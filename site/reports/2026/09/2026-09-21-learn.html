@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>S&amp;P Global and Moody's Keep Roughly Half of Every Dollar They Collect. A Wheat Farmer Can't Get Near It. — Learning Brief, Mon, Sep 21, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-21",
+    "slot": "learn",
+    "title": "S&P Global and Moody's Keep Roughly Half of Every Dollar They Collect. A Wheat Farmer Can't Get Near It.",
+    "path": "reports/2026/09/2026-09-21-learn.html",
+    "summary": "Day twenty-six of the 150-day curriculum: the four market structures, the calculus that sets a profit-maximizing price in any of them, and the Lerner Index and HHI economists use to measure pricing power -- tested against a wheat farmer, a patent-protected drug, and the real, sourced economics of the S&P Global / Moody's ratings duopoly.",
+    "headlines": [
+      "Day 26 of 150 · Economics: market structures and pricing power as an investable idea",
+      "A wheat farmer sets price equal to marginal cost and earns zero economic profit -- a monopolist gets to choose, and the choice is calculus",
+      "S&P Global and Moody's run operating margins near 50% with an HHI estimated near 3,450 -- nearly double the DOJ/FTC's 'highly concentrated' line"
+    ],
+    "reading_minutes": 29,
+    "generated_at": "2026-09-21T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>S&amp;P Global and Moody&rsquo;s Keep Roughly Half of Every Dollar They Collect. A Wheat Farmer Can&rsquo;t Get Near It.</h1>
+      <p class="paper-dateline">
+        Monday, September 21, 2026 <span class="sep">&middot;</span> 29 min read
+      </p>
+      <p class="paper-standfirst">
+        Between a market where nobody can move the price and a market where two firms price nearly all of the world&rsquo;s rated debt sits a whole spectrum economists call market structure &mdash; and today&rsquo;s lesson builds the calculus that sets the profit-maximizing price anywhere on that spectrum, the index that measures pricing power as an actual number, and the investing logic Warren Buffett once called the single most important decision in evaluating a business.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Economics</p>
+      <span class="track-progress">Day 26 of 150 &middot; Economics 4 of 20 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A farmer who cannot move the price, and a rating agency that almost cannot lose money</h3>
+
+      <p>Picture two people who both sell something the world genuinely needs. The first is a wheat farmer somewhere on the plains, standing over a harvest that took a growing season, real fertilizer, real diesel, and real risk of hail to produce. If he tries to sell his wheat for ten cents more a bushel than the going rate, buyers simply walk to the next farmer, and the next, until they find the market price again &mdash; his own wheat is, to every buyer on earth, a perfect substitute for everyone else&rsquo;s. The second is a credit analyst at a firm that sells something with no physical substance at all: an opinion, printed as a letter grade, on how likely a bond issuer is to pay its debts on time. That opinion costs the firm very little marginal effort to produce once the analytical framework already exists, and yet companies and governments line up to pay for it, because a bond without that letter grade is, for most large institutional buyers, unsellable.</p>
+
+      <p>Here is the number that should feel wrong. S&amp;P Global and Moody&rsquo;s, the two firms that between them price nearly every dollar of investment-grade corporate debt issued anywhere in the world, both run operating margins close to fifty cents on every dollar of revenue &mdash; Moody&rsquo;s posted a 47.3% operating margin in its most recent fourth quarter and has told investors it is targeting 53%, while S&amp;P Global&rsquo;s adjusted operating margin ran 51.4% in a recent quarter on more than $13.5 billion of annual revenue. The wheat farmer, growing something every human being on the planet needs to eat, will be lucky to keep a nickel of every dollar after seed, fuel, land, and labor. Both businesses are real. Both sell something valuable. Only one of them gets to decide, more or less on its own, what to charge for it.</p>
+
+      <p>The gap between those two businesses is not luck, and it is not simply that rating agencies have good lawyers, though that is part of the real story. It is the output of a specific, nameable economic structure &mdash; a way of classifying markets by how many sellers compete in them, how similar their products are, and how hard it is for a new seller to show up &mdash; combined with a single piece of calculus that tells any firm, in any of those market structures, exactly how much to produce and what to charge to maximize its own profit. This lesson builds both pieces, tests them against a hypothetical farmer, a hypothetical patent-protected drug, and the real, sourced economics of the credit-rating duopoly, and ends with the investing framework built entirely on knowing which side of this divide a business sits on before ever buying its stock.</p>
+
+      <h3>Price takers and price makers</h3>
+
+      <p>Strip away the jargon and the entire subject of market structure rests on one distinction. A <b>price taker</b> is a seller who looks at the market and sees a single number already decided for them &mdash; the going price &mdash; and the only decision left is how much to produce and sell at that price. The wheat farmer is a price taker: whatever the world price of wheat happens to be this morning, that is the price he gets, whether he likes it or not, because any buyer can walk away to an identical bushel grown by someone else. A <b>price maker</b>, by contrast, faces a demand curve that belongs to their business alone &mdash; raise the price and some, but not all, customers walk away; lower it and some new customers show up &mdash; and gets to choose where on that curve to sit. The rating agency is a price maker: raise the fee for rating a bond issue by ten percent, and almost none of the affected issuers will simply decline to be rated, because an unrated bond is close to unsellable to the institutional buyers who are themselves required, by their own mandates, to hold only rated paper.</p>
+
+      <p>Economists sort real markets into four rough categories along this spectrum, built from three underlying questions: how many sellers are there, is the product identical across sellers or meaningfully different, and how hard is it for a new seller to enter. <b>Perfect competition</b> sits at one extreme &mdash; many sellers, an identical (economists say &ldquo;homogeneous&rdquo;) product, and free entry and exit &mdash; and it is the world of the wheat farmer: pure price taking, and, as this lesson will show with numbers, zero economic profit once the market has had time to adjust. <b>Monopolistic competition</b> keeps the many sellers and the free entry but drops the identical-product assumption: restaurants, hair salons, and retail brands compete with dozens of near-substitutes, yet each one has carved out just enough of its own identity &mdash; a location, a menu, a membership card &mdash; to face a demand curve that is genuinely its own, giving it a sliver of real, if limited, pricing power. <b>Oligopoly</b> means few sellers, whether or not their products are identical, behind real barriers to entry high enough to keep new rivals out; what makes oligopoly distinctive is not just size but <em>mutual interdependence</em> &mdash; each firm&rsquo;s best price or output decision depends explicitly on what its handful of rivals are expected to do, in a way that a farmer among thousands of other farmers never has to think about. <b>Monopoly</b> sits at the far extreme: one seller, no close substitute for what it sells, and barriers &mdash; a patent, an exclusive license, a natural cost advantage &mdash; high enough to keep it that way. It is tempting to hear &ldquo;monopoly&rdquo; and think &ldquo;can charge literally anything,&rdquo; and this lesson is going to spend real effort later showing exactly why that is wrong: a monopolist is still bound by what customers are willing to pay, just as surely as the wheat farmer is bound by what the world market says wheat is worth. It has more freedom in choosing where on its demand curve to sit. It does not get to ignore the demand curve.</p>
+
+      <p>What actually keeps a monopoly, or the tighter end of an oligopoly, from dissolving back into ordinary competition is always some specific, nameable barrier to entry, and it is worth naming the common ones rather than treating &ldquo;barriers to entry&rdquo; as one vague catch-all phrase. A <b>patent</b> or an <b>exclusive license</b> is a legal barrier, granted by a government for a fixed term, and it is the kind this lesson&rsquo;s own worked example uses. Control of a genuinely scarce key input &mdash; a mine holding nearly all of a rare mineral, a location with the only deep-water port for a hundred miles &mdash; is a resource barrier, and needs no government involved at all. A <b>network effect</b>, where a product becomes more valuable to each user precisely because more other users already have it, is a barrier built entirely out of the customer base itself, and it is why a second, technically equal social network or payments rail can struggle for years to dislodge an established one even without a single new feature holding it back. And a <b>natural monopoly</b> arises from the cost structure alone: when a business requires an enormous fixed investment &mdash; a water utility&rsquo;s pipe network, an electric grid&rsquo;s wires &mdash; relative to the low variable cost of serving one more customer once that network exists, average cost keeps falling as output grows across the entire relevant range of demand, so a single large provider can genuinely serve a market more cheaply than two or three smaller, duplicate networks could. That last category is exactly why residential water and electricity delivery are typically run as a single regulated provider rather than left to open competition: the economics of the cost curve, not any law, are what make a second competing pipe network wasteful rather than merely inconvenient.</p>
+
+      <p>The theory behind the two middle categories &mdash; monopolistic competition and oligopoly &mdash; is newer than you might expect, and it arrived in an unusually compressed burst. The French mathematician and economist Antoine Augustin Cournot published the first formal model of a market with more than one but not very many sellers in 1838, in a treatise called <em>Recherches sur les Principes Math&eacute;matiques de la Th&eacute;orie des Richesses</em>. Cournot imagined two mineral-spring owners, selling an identical product at essentially zero cost, each simultaneously choosing how much water to bring to market while assuming &mdash; naively, but usefully &mdash; that the other owner&rsquo;s quantity would stay fixed; working out where both owners&rsquo; best responses to each other settled down was, in effect, an early ancestor of the equilibrium concept John Nash would formalize as a general theory of games more than a century later, in work that itself won a Nobel Prize. But for nearly a hundred years after Cournot, economic theory mostly treated markets as either the perfect-competition extreme or the monopoly extreme, with almost nothing built to describe the vast, ordinary middle ground where most real businesses actually sit. That gap was closed in a single remarkable year: in February 1933, the American economist Edward Chamberlin published <em>The Theory of Monopolistic Competition</em>, and that same spring the British economist Joan Robinson published <em>The Economics of Imperfect Competition</em>, each independently building essentially the same missing piece &mdash; a formal theory of markets with many sellers whose products are close substitutes but not identical, so that each seller retains a small, real, measurable amount of the price-making power a pure monopolist has in full. Chamberlin spent much of the rest of his career arguing that his framework and Robinson&rsquo;s were not really the same idea wearing two names, but the discipline as a whole settled quickly on treating the two books, arriving in the same few months from two economists working independently on two different continents, as having found the same missing middle of the market-structure spectrum at essentially the same time.</p>
+
+      <h3>The formalism: one condition governs every market structure</h3>
+
+      <p>Every firm in every one of the four structures above is trying to solve the identical problem: choose a quantity to produce, Q, in order to maximize profit, &pi;, which is total revenue, R(Q), minus total cost, C(Q). What differs across the four structures is not the goal and not the method &mdash; it is only the shape of the revenue function each firm faces, because that shape depends on whether the firm can influence the price it receives.</p>
+
+      <div class="formula">
+        <p class="expr">&pi;(Q) = R(Q) &minus; C(Q) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &pi;&prime;(Q) = 0 &nbsp;&#8658;&nbsp; MR(Q) = MC(Q)</p>
+        <dl>
+          <dt>&pi;(Q)</dt><dd>profit as a function of quantity produced and sold &mdash; the quantity every firm in this lesson is trying to maximize, regardless of market structure.</dd>
+          <dt>R(Q)</dt><dd>total revenue, equal to price times quantity, P(Q)&middot;Q &mdash; but P itself may or may not depend on Q, which is exactly where the four market structures start to diverge.</dd>
+          <dt>C(Q)</dt><dd>total cost of producing quantity Q, combining fixed costs (which do not change with output) and variable costs (which do).</dd>
+          <dt>MR(Q)</dt><dd>marginal revenue, R&prime;(Q) &mdash; the additional revenue earned from selling one more unit.</dd>
+          <dt>MC(Q)</dt><dd>marginal cost, C&prime;(Q) &mdash; the additional cost incurred to produce one more unit.</dd>
+        </dl>
+      </div>
+
+      <p>This is exactly the flat-point idea from earlier in this curriculum&rsquo;s calculus track, aimed at a business decision instead of a can or a fenced field: profit is maximized where its derivative with respect to quantity is zero, which happens precisely where marginal revenue equals marginal cost. Produce one unit less than that point and you are leaving money on the table &mdash; the next unit would have brought in more revenue than it cost to make. Produce one unit more and you are destroying value &mdash; that unit costs more to make than it brings in. MR = MC is not a rule specific to monopolies or to any other single structure; it is the single first-order condition every profit-maximizing firm in this lesson satisfies, in every market structure, without exception. As with any critical point, satisfying MR = MC only guarantees a flat spot, not necessarily a peak &mdash; the accompanying second-order condition, that marginal revenue is falling faster than marginal cost is rising at that quantity (MR&prime;(Q) &lt; MC&prime;(Q)), is what confirms the flat spot is actually a maximum of profit and not a minimum. In every example below, that check will hold, and it is worth checking rather than assuming.</p>
+
+      <p>Where the four structures actually part ways is in what P(Q) looks like. A price taker sells at a fixed market price P that does not change no matter how much or how little it produces, so R(Q) = P&middot;Q, and marginal revenue collapses to something remarkably simple: MR(Q) = P, a constant, for every unit. Substitute that into the general condition and the profit-maximizing rule for a price taker becomes P = MC &mdash; the signature equation of perfect competition, and the reason economists can say, with no further information about any individual firm, that a competitive firm&rsquo;s supply curve <em>is</em> its marginal cost curve. A price maker, on the other hand, faces its own downward-sloping demand curve, P(Q), where selling more requires accepting a lower price &mdash; and, critically, for a firm that charges a single price to everyone (rather than perfectly discriminating between customers), that lower price applies not just to the marginal unit but to every unit sold. Using the product rule on R(Q) = P(Q)&middot;Q gives MR(Q) = P(Q) + Q&middot;P&prime;(Q), and because P&prime;(Q) is negative for a downward-sloping demand curve, that second term is always negative &mdash; meaning marginal revenue is always strictly below price for any firm with genuine pricing power. Selling one more unit does bring in that unit&rsquo;s price, but it also costs the firm a little revenue on every unit it was already selling, now sold at the new, lower price. That single algebraic fact, more than anything else, is the mathematical seed of every restriction a monopolist places on its own output relative to a competitive market.</p>
+
+      <p>Economists have a precise, numerical way to measure how much of that gap between price and marginal cost a firm actually captures, named for the economist Abba Lerner, who introduced it in 1934, one year after Chamberlin and Robinson&rsquo;s books appeared.</p>
+
+      <div class="formula">
+        <p class="expr">L = (P &minus; MC) / P = 1 / |E<sub>d</sub>|</p>
+        <dl>
+          <dt>L</dt><dd>the Lerner Index, a number between 0 and 1 measuring a firm&rsquo;s degree of market power &mdash; 0 means no pricing power at all (price equals marginal cost, the perfect-competition result); values approaching 1 mean price is far above marginal cost.</dd>
+          <dt>P</dt><dd>the price the firm actually charges at its profit-maximizing quantity.</dd>
+          <dt>MC</dt><dd>marginal cost at that same quantity.</dd>
+          <dt>E<sub>d</sub></dt><dd>the price elasticity of demand the firm faces at its profit-maximizing price &mdash; the percentage change in quantity demanded for a 1% change in price, always negative for a normal downward-sloping demand curve, which is why the formula uses its absolute value.</dd>
+        </dl>
+      </div>
+
+      <p>The second form of that formula &mdash; one divided by the elasticity of demand &mdash; is not asserted for free; it falls directly out of the marginal-revenue formula already derived above. Start from MR(Q) = P(Q) + Q&middot;P&prime;(Q), and factor out P: MR = P&middot;(1 + (Q/P)&middot;P&prime;(Q)). The bracketed term (Q/P)&middot;P&prime;(Q) is, by definition, the reciprocal of the price elasticity of demand, 1/E<sub>d</sub>, since E<sub>d</sub> itself is defined as (P/Q)&middot;(dQ/dP) &mdash; the percentage change in quantity divided by the percentage change in price. So MR = P&middot;(1 + 1/E<sub>d</sub>). Set this equal to marginal cost at the profit-maximizing quantity, MR = MC, and rearrange: P + P/E<sub>d</sub> = MC, so P/E<sub>d</sub> = MC &minus; P, and dividing both sides by P gives 1/E<sub>d</sub> = (MC &minus; P)/P = &minus;(P &minus; MC)/P. Since E<sub>d</sub> is negative for a normal downward-sloping demand curve, flip the sign on both sides to get &minus;1/E<sub>d</sub> = (P &minus; MC)/P, and because dividing by a negative number is the same as taking the absolute value of a negative reciprocal, that left-hand side is exactly 1/|E<sub>d</sub>| &mdash; which is precisely the Lerner Index formula stated above. Nothing about that derivation assumed monopoly specifically; it holds for any firm facing a downward-sloping demand curve of its own, which is exactly why the same formula applies just as well to a firm in monopolistic competition or a firm in an oligopoly as it does to a pure monopolist &mdash; only the size of E<sub>d</sub>, driven by how many close substitutes customers actually have, changes from one structure to the next.</p>
+
+      <p>The Lerner Index turns &ldquo;pricing power&rdquo; from a vibe into an actual, computable number, and its second form &mdash; one divided by the absolute value of the elasticity of demand the firm faces &mdash; explains exactly where that power comes from: a firm whose customers have very few good substitutes to switch to (inelastic demand, a small |E<sub>d</sub>|) can mark price up far above marginal cost and lose very few sales in the process; a firm whose customers can switch to a near-identical rival at the first sign of a price increase (elastic demand, a large |E<sub>d</sub>|) has almost none of that room. A perfectly competitive firm faces effectively infinite elasticity &mdash; raise price even slightly above the market rate and demand for that one firm&rsquo;s output falls to zero, because buyers can get an identical product elsewhere &mdash; which is exactly why its Lerner Index is zero and its price equals its marginal cost.</p>
+
+      <p>One more tool belongs in this formalism, because it measures the market-structure side of the story rather than the pricing-power outcome, and the two are related but genuinely different things. The <b>Herfindahl-Hirschman Index</b>, used by antitrust regulators to gauge how concentrated a market is, sums the squared market shares (expressed as whole-number percentages) of every firm competing in it.</p>
+
+      <div class="formula">
+        <p class="expr">HHI = &Sigma; s<sub>i</sub><sup>2</sup></p>
+        <dl>
+          <dt>HHI</dt><dd>the Herfindahl-Hirschman Index for a market, ranging from near 0 (many tiny, equal-sized firms) to 10,000 (a single firm with 100% of the market).</dd>
+          <dt>s<sub>i</sub></dt><dd>firm i&rsquo;s market share, expressed as a whole number out of 100 (a 40% share enters the sum as 40, squared to 1,600) rather than as a decimal fraction.</dd>
+        </dl>
+      </div>
+
+      <p>Under the U.S. Department of Justice and Federal Trade Commission&rsquo;s current merger guidelines, finalized in December 2023, regulators treat a market with an HHI between 1,000 and 1,800 as moderately concentrated, and a market above 1,800 as highly concentrated &mdash; a real tightening from the 2010 guidelines&rsquo; 2,500 threshold for the same &ldquo;highly concentrated&rdquo; label, and under the 2023 rules a merger that would push a market&rsquo;s post-merger HHI above 1,800, while raising it by more than 100 points, is presumed anticompetitive unless the merging parties can show otherwise. HHI measures the shape of a market &mdash; how many sellers, how evenly sized &mdash; and it is a useful screening tool precisely because it is cheap to compute from public market-share data. It does not, on its own, measure what those firms actually do with that structure; that distinction matters enough that this lesson comes back to it directly in the misconception section below.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; a wheat farmer who cannot move the market</b>
+        <p>A hypothetical Kansas wheat farmer faces a world market price this season of $6.50 per bushel &mdash; a number set by the aggregate of millions of buyers and thousands of growers worldwide, over which this one farmer&rsquo;s own output has no detectable effect. His own marginal cost of producing the Q-th bushel from his acreage rises as he pushes yield higher on fixed land, following MC(Q) = 2 + 0.01Q, in dollars per bushel, where Q is measured in bushels from this plot. Find his profit-maximizing quantity.</p>
+        <ol>
+          <li>As a price taker, this farmer&rsquo;s marginal revenue is simply the market price, constant at every quantity: MR(Q) = P = $6.50.</li>
+          <li>Apply the universal first-order condition, MR(Q) = MC(Q): 6.50 = 2 + 0.01Q.</li>
+          <li>Solve for Q: 0.01Q = 4.50, so Q = 450 bushels.</li>
+          <li>Check the second-order condition: MC is rising (its derivative, 0.01, is positive) while MR is flat (its derivative is zero), so MR is indeed falling relative to MC beyond this point &mdash; confirming 450 bushels is a genuine profit maximum, not a minimum.</li>
+          <li>Below 450 bushels, MC is under $6.50 and every additional bushel adds more revenue than cost, so producing more is worth it; above 450 bushels, MC exceeds $6.50 and every additional bushel actually loses money. 450 bushels is exactly the point where those two forces balance.</li>
+        </ol>
+        <p>Notice what is completely absent from this calculation: any mention of what any other farmer is doing, any decision about what price to charge, or any negotiation with a buyer. The entire problem was handed to him by the market and reduced to a single question &mdash; how much to produce &mdash; which is the whole meaning of &ldquo;price taker.&rdquo; And in the long run, perfect competition&rsquo;s free entry and exit assumption finishes the story: if $6.50 a bushel leaves farmers earning more than a normal return on their land, equipment, and labor, more farmers plant wheat, or existing farmers plant more of it, until the added supply pushes the world price down to the point where the least efficient farmer still willing to grow wheat is earning exactly enough to keep doing it &mdash; economists call this outcome zero <em>economic</em> profit, a term this lesson is careful not to confuse with zero <em>accounting</em> profit: the farmer is still being paid a full, fair return for his own land, labor, and capital, just no return beyond that, because free entry has already competed away anything more.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; a patent, a demand curve, and a derivative set to zero</b>
+        <p>A hypothetical pharmaceutical firm holds a ten-year patent on a specialty drug with no close therapeutic substitute, giving it a textbook, if temporary, monopoly. Market research puts the inverse demand curve at P(Q) = 100 &minus; 0.5Q, where Q is measured in thousands of doses per month and P in dollars per dose, and the firm&rsquo;s marginal cost of manufacturing is constant at $20 per dose. Find the firm&rsquo;s profit-maximizing price and quantity, and its Lerner Index at that point.</p>
+        <ol>
+          <li>Write total revenue as a function of Q alone: R(Q) = P(Q)&middot;Q = (100 &minus; 0.5Q)Q = 100Q &minus; 0.5Q&sup2;.</li>
+          <li>Differentiate to get marginal revenue: MR(Q) = R&prime;(Q) = 100 &minus; Q. Notice this is exactly twice as steep as the demand curve itself, which slopes at &minus;0.5 &mdash; a general fact about marginal revenue under linear demand that always leaves MR strictly below P for any Q above zero, exactly as the general formalism predicted.</li>
+          <li>Apply MR(Q) = MC(Q): 100 &minus; Q = 20, so Q* = 80 thousand doses per month.</li>
+          <li>Recover price from the original demand curve: P* = 100 &minus; 0.5(80) = $60 per dose.</li>
+          <li>Check the second-order condition: MR&prime;(Q) = &minus;1 and MC&prime;(Q) = 0, so MR is falling relative to MC (&minus;1 &lt; 0) at Q* &mdash; confirming a genuine profit maximum.</li>
+          <li>Compute the Lerner Index at the profit-maximizing point: L = (P* &minus; MC)/P* = (60 &minus; 20)/60 &asymp; 0.667. A value approaching two-thirds is very high pricing power, consistent with a firm selling a patented product with, by construction, no close substitute at all.</li>
+          <li>For contrast, find what the same demand curve would produce under perfect competition, where price is forced down to marginal cost: set P(Q) = MC directly, 100 &minus; 0.5Q = 20, giving Q = 160 thousand doses at P = $20. The monopolist&rsquo;s profit-maximizing output, 80 thousand doses, is exactly half of the competitive benchmark &mdash; the same shape a single seller restricting output to defend a higher price takes in every textbook monopoly diagram, arrived at here purely from setting a derivative to zero rather than from a diagram.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; how concentrated is bond-rating, really?</b>
+        <p>Using the commonly reported estimate that S&amp;P Global and Moody&rsquo;s each hold roughly 40% of the global credit-ratings market, with Fitch Ratings estimated at roughly 15% and the remaining smaller, SEC-registered rating agencies splitting a residual 5% &mdash; approximate, rounded figures, not a precise regulatory filing, and flagged as such &mdash; estimate the market&rsquo;s HHI and compare it to the DOJ/FTC&rsquo;s current concentration thresholds.</p>
+        <ol>
+          <li>Square each firm&rsquo;s share: S&amp;P Global, 40&sup2; = 1,600. Moody&rsquo;s, 40&sup2; = 1,600. Fitch, 15&sup2; = 225. Remaining agencies combined, treated here as a single block for simplicity, 5&sup2; = 25.</li>
+          <li>Sum: HHI &asymp; 1,600 + 1,600 + 225 + 25 = 3,450.</li>
+          <li>Compare to the 2023 DOJ/FTC threshold for &ldquo;highly concentrated,&rdquo; an HHI above 1,800: an estimated 3,450 is nearly double that line, and would sit well above even the older, looser 2010-era threshold of 2,500.</li>
+          <li>Cross-check against the Lerner-style evidence already in hand: Moody&rsquo;s 47.3% operating margin and S&amp;P Global&rsquo;s 51.4% adjusted operating margin are exactly the kind of outcome a very high HHI would lead you to expect, even though HHI itself is a structure measure, not a direct measure of markup &mdash; the two numbers are telling a consistent story from two different angles, which is worth noting precisely because, as the misconception below explains, they do not always have to agree.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: pricing power as the whole ballgame</h3>
+
+      <p>In a 2010 interview with the Financial Crisis Inquiry Commission &mdash; the official government panel investigating the causes of the 2008 crisis, later released by the National Archives and reported by Bloomberg in February 2011 &mdash; Warren Buffett was asked what he actually looks for in a business, and his answer did not mention management, growth, or even the balance sheet first. &ldquo;The single most important decision in evaluating a business is pricing power,&rdquo; he said. &ldquo;If you&rsquo;ve got the power to raise prices without losing business to a competitor, you&rsquo;ve got a very good business. And if you have to have a prayer session before raising the price by 10 percent, then you&rsquo;ve got a terrible business.&rdquo; Translated into this lesson&rsquo;s vocabulary, Buffett was not asking &ldquo;is this a literal monopoly&rdquo; &mdash; almost nothing Berkshire Hathaway has ever bought is one. He was asking, in plain English, whether a business sits far enough toward the price-maker end of the spectrum that its Lerner Index stays meaningfully above zero without new entrants or regulators dragging it back down &mdash; whether, in short, its customers face something closer to a wheat farmer&rsquo;s situation in reverse.</p>
+
+      <p>Buffett&rsquo;s own portfolio makes the point with the exact company this lesson has been using as its real-world anchor. Berkshire Hathaway first acquired shares of Moody&rsquo;s Corporation through its 2000 spin-off from Dun &amp; Bradstreet, at roughly $12 a share, and despite trimming the position steadily since a first reported reduction in 2009, Berkshire has held Moody&rsquo;s stock continuously for a quarter century and still owned roughly a 14% stake, an $11-billion-plus position, as of recent 2026 reporting &mdash; one of the longest continuously held positions in the entire Berkshire portfolio. A firm whose Lerner Index and HHI both point the same direction, sitting inside a market structure that has barely changed in a hundred years, is precisely the kind of business Buffett&rsquo;s framework was built to identify, and he identified this one at the moment it was created.</p>
+
+      <p>Pricing power does not require a literal duopoly to show up, either, which is the useful part for spotting it elsewhere. Costco&rsquo;s membership business, covered in this curriculum&rsquo;s own accounting track, sits firmly inside <em>monopolistic competition</em> &mdash; there is no shortage of warehouse clubs and grocers competing for the same customer &mdash; yet an annual membership fee, paid up front and renewed at a rate the company itself reports above 90%, builds a real, if modest, switching cost around every member household: having already paid $65 for the year, a member is meaningfully less likely to defect to a rival over a small price difference than a shopper with no membership at all. That is a genuine, if partial, version of the same demand-curve-of-its-own idea this lesson built formally for the monopolist &mdash; just with a Lerner Index closer to the middle of the 0-to-1 range than to Moody&rsquo;s end of it, which is exactly what &ldquo;monopolistic&rdquo; competition, positioned between the two pure extremes, should look like in practice.</p>
+
+      <p>This is also, in practice, what a great deal of professional equity research is actually doing under a different name. An analyst asking whether a company can &ldquo;pass through&rdquo; a cost increase to customers without losing volume is asking, in this lesson&rsquo;s vocabulary, whether that company&rsquo;s residual demand curve is inelastic enough to keep its Lerner Index high after the shock; a stable or expanding gross margin over many years, held even through periods of rising input costs, is indirect but genuine evidence that a firm sits further toward the price-maker end of the spectrum than its published market share alone would suggest. None of this requires an analyst to compute an HHI by hand, but the underlying question &mdash; how many sellers, how similar are their products, how hard would it be for a new one to show up &mdash; is exactly the three-part test this lesson opened with, just asked in the language of a research note instead of a textbook.</p>
+
+      <h3>The misconception</h3>
+
+      <p>The most common mistake is treating &ldquo;monopoly&rdquo; or a high HHI as a synonym for &ldquo;guaranteed, effortless profit.&rdquo; It is not, for two separate and equally important reasons. First, a monopolist is still bound by its own demand curve, exactly as worked example 2 showed algebraically: it gets to choose where on that curve to sit, not to escape it. If a market is small enough, or fixed costs high enough, relative to what any quantity-price combination on the demand curve can generate, a monopolist can set MR = MC perfectly correctly and still watch its price-maximizing revenue fall short of covering its total costs &mdash; a patent-protected drug developed at enormous research cost for a disease that turns out to affect very few patients is a real, unglamorous example of a legally airtight monopoly that can still lose money. Total legal exclusivity is not the same statement as total customer willingness to pay whatever it takes to cover the bill. The formal version of this same point distinguishes two different break-even conditions: in the short run a firm, monopolist or otherwise, is willing to keep operating as long as price at least covers average <em>variable</em> cost, even at a loss, because shutting down entirely would still leave the fixed costs unpaid; only in the long run, once every cost is variable, does the firm need price to cover average <em>total</em> cost, fixed costs included, to be worth continuing at all. A monopoly grants pricing freedom on one axis &mdash; where to sit on the demand curve &mdash; and does nothing whatsoever to guarantee that the best available point on that curve clears either bar.</p>
+
+      <p>Second, and this is the sharper edge of the same mistake: market <em>structure</em> &mdash; how many sellers, how concentrated by HHI &mdash; is not the same thing as market <em>conduct</em>, which is what actually determines price. In 1883, the French mathematician Joseph Bertrand reviewed Cournot&rsquo;s original duopoly work and pointed out a genuinely startling result now called the Bertrand paradox: if just two firms sell an identical product and compete by simultaneously naming a price rather than a quantity, each one has an incentive to undercut the other by even a fraction of a cent to capture the entire market, and that undercutting logic drives equilibrium price all the way down to marginal cost &mdash; the same P = MC outcome as perfect competition, achieved with only two sellers instead of thousands. An HHI of, say, 5,000, describing a market with just two equal-sized firms, is entirely consistent with either the S&amp;P-and-Moody&rsquo;s outcome this lesson computed &mdash; sustained margins near 50% &mdash; or with a Bertrand-style price war that leaves both firms earning close to nothing, depending entirely on how those two firms actually choose to behave toward each other, something the concentration number alone cannot tell you. Structure sets the stage. It does not write the script.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day sixteen&rsquo;s lesson on optimization and related rates actually named this exact application before this curriculum ever reached economics, in a single sentence tucked inside its opening explanation of the flat-point idea: &ldquo;every time a company chooses a price that maximizes profit rather than revenue&hellip; someone, somewhere, is implicitly solving a version of the hiking-trail problem.&rdquo; That lesson built the machinery in full &mdash; a critical point occurs where f&prime;(c) = 0, and the second derivative&rsquo;s sign, f&Prime;(c), tells a local minimum (f&Prime;(c) &gt; 0, the shape of a can&rsquo;s surface-area problem) from a local maximum (f&Prime;(c) &lt; 0, the shape of a farmer&rsquo;s fenced-field problem) &mdash; using an aluminum can and a fence as the examples, with profit maximization mentioned only in passing as a preview of where the same idea would eventually show up. Today is where that passing mention gets cashed in: &pi;&prime;(Q) = MR(Q) &minus; MC(Q) = 0 is the identical critical-point condition, f&prime;(c) = 0, and the requirement that MR fall faster than MC at the optimum is the identical second-derivative test, &pi;&Prime;(Q) &lt; 0, confirming a maximum rather than a minimum, run with a dollar sign attached instead of a square centimeter. The can problem and the wheat farmer&rsquo;s bushel count are, underneath the different vocabulary, the exact same flat-point hunt.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can name the four market structures by their underlying criteria &mdash; number of sellers, product differentiation, barriers to entry &mdash; and state, for each one, what shape its firms&rsquo; demand curve takes and how much genuine pricing power that shape implies.</li>
+          <li>You can derive the profit-maximizing price and quantity for a price-taking firm and a price-making firm from the same MR = MC condition, and you have done it twice, by hand, with a wheat farmer and a patent-protected drug.</li>
+          <li>You can compute the Lerner Index and the Herfindahl-Hirschman Index for a real industry, and you know precisely why a high HHI is not by itself proof of a high markup &mdash; the Bertrand paradox shows structure and conduct are genuinely separate questions.</li>
+          <li>You have a formal, numerical version of what Warren Buffett calls pricing power, and you know how to look for it in a business the way his own quarter-century Moody&rsquo;s position, and Costco&rsquo;s own membership renewal rate, both illustrate in practice.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Warren Buffett&rsquo;s pricing-power remarks are drawn from his 2010 Financial Crisis Inquiry Commission interview, released by the National Archives and reported by Bloomberg on February 18, 2011. Moody&rsquo;s and S&amp;P Global operating-margin figures and their roughly 40%-apiece global market share come from recent financial reporting and S&amp;P Global&rsquo;s own earnings materials; the ratings-industry HHI in worked example 3 is this report&rsquo;s own estimate built on those commonly cited, rounded shares, not an official regulatory figure, and is labeled as such. Berkshire Hathaway&rsquo;s Moody&rsquo;s position &mdash; the 2000 Dun &amp; Bradstreet spin-off origin, the 2009 first reduction, and the recent roughly 14% stake &mdash; was checked against portfolio-tracking and financial-media reporting. The DOJ/FTC HHI concentration thresholds are from the final 2023 Merger Guidelines, compared against the prior 2010 guidelines. Antoine Cournot&rsquo;s 1838 duopoly model, Joseph Bertrand&rsquo;s 1883 review and the paradox it produced, and Edward Chamberlin and Joan Robinson&rsquo;s independent 1933 books were checked against published histories of economic thought. Costco&rsquo;s membership renewal rate carries forward from day twenty-five&rsquo;s lesson, sourced there to the company&rsquo;s own filings. The wheat farmer and the patent-protected drug in worked examples 1 and 2 are hypotheticals built for this curriculum, with all arithmetic computed directly for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day sixteen&rsquo;s lesson on optimization and day twenty-five&rsquo;s lesson on Costco&rsquo;s membership accounting. Missing data is declared missing, never estimated; a rounded or estimated figure is labeled as such rather than presented as precise. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-20-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

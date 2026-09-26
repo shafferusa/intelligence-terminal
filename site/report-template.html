@@ -3,11 +3,11 @@
   Logan's Daily Newspaper - report page template & design reference (v2).
 
   HOW THE CLOUD ROUTINE USES THIS FILE
-  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
   2. Replace the <title> text.
   3. Replace the JSON inside the report-meta script block in <head>
      (keep its id and type attributes exactly as they are).
-  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
      That one attribute drives the edition colour throughout the page.
   5. Replace everything between the REPORT:START and REPORT:END marker comments
      with the new report body. Everything outside the markers is boilerplate
@@ -96,8 +96,7 @@
     <!-- ================= MASTHEAD =================
          Edition eyebrow, headline, dateline, one-sentence standfirst.
          Nothing else. No cutoff times, no version, no confidence rating,
-         no per-source freshness table. The audio bar is injected by
-         assets/report.js immediately after this header. -->
+         no per-source freshness table. -->
     <header class="paper-head">
       <p class="paper-edition">Morning Edition</p>
       <h1>Sample Morning Brief</h1>
@@ -187,8 +186,7 @@
     </section>
 
     <!-- ================= TOP STORIES =================
-         8-10 stories, at least four of them markets, the economy or business
-         (2026-09-09). The first carries .story--lead (bigger headline,
+         8-12 stories. The first carries .story--lead (bigger headline,
          drop cap). Each story: headline, deck, body prose, and at most two
          .story-note blocks (Why it matters / What's next). The old seven
          labelled subheads are gone - write it as prose.
@@ -237,9 +235,11 @@
     </section>
 
     <!-- ================= DOMAIN SECTIONS =================
-         The Economy · Business · Watchlist · Politics · The World ·
-         Technology & AI · Science & Space, in that order (2026-09-09: the
-         market sections lead the domains; Science and Space are ONE section).
+         Finance-first (2026-09-25): The Economy · Business & Earnings lead;
+         then The United States · The World · AI & Technology · Science ·
+         Space (separate sections) · Also in the News (catch-all).
+         Section order per edition: prompts/weekday.md Step 4 /
+         prompts/weekend.md S4, U3.
          Write each as prose under the .story-body class. A section with
          nothing material to say is OMITTED - never padded to fill the slot. -->
     <section class="paper-section" aria-labelledby="s-econ">
@@ -247,39 +247,7 @@
       <div class="story-body">
         <p>Two to five short paragraphs. Releases are described in prose with the number, the expectation, the surprise and the revision, rather than in a fact-card grid. Level versus rate-of-change stays explicit; nominal versus real stays explicit.</p>
         <p>Initial jobless claims came in at 219,000 for the week ending July 18, against a 225,000 consensus, with the prior week revised up to 221,000 from 218,000. The four-week average sits at 222,000 and has drifted sideways since spring &mdash; a labour market cooling without cracking, and not on its own enough to move the policy path. (Sample.)</p>
-        <p><strong>The Fed path.</strong> The effective rate is 4.33%. Fed funds futures (Yahoo, delayed) put the average rate for the month after the September meeting at 4.47%, an implied 14 basis points of tightening, roughly a 50&ndash;60% chance of a quarter-point hike, up 8 points on the day; the following meeting adds nothing further. What moves it next is Friday&rsquo;s payrolls. (Sample.)</p>
-        <!-- The paragraph always names the direction the market is pricing:
-             a negative implied change reads "roughly 50-60% for an October
-             cut", never "0-5% for a hike". Under 5bp either way: "little
-             priced for October". See prompts/weekday.md 2.15. -->
       </div>
-    </section>
-
-    <!-- ================= WATCHLIST =================
-         Three to six items on the names in config/watchlists.yml since the
-         last edition: filings, earnings (pre-report card in the morning,
-         post-report card at the close), guidance, contracts, leadership.
-         Each item carries a .watch-ticker label. Added 2026-09-09. -->
-    <section class="paper-section" aria-labelledby="s-watch">
-      <h2 id="s-watch">Watchlist</h2>
-
-      <article class="watch-item">
-        <p class="watch-ticker">AVGO &middot; Broadcom &middot; reports after the close</p>
-        <h3>The question is the AI-semiconductor guide, not the quarter</h3>
-        <div class="story-body">
-          <p>Consensus for fiscal Q3 is $29.6 billion of revenue and $3.28 of adjusted EPS; the options market implies a move of about 8% either way. Last quarter the stock fell 5% on a beat because the AI guide did not rise, and the same test applies tonight. (Sample.)</p>
-        </div>
-        <p class="story-sourceline">Company IR calendar (primary) &middot; consensus per a named tracker &middot; options-implied move per a named source.</p>
-      </article>
-
-      <article class="watch-item">
-        <p class="watch-ticker">VRT &middot; Vertiv &middot; 8-K filed 7:02 AM ET</p>
-        <h3>Vertiv buys a microgrid-controls company for up to $2.6 billion</h3>
-        <div class="story-body">
-          <p>$1.45 billion in cash at closing plus up to $1.15 billion of earn-outs, about 13 times the target&rsquo;s expected 2027 EBITDA, funded from existing resources, closing in the fourth quarter subject to antitrust clearance. It buys the part of a data-centre build that is now the bottleneck: getting power connected. (Sample.)</p>
-        </div>
-        <p class="story-sourceline">SEC Form 8-K (primary) &middot; company release.</p>
-      </article>
     </section>
 
     <!-- ================= CALENDAR ================= -->
@@ -302,36 +270,12 @@
     </section>
 
     <!-- ================= MARKET SETUP =================
-         am: "Before the Open"   pm: "What Moved Markets", then the Markets
-         section below, then "Winners & Losers".
+         am: "Before the Open"   pm: "What Moved Markets" + "Winners & Losers"
          sat/sun: replaced by the weekly/forward sections. -->
     <section class="paper-section" aria-labelledby="s-setup">
       <h2 id="s-setup">Before the Open</h2>
       <div class="story-body">
         <p>Prose, not a table: where futures sit, where yields and the dollar sit, what the overnight tape appears to price, which assumption in that pricing is most fragile, and what would invalidate it before the open. Futures are not a guaranteed open and the report says so once, here, rather than in a label on every row.</p>
-        <!-- CLOSING EDITION ONLY: in "What Moved Markets" each attributed move
-             opens with one of the four labels in a .verdict span, no trailing
-             punctuation inside the span, qualifiers in the prose after it:
-             <p><span class="verdict">Likely contributor</span> The weak payrolls print, out before the open, coincided with the drop in front-end yields; no single confirmed catalyst for the equity rally. (Sample.)</p> -->
-      </div>
-    </section>
-
-    <!-- ================= MARKETS =================
-         Both weekday editions, 400-600 words, four fixed sub-heads, prose with
-         the numbers in the sentences. This is the narrative that used to sit
-         in the collapsed appendix; the appendix keeps the tables. Added
-         2026-09-09. -->
-    <section class="paper-section" aria-labelledby="s-markets">
-      <h2 id="s-markets">Markets</h2>
-      <div class="story-body">
-        <h3>The regime</h3>
-        <p>Risk-on, moderate, and a notch weaker than Friday. For it: the index above its 50-day average, equal-weight keeping pace with cap-weight, spreads tight. Against it: small caps lagging for a third week and a volatility curve that has stopped falling. (Sample.)</p>
-        <h3>Rates &amp; credit</h3>
-        <p>The 2-year at 4.39%, up 14 basis points on the week, did the work; the 10-year at 4.79% barely moved, so the curve flattened to 40 basis points. Real yields rose with nominals and breakevens were flat &mdash; a rate-path move, not an inflation move. High-yield spreads at 265 basis points widened two, which is noise. (Sample.)</p>
-        <h3>Sectors &amp; factors</h3>
-        <p>Semiconductors led and regional banks followed, the classic lower-path pairing, while defence and aerospace fell as a group despite a wider war. Value beat growth for the week and small-cap value beat everything, which is the rotation to watch if the data keep softening. (Sample.)</p>
-        <h3>Cross-asset &amp; commodities</h3>
-        <p>Oil at $90 has stopped responding to each new strike, gold rose with equities rather than against them, and the dollar was flat. The correlation that broke this week is oil versus energy stocks. (Sample.)</p>
       </div>
     </section>
 
@@ -415,11 +359,9 @@
     </section>
 
     <!-- ================= MARKET APPENDIX =================
-         Collapsed. Since 2026-09-09 the regime, rates, credit, sectors,
-         factors, cross-asset, commodities, FX and crypto blocks are tables
-         plus at most one sentence each - the prose is in the Markets section
-         above. It costs the reader nothing while closed, and it is where
-         every number with a delay label now lives. -->
+         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
+         It costs the reader nothing while closed, and it is where every
+         number with a delay label now lives. -->
     <section class="paper-section appendix" aria-labelledby="s-appendix">
       <h2 id="s-appendix">Market Appendix</h2>
       <details class="appendix-shell">
@@ -427,7 +369,7 @@
 
         <details class="appendix-block">
           <summary>Market regime</summary>
-          <p><span class="chip chip--ok">Risk-on, moderate</span> One sentence: the call and the change from the prior edition. The evidence for and against is in the Markets section above, not repeated here. (Sample.)</p>
+          <p><span class="chip chip--ok">Risk-on, moderate</span> Supporting evidence (trend, breadth, credit) and contradicting evidence (narrow leadership) both listed; confidence stated; change from the prior report noted.</p>
         </details>
 
         <details class="appendix-block">

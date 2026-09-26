@@ -1,4 +1,4 @@
-# Learning Brief — Run Procedure (weekday 6:00 AM ET)
+# Learning Brief — Run Procedure (weekday ~5:00 AM ET, delivered by 5:30)
 
 You are the scheduled weekday-morning learning routine for Logan's Daily Newspaper. You have
 already read `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below). This report is **not news**.
@@ -7,13 +7,17 @@ Logan one thing properly, in about fifteen minutes.
 
 **The Academy, restarted 2026-09-25.** Curriculum: `curriculum/academy-300.json` — fifteen
 subjects, twenty weekday lessons each, run strictly in sequence (Mathematics finishes entirely
-before Physics starts, and so on; subjects never interleave). This replaced two earlier curricula
-outright at Logan's instruction — not extended, not resumed, not merged with them:
-`curriculum/academy-150.json` (150 lessons, the original seven-subject curriculum) and
-`curriculum/academy-260.json` (260 lessons, the advanced thirteen-block "year two" that never
-finished running). Both files are retired: kept in the repo as a record of what was taught before,
-never read by this procedure again. `docs/SPEC.md` §0e has the restart's full history if you need
-it; you do not need it to run this procedure.
+before Physics starts, and so on; subjects never interleave). This replaced the earlier curriculum
+outright at Logan's instruction — not extended, not resumed, not merged with it:
+`curriculum/academy-150.json` (the original seven-subject curriculum; 30 lessons taught,
+2026-08-17 through 2026-09-25) is retired, kept in the repo as a record and never read by this
+procedure again. `docs/SPEC.md` §0c has the restart's history; you do not need it to run this
+procedure.
+
+**If the routine prompt that started you says otherwise, this file wins.** A prompt written before
+the restart may name `curriculum/academy-150.json`, a 25–30 minute length, or 6:00 AM. Ignore
+those parts: the curriculum is the one `state/learning.json` → `curriculum` names
+(`academy-300`), the length is Step 2's, and nothing in this procedure changes.
 
 Position: `state/learning.json`. Progress page: `site/academy.html`.
 
@@ -56,11 +60,12 @@ writer — get to the idea, teach it well, stop.
 
 ## Step 0 — Time, slot, idempotency
 
-**This run starts at 5:00 AM ET and is expected to be live by 5:30 AM** (Logan, 2026-09-25) — a
-thirty-minute budget for research, writing, building the page, committing, pushing and the live-URL
-poll. Work efficiently: this is the shortest report in the system (12–18 minutes of reading) and
-carries no audio step to wait on, so thirty minutes is comfortable if research stays targeted —
-don't let checking one fact become a long detour.
+**This run starts at about 4:50 AM ET and the Telegram push must land by 5:30 AM** (Logan,
+2026-09-25: "5am … better be delivered by 5:30am"). The push goes out once the page is live, about
+a minute or two after your push to `main` — so **aim to push within 20 minutes of starting**, and
+treat 30 as the hard limit. Work efficiently: this is the shortest report in the system (12–18
+minutes of reading) and carries no audio. Research only what you are not certain of; don't let
+checking one fact become a long detour.
 
 1. ```bash
    TODAY=$(TZ="America/New_York" date +%F)
@@ -74,8 +79,9 @@ don't let checking one fact become a long detour.
    exchange's.
 3. SR §1 idempotency with `KEY="$TODAY-learn"`. Already successful → EXIT NOW. Record `RUN_START`.
 4. Read `state/learning.json`, `curriculum/academy-300.json`, and `ledgers/corrections.json`. Any
-   correction whose `report` is a `-learn.html` page and which no later Learning Brief has yet
-   stated goes in today's colophon, plainly. A lesson that taught something wrong is corrected in
+   correction whose `report` is a `-learn.html` page and whose `found` date is after the most
+   recent published Learning Brief goes in today's colophon, plainly (anything found earlier was
+   already stated). A lesson that taught something wrong is corrected in
    the next lesson, whatever subject that lesson is in.
 
 ## Step 1 — Find today's lesson
@@ -83,7 +89,7 @@ don't let checking one fact become a long detour.
 `state/learning.json` shape:
 
 ```json
-{"curriculum": "academy-300", "day": 37, "last_taught": "2026-11-14", "started": "2026-09-25", "completed": []}
+{"curriculum": "academy-300", "day": 37, "last_taught": "2026-11-16", "started": "2026-09-28", "completed": ["2026-09-28", "…"], "previous_curriculum": {…}}
 ```
 
 Today's lesson is `curriculum/academy-300.json` → `days[]` where `day` equals `learning.day`. Each
@@ -95,9 +101,19 @@ none genuinely fits — never force one in), `source` (always `"new"`: no house 
 this curriculum, research as needed), and `connect_back` (an earlier day's subject and topic;
 absent for Mathematics, the first subject, since nothing earlier exists yet).
 
-**At day 301, the curriculum is complete.** Continue at the same cadence and depth with a
-Logan-approved next block rather than restarting; if none has been given, flag this in the
-standfirst and stop rather than inventing an open-ended extension unasked. Never restart at day 1.
+**Guard — check the `curriculum` key first.** If `learning.curriculum` is missing or is not
+`"academy-300"`, the state was never migrated to the restart (the retired curriculum's state had no
+such key and stood at day 31): move the whole existing object into `previous_curriculum` (with
+`"id": "academy-150"`), set `curriculum` = `"academy-300"`, `day` = 1, `last_taught` = null,
+`started` = null, `completed` = [], teach day 1, and say so in the run-log `note`. If it is
+`"academy-300"`, use `day` exactly as stored — never reset it, never recompute it from dates.
+
+**After day 300 the curriculum is complete.** If `learning.day` > 300: publish nothing, leave
+`index.json` alone (so no Telegram push), append the run-log line
+`{"ts":"<UTC ISO>","slot":"learn","ok":true,"note":"academy-300 complete; awaiting Logan's next curriculum"}`,
+mark `runs["$TODAY-learn"]` success, commit, push, end. A new curriculum starts only when Logan
+approves one and `state/learning.json` → `curriculum` names it. Never restart at day 1. On day 300
+itself, the standfirst tells Logan this is the final lesson.
 
 **`connect_back` is a default, not an instruction.** It is a reasonable, already-taught anchor
 lesson from a different subject — always valid, but sometimes a better connection exists. Two
@@ -121,12 +137,12 @@ political-neutrality rules apply here exactly as in the news editions.
 **Length: about 15 minutes — 2,600–4,000 words at 220 wpm, targeting ~3,300.** This is
 deliberately the shortest report in the whole system: a coffee-length read, not a deep dive. Do
 not pad it to reach the target — if the topic is genuinely thinner than 2,600 words at this level,
-a slightly shorter, well-made lesson beats a padded one. If it needs more than 4,000 to do the idea
-justice, say so is fine, but that should be rare; this is a baseline-literacy brief, not a
-graduate lecture (`docs/SPEC.md` §0e).
+a slightly shorter, well-made lesson beats a padded one. A topic that genuinely needs more than
+4,000 words may run longer, but that should be rare; this is a baseline-literacy brief, not a
+graduate lecture (`docs/SPEC.md` §0c).
 
 **Structure.** These are the sections, in this order, each a real `<h3>` heading using the
-reader's own language for it (his own structure — follow it; the exact wording of a heading can
+reader's own language for it (Logan's own structure — follow it; the exact wording of a heading can
 flex where another phrasing teaches the topic better, but the shape below should not):
 
 1. **The headline** (the page's `<h1>`, not a body heading) — a clear, specific title for today's
@@ -163,12 +179,14 @@ flex where another phrasing teaches the topic better, but the shape below should
    not need to be a literal formula to earn this section.
 7. **Why It Matters.** Why this idea is important and how it connects to the larger field — not a
    restatement of the Big Idea, the payoff: what understanding this now lets Logan do or see that
-   he could not before.
+   was out of reach before. From day 21 on, close this section with two or three sentences tying
+   today's idea to the `connect_back` lesson (or a better already-taught one, per Step 1), named by
+   subject and topic. No separate callback section; days 1–20 have none.
 8. **Remember These.** A `.recap` block, labeled "Remember These": three to five concise bullets,
    the ones actually worth retaining a month from now. Not a summary of every subsection — the
    distilled takeaways.
 9. **Think About It.** A `.think-about-it` block: one good question that makes Logan reason about
-   the material, not recall a definition. A question with a real answer he can work out from what
+   the material, not recall a definition. A question with a real answer Logan can work out from what
    the lesson just taught, not a trivia prompt and not rhetorical throat-clearing.
 
 **Forbidden** (Logan's standing instruction, unchanged): no quizzes, no problem sets, no review
@@ -177,7 +195,7 @@ self-assessment scoring. "Think About It" is one reflective question to sit with
 to answer and check.
 
 **Voice.**
-- Second person throughout — teach him, don't lecture the air.
+- Second person throughout — teach Logan directly, don't lecture the air.
 - Never condescend and never inflate. If something is genuinely hard, say so and slow down. If a
   step is routine, say so and move on.
 - Define jargon on first use, every time, even if a related term appeared in an earlier lesson.
@@ -204,11 +222,18 @@ SR §12, with these specifics:
 - Masthead: `.paper-edition` = `Learning Brief`; `<h1>` = the lesson's real headline (Step 2.1).
 - Immediately under the masthead, a `.track-head`:
   `<p class="track-subject">Mathematics</p>` and
-  `<span class="track-progress">Day 1 of 300 · Mathematics 1 of 20</span>`.
+  `<span class="track-progress">Day 1 of 300 · Mathematics 1 of 20 · Numbers, infinity, and the birth of proof</span>`
+  — day, subject position, and the curriculum entry's `topic` verbatim. That is Today's Topic in
+  its plain form; the `<h1>` is its headline.
 - Body in `.lesson-body`, sections in the Step 2 order, using `.key-terms` (Key Concepts),
   `.formula` (Equation / Model, when present, with its `<dl>` and `.expr-spoken` line), `.worked`
   (a quantitative Example / Application), `.recap` (Remember These) and `.think-about-it` (Think
-  About It) as described above. Use real `<h3>` headings for each named section.
+  About It) as described above. The whole lesson is one `<article class="lesson-body">`; each named
+  section opens with a real `<h3>`, except Remember These and Think About It, whose `.recap` and
+  `.think-about-it` blocks open with their own `<b>` label instead (no `<h3>` above them).
+  **Reference layout:** `site/reports/2026/09/2026-09-25-practice-learn.html` — a practice Day 1
+  built to this procedure. Copy its structure and markup, never its content (the real Day 1 is
+  written fresh), and leave off its "Practice Edition" labels.
 - **Omit entirely:** The Brief, The Board, Top Stories, all domain sections, the calendar, Local,
   the weather strip, and the Market Appendix. This report has a masthead, a track head, a lesson,
   and a colophon. Nothing else.
@@ -216,14 +241,14 @@ SR §12, with these specifics:
   external was needed), plus any correction to an earlier lesson. Corrections to lessons go in
   `ledgers/corrections.json` exactly like news corrections (SR §9) — if day 40 taught something
   wrong, day 41 says so plainly.
-- Keep the `assets/report.js` script tag for read-time navigation and theme handling, same as
-  every other edition. **No audio player mounts on this report** (Logan, 2026-09-25):
-  `make_audio.py` skips every `learn` entry, `notify.py` sends the Telegram push without waiting
-  on an MP3, and `report.js` recognizes `slot: "learn"` and does not fall back to Web Speech
-  either. Nothing else to do here — the scripts already handle it; just don't add anything that
-  fights it.
-- `reading_minutes` = word count / 220. Expect 12-18; well under 12 means the lesson is too thin
-  for the topic, well over 18 means it has drifted past a baseline-literacy brief.
+- Keep the `assets/report.js` script tag (the template loads it; it does nothing on a Learning
+  Brief, but every page loads the same asset). There is no audio of any kind (report audio was
+  retired 2026-09-25) — don't add a player or audio bar.
+- End with the template's `report-nav` per SR §12.3: Previous = the entry directly below yours in
+  `index.json`, whatever edition it is; Next stays disabled.
+- `reading_minutes` = body word count / 220, rounded up (SR §12.7). Expect 12-18; well under 12
+  means the lesson is too thin for the topic, well over 18 means it has drifted past a
+  baseline-literacy brief.
 
 ## Step 4 — Index entry
 
@@ -244,7 +269,8 @@ Get it exact or the progress page cannot find today's lesson.
 ## Step 5 — Advance, publish, verify
 
 1. Update `state/learning.json`: `day` += 1, `last_taught` = `$TODAY`, append `$TODAY` to
-   `completed`. **Only after the lesson body is written** — a failed run must re-teach the same
+   `completed`, and set `started` = `$TODAY` if it is still `null` (day 1). Leave
+   `previous_curriculum` untouched. **Only after the lesson body is written** — a failed run must re-teach the same
    day, never skip it.
 2. Append the run-log line (SR §15.4) with `"slot":"learn"`.
 3. Mark `state/last-run.json` `runs["$TODAY-learn"]` success (SR §1.5).

@@ -701,6 +701,7 @@ td.down, .fact-card dd.down { color: var(--down); }
   --edition-sat:   #6B4E12;
   --edition-sun:   #5B3A6E;
   --edition-learn: #7E3325;
+  --edition-sie:   #33508A;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -709,6 +710,7 @@ td.down, .fact-card dd.down { color: var(--down); }
     --edition-sat:   #D9B876;
     --edition-sun:   #C0A0D6;
     --edition-learn: #E39F90;
+    --edition-sie:   #A3B8E6;
   }
 }
 :root[data-theme="dark"] {
@@ -717,6 +719,7 @@ td.down, .fact-card dd.down { color: var(--down); }
   --edition-sat:   #D9B876;
   --edition-sun:   #C0A0D6;
   --edition-learn: #E39F90;
+  --edition-sie:   #A3B8E6;
 }
 
 .paper { --edition: var(--edition-am); }
@@ -724,6 +727,7 @@ td.down, .fact-card dd.down { color: var(--down); }
 .paper[data-slot="sat"]   { --edition: var(--edition-sat); }
 .paper[data-slot="sun"]   { --edition: var(--edition-sun); }
 .paper[data-slot="learn"] { --edition: var(--edition-learn); }
+.paper[data-slot="sie"]   { --edition: var(--edition-sie); }
 
 /* ---------- report masthead ---------- */
 
@@ -779,87 +783,6 @@ td.down, .fact-card dd.down { color: var(--down); }
   max-width: 34rem;
   margin: 0.9rem auto 0;
   text-align: center;
-}
-
-/* ---------- audio bar ---------- */
-
-.audio-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.4rem 0.55rem;
-  margin: 0 auto 1.9rem;
-  max-width: 27rem;
-  box-shadow: var(--shadow);
-}
-.audio-bar[hidden] { display: none; }
-.audio-btn {
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 0;
-  border-radius: 999px;
-  padding: 0.45rem 0.9rem;
-  cursor: pointer;
-  background: var(--edition, var(--accent));
-  color: var(--on-accent);
-  white-space: nowrap;
-}
-.audio-btn:hover { filter: brightness(1.08); }
-.audio-btn-ghost {
-  background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  padding: 0.4rem 0.7rem;
-  font-weight: 500;
-}
-.audio-btn-ghost:hover { border-color: var(--edition, var(--accent)); color: var(--ink); }
-.audio-status {
-  flex: 1 1 7rem;
-  min-width: 0;
-  font-size: 0.71875rem;
-  font-family: var(--mono);
-  color: var(--muted);
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-/* Native <audio> player: shown when a generated MP3 exists for this report.
-   Wider than the speech bar because the browser's own transport controls
-   need the room, and it earns it -- this is the one that plays on a locked
-   phone. */
-.audio-bar:has(.audio-native) {
-  max-width: 34rem;
-  border-radius: 12px;
-  padding: 0.55rem 0.7rem;
-  gap: 0.7rem;
-}
-.audio-native {
-  flex: 1 1 16rem;
-  min-width: 0;
-  height: 2.2rem;
-}
-.audio-bar .audio-status:has(+ .audio-native) {
-  flex: 0 0 auto;
-  font-family: var(--sans);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--edition, var(--accent));
-  text-align: left;
-}
-
-/* Sentence currently being spoken. */
-.is-speaking {
-  background: var(--tone-warn-bg);
-  box-shadow: 0 0 0 3px var(--tone-warn-bg);
-  border-radius: 2px;
 }
 
 /* ---------- newspaper sections ---------- */
@@ -927,17 +850,6 @@ td.down, .fact-card dd.down { color: var(--down); }
 }
 .story-body > p { margin: 0 0 0.85em; }
 .story-body > p:last-child { margin-bottom: 0; }
-/* Sub-heads inside a prose section (the Markets section's four parts). */
-.story-body > h3 {
-  font-family: var(--sans);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--edition, var(--accent));
-  margin: 1.3em 0 0.35em;
-}
-.story-body > h3:first-child { margin-top: 0; }
 
 /* "Why it matters" / "What's next" — the only two labels that survive. */
 .story-note {
@@ -974,25 +886,6 @@ td.down, .fact-card dd.down { color: var(--down); }
   margin: 0.75rem 0 0;
 }
 .story-sourceline a { color: var(--muted); }
-
-/* What Moved Markets attribution — exactly four labels (Confirmed catalyst /
-   Likely contributor / Market narrative / Unexplained), one per move, opening
-   the sentence it judges. Set like the story-note kicker so it reads as a
-   verdict, not as a stray capitalised word in the middle of a paragraph. */
-.verdict {
-  display: inline-block;
-  font-family: var(--sans);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  color: var(--edition, var(--accent));
-  border-bottom: 1px solid currentColor;
-  margin-right: 0.5em;
-  vertical-align: 0.1em;
-  white-space: nowrap;
-}
 
 /* Caution flag — shown ONLY when a claim is genuinely shaky. */
 .flag {
@@ -1240,18 +1133,14 @@ table.board-table {
   font-weight: 600;
 }
 
-.local-item, .watch-item {
+.local-item {
   border-top: 1px solid var(--line);
   padding: 1rem 0 0;
   margin: 0 0 1rem;
 }
-/* :first-of-type, not :first-child - the first item follows the h2 (and in the
-   morning the weather strip), so :first-child never matched and the first Local
-   item always drew a top rule. */
-.local-item:first-of-type, .watch-item:first-of-type { border-top: 0; padding-top: 0; }
-.local-item h3, .watch-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
-/* Watchlist items (2026-09-09) share the local-item shape; the label is the ticker line. */
-.local-place, .watch-ticker {
+.local-item:first-child { border-top: 0; padding-top: 0; }
+.local-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+.local-place {
   font-family: var(--sans);
   font-size: 0.625rem;
   font-weight: 700;
@@ -1387,25 +1276,10 @@ table.board-table {
   color: var(--muted);
   margin-bottom: 0.3rem;
 }
-
-/* Retired with year two of the Academy (2026-09-25): a contents list before
-   Part 1, and each part as its own .paper-section. Kept in case a future
-   multi-part format returns. */
-.lesson-contents {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.8rem 1.1rem;
-  margin: 0 0 1.4rem;
-  font-family: var(--sans);
-  font-size: 0.875rem;
+@media (max-width: 30rem) {
+  .key-terms dl { grid-template-columns: 1fr; gap: 0.1rem; }
+  .key-terms dd { margin-bottom: 0.45rem; }
 }
-.lesson-contents ol { margin: 0; padding-left: 1.4rem; }
-.lesson-contents li { margin: 0.2em 0; }
-.lesson-contents a { color: var(--ink); text-decoration: none; font-weight: 600; }
-.lesson-contents a:hover { text-decoration: underline; }
-.lesson-contents small { color: var(--muted); font-weight: 400; margin-left: 0.4em; }
-.lesson-part { margin-top: 2.2rem; }
 
 /* Where the track stands. */
 .recap {
@@ -1457,85 +1331,193 @@ table.board-table {
   body { font-size: 10.5pt; }
   .wrap { max-width: none; padding: 0; }
   .top-bar, .report-nav, .site-footer, .footer-controls,
-  .search-section, .bm-btn, .btn, .audio-bar { display: none !important; }
+  .search-section, .bm-btn, .btn { display: none !important; }
   .story-card, .lesson, .exec-summary, .fact-card,
   .appendix > details.appendix-shell { box-shadow: none; break-inside: avoid; }
   .brief, .board, .formula, .worked, .recap, .story { box-shadow: none; break-inside: avoid; }
   .board-table thead th, .board-table .sym { position: static; }
-  .is-speaking { background: none; box-shadow: none; }
   summary::before { content: none; }
   a { color: inherit; text-decoration: none; }
   /* Report pages also open every <details> via a beforeprint handler,
      so collapsed analysis and the market appendix print in full. */
 }
 
-/* ==========================================================================
-   ARCHIVE & ACADEMY (2026-09-02)
-   The index shows every edition of the latest day, filters the archive by
-   edition, and links to the Academy page (the curriculum, lesson by lesson).
-   ========================================================================== */
+/* ---------- SIE Program (daily noon edition, data-slot="sie") ----------
+   Reuses the Learning Brief's .track-head, .lesson-body, .formula, .worked
+   and .recap. Adds the four labelled knowledge blocks Logan asked for
+   (UNDERSTAND / MEMORIZE / EXAM TRAP / TRADER CONNECTION), text flow
+   diagrams, pause-and-check reveals, the quiz, and the weakness tracker. */
 
-/* The rest of the latest day's editions, inside the hero card. */
-.hero-more {
-  border-top: 1px solid var(--line);
-  margin-top: 1.25rem;
-  padding-top: 0.9rem;
+.sie-plan {
+  background: var(--tone-info-bg);
+  color: var(--tone-info-fg);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  margin: 1.2em 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
 }
-.hero-more .hero-kicker { margin-bottom: 0.1rem; }
-.hero-more .report-row:last-child { border-bottom: 0; padding-bottom: 0.2rem; }
+.sie-plan > b, .sie-block > b, .answer-bar > b {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.sie-plan ul, .sie-block ul, .sie-block ol { margin: 0; padding-left: 1.15rem; }
+.sie-plan li, .sie-block li { margin-bottom: 0.3em; }
 
-/* Edition filter chips above the archive. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0.8rem 0 0.2rem;
+.sie-block {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--edition, var(--accent));
+  border-radius: 0 8px 8px 0;
+  padding: 0.9rem 1.1rem;
+  margin: 1.3em 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  background: var(--card);
 }
-.chips:empty { display: none; }
-.chip-btn {
-  font: inherit;
+.sie-block > b { color: var(--edition, var(--accent)); }
+.sie-block.memorize { background: var(--tone-warn-bg); border-left-color: var(--tone-warn-fg); color: var(--ink); }
+.sie-block.memorize > b { color: var(--tone-warn-fg); }
+.sie-block.memorize li { font-family: var(--mono); font-size: 0.875rem; list-style: none; margin-left: -1.15rem; }
+.sie-block.traps { background: var(--tone-bad-bg); border-left-color: var(--tone-bad-fg); }
+.sie-block.traps > b { color: var(--tone-bad-fg); }
+.sie-block.trader { background: var(--tone-ok-bg); border-left-color: var(--tone-ok-fg); }
+.sie-block.trader > b { color: var(--tone-ok-fg); }
+
+.tag-memo {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.4rem;
+  border-radius: 4px;
+  background: var(--tone-warn-bg);
+  color: var(--tone-warn-fg);
+  vertical-align: 0.1em;
+}
+
+/* Cash and security flows drawn with arrows. Scrolls sideways inside its
+   own box on a phone rather than pushing the page wider. */
+pre.flow {
+  font-family: var(--mono);
   font-size: 0.8125rem;
-  color: var(--muted);
+  line-height: 1.55;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.3rem 0.85rem;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin: 1.2em 0;
+  overflow-x: auto;
+  white-space: pre;
+  max-width: 100%;
+}
+
+details.check {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin: 1em 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+}
+details.check > summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+details.check .check-label { color: var(--edition, var(--accent)); font-weight: 700; margin-right: 0.35em; }
+details.check[open] > summary { margin-bottom: 0.5rem; }
+
+/* The quiz. Radios are real form controls so it works with JS off; the
+   answer string and copy button are added by report.js. */
+.quiz .quiz-howto { font-family: var(--sans); font-size: 0.875rem; color: var(--muted); }
+.quiz-list { padding-left: 1.4rem; margin: 1rem 0; }
+.quiz-q { margin-bottom: 1.4rem; }
+.quiz-stem { margin: 0 0 0.5rem; }
+.quiz-opts { list-style: none; margin: 0; padding: 0; font-family: var(--sans); font-size: 0.9375rem; }
+.quiz-opts li { margin: 0.25rem 0; }
+.quiz-opts label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
   cursor: pointer;
 }
-.chip-btn:hover { border-color: var(--accent); color: var(--ink); }
-.chip-btn[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-  font-weight: 600;
-}
+.quiz-opts input { margin-top: 0.3rem; flex: none; }
+.quiz-opts label:has(input:checked) { border-color: var(--edition, var(--accent)); background: var(--tone-info-bg); }
 
-/* The Academy strip on the index page. */
-.academy-strip { margin: 0 0 1.75rem; }
-.academy-link {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem 0.9rem;
+.answer-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
   background: var(--card);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--edition-learn, var(--accent));
-  border-radius: 0 10px 10px 0;
-  padding: 0.75rem 1.1rem;
-  text-decoration: none;
-  color: var(--ink);
-  box-shadow: var(--shadow);
+  border-top: 3px solid var(--edition, var(--accent));
+  border-radius: 8px 8px 0 0;
+  padding: 0.75rem 1rem;
+  margin-top: 1.2rem;
+  font-family: var(--sans);
+  font-size: 0.875rem;
 }
-.academy-link:hover { border-color: var(--edition-learn, var(--accent)); }
-.academy-kicker {
+.answer-bar p { margin: 0.25rem 0; }
+.answer-bar .answer-string {
   font-family: var(--mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--edition-learn, var(--accent));
+  font-size: 0.9375rem;
+  word-break: break-all;
+  margin: 0.4rem 0;
 }
-.academy-progress { font-family: var(--serif); font-weight: 700; }
-.academy-cta { margin-left: auto; font-size: 0.8125rem; color: var(--muted); }
+.answer-bar .answer-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.answer-bar button, .answer-bar .btn-link {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--edition, var(--accent));
+  background: var(--edition, var(--accent));
+  color: var(--card);
+  cursor: pointer;
+  text-decoration: none;
+}
+.answer-bar .btn-link { background: transparent; color: var(--edition, var(--accent)); }
+
+.sie-graded .result-ok { color: var(--tone-ok-fg); font-weight: 700; }
+.sie-graded .result-miss { color: var(--tone-bad-fg); font-weight: 700; }
+.miss-explain { border-top: 1px solid var(--line); padding-top: 0.8rem; margin-top: 0.8rem; }
+
+details.tracker { margin: 1.6rem 0; }
+details.tracker > summary { cursor: pointer; font-family: var(--sans); font-weight: 700; }
+.rating { font-family: var(--sans); font-size: 0.75rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 4px; }
+.rating.strong    { background: var(--tone-ok-bg);   color: var(--tone-ok-fg); }
+.rating.adequate  { background: var(--tone-info-bg); color: var(--tone-info-fg); }
+.rating.weak      { background: var(--tone-warn-bg); color: var(--tone-warn-fg); }
+.rating.very-weak { background: var(--tone-bad-bg);  color: var(--tone-bad-fg); }
+
+.cheatsheet { font-family: var(--sans); font-size: 0.875rem; line-height: 1.5; columns: 2 18rem; column-gap: 1.5rem; }
+.cheatsheet h3 { break-after: avoid; font-size: 0.9375rem; margin: 0.8em 0 0.3em; }
+.cheatsheet ul { margin: 0 0 0.6em; padding-left: 1rem; }
+
+@media print {
+  .answer-bar { position: static; }
+  .sie-block, pre.flow, .quiz-q { break-inside: avoid; box-shadow: none; }
+}
+
+/* ---------- SIE Study Guide (site/reports/sie/study-guide.html) ---------- */
+.guide-toc { font-family: var(--sans); font-size: 0.9375rem; margin: 1.2rem 0 2rem; }
+.guide-toc > summary { cursor: pointer; font-weight: 700; }
+.guide-toc ol { margin: 0.6rem 0 0; padding-left: 1.4rem; columns: 2 16rem; column-gap: 1.5rem; }
+.guide-toc li { margin-bottom: 0.3em; break-inside: avoid; }
+.guide-toc li.done a::after { content: " \2713"; color: var(--tone-ok-fg); font-weight: 700; }
+.guide-part { margin: 3rem 0 0.5rem; font-family: var(--sans); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--edition, var(--accent)); border-top: var(--rule-heavy) solid var(--edition, var(--accent)); padding-top: 0.6rem; }
+.guide-chapter { border-top: 1px solid var(--line); margin-top: 2.6rem; padding-top: 1.2rem; scroll-margin-top: 1rem; }
+.guide-chapter > h2 { font-size: 1.45rem; margin: 0 0 0.3rem; }
+.guide-meta { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); margin: 0 0 0.8rem; }
+.guide-lede { font-size: 1.125rem; font-style: italic; }
+.guide-done { display: flex; gap: 0.5rem; align-items: center; font-family: var(--sans); font-size: 0.875rem; margin: 1.4rem 0 0; padding: 0.6rem 0.8rem; border: 1px dashed var(--line); border-radius: 8px; }
+.guide-done input { width: 1.1rem; height: 1.1rem; }
+.guide-chapter details.check > summary { font-weight: 500; line-height: 1.55; }
 
 /* ---------- academy page ---------- */
 
@@ -1549,7 +1531,7 @@ table.board-table {
 }
 .subjects li { font-size: 0.875rem; }
 .subjects .subject-name { display: flex; justify-content: space-between; gap: 0.5rem; }
-.subjects .subject-count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.subjects .subject-count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
 .subject-bar {
   display: block;
   height: 4px;
@@ -1606,7 +1588,3 @@ table.board-table {
 .lesson-row.is-next { background: var(--tone-info-bg); border-radius: 6px; padding-left: 0.5rem; padding-right: 0.5rem; }
 .lesson-row.is-next .lesson-subject::after { content: " · next"; letter-spacing: 0; text-transform: none; font-weight: 600; }
 .lesson-row.is-future .lesson-topic { font-weight: 400; color: var(--muted); }
-
-@media print {
-  .chips, .academy-strip, .hero-more { display: none !important; }
-}

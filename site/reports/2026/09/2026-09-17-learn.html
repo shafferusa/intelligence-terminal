@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>A Bank Offered to Compound Your Interest Every Instant. The Payout Still Stops at 2.71828. — Learning Brief, Thu, Sep 17, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-17",
+    "slot": "learn",
+    "title": "A Bank Offered to Compound Your Interest Every Instant. The Payout Still Stops at 2.71828.",
+    "path": "reports/2026/09/2026-09-17-learn.html",
+    "summary": "Day twenty-four of the 150-day curriculum: sequences, series and convergence, built from Jacob Bernoulli's 1683 compound-interest puzzle and Archimedes' third-century-BC parabola calculation, then extended into Brook Taylor's 1715 theorem for turning smooth functions into infinite polynomials with a provably bounded error.",
+    "headlines": [
+      "Day 24 of 150 · Mathematics: sequences, series, convergence, and Taylor expansion",
+      "A 1683 compound-interest puzzle traps a number forever between 2 and 3 -- it is e, 2.71828...",
+      "Taylor's 1715 theorem turns curves into polynomials with a provable error bound -- the same trick behind a bond desk's 'duration'"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-09-17T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>A Bank Offered to Compound Your Interest Every Instant. The Payout Still Stops at 2.71828.</h1>
+      <p class="paper-dateline">
+        Thursday, September 17, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        In 1683 Jacob Bernoulli asked what happens to a dollar compounded infinitely often and found the answer trapped forever between 2 and 3 &mdash; this lesson builds the mathematics of sequences and series that pins that number down as e&nbsp;=&nbsp;2.71828&hellip;, then carries the same machinery into Brook Taylor&rsquo;s 1715 theorem for rewriting any smooth function as an infinite polynomial with a provably bounded error, the same trick quietly at work every time this newspaper calls a bond fund &ldquo;short duration.&rdquo;
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 24 of 150 &middot; Mathematics 11 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A deal no banker should offer</h3>
+
+      <p>In 1683 the Swiss mathematician Jacob Bernoulli was working through a problem that had nothing to do with pure mathematics at first glance: a question about compound interest. Suppose a bank offers you 100 percent annual interest on one dollar &mdash; absurd, but useful for clean arithmetic &mdash; and suppose, instead of paying that interest once at the end of the year, the bank agrees to compound it more and more often within the year: monthly, daily, once an hour, once a second, and then keeps going, compounding continuously, at every instant. Does your dollar grow without limit, ballooning toward infinity the more finely the bank slices the year? Or does something stop it?</p>
+
+      <p>Try the arithmetic before reading the answer, because the shape of the surprise is the whole point of this lesson. Compounded once, at year&rsquo;s end, your dollar becomes exactly two dollars. Compounded twice &mdash; 50 percent added at mid-year, another 50 percent added to the new total at year&rsquo;s end &mdash; your dollar becomes $1.50&nbsp;&times;&nbsp;1.50&nbsp;=&nbsp;$2.25, already more than compounding once, because you are now earning interest on interest. Compounded twelve times, once a month, it becomes $2.6130. Compounded 365 times, once a day, it becomes $2.71457. Keep going: 8,760 times, once an hour, and the total is $2.71813. It is still climbing, but not by much anymore, and not toward anywhere obvious &mdash; not $3, not $10, not infinity.</p>
+
+      <p>Bernoulli proved that no matter how many times you compound within the year, the result stays trapped between 2 and 3, forever, and he did it without ever pinning down the exact number the sequence was creeping toward. That took another half-century, and the number turned out to matter far more than one banker&rsquo;s thought experiment: 2.718281828459045&hellip;, a digit string with no repeating pattern and no way to write it as a fraction, showing up not just in finance but in radioactive decay, in the shape of a hanging chain, and, as this lesson will show directly, in the machinery every calculator and computer uses to evaluate a function it cannot simply look up in a table. Bernoulli had discovered, without realizing what he was holding, the first number in mathematics ever defined purely as the limit of an infinite process &mdash; which makes it exactly the right place to start a lesson on what a limit even is.</p>
+
+      <h3>What it means for a list of numbers to settle down</h3>
+
+      <p>Strip away the dollars and cents, and Bernoulli&rsquo;s compounding experiment is really a list of numbers: 2, 2.25, 2.6130, 2.71457, 2.71813, and so on, one number for every choice of how finely you slice the year. Mathematicians call an ordered, endless list like this a <b>sequence</b> &mdash; a first term, a second, a third, with a definite rule for what comes next, going on forever. A sequence does not have to come from compound interest. The digits of pi form a sequence. The list 1, 4, 9, 16, 25 of perfect squares is a sequence. What makes Bernoulli&rsquo;s sequence special is not that it is a sequence &mdash; every ordered list is one &mdash; but that it does something specific and useful: it settles down. The terms stop changing very much, homing in tighter and tighter on one particular number, close enough that from some point on, no term is ever far from it again. That behavior has a name: a sequence that settles on a specific number like this is said to <b>converge</b>, and the number it settles on is called its <b>limit</b>. Not every sequence converges. The sequence 1, 2, 3, 4, 5&hellip; grows forever and never settles anywhere; the sequence 1, &minus;1, 1, &minus;1, 1&hellip; never grows, but never settles either, forever flipping between two values instead of approaching one. Both are said to <b>diverge</b>. Convergence is the exception among sequences, not the rule, and knowing which kind you have in hand &mdash; before trusting an answer built on &ldquo;the limit&rdquo; of something &mdash; is the single most load-bearing skill this lesson teaches.</p>
+
+      <p>A <b>series</b> is a different animal built from the same material: instead of asking whether the terms of a sequence settle down, a series asks about their running total. Add the first term, then the first two, then the first three, and so on &mdash; that running list of partial sums is itself a new sequence, and the original series is said to converge exactly when that sequence of partial sums converges. This distinction &mdash; a sequence of terms versus a sequence of their running totals &mdash; trips up nearly everyone the first time they meet it, and it is worth sitting with before the next section makes it formal: a sequence can converge (0.1, 0.01, 0.001&hellip; converges to zero) while the series built by adding up those same terms does something else again, and, more surprisingly, as this lesson&rsquo;s misconception section will show, a series can just as easily diverge even when its individual terms shrink all the way to zero. Shrinking terms are necessary for a series to converge. They are nowhere near sufficient.</p>
+
+      <h3>Making &ldquo;settles down&rdquo; precise</h3>
+
+      <p>&ldquo;Gets closer and closer&rdquo; is a fine intuition and a hopeless definition &mdash; a sequence could wander closer for a while and then jump away, or crawl toward a target so slowly that &ldquo;closer&rdquo; is technically true but practically meaningless. Mathematicians spent a genuinely difficult couple of centuries turning &ldquo;gets closer and closer&rdquo; into something that could not be argued with, and the version that stuck, credited chiefly to the French mathematician Augustin-Louis Cauchy in the 1820s and sharpened further by the German Karl Weierstrass a few decades later, defines convergence not by describing the sequence&rsquo;s behavior in words at all, but by issuing a challenge:</p>
+
+      <div class="formula">
+        <div class="expr">a<sub>n</sub>&nbsp;&rarr;&nbsp;L &nbsp;means:&nbsp; for every &epsilon;&nbsp;&gt;&nbsp;0, there exists an N such that for all n&nbsp;&gt;&nbsp;N, |a<sub>n</sub>&nbsp;&minus;&nbsp;L|&nbsp;&lt;&nbsp;&epsilon;</div>
+        <dl>
+          <dt>a<sub>n</sub></dt><dd>the sequence&rsquo;s n-th term &mdash; the value at position n in the ordered list.</dd>
+          <dt>L</dt><dd>the proposed limit &mdash; the number the sequence is claimed to converge to.</dd>
+          <dt>&epsilon;</dt><dd>(epsilon) any tolerance you choose to name, however small &mdash; a challenge: &ldquo;get within this much of L.&rdquo;</dd>
+          <dt>N</dt><dd>a position in the sequence, which may depend on how small &epsilon; is &mdash; the promise: &ldquo;past this point, every remaining term meets the challenge.&rdquo;</dd>
+        </dl>
+      </div>
+
+      <p>Read it as a negotiation rather than a formula. Anyone skeptical that a sequence converges to L is allowed to name any tolerance &epsilon; they like &mdash; one part in ten, one part in a million, one part in a googol &mdash; as tight as they want to make it hard. The sequence converges to L only if, no matter which tolerance the skeptic names, you can always find a point N in the sequence beyond which every remaining term, forever afterward, lands within that tolerance of L. Try it on Bernoulli&rsquo;s sequence: name a tolerance of 0.001, and there is some finite point beyond which every term stays within 0.001 of 2.71828&hellip;; name a tighter tolerance of one-billionth, and there is still some finite point &mdash; farther out, but it exists &mdash; beyond which every term stays that close. No matter how small the skeptic&rsquo;s demand, the sequence can always answer it. That is what &ldquo;converges&rdquo; means, precisely, and it is exactly demanding enough to rule out sequences that merely wander near a value without ever committing to it.</p>
+
+      <p>A series inherits its convergence from this same machine, applied to its sequence of partial sums:</p>
+
+      <div class="formula">
+        <div class="expr">S<sub>n</sub>&nbsp;=&nbsp;a<sub>1</sub>&nbsp;+&nbsp;a<sub>2</sub>&nbsp;+&nbsp;&hellip;&nbsp;+&nbsp;a<sub>n</sub>&nbsp;&nbsp;&nbsp;&mdash;&nbsp;&nbsp;the series &sum;a<sub>n</sub> converges to S if S<sub>n</sub>&nbsp;&rarr;&nbsp;S</div>
+        <dl>
+          <dt>a<sub>1</sub>, a<sub>2</sub>, &hellip;</dt><dd>the terms of the underlying sequence being added.</dd>
+          <dt>S<sub>n</sub></dt><dd>the n-th partial sum &mdash; the running total through the n-th term, itself just another sequence.</dd>
+          <dt>S</dt><dd>the series&rsquo; sum, if the sequence of partial sums S<sub>n</sub> converges to it in exactly the &epsilon;-N sense above.</dd>
+        </dl>
+      </div>
+
+      <p>One family of series is well-behaved enough to solve completely, in closed form, and it turns out to be the family underneath both Bernoulli&rsquo;s compounding and, as the next section will show, a genuinely ancient calculation: the <b>geometric series</b>, where each term is the previous one multiplied by a fixed ratio r.</p>
+
+      <div class="formula">
+        <div class="expr">&sum;<sub>n=0</sub><sup>&infin;</sup>&nbsp;ar<sup>n</sup>&nbsp;=&nbsp;a&nbsp;+&nbsp;ar&nbsp;+&nbsp;ar<sup>2</sup>&nbsp;+&nbsp;&hellip;&nbsp;=&nbsp;a&nbsp;/&nbsp;(1&nbsp;&minus;&nbsp;r)&nbsp;&nbsp;&nbsp;&nbsp;(for |r|&nbsp;&lt;&nbsp;1)</div>
+        <dl>
+          <dt>a</dt><dd>the first term of the series.</dd>
+          <dt>r</dt><dd>the common ratio &mdash; the fixed multiplier from each term to the next; the series converges only if |r| is strictly less than 1.</dd>
+        </dl>
+      </div>
+
+      <p>The restriction |r|&nbsp;&lt;&nbsp;1 is not a technicality to skip past. Set r&nbsp;=&nbsp;2 and the series 1&nbsp;+&nbsp;2&nbsp;+&nbsp;4&nbsp;+&nbsp;8&nbsp;+&hellip; obviously runs away to infinity; the closed-form answer a/(1&minus;r) would nonsensically hand you a negative number for a sum of positive terms, which is exactly what happens when a formula derived under an assumption gets used outside the range where the assumption holds. Every convergence result in this lesson, including Taylor&rsquo;s theorem later on, comes with a boundary like this one, and the boundary is not a footnote &mdash; it is the difference between an approximation you can trust and one that will quietly hand you nonsense.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; watching Bernoulli&rsquo;s sequence converge</b>
+        <p>Bernoulli&rsquo;s compounding sequence is a<sub>n</sub>&nbsp;=&nbsp;(1&nbsp;+&nbsp;1/n)<sup>n</sup>, where n is the number of times per year the interest compounds. Compute a few terms directly.</p>
+        <ol>
+          <li>n&nbsp;=&nbsp;1: a<sub>1</sub>&nbsp;=&nbsp;(1+1/1)<sup>1</sup>&nbsp;=&nbsp;2<sup>1</sup>&nbsp;=&nbsp;<strong>2.0000</strong>.</li>
+          <li>n&nbsp;=&nbsp;12 (monthly): a<sub>12</sub>&nbsp;=&nbsp;(1+1/12)<sup>12</sup>&nbsp;=&nbsp;(1.08333&hellip;)<sup>12</sup>&nbsp;&asymp;&nbsp;<strong>2.6130</strong>.</li>
+          <li>n&nbsp;=&nbsp;365 (daily): a<sub>365</sub>&nbsp;=&nbsp;(1+1/365)<sup>365</sup>&nbsp;&asymp;&nbsp;<strong>2.71457</strong>.</li>
+          <li>n&nbsp;=&nbsp;8,760 (hourly): a<sub>8760</sub>&nbsp;=&nbsp;(1+1/8760)<sup>8760</sup>&nbsp;&asymp;&nbsp;<strong>2.71813</strong>.</li>
+          <li>n&nbsp;=&nbsp;1,000,000: a<sub>1,000,000</sub>&nbsp;&asymp;&nbsp;<strong>2.71828</strong>, already matching the true limit to five decimal places.</li>
+        </ol>
+        <p>Every term in this sequence is strictly less than 3 &mdash; a fact Bernoulli could prove with the binomial theorem without knowing what the sequence was approaching &mdash; and every term is strictly greater than the one before it, which together mean the sequence has nowhere to go but up, toward some ceiling. That ceiling is the definition of the number e: e&nbsp;=&nbsp;lim<sub>n&rarr;&infin;</sub>&nbsp;(1+1/n)<sup>n</sup>&nbsp;=&nbsp;2.718281828459045&hellip;, a number Euler would not attach the symbol &ldquo;e&rdquo; to for another half-century, in an unpublished manuscript on cannon-fire experiments written around 1727&ndash;1728 that was not printed until 1862, long after his death. Continuous compounding &mdash; the mathematical idealization of compounding &ldquo;infinitely often&rdquo; &mdash; is not a loophole that lets a dollar grow without bound; it is a hard ceiling, and e is its exact height.</p>
+      </div>
+
+      <h3>The oldest series problem there is</h3>
+
+      <p>The unease around infinite sums is itself far older than any banker&rsquo;s puzzle. Roughly two centuries before Archimedes, the philosopher Zeno of Elea posed a paradox that still unsettles people the first time they hear it: to catch a fleeing tortoise, Achilles must first reach the point where the tortoise started, but by the time he gets there the tortoise has moved a little farther on, and by the time Achilles closes that gap, the tortoise has moved farther still, seemingly forever &mdash; an infinite number of catch-up steps standing between Achilles and a tortoise he can plainly outrun in reality. Zeno was not confused about running; he was pointing, correctly, at something genuinely puzzling about adding infinitely many positive quantities together, a puzzle nobody would resolve rigorously for well over two thousand years. The resolution, once geometric series were properly understood, is that Achilles&rsquo; infinite sequence of catch-up distances is itself a geometric series with ratio equal to the tortoise&rsquo;s speed divided by Achilles&rsquo;, strictly less than 1 whenever Achilles is faster &mdash; and an infinite geometric series with |r|&nbsp;&lt;&nbsp;1 has a perfectly finite sum, exactly the fact the worked example below is about to put to use on a far more concrete problem than a mythical footrace.</p>
+
+      <p>Series convergence did not begin with a 17th-century banker&rsquo;s puzzle, either. Its oldest fully rigorous example is roughly nineteen centuries older than Bernoulli, and it belongs to Archimedes of Syracuse, working in the third century BC, more than eighteen hundred years before anyone had the concept of a limit in the modern sense at all. In a treatise addressed to his friend Dositheus, known today as <em>Quadrature of the Parabola</em>, Archimedes set out to find the exact area enclosed by a parabola and a straight line cutting across it &mdash; a curved shape, at a time when reliably measuring the area of anything curved was itself close to the frontier of what geometry could do.</p>
+
+      <p>His method was to inscribe the largest triangle that fits inside the parabolic segment, then to fill each of the two slivers of area left over with the largest triangle that fits inside <em>them</em>, and to keep going &mdash; each new round of triangles filling in the slivers left by the round before. Archimedes showed, through a careful geometric argument, that each new round of triangles contributes exactly one-quarter of the total area the previous round contributed. If the first, largest triangle has area A, the total area of the parabolic segment is therefore the geometric series A&nbsp;+&nbsp;A/4&nbsp;+&nbsp;A/16&nbsp;+&nbsp;A/64&nbsp;+&hellip;, a series with first term A and common ratio r&nbsp;=&nbsp;1/4.</p>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; Archimedes&rsquo; area, in the geometric-series formula</b>
+        <p>Apply the geometric-series formula from the plate above, with a&nbsp;=&nbsp;A (the first triangle&rsquo;s area) and r&nbsp;=&nbsp;1/4.</p>
+        <ol>
+          <li>The formula requires |r|&nbsp;&lt;&nbsp;1, and 1/4 comfortably satisfies it, so the series converges to a finite sum rather than running away.</li>
+          <li>Sum&nbsp;=&nbsp;a&nbsp;/&nbsp;(1&minus;r)&nbsp;=&nbsp;A&nbsp;/&nbsp;(1&nbsp;&minus;&nbsp;1/4)&nbsp;=&nbsp;A&nbsp;/&nbsp;(3/4)&nbsp;=&nbsp;<strong>(4/3)A</strong>.</li>
+          <li>The parabolic segment&rsquo;s total area is exactly four-thirds the area of the first, largest inscribed triangle &mdash; not an approximation refined forever, but an exact answer, because the infinite series of ever-smaller triangular slivers has a well-defined, finite sum.</li>
+        </ol>
+      </div>
+
+      <p>Archimedes did not have Cauchy&rsquo;s &epsilon;-N definition, would not have recognized the word &ldquo;limit&rdquo; in its modern sense, and did not simply add up infinitely many terms the way the worked example above just did &mdash; doing so openly would have made ancient Greek geometers deeply uneasy about &ldquo;the infinite,&rdquo; a concept treated with real philosophical suspicion since Zeno&rsquo;s paradoxes two centuries earlier. Instead, Archimedes proved his 4/3 result by a method historians call a double reductio ad absurdum, now usually named the method of exhaustion: he showed the true area could not be greater than (4/3)A, by demonstrating that assuming so leads to a contradiction, and separately that it could not be less than (4/3)A, by the same style of argument in reverse. With both possibilities eliminated, only equality remains. It is, in effect, a rigorous proof of a series&rsquo; sum that carefully avoids ever saying the word &ldquo;series&rdquo; &mdash; and it stood as the most sophisticated treatment of an infinite process in mathematics for well over a thousand years, until the calculus of Newton and Leibniz, and later the rigor of Cauchy and Weierstrass, gave mathematicians the vocabulary to say directly what Archimedes had already proven indirectly.</p>
+
+      <h3>Turning a curve into a polynomial</h3>
+
+      <p>Everything so far has been about adding up numbers. The next idea adds up functions instead, and it is one of the most useful tricks in applied mathematics for a reason this lesson is about to make concrete: polynomials &mdash; expressions built only from adding, multiplying, and raising to whole-number powers &mdash; are the easiest functions in existence to evaluate, differentiate, and integrate, while functions like e<sup>x</sup>, sin(x), and ln(x) are, in a precise sense, impossible to evaluate exactly by hand for any input except a handful of special values. A <b>Taylor series</b> is a way of rebuilding any sufficiently smooth function, term by term, as an infinite polynomial that matches the original function&rsquo;s value and every one of its derivatives at a single chosen point.</p>
+
+      <div class="formula">
+        <div class="expr">f(x)&nbsp;=&nbsp;&sum;<sub>n=0</sub><sup>&infin;</sup>&nbsp;[f<sup>(n)</sup>(a)&nbsp;/&nbsp;n!]&nbsp;(x&minus;a)<sup>n</sup></div>
+        <dl>
+          <dt>f(x)</dt><dd>the function being approximated, evaluated at the point x.</dd>
+          <dt>a</dt><dd>the point the expansion is centered on &mdash; the one place the polynomial is required to match f and all its derivatives exactly. When a&nbsp;=&nbsp;0, the series is often called a <b>Maclaurin series</b>, a special case named for Colin Maclaurin rather than a different theorem.</dd>
+          <dt>f<sup>(n)</sup>(a)</dt><dd>the n-th derivative of f, evaluated at a &mdash; f<sup>(0)</sup>(a) is just f(a) itself; f<sup>(1)</sup>(a) is the familiar first derivative; f<sup>(2)</sup>(a) the second, and so on, using the same differentiation rules day thirteen&rsquo;s lesson built.</dd>
+          <dt>n!</dt><dd>n factorial &mdash; n&times;(n&minus;1)&times;&hellip;&times;1, with 0! defined as 1.</dd>
+        </dl>
+      </div>
+
+      <p>The history of this one theorem is a genuine tangle of near-misses. The Scottish mathematician James Gregory had already worked out equivalent series expansions in private correspondence with the mathematician John Collins as early as 1671 &mdash; a letter dated that May shows Gregory in possession of six separate expansions &mdash; but he never published the general method, and by some accounts held back once he learned Newton was working on similar ground. It was Brook Taylor who published the general theorem openly, in his 1715 treatise <em>Methodus Incrementorum Directa et Inversa</em>, and it is Taylor&rsquo;s name the theorem carries today, not because he found it first but because he made it usable: a result sitting unpublished in a private letter cannot be built on by anyone else. Colin Maclaurin&rsquo;s own contribution, a 1742 textbook called <em>A Treatise of Fluxions</em> written to defend Newton&rsquo;s calculus against a bishop&rsquo;s public attacks, used and popularized the special case centered at zero so effectively that it earned its own name &mdash; even though Maclaurin&rsquo;s book explicitly credits Taylor&rsquo;s more general 1715 result as the source. Three names, one theorem, and a reminder that the person a discovery gets attributed to is often the person who published it in a form other people could actually use, not necessarily the first person to see it.</p>
+
+      <p>A Taylor series with infinitely many terms is, in principle, exact &mdash; but nobody ever writes down infinitely many terms. What makes the theorem practically useful rather than a beautiful abstraction is the ability to stop after a handful of terms and know, with a hard number rather than a hopeful guess, how far off the truncated version can possibly be. That guarantee did not arrive until 1797, when Joseph-Louis Lagrange, in his <em>Th&eacute;orie des fonctions analytiques</em>, gave a concrete form for the error left behind after stopping a Taylor series at any chosen term:</p>
+
+      <div class="formula">
+        <div class="expr">R<sub>n</sub>(x)&nbsp;=&nbsp;[f<sup>(n+1)</sup>(c)&nbsp;/&nbsp;(n+1)!]&nbsp;(x&minus;a)<sup>n+1</sup>&nbsp;&nbsp;&nbsp;&nbsp;for some c strictly between a and x</div>
+        <dl>
+          <dt>R<sub>n</sub>(x)</dt><dd>the remainder &mdash; the exact gap between the true value f(x) and the truncated polynomial using terms through degree n.</dd>
+          <dt>f<sup>(n+1)</sup>(c)</dt><dd>the (n+1)-th derivative of f, evaluated at some unknown point c between a and x &mdash; Lagrange&rsquo;s theorem guarantees such a c exists without saying exactly where it is.</dd>
+          <dt>(x&minus;a)<sup>n+1</sup></dt><dd>the distance from the expansion&rsquo;s center, raised to one power higher than the last term kept &mdash; the reason a Taylor approximation gets better the closer x sits to a.</dd>
+        </dl>
+      </div>
+
+      <p>The trick to using this formula in practice is that you rarely know c exactly, but you often know enough about f<sup>(n+1)</sup> to bound it &mdash; to say, honestly, &ldquo;however large this unknown derivative gets on the interval in question, it cannot exceed this ceiling&rdquo; &mdash; and that ceiling alone is enough to guarantee the truncated approximation is accurate to within a stated number, before ever checking it against the real answer. That is the sense in which this lesson&rsquo;s opening claim is literally true: approximation, done with a Lagrange remainder in hand, is not a shortcut taken on faith. It is a provable statement with a number attached, exactly as rigorous as the exact calculation it stands in for.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; e<sup>x</sup> from four terms, with a guarantee attached</b>
+        <p>The Maclaurin series (a&nbsp;=&nbsp;0) for e<sup>x</sup> is especially clean, because every derivative of e<sup>x</sup> is e<sup>x</sup> itself: e<sup>x</sup>&nbsp;=&nbsp;1&nbsp;+&nbsp;x&nbsp;+&nbsp;x<sup>2</sup>/2!&nbsp;+&nbsp;x<sup>3</sup>/3!&nbsp;+&hellip;. Use it to approximate e<sup>0.1</sup> with the first four terms (through the x<sup>3</sup> term).</p>
+        <ol>
+          <li>Term by term at x&nbsp;=&nbsp;0.1: 1, then 0.1, then (0.1)<sup>2</sup>/2&nbsp;=&nbsp;0.005, then (0.1)<sup>3</sup>/6&nbsp;=&nbsp;0.0001667.</li>
+          <li>Running total: 1&nbsp;+&nbsp;0.1&nbsp;+&nbsp;0.005&nbsp;+&nbsp;0.0001667&nbsp;=&nbsp;<strong>1.1051667</strong>.</li>
+          <li>Before checking against the true value, bound the error with Lagrange&rsquo;s remainder. The next derivative involved is the fourth, and since every derivative of e<sup>x</sup> is e<sup>x</sup>, and e<sup>x</sup> is increasing, its largest value anywhere between 0 and 0.1 is at most e<sup>0.1</sup>&nbsp;&asymp;&nbsp;1.106 &mdash; so R<sub>3</sub>(0.1)&nbsp;&le;&nbsp;(1.106/4!)&times;(0.1)<sup>4</sup>&nbsp;=&nbsp;(1.106/24)&times;0.0001&nbsp;&asymp;&nbsp;<strong>0.0000046</strong>, guaranteed, before looking up a single digit of the true answer.</li>
+          <li>The true value is e<sup>0.1</sup>&nbsp;=&nbsp;1.1051709&hellip;. The actual gap between the four-term approximation and the truth is 1.1051709&nbsp;&minus;&nbsp;1.1051667&nbsp;&asymp;&nbsp;<strong>0.0000042</strong> &mdash; smaller than the guaranteed ceiling of 0.0000046, exactly as Lagrange&rsquo;s theorem promised, and accurate to five decimal places from four terms of arithmetic anyone can do by hand.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: the bond desk&rsquo;s secret Taylor series</h3>
+
+      <p>Logan has seen the word &ldquo;duration&rdquo; attached to a fund in this newspaper&rsquo;s own closing-edition watchlist and market appendix more than once &mdash; short-term Treasury funds like SGOV, BIL and SHY described as short-duration, longer-dated funds like TLT described as long-duration, the front end of the curve called more or less sensitive to a shift in yields. Duration sounds like it should mean &ldquo;years until the bond matures,&rdquo; and it is quoted in years, which does not help the confusion, but that is not actually what it measures. Duration is the first derivative, in disguise, of a bond&rsquo;s price with respect to its yield &mdash; and the formula bond desks use to estimate how much a bond&rsquo;s price will move for a given change in yield is nothing but a truncated Taylor series, centered on the bond&rsquo;s current yield:</p>
+
+      <div class="formula">
+        <div class="expr">&Delta;P&nbsp;/&nbsp;P&nbsp;&asymp;&nbsp;&minus;D&nbsp;&times;&nbsp;&Delta;y&nbsp;+&nbsp;&frac12;&nbsp;&times;&nbsp;C&nbsp;&times;&nbsp;(&Delta;y)<sup>2</sup></div>
+        <dl>
+          <dt>&Delta;P&nbsp;/&nbsp;P</dt><dd>the bond&rsquo;s percentage price change &mdash; the quantity being approximated, standing in for f(x)&nbsp;&minus;&nbsp;f(a) in the Taylor framework above.</dd>
+          <dt>D</dt><dd>(modified) duration &mdash; the first-order term, proportional to the bond price function&rsquo;s first derivative with respect to yield, evaluated at the current yield.</dd>
+          <dt>&Delta;y</dt><dd>the change in yield being considered &mdash; standing in for (x&minus;a), the distance from the point the expansion is centered on.</dd>
+          <dt>C</dt><dd>convexity &mdash; the second-order term, proportional to the second derivative, capturing the curvature the first-order duration term alone misses.</dd>
+        </dl>
+      </div>
+
+      <p>A bond&rsquo;s true price-versus-yield relationship is a curve, not a straight line, and duration alone &mdash; the first term of the expansion &mdash; is exactly the tangent-line approximation to that curve at the current yield, precisely as good and precisely as limited as stopping worked example 3&rsquo;s e<sup>x</sup> expansion after just the &ldquo;1&nbsp;+&nbsp;x&rdquo; term. For a small yield move, the tangent line is close enough that markets largely ignore the difference, which is why a headline can call a fund &ldquo;short duration&rdquo; and mean, quite literally, &ldquo;a smaller first-derivative term in this fund&rsquo;s own personal Taylor expansion of price against yield.&rdquo; For a larger move, the curvature term &mdash; convexity, the second derivative, exactly analogous to the x<sup>2</sup>/2! term in worked example 3 &mdash; starts to matter, which is why bond desks quote both numbers rather than duration alone, and why a sufficiently violent rate move can make a &ldquo;duration-hedged&rdquo; position behave in ways a first-order estimate never warned about. The same idea, one order of approximation up, is why a calculator&rsquo;s sine or exponential button does not consult an infinite lookup table: modern hardware typically uses a related but more efficient family of polynomials, tuned to minimize the worst-case error across an entire range of inputs rather than matching one point exactly, but the underlying idea &mdash; replace a function that is expensive to compute exactly with a polynomial that is cheap to compute and provably close &mdash; is the direct descendant of the theorem Taylor published in 1715.</p>
+
+      <p>The small-angle approximation used throughout physics and engineering is the same trick, at a single term. For an angle &theta; measured in radians, sin(&theta;)&nbsp;&asymp;&nbsp;&theta; is nothing but the first term of sine&rsquo;s own Maclaurin series, sin(&theta;)&nbsp;=&nbsp;&theta;&nbsp;&minus;&nbsp;&theta;<sup>3</sup>/3!&nbsp;+&nbsp;&theta;<sup>5</sup>/5!&nbsp;&minus;&hellip;, with every term past the first thrown away. At &theta;&nbsp;=&nbsp;0.1 radians (about 5.7&deg;), the true value is sin(0.1)&nbsp;=&nbsp;0.099833&hellip;, and the crude one-term approximation of 0.1 is already accurate to within about 0.17 percent &mdash; good enough that engineers use it routinely for small oscillations and optics without a second thought. At &theta;&nbsp;=&nbsp;1 radian (57.3&deg;), the same one-term shortcut gives 1 against a true value of 0.8415&hellip;, an error of nearly 19 percent &mdash; a reminder that every Taylor approximation is only ever as good as its distance from the point it was centered on, exactly the (x&minus;a) term sitting inside Lagrange&rsquo;s remainder formula above.</p>
+
+      <h3>The misconception</h3>
+
+      <p>The single most common mistake made about series &mdash; showing up in calculus classrooms as reliably as any mistake in mathematics &mdash; is believing that if a series&rsquo; individual terms shrink toward zero, the series itself must converge. It feels obviously true: if you are adding smaller and smaller amounts forever, surely the running total has to level off somewhere? It does not, and the counterexample has been known for roughly 650 years. The <b>harmonic series</b>, 1&nbsp;+&nbsp;1/2&nbsp;+&nbsp;1/3&nbsp;+&nbsp;1/4&nbsp;+&hellip;, has terms that shrink to zero &mdash; 1/n&nbsp;&rarr;&nbsp;0 as n grows, with no argument possible &mdash; and yet the series diverges, its partial sums climbing without limit, forever.</p>
+
+      <p>The proof is medieval, not modern, usually credited to the French bishop and mathematician Nicole Oresme in a work from around 1350, and it needs nothing more advanced than grouping terms cleverly:</p>
+
+      <div class="formula">
+        <div class="expr">1&nbsp;+&nbsp;1/2&nbsp;+&nbsp;(1/3+1/4)&nbsp;+&nbsp;(1/5+1/6+1/7+1/8)&nbsp;+&nbsp;(1/9+&hellip;+1/16)&nbsp;+&nbsp;&hellip;</div>
+        <dl>
+          <dt>(1/3+1/4)</dt><dd>two terms, each at least 1/4, so the group sums to at least 2&times;(1/4)&nbsp;=&nbsp;1/2.</dd>
+          <dt>(1/5+&hellip;+1/8)</dt><dd>four terms, each at least 1/8, so the group sums to at least 4&times;(1/8)&nbsp;=&nbsp;1/2.</dd>
+          <dt>(1/9+&hellip;+1/16)</dt><dd>eight terms, each at least 1/16, so the group sums to at least 8&times;(1/16)&nbsp;=&nbsp;1/2.</dd>
+        </dl>
+      </div>
+
+      <p>Every group Oresme constructs this way &mdash; doubling in length each time, from 2 terms to 4 to 8 to 16 &mdash; sums to at least one-half, by the same trick: a group of 2<sup>k</sup> terms, each individually no smaller than the group&rsquo;s own smallest term, sums to at least 2<sup>k</sup> times that smallest term, and the smallest term in each group is chosen so that product is always exactly 1/2. Add up enough of these one-half chunks and the running total passes any number you like, however large: it just takes more chunks. The divergence is completely real and completely provable &mdash; and also almost imperceptibly slow. It takes only 8 terms to pass 2.7, but, using the well-established approximation that the harmonic series&rsquo; n-th partial sum is close to ln(n)&nbsp;+&nbsp;0.5772 (the constant later named for Euler, who studied this series two centuries after Oresme), it takes roughly 12,000 terms to pass 10, roughly 272 million terms to pass 20, and something on the order of 1.5&times;10<sup>43</sup> terms to pass 100 &mdash; a number so large that even if every person alive today added a trillion terms every single second, it would take roughly 3,500 times the current age of the universe to get there. A series can diverge and still look, to any experiment you could actually run, exactly like it is converging.</p>
+
+      <p>The lesson generalizes past this one series. &ldquo;The terms shrink to zero&rdquo; is a necessary condition for a series to converge &mdash; if the terms do not shrink to zero, the series is guaranteed to diverge, no exceptions &mdash; but it is nowhere near sufficient, and the harmonic series is the standing proof. Every legitimate convergence test used beyond this lesson &mdash; the ratio test, the comparison test, the integral test that formalizes exactly the grouping trick above &mdash; exists because &ldquo;the terms get small&rdquo; was never going to be enough on its own.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day five&rsquo;s lesson on kinematics handed you the equation for an object&rsquo;s position under constant acceleration, x(t)&nbsp;=&nbsp;x<sub>0</sub>&nbsp;+&nbsp;v<sub>0</sub>t&nbsp;+&nbsp;&frac12;at<sup>2</sup>, and derived it the way every introductory physics course does: from the definitions of velocity and acceleration as rates of change. Look at it again now with today&rsquo;s machinery in hand, and it is something else entirely: it is the exact Taylor expansion of position, centered at t&nbsp;=&nbsp;0, carried through the second-order term &mdash; x<sub>0</sub> is f(0), v<sub>0</sub>t is f&prime;(0)t, and &frac12;at<sup>2</sup> is f&Prime;(0)t<sup>2</sup>/2!, exactly matching the general Taylor formula&rsquo;s first three terms with a&nbsp;=&nbsp;0. The only reason day five&rsquo;s formula could stop there, with no third-order term and no Lagrange remainder trailing behind it warning of an error to account for, is that every derivative of position beyond the second &mdash; jerk, the rate of change of acceleration, and everything past it &mdash; is exactly zero when acceleration is genuinely constant. Day five&rsquo;s kinematics equation is not an approximation of the truth; it is the rare, clean case where a Taylor series, expanded around constant-acceleration motion, simply runs out of nonzero terms and stops on its own. The moment acceleration itself starts changing &mdash; a rocket burning fuel and lightening as it climbs, a car easing off the gas rather than braking at a fixed rate &mdash; the higher-order terms this lesson introduced stop being zero, the tidy formula from day five stops being exact, and the choice becomes exactly the one worked example 3 walked through for e<sup>0.1</sup>: how many terms to keep, and how to put a provable number on what keeping only that many costs you.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state, precisely, what it means for a sequence or a series to converge &mdash; the &epsilon;-N challenge, not just &ldquo;gets closer&rdquo; &mdash; and you know that shrinking terms are necessary but never sufficient for a series to converge, with the harmonic series standing as permanent proof.</li>
+          <li>You can sum any geometric series with |r|&nbsp;&lt;&nbsp;1 in closed form, and you have used exactly that formula to reproduce, in one line, a result Archimedes needed a full geometric treatise to prove without the concept of a limit at all.</li>
+          <li>You can build a Taylor or Maclaurin series for a smooth function, truncate it, and use Lagrange&rsquo;s remainder to state &mdash; before checking a single digit against the true answer &mdash; exactly how large the error from truncating can possibly be.</li>
+          <li>You have seen this three-century-old theorem doing quiet, unglamorous work in a bond fund&rsquo;s duration and convexity figures, and you know precisely which earlier lesson&rsquo;s formula was secretly this one all along, which sets up how later lessons in this curriculum will handle functions whose higher derivatives never vanish at all.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Jacob Bernoulli&rsquo;s 1683 compound-interest analysis and the bounds it placed on (1+1/n)<sup>n</sup>, and Leonhard Euler&rsquo;s manuscript from around 1727&ndash;1728 first using the symbol e (unpublished until 1862, with a later 1731 use in a letter to Christian Goldbach and the first print appearance in Euler&rsquo;s 1736 <em>Mechanica</em>), were checked against the MacTutor History of Mathematics archive and the Euler Archive. Archimedes&rsquo; <em>Quadrature of the Parabola</em> and its method of exhaustion were checked against standard histories of Greek mathematics. James Gregory&rsquo;s 1671 correspondence with John Collins, Brook Taylor&rsquo;s 1715 <em>Methodus Incrementorum Directa et Inversa</em>, Colin Maclaurin&rsquo;s 1742 <em>Treatise of Fluxions</em>, and Joseph-Louis Lagrange&rsquo;s 1797 <em>Th&eacute;orie des fonctions analytiques</em> were checked against MacTutor and standard histories of the calculus. Nicole Oresme&rsquo;s circa-1350 divergence proof for the harmonic series was checked against modern expositions of the classical grouping argument. All numerical results in the worked examples &mdash; the compounding sequence, the e<sup>0.1</sup> approximation and its Lagrange bound, and the harmonic-series partial-sum estimates &mdash; were computed directly for this report. The bond-duration Taylor expansion is standard fixed-income theory, not a claim about any specific fund or filing.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day five&rsquo;s kinematics lesson, day nine&rsquo;s lesson on limits and continuity, day eleven&rsquo;s lesson on derivatives, and day thirteen&rsquo;s lesson on the rules of differentiation. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-16-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Apple Made $112 Billion Last Year. Its Cash Grew by Six. — Learning Brief, Tue, Sep 15, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-15",
+    "slot": "learn",
+    "title": "Apple Made $112 Billion Last Year. Its Cash Grew by Six.",
+    "path": "reports/2026/09/2026-09-15-learn.html",
+    "summary": "Day twenty-two of the 150-day curriculum: the cash flow statement, rebuilt line by line from Apple's own fiscal 2025 10-K, reconciling $112.010 billion of net income against a $5.991 billion cash increase to the exact dollar, tracing the statement's own 1970s origins in the Penn Central bankruptcy, and testing the claim that it is the hardest financial statement to fake against the one famous case -- WorldCom -- where someone tried anyway.",
+    "headlines": [
+      "Day 22 of 150 \u00b7 Accounting: the cash flow statement, operating/investing/financing",
+      "Apple earned $112 billion and grew its cash by $6 billion -- the other $106 billion, traced dollar for dollar",
+      "WorldCom moved $3.8 billion between two buckets and proved cash flow can be gamed, just not faked outright"
+    ],
+    "reading_minutes": 29,
+    "generated_at": "2026-09-15T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Apple Made $112 Billion Last Year. Its Cash Grew by Six.</h1>
+      <p class="paper-dateline">
+        Tuesday, September 15, 2026 <span class="sep">&middot;</span> 29 min read
+      </p>
+      <p class="paper-standfirst">
+        Net income and cash are not the same number, and the $106 billion gap between Apple&rsquo;s fiscal 2025 profit and the far smaller growth in its actual bank balance is closed, dollar for dollar, by the one statement built after a railroad&rsquo;s profitable-looking 1970 bankruptcy and broken once, deliberately, by a telecom company three decades later &mdash; which is exactly what makes it the hardest of the three core financial statements to fake, not the easiest to skip.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Accounting</p>
+      <span class="track-progress">Day 22 of 150 &middot; Accounting 5 of 18 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A profit that outran the company&rsquo;s own bank balance by more than a hundred billion dollars</h3>
+
+      <p>Apple&rsquo;s fiscal 2025 annual report &mdash; the same 10-K day seventeen&rsquo;s income-statement lesson built its worked examples from &mdash; contains a second pair of numbers, sitting a few pages further into the filing than net income does, that looks even stranger than anything the income statement produced. Net income for the year ended September 27, 2025 came in at $112.010 billion, up 19.5 percent from the prior year. That is the number that made every headline. But the line further down the filing that shows how much Apple&rsquo;s actual cash and cash equivalents grew over that same twelve months &mdash; the balance day twelve&rsquo;s lesson would find sitting at the very top of the balance sheet&rsquo;s asset side &mdash; shows an increase of just $5.991 billion. A company that told the world it had earned $112 billion somehow finished the year with barely six billion dollars more cash in the bank than it started with. Put the two numbers next to each other and the gap is $106 billion &mdash; not a rounding difference, not a typo, and not, as this lesson is about to show, any kind of contradiction at all.</p>
+
+      <p>Nothing about that gap involves a shrinking business, either. Apple&rsquo;s revenue rose. Its net income rose faster than revenue, for the specific reasons day seventeen&rsquo;s lesson traced. Its balance sheet, which day twelve&rsquo;s lesson taught you to read as a snapshot, shows the company ended the year with more total assets than it started with. And yet the one number that measures the thing most people actually mean when they ask whether a company is &ldquo;doing well&rdquo; &mdash; how much richer, in cash a bank would actually recognize, did the company get this year &mdash; grew by barely a twentieth of what net income alone would suggest.</p>
+
+      <p>If your instinct is that one of these numbers must be wrong, or that Apple must be hiding something, hold onto that instinct for a few pages, because it is exactly the instinct this lesson exists to correct. Nothing is hidden. Every dollar of that $106 billion gap is accounted for, in the most literal sense the word allows, inside a single financial statement built for no other purpose than reconciling a company&rsquo;s reported profit with what actually happened to its cash. It is the third and last of the three core financial statements this curriculum has now built, after day twelve&rsquo;s balance sheet and day seventeen&rsquo;s income statement, and Logan&rsquo;s own 60-day academy plan flagged it correctly as the hardest of the three to fake &mdash; a claim this lesson will justify with real numbers, and then test against the one famous case where someone tried anyway.</p>
+
+      <p>The cash flow statement is not a fourth, optional document companies produce because regulations demand paperwork. It is the statement that answers the single most practical question a lender, an acquirer, or an employee holding stock options can ask about a business: does this company actually generate the cash it claims to be worth? A company can report a profit while its cash reserves quietly drain away, and a company can report a loss while sitting on a growing pile of cash. Both situations are common enough to have ended careers, and neither one is visible from the income statement alone.</p>
+
+      <h3>Profit is an opinion. Cash is a fact.</h3>
+
+      <p>Start with the plain-English version, because the whole lesson rests on a distinction that sounds almost too simple to matter and turns out to explain everything: net income is a measurement built on judgment calls, and the change in a bank balance is not.</p>
+
+      <p>When Apple books a sale, day seventeen&rsquo;s lesson already showed that revenue is recognized when a performance obligation is satisfied &mdash; when the customer takes control of the iPhone, roughly speaking &mdash; which very often happens before the customer&rsquo;s payment actually clears into Apple&rsquo;s bank account. When Apple buys a factory robot expected to last seven years, the income statement spreads that cost across seven years of depreciation, a dollar amount nobody actually writes a check for in years two through seven; the entire check was written, in cash, in year one. When Apple estimates how much of a warranty reserve it will need to pay out for iPhones that will fail next year, that estimate lands on this year&rsquo;s income statement even though not one dollar of it has left the company yet. Every one of these is a legitimate, GAAP-compliant accounting judgment &mdash; not a trick &mdash; and every one of them means net income and the movement of actual cash can diverge, sometimes by a lot, in a single reporting period, without either number being wrong.</p>
+
+      <p>The cash flow statement exists to strip all of that judgment back out. It ignores when a sale was recognized and asks only when the money actually moved. It ignores the seven-year depreciation schedule and asks only when the check for the robot was actually written. It takes every dollar that crossed into or out of the company&rsquo;s bank accounts during the period and sorts those dollars into exactly three buckets, based on nothing more complicated than what kind of activity caused the money to move: running the business day to day (<strong>operating</strong>), buying or selling long-lived productive assets and investments (<strong>investing</strong>), and raising or returning capital to lenders and owners (<strong>financing</strong>). Add the three buckets together and the answer has to equal, to the exact dollar, the change in the company&rsquo;s cash balance between the opening and closing balance sheet &mdash; a check nothing else in accounting enforces so mechanically, which is precisely the property that makes this statement so hard to falsify cleanly, and precisely the property this lesson&rsquo;s worked example is about to demonstrate on Apple&rsquo;s own real numbers.</p>
+
+      <p>This is also why the statement rewards being read in a specific order, rather than skimmed for its three subtotals. A healthy, mature company&rsquo;s cash flow statement has a recognizable shape: positive operating cash flow, comfortably larger than net income once non-cash add-backs are counted; negative investing cash flow, because a growing business keeps spending on the equipment and capacity that keep it growing; and negative financing cash flow, because a company that no longer needs outside capital is returning it to lenders and owners instead of raising more. A company whose shape looks different &mdash; negative operating cash flow propped up by financing inflows, say, or investing activities that are positive because the company is selling off productive assets rather than buying them &mdash; is not automatically in trouble, but it is a company whose story the other two statements alone would not have told you to ask about.</p>
+
+      <h3>Why this statement had to be invented at all</h3>
+
+      <p>It is worth pausing on why a third financial statement exists in the first place, rather than trusting the balance sheet and income statement day twelve and day seventeen already built. For most of American corporate history, it did not exist in anything like its current form &mdash; and the case usually cited to explain why regulators eventually insisted on one is a railroad, not a technology company, and it predates Apple&rsquo;s founding by six years.</p>
+
+      <p>The Penn Central Transportation Company, formed in 1968 from the merger of the New York Central and Pennsylvania railroads, reported net income of $87 million in its first full year. Its second year, 1969, still showed a profit: $4 million. Then, on June 21, 1970, Penn Central filed for what was at the time the largest bankruptcy in American history, blindsiding investors who had just been shown two years of positive earnings. A subsequent SEC staff investigation found the company had been, in the commission&rsquo;s own words, &ldquo;stretching of accounting principles to cover novel situations, emphasizing form over substance,&rdquo; and using transactions with its own subsidiaries that were, in substance, paper entries that should never have been booked as profit at all. Buried underneath both reported profits, and visible to almost nobody outside the company at the time, cash from operations had already turned negative the year before the first of those two profitable-looking years and kept deteriorating, month over month, while the income statement kept reporting income.</p>
+
+      <p>Penn Central became one of the standard illustrations accounting historians and regulators point back to for why net income alone is an inadequate early-warning system &mdash; a profitable-looking company can be hemorrhaging the one resource, cash, that actually keeps it able to pay its bills. But the fix took years, and the fix that eventually arrived was not, at first, the clean three-bucket statement this lesson has been building. Companies were required only to publish a &ldquo;statement of changes in financial position,&rdquo; and the accounting profession spent the 1970s and early 1980s arguing over what &ldquo;funds&rdquo; even meant in that statement&rsquo;s own title &mdash; some companies defined it as cash, others as working capital, others as some other basket of liquid resources entirely, which meant two companies&rsquo; &ldquo;funds flow&rdquo; statements were often not even measuring the same thing. The Financial Accounting Standards Board spent roughly six years &mdash; discussion memoranda, exposure drafts, public hearings, task forces, hundreds of comment letters &mdash; resolving that inconsistency, and issued Statement of Financial Accounting Standards No. 95 in November 1987, mandating exactly the statement this lesson has been rebuilding: one single, standardized definition of cash and cash equivalents, sorted into exactly the same three buckets, for every public company, comparable line by line. The statement Apple filed for fiscal 2025 uses, essentially unchanged, the same three-bucket structure SFAS 95 set thirty-eight years ago.</p>
+
+      <h3>Three buckets, and a reconciliation that has to balance to the dollar</h3>
+
+      <p>Most companies, Apple included, do not build the operating-activities bucket by listing every individual cash receipt and cash payment from the year &mdash; that would run to millions of lines. Instead they use what accountants call the <strong>indirect method</strong>: start from net income, the number the income statement already produced, and adjust it for every difference between &ldquo;when it was recognized&rdquo; and &ldquo;when the cash actually moved.&rdquo;</p>
+
+      <div class="formula">
+        <div class="expr">CFO&nbsp;=&nbsp;NI&nbsp;+&nbsp;D&nbsp;+&nbsp;S&nbsp;+&nbsp;O&nbsp;&minus;&nbsp;&Delta;WC</div>
+        <dl>
+          <dt>CFO</dt><dd>cash generated by operating activities &mdash; the first of the three buckets, and the one analysts watch most closely because it reflects the core, repeatable business.</dd>
+          <dt>NI</dt><dd>net income, the bottom line day seventeen&rsquo;s lesson built line by line &mdash; the starting point, not the answer.</dd>
+          <dt>D</dt><dd>depreciation and amortization &mdash; the non-cash expense that reduced net income but required no cash payment this period, added back because the cash for it (if any) already left in an earlier period, when the asset was purchased.</dd>
+          <dt>S</dt><dd>share-based compensation expense &mdash; another non-cash charge against net income (paying employees in stock, not cash), added back for the same reason.</dd>
+          <dt>O</dt><dd>other non-cash adjustments &mdash; deferred taxes, gains or losses on asset sales already counted elsewhere, and similar items that touched net income without touching cash.</dd>
+          <dt>&Delta;WC</dt><dd>the net increase in operating working capital &mdash; the combined change in accounts receivable, inventory, accounts payable and similar accounts tied directly to day-to-day operations. When customers owe Apple more at year-end than they did at the start (receivables up), that is revenue Apple has recognized but not yet collected in cash, so it is subtracted; when Apple owes its suppliers more at year-end (payables up), that is expense Apple has recognized but not yet paid in cash, so it adds back. &Delta;WC is the net of every such swing, and it is why the sign in front of it is a subtraction: a net increase in what operations have <em>tied up</em> in working capital is cash that has not yet come in the door.</dd>
+        </dl>
+      </div>
+
+      <p>SFAS 95 actually encouraged companies to use the more intuitive <strong>direct method</strong> instead &mdash; listing operating cash receipts and payments the way worked example 0 below will, rather than starting from net income and adjusting backward &mdash; but it made the direct method optional and the indirect method&rsquo;s reconciliation mandatory even for companies that chose direct, and the reconciliation turned out to be simpler to produce from an accrual-based general ledger that was never designed to track individual cash receipts separately in the first place. Essentially every large public company, Apple included, ended up using the indirect method exclusively, which is why the formula above &mdash; starting from net income, not from a list of receipts and payments &mdash; is the one that shows up in a real 10-K. Whichever method a company chooses, GAAP still requires one number the indirect method&rsquo;s formula alone would otherwise let a company skip disclosing: actual cash paid during the year for interest and for income taxes, reported as supplemental information beneath the statement&rsquo;s three main buckets, precisely because interest and taxes are the two operating-adjustment items readers most often want to see broken out on their own.</p>
+
+      <p>Investing and financing activities, by contrast, are usually built the direct way &mdash; the filing simply lists the actual cash paid or received for each kind of transaction: purchases and maturities of marketable securities, payments to acquire property and equipment, stock buybacks, dividends, debt issued and repaid. There is no indirect adjustment needed there because those activities were never run through the income statement&rsquo;s judgment calls in the first place &mdash; a debt repayment, for instance, never touches net income at all; only the interest on that debt does.</p>
+
+      <p>The second formula is the one that makes the whole statement a genuine reconciliation rather than three disconnected lists, and it is the equation that ties this lesson directly back to day twelve&rsquo;s balance sheet:</p>
+
+      <div class="formula">
+        <div class="expr">&Delta;Cash&nbsp;=&nbsp;CFO&nbsp;+&nbsp;CFI&nbsp;+&nbsp;CFF</div>
+        <dl>
+          <dt>&Delta;Cash</dt><dd>the change in the company&rsquo;s cash and cash-equivalents balance from the opening balance sheet to the closing one &mdash; the exact number day twelve&rsquo;s lesson would find sitting at the top of the asset side on both dates, subtracted.</dd>
+          <dt>CFO</dt><dd>net cash from operating activities, defined above.</dd>
+          <dt>CFI</dt><dd>net cash from investing activities &mdash; positive when the company brought in more cash from selling or maturing investments and assets than it spent buying new ones; negative when it spent more than it brought in.</dd>
+          <dt>CFF</dt><dd>net cash from financing activities &mdash; positive when the company raised more cash from debt or equity than it returned to lenders and owners; negative, as it usually is for a mature, profitable company, when it returned more than it raised.</dd>
+        </dl>
+      </div>
+
+      <p>That equation is not an approximation, and it is not a rule of thumb the way some of the ratios day seventeen&rsquo;s lesson introduced were. It is arithmetic identity, forced by the fact that a bank account&rsquo;s balance can only change through deposits and withdrawals, and every deposit or withdrawal a public company makes has to be sorted into one of exactly three buckets. If the three buckets do not sum to the exact change in cash, an auditor has found an error, full stop &mdash; which is a very different standard from the balance sheet, where a mis-estimated warranty reserve can sit quietly for years without any equation flagging it as wrong.</p>
+
+      <div class="worked">
+        <b>Worked example 0 &mdash; sorting eight transactions into three buckets by hand</b>
+        <p>Before Apple&rsquo;s scale makes the mechanics harder to see, sort a small roastery&rsquo;s first month of real cash movements into the three buckets directly &mdash; no net income, no indirect-method adjustments, just cash in and cash out, classified by what caused it. This is the &ldquo;direct method&rdquo; SFAS 95 permits alongside the indirect method Apple and almost every large company actually use; the two methods only ever differ in how the operating bucket&rsquo;s total is shown, never in the total itself.</p>
+        <ol>
+          <li>Cash received from customers for roasted coffee sold: +$42,000. <strong>Operating</strong> &mdash; the core, repeatable business.</li>
+          <li>Cash paid to green-coffee suppliers: &minus;$18,000. <strong>Operating.</strong></li>
+          <li>Cash paid in wages to roasters and delivery staff: &minus;$9,500. <strong>Operating.</strong></li>
+          <li>Cash paid to buy a used commercial roaster: &minus;$26,000. <strong>Investing</strong> &mdash; a long-lived productive asset, not day-to-day operating expense.</li>
+          <li>Cash received from selling the old, smaller roaster it replaced: +$4,000. <strong>Investing.</strong></li>
+          <li>Cash received from a bank term loan to help fund the new roaster: +$20,000. <strong>Financing</strong> &mdash; raising capital, not operating the business.</li>
+          <li>Cash paid to the bank as the loan&rsquo;s first principal repayment: &minus;$1,000. <strong>Financing.</strong> (Note the split that trips up almost everyone new to this statement: only the principal repayment is financing. Interest paid on that same loan is <em>operating</em>, because GAAP treats interest expense as a cost of running the business, not as a capital transaction &mdash; one more reason the classification rules deserve close reading rather than instinct.)</li>
+          <li>Cash the two owners put in as an additional equity contribution: +$5,000. <strong>Financing.</strong></li>
+          <li>Sum by bucket: Operating = $42,000 &minus; $18,000 &minus; $9,500 = <strong>+$14,500</strong>. Investing = &minus;$26,000 + $4,000 = <strong>&minus;$22,000</strong>. Financing = $20,000 &minus; $1,000 + $5,000 = <strong>+$24,000</strong>.</li>
+          <li>&Delta;Cash = $14,500 &minus; $22,000 + $24,000 = <strong>+$16,500</strong>. If the roastery started the month with $10,000 in the bank, its balance sheet a month later shows exactly $26,500 &mdash; and every dollar of the $16,500 change is traceable to one of the eight transactions above, with no estimate, no judgment call, and nothing left over.</li>
+        </ol>
+      </div>
+
+      <h3>Rebuilding Apple&rsquo;s fiscal 2025 cash flow statement</h3>
+
+      <p>Every figure below is drawn directly from Apple&rsquo;s own XBRL-tagged 10-K data as filed with the SEC for the fiscal year ended September 27, 2025 (filed October 31, 2025), the same primary source day seventeen&rsquo;s lesson used for net income and revenue.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; the operating-activities bucket</b>
+        <ol>
+          <li>Start from net income: NI = $112.010 billion, the figure day seventeen&rsquo;s lesson built line by line from revenue down.</li>
+          <li>Add back depreciation and amortization, the non-cash expense for equipment, buildings and other long-lived assets already purchased in cash in earlier years: D = $11.698 billion. Running subtotal: $123.708 billion.</li>
+          <li>Add back share-based compensation, the non-cash expense for stock granted to employees rather than paid in cash: S = $12.863 billion. Running subtotal: $136.571 billion.</li>
+          <li>Subtract the net effect of every other operating adjustment &mdash; deferred taxes, gains and losses reclassified elsewhere, and the working-capital swing &Delta;WC across receivables, inventory, accounts payable and the rest of Apple&rsquo;s operating balance-sheet accounts. Apple does not publish that combined figure as a single labeled line the way it does net income, so it is derived here as the one number that makes the equation close exactly: $136.571 billion &minus; $111.482 billion (the reported CFO figure, confirmed independently below) = $25.089 billion. That $25.089 billion was a net <em>use</em> of cash during the year &mdash; operating assets and liabilities collectively tied up roughly a quarter of the year&rsquo;s reported profit in receivables, inventory and similar accounts rather than converting it to cash on hand, a pattern consistent with a company whose September fiscal year-end sits right before its biggest, inventory-heavy holiday quarter.</li>
+          <li>CFO = $136.571 billion &minus; $25.089 billion = <strong>$111.482 billion</strong> &mdash; the exact figure Apple reported for net cash provided by operating activities, down from $118.254 billion the prior fiscal year even though net income itself rose.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; investing and financing, and closing the loop back to the balance sheet</b>
+        <ol>
+          <li>Investing activities: Apple reported net cash provided by investing activities of CFI = +$15.195 billion, up sharply from +$2.935 billion the prior year. Read that carefully before drawing a conclusion &mdash; it does not mean Apple shrank its business. Within that bucket, Apple spent $12.715 billion in actual cash on property, plant and equipment &mdash; new factories, tooling, servers, data-center capacity &mdash; the genuine reinvestment-in-the-business number this lesson will come back to below. The positive net figure comes instead from Apple&rsquo;s enormous marketable-securities portfolio: more securities matured or were sold than were purchased during the year, a portfolio-management decision, not a sign of retreat.</li>
+          <li>Financing activities: Apple reported net cash used in financing activities of CFF = &minus;$120.686 billion, roughly in line with &minus;$121.983 billion the prior year. Of that outflow, $90.711 billion went to repurchasing Apple&rsquo;s own stock and $15.421 billion went to dividend payments &mdash; $106.132 billion returned directly to shareholders. The remaining roughly $14.6 billion of outflow covers debt activity and employee-related items the filing itemizes separately; the two headline capital-return numbers already tell the essential story.</li>
+          <li>Sum the three buckets: &Delta;Cash = CFO + CFI + CFF = $111.482 billion + $15.195 billion &minus; $120.686 billion = <strong>+$5.991 billion</strong>.</li>
+          <li>That $5.991 billion is not a number this lesson invented to make the arithmetic work &mdash; it is the exact figure Apple reported as its period increase in cash, cash equivalents and restricted cash, including the effect of exchange rates, for fiscal 2025. Three independently reported buckets, summed, reproduce a fourth independently reported number to the dollar. That is the reconciliation day twelve&rsquo;s balance sheet lesson promised was coming: the cash balance on this September&rsquo;s balance sheet equals the cash balance on last September&rsquo;s balance sheet, plus exactly this statement&rsquo;s $5.991 billion, and not one dollar more or less.</li>
+        </ol>
+      </div>
+
+      <p>Lay the two worked examples side by side and the original puzzle answers itself. Apple&rsquo;s $112.010 billion of net income became $111.482 billion of actual operating cash after non-cash add-backs of $24.561 billion were mostly offset by a $25.089 billion working-capital swing. That $111.482 billion then had to survive $12.715 billion of genuine capital spending, a net $2.480 billion inflow from portfolio rebalancing, and a $120.686 billion wave of cash returned to shareholders and lenders, before whatever survived all three &mdash; $5.991 billion &mdash; was left to actually grow the balance sheet&rsquo;s cash line. Nothing about the $106 billion gap between net income and the change in cash was ever mysterious. It was simply spent, deliberately, on buybacks and dividends that the income statement was never designed to show in the first place, because paying a shareholder is not an expense; it is exactly the kind of financing-activity cash movement this statement exists to isolate.</p>
+
+      <h3>Where it shows up: the number Wall Street trusts more than net income</h3>
+
+      <p>The operating-cash-flow figure this lesson just rebuilt feeds directly into the single metric professional analysts and credit officers reach for before almost anything else on the income statement: <strong>free cash flow</strong>, FCF = CFO &minus; CapEx. For Apple&rsquo;s fiscal 2025, that is $111.482 billion minus the $12.715 billion of property-and-equipment spending identified above, or <strong>$98.767 billion</strong> &mdash; the cash Apple generated from its core business, after paying for the equipment that business needs to keep running, and before a single dollar goes to a buyback, a dividend, or a debt payment. It is the number a lender asks for before extending credit, because a company can report glowing net income for years on paper while free cash flow quietly turns negative &mdash; a pattern that has preceded more real financial trouble than almost any single line on an income statement, precisely because net income is the number easiest to manage with the judgment calls day seventeen&rsquo;s lesson catalogued, and free cash flow is the number hardest to manage with them.</p>
+
+      <p>This is also the statement day seventeen&rsquo;s own lesson explicitly promised was coming, for exactly the reason this lesson has now spent several pages establishing. That lesson found fiscal 2024&rsquo;s income tax expense &mdash; and through it, fiscal 2024&rsquo;s net income, the base fiscal 2025&rsquo;s 19.5 percent growth is measured against &mdash; distorted by a one-time $10.2 billion charge tied to the European Court of Justice&rsquo;s September 2024 ruling that Ireland had granted Apple unlawful state aid. Day seventeen already flagged the timing wrinkle: the underlying &euro;13 billion had sat in escrow for years before the ruling landed, so the $10.2 billion income-statement charge was largely the accrual-basis recognition of an old dispute concluding, not a fresh fiscal 2024 cash outflow. That is the accrual-versus-cash gap this lesson&rsquo;s plain-English section described in the abstract, playing out as a real, dated, footnoted event on Apple&rsquo;s own books &mdash; and it is a concrete reason fiscal 2025&rsquo;s eye-catching 19.5 percent net-income growth needs the comparison year-over-year operating cash flow figure this lesson just rebuilt, $111.482 billion versus $118.254 billion, sitting next to it before anyone treats the income statement&rsquo;s growth rate alone as a clean read on how much more profitable the underlying business actually became.</p>
+
+      <p>Free cash flow also happens to be the raw material for the valuation technique this curriculum&rsquo;s finance track will eventually build in full: discounted cash flow valuation, which prices a company today as the sum of every future year&rsquo;s free cash flow, each one shrunk by a discount rate to account for the fact that a dollar received later is worth less than a dollar in hand now. That later lesson will need a working definition of &ldquo;the cash a business actually throws off, after the reinvestment required to keep running,&rdquo; and today&rsquo;s $98.767 billion is precisely that definition, computed on a real company&rsquo;s real filing rather than a textbook&rsquo;s clean hypothetical.</p>
+
+      <p>One more check is worth running before leaving Apple&rsquo;s numbers, because it is exactly the kind of comparison free cash flow exists to make possible. This lesson&rsquo;s worked examples already showed Apple returning $90.711 billion to shareholders through buybacks and $15.421 billion through dividends &mdash; $106.132 billion combined, against free cash flow of only $98.767 billion. Apple, in other words, returned $7.365 billion more to shareholders this year than its core business, after its own reinvestment, actually generated. That is not a red flag on its own &mdash; Apple&rsquo;s investing bucket ran a net $15.195 billion inflow, more than enough to cover the difference, financed by letting more of its marketable-securities portfolio mature than it replaced, not by borrowing under duress or selling productive assets it needed. But it is precisely the sentence a careful reader should be able to write after reading a cash flow statement and could not have written from the income statement or the balance sheet alone: capital returns exceeded free cash flow this year, and here specifically is where the difference came from.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The 60-day academy&rsquo;s own framing for today&rsquo;s topic &mdash; that the cash flow statement is the hardest of the three financial statements to fake &mdash; is true, and it is also frequently overstated into a flatly wrong belief: that cash flow <em>cannot</em> be manipulated at all, only net income can. That stronger claim is false, and the clearest proof of exactly how false it is comes from one of the largest accounting frauds in American corporate history.</p>
+
+      <p>Even short of outright fraud, real companies practice legal, disclosed versions of the same instinct WorldCom took to an illegal extreme, and analysts have a name for watching for it: <strong>operating-cash-flow window dressing</strong>. A company that needs its reported CFO to look strong right before a quarter ends can quietly delay paying its suppliers a few extra weeks &mdash; a real, GAAP-compliant choice that leaves more cash sitting in the bank at the measurement date, appearing in this lesson&rsquo;s &Delta;WC term as a smaller increase in accounts receivable relative to a larger increase in accounts payable, both of which improve the operating bucket. It can sell a batch of customer receivables to a bank at a discount rather than waiting to collect them &mdash; perfectly legitimate financing, called factoring, but one that pulls cash forward from a future period into the current one and can blur, if a reader is not checking the footnotes, whether the operating bucket&rsquo;s strength reflects the business or reflects the timing decision. None of this is the WorldCom story&rsquo;s outright fraud; all of it is the same underlying lesson, restated in its legal form &mdash; the totals in each bucket are real, checkable cash, but the timing and classification decisions that produce those totals still involve genuine choices, and a reader who only glances at the CFO subtotal, without asking what moved inside &Delta;WC this particular quarter, can be shown a true number arranged to leave a misleading impression.</p>
+
+      <p>In 2002, the telecommunications company WorldCom was caught having classified more than $3.8 billion of ordinary operating expenses &mdash; specifically, &ldquo;line costs,&rdquo; the fees WorldCom paid other carriers to route calls and data over their networks &mdash; as capital expenditures instead. The SEC&rsquo;s enforcement action (Litigation Release No. 17588) laid out the mechanism plainly: those payments were real cash WorldCom genuinely spent, and reclassifying them changed nothing about the total amount of cash that left the company. What it changed was where that spending showed up. An operating expense reduces operating cash flow, the bucket analysts watch as a signal of the health of the core, repeatable business. A capital expenditure sits inside investing activities instead &mdash; a bucket investors expect to be volatile and don&rsquo;t read as a signal of ongoing operational health the same way. By moving $3.8 billion from one bucket to the other, WorldCom made its operating cash flow, and the profit figures built on top of it, look dramatically healthier than the underlying business actually was, without altering the company&rsquo;s real total cash position by a single dollar. A court-appointed examiner, Richard Thornburgh, later found the fraud reached roughly $11 billion once earlier periods and other schemes were included; WorldCom filed for what was then the largest bankruptcy in U.S. history within weeks of the initial disclosure, and nearly 30,000 people lost their jobs.</p>
+
+      <p>The fraud was not caught by outside regulators combing through public filings &mdash; it was caught from inside, by Cynthia Cooper, WorldCom&rsquo;s own vice president of internal audit, and the small team she assembled to quietly investigate irregularities in the capital-expenditure accounts, often working at night specifically to avoid tipping off the executives whose numbers they were checking. Cooper briefed WorldCom&rsquo;s board audit committee directly on June 20, 2002; the company disclosed the fraud publicly days later. Chief executive Bernard Ebbers was convicted of securities fraud and conspiracy and sentenced to 25 years in prison. Cooper was later named one of <em>Time</em> magazine&rsquo;s Persons of the Year for 2002, alongside Enron whistleblower Sherron Watkins and FBI whistleblower Coleen Rowley &mdash; recognition for the specific, unglamorous skill of noticing that a capital-expenditure line had grown in a way the underlying business did not justify, and refusing to let it go unquestioned. It is worth naming as the practical takeaway of this entire misconception: the fraud was not caught by a more clever formula. It was caught by someone who knew, the way this lesson has just taught you, precisely which bucket a real cash outflow was supposed to sit in, and noticed when it didn&rsquo;t.</p>
+
+      <p>The honest, precise version of the 60-day academy&rsquo;s claim, then, is this: the <em>total</em> change in a company&rsquo;s cash balance is essentially impossible to fake, because it is checkable against the company&rsquo;s actual bank statements &mdash; a hard, external, physical fact no accounting judgment call can touch. What remains vulnerable, as WorldCom proved, is the <em>classification</em> of real cash movements among the three buckets. That is a narrower and more specific kind of fraud than faking net income outright, which is why this statement is harder to fake than the income statement &mdash; but &ldquo;harder&rdquo; and &ldquo;impossible&rdquo; are different claims, and only the first one is true. It is exactly the same reason today&rsquo;s worked examples bothered to identify which specific line items sat inside each of Apple&rsquo;s three buckets, rather than trusting the three subtotals alone: the subtotals will always add up to the true change in cash, by the identity above, but a reader who never looks inside the buckets can still be shown a true total built from a misleading arrangement of true parts.</p>
+
+      <h3>The callback</h3>
+
+      <p>Yesterday&rsquo;s lesson spent its whole thirty minutes on techniques for running a known rate of change backward to recover the total quantity it produces &mdash; substitution, integration by parts, and partial fractions, each one a way of finding an antiderivative when a tidy formula for the rate is already in hand. The cash flow statement is performing the same fundamental operation, stripped of any formula at all. Day twelve&rsquo;s balance sheet is a <em>stock</em> &mdash; a snapshot of cash on hand at one instant, exactly the kind of quantity calculus calls a position or a level. Today&rsquo;s statement is built entirely from <em>flows</em> &mdash; the individual cash movements recorded, transaction by transaction, throughout the year, exactly the kind of quantity calculus calls a rate. And the equation this lesson leaned on hardest, &Delta;Cash = CFO + CFI + CFF, is nothing but the discrete, bookkeeping-grade cousin of the Fundamental Theorem of Calculus that anchors the entire integration unit yesterday&rsquo;s lesson belongs to: the accumulated total of a rate, summed correctly across an interval, always equals the net change in the corresponding stock between the two endpoints of that interval. An accountant doing this by hand, sorting every real transaction into three buckets and adding, is not using any of yesterday&rsquo;s three named techniques &mdash; there is no elegant closed-form antiderivative to find here, only real recorded numbers to sum, which makes it closer in spirit to the raw Riemann sum than to a clever substitution. But the underlying relationship it is exploiting, between a stock and the flows that move it, is the identical piece of machinery both subjects share, wearing very different clothes. Notice, too, that today&rsquo;s version of the relationship runs in the direction a working accountant actually needs: not &ldquo;given a rate, find the total,&rdquo; the direction yesterday&rsquo;s three named techniques all pointed, but &ldquo;given every individual recorded flow, confirm the total lines up with an independently measured stock&rdquo; &mdash; closer to using the Fundamental Theorem of Calculus as a proof-check on an answer already obtained by brute-force summation than to using it to find that answer in the first place. Apple&rsquo;s auditors did not need substitution, integration by parts, or partial fractions to verify $5.991 billion; they needed exactly the discipline this lesson has spent the last several pages building, applied patiently to every transaction the company recorded in a year.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can read a real 10-K&rsquo;s cash flow statement and know exactly what belongs in each of the three buckets &mdash; operating, investing, financing &mdash; and why the split matters more than any of the three totals alone.</li>
+          <li>You can rebuild the indirect-method operating-activities calculation from net income, and you have watched three independently reported buckets sum, to the exact dollar, to a fourth independently reported number: Apple&rsquo;s real $5.991 billion cash increase.</li>
+          <li>You can compute free cash flow from a company&rsquo;s own filing and explain why professional lenders and analysts weight it more heavily than net income.</li>
+          <li>You know precisely what &ldquo;the cash flow statement is hardest to fake&rdquo; actually means &mdash; the total is nearly impossible to falsify, the classification between buckets is not, and WorldCom is the proof &mdash; which sets up a later lesson on earnings quality and red flags, where the specific ratios fraud examiners build from the mismatch between net income and operating cash flow &mdash; the same mismatch this lesson just taught you to spot by hand &mdash; get names of their own.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Apple&rsquo;s fiscal 2025 and fiscal 2024 operating, investing and financing cash flow figures, depreciation and amortization, share-based compensation, capital expenditures, stock repurchases, dividend payments and the period change in cash were retrieved directly from SEC EDGAR&rsquo;s XBRL company-concept API (data.sec.gov, CIK 0000320193), which mirrors Apple&rsquo;s own audited Form 10-K for the year ended September 27, 2025 (filed October 31, 2025); the net-income and European Commission tax-charge figures carry forward from day seventeen&rsquo;s income-statement lesson, sourced the same way. The Penn Central Transportation Company&rsquo;s 1968&ndash;1970 reported profits and bankruptcy, and the SEC staff finding on its accounting, were checked via web search against SEC historical records and contemporaneous reporting. The history of Statement of Financial Accounting Standards No. 95 (November 1987) was checked against FASB&rsquo;s own published standard and standard accounting histories. The WorldCom line-cost fraud, its $3.8 billion initial disclosure and roughly $11 billion full scope, Cynthia Cooper&rsquo;s internal-audit investigation, and Bernard Ebbers&rsquo; sentencing were checked against the SEC&rsquo;s own enforcement action (Litigation Release No. 17588) and corroborating reporting. All reconciliation arithmetic in this lesson&rsquo;s worked examples was computed directly and independently checked for this report; the small roastery in worked example 0 is a hypothetical built for this report, not a real company.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day twelve&rsquo;s balance sheet lesson, day seventeen&rsquo;s income statement lesson, and day twenty-one&rsquo;s lesson on integration techniques. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-14-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

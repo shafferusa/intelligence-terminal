@@ -1,6 +1,51 @@
 {
  "corrections": [
   {
+   "found": "2026-09-25",
+   "report": "reports/2026/09/2026-09-24-pm.html and 2026-09-25-am.html",
+   "original": "Neither Thursday's Closing Brief nor this morning's edition covered Akamai's $11.6 billion, seven-year cloud-computing agreement with Anthropic (expandable to roughly $20 billion), announced via Akamai's own press release and an SEC 8-K with a 5:30 PM ET investor call Thursday evening -- before Thursday's Closing Brief published.",
+   "corrected": "Added to today's Closing Brief (2026-09-25-pm) Top Stories, one edition late, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research passes for the 2026-09-24-pm and 2026-09-25-am editions did not surface the deal despite same-day primary-source disclosure (press release, 8-K, investor call).",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as prior same-pattern entries in this ledger. No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-18",
+   "report": "reports/2026/09/2026-09-18-am.html",
+   "original": "This morning's edition (and its underlying calendar-cache entry) reported the Progress MS-35 cargo craft's docking at the ISS Poisk module as confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check -- a day sooner than the Sept 17 cache's Roscosmos-sourced Sept 19 estimate.",
+   "corrected": "NASA's own ISS blog, posted today, schedules docking for tomorrow, Saturday Sept 19, at approximately 13:46 UTC (9:46 AM ET) at Poisk's space-facing port -- consistent with Roscosmos/TASS's original estimate this system had revised away from two days ago. No docking occurred this afternoon at the previously reported time; the mission itself (cargo resupply, vehicle, launch) is unaffected, only the docking date and time were wrong.",
+   "error_source": "This morning's run treated a single trade-press schedule (NASASpaceFlight.com), cross-checked only against Wikipedia, as more authoritative than NASA's own official schedule, without waiting for or checking NASA's own same-day blog post.",
+   "conclusions_changed": false,
+   "note": "Does not change the mission itself -- only the docking's actual date and time, now expected Saturday morning rather than Friday afternoon as this morning's edition stated. Corrected in today's report (2026-09-18-pm) Science & Space section and colophon; calendar-cache.json updated accordingly."
+  },
+  {
+   "found": "2026-09-18",
+   "report": "reports/2026/09/2026-09-18-am.html and 2026-09-17-pm.html",
+   "original": "Neither the Sept 17 closing edition nor this morning's edition covered the White House's Thursday withdrawal of Lance Schroyer's nomination to lead Immigration and Customs Enforcement, after Sen. Rand Paul held up the nomination in committee over questions about a Minnesota agent-involved shooting -- same-day, multi-outlet-covered news.",
+   "corrected": "Added to today's Closing Brief (2026-09-18-pm) Politics & Government section, one to two news cycles late, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research passes for the 2026-09-17-pm and 2026-09-18-am editions did not surface the story despite same-day reporting.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as prior same-pattern entries in this ledger (e.g. 2026-07-31, 2026-08-14, 2026-09-02, 2026-09-04). No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-14",
+   "report": "reports/2026/09/2026-09-13-sun.html",
+   "original": "Sunday's edition reported: \"An Iranian commercial vessel was struck near Qeshm Island... Iranian state media and the Qeshm governor blamed 'the US terrorist enemy'... President Trump, traveling in Ireland, told reporters 'Iran was probably to blame' -- a remark reading as skepticism of Iran's own account.\"",
+   "corrected": "Verified against contemporaneous, dated reporting (CNN, Business Recorder, Times of Israel, US News, Al Jazeera): Trump's 'I think they are, probably they are' remark, made Saturday in Dublin, answered a question about a separate incident -- Thursday's drone attack on Saudi Arabia's East-West oil pipeline, which Riyadh and Baghdad have linked to Iran-backed militias in Iraq (those militias deny it). Asked specifically about Sunday's Qeshm Island vessel strike, Trump's actual on-record answer was 'I don't want to say' -- a refusal to comment, not an attribution either way. This outlet's Sunday edition conflated the two separate incidents and misattributed the 'probably' remark to the wrong one.",
+   "error_source": "Sunday's news-research pass appears to have merged two same-weekend Trump remarks on two distinct Gulf incidents (the Thursday Saudi pipeline attack and the Sunday Qeshm vessel strike) into a single quote attached to the wrong event.",
+   "conclusions_changed": true,
+   "note": "This changes what Trump is actually on record saying about the Qeshm strike specifically -- from an implied lean toward Iranian responsibility to an explicit non-answer. It does not change the facts of either underlying incident. Verified independently via WebSearch this run against multiple dated outlets for both remarks. Corrected in today's report (2026-09-14-am) Top Stories and colophon."
+  },
+  {
+   "found": "2026-09-14",
+   "report": "reports/2026/09/2026-09-13-sun.html",
+   "original": "Sunday's edition described H.R. 6500, the stopgap government-funding bill, as coming before the House Monday Sept 14: \"House takes up H.R. 6500... funding government through Dec 11 -- a low-drama procedural item given the lopsided Senate vote, but this week's one concrete fiscal deadline.\"",
+   "corrected": "H.R. 6500 (the Continuing Appropriations and Extensions Act, 2027) passed the House 370-48 on Sept. 1, had already passed the Senate 90-6, and was signed into law by the President on Sept. 2 as Public Law No. 119-103, funding the government through Dec. 11. There is no House floor action on this bill pending; it is closed, not live.",
+   "error_source": "This system's calendar cache carried the bill forward as a pending Monday House action without re-verifying its status against Congress.gov or the White House's own signing statement before Sunday's edition published it.",
+   "conclusions_changed": false,
+   "note": "Does not change the substance of government funding (already resolved through Dec. 11) -- only whether any action was pending today. Verified directly against congress.gov, govtrack.us and whitehouse.gov this run. Corrected in today's report (2026-09-14-am) Politics & Government and colophon; also corrected in state/calendar-cache.json."
+  },
+  {
    "found": "2026-09-08",
    "report": "reports/2026/09/2026-09-07-am.html",
    "original": "This outlet's 2026-09-07-am and 2026-09-07-pm editions described the mail-ballot Supreme Court emergency's response deadline as \"the 10 AM Tuesday deadline carries over to the new filing\" -- i.e., 10:00 AM ET Tuesday, September 8.",
@@ -161,15 +206,6 @@
    "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the prior two editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
    "conclusions_changed": false,
    "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31 and 2026-08-14 entries above. No prior published sentence needed correcting."
-  },
-  {
-   "found": "2026-09-02",
-   "report": "reports/2026/09/2026-09-02-learn.html",
-   "original": "The Day 13 callback wrote Newton's second law for a rocket as F_net = d(mv)/dt = m·dv/dt + v·dm/dt, with v the rocket's own velocity, and named v·dm/dt as 'the term a rocket cannot afford to drop'.",
-   "corrected": "That is the classic variable-mass mistake. With v the rocket's velocity, m·dv/dt + v·dm/dt is not the force on the rocket (the result would depend on which inertial frame you measure v in). Apply F = dp/dt to the closed system of rocket plus expelled propellant and the correct equation for the rocket body is m·dv/dt = F_ext + u·dm/dt, where u is the exhaust velocity relative to the rocket (dm/dt is negative, so the u·dm/dt term is the thrust). The product rule was applied correctly; it was applied to the wrong system. Day 100, the Tsiolkovsky rocket equation, derives the right form from momentum conservation.",
-   "error_source": "A physics error in the Day 13 (2026-09-02) Learning Brief's callback paragraph, found in a maintenance review on 2026-09-02; the lesson's calculus was right, its choice of system was wrong.",
-   "conclusions_changed": true,
-   "note": "Surface in the next Learning Brief's colophon (prompts/learning.md Step 0 now reads this ledger). The equation plate in the published lesson is preserved as published; the correction is stated here and in the next lesson."
   },
   {
    "found": "2026-09-03",

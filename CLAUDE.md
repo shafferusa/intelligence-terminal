@@ -11,19 +11,24 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).
 3. Your run procedure — one of:
-   - `prompts/learning.md` — **Learning Brief**, Mon–Fri 6:00 AM ET. Strictly learning, ONE lesson
-     per report, no news. Reads like a newspaper feature. 25–30 minutes in year one; 60–120
-     minutes, in parts, in year two.
+   - `prompts/learning.md` — **Learning Brief**, Mon–Fri ~5:00 AM ET, delivered by 5:30. Strictly
+     learning, ONE ~15-minute lesson per report from `curriculum/academy-300.json`, no news, no
+     audio.
    - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
+   - `prompts/sie.md` — **SIE Program**, daily (weekends too) at noon ET. A 30-day FINRA SIE exam
+     course with quizzes, grading, a weakness tracker and spaced repetition (SPEC §0b). Strictly
+     exam study, no news.
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
+**The 2026-09-25 restart:** the Learning Brief now teaches `curriculum/academy-300.json` — fifteen
+subjects, twenty lessons each, strictly in sequence (SPEC §0c). If the routine prompt that started
+you names `academy-150.json`, "25-30 minutes" or 6:00 AM, it predates the restart: follow
+`prompts/learning.md` and `state/learning.json`, which win.
 
-**The 2026-09-09 weighting:** the newspaper is a markets paper first. At least four Top Stories
-from markets, the economy or business every edition, standing **Watchlist** and **Markets**
-sections, a Fed-path paragraph in The Economy, and roughly 40% or more of the reading path on
-those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
+The SIE Program (2026-09-25) is its own edition: its quizzes and tracker never appear in the
+Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 
 ## File map
 
@@ -31,35 +36,31 @@ those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
 - `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md, learning.md).
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
-- `curriculum/academy-300.json` — **the live curriculum**: fifteen subjects, 300 weekday lessons,
-  run strictly in sequence (one subject finishes before the next begins). Restarted 2026-09-25
-  (`docs/SPEC.md` §0e, `prompts/learning.md`), replacing the two curricula below outright.
-  `state/learning.json` → `curriculum` names the running file.
-- `curriculum/academy-150.json`, `curriculum/academy-260.json` — RETIRED (2026-09-25); the
-  150-lesson curriculum actually ran (18 lessons taught) and the 260-lesson "year two" was
-  designed but never started. Kept as a record, not read by the live procedure.
+- `curriculum/academy-300.json` — **the live curriculum** for the Learning Brief: fifteen subjects,
+  twenty weekday lessons each, run strictly in sequence (restarted 2026-09-25, SPEC §0c).
+  `curriculum/academy-150.json` — RETIRED 2026-09-25 (30 lessons taught); a record only, never read.
+- `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
+  (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
+  `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
+- `site/reports/sie/study-guide.html` — the SIE Study Guide (one chapter per program day).
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); were
   source material for the retired 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
-- `site/` — GitHub Pages root: `index.html` (latest day's editions, filterable archive, search),
-  `academy.html` (the 300-lesson curriculum, taught lessons linked), `status.html` (run health),
-  `assets/` (css/js/icons, incl. `report.js` = read-time prev/next nav; no audio player — the
-  Learning Brief carries no audio), `report-template.html`, `reports/YYYY/MM/*.html` +
-  `reports/index.json` (archive index), `equations/eq_NNN.png`, `manifest.webmanifest`, `sw.js`.
-  Build-generated, never committed: Pagefind assets, `status.jsonl`, `academy.json`, `audio/*.mp3`
-  (news editions only).
-- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum, day and a
-  `previous_curriculum` record of what was retired),
+- `site/` — GitHub Pages root: `index.html`, `academy.html` (the 300-lesson plan, taught lessons
+  linked), `status.html`, `assets/` (css/js/icons, incl. `report.js` = SIE quiz answer sheet +
+  study-guide ticks; report audio retired 2026-09-25), `report-template.html`,
+  `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
+  `manifest.webmanifest`, `sw.js`. Pagefind assets, `status.jsonl` and `academy.json` are
+  build-generated.
+- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
-  `run-log.jsonl`. `curriculum.json` (the pre-2026-08-16 three-track position) was retired and
-  deleted — never recreate it.
+  `run-log.jsonl`, `sie.json` (SIE program state: tracker, error log, review queue, scores),
+  `sie/quizzes/day-NN.json` (SIE answer keys), `sie/inbox.jsonl` (Logan's Telegram replies —
+  written ONLY by the `sie-inbox` Action; routines read it, never write it). `curriculum.json` is retired — do not read or write it.
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).
-- `.github/workflows/` — Pages build & deploy (Pagefind over `site/reports/`, stages recent MP3s,
-  copies the run log and curriculum into the site), report audio (edge-tts → GitHub Release),
-  the Telegram notifier (Actions is the ONLY sender), the `claude/*` PR auto-merge, and the
-  switched-off breaking-news scanner.
+- `.github/workflows/` — Pages build (runs `npx -y pagefind --site site`) and deploy.
 
 ## Iron rules (non-negotiable)
 
@@ -85,7 +86,6 @@ those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
    report triggers it. Sending from the run is what produced duplicate morning, Saturday and
    Sunday pushes until 2026-08-16 (`prompts/shared-rules.md` §14).
 8c. **One commit per run** — report, index, state, run log and ledgers together
-   (`prompts/shared-rules.md` §15.2). The only sanctioned second commit is the run-log-only
-   `log: confirm pages_ok …` line after the live-URL poll (§15.4).
+   (`prompts/shared-rules.md` §15.2).
 9. **Political neutrality, verification levels, and no unsupported market causality** — the
    methods in `prompts/shared-rules.md` are requirements, not suggestions.

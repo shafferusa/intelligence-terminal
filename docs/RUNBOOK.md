@@ -86,44 +86,37 @@ environment allowlist before the first morning run**, or the strip will silently
 | `COINGECKO_KEY` | https://www.coingecko.com (free "demo" API key) |
 | `MASSIVE_KEY` | https://massive.com (free "Stocks Basic" key; ex-Polygon.io — enables EOD whole-market breadth; optional, reports degrade gracefully without it) |
 
-### A4. Create the three routines
+### A4. Create the routines
 
 At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**, environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
 
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
-| Learning Brief | `0 9 * * 1-5` | Mon–Fri 5:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
+| Learning Brief | `CRON_TZ=America/New_York 50 4 * * 1-5` | Mon–Fri 4:50 AM start → push lands ~5:00, by 5:30 at the latest | `Read CLAUDE.md, prompts/shared-rules.md and prompts/learning.md in this repository and execute the Learning Brief run procedure exactly.` |
 | Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
+| SIE Program (added 2026-09-25) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
 
-**Learning Brief moved to 5:00 AM ET on 2026-09-25** (Logan; was 6:00 AM), with a **5:30 AM
-delivery target** — the run has thirty minutes to research, write, build the page, commit, push
-and be live. Two things make that realistic: the restarted curriculum's lessons are the shortest
-report in the system (12–18 minutes of reading, `docs/SPEC.md` §0e) and the Learning Brief carries
-no audio at all now, so there is no edge-tts step to wait on. This also clears the old overlap risk
-with the 6:30 AM Morning Brief by a full hour, so nothing further is needed there. If a run ever
-does run long, shared-rules §15.2 still covers a push conflict: `git pull --rebase` before every
-push, and on a conflict in `index.json` or `run-log.jsonl` take the remote version and re-apply
-your own addition.
+**The Learning Brief starts at 4:50 AM ET so it is in Telegram by 5:30** (Logan, 2026-09-25:
+"5am … better be delivered by 5:30am"; SPEC §0c). The scheduler starts `:00` crons 9–12 minutes
+late (the old `0 10` fired 6:08–6:10 ET) but other minutes on time, so 4:50 really means 4:50. A
+lesson run pushes 8–12 minutes after it starts; `notify.py` then waits for the page to go live
+(1–2 minutes, no audio) and sends. Expect the push around 5:00–5:10. It no longer overlaps the
+6:30 Morning Brief; shared-rules §15.2's pull-rebase rule still covers any `index.json` or
+`run-log.jsonl` race.
 
-**This trigger cannot be edited from inside a Claude Code session** — it was created via the API
-(`created_via: http_api`), not by an agent, so `update_trigger` is refused. Logan updates it
-himself at **https://claude.ai/code/routines/trig_012uy4GWGyq9VhQicy5KgJJC**: cron
-`0 9 * * 1-5`, and the prompt should be exactly
-`Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.`
-(the stored prompt as of 2026-09-25 hardcodes the old 25–30 minute length and
-`curriculum/academy-150.json` directly, which will fight with the restarted procedure — replace it
-with the line above so `prompts/learning.md` is the only source of truth, same as the other two
-routines already are).
+**Editing this routine is manual.** It was created through the API, and agents cannot edit
+API-created routines. At **claude.ai/code/routines** → "Intelligence Terminal — Learning Brief":
+set the schedule to weekdays at 4:50 AM Eastern (cron above; if the editor only accepts UTC, use
+`50 8 * * 1-5` during EDT and `50 9 * * 1-5` during EST and add it to the section B bump), and
+replace the prompt with the one in the table. The old prompt named `academy-150.json` and "25-30
+minutes"; `CLAUDE.md` and `prompts/learning.md` tell a run to ignore that, but fix it anyway.
 
-**Year two of the Academy (from about 2027-03-12).** Year-one lessons are 25–30 minutes; year-two
-lessons (`curriculum/academy-260.json`, SPEC §0d) are 60–120 minutes and carry no audio. Before the
-handover, move the Learning Brief to **5:00 AM ET** — during EST (Nov–Mar) that is `0 10 * * 1-5`,
-during EDT (from 2027-03-14) `0 9 * * 1-5` — so a two-hour writing run is finished before the
-Morning Brief publishes and the two runs never overlap on `index.json`. The
-handover is automatic: `state/learning.json` → `curriculum` flips to `academy-260` on the first
-weekday after day 150. If a two-hour lesson ever fails to finish inside a run, the failed-run rule
-re-teaches the same day; nothing is skipped.
+**The SIE Program starts at 11:28 ET so the Telegram push arrives around noon**: the run takes
+~15–25 minutes (grading, an 8,000-word lesson, a quiz and its answer key) and `notify.py` then waits
+for the page to go live. Its cron carries `CRON_TZ`, so unlike the two UTC routines it does **not** need the
+section B DST bump. It needs the **`sie-inbox` workflow** on `main` (it is scheduled there
+automatically) so Logan's Telegram answers are captured — see section E4.
 
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
 outcome branch, which forced the §15.2b PR fallback on most runs. Leave it unset so runs push
@@ -149,10 +142,11 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
-- **Nov 1, 2026** (fall back, EDT→EST): learning `0 9 * * 1-5` → `0 10 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 9 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
-
-(Learning moved from 6:00 AM ET to **5:00 AM ET** on 2026-09-25 — see A4 and SPEC §0e. The values above are already the post-move ones.)
+- The SIE Program and Learning Brief routines are pinned to `America/New_York` with `CRON_TZ`
+  and are never bumped. (If the Learning Brief was set with a UTC cron instead: `50 8 * * 1-5` →
+  `50 9 * * 1-5` on Nov 1, and back on Mar 14.)
+- **Nov 1, 2026** (fall back, EDT→EST): weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
+- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
 
 One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
 
@@ -172,7 +166,6 @@ If the token leaks or as periodic hygiene:
 
 - **NYSE holiday table** (each December): refresh `data/nyse-holidays.json` from https://www.nyse.com/markets/hours-calendars — holidays and early closes, kept ~3 years ahead.
 - **FOMC calendar** (when the Fed publishes next year's dates, usually mid-year): refresh the committed FOMC meeting dates from federalreserve.gov so calendar sections stay accurate.
-- **Watchlist hygiene** (whenever `site/status.html` shows the same symbol degraded on five consecutive runs): a fund that returns no bar for a week has been delisted or liquidated (FM was, in 2025, and sat in the failed-sources list for weeks). Remove or replace it in `config/watchlists.yml`; the routine picks the change up on the next run.
 
 ---
 
@@ -192,12 +185,7 @@ For any failed run: **claude.ai/code/routines → run list → transcript** is a
 
 ---
 
-## E2. Breaking-news alerts (built 2026-08-16, switched OFF 2026-08-17)
-
-**Off at Logan's request** ("just turn off the alerts, not needed"). The schedule in
-`.github/workflows/breaking-alerts.yml` is commented out; `workflow_dispatch` still works for a manual
-run. To turn it back on, uncomment the cron — nothing else needs to change. The rest of this section
-describes how it behaves when it runs.
+## E2. Breaking-news alerts (built 2026-08-16)
 
 `.github/workflows/breaking-alerts.yml` + `.github/scripts/breaking_alerts.py`, every ~10 minutes.
 **News only** — no market-move alerts, by Logan's instruction. Message is deliberately minimal:
@@ -229,57 +217,47 @@ cadence is nearer 10–25 minutes. For "big news, details in the morning" that i
 matters, port the script to a **Cloudflare Worker** (free tier, 1-minute cron): it is stdlib-only
 and the only pieces to swap are `urllib` → `fetch` and the dedupe file → Workers KV.
 
-## E3. Report audio (built 2026-08-16)
+## E3. Report audio — retired 2026-09-25
 
-`.github/workflows/audio.yml` + `.github/scripts/make_audio.py`, on every push that changes
-`site/reports/index.json`. Uses **edge-tts** (Microsoft read-aloud; free, no key, good neural
-voices) to synthesise the newest report, and publishes the MP3 as a **GitHub Release asset**.
+Removed at Logan's request ("no audio is needed"): `.github/workflows/audio.yml`,
+`.github/scripts/make_audio.py`, the MP3 staging step in `build-site.yml`, the 20-minute MP3 wait
+in `notify.py`, and the listen-to-text / MP3 player in `site/assets/report.js`. Telegram pushes now
+go out as soon as the page is live: `notify.py` polls the page URL until Pages answers 200 (about
+1.5 minutes after the push; up to 7 minutes, then it sends anyway) so the link never opens on a 404.
 
-**Not committed to the repo, deliberately:** three reports a day at ~11 MB is ~12 GB a year, which
-has no business in git history. Release assets are free and outside history.
+Existing `audio-<date>-<slot>` GitHub Releases were left in place (deleting them is irreversible);
+they are unused and can be deleted from the repo's Releases page at any time.
 
-**The URL is predictable**, which is what makes the whole thing work without a commit-back step or
-a race against the page build:
+## E4. SIE Program replies (built 2026-09-25)
 
-```
-https://github.com/shafferusa/intelligence-terminal/releases/download/audio-<date>-<slot>/<date>-<slot>.mp3
-```
+`.github/workflows/sie-inbox.yml` runs `.github/scripts/sie_inbox.py` every ~15 minutes:
 
-`site/assets/report.js` points an `<audio>` element at that URL. If it loads, the reader gets a
-real player — lock screen, background, CarPlay, scrub bar, resume-where-you-left-off, and
-Media Session metadata. If it 404s, the page falls back to the Web Speech reader.
+1. `collect` — `getUpdates` (no offset), keeps only messages from `TELEGRAM_CHAT_ID` that are SIE
+   answers or commands, appends them to `state/sie/inbox.jsonl`.
+2. The workflow commits and pushes the inbox (only when something new arrived).
+3. `confirm` — replies to each message (instant score from `state/sie/quizzes/day-NN.json`, or a
+   command acknowledgement), then confirms the updates with `offset=max+1`.
 
-**Synthesis takes ~9 minutes**, so the audio lands after the Telegram push. The page therefore
-re-probes every 90 seconds for ~12 minutes and upgrades silently — but only while speech is idle,
-never mid-sentence. A reader who opens the report immediately starts on speech and gets swapped to
-real audio a few minutes later, or on any reload.
+Reply formats Logan can use: `SIE 5: BDACA CBDAB`, `SIE 5: 1B 2D 3A`, `SIE exam 2026-10-24`,
+`SIE pause`, `SIE resume`, `SIE stop`, `SIE note …`, `SIE help`.
 
-**Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
-`continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
+| Symptom | Check |
+|---|---|
+| No score reply after answering | Actions → "SIE inbox" run log. Scheduled runs can lag 15–30 min. `workflow_dispatch` it by hand. |
+| Reply says "no answer key on file" | The routine did not write `state/sie/quizzes/day-NN.json` that day — check the SIE run transcript. The noon run still grades from the inbox once a key exists. |
+| Answers older than a day never arrived | Telegram drops unconfirmed updates after 24 h. The Action must be enabled (Actions → SIE inbox → Enable) — GitHub disables scheduled workflows after 60 days without repo activity. |
+| `getUpdates` 409 Conflict | Someone set a webhook on the bot. `deleteWebhook` restores polling. |
 
-**The Learning Brief has no audio at all** (Logan, 2026-09-25): `make_audio.py` exits without
-writing an MP3 whenever the newest index entry's `slot` is `learn`; `notify.py` sends the Telegram
-push at once for those, with nothing to wait on; `report.js` mounts no player — not even the Web
-Speech fallback. The news editions are unchanged and still wait up to twenty minutes
-(`AUDIO_WAIT_SECONDS`) for their MP3. `build-site.yml` stages recent audio newest-first until about
-650 MB is in the deploy (always the three newest); with the Learning Brief never contributing an
-MP3, that budget now covers only the four news editions a day.
+Privacy: the repo is public, so the inbox file is public. Only SIE-formatted messages are stored;
+anything else Logan sends the bot is ignored and never written.
 
-**Voice:** `TTS_VOICE` / `TTS_RATE` env vars in `audio.yml`. Logan's pick (2026-08-16) is
-`en-GB-ThomasNeural` at `+0%` — a UK news-register voice at its natural pace, chosen after comparing
-+8% / 0% / −8% on a real edition. The earlier default (`en-US-AndrewMultilingualNeural` at `+8%`) read a
-newspaper flat and rushed. `edge-tts --list-voices` shows the alternatives.
-
-**Where the phone plays it from:** GitHub Releases serve MP3s as `application/octet-stream` with an
-attachment disposition, which iOS Safari refuses to play inline. So `build-site.yml` stages the most
-recent release MP3s into `site/audio/` at build time (Pages serves them as `audio/mpeg`, same-origin,
-with range requests) and `report.js` tries that URL first. A report older than the staging window falls
-back to the release URL — which works in desktop Chrome and NOT on the iPhone — and then to browser
-speech. If a lesson from last week has the wrong voice, the staging window in `build-site.yml` is why.
+**Egress for SIE fact-checking (recommended):** add `www.finra.org`, `www.irs.gov`, `www.msrb.org`
+and `www.investor.gov` to the environment allowlist (section A3). They were blocked when the program
+was built, so runs verify through WebSearch and `www.sec.gov`, which is slower and less direct.
 
 ## F. Usage notes (Max plan)
 
-- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 3/day weekdays (learning + morning + closing) and 1/day weekends — well under the cap.
+- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 4/day weekdays (learning + morning + closing + SIE) and 2/day weekends (weekend edition + SIE) — well under the cap.
 - Heavy interactive Claude usage on the same plan can starve scheduled runs near limits; if a run is skipped for usage, it will show in the routines run list — regenerate with "run now" once headroom returns.
 
 ---

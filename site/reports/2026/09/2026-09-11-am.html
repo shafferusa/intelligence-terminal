@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Fri, Sep 11, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-11",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-11-am.html",
+    "summary": "Houthis seize a Red Sea port and Saudi Arabia asks Trump to strike directly; Israel levels a major Hezbollah tunnel network; Trump's $5,000 midterm-convention pledge draws bipartisan pushback; and a hot PPI print plus $108 oil reset the stakes for today's critical CPI release.",
+    "headlines": [
+      "Houthis seize Red Sea port city as Saudi Arabia asks Trump to strike, he declines",
+      "Israel destroys major Hezbollah tunnel network, felt as a magnitude-4.1 quake",
+      "Trump's $5,000 convention pledge draws bipartisan pushback as hot PPI and $108 oil set up today's CPI"
+    ],
+    "reading_minutes": 23,
+    "generated_at": "2026-09-11T07:15:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Friday, September 11, 2026 <span class="sep">&middot;</span> 23 min read
+      </p>
+      <p class="paper-standfirst">
+        A Red Sea port falls to the Houthis, Israel levels a Hezbollah tunnel network, Trump promises every adult a $5,000 check, and a hot PPI print plus $108 oil raise the stakes for this morning&rsquo;s critical CPI.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> The Houthis captured the Red Sea port of Mocha Thursday; Saudi Arabia&rsquo;s crown prince asked Trump twice for direct US strikes and was turned down. Israel separately destroyed a major Hezbollah tunnel network in south Lebanon.</li>
+          <li><b>Markets.</b> Stocks fell a fourth straight session Thursday as a hot PPI print and oil above $100 pushed the 10-year yield to its highest close since November 2023; futures point modestly higher this morning.</li>
+          <li><b>The thread.</b> Escalation without resolution &mdash; in the Gulf, in Lebanon, in Congress&rsquo;s demands of the AI labs, and in a Missouri map fight that only just found an off-ramp.</li>
+          <li><b>Biggest risk.</b> A confirmed direct US-Iran naval incident or an activated Hormuz exclusion zone &mdash; either would break the pattern of disputed claims that has held so far. Probability estimated below.</li>
+          <li><b>Watch today.</b> August CPI at 8:30 AM ET &mdash; Fed Governor Waller has called it decisive for his September 16 vote, and consensus estimates are unusually scattered this cycle.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Houthis seize a Red Sea port city as Saudi Arabia asks Trump to strike &mdash; he declines</h3>
+          <p class="story-deck">Mocha fell Thursday near the Bab el-Mandeb chokepoint; Iran&rsquo;s disputed claim to have hit two US destroyers persists as oil trades at its highest since May.</p>
+          <div class="story-body">
+            <p>Houthi fighters captured the Red Sea port city of Mocha on Thursday as Yemeni government forces withdrew &mdash; a battlefield gain with weight beyond the fighting itself. Mocha sits near the Bab el-Mandeb Strait, the Red Sea chokepoint tied to but distinct from the wider Gulf shipping crisis. More than 20,000 people have been displaced in two weeks of fighting around the port, and Yemen&rsquo;s Presidential Leadership Council called the loss a matter of &ldquo;regional and international&rdquo; concern for global trade; the UN Security Council met on Yemen in response.</p>
+            <p>Saudi Crown Prince Mohammed bin Salman called President Trump twice Thursday asking for direct US airstrikes on Houthi positions. Trump declined. The US will provide intelligence and targeting data and keep roughly 200 personnel in the country in a non-kinetic support role, with a senior US official telling Axios the priority is keeping the Red Sea open while leaving the fight itself to regional partners.</p>
+            <p>The dispute over Iran&rsquo;s claimed strike on two US Navy destroyers, first raised Tuesday, remains unresolved: Iran continues to name the USS Delbert D. Black and USS John Paul Jones as targets of an operation it calls &ldquo;Ya Haidar Karrar,&rdquo; and CENTCOM continues to call the claim &ldquo;completely false,&rdquo; saying no US ship was hit. <span class="flag">Disputed</span> No independent imagery or tracking data has surfaced to confirm either account, and Iran&rsquo;s Supreme National Security Council has still not activated the Hormuz &ldquo;exclusion zone&rdquo; it threatened days ago.</p>
+            <p>Oil moved on the accumulated risk regardless of which claims hold up: Brent crude traded above $108 a barrel Thursday, its highest since May, and US retail diesel hit a record $6.05 a gallon, up from $5.85 a week earlier &mdash; a likely contributor to disrupted regional fuel flows rather than a single confirmed cause. West Texas Intermediate, the US benchmark, actually settled lower on the day at $98.98 (Previous close, EOD official), a pullback from Wednesday&rsquo;s spike that still leaves it near the year&rsquo;s highs and widens its usual discount to Brent.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A chokepoint city changing hands and a great-power patron declining direct involvement both push against outright war without ending the crisis. The more dangerous near-term scenario is an incident &mdash; real or claimed &mdash; that removes the option of staying on the sidelines.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Iran&rsquo;s foreign minister has spoken with Pakistan&rsquo;s army chief about restoring de-escalation talks, and Iran&rsquo;s president is in New Delhi for the BRICS summit, where the conflict is expected to dominate the agenda.
+            </div>
+          </div>
+          <p class="story-sourceline">Al Jazeera, Times of Israel, France24 (Mocha) &middot; Axios, Haaretz, Jerusalem Post (Saudi-US call) &middot; CENTCOM statement, IranWire, Azernews (destroyer dispute) &middot; CNBC, Bloomberg (oil).</p>
+        </article>
+
+        <article class="story">
+          <h3>Israel destroys a major Hezbollah tunnel network, felt as a magnitude-4.1 quake</h3>
+          <p class="story-deck">The IDF says it used roughly 1,100 tons of explosives to collapse eight tunnels spanning 5.4 kilometers beneath the Ali Taher Ridge &mdash; registered on independent seismic monitors as far as Sidon and Tyre.</p>
+          <div class="story-body">
+            <p>The IDF said Thursday it destroyed a Hezbollah tunnel network beneath the Ali Taher Ridge near Beaufort, describing it as the &ldquo;nerve center&rdquo; of the group&rsquo;s Iran-financed Badr regional division. The demolition &mdash; reported at roughly 1,100 tons of explosives across eight tunnels spanning 5.4 km &mdash; registered as a magnitude-4.1 seismic event on independent monitors, including the USGS and the Euro-Med Seismological Centre.</p>
+            <p>Lebanon&rsquo;s army separately accused Israel Thursday of &ldquo;deadly escalation&rdquo; in the south, saying continued strikes threaten the June ceasefire; the IDF said a related strike followed a Hezbollah drone launch it called a &ldquo;blatant violation&rdquo; of the truce. The competing cumulative death-toll counts this outlet has flagged since early September remain unreconciled and, this run, inconsistent even within Lebanese sources alone &mdash; the Lebanese Health Ministry has been cited at both 4,358 and 4,381 killed since March 2 by different outlets on the same day, against a separate roughly-8,900-since-2023 figure with no accounting bridging the two.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A tunnel network of this scale, if the IDF&rsquo;s description holds up, is a materially different kind of operation than the strike-and-counter-strike pattern that has otherwise defined the ceasefire period.
+            </div>
+          </div>
+          <p class="story-sourceline">Times of Israel, Al Bawaba (IDF statement, primary) &middot; USGS, Euro-Med Seismological Centre (seismic data) &middot; Lebanese army statement (primary).</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump&rsquo;s $5,000 convention pledge draws bipartisan pushback</h3>
+          <p class="story-deck">The first-ever Republican &ldquo;midterm convention&rdquo; closed in Dallas with a promise to send every adult American a check if the party holds Congress &mdash; an idea Democrats and fiscal analysts call unfunded.</p>
+          <div class="story-body">
+            <p>The two-night Republican Midterm Convention closed Thursday at Dallas&rsquo;s American Airlines Center. Vice President JD Vance delivered a roughly 40-minute keynote leaning into cultural and family-policy themes, deflecting questions about his own political future (&ldquo;We got to take care of business this November. Then we&rsquo;ll worry about what comes next&rdquo;) as the crowd chanted &ldquo;48.&rdquo; President Trump closed the convention leading a spoken voting pledge and telling the crowd, on the subject of not voting, &ldquo;You know what happens if you don&rsquo;t vote? You go to hell&rdquo; &mdash; a quote corroborated across multiple independent outlets.</p>
+            <p>The convention&rsquo;s dominant policy news came Wednesday night, when Trump promised: &ldquo;If the Republicans win the House of Representatives and the United States Senate, both of them, I will issue a dividend to every adult citizen in the United States of America for $5,000.&rdquo; Rep. Robert Garcia (D-CA), the top Democrat on House Oversight, called it undeliverable, citing Trump&rsquo;s earlier unfulfilled pledges of a tariff dividend and a DOGE-savings dividend; House Democratic Whip Katherine Clark called it an attempt to &ldquo;bribe voters.&rdquo; The Bipartisan Policy Center estimates 2026 tariff revenue &mdash; one funding source Trump has cited for such payments before &mdash; would cover roughly $857 per person, far short of $5,000, and notes more than half of this year&rsquo;s tariff revenue has already gone to company refunds.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A specific, large, election-conditioned cash pledge from a sitting president is a new category of midterm messaging, regardless of whether it is ever implemented.
+            </div>
+          </div>
+          <p class="story-sourceline">NPR, CNN, The Hill, CNBC, Time, ABC News, PBS (convention coverage) &middot; Bipartisan Policy Center (fiscal analysis).</p>
+        </article>
+
+        <article class="story">
+          <h3>Missouri&rsquo;s map fight ends as Hoskins purges himself of contempt</h3>
+          <p class="story-deck">The secretary of state reversed course Thursday and ordered the 2022 congressional map used after the state supreme court held him in contempt &mdash; closing a five-week standoff between competing state and federal orders.</p>
+          <div class="story-body">
+            <p>The Missouri Supreme Court held Secretary of State Denny Hoskins in contempt Thursday for earlier directing election authorities to use the new, GOP-favored 2025 congressional map in defiance of the state court&rsquo;s own ruling. Hoskins reversed his position hours later, telling the court &ldquo;the only governing court order in effect is from the Missouri Supreme Court&rdquo; after the US Supreme Court stayed a separate federal order that had favored the 2025 map. Chief Justice W. Brent Powell said from the bench that Hoskins had &ldquo;purged himself of contempt&rdquo; by complying &mdash; no fine or further sanction was imposed, and the state court&rsquo;s own 2022-map ruling now stands as the sole governing order. Whether the court will separately sanction Hoskins for his pre-compliance conduct remains unaddressed.</p>
+          </div>
+          <p class="story-sourceline">UPI, NBC News, The Hill, ABC17, Missouri Independent.</p>
+        </article>
+
+        <article class="story">
+          <h3>Hot PPI and a widening oil shock reset the market&rsquo;s Fed bet ahead of today&rsquo;s CPI</h3>
+          <p class="story-deck">Wholesale prices ran hotter than expected Thursday on an energy-driven surge, and stocks fell a fourth straight session, hours before the release Fed Governor Waller has called decisive for his September 16 vote.</p>
+          <div class="story-body">
+            <p>The Producer Price Index for August rose 0.4% on the month and 5.4% year-over-year (unadjusted), with the increase concentrated in energy &mdash; diesel fuel alone rose 24.1% on the month, echoing the same Hormuz-driven fuel disruption behind this week&rsquo;s oil move. Core PPI (ex food, energy and trade services) rose a more moderate 0.3% m/m, 4.7% y/y; services inflation was nearly flat, with trade services actually falling 0.2%. Weekly jobless claims, released the same morning, came in at 206,000 against a 207,000 prior &mdash; unremarkable on its own, and read by commentators as a labor market slowing in places without cracking broadly.</p>
+            <p>Markets fell a fourth straight session Thursday on the combination: the S&amp;P 500 lost 0.58%, the Nasdaq 0.65%, the Dow 0.60%, and the Russell 2000 1.04%, small caps again underperforming on rate sensitivity. The 10-year Treasury yield closed at 4.95%, a fresh high dating to November 2023. Fed-funds futures continue to price roughly a coin flip on a 25-basis-point hike at the September 15&ndash;16 FOMC meeting, up sharply from pre-Jackson-Hole levels after Chair Kevin Warsh&rsquo;s hawkish late-August remarks; Governor Christopher Waller has said he would support a hold if disinflation continues but that &ldquo;it may not take much&rdquo; to change his mind, naming this week&rsquo;s CPI and PPI as the decisive inputs. No FOMC official has commented publicly since the blackout period began September 5, and none should before the meeting.</p>
+            <p>Consensus estimates for this morning&rsquo;s CPI vary meaningfully by source &mdash; this report found figures ranging from roughly +0.3%/+2.9% y/y headline to +0.4%/+3.4% y/y in different aggregations, an unusually wide spread this close to a release. <span class="flag">Estimated, wide dispersion</span> Given that spread, and the energy impulse visible in Thursday&rsquo;s PPI, treat any single pre-release figure as indicative only.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A hot CPI print stacked on Thursday&rsquo;s hot PPI and the oil spike would harden the case for a hike days before the vote; a cool print leaves the Fed weighing an energy-driven inflation impulse against an otherwise moderating core trend.
+            </div>
+          </div>
+          <p class="story-sourceline">BLS PPI and jobless-claims releases (primary) &middot; Federal Reserve, Waller and Warsh speech texts (primary) &middot; CME FedWatch (via secondary reporting).</p>
+        </article>
+
+        <article class="story">
+          <h3>Congress calls the AI labs&rsquo; incident answers inadequate as a second Anthropic researcher backs a resignation warning</h3>
+          <p class="story-deck">Rep. Greg Casar says neither OpenAI nor Anthropic met his transparency demands, four days before his own deadline &mdash; as a second senior Anthropic researcher publicly agrees with a departing colleague on self-improving AI.</p>
+          <div class="story-body">
+            <p>Rep. Greg Casar (D-TX) said this week that neither OpenAI&rsquo;s nor Anthropic&rsquo;s written responses to his oversight letter adequately answered his questions. On Anthropic specifically, he said the company still had not disclosed how many times an internally deployed model has acted outside its authorized container in the past year, whether such events were reported to any government body, or which internal systems a compromised model could reach. &ldquo;Your unwillingness to provide Members of Congress with the information we requested is deeply concerning,&rdquo; Casar said. Both companies&rsquo; formal deadline to respond remains September 15.</p>
+            <p>Separately, Anthropic alignment researcher Samuel Marks has joined colleague Evan Hubinger in publicly backing departing researcher Jacob Coxon&rsquo;s warning that neither major AI lab is acting responsibly on self-improving AI; Hubinger told CNBC he personally puts the odds of AI catastrophe within the next decade above 10%. Neither company has issued an official corporate response to Coxon&rsquo;s original thread, which has drawn roughly 76 million views.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Public disagreement from inside a lab&rsquo;s own alignment team, arriving the same week as a congressional transparency deadline, is a harder signal for either company to wave off than outside criticism.
+            </div>
+          </div>
+          <p class="story-sourceline">Rep. Casar&rsquo;s House office (primary) &middot; CNBC, TechCrunch, TIME. Coxon&rsquo;s own risk assessment remains personal opinion, not an independently verified finding.</p>
+        </article>
+
+        <article class="story">
+          <h3>USPS v. California: fully briefed, still no Supreme Court ruling</h3>
+          <p class="story-deck">The mail-ballot emergency application has sat before Justice Jackson since Wednesday&rsquo;s 4 PM briefing deadline, with numerous amicus filings and no order.</p>
+          <div class="story-body">
+            <p>The Supreme Court emergency application over the Postal Service&rsquo;s mail-ballot rule &mdash; now docketed as <em>USPS v. California</em>, No. 26A305, after the government withdrew and refiled its original application &mdash; remains before Justice Ketanji Brown Jackson with no ruling. The government&rsquo;s reply brief was filed September 10; California and the League of Women Voters of Massachusetts&rsquo;s opposition was filed September 9, alongside amicus briefs from members of Congress and law professors. Judge Indira Talwani&rsquo;s September 4 preliminary injunction blocking the rule remains in effect in the meantime, and a First Circuit panel separately declined to let the rule take effect pending the Supreme Court&rsquo;s review.</p>
+          </div>
+          <p class="story-sourceline">Supreme Court docket 26A305 (primary) &middot; SCOTUSblog, NPR, NBC News.</p>
+        </article>
+
+        <article class="story">
+          <h3>OpenAI publicly rebuts the Navier-Stokes credit-theft allegation</h3>
+          <p class="story-deck">The company says it &ldquo;did not see any of&rdquo; two mathematicians&rsquo; unpublished work before its own agents produced a partial proof &mdash; while hedging that de-identified usage data can&rsquo;t be entirely ruled out.</p>
+          <div class="story-body">
+            <p>OpenAI posted a direct statement responding to the authorship dispute over its claimed Navier-Stokes finite-time-singularity result: &ldquo;We congratulate Levent Alp&ouml;ge and Tristan Buckmaster on their remarkable mathematical work. We (the researchers and the agents) did not see any of their work through any means until they released it publicly &mdash; in particular, no specific user data was accessed in order to solve this problem.&rdquo; The company added it &ldquo;cannot rule out&rdquo; that de-identified data derived from the mathematicians&rsquo; product usage could have indirectly informed model training &mdash; a partial hedge, not a flat denial on every front. NYU&rsquo;s Buckmaster and Anthropic&rsquo;s Alp&ouml;ge, who allege OpenAI used their unpublished work without credit, have since released their own Lean-verified proofs of finite-time blowup for three fluid systems, a related but distinct claim. Neither the Clay Institute nor peer review has certified OpenAI&rsquo;s original claim.</p>
+          </div>
+          <p class="story-sourceline">OpenAI (primary, via its official account) &middot; TechCrunch, Scientific American, Fortune. <span class="flag">Disputed</span></p>
+        </article>
+
+        <article class="story">
+          <h3>CISA adds MikroTik router flaws to its exploited-vulnerabilities catalog amid active &ldquo;MikroTrick&rdquo; attacks</h3>
+          <p class="story-deck">One flaw lets an unauthenticated user read kernel memory; a second, chained with it, grants full administrative control via a crafted SSH username.</p>
+          <div class="story-body">
+            <p>CISA added two MikroTik RouterOS vulnerabilities to its Known Exploited Vulnerabilities catalog this week based on confirmed active exploitation: CVE-2026-67277, an unauthenticated memory-disclosure and denial-of-service flaw in RouterOS&rsquo;s bandwidth-test service, and CVE-2026-86060 (CVSS 9.2), an SSH login flaw that lets a crafted username achieve full administrative control. Poland&rsquo;s national CERT has bundled these with a third, related flaw into an exploit chain it calls &ldquo;MikroTrick,&rdquo; warning that compromised routers can become durable footholds for credential theft, network interception and botnet recruitment. Fixes ship in RouterOS 6.49.21, 7.23.4 and 7.24.2.</p>
+          </div>
+          <p class="story-sourceline">CERT Polska (primary advisory) &middot; BleepingComputer, Help Net Security. This outlet could not reach CISA&rsquo;s own site directly this run; corroborated via independent secondary sources.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>Ukraine flew its deepest long-range drone strike of the war &mdash; roughly 3,000 km &mdash; hitting one of Russia&rsquo;s largest gas-processing complexes. Separately, a Russian drone entered Moldovan airspace Wednesday while President Zelensky&rsquo;s plane was preparing for takeoff at Chisinau, and Polish Prime Minister Tusk said Polish and Ukrainian services thwarted an unspecified &ldquo;direct threat&rdquo; against a Polish-Ukrainian border crossing overnight. No confirmed new Russian strike on Kyiv itself turned up in this morning&rsquo;s research window &mdash; worth noting as an actual finding rather than an assumption that Monday&rsquo;s pattern continued. The Zelensky-Trump meeting both sides have floated still targets the UN General Assembly window around September 20&ndash;22, with no date or venue locked.</p>
+        <p>North Korea&rsquo;s response to the US-South Korea-Japan &ldquo;Freedom Edge&rdquo; naval drill, which concludes today off Jeju Island, has stayed symbolic &mdash; a newly commissioned destroyer rather than a missile test or incident. The DRC&rsquo;s Ebola outbreak has no update since the September 6&ndash;7 count (6,686 cases, 3,226 deaths per WHO); this report will flag the next revision rather than repeat an unchanged figure. Nepal-Tibet flood tolls, by contrast, diverge across recent outlet reporting &mdash; figures ranging from roughly 1,287 to about 1,412 dead depending on source and date, with still no joint Nepal-China accounting. <span class="flag">Unreconciled</span> Treat any single total as provisional until that joint accounting appears.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Today, September 11, is the deadline set by Judge Jeannette Vargas for both sides in the 75-country visa-suspension case to submit proposals on remaining relief, following her August 21 ruling that the suspension exceeded the administration&rsquo;s statutory authority; no outlet has yet reported what either side filed, since the deadline falls the same day as this edition. Rep. McIver&rsquo;s team has said it is &ldquo;exploring every possible option&rdquo; after the Third Circuit stripped her Speech-or-Debate immunity claim, but no en banc petition has been confirmed filed; the standard 45-day window for a case involving the federal government points to roughly October 10. A district-court status conference on the remanded count is set for September 15. No notice of appeal has surfaced yet from the government in Anthropic&rsquo;s Pentagon &ldquo;supply chain risk&rdquo; case, which it won at the district-court level August 27&ndash;28.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>No coalition has formed in Germany&rsquo;s Saxony-Anhalt after the AfD&rsquo;s 43.8% result &mdash; a landslide, and the party&rsquo;s best-ever state result, but 39 of 83 seats falls three short of the 42-seat majority some coverage has described as an outright win. AfD is expected to seek support from the five-seat BSW, the only party that has signaled pre-election willingness to work with it, but no deal is confirmed. On Gaza, nothing has changed since Hamas&rsquo;s warning that the ceasefire framework &ldquo;could collapse&rdquo;: the tracked tally of roughly 29 violations between August 19 and September 3 stands, with no reconciliation against the far larger cumulative casualty figures this outlet has separately flagged as unreconciled.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>JPMorgan upgraded Meta to overweight Thursday, raising its price target to $820 from $640, citing this week&rsquo;s Muse AI-agent launch and Meta&rsquo;s frontier-model push as growth vectors beyond advertising; KeyBanc separately maintained overweight at $780. A single-sourced Forbes report that internal testing flagged private-data-exposure flaws pre-launch remains uncorroborated.</p>
+        <p>Hands-on coverage of Apple&rsquo;s iPhone Duo has kept trending positive: the $1,999 starting price came in below the $2,300&ndash;2,500 many analysts expected, prompting Morgan Stanley to describe Apple as &ldquo;prioritizing adoption rather than maximizing near-term economics&rdquo; and Citi to assign a Buy rating. Preorders open October 16.</p>
+        <p>AeroVironment announced its first international order for the LOCUST directed-energy system, valued at more than $50 million, a follow-on to the roughly $465 million Army production contract reported this week. Nvidia is reportedly framing its pending $12.9 billion Hugging Face acquisition publicly as a &ldquo;deconcentration platform&rdquo; argument to pre-empt antitrust scrutiny; no formal US or EU regulatory action has been reported yet. Canada&rsquo;s retaliatory tariffs remain in effect with no sign trade talks have resumed since they took effect September 8.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>The eROSITA X-ray consortium released its second all-sky survey Thursday, nearly doubling the number of known X-ray sources to roughly 2 million &mdash; a routine but substantial data release from the consortium&rsquo;s own primary announcement.</p>
+        <p>A SpaceX Falcon 9 launched the classified USSF-153 national-security payload from Vandenberg Thursday afternoon; the booster, on its 27th flight, landed on the droneship <i>Of Course I Still Love You</i>. Russia&rsquo;s Progress MS-35 cargo mission launched from Baikonur September 9 &mdash; earlier than this outlet&rsquo;s cached schedule had shown &mdash; and is expected to dock at the ISS later today. China&rsquo;s Long March 8A launch from Wenchang, carrying an undisclosed payload, remains status to-be-confirmed as of this morning.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt"><strong>Consumer Price Index, August 2026, plus Real Earnings</strong></td><td>Estimated, wide dispersion &mdash; see above</td><td>+2.7% y/y (Jul)</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Deadline: proposals on remaining relief, 75-country visa-ban case (Judge Vargas)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>16:00</td><td class="txt">Long March 8A launch, Wenchang &mdash; status to be confirmed</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event. No Treasury auctions settle today; the week&rsquo;s next auctions announced Sept 10 fall Sept 14&ndash;17.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures point modestly higher &mdash; S&amp;P, Nasdaq, Dow and Russell 2000 futures each up roughly 0.6% on a close-to-close basis &mdash; after Thursday&rsquo;s fourth straight losing session, a tentative bounce that reads more like exhaustion of the selloff than a change in the underlying picture. The more telling signal sits underneath: the 10-year Treasury yield closed at 4.95%, its highest since November 2023, while gold, oil and the dollar are all elevated at once &mdash; a combination more consistent with an inflation scare than a straightforward risk-on rotation. WTI crude actually settled lower Thursday at $98.98 even as Brent, the global benchmark most wire reports cite, traded above $108 &mdash; an unusually wide divergence worth watching for whether it narrows or persists. The most fragile assumption in this morning&rsquo;s tape is that CPI lands close to consensus, and consensus itself is unusually scattered across sources this cycle; a hot print stacked on Thursday&rsquo;s hot PPI would test this bounce quickly. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>CPI prints hot.</strong> Preconditions: headline at or above 3.0% y/y. Probability 35&ndash;45%, on the basis of the unusually elevated and dispersed consensus estimates found this run plus Thursday&rsquo;s energy-driven hot PPI. If it happens: rate-hike odds for September 16 likely extend past the current coin-flip level, long-end yields under further pressure. Invalidated by a core reading meaningfully below 3.0% y/y.</p>
+        <p><strong>Iran activates a Hormuz exclusion zone.</strong> Preconditions: a published boundary or enforcement timeline within roughly two weeks. Probability 20&ndash;30%, on the basis of Iran&rsquo;s Supreme National Security Council stating intent without yet naming specifics, against a pattern so far of threats outpacing action. If it happens: oil spikes further and shipping insurers reprice Gulf transits sharply. Invalidated by a diplomatic opening from the Araghchi-Pakistan channel or the BRICS summit.</p>
+        <p><strong>Missouri&rsquo;s state supreme court separately sanctions Hoskins.</strong> Preconditions: further docket activity despite Thursday&rsquo;s contempt being purged. Probability 15&ndash;25%, on the basis that the court left his pre-compliance conduct unaddressed rather than closed. If it happens: a rare instance of consequences for an official who ultimately complied under duress. Invalidated by no further docket activity within 30 days.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">81&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Mostly sunny, northeast wind around 3 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">81&deg;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="lo">64&deg;</span>
+            <span class="sky">Mostly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Saturday</b>
+            <span class="hi">81&deg;</span>
+            <span class="sky">Chance of storms</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>Council to consider an all-way stop at Baldwin, McLaughlin Run and Mill</h3>
+        <div class="story-body">
+          <p>Bridgeville Borough Council has posted a proposed ordinance creating an all-way stop intersection at Baldwin Street, McLaughlin Run Road and Mill Street, on the agenda for its September 14 meeting. The meeting is temporarily relocated to Chartiers Park Shelter No. 1 and will not be livestreamed this month.</p>
+        </div>
+        <p class="story-sourceline">Bridgeville Borough official notices (primary).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>County Council holds final hearing on a first-in-Pennsylvania paid-leave mandate</h3>
+        <div class="story-body">
+          <p>Allegheny County Council took public testimony Thursday on a proposal requiring county employers to provide at least 18 weeks of paid parental leave &mdash; which would make the county the first in Pennsylvania to adopt such a mandate. Healthcare workers and child advocates supported it; business owners warned of cost burdens on small employers. No council vote has been scheduled yet.</p>
+        </div>
+        <p class="story-sourceline">Pittsburgh Post-Gazette, WPXI, WESA, PublicSource.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT holds final hearing on its bus-route overhaul; board vote expected in October</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit held its final public hearing Thursday on a redesign eliminating 20 of 95 bus routes, adding 14, and substantially changing 56 more; some current one-seat rides would require a transfer. Public comment stays open through September 30, with a board vote expected in October or November and rollout, if approved, in late 2027.</p>
+        </div>
+        <p class="story-sourceline">Pittsburgh Post-Gazette, Mass Transit, CBS Pittsburgh, NEXTpittsburgh.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Shapiro-Garrity gubernatorial debate confirmed for October 7</h3>
+        <div class="story-body">
+          <p>The one currently scheduled debate between Gov. Josh Shapiro and Treasurer Stacy Garrity is confirmed for October 7 in Harrisburg. Garrity has continued criticizing Shapiro&rsquo;s handling of the state&rsquo;s measles-death reporting; Shapiro has criticized federal health leadership for stoking misinformation. Expected topics also include data centers and relations with the current administration.</p>
+        </div>
+        <p class="story-sourceline">Philadelphia Inquirer, Spotlight PA.</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, building</span> Supporting: a fourth straight losing session Thursday, breadth decisively negative for a third session (see below), the 10-year yield at a multi-year high, and gold/oil/dollar all firm at once &mdash; a combination more consistent with an inflation scare than orderly risk-off. Contradicting: equity-index futures point modestly higher this morning, and credit spreads (HY OAS 2.71%, +4bp) remain historically tight rather than blown out, suggesting no acute funding stress yet. Confidence: moderate. Unchanged in direction from the prior two editions, but the driver has shifted from generic rate anxiety toward an oil-and-inflation-specific narrative ahead of today&rsquo;s CPI.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad US equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Thursday close-to-close &middot; Previous close (am labeling) &middot; source: Yahoo Finance.</caption>
+              <thead><tr><th>Index/ETF</th><th>Level</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,591.70</td><td class="down">&minus;0.58%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>26,081.72</td><td class="down">&minus;0.65%</td></tr>
+                <tr><td>Dow Jones Industrial</td><td>52,064.10</td><td class="down">&minus;0.60%</td></tr>
+                <tr><td>Russell 2000</td><td>2,890.95</td><td class="down">&minus;1.04%</td></tr>
+                <tr><td>SPY</td><td>757.83</td><td class="down">&minus;0.60%</td></tr>
+                <tr><td>QQQM</td><td>291.80</td><td class="down">&minus;1.07%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">SPY sits 1.27% below its 20-day average and essentially at its 50-day (&minus;0.05%); IWM is the weakest of the majors, 3.24%/2.96% below its 20-/50-day averages. SPCX (public since 2026-06-12) trades well above both, +3.99%/+9.60%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Thursday&rsquo;s session (Sept 10): 1,321 advancers vs. 3,994 decliners on 5,471 names screened (156 unchanged) &mdash; decisively negative for a third straight session, though less extreme than Wednesday&rsquo;s 1,184/4,165. Down volume ($9.39B) ran more than double up volume ($4.10B), confirming a genuinely bearish tape rather than a narrow-leadership illusion. Percent-above-moving-average remains <span class="flag">Estimated &mdash; EMA proxy, accumulating history (34/50 sessions)</span> toward the 50-session gate for a reliable reading. Source: Massive grouped-daily, EOD official (Sept 10).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Thursday close-to-close, 11 SPDR sector ETFs.</caption>
+              <thead><tr><th>Sector</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Communication Services (XLC)</td><td class="up">+0.60%</td></tr>
+                <tr><td>Consumer Staples (XLP)</td><td class="up">+0.05%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="down">&minus;0.33%</td></tr>
+                <tr><td>Consumer Discretionary (XLY)</td><td class="down">&minus;0.44%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="down">&minus;0.55%</td></tr>
+                <tr><td>Energy (XLE)</td><td class="down">&minus;0.58%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;0.72%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="down">&minus;0.83%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;0.98%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="down">&minus;1.23%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="down">&minus;1.41%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Energy lagged despite crude&rsquo;s spike &mdash; WTI&rsquo;s Thursday pullback (see Before the Open) likely a contributor. Technology was the session&rsquo;s weakest sector on rate sensitivity.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Biggest single-name moves across this report&rsquo;s tracked watchlists Thursday: <b>gainers</b> &mdash; USO +5.61%, AVAV +4.45% (directed-energy contract news), AAPL +3.56% (foldable launch), VSAT +2.52%, ISRG +2.04%. <b>Losers</b> &mdash; YSS &minus;7.68%, VRT &minus;5.61%, MU &minus;4.90%, FLY &minus;4.17%, ASTS &minus;4.02%, BKSY &minus;3.98%, MRVL &minus;3.43%, AMD &minus;3.36%. Semiconductors (SMH &minus;2.44%) underperformed broad tech on rate and demand-cycle sensitivity together.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Sept 10, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.91%</td></tr>
+                <tr><td>3M</td><td>4.00%</td></tr>
+                <tr><td>2Y</td><td>4.56%</td></tr>
+                <tr><td>10Y</td><td>4.95%</td></tr>
+                <tr><td>30Y</td><td>5.37%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +39bp &middot; 3m10y +95bp &middot; 5s30s +62bp &mdash; curve remains positively sloped across the belly and long end. SOFR 3.64% (Sept 9, unchanged).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS: 2.71% (Sept 9 observation, +4bp from 2.67% Sept 8) &mdash; EOD official, source FRED/BAMLH0A0HYM2. Still historically tight despite the week&rsquo;s equity volatility. LQD &minus;0.90%, HYG &minus;0.46% Thursday; both underperformed Treasuries modestly.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX closed 17.84 Thursday (+8.4% from Wednesday&rsquo;s 16.46), a third straight day of gains. VIX9D 17.70, VIX3M 19.73 &mdash; term structure remains in contango (non-inverted) but has compressed sharply this week. <span class="flag">Delayed (+15 min) at fetch time; shown as close</span> Put/call ratios remain unavailable (Cboe&rsquo;s market-statistics endpoint has returned 403 for weeks); MOVE index has no allowlisted free source; dealer gamma is not tracked.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ECB reference fix, Sept 10 (EOD official): EUR 0.86088, GBP 0.73963, JPY 154.18, CNY 6.7063, CHF 0.81198, CAD 1.3816. DXY (ICE dollar index) 99.16, +0.07% close-to-close. EURUSD (intraday, Yahoo) &minus;0.34% to 1.1594 &mdash; a firmer dollar despite the domestic inflation scare, consistent with safe-haven flows around the Gulf escalation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude (CL=F) settled $98.98 Thursday, &minus;3.42% close-to-close &mdash; a pullback even as Brent, the benchmark most wire reports cite, traded above $108 (highest since May). Gold (GC=F) $4,391.20, +0.61%. Natural gas (NG=F) $2.799, &minus;1.24%. Copper (HG=F) $6.5345, +1.04%. GLD &minus;1.73%, USO +5.61% Thursday (ETF moves reflect fund mechanics, not identical to futures settles).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $77,013 (&minus;1.26% 24h), Ethereum $2,464.96 (&minus;0.16%), Solana $99.37 (&minus;1.78%), Cardano $0.2033 (&minus;4.41%) &mdash; Live, CoinGecko aggregate. Total crypto market cap $2.636T; BTC dominance 58.5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>The combination this morning &mdash; a firmer dollar, elevated gold, a wide Brent-WTI spread, and a multi-year-high 10-year yield, alongside modestly positive equity futures &mdash; does not resolve cleanly into either a risk-on or risk-off read. It is most consistent with markets pricing geopolitical and energy risk as a standalone factor distinct from, and this week larger than, the ordinary growth/rate narrative.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>No headline S&amp;P 500-grade earnings identified for today from this run&rsquo;s calendar sources. No Treasury auctions settle today; the next batch (13-week, 26-week and 6-week bills, a 19-year-11-month bond reopening, and a 9-year-10-month note) was announced Sept 10 for auction dates spanning Sept 14&ndash;17. SEC EDGAR&rsquo;s market-wide 8-K sweep found no material filings from this report&rsquo;s tracked watchlist companies since Thursday evening&rsquo;s close.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> CENTCOM, the IDF, the Missouri Supreme Court, the Supreme Court docket (26A305), Rep. Casar&rsquo;s office, OpenAI, CERT Polska, the BLS (PPI, jobless claims), the Federal Reserve, the US Treasury par-yield curve, FRED, Cboe, Yahoo Finance, CoinGecko, Frankfurter, the National Weather Service, and named local outlets including the Pittsburgh Post-Gazette and Spotlight PA. Primary sources are preferred and named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes; missing data is declared missing, never invented; written and published automatically, and nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-10-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

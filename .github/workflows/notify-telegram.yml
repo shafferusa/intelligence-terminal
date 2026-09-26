@@ -15,7 +15,17 @@ name: Notify Telegram on direct publish
 #
 # PR-path publishes never reach this workflow -- their merge commits are made
 # with GITHUB_TOKEN, which does not trigger push events; build-site.yml
-# notifies for that path instead. The two are mutually exclusive.
+# notifies for that path instead.
+#
+# This (direct-push) path is correctly scoped: the paths filter means it only
+# fires when an edition actually changes site/reports/index.json. The bug was on
+# the OTHER path: build-site.yml's workflow_run notify job fired for EVERY
+# auto-merged claude/* PR and re-announced the latest edition, so any non-report
+# PR merge produced a duplicate brief. Fixed 2026-09-25 by (a) narrowing
+# publish-report.yml to auto-merge only routine PRs (run-commit title, write-set
+# paths only) and (b) gating build-site.yml's notify job on the merged PR having
+# changed index.json. So the two senders stay exclusive per real edition -- by
+# construction now, not by assumption.
 
 on:
   push:
@@ -32,10 +42,9 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    # notify.py holds the push for up to 20 min waiting on the report MP3, so
-    # this job is mostly spent idling on purpose. The cap sits above that wait
-    # so the timeout can only ever fire on a genuine hang.
-    timeout-minutes: 55
+    # Report audio (and the 20-min MP3 wait) was retired 2026-09-25; the send is
+    # immediate, so any run this long is a genuine hang.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -43,8 +52,4 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-          # Read-only, and only for the releases API the audio wait polls.
-          # Runners share public IPs, so the anonymous 60/hour limit is not
-          # ours alone to spend.
-          GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/notify.py

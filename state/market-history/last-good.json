@@ -1,1227 +1,279 @@
 {
- "fetched_at": "2026-09-09T16:50:00-04:00",
+ "fetched_at": "2026-09-25T20:47:00Z",
  "treasury_par_curve": {
-  "date": "2026-09-09",
-  "1M": 3.81,
-  "3M": 3.95,
-  "2Y": 4.43,
-  "3Y": 4.49,
-  "5Y": 4.61,
-  "7Y": 4.71,
-  "10Y": 4.83,
-  "20Y": 5.28,
-  "30Y": 5.28
+  "as_of": "2026-09-25 EOD official",
+  "curve": {
+   "1M": 4.04,
+   "1.5M": 4.14,
+   "2M": 4.20,
+   "3M": 4.24,
+   "4M": 4.32,
+   "6M": 4.33,
+   "1Y": 4.50,
+   "2Y": 4.81,
+   "3Y": 4.94,
+   "5Y": 4.98,
+   "7Y": 5.06,
+   "10Y": 5.17,
+   "20Y": 5.54,
+   "30Y": 5.49
+  },
+  "2s10s_bp": 36,
+  "3m10y_bp": 93,
+  "5s30s_bp": 51,
+  "note": "Fresh Sept 25 EOD curve, fetched ~4:35pm ET after Treasury's afternoon post. Genuine twist vs Sept 24: 2Y-7Y eased (2Y -6bp, 5Y -5bp, 10Y -1bp) while 20Y/30Y rose (+1bp/+2bp) to fresh multi-decade highs. No auction today."
  },
  "fred": {
-  "CPIAUCSL": {
-   "date": "2026-07-01",
-   "value": 332.813
-  },
-  "CPILFESL": {
-   "date": "2026-07-01",
-   "value": 336.789
-  },
-  "PAYEMS": {
-   "date": "2026-08-01",
-   "value": 159075
-  },
-  "ICSA": {
-   "date": "2026-08-29",
-   "value": 206000
-  },
-  "UNRATE": {
-   "date": "2026-08-01",
-   "value": 4.1
-  },
-  "T10Y2Y": {
-   "date": "2026-09-08",
-   "value": 0.41
-  },
-  "DGS2": {
-   "date": "2026-09-08",
-   "value": 4.39
-  },
-  "DGS10": {
-   "date": "2026-09-08",
-   "value": 4.8
-  },
-  "T10YIE": {
-   "date": "2026-09-08",
-   "value": 2.37
-  },
-  "DFII10": {
-   "date": "2026-09-08",
-   "value": 2.43
-  },
-  "SOFR": {
-   "date": "2026-09-08",
-   "value": 3.64
-  },
-  "BAMLH0A0HYM2": {
-   "date": "2026-09-08",
-   "value": 2.67
+  "as_of": "2026-09-25 pm run: T10Y2Y/DGS2/DGS10/T10YIE/DFII10/SOFR/BAMLH0A0HYM2 rolled to fresh 2026-09-24 obs (FRED's daily series lag one business day).",
+  "series": {
+   "CPIAUCSL": {
+    "value": 334.131,
+    "date": "2026-08-01"
+   },
+   "CPILFESL": {
+    "value": 337.765,
+    "date": "2026-08-01"
+   },
+   "PAYEMS": {
+    "value": 159075,
+    "date": "2026-08-01"
+   },
+   "ICSA": {
+    "value": 197000,
+    "date": "2026-09-19"
+   },
+   "UNRATE": {
+    "value": 4.1,
+    "date": "2026-08-01"
+   },
+   "T10Y2Y": {
+    "value": 0.31,
+    "date": "2026-09-24"
+   },
+   "DGS2": {
+    "value": 4.87,
+    "date": "2026-09-24"
+   },
+   "DGS10": {
+    "value": 5.18,
+    "date": "2026-09-24"
+   },
+   "T10YIE": {
+    "value": 2.33,
+    "date": "2026-09-24"
+   },
+   "DFII10": {
+    "value": 2.85,
+    "date": "2026-09-24"
+   },
+   "SOFR": {
+    "value": 3.88,
+    "date": "2026-09-24"
+   },
+   "BAMLH0A0HYM2": {
+    "value": 2.80,
+    "date": "2026-09-24"
+   }
   }
  },
  "vix_complex": {
-  "date": "2026-09-09",
-  "VIX": {
-   "last": 16.46,
-   "chg_pct": 4.71,
-   "prev_close": 15.72
-  },
-  "VIX9D": {
-   "last": 15.59,
-   "chg_pct": 5.27,
-   "prev_close": 14.81
-  },
-  "VIX3M": {
-   "last": 18.87,
-   "chg_pct": 2.61,
-   "prev_close": 18.39
-  }
+  "vix": 14.21,
+  "vix9d": 12.13,
+  "vix3m": 17.61,
+  "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote domain (cdn-api.cboe.com) returned an explicit EGRESS_BLOCKED / connect_rejected response again this run, confirmed via both direct curl and WebFetch (which itself returned error_type EGRESS_BLOCKED after following the 307 redirect). Fifth consecutive stale session.",
+  "term_structure": "VIX9D < VIX < VIX3M -- normal contango (as of the last posted value)",
+  "note": "Confirmed policy-level block, not a transient delay. Worth a RUNBOOK look -- five sessions running now."
  },
  "fx": {
-  "date": "2026-09-09",
-  "base": "USD",
-  "EUR": 0.85822,
-  "JPY": 153.27,
-  "GBP": 0.7372,
-  "CNY": 6.7078,
-  "CHF": 0.80707,
-  "CAD": 1.3768,
-  "AUD": 1.3841,
-  "MXN": 16.9025,
-  "BRL": 5.0889,
-  "INR": 95.11
+  "as_of": "2026-09-25 EOD official (ECB reference)",
+  "rates_vs_usd": {
+   "EUR": 0.87696,
+   "JPY": 157.59,
+   "GBP": 0.75458,
+   "CNY": 6.7132,
+   "CHF": 0.82829,
+   "CAD": 1.4143,
+   "AUD": 1.4224,
+   "MXN": 17.6989,
+   "BRL": 5.1821,
+   "INR": 95.82
+  }
  },
  "crypto": {
-  "date": "2026-09-09",
-  "bitcoin": {
-   "usd": 78293,
-   "chg24h_pct": -0.264
-  },
-  "ethereum": {
-   "usd": 2469.95,
-   "chg24h_pct": -0.517
-  },
-  "solana": {
-   "usd": 102.61,
-   "chg24h_pct": -0.636
-  },
-  "cardano": {
-   "usd": 0.214009,
-   "chg24h_pct": -3.178
-  },
-  "total_market_cap_usd": 2685575943545.26,
-  "btc_dominance_pct": 58.45
+  "as_of": "2026-09-25 live (CoinGecko; /simple/price and /global both succeeded on retry after an initial 429)",
+  "btc": 84055,
+  "eth": 2693.34,
+  "sol": 122.39,
+  "ada": 0.2566,
+  "total_mkt_cap": 2898067139205.91,
+  "btc_dominance_pct": 58.22,
+  "eth_dominance_pct": 11.34,
+  "note": "All figures fresh this run, live."
  },
  "indices": {
-  "date": "2026-09-09",
-  "SPX": {
-   "close": 7636.36,
-   "chg": -37.16,
-   "chg_pct": -0.484
+  "as_of": "2026-09-25 EOD official",
+  "sp500": {
+   "price": 7743.41,
+   "pct": 0.51
   },
-  "IXIC": {
-   "close": 26253.34,
-   "chg": -168.072,
-   "chg_pct": -0.636
+  "nasdaq_composite": {
+   "price": 27068.72,
+   "pct": 0.48
   },
-  "DJI": {
-   "close": 52380.66,
-   "chg": -405.41,
-   "chg_pct": -0.768
+  "dow": {
+   "price": 51828.62,
+   "pct": 0.93
   },
-  "RUT": {
-   "close": 2921.2344,
-   "chg": -38.9692,
-   "chg_pct": -1.3164
+  "russell2000": {
+   "price": 2837.55,
+   "pct": 0.07
   }
  },
  "futures_commodities_fx": {
-  "date": "2026-09-09",
-  "ES=F": {
-   "price": 7645.0,
-   "chg_pct": -0.46
+  "as_of": "2026-09-25 ~4:35pm ET (futures/commodities continue trading after the cash close; close-to-close vs Thursday's settle)",
+  "es_f": {
+   "price": 7803.0,
+   "pct": 0.46
   },
-  "NQ=F": {
-   "price": 29450.25,
-   "chg_pct": -0.3
+  "nq_f": {
+   "price": 30887.75,
+   "pct": 0.39
   },
-  "YM=F": {
-   "price": 52458.0,
-   "chg_pct": -0.71
+  "ym_f": {
+   "price": 52167.0,
+   "pct": 0.87
   },
-  "RTY=F": {
-   "price": 2922.2,
-   "chg_pct": -1.4
+  "rty_f": {
+   "price": 2860.1,
+   "pct": 0.12
   },
-  "CL=F": {
-   "price": 96.67,
-   "chg_pct": 3.91
+  "tnx": {
+   "price": 5.184,
+   "pct": 0.43
   },
-  "GC=F": {
-   "price": 4442.7,
-   "chg_pct": 0.08
+  "cl_f": {
+   "price": 92.65,
+   "pct": -2.07
   },
-  "NG=F": {
-   "price": 2.808,
-   "chg_pct": -3.7
+  "gc_f": {
+   "price": 4324.5,
+   "pct": 0.62
   },
-  "HG=F": {
-   "price": 6.853,
-   "chg_pct": 0.43
+  "ng_f": {
+   "price": 3.239,
+   "pct": -1.76
   },
-  "EURUSD=X": {
-   "price": 1.163,
-   "chg_pct": 0.05
+  "hg_f": {
+   "price": 6.774,
+   "pct": 0.83
   },
-  "DX-Y.NYB": {
-   "price": 98.81,
-   "chg_pct": 0.02
+  "eurusd": {
+   "price": 1.1397,
+   "pct": 0.20
+  },
+  "dxy": {
+   "price": 101.015,
+   "pct": -0.27
   }
  },
  "watchlist": {
-  "IWM": {
-   "price": 290.65,
-   "chg": -4.02,
-   "chg_pct": -1.364,
-   "vol": 18851488,
-   "hi52": 305.18,
-   "lo52": 228.9
-  },
-  "DIA": {
-   "price": 524.4,
-   "chg": -3.96,
-   "chg_pct": -0.75,
-   "vol": 3662860,
-   "hi52": 546.75,
-   "lo52": 450.44
-  },
-  "SMH": {
-   "price": 574.29,
-   "chg": 0.56,
-   "chg_pct": 0.098,
-   "vol": 3382228,
-   "hi52": 671.83,
-   "lo52": 298.77
-  },
-  "MAGS": {
-   "price": 69.26,
-   "chg": 0.25,
-   "chg_pct": 0.362,
-   "vol": 2394595,
-   "hi52": 71.16,
-   "lo52": 55.085
-  },
-  "SPY": {
-   "price": 762.69,
-   "chg": -3.27,
-   "chg_pct": -0.427,
-   "vol": 31597628,
-   "hi52": 779.37,
-   "lo52": 629.28
-  },
-  "XLK": {
-   "price": 188.06,
-   "chg": 0.19,
-   "chg_pct": 0.101,
-   "vol": 5959201,
-   "hi52": 198.73,
-   "lo52": 126.68
-  },
-  "QQQM": {
-   "price": 294.99,
-   "chg": -0.799,
-   "chg_pct": -0.27,
-   "vol": 1869624,
-   "hi52": 308.21,
-   "lo52": 228.75
-  },
-  "RSP": {
-   "price": 214.8,
-   "chg": -2.09,
-   "chg_pct": -0.964,
-   "vol": 6931237,
-   "hi52": 223.44,
-   "lo52": 182.11
-  },
-  "XLF": {
-   "price": 57.06,
-   "chg": -0.24,
-   "chg_pct": -0.419,
-   "vol": 27256421,
-   "hi52": 58.6,
-   "lo52": 47.67
-  },
-  "KRE": {
-   "price": 73.49,
-   "chg": -0.86,
-   "chg_pct": -1.157,
-   "vol": 10822641,
-   "hi52": 78.35,
-   "lo52": 57.55
-  },
-  "XLE": {
-   "price": 65.27,
-   "chg": 0.54,
-   "chg_pct": 0.834,
-   "vol": 25063241,
-   "hi52": 65.915,
-   "lo52": 42.35
-  },
-  "TLT": {
-   "price": 81.62,
-   "chg": -0.59,
-   "chg_pct": -0.718,
-   "vol": 40435612,
-   "hi52": 92.19,
-   "lo52": 81.17
-  },
-  "IEF": {
-   "price": 91.84,
-   "chg": -0.3,
-   "chg_pct": -0.326,
-   "vol": 5431561,
-   "hi52": 98.05,
-   "lo52": 91.78
-  },
-  "TIP": {
-   "price": 106.83,
-   "chg": -0.25,
-   "chg_pct": -0.234,
-   "vol": 2036506,
-   "hi52": 112.26,
-   "lo52": 106.69
-  },
-  "HYG": {
-   "price": 79.0,
-   "chg": -0.12,
-   "chg_pct": -0.152,
-   "vol": 30430479,
-   "hi52": 81.36,
-   "lo52": 78.57
-  },
-  "LQD": {
-   "price": 105.3,
-   "chg": -0.17,
-   "chg_pct": -0.161,
-   "vol": 34195956,
-   "hi52": 112.93,
-   "lo52": 105.08
-  },
-  "GLD": {
-   "price": 403.37,
-   "chg": 3.65,
-   "chg_pct": 0.913,
-   "vol": 8029303,
-   "hi52": 509.7,
-   "lo52": 326.19
-  },
-  "USO": {
-   "price": 149.94,
-   "chg": 3.91,
-   "chg_pct": 2.678,
-   "vol": 5365748,
-   "hi52": 154.08,
-   "lo52": 65.99
-  },
-  "EEM": {
-   "price": 68.47,
-   "chg": -0.35,
-   "chg_pct": -0.508,
-   "vol": 16163541,
-   "hi52": 71.57,
-   "lo52": 51.5
-  },
-  "VGK": {
-   "price": 90.21,
-   "chg": -0.98,
-   "chg_pct": -1.075,
-   "vol": 1723341,
-   "hi52": 93.29,
-   "lo52": 77.82
-  },
-  "BTC": {
-   "price": 34.67,
-   "chg": -0.01,
-   "chg_pct": -0.03,
-   "vol": 1538001,
-   "hi52": 55.96,
-   "lo52": 25.65
-  },
-  "DX-Y.NYB": {
-   "price": 98.809,
-   "chg": 0.022,
-   "chg_pct": 0.022,
-   "vol": null,
-   "hi52": 101.8,
-   "lo52": 95.55
-  },
-  "XLC": {
-   "price": 110.75,
-   "chg": -0.69,
-   "chg_pct": -0.619,
-   "vol": 4800543,
-   "hi52": 120.405,
-   "lo52": 105.03
-  },
-  "XLP": {
-   "price": 83.112,
-   "chg": -0.908,
-   "chg_pct": -1.08,
-   "vol": 12181953,
-   "hi52": 90.14,
-   "lo52": 75.16
-  },
-  "XLY": {
-   "price": 112.46,
-   "chg": -1.53,
-   "chg_pct": -1.342,
-   "vol": 7637201,
-   "hi52": 125.01,
-   "lo52": 105.19
-  },
-  "XLV": {
-   "price": 166.73,
-   "chg": -0.55,
-   "chg_pct": -0.329,
-   "vol": 7984202,
-   "hi52": 176.6,
-   "lo52": 133.73
-  },
-  "XLI": {
-   "price": 171.947,
-   "chg": -2.63,
-   "chg_pct": -1.508,
-   "vol": 6374079,
-   "hi52": 188.19,
-   "lo52": 147.14
-  },
-  "XLB": {
-   "price": 51.49,
-   "chg": -0.55,
-   "chg_pct": -1.059,
-   "vol": 13095077,
-   "hi52": 54.19,
-   "lo52": 42.035
-  },
-  "XLRE": {
-   "price": 43.441,
-   "chg": -0.459,
-   "chg_pct": -1.046,
-   "vol": 5832499,
-   "hi52": 46.455,
-   "lo52": 39.725
-  },
-  "ES=F": {
-   "price": 7645.0,
-   "chg": -35.5,
-   "chg_pct": -0.462,
-   "vol": 1353766,
-   "hi52": 7838.5,
-   "lo52": 6353.25
-  },
-  "NQ=F": {
-   "price": 29450.25,
-   "chg": -88.5,
-   "chg_pct": -0.3,
-   "vol": 490116,
-   "hi52": 30968.0,
-   "lo52": 22961.5
-  },
-  "YM=F": {
-   "price": 52458.0,
-   "chg": -374.0,
-   "chg_pct": -0.708,
-   "vol": 68888,
-   "hi52": 54884.0,
-   "lo52": 45052.0
-  },
-  "RTY=F": {
-   "price": 2922.2,
-   "chg": -41.4,
-   "chg_pct": -1.397,
-   "vol": 153308,
-   "hi52": 3079.9,
-   "lo52": 2300.7
-  },
-  "XLU": {
-   "price": 42.97,
-   "chg": -0.51,
-   "chg_pct": -1.174,
-   "vol": 16837084,
-   "hi52": 47.8,
-   "lo52": 41.74
-  },
-  "GC=F": {
-   "price": 4442.7,
-   "chg": 3.7,
-   "chg_pct": 0.083,
-   "vol": 160622,
-   "hi52": 5586.2,
-   "lo52": 3618.4
-  },
-  "NG=F": {
-   "price": 2.808,
-   "chg": -0.108,
-   "chg_pct": -3.704,
-   "vol": 167299,
-   "hi52": 7.827,
-   "lo52": 2.483
-  },
-  "CL=F": {
-   "price": 96.67,
-   "chg": 3.64,
-   "chg_pct": 3.913,
-   "vol": 296273,
-   "hi52": 119.48,
-   "lo52": 54.98
-  },
-  "HG=F": {
-   "price": 6.853,
-   "chg": 0.0295,
-   "chg_pct": 0.4323,
-   "vol": 46183,
-   "hi52": 6.894,
-   "lo52": 4.5025
-  },
-  "EURUSD=X": {
-   "price": 1.1635,
-   "chg": 0.0005,
-   "chg_pct": 0.0465,
-   "vol": 0,
-   "hi52": 1.2024,
-   "lo52": 1.1325
-  },
-  "QQQ": {
-   "price": 716.38,
-   "chg": -1.97,
-   "chg_pct": -0.274,
-   "vol": 25984822,
-   "hi52": 748.65,
-   "lo52": 555.6
-  },
-  "SPCX": {
-   "price": 147.16,
-   "chg": -6.27,
-   "chg_pct": -4.085,
-   "vol": 119903183,
-   "hi52": 225.64,
-   "lo52": 104.83
-  },
-  "NVDA": {
-   "price": 223.751,
-   "chg": -1.98,
-   "chg_pct": -0.877,
-   "vol": 79030981,
-   "hi52": 236.54,
-   "lo52": 164.27
-  },
-  "MSFT": {
-   "price": 492.008,
-   "chg": -1.95,
-   "chg_pct": -0.395,
-   "vol": 12737893,
-   "hi52": 553.72,
-   "lo52": 349.2
-  },
-  "AAPL": {
-   "price": 315.847,
-   "chg": -0.39,
-   "chg_pct": -0.123,
-   "vol": 64657084,
-   "hi52": 344.57,
-   "lo52": 225.95
-  },
-  "AMZN": {
-   "price": 252.51,
-   "chg": -4.46,
-   "chg_pct": -1.736,
-   "vol": 32080415,
-   "hi52": 287.2,
-   "lo52": 196.0
-  },
-  "AMD": {
-   "price": 521.181,
-   "chg": 15.361,
-   "chg_pct": 3.037,
-   "vol": 21994506,
-   "hi52": 584.73,
-   "lo52": 149.85
-  },
-  "GOOGL": {
-   "price": 331.17,
-   "chg": -7.26,
-   "chg_pct": -2.146,
-   "vol": 32654891,
-   "hi52": 408.61,
-   "lo52": 235.84
-  },
-  "AVGO": {
-   "price": 364.8,
-   "chg": -3.81,
-   "chg_pct": -1.034,
-   "vol": 24486672,
-   "hi52": 495.0,
-   "lo52": 289.96
-  },
-  "TSLA": {
-   "price": 367.549,
-   "chg": -0.65,
-   "chg_pct": -0.177,
-   "vol": 32273229,
-   "hi52": 498.83,
-   "lo52": 297.38
-  },
-  "TSM": {
-   "price": 435.45,
-   "chg": -3.55,
-   "chg_pct": -0.809,
-   "vol": 7428843,
-   "hi52": 479.0,
-   "lo52": 257.75
-  },
-  "META": {
-   "price": 651.277,
-   "chg": 37.88,
-   "chg_pct": 6.175,
-   "vol": 35268904,
-   "hi52": 790.8,
-   "lo52": 520.26
-  },
-  "MU": {
-   "price": 1027.391,
-   "chg": 27.23,
-   "chg_pct": 2.722,
-   "vol": 23501270,
-   "hi52": 1255.0,
-   "lo52": 138.34
-  },
-  "ASML": {
-   "price": 1728.75,
-   "chg": -35.33,
-   "chg_pct": -2.002,
-   "vol": 1021914,
-   "hi52": 1999.96,
-   "lo52": 791.02
-  },
-  "MRVL": {
-   "price": 235.2,
-   "chg": 9.707,
-   "chg_pct": 4.306,
-   "vol": 19995283,
-   "hi52": 329.88,
-   "lo52": 66.14
-  },
-  "ETN": {
-   "price": 416.514,
-   "chg": -6.91,
-   "chg_pct": -1.637,
-   "vol": 1774703,
-   "hi52": 478.0,
-   "lo52": 311.92
-  },
-  "ANET": {
-   "price": 192.864,
-   "chg": -2.096,
-   "chg_pct": -1.075,
-   "vol": 3671791,
-   "hi52": 214.89,
-   "lo52": 114.52
-  },
-  "CEG": {
-   "price": 293.845,
-   "chg": -5.145,
-   "chg_pct": -1.72,
-   "vol": 2195547,
-   "hi52": 412.7,
-   "lo52": 228.63
-  },
-  "VST": {
-   "price": 151.052,
-   "chg": -0.668,
-   "chg_pct": -0.44,
-   "vol": 3857151,
-   "hi52": 219.82,
-   "lo52": 132.66
-  },
-  "PWR": {
-   "price": 627.21,
-   "chg": -12.07,
-   "chg_pct": -1.889,
-   "vol": 529991,
-   "hi52": 788.75,
-   "lo52": 373.4
-  },
-  "EQIX": {
-   "price": 1043.78,
-   "chg": 1.85,
-   "chg_pct": 0.178,
-   "vol": 471724,
-   "hi52": 1128.68,
-   "lo52": 720.62
-  },
-  "DLR": {
-   "price": 189.08,
-   "chg": -0.42,
-   "chg_pct": -0.222,
-   "vol": 1492322,
-   "hi52": 208.14,
-   "lo52": 146.23
-  },
-  "VRT": {
-   "price": 262.66,
-   "chg": -28.17,
-   "chg_pct": -9.686,
-   "vol": 9703138,
-   "hi52": 379.935,
-   "lo52": 132.685
-  },
-  "LMT": {
-   "price": 524.15,
-   "chg": -12.0,
-   "chg_pct": -2.238,
-   "vol": 1361344,
-   "hi52": 692.0,
-   "lo52": 437.25
-  },
-  "RTX": {
-   "price": 197.55,
-   "chg": -1.26,
-   "chg_pct": -0.634,
-   "vol": 3182631,
-   "hi52": 226.88,
-   "lo52": 151.65
-  },
-  "NOC": {
-   "price": 515.57,
-   "chg": -3.01,
-   "chg_pct": -0.58,
-   "vol": 690465,
-   "hi52": 774.0,
-   "lo52": 479.02
-  },
-  "GD": {
-   "price": 352.67,
-   "chg": -3.91,
-   "chg_pct": -1.097,
-   "vol": 873938,
-   "hi52": 400.0,
-   "lo52": 306.77
-  },
-  "LHX": {
-   "price": 251.25,
-   "chg": -5.33,
-   "chg_pct": -2.084,
-   "vol": 1250273,
-   "hi52": 379.23,
-   "lo52": 250.28
-  },
-  "BA": {
-   "price": 206.75,
-   "chg": -3.98,
-   "chg_pct": -1.889,
-   "vol": 4273032,
-   "hi52": 254.35,
-   "lo52": 176.77
-  },
-  "HII": {
-   "price": 280.85,
-   "chg": -6.82,
-   "chg_pct": -2.371,
-   "vol": 356321,
-   "hi52": 460.0,
-   "lo52": 263.62
-  },
-  "BWXT": {
-   "price": 156.71,
-   "chg": -3.7,
-   "chg_pct": -2.307,
-   "vol": 628908,
-   "hi52": 241.82,
-   "lo52": 147.74
-  },
-  "PLTR": {
-   "price": 169.67,
-   "chg": -0.77,
-   "chg_pct": -0.452,
-   "vol": 20087859,
-   "hi52": 207.52,
-   "lo52": 106.37
-  },
-  "AVAV": {
-   "price": 145.32,
-   "chg": -3.339,
-   "chg_pct": -2.244,
-   "vol": 4092904,
-   "hi52": 417.86,
-   "lo52": 135.2
-  },
-  "KTOS": {
-   "price": 47.29,
-   "chg": -0.91,
-   "chg_pct": -1.888,
-   "vol": 4536155,
-   "hi52": 134.0,
-   "lo52": 43.09
-  },
-  "RKLB": {
-   "price": 63.17,
-   "chg": -2.72,
-   "chg_pct": -4.129,
-   "vol": 26206904,
-   "hi52": 151.0,
-   "lo52": 37.57
-  },
-  "LUNR": {
-   "price": 14.98,
-   "chg": -0.74,
-   "chg_pct": -4.719,
-   "vol": 6711155,
-   "hi52": 46.75,
-   "lo52": 7.78
-  },
-  "ASTS": {
-   "price": 62.3,
-   "chg": -3.82,
-   "chg_pct": -5.777,
-   "vol": 8207131,
-   "hi52": 133.86,
-   "lo52": 36.94
-  },
-  "RDW": {
-   "price": 10.744,
-   "chg": -0.486,
-   "chg_pct": -4.329,
-   "vol": 12334931,
-   "hi52": 26.64,
-   "lo52": 4.87
-  },
-  "PL": {
-   "price": 17.25,
-   "chg": -0.56,
-   "chg_pct": -3.144,
-   "vol": 13197864,
-   "hi52": 51.76,
-   "lo52": 8.595
-  },
-  "BKSY": {
-   "price": 21.3,
-   "chg": -0.47,
-   "chg_pct": -2.129,
-   "vol": 1204637,
-   "hi52": 52.88,
-   "lo52": 12.41
-  },
-  "IRDM": {
-   "price": 47.88,
-   "chg": -0.74,
-   "chg_pct": -1.548,
-   "vol": 541735,
-   "hi52": 57.18,
-   "lo52": 15.65
-  },
-  "SPIR": {
-   "price": 11.49,
-   "chg": -0.65,
-   "chg_pct": -5.354,
-   "vol": 417302,
-   "hi52": 25.93,
-   "lo52": 6.6
-  },
-  "GSAT": {
-   "price": 81.59,
-   "chg": -0.63,
-   "chg_pct": -0.766,
-   "vol": 650189,
-   "hi52": 84.85,
-   "lo52": 29.36
-  },
-  "KRMN": {
-   "price": 34.9,
-   "chg": -4.79,
-   "chg_pct": -12.069,
-   "vol": 4351668,
-   "hi52": 118.38,
-   "lo52": 35.18
-  },
-  "VOYG": {
-   "price": 33.75,
-   "chg": -1.66,
-   "chg_pct": -4.688,
-   "vol": 864711,
-   "hi52": 52.4,
-   "lo52": 17.41
-  },
-  "VSAT": {
-   "price": 72.91,
-   "chg": -5.39,
-   "chg_pct": -6.932,
-   "vol": 1433167,
-   "hi52": 93.03,
-   "lo52": 26.1
-  },
-  "FLY": {
-   "price": 21.94,
-   "chg": -1.09,
-   "chg_pct": -4.76,
-   "vol": 2213709,
-   "hi52": 62.17,
-   "lo52": 16.0
-  },
-  "JPM": {
-   "price": 354.71,
-   "chg": 1.2,
-   "chg_pct": 0.339,
-   "vol": 6252202,
-   "hi52": 366.5,
-   "lo52": 279.1
-  },
-  "BAC": {
-   "price": 62.711,
-   "chg": 0.321,
-   "chg_pct": 0.515,
-   "vol": 35189347,
-   "hi52": 65.23,
-   "lo52": 46.12
-  },
-  "WFC": {
-   "price": 89.67,
-   "chg": 1.71,
-   "chg_pct": 1.944,
-   "vol": 14261919,
-   "hi52": 97.76,
-   "lo52": 72.78
-  },
-  "C": {
-   "price": 137.561,
-   "chg": 1.06,
-   "chg_pct": 0.775,
-   "vol": 6652111,
-   "hi52": 147.96,
-   "lo52": 93.66
-  },
-  "YSS": {
-   "price": 8.2,
-   "chg": -0.73,
-   "chg_pct": -8.175,
-   "vol": 2946947,
-   "hi52": 44.54,
-   "lo52": 8.05
-  },
-  "GS": {
-   "price": 1028.0,
-   "chg": -7.75,
-   "chg_pct": -0.748,
-   "vol": 1638905,
-   "hi52": 1153.99,
-   "lo52": 740.01
-  },
-  "SCHW": {
-   "price": 106.54,
-   "chg": -0.33,
-   "chg_pct": -0.309,
-   "vol": 7814532,
-   "hi52": 114.53,
-   "lo52": 83.96
-  },
-  "MS": {
-   "price": 215.35,
-   "chg": -0.89,
-   "chg_pct": -0.412,
-   "vol": 3905583,
-   "hi52": 232.25,
-   "lo52": 151.42
-  },
-  "IBKR": {
-   "price": 90.882,
-   "chg": -0.69,
-   "chg_pct": -0.758,
-   "vol": 2637846,
-   "hi52": 98.75,
-   "lo52": 58.95
-  },
-  "HOOD": {
-   "price": 115.36,
-   "chg": -2.01,
-   "chg_pct": -1.713,
-   "vol": 18171186,
-   "hi52": 153.86,
-   "lo52": 63.515
-  },
-  "COIN": {
-   "price": 175.4,
-   "chg": -3.633,
-   "chg_pct": -2.03,
-   "vol": 5905275,
-   "hi52": 402.16,
-   "lo52": 139.11
-  },
-  "BX": {
-   "price": 129.35,
-   "chg": -4.9,
-   "chg_pct": -3.658,
-   "vol": 3911140,
-   "hi52": 190.09,
-   "lo52": 101.73
-  },
-  "ICE": {
-   "price": 156.005,
-   "chg": -1.26,
-   "chg_pct": -0.799,
-   "vol": 2758221,
-   "hi52": 176.59,
-   "lo52": 121.79
-  },
-  "KKR": {
-   "price": 104.09,
-   "chg": -1.64,
-   "chg_pct": -1.551,
-   "vol": 4351859,
-   "hi52": 152.1,
-   "lo52": 82.67
-  },
-  "CBOE": {
-   "price": 291.87,
-   "chg": -1.46,
-   "chg_pct": -0.498,
-   "vol": 1017409,
-   "hi52": 371.18,
-   "lo52": 227.15
-  },
-  "BLK": {
-   "price": 1072.03,
-   "chg": -23.34,
-   "chg_pct": -2.131,
-   "vol": 463292,
-   "hi52": 1219.94,
-   "lo52": 917.39
-  },
-  "APO": {
-   "price": 130.98,
-   "chg": -0.83,
-   "chg_pct": -0.63,
-   "vol": 2434669,
-   "hi52": 153.29,
-   "lo52": 99.56
-  },
-  "ARES": {
-   "price": 134.37,
-   "chg": -4.25,
-   "chg_pct": -3.066,
-   "vol": 2249576,
-   "hi52": 186.85,
-   "lo52": 95.8
-  },
-  "CME": {
-   "price": 274.042,
-   "chg": -3.53,
-   "chg_pct": -1.269,
-   "vol": 1599579,
-   "hi52": 329.16,
-   "lo52": 218.31
-  },
-  "UNH": {
-   "price": 392.86,
-   "chg": -7.98,
-   "chg_pct": -1.991,
-   "vol": 7707112,
-   "hi52": 461.62,
-   "lo52": 255.97
-  },
-  "LLY": {
-   "price": 1125.75,
-   "chg": 0.3,
-   "chg_pct": 0.027,
-   "vol": 2013187,
-   "hi52": 1292.65,
-   "lo52": 712.05
-  },
-  "JNJ": {
-   "price": 268.44,
-   "chg": -0.68,
-   "chg_pct": -0.253,
-   "vol": 5862062,
-   "hi52": 281.07,
-   "lo52": 173.33
-  },
-  "MRK": {
-   "price": 147.53,
-   "chg": -0.93,
-   "chg_pct": -0.626,
-   "vol": 7757964,
-   "hi52": 156.92,
-   "lo52": 77.58
-  },
-  "ABBV": {
-   "price": 250.299,
-   "chg": 2.13,
-   "chg_pct": 0.856,
-   "vol": 3642931,
-   "hi52": 267.47,
-   "lo52": 190.75
-  },
-  "PFE": {
-   "price": 27.794,
-   "chg": -0.01,
-   "chg_pct": -0.036,
-   "vol": 28599468,
-   "hi52": 29.21,
-   "lo52": 23.58
-  },
-  "VRTX": {
-   "price": 522.11,
-   "chg": -7.78,
-   "chg_pct": -1.471,
-   "vol": 929141,
-   "hi52": 560.25,
-   "lo52": 374.17
-  },
-  "NVO": {
-   "price": 44.651,
-   "chg": -0.509,
-   "chg_pct": -1.128,
-   "vol": 8778861,
-   "hi52": 64.16,
-   "lo52": 35.12
-  },
-  "REGN": {
-   "price": 807.65,
-   "chg": -2.66,
-   "chg_pct": -0.328,
-   "vol": 563433,
-   "hi52": 859.34,
-   "lo52": 541.0
-  },
-  "TMO": {
-   "price": 605.69,
-   "chg": 2.67,
-   "chg_pct": 0.443,
-   "vol": 1915749,
-   "hi52": 647.0,
-   "lo52": 435.27
-  },
-  "DHR": {
-   "price": 204.85,
-   "chg": -0.38,
-   "chg_pct": -0.185,
-   "vol": 2766963,
-   "hi52": 242.8,
-   "lo52": 160.93
-  },
-  "WMT": {
-   "price": 105.84,
-   "chg": -0.22,
-   "chg_pct": -0.207,
-   "vol": 15308688,
-   "hi52": 135.16,
-   "lo52": 98.88
-  },
-  "ISRG": {
-   "price": 353.0,
-   "chg": 3.08,
-   "chg_pct": 0.88,
-   "vol": 2358870,
-   "hi52": 603.88,
-   "lo52": 328.57
-  },
-  "COST": {
-   "price": 902.868,
-   "chg": -7.48,
-   "chg_pct": -0.822,
-   "vol": 2029540,
-   "hi52": 1096.5,
-   "lo52": 844.06
-  },
-  "HD": {
-   "price": 310.9,
-   "chg": -3.25,
-   "chg_pct": -1.036,
-   "vol": 3351606,
-   "hi52": 426.75,
-   "lo52": 289.1
-  },
-  "TGT": {
-   "price": 158.45,
-   "chg": -4.26,
-   "chg_pct": -2.618,
-   "vol": 3375260,
-   "hi52": 170.75,
-   "lo52": 83.44
-  },
-  "LOW": {
-   "price": 198.6,
-   "chg": -2.2,
-   "chg_pct": -1.096,
-   "vol": 2437051,
-   "hi52": 293.06,
-   "lo52": 197.14
-  },
-  "MCD": {
-   "price": 253.79,
-   "chg": -2.02,
-   "chg_pct": -0.79,
-   "vol": 4371287,
-   "hi52": 341.75,
-   "lo52": 253.346
-  },
-  "CMG": {
-   "price": 36.03,
-   "chg": -0.93,
-   "chg_pct": -2.516,
-   "vol": 9023320,
-   "hi52": 42.82,
-   "lo52": 28.04
-  },
-  "SBUX": {
-   "price": 100.14,
-   "chg": -1.97,
-   "chg_pct": -1.931,
-   "vol": 5847056,
-   "hi52": 110.51,
-   "lo52": 77.99
-  },
-  "BKNG": {
-   "price": 173.467,
-   "chg": -6.84,
-   "chg_pct": -3.794,
-   "vol": 11979830,
-   "hi52": 224.996,
-   "lo52": 150.14
-  },
-  "ABNB": {
-   "price": 169.63,
-   "chg": -4.91,
-   "chg_pct": -2.813,
-   "vol": 4885781,
-   "hi52": 193.453,
-   "lo52": 110.81
-  },
-  "UAL": {
-   "price": 107.38,
-   "chg": -1.115,
-   "chg_pct": -1.03,
-   "vol": 2699858,
-   "hi52": 138.77,
-   "lo52": 84.64
-  },
-  "DAL": {
-   "price": 79.0,
-   "chg": -0.21,
-   "chg_pct": -0.266,
-   "vol": 4498299,
-   "hi52": 95.68,
-   "lo52": 55.03
-  },
-  "RCL": {
-   "price": 259.9,
-   "chg": -4.74,
-   "chg_pct": -1.792,
-   "vol": 2408151,
-   "hi52": 356.39,
-   "lo52": 232.1
+  "SPY": {"price": 771.35, "prev": 767.18, "chg": 4.17, "pct": 0.54, "vol": 34116693, "hi52": 779.37, "lo52": 629.28, "as_of": "2026-09-25 EOD official"},
+  "QQQM": {"price": 306.54, "prev": 305.14, "chg": 1.40, "pct": 0.46, "vol": 2402866, "hi52": 308.21, "lo52": 228.75, "as_of": "2026-09-25 EOD official"},
+  "DIA": {"price": 517.49, "prev": 512.68, "chg": 4.81, "pct": 0.94, "vol": 2708382, "hi52": 546.75, "lo52": 450.44, "as_of": "2026-09-25 EOD official"},
+  "IWM": {"price": 281.97, "prev": 281.66, "chg": 0.31, "pct": 0.11, "vol": 22126129, "hi52": 305.18, "lo52": 228.9, "as_of": "2026-09-25 EOD official"},
+  "MAGS": {"price": 72.64, "prev": 72.51, "chg": 0.13, "pct": 0.18, "vol": 2693271, "hi52": 73.46, "lo52": 55.085, "as_of": "2026-09-25 EOD official"},
+  "RSP": {"price": 211.11, "prev": 210.26, "chg": 0.85, "pct": 0.40, "vol": 5459369, "hi52": 223.44, "lo52": 182.11, "as_of": "2026-09-25 EOD official"},
+  "SMH": {"price": 606.56, "prev": 600.52, "chg": 6.04, "pct": 1.01, "vol": 4489579, "hi52": 671.83, "lo52": 315.05, "as_of": "2026-09-25 EOD official"},
+  "XLK": {"price": 196.27, "prev": 194.71, "chg": 1.56, "pct": 0.80, "vol": 5965183, "hi52": 198.73, "lo52": 126.68, "as_of": "2026-09-25 EOD official"},
+  "XLF": {"price": 54.84, "prev": 54.53, "chg": 0.31, "pct": 0.57, "vol": 28767254, "hi52": 58.6, "lo52": 47.67, "as_of": "2026-09-25 EOD official"},
+  "KRE": {"price": 71.55, "prev": 70.94, "chg": 0.61, "pct": 0.86, "vol": 12258619, "hi52": 78.35, "lo52": 57.55, "as_of": "2026-09-25 EOD official"},
+  "XLE": {"price": 62.04, "prev": 62.60, "chg": -0.56, "pct": -0.89, "vol": 37398357, "hi52": 66.17, "lo52": 42.35, "as_of": "2026-09-25 EOD official"},
+  "TLT": {"price": 79.32, "prev": 79.42, "chg": -0.10, "pct": -0.13, "vol": 60249382, "hi52": 92.19, "lo52": 78.83, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "IEF": {"price": 90.00, "prev": 89.69, "chg": 0.31, "pct": 0.35, "vol": 17134151, "hi52": 98.05, "lo52": 89.54, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "TIP": {"price": 104.54, "prev": 104.30, "chg": 0.24, "pct": 0.23, "vol": 2127319, "hi52": 112.24, "lo52": 104.2, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "LQD": {"price": 103.21, "prev": 103.15, "chg": 0.06, "pct": 0.06, "vol": 43963497, "hi52": 112.93, "lo52": 102.74, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "HYG": {"price": 77.86, "prev": 77.89, "chg": -0.03, "pct": -0.04, "vol": 56552201, "hi52": 81.33, "lo52": 77.67, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "GLD": {"price": 393.41, "prev": 391.69, "chg": 1.72, "pct": 0.44, "vol": 7002878, "hi52": 509.7, "lo52": 345.31, "as_of": "2026-09-25 EOD official"},
+  "USO": {"price": 148.33, "prev": 153.09, "chg": -4.76, "pct": -3.11, "vol": 7128728, "hi52": 163.35, "lo52": 65.99, "as_of": "2026-09-25 EOD official"},
+  "EEM": {"price": 67.98, "prev": 67.25, "chg": 0.73, "pct": 1.09, "vol": 19055343, "hi52": 71.57, "lo52": 51.82, "as_of": "2026-09-25 EOD official"},
+  "VGK": {"price": 88.63, "prev": 88.07, "chg": 0.56, "pct": 0.64, "vol": 1136813, "hi52": 93.29, "lo52": 77.82, "as_of": "2026-09-25 EOD official"},
+  "BTC": {"price": 37.16, "prev": 37.31, "chg": -0.15, "pct": -0.40, "vol": 1260126, "hi52": 55.96, "lo52": 25.65, "as_of": "2026-09-25 EOD official", "note": "Grayscale Bitcoin Mini Trust ETF"},
+  "DXY": {"price": 101.015, "prev": 101.29, "chg": -0.275, "pct": -0.27, "vol": null, "hi52": 101.8, "lo52": 95.55, "as_of": "2026-09-25 EOD official"}
+ },
+ "global_indices": {},
+ "dma": {
+  "SPY": {"n_sessions": 64, "last_price": 771.35, "hi52": 779.37, "lo52": 629.28, "dist20_pct": 0.78, "dist50_pct": 1.28},
+  "QQQ": {"n_sessions": 64, "last_price": 744.50, "hi52": 748.65, "lo52": 555.6, "dist20_pct": 3.28, "dist50_pct": 4.47},
+  "IWM": {"n_sessions": 64, "last_price": 281.97, "hi52": 305.18, "lo52": 228.9, "dist20_pct": -2.30, "dist50_pct": -4.09},
+  "DIA": {"n_sessions": 64, "last_price": 517.49, "hi52": 546.75, "lo52": 450.44, "dist20_pct": -1.17, "dist50_pct": -1.91},
+  "TLT": {"n_sessions": 64, "last_price": 79.32, "hi52": 92.19, "lo52": 78.83, "dist20_pct": -2.52, "dist50_pct": -3.56},
+  "SPCX": {"n_sessions": 64, "last_price": 148.68, "hi52": 225.64, "lo52": 104.83, "dist20_pct": 0.19, "dist50_pct": 9.39}
+ },
+ "breadth_latest": {
+  "date": "2026-09-24",
+  "advancers": 1963,
+  "decliners": 3476,
+  "unchanged": 178,
+  "universe": 5617,
+  "up_vol": 5950000000.0,
+  "down_vol": 8960000000.0,
+  "pct_above_e50": null,
+  "pct_above_e200": null,
+  "note": "Carried forward from this morning's computation (Massive grouped-daily for Sept 24). Still NOT appended to breadth.json's tracked EMA history/ma_state -- history array still ends 2026-09-23. Standalone snapshot only; a future run should reconcile and append properly."
+ },
+ "finra_short_vol": {
+  "session": "2026-09-24",
+  "aggregate_short_vol_ratio_pct": 50.38,
+  "note": "Same previous-session file used by this morning's run (D=Sept24 is the previous NYSE session for both today's am and pm runs). Board standouts (highest): LQD 77.9%, XLF 71.8%, TLT 71.7%, MAGS 71.1%, IEF 70.5%, XLE 67.5%, IWM 67.4%, TIP 65.8%, KRE 63.2%. Lowest: VGK 34.7%, BTC 41.3%, DIA 43.6%, XLK 45.5%. Daily short volume != short interest."
+ },
+ "sector_etfs_wk": {
+  "as_of": "2026-09-25 EOD official",
+  "pct": {
+   "XLI": 0.95,
+   "XLK": 0.80,
+   "XLF": 0.57,
+   "XLV": 0.49,
+   "XLP": 0.44,
+   "XLU": 0.38,
+   "XLB": 0.24,
+   "XLY": 0.22,
+   "XLRE": -0.22,
+   "XLE": -0.89,
+   "XLC": -0.90
   }
  },
- "global_indices": {}
+ "commodities": {
+  "wti": {"price": 92.65, "pct": -2.07, "note": "CL=F, close-to-close"},
+  "gold": {"price": 4324.5, "pct": 0.62, "note": "GC=F futures; GLD ETF +0.44%"},
+  "natgas": {"price": 3.239, "pct": -1.76, "note": "NG=F"},
+  "copper": {"price": 6.774, "pct": 0.83, "note": "HG=F"},
+  "label": "EOD official, Sep 25, 2026",
+  "fetched_at": "2026-09-25T20:47:00Z"
+ },
+ "sec_edgar_sweep": {
+  "date": "2026-09-25",
+  "cutoff": "2026-09-25T11:02:00-04:00 (this morning's am run window start)",
+  "method": "Market-wide latest-8-K atom feed reviewed for watchlist-name matches, plus a targeted check of CME Group's own filing feed after it appeared in the market-wide feed; not a full 86-ticker per-company sweep this run.",
+  "new_filings_since_cutoff": [],
+  "note": "CME Group appeared in today's market-wide 8-K feed but its own per-company feed shows its most recent filing dated Sept 9 (director/officer changes) -- the market-wide feed entry appears to be an indexing artifact, not a new same-day filing. No other watchlist names appeared in the market-wide feed. Akamai (not a watchlist name) filed an 8-K covering its Anthropic deal, discussed in Top Stories."
+ },
+ "mega_cap_tech": {
+  "as_of": "2026-09-25 EOD official",
+  "pct": {
+   "AAPL": 1.53,
+   "MSFT": 3.66,
+   "NVDA": 0.22,
+   "AMZN": 0.12,
+   "GOOGL": 0.46,
+   "META": -3.33,
+   "TSLA": -1.54,
+   "SPCX": 0.44
+  }
+ },
+ "cost": {
+  "as_of": "2026-09-25 EOD official",
+  "price": 922.77,
+  "pct": 2.93
+ },
+ "_notes_this_run": "2026-09-25 pm: fifth consecutive stale VIX session, reconfirmed policy-level egress block via both curl and WebFetch. Treasury curve shows a genuine twist (2Y-7Y eased, 20Y/30Y rose to fresh highs) with no auction today to explain the long end. Breadth still not reconciled into breadth.json EMA history (carried from am run's snapshot)."
 }

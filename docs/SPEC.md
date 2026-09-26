@@ -19,6 +19,8 @@ anything later in this document, this wins.
   Rocketry, built from Logan's 60-day academy plus the retired physics/spaceflight/quant-ml
   sequences, with Accounting and Economics authored fresh). Position: `state/learning.json`.
   No quizzes, no problem sets, no spaced repetition — that standing rule is unchanged.
+  **SUPERSEDED 2026-09-25 by §0c:** the Learning Brief now runs at about 5:00 AM ET (delivered by
+  5:30), is about 15 minutes long, has no audio, and teaches `curriculum/academy-300.json`.
 - **The reader is a reader, not the operator.** Removed from every report: the data-freshness
   table, the metadata grid, news-cutoff and market-data-as-of stamps, report version, overall
   confidence, market-status chips, `Section N` numbering, the per-run system-health footer, the
@@ -30,12 +32,11 @@ anything later in this document, this wins.
 - **Local section**, low in every weekday edition, covering three beats in their own right:
   Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County · Pennsylvania. Up to two
   items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
-  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
-- **Listen to text** on every report: an in-page Web Speech player injected by
-  `site/assets/report.js`. Chosen over generated audio files because it works on every report
-  including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
-  accepted: iOS pauses speech when the screen locks. Pre-generated MP3s hosted on GitHub Releases
-  remain the documented upgrade path if that limit becomes annoying.
+  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18). Kept as a
+  real section under the finance-first tilt (2026-09-25) — only tech/science coverage was demoted.
+- **No report audio (retired 2026-09-25).** The Web Speech listen-to-text player and the
+  generated-MP3 pipeline (edge-tts → GitHub Releases) were removed at Logan's request ("no audio is
+  needed"). Telegram pushes no longer wait for an MP3, and reports are text only.
 - **Telegram is sent by GitHub Actions only.** The routine never sends. This fixes a duplicate
   that hit every morning, Saturday and Sunday edition (shared-rules §14 explains the mechanism).
 - **Schedule corrected.** The weekday cron had drifted to 5:30 AM / 3:30 PM ET — the closing
@@ -54,158 +55,97 @@ anything later in this document, this wins.
 - **Full reports** are mobile web pages on GitHub Pages (this repo → `site/`); the Telegram push carries title, one-sentence summary, 2–3 top developments, critical-risk flag when warranted, and the report link.
 - ~~**Learning tracks are LIGHT** — three sequential tracks inside the news reports.~~
   **SUPERSEDED 2026-08-16 by §0a:** the tracks were removed from the news editions entirely and
-  replaced by the standalone weekday Learning Brief, which teaches ONE subject properly for 25–30
-  minutes. The no-quizzes / no-spaced-repetition rule carries over unchanged.
+  replaced by the standalone weekday Learning Brief, which teaches ONE subject properly (about 15
+  minutes since §0c). The no-quizzes / no-spaced-repetition rule carries over unchanged.
 - **Quant/ML equation registry** (`curriculum/quant-ml/equation_registry.csv`, 118 equations, 13
   sections) and the rendered images in `site/equations/eq_NNN.png` are retained as *source
   material* for the Learning Brief's AI and Finance lessons.
 - **SpaceX is PUBLIC** — verified against SEC EDGAR 2026-07-26: IPO 2026-06-12, Nasdaq ticker SPCX, CIK 0001181412. CRITICAL: pre-2026-04-07 "SPCX" data = the unrelated Tuttle ETF (now SPCK). SpaceX price history begins 2026-06-12; never backfill earlier SPCX data.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
-- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends. **The Learning Brief's 6:00 AM moved to 5:00 AM on 2026-09-25 — §0e.**
+- Schedule (America/New_York): Mon–Fri ~5:00 AM (Learning Brief, delivered by 5:30 — §0c) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook); **daily ~noon (SIE Program, §0b, added 2026-09-25)**. Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
 
-### 0b. Built since the amendment — a record, not new decisions (2026-09-02)
+### 0b. Amendment of 2026-09-25 — the SIE Program (sixth edition, daily at noon)
 
-- **Spoken editions are real MP3s now, not only Web Speech.** `.github/workflows/audio.yml` +
-  `.github/scripts/make_audio.py` synthesise every edition with edge-tts (voice: Logan's pick,
-  `en-GB-ThomasNeural` at `+0%`), publish it as a GitHub Release asset, and the site build stages
-  the recent MP3s into `site/audio/` so the iPhone plays them same-origin (lock screen, CarPlay,
-  resume position). `report.js` falls back to Web Speech only when no MP3 is reachable. The Telegram
-  push waits for the MP3 before sending (`notify.py`), so the link opens on the real voice.
-- **Breaking-news alerts** were built 2026-08-16 (news only, cross-source corroboration) and
-  switched **off** 2026-08-17 at Logan's request. The workflow stays, unscheduled.
-- **Run health** lives on `site/status.html`, built from `state/run-log.jsonl`; §25's per-report
-  health footer is superseded by §0a.
-- **Archive and Academy (2026-09-02):** the index shows every edition of the latest day, filters the
-  archive by edition, and links to `site/academy.html` — the 150-lesson curriculum with every taught
-  lesson linked and the next one marked. Report pages gain working previous/next links at read time
-  (lessons step through lessons, news through news). Search indexes report pages only.
+Logan's exam for the FINRA Securities Industry Essentials (SIE) is about a month out. At his request
+a sixth edition was added: a **30-day SIE program**, published **every day (weekends included) at
+noon ET**, strictly exam study — no news, no markets. Procedure: `prompts/sie.md`. Roadmap and
+topic taxonomy: `curriculum/sie-30.json`. Memorization reference: `curriculum/sie-facts.json`.
+State: `state/sie.json`, answer keys in `state/sie/quizzes/`, Telegram replies in
+`state/sie/inbox.jsonl`. Slot `sie`, edition colour `--edition-sie`.
 
-### 0c. Amendment of 2026-09-09 — the markets weight (SUPERSEDES the story count and category balance in §4 and the section lists in §18–§21)
+- **Authority:** the official FINRA SIE Content Outline (4 sections: 16% / 44% / 31% / 9%). Where a
+  third-party prep convention conflicts with a FINRA or SEC rule, the rule wins.
+- **Goal is understanding, not only a pass.** Every edition separates UNDERSTAND / MEMORIZE /
+  EXAM TRAP / TRADER CONNECTION, teaches from first principles with flows and worked numbers, and
+  connects each topic to Logan's intended specialization (trading, derivatives, hedging, risk,
+  securities lending, collateral, market structure).
+- **Quizzes, grading, a weakness tracker and spaced repetition are REQUIRED here.** This is an
+  explicit exception to the Learning Brief's standing no-quiz rule, which is unchanged for the
+  Learning Brief. The two must not bleed into each other or into the news editions.
+- **Answers never appear on the page.** Logan replies to the Telegram bot; the `sie-inbox` GitHub
+  Action (every ~15 min) saves SIE messages to the inbox and replies with an instant score from the
+  stored key; the next noon edition grades every question in full and updates the tracker. Telegram
+  keeps bot updates only 24 hours, which is why the Action exists.
+- **Shape:** days 1–23 teaching (weighted to the outline and to conceptual weight, 75–120 min),
+  24–25 weak-area review, 26 and 28 practice exams (75 questions, 12/33/23/7), 27 exam review,
+  29 memorization sprint, 30 final exam + cheat sheet, then a report card and, if an exam date is
+  set, short maintenance editions until the exam.
+- **The SIE Study Guide** (`site/reports/sie/study-guide.html`, added 2026-09-25 at Logan's
+  request): one page covering everything the 30 days teach in slightly less detail, a chapter per
+  day with the same four labelled blocks and hidden-answer check questions, plus the exam-week
+  formula gauntlet, master memorization list and cheat sheet. Published with Day 1; every edition
+  links its chapter. Routines may only correct errors in it (logged as corrections).
+- **Question style** follows a practice exam Logan supplied, summarised as patterns in
+  `curriculum/sie-question-style.md` together with the third-party errors never to repeat.
+- Still one sender per edition: the edition push comes from `notify.py` like every other edition.
+  The inbox Action's score reply is a reply to Logan's own message, also sent by Actions, never by a
+  routine (iron rule 8b unchanged).
 
-Logan, after three weeks of the decluttered paper: *"the newspapers aren't containing enough
-markets/finance/business/economics stories and analysis."* Measured over the week of Sep 3–8:
-markets, the economy and business were 17–24% of the weekday reading path and 8% of the Saturday
-review; the Business section ran 40–80 words; two or three Top Stories a day touched a market; the
-real analysis sat in the collapsed appendix that neither the reader nor the audio player opens.
-Directed:
+### 0c. Amendment of 2026-09-25 — the Learning Brief restarted (SUPERSEDES §16 and every Learning Brief detail in §0a)
 
-- **This is a markets paper first.** SPEC §4's "relevance to Logan's interests" means markets,
-  the economy, central banks, business, earnings and the watchlist names, weighted above general
-  news of similar magnitude. At least four Top Stories come from them every edition; on jobs, CPI,
-  PCE and FOMC days the data or the Fed leads (the morning with the preview, the closing with the
-  print). Top Stories are 8–10; general-news Top Stories are capped at six.
-- **Two new standing weekday sections**: **Watchlist** (up to six items from
-  `config/watchlists.yml` names — filings, earnings with pre- and post-report cards, guidance,
-  contracts) and **Markets** (the regime, rates & credit, sectors & factors, cross-asset &
-  commodities, in prose, 400–600 words). The Market Appendix keeps the tables and drops the
-  duplicated narrative.
-- **The Economy** carries a release card for every print and a standing Fed-path paragraph
-  computed from fed funds futures and the effective rate (`prompts/weekday.md` §2.15).
-- **Weekend**: The Week in Markets runs 1,000 words or more with a weekly returns table; Sunday's
-  Economy Ahead and Earnings & Business carry consensus tables and Market Setup runs 400 or more.
-- **Paid for inside 18–25 minutes of reading path** — the collapsed appendix, the Board and the
-  tables no longer count toward `reading_minutes`, since the reader does not read them and the audio
-  does not speak them. Markets, the economy and business are roughly 40% or more of that reading
-  path (`prompts/shared-rules.md` §12b.7 has the word budget, whose range tops are ceilings); running tolls,
-  vulnerability catalogues and court-calendar mechanics become a sentence in a domain section
-  unless something materially changed.
-- **The Telegram push always carries one markets clause with its number.**
+Logan: *"I want you to completely restart my Daily Learning Brief system"* — and, to be clear,
+*"this is overtaking the current learning briefs and the future planned ones. Replace them with
+this 300 lesson plan."* Not an extension of the old curriculum: a full replacement. His framing of
+the purpose: subjects outside his main Finance/Economics/Accounting education, aimed at *"a very
+strong general baseline… not mastery or academic specialization"* — how the world works, the
+vocabulary and major ideas of each field, enough foundation to go deeper later.
 
-### 0d. Amendment of 2026-09-11 — year two of the Academy (extends §16)
-
-**Superseded 2026-09-25 by §0e: this section is history, not the live curriculum.** `academy-260`
-never started running (year one was still on day 19 when Logan replaced both curricula outright)
-and the schedule/audio decisions below are superseded by §0e's own. Left here as a record of what
-was designed and why.
-
-Logan's instruction for what follows the 150-day curriculum: *thirteen topics, twenty lessons
-each — one topic for twenty weekdays straight — way more in depth and advanced than the 150-day,
-up to one to two hours per day, covering a full year.* Built as `curriculum/academy-260.json`:
-
-- **Thirteen blocks of twenty**, in this order (confirmed and adjusted by Logan 2026-09-12):
-  Finance & Markets I and II (a 40-lesson course shaped on the public CFA topic areas, plus
-  trading), Economics (advanced micro, ten, then advanced macro, ten), Mathematics (moved ahead of
-  Physics so the physics lessons can assume it), Philosophy & Psychology (ten and ten), Physics,
-  Political Science and its theories, Rocketry (mechanical and flight), AI/Technology/Coding,
-  Accounting I and II (a 40-lesson course shaped on the public CPA blueprint), Wealth Management I
-  and II (a 40-lesson course shaped on the public CFP principal knowledge topics). No claim of
-  affiliation with any credentialing body.
-- **60–120 minutes per lesson** (working target 75–90), written in four to six parts, each a
-  chapter with its own formalism and worked examples on real data; exam-shaped blocks end with a
-  prose *what a practitioner is expected to know*. Still no quizzes, problem sets or self-assessment.
-- **The AI block is re-planned on its first morning** from current sources (`refresh_before_run`),
-  because it runs about a year after it was written; the refreshed plan lives in `state/`.
-- **Handover**: on the weekday after year one's day 150 (projected 2027-03-11), the Learning
-  Brief switches to `academy-260` day 1; `state/learning.json` carries a `curriculum` key.
-  Year two's day 260 lands around 2028-03-09.
-- **No audio for year-two lessons** (Logan, 2026-09-12): the audio job, the Telegram push and the
-  page all skip them. Year-one lessons keep their MP3s.
-- **Depth pass, 2026-09-12**: Logan's instruction "ensure this is advanced stuff", with a suggested
-  topic list per subject. Every block was audited against that list at graduate / professional-exam
-  depth, gaps folded in as parts and worked examples (whole days replaced only in block 5, where
-  Psychology had displaced ethics, metaethics and political philosophy: the philosophy half now runs
-  seven knowledge-and-mind days and three value-and-society days), factual slips corrected, and each
-  block's record carries a `coverage_note` saying what is taught, what was left to year one and why.
-- **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so a
-  two-hour lesson is finished before the Morning Brief publishes (`docs/RUNBOOK.md` A4); the Academy
-  page lists both years. Procedure: `prompts/learning.md` → **Year Two**.
-
-### 0e. Amendment of 2026-09-25 — the Academy restarted (SUPERSEDES §0d and the Learning Brief
-description in §16; REPLACES §0a's `curriculum/academy-150.json` bullet)
-
-Logan: *"I want you to completely restart my Daily Learning Brief system… replace it with"* a new
-structure. Not an extension of either prior curriculum — a full replacement, effective
-immediately, discarding both. His own framing of the purpose: this is for subjects outside his
-main Finance/Economics/Accounting education, aimed at *"a very strong general baseline… not
-mastery or academic specialization"* — understanding how the world works, recognizing concepts,
-following conversations and news intelligently, knowing each field's vocabulary and major ideas,
-with enough foundation to go deeper later if he wants to.
-
-- **Both prior curricula are retired outright**, not paused and not continued from where they
-  stopped. `curriculum/academy-150.json` (day 19 of 150 when this landed, 18 lessons actually
-  taught, 2026-08-17 through 2026-09-09) and `curriculum/academy-260.json` (designed but never
-  started) stay in the repo as a record of what ran before; `prompts/learning.md` no longer
-  references either. The ~19 already-published `-learn.html` pages stay live in the site archive
-  and search — deleting published editions is not what "remove from the active learning sequence"
-  was read to mean — but `site/academy.html` (the *active* sequence) tracks only the new
-  curriculum from here on.
+- **The old curriculum is retired outright**, not paused. `curriculum/academy-150.json` stopped
+  at day 31 of 150 (30 lessons taught, 2026-08-17 through 2026-09-25) and stays in the repo as a
+  record only; `prompts/learning.md` no longer reads it. A drafted "year two" plan (never merged,
+  never run) is dropped too. The 30 published `-learn.html` pages stay in the archive and search.
 - **The new curriculum**: `curriculum/academy-300.json` — **fifteen subjects, twenty weekday
-  lessons each, run strictly in sequence** (Mathematics finishes entirely before Physics starts,
-  and so on; never interleaved, unlike the old academy-150's day-by-day rotation). Order, exactly
-  as specified: Mathematics; Physics; Rockets, Spaceflight & Astronomy; AI, Computing & Modern
-  Technology; Psychology; Philosophy; Chemistry; Biology; Engineering; History & Civilizations;
-  Geography & Earth Science; Government & Law; Geopolitics & International Relations; Sociology &
-  Anthropology; Communication, Media & Linguistics. 300 lessons total, weekdays only, roughly
-  fourteen months end to end from whenever the first lesson actually runs.
-- **Depth**: baseline literacy, not a specialist course — "the 20% of ideas that give 80% of the
-  understanding," pitched at an intelligent, curious reader with no formal background in the
-  subject. Each subject's mission statement (in the curriculum file) names the working conceptual
-  grasp the twenty lessons build toward. Scope is fixed per subject to avoid overlap (e.g.
-  Mathematics teaches mathematical concepts, not statistics-for-finance; Physics teaches physical
-  law, not engineering design; Geography is the physical Earth, not geopolitics) — each subject's
-  `mission` and the day-by-day `key_concepts` hold that line.
-- **Format, replacing the old feature-journalism shape**: Today's Topic (the headline) → The Big
-  Idea (plain English) → How It Works (the mechanism) → Key Concepts (a short glossary) → Example /
-  Application → Equation / Model (only when one genuinely helps — never forced) → Why It Matters →
-  Remember These (3–5 takeaways) → Think About It (one reflective question, not an exercise). Still
-  no quizzes, no problem sets, no spaced repetition — that rule survives every version of this
-  system. Length: **about 15 minutes (2,600–4,000 words)** — the shortest report in the system,
-  down from year one's 25–30 minutes. Procedure: `prompts/learning.md` (fully rewritten; there is no
-  more "Year Two" section — see §0d above).
-- **No audio for the Learning Brief, any edition** (Logan, 2026-09-25 — a stricter rule than §0d's
-  year-two-only exception, which is moot now that year two never ran): `make_audio.py` skips every
-  `learn`-slot entry, `notify.py` sends the Telegram push without waiting on an MP3, and
-  `report.js` mounts no player at all — not even the Web Speech fallback. The news editions are
-  unchanged.
-- **Schedule moved to 5:00 AM ET** (from 6:00 AM), **delivered by 5:30 AM**: cron `0 9 * * 1-5`
-  during EDT / `0 10 * * 1-5` during EST (`docs/RUNBOOK.md` A4, B). Realistic because the new
-  lessons are short and carry no audio-wait step. This also removes the old overlap risk with the
-  6:30 AM Morning Brief by a full hour.
-- **Reset**: `state/learning.json` → `curriculum: "academy-300"`, `day: 1`, `completed: []`,
-  `started: "2026-09-25"`, with the retired curriculum's stopping point kept in a
-  `previous_curriculum` field for the record. The first lesson (Mathematics, day 1) is written by
-  the next scheduled run, not pre-generated by this restart — consistent with the standing rule
-  that the curriculum file is a plan the daily routine expands, not a cache of finished reports.
+  lessons each, run strictly in sequence** (a subject finishes entirely before the next begins;
+  never interleaved). Order, exactly as Logan specified: Mathematics; Physics; Rockets,
+  Spaceflight & Astronomy; AI, Computing & Modern Technology; Psychology; Philosophy; Chemistry;
+  Biology; Engineering; History & Civilizations; Geography & Earth Science; Government & Law;
+  Geopolitics & International Relations; Sociology & Anthropology; Communication, Media &
+  Linguistics. 300 lessons, weekdays only, about fourteen months end to end. Each subject's
+  `mission` fixes its scope so subjects don't overlap. Lessons are written fresh each weekday by
+  the routine from the plan — never pre-generated. `site/academy.html` shows the plan and progress.
+- **Depth**: baseline literacy — "the 20% of ideas that give 80% of the understanding," for an
+  intelligent, curious reader with no formal background in the subject. Not dumbed down, not a
+  graduate lecture.
+- **Format**: Today's Topic (the headline) → The Big Idea → How It Works → Key Concepts (short
+  glossary) → Example / Application → Equation / Model (only when one genuinely helps) → Why It
+  Matters → Remember These (3–5 takeaways) → Think About It (one question). Still no quizzes, no
+  problem sets, no spaced repetition. Length: **about 15 minutes (2,600–4,000 words)**, down from
+  25–30. Procedure: `prompts/learning.md` (rewritten). Reference layout:
+  `site/reports/2026/09/2026-09-25-practice-learn.html` (a practice Day 1, not counted as taught).
+- **No audio.** Report audio was retired system-wide the same day (§0a), so the Learning Brief is
+  text only. `notify.py` holds each Telegram push until Pages is actually serving the page (about
+  1.5 minutes after the push), so the link never opens on a 404.
+- **Schedule: about 5:00 AM ET, delivered by 5:30 AM.** The routine starts at **4:50 AM ET**
+  (`CRON_TZ=America/New_York 50 4 * * 1-5`, DST-proof). Why ten to the hour: the scheduler starts
+  `:00` crons 9–12 minutes late (the old 6:00 AM cron actually fired 6:08–6:10; the 9:00 AM
+  weekend cron 9:11), while other minutes fire on time (the 6:30 cron fires at 6:30). A lesson run
+  pushes 8–12 minutes after it starts and the page is live 1–2 minutes later, so the push lands
+  around 5:00–5:10 with about twenty minutes to spare. `docs/RUNBOOK.md` A4 has the routine edit.
+- **Reset**: `state/learning.json` → `curriculum: "academy-300"`, `day: 1`, `completed: []`, with
+  the retired curriculum's stopping point kept in `previous_curriculum`. The first real lesson
+  (Mathematics, day 1) is the first weekday run after this lands.
+- **Index headline**: a learn entry's `headlines[0]` reads `Day N of 300 · <Subject>: <clause>`;
+  `site/academy.html` counts a lesson as taught only from that exact shape with a total of 300.
 
 ## 1. Mission
 
@@ -277,60 +217,59 @@ SpaceX is public (see §0) — track under public equities/aerospace/space/comms
 
 Never hardcode public/private status. Per entity: official + common name, status (public/private/acquired/merged/delisted/renamed), parent/subsidiaries, ticker, exchange, share class, IPO/delisting dates, HQ, industry, last-verified date, verification source. Verify via SEC EDGAR (`data.sec.gov/submissions/CIK##########.json` — authoritative tickers/exchanges signal; UA header required). Detect IPOs, listings, SPACs, acquisitions, spin-offs, ticker/exchange changes, delistings, bankruptcies, going-private. Private module (verified 2026-07-26, all private): OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink — track last-verified valuation + date, rounds, investors, revenue estimates + source, secondaries, contracts, IPO preparations, public proxies. NEVER invent a price for a private company. OpenAI/Anthropic/Discord have reported confidential S-1s → weekly EDGAR re-check (Saturday run); flag flips in next report. Weekly registry sweep is part of the Saturday routine.
 
-## 16. The Learning Brief (weekday 5:00 AM ET) — replaces the in-report learning tracks
+## 16. The Learning Brief (weekday ~5:00 AM ET, delivered by 5:30) — replaces the in-report learning tracks
 
-**Superseded §16 in full on 2026-08-16, then again in full on 2026-09-25 (§0e).** There are no
+**Superseded in full on 2026-08-16, then again in full on 2026-09-25 (§0c).** There are no
 lessons in the news editions.
 
 A separate fifth edition, strictly learning, weekdays only. **One lesson per report**: one subject,
 one topic, about fifteen minutes (2,600–4,000 words), taught properly. Same masthead and typography
-as the news editions, but the voice is closer to a sharp private tutor than a feature-magazine
-writer — get to the idea, teach it well, stop.
+as the news editions; the voice is a sharp private tutor — get to the idea, teach it well, stop.
 
-Shape: The Big Idea (plain English) → How It Works (the mechanism) → Key Concepts (a short
-glossary) → Example / Application → Equation / Model (only when one genuinely helps, never forced)
-→ Why It Matters → Remember These (3–5 takeaways) → Think About It (one reflective question). No
-quizzes, no problem sets, no spaced repetition, no self-assessment.
+Shape: The Big Idea → How It Works → Key Concepts → Example / Application → Equation / Model (only
+when one genuinely helps) → Why It Matters → Remember These (3–5 takeaways) → Think About It (one
+reflective question). No quizzes, no problem sets, no spaced repetition, no self-assessment. No
+audio.
 
 Curriculum: `curriculum/academy-300.json` — 300 weekday lessons, **fifteen subjects, twenty
-lessons each, run strictly in sequence** (a subject finishes entirely before the next begins — no
-interleaving). Order: Mathematics; Physics; Rockets, Spaceflight & Astronomy; AI, Computing &
-Modern Technology; Psychology; Philosophy; Chemistry; Biology; Engineering; History &
-Civilizations; Geography & Earth Science; Government & Law; Geopolitics & International Relations;
-Sociology & Anthropology; Communication, Media & Linguistics. Position in `state/learning.json`.
-Procedure in `prompts/learning.md`. No audio (§0e).
-
-This replaced two earlier curricula outright on 2026-09-25 (§0e): `curriculum/academy-150.json`
-(150 lessons across seven subjects, interleaved by phase) and `curriculum/academy-260.json`
-(designed as an advanced 260-lesson "year two" but never started). Both are retired — kept in the
-repo as a record, never read by the current procedure. The sequence never restarts.
+lessons each, run strictly in sequence** (order in §0c). Position in `state/learning.json`.
+Procedure in `prompts/learning.md`. Progress: `site/academy.html`. The retired
+`curriculum/academy-150.json` is a record only. At day 300 the curriculum is complete; what
+follows is Logan's call. The sequence never restarts.
 
 ## 17. Calendars
 
 Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnings, votes, hearings, court decisions, summits, deadlines, launches, milestones — ET primary, importance-classified (Critical/High/Medium/Low, with reason). Closing: completed (with results), delayed, canceled, still upcoming, overnight, tomorrow's majors. Sunday: full day-by-day week plan with expected market sensitivity.
 
-## 18. Weekday MORNING report structure (6:30 AM ET) — revised 2026-08-16
+## 18. Weekday MORNING report structure (6:30 AM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · Top Stories · Overnight · The Economy · Business · **Watchlist** ·
-Politics & Government · The World · Technology & AI · Science & Space · Today's Calendar ·
-Before the Open · **Markets** · Risks & Scenarios · **Local** (weather strip, then the three
-beats) · Market Appendix (collapsed) · Colophon. *(Watchlist and Markets added, and the market
-sections moved ahead of the general-news domains, 2026-09-09 — §0c.)*
+Masthead · The Brief (markets-led) · Top Stories (finance-weighted) · Overnight & Since the Close ·
+Before the Open (expanded centerpiece) · The Economy (Fed/Treasury/rates, expanded) ·
+Business & Earnings (expanded) · Today's Calendar · Risks & Scenarios · The United States · The World ·
+AI & Technology · Science · Space · Also in the News (small catch-all) · **Local** (weather strip + the
+three beats incl. Pennsylvania) · Market Appendix (collapsed) · Colophon.
 
-Domain sections with nothing material are omitted, not padded. Before the Open is prose, not a
-table: futures, yields, dollar, VIX, oil, gold, BTC, what the tape appears to price, the most
-fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
+Both weekday editions LEAD with and go deepest on finance / business / economics / Fed / Treasury —
+that block is the main event and gets the depth. General news is kept real: **The United States**,
+**The World**, **AI & Technology**, **Science**, **Space** and **Local** (including Pennsylvania) all
+stay dedicated sections. **Also in the News** is only a small catch-all for what none of them cover
+(climate/disasters, public health, human interest), omitted when empty. Domain items with nothing
+material are omitted, not padded. Before the Open is prose, not a table: futures, the curve, dollar,
+VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most fragile
+assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
 
-## 19. Weekday CLOSING report structure (4:30 PM ET) — revised 2026-08-16
+## 19. Weekday CLOSING report structure (4:30 PM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · **The Board** (the 25-row watchlist chart, shared-rules §17) · Top Stories ·
-What Changed Today · The Economy · Business · **Watchlist** · Politics & Government · The World ·
-Technology & AI · Science & Space · What Moved Markets · **Markets** · Winners & Losers ·
-Tomorrow · **Local** (no weather strip) · Market Appendix (collapsed) · Colophon. *(Watchlist and
-Markets added, and the market sections moved ahead of the general-news domains, 2026-09-09 — §0c.)*
+Masthead · The Brief (markets-led) · **The Board** (the 25-row watchlist chart, shared-rules §17) ·
+Top Stories (finance-weighted) · What Moved Markets (expanded) · Winners & Losers ·
+What Changed Today · The Economy (Fed/Treasury/rates, expanded) · Business & Earnings (expanded) ·
+Tomorrow · The United States · The World · AI & Technology · Science · Space · Also in the News (small
+catch-all) · **Local** (no weather strip, the three beats incl. Pennsylvania) · Market Appendix
+(collapsed) · Colophon.
 
-What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / `Likely contributor` /
-`Market narrative` / `Unexplained`. Those are honesty, not clutter, and they stay.
+What Moved Markets sits high in the edition and keeps its four attribution labels —
+`Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Those are honesty,
+not clutter, and they stay.
 
 What Moved Markets: open/morning/midday/close phases; rates, data, earnings, policy, geopolitics, commodities, positioning, technicals, rebalancing/flows. Label: Confirmed catalyst / Likely contributor / Market narrative / Unexplained. Never force a narrative.
 
@@ -342,16 +281,24 @@ Complete retrospective that SYNTHESIZES (not concatenates): 1 Cover & date range
 note in the report, a **Local** section covering the week's three beats, and the section list above
 consolidated per `prompts/weekend.md` — best/worst assets and sector rotation fold into The Week in
 Markets; overhyped and undercovered become one section; the registry sweep becomes one sentence in
-the colophon. **Revised 2026-09-09 (§0c):** The Week in Markets runs 1,000 words or more and opens
-with a weekly returns table; The Economy & Central Banks and Business & Earnings run 300 or more.
+the colophon.
+
+**Finance-first (2026-09-25):** the weekly Markets / Economy & Central Banks / Business & Earnings block
+leads and gets the depth. US politics, the world, AI & Technology, Science, Space and Local (incl.
+Pennsylvania) all stay dedicated weekly reviews; **Also in the News** is only a small catch-all for what
+none of them cover. Authoritative order in `prompts/weekend.md` S4.
 
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
 1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 23 Sources & Methodology.
 
 **Revised 2026-08-16:** no learning previews, plus a **Local Week Ahead** section; consolidated
-per `prompts/weekend.md`. **Revised 2026-09-09 (§0c):** consensus tables for the week's releases and
-the watchlist earnings, the Fed path in The Economy Ahead, and Market Setup at 400 words or more.
+per `prompts/weekend.md`.
+
+**Finance-first (2026-09-25):** the forward Economy Ahead / Earnings & Business / Market Setup block
+leads and gets the depth. The United States, The World Ahead, AI & Technology Ahead, Science Ahead,
+Space Ahead (incl. the launch calendar) and Local Week Ahead all stay dedicated; **Also in the News
+Ahead** is only a small catch-all. Authoritative order in `prompts/weekend.md` U3.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 
@@ -363,7 +310,7 @@ the watchlist earnings, the Fed path in The Economy Ahead, and Market Setup at 4
 - **Watchlists** (`config/watchlists.yml`, editable): mega-cap tech (AAPL MSFT NVDA AMZN GOOGL META TSLA SPCX), AI infra (NVDA AMD AVGO TSM ASML MU MRVL ANET VRT ETN PWR CEG VST EQIX DLR), defense/aero (LMT RTX NOC GD BA LHX HII BWXT AVAV KTOS PLTR RKLB SPCX), space (SPCX RKLB ASTS LUNR RDW PL BKSY IRDM SPIR VSAT GSAT KRMN VOYG FLY YSS), financials (JPM BAC C WFC GS MS SCHW IBKR HOOD COIN CME ICE CBOE BLK BX KKR APO ARES), health (LLY NVO UNH JNJ ABBV MRK PFE VRTX REGN TMO DHR ISRG), consumer (WMT COST AMZN TGT HD LOW MCD SBUX CMG BKNG ABNB DAL UAL RCL). Per company as available: price, cap, returns, volume/rel volume, earnings date, revenue & EPS growth, FCF, forward valuation, estimate revisions, filings, insider activity, news, RS vs industry & SPY, short interest (labeled stale), implied move/IV when available, technical levels.
 - **Rates:** fed funds target + effective, full curve 3M→30Y, 2s10s, 3m10y, 5s30s, 10Y real, 10Y breakeven, mortgage rates, SOFR. Funds: SGOV BIL SHY IEI IEF TLT GOVT TIP SCHP BND AGG MUB. Per rate: level, bp changes D/W/M, trend, catalyst, policy/equity/housing/dollar implications. Yields in bp, prices vs yields explained correctly.
 - **Credit:** IG & HY spreads (self-archived history), issuance, defaults, LQD VCIT HYG JNK BKLN SRLN, HYG/LQD, HYG/IEF, upgrades/downgrades. Does credit confirm equities?
-- **Volatility & options:** VIX, VIX9D, VIX3M (term structure & inversions), MOVE when available, ~~put/call ratios (Cboe daily)~~ (retired 2026-08-16, §0a — not tracked, never named by endpoint in a report), realized vs implied, expirations. Explain contango/backwardation. Label modeled estimates. Dealer gamma: not tracked (no legitimate free source) — say so.
+- **Volatility & options:** VIX, VIX9D, VIX3M (term structure & inversions), MOVE when available, put/call ratios (Cboe daily), realized vs implied, expirations. Explain contango/backwardation. Label modeled estimates. Dealer gamma: not tracked (no legitimate free source) — say so.
 - **FX:** DXY, EURUSD, USDJPY, GBPUSD, USDCNY, USDCHF, USDCAD, AUDUSD, USDMXN, USDBRL, USDINR — rate differentials, CB divergence, risk sentiment, carry, intervention risk.
 - **Commodities:** WTI, Brent, natgas, gasoline, gold, silver, copper, platinum, uranium indicators, corn, wheat, soybeans, coffee, cocoa, sugar, cotton, cattle. Big moves: supply/demand/inventories/weather/sanctions/war/transport/currency/rates/speculation/policy.
 - **Crypto:** BTC, ETH, SOL, ADA, stablecoins, total cap, BTC dominance, ETF flows, funding/basis/OI/liquidations when available, regulation, network developments. Separate price action from fundamentals from leverage. No anonymous social posts as sources.
@@ -382,7 +329,7 @@ Committed NYSE holiday/early-close table (`data/nyse-holidays.json`, published 3
 
 ## 25. Reliability
 
-Idempotent runs (`state/last-run.json` date+slot check → no duplicate reports/deliveries). Per-source timeout + 3 retries + exponential backoff → repo-cached last-good fallback, labeled. Partial reports over no reports; one failed provider never kills the run. Delivery verification (Telegram API response checked; page URL probed). ~~Health footer every report: sources up/down, data ages, run duration, prior failures.~~ **Superseded 2026-08-16 (§0a):** run health goes to `state/run-log.jsonl` and `site/status.html`, never into the report. Manual regeneration: run-now at claude.ai/code/routines. Everything rebuildable from repo alone. Runbook in `docs/RUNBOOK.md` (token rotation, DST bump, holiday refresh, failure triage).
+Idempotent runs (`state/last-run.json` date+slot check → no duplicate reports/deliveries). Per-source timeout + 3 retries + exponential backoff → repo-cached last-good fallback, labeled. Partial reports over no reports; one failed provider never kills the run. Delivery verification (Telegram API response checked; page URL probed). Health footer every report: sources up/down, data ages, run duration, prior failures. Manual regeneration: run-now at claude.ai/code/routines. Everything rebuildable from repo alone. Runbook in `docs/RUNBOOK.md` (token rotation, DST bump, holiday refresh, failure triage).
 
 ## 26. Security
 
@@ -398,4 +345,4 @@ Cloudflare Worker (free), 1-min cron in market hours: watchlist %-moves (Finnhub
 
 ## 29. Acceptance tests (system incomplete until all pass)
 
-All four report types delivered on schedule · correct ET & DST behavior · holiday behavior · computer-off & session-closed operation · iPhone notification + full report opens · searchable archive · citations everywhere · dedupe works · "since previous report" works · neutral politics · fact-vs-analysis labels · every table timestamped & delay-labeled · registry verification live (SpaceX public under SPCX with correct ticker-history handling) · source-failure tolerance · duplicate prevention · editable watchlists · morning ≠ closing differentiation · Saturday synthesis · Sunday forward plan · ~~three learning tracks sequential across a full week~~ the Learning Brief advances one curriculum day per weekday and never skips or restarts (§0a, §16) · secure credentials · runbook complete.
+All four report types delivered on schedule · correct ET & DST behavior · holiday behavior · computer-off & session-closed operation · iPhone notification + full report opens · searchable archive · citations everywhere · dedupe works · "since previous report" works · neutral politics · fact-vs-analysis labels · every table timestamped & delay-labeled · registry verification live (SpaceX public under SPCX with correct ticker-history handling) · source-failure tolerance · duplicate prevention · editable watchlists · morning ≠ closing differentiation · Saturday synthesis · Sunday forward plan · three learning tracks sequential across a full week · secure credentials · runbook complete.

@@ -5,19 +5,21 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "curriculum/academy-300.json"   # copied into the site as academy.json
   workflow_dispatch:
   # PR-path publishes: after publish-report merges a claude/* report PR, this
   # workflow_run trigger rebuilds and deploys from main (merges made with
   # GITHUB_TOKEN never fire push events, and the github-pages environment only
   # allows deploys from main — which workflow_run satisfies).
   workflow_run:
-    workflows: ["Publish report (auto-merge claude/ PRs)"]
+    workflows: ["Publish report (auto-merge routine PRs)"]   # must match publish-report.yml's name: exactly
     types: [completed]
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  pull-requests: read   # notify gate: look up the merged PR's file list
 
 concurrency:
   group: pages
@@ -43,20 +45,17 @@ jobs:
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
 
-      # Same idea for the Academy page: the curriculum lives in curriculum/,
-      # outside the site root, and academy.html lists every lesson from it.
-      # academy-150.json and academy-260.json are retired (2026-09-25,
-      # SPEC Sec.0e) and no longer copied in.
+      # Same idea for the Academy page: the Learning Brief's curriculum lives
+      # in curriculum/, outside the site root, and academy.html lists every
+      # lesson from it (SPEC Sec.0c, 2026-09-25).
       - name: Publish the curriculum for the Academy page
         run: cp curriculum/academy-300.json site/academy.json || echo "no curriculum yet"
 
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
       # that key by hand was the documented rule and it was missed the very
-      # next time assets changed: the MP3 player shipped in report.js while
-      # sw.js still said ldn-cache-v2, so every phone kept running the
-      # pre-MP3 player and silently ignored audio that was being published
-      # correctly every day.
+      # next time assets changed: a report.js update shipped while sw.js still
+      # said ldn-cache-v2, so every installed phone kept running the old file.
       #
       # So derive it instead. The key is now a hash of the asset bytes: change
       # any asset and the cache key changes with it, forget to do anything and
@@ -70,50 +69,8 @@ jobs:
           echo "cache key: ldn-cache-$HASH"
           grep -n '^var VERSION' site/sw.js
 
-      # Release assets serve Content-Type: application/octet-stream with
-      # Content-Disposition: attachment. Chrome sniffs past that; iOS Safari
-      # does not, and refuses to play it in an <audio> element -- so the
-      # player fell back to browser speech on the one device this exists for,
-      # every time, while the MP3 sat there correct and unplayable.
-      #
-      # Pages serves .mp3 as audio/mpeg, inline, same-origin, with range
-      # requests. So copy the recent audio into the artifact at build time.
-      # Releases stay the storage -- nothing is committed, git stays clean,
-      # and only the recent editions ride along in the deploy.
-      #
-      # How many: three editions a weekday, so 8 releases was under three
-      # days -- a lesson from last week fell back to the release URL, which
-      # the iPhone will not play, and then to browser speech. Newest first,
-      # up to 40 releases, stopping once about 650 MB is staged: a news
-      # edition is ~9 MB, a year-one lesson ~10 MB, and a year-two lesson
-      # (60-120 minutes, from 2027) 20-45 MB, so the byte cap is what keeps
-      # the deploy under GitHub Pages' 1 GB soft limit once the long lessons
-      # start. The three newest are always staged regardless.
-      - name: Stage recent audio for same-origin playback
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p site/audio
-          budget=$((650 * 1024 * 1024)); total=0; n=0
-          gh release list --limit 40 --json tagName \
-            --jq '.[] | select(.tagName | startswith("audio-")) | .tagName' \
-          | while read -r tag; do
-              if [ "$total" -ge "$budget" ] && [ "$n" -ge 3 ]; then
-                echo "audio budget reached; not staging $tag"; continue
-              fi
-              gh release download "$tag" --dir site/audio --clobber || \
-                { echo "no asset on $tag"; continue; }
-              total=$(du -sb site/audio | cut -f1); n=$((n + 1))
-            done
-          echo "staged:"; ls -lh site/audio/ 2>/dev/null || echo "  (none yet)"
-
-      # Only the reports are searchable. Without the glob, Pagefind also
-      # indexed site/report-template.html -- the design sample, whose fake
-      # "central bank signals slower runoff" story and illustrative figures
-      # then turned up as real search hits -- plus the archive and status
-      # pages, which have nothing worth finding.
       - name: Build Pagefind search index
-        run: npx -y pagefind --site site --glob "reports/**/*.html"
+        run: npx -y pagefind --site site
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -138,22 +95,56 @@ jobs:
 
   # Telegram notification for PR-path publishes only — sent AFTER the deploy so the
   # link is live. Direct-push publishes are notified by notify-telegram.yml instead.
+  #
+  # GUARD (2026-09-25): only notify when the merged PR actually published a new
+  # edition, i.e. its own file list includes site/reports/index.json. Without this,
+  # any workflow_run re-announced the latest edition and sent a duplicate brief.
+  # publish-report.yml now only merges routine PRs, so this is the second line of
+  # defence. It reads the PR's files, NOT main's tip: other commits (the sie-inbox
+  # poller, a direct-push edition) can land on main before this job starts, and a
+  # tip diff would then skip a real edition.
   notify:
     if: github.event_name == 'workflow_run'
     needs: deploy
     runs-on: ubuntu-latest
-    # notify.py also waits here for the report MP3 (audio.yml runs off the same
-    # publish-report completion, in parallel with this deploy).
-    timeout-minutes: 55
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: main
 
+      - name: Did the merged PR publish a new edition?
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # publish-report ran on the pull_request event, so this is the PR's head commit.
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          pr=$(gh api "repos/${{ github.repository }}/commits/$HEAD_SHA/pulls" \
+                 --jq '[.[] | select(.merged_at != null)][0].number // empty' || true)
+          if [ -z "$pr" ]; then
+            # Fail open: a missed edition is worse than a rare duplicate.
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "could not resolve the merged PR for $HEAD_SHA -- notifying anyway."
+            exit 0
+          fi
+          if ! files=$(gh api --paginate "repos/${{ github.repository }}/pulls/$pr/files" --jq '.[].filename'); then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "could not list PR #$pr files -- notifying anyway."
+            exit 0
+          fi
+          if printf '%s\n' "$files" | grep -qx 'site/reports/index.json'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "PR #$pr changed index.json -- a new edition, will notify."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "PR #$pr did not change index.json -- no new edition, skipping Telegram."
+          fi
+
       - name: Send Telegram notification
+        if: steps.gate.outputs.changed == 'true'
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/notify.py

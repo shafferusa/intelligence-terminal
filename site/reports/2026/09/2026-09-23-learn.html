@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Grid of Numbers That Is Secretly a Move — Learning Brief, Wed, Sep 23, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-23",
+    "slot": "learn",
+    "title": "The Grid of Numbers That Is Secretly a Move",
+    "path": "reports/2026/09/2026-09-23-learn.html",
+    "summary": "Day 28 of the 150-day curriculum: solving simultaneous equations by elimination, and the deeper idea underneath it — a matrix is not a table of numbers but an instruction for how to move every point in space, built around a 2,200-year-old Chinese grain problem, a rotation that refuses to commute with a reflection, and a hedge built from two real ETFs.",
+    "headlines": [
+      "Day 28 of 150 · Mathematics",
+      "Elimination is 2,000 years older than Gauss's name on it",
+      "Why a matrix is a move, not a grid, and why order matters"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-09-23T06:10:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Grid of Numbers That Is Secretly a Move</h1>
+      <p class="paper-dateline">
+        Wednesday, September 23, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A 2,200-year-old grain problem, a rotation that will not swap places with a reflection, and a hedge built from two ETFs in Wednesday&rsquo;s closing prices all turn out to be the same object: a matrix, which is not a table of numbers but an instruction for how to move every point in space.</p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 28 of 150 &middot; Mathematics 12 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A grain problem with three unknowns and a board full of rods</h3>
+
+      <p>Sometime before the year 100 CE, a Chinese scribe copying out a mathematics text called the <i>Jiuzhang Suanshu</i> &mdash; <i>The Nine Chapters on the Mathematical Art</i>, a book that had already been assembled and revised by generations of officials and scholars over the preceding few centuries &mdash; wrote down a problem about grain. Three bundles of top-grade grain, two of medium-grade, and one of low-grade together yield 39 <i>dou</i> (a unit of dry volume). Two top-grade, three medium-grade, and one low-grade yield 34 <i>dou</i>. One top-grade, two medium-grade, and three low-grade yield 26 <i>dou</i>. The question: how much grain does one bundle of each grade actually hold?</p>
+
+      <p>This is three simultaneous facts about three unknown quantities, and no single one of the three sentences can be solved on its own &mdash; the first sentence alone is consistent with an infinite number of possible bundle sizes. Only taken together, all three at once, do they pin down a unique answer. The chapter of the <i>Nine Chapters</i> that contains this problem is called <i>Fangcheng</i> &mdash; roughly, &ldquo;rectangular arrays&rdquo; &mdash; and its method for solving it was to lay the three sentences&rsquo; coefficients out as columns of counting rods on a flat surface, one column per sentence, and then systematically combine columns to cancel out one unknown at a time, working the grid down toward a shape where the last column contained only one unknown, solvable directly, which could then be substituted back up through the rest. Work through the arithmetic today &mdash; this lesson will, in the first worked example below &mdash; and you get top-grade at 9&frac14; <i>dou</i> per bundle, medium at 4&frac14;, and low at 2&frac34;.</p>
+
+      <p>Here is the number that seems wrong, and the reason this lesson opens with a grain merchant instead of a modern textbook. Method of solution described above &mdash; lay coefficients out in a rectangular grid, systematically combine rows or columns to eliminate unknowns one at a time, then solve backward &mdash; is, arithmetic operation for arithmetic operation, the identical procedure taught in every linear-algebra course on Earth today under the name <b>Gaussian elimination</b>. Carl Friedrich Gauss did use it, in 1810, in a paper on the orbit of the newly discovered asteroid Pallas, applying it to the equations that fell out of his method of least squares. He did not invent it. The <i>Fangcheng</i> chapter&rsquo;s counting-rod procedure predates that paper by roughly eighteen centuries, and Gauss himself never claimed otherwise &mdash; the naming happened later, as later mathematicians and the professional human &ldquo;computers&rdquo; of the nineteenth century adopted the specific notation Gauss had used for his own orbit calculations and carried his name along with it. The word for the rectangular grid of numbers itself &mdash; <i>matrix</i> &mdash; is even younger than the misattributed name: the British mathematician James Joseph Sylvester coined it only in 1850, choosing the Latin word for &ldquo;womb&rdquo; because he saw the grid as the place from which smaller square arrays, and the single numbers called determinants that could be computed from them, were born. So the tool is one of the oldest continuously used pieces of mathematics on record, and the vocabulary for talking about it is barely older than the telegraph.</p>
+
+      <p>There is a second piece of that ancient procedure worth pausing on before moving past it, because it is not a footnote &mdash; it is where an entire category of number entered written mathematics for what may be the first time on record. Run elimination on a real system of equations, as this lesson&rsquo;s first worked example is about to, and it is almost unavoidable that some intermediate quantity along the way comes out negative, even when every original number in the problem was a positive count of grain. The counting-rod method handled this by laying out two kinds of rod: red rods for positive quantities, black rods for negative ones (or, where only one color of rod was available, a rod laid diagonally across a column to flag it as negative). Liu Hui, the third-century mathematician whose commentary on the <i>Nine Chapters</i> is the version of the text that survives in the most complete form, wrote directly about what those black rods meant: &ldquo;two calculations have opposite gain and loss; one must use &lsquo;positive&rsquo; and &lsquo;negative&rsquo; to name them.&rdquo; That is a working definition of negative numbers, arrived at because the <i>Fangcheng</i> chapter&rsquo;s own elimination arithmetic demanded one &mdash; centuries before negative numbers were accepted, argued over, or even consistently used elsewhere in the mathematical world. Solving several conditions at once did not just produce a method later renamed after someone else. It forced the invention of the accounting device &mdash; the signed number &mdash; that elimination has depended on in every century since.</p>
+
+      <p>None of that is the interesting part yet. The interesting part is what a matrix actually <i>is</i>, once you stop thinking of it as a grid at all &mdash; and elimination, it turns out, is only half the story that grid can tell.</p>
+
+      <h3>Two questions, and they are the same question</h3>
+
+      <p>Strip away the notation for a moment and there are exactly two things this lesson is going to teach, and they look unrelated until they suddenly are not. The first: given several conditions that must all hold simultaneously on the same set of unknown quantities &mdash; the grain problem&rsquo;s three sentences, or a bridge&rsquo;s trusses each needing their forces to balance, or a mixing tank that has to hit a target volume and a target concentration at once &mdash; how do you find the one combination of values, if one exists, that satisfies every condition at the same time? That is what a <b>system of linear equations</b> is, and <b>elimination</b> is the systematic procedure for answering it: use one condition to strip an unknown out of the others, repeat until only one unknown is left standing alone, solve it, then walk the answer back up through everything you eliminated.</p>
+
+      <p>The second question sounds completely different: if you take every point in a plane, or in three-dimensional space, and move each one according to some consistent rule &mdash; rotate the whole plane thirty degrees, or stretch it twice as tall while leaving it the same width, or tip it sideways into a slant &mdash; how do you write that rule down precisely enough to compute where any given point lands? That is what a <b>matrix</b> is for, once you see it correctly: not a static grid of numbers sitting there being a grid, but a compact set of instructions for a specific kind of move &mdash; a <i>linear transformation</i> &mdash; applied to every point in space at once. &ldquo;Multiply a vector by a matrix&rdquo; means, in plain terms, &ldquo;apply this move to this point and tell me where it ends up.&rdquo;</p>
+
+      <p>The reason this lesson teaches both in the same 28 minutes is that they are not two topics bolted together for convenience. They are the same mathematical object looked at from its two ends. A system of equations, arranged correctly, <i>is</i> a matrix acting on an unknown vector of values and being asked to produce a known vector of totals. Solving the system and understanding the transformation turn out to be the same act of understanding, approached from opposite directions &mdash; and by the end of this lesson you will be able to look at a single failed elimination and know, without any extra calculation, exactly what that failure says about the transformation underneath it.</p>
+
+      <h3>The formalism: rows, unknowns, and three moves that never change the answer</h3>
+
+      <p>A system of linear equations is any collection of equations, each one a sum of unknowns multiplied by fixed numbers, set equal to a fixed total &mdash; no unknown multiplied by another unknown, no unknown raised to a power, nothing but plain addition of scaled unknowns. Written out for three equations in three unknowns, it looks like this.</p>
+
+      <div class="formula">
+        <p class="expr">a<sub>11</sub>x<sub>1</sub> + a<sub>12</sub>x<sub>2</sub> + a<sub>13</sub>x<sub>3</sub> = b<sub>1</sub><br>
+        a<sub>21</sub>x<sub>1</sub> + a<sub>22</sub>x<sub>2</sub> + a<sub>23</sub>x<sub>3</sub> = b<sub>2</sub><br>
+        a<sub>31</sub>x<sub>1</sub> + a<sub>32</sub>x<sub>2</sub> + a<sub>33</sub>x<sub>3</sub> = b<sub>3</sub></p>
+        <dl>
+          <dt>x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub></dt><dd>the unknown quantities the system is trying to pin down &mdash; the same three numbers appear in every equation, which is exactly what makes the equations a linked <i>system</i> rather than three independent puzzles.</dd>
+          <dt>a<sub>ij</sub></dt><dd>the coefficient sitting in equation i (the row) on unknown x<sub>j</sub> (the column) &mdash; a fixed, known number, not part of what you are solving for.</dd>
+          <dt>b<sub>i</sub></dt><dd>the known total that equation i must add up to.</dd>
+        </dl>
+      </div>
+
+      <p>Strip the unknowns&rsquo; names off and keep only the coefficients and totals, arranged in the same rows and columns, and you have exactly the counting-rod arrangement the <i>Fangcheng</i> chapter worked with &mdash; what a modern textbook calls an <b>augmented matrix</b>, the coefficient grid with the totals tacked on as one extra column, usually drawn with a vertical bar separating the two.</p>
+
+      <p>Elimination works by repeatedly applying three moves to this grid, chosen specifically because none of them can ever change what values of x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub> satisfy the system &mdash; they only change how the system is written.</p>
+
+      <div class="formula">
+        <p class="expr">Row swap &nbsp;&middot;&nbsp; Row scaling &nbsp;&middot;&nbsp; Row replacement</p>
+        <dl>
+          <dt>Row swap</dt><dd>exchange the position of two equations. Order never mattered to what counts as a simultaneous solution.</dd>
+          <dt>Row scaling</dt><dd>multiply every term in one equation by the same nonzero number. If 2x + y = 8 is true, so is 4x + 2y = 16 &mdash; scaling a true equation produces another true equation with the identical solution set.</dd>
+          <dt>Row replacement</dt><dd>replace one equation with itself plus a multiple of another equation. If both original equations are true simultaneously, their sum (or any scaled combination) is automatically true too &mdash; this is the move that actually cancels unknowns.</dd>
+        </dl>
+      </div>
+
+      <p>The whole of elimination is: use row replacement, over and over, to zero out the coefficients below the first entry in the first column, then below the second entry in the second column, and so on, until the grid has become <i>upper triangular</i> &mdash; every entry below the main diagonal is zero, so the bottom row involves only the last unknown, directly solvable, and each row above it can then be solved in turn by substituting in what you already found below. That backward pass has a name too, <b>back-substitution</b>, and it is the part of the process that actually produces numbers rather than just simplifying the grid.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; the grain problem, run to a number</b>
+        <p>Solve the <i>Fangcheng</i> chapter&rsquo;s own problem: 3x + 2y + z = 39, 2x + 3y + z = 34, x + 2y + 3z = 26, where x, y, z are the <i>dou</i> per bundle of top, medium, and low-grade grain.</p>
+        <ol>
+          <li><b>Eliminate x from equation 2.</b> Row replacement: (equation 2) &minus; (2/3)(equation 1) removes x from row 2, but fractions get ugly fast this way &mdash; cleaner to use (3&times;equation 2) &minus; (2&times;equation 1) instead, which is just row scaling followed by row replacement: 3(2x+3y+z) &minus; 2(3x+2y+z) = 3(34) &minus; 2(39) &rarr; (6x&minus;6x) + (9y&minus;4y) + (3z&minus;2z) = 102&minus;78 &rarr; 5y + z = 24.</li>
+          <li><b>Eliminate x from equation 3.</b> (3&times;equation 3) &minus; (equation 1): 3(x+2y+3z) &minus; (3x+2y+z) = 3(26) &minus; 39 &rarr; (3x&minus;3x) + (6y&minus;2y) + (9z&minus;z) = 78&minus;39 &rarr; 4y + 8z = 39.</li>
+          <li><b>Eliminate y from the new equation 3, using the new equation 2.</b> The grid is now triangular in everything but this last pair: 5y+z=24 and 4y+8z=39. (4&times;[5y+z=24]) &minus; (5&times;[4y+8z=39]): 20y+4z&minus;20y&minus;40z = 96&minus;195 &rarr; &minus;36z = &minus;99 &rarr; z = 99/36 = 2.75.</li>
+          <li><b>Back-substitute for y.</b> From 5y + z = 24: 5y = 24 &minus; 2.75 = 21.25 &rarr; y = 4.25.</li>
+          <li><b>Back-substitute for x.</b> From the original 3x + 2y + z = 39: 3x = 39 &minus; 2(4.25) &minus; 2.75 = 39 &minus; 8.5 &minus; 2.75 = 27.75 &rarr; x = 9.25.</li>
+          <li><b>Check against every original equation.</b> 3(9.25)+2(4.25)+2.75 = 27.75+8.5+2.75 = 39 &check;. 2(9.25)+3(4.25)+2.75 = 18.5+12.75+2.75 = 34 &check;. 9.25+2(4.25)+3(2.75) = 9.25+8.5+8.25 = 26 &check;. A bundle of top-grade grain holds 9&frac14; <i>dou</i>, medium 4&frac14;, low 2&frac34; &mdash; the same answer the <i>Fangcheng</i> chapter reaches with counting rods instead of algebraic notation, arriving at it by exactly this row-by-row cancellation.</li>
+        </ol>
+      </div>
+
+      <h3>A matrix is a move, not a grid</h3>
+
+      <p>Now set elimination aside and look at the coefficient grid a completely different way. Collect the unknowns into a single column, <b>x</b> = (x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub>), and write the whole system as one compact statement: <b>Ax</b> = <b>b</b>, where <b>A</b> is the coefficient grid, stripped of the totals column this time. The definition of what <b>Ax</b> actually means is worth sitting with, because it is where &ldquo;grid of numbers&rdquo; stops being the useful picture.</p>
+
+      <div class="formula">
+        <p class="expr"><b>Ax</b> = x<sub>1</sub><b>a</b><sub>1</sub> + x<sub>2</sub><b>a</b><sub>2</sub> + x<sub>3</sub><b>a</b><sub>3</sub></p>
+        <dl>
+          <dt><b>A</b></dt><dd>the matrix, read here not as a block of numbers but as an ordered list of columns <b>a</b><sub>1</sub>, <b>a</b><sub>2</sub>, <b>a</b><sub>3</sub>, each one itself a vector.</dd>
+          <dt><b>a</b><sub>j</sub></dt><dd>the j-th column of <b>A</b>, taken on its own as a vector in the output space.</dd>
+          <dt>x<sub>j</sub></dt><dd>the j-th entry of the input vector <b>x</b> &mdash; here, it is simply the number scaling column <b>a</b><sub>j</sub> before all the scaled columns are added together.</dd>
+        </dl>
+      </div>
+
+      <p>Matrix-vector multiplication, in other words, is nothing but a weighted sum of the matrix&rsquo;s own columns, with the input vector supplying the weights. That single fact has an immediate and very concrete consequence: plug in <b>x</b> = (1, 0, 0) &mdash; what mathematicians call the first <b>standard basis vector</b>, usually written <b>e</b><sub>1</sub>, meaning &ldquo;one step in the first direction and nothing else&rdquo; &mdash; and every term in the weighted sum except the first vanishes, leaving <b>Ae</b><sub>1</sub> = <b>a</b><sub>1</sub>, the first column, exactly. The same holds for <b>e</b><sub>2</sub> and <b>e</b><sub>3</sub>. <i>A matrix&rsquo;s columns are nothing more or less than a record of where the basic unit steps &mdash; one unit right, one unit up, one unit out of the page &mdash; land after the transformation is applied.</i> Because the transformation is <i>linear</i> &mdash; it respects addition and scaling, which is exactly what the weighted-sum formula above says &mdash; knowing where those few basis vectors land is enough to know where every other point in the whole space lands too, since every other point is reachable as some combination of the basis vectors.</p>
+
+      <p>Restrict attention to two dimensions for a moment, because it is where you can actually watch this happen. A 2&times;2 matrix has exactly two columns, and those two columns are exactly the two images of &ldquo;one step right&rdquo; and &ldquo;one step up.&rdquo; A handful of standard moves and the matrices that produce them are worth having on hand, because they come up constantly and each one is a direct readout of where those two basis vectors go.</p>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Common 2&times;2 transformations. &theta; is the rotation angle, measured counter-clockwise from the positive x-axis; s<sub>x</sub>, s<sub>y</sub> are stretch factors; k is the shear factor.</caption>
+          <thead><tr><th>Transformation</th><th>Matrix</th><th>What it does to (1,0) and (0,1)</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Rotate by &theta;</td><td>[[cos&theta;, &minus;sin&theta;], [sin&theta;, cos&theta;]]</td><td class="txt">Both basis vectors swing through angle &theta;, keeping their length and their 90&deg; separation.</td></tr>
+            <tr><td class="txt">Scale</td><td>[[s<sub>x</sub>, 0], [0, s<sub>y</sub>]]</td><td class="txt">(1,0) stretches to (s<sub>x</sub>,0); (0,1) stretches to (0,s<sub>y</sub>). Directions unchanged, lengths change.</td></tr>
+            <tr><td class="txt">Reflect over the x-axis</td><td>[[1, 0], [0, &minus;1]]</td><td class="txt">(1,0) stays put; (0,1) flips to (0,&minus;1). Handedness reverses.</td></tr>
+            <tr><td class="txt">Shear (horizontal)</td><td>[[1, k], [0, 1]]</td><td class="txt">(1,0) stays put; (0,1) tips over to (k,1). Straight lines stay straight, but a square becomes a parallelogram.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>One more idea belongs here before the second worked example, because it is the exact point where the transformation view and the elimination view meet again. The <b>determinant</b> of a 2&times;2 matrix [[a,b],[c,d]] is the number ad &minus; bc, and geometrically it measures precisely what happens to area under the transformation: the unit square with corners at (0,0), (1,0), (0,1), (1,1) starts with area 1, and after the transformation it becomes a parallelogram (or, in the rotation and reflection rows above, still a square or a mirrored square) with area equal to the <i>absolute value</i> of the determinant. The <i>sign</i> of the determinant carries a second piece of information: positive means the transformation preserves handedness &mdash; a counter-clockwise loop through the basis vectors is still counter-clockwise afterward &mdash; and negative means it flips handedness, exactly what the reflection row above does. And when the determinant is exactly zero, the transformation is not merely shrinking area, it is <i>destroying a whole dimension</i>: both columns end up pointing along the same line (or, in the extreme case, both collapse to the origin), so the entire plane gets squashed flat into that one line or point. This is not a separate fact from elimination &mdash; it is the same fact worked example 1 would have run into if the grain problem had been set up badly. A system whose elimination produces a row that reads 0 = (something nonzero) has no solution at all; a row that reads 0 = 0 means one equation carried no new information and the system has infinitely many solutions. Both outcomes happen exactly when the coefficient matrix has determinant zero &mdash; when the transformation it represents has already thrown away a dimension before you ever asked it a question, so there is no way to uniquely reconstruct an input from its output. Day 34 of this curriculum comes back to determinants directly and builds the machinery for finding one at any size, not just 2&times;2; today you only need to know what the zero case means.</p>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; a rotation and a reflection, in the wrong order</b>
+        <p>Let R be the matrix that rotates the plane 90&deg; counter-clockwise, and let S be the matrix that reflects it over the x-axis. Using the table above with &theta;=90&deg; (cos90&deg;=0, sin90&deg;=1): R = [[0,&minus;1],[1,0]]. And S = [[1,0],[0,&minus;1]]. Apply both, in each order, to the point (2,1), and compare.</p>
+        <ol>
+          <li><b>Reflect first, then rotate</b> &mdash; the matrix product RS, read right to left the way function composition always is: apply S, then R. RS = [[0,&minus;1],[1,0]]&middot;[[1,0],[0,&minus;1]]. Top-left entry: (0)(1)+(&minus;1)(0)=0. Top-right: (0)(0)+(&minus;1)(&minus;1)=1. Bottom-left: (1)(1)+(0)(0)=1. Bottom-right: (1)(0)+(0)(&minus;1)=0. So RS = [[0,1],[1,0]] &mdash; which is itself a reflection, over the line y=x, swapping any point&rsquo;s two coordinates.</li>
+          <li><b>Apply RS to (2,1).</b> [[0,1],[1,0]]&middot;(2,1) = (0&middot;2+1&middot;1, 1&middot;2+0&middot;1) = (1,2). The coordinates swapped, exactly as a reflection over y=x should do.</li>
+          <li><b>Rotate first, then reflect</b> &mdash; the matrix product SR, applying R first, then S. SR = [[1,0],[0,&minus;1]]&middot;[[0,&minus;1],[1,0]]. Top-left: (1)(0)+(0)(1)=0. Top-right: (1)(&minus;1)+(0)(0)=&minus;1. Bottom-left: (0)(0)+(&minus;1)(1)=&minus;1. Bottom-right: (0)(&minus;1)+(&minus;1)(0)=0. So SR = [[0,&minus;1],[&minus;1,0]] &mdash; a different reflection, this one over the line y=&minus;x.</li>
+          <li><b>Apply SR to the same point (2,1).</b> [[0,&minus;1],[&minus;1,0]]&middot;(2,1) = (0&middot;2+(&minus;1)&middot;1, (&minus;1)&middot;2+0&middot;1) = (&minus;1,&minus;2).</li>
+          <li><b>Compare.</b> Reflect-then-rotate sent (2,1) to (1,2). Rotate-then-reflect sent the identical starting point to (&minus;1,&minus;2) &mdash; not a rotated or reflected version of the first answer, a genuinely different point in a different part of the plane. RS and SR are not the same matrix, and applying them to the same input does not even give answers related by symmetry. Order was never a bookkeeping detail here; it changed the destination outright.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; the matrix that swallows a dimension</b>
+        <p>Two more small systems, chosen to look almost identical on the page. System A: x + 2y = 4, 2x + 4y = 9. System B: x + 2y = 4, 2x + 4y = 8. Eliminate x from the second equation in each and see what elimination itself is trying to tell you.</p>
+        <ol>
+          <li><b>System A.</b> (equation 2) &minus; 2(equation 1): (2x+4y) &minus; 2(x+2y) = 9 &minus; 2(4) &rarr; 0 = 1. A statement that is simply false, for any x and y whatsoever &mdash; elimination has not made an error; it has correctly reported that no pair (x,y) can satisfy both equations at once.</li>
+          <li><b>System B.</b> The identical row operation: (2x+4y) &minus; 2(x+2y) = 8 &minus; 2(4) &rarr; 0 = 0. A statement that is trivially true for any x and y &mdash; the second equation carried no information the first one had not already supplied, and every pair (x,y) satisfying x+2y=4 satisfies the whole system.</li>
+          <li><b>Read the coefficient matrix underneath both systems.</b> Both A and B share the exact same left-hand side, [[1,2],[2,4]], and only the totals column differs. Its determinant: (1)(4) &minus; (2)(2) = 4&minus;4 = 0. As the transformation table predicts, a matrix with determinant zero sends the whole plane onto a single line &mdash; here, every input point (x,y) lands somewhere on the line through the origin in the direction (1,2), because the matrix&rsquo;s two columns, (1,2) and (2,4), already point the same direction before you multiply anything.</li>
+          <li><b>Connect the two views.</b> System A asks that transformation to produce a point, (4,9), that is not on the one line it is capable of reaching &mdash; impossible, hence 0=1. System B asks it to produce (4,8), which does sit on that line (it is exactly 2&times;(2,4)) &mdash; reachable by infinitely many different inputs, hence 0=0. Whether elimination dead-ends in a contradiction or collapses into a redundancy was never a coin flip; it is decided entirely by whether the target point happens to lie on the flattened line the singular matrix produces, and both outcomes were visible in the determinant before a single row operation was performed.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: hedging a portfolio is solving Ax = b</h3>
+
+      <p>Tuesday&rsquo;s closing brief closed SPY, the S&amp;P 500 ETF, at $773.38 and QQQM, the Nasdaq-100 ETF, at $307.78. Suppose &mdash; this next part, the target numbers, is a hypothetical set up to show the method, not a real recommendation &mdash; you want to put $20,000 into some combination of the two, and you want the combined position&rsquo;s blended market beta (a measure of how much the position tends to move for each 1% move in the broad market; SPY&rsquo;s beta to the S&amp;P 500 is by definition close to 1.00, and QQQM, being more concentrated in a handful of large technology names, runs hotter, hypothetically 1.20 here) to land at exactly 1.10 &mdash; a little more aggressive than the market as a whole, but not as aggressive as an all-Nasdaq bet. That is two conditions &mdash; a total-dollar condition and a target-beta condition &mdash; on two unknowns, the dollars put into each ETF, which is a linear system exactly as much as the grain problem was, just with two unknowns instead of three.</p>
+
+      <div class="formula">
+        <p class="expr">w<sub>1</sub> + w<sub>2</sub> = 20000 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.00w<sub>1</sub> + 1.20w<sub>2</sub> = 22000</p>
+        <dl>
+          <dt>w<sub>1</sub></dt><dd>dollars allocated to SPY.</dd>
+          <dt>w<sub>2</sub></dt><dd>dollars allocated to QQQM.</dd>
+          <dt>22000</dt><dd>the target blended dollar-beta: the $20,000 budget multiplied by the target beta of 1.10.</dd>
+        </dl>
+      </div>
+
+      <p>In matrix form this is <b>Aw</b> = <b>b</b> with <b>A</b> = [[1,1],[1.00,1.20]], <b>w</b> = (w<sub>1</sub>,w<sub>2</sub>), <b>b</b> = (20000,22000) &mdash; the identical <b>Ax</b>=<b>b</b> shape as the grain problem, just relabeled, and it eliminates the same way. From the first equation, w<sub>1</sub> = 20000 &minus; w<sub>2</sub>. Substitute into the second: 1.00(20000&minus;w<sub>2</sub>) + 1.20w<sub>2</sub> = 22000 &rarr; 20000 + 0.20w<sub>2</sub> = 22000 &rarr; w<sub>2</sub> = 10000, and then w<sub>1</sub> = 10000. An even 50/50 dollar split, $10,000 each, hits the target: check that (1.00&times;10000 + 1.20&times;10000)/20000 = 22000/20000 = 1.10 exactly. Convert those dollar targets into actual share counts at Tuesday&rsquo;s closes: $10,000 &divide; $773.38 &asymp; 12.93 shares of SPY, and $10,000 &divide; $307.78 &asymp; 32.49 shares of QQQM.</p>
+
+      <p>This is not a toy resemblance. A real portfolio desk hedging a book against several risk factors at once &mdash; overall market beta, sector concentration, interest-rate duration, currency exposure &mdash; is solving exactly this kind of system, just with many more assets as unknowns and many more target conditions as rows, and the matrix connecting them is exactly as much a table of coefficients as it is a description of how a change in position sizes transforms into a change in risk exposures. Every index fund that rebalances to track its benchmark, every risk-parity strategy that resizes positions overnight, is running elimination, or one of its computationally faster cousins, on a matrix built fresh that day. The same shape of problem, with the roles renamed, is what an electrical engineer solves for the currents in a circuit&rsquo;s branches from Kirchhoff&rsquo;s voltage and current laws, and it is what the economist Wassily Leontief formalized in the 1930s as the input-output model of a national economy &mdash; a matrix recording how many units of steel, electricity, and labor each industry consumes from every other industry, solved as one large <b>Ax</b>=<b>b</b> to find the total output every sector needs in order to meet a target level of final demand across the whole economy at once. He won the 1973 Nobel Memorial Prize in Economic Sciences for it. And the transformation side of today&rsquo;s lesson, not just the elimination side, is equally real machinery: every 3D game engine and every computer-animated film rotates, scales, and repositions a character model by multiplying every one of its thousands of vertices by exactly the kind of small matrix worked example 2 just built by hand, thousands of times a second.</p>
+
+      <p>Scale matters here in a way that is easy to miss from a three-unknown grain problem or a two-asset hedge. A real trading desk&rsquo;s risk system is not solving for two portfolio weights; it can easily be solving a system with hundreds of assets as unknowns and dozens of risk-factor rows, and every one of the by-hand row operations worked examples 1 and 3 walked through &mdash; scale a row, subtract it from another, repeat &mdash; still has to happen, just at a scale no human would do with a pencil. That is exactly why elimination is not treated as a historical curiosity once it leaves the classroom: it is still, in modernized computer-arithmetic form, the actual method a spreadsheet&rsquo;s regression tool, a structural-engineering package solving a truss, or a portfolio-optimization engine uses underneath a button labeled &ldquo;solve.&rdquo; Nothing about the machinery changed between the counting-rod version and the version running on a server tonight; only the number of rows did.</p>
+
+      <h3>The misconception: matrix multiplication does not commute, and that is not a technicality</h3>
+
+      <p>Every number Logan has ever multiplied before today &mdash; two integers, two fractions, two measurements in a physics problem &mdash; obeyed the same quiet rule: order never mattered. 3&times;5 and 5&times;3 are the same number, and nobody past the age of eight thinks to check. That habit, reasonable everywhere else in arithmetic, is exactly the assumption worked example 2 was built to break, and it is worth stating the break as plainly as possible: for matrices <b>A</b> and <b>B</b>, <b>AB</b> and <b>BA</b> are, in general, different matrices, producing different results on the same input, and there is no shortcut around checking which order a problem actually calls for.</p>
+
+      <p>The reason is not a quirk of the notation; it falls straight out of what multiplying matrices <i>means</i>. <b>AB</b> applied to a vector means &ldquo;apply B first, then apply A to whatever B produced&rdquo; &mdash; it is function composition, read right to left, and composition of two general moves has never commuted in ordinary experience either. Put on your socks, then your shoes, and you get a normal morning. Put on your shoes, then your socks, and you get a completely different (and much stranger) result, from the exact same two actions performed in the wrong order. Rotating the plane and then reflecting it is, geometrically, two entirely different physical moves depending on which one happens first &mdash; worked example 2&rsquo;s reflection over y=x versus reflection over y=&minus;x are not approximately the same transformation with a rounding difference between them; they are two different lines, mirroring the plane in two different directions, and the single point (2,1) landed nowhere near itself under the two orders. A very small number of special matrix pairs do happen to commute &mdash; two rotations about the same axis, notably, always agree on order, which is part of why it feels intuitive that &ldquo;turning&rdquo; should be order-independent in a way that turning-plus-flipping is not &mdash; but that is the exception earning its own mention specifically because the general rule is that it fails.</p>
+
+      <p>The practical cost of forgetting this is not abstract. A robotics engineer who rotates a robot arm&rsquo;s joint and then translates it, when the intended motion was to translate first and then rotate about the new position, gets a machine that reaches for the wrong point in space &mdash; not slightly wrong, categorically wrong, exactly as (1,2) and (&minus;1,&minus;2) are categorically different points and not slightly-off versions of each other. A portfolio system that applies a currency hedge and then a duration hedge, when the model was built assuming the reverse order, can misstate its own risk exposure in exactly the same way. The fix is never a better approximation. It is checking, every time, which transformation was actually supposed to happen first &mdash; because the grid of numbers does not know or care what you meant; it only knows the order you multiplied it in.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day 27&rsquo;s lesson on center of mass and rotation described how a spinning object turns using a single number, the moment of inertia I, appearing in &tau;<sub>net</sub> = I&alpha; and L = I&omega; &mdash; and that single-number treatment quietly assumed the object was spinning about an axis of symmetry, the one case where I really is just one number. Today&rsquo;s formalism explains why that assumption was necessary and names what replaces it once you drop it. A rotation in three-dimensional space, tracked as a full change of orientation rather than a single angle around a fixed axis, is exactly today&rsquo;s rotation matrix &mdash; a 3&times;3 version of worked example 2&rsquo;s R, still built from where the transformation sends the basis vectors, still liable to the same order-matters warning if you compose two rotations about different axes. And for an object spinning about an axis that is <i>not</i> a symmetry axis &mdash; an unevenly loaded satellite, a poorly balanced tire &mdash; moment of inertia itself stops being the single number day 27 used and becomes a matrix, the <i>inertia tensor</i>, that can relate an applied torque to an angular acceleration pointing in an entirely different direction, for exactly the same underlying reason worked example 2&rsquo;s two orderings produced two different points: a matrix, unlike a plain number, is allowed to change a vector&rsquo;s direction, not just its length, and day 27&rsquo;s falling cat and torque wrench were quietly living inside the one special case where that extra freedom never showed up. A future lesson in this curriculum&rsquo;s physics track will build the inertia tensor properly; today built the piece of linear algebra it is written in.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can take a system of simultaneous linear equations, row-reduce it to triangular form by elimination, back-substitute for a numeric answer, and you have done it once by hand on a 2,200-year-old grain problem and gotten the historically documented answer.</li>
+          <li>You can read a matrix by its columns &mdash; as the images of the basis vectors under a transformation &mdash; rather than as an inert grid, and you can build the standard 2&times;2 matrix for a rotation, a scaling, a reflection, or a shear directly from that idea.</li>
+          <li>You know that matrix multiplication represents composing two moves, that order generally changes the outcome, and you have watched the identical point (2,1) land in two unrelated places depending on whether a rotation or a reflection went first.</li>
+          <li>You can read a zero determinant, or a row of zeros surviving elimination, as the same fact stated two ways: the transformation has collapsed a dimension, and there is no unique way back from output to input. Day 34 returns to determinants directly, and builds the tools to compute one at any size.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The <i>Fangcheng</i> chapter of <i>The Nine Chapters on the Mathematical Art</i> and its counting-rod elimination method, and James Joseph Sylvester&rsquo;s 1850 coinage of the word &ldquo;matrix,&rdquo; were checked against standard histories of mathematics. Gauss&rsquo;s 1810 use of elimination in his paper on the orbit of the asteroid Pallas, and the later, retrospective attachment of his name to the method, were likewise checked rather than taken from memory. Wassily Leontief&rsquo;s input-output model and 1973 Nobel Memorial Prize in Economic Sciences are drawn from the standard record. SPY and QQQM closing prices are Tuesday&rsquo;s official closes as carried in this paper&rsquo;s September 22 closing brief. The portfolio hedge, its target beta, and its dollar figures are a hypothetical built for this lesson, clearly labeled as such; the arithmetic on it was computed directly for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day six&rsquo;s lesson on vectors and day 27&rsquo;s lesson on rotation. Missing data is declared missing, never estimated; a hypothetical figure is labeled as such rather than presented as measured. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-22-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

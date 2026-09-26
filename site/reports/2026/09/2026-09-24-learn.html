@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Instant a Promise Becomes a Sale — Learning Brief, Thu, Sep 24, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-24",
+    "slot": "learn",
+    "title": "The Instant a Promise Becomes a Sale",
+    "path": "reports/2026/09/2026-09-24-learn.html",
+    "summary": "Day 29 of the 150-day curriculum: how accounting decides the exact moment a sale becomes revenue, built around a warehouse full of barbecue grills sold in December, a Xerox copier lease that moved $6.4 billion out of the years it was earned, and the five-step test now used to pin that instant down.",
+    "headlines": [
+      "Day 29 of 150 · Accounting",
+      "Revenue recognition fraud almost never involves a fake transaction",
+      "Why the same judgment call sank Sunbeam and cost Xerox $10 million"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-24T06:10:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Instant a Promise Becomes a Sale</h1>
+      <p class="paper-dateline">
+        Thursday, September 24, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        A warehouse full of barbecue grills sold in December, a Xerox copier lease that quietly moved $6.4 billion out of the years it was actually earned, and the five-step test now used to pin down the exact instant a promise becomes revenue all turn on the same problem calculus solved for limits: replacing &ldquo;close enough&rdquo; with a test you can actually check.</p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Accounting</p>
+      <span class="track-progress">Day 29 of 150 &middot; Accounting 7 of 18 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A warehouse full of grills, sold in the dead of winter</h3>
+
+      <p>In the winter of 1996 into 1997, sales representatives at the Sunbeam Corporation began calling the buyers at major retail chains with an unusual offer. Sunbeam made small appliances and outdoor gas grills, and gas grills are a summer product &mdash; nobody restocks a grill aisle in January. The reps offered steep discounts anyway, for one condition: place the order now, for delivery whenever the retailer actually wanted the grills on the floor, months later. Sunbeam would hold the inventory itself in the meantime. Nothing about the grills changed. They sat in Sunbeam&rsquo;s own warehouses, unlabeled for any particular customer, exactly as they had before the phone call. No truck left a loading dock. No retailer paid a dollar. The only thing that happened was a piece of paper &mdash; a purchase order, an invoice &mdash; and the moment that paper existed, Sunbeam&rsquo;s books recorded a completed sale.</p>
+
+      <p>Sunbeam&rsquo;s chief executive at the time was Albert J. Dunlap, known in the business press as &ldquo;Chainsaw Al&rdquo; for the mass layoffs that had made his reputation at Scott Paper a few years earlier, and he had been hired at Sunbeam in mid-1996 specifically to engineer a dramatic turnaround. He got one, on paper. Sunbeam reported record 1997 results, and the stock more than tripled over Dunlap&rsquo;s first eighteen months in charge. Then, in 1998, the company disclosed accounting irregularities, restated its earnings, and Dunlap was fired that June. Less than three years later, in February 2001, Sunbeam filed for bankruptcy. The Securities and Exchange Commission later concluded that at least $60 million of the $189 million in pretax earnings Sunbeam had reported for 1997 came from schemes exactly like the grill arrangement &mdash; what accountants call, when the customer did not actually ask for the arrangement and the goods never really left the seller&rsquo;s control, a &ldquo;bill-and-hold&rdquo; sale.</p>
+
+      <p>The unraveling took about five months and involved the company&rsquo;s own outside auditor turning on it. Arthur Andersen LLP &mdash; the same firm that would collapse a few years later alongside Enron &mdash; had signed off on Sunbeam&rsquo;s 1997 results, but when Sunbeam tried to fold those numbers into a new SEC registration statement in mid-1998, Andersen refused to let its audit report be reused. Sunbeam&rsquo;s board removed Dunlap as chairman and chief executive on June 15, 1998, and its audit committee announced seven days after that the prior financial statements &ldquo;should not be relied upon&rdquo; &mdash; about as blunt a sentence as a corporate board ever issues about its own books. Deloitte &amp; Touche was brought in that autumn to help sort out what had actually happened, and on October 20, 1998, Sunbeam restated its results for 1996, 1997, and the first quarter of 1998, cutting previously reported profit by $95 million across those periods. Deloitte replaced Andersen as the company&rsquo;s permanent auditor a month later. None of it saved the company: Sunbeam filed for Chapter 11 bankruptcy protection in February 2001.</p>
+
+      <p>Here is the number that seems wrong, and the reason this lesson opens with a warehouse instead of a rulebook: nobody at Sunbeam stole any cash. No account was secretly drained, no invoice was for a shipment that flatly never existed &mdash; the retailers were real companies, the grills were real grills, and most of those orders eventually did ship, months later, more or less as promised. The entire fraud lived inside a single judgment call, repeated thousands of times: deciding that a sale had already happened at the moment it plainly had not. That judgment &mdash; the question of exactly when a business has earned the right to call something revenue &mdash; is not a footnote to accounting. It is one of the most consequential decisions a set of financial statements ever makes, it is harder to pin down than it looks, and it is the subject of this lesson.</p>
+
+      <h3>The idea in plain English: revenue is a claim about what has already happened</h3>
+
+      <p>Strip away every rule for a moment and ask what &ldquo;revenue&rdquo; is actually supposed to mean. It is not the same thing as cash in the bank &mdash; you already know that, if you have ever paid a deposit for something you have not received yet, or been paid in advance for work you have not finished. Revenue is a claim, stated in a company&rsquo;s books, that a specific amount of economic value has already been delivered to a customer in exchange for a specific amount of consideration. It is a statement about the past, not a forecast about the future and not a description of a bank balance today.</p>
+
+      <p>A real business relationship is rarely one clean instant. It is a chain: a conversation, a negotiation, a signed agreement, work performed, something handed over, an invoice, eventually a payment. Cash can arrive at almost any point along that chain &mdash; a deposit up front, payment on delivery, an invoice thirty or sixty days after the fact &mdash; and none of those cash moments is automatically the moment revenue happened. Accounting&rsquo;s job is to look at that whole chain and defend one specific point on it: <i>here, exactly here, a promise stopped being a promise and became earned income.</i> Before that point, any cash already collected is not income at all &mdash; it is a liability, because the company still owes the customer either the product, the service, or the money back. After that point, revenue is recognized whether or not the cash has actually shown up yet; if it has not, the company records a receivable, an asset representing money it is now owed.</p>
+
+      <p>The test that decides where that point falls has changed in wording over the decades, but the modern version, in force since 2018 and taught below, boils down to one word: <b>control</b>. Revenue happens when control of whatever was promised &mdash; a product, a completed service, a right to use something &mdash; passes to the customer. Not when the contract was signed. Not when a truck left the loading dock, if the buyer can still reject the shipment or the seller can still redirect it elsewhere. Not when a check clears. Control, specifically, is what changes hands at the instant revenue is recognized.</p>
+
+      <p>Why is this a genuinely hard problem rather than a bookkeeping technicality? Because very few real transactions hand over control in one visible instant. A software subscription delivers value continuously across an entire year; there is no delivery truck to watch. A three-year construction contract delivers nothing usable to the customer until the very last day, yet the builder is unmistakably earning money throughout, cashing progress payments and incurring costs the whole time. A grill sold on paper but sitting untouched in the seller&rsquo;s own warehouse has transferred nothing at all, however official the invoice looks. A rule general enough to answer all three cases correctly &mdash; without a separate ad hoc exception invented industry by industry &mdash; and specific enough that a manager whose bonus depends on this quarter&rsquo;s revenue number cannot simply pick whichever answer is convenient, is a genuinely difficult thing to write down. It took accounting standard-setters most of a century, several major rewrites, and finally a single joint project between the American and international standard-setters to get it into its current form.</p>
+
+      <h3>The formalism: five steps, and a stopwatch that can start early or run late</h3>
+
+      <p>The rule in force today in the United States is <b>ASC 606</b>, <i>Revenue from Contracts with Customers</i>, issued by the Financial Accounting Standards Board in May 2014 in a joint project with the International Accounting Standards Board, whose parallel rule is called IFRS 15 and states the identical core principle. The two bodies spent years converging on one shared answer specifically because the split between an American rulebook and an international one, and the pile of industry-specific exceptions each had separately accumulated, had become its own source of inconsistency. ASC 606 took effect for public companies&rsquo; fiscal years beginning after December 15, 2017 &mdash; calendar 2018 for most companies &mdash; replacing a patchwork of over one hundred separate pieces of older, narrower American guidance with a single test applied the same way whether a company sells software, grills, airplanes, or forty-year construction contracts.</p>
+
+      <p>It is worth knowing what that patchwork actually looked like, because the patchwork itself is part of why fraud like Sunbeam&rsquo;s was possible. Before 606, American GAAP had one general principle &mdash; revenue recognized once it was &ldquo;realized or realizable and earned&rdquo; &mdash; and then a separate, more specific rulebook for nearly every industry that had ever successfully argued its transactions were too distinctive for the general principle alone: one set of guidance for long-term construction contracts, a different one for software, another for real-estate sales, another for multiple-element arrangements bundling a product with a service. A company selling something at the seam between two of those rulebooks had room to argue for whichever specific guidance produced the answer it wanted, and the SEC itself grew concerned enough about the bill-and-hold pattern specifically &mdash; Sunbeam was far from the only case &mdash; that it issued its own supplementary staff guidance on the topic in 1999, tightened again in 2003, well before 606 folded the whole area into one coherent standard. Replacing a hundred-plus specific rulebooks with five general steps did not make judgment disappear from revenue recognition; it made the judgment harder to shop around.</p>
+
+      <p>The core principle, and then the five-step test that operationalizes it:</p>
+
+      <div class="formula">
+        <p class="expr">Core principle: recognize revenue to depict the transfer of promised goods or services to a customer, in an amount that reflects the consideration the entity expects to be entitled to in exchange.</p>
+        <dl>
+          <dt>Step 1</dt><dd>Identify the contract &mdash; the parties have approved it, each party&rsquo;s rights and the payment terms can be identified, and it has commercial substance.</dd>
+          <dt>Step 2</dt><dd>Identify the performance obligations &mdash; the distinct promises within the contract, each one a separately promised good or service the customer could, in principle, benefit from on its own.</dd>
+          <dt>Step 3</dt><dd>Determine the transaction price &mdash; the total consideration the entity expects to be entitled to, including any variable amounts, discounts, or financing effects.</dd>
+          <dt>Step 4</dt><dd>Allocate the transaction price across the performance obligations identified in Step 2, in proportion to what each one would sell for on its own.</dd>
+          <dt>Step 5</dt><dd>Recognize revenue for each performance obligation as (or when) control of the underlying good or service actually transfers to the customer &mdash; at a single point in time, or over time, depending on the nature of the promise.</dd>
+        </dl>
+      </div>
+
+      <p>Step 4 is where the arithmetic lives, and it is worth having the actual formula rather than just the description, because a worked example below will use it and a later section of this lesson will show precisely how it gets bent. Every performance obligation is assigned a share of the total contract price proportional to its own <b>standalone selling price</b> &mdash; what that piece would cost a customer if it were sold entirely by itself.</p>
+
+      <div class="formula">
+        <p class="expr">Allocated price<sub>i</sub> = Total transaction price &times; (SSP<sub>i</sub> &divide; &Sigma;SSP<sub>j</sub>)</p>
+        <dl>
+          <dt>Allocated price<sub>i</sub></dt><dd>the share of the total contract price assigned to performance obligation i.</dd>
+          <dt>SSP<sub>i</sub></dt><dd>the standalone selling price of performance obligation i &mdash; the price the entity would charge for that promise alone, to a similar customer, in similar circumstances.</dd>
+          <dt>&Sigma;SSP<sub>j</sub></dt><dd>the sum of the standalone selling prices of every performance obligation in the contract, summed over all j.</dd>
+        </dl>
+      </div>
+
+      <p>Step 5 splits recognition into two families of answer. Some performance obligations are satisfied at a single point in time &mdash; ownership and risk of a physical product changing hands, all at once. Others are satisfied <b>over time</b>, because the customer is receiving and consuming the benefit continuously as the entity performs &mdash; a subscription granting access throughout its term, or a long construction project where the customer effectively controls the asset as it is built. The most common method for pacing an over-time obligation on a long contract is <b>percentage-of-completion</b>, which measures progress by costs actually incurred against the total cost the project is expected to consume.</p>
+
+      <div class="formula">
+        <p class="expr">% complete = Costs incurred to date &divide; Total estimated contract cost<br>
+        Revenue recognized to date = % complete &times; Total contract price<br>
+        Revenue this period = Revenue recognized to date &minus; Revenue recognized in prior periods</p>
+        <dl>
+          <dt>Costs incurred to date</dt><dd>actual costs the entity has spent on the project so far, cumulative since the contract began.</dd>
+          <dt>Total estimated contract cost</dt><dd>management&rsquo;s current best estimate of everything the project will cost, start to finish &mdash; not fixed at signing; revised as work proceeds and new information arrives.</dd>
+          <dt>Total contract price</dt><dd>the fixed (or fixed-plus-variable) amount the customer has agreed to pay for the whole project.</dd>
+        </dl>
+      </div>
+
+      <p>Notice what is doing the real work in that second formula: <i>total estimated contract cost</i>, a number nobody outside the company can independently verify while the project is still underway, because it is a forecast of costs that have not been spent yet. That single estimate will matter a great deal by the time this lesson reaches the Xerox case below.</p>
+
+      <p>Step 5&rsquo;s point-in-time side has its own formal checklist, worth having because worked example 3 below leans on it directly. A performance obligation is treated as satisfied at a single point in time &mdash; rather than gradually, over time &mdash; based on indicators including: the entity has a present right to payment; the customer holds legal title; the customer has physical possession; the customer has taken on the significant risks and rewards of ownership; and the customer has formally accepted the asset. No single indicator is decisive on its own, and none of them is &ldquo;a truck left a loading dock&rdquo; &mdash; which is exactly the gap a bill-and-hold arrangement is built to exploit, since an invoice and a shipping label are easy to produce without a single one of those five conditions actually being true.</p>
+
+      <p>The over-time side of the same test has its own three conditions, and satisfying any one of them is enough: the customer simultaneously receives and consumes the benefit as the entity performs, the way a cleaning service or a subscription is consumed continuously rather than handed over at the end; the entity&rsquo;s performance creates or enhances an asset the customer controls as it is being built, common in some construction and custom-manufacturing arrangements; or the asset being created has no alternative use to the entity &mdash; it could not profitably be resold to anyone else &mdash; and the entity has an enforceable right to payment for the work performed to date. Worked example 1&rsquo;s subscription, below, qualifies under the first of these three; worked example 2&rsquo;s bridge &mdash; a structure with no possible buyer but the customer who commissioned it, under a contract that pays for progress rather than only for the finished span &mdash; qualifies under the third. This is also, worth noting in passing, why a company cannot simply choose the recognition pattern it prefers: the facts of the contract, who consumes what and when and who could resell an unfinished asset to whom, decide the answer, and the five-step model exists to make that decision auditable rather than optional.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; allocating a bundled software contract</b>
+        <p>A software company signs a customer to a contract combining a one-time implementation service, standalone value $15,000, with a three-year cloud subscription priced at $30,000 per year on its own ($90,000 across three years). Bundled together, the company offers the whole package for $99,000, a $6,000 discount off the combined standalone value of $105,000. The customer pays the full $99,000 up front, in January, and the implementation work is completed that same month. How much revenue does the company recognize in Year 1?</p>
+        <ol>
+          <li><b>Step 1 &mdash; the contract.</b> Signed, enforceable, commercially substantive: $99,000 total consideration.</li>
+          <li><b>Step 2 &mdash; performance obligations.</b> Two distinct promises: the implementation service (a point-in-time obligation, complete once delivered) and the three-year subscription (an over-time, &ldquo;stand ready&rdquo; obligation, satisfied evenly as access is provided across the term).</li>
+          <li><b>Step 3 &mdash; transaction price.</b> $99,000, fixed, paid in full up front.</li>
+          <li><b>Step 4 &mdash; allocate by relative standalone selling price.</b> Total SSP = $15,000 + $90,000 = $105,000. Implementation share: $99,000 &times; (15,000 &divide; 105,000) = $99,000 &times; 1/7 = $14,142.86. Subscription share: $99,000 &times; (90,000 &divide; 105,000) = $99,000 &times; 6/7 = $84,857.14. Check: $14,142.86 + $84,857.14 = $99,000.00 exactly.</li>
+          <li><b>Step 5 &mdash; recognize.</b> The implementation service is complete in January, so its full $14,142.86 is recognized then, at that point in time. The subscription is recognized evenly over its three-year term: $84,857.14 &divide; 3 = $28,285.71 per year, or $2,357.14 per month.</li>
+          <li><b>Year 1 revenue.</b> $14,142.86 (implementation, all at once) + $28,285.71 (one year of subscription) = <b>$42,428.57</b> &mdash; even though the company collected the entire $99,000 in cash that January. The remaining $56,571.43 sits on the balance sheet as <b>deferred revenue</b> (also called a contract liability), a real obligation still owed, to be recognized $28,285.71 in Year 2 and the same again in Year 3.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; a construction contract, and the estimate that moves a quarter&rsquo;s profit</b>
+        <p>This example is a hypothetical, built to show the mechanics cleanly, though the arithmetic mirrors real fixed-price construction and engineering contracts. A builder signs a fixed-price contract to build a bridge for $12,000,000, initially expected to cost $9,000,000 in total &mdash; a $3,000,000 expected profit, 25% of the contract price &mdash; over three years.</p>
+        <ol>
+          <li><b>Year 1.</b> Actual costs incurred: $2,700,000. No change to the cost estimate. % complete = $2,700,000 &divide; $9,000,000 = 30%. Revenue to date = 30% &times; $12,000,000 = $3,600,000. Nothing was recognized before, so Year 1 revenue = $3,600,000. Profit = $3,600,000 &minus; $2,700,000 = $900,000, exactly 30% of the original $3,000,000 expected profit &mdash; a useful sanity check that the pacing is consistent.</li>
+          <li><b>Year 2.</b> Costs incurred this year: $3,600,000, bringing cumulative costs to $6,300,000. But steel and labor have run over budget, and the project engineers now estimate the job will cost $9,900,000 in total, not $9,000,000 &mdash; a $900,000 increase. % complete = $6,300,000 &divide; $9,900,000 = 63.64%. Revenue to date = 63.64% &times; $12,000,000 = $7,636,364. Year 2 revenue = $7,636,364 &minus; $3,600,000 already recognized = <b>$4,036,364</b>. Profit to date = $7,636,364 &minus; $6,300,000 = $1,336,364; Year 2 profit = $1,336,364 &minus; $900,000 already recognized = $436,364.</li>
+          <li><b>What just happened.</b> Total expected profit fell from $3,000,000 to $2,100,000 (the new $9,900,000 estimated cost against the same $12,000,000 price) purely because of the cost revision. But the amount of revenue and profit recognized in Year 2 was not simply &ldquo;33.64 percentage points of progress times the new totals&rdquo; &mdash; it also absorbed a one-time catch-up, because the percentage-complete formula is applied fresh each period to the latest cumulative numbers and the latest estimate. A change to a single forecast number, <i>total estimated contract cost</i>, reshaped how much profit appeared in a quarter, on top of whatever the physical construction work that quarter actually justified.</li>
+          <li><b>Year 3.</b> The project finishes; actual total cost lands exactly at the revised $9,900,000 estimate, so remaining costs this year = $9,900,000 &minus; $6,300,000 = $3,600,000. Year 3 revenue = $12,000,000 total &minus; $7,636,364 already recognized = $4,363,636. Year 3 profit = $4,363,636 &minus; $3,600,000 = $763,636.</li>
+          <li><b>Check.</b> Total revenue: $3,600,000 + $4,036,364 + $4,363,636 = $12,000,000. Total profit: $900,000 + $436,364 + $763,636 = $2,100,000, which matches $12,000,000 &minus; $9,900,000 exactly. Over the life of the contract, the numbers always reconcile perfectly &mdash; the only thing an estimate revision changes is <i>which year</i> the profit shows up in.</li>
+        </ol>
+      </div>
+
+      <p>Sit with that last line, because it is the entire reason percentage-of-completion accounting is both a legitimate, required method for long contracts and a favorite target for manipulation. <i>Total estimated contract cost</i> is an internal engineering forecast, not an observable fact, and it is precisely the number an outside auditor has the hardest time independently verifying while the project is still underway. Understate how much a project will still cost to finish &mdash; delay recognizing a known overrun, or simply assume the best case &mdash; and the percentage-complete number comes out higher than it should, pulling revenue and profit into the current quarter that a more honest estimate would have pushed into a later one.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; running Sunbeam&rsquo;s grills through the bill-and-hold checklist</b>
+        <p>A sale where the seller ships nothing and simply holds the goods itself is not automatically improper &mdash; &ldquo;bill-and-hold&rdquo; arrangements are a recognized, if narrow, category, provided specific conditions genuinely hold. The core tests, drawn from long-standing SEC guidance now folded into the implementation guidance behind ASC 606&rsquo;s control-transfer principle, are: (1) the reason for holding the goods must be substantive and must originate with the customer, not the seller; (2) the product must be separately identified as belonging to that specific customer, not held as undifferentiated stock; (3) the product must be complete and ready for physical transfer; and (4) the seller must not retain the ability to use the product itself or redirect it to a different customer. Apply each test to what the SEC found at Sunbeam.</p>
+        <ol>
+          <li><b>Customer-initiated, substantive reason?</b> No. Sunbeam&rsquo;s own sales force proposed the arrangement and used discounts as the inducement, specifically to help Sunbeam hit its own quarterly targets. The retailers had no business need of their own to take December delivery of a July product.</li>
+          <li><b>Separately identified as the customer&rsquo;s property?</b> No. The SEC&rsquo;s findings describe the grills sitting as ordinary, undifferentiated inventory in Sunbeam&rsquo;s own warehouses &mdash; not segregated, tagged, or set aside for the retailers who had supposedly already bought them.</li>
+          <li><b>Ready for immediate transfer?</b> Largely beside the point once the first two tests fail, but even here the arrangement was built around indefinite holding, not a brief shipping delay.</li>
+          <li><b>Seller retains no ability to redirect it?</b> No. Sunbeam kept full control of the physical grills, and a substantial share of the &ldquo;sales&rdquo; were later reversed as returns once the promotional terms did not hold up &mdash; the SEC&rsquo;s own title for the enforcement matter names channel stuffing, bill-and-hold, and &ldquo;lots of returns&rdquo; together, because the three were the same scheme viewed from three angles.</li>
+        </ol>
+        <p>Every single test fails. Nothing here is a close call decided the wrong way &mdash; it is a transaction that does not clear even one bar of the checklist built specifically to police this exact scenario.</p>
+      </div>
+
+      <h3>Where it shows up: the $6.4 billion Xerox moved out of the years it was earned</h3>
+
+      <p>On April 11, 2002, Xerox Corporation settled an SEC enforcement action alleging it had committed fraud in how it accounted for its equipment leases, agreeing to a $10 million civil penalty without admitting or denying the SEC&rsquo;s allegations. The settlement required Xerox to restate its financial results for 1997 through 2000 and adjust its already-announced 2001 results. The restatement reduced previously reported equipment-sales revenue across that period by $6.4 billion, offset by a $5.1 billion increase in revenue reclassified as service, rental, financing, and document-outsourcing revenue over the same years. The SEC&rsquo;s complaint pointed to one especially concrete instance from 1999: roughly $400 million in lease sales that added $182 million in pre-tax profit Xerox had not separately disclosed the impact of.</p>
+
+      <p>The mechanism is exactly this lesson&rsquo;s Step 4, run in reverse. Xerox leased its copiers on multi-year contracts that bundled several things into one stream of lease payments: the equipment itself, ongoing servicing, supplies, and financing. Under rules that worked, in substance, the same way ASC 606&rsquo;s allocation step works today, only the portion of a bundled lease attributable to the equipment could be recognized immediately, the way an outright sale would be; the remainder had to be recognized gradually, over the life of the lease, matched to the service and financing actually being provided across that time. That split depended on an internal valuation assumption &mdash; in effect, what standalone selling price to assign the equipment piece relative to everything else in the bundle. The SEC found that Xerox systematically skewed that assumption, across its international units, to push more of every lease&rsquo;s value into the immediately recognizable equipment bucket than the economics actually supported &mdash; the complaint itself uses the plural phrase &ldquo;accounting opportunities&rdquo; for the recurring menu of such adjustments, which the complaint separately estimated had accelerated recognized equipment revenue by more than $3 billion and pre-tax earnings by roughly $1.5 billion (a narrower, allegation-stage figure than the eventual $6.4 billion restatement above, which covered the full agreed-upon correction across every year and every cause, not only the acts the complaint chose to quantify). Each individual adjustment could be defended as a rounding-sized judgment buried inside a valuation model, and no single lease looked like fraud. Multiplied across every lease the company wrote for four years, it added up to billions of dollars pulled out of the years the underlying service was actually delivered and into the year the lease was signed. Nothing about any individual copier lease was fake. The only thing wrong was which year, and how much of each year, the revenue was assigned to.</p>
+
+      <p>This is worth carrying forward whenever you read a company&rsquo;s balance sheet. Two line items are where the mechanics of this lesson show up directly. <b>Deferred revenue</b> (sometimes labeled a contract liability) is cash or a receivable already recorded that has not yet been earned &mdash; worked example 1&rsquo;s $56,571.43 sitting on the books after Year 1. A healthy, growing subscription business typically shows this balance growing roughly in step with new bookings; it is cash collected ahead of the work, not a warning sign on its own. The opposite item, <b>unbilled receivables</b> or a <b>contract asset</b>, represents revenue already recognized that has not yet been invoiced or collected &mdash; the flip side, and the one worth more scrutiny. When that balance grows meaningfully faster than reported revenue, especially at a company using percentage-of-completion on long contracts, it is at minimum worth asking whether the company&rsquo;s own cost-to-complete estimates &mdash; the exact number worked example 2 showed steering a quarter&rsquo;s profit &mdash; are the thing doing the growing.</p>
+
+      <p>The single broadest version of this check, the one a forensic accountant runs first and the one you can run yourself from three lines of any 10-K, is simply comparing the growth rate of reported revenue to the growth rate of cash actually collected from operations. Revenue is an accrual-basis figure built on judgment calls exactly like the ones this lesson has walked through; cash from operations, on the statement of cash flows, is much closer to an observable fact &mdash; money that either moved into the bank or did not. When revenue climbs quarter after quarter while operating cash flow stalls or falls, the gap has to be sitting somewhere on the balance sheet, usually in receivables or a contract asset, and while there are entirely innocent reasons for that gap to open for a quarter or two, a gap that keeps widening for several years running is exactly the shape both Sunbeam&rsquo;s channel-stuffed receivables and Xerox&rsquo;s reallocated lease revenue left behind, visible in hindsight to anyone who had been watching the two growth rates diverge in real time.</p>
+
+      <h3>The misconception: almost none of this requires anything to be fake</h3>
+
+      <p>The instinctive picture of accounting fraud is invented transactions &mdash; a fictional customer, a shipment that never happened, a number simply made up. Sunbeam&rsquo;s grills were real grills, sold to real retailers, most of which eventually did ship. Xerox&rsquo;s leases were real leases, signed by real customers, for copiers that were genuinely delivered and genuinely serviced. In both cases, and in the overwhelming majority of revenue-recognition cases the SEC has ever brought, an auditor checking &ldquo;does this transaction actually exist&rdquo; would truthfully answer yes. What was wrong in both cases was never existence. It was timing and allocation &mdash; when a real transaction&rsquo;s value was recorded, and how much of it landed in this period versus a later one.</p>
+
+      <p>That distinction is not a technicality; it is what makes this category of fraud so much harder to catch than the invented-transaction kind. A fake sale can, in principle, be caught by confirming the transaction exists at all &mdash; calling the customer, checking a shipping record, finding nothing there. A timing-and-allocation problem leaves every individual document looking correct, because every individual document <i>is</i> correct: the grill really was invoiced, the lease really was signed, the cost-to-complete estimate really was somebody&rsquo;s honest professional judgment on the day they made it. What is wrong only becomes visible as a pattern &mdash; the same customers reordering suspiciously large amounts every year-end, in Sunbeam&rsquo;s case, or an equipment-valuation assumption that happened to skew the same direction on every lease, every quarter, for four straight years, in Xerox&rsquo;s. Day 25 of this curriculum drew the line between accrual and cash accounting; today&rsquo;s lesson lives entirely on the accrual side of that line, and revenue recognition is the single most consequential judgment call accrual accounting asks a company to make, precisely because &ldquo;the transaction is real&rdquo; and &ldquo;the number is right&rdquo; turn out to be two completely different claims.</p>
+
+      <p>A second, quieter version of the same misconception is worth naming separately, because it is the one that trips up people who already know the first: the belief that following the letter of ASC 606 guarantees an honest number. It does not, and it was never meant to. The five-step model narrows the range of defensible answers; it does not collapse that range to a single point. Worked example 2&rsquo;s estimated cost-to-complete is a legitimate input every construction company using percentage-of-completion is required to produce, in full compliance with the standard, every single reporting period &mdash; and two equally compliant, equally good-faith engineering teams looking at the identical half-built bridge can reasonably land on estimates thousands of dollars apart, each fully defensible, each producing a different revenue number this quarter. The standard exists to bound judgment, not eliminate it, which means &ldquo;this was done in full compliance with GAAP&rdquo; is a much weaker assurance than it sounds &mdash; true of Sunbeam&rsquo;s auditor&rsquo;s initial sign-off, true right up until the day it was not, and true today of any company whose estimates happen, quarter after quarter, to lean in exactly the direction that flatters the number a bonus is tied to.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day 9 of this curriculum built the formal definition of a limit specifically to fix a problem with the informal one: &ldquo;f(x) gets arbitrarily close to L as x approaches a&rdquo; sounds precise but is not actually checkable, so mathematicians replaced it with the epsilon-delta definition &mdash; a concrete, adversarial test naming exactly how close is close enough, and exactly how near x has to be to guarantee it. That same lesson defined continuity at a point as a three-part claim: the limit approaching that point has to exist, the function has to actually be defined there, and &mdash; the part that matters most here &mdash; the two have to match exactly, with no gap between what the approach promised and what the function actually delivers at that instant.</p>
+
+      <p>Revenue recognition is accounting&rsquo;s own version of that exact upgrade. The rule ASC 606 replaced, in force for most of the twentieth century, recognized revenue once it was &ldquo;realized or realizable and earned&rdquo; &mdash; a phrase with roughly the same operational precision as &ldquo;gets arbitrarily close,&rdquo; patched over the decades with an accumulating pile of industry-specific bulletins because the core wording alone could not be checked against a hard case. The five-step test is the checkable replacement: not &ldquo;earned, roughly,&rdquo; but a specific, defensible claim &mdash; has control transferred, yes or no &mdash; the same move that replaced &ldquo;approaches&rdquo; with a number a skeptic could name and test. And Sunbeam&rsquo;s grills are, in exactly Day 9&rsquo;s vocabulary, a textbook discontinuity: the books recorded a value at the recognition point &mdash; a completed sale &mdash; that the actual economic substance approaching that point never supported. A company whose recognized revenue and its underlying economic reality never actually meet at the point where the books claim they do is discontinuous at precisely the instant it claims to be smoothest.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can name the five ASC 606 steps and explain why <b>control</b> &mdash; not a signed contract, not a shipped box, not a cleared check &mdash; is what actually triggers revenue.</li>
+          <li>You can allocate a bundled contract&rsquo;s price across separate performance obligations by relative standalone selling price, and you have done it once by hand on a real bundled-contract shape.</li>
+          <li>You can run percentage-of-completion on a multi-year contract, and you have watched a single revision to an estimated cost-to-complete number move profit between quarters independent of how much construction physically happened that quarter.</li>
+          <li>You know that almost none of the history of revenue-recognition fraud, from Sunbeam&rsquo;s grills to Xerox&rsquo;s leases, required inventing a transaction &mdash; only pushing a real one&rsquo;s timing and allocation in one direction, on purpose, quarter after quarter.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The ASC 606 core principle and five-step model, and its joint issuance by the FASB and IASB in May 2014 with a public-company effective date for fiscal years beginning after December 15, 2017, were checked against FASB and professional-services summaries rather than taken from memory. The Sunbeam Corporation bill-and-hold and channel-stuffing findings, including the $60 million and $189 million 1997 figures, are drawn from SEC enforcement materials and case literature on the matter. The Xerox Corporation restatement figures ($6.4 billion and $5.1 billion, the 1999 $400 million/$182 million detail, and the April 2002 $10 million settlement) are drawn from the SEC&rsquo;s own 2002 press release announcing the settlement; the complaint&rsquo;s separate &ldquo;accounting opportunities&rdquo; language and its $3 billion/$1.5 billion figures are drawn from the SEC&rsquo;s litigation materials on the matter. The software-contract and construction-contract worked examples are hypotheticals built for this lesson to demonstrate the arithmetic, clearly labeled as such; both are structured to mirror how real bundled-service and fixed-price contracts are accounted for.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day nine&rsquo;s lesson on limits and continuity and day 25&rsquo;s lesson on accrual versus cash accounting. Missing data is declared missing, never estimated; a hypothetical figure is labeled as such rather than presented as measured. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-23-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

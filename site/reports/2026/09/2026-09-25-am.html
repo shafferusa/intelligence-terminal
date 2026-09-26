@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Fri, Sep 25, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-25",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-25-am.html",
+    "summary": "Trump and Xi's summit ends without a joint statement and the Taiwan arms question unresolved, Treasury yields extend their climb to fresh multi-decade highs as long-duration bond funds hit new 52-week lows, Costco says its tariff-refund benefit will keep recurring, and today is the federal deadline to patch an actively exploited F5 firewall flaw.",
+    "headlines": [
+      "Trump-Xi summit ends without a joint statement; Taiwan arms package still undecided",
+      "Treasury yields extend their climb to fresh highs; TLT and IEF hit new 52-week lows",
+      "Costco's tariff-refund benefit will keep recurring; today is the deadline to patch a critical F5 flaw"
+    ],
+    "reading_minutes": 22,
+    "generated_at": "2026-09-25T06:35:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Friday, September 25, 2026 <span class="sep">&middot;</span> 22 min read
+      </p>
+      <p class="paper-standfirst">
+        Trump and Xi&rsquo;s summit closed without a joint statement and the Taiwan arms question still open, Treasury yields extended their climb to fresh multi-decade highs as the long-duration bond funds on Logan&rsquo;s board hit new 52-week lows, Costco said its tariff-refund benefit will keep showing up in results, and today is the federal deadline to patch a critical, actively exploited F5 firewall flaw.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Xi departed Washington Thursday afternoon after the bilateral meeting, Rose Garden ceremony and state dinner closed his three-day visit; neither side issued a joint statement, and the $14 billion Taiwan arms package China wants shelved is still undecided. Overnight, Russian drones hit Odesa again as Zelensky&rsquo;s push for a three-way meeting with Putin and Trump continues to go nowhere.</li>
+          <li><b>Markets.</b> Treasury yields extended their climb Thursday &mdash; the 10-year closed at 5.18%, the 30-year at 5.47% &mdash; and the two long-duration Treasury funds on the board, TLT and IEF, both closed at fresh 52-week lows; futures point modestly higher this morning.</li>
+          <li><b>The thread.</b> Long-duration stress is now visible at the fund level, not just in headline yields, even as selective risk appetite holds up in places like Meta&rsquo;s Muse-driven rally &mdash; a market that hasn&rsquo;t fully reconciled higher-for-longer rates with pockets of AI-driven strength.</li>
+          <li><b>Biggest risk.</b> A third soft Treasury auction or a hot economic print could push long yields past their new highs and deepen the stress already showing up in rate-sensitive funds; the next real test is today&rsquo;s data, not another auction (none is scheduled today).</li>
+          <li><b>Watch today.</b> Durable Goods Orders at 8:30 AM ET and the University of Michigan&rsquo;s final consumer-sentiment read at 10:00 AM test whether incoming data validates the bond market&rsquo;s hawkish repricing; separately, today is CISA&rsquo;s federal deadline to patch the actively exploited F5 BIG-IP flaw.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Trump and Xi&rsquo;s summit ends without a joint statement; the Taiwan arms question is still open</h3>
+          <p class="story-deck">The two governments extended their trade truce to January and opened an AI-safety channel, but $14 billion in pending Taiwan arms sales &mdash; and what either side actually agreed on it &mdash; remains unresolved.</p>
+          <div class="story-body">
+            <p>Xi departed the White House around 1:30 PM Thursday after the bilateral meeting, Rose Garden ceremony and state dinner closed out his three-day visit, his first to Washington in more than a decade. Neither government issued a joint statement; each published its own separate readout. China&rsquo;s Ministry of Foreign Affairs described the visit as leaving &ldquo;greater scope for cooperation,&rdquo; singling out artificial intelligence &mdash; consistent with the AI-safety communications channel the two sides opened overnight Wednesday alongside an extension of their trade truce to January 10, 2027, from a previous November 10 expiration.</p>
+            <p>The $14 billion Taiwan arms package China wants shelved was, by administration officials&rsquo; own account, the dominant subject of the private conversation. A senior official told reporters Thursday that Trump would decide &ldquo;in a fairly short time&rdquo; &mdash; no decision has been announced as of this edition. Taiwan&rsquo;s Defense Ministry said Friday it still expects the package to &ldquo;proceed as planned.&rdquo;</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Congress split along predictable lines reacting to the same meeting: Rep. Gregory Meeks (D) said Xi &ldquo;has leverage over the president&rdquo; but not over Congress; Rep. Michael McCaul (R) called Xi &ldquo;very aggressive&rdquo; and said Taiwan dominated the conversation; Rep. Brian Fitzpatrick (R) compared the stakes to Ukraine. None of that reaction changes what the administration actually decides.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The Taiwan arms decision itself, on no fixed timeline, and any detail on how the new AI-safety channel gets used.
+            </div>
+          </div>
+          <p class="story-sourceline">China&rsquo;s Foreign Ministry readout, Taiwan&rsquo;s Defense Ministry statement (primary) &middot; NBC News, CNN, Bloomberg, CNBC, Al Jazeera, CBS News (secondary).</p>
+        </article>
+
+        <article class="story">
+          <h3>Treasury yields extend their climb to fresh multi-decade highs as two auctions tail in one week</h3>
+          <p class="story-deck">The 10-year closed at 5.18%, the 30-year at 5.47% &mdash; both up again Thursday &mdash; while the two long-duration Treasury funds on the board hit new 52-week lows.</p>
+          <div class="story-body">
+            <p>The Treasury&rsquo;s official par curve for Thursday shows a broad-based move higher across every tenor from one month (+2bp) to 30 years (+7bp): the 10-year closed at 5.18%, the 30-year at 5.47%, the 2s10s spread widening to +31 basis points. It&rsquo;s the fourth straight session of higher long yields, a run that began Tuesday with a hot flash PMI, Fed Governor Michael Barr&rsquo;s hawkish remarks and a weak five-year auction, then continued Thursday with a soft seven-year auction &mdash; a 5.085% high yield, the highest for that tenor since April 1993, with a bid-to-cover of 2.42 and indirect bidders taking a reduced 57.2% of the award.</p>
+            <p>On the board, the effect is now concrete rather than abstract: TLT (20+ Year Treasury) and IEF (7-10 Year Treasury) both closed Thursday at new 52-week lows, and the investment-grade and high-yield credit funds, LQD and HYG, both closed within a few cents of theirs. Two Fed officials reinforced the hawkish read this week &mdash; Barr said further hikes are &ldquo;likely to be needed&rdquo;; NY Fed President John Williams, speaking Thursday in London, called another hike &ldquo;reasonable&rdquo; by year-end without committing to a month. Odds trackers for an October hike have not converged on a single figure this outlet is prepared to print as consensus; treat any specific percentage reported elsewhere with the same caution this outlet has applied all week.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the fourth consecutive session of higher long yields, and it is now visible in fund-level price action &mdash; new 52-week lows &mdash; not just in headline Treasury levels.
+            </div>
+          </div>
+          <p class="story-sourceline">Treasury par-yield curve, TreasuryDirect auction results (primary) &middot; Federal Reserve remarks via wire (primary) &middot; this report&rsquo;s own Yahoo Finance data.</p>
+        </article>
+
+        <article class="story">
+          <h3>Costco&rsquo;s tariff-refund benefit isn&rsquo;t a one-quarter story &mdash; the company says it will recur</h3>
+          <p class="story-deck">Thursday&rsquo;s earnings beat again leaned on a one-time refund; Costco now says it will disclose the net effect every quarter through fiscal 2027.</p>
+          <div class="story-body">
+            <p>Costco&rsquo;s fiscal Q4 numbers, filed via 8-K after Thursday&rsquo;s close: adjusted EPS $6.75 against roughly $6.48&ndash;$6.67 in vendor estimates, net sales $93.9 billion (+11.2%), comparable sales +9.4% (digitally-enabled sales +19.5%), total revenue including membership fees $95.7 billion. The $0.15-per-share benefit from IEEPA tariff refunds, first flagged as a one-time item last quarter, is not behind the company: Costco&rsquo;s own materials say the dynamic will keep affecting quarterly comparisons into fiscal 2027, and it has committed to disclosing the net impact every quarter going forward &mdash; an unusual level of standing disclosure for what started out described as one-time.</p>
+            <p>Analyst reaction was incremental rather than enthusiastic: Truist held at Hold but raised its price target to $909 from $873; BMO reiterated Outperform, lifting its target to $980 from $950; DA Davidson stayed at Neutral, raising to $880 from $780 &mdash; all modest upward revisions consistent with a confirmation-not-surprise quarter. This outlet could not obtain a reliable Friday premarket quote for Costco at gather time and is not printing one; see Before the Open.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A company voluntarily committing to disclose a one-time benefit&rsquo;s lingering effect, every quarter, is Costco itself signaling that its headline growth rate is currently running hotter than its underlying business &mdash; worth watching whether analysts start backing it out of their own models.
+            </div>
+          </div>
+          <p class="story-sourceline">Costco Wholesale Corp. 8-K, Exhibit 99.1, and earnings call (primary, SEC EDGAR) &middot; Benzinga transcript, TipRanks analyst-rating data (secondary).</p>
+        </article>
+
+        <article class="story">
+          <h3>Meta&rsquo;s Muse rally keeps running as the Amazon standoff goes unresolved</h3>
+          <p class="story-deck">Shares are up more than 20% in two weeks and Muse is reported atop Apple&rsquo;s App Store, but Amazon still won&rsquo;t let the AI agent onto its own site.</p>
+          <div class="story-body">
+            <p>Amazon continues to block Meta&rsquo;s Muse AI agent from Amazon.com over unauthorized access under its Conditions of Service; Meta has separately unveiled &ldquo;Muse Charm,&rdquo; a roughly two-inch, AirPods-case-sized hardware device with its own 5G connection for voice-first interaction with the agent, shipping for the holidays in December. Neither company has said anything further about resolving the access dispute. Meta shares are now up more than 20% over the two weeks since Muse&rsquo;s introduction, closing Thursday at $777.59 (+4.50%), just under the stock&rsquo;s 52-week high of $779.82.</p>
+            <p><span class="flag">Unverified ranking claim</span> Multiple outlets report Muse has reached the top spot on Apple&rsquo;s App Store, ahead of ChatGPT. This outlet has not independently checked App Store rankings and is reporting the claim as stated by outlets covering it, not as independently confirmed.</p>
+          </div>
+          <p class="story-sourceline">Bloomberg, CNBC, Axios (secondary) &middot; this report&rsquo;s own Yahoo Finance data &middot; App Store ranking per trade-press reporting, unverified.</p>
+        </article>
+
+        <article class="story">
+          <h3>Today is the federal deadline to patch an actively exploited firewall flaw affecting 14,700+ systems</h3>
+          <p class="story-deck">CISA gave federal agencies until today to fix a critical F5 BIG-IP flaw; a security-research group&rsquo;s own internet scan counts nearly 15,000 exposed instances worldwide.</p>
+          <div class="story-body">
+            <p>CVE-2026-94127 (CVSS 9.8), a heap-based buffer overflow in BIG-IP Access Policy Manager enabling unauthenticated remote code execution when APM is configured as an OAuth authorization server, was disclosed and hotfixed by F5 on September 22; CISA added it to its Known Exploited Vulnerabilities catalog the same day, setting today as the federal civilian remediation deadline. Shadowserver&rsquo;s own internet-wide scan counts more than 14,700 internet-facing IP addresses carrying a BIG-IP APM fingerprint &mdash; a rough measure of how much exposed surface may still be unpatched, not a count of actual compromises. No new confirmed exploitation or breach disclosure tied to this specific flaw has surfaced since Tuesday.</p>
+          </div>
+          <p class="story-sourceline">CISA KEV catalog, F5 security advisory (primary) &middot; Shadowserver scan data via BleepingComputer, The Register, Help Net Security (secondary).</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC&rsquo;s Ebola outbreak splits in two directions: falling at its epicenter, surging in the north</h3>
+          <p class="story-deck">The fastest-growing Ebola outbreak on record has passed 7,770 cases, but the trend is no longer uniform &mdash; Ituri is improving while North Kivu&rsquo;s case count is up 73% in three weeks.</p>
+          <div class="story-body">
+            <p>WHO&rsquo;s latest figures, for data through September 22: 7,773 confirmed cases, 3,759 deaths, 839 hospitalized in isolation &mdash; up 40 cases and 27 deaths from the prior day&rsquo;s report. What has genuinely changed since this outlet&rsquo;s last update is the trajectory itself: Ituri, the epicenter, is down roughly 26% and Haut-U&eacute;l&eacute; down about 15% over the trailing 21 days, both provinces improving, while North Kivu is up roughly 73% over the same window &mdash; the outbreak&rsquo;s center of gravity may be shifting north even as the epicenter cools.</p>
+          </div>
+          <p class="story-sourceline">WHO Disease Outbreak News (primary) &middot; UN News, ECDC aggregation (secondary).</p>
+        </article>
+
+        <article class="story">
+          <h3>Russian drones hit Odesa again overnight as Zelensky&rsquo;s three-way-meeting push goes nowhere</h3>
+          <p class="story-deck">Ukraine says it intercepted 267 of 295 drones launched at it overnight; the Kremlin still calls a Trump-Putin-Zelensky sit-down premature.</p>
+          <div class="story-body">
+            <p><span class="flag">Single-sourced casualty count</span> Russian drones struck Odesa overnight into Friday, killing at least one person and injuring two, with fires reported at warehouses; Ukraine&rsquo;s air force said it intercepted 267 of 295 drones launched nationwide. The casualty figures come from Ukrainian officials only; this outlet has not found independent corroboration and reports them as single-sourced, per its standard for war-casualty claims. This is a separate, smaller barrage from Wednesday night&rsquo;s larger strike on Kyiv and Odesa (16 killed, 54 injured), already reported.</p>
+            <p>Diplomatically, nothing has moved: Zelensky continues pushing for a three-way meeting with Trump and Putin, first raised at Tuesday&rsquo;s UN General Assembly session; the Kremlin&rsquo;s Peskov continues to call it premature, saying expert-level talks should come first. No trilateral meeting has been scheduled.</p>
+          </div>
+          <p class="story-sourceline">Ukrainian Air Force statement (primary, single-party) &middot; Kyiv Independent (secondary).</p>
+        </article>
+
+        <article class="story">
+          <h3>SpaceX&rsquo;s lockup opened calmly Thursday, but a Shotwell share sale and two more unlock dates lie ahead</h3>
+          <p class="story-deck">President Gwynne Shotwell disclosed a $52 million share sale ahead of this week&rsquo;s unlock; the next tranches come October 9 and 24.</p>
+          <div class="story-body">
+            <p>SPCX fell about 4% Wednesday &mdash; described by several outlets as its sharpest single-day drop in nearly two months &mdash; after President and COO Gwynne Shotwell filed a Form 4 disclosing plans to sell 342,170 shares, worth roughly $52 million, ahead of Thursday&rsquo;s lockup expiration (roughly 328.4 million additional shares becoming eligible to trade for the first time since the June IPO). Thursday&rsquo;s actual unlock session was far calmer: SPCX closed at $148.03, down 0.22%, with no major dislocation observed. Further lockup tranches are scheduled for October 9 and October 24, then a larger release tied to third-quarter earnings &mdash; Thursday&rsquo;s calm session doesn&rsquo;t resolve what happens at those larger unlocks.</p>
+          </div>
+          <p class="story-sourceline">SEC Form 4 (primary) &middot; TradingView/Stocktwits wire, TipRanks (secondary) &middot; this report&rsquo;s own Yahoo Finance data.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= OVERNIGHT ================= -->
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>What changed since last night, in brief: the previous understanding was that Wednesday&rsquo;s yield spike might prove a one-day shock; the new information is a second consecutive session of higher long yields plus a second soft Treasury auction (Thursday&rsquo;s seven-year, the weakest for that tenor since 1993) and a second Fed voice (Williams, after Barr) reinforcing the hawkish read &mdash; which raises confidence this is a genuine repricing of the rate path, not noise. On the Trump-Xi summit, the previous understanding was that the substantive Taiwan conversation was still ahead; the new information is that the meeting concluded without resolving it and without a joint statement, which lowers confidence that a near-term decision is imminent despite an official&rsquo;s promise to decide &ldquo;in a fairly short time.&rdquo;</p>
+        <p>Separately, Saudi Arabia&rsquo;s coalition said Thursday it intercepted six ballistic missiles aimed at Taif and the Red Sea port of Yanbu; Houthi forces claim, without confirming that target, to have fired &ldquo;dozens&rdquo; of missiles and drones at Jazan province instead &mdash; the discrepancy is unresolved and this outlet is not adjudicating which account is accurate. In Indonesia, the Java Sea ferry search&rsquo;s confirmed toll had risen to 26 dead with 109 still missing as of Wednesday, the most current count available as this edition goes to press.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Two releases land before this edition is far behind Logan: Durable Goods Orders for August at 8:30 AM ET, with the best available consensus estimates &mdash; not refreshed same-morning &mdash; clustered around &minus;0.3% headline and +0.5% ex-transport, against July&rsquo;s actual +1.1% headline gain (its fifteenth straight ex-transport increase). The final University of Michigan Consumer Sentiment read for September follows at 10:00 AM; the preliminary print was 47.8, down 7.5% from August, with year-ahead inflation expectations up to 4.6% from 4.0%. A final that simply confirms 47.8 would be a non-event; any revision away from it would be the actual story. The BLS also publishes its Employee Benefits in the United States survey at 10:00 AM, routine and not market-moving.</p>
+        <p>Two market-implied FRED series did roll to fresher observations overnight: the 2s10s Treasury spread (T10Y2Y) widened to 0.31 percentage points from 0.26, while 10-year breakeven inflation expectations (T10YIE) eased slightly to 2.33% from 2.35% &mdash; nominal yields rising while inflation expectations tick down implies real yields rose even more, consistent with a market pricing tighter policy rather than more inflation. CPI, core CPI, payrolls and the unemployment rate are unchanged from Thursday, still reflecting August data.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p><span class="flag">Single-reliable-source, Preliminary</span> Google, OpenAI and Anthropic are reportedly courting Sriram Krishnan &mdash; the White House&rsquo;s former AI policy adviser, who left that role in June &mdash; to lead a proposed industry-run AI-safety self-regulator modeled on FINRA, with no government oversight and a targeted launch in late 2026 or early 2027; other names reportedly approached include former White House science adviser Arati Prabhakar, Condoleezza Rice and David Friedberg. This rests on a small number of trade-press reports, with no joint statement or confirmation from any of the three companies, and this outlet treats it as worth watching rather than settled. If it proceeds, it would be the clearest sign yet that the major labs prefer writing their own rules to waiting on Congress, which has taken no floor action on any AI-safety bill introduced this year.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>SpaceX&rsquo;s Starship Flight 14 &mdash; the debut of the upgraded V3 vehicle and, if successful, the first Starship flight to reach Earth orbit, carrying a batch of Starlink satellites &mdash; is targeting no earlier than Monday, September 28, contingent on an FAA launch license SpaceX says it expects before then. Closer to home, Rocket Lab&rsquo;s Electron lifts off tonight at 8:26 PM ET from New Zealand carrying a synthetic-aperture-radar satellite for Japan&rsquo;s Synspective, the company&rsquo;s 13th mission for that customer and its 97th Electron flight overall. A SpaceX Falcon 9 is scheduled to carry the classified USSF-385 national-security payload early Saturday.</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>08:30</strong></td><td class="txt"><strong>Durable Goods Orders (Aug)</strong></td><td>&minus;0.3% / +0.5% ex-transport</td><td>+1.1% / +0.4% ex-transport</td></tr>
+            <tr><td>10:00</td><td class="txt">Univ. of Michigan Consumer Sentiment, final (Sept)</td><td>47.8</td><td>47.8 (prelim)</td></tr>
+            <tr><td>10:00</td><td class="txt">BLS: Employee Benefits in the United States (Mar 2026)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>20:26</td><td class="txt">Rocket Lab Electron launch (StriX 13 / Synspective), New Zealand</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled release. No Treasury auction is scheduled today, after this week&rsquo;s full 2-, 5- and 7-year note slate.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures point modestly higher: S&amp;P futures up about 0.3%, Nasdaq futures up about 0.5%, Dow futures up about 0.2%, small-cap futures up about 0.3% &mdash; a tentative bounce after Thursday&rsquo;s essentially flat close (S&amp;P &minus;0.02%, Nasdaq +0.01%, Dow &minus;0.31%). Gold is firmer in premarket trading (roughly +1.1%), the dollar index is fractionally softer (&minus;0.2%, near 101.05), and oil has pulled back in early trading (WTI futures roughly &minus;1.9%) after USO itself rose 2.9% Thursday &mdash; a reminder that an incomplete overnight futures print and the prior day&rsquo;s official close cover two different periods and shouldn&rsquo;t be read as contradicting each other. Natural gas is lower (roughly &minus;1.7%) after several sessions as the standout mover. Bitcoin is firmer, up about 1.8% to roughly $84,700.</p>
+        <p>The Cboe volatility complex has not posted a fresh settlement in four consecutive sessions. This morning&rsquo;s attempt found Cboe&rsquo;s delayed-quote domain returning an explicit access-denied response on both a direct fetch and this outlet&rsquo;s backup fetch method &mdash; which reads as a policy-level block rather than data simply running late. Whatever the VIX actually is this morning, this outlet is not printing Monday&rsquo;s stale 14.21 as if it were current.</p>
+        <p>The tape appears to be pricing a pause in the four-session yield climb, not its reversal &mdash; a bounce in equity futures alongside continued pressure at the long end (TLT and IEF both closed at 52-week lows Thursday) is not obviously a single consistent read. The most fragile assumption behind this morning&rsquo;s calm is that today&rsquo;s Durable Goods and consumer-sentiment data cooperate; a hot durable-goods print, on top of two soft Treasury auctions this week and two hawkish Fed officials, could reopen the selloff rather than confirm a plateau. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Long yields extend their climb past this week&rsquo;s highs within two weeks.</strong> Probability 30&ndash;40%, on the basis of four consecutive sessions of higher yields, two soft auctions and two hawkish Fed officials this week, weighed against no auction scheduled today and next week&rsquo;s data able to cut either way. If it happens: TLT and IEF push further below their new 52-week lows, and credit spreads &mdash; still only modestly wider &mdash; likely widen further. Invalidated by a cooler-than-expected Durable Goods print or a dovish Fed speaker.</p>
+        <p><strong>Trump decides the Taiwan arms package&rsquo;s fate within two weeks.</strong> Probability 40&ndash;55%, on the basis of a senior official&rsquo;s &ldquo;fairly short time&rdquo; comment plus bipartisan congressional pressure for clarity, weighed against the vagueness of that timeframe and the administration&rsquo;s pattern of extended deliberation on this specific question. If it happens: Taiwan gets a clear answer either way; a decision to proceed would likely draw a sharp response from China&rsquo;s Foreign Ministry given its stated position this week. Invalidated by continued delay past two weeks.</p>
+        <p><strong>The Fed delivers a hike at the October 27&ndash;28 meeting.</strong> This outlet&rsquo;s open forecast on this question, logged September 23 at 55&ndash;70%, stands; this week&rsquo;s auction and Fed-speaker news reinforces rather than changes it, so it is not re-logged as a new forecast.</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL NEWS ================= -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">69&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Sunny, wind NE 3&ndash;9 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">69&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">48&deg;</span>
+            <span class="sky">Mostly clear</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">70&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+        </div>
+      </div>
+      <p class="small muted">No active National Weather Service alerts for the area. National wire reports describe a rare September nor&rsquo;easter set to hit the mid-Atlantic and Northeast coast tonight into Saturday, affecting tens of millions; the National Weather Service&rsquo;s own Bridgeville forecast, above, shows no sign of it reaching the South Hills.</p>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT&rsquo;s board votes today on a $94.1 million, 102-bus order</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit&rsquo;s board is scheduled to vote today on a $94.1 million purchase of 102 buses &mdash; 56 sixty-foot diesel, six sixty-foot electric and 40 thirty-five-foot diesel &mdash; to replace vehicles at least 12 years old or with 500,000-plus miles, funded mostly by federal ($77 million) and state ($16.6 million) dollars under PRT&rsquo;s existing 2022 master contract with New Flyer. If approved, the new buses would enter service next summer. The outcome was not available as of this edition&rsquo;s publication.</p>
+        </div>
+        <p class="story-sourceline">Pittsburgh Regional Transit board agenda (primary) &middot; Pittsburgh Post-Gazette, WPXI (secondary).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Garrity and Shapiro&rsquo;s tax-cut divide sharpens ahead of next year&rsquo;s governor&rsquo;s race</h3>
+        <div class="story-body">
+          <p>State Treasurer Stacy Garrity, a likely 2026 gubernatorial contender, continues campaigning on cutting Pennsylvania&rsquo;s flat income-tax rate below its current 3.07% &mdash; a state House bill would take it to 2.8% &mdash; along with eliminating the inheritance tax and rolling back the 5.9% gross-receipts tax on utilities. Governor Shapiro has not proposed cutting the income-tax rate itself; his platform centers on the targeted Working Pennsylvanians Tax Credit, worth up to $805 on top of the federal Earned Income Tax Credit. Fresh coverage this week confirms the divide is sharpening, not narrowing, as both sides position ahead of next year&rsquo;s race.</p>
+        </div>
+        <p class="story-sourceline">WESA, Northeast Times, South Philly Review (secondary).</p>
+      </article>
+    </section>
+
+    <!-- ================= MARKET APPENDIX ================= -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, moderate</span> Supporting: breadth was decisively negative Thursday (1,963 advancers vs. 3,476 decliners across a 5,617-name universe), the two long-duration Treasury funds on the board (TLT, IEF) both closed at fresh 52-week lows, and the 10-year yield extended its climb to 5.18%. Contradicting: Meta rallied 4.50% to just under its 52-week high, communications and healthcare sector funds both gained (XLC +1.27%, XLV +0.63%), and Bitcoin is firmer this morning. Confidence: moderate. Change from Thursday&rsquo;s report: essentially unchanged in direction, with long-duration stress now visible at the fund level (fresh 52-week lows) rather than just in headline yield levels.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close, Sept 24, 2026 (market not yet open) &middot; close-to-close.</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>767.18</td><td class="down">&minus;0.08%</td></tr>
+                <tr><td>QQQM</td><td>305.14</td><td class="flat">0.00%</td></tr>
+                <tr><td>DIA</td><td>512.68</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>IWM</td><td>281.66</td><td class="down">&minus;0.09%</td></tr>
+                <tr><td>MAGS</td><td>72.51</td><td class="up">+0.60%</td></tr>
+                <tr><td>RSP</td><td>210.26</td><td class="down">&minus;0.50%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">S&amp;P 500 index closed 7,704.13 (&minus;0.02%), Nasdaq Composite 26,939.37 (+0.01%), Dow 51,349.98 (&minus;0.31%) Thursday, EOD official.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><span class="chip chip--warn">Estimated &mdash; not yet folded into the tracked EMA file</span> Thursday&rsquo;s whole-market breadth (Massive grouped-daily, filtered universe): 1,963 advancers, 3,476 decliners, 178 unchanged across 5,617 names; up-volume $5.95B against down-volume $8.96B &mdash; a decisively negative session. This run could not reconcile the full symbol-level EMA state needed to safely append it to the tracked breadth file without risking a gap in that file&rsquo;s sequential history, so it is reported here as this session&rsquo;s standalone reading rather than folded into <code>breadth.json</code>; percent-above-moving-average figures remain unavailable pending 50 and 200 sessions of accumulated history (44/200 so far).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sept 24 close-to-close, all 11 SPDR sector funds.</caption>
+              <thead><tr><th>Sector ETF</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>XLC (Communications)</td><td class="up">+1.27%</td></tr>
+                <tr><td>XLV (Health Care)</td><td class="up">+0.63%</td></tr>
+                <tr><td>XLE (Energy)</td><td class="up">+0.37%</td></tr>
+                <tr><td>XLF (Financials)</td><td class="down">&minus;0.02%</td></tr>
+                <tr><td>XLY (Discretionary)</td><td class="down">&minus;0.30%</td></tr>
+                <tr><td>XLK (Technology)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>XLRE (Real Estate)</td><td class="down">&minus;0.45%</td></tr>
+                <tr><td>XLI (Industrials)</td><td class="down">&minus;0.75%</td></tr>
+                <tr><td>XLP (Staples)</td><td class="down">&minus;0.89%</td></tr>
+                <tr><td>XLU (Utilities)</td><td class="down">&minus;0.98%</td></tr>
+                <tr><td>XLB (Materials)</td><td class="down">&minus;1.19%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Rate-sensitive utilities and materials led decliners; communications and health care were the standout gainers.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries</summary>
+          <p>Semiconductors (SMH) fell 0.15%, roughly in line with a mixed tech tape rather than a distinct AI-specific move; Meta&rsquo;s continued Muse-driven strength (see Top Stories) was the clearest single-name industry signal this session.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sept 24 close-to-close, previous close (AM edition, market not yet open).</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>AAPL</td><td>335.92</td><td class="down">&minus;0.33%</td></tr>
+                <tr><td>MSFT</td><td>497.93</td><td class="down">&minus;0.53%</td></tr>
+                <tr><td>NVDA</td><td>224.58</td><td class="down">&minus;0.41%</td></tr>
+                <tr><td>AMZN</td><td>249.38</td><td class="up">+0.04%</td></tr>
+                <tr><td>GOOGL</td><td>342.36</td><td class="up">+1.34%</td></tr>
+                <tr><td>META</td><td>777.59</td><td class="up">+4.50%</td></tr>
+                <tr><td>TSLA</td><td>377.94</td><td class="down">&minus;0.57%</td></tr>
+                <tr><td>SPCX</td><td>148.03</td><td class="down">&minus;0.22%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Costco (COST) is covered in Top Stories; no reliable premarket or closing quote was independently gathered this run &mdash; see Before the Open.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official, Sept 24, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>4.01%</td></tr>
+                <tr><td>3M</td><td>4.24%</td></tr>
+                <tr><td>1Y</td><td>4.51%</td></tr>
+                <tr><td>2Y</td><td>4.87%</td></tr>
+                <tr><td>5Y</td><td>5.03%</td></tr>
+                <tr><td>7Y</td><td>5.10%</td></tr>
+                <tr><td>10Y</td><td>5.18%</td></tr>
+                <tr><td>20Y</td><td>5.53%</td></tr>
+                <tr><td>30Y</td><td>5.47%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +31bp &middot; 3m10y +94bp &middot; 5s30s +44bp. No fresher curve posted pre-open; this is still Thursday&rsquo;s official close, the highest 10-year print since July 2007.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield spread (BAMLH0A0HYM2) 2.73 as of Sept 23, EOD official, widened from 2.68 the prior session. LQD (investment-grade) fell 0.71% and HYG (high-yield) fell 0.27% Thursday, both closing within a few cents of their 52-week lows. FINRA short-volume ratios for Sept 24 show an aggregate of 50.38% across the board-subset universe, with standouts VOYG 91.6%, XLV 80.6%, MDY 80.0% and LQD 77.9%; lowest were BKNG 15.5% and MRK 15.1%. Daily short volume is not short interest, which is always settlement-dated and 2&ndash;3 weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p><span class="chip chip--warn">Feed blocked, fourth session</span> Cboe&rsquo;s delayed-quote domain returned an explicit access-denied response this run on both a direct fetch and this outlet&rsquo;s backup fetch method &mdash; a policy-level block, not a simple delay. The complex still shows Sept 22&rsquo;s close (VIX 14.21, VIX9D 12.13, VIX3M 17.61, normal contango); this outlet is not printing it as current. Given four sessions of rising yields and Thursday&rsquo;s negative breadth, a materially higher print is likely once Cboe posts one, but no value is invented here. Put/call ratios remain unavailable; the MOVE index and dealer gamma positioning have no allowlisted free source and are not tracked.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>The dollar index (DXY) sat at 101.046 in premarket trading, down 0.24% from Thursday&rsquo;s close; EUR/USD was 1.14 (+0.16%). ECB reference rates, Sept 24 EOD official: EUR 0.87974, JPY 158.85, GBP 0.75645, CNY 6.7126 (all per US dollar).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Gold rose in premarket trading (GC=F +1.06%) after falling Thursday (GLD &minus;0.30%) &mdash; two different, non-overlapping periods, not a contradiction. Oil pulled back in premarket trading (CL=F roughly &minus;1.85%) after rising Thursday (USO +2.86%). Natural gas fell (NG=F &minus;1.73%) after several sessions as the standout mover; copper futures (HG=F) rose about 1.0%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip chip--ok">Live, CoinGecko</span> Bitcoin $84,680 (+1.76% 24h), Ethereum $2,711.18 (+2.85%), Solana $118.75 (+5.30%), Cardano $0.2526 (+7.98%). Bitcoin dominance 58.93%, Ethereum dominance 11.46%, total crypto market cap $2.877 trillion, down 0.73% over 24 hours.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Mega-cap growth (MAGS +0.60%) outperformed the broad market (SPY &minus;0.08%) Thursday, a reversal from earlier this week when higher-duration, higher-multiple names underperformed on rising real yields &mdash; consistent with Meta&rsquo;s single-name rally rather than a broad growth-factor move (MSFT and NVDA both fell Thursday).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>The cross-asset picture continues to defy a single narrative: yields extended their climb and gold fell Thursday, consistent with rising real rates, but oil rose (USO +2.86%) and the dollar softened slightly (&minus;0.24%) &mdash; not the coherent rates-up/dollar-up/gold-down/oil-down pattern a textbook hawkish repricing would predict. Oil&rsquo;s move is treated as its own story, not folded into the rates narrative, consistent with this week&rsquo;s pattern.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist-company earnings today. Costco&rsquo;s quarter, reported Thursday, is covered in Top Stories and Business context above. The next watchlist report is Micron (MU) on September 30.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No Treasury auction is scheduled today, following this week&rsquo;s full 2-, 5- and 7-year note slate &mdash; both the 5-year and 7-year showed soft demand by historical standards. The next scheduled bill auctions are Monday, September 28 (13-week, $95B; 26-week, $82B) and Tuesday, September 29 (52-week, $54B; 6-week, $85B).</p>
+        </details>
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON ================= -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The Treasury par-yield curve and FRED; China&rsquo;s Foreign Ministry and Taiwan&rsquo;s Defense Ministry statements; the CISA KEV catalog and F5&rsquo;s security advisory; the World Health Organization&rsquo;s Disease Outbreak News; the Ukrainian Air Force; Costco&rsquo;s own SEC filing; the National Weather Service; Yahoo Finance and CoinGecko market data; wire and outlet reporting including NBC News, CNN, Bloomberg, CNBC and the Kyiv Independent, named throughout.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-24-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

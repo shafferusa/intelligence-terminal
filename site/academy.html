@@ -2,11 +2,10 @@
 <!--
   The Academy: the Learning Brief's curriculum, lesson by lesson.
 
-  Restarted 2026-09-25 (docs/SPEC.md Sec.0e): fifteen subjects, twenty weekday
+  Restarted 2026-09-25 (docs/SPEC.md Sec.0c): fifteen subjects, twenty weekday
   lessons each, run strictly in sequence -- one subject finishes entirely
-  before the next begins. Replaces two earlier curricula outright
-  (curriculum/academy-150.json and curriculum/academy-260.json, both
-  retired). This page lists all 300 lessons in order, links the ones already
+  before the next begins. Replaced the earlier curriculum outright
+  (curriculum/academy-150.json, retired). This page lists all 300 lessons in order, links the ones already
   taught to their Learning Brief, and shows where the sequence stands. It is
   the table of contents the daily lesson pages cannot carry themselves.
 
@@ -95,9 +94,9 @@
       var p = iso.split("-"), dt = new Date(+p[0], +p[1] - 1, +p[2]);
       return DAYS[dt.getDay()] + " " + MONTHS[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
     }
-    /* "Day 37 of 300 · Mathematics: ...". The retired curricula's pages read "Day N
-       of 150" or "Year 2 · Day N of 260" -- excluded by requiring the parsed total
-       to match this curriculum's own total_days, not just any "Day N of M" shape. */
+    /* "Day 37 of 300 · Mathematics: ...". The retired curriculum's pages read "Day N
+       of 150" -- excluded by requiring the parsed total to match this curriculum's
+       own total_days, not just any "Day N of M" shape. */
     function lessonDay(entry, totalDays) {
       if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
       var m = /^Day\s+(\d+)\s+of\s+(\d+)/i.exec(String(entry.headlines[0] || ""));
@@ -157,12 +156,12 @@
       }
 
       var sf = doc.getElementById("standfirst");
-      sf.textContent = "Day " + taughtCount + " of " + total + " taught" +
+      sf.textContent = taughtCount + " of " + total + " lessons taught" +
         (next ? ". Next: " + next.subject + " — " + next.topic + "." : "; complete.");
 
       var progress = doc.getElementById("progress");
       progress.textContent = "";
-      progress.appendChild(el("h3", { text: "Day " + taughtCount + " of " + total }));
+      progress.appendChild(el("h3", { text: taughtCount + " of " + total + " lessons taught" }));
       var perSubject = {};
       allDays.forEach(function (d) {
         var s = perSubject[d.subject] || (perSubject[d.subject] = { total: 0, done: 0 });
@@ -206,7 +205,7 @@
             body.appendChild(el("p", { class: "lesson-topic" }, [el("a", { href: "./" + e.path, text: d.topic })]));
             body.appendChild(el("p", { class: "lesson-headline", text: e.title }));
             body.appendChild(el("p", { class: "lesson-date",
-              text: fmtDate(e.date) + " · " + e.reading_minutes + " min read" }));
+              text: fmtDate(e.date) + (e.reading_minutes ? " · " + e.reading_minutes + " min read" : "") }));
           } else {
             body.appendChild(el("p", { class: "lesson-topic", text: d.topic }));
             if (d.focus) body.appendChild(el("p", { class: "lesson-headline", text: d.focus }));

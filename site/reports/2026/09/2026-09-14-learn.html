@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Impossible Integral Every Trading Desk Solves Anyway — Learning Brief, Mon, Sep 14, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-14",
+    "slot": "learn",
+    "title": "The Impossible Integral Every Trading Desk Solves Anyway",
+    "path": "reports/2026/09/2026-09-14-learn.html",
+    "summary": "Day twenty-one of the 150-day curriculum: the three real techniques for finding an antiderivative -- substitution, integration by parts, partial fractions -- worked by hand on real numbers, why an entire class of integrals including the bell curve behind every option price has no closed form at all (proved, not merely unfound, in 1835), and how the CBOE's own VIX formula solves that exact problem every trading day by counting instead of solving.",
+    "headlines": [
+      "Day 21 of 150 · Mathematics: techniques of integration",
+      "Why no formula for the bell-curve integral can ever be written down",
+      "Inside the CBOE's VIX formula: a Riemann sum standing in for an integral nobody can write"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-09-14T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Impossible Integral Every Trading Desk Solves Anyway</h1>
+      <p class="paper-dateline">
+        Monday, September 14, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A French mathematician proved in 1835 that the bell-curve integral sitting inside every option price can never be written as a formula, not merely that nobody has found one yet &mdash; which makes today&rsquo;s real subject not a single trick but a working toolkit of three, the professional judgment for when none of the three will ever succeed, and the CBOE&rsquo;s own volatility index as living proof of what a market does instead.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 21 of 150 &middot; Mathematics 10 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>The number every options desk computes and no formula can produce</h3>
+
+      <p>Somewhere on a derivatives desk right now, a piece of software is pricing an option, and buried inside that price is a single number that has to be computed billions of times a day, worldwide, on every exchange that lists a call or a put: the fraction of a bell-shaped curve lying to the left of some cutoff point. It is the least exotic-sounding ingredient imaginable &mdash; a plain area under a plain curve &mdash; and the 1973 Black-Scholes-Merton formula that made modern options pricing possible leans on it twice in every single evaluation. Ask for the exact function whose derivative produces that bell curve&rsquo;s equation, e<sup>&minus;x&sup2;</sup>, and you have asked a question calculus cannot answer. Not &ldquo;nobody has found it yet.&rdquo; Cannot, ever, ever be answered, in the specific and provable sense this lesson is about to make precise.</p>
+
+      <p>That claim sounds like exaggeration until you see what backs it. In 1835, the French mathematician Joseph Liouville, building on work he had begun two years earlier on when an antiderivative of an elementary function is itself elementary, proved a theorem that settles the question completely: no finite combination of polynomials, exponentials, logarithms, trigonometric functions and roots &mdash; the entire toolbox this curriculum has spent twenty days assembling &mdash; can ever be differentiated to produce e<sup>&minus;x&sup2;</sup>. The proof is not a report of a long, unsuccessful search. It is closer, in spirit, to the proofs that a general angle cannot be trisected with only a compass and straightedge, or that a general fifth-degree equation cannot be solved by any formula built from radicals: a permanent wall, established by reasoning about what the elementary functions are and are not capable of producing, not a temporary gap waiting for a cleverer mathematician. e<sup>&minus;x&sup2;</sup> is the single most famous member of a short, specific list of functions that share this fate &mdash; sin(x)/x, e<sup>x</sup>/x, and 1/ln(x) among them &mdash; each one perfectly smooth, perfectly ordinary-looking, and each one provably, permanently, without an elementary antiderivative.</p>
+
+      <p>So how does the option get priced? That question is the entire spine of today&rsquo;s lesson, and it will not be answered until the very end, because answering it properly requires building the real toolkit first. Day eighteen handed you exactly one method for finding an antiderivative &mdash; run the power rule backward, term by term &mdash; and it is genuinely powerful, but it only ever reaches polynomials and the handful of functions that happen to look like one in disguise. Today builds the three techniques that professional mathematicians, engineers and quantitative analysts actually reach for on everything else: substitution, integration by parts, and partial fractions. And then, because those three techniques are not magic and do not reach everything either, today builds the disciplined judgment for recognizing the moment none of them will ever work &mdash; and the correct, unembarrassed thing to do next.</p>
+
+      <h3>A search problem wearing a bookkeeping problem&rsquo;s clothes</h3>
+
+      <p>Differentiation, as this curriculum has used it since lesson eleven, is a machine with a guarantee built in. Hand it any function assembled from polynomials, exponentials, logarithms, and trigonometric functions, glued together by addition, multiplication, division and composition, and lesson thirteen&rsquo;s rules &mdash; the product rule, the quotient rule, the chain rule &mdash; grind forward mechanically and produce an exact derivative, every time, with zero risk of getting stuck partway through. There is no function built from those pieces that differentiation cannot handle. It is bookkeeping: a fixed, terminating procedure that always finishes.</p>
+
+      <p>Integration is being asked to run that exact machine backward, and running a deterministic machine backward is a fundamentally different kind of task from running it forward. Given a derivative, finding the function it came from means searching for something whose recipe you do not know in advance, rather than following a recipe you already have. Most of the time, for functions built the way real formulas are built, that search succeeds &mdash; but nothing guarantees it will, and Liouville&rsquo;s theorem is the proof that for a specific, identifiable class of functions, it never can. Every technique in today&rsquo;s lesson is a way of recognizing a pattern differentiation is known to leave behind, and running the specific rule that created that pattern in reverse.</p>
+
+      <p>State the three patterns in plain words before any notation touches them, because each one is genuinely simple once it is named. <strong>Substitution</strong> looks for a chunk of the integrand sitting next to its own derivative &mdash; the exact fingerprint the chain rule leaves on anything it touches &mdash; and renames that chunk something simpler so the disguise falls away. <strong>Integration by parts</strong> is for when two unrelated kinds of function are multiplied together, neither one a disguised derivative of the other, and it trades the integral in front of you for a different, hopefully friendlier integral, using the product rule run in reverse and then rearranged. <strong>Partial fractions</strong> is not really a calculus technique at all &mdash; it is pure algebra, performed before any integrating starts, splitting one complicated fraction back into the simpler separate fractions that could have been added together to produce it, because each of those simpler pieces integrates by a rule this curriculum already owns. And when a function matches none of these patterns and provably never will, the honest move is the one day eighteen already proved trustworthy: stop hunting for a formula, and compute the number directly.</p>
+
+      <h3>Undoing the chain rule: substitution</h3>
+
+      <p>Lesson thirteen&rsquo;s chain rule says that differentiating a composed function f(g(x)) produces f&prime;(g(x))&middot;g&prime;(x) &mdash; the outer function&rsquo;s own derivative, evaluated at the inner function, multiplied by the inner function&rsquo;s derivative. That multiplication by g&prime;(x) is the chain rule&rsquo;s fingerprint, and it is exactly what substitution is built to spot: whenever an integrand contains some inner expression g(x) sitting next to its own derivative g&prime;(x) as a multiplied factor, the entire messy composition can be renamed down to something the reversed power rule, or any other rule this curriculum already has, can finish off directly.</p>
+
+      <div class="formula">
+        <p class="expr">&int; f(g(x))&middot;g&prime;(x) dx &nbsp;=&nbsp; &int; f(u) du, &nbsp;&nbsp;&nbsp; where u = g(x), du = g&prime;(x) dx</p>
+        <dl>
+          <dt>g(x)</dt><dd>the inner function &mdash; the &ldquo;chunk&rdquo; being renamed, chosen because its own derivative also appears, as a factor, somewhere else in the integrand</dd>
+          <dt>u</dt><dd>the new variable standing in for g(x) &mdash; a bookkeeping rename, not a new mathematical object</dd>
+          <dt>du</dt><dd>the differential of u, equal to g&prime;(x) dx &mdash; this is what has to be sitting in the original integral, as a factor, for substitution to apply cleanly</dd>
+          <dt>f(u)</dt><dd>whatever is left of the integrand once g(x) has been replaced by the single symbol u</dd>
+          <dt>&int; f(g(x))&middot;g&prime;(x) dx</dt><dd>the original integral, written in x, before the substitution is made</dd>
+        </dl>
+      </div>
+
+      <p>The justification is nothing more than the chain rule read from right to left: if F is any antiderivative of f, then by the chain rule itself, the derivative of F(g(x)) is exactly F&prime;(g(x))&middot;g&prime;(x) = f(g(x))&middot;g&prime;(x) &mdash; which is precisely the integrand on the left of the formula above. Substitution is not a new law of calculus. It is the chain rule, already proved in lesson thirteen, simply being read in the direction that recovers an antiderivative instead of the direction that produces a derivative.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; spotting the chain rule&rsquo;s fingerprint</b>
+        <p>Compute &int;<sub>0</sub><sup>2</sup> 2x&middot;cos(x&sup2;) dx.</p>
+        <ol>
+          <li>Scan the integrand for an inner expression sitting next to its own derivative. The inner expression x&sup2; has derivative 2x &mdash; and 2x is sitting right there, multiplied in. That is substitution&rsquo;s fingerprint, exactly as described above.</li>
+          <li>Let u = x&sup2;, so du = 2x dx. The integral &int;2x&middot;cos(x&sup2;)dx becomes, term for term, &int;cos(u)du &mdash; the entire x&sup2; and its accompanying 2x have vanished into a single clean substitution.</li>
+          <li>&int;cos(u)du = sin(u) + C, a rule already available from lesson thirteen&rsquo;s trigonometric derivatives run in reverse. Substituting back, an antiderivative in x is F(x) = sin(x&sup2;).</li>
+          <li>Evaluate the definite integral using day eighteen&rsquo;s Evaluation Theorem: F(2) &minus; F(0) = sin(4) &minus; sin(0) = sin(4) &minus; 0. In radians, sin(4) &asymp; &minus;0.7568, so the integral evaluates to <strong>&asymp; &minus;0.7568</strong>.</li>
+          <li>The negative sign is not an error to be second-guessed away. cos(x&sup2;) genuinely goes negative over parts of &lsqb;0,2&rsqb; &mdash; x&sup2; sweeps from 0 up past &pi;/2 &asymp; 1.5708 and on toward 4, carrying the cosine through a full swing from positive to negative and partway back &mdash; so a negative net area is exactly what a correctly computed signed integral, in the sense lesson eighteen&rsquo;s misconception section built, should produce here.</li>
+        </ol>
+      </div>
+
+      <h3>Undoing the product rule: integration by parts</h3>
+
+      <p>Substitution only helps when one factor is visibly the derivative of something else in the integrand. Plenty of products do not cooperate that way &mdash; a polynomial multiplied by an exponential, say, where neither factor is the other&rsquo;s derivative in any useful sense. Lesson thirteen&rsquo;s product rule says the derivative of a product u(x)v(x) is u&prime;(x)v(x) + u(x)v&prime;(x). Integrate both sides of that identity with respect to x, and one term on the right rearranges into exactly the tool this section needs.</p>
+
+      <div class="formula">
+        <p class="expr">&int; u dv &nbsp;=&nbsp; uv &minus; &int; v du</p>
+        <dl>
+          <dt>u</dt><dd>one factor of the original integrand, chosen because it gets <em>simpler</em> when differentiated (a polynomial&rsquo;s degree drops by one each time, for instance)</dd>
+          <dt>dv</dt><dd>the remaining factor, packaged together with dx, chosen because it is easy to find an antiderivative for</dd>
+          <dt>v</dt><dd>any antiderivative of the function paired with dv &mdash; found by direct integration, the same way every antiderivative in this curriculum has been found so far</dd>
+          <dt>du</dt><dd>the derivative of u, multiplied by dx &mdash; found by ordinary differentiation, lesson thirteen&rsquo;s rules applied forward, not in reverse</dd>
+          <dt>uv &minus; &int; v du</dt><dd>the traded result: one term evaluated directly (uv), plus a new integral (&int;v du) that is meant to be strictly easier than the one you started with</dd>
+        </dl>
+      </div>
+
+      <p>The entire method lives or dies on that last clause &mdash; &ldquo;meant to be strictly easier.&rdquo; Choose u and dv badly, and &int;v du can come back exactly as hard as the original integral, or harder. Generations of calculus students have converged on a rough ordering for which factor to call u first, commonly taught under the mnemonic <strong>LIATE</strong> &mdash; Logarithmic, Inverse trigonometric, Algebraic (plain polynomials), Trigonometric, Exponential &mdash; try calling u whichever type of function appears earliest in that list, because logarithms and inverse trig functions get simpler when differentiated while exponentials, which sit last, essentially never do. It is a rule of thumb, not a theorem, published by the mathematician Herbert Kasube in 1983 as a teaching aid rather than derived from any deeper principle &mdash; but it correctly predicts the right choice often enough to be worth trying first.</p>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; a polynomial times an exponential, by LIATE</b>
+        <p>Compute &int;<sub>0</sub><sup>1</sup> x&middot;e<sup>x</sup> dx.</p>
+        <ol>
+          <li>Neither factor is the derivative of the other, so substitution does not apply directly &mdash; this is integration by parts territory. By LIATE, the algebraic factor x outranks the exponential e<sup>x</sup>, so let u = x and dv = e<sup>x</sup>dx.</li>
+          <li>Differentiate u: du = dx. Integrate dv: v = e<sup>x</sup> (its own antiderivative, a fact this curriculum has used since lesson eleven first introduced e<sup>x</sup> as the function equal to its own derivative).</li>
+          <li>Apply the formula: &int;x&middot;e<sup>x</sup>dx = x&middot;e<sup>x</sup> &minus; &int;e<sup>x</sup>dx = x&middot;e<sup>x</sup> &minus; e<sup>x</sup> + C. Notice the trade promised above actually happened: the new integral, &int;e<sup>x</sup>dx, is strictly easier than the one that started this problem.</li>
+          <li>Evaluate the antiderivative F(x) = xe<sup>x</sup> &minus; e<sup>x</sup> at both limits. F(1) = 1&middot;e &minus; e = 0. F(0) = 0&middot;1 &minus; 1 = &minus;1.</li>
+          <li>F(1) &minus; F(0) = 0 &minus; (&minus;1) = <strong>1, exactly</strong>. Two structurally different functions &mdash; a straight line and an exponential curve &mdash; multiplied together and integrated over an interval chosen for no special reason, and the messy-looking arithmetic collapses to a clean whole number. That is simply how the numbers in this particular problem happen to fall; it is a useful reason to actually carry an answer through to the end rather than stopping once a formula has been found, because the formula alone would never have revealed it.</li>
+        </ol>
+      </div>
+
+      <h3>Undoing the common denominator: partial fractions</h3>
+
+      <p>The third technique starts before any calculus does. A rational function &mdash; one polynomial divided by another &mdash; can look impossible to integrate directly, and the reason is often nothing more than algebra: at some point, someone added two or three simpler fractions together over a common denominator, and the sum is what you are staring at now. <strong>Partial fraction decomposition</strong> runs that addition backward, splitting the single complicated fraction back into the separate simple pieces that produced it &mdash; pieces that turn out, one at a time, to integrate by a rule already sitting in this curriculum: reversing the derivative of a natural logarithm.</p>
+
+      <div class="formula">
+        <p class="expr">P(x) / &lsqb;(x&minus;a)(x&minus;b)&rsqb; &nbsp;=&nbsp; A/(x&minus;a) + B/(x&minus;b)</p>
+        <dl>
+          <dt>P(x)</dt><dd>the numerator of the original rational function, of lower degree than the denominator</dd>
+          <dt>(x&minus;a)(x&minus;b)</dt><dd>the denominator, already factored into distinct linear pieces &mdash; the case this lesson covers; repeated or irreducible quadratic factors need extra terms the same idea still handles, just with more bookkeeping</dd>
+          <dt>A, B</dt><dd>constants, found by clearing denominators and solving &mdash; once P(x) = A(x&minus;b) + B(x&minus;a), plugging in x = a makes the B-term vanish and isolates A directly, and plugging in x = b does the same for B</dd>
+        </dl>
+      </div>
+
+      <p>Each piece A/(x&minus;a) integrates immediately: it is A times the derivative-of-a-logarithm pattern this curriculum has used since lesson eleven, giving A&middot;ln|x&minus;a|. The decomposition traded one integral nobody could see how to start into two integrals every calculus student has already solved by lesson eleven&rsquo;s own rules &mdash; the entire difficulty of the problem was hiding in the algebra of splitting the fraction apart, not in any new calculus at all. Gottfried Leibniz and Johann Bernoulli worked this idea out independently around 1702, arguing by letter over exactly which denominators could always be split this way &mdash; Bernoulli initially believed every quadratic factor could be avoided, and Leibniz correctly pointed out that some genuinely cannot be factored into real linear pieces at all &mdash; and Leonhard Euler gave the method its full, rigorous general treatment, covering repeated and irreducible factors alike, in his 1748 textbook <em>Introductio in analysin infinitorum</em>.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; splitting a fraction before integrating it</b>
+        <p>Compute &int;<sub>2</sub><sup>4</sup> dx / &lsqb;(x&minus;1)(x+2)&rsqb;.</p>
+        <ol>
+          <li>Set up the decomposition: 1/&lsqb;(x&minus;1)(x+2)&rsqb; = A/(x&minus;1) + B/(x+2). Clear denominators: 1 = A(x+2) + B(x&minus;1).</li>
+          <li>Plug in x = 1 to eliminate B: 1 = A(3), so A = 1/3. Plug in x = &minus;2 to eliminate A: 1 = B(&minus;3), so B = &minus;1/3.</li>
+          <li>The integrand splits into (1/3)/(x&minus;1) &minus; (1/3)/(x+2), and each piece integrates directly: &int; = (1/3)ln|x&minus;1| &minus; (1/3)ln|x+2| + C = (1/3)&middot;ln|(x&minus;1)/(x+2)| + C, combining the two logarithms using the same log rule lesson two&rsquo;s algebra review, and every lesson touching logarithms since, has relied on.</li>
+          <li>Evaluate F(x) = (1/3)ln|(x&minus;1)/(x+2)| at both limits. At x=4: (4&minus;1)/(4+2) = 3/6 = 0.5, and ln(0.5) &asymp; &minus;0.6931, so F(4) &asymp; &minus;0.2310. At x=2: (2&minus;1)/(2+2) = 1/4 = 0.25, and ln(0.25) &asymp; &minus;1.3863, so F(2) &asymp; &minus;0.4621.</li>
+          <li>F(4) &minus; F(2) &asymp; &minus;0.2310 &minus; (&minus;0.4621) = <strong>&asymp; 0.2311</strong>, positive as it should be &mdash; the integrand 1/&lsqb;(x&minus;1)(x+2)&rsqb; is positive everywhere on &lsqb;2,4&rsqb;, since both factors are positive there, so a positive net area is the only sane answer and the arithmetic delivers exactly that as a check on the work.</li>
+        </ol>
+      </div>
+
+      <h3>When the toolbox comes up empty: numerical integration</h3>
+
+      <p>All three techniques above share a hidden assumption: that an elementary antiderivative exists to be found, and the only question is which pattern-matching trick reveals it. Liouville&rsquo;s theorem is the proof that for e<sup>&minus;x&sup2;</sup> and its short list of relatives, that assumption is simply false, no matter how cleverly substitution, parts and partial fractions are combined or how long the search continues. For those functions &mdash; and, in practice, for the great majority of functions engineers and economists actually need to integrate, most of which were never designed with calculus tidiness in mind &mdash; the correct next move is not a fourth trick. It is dropping back to the one method this curriculum has already proved trustworthy even when no antiderivative can ever be found: day eighteen&rsquo;s Riemann sum, refined into something usable by hand.</p>
+
+      <p>A plain Riemann sum, approximating each thin slice of area with a rectangle, converges to the true integral as the slices narrow &mdash; day eighteen proved that much rigorously &mdash; but it converges slowly, because a flat-topped rectangle is a genuinely poor approximation to a curving function. Replace each pair of rectangles with a single parabola fitted through three consecutive points instead, and the fit tracks a smoothly curving function dramatically better for the same number of evaluation points. That upgrade is called <strong>Simpson&rsquo;s Rule</strong>, and although it carries the English mathematician Thomas Simpson&rsquo;s name from his 1743 textbook <em>Mathematical Dissertations on Physical and Analytical Subjects</em>, the identical parabolic-fit idea is more than a century older: Johannes Kepler used it in 1615 to estimate the volume of a wine barrel, a version still called Kepler&rsquo;s barrel rule (<em>Keplersche Fassregel</em>) in German mathematical writing today.</p>
+
+      <div class="formula">
+        <p class="expr">&int;<sub>a</sub><sup>b</sup> f(x) dx &nbsp;&asymp;&nbsp; (&Delta;x/3)&lsqb;f(x<sub>0</sub>) + 4f(x<sub>1</sub>) + 2f(x<sub>2</sub>) + 4f(x<sub>3</sub>) + &hellip; + 4f(x<sub>n&minus;1</sub>) + f(x<sub>n</sub>)&rsqb;</p>
+        <dl>
+          <dt>a, b</dt><dd>the interval&rsquo;s endpoints, exactly as in day eighteen&rsquo;s Riemann sum</dd>
+          <dt>n</dt><dd>the number of equal slices, required to be even for Simpson&rsquo;s Rule&rsquo;s pairing of parabolas to come out evenly</dd>
+          <dt>&Delta;x</dt><dd>the width of each slice, (b&minus;a)/n</dd>
+          <dt>x<sub>0</sub>, x<sub>1</sub>, &hellip;, x<sub>n</sub></dt><dd>the n+1 evenly spaced points across &lsqb;a,b&rsqb;, including both endpoints</dd>
+          <dt>the 1, 4, 2, 4, &hellip;, 4, 1 pattern</dt><dd>the weights a parabola-fitting derivation assigns to each point &mdash; endpoints once, odd-indexed interior points four times, even-indexed interior points twice &mdash; nothing here is arbitrary; it falls directly out of integrating the fitted parabola on each pair of slices exactly</dd>
+        </dl>
+      </div>
+
+      <p>The practical payoff of fitting parabolas instead of rectangles is a much faster rate of convergence: a plain Riemann sum&rsquo;s error shrinks roughly in proportion to &Delta;x, while Simpson&rsquo;s Rule&rsquo;s error shrinks roughly in proportion to &Delta;x<sup>4</sup> &mdash; so halving the slice width cuts a Riemann sum&rsquo;s error by about half, but cuts Simpson&rsquo;s Rule&rsquo;s error by a factor of about sixteen. That difference is exactly why Simpson&rsquo;s Rule, not a raw Riemann sum, is the version actually used whenever a real number is needed from an integral with no elementary antiderivative to fall back on.</p>
+
+      <div class="worked">
+        <b>Worked example 4 &middot; closing the loop on the bell curve this lesson opened with</b>
+        <p>Approximate &int;<sub>0</sub><sup>1</sup> e<sup>&minus;x&sup2;</sup> dx &mdash; a close relative of the exact integral sitting inside the Black-Scholes formula &mdash; using Simpson&rsquo;s Rule with four slices, and compare the result to the true value.</p>
+        <ol>
+          <li>Slice &lsqb;0,1&rsqb; into n=4 equal pieces, &Delta;x = 0.25, at x<sub>0</sub>=0, x<sub>1</sub>=0.25, x<sub>2</sub>=0.5, x<sub>3</sub>=0.75, x<sub>4</sub>=1. Evaluate f(x)=e<sup>&minus;x&sup2;</sup> at each: f(0)=1.000000, f(0.25)&asymp;0.939413, f(0.5)&asymp;0.778801, f(0.75)&asymp;0.569783, f(1)&asymp;0.367879.</li>
+          <li>Apply the 1&ndash;4&ndash;2&ndash;4&ndash;1 weighting: sum = f(x<sub>0</sub>) + 4f(x<sub>1</sub>) + 2f(x<sub>2</sub>) + 4f(x<sub>3</sub>) + f(x<sub>4</sub>) = 1.000000 + 3.757652 + 1.557602 + 2.279132 + 0.367879 = 8.962265.</li>
+          <li>Multiply by &Delta;x/3 = 0.25/3 &asymp; 0.083333: 8.962265 &times; 0.083333 &asymp; <strong>0.746855</strong>.</li>
+          <li>The true value, computable only through the non-elementary error function this lesson has been building toward all along ((&radic;&pi;/2)&middot;erf(1), with erf(1) &asymp; 0.842701), is 0.746824. Simpson&rsquo;s Rule, using only five function evaluations and no formula for an antiderivative at all, landed within 0.00003 of an integral that no elementary formula could ever reach exactly &mdash; a relative error of about 0.004%.</li>
+          <li>This is not a lesser answer standing in for a real one. Day eighteen&rsquo;s Riemann-sum definition already proved that this slicing procedure converges to the exact value of the definite integral as the number of slices grows; Simpson&rsquo;s Rule is simply a faster-converging version of that identical, already-proven machinery. The number 0.746824 is exactly as real, and exactly as rigorously established, as the number 60 that fell out of worked example one&rsquo;s odometer problem back on day eighteen &mdash; it is simply reached by counting instead of by finding a formula, because for this particular function, Liouville&rsquo;s theorem has already ruled the formula out.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: the CBOE&rsquo;s own volatility index</h3>
+
+      <p>The clearest large-scale example of exactly this trade-off &mdash; a genuine integral with no closed form, resolved by turning it into a sum instead &mdash; sits inside a number this newspaper&rsquo;s own market pages track most weekday afternoons: the Cboe Volatility Index, VIX, which closed at 15.84 in Thursday&rsquo;s edition (2026-09-11 pm), down sharply from the prior session. VIX is built to answer a genuinely calculus-shaped question: given the current prices of options expiring in 30 days, at every strike price the market happens to be quoting, what does the market as a whole expect the S&amp;P 500&rsquo;s variance to be over that month? The theoretical answer, developed in variance-swap pricing research through the late 1990s, is a formula requiring an integral over every possible strike price, continuously, from zero to infinity, weighting each option&rsquo;s price by one over its strike price squared.</p>
+
+      <p>No such continuous integral can actually be computed, for a reason that has nothing to do with Liouville&rsquo;s theorem and everything to do with what a real market is: options are not listed at every conceivable strike price, continuously. They are listed at a finite grid of specific strikes &mdash; five dollars apart near the current index level, wider apart further away &mdash; and nothing trades in between. Cboe&rsquo;s actual published methodology, accordingly, does not attempt the impossible continuous integral at all. It replaces the theoretical integral with a discrete weighted sum over the strikes that genuinely exist and trade, using a formula built directly on the same slicing logic day eighteen used to define the Riemann sum in the first place:</p>
+
+      <div class="formula">
+        <p class="expr">VIX&sup2; &nbsp;=&nbsp; (2/&tau;) &Sigma;<sub>i</sub> (&Delta;K<sub>i</sub>/K<sub>i</sub>&sup2;)&middot;e<sup>r&tau;</sup>&middot;Q(K<sub>i</sub>) &nbsp;&minus;&nbsp; (1/&tau;)(F/K<sub>0</sub> &minus; 1)&sup2;</p>
+        <dl>
+          <dt>&tau;</dt><dd>time to expiration, in years &mdash; fixed at 30/365 for the headline VIX number</dd>
+          <dt>K<sub>i</sub></dt><dd>the strike price of the i-th listed out-of-the-money option actually trading in the market &mdash; the discrete stand-in for the continuous variable a true integral would sweep through smoothly</dd>
+          <dt>&Delta;K<sub>i</sub></dt><dd>the gap between the strikes on either side of K<sub>i</sub>, divided by two &mdash; the discrete stand-in for dK, playing exactly the role &Delta;x plays in a Riemann sum</dd>
+          <dt>Q(K<sub>i</sub>)</dt><dd>the midpoint of the bid and ask price for the option at strike K<sub>i</sub> &mdash; the function value being weighted and summed, standing in for f(x)</dd>
+          <dt>r</dt><dd>the risk-free interest rate over the option&rsquo;s remaining life</dd>
+          <dt>F, K<sub>0</sub></dt><dd>the forward index level and the first listed strike below it, together correcting the sum for the specific way the calculation is centered</dd>
+          <dt>&Sigma;<sub>i</sub></dt><dd>the sum across every qualifying listed strike &mdash; a finite Riemann-style sum standing in for what a true variance-swap integral would compute over a continuum of strikes that simply does not exist in a real market</dd>
+        </dl>
+      </div>
+
+      <p>Notice the family resemblance to day eighteen&rsquo;s own Riemann-sum definition: a sum of (function value) &times; (a small width), run across a partition, standing in for a true integral. Cboe is not choosing to approximate out of laziness. There is no continuous strike axis to integrate over in the first place &mdash; only a finite, unevenly spaced grid of contracts that people are actually willing to trade &mdash; so the sum is not a stand-in for a shortcut being skipped; it is the only calculation that could ever correspond to a real, tradeable market. The accuracy of the resulting VIX number depends directly on how tightly the listed strikes are packed together, in precisely the same sense that a Riemann sum&rsquo;s accuracy depends on how thin its slices are &mdash; more strikes, packed more tightly near the current index level, means a VIX figure closer to the theoretical continuous integral it is built to approximate. Thursday&rsquo;s reading of 15.84 is, underneath its familiar quotation on a market screen, a discretized Riemann-style sum computed fresh from the day&rsquo;s actual option quotes &mdash; the identical mathematical object this lesson has spent its numerical-integration section building, doing real work on real money every trading day.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The most common misreading of everything this lesson has covered is treating a numerical answer as a lesser one &mdash; a fallback for when the &ldquo;real&rdquo; solution, a tidy formula, could not be found in time, as though 0.746824 were somehow less true than 60 was in day eighteen&rsquo;s odometer problem because the first came from Simpson&rsquo;s Rule and the second came from a reversed power rule. That instinct gets the entire relationship backward, and it is worth stating plainly why.</p>
+
+      <p>Day eighteen&rsquo;s Riemann-sum definition did not define the integral as &ldquo;whatever an antiderivative formula produces.&rdquo; It defined the integral as the limit a slicing sum converges to, full stop &mdash; and then proved, as a separate and remarkable bonus theorem, that whenever an antiderivative happens to exist, evaluating it at two points reaches that identical limiting number in three algebraic steps instead of an infinite sum. The formula is the shortcut. The slicing sum is the actual definition. For a function like e<sup>&minus;x&sup2;</sup>, the shortcut is permanently unavailable &mdash; Liouville&rsquo;s theorem forecloses it completely &mdash; but the actual definition never depended on the shortcut existing in the first place, so nothing about the integral&rsquo;s reality is diminished when the shortcut is gone. The number 0.746824 is exactly as rigorously the value of &int;<sub>0</sub><sup>1</sup>e<sup>&minus;x&sup2;</sup>dx as 60 meters was rigorously the distance day eighteen&rsquo;s car traveled; Simpson&rsquo;s Rule simply reaches it by a different, and for this function the only available, route.</p>
+
+      <p>The professional skill this lesson&rsquo;s focus has been building toward &mdash; knowing when to give up and go numerical &mdash; is therefore not a confession of defeat. It is a specific, teachable judgment call: try substitution first, because it is fastest when it applies; if no chunk-and-its-derivative pattern presents itself, try integration by parts on a product of unrelated function types; if the integrand is a rational function, split it with partial fractions before doing anything else. If all three genuinely fail on a function known to belong to Liouville&rsquo;s short list of provably nonelementary integrals &mdash; or, far more commonly in practice, on a real-world function nobody ever promised would be elementary in the first place, from an option&rsquo;s price to a satellite&rsquo;s orbit to a bridge&rsquo;s load distribution &mdash; the correct next move is not a fourth trick to hunt for. It is Simpson&rsquo;s Rule, applied with the same confidence as any of the three techniques above, because it rests on the identical proven foundation they all do.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day twenty built two derivatives and used them forward: marginal cost as MC(q) = dTC/dq, the extra cost of one more unit, and marginal utility as MU<sub>x</sub> = dTU<sub>x</sub>/dx, the extra satisfaction from one more unit &mdash; both derivatives, both answering &ldquo;given the total, what is the rate?&rdquo; That lesson never asked the reverse question, because it did not yet have the tools to answer it. Today&rsquo;s techniques answer it directly: if an economist is handed nothing but a firm&rsquo;s marginal cost function &mdash; say, MC(q) = 3q&sup2; &minus; 4q + 1, the exact polynomial day eighteen&rsquo;s own worked example integrated for entirely different reasons &mdash; then total cost is recovered by integrating: TC(q) = &int;MC(q)dq = q&sup3; &minus; 2q&sup2; + q + C, with the constant C fixed by whatever fixed cost the firm already knows it owes at zero output. Substitution, parts and partial fractions are, in this light, nothing more exotic than the specific machinery for running day twenty&rsquo;s marginal-to-total relationship backward whenever the marginal function is not a simple polynomial.</p>
+
+      <p>The same reversal is exactly what a microeconomics textbook is doing, usually without ever writing an integral sign, when it computes <strong>consumer surplus</strong> and <strong>producer surplus</strong> &mdash; the two areas, one above the market price and below the demand curve, the other below the market price and above the supply curve, that together measure the total gain a market creates for buyers and sellers alike. Both are nothing but definite integrals of a demand or supply curve, computed by whichever of today&rsquo;s three techniques matches the curve&rsquo;s particular algebraic form, and both fall back, exactly as this lesson&rsquo;s VIX section did, to a numerical sum whenever the curve in question is a set of real, empirically estimated data points rather than a tidy formula that substitution or partial fractions can crack open. Day twenty taught the derivative half of this machine and called it marginal analysis. Today taught the other half, and it turns out to have been welfare economics all along.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can find an antiderivative by spotting the chain rule&rsquo;s fingerprint (substitution), the product rule&rsquo;s fingerprint (integration by parts), or by splitting a rational function algebraically before integrating at all (partial fractions) &mdash; and you have checked all three by hand on real numbers, including one, worked example two, that landed on an exact, clean answer.</li>
+          <li>You can state, and explain why, an entire class of ordinary-looking functions including e<sup>&minus;x&sup2;</sup> has no elementary antiderivative at all &mdash; a fact proved once, by Liouville in 1835, not an open research question.</li>
+          <li>You can approximate a definite integral with Simpson&rsquo;s Rule, know why its parabola-fitting converges far faster than a raw Riemann sum, and you have used it to reach within 0.00003 of an integral no formula could ever reach exactly.</li>
+          <li>You can read the CBOE&rsquo;s own VIX methodology and recognize a Riemann-style sum standing in for a variance-swap integral that no real market, with its finite grid of listed strikes, could ever compute continuously &mdash; the identical machinery this lesson built, doing genuine work on a number this paper reports most weekday afternoons.</li>
+          <li>What this sets up: later mathematics lessons in this curriculum extend today&rsquo;s toolkit to functions of more than one variable, where the same three instincts &mdash; look for a hidden composition, look for a hidden product, look for a hidden sum of simpler pieces &mdash; return in a genuinely higher-dimensional form.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of the 60-Day Academy&rsquo;s Day 3 calculus material, used as a reference point rather than a text available to this run), building directly on the limit and Riemann-sum machinery of lesson nine and lesson eighteen, the derivative rules of lessons eleven and thirteen, and the marginal-cost and marginal-utility framing of day twenty. Joseph Liouville&rsquo;s 1833&ndash;1835 work establishing when an elementary function has an elementary antiderivative, and its application to e<sup>&minus;x&sup2;</sup>, sin(x)/x, e<sup>x</sup>/x and 1/ln(x), was checked via web search against standard accounts of Liouville&rsquo;s theorem in differential algebra. Brook Taylor&rsquo;s 1715 origination of integration by parts in <em>Methodus Incrementorum Directa et Inversa</em>; Johann Bernoulli and Gottfried Leibniz&rsquo;s independent 1702 work on partial fractions and their correspondence over irreducible quadratic factors; Leonhard Euler&rsquo;s full 1748 treatment of partial fractions in <em>Introductio in analysin infinitorum</em>; Johannes Kepler&rsquo;s 1615 barrel-volume rule; and Thomas Simpson&rsquo;s 1743 publication of Simpson&rsquo;s Rule in <em>Mathematical Dissertations on Physical and Analytical Subjects</em>, were all checked via web search against standard histories of calculus. The LIATE mnemonic for choosing u in integration by parts was checked against Herbert Kasube&rsquo;s 1983 note in the <em>American Mathematical Monthly</em>. The Gaussian integral&rsquo;s history &mdash; Abraham de Moivre&rsquo;s 1733 early version, Pierre-Simon Laplace&rsquo;s 1774 proof, and Sim&eacute;on Denis Poisson&rsquo;s 1830s polar-coordinate technique &mdash; was checked the same way; the numerical value erf(1) &asymp; 0.842701, and the resulting &int;<sub>0</sub><sup>1</sup>e<sup>&minus;x&sup2;</sup>dx &asymp; 0.746824, were independently recomputed for this report. The 1973 Black-Scholes-Merton option-pricing formula&rsquo;s reliance on the cumulative standard normal distribution was checked via web search. The Cboe VIX methodology &mdash; its variance-swap-replication basis and its published discrete-sum formula weighting option prices by &Delta;K<sub>i</sub>/K<sub>i</sub>&sup2; &mdash; was checked directly against Cboe&rsquo;s own published VIX methodology documentation. Thursday&rsquo;s VIX close of 15.84 is drawn from this paper&rsquo;s own 2026-09-11 closing edition. All worked-example arithmetic, including the Simpson&rsquo;s Rule approximation, was computed directly and independently checked for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-13-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

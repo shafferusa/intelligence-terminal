@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Trump Bars CNN, MSNBC and Politico From the White House as Buffett Steps Down From Berkshire — Fri, Sep 18, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-18",
+    "slot": "pm",
+    "title": "Trump Bars CNN, MSNBC and Politico From the White House as Buffett Steps Down From Berkshire",
+    "path": "reports/2026/09/2026-09-18-pm.html",
+    "summary": "Trump barred three news organizations from the White House, Warren Buffett stepped down as Berkshire Hathaway's chairman after six decades, and a second reported Hormuz tanker strike sharpened the stakes on the Iran 'big decision' Trump says he's facing.",
+    "headlines": [
+      "Trump bars CNN, MSNBC and Politico from the White House press corps",
+      "Buffett steps down as Berkshire's chairman; Fed's Bowman faults Fed staff for the SVB failure",
+      "A second reported Hormuz tanker strike as Seoul declines to send troops for the Iran war"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-18T21:15:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Trump Bars CNN, MSNBC and Politico From the White House as Buffett Steps Down From Berkshire</h1>
+      <p class="paper-dateline">
+        Friday, September 18, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Trump barred three news organizations from the White House and Warren Buffett stepped down as Berkshire&rsquo;s chairman after six decades, while a second reported Hormuz tanker strike and Seoul&rsquo;s refusal to send troops sharpened the stakes on the Iran &ldquo;big decision&rdquo; the president says he is facing.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Iran&rsquo;s war widened again &mdash; a second reported tanker strike in the Strait of Hormuz, South Korea publicly declining Trump&rsquo;s request for troops, and Poland narrowing talks over a US Army base to its west &mdash; while Russia opened a three-day election amid fears of a mobilization wave once it ends.</li>
+          <li><b>Markets.</b> Stocks closed mixed: the Nasdaq gained on a broad chip rally and crypto-linked names surged with bitcoin, while the Dow slipped as Treasury yields pushed the 10-year above 5% and small-cap space stocks fell together for no identified reason.</li>
+          <li><b>The thread.</b> Institutional guardrails came under visible strain today &mdash; a president barring outlets from the White House, a Fed governor admitting her own agency&rsquo;s supervisors missed Silicon Valley Bank&rsquo;s warning signs, voting-rights groups suing over armed agents at the polls.</li>
+          <li><b>Biggest risk.</b> Trump has framed an Iran decision as imminent, expected to clarify around next week&rsquo;s UN General Assembly meetings with Gulf leaders; a further US-Iran military escalation is the report&rsquo;s largest identified near-term risk.</li>
+          <li><b>Positive development.</b> Volatility kept falling &mdash; the VIX closed at 14.81, down for a second straight session as the post-Fed-decision risk premium continues to unwind.</li>
+          <li><b>Key unknown.</b> Whether Russia announces a mobilization wave once its Sept. 18&ndash;20 election concludes; the Kremlin denies any plan, but Ukrainian and some European officials expect one within weeks.</li>
+          <li><b>Watch this weekend.</b> The Cisco ISE zero-day&rsquo;s federal patch deadline falls Saturday; Russia&rsquo;s election concludes Sunday; the ISS Progress MS-35 docking, corrected in this edition, is now expected Saturday morning, not today as this morning&rsquo;s report stated.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Sep 18, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Sept 18, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>761.69</td><td class="down">&minus;0.91</td><td class="down">&minus;0.12%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 779.37</span><span class="range-bar" style="--pos:88"><i></i></span></td>
+                <td>63M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>296.91</td><td class="up">+1.71</td><td class="up">+0.58%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 308.21</span><span class="range-bar" style="--pos:86"><i></i></span></td>
+                <td>2.3M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>515.88</td><td class="down">&minus;2.47</td><td class="down">&minus;0.48%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:68"><i></i></span></td>
+                <td>2.6M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>284.10</td><td class="down">&minus;1.33</td><td class="down">&minus;0.47%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:72"><i></i></span></td>
+                <td>31M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>70.46</td><td class="down">&minus;0.32</td><td class="down">&minus;0.45%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 71.20</span><span class="range-bar" style="--pos:95"><i></i></span></td>
+                <td>3.4M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>212.29</td><td class="down">&minus;1.02</td><td class="down">&minus;0.48%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:73"><i></i></span></td>
+                <td>5.9M</td><td>&mdash;</td>
+              </tr>
+
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>573.00</td><td class="up">+12.39</td><td class="up">+2.21%</td>
+                <td class="range-cell"><span class="range-nums">313.43 &ndash; 671.83</span><span class="range-bar" style="--pos:72"><i></i></span></td>
+                <td>6.0M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>189.60</td><td class="up">+1.54</td><td class="up">+0.82%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 198.73</span><span class="range-bar" style="--pos:87"><i></i></span></td>
+                <td>6.9M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>55.86</td><td class="down">&minus;0.02</td><td class="down">&minus;0.04%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:75"><i></i></span></td>
+                <td>33M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>72.75</td><td class="up">+0.01</td><td class="up">+0.01%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:73"><i></i></span></td>
+                <td>12M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>64.31</td><td class="down">&minus;0.17</td><td class="down">&minus;0.26%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:92"><i></i></span></td>
+                <td>29M</td><td>&mdash;</td>
+              </tr>
+
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.14%</td><td class="up">+2bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td>
+                <td>5.01%</td><td class="up">+7bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>81.25</td><td class="down">&minus;0.53</td><td class="down">&minus;0.65%</td>
+                <td class="range-cell"><span class="range-nums">80.46 &ndash; 92.19</span><span class="range-bar" style="--pos:7"><i></i></span></td>
+                <td>40M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>90.80</td><td class="down">&minus;0.45</td><td class="down">&minus;0.49%</td>
+                <td class="range-cell"><span class="range-nums">90.70 &ndash; 98.05</span><span class="range-bar" style="--pos:1"><i></i></span></td>
+                <td>6.7M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>105.27</td><td class="down">&minus;0.44</td><td class="down">&minus;0.42%</td>
+                <td class="range-cell"><span class="range-nums">105.27 &ndash; 112.24</span><span class="range-bar" style="--pos:0"><i></i></span></td>
+                <td>2.1M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>104.70</td><td class="down">&minus;0.46</td><td class="down">&minus;0.44%</td>
+                <td class="range-cell"><span class="range-nums">104.05 &ndash; 112.93</span><span class="range-bar" style="--pos:7"><i></i></span></td>
+                <td>29M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>78.53</td><td class="down">&minus;0.19</td><td class="down">&minus;0.24%</td>
+                <td class="range-cell"><span class="range-nums">78.36 &ndash; 81.36</span><span class="range-bar" style="--pos:6"><i></i></span></td>
+                <td>34M</td><td>&mdash;</td>
+              </tr>
+
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>401.17</td><td class="up">+2.81</td><td class="up">+0.71%</td>
+                <td class="range-cell"><span class="range-nums">336.31 &ndash; 509.70</span><span class="range-bar" style="--pos:37"><i></i></span></td>
+                <td>9.4M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>153.82</td><td class="down">&minus;1.49</td><td class="down">&minus;0.96%</td>
+                <td class="range-cell"><span class="range-nums">65.99 &ndash; 163.35</span><span class="range-bar" style="--pos:90"><i></i></span></td>
+                <td>4.3M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>100.19</td><td class="down">&minus;0.03</td><td class="down">&minus;0.03%</td>
+                <td class="range-cell"><span class="range-nums">95.55 &ndash; 101.80</span><span class="range-bar" style="--pos:74"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>14.81</td><td class="down">&minus;0.63</td><td class="down">&minus;4.08%</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>67.03</td><td class="up">+0.12</td><td class="up">+0.18%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:77"><i></i></span></td>
+                <td>19M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>88.21</td><td class="down">&minus;1.16</td><td class="down">&minus;1.30%</td>
+                <td class="range-cell"><span class="range-nums">77.82 &ndash; 93.29</span><span class="range-bar" style="--pos:67"><i></i></span></td>
+                <td>3.7M</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>35.91</td><td class="up">+2.09</td><td class="up">+6.18%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.96</span><span class="range-bar" style="--pos:34"><i></i></span></td>
+                <td>2.5M</td><td>&mdash;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Official closes as of 4:00 PM ET. Yields from the Treasury par-yield curve (Sept. 18 EOD); index levels (DXY, VIX) are not tradeable instruments and carry no volume. Average-volume data was not available this run and is shown as an em dash rather than estimated.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Trump bars CNN, MSNBC and Politico from the White House</h3>
+          <p class="story-deck">Calling their coverage &ldquo;FICTION and LIES,&rdquo; Trump said Friday he is banning three news organizations effective immediately &mdash; the sharpest move yet in a running conflict between the administration and the press corps that covers it.</p>
+          <div class="story-body">
+            <p>In a Friday afternoon Truth Social post, Trump said he is banning CNN, MS NOW (the rebranded MSNBC) and Politico from the White House, calling their reporting &ldquo;FAKE NEWS&rdquo; and warning other outlets &ldquo;would follow.&rdquo; He singled out MS NOW&rsquo;s rebrand, saying it reflected &ldquo;a lack of viewership and credibility,&rdquo; and separately criticized the roughly $8 million the federal government pays for Politico Pro subscriptions, calling that spending &ldquo;illegal and ridiculous.&rdquo;</p>
+            <p>As of Friday afternoon there was no confirmation the outlets&rsquo; White House access had actually been revoked in practice; CNN said its staff remained in their workspace. Bruce D. Brown, president of the Reporters Committee for Freedom of the Press, called the move &ldquo;flatly unconstitutional&rdquo; and &ldquo;textbook viewpoint discrimination.&rdquo; A federal judge ruled against the administration on a related press-access dispute last year, after the Associated Press sued over being excluded from White House events following its refusal to adopt the administration&rsquo;s preferred &ldquo;Gulf of America&rdquo; terminology.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A sitting president publicly announcing the exclusion of named news organizations from the White House, on the stated basis of their coverage, raises First Amendment and press-access questions with a live legal precedent already on the books.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Watch for whether access badges are actually revoked, and whether any of the three outlets files suit citing the AP precedent.
+            </div>
+          </div>
+          <p class="story-sourceline">Trump&rsquo;s Truth Social post (primary) &middot; Reporters Committee for Freedom of the Press statement (primary) &middot; CNBC, CNN, NBC News, Washington Post, Time, NPR, Al Jazeera.</p>
+        </article>
+
+        <article class="story">
+          <h3>Buffett steps down as Berkshire Hathaway&rsquo;s chairman after six decades</h3>
+          <p class="story-deck">Warren Buffett, 96, becomes chairman emeritus; his son Howard Buffett, a Berkshire director for 33 years, takes the chair.</p>
+          <div class="story-body">
+            <p>Berkshire Hathaway announced Friday that Warren Buffett is stepping down as chairman effective immediately. Buffett had already handed the chief executive role to Greg Abel in 2025; in his accompanying shareholder letter he wrote that &ldquo;Father Time always wins&rdquo; and said Abel had &ldquo;exceeded&rdquo; his expectations in the CEO seat. Berkshire&rsquo;s Class B shares fell roughly 1% on the news &mdash; a stock up only about 1% year-to-date against the S&amp;P 500&rsquo;s 11%-plus gain, a lag some coverage attributes in part to rising oil prices and a broader investor preference for higher-growth names rather than to today&rsquo;s announcement specifically.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Closes a 60-year chapter at one of the most closely watched companies in American finance and completes a succession Buffett has been telegraphing for years.
+            </div>
+          </div>
+          <p class="story-sourceline">Berkshire Hathaway shareholder letter (primary) &middot; CNBC, CNN, NPR, Axios, Washington Post, NBC News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Fed&rsquo;s Bowman says the central bank&rsquo;s own supervisors missed the warning signs before SVB failed</h3>
+          <p class="story-deck">An independent review commissioned by Fed Vice Chair for Supervision Michelle Bowman finds staff &ldquo;knew, or should have known&rdquo; about Silicon Valley Bank&rsquo;s vulnerabilities more than a year before its 2023 collapse.</p>
+          <div class="story-body">
+            <p>Speaking at a London luncheon Friday afternoon, Bowman unveiled an independent review, conducted by Starling Advisory Group, into the Fed&rsquo;s supervisory failures ahead of SVB&rsquo;s collapse. The review found supervisory staff &ldquo;knew, or should have known&rdquo; about the bank&rsquo;s vulnerabilities as early as March 2022 but failed to act &ldquo;prompt[ly] and decisive[ly],&rdquo; citing a &ldquo;long-standing culture of risk aversion&rdquo; inside the Fed&rsquo;s supervisory arm. It found that regulatory tailoring adopted during the first Trump administration played no role in the failure, clearing former Vice Chair Randal Quarles of responsibility for it. In a companion speech, Bowman said a revamped bank stress-testing framework &mdash; replacing what she called an &ldquo;opaque and unnecessarily unpredictable&rdquo; regime &mdash; will be finalized &ldquo;in the coming weeks.&rdquo;</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A sitting Fed vice chair publicly faulting her own agency&rsquo;s supervisors, rather than deregulation, for a bank failure is a notable break from the administration&rsquo;s deregulatory framing of bank oversight, and a new stress-test regime would directly affect how much capital large banks must hold.
+            </div>
+          </div>
+          <p class="story-sourceline">Fed Vice Chair Bowman&rsquo;s speech texts (primary, via federalreserve.gov) &middot; CNN, American Banker, ABA Banking Journal, Banking Dive.</p>
+        </article>
+
+        <article class="story">
+          <h3>A second reported Hormuz tanker strike as South Korea declines to send troops for the Iran war</h3>
+          <p class="story-deck">Iran&rsquo;s Revolutionary Guard claims it struck and detained a Togo-flagged tanker; separately, a UKMTO-reported vessel fire near Oman appears to be a distinct, second incident the same day.</p>
+          <div class="story-body">
+            <p>UKMTO reported a tanker hit by an unidentified projectile in the Strait of Hormuz early Friday, causing a fire that was extinguished with the crew reported safe &mdash; described in some reporting as a second Hormuz incident within hours of an earlier one. Separately, Iran&rsquo;s IRGC Navy publicly claimed it struck and detained a Togo-flagged tanker named Trend for an alleged unauthorized passage through the strait; UKMTO logged a related security incident roughly 16 nautical miles from Khasab, Oman, but has not confirmed whether the two reports describe the same vessel. Iran&rsquo;s claim of authorship and the tanker&rsquo;s identity rest on Iranian state media alone and are unconfirmed by any other government.</p>
+            <p>South Korean President Lee Jae Myung said at a Friday press conference that South Korea &ldquo;will not&rdquo; send troops for the Iran war or to the Strait of Hormuz, the clearest on-record response yet to Trump&rsquo;s repeated personal requests for Korean support; Lee left open a narrower role protecting only South Korea&rsquo;s own merchant shipping. It lands days before Trump is expected to meet Gulf leaders around next week&rsquo;s UN General Assembly session &mdash; a meeting officials have cited as a likely moment of clarity on the &ldquo;big decision&rdquo; on further military action Trump described in Thursday&rsquo;s Axios interview.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Watch for whether Trump's Gulf-leaders meeting around the UNGA produces any public signal on his stated decision, and whether any government other than Iran confirms today&rsquo;s tanker claims.
+            </div>
+          </div>
+          <p class="story-sourceline">UKMTO statements (primary) &middot; IRGC/Iranian state media (primary, single-party, disputed) &middot; President Lee&rsquo;s press conference (primary) &middot; Korea Herald, Korea JoongAng Daily, Al Jazeera, Washington Times.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Neither the vessel identity nor the sequencing of today&rsquo;s two reported Hormuz incidents could be independently confirmed beyond UKMTO&rsquo;s advisories and Iranian state media&rsquo;s own claim; treat both as <span class="flag">Disputed</span> pending a third-party confirmation. Separately, Poland&rsquo;s deputy defense minister said Friday that a potential US Army base &mdash; the subject of Trump&rsquo;s Thursday &ldquo;great progress&rdquo; social-media post, credited to President Nawrocki &mdash; would &ldquo;definitely&rdquo; be sited in western Poland, though no site, troop count or finalized agreement has been announced. It follows Prime Minister Tusk&rsquo;s warning this week that Russia may stage &ldquo;accidental&rdquo; hybrid strikes on NATO members.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Russia opens a three-day election as fears of a post-vote mobilization wave build</h3>
+          <p class="story-deck">Russia&rsquo;s State Duma election runs through Sunday; some Ukrainian and European officials expect a new conscription wave once it ends, a claim the Kremlin flatly denies.</p>
+          <div class="story-body">
+            <p>Russia&rsquo;s 2026 parliamentary election began Friday and runs through Sunday, Sept. 20. Bloomberg and other outlets report that Russians &mdash; including, per that reporting, some Kremlin and recruitment-center officials &mdash; increasingly fear a mass mobilization once the vote concludes; one unnamed European security official cited a figure of up to 300,000 additional conscripts by year-end. Putin has publicly dismissed the mobilization warnings as &ldquo;complete nonsense,&rdquo; and Zelensky has said he expects any call-up to begin in late September or early October &mdash; a claim from the opposing side of the war, not an independently confirmed fact. Separately, Russia struck Ukraine&rsquo;s Zaporizhzhia with a reported wave of roughly 93 drones that destroyed a shopping complex in a large fire, and hit the grounds of a hospital in Kherson&rsquo;s Korabelny district with an explosive dropped from a drone; no casualties were reported at the hospital site. Ukraine&rsquo;s General Staff also says Russia has begun substituting less-accurate modified training missiles for its more precise ballistic missiles at scale &mdash; a claim, like Ukraine&rsquo;s reported daily Russian-casualty figures, that comes from a combatant and could not be independently verified.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A confirmed new mobilization wave would be a significant escalation in Russian force generation for the Ukraine war; the report is logging an explicit forecast below on whether one is announced within two weeks of the election&rsquo;s close.
+            </div>
+          </div>
+          <p class="story-sourceline">Bloomberg, Moscow Times, Russia Matters, Ukraine General Staff statements (combatant-sourced) &middot; Mezha.net, Ukrinform.</p>
+        </article>
+
+        <article class="story">
+          <h3>Voting-rights groups sue over armed federal agents at polling places as early voting begins</h3>
+          <p class="story-deck">A nine-organization coalition led by the NAACP argues the administration&rsquo;s suggestions that armed ICE officers could appear near polling sites amount to illegal voter intimidation, as a separate NPR report surfaces a DHS document tying a non-English-language voting list to a DOJ prosecution checklist.</p>
+          <div class="story-body">
+            <p>A coalition including the NAACP, Mi Familia en Acci&oacute;n, OCA-Asian Pacific American Advocates and four national unions filed a federal suit Friday in the U.S. District Court for D.C., arguing that repeated administration suggestions that armed federal or ICE officers could appear at or near polling sites during the midterms constitute illegal voter intimidation under the 1965 Voting Rights Act. Separately, NPR reports it obtained an internal DHS email, dated last December, in which a border-policy official sent a 78-page list of counties and states required to provide non-English election materials to a DHS undersecretary and the official leading the administration&rsquo;s noncitizen-voting review, with a DOJ voter-prosecution &ldquo;criminal checklist&rdquo; attached; the purpose of pairing the two documents is unclear given heavy redaction. DHS told NPR on the record that it &ldquo;is not planning operations targeting polling locations.&rdquo;</p>
+            <p>Both stories land the same day early voting opened in Virginia, South Dakota and Minnesota &mdash; the first states to begin balloting for the Nov. 3 midterms.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two distinct legal and reporting threads converging on the same question &mdash; whether federal enforcement activity around the midterms could chill turnout in specific communities &mdash; arriving as voting itself begins.
+            </div>
+          </div>
+          <p class="story-sourceline">Coalition complaint via AALDEF (primary) &middot; DHS statement to NPR (primary) &middot; NPR (exclusive reporting) &middot; MS NOW.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>The NPR-reported DHS email rests on a single newsroom&rsquo;s reporting of a document it says it obtained; no independent outlet has yet corroborated its contents, and the document&rsquo;s own purpose is unclear even in NPR&rsquo;s account. Treat this specific claim as <span class="flag">Single-reliable-source</span> pending wider corroboration, distinct from the polling-place lawsuit itself, which is a matter of public court record.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>US growth data cools: industrial output stalls, a first manufacturing decline in seven months</h3>
+          <p class="story-deck">The Conference Board&rsquo;s Leading Economic Index fell for the first time since March, adding a second soft print to a day that otherwise carried little fresh economic news.</p>
+          <div class="story-body">
+            <p>Industrial production was flat in August (0.0%), missing a consensus near +0.2% to +0.3% and down from July&rsquo;s +0.2% gain; manufacturing output alone fell 0.3%, its first monthly decline after seven straight increases, with durable goods down 0.5% and nondurables flat. Utilities output rose 1.8% on electricity demand, and computer/electronic-products and electrical-equipment utilization both rose &mdash; a detail consistent with continued AI-infrastructure capital spending even as the broader factory sector cooled. Capacity utilization held at 76.3%, matching both the July level and consensus, still 3.1 points below its 1972&ndash;2025 long-run average. Separately, the Conference Board&rsquo;s Leading Economic Index fell 0.1% to 99.5 in August, its first decline since March, with four of ten components negative and consumer expectations the largest drag; the Board still projects 1.9% GDP growth for 2026 but trimmed its 2027 outlook to 1.8% from 1.9%.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two independent gauges pointing the same direction &mdash; a factory-sector pause and a broader leading indicator turning down for the first time in five months &mdash; is a modest but genuine cooling signal, landing two days after the Fed&rsquo;s hawkish rate hike.
+            </div>
+          </div>
+          <p class="story-sourceline">Federal Reserve G.17 industrial production release (primary) &middot; Conference Board release (primary) &middot; FRED, Trading Economics.</p>
+        </article>
+
+        <article class="story">
+          <h3>Poland narrows talks on a potential permanent US Army base to its west</h3>
+          <p class="story-deck">A day after Trump credited &ldquo;great progress&rdquo; toward a base to President Nawrocki, a Polish deputy defense minister says any site will &ldquo;definitely&rdquo; be in western Poland.</p>
+          <div class="story-body">
+            <p>Polish Deputy Defense Minister Magdalena Sobkowiak-Czarnecka said Friday any US Army base under discussion would &ldquo;definitely&rdquo; be located in western Poland &mdash; the first concrete detail beyond Trump&rsquo;s Thursday Truth Social post citing progress toward the arrangement. No site, troop count, or finalized agreement has been announced. The disclosure follows this week&rsquo;s warning from Polish Prime Minister Donald Tusk that Russia may be preparing drone or rocket strikes on Poland or other NATO members, presented as &ldquo;accidental,&rdquo; to test the alliance&rsquo;s Article 5 resolve; Russia&rsquo;s foreign ministry called the warning &ldquo;contrived.&rdquo;</p>
+          </div>
+          <p class="story-sourceline">Polish Deputy Defense Ministry statement (primary) &middot; Trump&rsquo;s Truth Social post (primary) &middot; RFE/RL, Washington Times, TimesLive.</p>
+        </article>
+
+        <article class="story">
+          <h3>Java Sea ferry search shifts to recovery as divers enter the wreck</h3>
+          <p class="story-deck">Five days after the Virgo Transport 8 capsized, Indonesian navy divers entered the hull for what appears to be the first time and recovered three bodies.</p>
+          <div class="story-body">
+            <p>Indonesia&rsquo;s national search-and-rescue agency began a salvage operation Friday, five days after the ferry capsized with 243 aboard, and divers entered the wreck to recover three bodies &mdash; the first confirmed physical entry into the hull since the sinking. That brings the confirmed toll to nine dead against roughly 126 still missing; fast currents, water pressure and the vessel&rsquo;s design continue to hamper access.</p>
+          </div>
+          <p class="story-sourceline">Indonesian search-and-rescue authorities (primary, via wire) &middot; Malay Mail, US News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Sudan gold-mine collapse kills dozens in RSF-held territory</h3>
+          <p class="story-deck">Two attributed sources give conflicting death tolls for a mine collapse in West Kordofan &mdash; a disaster, not a strike, in a region the war has left without independent access.</p>
+          <div class="story-body">
+            <p><span class="flag">Disputed toll</span> The Sudanese Doctors Network reported at least 67 dead in a gold-mine collapse at Al-Zaraa, West Kordofan, an area under Rapid Support Forces control; an anonymous RSF source cited by AFP put the toll at least 82. Neither figure could be independently verified given the absence of independent access to the area, itself a consequence of Sudan&rsquo;s ongoing civil war, now in its fourth year amid famine conditions the World Food Programme says affect 24.6 million people.</p>
+          </div>
+          <p class="story-sourceline">Sudanese Doctors Network (primary, single-source) &middot; anonymous RSF source via AFP (primary, single-source, disputed toll).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><strong>Iran.</strong> Previously: Trump&rsquo;s Thursday Axios remark that he faces a &ldquo;big decision&rdquo; on whether to &ldquo;annihilate&rdquo; Iran&rsquo;s regime sat in tension with his own claim of &ldquo;direct&rdquo; contact with Tehran. New: a second reported Hormuz tanker incident and South Korea&rsquo;s on-record refusal to send troops both narrow the diplomatic runway even as the military option stays open. Confidence: Confirmed-multiple for South Korea&rsquo;s statement; the tanker claims remain Disputed.</p>
+        <p><strong>Voting rights.</strong> Previously: this morning&rsquo;s edition carried NPR&rsquo;s single-sourced report on an internal DHS noncitizen-voter document, with DHS&rsquo;s on-record denial. New: a nine-organization coalition led by the NAACP has now filed suit over armed agents at polling places, and NPR has surfaced a second, distinct DHS document tying a non-English-jurisdiction list to a DOJ prosecution checklist. Confidence: Confirmed-multiple for the lawsuit itself; Single-reliable-source for the second document&rsquo;s contents.</p>
+        <p><strong>The Fed and bank supervision.</strong> Previously: this week&rsquo;s reporting tracked Trump&rsquo;s pressure campaign on Chair Warsh and Wednesday&rsquo;s rate hike. New: Vice Chair Bowman&rsquo;s independent review faults the Fed&rsquo;s own supervisory staff, not deregulation, for missing Silicon Valley Bank&rsquo;s 2023 collapse, and previews a looser stress-test regime within weeks. Confidence: Confirmed-primary.</p>
+        <p><strong>The economy.</strong> Previously: this morning&rsquo;s edition noted August&rsquo;s Industrial Production and Leading Economic Index releases had not yet printed. New: both came in soft &mdash; a flat industrial-production reading with the first manufacturing decline in seven months, and the LEI&rsquo;s first monthly fall since March. Confidence: Confirmed-primary.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>The White House withdrew its nomination of Lance Schroyer to lead Immigration and Customs Enforcement on Thursday, after Sen. Rand Paul held up the nomination in committee over questions about a Minnesota agent-involved shooting; this report did not cover the withdrawal in Thursday&rsquo;s or this morning&rsquo;s edition despite same-day coverage, and is disclosing that gap here rather than folding the story in as newly broken. No successor nominee has been named.</p>
+        <p>The House remains in recess until after the midterms, meaning neither the Epstein Files Transparency Act II discharge petition Reps. Massie and Khanna say has its 218 signatures, nor either AI-safety bill blocked or introduced this week, can reach a floor vote before November at the earliest.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Beyond today&rsquo;s industrial-production and Leading Economic Index releases (Top Stories), the Treasury&rsquo;s par yield curve posted fresh for Sept. 18: the 10-year rose 7 basis points to 5.01%, the 2-year rose further out the curve than the 10-year did, narrowing 2s10s to 25 basis points from 27, while 3-month-to-10-year steepened to 87 basis points. A separate FRED release dated Sept. 17 showed the Secured Overnight Financing Rate jumping 23 basis points to 3.85% &mdash; a large one-day move in an overnight funding-market benchmark, plausibly related to quarter-end-adjacent repo demand rather than any single news event; this report has no confirmed catalyst for it and is flagging it rather than asserting one.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>Two federal patch deadlines converged this week without incident so far: Google Chrome&rsquo;s sixth 2026 zero-day (CVE-2026-85046, a V8 sandbox escape) carried a CISA remediation deadline today, with the fix available since Sept. 4 and no reporting of continued exploitation found. The maximum-severity Cisco Identity Services Engine flaw (CVE-2026-76460, CVSS 10.0) tracked in Wednesday&rsquo;s edition still carries its federal deadline for tomorrow, Saturday; no new advisory or workaround has appeared.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p><strong>Correction.</strong> This morning&rsquo;s edition, drawing on NASASpaceflight.com and a Wikipedia cross-check, reported the Progress MS-35 cargo craft would dock at the ISS&rsquo;s Poisk module today, Sept. 18, at 2:37 PM ET. NASA&rsquo;s own ISS blog, posted today, instead schedules docking for tomorrow, Saturday, Sept. 19, at approximately 9:46 AM ET &mdash; consistent with Roscosmos&rsquo;s original estimate this system had revised away from two days ago. No docking occurred this afternoon at the previously reported time; the mission itself is unaffected, only the date and time were wrong. Logged to the corrections ledger.</p>
+        <p>SpaceX&rsquo;s Starship Flight 14 remains unchanged from Thursday&rsquo;s reporting: targeting no earlier than Monday, Sept. 28, pending an FAA launch license, with environmental review already cleared.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">What Moved Markets</h2>
+      <div class="story-body">
+        <p>Stocks closed mixed on the week&rsquo;s final session: the S&amp;P 500 added 0.17% to 7,650.50, the Nasdaq Composite gained 0.40% to 26,522.55, while the Dow fell 0.18% to 51,682.64 and the Russell 2000 slipped 0.50%. The session&rsquo;s clearest thread was a broad semiconductor and AI-infrastructure rally &mdash; the VanEck Semiconductor ETF (SMH) gained 2.21%, with Micron (+3.92%), ASML (+3.08%), Broadcom (+2.97%) and AMD (+2.70%) among the largest movers &mdash; extending the rebound from Monday&rsquo;s AI-slowdown-fear selloff. No single catalyst was identified for the rally beyond that continuation; this report labels it a <strong>Market narrative</strong> rather than a confirmed cause.</p>
+        <p>Crypto-linked equities were the day&rsquo;s single largest movers: Coinbase gained 11.66% and Robinhood 9.12%, alongside a sharp bitcoin rally (up 5.85% over 24 hours to roughly $80,986, with the broader crypto market capitalization up 2.69%). Given the close mechanical link between exposed equities and the underlying asset, this report labels bitcoin&rsquo;s rally a <strong>likely contributor</strong> to the two stocks&rsquo; moves, short of asserting it as the sole cause.</p>
+        <p>Rate-sensitive and defensive sectors underperformed as the 10-year yield rose to 5.01%: utilities (XLU) fell 1.42%, materials (XLB) fell 1.42%, communications (XLC) fell 1.37% and real estate (XLRE) fell 0.96%, a pattern this report labels a <strong>likely contributor</strong> tied to rising yields rather than a coincidence. Small-cap space stocks fell together across the board &mdash; Redwire (&minus;7.01%), AST SpaceMobile (&minus;6.68%), Spire (&minus;6.10%), Intuitive Machines (&minus;5.88%) and Rocket Lab (&minus;4.79%) &mdash; with no confirmed catalyst identified in this run&rsquo;s research; labeled <strong>Unexplained</strong>. Oil eased roughly 1% on the session (via the United States Oil Fund, USO, down 0.96%; outside reporting puts WTI near $100/bbl, down about 1.6%), coinciding with this week&rsquo;s already-tracked reporting of Saudi Arabia rerouting supply through Oman &mdash; labeled a <strong>likely contributor</strong>, not a confirmed cause, given the war&rsquo;s continued escalation the same day.</p>
+        <p class="small muted">Data-quality note: Yahoo Finance&rsquo;s WTI futures feed (CL=F) showed an implausible &minus;6.46% move today, inconsistent with USO&rsquo;s &minus;0.96% move and outside reporting near &minus;1.6%; this report excludes the raw CL=F reading as unreliable, the third consecutive run flagging this feed.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="story-body">
+        <p><strong>Winners.</strong> Coinbase +11.66%, Robinhood +9.12%, Micron +3.92%, Interactive Brokers +2.61%, ASML +3.08%, Broadcom +2.97%, Cboe Global Markets +2.32%, Intuitive Surgical +2.55%, Viasat +4.60% (coinciding with a same-day SEC filing), gold (GLD) +0.71%.</p>
+        <p><strong>Losers.</strong> Redwire &minus;7.01%, AST SpaceMobile &minus;6.68%, Spire &minus;6.10%, Intuitive Machines &minus;5.88%, Rocket Lab &minus;4.79%, Meta &minus;2.43%, Constellation Energy &minus;3.08%, Firefly Aerospace &minus;3.45%, European equities (VGK) &minus;1.30%, long Treasuries (TLT) &minus;0.65%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="story-body">
+        <p>Markets are closed for the weekend. Saturday brings the federal remediation deadline for the maximum-severity Cisco ISE flaw (CVE-2026-76460) and the corrected Progress MS-35 docking at the ISS, now expected around 9:46 AM ET. Russia&rsquo;s State Duma election concludes Sunday, the point at which mobilization fears (Top Stories) would first be testable. Next week brings the Allegheny County Board of Health&rsquo;s rescheduled parental-leave recommendation vote (Sept. 28), Pittsburgh Regional Transit&rsquo;s board vote on its bus-purchase plan (Sept. 25), and the Kennedy Center&rsquo;s court-ordered sworn status report (Sept. 23).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>PennDOT adds nighttime I-79 lane restrictions to an already-busy fall of road work</h3>
+        <div class="story-body">
+          <p>PennDOT will begin nighttime joint-and-crack sealing on I-79 in South Fayette Township starting Friday, Sept. 27, with lane restrictions from 7 PM to 6 AM between the PA Turnpike/Pittsburgh International/Morganza Road interchange and the Route 50/Bridgeville exit, running through early November. It layers onto the Route 50 (Washington Pike/Washington Avenue) signal-upgrade project already underway through Bridgeville, Heidelberg, Collier and Scott townships, which continues weekday shoulder and lane restrictions through late November.</p>
+        </div>
+        <p class="story-sourceline">PennDOT District 11 (primary) &middot; WPXI.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>PUC votes to rewrite emergency electric load-control rules as data centers strain the grid</h3>
+        <div class="story-body">
+          <p>The Public Utility Commission voted 5-0 to direct staff to draft updated regulations clarifying when and how customers can be curtailed during grid emergencies, citing PJM&rsquo;s projected 6,831-megawatt reliability shortfall for 2028-29, tied partly to data-center demand growth. A technical conference on cost allocation is planned this fall, with a tentative plan due at the PUC&rsquo;s Oct. 1 public meeting.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Public Utility Commission (primary).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, narrow</span> Supporting: a broad chip/AI-infrastructure rally, a sharp bitcoin-led crypto rally, falling volatility (VIX 14.81, second straight decline), stable credit spreads (HY OAS 2.70, unchanged). Contradicting: a Dow decline, broad small-cap space-stock weakness with no identified catalyst, the 10-year yield&rsquo;s push to 5.01%, and underperformance in every rate-sensitive sector (utilities, real estate, staples). Confidence: moderate. Change from Thursday: narrower leadership than Thursday&rsquo;s broad post-FOMC-relief rally, which lifted nearly every sector.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <p>SPY &minus;0.12%, QQQM +0.58%, DIA &minus;0.48%, IWM &minus;0.47%, RSP &minus;0.48% &mdash; equal-weight lagging cap-weight confirms narrow, mega-cap/chip-led leadership rather than a broad advance. Internationally, emerging markets (EEM) gained 0.18% while Europe (VGK) fell 1.30%. This edition did not fetch the wider broad-US or international-ETF universe (VOO, VTI, MDY, IJH, AVUV, IWN, VXUS, VEA, EFA and the rest of the regional-ETF list); the board and sector rows above are the full set of fresh data this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Reused from the previous session (Sept. 17, the last completed NYSE session; not refetched today per the once-per-session rule): 3,059 advancers vs. 2,337 decliners of 5,521 in the whole-market universe, a positive tilt. <span class="chip">Estimated &mdash; EMA proxy, accumulating history (38/200 sessions)</span> pct-above-50/200-day figures remain withheld pending a fuller EMA history.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>All 11 SPDR sector funds, close-to-close, Sept. 18, 2026 EOD official.</caption>
+              <thead><tr><th>Sector</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Technology (XLK)</td><td class="up">+0.82%</td></tr>
+                <tr><td class="txt">Communications (XLC)</td><td class="down">&minus;1.37%</td></tr>
+                <tr><td class="txt">Consumer Discretionary (XLY)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td class="txt">Consumer Staples (XLP)</td><td class="down">&minus;0.83%</td></tr>
+                <tr><td class="txt">Financials (XLF)</td><td class="down">&minus;0.04%</td></tr>
+                <tr><td class="txt">Health Care (XLV)</td><td class="down">&minus;0.25%</td></tr>
+                <tr><td class="txt">Industrials (XLI)</td><td class="up">+0.44%</td></tr>
+                <tr><td class="txt">Energy (XLE)</td><td class="down">&minus;0.26%</td></tr>
+                <tr><td class="txt">Materials (XLB)</td><td class="down">&minus;1.42%</td></tr>
+                <tr><td class="txt">Utilities (XLU)</td><td class="down">&minus;1.42%</td></tr>
+                <tr><td class="txt">Real Estate (XLRE)</td><td class="down">&minus;0.96%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Leadership: Technology and Industrials the only sectors positive; Materials and Utilities the weakest, consistent with a rising-yield, rate-sensitive rotation out of bond-proxy sectors rather than a single sector-specific news event.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries</summary>
+          <p>Semiconductors (SMH) +2.21%, the session&rsquo;s clearest industry theme (Top Stories, What Moved Markets). Regional banks (KRE) essentially flat, +0.01%. This edition did not fetch the wider industry-ETF universe (SOXX, XSD, IGV, CLOU, CIBR, HACK, BOTZ, AIQ, KBE, KIE, FINX, XBI, IBB, IHI, XRT, JETS, PAVE, IFRA, IYT, ITB, XHB, XOP, OIH, AMLP, URA, GDX, LIT and the rest); only the board&rsquo;s two rows above have fresh data this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p><strong>Financials</strong> stood out on crypto exposure: Coinbase +11.66%, Robinhood +9.12%, Interactive Brokers +2.61%, Cboe +2.32%; traditional banks were mixed and modestly negative (Goldman Sachs &minus;1.00%, Wells Fargo &minus;0.89%). <strong>AI infrastructure</strong> rallied broadly: Micron +3.92%, Eaton +3.74%, ASML +3.08%, Quanta Services +3.27%, Broadcom +2.97%, AMD +2.70%, Vertiv +3.27%, while Constellation Energy fell 3.08% and Vistra fell 2.01% &mdash; a split within the AI-power trade this report does not have a confirmed explanation for. <strong>Space</strong> names fell almost uniformly (Redwire &minus;7.01%, AST SpaceMobile &minus;6.68%, Spire &minus;6.10%, Intuitive Machines &minus;5.88%, Rocket Lab &minus;4.79%, Firefly &minus;3.45%, Voyager &minus;1.99%, York &minus;2.40%), the exception being Viasat (+4.60%), which filed an SEC Form 8-K and a related Form 425 business-combination communication today; the filing&rsquo;s content was not reviewed this run. <strong>Consumer</strong> names were broadly softer (Target &minus;1.03%, Lowe&rsquo;s &minus;0.88%, Booking Holdings &minus;1.54%) with no standout gainers. <strong>Health care</strong> was mixed and mostly flat; Intuitive Surgical (+2.55%) was the standout. <strong>Defense</strong> was mixed: Rocket Lab fell alongside the broader space-stock weakness, AeroVironment fell 2.10%, while Northrop Grumman gained 0.65%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par curve, Sept. 18, 2026 EOD official (home.treasury.gov, direct fetch).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D chg</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>4.14%</td><td class="up">+2bp</td></tr>
+                <tr><td>2Y</td><td>4.76%</td><td class="up">+9bp</td></tr>
+                <tr><td>10Y</td><td>5.01%</td><td class="up">+7bp</td></tr>
+                <tr><td>30Y</td><td>5.34%</td><td class="up">+5bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s narrowed to 25bp (from 27bp), 3-month-to-10-year steepened to 87bp, 5s30s narrowed to 48bp. Separately, FRED&rsquo;s Sept. 17-dated SOFR reading jumped 23bp to 3.85% &mdash; a large one-day funding-market move flagged above (The Economy) without a confirmed cause. This edition did not fetch the wider Treasury-fund list (SGOV, BIL, SHY, IEI, GOVT, SCHP, BND, AGG, MUB); TLT, IEF and TIP above (The Board) are the only fresh fund-level data this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield option-adjusted spreads held at 2.70 (FRED, dated Sept. 17, unchanged from Sept. 16) &mdash; credit shows no stress and continues to confirm the equity market&rsquo;s calm reading more than its narrow leadership would suggest on its own. Investment-grade (LQD) fell 0.44% and high-yield (HYG) fell a smaller 0.24%, both simply tracking the broader rate move rather than any credit-specific news. This edition did not fetch the wider credit-fund list (VCIT, JNK, BKLN, SRLN).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 14.81 (&minus;4.08%), VIX9D 12.27 (&minus;8.36%), VIX3M 18.24 (&minus;1.67%) &mdash; normal contango, no inversion, continuing to unwind Wednesday&rsquo;s post-FOMC event-risk premium. Cboe put/call ratios remain retired from this report (persistent 403 errors on the data source for weeks); MOVE index has no allowlisted free source; dealer gamma is not tracked (no legitimate free source for either).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>Dollar index (DXY) essentially flat, &minus;0.03% to 100.19. Frankfurter&rsquo;s ECB reference fix shows the dollar modestly firmer against the euro and yen day-over-day (EUR/USD fix implying roughly 1.1460 from 1.1481; USD/JPY 157.89 from 155.69) and mixed against emerging-market crosses. <span class="chip">Data-quality note</span> Yahoo&rsquo;s EURUSD=X series is missing a close for Sept. 17, so this report uses the ECB reference fix rather than Yahoo&rsquo;s gapped comparison for the euro figure above.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Gold (GLD) +0.71% to 401.17, extending its slow grind higher despite a firmer dollar and higher real yields &mdash; a mild cross-asset divergence noted below. Oil eased roughly 1% on the session; see What Moved Markets for the CL=F data-quality caveat and the USO-based estimate used in its place. Natural gas (NG=F) flat at 2.901; copper (HG=F) +2.07% to 6.7225, an outlier worth watching but without a same-day news catalyst identified this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $80,986 (+5.85% over 24 hours), Ethereum $2,628.07 (+7.27%), Solana $113.31 (+12.21%), Cardano $0.2233 (+10.48%) &mdash; broad-based, not bitcoin-only. Total crypto market cap $2.780 trillion (+2.69% over 24 hours), bitcoin dominance 58.35%, 24-hour volume $126.8 billion (+55.98%), consistent with a genuine risk-on flow rather than a single-asset move. Labeled Live (CoinGecko aggregate).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Not tracked this run: the factor-fund list (VUG, IWF, VTV, IWD, MTUM, QUAL, USMV, SPLV, VYM, SCHD, PKW, SPHQ) was not fetched. Declared unavailable rather than estimated.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Stocks vs. bonds: equities mixed while long Treasuries fell (TLT &minus;0.65%) as yields rose &mdash; a normal, not divergent, relationship today. Gold vs. real yields: gold rose even as real (TIPS-implied) yields firmed, a mild divergence from the usual inverse relationship, unexplained this run. Oil vs. geopolitical risk: oil fell despite an actively widening Gulf war, coinciding with this week&rsquo;s Saudi-reroute reporting rather than the conflict itself. Bitcoin vs. broader risk appetite: today&rsquo;s crypto rally aligned with, rather than diverged from, the equity market&rsquo;s risk-on tilt. Space stocks vs. launch news: today&rsquo;s broad space-sector decline has no accompanying negative launch, contract or regulatory news identified this run &mdash; a genuine, unexplained divergence.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist company reported earnings today; the nearest scheduled watchlist report is Costco on Sept. 24, per the Alpha Vantage calendar refreshed Sept. 16.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No material Treasury auction settled today. The next scheduled auctions and the Fed&rsquo;s balance-sheet posture are unchanged from this week&rsquo;s prior editions.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Trump&rsquo;s Truth Social post and the Reporters Committee for Freedom of the Press; Berkshire Hathaway&rsquo;s shareholder letter; Federal Reserve Vice Chair Bowman&rsquo;s speech texts and the Federal Reserve G.17 release; UKMTO and Iranian state-media statements; President Lee Jae Myung&rsquo;s press conference; the Conference Board; Pennsylvania&rsquo;s Public Utility Commission and PennDOT; the Treasury par-yield curve, FRED, Cboe, Yahoo Finance, Frankfurter and CoinGecko for market data; SEC EDGAR for filings. Wire and outlet reporting is named story by story above.</p>
+      <p><strong>Corrections.</strong> This morning&rsquo;s edition reported the Progress MS-35 cargo craft would dock at the ISS today at 2:37 PM ET; NASA&rsquo;s own ISS blog instead schedules docking for tomorrow morning, around 9:46 AM ET. Corrected above (Science &amp; Space) and logged to the corrections ledger. Separately, this report discloses a coverage gap: Thursday&rsquo;s withdrawal of the ICE director nomination was not covered in Thursday&rsquo;s or this morning&rsquo;s edition despite same-day reporting; noted above (Politics &amp; Government).</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated; two figures (WTI futures, one day&rsquo;s EURUSD close) were excluded this run as unreliable rather than printed uncritically, with the substitute method disclosed where used. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-18-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
