@@ -1525,6 +1525,9 @@ def synth_world(kind: str, seed: int = 1, weeks: int = 1270, n_assets: int = 48,
     return _assemble(tab, None, sD, sE, sP, states, f"synthetic {kind}")
 
 
+EXTRA_NAMES = {"MT": "MT multi-task (economic groups)", "DH": "DH dynamic hierarchy", "PW": "PW pairwise → per-asset score"}
+
+
 def alpha_suite(R: Resid, extra: Optional[Dict[str, array]] = None, progress=None) -> Tuple[Dict[str, dict], Dict[str, dict]]:
     """R1, R1s, R2, R3, R4, R5 (+ any extra per-asset scores, e.g. MT, DH, PW) evaluated with A1–A7 and FDR."""
     say = progress or (lambda m: None)
@@ -1534,7 +1537,7 @@ def alpha_suite(R: Resid, extra: Optional[Dict[str, array]] = None, progress=Non
     say(f"alpha residual challengers fitted ({time.time() - t0:.0f}s)")
     res = {k: evaluate_alpha(R, m["wf"], m["name"]) for k, m in models.items()}
     for k, s_ in (extra or {}).items():
-        res[k] = evaluate_alpha(R, s_, k)
+        res[k] = evaluate_alpha(R, s_, EXTRA_NAMES.get(k, k))
     finalize_alpha(res)
     return res, models
 

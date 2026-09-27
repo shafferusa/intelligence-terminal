@@ -611,6 +611,18 @@ def current_markdown(res: dict) -> str:
       f"{tm.split('/')[1]} (bottom): the benchmark T1 (E's percentile) unless a richer tail model passed its gates. A passing T4 "
       "learns mostly which assets move a lot (asset class, signal disagreement), so it raises both tails for volatile assets.")
     w("- **Prior / Adj.**: Directional prior-only P(up) and the Directional residual's capped adjustment (research; the Directional model stays prior-only).")
+    de = W.get("de") or {}
+    unval = []
+    if not any((A.get(k) or {}).get("passed") for k in ("R1", "R1s")):
+        unval.append("**Residual** (R1 did not pass A1–A7: the correction is shown for transparency, not applied)")
+    if not (de.get("DE-A") or {}).get("passed"):
+        unval.append("**P(E) / Pref.** (the D-vs-E selector did not pass; it prefers whichever model is less extreme, because an extreme "
+                     "percentile is usually farther from the realised one — historically always-E beats always-D "
+                     f"by {_f(-((de.get('always_D_minus_E') or {}).get('mean') or 0))})")
+    if not (W.get("directional_1W") or {}).get("passed"):
+        unval.append("**Adj.** (the Directional residual did not pass; the Directional model stays prior-only)")
+    if unval:
+        w("- **Not validated — display only:** " + "; ".join(unval) + ".")
     w("")
     w("| Asset | Class | E % | D % | Residual | Adj. Alpha | REL | P(E) | Pref. | Exp. rel. | range (95%) | Top | Bottom | Prior | Adj. |")
     w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")

@@ -1252,13 +1252,13 @@
       <p class="faint" style="font-size:12px;padding:0 12px">Expected relative return = the mean 1W return relative to the cross-section in E's percentile bucket (2013–2024); range = 95% of single weekly outcomes in that bucket (the honest interval for one asset's week). No sizing is derived from any of it.</p></div>`;
     table($('#rsN'), today, [{ k: 'asset', label: 'Asset', l: 1, f: r => `<b>${esc(r.asset)}</b><span class="sub">${esc(r.class || '')}</span>` },
       { k: 'E_pct', label: 'E %', f: r => fmt.num(r.E_pct, 0) }, { k: 'D_pct', label: 'D %', f: r => fmt.num(r.D_pct, 0) },
-      { k: 'residual', label: 'Residual', f: r => r.residual == null ? '—' : `<span class="${r.residual_material ? sign(r.residual) : 'faint'}">${fmt.num(r.residual, 3)}${r.residual_material ? '*' : ''}</span>` },
+      { k: 'residual', label: ['R1', 'R1s'].some(k => (A[k] || {}).passed) ? 'Residual' : 'Residual (not validated)', f: r => r.residual == null ? '—' : `<span class="${r.residual_material ? sign(r.residual) : 'faint'}">${fmt.num(r.residual, 3)}${r.residual_material ? '*' : ''}</span>` },
       { k: 'adjusted_pct', label: W.adjusted_by ? `Adj. Alpha (${W.adjusted_by})` : 'Adj. Alpha (= E)', f: r => fmt.num(r.adjusted_pct ?? r.E_pct, 0) },
-      { k: 'reliability', label: 'E reliability', f: r => fmt.num(r.reliability, 2) }, { k: 'p_E_better', label: 'Preferred', f: r => r.preferred ? `${r.preferred} <span class="faint">(${fmt.num(r.p_E_better, 2)})</span>` : '—' },
+      { k: 'reliability', label: 'E reliability', f: r => fmt.num(r.reliability, 2) }, { k: 'p_E_better', label: ((W.de || {})['DE-A'] || {}).passed ? 'Preferred' : 'Preferred (not validated)', f: r => r.preferred ? `${r.preferred} <span class="faint">(${fmt.num(r.p_E_better, 2)})</span>` : '—' },
       { k: 'exp_rel_return', label: 'Exp. rel. return', f: r => `<span class="${sign(r.exp_rel_return)}">${fmt.spct(r.exp_rel_return, 2)}</span>` },
       { k: 'range95', label: 'Uncertainty (95%)', l: 1, f: r => r.range95 ? `${fmt.spct(r.range95[0], 1)} … ${fmt.spct(r.range95[1], 1)}` : '—' },
       { k: 'p_top_decile', label: 'Tail win', f: r => fmt.pct(r.p_top_decile, 0) }, { k: 'p_bottom_decile', label: 'Tail loss', f: r => fmt.pct(r.p_bottom_decile, 0) },
-      { k: 'dir_prior', label: 'Dir. prior', f: r => fmt.pct(r.dir_prior, 1) }, { k: 'dir_adjustment', label: 'Dir. residual', f: r => r.dir_adjustment == null ? '—' : `${fmt.num(100 * r.dir_adjustment, 2)} pp` }], { sortKey: 'E_pct', maxH: 640 });
+      { k: 'dir_prior', label: 'Dir. prior', f: r => fmt.pct(r.dir_prior, 1) }, { k: 'dir_adjustment', label: (W.directional_1W || {}).passed ? 'Dir. residual' : 'Dir. residual (not validated)', f: r => r.dir_adjustment == null ? '—' : `${fmt.num(100 * r.dir_adjustment, 2)} pp` }], { sortKey: 'E_pct', maxH: 640 });
   };
   const labHedgeTune = async (body) => {
     body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
