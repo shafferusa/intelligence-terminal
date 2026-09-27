@@ -105,18 +105,31 @@ def due(store, today: str) -> bool:
     return not any(p.get("week") == _week(today) for p in (store.kv_get(PANEL_KEY) or []))
 
 
-def _sweep_worker(db_path: str, asset_id: str):
-    """One asset's production sweep in a worker process — the same computation as Research.shaffer_full — returned to
-    the single writer instead of being stored here (SQLite has one writer; checkpoints are written by the caller)."""
+def _cp_worker(db_path: str, asset_id: str):
+    """Phase 1: an asset's January checkpoints (its own evidence sums only — priors play no part in them)."""
+    from ..data.store import Store
+    from .research import Research
+    from .shaffer import ShafferRun, _cp_payload
+    st = Store(db_path)
+    try:
+        run = ShafferRun(Research(st), asset_id, use_priors=False)
+        run.run(checkpoints_only=True, save=False)
+        return asset_id, _cp_payload(run.cls, run.yearly, run.signals)
+    finally:
+        st.close()
+
+
+def _sweep_worker(db_path: str, asset_id: str, overrides: dict):
+    """Phase 2: one asset's production sweep — the computation Research.shaffer_full makes — seeing exactly the
+    checkpoints a sequential run would have stored before reaching it (`overrides`), returned to the single writer."""
     from ..data.store import Store
     from .research import Research, clean
     from .shaffer import ShafferRun, summarize
     st = Store(db_path)
     try:
         r = Research(st)
+        r._cp_overrides = overrides or None
         key = r.shaffer_key(asset_id)
-        if st.kv_get(key) is not None:
-            return asset_id, key, None, None
         run = ShafferRun(r, asset_id)
         full = clean(summarize(run.run(save=False), run))
         return asset_id, key, full, (run.cls, run.yearly, run.signals)
@@ -125,10 +138,19 @@ def _sweep_worker(db_path: str, asset_id: str):
 
 
 def precompute(research, assets: List[str], workers: int = 0, progress=None) -> dict:
-    """Production sweeps for the assets whose cached result is missing, in parallel worker processes; every write
-    (the cached result, the January checkpoints, production's ledger rows) is made here, as shaffer_full would."""
+    """Production sweeps for the panel assets whose cached result is missing, in parallel worker processes, with
+    results identical to the sequential path (record_panel with workers=1).
+
+    The sequential path has an order effect: each sweep saves the asset's January checkpoints, and later sweeps read
+    every other asset's checkpoints as priors — so when a stored checkpoint is out of date, assets later in the panel
+    order see the recomputed one and earlier assets the stored one. To reproduce that exactly: phase 1 recomputes the
+    checkpoints of every asset to be swept (they depend on the asset's own data only); phase 2 gives each asset the
+    recomputed checkpoints of the assets swept before it in panel order and the stored ones otherwise. Every write
+    (the cached result, the checkpoints, production's ledger rows) is made here, in panel order."""
+    import json
     import os
     from concurrent.futures import ProcessPoolExecutor
+    from .. import shaffer_score as cfg
     from .shaffer import save_checkpoints
     from .tracking import record_shaffer
     say = progress or (lambda m: None)
@@ -138,11 +160,14 @@ def precompute(research, assets: List[str], workers: int = 0, progress=None) -> 
     if len(todo) < 2 or workers < 2 or getattr(st, "_memory", False):
         return {"parallel": 0, "todo": len(todo)}
     t0 = time.time()
-    done = 0
     with ProcessPoolExecutor(max_workers=workers) as ex:
-        for a, key, full, cp in ex.map(_sweep_worker, [st.path] * len(todo), todo):
-            if full is None:
-                continue
+        new_cp = dict(ex.map(_cp_worker, [st.path] * len(todo), todo))
+        changed = [a for a in todo if json.dumps(st.kv_get(f"shaffer_cp:{a}:{cfg.VERSION}"), sort_keys=True) != json.dumps(new_cp[a], sort_keys=True)]
+        say(f"live panel: {len(changed)} checkpoint(s) out of date ({time.time() - t0:.0f}s)")
+        pos = {a: i for i, a in enumerate(todo)}
+        ov = [{c: new_cp[c] for c in changed if pos[c] < pos[a]} for a in todo]
+        done = 0
+        for a, key, full, cp in ex.map(_sweep_worker, [st.path] * len(todo), todo, ov):
             st.kv_set(key, full)
             save_checkpoints(research, a, cp[0], cp[1], cp[2])
             try:
@@ -151,7 +176,7 @@ def precompute(research, assets: List[str], workers: int = 0, progress=None) -> 
                 pass
             done += 1
             say(f"live panel sweeps {done}/{len(todo)}: {a}")
-    return {"parallel": done, "todo": len(todo), "workers": workers, "seconds": round(time.time() - t0, 1)}
+    return {"parallel": done, "todo": len(todo), "workers": workers, "stale_checkpoints": changed, "seconds": round(time.time() - t0, 1)}
 
 
 def record_panel(research, progress=None, force: bool = False, workers: int = 0) -> dict:

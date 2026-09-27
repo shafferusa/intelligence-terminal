@@ -841,8 +841,22 @@ def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
             per[k.split(":")[1]] = _parse_cp(v)
         cache = {"keys": keys, "per": per}
         research._prior_cache = cache
+    per = cache["per"]
+    ov = getattr(research, "_cp_overrides", None)
+    if ov:
+        # the checkpoints a sequential panel run would have stored by now (see engine/livexs.precompute): in key order,
+        # exactly as a reload of the store after those saves would list them
+        allk = sorted(set(keys) | {f"shaffer_cp:{a}:{cfg.VERSION}" for a in ov})
+        base = per
+        per = {}
+        for k in allk:
+            a = k.split(":")[1]
+            if a in ov:
+                per[a] = _parse_cp(ov[a])
+            elif a in base:
+                per[a] = base[a]
     agg: Dict[tuple, list] = {}
-    for aid, (acls, data) in cache["per"].items():
+    for aid, (acls, data) in per.items():
         if aid == asset_id:
             continue
         for key, sums in data.items():
