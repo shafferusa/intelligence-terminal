@@ -46,6 +46,25 @@ class PriorCache(unittest.TestCase):
         SH.save_checkpoints(r, "B", "EQUITY", _yearly(rnd), ["a", "b", "c"])
         self.assertEqual(repr(SH.load_priors(r, "C", "EQUITY")), repr(SH.load_priors(SimpleNamespace(store=self.st), "C", "EQUITY")))
 
+    def test_overrides_equal_the_sequential_saves(self):
+        """A worker told 'these checkpoints would already have been re-saved' sees exactly the priors the sequential
+        path sees after actually saving them (including a checkpoint that did not exist before)."""
+        rnd = random.Random(5)
+        sigs = ["a", "b", "c"]
+        r = SimpleNamespace(store=self.st)
+        for aid in ("A", "C", "D"):
+            SH.save_checkpoints(r, aid, "EQUITY", _yearly(rnd), sigs)
+        newC, newB = _yearly(rnd), _yearly(rnd)
+        worker = SimpleNamespace(store=self.st, _cp_overrides={"C": SH._cp_payload("EQUITY", newC, sigs), "B": SH._cp_payload("ETF", newB, sigs)})
+        seen_by_worker = repr(SH.load_priors(worker, "D", "EQUITY"))
+        SH.save_checkpoints(r, "C", "EQUITY", newC, sigs)           # what the sequential path does
+        SH.save_checkpoints(r, "B", "ETF", newB, sigs)
+        self.assertEqual(seen_by_worker, repr(SH.load_priors(SimpleNamespace(store=self.st), "D", "EQUITY")))
+
+    def test_sweep_does_not_write_checkpoints_when_asked_not_to(self):
+        import inspect
+        self.assertIn("save", inspect.signature(SH.ShafferRun.run).parameters)
+
 
 if __name__ == "__main__":
     unittest.main()

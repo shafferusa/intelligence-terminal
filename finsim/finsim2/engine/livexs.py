@@ -160,7 +160,10 @@ def precompute(research, assets: List[str], workers: int = 0, progress=None) -> 
     if len(todo) < 2 or workers < 2 or getattr(st, "_memory", False):
         return {"parallel": 0, "todo": len(todo)}
     t0 = time.time()
-    with ProcessPoolExecutor(max_workers=workers) as ex:
+    import multiprocessing as mp
+    # spawn on every platform: the Windows default, and safe from inside the server's threads (no fork of an open
+    # SQLite connection)
+    with ProcessPoolExecutor(max_workers=workers, mp_context=mp.get_context("spawn")) as ex:
         new_cp = dict(ex.map(_cp_worker, [st.path] * len(todo), todo))
         changed = [a for a in todo if json.dumps(st.kv_get(f"shaffer_cp:{a}:{cfg.VERSION}"), sort_keys=True) != json.dumps(new_cp[a], sort_keys=True)]
         say(f"live panel: {len(changed)} checkpoint(s) out of date ({time.time() - t0:.0f}s)")
