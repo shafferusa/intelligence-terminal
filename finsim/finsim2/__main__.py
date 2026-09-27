@@ -142,6 +142,7 @@ def main(argv=None) -> int:
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
+    lb.add_argument("--event-hedge", action="store_true", help="stage 4: does the event-calendar volatility forecast improve Shaffer Hedge outcomes? (SHAFFER_EVENT_HEDGE_PROTOCOL.md)")
     lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
     lb.add_argument("--fetch-finra", action="store_true", help="download FINRA Reg SHO short-sale volume (2019 on) for US equities and ETFs")
     lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
@@ -339,6 +340,14 @@ def main(argv=None) -> int:
                 st.close()
             open(os.path.join(here, "SHAFFER_VNEXT_SUMMARY.md"), "w", encoding="utf-8").write(vnext.summary(ra, rd, rh))
             print("vNext reports written")
+        return 0
+    if args.cmd == "lab" and args.event_hedge:
+        from .hedge import volhedge
+        res = volhedge.run_all(app.db_path(), workers=args.workers, progress=print, family="event_calendar")
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_EVENT_HEDGE.md")
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(volhedge.markdown(res))
+        print(f"event-volatility hedge research: {res['seconds']}s; wrote", out)
         return 0
     if args.cmd == "lab" and args.breadth_hedge:
         from .hedge import volhedge

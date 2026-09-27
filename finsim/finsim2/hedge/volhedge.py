@@ -118,8 +118,28 @@ def _dot(w, x):
     return sum(a * b for a, b in zip(w, x))
 
 
+# ------------------------------------------------------------------ which volatility family (breadth, the original study;
+# event_calendar, stage 4 of the 2026-09-27 program — SHAFFER_EVENT_HEDGE_PROTOCOL.md). The replay, arms, gates and report
+# are identical; only the challenger's forecast features, the store key and the cache differ.
+VOL_LABEL = {"breadth_plus": "breadth", "event_calendar": "event"}
+EVENT_FEATURES = ["macro_events_5d", "fomc_5d"]      # the market factor (SPY) has no earnings window
+
+
+def _model_features(family: str) -> List[str]:
+    from ..engine import newinfo as N
+    return EVENT_FEATURES if family == "event_calendar" else list(N.FAMILIES[family]["features"])
+
+
+def challenger_id(family: str) -> str:
+    return CHALLENGER if family == "breadth_plus" else f"hedge-2-{VOL_LABEL.get(family, family)}-vol-exp"
+
+
+def research_key(family: str) -> str:
+    return RESEARCH_KEY if family == "breadth_plus" else f"lab:{VOL_LABEL.get(family, family)}hedge"
+
+
 # ------------------------------------------------------------------ the volatility models (per horizon, per era)
-def fit_vol_models(store, research, lab: str, progress=None) -> Dict[str, dict]:
+def fit_vol_models(store, research, lab: str, progress=None, family: str = "breadth_plus") -> Dict[str, dict]:
     """{era_start: {"b0", "b1", "std", "k0", "k1", "n", "to"}}: the pooled log-volatility models of newinfo, trained on
     records matured before each era, with the level calibrated on SPY's own training records."""
     from ..engine import directional as D
@@ -133,7 +153,11 @@ def fit_vol_models(store, research, lab: str, progress=None) -> Dict[str, dict]:
     D.attach(recs, research, h)
     recs = [r for r in recs if r.ext and r.ext.get("s") and r.yr != 0]
     builder = N.Builder(research, store)
-    rows = N.attach(recs, builder, "breadth_plus")
+    rows = N.attach(recs, builder, family)
+    if family != "breadth_plus":                     # the validated pool: equities, equity ETFs, indices (as for breadth)
+        keep = [N.FAMILIES[family]["features"].index(f) for f in _model_features(family)]
+        rows = [(r, [v[k] for k in keep]) for r, v in rows if N.applies("breadth_plus", r.meta)]
+        rows = [(r, v) for r, v in rows if any(x is not None for x in v)]
     ctx = {"rets": {a: N._logret(builder.series(a)) for a in {r.asset for r, _ in rows}}, "vix": builder.macro("VIXCLS")}
     data = []
     for r, v in rows:
@@ -159,21 +183,21 @@ def fit_vol_models(store, research, lab: str, progress=None) -> Dict[str, dict]:
             den = sum(math.exp(2 * _dot(w, x0 + (N._z(v, st) if add else []))) for _, v, x0, _ in spy)
             k.append(num / den if den > 0 else 1.0)
         out[a] = {"b0": b0, "b1": b1, "std": st, "k0": k[0], "k1": k[1], "n": len(tr), "n_spy": len(spy), "to": b,
-                  "features": list(N.FAMILIES["breadth_plus"]["features"])}
+                  "features": _model_features(family)}
     return out
 
 
 class VolForecaster:
     """The market factor's daily variance over (i, i+h] under R and B, on any past session i, point in time."""
 
-    def __init__(self, research, store, models: Dict[str, dict], h: int, asset: str = "SPY"):
+    def __init__(self, research, store, models: Dict[str, dict], h: int, asset: str = "SPY", family: str = "breadth_plus"):
         from ..engine import newinfo as N
         self.r, self.models, self.h, self.asset = research, models, h, asset
         self.b = N.Builder(research, store)
         self.cal = self.b.cal
         self.rets = N._logret(self.b.series(asset))
         self.vix = self.b.macro("VIXCLS")
-        self.feat = self.b.features("breadth_plus", store.asset(asset) or {"id": asset, "asset_class": "ETF", "sector": "Broad Market"})
+        self.feat = self.b.features(family, store.asset(asset) or {"id": asset, "asset_class": "ETF", "sector": "Broad Market"})
         self.meta = store.asset(asset) or {"id": asset, "asset_class": "ETF"}
         self.starts = sorted(models)
 
@@ -882,7 +906,7 @@ def read_stream(path: str) -> List[dict]:
 
 
 def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multiples: dict, books=None, objectives=None,
-            stream: Optional[str] = None):
+            stream: Optional[str] = None, family: str = "breadth_plus"):
     """Replays `idx`; each finished date is appended to `stream`, and dates already in it are not replayed again."""
     import pickle
     from ..data.store import Store
@@ -891,7 +915,7 @@ def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multip
     st = Store(db_path)
     try:
         r = Research(st)
-        fc = VolForecaster(r, st, models, h)
+        fc = VolForecaster(r, st, models, h, family=family)
         cr = _credit_state(r)
         out = []
         for i in idx:
@@ -914,23 +938,24 @@ def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multip
 CHUNKS = 12                        # fixed, so a resumed run splits the dates exactly as the interrupted one did
 
 
-def _cache_dir(db_path: str) -> str:
+def _cache_dir(db_path: str, family: str = "breadth_plus") -> str:
     import os
-    d = db_path + ".breadthhedge"
+    d = db_path + (".breadthhedge" if family == "breadth_plus" else f".{family}.hedge")
     os.makedirs(d, exist_ok=True)
     return d
 
 
-def load_dates(db_path: str, lab: str) -> List[dict]:
+def load_dates(db_path: str, lab: str, family: str = "breadth_plus") -> List[dict]:
     """Every replayed date (with its cases) of a finished horizon, as saved by run_all."""
     import os
     import pickle
-    f = os.path.join(_cache_dir(db_path), f"{lab}_dates.pkl")
+    f = os.path.join(_cache_dir(db_path, family), f"{lab}_dates.pkl")
     with open(f, "rb") as fh:
         return pickle.load(fh)
 
 
-def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=None, objectives=None, max_dates: Optional[int] = None) -> dict:
+def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=None, objectives=None, max_dates: Optional[int] = None,
+            family: str = "breadth_plus") -> dict:
     """The complete study (A, B, R; C and D from A and B's packages) on every horizon; stored under RESEARCH_KEY.
     Each finished chunk of dates is saved next to the database and reused on a rerun with the same dates, books and
     objectives (a deterministic resume); every horizon's cases are kept for the post-run attribution."""
@@ -950,7 +975,7 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
         bm = benchmark(st)
         if not bm or not verify_benchmark(st, bm["id"]).get("ok"):
             raise ValueError("a frozen, verified benchmark is required (python -m finsim2 lab --freeze-benchmark)")
-        ni = st.kv_get(N.RESEARCH_KEY) or {}
+        ni = st.kv_get(N.RESEARCH_KEY if family in N.FAMILIES and not N.FAMILIES[family].get("batch") else N.BATCH2_KEY) or {}
         r = Research(st)
         cal = r.panel().calendar()
         sizing = next((v for v in registry(st)["versions"] if v["id"] == RESIZE), None)
@@ -958,12 +983,13 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
         labs = [x for x in HORIZONS if not horizons or x[0] in horizons]
         models = {}
         for lab, h, _ in labs:
-            models[lab] = fit_vol_models(st, r, lab, say)
+            models[lab] = fit_vol_models(st, r, lab, say, family)
             say(f"{lab}: volatility models for eras {', '.join(sorted(models[lab]))}")
     finally:
         st.close()
     out = {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "benchmark": {k: bm[k] for k in ("id", "hash", "frozen", "production")},
-           "arms": {"A": CONTROL, "B": CHALLENGER, "R": REFERENCE, "C": RESIZE, "D": COMBO}, "lambdas": list(LAMBDAS),
+           "arms": {"A": CONTROL, "B": challenger_id(family), "R": REFERENCE, "C": RESIZE, "D": COMBO}, "lambdas": list(LAMBDAS),
+           "vol_family": family,
            "books": BOOKS if not books else books, "resize_multiples": multiples, "resize_from": RESIZE_FROM, "horizons": {},
            "models": {lab: {e: {"n": m["n"], "n_spy": m["n_spy"], "k0": m["k0"], "k1": m["k1"], "to": m["to"]} for e, m in mm.items()} for lab, mm in models.items()}}
     for lab, h, step in labs:
@@ -971,7 +997,7 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
         if max_dates:
             idx = idx[:: max(1, len(idx) // max_dates)][:max_dates]
         chunks = [idx[k::CHUNKS] for k in range(CHUNKS)]
-        cdir = _cache_dir(db_path)
+        cdir = _cache_dir(db_path, family)
         tag = hashlib.sha256(json.dumps([lab, idx, [b["key"] for b in (books or BOOKS)], objectives or OBJECTIVES,
                                          out["models"][lab]], sort_keys=True, default=str).encode()).hexdigest()[:12]
         dates: List[dict] = []
@@ -986,7 +1012,7 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
                 todo.append((k, ch, f))
         t1 = time.time()
         with ProcessPoolExecutor(max_workers=workers) as ex:
-            futs = {ex.submit(_worker, db_path, lab, h, ch, models[lab], multiples, books, objectives, f + ".stream"): (k, f) for k, ch, f in todo}
+            futs = {ex.submit(_worker, db_path, lab, h, ch, models[lab], multiples, books, objectives, f + ".stream", family): (k, f) for k, ch, f in todo}
             for n_done, fu in enumerate(as_completed(futs), 1):
                 k, f = futs[fu]
                 part = fu.result()
@@ -999,22 +1025,22 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
         with open(os.path.join(cdir, f"{lab}_dates.pkl.tmp"), "wb") as fh:
             pickle.dump(dates, fh)
         os.replace(os.path.join(cdir, f"{lab}_dates.pkl.tmp"), os.path.join(cdir, f"{lab}_dates.pkl"))
-        out["horizons"][lab] = study_horizon(dates, lab, ni, say)
+        out["horizons"][lab] = study_horizon(dates, lab, ni, say, family)
     finalise(out)
     out["seconds"] = round(time.time() - t0, 1)
     st = Store(db_path)
     try:
-        st.kv_set(RESEARCH_KEY, out)
+        st.kv_set(research_key(family), out)
     finally:
         st.close()
     return out
 
 
-def study_horizon(dates: List[dict], lab: str, ni: dict, say=None) -> dict:
+def study_horizon(dates: List[dict], lab: str, ni: dict, say=None, family: str = "breadth_plus") -> dict:
     say = say or (lambda m: None)
     cases = [c for d in dates for c in d["cases"]]
     fc = forecast_check(dates)
-    fam = ((((ni.get("horizons") or {}).get(lab) or {}).get("families") or {}).get("breadth_plus") or {})
+    fam = ((((ni.get("horizons") or {}).get(lab) or {}).get("families") or {}).get(family) or {})
     pooled_t = (((fam.get("walkforward") or {}).get("hedge") or {}).get("vol_mse_gain") or {}).get("t")
     g1 = bool(pooled_t is not None and pooled_t >= 2 and (fc.get("gain_vs_reference") or 0) > 0)
     hz = {"dates": len(dates), "cases": len(cases), "forecast": fc, "pooled_t": pooled_t, "G1": g1, "cells": {},
@@ -1068,6 +1094,19 @@ def _t(x):
 
 
 def markdown(res: dict) -> str:
+    fam = res.get("vol_family") or "breadth_plus"
+    text = _markdown(res)
+    if fam == "breadth_plus":
+        return text
+    lab = VOL_LABEL.get(fam, fam)
+    text = (text.replace("--breadth-hedge", f"--{lab}-hedge").replace(CHALLENGER, challenger_id(fam))
+            .replace("Breadth", lab.capitalize()).replace("breadth", lab)
+            .replace("BREADTH_HEDGE_RESEARCH", "SHAFFER_EVENT_HEDGE"))
+    return text.replace(f"# Does better volatility forecasting improve Shaffer Hedge outcomes? — research",
+                        f"# Does the {lab}-calendar volatility forecast improve Shaffer Hedge outcomes? — research (stage 4)", 1)
+
+
+def _markdown(res: dict) -> str:
     H = res.get("horizons") or {}
     L: List[str] = []
     w = L.append
@@ -1105,8 +1144,9 @@ def markdown(res: dict) -> str:
           f"that regression lowered utility in {len(neg_b)} of the {len(vs)} variance-sensitive cells.")
     meds = [((c.get("extended") or {}).get("size_ratio") or {}).get("median") for *_, c in uniq]
     meds = [m for m in meds if m is not None]
-    w(f"- Hedge sizes barely move: the median breadth ÷ production size (same risk unit) is between {min(meds):.2f} and {max(meds):.2f} across cells; "
-      "the decisions that change are mostly product and leg choices, and their realised effects are not significant.")
+    if meds:
+        w(f"- Hedge sizes barely move: the median breadth ÷ production size (same risk unit) is between {min(meds):.2f} and {max(meds):.2f} across cells; "
+          "the decisions that change are mostly product and leg choices, and their realised effects are not significant.")
     w("")
     w("Arms, as always kept apart: **production** = hedge-2 (252-day covariance) · **no-breadth vol** = the new log-volatility regression "
       "(63d / 21d realised volatility, VIX) without breadth · **breadth vol** = the same regression with the five breadth features "
