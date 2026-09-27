@@ -344,6 +344,10 @@ def today(store, research, res: dict, data: Dict[str, List[dict]]) -> dict:
     return view
 
 
+def _yn(v) -> str:
+    return "—" if v is None else ("yes" if v else "no")
+
+
 def _f(v, d=4):
     return "—" if v is None else f"{v:+.{d}f}"
 
@@ -372,7 +376,7 @@ def markdown(res: dict, view: Optional[dict] = None) -> str:
                   "|---|---|---|---|---|"]
             for i in hv["items"][:15]:
                 L.append(f"| {i['asset']} | ±{math.expm1(i['sigma']):.1%} | [{math.expm1(i['lo']):+.1%}, {math.expm1(i['hi']):+.1%}] | "
-                         f"{'yes' if i.get('macro_next') else 'no'} | {'yes' if i.get('earn_soon_5d') else '—'} |")
+                         f"{_yn(i.get('macro_next'))} | {_yn(i.get('earn_soon_5d'))} |")
             L.append("")
     return "\n".join(L) + "\n"
 
