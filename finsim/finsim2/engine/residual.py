@@ -868,7 +868,7 @@ def finalize_family(items: Dict[str, dict], gate_keys) -> Dict[str, dict]:
 
 # ------------------------------------------------------------------ tail classifiers (T1 benchmark; T2–T4)
 def _tree_boost_logit(R: "Resid", base_lin: array, lab: array, rounds: int = 20, rate: float = 0.1, n_feat: int = 20,
-                      nb: int = 16, sample: int = 12000, seed: int = 9) -> array:
+                      nb: int = 16, sample: int = 12000, seed: int = 9, splits: Optional[Dict[str, int]] = None) -> array:
     """T4: Newton boosting of depth-2 trees on the logistic residual of a base linear predictor, walk-forward."""
     tab, lr = R.tab, R.ctx.lr
     rnd = random.Random(seed)
@@ -906,6 +906,9 @@ def _tree_boost_logit(R: "Resid", base_lin: array, lab: array, rounds: int = 20,
                 break
             trees.append(tr)
             f1, t1, leaves, _g = tr
+            if splits is not None:
+                for q in {f1} | {lf[0] for lf in leaves if lf[0] is not None}:
+                    splits[tab.names[top[q]]] = splits.get(tab.names[top[q]], 0) + 1
             for i_ in idx:
                 L_ = leaves[0] if Xb[f1][i_] <= t1 else leaves[1]
                 F_[i_] += rate * (L_[2] if L_[0] is None or Xb[L_[0]][i_] <= L_[1] else L_[3])
@@ -957,7 +960,8 @@ def tails(R: "Resid") -> dict:
         l1, f1 = era_logistic(R, cub, ["pE", "pE^2", "pE^3"], lab)
         l2, f2 = era_logistic(R, cub + feat, ["pE", "pE^2", "pE^3"] + fnames, lab)
         l3, f3 = era_logistic(R, cub + feat + cls_cols, ["pE", "pE^2", "pE^3"] + fnames + cls_names, lab)
-        l4 = _tree_boost_logit(R, l1, lab)
+        t4_splits: Dict[str, int] = {}
+        l4 = _tree_boost_logit(R, l1, lab, splits=t4_splits)
         p1 = array("d", ((_sig(v) if v == v else NAN) for v in l1))
         base = {"name": f"T1 {side}", "prob": p1, "final": f1.get(L.FINAL)}
         res = {"T1": base}
@@ -986,6 +990,8 @@ def tails(R: "Resid") -> dict:
                         "confirm": eras.get(4)}
             if key == "T2" and f2.get(L.FINAL):
                 res[key]["coefficients"] = f2[L.FINAL]["design"].coef_table(f2[L.FINAL]["b"])[:10]
+            if key == "T4":
+                res[key]["top_splits"] = sorted(t4_splits.items(), key=lambda kv: -kv[1])[:8]
             if key == "T3" and f3.get(L.FINAL):
                 res[key]["final"] = f3[L.FINAL]
             if key == "T2" and f2.get(L.FINAL):

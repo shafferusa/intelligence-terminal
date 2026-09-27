@@ -282,6 +282,11 @@ def _tails(w, W: dict):
             w(f"| {side} | {v.get('name', k)} | {_f((v.get('brier_gain') or {}).get('mean'), 6)} | {_t((v.get('brier_gain') or {}).get('t'))} | "
               f"{_f(v.get('logloss'), 4, False)} / {_f(v.get('logloss_T1'), 4, False)} | {' / '.join(_f(er.get(x), 6) for x in ('2013–16', '2017–20', '2021–24', '2025–'))} | {v.get('status', '—')} |")
     for side in ("top", "bottom"):
+        sp = ((T.get(side) or {}).get("T4") or {}).get("top_splits") or []
+        if sp:
+            w("")
+            w(f"T4 ({side}) most-used splits: " + ", ".join(f"`{a}` ×{b}" for a, b in sp) + ".")
+    for side in ("top", "bottom"):
         t1 = (T.get(side) or {}).get("T1") or {}
         if t1.get("base_rate") is not None:
             w(f"")
