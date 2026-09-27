@@ -271,9 +271,14 @@ class LaptopRunFixes(unittest.TestCase):
             with self.assertRaises(R.NoUSGAAP) as cm:
                 R.refresh_sec(self.st, self.st.asset("TSM"))
         self.assertIn("ifrs-full", str(cm.exception))
-        with mock.patch("finsim2.data.sec.fetch_companyfacts", return_value={"facts": {"us-gaap": {}}}):
-            with self.assertRaises(ValueError):
+        with mock.patch("finsim2.data.sec.fetch_companyfacts", return_value={"facts": {"us-gaap": {"Unrelated": {}}, "ifrs-full": {}}}):
+            with self.assertRaises(R.NoUSGAAP):                       # some US-GAAP tags, none FinSim2 reads (ASML, ARM, …)
                 R.refresh_sec(self.st, self.st.asset("TSM"))
+        from finsim2.data import sec as SEC
+        with mock.patch("finsim2.data.sec.fetch_companyfacts", side_effect=SEC.SecError("CIK 1: HTTP 503", status=503)):
+            with self.assertRaises(ValueError) as cm:                 # a failed download is still an error
+                R.refresh_sec(self.st, self.st.asset("TSM"))
+            self.assertNotIsInstance(cm.exception, R.NoUSGAAP)
 
     def test_new_issuers_get_insider_history_from_stored_quarters(self):
         from unittest import mock

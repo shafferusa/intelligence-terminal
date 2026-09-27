@@ -16,12 +16,12 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
-from zoneinfo import ZoneInfo
+from ..tzfallback import get_zone
 
 SEARCH = "https://query2.finance.yahoo.com/v1/finance/search?q={q}&quotesCount=0&newsCount={n}"
 FED_RSS = "https://www.federalreserve.gov/feeds/press_all.xml"
 UA = "Mozilla/5.0"
-NY = ZoneInfo("America/New_York")
+NY = get_zone("America/New_York")
 MARKET_QUERIES = ["SPY", "^GSPC", "^TNX", "^VIX"]
 
 

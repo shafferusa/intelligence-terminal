@@ -217,8 +217,10 @@ def refresh_sec(store, asset: dict) -> int:
             rows.extend(sec.extract(facts))
         except Exception as exc:  # noqa: BLE001 - one bad CIK must not lose the other
             errors.append(f"CIK {cik}: {exc}")
-    if not rows and taxonomies and "us-gaap" not in taxonomies:
-        raise NoUSGAAP("no US-GAAP facts (" + (", ".join(sorted(taxonomies - {"dei"})) or "cover page only") + ") — foreign filer")
+    if not rows and taxonomies and not errors:
+        what = ", ".join(sorted(taxonomies - {"dei"})) or "cover page only"
+        raise NoUSGAAP(("no US-GAAP facts (" + what + ") — foreign filer") if "us-gaap" not in taxonomies
+                       else f"none of the US-GAAP concepts FinSim2 reads ({what}; files IFRS / 20-F) — skipped")
     if not rows:
         raise ValueError("; ".join(errors) or "no fundamentals in companyfacts")
     return store.upsert_fundamentals(asset["id"], rows)

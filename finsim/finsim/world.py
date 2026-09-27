@@ -1123,7 +1123,7 @@ class World:
     def set_clock(self, update_time: Optional[str] = None, timezone: Optional[str] = None, lock_session: Optional[bool] = None) -> Event:
         """Change when a career save processes its day and whether instructions lock while the session runs (the settings
         page). Real-market saves must update after the close."""
-        from zoneinfo import ZoneInfo
+        from .tzfallback import get_zone as ZoneInfo
         from datetime import datetime as _dt, time as _time
         from .clock import MARKET_TZ, SESSION_FINAL
         tz = timezone or self.clock.timezone

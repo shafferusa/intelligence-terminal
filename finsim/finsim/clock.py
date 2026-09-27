@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Optional
-from zoneinfo import ZoneInfo
+from .tzfallback import get_zone
 
 from .calendar import BusinessCalendar
 
@@ -33,11 +33,11 @@ class ClockConfig:
     update_time: str = "17:00"            # HH:MM local
     lock_session: bool = False            # refuse instructions from 09:30 New York until the update (off: trade at any hour)
 
-    def tz(self) -> ZoneInfo:
+    def tz(self):
         try:
-            return ZoneInfo(self.timezone)
+            return get_zone(self.timezone)
         except Exception:
-            return ZoneInfo("America/New_York")
+            return get_zone("America/New_York")
 
     def update_t(self) -> time:
         h, m = self.update_time.split(":")
@@ -68,7 +68,7 @@ def next_update(cfg: ClockConfig, cal: BusinessCalendar, at: Optional[datetime] 
     return datetime.combine(d, cfg.update_t(), tzinfo=cfg.tz())
 
 
-MARKET_TZ = ZoneInfo("America/New_York")
+MARKET_TZ = get_zone("America/New_York")
 MARKET_OPEN = time(9, 30)
 SESSION_FINAL = time(16, 0)           # the session closes at the 16:00 bell
 
