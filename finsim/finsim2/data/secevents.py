@@ -40,6 +40,7 @@ ZIP_URL = "https://www.sec.gov/files/structureddata/data/insider-transactions-da
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/{name}"
 FIRST_QUARTER = (2006, 1)
 DONE_KEY = "secevents:insider_quarters"
+CIKS_KEY = "secevents:insider_ciks"          # issuers whose full quarterly history has been read
 MARKET_CLOSE_ET = 16 * 60                     # minutes after midnight, New York
 _MON = {m: i for i, m in enumerate(["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], 1)}
 
@@ -313,15 +314,24 @@ def refresh_insider_recent(store, progress=None, assets: Optional[Iterable[str]]
 
 
 def refresh_insider(store, progress=None, until: Optional[_dt.date] = None, force: bool = False) -> dict:
-    """Download every quarter not yet stored (the latest two are always re-read: SEC adds late filings)."""
+    """Download every quarter not yet stored (the latest two are always re-read: SEC adds late filings). Issuers added
+    since the last full pass (e.g. by ``universe --expand``) get their history from every stored quarter too — read for
+    those issuers only, so existing rows are not rewritten."""
     say = progress or (lambda m: None)
     ciks = issuer_map(store)
     done = set(store.kv_get(DONE_KEY) or [])
+    known = store.kv_get(CIKS_KEY)
+    known = set(known) if known is not None else (set(ciks) if done else set())   # stores from before this key
+    new = {c: a for c, a in ciks.items() if c not in known}
     qs = quarters(until)
     recent = set(qs[-2:])
-    todo = [q for q in qs if force or q not in done or q in recent]
-    rows_total, missing = 0, []
-    for k, q in enumerate(todo):
+    todo = [(q, ciks) for q in qs if force or q not in done or q in recent]
+    if new and not force:
+        todo += [(q, new) for q in qs if q in done and q not in recent]
+        todo.sort()
+        say(f"SEC insider: backfilling {len(set(new.values()))} new issuers over {sum(1 for _, m in todo if m is new)} stored quarters")
+    rows_total, missing, failed = 0, [], 0
+    for k, (q, cmap) in enumerate(todo):
         S._throttle()
         try:
             blob = S._get(ZIP_URL.format(q=q))
@@ -330,11 +340,13 @@ def refresh_insider(store, progress=None, until: Optional[_dt.date] = None, forc
                 missing.append(q)
                 continue
             say(f"SEC insider {q}: {e}")
+            failed += 1
             continue
         try:
-            agg = parse_insider_zip(blob, ciks)
+            agg = parse_insider_zip(blob, cmap)
         except (zipfile.BadZipFile, KeyError) as e:
             say(f"SEC insider {q}: unreadable ({type(e).__name__})")
+            failed += 1
             continue
         rows = [(a, d, fld, val, _next_day(d)) for (a, d), f in agg.items() for fld, val in f.items()]
         if rows:
@@ -343,7 +355,10 @@ def refresh_insider(store, progress=None, until: Optional[_dt.date] = None, forc
         done.add(q)
         store.kv_set(DONE_KEY, sorted(done))
         say(f"SEC insider {q}: {len(agg)} issuer-days ({k + 1}/{len(todo)})")
-    return {"quarters": len(todo) - len(missing), "missing": missing, "rows": rows_total, "issuers": len(set(ciks.values()))}
+    if not failed:
+        store.kv_set(CIKS_KEY, sorted(ciks))
+    return {"quarters": len(todo) - len(missing), "missing": missing, "rows": rows_total, "issuers": len(set(ciks.values())),
+            "new_issuers": len(set(new.values()))}
 
 
 # ------------------------------------------------------------------ 8-K events (submissions API)

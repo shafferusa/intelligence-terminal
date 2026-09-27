@@ -104,7 +104,7 @@ class Cftc(unittest.TestCase):
     def test_wrong_contract_code_is_reported_not_mapped(self):
         rows, err = cftc.parse_rows([{**self.ROW, "market_and_exchange_names": "GOLD - COMMODITY EXCHANGE INC."}], "disaggregated", "067651")
         self.assertEqual(rows, [])
-        self.assertIn("does not contain", err)
+        self.assertIn("matches none of", err)
 
     def test_shutdown_reports_wait_for_the_catch_up(self):
         self.assertEqual(cftc.published("2019-01-08"), "2019-03-08")
@@ -224,6 +224,123 @@ class Store(unittest.TestCase):
         finally:
             st.close()
             shutil.rmtree(tmp, ignore_errors=True)
+
+
+
+class LaptopRunFixes(unittest.TestCase):
+    """What the first real run on the laptop showed (2026-09-27)."""
+
+    def setUp(self):
+        from finsim2.data.store import Store as St
+        self.tmp = tempfile.mkdtemp()
+        self.st = St(os.path.join(self.tmp, "x.db"))
+
+    def tearDown(self):
+        self.st.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _equity(self, aid, cik, name="Co", **meta):
+        self.st.upsert_asset({"id": aid, "name": name, "asset_class": "EQUITY", "sector": "Health Care", "country": "United States",
+                              "currency": "USD", "yahoo": aid, "cik": cik, "meta": meta})
+
+    def test_cftc_accepts_renamed_markets_and_skips_strays(self):
+        hist = [{**Cftc.ROW, "report_date_as_yyyy_mm_dd": "2010-03-02T00:00:00.000"},
+                {**Cftc.ROW, "market_and_exchange_names": "WTI-PHYSICAL - NEW YORK MERCANTILE EXCHANGE"},
+                {**Cftc.ROW, "report_date_as_yyyy_mm_dd": "2024-03-12T00:00:00.000", "market_and_exchange_names": "GOLD - COMEX"}]
+        rows, err = cftc.parse_rows(hist, "disaggregated", "067651")
+        self.assertIsNone(err)
+        self.assertEqual(sorted({r[1] for r in rows}), ["2010-03-02", "2024-03-05"], "old and new names kept, the stray row dropped")
+        for code, name in (("043602", "UST 10Y NOTE - CHICAGO BOARD OF TRADE"), ("098662", "USD INDEX - ICE FUTURES U.S."),
+                           ("124603", "DJIA x $5 - CHICAGO BOARD OF TRADE"), ("023651", "NAT GAS NYME - NEW YORK MERCANTILE EXCHANGE")):
+            _, err = cftc.parse_rows([{**Cftc.ROW, "market_and_exchange_names": name}], "legacy", code)
+            self.assertIsNone(err, name)
+
+    def test_cftc_resumes_per_contract_so_a_failed_contract_gets_its_history(self):
+        rows, _ = cftc.parse_rows([Cftc.ROW], "disaggregated", "067651")
+        self.st.put_alt(cftc.DATASET, rows)
+        self.assertEqual(cftc._last_date(self.st, "067651", "disaggregated"), "2024-03-05")
+        self.assertIsNone(cftc._last_date(self.st, "067651", "legacy"))
+        self.assertIsNone(cftc._last_date(self.st, "023651", "disaggregated"))
+
+    def test_foreign_filer_without_us_gaap_is_skipped_not_an_error(self):
+        from unittest import mock
+        from finsim2.data import refresh as R
+        self._equity("TSM", 1046179)
+        with mock.patch("finsim2.data.sec.fetch_companyfacts", return_value={"facts": {"ifrs-full": {"Revenue": {}}, "dei": {}}}):
+            with self.assertRaises(R.NoUSGAAP) as cm:
+                R.refresh_sec(self.st, self.st.asset("TSM"))
+        self.assertIn("ifrs-full", str(cm.exception))
+        with mock.patch("finsim2.data.sec.fetch_companyfacts", return_value={"facts": {"us-gaap": {}}}):
+            with self.assertRaises(ValueError):
+                R.refresh_sec(self.st, self.st.asset("TSM"))
+
+    def test_new_issuers_get_insider_history_from_stored_quarters(self):
+        from unittest import mock
+        qs = ["2025q1", "2025q2", "2025q3", "2025q4"]
+        seen = []
+        real = E.parse_insider_zip
+
+        def spy(blob, cmap):
+            seen.append(sorted(set(cmap.values())))
+            return real(blob, cmap)
+        base = sorted(set(E.issuer_map(self.st).values()))           # the seeded universe
+        with mock.patch.object(E, "quarters", return_value=qs), mock.patch.object(E.S, "_get", return_value=_insider_zip()), \
+                mock.patch.object(E.S, "_throttle"), mock.patch.object(E, "parse_insider_zip", side_effect=spy):
+            E.refresh_insider(self.st)
+            self.assertEqual(seen, [base] * 4)
+            seen.clear()
+            self._equity("NEWCO", 999999)                      # added by universe --expand
+            res = E.refresh_insider(self.st)
+            self.assertEqual(res["new_issuers"], 1)
+            self.assertEqual(seen.count(["NEWCO"]), 2, "stored quarters re-read for the new issuer only")
+            self.assertEqual(seen.count(sorted(base + ["NEWCO"])), 2, "the latest two quarters for everyone")
+            self.assertTrue(self.st.alt(E.INSIDER, "NEWCO"))
+            seen.clear()
+            E.refresh_insider(self.st)
+            self.assertEqual(seen, [sorted(base + ["NEWCO"])] * 2, "no backfill once done")
+
+    def test_funds_are_not_equities(self):
+        from finsim2.data import expand as X2
+        payload = {"fields": ["cik", "name", "ticker", "exchange"], "data": [
+            [1, "iShares Gold Trust", "IAU", "NYSE"], [2, "SPDR Gold MiniShares Trust", "GLDM", "NYSE"], [3, "Sprott Inc.", "SII", "NYSE"],
+            [4, "Vornado Realty Trust", "VNO", "NYSE"], [5, "Northern Trust Corp", "NTRS", "Nasdaq"]]}
+        self.assertEqual([c[0] for c in X2.candidates(payload)], ["SII", "VNO", "NTRS"])
+        self.assertTrue(X2.is_fund("World Gold Trust", 6221))
+        self._equity("IAU", 1278680, "iShares Gold Trust", expanded="2026-09-27")
+        self._equity("MU", 723125, "Micron Technology", expanded="2026-09-27")
+        self._equity("GLDX", 1, "Gold Trust Holdings")              # not expanded: never touched
+        fixed = X2.reclassify_funds(self.st)
+        self.assertEqual([f["id"] for f in fixed], ["IAU"])
+        self.assertEqual(self.st.asset("IAU")["asset_class"], "ETF")
+        self.assertEqual(self.st.asset("IAU")["sector"], "Precious Metals")
+        self.assertEqual(self.st.asset("MU")["asset_class"], "EQUITY")
+
+    def test_placeholder_keys_count_as_missing(self):
+        from unittest import mock
+        from finsim2.data import env_key, placeholder_key
+        with mock.patch.dict(os.environ, {"EIA_API_KEY": "your-key-here", "FINNHUB_KEY": "abc123real"}):
+            self.assertIsNone(env_key("EIA_API_KEY"))
+            self.assertTrue(placeholder_key("EIA_API_KEY"))
+            self.assertEqual(env_key("FINNHUB_KEY"), "abc123real")
+            res = eia.refresh(self.st)
+            self.assertIn("placeholder", res["skipped"])
+            self.assertNotIn("your-key-here", res["skipped"])
+
+    def test_binance_refusal_is_reported_once_not_as_errors(self):
+        from unittest import mock
+        from finsim2.data import FetchError
+
+        def fake(url, *a, **k):
+            if "binance" in url:
+                raise FetchError("HTTP 451", status=451)
+            if "deribit" in url:
+                return {"result": []}
+            raise FetchError("HTTP 404", status=404)
+        with mock.patch.object(X, "_json", side_effect=fake), mock.patch.object(X.time, "sleep"):
+            res = X.refresh(self.st)
+        self.assertEqual(len(res["unavailable"]), 1)
+        self.assertFalse([n for n in res["notes"] if "Binance" in n])
+        self.assertEqual(X.ASSETS["SOL"]["deribit"], "SOL_USDC-PERPETUAL")
 
 
 if __name__ == "__main__":

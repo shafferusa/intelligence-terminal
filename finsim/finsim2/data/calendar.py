@@ -27,7 +27,7 @@ import re
 import time
 from typing import Dict, List, Optional, Tuple
 
-from . import GOV_UA, FetchError, http_get, num
+from . import GOV_UA, FetchError, env_key, http_get, num, placeholder_key
 
 EVENTS = "event_calendar"
 EARNINGS = "earnings_calendar"
@@ -61,9 +61,10 @@ def parse_fred_dates(payload) -> List[str]:
 
 
 def macro_rows(store=None, key: Optional[str] = None) -> Tuple[List[tuple], List[str]]:
-    key = key or os.environ.get("FRED_API_KEY")
+    key = key or env_key("FRED_API_KEY")
     if not key:
-        return [], ["FRED release calendar skipped: set FRED_API_KEY"]
+        return [], ["FRED release calendar skipped: " + ("FRED_API_KEY is still the placeholder text" if placeholder_key("FRED_API_KEY")
+                    else "set FRED_API_KEY") + " (free: https://fredaccount.stlouisfed.org/apikeys)"]
     rows, errs = [], []
     for name, rid in FRED_RELEASES.items():
         try:
@@ -191,9 +192,10 @@ def parse_finnhub(payload, wanted: Dict[str, str], collected: str) -> List[tuple
 
 
 def earnings_rows(store, key: Optional[str] = None, days_ahead: int = 90) -> Tuple[List[tuple], List[str]]:
-    key = key or os.environ.get("FINNHUB_KEY")
+    key = key or env_key("FINNHUB_KEY")
     if not key:
-        return [], ["earnings calendar skipped: set FINNHUB_KEY (free: https://finnhub.io/register)"]
+        return [], ["earnings calendar skipped: " + ("FINNHUB_KEY is still the placeholder text" if placeholder_key("FINNHUB_KEY")
+                    else "set FINNHUB_KEY") + " (free: https://finnhub.io/register)"]
     wanted = {a["id"].replace("-", ".").upper(): a["id"] for a in store.assets("EQUITY")}
     today = _dt.date.today()
     rows, errs = [], []

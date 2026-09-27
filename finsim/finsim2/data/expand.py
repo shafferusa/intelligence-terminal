@@ -31,6 +31,20 @@ CACHE_KEY = "expand:liquidity"
 MIN_INTERVAL = 0.6
 RERANK_DAYS = 30
 _EXCLUDE_NAME = re.compile(r"\b(ACQUISITION|ACQUISITIONS|CAPITAL TRUST|ETF|FUND|FUNDS|TRUST UNITS|SPAC|WARRANT|RIGHTS|UNITS?)\b", re.I)
+# exchange-traded trusts and funds that SEC lists like companies (IAU "iShares Gold Trust", GLDM "SPDR Gold MiniShares")
+_FUND_NAME = re.compile(r"\b(ISHARES|SPDR|PROSHARES|DIREXION|GRAYSCALE|WISDOMTREE|VANECK|INVESCO DB|GLOBAL X|ABRDN|SPROTT PHYSICAL|"
+                        r"TEUCRIUM|21SHARES|BITWISE|WISE ORIGIN|MINISHARES|(GOLD|SILVER|PLATINUM|PALLADIUM|BITCOIN|ETHER|ETHEREUM|"
+                        r"SOLANA|XRP|OIL|GAS|COMMODITY) (TRUST|SHARES|FUND|ETF))\b", re.I)
+FUND_SIC = {6221}                     # "commodity contracts brokers & dealers": what SEC files commodity and crypto trusts under
+
+
+def is_fund(name: str, sic=None) -> bool:
+    try:
+        if sic is not None and int(sic) in FUND_SIC:
+            return True
+    except (TypeError, ValueError):
+        pass
+    return bool(_FUND_NAME.search(name or ""))
 
 
 def candidates(payload) -> List[Tuple[str, int, str, str]]:
@@ -50,7 +64,7 @@ def candidates(payload) -> List[Tuple[str, int, str, str]]:
             continue
         common = re.fullmatch(r"[A-Z]{1,4}", tic) or re.fullmatch(r"[A-Z]{5}", tic) and tic[-1] not in "WURQ" \
             or re.fullmatch(r"[A-Z]{1,4}-[AB]", tic)
-        if not common or _EXCLUDE_NAME.search(name):
+        if not common or _EXCLUDE_NAME.search(name) or is_fund(name):
             continue
         try:
             out.append((tic, int(cik), name, exch))
@@ -150,19 +164,28 @@ def expand(store, n: int, progress=None, max_requests: Optional[int] = None, dry
     if done < len(cands) and not allow_partial:
         return {"candidates": len(cands), "ranked": done, "added": [], "complete": False,
                 "note": f"liquidity ranked for {done} of {len(cands)} candidates — run again to continue (nothing added yet)"}
+    fixed = reclassify_funds(store, dry_run)
+    for f in fixed:
+        say(f"reclassified {f['id']} as {f['asset_class']} ({f['reason']})")
     ranked = sorted(((cache[t][1], t, cik, name) for t, cik, name, _ in cands if t in cache and cache[t][1]), reverse=True)
     existing_equities = len(store.assets("EQUITY"))
     need = max(0, n - existing_equities)
-    picked = [(dv, t, cik, name) for dv, t, cik, name in ranked if t not in have][:need]
-    added = []
+    added, funds = [], []
     today = _dt.date.today().isoformat()
-    for dv, t, cik, name in picked:
+    for dv, t, cik, name in ranked:
+        if len(added) >= need:
+            break
+        if t in have:
+            continue
         S._throttle()
         try:
             sub = json.loads(S._get(f"https://data.sec.gov/submissions/CIK{cik:010d}.json").decode("utf-8", "replace"))
         except (FetchError, ValueError):
             sub = {}
         sic = sub.get("sic") if isinstance(sub, dict) else None
+        if is_fund(name, sic):
+            funds.append(t)
+            continue
         sector = sector_of_sic(sic) or "Unclassified"
         asset = {"id": t, "name": name.title() if name.isupper() else name, "asset_class": "EQUITY", "sector": sector,
                  "country": "United States", "currency": "USD", "yahoo": t, "cik": cik, "duration": None, "convexity": None,
@@ -173,4 +196,22 @@ def expand(store, n: int, progress=None, max_requests: Optional[int] = None, dry
         added.append({"id": t, "sector": sector, "liquidity_usd": round(dv)})
     ranked_n = sum(1 for v in cache.values() if v[1])
     return {"candidates": len(cands), "ranked": ranked_n, "equities_before": existing_equities, "added": added,
+            "skipped_funds": funds, "reclassified": fixed,
             "complete": ranked_n + sum(1 for v in cache.values() if not v[1]) >= len(cands)}
+
+
+def reclassify_funds(store, dry_run: bool = False) -> List[dict]:
+    """Expanded 'equities' that are really exchange-traded trusts or funds (added before the fund filter existed) become
+    ETF assets, like GLD and SLV, so they leave the equity cross-section."""
+    out = []
+    for a in store.assets("EQUITY"):
+        m = a.get("meta") or {}
+        if not m.get("expanded") or not is_fund(a.get("name") or "", m.get("sic")):
+            continue
+        metal = re.search(r"GOLD|SILVER|PLATINUM|PALLADIUM", a.get("name") or "", re.I)
+        fixed = dict(a, asset_class="ETF", sector="Precious Metals" if metal else "Commodities",
+                     meta=dict(m, reclassified=_dt.date.today().isoformat(), industry=m.get("industry")))
+        if not dry_run:
+            store.upsert_asset(fixed)
+        out.append({"id": a["id"], "asset_class": "ETF", "reason": f"fund: {a.get('name')}"})
+    return out

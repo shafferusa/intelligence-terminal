@@ -21,7 +21,7 @@ import os
 import time
 from typing import Dict, List, Optional, Tuple
 
-from . import FetchError, http_get, num
+from . import FetchError, env_key, http_get, num, placeholder_key
 
 DATASET = "eia_weekly"
 URL = "https://api.eia.gov/v2/seriesid/{sid}?api_key={key}&length=5000&offset={off}"
@@ -95,9 +95,10 @@ def fetch(field: str, key: str) -> List[tuple]:
 
 def refresh(store, progress=None, key: Optional[str] = None) -> dict:
     say = progress or (lambda m: None)
-    key = key or os.environ.get(KEY_ENV)
+    key = key or env_key(KEY_ENV)
     if not key:
-        return {"skipped": f"set {KEY_ENV} (free key: https://www.eia.gov/opendata/register.php)"}
+        why = f"{KEY_ENV} is still the placeholder text — set your real key" if placeholder_key(KEY_ENV) else f"set {KEY_ENV}"
+        return {"skipped": f"{why} (free key: https://www.eia.gov/opendata/register.php)"}
     n, errors = 0, []
     for k, field in enumerate(SERIES):
         try:

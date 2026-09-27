@@ -202,14 +202,23 @@ def _sec_recent(store, asset_id: str, today: _dt.date) -> bool:
     return (today - when).days < SEC_MIN_AGE_DAYS
 
 
+class NoUSGAAP(Exception):
+    """The issuer files no US-GAAP facts (a foreign private issuer reporting IFRS on 20-F / 40-F): not an error, and
+    not retried until the next weekly SEC pass."""
+
+
 def refresh_sec(store, asset: dict) -> int:
     ciks = [asset["cik"]] + list((asset.get("meta") or {}).get("extra_ciks") or [])
-    rows, errors = [], []
+    rows, errors, taxonomies = [], [], set()
     for cik in ciks:
         try:
-            rows.extend(sec.extract(sec.fetch_companyfacts(cik)))
+            facts = sec.fetch_companyfacts(cik)
+            taxonomies |= set((facts.get("facts") or {}).keys())
+            rows.extend(sec.extract(facts))
         except Exception as exc:  # noqa: BLE001 - one bad CIK must not lose the other
             errors.append(f"CIK {cik}: {exc}")
+    if not rows and taxonomies and "us-gaap" not in taxonomies:
+        raise NoUSGAAP("no US-GAAP facts (" + (", ".join(sorted(taxonomies - {"dei"})) or "cover page only") + ") — foreign filer")
     if not rows:
         raise ValueError("; ".join(errors) or "no fundamentals in companyfacts")
     return store.upsert_fundamentals(asset["id"], rows)
@@ -313,6 +322,9 @@ def refresh(store, assets=None, progress=None, full: bool = False, macro=None, f
                 n = refresh_sec(store, a)
                 summary["fundamentals"][a["id"]] = n
                 store.log_fetch("sec", a["id"], "ok", f"{n} changed")
+        except NoUSGAAP as exc:
+            summary["skipped"].append({"source": "sec", "key": a["id"], "reason": str(exc)})
+            store.log_fetch("sec", a["id"], "ok", str(exc))
         except Exception as exc:  # noqa: BLE001
             fail("sec", a["id"], exc)
         done += 1
@@ -392,4 +404,4 @@ def add_symbol(store, yahoo_symbol: str, asset_class: str | None = None, lookup_
 
 
 __all__ = ["refresh", "stale", "add_symbol", "total_return_index", "build_synthetic", "refresh_yahoo",
-           "refresh_fred", "refresh_sec", "last_business_day", "first_release_series", "KeptFirstRelease"]
+           "refresh_fred", "refresh_sec", "NoUSGAAP", "last_business_day", "first_release_series", "KeptFirstRelease"]

@@ -1,5 +1,16 @@
 # New data sources — audit (2026-09-25)
 
+## 2026-09-27 — first run on the laptop, and what it changed
+
+| Seen | Cause | Fix |
+|---|---|---|
+| CFTC: 9 of 31 contracts "code not mapped" | the CFTC renamed markets (crude oil → `WTI-PHYSICAL`, notes → `UST 10Y NOTE`, dollar index → `USD INDEX`, `NAT GAS NYME`, `DJIA x $5`) | each contract accepts a list of names; stray rows are skipped; each contract/report resumes from its own last date, so the failed ones get full history |
+| 35 "no fundamentals in companyfacts" | foreign private issuers (TSM, ASML, SAP, …) file IFRS on 20-F / 40-F, no US-GAAP | reported as skipped (foreign filer), not an error; re-checked weekly |
+| new stocks had no insider history | quarterly SEC files were marked done for the old issuer set | issuers added since the last full pass are backfilled from every stored quarter (for them only) |
+| IAU, GLDM added as "equities" | SEC lists exchange-traded trusts like companies | fund filter (sponsor names, SIC 6221); `universe --expand` and plain `python -m finsim2 universe` move already-added funds to the ETF class |
+| crypto: 4 Binance errors every run | Binance refuses US connections (HTTP 451) | reported once under `unavailable`; SOL funding now from Deribit `SOL_USDC-PERPETUAL`; runs are incremental |
+| EIA / Finnhub key "set" but not working | `setx` with the placeholder text | placeholder values count as missing and the message says so |
+
 ## 2026-09-27 — new sources built (`python -m finsim2 data`)
 
 The residual / meta-learning program showed that E is close to the limit of what the current 74 signals hold, so the

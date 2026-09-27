@@ -57,6 +57,12 @@ def _data_cmd(args) -> int:
             return 0 if all(v.get("state") in ("ok", "partial", "skipped") for v in res.values()) else 1
         if args.cmd == "universe":
             from .data import expand
+            if args.expand is None:
+                fixed = expand.reclassify_funds(st, args.dry_run)
+                for f in fixed:
+                    print(f"reclassified {f['id']} as {f['asset_class']} ({f['reason']})")
+                print(f"{len(fixed)} expanded assets reclassified as funds" + (" (dry run)" if args.dry_run else ""))
+                return 0
             res = expand.expand(st, args.expand, print, dry_run=args.dry_run, allow_partial=args.allow_partial)
             if res.get("note"):
                 print(res["note"])
@@ -108,7 +114,8 @@ def main(argv=None) -> int:
     dt_.add_argument("--force", action="store_true", help="refresh the named (or all) sources now, due or not")
     dt_.add_argument("--status", action="store_true", help="rows, coverage and last publication date per dataset")
     uv = sub.add_parser("universe", help="widen the research universe to the N most liquid US common stocks")
-    uv.add_argument("--expand", type=int, required=True, metavar="N", help="target number of equities (e.g. 500, 1000, 1500)")
+    uv.add_argument("--expand", type=int, metavar="N", help="target number of equities (e.g. 500, 1000, 1500); "
+                    "without it, only move expanded 'equities' that are really funds (IAU, GLDM) to the ETF class")
     uv.add_argument("--dry-run", action="store_true", help="rank and list, add nothing")
     uv.add_argument("--allow-partial", action="store_true", help="add from an incomplete liquidity ranking")
     for nm, what in (("import-estimates", "analyst estimates (FactSet / I/B/E/S / Zacks CSV)"), ("import-options", "historical options summaries (ORATS / Cboe / OptionMetrics CSV)")):

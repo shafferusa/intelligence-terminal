@@ -21,6 +21,24 @@ BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 
 MAX_BYTES = 64 * 1024 * 1024  # refuse absurd payloads
 
+_PLACEHOLDERS = {"your-key-here", "your_key_here", "yourkey", "changeme", "xxx", "key", "none", "null", "..."}
+
+
+def env_key(name: str):
+    """An API key from the environment, or None when it is unset or still a placeholder (``setx X "your-key-here"``).
+    The value is never logged or put in an error message."""
+    import os
+    v = (os.environ.get(name) or "").strip().strip('"').strip("'")
+    if not v or v.lower() in _PLACEHOLDERS or v.startswith("<") or "your" in v.lower():
+        return None
+    return v
+
+
+def placeholder_key(name: str) -> bool:
+    """True when the variable is set but to a placeholder (so the message can say so)."""
+    import os
+    return bool((os.environ.get(name) or "").strip()) and env_key(name) is None
+
 
 class FetchError(Exception):
     """A download failed. ``status`` is the HTTP status when there was one (else None).

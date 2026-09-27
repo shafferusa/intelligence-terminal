@@ -36,39 +36,40 @@ REPORTS = {"legacy": "6dca-aqww", "disaggregated": "72hh-3qpy", "tff": "gpe5-46i
 PAGE = 50000
 MIN_INTERVAL = 0.5
 
-# CFTC contract market code -> (keyword that must appear in the market name, report types to read)
-CONTRACTS: Dict[str, Tuple[str, Tuple[str, ...]]] = {
-    "067651": ("CRUDE OIL", ("legacy", "disaggregated")),
-    "023651": ("NATURAL GAS", ("legacy", "disaggregated")),
-    "111659": ("GASOLINE", ("legacy", "disaggregated")),
-    "022651": ("HEATING OIL", ("legacy", "disaggregated")),       # NY Harbor ULSD
-    "088691": ("GOLD", ("legacy", "disaggregated")),
-    "084691": ("SILVER", ("legacy", "disaggregated")),
-    "085692": ("COPPER", ("legacy", "disaggregated")),
-    "076651": ("PLATINUM", ("legacy", "disaggregated")),
-    "002602": ("CORN", ("legacy", "disaggregated")),
-    "001602": ("WHEAT", ("legacy", "disaggregated")),
-    "005602": ("SOYBEANS", ("legacy", "disaggregated")),
-    "083731": ("COFFEE", ("legacy", "disaggregated")),
-    "13874A": ("S&P 500", ("legacy", "tff")),
-    "209742": ("NASDAQ", ("legacy", "tff")),
-    "239742": ("RUSSELL", ("legacy", "tff")),
-    "124603": ("DOW JONES", ("legacy", "tff")),
-    "1170E1": ("VIX", ("legacy", "tff")),
-    "042601": ("2-YEAR", ("legacy", "tff")),
-    "044601": ("5-YEAR", ("legacy", "tff")),
-    "043602": ("10-YEAR", ("legacy", "tff")),
-    "020601": ("BOND", ("legacy", "tff")),
-    "099741": ("EURO FX", ("legacy", "tff")),
-    "097741": ("JAPANESE YEN", ("legacy", "tff")),
-    "096742": ("BRITISH POUND", ("legacy", "tff")),
-    "092741": ("SWISS FRANC", ("legacy", "tff")),
-    "090741": ("CANADIAN DOLLAR", ("legacy", "tff")),
-    "232741": ("AUSTRALIAN DOLLAR", ("legacy", "tff")),
-    "112741": ("NZ DOLLAR", ("legacy", "tff")),
-    "095741": ("MEXICAN PESO", ("legacy", "tff")),
-    "098662": ("DOLLAR INDEX", ("legacy", "tff")),
-    "133741": ("BITCOIN", ("legacy", "tff")),
+# CFTC contract market code -> (names, any one of which must appear in the market name, report types to read).
+# The CFTC renames markets (crude oil is now "WTI-PHYSICAL", Treasury notes "UST 10Y NOTE", the dollar index "USD INDEX")
+CONTRACTS: Dict[str, Tuple[Tuple[str, ...], Tuple[str, ...]]] = {
+    "067651": (("CRUDE OIL", "WTI"), ("legacy", "disaggregated")),
+    "023651": (("NATURAL GAS", "NAT GAS"), ("legacy", "disaggregated")),
+    "111659": (("GASOLINE", "RBOB"), ("legacy", "disaggregated")),
+    "022651": (("HEATING OIL", "ULSD"), ("legacy", "disaggregated")),       # NY Harbor ULSD
+    "088691": (("GOLD",), ("legacy", "disaggregated")),
+    "084691": (("SILVER",), ("legacy", "disaggregated")),
+    "085692": (("COPPER",), ("legacy", "disaggregated")),
+    "076651": (("PLATINUM",), ("legacy", "disaggregated")),
+    "002602": (("CORN",), ("legacy", "disaggregated")),
+    "001602": (("WHEAT",), ("legacy", "disaggregated")),
+    "005602": (("SOYBEANS",), ("legacy", "disaggregated")),
+    "083731": (("COFFEE",), ("legacy", "disaggregated")),
+    "13874A": (("S&P 500",), ("legacy", "tff")),
+    "209742": (("NASDAQ",), ("legacy", "tff")),
+    "239742": (("RUSSELL",), ("legacy", "tff")),
+    "124603": (("DOW JONES", "DJIA"), ("legacy", "tff")),
+    "1170E1": (("VIX",), ("legacy", "tff")),
+    "042601": (("2-YEAR", "2Y NOTE", "2 YEAR"), ("legacy", "tff")),
+    "044601": (("5-YEAR", "5Y NOTE", "5 YEAR"), ("legacy", "tff")),
+    "043602": (("10-YEAR", "10Y NOTE", "10 YEAR"), ("legacy", "tff")),
+    "020601": (("BOND",), ("legacy", "tff")),
+    "099741": (("EURO FX",), ("legacy", "tff")),
+    "097741": (("JAPANESE YEN",), ("legacy", "tff")),
+    "096742": (("BRITISH POUND",), ("legacy", "tff")),
+    "092741": (("SWISS FRANC",), ("legacy", "tff")),
+    "090741": (("CANADIAN DOLLAR",), ("legacy", "tff")),
+    "232741": (("AUSTRALIAN DOLLAR",), ("legacy", "tff")),
+    "112741": (("NZ DOLLAR", "NEW ZEALAND DOLLAR"), ("legacy", "tff")),
+    "095741": (("MEXICAN PESO",), ("legacy", "tff")),
+    "098662": (("DOLLAR INDEX", "USD INDEX"), ("legacy", "tff")),
+    "133741": (("BITCOIN",), ("legacy", "tff")),
 }
 
 # FinSim2 asset -> (contract code, sign): +1 when a long futures position is long the asset
@@ -132,16 +133,19 @@ def match_field(keys, report: str, want: str) -> Optional[str]:
 
 
 def parse_rows(rows: List[dict], report: str, code: str) -> Tuple[List[tuple], Optional[str]]:
-    """alt_data tuples for one contract and report type; the second value is an error (name mismatch)."""
-    kw = CONTRACTS[code][0]
+    """alt_data tuples for one contract and report type; the second value is an error. A row whose market name matches
+    none of the contract's names is skipped; if no row matches, the code is reported as unmapped (with the names seen)."""
+    names = CONTRACTS[code][0]
     out = []
     keys: Dict[str, Optional[str]] = {}
+    other: Dict[str, int] = {}
     for r in rows:
         if not isinstance(r, dict):
             continue
         name = str(r.get("market_and_exchange_names") or "").upper()
-        if kw not in name:
-            return [], f"{code}: market name '{name[:60]}' does not contain '{kw}' — code not mapped"
+        if not any(n in name for n in names):
+            other[name[:60]] = other.get(name[:60], 0) + 1
+            continue
         d = str(r.get("report_date_as_yyyy_mm_dd") or "")[:10]
         try:
             _dt.date.fromisoformat(d)
@@ -154,6 +158,9 @@ def parse_rows(rows: List[dict], report: str, code: str) -> Tuple[List[tuple], O
             v = num(r.get(k)) if k else None
             if v is not None and v >= 0:
                 out.append((f"cot:{code}", d, fld, v, pub))
+    if other and not out:
+        seen = "; ".join(f"'{n}'" for n in sorted(other, key=other.get, reverse=True)[:3])
+        return [], f"{code}: market name {seen} matches none of {', '.join(names)} — code not mapped"
     return out, None
 
 
@@ -179,13 +186,13 @@ def fetch(report: str, code: str, since: str = "1986-01-01") -> List[dict]:
 
 
 def refresh(store, progress=None, since: Optional[str] = None) -> dict:
-    """Every mapped contract and report type (incremental from the latest stored report date unless `since`)."""
+    """Every mapped contract and report type, each incremental from its own latest stored report date (a contract that
+    failed before gets its full history) unless `since`."""
     say = progress or (lambda m: None)
-    have = store.alt_dates(DATASET)
-    start = since or ((max(have) if have else "1986-01-01"))
     n, errors = 0, []
     for k, (code, (kw, reports)) in enumerate(CONTRACTS.items()):
         for rep in reports:
+            start = since or _last_date(store, code, rep) or "1986-01-01"
             try:
                 rows = fetch(rep, code, start)
             except (FetchError, ValueError) as e:
@@ -199,5 +206,12 @@ def refresh(store, progress=None, since: Optional[str] = None) -> dict:
                 store.put_alt(DATASET, tuples)
             n += len(tuples)
             time.sleep(MIN_INTERVAL)
-        say(f"CFTC COT {k + 1}/{len(CONTRACTS)} ({kw})")
-    return {"contracts": len(CONTRACTS), "rows": n, "errors": errors, "since": start}
+        say(f"CFTC COT {k + 1}/{len(CONTRACTS)} ({kw[0]})")
+    return {"contracts": len(CONTRACTS), "rows": n, "errors": errors, "since": since or "per contract"}
+
+
+def _last_date(store, code: str, report: str) -> Optional[str]:
+    flds = [f[0] for f in FIELDS if f[1] == report]
+    r = store._q(f"SELECT MAX(date) AS d FROM alt_data WHERE dataset = ? AND asset_id = ? AND field IN ({','.join('?' * len(flds))})",
+                 (DATASET, f"cot:{code}", *flds))
+    return r[0]["d"] if r and r[0]["d"] else None

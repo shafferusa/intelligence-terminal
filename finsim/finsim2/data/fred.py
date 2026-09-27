@@ -25,7 +25,7 @@ import os
 import time
 import urllib.parse
 
-from . import GOV_UA, FetchError, http_get, num
+from . import GOV_UA, FetchError, env_key, http_get, num
 from .universe import FRED_SERIES
 
 CSV_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv"
@@ -68,7 +68,7 @@ def _get_retry(url: str) -> bytes:
 
 def has_api_key() -> bool:
     """True when ``FRED_API_KEY`` is set (the value itself is never returned)."""
-    return bool(os.environ.get("FRED_API_KEY"))
+    return bool(env_key("FRED_API_KEY"))
 
 
 def _valid_id(series_id: str) -> str:
@@ -148,7 +148,7 @@ def parse_first_release_json(text: str) -> list[tuple[str, float, str]]:
 
 
 def _api_key(sid: str) -> str:
-    key = os.environ.get("FRED_API_KEY")
+    key = env_key("FRED_API_KEY")
     if not key:
         raise FredError(f"{sid}: first-release vintages need FRED_API_KEY")
     return key
@@ -249,7 +249,7 @@ def fetch_series(series_id: str, start=None) -> list[tuple[str, float]]:
     try:
         rows = parse_csv(_get(CSV_URL + "?" + urllib.parse.urlencode(params)).decode("utf-8", "replace"))
     except (FetchError, ValueError, UnicodeError) as exc:
-        key = os.environ.get("FRED_API_KEY")
+        key = env_key("FRED_API_KEY")
         if not key:
             raise FredError(f"{sid}: CSV download failed ({exc})") from None
         q = {"series_id": sid, "api_key": key, "file_type": "json"}

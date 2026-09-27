@@ -8,8 +8,9 @@ Fields per asset and UTC day:
 CME bitcoin futures open interest and positioning come weekly from CFTC (``cftc.py``, contract 133741).
 
 Providers, in order, per field. Binance (fapi.binance.com) and Bybit refuse US connections, so from a US machine the
-funding history comes from Deribit (www.deribit.com public API, BTC and ETH, no key) and the basis from CME futures
-on Yahoo; Binance fills in wherever it answers (and is the only source for SOL and for the premium index).
+funding history comes from Deribit (www.deribit.com public API, no key: BTC-PERPETUAL, ETH-PERPETUAL and the USDC-margined
+SOL_USDC-PERPETUAL) and the basis from CME futures on Yahoo; Binance fills in wherever it answers (and is the only
+source for the premium index).
 
 Point in time: a UTC day ends at 19:00 / 20:00 New York, after the US close, so a UTC day's values are published the
 next day. Downloaded content is untrusted and parsed with json.
@@ -30,7 +31,7 @@ BINANCE_PREMIUM = "https://fapi.binance.com/fapi/v1/premiumIndexKlines?symbol={s
 YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{sym}?period1={a}&period2={b}&interval=1d"
 ASSETS = {"BTC": {"deribit": "BTC-PERPETUAL", "binance": "BTCUSDT", "cme": "BTC=F"},
           "ETH": {"deribit": "ETH-PERPETUAL", "binance": "ETHUSDT", "cme": "ETH=F"},
-          "SOL": {"deribit": None, "binance": "SOLUSDT", "cme": None}}
+          "SOL": {"deribit": "SOL_USDC-PERPETUAL", "binance": "SOLUSDT", "cme": None}}
 START = "2019-01-01"
 MIN_INTERVAL = 0.25
 DAY_MS = 86400000
@@ -136,34 +137,48 @@ def _binance_funding(sym: str, start: str) -> Dict[str, Tuple[float, int]]:
     return out
 
 
-def refresh(store, progress=None, start: str = START) -> dict:
+def _blocked(e: Exception) -> bool:
+    return isinstance(e, FetchError) and e.status in (451, 403)
+
+
+def refresh(store, progress=None, start: Optional[str] = None) -> dict:
+    """Incremental per asset (from a few days before its latest stored row) unless `start`. Binance refusing this
+    location (HTTP 451 from the US) is reported once under ``unavailable`` and not retried in the same run."""
     say = progress or (lambda m: None)
     today = _dt.date.today().isoformat()
-    n, notes = 0, []
+    n, notes, unavailable = 0, [], []
+    binance_ok = True
     for asset, src in ASSETS.items():
         rows: List[tuple] = []
         funding, which = {}, 0
+        a_start = start or _resume(store, asset)
         if src["deribit"]:
             try:
-                funding, which = _deribit(src["deribit"], start, today), 1
+                funding, which = _deribit(src["deribit"], a_start, today), 1
             except (FetchError, ValueError) as e:
                 notes.append(f"{asset} Deribit: {e}")
-        if not funding and src["binance"]:
+        if not funding and src["binance"] and binance_ok:
             try:
-                funding, which = _binance_funding(src["binance"], start), 2
+                funding, which = _binance_funding(src["binance"], a_start), 2
             except (FetchError, ValueError) as e:
-                notes.append(f"{asset} Binance funding: {e} (Binance refuses US connections)")
+                if _blocked(e):
+                    binance_ok = False
+                else:
+                    notes.append(f"{asset} Binance funding: {e}")
         for d, (s, k) in funding.items():
             rows += [(asset, d, "funding_8h", s / k, _next(d)), (asset, d, "funding_src", float(which), _next(d))]
-        if src["binance"]:
+        if src["binance"] and binance_ok:
             try:
-                prem = parse_binance_premium(_json(BINANCE_PREMIUM.format(sym=src["binance"], a=_ms(start))))
+                prem = parse_binance_premium(_json(BINANCE_PREMIUM.format(sym=src["binance"], a=_ms(a_start))))
                 rows += [(asset, d, "premium", v, _next(d)) for d, v in prem.items()]
             except (FetchError, ValueError) as e:
-                notes.append(f"{asset} Binance premium: {e}")
+                if _blocked(e):
+                    binance_ok = False
+                else:
+                    notes.append(f"{asset} Binance premium: {e}")
         if src["cme"]:
             try:
-                a, b = _ms(start) // 1000, _ms(today) // 1000 + 86400
+                a, b = _ms(a_start) // 1000, _ms(today) // 1000 + 86400
                 fut = parse_yahoo_close(_json(YAHOO.format(sym=src["cme"], a=a, b=b), BROWSER_UA))
                 spot = {r["date"]: num(r.get("close")) for r in store.prices(asset) if num(r.get("close"))}
                 rows += [(asset, d, "cme_basis", f / spot[d] - 1, _next(d)) for d, f in fut.items() if d in spot and abs(f / spot[d] - 1) < 0.5]
@@ -173,4 +188,12 @@ def refresh(store, progress=None, start: str = START) -> dict:
             store.put_alt(DATASET, rows)
         n += len(rows)
         say(f"crypto derivatives {asset}: {len(rows)} rows")
-    return {"rows": n, "notes": notes}
+    if not binance_ok:
+        unavailable.append("Binance refuses this location (HTTP 451, US) — premium index and Binance-only funding unavailable")
+    return {"rows": n, "notes": notes, "unavailable": unavailable}
+
+
+def _resume(store, asset: str) -> str:
+    r = store._q("SELECT MAX(date) AS d FROM alt_data WHERE dataset = ? AND asset_id = ?", (DATASET, asset))
+    d = r[0]["d"] if r and r[0]["d"] else None
+    return (_dt.date.fromisoformat(d) - _dt.timedelta(days=5)).isoformat() if d else START
