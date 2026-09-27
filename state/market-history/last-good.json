@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-26T13:15:00Z",
+ "fetched_at": "2026-09-27T13:22:49Z",
  "treasury_par_curve": {
   "as_of": "2026-09-25 EOD official",
   "curve": {
@@ -102,13 +102,13 @@
   }
  },
  "crypto": {
-  "as_of": "2026-09-26 ~09:10 ET live (CoinGecko)",
-  "btc": 84007,
-  "eth": 2687.46,
-  "sol": 120.9,
-  "ada": 0.255527,
-  "total_mkt_cap": 2896913945152.46,
-  "btc_dominance_pct": 58.29
+  "as_of": "2026-09-27 ~09:10 ET live (CoinGecko)",
+  "btc": 84764,
+  "eth": 2704.21,
+  "sol": 123.13,
+  "ada": 0.255296,
+  "total_mkt_cap": 2915144369455.58,
+  "btc_dominance_pct": 58.32
  },
  "indices": {
   "as_of": "2026-09-25 EOD official",
@@ -537,5 +537,5 @@
   "price": 922.77,
   "pct": 2.93
  },
- "_notes_this_run": "2026-09-26 sat: weekly gather -- Yahoo 3-month daily series for ~200 symbols (FM failed), Treasury Sept curve, FRED weekly, Frankfurter Sep 18 vs Sep 25, CoinGecko live, VIX via Yahoo. Weekly: S&P +1.21%, Nasdaq +2.06%, Dow +0.28%, RUT -0.80%; 10Y +16bp to 5.17%."
+ "_notes_this_run": "2026-09-27 sun: CoinGecko live refreshed; FRED checked (no observations newer than Sep 24/25); Yahoo reachable (ES=F last 7803.75, Friday). All other blocks carry Friday Sep 25 EOD from the Sep 26 sat run."
 }
