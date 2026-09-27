@@ -131,6 +131,7 @@ def main(argv=None) -> int:
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
     lb.add_argument("--new-data", action="store_true", help="batch 2: the new data sources' signal families (NEW_DATA_SIGNALS_PROTOCOL.md)")
+    lb.add_argument("--alpha-horizons", choices=["build", "study", "all"], help="Shaffer Alpha 1M–5Y with horizon / sector / stock weights (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)")
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
     lb.add_argument("--residual", action="store_true", help="residual / meta-learning program on the frozen E (capability worlds first; research only): engine/residual.py")
@@ -345,6 +346,32 @@ def main(argv=None) -> int:
         with open(args.breadth_hedge_report, "w", encoding="utf-8") as f:
             f.write(volhedge.markdown(res))
         print(f"breadth-volatility hedge research: {res['seconds']}s; wrote", args.breadth_hedge_report)
+        return 0
+    if args.cmd == "lab" and args.alpha_horizons:
+        from .data.store import Store
+        from .engine import alphahz
+        from .engine import newinfo
+        if args.alpha_horizons in ("build", "all"):
+            st = Store(app.db_path())
+            try:
+                extra = alphahz.passed_extra(st.kv_get(newinfo.BATCH2_KEY) or {})
+            finally:
+                st.close()
+            print("new-data features included:", [f for _, f in extra] or "none")
+            print(alphahz.build(app.db_path(), workers=args.workers, extra=extra, progress=print))
+        if args.alpha_horizons in ("study", "all"):
+            res = alphahz.run(app.db_path(), progress=print)
+            st = Store(app.db_path())
+            try:
+                from .engine.research import Research
+                view = alphahz.today(st, Research(st), res)
+                st.kv_set(alphahz.RESEARCH_KEY + ":today", view)
+            finally:
+                st.close()
+            out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_ALPHA_HORIZONS.md")
+            with open(out, "w", encoding="utf-8") as f:
+                f.write(alphahz.markdown(res, view))
+            print(f"alpha horizons: {res['seconds']}s; wrote", out)
         return 0
     if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra or args.new_data):
         from .data.store import Store
