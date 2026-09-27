@@ -20,6 +20,12 @@ def configure() -> None:
     os.environ["FINSIM_DB"] = os.environ.get("FINSIM2_RESEARCH_DB") or os.environ.get("FINSIM2_DB") or os.path.join(home, "research.db")
     from finsim import app
     app.APP_NAME = APP_NAME
+    # the desktop-app installer (finsim/app.py) with FinSim2's own names, so both apps can be installed side by side
+    app.MODULE, app.SLUG, app.HOME_ENV = "finsim2", "finsim2", "FINSIM2_HOME"
+    app.BUNDLE_ID = "io.finsim2.terminal"
+    app.DESCRIPTION = "FinSim2 — portfolio and quant analytics (local)"
+    app.ICON_SMALL = (os.path.join(STATIC_DIR, "icon-192.png"), 192)
+    app.ICON_LARGE = os.path.join(STATIC_DIR, "icon-512.png")
 
     def serve_argv(p=None):
         return [app.python_exe(windowless=True), "-m", "finsim2", "serve", "--db", app.db_path(), "--port", str(p or app.port())]
@@ -38,6 +44,10 @@ def main(argv=None) -> int:
     s.add_argument("--port", type=int, default=app.port())
     s.add_argument("--key", default=None)
     sub.add_parser("open", help="start the server if needed and open FinSim2 in its own window")
+    ins = sub.add_parser("install", help="install FinSim2 as a local app: server starts at login + a desktop / Start Menu launcher (this user only)")
+    ins.add_argument("--no-open", action="store_true", help="do not open the window after installing")
+    un = sub.add_parser("uninstall", help="remove the FinSim2 launcher and login service (your data stays)")
+    un.add_argument("--purge", action="store_true", help="also delete the research database")
     sub.add_parser("status", help="is FinSim2 running, where are its saves")
     sub.add_parser("stop", help="stop the FinSim2 server")
     ph = sub.add_parser("phone", help="reach FinSim2 from your phone (behind an access key)")
@@ -357,6 +367,10 @@ def main(argv=None) -> int:
         return 0
     if args.cmd == "open":
         return app.cmd_open()
+    if args.cmd == "install":
+        return app.cmd_install(open_after=not args.no_open)
+    if args.cmd == "uninstall":
+        return app.cmd_uninstall(keep_data=not args.purge)
     if args.cmd == "status":
         return app.cmd_status()
     if args.cmd == "stop":

@@ -63,12 +63,14 @@ predicted which assets at which horizons, trains simple models walk-forward, and
 holdings. You decide what to buy or sell. Design notes: `finsim2/ARCHITECTURE.md`.
 
 ```
+python3 -m finsim2 install            # once: FinSim2 as a local app — server starts at login, "FinSim2" shortcut on the
+                                      # desktop / Start Menu that opens it in its own window (no address to type)
 python3 -m finsim2 open               # starts its server (port 8865) if needed and opens the window
 python3 -m finsim2 refresh [--full]   # download / update the market history in this terminal (2–4 min the first time)
 python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train the ML models) from the terminal
 python3 -m finsim2 audit [--workers 3]      # replay the Shaffer Score and ML over the universe -> finsim2/SHAFFER_AUDIT.md
 python3 -m finsim2 hedge-audit              # walk-forward Shaffer Hedge evaluation + ML-adjustment training -> finsim2/HEDGE_AUDIT.md
-python3 -m finsim2 serve | status | stop | phone on
+python3 -m finsim2 serve | status | stop | phone on | uninstall
 ```
 
 **Data.**

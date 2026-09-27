@@ -57,6 +57,37 @@ class LauncherFilesTest(unittest.TestCase):
                     self.assertNotIn("0.0.0.0", content, "never bound to every interface")
 
 
+class FinSim2LauncherTest(unittest.TestCase):
+    def test_finsim2_installs_its_own_launcher_beside_finsim(self):
+        import finsim2.__main__ as fs2
+        keep = {k: getattr(app, k) for k in ("APP_NAME", "MODULE", "SLUG", "HOME_ENV", "BUNDLE_ID", "DESCRIPTION", "ICON_SMALL", "ICON_LARGE",
+                                            "serve_argv", "legacy_db_path")}
+        env_keep = {k: os.environ.get(k) for k in ("FINSIM_HOME", "FINSIM_PORT", "FINSIM_DB")}
+        try:
+            with mock.patch.dict(os.environ, {"FINSIM2_HOME": r"C:\Users\me\.finsim2", "FINSIM2_PORT": "8865"}):
+                fs2.configure()
+                win = app.launcher_files("windows", base=r"C:\Users\me\.finsim2")
+                server = win[os.path.join(r"C:\Users\me\.finsim2", "finsim2-server.vbs")]
+                self.assertIn("-m finsim2 serve", server)
+                self.assertIn("--port 8865", server)
+                self.assertIn('("FINSIM2_HOME")', server)
+                self.assertIn("research.db", server)
+                opener = win[os.path.join(r"C:\Users\me\.finsim2", "finsim2-open.vbs")]
+                self.assertIn("-m finsim2 open", opener)
+                shortcuts = win[os.path.join(r"C:\Users\me\.finsim2", "make-shortcuts.vbs")]
+                self.assertIn("FinSim2.lnk", shortcuts)
+                self.assertIn("finsim2.ico", shortcuts)
+                self.assertTrue(win[os.path.join(r"C:\Users\me\.finsim2", "finsim2.ico")].startswith(b"\x00\x00\x01\x00"))
+        finally:
+            for k, v in keep.items():
+                setattr(app, k, v)
+            for k, v in env_keep.items():                    # configure() writes FinSim's env vars; put them back
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+
 class PhoneSettingTest(unittest.TestCase):
     def test_key_is_generated_once_and_the_host_follows_the_setting(self):
         with tempfile.TemporaryDirectory() as home:
