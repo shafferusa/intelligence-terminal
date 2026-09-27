@@ -34,6 +34,15 @@ finsim2/
     sec_extra.py         research-only EDGAR concepts (cash flow, capex, buybacks, gross profit, assets, debt), first reported
     finra.py             FINRA Reg SHO daily short-sale volume files (2019 on; short-sale volume, NOT short interest) -> alt_data
     refresh.py           refresh(store, progress) -> downloads everything that is stale
+    secevents.py         SEC Form 4 insider buys / sells (quarterly data sets + recent filings) -> sec_insider;
+                         8-K item types and release time -> sec_8k (NEW_DATA_SOURCES.md)
+    cftc.py              CFTC Commitments of Traders (legacy, disaggregated, TFF) -> cftc_cot; LINKS asset -> contract
+    eia.py               EIA weekly petroleum + gas storage (EIA_API_KEY) -> eia_weekly
+    cryptoderiv.py       perpetual funding / premium (Deribit, Binance) and CME basis -> crypto_deriv
+    calendar.py          FOMC / CPI / jobs / GDP / PPI / retail release days -> event_calendar; earnings -> earnings_calendar
+    expand.py            widen the universe to the N most liquid US common stocks (meta.expanded = survivorship flag)
+    imports.py           CSV importers for licensed analyst estimates and options summaries
+    newdata.py           the new sources together: per-source cadence, ok / partial / skipped / failed, status
   engine/
     align.py             common business-day calendar; aligned price / macro series
     features.py          FeatureEngine

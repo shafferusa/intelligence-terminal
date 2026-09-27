@@ -114,7 +114,7 @@ def classify(meta: dict) -> Tuple[str, str, Optional[str], Optional[str]]:
     a, ac, sec = meta.get("id"), meta.get("asset_class"), meta.get("sector")
     m = meta.get("meta") or {}
     if ac == "EQUITY":
-        return "Equity", "single stock", sec, INDUSTRY.get(a)
+        return "Equity", "single stock", sec, INDUSTRY.get(a) or m.get("industry")     # expanded equities: SEC SIC description
     if ac == "INDEX":
         return "Equity", "equity index", "US" if a in _US_INDEX else "International", None
     if ac == "TREASURY":

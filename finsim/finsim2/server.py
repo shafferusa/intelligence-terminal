@@ -101,6 +101,13 @@ class App:
         (once a month, or when an asset has none). Historical predictions are never rewritten."""
         from .engine import ml, tracking
         out = {"graded": 0, "shaffer": [], "ml_forecasts": [], "retrained": [], "errors": []}
+        try:                                            # new data sources on their own cadence (SEC, calendar, CFTC, EIA, crypto)
+            from .data import newdata
+            nd = newdata.refresh_due(self.store, (lambda m: job.progress(0, 1, m)) if job else None)
+            out["new_data"] = {k: v.get("state") for k, v in nd.items()}
+            out["errors"] += [f"new data {k}: {v['error']}" for k, v in nd.items() if v.get("state") == "failed"]
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"new data: {e}")
         try:
             out["graded"] = tracking.score_matured(self.store, self.research.panel())
             try:                                        # hedge recommendations whose horizon has passed

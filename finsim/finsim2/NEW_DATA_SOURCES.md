@@ -1,5 +1,35 @@
 # New data sources — audit (2026-09-25)
 
+## 2026-09-27 — new sources built (`python -m finsim2 data`)
+
+The residual / meta-learning program showed that E is close to the limit of what the current 74 signals hold, so the
+next gains have to come from information FinSim2 does not have. These sources are now ingested into the point-in-time
+`alt_data` store (every row carries the date it became public). They are **data only**: no signal family uses them
+yet — each will be tested the usual way (a protocol fixed before results, the new-information gates, FDR) before it can
+touch a score.
+
+| Source | Dataset | Module | Key / host | Depth | Point in time | Status (2026-09-27) |
+|---|---|---|---|---|---|---|
+| SEC Form 4 insider transactions — open-market buys / sells, value, role (officer / director / CEO-CFO / 10%), 10b5-1 plans, size vs holding | `sec_insider` | `data/secevents.py` | none (SEC UA) | 2006 → (quarterly data sets) + recent filings one by one | filing date; used from the next day | **LIVE-TESTED** — 81 quarters, ~101k rows for the 45 equities in 3 minutes |
+| SEC 8-K event types — item codes (2.02 results, 5.02 officer changes, 1.01 agreements, …), New York release time | `sec_8k` | `data/secevents.py` | none | 1994 → | acceptance time: before 16:00 NY = that day, later = next day | **LIVE-TESTED** — ~48k rows; Apple's results at 16:30 NY every quarter |
+| Event calendar — FOMC decisions (scheduled / with projections / unscheduled), CPI, jobs, GDP, PPI, retail sales release days | `event_calendar` | `data/calendar.py` | FRED_API_KEY; federalreserve.gov | FOMC 2000 → 2027, data releases 1947 → 2027 | scheduled: known 30 days ahead; unscheduled FOMC: next day | **LIVE-TESTED** — 258 FOMC days (2008 and 2020 emergency actions included), 4,051 release days |
+| Earnings calendar — scheduled dates, before / after the open, consensus EPS / revenue at collection | `earnings_calendar` | `data/calendar.py` | FINNHUB_KEY | forward 90 days, collected daily from now (history comes from 8-K 2.02) | collection date | **LIVE-TESTED** — builds a forward history from today |
+| CFTC Commitments of Traders — managed money, producers, swap dealers, leveraged funds, asset managers, dealers, open interest; 31 contracts linked to 50 assets | `cftc_cot` | `data/cftc.py` | none; `publicreporting.cftc.gov` | 1986 → (legacy), 2006 → (disaggregated / TFF) | Tuesday positions used from Saturday; shutdown weeks from the catch-up date | **FIXTURE-TESTED** — the host is blocked in the cloud research environment; runs on your machine |
+| EIA weekly energy — crude / gasoline / distillate / Cushing / SPR stocks, refinery utilisation, production, imports, exports, product supplied, natural-gas storage | `eia_weekly` | `data/eia.py` | **EIA_API_KEY** (free); `api.eia.gov` | 1980s → | petroleum: Thursday after the week; gas: Friday | **FIXTURE-TESTED** — needs the free key; latest vintage (rare, small revisions) |
+| Crypto derivatives — perpetual funding (Deribit, else Binance), premium index (Binance), CME basis (Yahoo) | `crypto_deriv` | `data/cryptoderiv.py` | none; `www.deribit.com`, `fapi.binance.com`, Yahoo | 2019 → | UTC day used from the next day | **PARTIAL** — CME basis live-tested (BTC 2019 →, ETH 2021 →; noisy: CME settles 16:00 NY, spot closes at midnight UTC); funding fixture-tested. **Binance refuses US connections**, so from a US machine funding comes from Deribit (BTC, ETH) and SOL has none. CME bitcoin positioning comes from CFTC. |
+| Analyst estimates — consensus EPS / revenue by horizon, dispersion, analyst count, revisions | `analyst_estimates` | `data/imports.py` | licensed (FactSet, LSEG I/B/E/S, Zacks) | whatever you buy | the as-of date of the consensus (+1 day unless the file says) | **IMPORTER READY** — `python -m finsim2 import-estimates file.csv` |
+| Historical options — ATM IV 30/60/90, 25-delta skew, put / call volume and OI, IV rank | `options_summary` | `data/imports.py` | licensed (ORATS, Cboe DataShop, OptionMetrics) | whatever you buy | the trading day (+1 day unless the file says) | **IMPORTER READY** — `python -m finsim2 import-options file.csv` |
+| Wider universe — the N most liquid NYSE / Nasdaq common stocks (e.g. 500 – 1,500) with CIK and SIC sector | assets | `data/expand.py` | none; SEC + Yahoo | each stock's full Yahoo history | **survivorship bias**: today's listings ranked by today's liquidity — delisted names are missing; added assets carry `meta.expanded` | **READY** — `python -m finsim2 universe --expand 500` (≈ 1 hour to rank ~5,800 candidates once) |
+
+News: a consumer WSJ / MarketWatch / Barron's subscription does not permit automated downloading (Dow Jones'
+subscriber terms), so FinSim2 does not log in to it. Licensed news with timestamps (Dow Jones Factiva / Newswires / DNA)
+would be the route for text data; the free, point-in-time alternative already here is the 8-K event stream.
+
+Hosts added for FinSim2 by the owner's decision (2026-09-27): `publicreporting.cftc.gov`, `api.eia.gov`,
+`www.deribit.com`, `fapi.binance.com`, `finnhub.io`, `www.federalreserve.gov`. SEC and FRED rules are unchanged (the
+LoganTerminal user agent, ≤ 10 SEC requests / second).
+
+
 What new information the Shaffer research can actually obtain, from the domains FinSim2 is allowed to fetch
 (`docs/RUNBOOK.md`) with the keys that exist (checked by presence only; key values are never printed or stored).
 Every source was probed on 2026-09-25 with at most a few requests; nothing was scraped and nothing unavailable was

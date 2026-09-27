@@ -33,6 +33,45 @@ def configure() -> None:
     app.legacy_db_path = lambda: os.path.join(home, "none.db")     # FinSim2 never adopts FinSim's saves
 
 
+def _data_cmd(args) -> int:
+    from finsim import app
+    from .data.store import Store
+    st = Store(app.db_path())
+    try:
+        if args.cmd == "data":
+            from .data import newdata
+            if args.status:
+                for r in newdata.status(st):
+                    print(f"{r['dataset']:<18} {r['rows']:>9} rows  {r['series']:>5} series  {r['first'] or '—'} → {r['last'] or '—'}  (last published {r['last_published'] or '—'})")
+                print("due now:", ", ".join(newdata.due(st)) or "nothing")
+                return 0
+            names = args.sources or (list(newdata.SOURCES) if args.force else newdata.due(st))
+            bad = [n for n in names if n not in newdata.SOURCES]
+            if bad:
+                print("unknown source(s):", ", ".join(bad), "— choose from", ", ".join(newdata.SOURCES))
+                return 2
+            if not names:
+                print("every source is up to date (use --force to refresh anyway)")
+                return 0
+            res = newdata.refresh(st, names, print)
+            return 0 if all(v.get("state") in ("ok", "partial", "skipped") for v in res.values()) else 1
+        if args.cmd == "universe":
+            from .data import expand
+            res = expand.expand(st, args.expand, print, dry_run=args.dry_run, allow_partial=args.allow_partial)
+            if res.get("note"):
+                print(res["note"])
+            print(f"added {len(res['added'])} equities" + (" (dry run)" if args.dry_run else "") + "; next: python -m finsim2 refresh, then python -m finsim2 data sec --force")
+            for a in res["added"][:50]:
+                print(f"  {a['id']:<7} {a['sector']:<24} ${a['liquidity_usd'] / 1e6:,.0f}M / day")
+            return 0
+        from .data import imports
+        res = imports.import_file(st, args.file, "estimates" if args.cmd == "import-estimates" else "options", args.source)
+        print(f"{res['dataset']}: {res['rows']} values imported; skipped {res['skipped']}")
+        return 0
+    finally:
+        st.close()
+
+
 def main(argv=None) -> int:
     configure()
     from finsim import app
@@ -64,6 +103,18 @@ def main(argv=None) -> int:
     ic = sub.add_parser("import-chain", help="load an option chain (CSV: asof, underlying, expiry, strike, right, bid, ask, last, iv, delta, gamma, vega, theta, rho, open_interest, volume)")
     ic.add_argument("file")
     ic.add_argument("--source", default="import")
+    dt_ = sub.add_parser("data", help="new data sources: SEC insider + 8-K, event calendar, CFTC, EIA, crypto derivatives (NEW_DATA_SOURCES.md)")
+    dt_.add_argument("sources", nargs="*", help="sec calendar cftc eia crypto (default: every source that is due)")
+    dt_.add_argument("--force", action="store_true", help="refresh the named (or all) sources now, due or not")
+    dt_.add_argument("--status", action="store_true", help="rows, coverage and last publication date per dataset")
+    uv = sub.add_parser("universe", help="widen the research universe to the N most liquid US common stocks")
+    uv.add_argument("--expand", type=int, required=True, metavar="N", help="target number of equities (e.g. 500, 1000, 1500)")
+    uv.add_argument("--dry-run", action="store_true", help="rank and list, add nothing")
+    uv.add_argument("--allow-partial", action="store_true", help="add from an incomplete liquidity ranking")
+    for nm, what in (("import-estimates", "analyst estimates (FactSet / I/B/E/S / Zacks CSV)"), ("import-options", "historical options summaries (ORATS / Cboe / OptionMetrics CSV)")):
+        ip = sub.add_parser(nm, help=f"import licensed {what} into the point-in-time store")
+        ip.add_argument("file")
+        ip.add_argument("--source", default="import")
     lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
@@ -365,6 +416,8 @@ def main(argv=None) -> int:
             f.write(haudit.markdown(res))
         print("wrote", args.out)
         return 0
+    if args.cmd in ("data", "universe", "import-estimates", "import-options"):
+        return _data_cmd(args)
     if args.cmd == "open":
         return app.cmd_open()
     if args.cmd == "install":

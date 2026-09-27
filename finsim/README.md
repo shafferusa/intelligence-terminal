@@ -71,6 +71,9 @@ python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train th
 python3 -m finsim2 audit [--workers 3]      # replay the Shaffer Score and ML over the universe -> finsim2/SHAFFER_AUDIT.md
 python3 -m finsim2 hedge-audit              # walk-forward Shaffer Hedge evaluation + ML-adjustment training -> finsim2/HEDGE_AUDIT.md
 python3 -m finsim2 serve | status | stop | phone on | uninstall
+python3 -m finsim2 data [sec calendar cftc eia crypto] [--force] [--status]   # new data sources (finsim2/NEW_DATA_SOURCES.md)
+python3 -m finsim2 universe --expand 500    # add the most liquid US common stocks (then: refresh, data sec --force)
+python3 -m finsim2 import-estimates FILE | import-options FILE   # licensed analyst estimates / option history (CSV)
 ```
 
 **Data.**
