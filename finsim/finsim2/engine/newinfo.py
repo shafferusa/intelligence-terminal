@@ -101,7 +101,37 @@ FAMILIES: Dict[str, dict] = {
         "label": "Short-sale volume (FINRA Reg SHO) — not short interest", "tier": 1, "track": "limited", "wide": False,
         "source": "FINRA cdn.finra.org Reg SHO daily files (2019 →)", "pit": "published after the close; used from the next day",
         "quality": "medium (short-marked volume includes market-making)", "features": ["short_ratio_5d", "short_ratio_z"]},
+    # ---- batch 2 (2026-09-27): the new data sources (data/secevents, calendar, cftc, eia, cryptoderiv); own FDR
+    "insider": {
+        "label": "Insider buying / selling (SEC Form 4)", "tier": 1, "track": "historical", "wide": False, "batch": 2,
+        "source": "SEC insider-transaction data sets (2006 →) + recent Form 4 filings", "pit": "filing date; used from the next day",
+        "quality": "high (open-market P / S only, originals only)",
+        "features": ["ins_net_63", "ins_buy_126", "ins_officer_buy_126", "ins_buyers_126", "ins_sell_z"]},
+    "sec_events": {
+        "label": "8-K event types", "tier": 2, "track": "historical", "wide": False, "batch": 2,
+        "source": "EDGAR submissions (item codes from 2004-08)", "pit": "acceptance time; after 16:00 New York -> next day",
+        "quality": "high", "features": ["k8_count_63", "k8_mgmt_126", "k8_deal_126", "k8_bad_252", "k8_other_21"]},
+    "event_calendar": {
+        "label": "Event calendar (FOMC, CPI / jobs / GDP, earnings window)", "tier": 2, "track": "historical", "wide": False,
+        "batch": 2, "source": "Federal Reserve FOMC calendars, FRED release dates, 8-K item 2.02 history",
+        "pit": "scheduled dates known 30 days ahead; the next earnings date estimated from past 2.02 filings only",
+        "quality": "high", "features": ["macro_events_5d", "fomc_5d", "earn_soon_5d", "earn_soon_21d", "earn_age"]},
+    "cftc_positioning": {
+        "label": "CFTC positioning (Commitments of Traders)", "tier": 1, "track": "historical", "wide": False, "batch": 2,
+        "source": "CFTC Public Reporting (legacy 1986 →, disaggregated / TFF 2006 →)",
+        "pit": "Tuesday positions released Friday; used from the Saturday (shutdown catch-up dates)",
+        "quality": "high (futures positions only; linked to assets by LINKS with a sign)",
+        "features": ["cot_spec_z", "cot_spec_chg_13w", "cot_comm_z", "cot_fast_z"]},
+    "commodity_inventories": {
+        "label": "EIA inventories (crude, gas storage)", "tier": 2, "track": "historical", "wide": False, "batch": 2,
+        "source": "EIA weekly petroleum status / natural-gas storage", "pit": "Thursday (petroleum) / Friday (gas) after the week",
+        "quality": "high (latest vintage; revisions rare)", "features": ["inv_surprise", "inv_vs_5y"]},
+    "crypto_derivs": {
+        "label": "Crypto funding and basis", "tier": 2, "track": "limited", "wide": False, "batch": 2,
+        "source": "Deribit perpetual funding, CME futures vs spot (Yahoo)", "pit": "UTC day, used from the next day",
+        "quality": "medium (CME settles 16:00 New York, spot at midnight UTC)", "features": ["funding_7d", "funding_z", "cme_basis_5d"]},
 }
+BATCH2 = [f for f, v in FAMILIES.items() if v.get("batch") == 2]
 BLOCKED = [
     {"family": "analyst_revisions", "label": "Analyst expectations / revisions", "tier": 1,
      "reason": "no point-in-time estimate history on the available tiers (Finnhub estimates / revisions 403; Alpha Vantage 25 requests a day)"},
@@ -109,13 +139,10 @@ BLOCKED = [
      "reason": "no historical chains (Yahoo options needs authentication; Cboe chain statistics retired); pricing stays MODEL-PRICED — FLAT VOLATILITY ASSUMPTION"},
     {"family": "futures_curves", "label": "Dated futures curves", "tier": 1,
      "reason": "only unexpired contracts are downloadable, so past curves cannot be rebuilt"},
-    {"family": "cftc_positioning", "label": "CFTC positioning", "tier": 1, "reason": "www.cftc.gov is not on the allowed-domain list"},
     {"family": "short_interest", "label": "Short interest", "tier": 1, "reason": "only the last year is available (Nasdaq)"},
     {"family": "credit_oas_cds", "label": "IG / HY OAS history, CDS, CDX, ratings", "tier": 1,
      "reason": "ICE OAS on FRED is limited to 3 years; no free CDS / ratings source"},
     {"family": "flows", "label": "ETF / fund flows, creations / redemptions", "tier": 2, "reason": "no free point-in-time source"},
-    {"family": "commodity_fundamentals", "label": "EIA inventories, storage, rig counts, crop reports", "tier": 2,
-     "reason": "api.eia.gov / USDA / Baker Hughes are not on the allowed-domain list (the weekly EIA series are not on FRED)"},
     {"family": "fx_forwards", "label": "FX forward points, inflation differentials", "tier": 2,
      "reason": "no forward-point source; foreign CPI on FRED is stale (UK to 2025-03, Japan to 2021)"},
 ]
@@ -136,7 +163,22 @@ def applies(family: str, meta: dict) -> bool:
                                              and a not in D.COMMODITY_ETFS)
     if family == "short_volume":
         return cls in ("EQUITY", "ETF")
-    return True                                            # market-wide macro families
+    if family in ("insider", "sec_events"):
+        return cls == "EQUITY" and bool(meta.get("cik"))
+    if family == "cftc_positioning":
+        from ..data.cftc import LINKS
+        return a in LINKS
+    if family == "commodity_inventories":
+        return a in INVENTORY
+    if family == "crypto_derivs":
+        return a in CRYPTO_UNDERLYING
+    return True                                            # market-wide macro families / the event calendar
+
+
+# assets -> the EIA series that describes their inventory, and crypto proxies -> their underlying
+INVENTORY = {"WTI": "crude_stocks", "BRENT": "crude_stocks", "USO": "crude_stocks", "XLE": "crude_stocks",
+             "NATGAS": "natgas_storage", "UNG": "natgas_storage"}
+CRYPTO_UNDERLYING = {"BTC": "BTC", "ETH": "ETH", "SOL": "SOL", "IBIT": "BTC", "BITO": "BTC"}
 
 
 # ------------------------------------------------------------------ small series helpers (all backward-looking)
@@ -369,6 +411,224 @@ class Builder:
                     sd = math.sqrt(sum((x - mu) ** 2 for x in w) / 60)
                     sz[i] = max(-4.0, min(4.0, (m5 - mu) / sd)) if sd > 0 else 0.0
         return {"short_ratio_5d": s5, "short_ratio_z": sz}
+
+    # ---- batch 2: the new data sources
+    def _alt_events(self, ds: str, asset: str) -> List[Tuple[int, Dict[str, float]]]:
+        """[(first calendar index at which the row is public, {field: value})] — summed per publication day."""
+        by: Dict[str, Dict[str, float]] = {}
+        for _, _d, f, v, pub in self.store.alt(ds, asset):
+            if v is None:
+                continue
+            day = by.setdefault(str(pub)[:10], {})
+            day[f] = day.get(f, 0.0) + v
+        out = []
+        for pub, f in sorted(by.items()):
+            i = bisect.bisect_left(self.cal, pub)
+            if i < self.n:
+                out.append((i, f))
+        return out
+
+    def _window_sums(self, events, fields, w: int, start: Optional[str]) -> Dict[str, Series]:
+        """Trailing w-session sums of the fields; 0 where no event but coverage has begun (``start``), else None."""
+        n = self.n
+        daily = {f: [0.0] * n for f in fields}
+        for i, f in events:
+            for k in fields:
+                daily[k][i] += f.get(k, 0.0)
+        i0 = bisect.bisect_left(self.cal, start) if start else 0
+        out = {}
+        for k in fields:
+            acc, run = [None] * n, 0.0
+            for i in range(n):
+                run += daily[k][i] - (daily[k][i - w] if i >= w else 0.0)
+                if i >= i0:
+                    acc[i] = run
+            out[k] = acc
+        return out
+
+    def _dollar_volume(self, a: str, w: int = 63) -> Series:
+        p, v = self.series(a, "close"), self.series(a, "volume")
+        if not any(x is not None for x in p):
+            p = self.series(a)
+        dv = [x * y if x and y else None for x, y in zip(p, v)]
+        pre = D._Prefix(dv)
+        out: Series = [None] * self.n
+        for i in range(self.n):
+            k, m, *_ = pre.window(i, w)
+            if k and k >= w // 2 and m:
+                out[i] = m
+        return out
+
+    def insider(self, a: str) -> Dict[str, Series]:
+        from ..data.secevents import INSIDER
+        ev = self._alt_events(INSIDER, a)
+        flds = ["buy_value", "sell_value", "planned_sell_value", "officer_buy_value", "ceo_cfo_buy_value", "buyers"]
+        s63 = self._window_sums(ev, flds, 63, "2006-01-03")
+        s126 = self._window_sums(ev, flds, 126, "2006-01-03")
+        dv = self._dollar_volume(a)
+        sc = lambda x, d: math.asinh(x / d * 1e4) if x is not None and d else None   # noqa: E731 — per 1e-4 of 63-day ADV
+        n = self.n
+        disc = [(s63["sell_value"][i] - s63["planned_sell_value"][i]) if s63["sell_value"][i] is not None else None for i in range(n)]
+        net = [sc(s63["buy_value"][i] - disc[i], dv[i]) if disc[i] is not None else None for i in range(n)]
+        sell = [sc(max(0.0, disc[i]), dv[i]) if disc[i] is not None else None for i in range(n)]
+        return {"ins_net_63": net,
+                "ins_buy_126": [sc(s126["buy_value"][i], dv[i]) for i in range(n)],
+                "ins_officer_buy_126": [sc((s126["officer_buy_value"][i] or 0.0) + (s126["ceo_cfo_buy_value"][i] or 0.0), dv[i])
+                                        if s126["officer_buy_value"][i] is not None else None for i in range(n)],
+                "ins_buyers_126": [math.log1p(x) if x is not None else None for x in s126["buyers"]],
+                "ins_sell_z": _roll_z(sell, 756, 252)}
+
+    def sec_events(self, a: str) -> Dict[str, Series]:
+        from ..data.secevents import EVENTS
+        ev = self._alt_events(EVENTS, a)
+        items = lambda *c: [f"item_{x}" for x in c]   # noqa: E731
+        start = "2004-08-23"                           # 8-K item codes (the 2004 rule)
+        cnt = self._window_sums(ev, ["n_8k"], 63, start)["n_8k"]
+        mg = self._window_sums(ev, items("5.02"), 126, start)
+        deal = self._window_sums(ev, items("1.01", "2.01"), 126, start)
+        bad = self._window_sums(ev, items("2.05", "2.06", "3.01", "4.01", "4.02"), 252, start)
+        oth = self._window_sums(ev, items("7.01", "8.01"), 21, start)
+        tot = lambda d: [sum(v[i] for v in d.values()) if all(v[i] is not None for v in d.values()) else None for i in range(self.n)]  # noqa: E731
+        lg = lambda x: [math.log1p(v) if v is not None else None for v in x]  # noqa: E731
+        return {"k8_count_63": lg(cnt), "k8_mgmt_126": lg(tot(mg)), "k8_deal_126": lg(tot(deal)), "k8_bad_252": lg(tot(bad)),
+                "k8_other_21": lg(tot(oth))}
+
+    def _macro_calendar(self) -> Dict[str, Series]:
+        if "_cal" in self._wide:
+            return self._wide["_cal"]
+        from ..data.calendar import EVENTS as EVCAL
+        n, cal = self.n, self.cal
+        rows = self.store.alt(EVCAL, "macro:US")
+        known: List[Tuple[int, int, str]] = []           # (index public from, event index, kind)
+        for _, d, f, v, pub in rows:
+            if not v:
+                continue
+            e = bisect.bisect_left(cal, str(d)[:10])
+            if e >= n or cal[e] != str(d)[:10]:
+                continue
+            known.append((bisect.bisect_left(cal, str(pub)[:10]), e, f))
+        first = min((k for k, _, _ in known), default=None)
+        mac: Series = [None] * n
+        fom: Series = [None] * n
+        if first is not None:
+            by_e: Dict[int, List[Tuple[int, str]]] = {}
+            for k, e, f in known:
+                by_e.setdefault(e, []).append((k, f))
+            for i in range(max(first, 0), n):
+                c = fo = 0
+                for e in range(i + 1, min(n, i + 6)):                  # the next five sessions
+                    for k, f in by_e.get(e, []):
+                        if k <= i:
+                            c += 1
+                            fo += 1 if f == "fomc" else 0
+                mac[i], fom[i] = float(c), float(min(1, fo))
+        self._wide["_cal"] = {"macro_events_5d": mac, "fomc_5d": fom}
+        return self._wide["_cal"]
+
+    def event_calendar(self, a: str) -> Dict[str, Series]:
+        out = dict(self._macro_calendar())
+        n = self.n
+        s5: Series = [None] * n; s21: Series = [None] * n; age: Series = [None] * n
+        meta = self.store.asset(a) or {}
+        if meta.get("asset_class") == "EQUITY" and meta.get("cik"):
+            from ..data.secevents import EVENTS
+            pubs = sorted({bisect.bisect_left(self.cal, str(p)[:10]) for _, _d, f, v, p in self.store.alt(EVENTS, a)
+                           if f == "item_2.02" and v})
+            j = 0
+            last = None
+            i0 = bisect.bisect_left(self.cal, "2004-08-23")
+            for i in range(i0, n):
+                while j < len(pubs) and pubs[j] <= i:
+                    last = pubs[j]; j += 1
+                if last is None:
+                    continue
+                gap = i - last                                         # sessions since the last earnings release
+                nxt = 63 - gap                                         # ~ one quarter apart
+                s5[i] = 1.0 if -3 <= nxt <= 5 else 0.0
+                s21[i] = 1.0 if -3 <= nxt <= 21 else 0.0
+                age[i] = min(2.0, gap / 63.0)
+        out.update(earn_soon_5d=s5, earn_soon_21d=s21, earn_age=age)
+        return out
+
+    def _weekly_to_daily(self, obs: List[Tuple[str, float]]) -> Series:
+        """Weekly observations [(published, value)] held until the next one (at most 21 sessions)."""
+        return _hold(obs, self.cal, 21)
+
+    def cftc_positioning(self, a: str) -> Dict[str, Series]:
+        from ..data.cftc import DATASET, LINKS
+        code, sign = LINKS[a]
+        by: Dict[str, Dict[str, float]] = {}
+        pubs: Dict[str, str] = {}
+        for _, d, f, v, pub in self.store.alt(DATASET, f"cot:{code}"):
+            by.setdefault(d, {})[f] = v
+            pubs[d] = str(pub)[:10]
+        dates = sorted(by)
+
+        def ratio(d, l, s):
+            x = by[d]
+            oi = x.get("open_interest")
+            return (x[l] - x[s]) / oi if oi and l in x and s in x else None
+        spec = [ratio(d, "noncomm_long", "noncomm_short") for d in dates]
+        comm = [ratio(d, "comm_long", "comm_short") for d in dates]
+        fast = [ratio(d, "mm_long", "mm_short") if ratio(d, "mm_long", "mm_short") is not None else ratio(d, "lev_long", "lev_short")
+                for d in dates]
+
+        def z(xs, w=156, mn=52):
+            out = []
+            for k, x in enumerate(xs):
+                win = [v for v in xs[max(0, k - w):k] if v is not None]
+                if x is None or len(win) < mn:
+                    out.append(None); continue
+                mu = sum(win) / len(win)
+                sd = math.sqrt(sum((v - mu) ** 2 for v in win) / len(win))
+                out.append(max(-4.0, min(4.0, (x - mu) / sd)) * sign if sd > 0 else None)
+            return out
+        chg = [(spec[k] - spec[k - 13]) * sign if k >= 13 and spec[k] is not None and spec[k - 13] is not None else None
+               for k in range(len(spec))]
+        hold = lambda xs: self._weekly_to_daily([(pubs[d], v) for d, v in zip(dates, xs) if v is not None])  # noqa: E731
+        return {"cot_spec_z": hold(z(spec)), "cot_spec_chg_13w": hold(chg), "cot_comm_z": hold(z(comm)), "cot_fast_z": hold(z(fast))}
+
+    def commodity_inventories(self, a: str) -> Dict[str, Series]:
+        from ..data.eia import DATASET, SERIES
+        fld = INVENTORY[a]
+        key = SERIES[fld][1]
+        obs = sorted((d, v, str(pub)[:10]) for _, d, f, v, pub in self.store.alt(DATASET, key) if f == fld and v is not None)
+        wk = lambda d: _date(d).isocalendar()[1]      # noqa: E731
+        sur, lvl = [], []
+        for k in range(1, len(obs)):
+            d, v, pub = obs[k]
+            chg = v - obs[k - 1][1]
+            y0 = _date(d).year
+            same = [(o[1] - obs[j - 1][1], o[1]) for j, o in enumerate(obs[:k]) if j and y0 - 5 <= _date(o[0]).year < y0
+                    and abs(wk(o[0]) - wk(d)) <= 1]
+            if len(same) >= 8:
+                mc = sum(c for c, _ in same) / len(same)
+                sc = math.sqrt(sum((c - mc) ** 2 for c, _ in same) / len(same)) or None
+                ml = sum(l for _, l in same) / len(same)
+                sl = math.sqrt(sum((l - ml) ** 2 for _, l in same) / len(same)) or None
+                if sc:
+                    sur.append((pub, max(-4.0, min(4.0, (chg - mc) / sc))))
+                if sl:
+                    lvl.append((pub, max(-4.0, min(4.0, (v - ml) / sl))))
+        return {"inv_surprise": self._weekly_to_daily(sur), "inv_vs_5y": self._weekly_to_daily(lvl)}
+
+    def crypto_derivs(self, a: str) -> Dict[str, Series]:
+        from ..data.cryptoderiv import DATASET
+        u = CRYPTO_UNDERLYING[a]
+        fund, basis = [], []
+        for _, d, f, v, pub in self.store.alt(DATASET, u):
+            if f == "funding_8h":
+                fund.append((str(pub)[:10], v))
+            elif f == "cme_basis":
+                basis.append((str(pub)[:10], v))
+        fd = _hold(sorted(fund), self.cal, 3)
+        bs = _hold(sorted(basis), self.cal, 3)
+
+        def mean(xs, w):
+            pre = D._Prefix(xs)
+            return [pre.window(i, w)[1] if pre.window(i, w)[0] and pre.window(i, w)[0] >= w // 2 else None for i in range(self.n)]
+        f7 = mean(fd, 5)
+        return {"funding_7d": f7, "funding_z": _roll_z(f7, 63, 40), "cme_basis_5d": mean(bs, 5)}
 
     def features(self, family: str, meta: dict) -> Optional[Dict[str, Series]]:
         if not applies(family, meta):
@@ -735,7 +995,10 @@ def finalise(result: dict) -> dict:
     result["fdr"] = {"q": FDR_Q, "family_tests": len(tests), "family_rejections": sum(rej), "feature_tests": len(feats),
                      "feature_nominal": sum(1 for *_, p in feats if p < 0.05), "feature_rejections": sum(frej)}
     summary = {}
+    run_fams = result.get("families_spec") or FAMILIES
     for fam, spec in FAMILIES.items():
+        if fam not in run_fams:
+            continue
         rows = [(lab, (hz.get("families") or {}).get(fam)) for lab, hz in (result.get("horizons") or {}).items()]
         rows = [(lab, fr) for lab, fr in rows if fr]
         if spec["track"] == "limited":
@@ -750,7 +1013,7 @@ def finalise(result: dict) -> dict:
             status = "SHADOW" if passed else "NO INCREMENTAL VALUE"
             why = ("passed G1, G2 and FDR: " + ", ".join(f"{l} {t}" for l, t in passed)) if passed else "no test passed G1, G2 and the FDR control"
         summary[fam] = {"status": status, "why": why, "label": spec["label"], "tier": spec["tier"], "track": spec["track"]}
-    for b in BLOCKED:
+    for b in result.get("blocked", BLOCKED):
         summary[b["family"]] = {"status": "BLOCKED", "why": b["reason"], "label": b["label"], "tier": b["tier"], "track": "—"}
     result["summary"] = summary
     return result
@@ -791,8 +1054,9 @@ def _worker(db_path: str, lab: str, families):
         st.close()
 
 
-def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, families=None) -> dict:
-    """Every family at every horizon, judged against the frozen benchmark (required)."""
+def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, families=None, key: str = RESEARCH_KEY) -> dict:
+    """Every family (or `families`) at every horizon, judged against the frozen benchmark (required). Batch 2 is run
+    on its own (``families=BATCH2, key=BATCH2_KEY``) so its multiple-testing correction covers only its own tests."""
     from concurrent.futures import ProcessPoolExecutor, as_completed
     from ..data.store import Store
     from .lab import benchmark, verify_benchmark
@@ -810,7 +1074,8 @@ def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, famili
     t0 = time.time()
     out = {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "benchmark": {"id": bm["id"], "hash": bm["hash"], "frozen": bm["frozen"],
                                                                          "production": bm["production"]},
-           "families_spec": {k: {kk: vv for kk, vv in v.items()} for k, v in FAMILIES.items()}, "blocked": BLOCKED,
+           "families_spec": {k: {kk: vv for kk, vv in v.items()} for k, v in FAMILIES.items() if not families or k in families},
+           "blocked": BLOCKED if not families else [],
            "eras": ERAS, "split": SPLIT, "fdr_q": FDR_Q, "horizons": {}}
     labs = [lab for lab, _ in LAB_HORIZONS if not horizons or lab in horizons]
     with ProcessPoolExecutor(max_workers=workers) as ex:
@@ -823,10 +1088,13 @@ def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, famili
     out["seconds"] = round(time.time() - t0, 1)
     st = Store(db_path)
     try:
-        st.kv_set(RESEARCH_KEY, out)
+        st.kv_set(key, out)
     finally:
         st.close()
     return out
+
+
+BATCH2_KEY = "lab:newinfo:b2"
 
 
 # ------------------------------------------------------------------ live shadow: families that passed every gate

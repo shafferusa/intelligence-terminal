@@ -130,6 +130,7 @@ def main(argv=None) -> int:
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
+    lb.add_argument("--new-data", action="store_true", help="batch 2: the new data sources' signal families (NEW_DATA_SIGNALS_PROTOCOL.md)")
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
     lb.add_argument("--residual", action="store_true", help="residual / meta-learning program on the frozen E (capability worlds first; research only): engine/residual.py")
@@ -345,7 +346,7 @@ def main(argv=None) -> int:
             f.write(volhedge.markdown(res))
         print(f"breadth-volatility hedge research: {res['seconds']}s; wrote", args.breadth_hedge_report)
         return 0
-    if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra):
+    if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra or args.new_data):
         from .data.store import Store
         if args.fetch_finra:
             from .data import finra
@@ -365,6 +366,13 @@ def main(argv=None) -> int:
                 directional.fit_live(st, Research(st), progress=print)
             finally:
                 st.close()
+        if args.new_data:
+            from .engine import newinfo
+            res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=newinfo.BATCH2, key=newinfo.BATCH2_KEY)
+            out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_DATA_SIGNALS.md")
+            with open(out, "w", encoding="utf-8") as f:
+                f.write(newinfo.markdown(res))
+            print(f"new-data signal research: {res['seconds']}s; wrote", out)
         if args.newinfo:
             from .engine import newinfo
             res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print)

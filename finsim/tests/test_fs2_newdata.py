@@ -1,6 +1,7 @@
 """New data sources (finsim2/data: secevents, cftc, eia, cryptoderiv, calendar): parsers on fixtures, point-in-time rules."""
 import datetime as dt
 import io
+import math
 import os
 import shutil
 import tempfile
@@ -341,6 +342,86 @@ class LaptopRunFixes(unittest.TestCase):
         self.assertEqual(len(res["unavailable"]), 1)
         self.assertFalse([n for n in res["notes"] if "Binance" in n])
         self.assertEqual(X.ASSETS["SOL"]["deribit"], "SOL_USDC-PERPETUAL")
+
+
+
+class _Panel:
+    def __init__(self, cal, px):
+        self.cal, self.px = cal, px
+
+    def calendar(self):
+        return self.cal
+
+    def series(self, a, field="adj_close"):
+        return [1e6 if field == "volume" else 100.0] * len(self.cal) if a in self.px else [None] * len(self.cal)
+
+    def macro(self, sid):
+        return [None] * len(self.cal)
+
+
+class _Research:
+    def __init__(self, panel):
+        self._p = panel
+
+    def panel(self):
+        return self._p
+
+
+class NewDataFamilies(unittest.TestCase):
+    """engine/newinfo.py batch 2: features exist only from the publication date."""
+
+    def setUp(self):
+        from finsim2.data.store import Store as St
+        self.tmp = tempfile.mkdtemp()
+        self.st = St(os.path.join(self.tmp, "x.db"))
+        d0 = dt.date(2010, 1, 4)
+        self.cal = [(d0 + dt.timedelta(days=k)).isoformat() for k in range(0, 800) if (d0 + dt.timedelta(days=k)).weekday() < 5]
+
+    def tearDown(self):
+        self.st.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _builder(self, assets=("AAPL",)):
+        from finsim2.engine import newinfo as N
+        return N.Builder(_Research(_Panel(self.cal, set(assets))), self.st)
+
+    def test_insider_buying_counts_from_the_filing_day(self):
+        d, pub = self.cal[300], self.cal[301]
+        self.st.put_alt(E.INSIDER, [("AAPL", d, "buy_value", 5e6, pub), ("AAPL", d, "buyers", 2.0, pub),
+                                    ("AAPL", d, "officer_buy_value", 5e6, pub)])
+        f = self._builder().insider("AAPL")
+        i = self.cal.index(pub)
+        self.assertEqual(f["ins_buy_126"][i - 1], 0.0, "not visible on the transaction day")
+        self.assertGreater(f["ins_buy_126"][i], 0.0)
+        self.assertGreater(f["ins_net_63"][i], 0.0)
+        self.assertAlmostEqual(f["ins_buyers_126"][i], math.log1p(2.0))
+        self.assertEqual(f["ins_buy_126"][i + 126], 0.0, "rolled out of the 126-session window")
+
+    def test_macro_calendar_only_counts_announced_events(self):
+        from finsim2.data.calendar import EVENTS as EVCAL
+        ev = self.cal[400]
+        self.st.put_alt(EVCAL, [("macro:US", ev, "fomc", 1.0, self.cal[398])])     # announced two sessions before
+        f = self._builder().event_calendar("SPY")
+        self.assertIn(f["fomc_5d"][self.cal.index(ev) - 3], (None, 0.0), "not yet announced")
+        self.assertEqual(f["fomc_5d"][self.cal.index(ev) - 2], 1.0)
+        self.assertEqual(f["fomc_5d"][self.cal.index(ev)], 0.0, "only the next five sessions, not today")
+
+    def test_cot_is_signed_per_asset_and_public_from_saturday(self):
+        rows = []
+        for k in range(80):
+            d = (dt.date(2010, 1, 5) + dt.timedelta(weeks=k)).isoformat()
+            net = 0.1 if k < 79 else 0.5                                   # a jump in speculator longs in the last week
+            rows += [("cot:097741", d, "open_interest", 1000.0, cftc.published(d)),
+                     ("cot:097741", d, "noncomm_long", 500.0 + net * 500, cftc.published(d)),
+                     ("cot:097741", d, "noncomm_short", 500.0 - net * 500, cftc.published(d))]
+        self.st.put_alt(cftc.DATASET, rows)
+        b = self._builder(("FXY", "USDJPY"))
+        last_pub = cftc.published((dt.date(2010, 1, 5) + dt.timedelta(weeks=79)).isoformat())
+        i = next(k for k, d in enumerate(self.cal) if d >= last_pub)
+        fxy, usdjpy = b.cftc_positioning("FXY")["cot_spec_chg_13w"], b.cftc_positioning("USDJPY")["cot_spec_chg_13w"]
+        self.assertGreater(fxy[i], 0.0, "long yen futures = long FXY")
+        self.assertLess(usdjpy[i], 0.0, "long yen futures = short USDJPY")
+        self.assertAlmostEqual(fxy[i - 1] or 0.0, 0.0, "the jump is not visible before its Saturday")
 
 
 if __name__ == "__main__":
