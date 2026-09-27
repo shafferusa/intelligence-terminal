@@ -1248,12 +1248,12 @@
     }
     const today = W.today || [];
     const passedRes = ['R1', 'R1s', 'R2', 'R3', 'R4', 'R5'].filter(k => (A[k] || {}).passed);
-    x.innerHTML = `<div class="card flush"><h2>Current predictions — research only <small>${today.length} assets · ${passedRes.length ? 'a residual model passed: ' + passedRes.join(', ') : 'no residual model passed → adjusted Alpha = E'} · residual marked * only when |r̂| > 1.96·se</small></h2><div id="rsN"></div>
+    x.innerHTML = `<div class="card flush"><h2>Current predictions — research only <small>${today.length} assets · ${W.adjusted_by ? 'adjusted Alpha applies ' + esc(W.adjusted_by) + ' (passed its gates)' : passedRes.length ? esc(passedRes.join(', ')) + ' passed but has no closed-form correction for today → adjusted Alpha = E' : 'no residual model passed → adjusted Alpha = E'} · residual marked * only when |r̂| > 1.96·se</small></h2><div id="rsN"></div>
       <p class="faint" style="font-size:12px;padding:0 12px">Expected relative return = the mean 1W return relative to the cross-section in E's percentile bucket (2013–2024); range = 95% of single weekly outcomes in that bucket (the honest interval for one asset's week). No sizing is derived from any of it.</p></div>`;
     table($('#rsN'), today, [{ k: 'asset', label: 'Asset', l: 1, f: r => `<b>${esc(r.asset)}</b><span class="sub">${esc(r.class || '')}</span>` },
       { k: 'E_pct', label: 'E %', f: r => fmt.num(r.E_pct, 0) }, { k: 'D_pct', label: 'D %', f: r => fmt.num(r.D_pct, 0) },
       { k: 'residual', label: 'Residual', f: r => r.residual == null ? '—' : `<span class="${r.residual_material ? sign(r.residual) : 'faint'}">${fmt.num(r.residual, 3)}${r.residual_material ? '*' : ''}</span>` },
-      { k: 'adj', label: 'Adj. Alpha', f: r => passedRes.length ? '—' : fmt.num(r.E_pct, 0) },
+      { k: 'adjusted_pct', label: W.adjusted_by ? `Adj. Alpha (${W.adjusted_by})` : 'Adj. Alpha (= E)', f: r => fmt.num(r.adjusted_pct ?? r.E_pct, 0) },
       { k: 'reliability', label: 'E reliability', f: r => fmt.num(r.reliability, 2) }, { k: 'p_E_better', label: 'Preferred', f: r => r.preferred ? `${r.preferred} <span class="faint">(${fmt.num(r.p_E_better, 2)})</span>` : '—' },
       { k: 'exp_rel_return', label: 'Exp. rel. return', f: r => `<span class="${sign(r.exp_rel_return)}">${fmt.spct(r.exp_rel_return, 2)}</span>` },
       { k: 'range95', label: 'Uncertainty (95%)', l: 1, f: r => r.range95 ? `${fmt.spct(r.range95[0], 1)} … ${fmt.spct(r.range95[1], 1)}` : '—' },

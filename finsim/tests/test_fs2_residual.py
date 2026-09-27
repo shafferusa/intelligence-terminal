@@ -117,3 +117,21 @@ class Registry(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Today(unittest.TestCase):
+    def test_adjusted_alpha_applies_only_a_passing_closed_form_model(self):
+        d = RS.synth_world("A", n_assets=24, weeks=900)
+        R = RS.Resid(d)
+        m1 = RS.r1(R)
+        last = max(R.tab.date)
+        idx = [k for k in range(R.tab.n) if R.tab.date[k] == last]
+        feats = {R.tab.asset[k]: [R.tab.X[i][k] for i in range(len(R.tab.names))] for k in idx}
+        t = RS.r1_today(R, m1["final"], feats)
+        self.assertEqual(set(t), set(feats))
+        self.assertTrue(all(v["se"] is not None and abs(v["shrunk"]) <= abs(v["rhat"]) + 1e-12 for v in t.values()))
+        by, adj = RS.adjusted_today(R, feats, {"R1": {"passed": False}}, {"R1": m1})
+        self.assertIsNone(by)
+        by, adj = RS.adjusted_today(R, feats, {"R1": {"passed": True}}, {"R1": m1})
+        self.assertEqual(by, "R1")
+        self.assertTrue(all(0 < v < 100 for v in adj.values()))

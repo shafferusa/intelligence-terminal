@@ -540,7 +540,8 @@ def current_markdown(res: dict) -> str:
     W = res.get("1W") or {}
     today = W.get("today") or []
     A = W.get("alpha") or {}
-    passed_res = [k for k in ("R1", "R1s", "R2", "R3", "R4", "R5") if (A.get(k) or {}).get("passed")]
+    passed_res = [k for k in ("R1", "R1s", "R2", "R3", "R4", "R5", "MT", "DH", "PW") if (A.get(k) or {}).get("passed")]
+    by = W.get("adjusted_by")
     lines: List[str] = []
     w = lines.append
     w("# FinSim2 — Residual / Meta ML: current research-only view")
@@ -550,8 +551,9 @@ def current_markdown(res: dict) -> str:
     w("")
     w("- **E / D %**: within-today percentile of E's and D's score (100 = most attractive).")
     w("- **Residual**: R1's correction r̂ with its between-era se; `*` = material (|r̂| > 1.96·se), otherwise not distinguishable from zero. "
-      + (f"A residual model passed ({', '.join(passed_res)}), so the adjusted Alpha applies it." if passed_res else
-         "No residual model passed its gates, so **adjusted Alpha = E**."))
+      + (f"**Adj. Alpha** = within-today percentile of β·zE + γ·r̂ of {by}, which passed its gates." if by else
+         (f"{', '.join(passed_res)} passed but has no closed-form correction for today; **adjusted Alpha = E**." if passed_res else
+          "No residual model passed its gates, so **adjusted Alpha = E**.")))
     w("- **REL**: E reliability (0–1, research display). **P(E)**: probability E is closer to the outcome than D.")
     w("- **Exp. rel.**: the mean 1W return relative to the cross-section in E's percentile bucket (2013–2024); **range** = 95% of single weekly outcomes.")
     w("- **Top / Bottom**: probability of finishing in the week's top / bottom decile (T1 benchmark unless a richer model passed).")
@@ -562,7 +564,7 @@ def current_markdown(res: dict) -> str:
     for r in today:
         rg = r.get("range95") or (None, None)
         res_s = "—" if r.get("residual") is None else f"{r['residual']:+.3f}{'*' if r.get('residual_material') else ''}"
-        adj = f"{r['E_pct']:.0f}" if not passed_res else "see model"
+        adj = _num(r.get("adjusted_pct", r.get("E_pct")), "{:.0f}")
         cells = [r["asset"], r.get("class"), _num(r.get("E_pct"), "{:.0f}"), _num(r.get("D_pct"), "{:.0f}"), res_s, adj,
                  _num(r.get("reliability"), "{:.2f}"), _num(r.get("p_E_better"), "{:.2f}"), r.get("preferred") or "—",
                  _num(r.get("exp_rel_return"), "{:+.2%}"), "—" if rg[0] is None else f"[{100 * rg[0]:+.1f}, {100 * rg[1]:+.1f}]%",

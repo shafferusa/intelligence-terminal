@@ -1662,12 +1662,12 @@ def today_features(data: Data, today: List[dict], sE: Dict[str, float], sD: Dict
     return out
 
 
-def r1_today(R: Resid, m1: dict, feats: Dict[str, List[float]]) -> Dict[str, dict]:
-    """R1's correction today (its final λ) and its uncertainty: se = the disagreement of R1 refitted on each complete
-    residual era separately; the correction is material only when |r̂| > 1.96·se."""
+def r1_today(R: Resid, choice: str, feats: Dict[str, List[float]]) -> Dict[str, dict]:
+    """R1's correction today at a final choice 'λ|γ', and its uncertainty: se = the disagreement of the same ridge
+    refitted on each residual era separately (as R1s does at every cut). `shrunk` = R1s's correction r̂·r̂²/(r̂² + se²);
+    the correction is material only when |r̂| > 1.96·se."""
     ctx = R.ctx
-    lam = float(m1["final"].split("|")[0])
-    gamma = float(m1["final"].split("|")[1])
+    lam, gamma = float(choice.split("|")[0]), float(choice.split("|")[1])
     rms = ctx.rms(L.FINAL)
     w = L.ridge(ctx.lr.fits[L.FINAL]["ns"]["global"], rms, [0.0] * ctx.P, lam)
     coef = L._coef(w, rms)
@@ -1675,8 +1675,7 @@ def r1_today(R: Resid, m1: dict, feats: Dict[str, List[float]]) -> Dict[str, dic
     for y, st in ctx.gy.items():
         if y >= 2009:
             ea = _era_of_year(y)
-            if ea <= 3:
-                by_era[ea] = st.copy() if ea not in by_era else by_era[ea].add(st)
+            by_era[ea] = st.copy() if ea not in by_era else by_era[ea].add(st)
     ecoefs = [L._coef(L.ridge(st, rms, [0.0] * ctx.P, lam), rms) for st in by_era.values() if st.sw > 0]
     assets = list(feats)
     P = len(R.tab.names)
@@ -1688,9 +1687,25 @@ def r1_today(R: Resid, m1: dict, feats: Dict[str, List[float]]) -> Dict[str, dic
         ps = [sum(c * v for c, v in zip(ec, xa)) for ec in ecoefs]
         k = len(ps)
         se = math.sqrt(sum((p - sum(ps) / k) ** 2 for p in ps) / (k * (k - 1))) if k >= 2 else None
+        shr = (r * r * r / (r * r + se * se)) if se is not None and (r * r + se * se) > 0 else 0.0
         contrib = sorted(((R.tab.names[i], coef[i] * xa[i]) for i in range(P)), key=lambda kv: -abs(kv[1]))[:3]
-        out[a] = {"rhat": r, "gamma": gamma, "se": se, "material": bool(se is not None and abs(r) > 1.96 * se), "drivers": contrib}
+        out[a] = {"rhat": r, "gamma": gamma, "se": se, "shrunk": shr, "material": bool(se is not None and abs(r) > 1.96 * se), "drivers": contrib}
     return out
+
+
+def adjusted_today(R: Resid, feats: Dict[str, List[float]], alpha: Dict[str, dict], models: Dict[str, dict]) -> Tuple[Optional[str], Dict[str, float]]:
+    """Today's adjusted Alpha (within-today percentile of β·zE + γ·r̂) from the residual model that passed its gates —
+    only R1 / R1s have a closed-form correction for today; another passing model is reported, not applied."""
+    jz = R.tab.names.index("ctx:zE")
+    for key in ("R1s", "R1"):
+        if (alpha.get(key) or {}).get("passed"):
+            ch = models[key]["final"]
+            t = r1_today(R, ch, feats)
+            g = float(ch.split("|")[1])
+            s_ = {a: R.beta * feats[a][jz] + g * (t[a]["shrunk"] if key == "R1s" else t[a]["rhat"]) for a in feats}
+            _, p = _norm_scores(s_)
+            return key, {a: 100 * (v + 0.5) for a, v in p.items()}
+    return None, {}
 
 
 def _fit_prob(fit: Optional[dict], vals: Sequence[float]) -> Optional[float]:
@@ -1773,8 +1788,12 @@ def study_1w(store, research, progress=None, rel_path: Optional[str] = None, wit
     sD = {a: v["score"] for a, v in F.today_scores(data.ctx, data.today, fin_D).items()}
     sP = {t["asset"]: t["rec"].raw for t in data.today if t["rec"].raw is not None}
     feats = today_features(data, data.today, sE, sD, sP)
-    rt = r1_today(R, models["R1"], feats)
+    rt = r1_today(R, models["R1"]["final"], feats)
+    adj_model, adj = adjusted_today(R, feats, alpha, models)
     today = _today_view(data, R, feats, sE, sD, rt, rel, de, tl, dr, bk)
+    for row in today:
+        row["adjusted_pct"] = adj.get(row["asset"], row["E_pct"])
+    res["adjusted_by"] = adj_model
     say(f"today's view: {len(today)} assets ({time.time() - t0:.0f}s)")
     res.update({
         "alpha": {k: _slim_alpha(v) for k, v in alpha.items()},
