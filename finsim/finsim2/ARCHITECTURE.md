@@ -65,6 +65,12 @@ finsim2/
     newinfo.py           ML Lab: new-information families judged incrementally against the frozen benchmark (Alpha, Directional
                          gate v2, hedge volatility), BH FDR, LIMITED HISTORY track, live-shadow fits + daily ledger,
                          NEW_INFORMATION_RESEARCH.md
+                         (batch 2 = the new data sources: insider, 8-K, event calendar, CFTC, EIA, crypto; own FDR)
+    alphahz.py           Shaffer Alpha 1M–5Y for stocks: family weights pooled global → horizon group → horizon → sector →
+                         stock, nested depth / shrinkage, vs production on identical records; expected excess return,
+                         90% range and P(beat SPY) by decile calibration (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)
+    movesize.py          Directional 1D / 1W move size: volatility forecast with the event calendar and 8-K events,
+                         QLIKE walk-forward, calibrated 90% ranges (SHAFFER_MOVE_SIZE_PROTOCOL.md)
     alphanext.py         Shaffer vNext Alpha: new PIT information on top of production, hierarchical ridge per horizon (1D–12M),
                          cross-sectional gates + FDR, SHAFFER_ALPHA_VNEXT.md
     dirnext.py           Shaffer vNext Directional: logistic challengers vs the prior-only model (1D/1W; 1M only if one passes),
@@ -92,7 +98,8 @@ finsim2/
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
                          history, objml (objective-specific hedge ML, sizing study), designs (profit-aware hedge designs),
-                         volhedge (research: does the breadth volatility forecast improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
+                         volhedge (research: does a better volatility forecast — breadth, or the event calendar (stage 4,
+                         SHAFFER_EVENT_HEDGE_PROTOCOL.md) — improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
                          hedgenext (Shaffer vNext Hedge: risk estimation, sizing, product choice, Alpha link; SHAFFER_HEDGE_VNEXT.md),
                          hedgelearn (learned hedge parameters: sizing, product preference, cost / basis / tail),
                          hedgetune (λ-conditional hedge-size surface, utility frontier, product prior, H4 anatomy, Alpha link),
