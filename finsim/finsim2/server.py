@@ -351,6 +351,9 @@ class Router:
             if part == "hedge":
                 return store.kv_get("lab:hedgetune") or {}
             return {"research": store.kv_get("lab:finetune"), "today": store.kv_get("lab:finetune:1W:today")}
+        if r == ["lab", "residual"] and method == "GET":
+            from .engine import residual as RS
+            return RS.load(store) or {}
         if r == ["lab", "run"] and method == "POST":
             return app.start_lab(bool(b.get("build"))).view()
         if r == ["lab", "promote"] and method == "POST":

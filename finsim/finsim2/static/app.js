@@ -759,9 +759,9 @@
   // ---------------------------------------------------------------- ML Lab: the laboratory for Shaffer Score and Shaffer Hedge
   const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['newinfo', 'New Information'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
     ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts'],
-    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext'], ['learned', 'Learned weights'], ['learneddir', 'Learned weights'], ['learnedhedge', 'Learned hedge'], ['finetune', 'Fine-tune'], ['hedgetune', 'Hedge fine-tune']];
+    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext'], ['learned', 'Learned weights'], ['learneddir', 'Learned weights'], ['learnedhedge', 'Learned hedge'], ['finetune', 'Fine-tune'], ['hedgetune', 'Hedge fine-tune'], ['residual', 'Residual / Meta ML']];
   const LAB_GROUPS = [['Shaffer Alpha', ['learned', 'finetune', 'alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['learneddir', 'directional', 'dirnext']],
-    ['Shaffer Hedge', ['learnedhedge', 'hedgetune', 'hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
+    ['Shaffer Hedge', ['learnedhedge', 'hedgetune', 'hedge', 'hedgenext']], ['Meta learning', ['residual']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
   const LAB_NAME = Object.fromEntries(LAB_TABS);
   const icT = (m) => m && m.ic != null ? `${fmt.num(m.ic, 3)} <span class="faint">(t ${fmt.num(m.t, 1)})</span>` : '—';
   const stagePill = s => `<span class="pill ${s === 'production' ? 'pos' : s === 'eligible for promotion' ? 'pos' : s === 'live shadow' ? 'warn' : s === 'retired' ? '' : 'neg'}" style="font-size:10.5px">${esc(s)}</span>`;
@@ -1157,6 +1157,109 @@
     table($('#ftTd'), Object.keys(base).map(a => ({ a, p: pt[a], ...Object.fromEntries(keys.map(k => [k, (td[k][a] || {}).score])) })), [{ k: 'a', label: 'Asset', l: 1, f: r => `<b>${esc(r.a)}</b>` },
       { k: 'p', label: 'Production', f: r => fmt.num(r.p, 1) }, ...keys.map(k => ({ k, label: k, f: r => `<span class="${sign(r[k])}">${fmt.num(r[k], 3)}</span>` }))], { sortKey: 'learned global (D)', maxH: 520 });
   };
+  // Residual / Meta ML (engine/residual.py, hedge/hedgepolicy.py): what the frozen E gets wrong, whether ML can learn it,
+  // E's reliability, D vs E, tails, the Directional residual, the hedge action policy and today's research-only view
+  const RS_SUB = [['alpha', 'Alpha errors'], ['rel', 'E reliability'], ['de', 'D vs E'], ['tail', 'Tail probability'], ['dir', 'Directional residual'], ['hedge', 'Hedge policy'], ['now', 'Current predictions']];
+  const RS_ORDER = ['R1', 'R1s', 'R2', 'R3', 'R4', 'R5', 'MT', 'DH', 'PW'];
+  const yn = b => b ? '<span class="pos">✓</span>' : '<span class="neg">✗</span>';
+  const rsStatus = s => `<span class="pill ${s && s.startsWith('PASSED') || s && s.startsWith('ELIGIBLE') ? 'pos' : 'neg'}" style="font-size:10.5px">${esc(s ? (s.startsWith('NOT') ? 'not validated' : s.startsWith('NO HEDGE') ? 'no improvement' : s.startsWith('INSUFF') ? 'insufficient data' : 'passed') : '—')}</span>`;
+  const labResidual = async (body) => {
+    body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
+    const R = await api('/fs2/lab/residual');
+    if (!R || !R['1W']) return vNone(body, 'Residual / Meta ML', 'python -m finsim2 lab --residual');
+    const W = R['1W'], H = R.horizons || {}, HD = R.hedge || {}, cap = R.capability || {};
+    const sub = RS_SUB.map(x => x[0]).includes(pref.get('rsS', 'alpha')) ? pref.get('rsS', 'alpha') : 'alpha';
+    const capOk = Object.values(cap).filter(v => v.pass).length, el = R.eligible || [];
+    const rep = W.reproduction || {}, rs = W.residual || {};
+    body.innerHTML = `<div class="card"><h2>Residual / Meta ML <small>what the frozen E gets wrong — and whether ML can learn it · research only</small></h2>
+      <p class="muted" style="margin:0 0 8px;font-size:12.5px">E (learned hierarchy) and D (learned global) are frozen: no refit, no retuning, their live predictions and G3-XS clocks untouched. Every model here learns from E's <b>out-of-sample</b> scores only (records from 2009), is chosen nestedly, and is judged on 2013–2024 with 2025– untouched, against pre-registered gates with FDR (<code>SHAFFER_RESIDUAL_PROTOCOL.md</code>). Capability worlds passed: <b>${capOk}/${Object.keys(cap).length}</b>. E reproduced at ${fmt.num(rep.E_rank_ic, 4)} (D ${fmt.num(rep.D_rank_ic, 4)}); residual records ${fmt.num(rs.records, 0)}, β ${fmt.num(rs.beta, 3)}. Eligible for a live-shadow <i>proposal</i>: <b>${el.length ? el.map(e => esc(e.candidate)).join(', ') : 'none'}</b> — nothing enters live shadow automatically.</p>
+      <div class="seg" id="rsS" style="margin:4px 0 6px">${RS_SUB.map(([k, l]) => `<button data-s="${k}" class="${k === sub ? 'on' : ''}">${l}</button>`).join('')}</div></div><div id="rsB" style="margin-top:14px"></div>`;
+    $$('#rsS button').forEach(b => b.onclick = () => { pref.set('rsS', b.dataset.s); route(); });
+    const x = $('#rsB'), A = W.alpha || {};
+    if (sub === 'alpha') {
+      const rows = RS_ORDER.filter(k => A[k]).map(k => ({ k, ...A[k] }));
+      x.innerHTML = `<div class="card flush"><h2>Alpha errors — can a model predict E's residual? <small>score = β·zE + γ·r̂ (MT, DH refits; PW pairwise) · Δ = weekly rank IC − E's on identical records</small></h2><div id="rsA"></div></div>
+        <div class="grid g2" style="margin-top:14px"><div class="card flush"><h2>What R1 would correct <small>largest standardised residual weights, all matured data</small></h2><div id="rsW"></div></div>
+        <div class="card flush"><h2>Capability worlds <small>planted errors, same code, before market data</small></h2><div id="rsC"></div></div></div>`;
+      table($('#rsA'), rows, [{ k: 'k', label: 'Model', l: 1, f: r => `<b>${esc(r.k)}</b><span class="sub">${esc(r.name || '')}</span>` },
+        { k: 'd', label: 'Δ IC (t)', v: r => (r.delta || {}).t, f: r => ftT((r.delta || {}).mean, (r.delta || {}).t) },
+        { k: 'e', label: 'Eras 13–16 · 17–20 · 21–24', l: 1, f: r => ['2013–16', '2017–20', '2021–24'].map(e => `<span class="${sign((r.eras || {})[e])}">${fmt.num((r.eras || {})[e], 4)}</span>`).join(' · ') },
+        { k: 'c', label: '2025– (A7)', f: r => `<span class="${sign(r.confirm)}">${fmt.num(r.confirm, 4)}</span>` },
+        { k: 'ls', label: 'LS10 net vs E', f: r => r.ls10 && r.ls10_E && r.ls10.net != null && r.ls10_E.net != null ? fmt.spct(r.ls10.net - r.ls10_E.net, 3) : '—' },
+        ...['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7'].map(g => ({ k: g, label: g, f: r => yn((r.gates || {})[g]) })),
+        { k: 's', label: 'Status', l: 1, f: r => rsStatus(r.status) }], { sortKey: null });
+      table($('#rsW'), Object.entries(W.r1_final_weights || {}).map(([n, v]) => ({ n, v })).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 20),
+        [{ k: 'n', label: 'Feature', l: 1 }, { k: 'v', label: 'Weight', f: r => `<span class="${sign(r.v)}">${fmt.num(r.v, 4)}</span>` }], { sortKey: null, maxH: 420 });
+      table($('#rsC'), Object.entries(cap).map(([k, v]) => ({ k, ...v })), [{ k: 'k', label: 'World', l: 1, f: r => `<b>${esc(r.k)}</b><span class="sub">${esc(r.world || '')}</span>` },
+        { k: 'pass', label: 'Result', f: r => yn(r.pass) }, { k: 'c', label: 'Checks', l: 1, f: r => Object.entries(r.checks || {}).map(([n, ok]) => `${ok ? '✓' : '✗'} ${esc(n)}`).join('<br>') }], { sortKey: null, maxH: 420 });
+      return;
+    }
+    if (sub === 'rel') {
+      const r = W.rel || {}, a = r.auc_minus_half || {}, bc = r.beyond_conviction || {}, g = r.gates || {}, ic = r.ic_terciles || [];
+      x.innerHTML = `<div class="tiles">${kpi('AUC − ½', fmt.num(a.mean, 4), `t ${fmt.num(a.t, 1)} · ${a.weeks || 0} weeks`)}${kpi('Beyond conviction', fmt.num(bc.mean, 4), `t ${fmt.num(bc.t, 1)} · vs |zE|, pE, pE² alone`)}${kpi('E rank IC by reliability', ic.map(v => fmt.num(v, 3)).join(' / '), 'low / mid / high tercile')}${kpi('Status', r.passed ? 'passed' : 'not validated', `AUC ${g.auc ? '✓' : '✗'} · t ${g.t_ok ? '✓' : '✗'} · monotone ${g.monotone ? '✓' : '✗'} · eras ${g.eras ? '✓' : '✗'} · FDR ${g.fdr ? '✓' : '✗'}`)}</div>
+        <p class="muted" style="font-size:12.5px">Reliability = P(E ranks the asset on the right side of the week's median | context), walk-forward. The capability world with an optimal E shows REL passes whenever E has any skill (its own conviction predicts its hits), so the beyond-conviction line is the one that says whether context adds anything. Display only; nothing is resized by it.</p>
+        <div class="grid g2"><div class="card flush"><h2>Largest coefficients</h2><div id="rsRc"></div></div><div class="card flush"><h2>Mean reliability by class</h2><div id="rsRk"></div></div></div>`;
+      table($('#rsRc'), (r.coefficients || []).map(([n, v]) => ({ n, v })), [{ k: 'n', label: 'Context feature', l: 1 }, { k: 'v', label: 'Coefficient', f: q => `<span class="${sign(q.v)}">${fmt.num(q.v, 3)}</span>` }], { sortKey: null });
+      table($('#rsRk'), Object.entries(r.by_class || {}).map(([n, v]) => ({ n, v })), [{ k: 'n', label: 'Class', l: 1 }, { k: 'v', label: 'Mean REL', f: q => fmt.num(q.v, 3) }], { sortKey: 'v' });
+      return;
+    }
+    if (sub === 'de') {
+      const de = W.de || {}, dd = de.always_D_minus_E || {};
+      x.innerHTML = `<div class="card flush"><h2>D versus E — can a selector or blend beat always-E? <small>always-D − always-E ${fmt.num(dd.mean, 4)} (t ${fmt.num(dd.t, 1)})</small></h2><div id="rsD"></div>
+        <p class="faint" style="font-size:12px;padding:0 12px">What the selector learned — mean P(E closer to the outcome than D): ${Object.entries(de.P_by_state || {}).map(([k, v]) => `${esc(k)} ${fmt.num(v, 3)}`).join(' · ')}</p></div>`;
+      table($('#rsD'), ['DE-A', 'DE-B'].map(k => ({ k, ...(de[k] || {}) })), [{ k: 'k', label: 'Model', l: 1, f: r => `<b>${r.k}</b><span class="sub">${r.k === 'DE-A' ? 'choose D or E per asset' : 'P·zE + (1 − P)·zD'}</span>` },
+        { k: 'd', label: 'Δ vs always-E (t)', f: r => ftT((r.delta_vs_E || {}).mean, (r.delta_vs_E || {}).t) },
+        { k: 'e', label: 'Eras 13–16 · 17–20 · 21–24 · 25–', l: 1, f: r => ['2013–16', '2017–20', '2021–24', '2025–'].map(e => fmt.num((r.eras || {})[e], 4)).join(' · ') },
+        { k: 'ch', label: 'Rank autocorr. (vs E)', f: r => `${fmt.num(r.churn, 3)} <span class="faint">(${fmt.num(r.churn_E, 3)})</span>` },
+        { k: 's', label: 'Status', l: 1, f: r => rsStatus(r.status) }], { sortKey: null });
+      return;
+    }
+    if (sub === 'tail') {
+      const T = W.tails || {}, rows = [];
+      ['top', 'bottom'].forEach(sd => ['T2', 'T3', 'T4'].forEach(k => rows.push({ sd, k, ...((T[sd] || {})[k] || {}) })));
+      x.innerHTML = `<div class="card flush"><h2>Tail probability — top / bottom decile of the week <small>benchmark T1 = logistic on E's percentile (cubic) · gain = Brier(T1) − Brier(model)</small></h2><div id="rsT"></div></div>`;
+      table($('#rsT'), rows, [{ k: 'sd', label: 'Side', l: 1 }, { k: 'k', label: 'Model', l: 1, f: r => `<b>${r.k}</b><span class="sub">${esc(r.name || '')}</span>` },
+        { k: 'g', label: 'Brier gain (t)', f: r => `${fmt.num((r.brier_gain || {}).mean, 6)} <span class="faint">(${fmt.num((r.brier_gain || {}).t, 1)})</span>` },
+        { k: 'll', label: 'Log loss vs T1', f: r => `${fmt.num(r.logloss, 4)} / ${fmt.num(r.logloss_T1, 4)}` }, { k: 's', label: 'Status', l: 1, f: r => rsStatus(r.status) }], { sortKey: null });
+      return;
+    }
+    if (sub === 'dir') {
+      const rows = [['1W', W.directional_1W || {}], ['1M', H['DR-1M'] || {}]].filter(([, v]) => v.gates).map(([h, v]) => ({ h, ...v }));
+      x.innerHTML = `<div class="card flush"><h2>Directional residual — logit P = logit P<sub>prior</sub> + capped adjustment <small>the Directional model stays prior-only · research</small></h2><div id="rsDr"></div></div>`;
+      table($('#rsDr'), rows, [{ k: 'h', label: 'Horizon', l: 1 }, { k: 'final', label: 'λ | cap today', l: 1 },
+        { k: 'b', label: 'Brier gain vs prior (t)', f: r => `${fmt.num((r.vs_prior || {}).brier_gain, 6)} <span class="faint">(${fmt.num((r.vs_prior || {}).brier_t, 1)})</span>` },
+        { k: 'ba', label: 'Balanced acc. (prior)', f: r => `${fmt.pct((r.metrics || {}).balanced_accuracy, 2)} <span class="faint">(${fmt.pct((r.metrics_prior || {}).balanced_accuracy, 2)})</span>` },
+        { k: 'sl', label: 'Cal. slope', f: r => fmt.num(r.calibration_slope, 2) }, { k: 'ew', label: 'Eras won', f: r => `${(r.gates || {}).eras_won ?? '—'}/3` },
+        { k: 'adj', label: 'Mean |adj.|', f: r => fmt.pct(r.mean_abs_adjustment, 2) }, { k: 's', label: 'Status', l: 1, f: r => rsStatus(r.status) }], { sortKey: null });
+      return;
+    }
+    if (sub === 'hedge') {
+      const cells = Object.entries(HD.cells || {}).map(([k, c]) => ({ k, ...c }));
+      x.innerHTML = `<div class="card flush"><h2>Hedge action policy <small>0.5–1.5× hedge-2 or an eligible product type, only when predicted gain − 1.96·se > 0 · judged per cell with H1–H5 at that λ · passed: ${esc((HD.passed || []).join(', ') || 'none')}</small></h2><div id="rsH"></div></div>
+        <div class="card flush" style="margin-top:14px"><h2>Counterfactual table — 1W <small>descriptive · $ per $1M book</small></h2><div id="rsHc"></div></div>`;
+      table($('#rsH'), cells, [{ k: 'k', label: 'Cell', l: 1 }, { k: 'dates', label: 'Dates' }, { k: 'departure_share', label: 'Departs', f: r => fmt.pct(r.departure_share, 0) },
+        { k: 'd', label: 'ΔU vs hedge-2 (t)', v: r => r.t, f: r => `<span class="${sign(r.d)}">${fmt.num(r.d, 0)}</span> <span class="faint">(${fmt.num(r.t, 1)})</span>` },
+        ...['H1', 'H2', 'H3', 'H4', 'H5'].map(g => ({ k: g, label: g, f: r => yn((r.gates || {})[g]) })), { k: 's', label: 'Status', l: 1, f: r => rsStatus(r.status) }], { sortKey: 'd', maxH: 520 });
+      table($('#rsHc'), (HD.counterfactual || {})['1W'] || [], [{ k: 'objective', label: 'Objective', l: 1 }, { k: 'volatility', label: 'Vol', l: 1 }, { k: 'action', label: 'Action', l: 1 },
+        { k: 'risk_reduction', label: 'Risk red.', f: r => fmt.num(r.risk_reduction, 0) }, { k: 'profit_given_up', label: 'Profit given up', f: r => fmt.num(r.profit_given_up, 0) },
+        { k: 'cost', label: 'Cost', f: r => fmt.num(r.cost, 0) }, { k: 'basis_error', label: 'Basis', f: r => fmt.num(r.basis_error, 0) },
+        { k: 'U@1', label: 'U(λ=1)', f: r => fmt.num(r['U@1'], 0) }, { k: 'U@5', label: 'U(λ=5)', f: r => fmt.num(r['U@5'], 0) }], { sortKey: null, maxH: 520 });
+      return;
+    }
+    const today = W.today || [];
+    const passedRes = ['R1', 'R1s', 'R2', 'R3', 'R4', 'R5'].filter(k => (A[k] || {}).passed);
+    x.innerHTML = `<div class="card flush"><h2>Current predictions — research only <small>${today.length} assets · ${passedRes.length ? 'a residual model passed: ' + passedRes.join(', ') : 'no residual model passed → adjusted Alpha = E'} · residual marked * only when |r̂| > 1.96·se</small></h2><div id="rsN"></div>
+      <p class="faint" style="font-size:12px;padding:0 12px">Expected relative return = the mean 1W return relative to the cross-section in E's percentile bucket (2013–2024); range = 95% of single weekly outcomes in that bucket (the honest interval for one asset's week). No sizing is derived from any of it.</p></div>`;
+    table($('#rsN'), today, [{ k: 'asset', label: 'Asset', l: 1, f: r => `<b>${esc(r.asset)}</b><span class="sub">${esc(r.class || '')}</span>` },
+      { k: 'E_pct', label: 'E %', f: r => fmt.num(r.E_pct, 0) }, { k: 'D_pct', label: 'D %', f: r => fmt.num(r.D_pct, 0) },
+      { k: 'residual', label: 'Residual', f: r => r.residual == null ? '—' : `<span class="${r.residual_material ? sign(r.residual) : 'faint'}">${fmt.num(r.residual, 3)}${r.residual_material ? '*' : ''}</span>` },
+      { k: 'adj', label: 'Adj. Alpha', f: r => passedRes.length ? '—' : fmt.num(r.E_pct, 0) },
+      { k: 'reliability', label: 'E reliability', f: r => fmt.num(r.reliability, 2) }, { k: 'p_E_better', label: 'Preferred', f: r => r.preferred ? `${r.preferred} <span class="faint">(${fmt.num(r.p_E_better, 2)})</span>` : '—' },
+      { k: 'exp_rel_return', label: 'Exp. rel. return', f: r => `<span class="${sign(r.exp_rel_return)}">${fmt.spct(r.exp_rel_return, 2)}</span>` },
+      { k: 'range95', label: 'Uncertainty (95%)', l: 1, f: r => r.range95 ? `${fmt.spct(r.range95[0], 1)} … ${fmt.spct(r.range95[1], 1)}` : '—' },
+      { k: 'p_top_decile', label: 'Tail win', f: r => fmt.pct(r.p_top_decile, 0) }, { k: 'p_bottom_decile', label: 'Tail loss', f: r => fmt.pct(r.p_bottom_decile, 0) },
+      { k: 'dir_prior', label: 'Dir. prior', f: r => fmt.pct(r.dir_prior, 1) }, { k: 'dir_adjustment', label: 'Dir. residual', f: r => r.dir_adjustment == null ? '—' : `${fmt.num(100 * r.dir_adjustment, 2)} pp` }], { sortKey: 'E_pct', maxH: 640 });
+  };
   const labHedgeTune = async (body) => {
     body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
     const HD = await api('/fs2/lab/finetune?part=hedge');
@@ -1335,6 +1438,7 @@
     if (tab === 'learnedhedge') return labLearnedHedge(body);
     if (tab === 'finetune') return labFinetune(body);
     if (tab === 'hedgetune') return labHedgeTune(body);
+    if (tab === 'residual') return labResidual(body);
     if (tab === 'directional') return labDirectional(body, L.directional, vers);
     if (!HZL.length && ['performance', 'signals', 'weights', 'versions'].includes(tab)) return need();
     const hx = H[hz] || {};

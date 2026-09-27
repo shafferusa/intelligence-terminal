@@ -64,6 +64,7 @@ def main(argv=None) -> int:
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
+    lb.add_argument("--residual", action="store_true", help="residual / meta-learning program on the frozen E (capability worlds first; research only): engine/residual.py")
     lb.add_argument("--finetune", action="store_true", help="fine-tune the learned 1W Shaffer Alpha (nested, G1–G5), 1D after costs, 1M–12M, hedge λ surface: engine/finetune.py")
     lb.add_argument("--extended", action="store_true", help="research-only extended-history records (pre-2001, training only) and the 1M–12M Alpha / Directional studies on them → SHAFFER_LONG_HORIZON_DATA.md")
     lb.add_argument("--hedge-panel", action="store_true", help="put the λ-conditional hedge sizing cells that passed every gate into live shadow and record / grade the λ-aware hedge panel now")
@@ -194,6 +195,24 @@ def main(argv=None) -> int:
             print(livexs.record_panel(Research(st), progress=print, force=True))
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and args.residual:
+        from .data.store import Store
+        from .engine import residual, residual_report
+        here = os.path.dirname(os.path.abspath(__file__))
+        res = residual.run_all(app.db_path(), workers=args.workers, progress=print)
+        if res.get("aborted"):
+            print(res["aborted"])
+            return 1
+        st = Store(app.db_path())
+        try:
+            residual.save(st, res)
+            print("registered (research only):", ", ".join(residual.register(st, res)))
+        finally:
+            st.close()
+        open(os.path.join(here, "SHAFFER_RESIDUAL_ML.md"), "w", encoding="utf-8").write(residual_report.markdown(res))
+        open(os.path.join(here, "SHAFFER_META_CURRENT.md"), "w", encoding="utf-8").write(residual_report.current_markdown(res))
+        print(f"residual program: {res['seconds']}s; wrote SHAFFER_RESIDUAL_ML.md and SHAFFER_META_CURRENT.md")
         return 0
     if args.cmd == "lab" and args.finetune:
         from .data.store import Store

@@ -149,3 +149,21 @@ signal, (C) a missing volatility-regime interaction, (D) a missing nonlinear thr
 noise residuals, (F) a baseline overconfident in one asset class, (G) two baselines each best in a different regime. The
 engine must recover what is planted, improve the baseline out of sample, reject noise (no gate pass in E) and learn
 when each baseline is better (G). If any fails, the engine is fixed before market data is touched.
+
+## Amendments (made after the synthetic capability suite, before any market result of this program)
+
+1. **Hedge policy se (§11).** With the hedge cases starting in 2009, the first test era (2013–16) has a single complete
+   training era, so a between-era se does not exist and the policy could never depart from hedge-2 there; H2 (≥ 3 of 3
+   complete eras won) would be unattainable by construction. While only one complete training era exists, se is the
+   disagreement of the same ridge refitted on that era's two halves (2009–10, 2011–12). Found by the planted-policy
+   capability world (the policy recovered the planted 0.5× sizing but could only win 2 eras); the noise world still
+   passes nothing.
+2. **D-vs-E label (§5), clarification.** When E and D give an asset the same within-week rank, |pE − pu| = |pD − pu| and
+   the label is undefined; such records carry no label (they had been counted as "D closer", which biased the base rate
+   below ½ in the capability worlds).
+3. **Nested choices (§2), clarification.** "≥ 52 inner weeks" counts inner weeks on which the options were actually
+   scored out of sample; ties between options keep the pre-registered default.
+4. **Descriptive diagnostic, not a gate.** The capability world with an optimal E showed that REL passes its §5 gates
+   whenever E has skill at all, because E's own conviction (|zE|) predicts when E is right. The report therefore also
+   shows REL's AUC *beyond* a conviction-only model (|zE|, pE, pE²). The REL gates are unchanged; a REL pass is read as
+   "E's hit rate varies with conviction and context", not as evidence that E can be improved.

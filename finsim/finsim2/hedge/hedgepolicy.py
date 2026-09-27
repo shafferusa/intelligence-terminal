@@ -104,7 +104,7 @@ def _fit(train: List[dict], arms: List[str], lam: float, amap) -> Dict[Tuple[str
     for arm in arms:
         tg = _targets(train, arm, lam)
         by_era: Dict[Tuple[str, str], List[dict]] = {}
-        for a, b in V.ERAS4:
+        for a, b in _blocks(train):
             sub = [c for c in train if a <= c["date"] < b]
             if HL._dates(sub) >= MIN_ERA_DATES:
                 tge = _targets(sub, arm, lam)
@@ -118,6 +118,20 @@ def _fit(train: List[dict], arms: List[str], lam: float, amap) -> Dict[Tuple[str
             eb = [_ridge([r[0] for r in v], [r[1] for r in v]) for (o, _), v in by_era.items() if o == obj]
             fits[(obj, arm)] = {"b": b, "eras": [x for x in eb if x is not None], "n": len(rows)}
     return fits
+
+
+def _blocks(train: List[dict]) -> List[Tuple[str, str]]:
+    """The training blocks whose disagreement is se: the complete eras with data — or, while only one exists, its two
+    halves (protocol amendment 1, made after the synthetic capability test and before any market result: with a
+    single block no se exists, the first test era could never depart from hedge-2 and H2 would be unattainable)."""
+    eras = [(a, b) for a, b in V.ERAS4 if HL._dates([c for c in train if a <= c["date"] < b]) >= MIN_ERA_DATES]
+    if len(eras) >= 2:
+        return eras
+    out = []
+    for a, b in eras:
+        mid = f"{(int(a[:4]) + int(b[:4])) // 2}-01-01"
+        out += [(a, mid), (mid, b)]
+    return out
 
 
 def _decide(c: dict, fits: Dict[Tuple[str, str], dict], arms: List[str], amap) -> Tuple[str, Optional[float], Optional[float]]:
@@ -244,3 +258,55 @@ def run(db_path: str, amap: Optional[dict] = None, progress=None) -> dict:
     res["passed"] = sorted(k for k, c in res["cells"].items() if c.get("passed"))
     res["seconds"] = round(time.time() - t0, 1)
     return res
+
+
+# ------------------------------------------------------------------ capability: a planted policy and a noise world
+def synth_cases(kind: str = "planted", seed: int = 3, weeks: int = 880, books: Tuple[str, ...] = ("AAPL", "JPM", "XOM")) -> List[dict]:
+    """Synthetic hedge cases (1W, min-variance). 'planted': in low volatility the book's true market beta is 0.5, so
+    hedge-2's full market hedge over-hedges and 0.5× is right; in high volatility hedge-2 is right. 'noise': hedge-2 is
+    right everywhere. Used by the capability test of the policy machinery."""
+    import datetime as _d
+    import random as _r
+    rnd = _r.Random(seed)
+    d0 = _d.date(2009, 1, 5)
+    out = []
+    vol = "low_vol"
+    for w in range(weeks):
+        if w % 26 == 0:
+            vol = "high_vol" if rnd.random() < 0.5 else "low_vol"
+        date = (d0 + _d.timedelta(days=7 * w)).isoformat()
+        sig = 0.02 if vol == "high_vol" else 0.008
+        mkt = [rnd.gauss(0, sig) * V.NAV for _ in range(5)]
+        for b in books:
+            beta = 0.5 if (kind == "planted" and vol == "low_vol") else 1.0
+            u = [beta * m + rnd.gauss(0, 0.004) * V.NAV for m in mkt]
+            hp = [-m for m in mkt]
+            out.append({"book": b, "btype": "single stock", "objective": "min_variance", "u": u, "ideal": [beta * h for h in hp],
+                        "arms": {"A": {"hp": hp, "cost": 60.0, "skew": 0.0, "mult": 1.0,
+                                       "legs": [{"id": "SPY", "product_type": "etf", "q": 1.0, "notional": V.NAV, "beta_usd": V.NAV}]}},
+                        "regime": {"volatility": vol, "market": "bull"}, "vix": 30.0 if vol == "high_vol" else 14.0, "primary": "MKT",
+                        "date": date})
+    return out
+
+
+def capability(kind: str = "planted") -> dict:
+    cases = synth_cases(kind)
+    for c in cases:
+        c["end"] = HL._end(c["date"], 5)
+        c["_tp"] = HT._path(c)
+    _sizing_arms(cases)
+    arms = [f"x{m:g}" for m in SIZES]
+    lam = 1.0
+    scored, counts = walk_forward(cases, arms, lam, None)
+    for c in scored:
+        c["arms"]["P"] = c["arms"][c["_pol"][lam][0]]
+    cells = {}
+    for nd in sorted({c["_tp"][2] for c in scored}):
+        sub = [c for c in scored if c["_tp"][2] == nd]
+        cells[nd] = HT.cell_at(sub, sub[0]["objective"], "P", lam)
+    _finalise(cells)
+    low = [c for c in scored if c["regime"]["volatility"] == "low_vol"]
+    high = [c for c in scored if c["regime"]["volatility"] == "high_vol"]
+    share = lambda cs, arm: (sum(1 for c in cs if c["_pol"][lam][0] == arm) / len(cs)) if cs else None  # noqa: E731
+    return {"kind": kind, "choices": counts, "low_vol_to_half": share(low, "x0.5"), "high_vol_kept": share(high, "A"),
+            "passed": [k for k, c in cells.items() if c.get("passed")], "cells": {k: {"d": c.get("d"), "gates": c.get("gates")} for k, c in cells.items()}}

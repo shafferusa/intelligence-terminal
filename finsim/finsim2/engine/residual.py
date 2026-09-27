@@ -185,11 +185,11 @@ def context_columns(tab: L.Table, zE, zD, zP, pE, states: Dict[str, List[Optiona
     return list(cols), list(cols.values())
 
 
-def build_market(store, research, progress=None) -> Data:
+def build_market(store, research, progress=None, only: Optional[set] = None) -> Data:
     """The market Data: the 1W research records, E and D exactly as in live shadow (walk-forward), production's score."""
     say = progress or (lambda m: None)
     t0 = time.time()
-    rows, today, names = L.build_rows(store, research, "1W", say)
+    rows, today, names = L.build_rows(store, research, "1W", say, only)
     tab = L.Table(rows, names, 5)
     del rows
     ctx = F.Ctx(tab, lambda m: say(f"1W {m}"))
@@ -663,6 +663,20 @@ class Design:
                 v += b[o + i] * (c[k] - m) / sd
         return v
 
+    def lin_vals(self, b: List[float], vals: Sequence[float]) -> float:
+        """The linear predictor for one out-of-table input vector (aligned with the design's columns)."""
+        v = b[0] if self.intercept else 0.0
+        o = 1 if self.intercept else 0
+        for i, (x, m, sd) in enumerate(zip(vals, self.m, self.sd)):
+            if sd and x == x:
+                v += b[o + i] * (x - m) / sd
+        return v
+
+    def contributions(self, b: List[float], vals: Sequence[float]) -> List[Tuple[str, float]]:
+        o = 1 if self.intercept else 0
+        out = [(nm, b[o + i] * (x - m) / sd) for i, (nm, x, m, sd) in enumerate(zip(self.names, vals, self.m, self.sd)) if sd and x == x]
+        return sorted(out, key=lambda kv: -abs(kv[1]))
+
     def coef_table(self, b: List[float]) -> List[Tuple[str, float]]:
         o = 1 if self.intercept else 0
         return sorted(((nm, b[o + i]) for i, nm in enumerate(self.names)), key=lambda kv: -abs(kv[1]))
@@ -840,12 +854,14 @@ def d_vs_e(R: "Resid", rel: Optional[array] = None) -> dict:
     return out
 
 
-def finalize_family(items: Dict[str, dict], gate_keys: Sequence[str]) -> Dict[str, dict]:
+def finalize_family(items: Dict[str, dict], gate_keys) -> Dict[str, dict]:
+    """BH FDR across one pre-registered family; `gate_keys` = the required gates (or, per member, a dict of them)."""
     keys = [k for k, v in items.items() if v.get("gates")]
     for k, r in zip(keys, bh([items[k]["p"] for k in keys])):
         g = items[k]["gates"]
         g["fdr"] = bool(r)
-        items[k]["passed"] = all(g.get(x) for x in gate_keys) and bool(r)
+        req = gate_keys[k] if isinstance(gate_keys, dict) else gate_keys
+        items[k]["passed"] = all(g.get(x) for x in req) and bool(r)
         items[k]["status"] = "PASSED (eligible for a live-shadow proposal)" if items[k]["passed"] else "NOT VALIDATED"
     return items
 
@@ -938,12 +954,12 @@ def tails(R: "Resid") -> dict:
     out = {}
     for side, cond in (("top", lambda p: p >= 0.4), ("bottom", lambda p: p < -0.4)):
         lab = array("d", (((1.0 if cond(p) else 0.0) if p == p else NAN) for p in R.pu))
-        l1, _ = era_logistic(R, cub, ["pE", "pE^2", "pE^3"], lab, final=False)
+        l1, f1 = era_logistic(R, cub, ["pE", "pE^2", "pE^3"], lab)
         l2, f2 = era_logistic(R, cub + feat, ["pE", "pE^2", "pE^3"] + fnames, lab)
         l3, f3 = era_logistic(R, cub + feat + cls_cols, ["pE", "pE^2", "pE^3"] + fnames + cls_names, lab)
         l4 = _tree_boost_logit(R, l1, lab)
         p1 = array("d", ((_sig(v) if v == v else NAN) for v in l1))
-        base = {"name": f"T1 {side}", "prob": p1}
+        base = {"name": f"T1 {side}", "prob": p1, "final": f1.get(L.FINAL)}
         res = {"T1": base}
         for key, ln in (("T2", l2), ("T3", l3), ("T4", l4)):
             p = array("d", ((_sig(v) if v == v else NAN) for v in ln))
@@ -1210,18 +1226,22 @@ MH_C = [0.5, 1.0, 2.0]
 MH_LAMBDAS = [1e3, 1e4, 1e5]
 
 
-def multi_horizon(store, research, data: Data, lab: str, progress=None) -> dict:
-    """1M / 3M global ridge shrunk toward c × the 1W global weights fitted before the same cut (instead of toward 0)."""
+def horizon_ctx(store, research, lab: str, progress=None, only: Optional[set] = None) -> Tuple[L.Table, F.Ctx]:
     from .lab import LAB_HORIZONS
     say = progress or (lambda m: None)
     h = dict(LAB_HORIZONS)[lab]
-    rows, _, names = L.build_rows(store, research, lab, say)
+    rows, _, names = L.build_rows(store, research, lab, say, only)
     tab = L.Table(rows, names, h)
     del rows
-    ctx = F.Ctx(tab, lambda m: say(f"{lab} {m}"), base=False)
+    return tab, F.Ctx(tab, lambda m: say(f"{lab} {m}"), base=False)
+
+
+def multi_horizon(data: Data, tab: L.Table, ctx: F.Ctx, lab: str) -> dict:
+    """1M / 3M global ridge shrunk toward c × the 1W global weights fitted before the same cut (instead of toward 0)."""
     P = ctx.P
     lr1 = data.ctx.lr
-    assert list(names) == list(data.tab.names[:P]) or list(names) == list(data.tab.names)
+    if list(tab.names) != list(data.tab.names):
+        raise ValueError("multi-horizon transfer needs the same signal set at 1W and at " + lab)
     D_wf, D_sp = ctx.score_global(lambda cut: ctx.lr.fits[cut]["W"][L.K_DEFAULT]["global"])
     Dw = ctx.weekly_ric(D_wf)
     opts = {}
@@ -1523,10 +1543,7 @@ def capability(progress=None, worlds: Sequence[str] = tuple(SYN_WORLDS)) -> dict
         de = d_vs_e(R, rel["rel"])
         pw = pairwise(R, rel["rel"])
         alpha, models = alpha_suite(R, {"PW": pw["score"]})
-        meta = finalize_family({"REL": rel, "DE-A": de["DE-A"], "DE-B": de["DE-B"]}, ("auc", "t_ok", "monotone", "eras"))
-        for k in ("DE-A", "DE-B"):                                   # DE gates differ from REL's
-            g = meta[k]["gates"]
-            meta[k]["passed"] = bool(g["beats_E"] and g["t_ok"] and g["eras"] and g["churn"] and g["fdr"])
+        meta = finalize_family({"REL": rel, "DE-A": de["DE-A"], "DE-B": de["DE-B"]}, {"REL": REL_GATES, "DE-A": DE_GATES, "DE-B": DE_GATES})
         pair = finalize_family({"PW-L": pw}, ("accuracy_gain", "t_ok", "eras"))
         tl = tails(R) if kind in ("E", "F") else None
         tail_items = {f"{k} {side}": tl[side][k] for side in ("top", "bottom") for k in ("T2", "T3", "T4")} if tl else {}
@@ -1576,3 +1593,494 @@ def capability(progress=None, worlds: Sequence[str] = tuple(SYN_WORLDS)) -> dict
                      "r1_top_signal": top_sig, "r4_top_splits": splits[:5], "r3_final": models["R3"]["final"]}
         say(f"capability world {kind} ({SYN_WORLDS[kind]}): {'PASS' if out[kind]['pass'] else 'FAIL'} ({time.time() - t0:.0f}s)")
     return out
+
+
+# ------------------------------------------------------------------ today's research-only view
+def _norm_scores(v: Dict[str, float]) -> Tuple[Dict[str, float], Dict[str, float]]:
+    items = [(a, x) for a, x in v.items() if x is not None and x == x]
+    if len(items) < 3:
+        return {}, {}
+    rk = L._ranks([x for _, x in items])
+    m = len(items)
+    z = {a: _inv_phi((r - 0.5) / m) for (a, _), r in zip(items, rk)}
+    p = {a: (r - 0.5) / m - 0.5 for (a, _), r in zip(items, rk)}
+    return z, p
+
+
+def today_features(data: Data, today: List[dict], sE: Dict[str, float], sD: Dict[str, float], sP: Dict[str, float]) -> Dict[str, List[float]]:
+    """Every asset's latest record as a feature vector aligned with data.feat_names (signals + context), with the context
+    computed on today's cross-section exactly as on each historical week."""
+    from .. import shaffer_score as cfg
+    tab = data.tab
+    names = list(tab.names)
+    zE, pE = _norm_scores(sE)
+    zD, _ = _norm_scores(sD)
+    zP, _ = _norm_scores(sP)
+    recs = {t["asset"]: t for t in today if t["asset"] in zE}
+    j1w = names.index("ret_1w") if "ret_1w" in names else None
+    jd = names.index("dist_ma200") if "dist_ma200" in names else None
+    xs1 = [float(t["rec"].x[j1w]) for t in recs.values()] if j1w is not None else []
+    disp = math.sqrt(sum((v - sum(xs1) / len(xs1)) ** 2 for v in xs1) / (len(xs1) - 1)) if len(xs1) > 2 else 0.0
+    wide = None
+    if jd is not None and recs:
+        wide = (sum(1 for t in recs.values() if float(t["rec"].x[jd]) > 0) / len(recs)) >= 0.5
+    fam_of = [cfg.ALL_FAMILY_OF.get(s_, cfg.FAMILY_OF.get(s_, "?")) for s_ in names]
+    fidx: Dict[str, List[int]] = {}
+    for i, f in enumerate(fam_of):
+        fidx.setdefault(f, []).append(i)
+    out = {}
+    for a, t in recs.items():
+        r = t["rec"]
+        x = [float(v) for v in r.x]
+        d: Dict[str, float] = {"ctx:zE": zE[a], "ctx:zD": zD.get(a, 0.0), "ctx:zP": zP.get(a, 0.0)}
+        d["ctx:zD-zE"] = d["ctx:zD"] - d["ctx:zE"]
+        d["ctx:|zE|"] = abs(d["ctx:zE"])
+        d["ctx:pE"] = pE[a]
+        d["ctx:pE^2"] = pE[a] ** 2
+        cls = t["path"][1] if len(t["path"]) > 1 else "?"
+        for c in CLASSES:
+            d[f"ctx:{c}"] = 1.0 if cls == c else 0.0
+        rg = r.reg or (None,) * 4
+        st = {"volatility": rg[1], "market": rg[0], "rates": rg[2],
+              "risk": None if rg[0] is None or rg[1] is None else ("risk-on" if rg[0] == "bull" and rg[1] == "low_vol" else "risk-off"),
+              "breadth": None if wide is None else ("wide" if wide else "narrow")}
+        for dim in STATE_DIMS:
+            d[f"ctx:{dim}"] = 0.0 if st[dim] is None else (1.0 if st[dim] == STATE_POS[dim] else -1.0)
+        d["ctx:dispersion"] = disp
+        ms = [sum(x[i] for i in ix) / len(ix) for ix in fidx.values() if ix]
+        mm = sum(ms) / len(ms)
+        d["ctx:signal_disagreement"] = math.sqrt(sum((v - mm) ** 2 for v in ms) / max(1, len(ms) - 1))
+        s0, s1 = tab.slices.get(a, (0, 0))
+        d["ctx:log_history"] = math.log1p(s1 - s0)
+        out[a] = x + [d[nm] for nm in data.feat_names[len(names):]]
+    return out
+
+
+def r1_today(R: Resid, m1: dict, feats: Dict[str, List[float]]) -> Dict[str, dict]:
+    """R1's correction today (its final λ) and its uncertainty: se = the disagreement of R1 refitted on each complete
+    residual era separately; the correction is material only when |r̂| > 1.96·se."""
+    ctx = R.ctx
+    lam = float(m1["final"].split("|")[0])
+    gamma = float(m1["final"].split("|")[1])
+    rms = ctx.rms(L.FINAL)
+    w = L.ridge(ctx.lr.fits[L.FINAL]["ns"]["global"], rms, [0.0] * ctx.P, lam)
+    coef = L._coef(w, rms)
+    by_era: Dict[int, L.Stat] = {}
+    for y, st in ctx.gy.items():
+        if y >= 2009:
+            ea = _era_of_year(y)
+            if ea <= 3:
+                by_era[ea] = st.copy() if ea not in by_era else by_era[ea].add(st)
+    ecoefs = [L._coef(L.ridge(st, rms, [0.0] * ctx.P, lam), rms) for st in by_era.values() if st.sw > 0]
+    assets = list(feats)
+    P = len(R.tab.names)
+    means = [sum(feats[a][i] for a in assets) / len(assets) for i in range(P)]
+    out = {}
+    for a in assets:
+        xa = [feats[a][i] - means[i] for i in range(P)]
+        r = sum(c * v for c, v in zip(coef, xa))
+        ps = [sum(c * v for c, v in zip(ec, xa)) for ec in ecoefs]
+        k = len(ps)
+        se = math.sqrt(sum((p - sum(ps) / k) ** 2 for p in ps) / (k * (k - 1))) if k >= 2 else None
+        contrib = sorted(((R.tab.names[i], coef[i] * xa[i]) for i in range(P)), key=lambda kv: -abs(kv[1]))[:3]
+        out[a] = {"rhat": r, "gamma": gamma, "se": se, "material": bool(se is not None and abs(r) > 1.96 * se), "drivers": contrib}
+    return out
+
+
+def _fit_prob(fit: Optional[dict], vals: Sequence[float]) -> Optional[float]:
+    if not fit:
+        return None
+    return _sig(fit["design"].lin_vals(fit["b"], vals))
+
+
+# ------------------------------------------------------------------ the market study (1W)
+ALPHA_GATES = ("A1", "A2", "A3", "A4", "A5", "A6", "A7")
+REL_GATES = ("auc", "t_ok", "monotone", "eras")
+DE_GATES = ("beats_E", "t_ok", "eras", "churn")
+TAIL_GATES = ("brier_gain", "t_ok", "eras", "logloss")
+PAIR_GATES = ("accuracy_gain", "t_ok", "eras")
+
+
+def _slim_alpha(v: dict) -> dict:
+    return {k: v.get(k) for k in ("name", "delta", "rank_ic", "rank_ic_E", "eras", "confirm", "ls10", "ls10_E", "loco", "no_crisis",
+                                  "calibration_rho", "calibration_rho_E", "gates", "p", "passed", "status")}
+
+
+def study_1w(store, research, progress=None, rel_path: Optional[str] = None, with_refits: bool = True, only: Optional[set] = None) -> dict:
+    """The complete 1W part of the program on the frozen E (and D): residual challengers, MT, DH, PW, reliability,
+    D-vs-E, tails, pairwise, Directional residual 1W, buckets, today's research-only view."""
+    import pickle
+    say = progress or (lambda m: None)
+    t0 = time.time()
+    data = build_market(store, research, say, only)
+    E, D = data.extra["E"], data.extra["D"]
+    res: dict = {"records": data.tab.n, "assets": len(data.tab.slices), "signals": list(data.tab.names),
+                 "context": [nm for nm in data.feat_names if nm.startswith("ctx:")]}
+    res["reproduction"] = {"E_rank_ic": _clust(data.ctx.weekly_ric(E.wf)).get("mean"), "D_rank_ic": _clust(data.ctx.weekly_ric(D.wf)).get("mean"),
+                           "E_choices": {k: str(v) for k, v in E.choices.items()}, "E_final": str(E.final)}
+    R = Resid(data, lambda m: say(f"residual {m}"))
+    res["residual"] = {"records": R.tab.n, "beta": R.beta, "from": min(R.tab.date), "to": max(R.tab.date)}
+    say(f"residual table: {R.tab.n} records, β = {R.beta:.4f} ({time.time() - t0:.0f}s)")
+    # meta first (REL feeds PW and the Directional residual)
+    rel = reliability(R)
+    if rel_path:
+        with open(rel_path + ".tmp", "wb") as fh:
+            pickle.dump({(a, d): rel["rel"][k] for k, (a, d) in enumerate(zip(R.tab.asset, R.tab.date)) if rel["rel"][k] == rel["rel"][k]}, fh)
+        import os
+        os.replace(rel_path + ".tmp", rel_path)
+    say(f"E reliability ({time.time() - t0:.0f}s)")
+    de = d_vs_e(R, rel["rel"])
+    say(f"D vs E ({time.time() - t0:.0f}s)")
+    pw = pairwise(R, rel["rel"])
+    say(f"pairwise ({time.time() - t0:.0f}s)")
+    extra = {"PW": pw["score"]}
+    mt = dh = None
+    if with_refits:
+        mt = multitask(data, R, lambda m: say(f"MT {m}"))
+        extra["MT"] = mt["score"]
+        say(f"multi-task refit ({time.time() - t0:.0f}s)")
+        dh = dynamic_hierarchy(data, R, say)
+        extra["DH"] = dh["score"]
+        say(f"dynamic hierarchy ({time.time() - t0:.0f}s)")
+    alpha, models = alpha_suite(R, extra, say)
+    say(f"Alpha residual family evaluated ({time.time() - t0:.0f}s)")
+    tl = tails(R)
+    say(f"tails ({time.time() - t0:.0f}s)")
+    # the Directional residual on the full 1W table (prior-only is defined on every record; E's inputs from 2009)
+    relm = array("d", repeat(NAN, data.tab.n))
+    for k, j in enumerate(R.main):
+        relm[j] = rel["rel"][k]
+    disp = data.feats[data.feat_names.index("ctx:dispersion")]
+    zdme = array("d", (d_ - e_ for d_, e_ in zip(data.zD, data.zE)))
+    dr = directional_residual(data.tab, data.ctx.lr, data.pE, zdme, data.states, disp, relm, "1W", say)
+    say(f"Directional residual 1W ({time.time() - t0:.0f}s)")
+    bk = buckets(R)
+    # ---- families, FDR, statuses
+    finalize_family({"REL": rel, "DE-A": de["DE-A"], "DE-B": de["DE-B"]}, {"REL": REL_GATES, "DE-A": DE_GATES, "DE-B": DE_GATES})
+    tail_items = {f"{k} {side}": tl[side][k] for side in ("top", "bottom") for k in ("T2", "T3", "T4")}
+    finalize_family(tail_items, TAIL_GATES)
+    finalize_family({"PW-L": pw}, PAIR_GATES)
+    # ---- today
+    fin_E = E.final_fn(E.final)
+    fin_D = D.final_fn(D.final)
+    sE = {a: v["score"] for a, v in F.today_scores(data.ctx, data.today, fin_E).items()}
+    sD = {a: v["score"] for a, v in F.today_scores(data.ctx, data.today, fin_D).items()}
+    sP = {t["asset"]: t["rec"].raw for t in data.today if t["rec"].raw is not None}
+    feats = today_features(data, data.today, sE, sD, sP)
+    rt = r1_today(R, models["R1"], feats)
+    today = _today_view(data, R, feats, sE, sD, rt, rel, de, tl, dr, bk)
+    say(f"today's view: {len(today)} assets ({time.time() - t0:.0f}s)")
+    res.update({
+        "alpha": {k: _slim_alpha(v) for k, v in alpha.items()},
+        "alpha_models": {k: {"choices": m.get("choices"), "final": m.get("final")} for k, m in models.items()},
+        "r1_final_weights": r1_final_weights(R, models["R1"]),
+        "r4_splits": models["R4"].get("info"),
+        "mt": {k: v for k, v in (mt or {}).items() if k != "score"} if mt else None,
+        "dh": {k: v for k, v in (dh or {}).items() if k != "score"} if dh else None,
+        "rel": {k: v for k, v in rel.items() if k not in ("rel", "label", "fits")},
+        "de": {**{k: {kk: vv for kk, vv in de[k].items() if kk != "score"} for k in ("DE-A", "DE-B")},
+               **{k: de[k] for k in ("always_E", "always_D", "always_D_minus_E", "always_D_minus_E_eras", "P_by_state", "coefficients")}},
+        "tails": {side: {k: {kk: vv for kk, vv in v.items() if kk not in ("prob", "final")} for k, v in tl[side].items()} for side in tl},
+        "pairwise": {k: v for k, v in pw.items() if k != "score"},
+        "directional_1W": {k: v for k, v in dr.items() if k not in ("prob", "prior", "final_fit")},
+        "buckets": bk, "today": today, "seconds": round(time.time() - t0, 1)})
+    res["_alpha_map"] = _alpha_map(data)
+    return res
+
+
+def _alpha_map(data: Data) -> Dict[str, List[Tuple[str, float]]]:
+    """E's out-of-sample within-week percentile (0–1) by asset and date — the book Alpha input of the hedge policy."""
+    out: Dict[str, List[Tuple[str, float]]] = {}
+    for k in range(data.tab.n):
+        p = data.pE[k]
+        if p == p:
+            out.setdefault(data.tab.asset[k], []).append((data.tab.date[k], round(p + 0.5, 4)))
+    return {a: sorted(v) for a, v in out.items()}
+
+
+def _today_view(data: Data, R: Resid, feats: Dict[str, List[float]], sE, sD, rt, rel, de, tl, dr, bk) -> List[dict]:
+    from . import directional as Dm
+    names = data.feat_names
+    ctx_idx = [i for i, nm in enumerate(names) if nm.startswith("ctx:")]
+    ctxv = lambda a: [feats[a][i] for i in ctx_idx]  # noqa: E731
+    relfit = (rel.get("fits") or {}).get(L.FINAL)
+    defit = de.get("final")
+    zE, pE = _norm_scores(sE)
+    zD, pD = _norm_scores(sD)
+    rows_b = bk["2013–2024"]["rows"]
+    # the tail classifiers' final fits (benchmark T1 unless a richer model passed)
+    t1 = {side: tl[side]["T1"].get("final") for side in ("top", "bottom")}
+    # Directional: prior-only (Platt at FINAL) and the residual's final fit
+    drf = dr.get("final_fit") or {}
+    lam_f = float(dr["final"].split("|")[0])
+    cap_f = float(dr["final"].split("|")[1])
+    dr_names = drf["design"].names if drf.get("design") else []
+    jn = {nm: names.index(nm) for nm in names}
+    out = []
+    for t in data.today:
+        a = t["asset"]
+        if a not in feats:
+            continue
+        x = feats[a]
+        pc = 100 * (pE[a] + 0.5)
+        b = rows_b[bucket_of(pc)]
+        relp = _fit_prob(relfit, ctxv(a))
+        pde = _fit_prob(defit, ctxv(a))
+        cub = [pE[a], pE[a] ** 2, pE[a] ** 3]
+        ptop, pbot = _fit_prob(t1["top"], cub), _fit_prob(t1["bottom"], cub)
+        z = Dm.z_of(t["rec"], Dm.MAIN_PRIOR)
+        p0 = _sig(drf["platt"][0] + drf["platt"][1] * z) if (drf.get("platt") and z is not None) else None
+        dadj = None
+        if p0 is not None and drf.get("design"):
+            vals = []
+            for nm in dr_names:
+                if nm == "E percentile":
+                    vals.append(pE[a])
+                elif nm == "zD − zE":
+                    vals.append(zD.get(a, 0.0) - zE[a])
+                elif nm == "E reliability (logit)":
+                    vals.append(_logit(relp) if relp is not None else 0.0)
+                elif nm.endswith(" state"):
+                    vals.append(x[jn[f"ctx:{nm.split()[0]}"]])
+                elif nm == "dispersion":
+                    vals.append(x[jn["ctx:dispersion"]])
+                else:
+                    vals.append(x[jn[nm]] if nm in jn else 0.0)
+            p1 = _sig(_logit(p0) + drf["design"].lin_vals(drf["b"][lam_f], vals))
+            dadj = min(cap_f, max(-cap_f, p1 - p0))
+        r = rt.get(a) or {}
+        e_contrib = []
+        if relfit:
+            e_contrib = relfit["design"].contributions(relfit["b"], ctxv(a))[:2]
+        out.append({"asset": a, "class": (t["path"][1].split(":", 1)[1] if len(t["path"]) > 1 else "?"), "date": t["rec"].date,
+                    "E": sE.get(a), "E_pct": pc, "D": sD.get(a), "D_pct": 100 * (pD[a] + 0.5) if a in pD else None,
+                    "residual": r.get("rhat"), "residual_se": r.get("se"), "residual_material": r.get("material"), "residual_drivers": r.get("drivers"),
+                    "reliability": relp, "reliability_drivers": e_contrib, "p_E_better": pde, "preferred": (None if pde is None else ("E" if pde >= 0.5 else "D")),
+                    "exp_rel_return": b.get("mean"), "exp_ci95": b.get("ci95"), "range95": b.get("range95"), "bucket": b.get("bucket"), "bucket_n": b.get("n"),
+                    "p_top_decile": ptop, "p_bottom_decile": pbot, "dir_prior": p0, "dir_adjustment": dadj})
+    return sorted(out, key=lambda r: -(r["E_pct"] or 0))
+
+
+
+def _map_1w(data: Data, tab: L.Table, v: Sequence[float], max_days: int = 6) -> array:
+    """A 1W per-record quantity carried to another horizon's records: the same asset's latest 1W record on or before
+    the date (at most `max_days` old) — point in time."""
+    import datetime as _d
+    by: Dict[str, Tuple[List[str], List[float]]] = {}
+    for a, (s0, s1) in data.tab.slices.items():
+        pairs = sorted((data.tab.date[k], v[k]) for k in range(s0, s1) if v[k] == v[k])
+        by[a] = ([p[0] for p in pairs], [p[1] for p in pairs])
+    out = array("d", repeat(NAN, tab.n))
+    for k in range(tab.n):
+        ds, vs = by.get(tab.asset[k], ([], []))
+        j = bisect.bisect_right(ds, tab.date[k]) - 1
+        if j >= 0 and (_d.date.fromisoformat(tab.date[k]) - _d.date.fromisoformat(ds[j])).days <= max_days:
+            out[k] = vs[j]
+    return out
+
+
+def study_horizons(store, research, progress=None, rel_path: Optional[str] = None, rel_wait: float = 4 * 3600,
+                   only: Optional[set] = None) -> dict:
+    """MH-1M and MH-3M (transfer from the 1W weights) and DR-1M (the Directional residual at 1M; E's inputs and REL are
+    carried from the latest 1W record)."""
+    import os
+    import pickle
+    say = progress or (lambda m: None)
+    t0 = time.time()
+    data = build_market(store, research, lambda m: say(f"1W {m}"), only)
+    out: dict = {}
+    for lab in ("1M", "3M"):
+        tab, ctx = horizon_ctx(store, research, lab, say, only)
+        out[f"MH-{lab}"] = multi_horizon(data, tab, ctx, lab)
+        say(f"MH-{lab} ({time.time() - t0:.0f}s)")
+        if lab != "1M":
+            continue
+        rel = None
+        if rel_path:
+            t1 = time.time()
+            while not os.path.exists(rel_path) and time.time() - t1 < rel_wait:
+                time.sleep(20)
+            if os.path.exists(rel_path):
+                with open(rel_path, "rb") as fh:
+                    rm = pickle.load(fh)
+                relw = array("d", (rm.get((a, d), NAN) for a, d in zip(data.tab.asset, data.tab.date)))
+                rel = _map_1w(data, tab, relw)
+        pE = _map_1w(data, tab, data.pE)
+        zdme = _map_1w(data, tab, array("d", (d_ - e_ for d_, e_ in zip(data.zD, data.zE))))
+        disp = _map_1w(data, tab, data.feats[data.feat_names.index("ctx:dispersion")])
+        reg = F.Regimes(ctx)
+        dr = directional_residual(tab, ctx.lr, pE, zdme, reg.state, disp, rel, lab, say)
+        out[f"DR-{lab}"] = {k: v for k, v in dr.items() if k not in ("prob", "prior", "final_fit")}
+        out[f"DR-{lab}"]["rel_available"] = rel is not None
+        say(f"DR-{lab} ({time.time() - t0:.0f}s)")
+    out["seconds"] = round(time.time() - t0, 1)
+    return out
+
+
+# ------------------------------------------------------------------ orchestration, statuses, versions
+def _worker(db_path: str, kind: str, rel_path: str, only: Optional[set] = None, log: Optional[str] = None):
+    from ..data.store import Store
+    from .research import Research
+    st = Store(db_path)
+
+    def say(m):
+        if log:
+            with open(log, "a") as fh:
+                fh.write(f"{time.strftime('%H:%M:%S')} [{kind}] {m}\n")
+    try:
+        r = Research(st)
+        if kind == "1W":
+            return study_1w(st, r, say, rel_path=rel_path, only=only)
+        return study_horizons(st, r, say, rel_path=rel_path, only=only)
+    finally:
+        st.close()
+
+
+def run_all(db_path: str, workers: int = 3, progress=None, with_capability: bool = True, only: Optional[set] = None,
+            log: Optional[str] = None) -> dict:
+    """Capability suite first (the engine is not run on market data if any world fails), then the 1W study, the
+    horizon study and — once E's percentile map exists — the hedge policy."""
+    import os
+    from concurrent.futures import ProcessPoolExecutor
+    say = progress or (lambda m: None)
+    t0 = time.time()
+    res: dict = {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "protocol": "SHAFFER_RESIDUAL_PROTOCOL.md (2026-09-27)"}
+    if with_capability:
+        from ..hedge import hedgepolicy as HP
+        res["capability"] = capability(say)
+        hp = {k: HP.capability(k) for k in ("planted", "noise")}
+        ok_p = hp["planted"]["passed"] and (hp["planted"]["low_vol_to_half"] or 0) > 0.8 and (hp["planted"]["high_vol_kept"] or 0) > 0.8
+        res["capability"]["H"] = {"world": "hedge policy: planted 0.5× sizing in low volatility / a noise world", "pass": bool(ok_p and not hp["noise"]["passed"]),
+                                  "checks": {"recovers the planted sizing and passes H1–H5": bool(ok_p), "noise world passes nothing": not hp["noise"]["passed"]},
+                                  "detail": {k: {kk: vv for kk, vv in v.items() if kk != "cells"} for k, v in hp.items()}}
+        say(f"capability hedge policy: {'PASS' if res['capability']['H']['pass'] else 'FAIL'}")
+        if not all(v["pass"] for v in res["capability"].values()):
+            res["aborted"] = "capability suite failed — market data not touched"
+            return res
+    rel_path = db_path + ".residual_rel.pkl"
+    if os.path.exists(rel_path):
+        os.remove(rel_path)
+    with ProcessPoolExecutor(max_workers=max(2, workers)) as ex:
+        f1 = ex.submit(_worker, db_path, "1W", rel_path, only, log)
+        f2 = ex.submit(_worker, db_path, "horizons", rel_path, only, log)
+        res["1W"] = f1.result()
+        say(f"1W study finished ({time.time() - t0:.0f}s)")
+        from ..hedge import hedgepolicy as HP
+        res["hedge"] = HP.run(db_path, res["1W"].get("_alpha_map"), progress=say)
+        say(f"hedge policy finished ({time.time() - t0:.0f}s)")
+        res["horizons"] = f2.result()
+        say(f"horizons finished ({time.time() - t0:.0f}s)")
+    finalise(res)
+    res["seconds"] = round(time.time() - t0, 1)
+    return res
+
+
+def finalise(res: dict) -> dict:
+    """FDR families that span the two processes (horizon, directional) and every candidate's final status."""
+    H = res.get("horizons") or {}
+    hz = {k: H[k] for k in ("MH-1M", "MH-3M") if k in H}
+    finalize_family(hz, ("G1", "G2", "G3", "G4", "vs_global"))
+    dr = {"DR-1W": (res.get("1W") or {}).get("directional_1W") or {}, **{k: H[k] for k in ("DR-1M",) if k in H}}
+    dr = {k: v for k, v in dr.items() if v.get("gates")}
+    finalize_family(dr, ("brier", "logloss", "balanced", "slope", "ece", "eras"))
+    for k, v in {**hz, **dr}.items():
+        v["status"] = "PASSED (eligible for a live-shadow proposal)" if v.get("passed") else "NOT VALIDATED"
+    res["eligible"] = eligible(res)
+    return res
+
+
+def eligible(res: dict) -> List[dict]:
+    W = res.get("1W") or {}
+    out = []
+    for k, v in (W.get("alpha") or {}).items():
+        if v.get("passed"):
+            out.append({"family": "alpha", "candidate": k, "name": v.get("name")})
+    for k in ("rel",):
+        if (W.get(k) or {}).get("passed"):
+            out.append({"family": "meta", "candidate": "REL", "name": "E reliability"})
+    for k, v in (W.get("de") or {}).items():
+        if isinstance(v, dict) and v.get("passed"):
+            out.append({"family": "meta", "candidate": k, "name": v.get("name")})
+    for side, d in (W.get("tails") or {}).items():
+        for k, v in d.items():
+            if v.get("passed"):
+                out.append({"family": "tail", "candidate": f"{k} {side}", "name": v.get("name")})
+    if (W.get("pairwise") or {}).get("passed"):
+        out.append({"family": "pair", "candidate": "PW-L", "name": "pairwise logistic"})
+    H = res.get("horizons") or {}
+    for k in ("MH-1M", "MH-3M", "DR-1M"):
+        if (H.get(k) or {}).get("passed"):
+            out.append({"family": "horizon" if k.startswith("MH") else "directional", "candidate": k, "name": H[k].get("name")})
+    if (W.get("directional_1W") or {}).get("passed"):
+        out.append({"family": "directional", "candidate": "DR-1W", "name": "Directional residual 1W"})
+    for k in (res.get("hedge") or {}).get("passed") or []:
+        out.append({"family": "hedge", "candidate": k, "name": "hedge action policy cell"})
+    return out
+
+
+VERSION_OF = {"R1": "ridge", "R1s": "ridge-shrunk", "R2": "elasticnet", "R3": "hierarchy", "R4": "gbm", "R5": "ensemble",
+              "MT": "multitask", "DH": "dynamic-hierarchy", "PW": "pairwise-score", "REL": "reliability", "DE-A": "de-select",
+              "DE-B": "de-blend", "PW-L": "pairwise", "MH-1M": "transfer-1m", "MH-3M": "transfer-3m", "DR-1W": "dir-1w", "DR-1M": "dir-1m"}
+
+
+def vid_of(key: str) -> str:
+    return f"resid-{VERSION_OF.get(key, key.lower().replace(' ', '-'))}-exp"
+
+
+def register(store, res: dict) -> List[str]:
+    """Every pre-registered candidate gets its own immutable research version. Nothing is put into live shadow here —
+    a passing candidate is only marked 'eligible for a live-shadow proposal'. D, E, production, the Directional prior,
+    hedge-2 and the λ-hedge shadow are never touched."""
+    from .lab import _save_registry, registry
+    reg = registry(store)
+    today = time.strftime("%Y-%m-%d")
+    protected = {"alpha-learned-1w-global-exp", "alpha-learned-1w-hierarchy-exp", "hedge-lambda-sizing-exp"}
+    W = res.get("1W") or {}
+    H = res.get("horizons") or {}
+    items: Dict[str, Tuple[str, dict]] = {}
+    for k, v in (W.get("alpha") or {}).items():
+        items[k] = ("shaffer-alpha", v)
+    items["REL"] = ("meta", W.get("rel") or {})
+    for k in ("DE-A", "DE-B"):
+        items[k] = ("meta", (W.get("de") or {}).get(k) or {})
+    items["PW-L"] = ("meta", W.get("pairwise") or {})
+    items["DR-1W"] = ("shaffer-directional", W.get("directional_1W") or {})
+    for k in ("MH-1M", "MH-3M", "DR-1M"):
+        if k in H:
+            items[k] = ("shaffer-alpha" if k.startswith("MH") else "shaffer-directional", H[k])
+    made = []
+    for k, (kind, v) in items.items():
+        vid = vid_of(k)
+        if vid in protected or not v:
+            continue
+        old = next((x for x in reg["versions"] if x["id"] == vid), None)
+        if old and old.get("status") not in ("research", None):
+            continue
+        reg["versions"] = [x for x in reg["versions"] if x["id"] != vid]
+        reg["versions"].append({"id": vid, "kind": kind, "family": "residual", "model": k, "status": "research",
+                                "introduced": (old or {}).get("introduced") or today, "parent": "alpha-learned-1w-hierarchy-exp",
+                                "formula": v.get("name"), "benchmark": "E (frozen, out of sample)" if kind != "shaffer-directional" else "prior-only",
+                                "training_cutoff": res.get("started"), "eligible_for_live_shadow_proposal": bool(v.get("passed")),
+                                "validation": {"gates": v.get("gates")}, "protocol": res.get("protocol")})
+        made.append(vid)
+    _save_registry(store, reg)
+    return made
+
+
+def save(store, res: dict):
+    slim = dict(res)
+    W = dict(res.get("1W") or {})
+    W.pop("_alpha_map", None)
+    store.kv_set(RESEARCH_KEY + ":today", {"today": W.pop("today", None), "built": res.get("started")})
+    slim["1W"] = W
+    store.kv_set(RESEARCH_KEY, slim)
+
+
+def load(store) -> Optional[dict]:
+    r = store.kv_get(RESEARCH_KEY)
+    if r is None:
+        return None
+    t = store.kv_get(RESEARCH_KEY + ":today") or {}
+    if r.get("1W") is not None:
+        r["1W"]["today"] = t.get("today")
+    return r
