@@ -105,8 +105,59 @@ def due(store, today: str) -> bool:
     return not any(p.get("week") == _week(today) for p in (store.kv_get(PANEL_KEY) or []))
 
 
-def record_panel(research, progress=None, force: bool = False) -> dict:
-    """Score every research-universe asset for production and every Shaffer challenger in live shadow (once a week)."""
+def _sweep_worker(db_path: str, asset_id: str):
+    """One asset's production sweep in a worker process — the same computation as Research.shaffer_full — returned to
+    the single writer instead of being stored here (SQLite has one writer; checkpoints are written by the caller)."""
+    from ..data.store import Store
+    from .research import Research, clean
+    from .shaffer import ShafferRun, summarize
+    st = Store(db_path)
+    try:
+        r = Research(st)
+        key = r.shaffer_key(asset_id)
+        if st.kv_get(key) is not None:
+            return asset_id, key, None, None
+        run = ShafferRun(r, asset_id)
+        full = clean(summarize(run.run(save=False), run))
+        return asset_id, key, full, (run.cls, run.yearly, run.signals)
+    finally:
+        st.close()
+
+
+def precompute(research, assets: List[str], workers: int = 0, progress=None) -> dict:
+    """Production sweeps for the assets whose cached result is missing, in parallel worker processes; every write
+    (the cached result, the January checkpoints, production's ledger rows) is made here, as shaffer_full would."""
+    import os
+    from concurrent.futures import ProcessPoolExecutor
+    from .shaffer import save_checkpoints
+    from .tracking import record_shaffer
+    say = progress or (lambda m: None)
+    st = research.store
+    todo = [a for a in assets if st.kv_get(research.shaffer_key(a)) is None]
+    workers = workers or max(1, min(4, (os.cpu_count() or 2) - 1))
+    if len(todo) < 2 or workers < 2 or getattr(st, "_memory", False):
+        return {"parallel": 0, "todo": len(todo)}
+    t0 = time.time()
+    done = 0
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        for a, key, full, cp in ex.map(_sweep_worker, [st.path] * len(todo), todo):
+            if full is None:
+                continue
+            st.kv_set(key, full)
+            save_checkpoints(research, a, cp[0], cp[1], cp[2])
+            try:
+                record_shaffer(st, research.panel(), a, full)
+            except Exception:  # noqa: BLE001
+                pass
+            done += 1
+            say(f"live panel sweeps {done}/{len(todo)}: {a}")
+    return {"parallel": done, "todo": len(todo), "workers": workers, "seconds": round(time.time() - t0, 1)}
+
+
+def record_panel(research, progress=None, force: bool = False, workers: int = 0) -> dict:
+    """Score every research-universe asset for production and every Shaffer challenger in live shadow (once a week).
+    Production's sweeps run in parallel worker processes first (identical results, one writer); `workers=1` keeps the
+    sequential path."""
     from . import lab
     say = progress or (lambda m: None)
     st = research.store
@@ -118,6 +169,7 @@ def record_panel(research, progress=None, force: bool = False) -> dict:
     freeze_expectations(st, reg)
     assets = st.lab_record_assets(lab.SIG_VERSION, "1W")
     t0 = time.time()
+    pre = precompute(research, assets, workers, say) if workers != 1 else {"parallel": 0}
     n_ok, n_rows, errors = 0, 0, []
     for k, a in enumerate(assets):
         say(f"live panel {k + 1}/{len(assets)}: {a}")
@@ -129,7 +181,7 @@ def record_panel(research, progress=None, force: bool = False) -> dict:
         except Exception as e:  # noqa: BLE001
             errors.append(f"{a}: {type(e).__name__}: {e}")
     rec = {"date": today, "week": _week(today), "assets": n_ok, "challengers": [v["id"] for v in chal], "rows": n_rows,
-           "seconds": round(time.time() - t0, 1), "errors": errors[:20]}
+           "seconds": round(time.time() - t0, 1), "precompute": pre, "errors": errors[:20]}
     panels = [p for p in (st.kv_get(PANEL_KEY) or []) if p.get("date") != today] + [rec]
     st.kv_set(PANEL_KEY, sorted(panels, key=lambda p: p["date"]))
     st.audit("lab.live_panel", today, {k: v for k, v in rec.items() if k != "errors"})

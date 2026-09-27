@@ -106,12 +106,15 @@ class Research:
     def is_cached(self, asset_id: str) -> bool:
         return self.store.kv_get(self._bkey(asset_id)) is not None
 
+    def shaffer_key(self, asset_id: str) -> str:
+        from .. import shaffer_score as shs
+        return f"shaffer2:{asset_id}:{self.version()}:{shs.VERSION}:{BUNDLE_VERSION}"
+
     def shaffer_full(self, asset_id: str) -> dict:
         """The Shaffer Score v2 run for an asset (live breakdown, reconstructed history, calibration, evidence,
         performance), computed by the one point-in-time sweep in engine/shaffer.py and cached per data version."""
-        from .. import shaffer_score as shs
         from .shaffer import ShafferRun, summarize
-        key = f"shaffer2:{asset_id}:{self.version()}:{shs.VERSION}:{BUNDLE_VERSION}"
+        key = self.shaffer_key(asset_id)
         cached = self.store.kv_get(key)
         if cached is None:
             def build():

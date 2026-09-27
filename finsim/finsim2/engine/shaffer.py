@@ -169,7 +169,9 @@ class ShafferRun:
             self.present[sgn] = acc
 
     # ------------------------------------------------------------------ the sweep
-    def run(self, until: Optional[int] = None, keep_history: bool = True, checkpoints_only: bool = False) -> dict:
+    def run(self, until: Optional[int] = None, keep_history: bool = True, checkpoints_only: bool = False, save: bool = True) -> dict:
+        """`save=False` leaves the January checkpoints for the caller to store (a worker process in the weekly panel
+        returns them to the single writer); the result is identical."""
         n = self.n if until is None else min(self.n, until + 1)
         z, sigs = self.z, self.signals
         refit_set = set(self.refits)
@@ -310,7 +312,7 @@ class ShafferRun:
                         self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"], f["V"]) for f in rec["families"]}))
                     if tau == n - 1:
                         latest[lab] = rec
-        if until is None:
+        if until is None and save:
             save_checkpoints(self.r, self.asset_id, self.cls, self.yearly, sigs)
         if checkpoints_only:
             return {"asset_id": self.asset_id, "checkpoints": sorted(self.yearly)}
@@ -786,8 +788,7 @@ def _unpack(text: str) -> List[float]:
     return list(a)
 
 
-def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict], sigs: List[str]) -> None:
-    """Store this asset's evidence sums at each January (horizons up to 12M) so other assets can use them as priors."""
+def _cp_payload(cls: str, yearly: Dict[str, dict], sigs: List[str]) -> dict:
     years = sorted(yearly)
     hs = sorted({h for y in years for h in yearly[y]})
     flat = []
@@ -796,8 +797,33 @@ def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict],
             row = yearly[y].get(h) or {}
             for sg in sigs:
                 flat += list(row.get(sg) or (0, 0.0, 0.0, 0.0, 0.0, 0.0))
-    research.store.kv_set(f"shaffer_cp:{asset_id}:{cfg.VERSION}", {"asset_class": cls, "years": years, "horizons": hs, "signals": sigs, "data": _pack(flat)})
+    return {"asset_class": cls, "years": years, "horizons": hs, "signals": sigs, "data": _pack(flat)}
+
+
+def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict], sigs: List[str]) -> None:
+    """Store this asset's evidence sums at each January (horizons up to 12M) so other assets can use them as priors."""
+    key = f"shaffer_cp:{asset_id}:{cfg.VERSION}"
+    v = _cp_payload(cls, yearly, sigs)
+    research.store.kv_set(key, v)
+    # keep the decoded prior cache in step with what was just stored (identical to a fresh decode of the stored
+    # value) instead of discarding it — a fresh decode of every checkpoint per asset dominated a panel run
+    cache = getattr(research, "_prior_cache", None)
+    if cache is not None and key in cache["keys"] and asset_id in cache["per"]:
+        cache["per"][asset_id] = _parse_cp(v)           # the same decode a reload of the stored value would give
+        return
     research._prior_cache = None
+
+
+def _parse_cp(v: dict):
+    flat = _unpack(v["data"])
+    sigs, hs, years = v["signals"], v["horizons"], v["years"]
+    data, pos = {}, 0
+    for y in years:
+        for h in hs:
+            for sg in sigs:
+                data[(y, h, sg)] = tuple(flat[pos:pos + 6])
+                pos += 6
+    return v["asset_class"], data
 
 
 def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
@@ -812,15 +838,7 @@ def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
             v = research.store.kv_get(k)
             if not v:
                 continue
-            flat = _unpack(v["data"])
-            sigs, hs, years = v["signals"], v["horizons"], v["years"]
-            data, pos = {}, 0
-            for y in years:
-                for h in hs:
-                    for sg in sigs:
-                        data[(y, h, sg)] = tuple(flat[pos:pos + 6])
-                        pos += 6
-            per[k.split(":")[1]] = (v["asset_class"], data)
+            per[k.split(":")[1]] = _parse_cp(v)
         cache = {"keys": keys, "per": per}
         research._prior_cache = cache
     agg: Dict[tuple, list] = {}
