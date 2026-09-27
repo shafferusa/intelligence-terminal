@@ -628,8 +628,11 @@ live gate (≥ 60 pooled forecasts) would be met the first week. So:
 
 * **Weekly live panel.** The first daily run of each ISO week scores the whole research universe (~155 assets) for
   production and every Shaffer challenger in live shadow (append-only ledger, graded like any forecast). One panel a
-  week keeps 1W observations independent. `python -m finsim2 lab --live-panel` runs it by hand. A fresh panel costs one
-  Shaffer sweep per asset (≈ 50 min in the research container; cached afterwards).
+  week keeps 1W observations independent. `python -m finsim2 lab --live-panel [--workers N]` runs it by hand. A fresh
+  panel costs one Shaffer sweep per asset (cached afterwards); the sweeps run in worker processes (every usable CPU by
+  default) and the panel records exactly what one-asset-at-a-time scoring records (`research.ShafferBatch`; test
+  `test_fs2_panel`, check on a research DB with `tools/panel_identity.py`). 155 assets: ≈ 6 min on 4 CPUs (one asset
+  at a time before 2026-09-27: ≈ 61 min).
 * **Gate G3-XS (fixed 2026-09-26, before any live panel was graded)** for the learned ranking families: ≥ 52 weekly
   cross-sections; live rank IC > 0 at t ≥ 1.65; live Δ vs production ≥ 0; live Δ within 2 standard errors of the
   backtest (frozen into the registry as `live_expectation`); no CUSUM decay alarm. Beating production at t ≥ 2 is not

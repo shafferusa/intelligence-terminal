@@ -493,7 +493,7 @@ class ShafferBatch:
         self.here = 0                                    # assets swept in this process (fallback)
         self.futures: Dict[str, object] = {}
         self.ex, self.dir = None, None
-        n = max(1, min(workers or os.cpu_count() or 1, len(self.fresh)))
+        n = max(1, min(workers or usable_cpus(), len(self.fresh)))
         on_disk = not getattr(st, "_memory", False)          # workers open the store by its path
         self.workers = n if n > 1 and on_disk and "fork" in mp.get_all_start_methods() else 0
         if not self.workers:
@@ -560,6 +560,29 @@ class ShafferBatch:
         if self.dir:
             shutil.rmtree(self.dir, ignore_errors=True)
             self.dir = None
+
+
+def usable_cpus() -> int:
+    """The CPUs this process may use: its CPU affinity, capped by a cgroup CPU quota when the container sets one
+    (os.cpu_count() reports the host's)."""
+    import os
+    try:
+        n = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        n = os.cpu_count() or 1
+    for path, period in (("/sys/fs/cgroup/cpu.max", None), ("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us")):
+        try:
+            with open(path) as f:
+                parts = f.read().split()
+            if period:
+                with open(period) as f:
+                    parts = parts[:1] + f.read().split()[:1]
+            if parts and parts[0] not in ("max", "-1") and len(parts) > 1 and float(parts[1]) > 0:
+                n = min(n, max(1, int(float(parts[0]) / float(parts[1]))))
+            break
+        except (OSError, ValueError):
+            continue
+    return max(1, n)
 
 
 def _sweep(research: "Research", asset_id: str, checkpoints: Optional[Dict[str, tuple]], run=None):

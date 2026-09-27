@@ -109,7 +109,7 @@ def due(store, today: str) -> bool:
 def record_panel(research, progress=None, force: bool = False, workers: Optional[int] = None) -> dict:
     """Score every research-universe asset for production and every Shaffer challenger in live shadow (once a week).
 
-    The production sweeps run in `workers` processes (default: every CPU; 1 = in this process) through
+    The production sweeps run in `workers` processes (default: every usable CPU; 1 = in this process) through
     research.ShafferBatch, which returns for every asset exactly what the one-asset-at-a-time loop would compute;
     every store and ledger write stays here, in asset order."""
     from . import lab
