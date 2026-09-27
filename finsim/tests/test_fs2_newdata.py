@@ -343,6 +343,11 @@ class LaptopRunFixes(unittest.TestCase):
         self.assertFalse([n for n in res["notes"] if "Binance" in n])
         self.assertEqual(X.ASSETS["SOL"]["deribit"], "SOL_USDC-PERPETUAL")
 
+    def test_each_crypto_field_resumes_on_its_own(self):
+        self.st.put_alt(X.DATASET, [("BTC", "2026-09-25", "cme_basis", 0.01, "2026-09-26")])
+        self.assertEqual(X._resume(self.st, "BTC", "cme_basis"), "2026-09-20")
+        self.assertEqual(X._resume(self.st, "BTC", "funding_8h"), X.START, "funding history not skipped")
+
 
 
 class _Panel:

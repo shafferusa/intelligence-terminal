@@ -151,15 +151,17 @@ def refresh(store, progress=None, start: Optional[str] = None) -> dict:
     for asset, src in ASSETS.items():
         rows: List[tuple] = []
         funding, which = {}, 0
-        a_start = start or _resume(store, asset)
+        f_start = start or _resume(store, asset, "funding_8h")
+        p_start = start or _resume(store, asset, "premium")
+        b_start = start or _resume(store, asset, "cme_basis")
         if src["deribit"]:
             try:
-                funding, which = _deribit(src["deribit"], a_start, today), 1
+                funding, which = _deribit(src["deribit"], f_start, today), 1
             except (FetchError, ValueError) as e:
                 notes.append(f"{asset} Deribit: {e}")
         if not funding and src["binance"] and binance_ok:
             try:
-                funding, which = _binance_funding(src["binance"], a_start), 2
+                funding, which = _binance_funding(src["binance"], f_start), 2
             except (FetchError, ValueError) as e:
                 if _blocked(e):
                     binance_ok = False
@@ -169,7 +171,7 @@ def refresh(store, progress=None, start: Optional[str] = None) -> dict:
             rows += [(asset, d, "funding_8h", s / k, _next(d)), (asset, d, "funding_src", float(which), _next(d))]
         if src["binance"] and binance_ok:
             try:
-                prem = parse_binance_premium(_json(BINANCE_PREMIUM.format(sym=src["binance"], a=_ms(a_start))))
+                prem = parse_binance_premium(_json(BINANCE_PREMIUM.format(sym=src["binance"], a=_ms(p_start))))
                 rows += [(asset, d, "premium", v, _next(d)) for d, v in prem.items()]
             except (FetchError, ValueError) as e:
                 if _blocked(e):
@@ -178,7 +180,7 @@ def refresh(store, progress=None, start: Optional[str] = None) -> dict:
                     notes.append(f"{asset} Binance premium: {e}")
         if src["cme"]:
             try:
-                a, b = _ms(a_start) // 1000, _ms(today) // 1000 + 86400
+                a, b = _ms(b_start) // 1000, _ms(today) // 1000 + 86400
                 fut = parse_yahoo_close(_json(YAHOO.format(sym=src["cme"], a=a, b=b), BROWSER_UA))
                 spot = {r["date"]: num(r.get("close")) for r in store.prices(asset) if num(r.get("close"))}
                 rows += [(asset, d, "cme_basis", f / spot[d] - 1, _next(d)) for d, f in fut.items() if d in spot and abs(f / spot[d] - 1) < 0.5]
@@ -193,7 +195,9 @@ def refresh(store, progress=None, start: Optional[str] = None) -> dict:
     return {"rows": n, "notes": notes, "unavailable": unavailable}
 
 
-def _resume(store, asset: str) -> str:
-    r = store._q("SELECT MAX(date) AS d FROM alt_data WHERE dataset = ? AND asset_id = ?", (DATASET, asset))
+def _resume(store, asset: str, field: str) -> str:
+    """A few days before the latest stored row of this field (each field resumes on its own: one source being current
+    must not skip another's history)."""
+    r = store._q("SELECT MAX(date) AS d FROM alt_data WHERE dataset = ? AND asset_id = ? AND field = ?", (DATASET, asset, field))
     d = r[0]["d"] if r and r[0]["d"] else None
     return (_dt.date.fromisoformat(d) - _dt.timedelta(days=5)).isoformat() if d else START
