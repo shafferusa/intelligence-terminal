@@ -106,17 +106,20 @@ class Research:
     def is_cached(self, asset_id: str) -> bool:
         return self.store.kv_get(self._bkey(asset_id)) is not None
 
+    def shaffer_key(self, asset_id: str) -> str:
+        from .. import shaffer_score as shs
+        return f"shaffer2:{asset_id}:{self.version()}:{shs.VERSION}:{BUNDLE_VERSION}"
+
     def shaffer_full(self, asset_id: str) -> dict:
         """The Shaffer Score v2 run for an asset (live breakdown, reconstructed history, calibration, evidence,
         performance), computed by the one point-in-time sweep in engine/shaffer.py and cached per data version."""
-        from .. import shaffer_score as shs
         from .shaffer import ShafferRun, summarize
-        key = f"shaffer2:{asset_id}:{self.version()}:{shs.VERSION}:{BUNDLE_VERSION}"
+        key = self.shaffer_key(asset_id)
         cached = self.store.kv_get(key)
         if cached is None:
             def build():
                 run = ShafferRun(self, asset_id)
-                return clean(summarize(run.run(), run))
+                return clean(summarize(run.run(records=False), run))
             cached = self._memo(key, build)
             self.store.kv_set(key, cached)
             try:                                   # today's scores go into the append-only prediction ledger
@@ -459,6 +462,203 @@ class Research:
         out["computed_in"] = round(time.time() - t0, 2)
         self.store.kv_set(key, out)
         return out
+
+
+# ------------------------------------------------------------------ many assets: the serial loop's results, in parallel
+class ShafferBatch:
+    """`shaffer_full` for many assets in worker processes, giving exactly what calling it on each asset in turn
+    (in the order given) would give, with every store write still made here, by one writer, in that order.
+
+    What makes a serial loop order-dependent is the priors: each fresh sweep reads every OTHER asset's stored January
+    checkpoints and then stores its own, so an asset's priors include the new checkpoints of the assets swept before
+    it and the stored ones of the rest. The checkpoints do not depend on the priors, so each worker first computes its
+    asset's new checkpoints and publishes them (a file in a scratch directory), then waits for those of the fresh
+    assets before it, and sweeps with the checkpoints the serial loop would have shown it: the stored ones, replaced by
+    the new ones where they differ. `take(asset)`, called in order, stores the checkpoints and the result as the loop
+    would, after checking that what the worker assumed is what the loop has stored by then; otherwise (an asset
+    before it failed after publishing, or a worker was lost) it sweeps the asset here, with the loop's checkpoints.
+    Assets whose result is already cached for this data version are not swept (the loop reads the cache). Workers
+    are forked: they share this process's code and hash seed (and with it the result's dict orders)."""
+
+    def __init__(self, research: "Research", assets: List[str], workers: Optional[int] = None, progress=None):
+        import multiprocessing as mp
+        import os
+        import tempfile
+        from concurrent.futures import ProcessPoolExecutor
+        from .shaffer import checkpoint_key, prior_cache
+        self.r, st = research, research.store
+        self.fresh = [a for a in assets if st.kv_get(research.shaffer_key(a)) is None]
+        self.saved: Dict[str, dict] = {}                 # checkpoints stored by take(), per fresh asset
+        self.agree = True                                # every asset taken so far stored what the workers assumed
+        self.here = 0                                    # assets swept in this process (fallback)
+        self.futures: Dict[str, object] = {}
+        self.ex, self.dir = None, None
+        n = max(1, min(workers or os.cpu_count() or 1, len(self.fresh)))
+        on_disk = not getattr(st, "_memory", False)          # workers open the store by its path
+        self.workers = n if n > 1 and on_disk and "fork" in mp.get_all_start_methods() else 0
+        if not self.workers:
+            return                                       # take() is shaffer_full, in this process
+        self.stored = {a: st.kv_get(checkpoint_key(a)) for a in self.fresh}
+        self.base = dict(prior_cache(research)["per"])
+        self.dir = tempfile.mkdtemp(prefix="finsim2-batch-")
+        self.ex = ProcessPoolExecutor(self.workers, mp_context=mp.get_context("fork"), initializer=_batch_init,
+                                      initargs=(st.path, self.base, self.stored, self.fresh, self.dir))
+        for a in self.fresh:
+            self.futures[a] = self.ex.submit(_batch_sweep, a)
+        (progress or (lambda m: None))(f"{len(self.fresh)} of {len(assets)} assets to sweep, on {self.workers} worker processes")
+
+    def take(self, asset_id: str) -> dict:
+        """The asset's shaffer_full, with its checkpoints, cache entry and first ledger rows written as the serial
+        loop writes them; raises what the serial loop would raise."""
+        from .shaffer import checkpoint_key, parse_checkpoints
+        r, st = self.r, self.r.store
+        if not self.workers or asset_id not in self.futures:
+            return r.shaffer_full(asset_id)
+        fut = self.futures.pop(asset_id)
+        result = None
+        if self.agree:
+            try:
+                result = fut.result()
+            except Exception:  # noqa: BLE001  the sweep raised, or a worker was lost: redone here (raises the same)
+                result = None
+        else:
+            fut.cancel()
+        if result is None:                                 # sweep it here, with the checkpoints the loop has stored
+            published = _published(self.dir, self.fresh.index(asset_id)) if self.agree else None
+            changed = {b: parse_checkpoints(p) for b, p in self.saved.items() if p != self.stored.get(b)}
+            per = {**self.base, **changed}
+            self.here += 1
+            try:
+                payload, full, err = _sweep(r, asset_id, {a: per[a] for a in sorted(per, key=checkpoint_key)})
+            except Exception:
+                if published is not None:                  # later workers assumed it stores new checkpoints: it stores none
+                    self.agree = False
+                raise
+        else:
+            _, published, payload, full, err = result
+        # later assets were swept assuming this one stores `published` (None: its stored checkpoints stay)
+        if published != (payload if payload != self.stored.get(asset_id) else None):
+            self.agree = False
+        st.kv_set(checkpoint_key(asset_id), payload)          # as ShafferRun.run does at the end of a full run
+        r._prior_cache = None
+        self.saved[asset_id] = payload
+        if err is not None:
+            raise err
+        st.kv_set(r.shaffer_key(asset_id), full)
+        try:                                   # today's scores go into the append-only prediction ledger
+            from .tracking import record_shaffer
+            record_shaffer(st, r.panel(), asset_id, full)
+        except Exception:
+            pass
+        return full
+
+    def close(self):
+        import shutil
+        if self.ex is not None:
+            self.ex.shutdown(wait=True, cancel_futures=True)
+            self.ex = None
+        if self.dir:
+            shutil.rmtree(self.dir, ignore_errors=True)
+            self.dir = None
+
+
+def _sweep(research: "Research", asset_id: str, checkpoints: Optional[Dict[str, tuple]], run=None):
+    """(the new checkpoint payload, clean(summarize(...)), the error summarize raised) of a full sweep that stores
+    nothing; `checkpoints` = the priors' source ({asset: parse_checkpoints(...)}, None = the stored ones). An error in
+    the sweep itself is raised (the serial loop stores nothing then)."""
+    from .shaffer import ShafferRun, aggregate_priors, checkpoint_payload, summarize
+    if run is None:
+        run = ShafferRun(research, asset_id, prior_checkpoints=checkpoints)
+    else:                                                  # a run built without priors (for its checkpoints): add them
+        run.priors = aggregate_priors(checkpoints, asset_id, run.cls, run.signals)
+        run.yearly, run._prior_ic = {}, {}
+    res = run.run(save=False, records=False)
+    payload = checkpoint_payload(run.cls, run.yearly, run.signals)
+    try:
+        return payload, clean(summarize(res, run)), None
+    except Exception as e:  # noqa: BLE001
+        return payload, None, e
+
+
+_WORKER: dict = {}
+
+
+def _batch_init(db_path: str, base: Dict[str, tuple], stored: Dict[str, dict], fresh: List[str], folder: str):
+    from ..data.store import Store
+    _WORKER.clear()
+    _WORKER.update(research=Research(Store(db_path)), base=base, stored=stored, fresh=fresh, dir=folder, parsed={})
+
+
+def _publish(folder: str, i: int, kind: str, payload: Optional[dict] = None):
+    import json
+    import os
+    tmp = os.path.join(folder, f".{i}.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(json.dumps(payload) if payload is not None else "")
+    os.replace(tmp, os.path.join(folder, f"{i}.{kind}"))
+
+
+def _published(folder: Optional[str], i: int, wait: float = 0.0) -> Optional[dict]:
+    """The checkpoints the i-th fresh asset published: the payload if they changed, None if unchanged or failed.
+    Waits up to `wait` seconds for them (then raises TimeoutError)."""
+    import json
+    import os
+    t0 = time.time()
+    while folder:
+        if os.path.exists(os.path.join(folder, f"{i}.new")):
+            with open(os.path.join(folder, f"{i}.new"), encoding="utf-8") as f:
+                return json.loads(f.read())
+        if os.path.exists(os.path.join(folder, f"{i}.same")) or os.path.exists(os.path.join(folder, f"{i}.none")):
+            return None
+        if time.time() - t0 > wait:
+            if wait:
+                raise TimeoutError(f"checkpoints of asset {i} not published")
+            return None
+        time.sleep(0.05)
+    return None
+
+
+def _forget(research: "Research", asset_id: str):
+    """Drop an asset's features, z-scores and prices from a worker's caches (a worker sees many assets)."""
+    with research._lock:
+        for k in (f"f:{asset_id}", f"z:{asset_id}"):
+            research._mem.pop(k, None)
+    p = research._panel
+    if p is not None and asset_id != p.benchmark:
+        with p._lock:
+            for k in [k for k in p._cache if len(k) > 1 and k[1] == asset_id]:
+                del p._cache[k]
+
+
+def _batch_sweep(asset_id: str):
+    """Worker: publish the asset's new checkpoints, wait for those of the fresh assets before it, sweep. Returns
+    ("worker", the published payload or None, the payload, clean(summarize(...)), summarize's error)."""
+    from .shaffer import ShafferRun, checkpoint_key, checkpoint_payload, parse_checkpoints
+    w = _WORKER
+    r, fresh, folder = w["research"], w["fresh"], w["dir"]
+    i = fresh.index(asset_id)
+    try:
+        try:
+            run = ShafferRun(r, asset_id, use_priors=False)
+            run.run(checkpoints_only=True, save=False)
+            new = checkpoint_payload(run.cls, run.yearly, run.signals)
+        except BaseException:
+            _publish(folder, i, "none")
+            raise
+        changed = new != w["stored"].get(asset_id)
+        _publish(folder, i, "new" if changed else "same", new if changed else None)
+        per = dict(w["base"])
+        for j in range(i):                                 # the loop has stored these by the time it reaches this asset
+            b = fresh[j]
+            if b not in w["parsed"]:
+                pb = _published(folder, j, wait=3600.0)
+                w["parsed"][b] = parse_checkpoints(pb) if pb is not None else None
+            if w["parsed"][b] is not None:
+                per[b] = w["parsed"][b]
+        payload, full, err = _sweep(r, asset_id, {a: per[a] for a in sorted(per, key=checkpoint_key)}, run=run)
+        return "worker", (new if changed else None), payload, full, err
+    finally:
+        _forget(r, asset_id)
 
 
 def expanding_standardize(rows: List[int], values: List[float], min_prior: int = 20) -> List[Optional[float]]:

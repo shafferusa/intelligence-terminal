@@ -56,7 +56,7 @@ def main(argv=None) -> int:
     ic.add_argument("--source", default="import")
     lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
-    lb.add_argument("--workers", type=int, default=3)
+    lb.add_argument("--workers", type=int, default=None, help="worker processes (default 3; --live-panel: every CPU)")
     lb.add_argument("--weights", action="store_true", help="only the signal-level Shaffer weight research (engine/weights.py)")
     lb.add_argument("--freeze-benchmark", metavar="ID", nargs="?", const="", default=None,
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
@@ -131,7 +131,7 @@ def main(argv=None) -> int:
         from .data.store import Store
         from .engine import learned
         here = os.path.dirname(os.path.abspath(__file__))
-        res = learned.run_all(app.db_path(), workers=args.workers, progress=print)
+        res = learned.run_all(app.db_path(), workers=args.workers or 3, progress=print)
         H = res["horizons"]
         st = Store(app.db_path())
         try:
@@ -191,7 +191,7 @@ def main(argv=None) -> int:
         from .engine.research import Research
         st = Store(app.db_path())
         try:
-            print(livexs.record_panel(Research(st), progress=print, force=True))
+            print(livexs.record_panel(Research(st), progress=print, force=True, workers=args.workers))
         finally:
             st.close()
         return 0
@@ -199,7 +199,7 @@ def main(argv=None) -> int:
         from .data.store import Store
         from .engine import finetune, finetune_report, learned
         here = os.path.dirname(os.path.abspath(__file__))
-        res = finetune.run_all(app.db_path(), workers=args.workers, progress=print)
+        res = finetune.run_all(app.db_path(), workers=args.workers or 3, progress=print)
         st = Store(app.db_path())
         try:
             lw = learned.load(st)
@@ -233,13 +233,13 @@ def main(argv=None) -> int:
             which = ["alpha", "directional", "hedge"] if args.vnext == "all" else [args.vnext]
             out = {}
             if "alpha" in which:
-                out["alpha"] = alphanext.run_all(app.db_path(), workers=args.workers, progress=print)
+                out["alpha"] = alphanext.run_all(app.db_path(), workers=args.workers or 3, progress=print)
                 open(os.path.join(here, "SHAFFER_ALPHA_VNEXT.md"), "w", encoding="utf-8").write(alphanext.markdown(out["alpha"]))
             if "directional" in which:
-                out["directional"] = dirnext.run_all(app.db_path(), workers=min(2, args.workers), progress=print)
+                out["directional"] = dirnext.run_all(app.db_path(), workers=min(2, args.workers or 3), progress=print)
                 open(os.path.join(here, "SHAFFER_DIRECTIONAL_VNEXT.md"), "w", encoding="utf-8").write(dirnext.markdown(out["directional"]))
             if "hedge" in which:
-                out["hedge"] = hedgenext.run_all(app.db_path(), workers=args.workers, progress=print)
+                out["hedge"] = hedgenext.run_all(app.db_path(), workers=args.workers or 3, progress=print)
                 open(os.path.join(here, "SHAFFER_HEDGE_VNEXT.md"), "w", encoding="utf-8").write(hedgenext.markdown(out["hedge"]))
             st = Store(app.db_path())
             try:
@@ -253,7 +253,7 @@ def main(argv=None) -> int:
         return 0
     if args.cmd == "lab" and args.breadth_hedge:
         from .hedge import volhedge
-        res = volhedge.run_all(app.db_path(), workers=args.workers, progress=print)
+        res = volhedge.run_all(app.db_path(), workers=args.workers or 3, progress=print)
         with open(args.breadth_hedge_report, "w", encoding="utf-8") as f:
             f.write(volhedge.markdown(res))
         print(f"breadth-volatility hedge research: {res['seconds']}s; wrote", args.breadth_hedge_report)
@@ -280,7 +280,7 @@ def main(argv=None) -> int:
                 st.close()
         if args.newinfo:
             from .engine import newinfo
-            res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print)
+            res = newinfo.run_all(app.db_path(), workers=args.workers or 3, progress=print)
             with open(args.newinfo_report, "w", encoding="utf-8") as f:
                 f.write(newinfo.markdown(res))
             print(f"new-information research: {res['seconds']}s; wrote", args.newinfo_report)
@@ -300,19 +300,19 @@ def main(argv=None) -> int:
         from .engine import lab
         if args.build:
             from .engine.audit import run_universe
-            run_universe(app.db_path(), workers=args.workers, progress=print, skip_ml=True)
+            run_universe(app.db_path(), workers=args.workers or 3, progress=print, skip_ml=True)
         if args.directional:
             from .engine import directional
-            dr = directional.run_all(app.db_path(), workers=args.workers, progress=print)
+            dr = directional.run_all(app.db_path(), workers=args.workers or 3, progress=print)
             with open(args.directional_report, "w", encoding="utf-8") as f:
                 f.write(directional.markdown(dr))
             print(f"directional research: {dr['seconds']}s; wrote", args.directional_report)
             return 0
         if not args.weights:
-            res = lab.run_parallel(app.db_path(), workers=args.workers, progress=print)
+            res = lab.run_parallel(app.db_path(), workers=args.workers or 3, progress=print)
             print("family-weight challengers:", ", ".join(res.get("challengers") or []) or "none", f"({res['seconds']}s)")
         from .engine import weights
-        wr = weights.run_all(app.db_path(), workers=args.workers, progress=print)
+        wr = weights.run_all(app.db_path(), workers=args.workers or 3, progress=print)
         for lab_, hz in sorted(wr["horizons"].items(), key=lambda kv: dict(lab.LAB_HORIZONS).get(kv[0], 0)):
             b = (hz.get("challengers") or {}).get(hz.get("best") or "", {})
             print(f"{lab_}: best {hz.get('best')} -> {(b.get('gates') or {}).get('status', hz.get('reason', '-'))}")

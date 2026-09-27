@@ -20,8 +20,12 @@ the families, the priors and the constants.
 """
 from __future__ import annotations
 
+import gc
 import math
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
+from functools import reduce
+from itertools import accumulate, compress, repeat
+from operator import add, and_, eq, gt, itemgetter, lt, mul
 from typing import Dict, List, Optional
 
 from .. import shaffer_score as cfg
@@ -102,29 +106,153 @@ def isotonic(xs: List[float], ys: List[float], ws: List[float]) -> List[float]:
     return out
 
 
-class _Sig:
-    """Running evidence of one signal at one horizon."""
-    __slots__ = ("n", "sx", "sy", "sxx", "syy", "sxy", "hn", "hh", "pn", "py", "qn", "qy", "reg", "cp", "cpn")
-
-    def __init__(self):
-        self.n = 0; self.sx = self.sy = self.sxx = self.syy = self.sxy = 0.0
-        self.hn = self.hh = self.pn = self.qn = 0; self.py = self.qy = 0.0
-        self.reg: Dict[str, list] = {}
-        self.cp: List[tuple] = []                 # base sums at each refit (for windows and thirds)
-        self.cpn: List[int] = []                  # row counts at each refit (binary search for thirds)
-
-    def base(self):
-        return (self.n, self.sx, self.sy, self.sxx, self.syy, self.sxy)
+def _pick(seq, idx) -> list:
+    """[seq[i] for i in idx] (at C speed)."""
+    if len(idx) > 1:
+        return list(itemgetter(*idx)(seq))
+    return [seq[i] for i in idx]
 
 
-def _window(a: tuple, b: tuple):
-    return tuple(b[k] - a[k] for k in range(6))
+def _stability(cps: list, ns: list, r: int, base: tuple, ps: float) -> float:
+    """The share of the thirds of the matured rows (by count, at refit r) whose IC has the sign of ps."""
+    en = base[0]
+    third = en / 3.0
+    k1, k2 = bisect_left(ns, third, 0, r + 1), bisect_left(ns, 2 * third, 0, r + 1)
+    c1 = cps[k1] if k1 <= r else base
+    c2 = cps[k2] if k2 <= r else base
+    sics = []                                   # (the first third is c1 itself: c1 − 0 is c1, bit for bit)
+    if c1[0] >= 20:
+        sics.append(_corr(*c1))
+    if c2[0] - c1[0] >= 20:
+        sics.append(_corr_window(c1, c2))
+    if en - c2[0] >= 20:
+        sics.append(_corr_window(c2, base))
+    sics = [x for x in sics if x is not None]
+    return (sum(1 for x in sics if (x > 0) == (ps > 0)) / len(sics)) if sics else 0.0
+
+
+def _corr_window(a: tuple, b: tuple) -> Optional[float]:
+    """The correlation from the sums accumulated between two checkpoints a and b (each (n, Σx, Σy, Σx², Σy², Σxy))."""
+    return _corr(b[0] - a[0], b[1] - a[1], b[2] - a[2], b[3] - a[3], b[4] - a[4], b[5] - a[5])
+
+
+class _Buckets:
+    """One signal's sums per regime state at one horizon, [(state, n, Σx, Σy, Σx², Σy², Σxy)] with each sum a list
+    over the needed refits, the states in the order they first occurred (a state's sums take its observations in
+    date order, as the step-by-step sweep adds them). Built on first use: a signal never active at a horizon never
+    needs them, and the evidence the run returns needs them at its last refit only (`at`)."""
+    __slots__ = ("xT", "yT", "states", "jw", "m", "shared", "_rows", "_index")
+
+    def __init__(self, xT: list, yT: list, states: Dict[str, tuple], jw: List[int], m: Optional[int] = None,
+                 shared: Optional[dict] = None):
+        """`m`: the signal has a value on every observation from the m-th on (and none before), None otherwise; then
+        the outcome side of the sums is the same for every such signal and is kept in `shared` (one per horizon)."""
+        self.xT, self.yT, self.states, self.jw, self.m, self.shared, self._rows, self._index = xT, yT, states, jw, m, shared, None, None
+
+    def _entries(self):
+        """(first occurrence, state, positions with a value) per state that ever has one."""
+        xT = self.xT
+        out = []
+        for st, (pos, dim) in self.states.items():
+            first = next(((p, d) for p, d in zip(pos, dim) if xT[p] is not None), None)
+            if first is not None:
+                out.append((first, st, [p for p in pos if xT[p] is not None]))
+        out.sort(key=lambda e: e[0])
+        return out
+
+    def _outcomes(self, st: str, pos: List[int], k0: int) -> tuple:
+        """(positions, y values, counts at the needed refits, Σy, Σy²) of state st from its k0-th position on."""
+        key = (st, k0)
+        v = self.shared.get(key)
+        if v is None:
+            bp = pos[k0:]
+            by = _pick(self.yT, bp)
+            cs = [bisect_left(bp, j) for j in self.jw]
+            v = self.shared[key] = (bp, by, cs, _pick(list(accumulate(by, initial=0.0)), cs), _pick(list(accumulate(map(mul, by, by), initial=0.0)), cs))
+        return v
+
+    def rows(self) -> list:
+        if self._rows is None:
+            xT, yT, jw = self.xT, self.yT, self.jw
+            rows = []
+            if self.m is not None and self.shared is not None:
+                entries = []
+                for st, (pos, dim) in self.states.items():
+                    k0 = bisect_left(pos, self.m)
+                    if k0 < len(pos):
+                        entries.append(((pos[k0], dim[k0]), st, pos, k0))
+                entries.sort(key=lambda e: e[0])
+                for _, st, pos, k0 in entries:
+                    bp, by, cs, BY, BYY = self._outcomes(st, pos, k0)
+                    bx = _pick(xT, bp)
+                    rows.append((st, cs, _pick(list(accumulate(bx, initial=0.0)), cs), BY, _pick(list(accumulate(map(mul, bx, bx), initial=0.0)), cs),
+                                 BYY, _pick(list(accumulate(map(mul, bx, by), initial=0.0)), cs)))
+            else:
+                for _, st, bp in self._entries():
+                    bx, by = _pick(xT, bp), _pick(yT, bp)
+                    cs = [bisect_left(bp, j) for j in jw]
+                    rows.append((st, cs) + tuple(_pick(P, cs) for P in ShafferRun._prefix(bx, by)))
+            self._rows = rows
+        return self._rows
+
+    def index(self) -> dict:
+        if self._index is None:
+            self._index = {b[0]: b for b in self.rows()}
+        return self._index
+
+    def at(self, k: int) -> list:
+        """[(state, (n, Σx, Σy, Σx², Σy², Σxy))] at the k-th needed refit (without building every refit's sums)."""
+        if self._rows is not None:
+            return [(b[0], (b[1][k], b[2][k], b[3][k], b[4][k], b[5][k], b[6][k])) for b in self._rows]
+        xT, yT, j = self.xT, self.yT, self.jw[k]
+        out = []
+        for _, st, bp in self._entries():
+            c = bisect_left(bp, j)
+            bx, by = _pick(xT, bp[:c]), _pick(yT, bp[:c])
+            out.append((st, (c, reduce(add, bx, 0.0), reduce(add, by, 0.0), reduce(add, map(mul, bx, bx), 0.0),
+                             reduce(add, map(mul, by, by), 0.0), reduce(add, map(mul, bx, by), 0.0))))
+        return out
+
+
+class _Regimes:
+    """The regime-conditional evidence of one signal at one refit, {state: (IC, n_eff)} for the states with ≥ 20 rows,
+    from the signal's `_Buckets` — computed per state when first read."""
+    __slots__ = ("buckets", "k", "step", "den", "memo")
+
+    def __init__(self, buckets: "_Buckets", k: int, step: int, den: float):
+        self.buckets, self.k, self.step, self.den, self.memo = buckets, k, step, den, {}
+
+    def _value(self, acc: tuple):
+        return _corr(*acc), max(1.0, acc[0] * self.step / self.den)
+
+    def full(self) -> dict:
+        return {st: self._value(acc) for st, acc in self.buckets.at(self.k) if acc[0] >= 20}
+
+    def at(self, states: tuple) -> dict:
+        """The entries for the states in `states` (today's state in each dimension)."""
+        out = self.memo.get(states)
+        if out is None:
+            out = self.memo[states] = self._at(states)
+        return out
+
+    def _at(self, states: tuple) -> dict:
+        out = {}
+        idx, k = self.buckets.index(), self.k
+        for st in states:
+            if not st or st in out:
+                continue
+            b = idx.get(st)
+            if b is not None and b[1][k] >= 20:
+                out[st] = self._value((b[1][k], b[2][k], b[3][k], b[4][k], b[5][k], b[6][k]))
+        return out
 
 
 class ShafferRun:
     """One asset's point-in-time Shaffer Score run. Build with the research object, then `run(until)`."""
 
-    def __init__(self, research, asset_id: str, use_priors: bool = True):
+    def __init__(self, research, asset_id: str, use_priors: bool = True, prior_checkpoints: Optional[Dict[str, tuple]] = None):
+        """`prior_checkpoints` ({asset: parse_checkpoints(...)}, in key order) replaces the stored checkpoints as the
+        source of the priors (the weekly panel passes each asset the checkpoints the serial run would have seen)."""
         self.r = research
         self.asset_id = asset_id
         panel = research.panel()
@@ -158,8 +286,15 @@ class ShafferRun:
                         ys[t] = _clip(lr / (v * math.sqrt(h / 252.0)), -4.0, 4.0)
             self.y[h], self.yr[h] = ys, yrs
         self.refits = [i for i in range(max(1, first), self.n) if self.cal[i][:7] != self.cal[i - 1][:7]]
-        self.priors = load_priors(research, asset_id, self.cls) if use_priors else {}
+        if not use_priors:
+            self.priors = {}
+        elif prior_checkpoints is not None:
+            self.priors = aggregate_priors(prior_checkpoints, asset_id, self.cls, self.signals)
+        else:
+            self.priors = load_priors(research, asset_id, self.cls, self.signals)
+        self._prior_ic: Dict[int, tuple] = {}
         self.yearly: Dict[str, dict] = {}
+        self._fam_memo: Dict[str, list] = {}
         self.present = {}
         for sgn in self.signals:                        # prefix count of sessions with a value (data quality)
             acc, c = [0] * (self.n + 1), 0
@@ -169,155 +304,256 @@ class ShafferRun:
             self.present[sgn] = acc
 
     # ------------------------------------------------------------------ the sweep
-    def run(self, until: Optional[int] = None, keep_history: bool = True, checkpoints_only: bool = False) -> dict:
+    def run(self, until: Optional[int] = None, keep_history: bool = True, checkpoints_only: bool = False, save: bool = True,
+            records: bool = True) -> dict:
+        """The forward sweep described in the module docstring, computed horizon by horizon. A full run (no `until`)
+        stores the asset's January checkpoints unless `save` is False. Without `records`, the research records the
+        ML Lab and the audit read (lab_records, sig_records, fam_records, sign_checks, the shadow pairs) are not kept:
+        nothing else changes (summarize does not read them).
+
+        Nothing crosses horizons inside the sweep except the refit calendar, signal persistence and the within-family
+        correlations, which are computed first. Every running sum is a prefix sum over its observations in the order
+        they join (itertools.accumulate adds them one by one, exactly as a running `+=` would), read at each refit.
+        Evidence, validation and calibration are only computed at refits whose result is scored before the next
+        refit (the others would be overwritten unread), so the output is the step-by-step sweep's, bit for bit."""
+        gc_on = gc.isenabled()
+        gc.disable()                             # millions of small tuples, no cycles: the collector only costs time
+        try:
+            return self._run(until, keep_history, checkpoints_only, save, records)
+        finally:
+            if gc_on:
+                gc.enable()
+
+    def _run(self, until: Optional[int], keep_history: bool, checkpoints_only: bool, save: bool, records: bool) -> dict:
         n = self.n if until is None else min(self.n, until + 1)
-        z, sigs = self.z, self.signals
-        refit_set = set(self.refits)
+        cal = self.cal
+        refits = [tau for tau in self.refits if tau < n]
         start_hist = max(self.first + cfg.MIN_TRAIN_YEARS * 252, n - cfg.HISTORY_YEARS * 252)
-        # running state
-        S = {h: {s: _Sig() for s in sigs} for _, h in self.horizons}
-        pers = {s: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for s in sigs}         # lag-21 autocorrelation sums
-        pairs = {f: {(a, b): [0, 0.0, 0.0, 0.0, 0.0, 0.0] for i, a in enumerate(ss) for b in ss[i + 1:]} for f, ss in self.fam_signals.items()}
-        oos = {h: {"pairs": [], "shadow": [], "fam": {f: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for f in cfg.ALL_FAMILIES}} for _, h in self.horizons}
-        pending: Dict[int, List[tuple]] = {}                           # maturity index -> [(h, record)]
-        ev: Dict[int, dict] = {}                                        # current evidence per horizon
-        calib: Dict[int, dict] = {}
-        vf: Dict[int, dict] = {}
-        corr_now: Dict[str, dict] = {}
-        pers_now: Dict[str, float] = {}
+        score_days = [] if checkpoints_only else sorted(set(range(start_hist, n, 5)) | {n - 1})
+        need = []                                # a refit's evidence is read iff a score day falls before the next refit
+        for r, tr in enumerate(refits):
+            nxt = refits[r + 1] if r + 1 < len(refits) else n
+            k = bisect_left(score_days, tr)
+            need.append(k < len(score_days) and score_days[k] < nxt)
+        januaries = [r for r, tr in enumerate(refits) if cal[tr][5:7] == "01"]
+        pers_at, corr_at = ({}, {}) if checkpoints_only else self._comovement(n, refits, need)
         history = {lab: [] for lab, _ in self.horizons}
         latest = {}
-        dims = list(self.regimes)
-        refit_k = -1
-        score_days = set() if checkpoints_only else set(range(start_hist, n, 5)) | {n - 1}
+        oos, ev, calib, vf = {}, {}, {}, {}
         self.fam_records = {lab: [] for lab, _ in self.horizons}
-        self.lab_records: Dict[str, list] = {}
-        self.sig_records: Dict[str, list] = {}
-        self.sign_checks: Dict[str, list] = {}
-        for tau in range(n):
-            # 1) matured score records feed the out-of-sample record (validation, calibration)
-            for h, rec in pending.pop(tau, ()):
-                y, yr = self.y[h][rec["t"]], self.yr[h][rec["t"]]
-                if y is None:
-                    continue
-                rec["realized"] = yr
-                o = oos[h]
-                o["pairs"].append((rec["raw"], y, yr, rec["t"]))
-                for f, fs in rec["fam"].items():
-                    a = o["fam"][f]
-                    a[0] += 1; a[1] += fs; a[2] += y; a[3] += fs * fs; a[4] += y * y; a[5] += fs * y
-                if rec.get("sh"):
-                    o["shadow"].append((rec["t"], y, rec["raw"], rec["all"], rec["sh"]))
-                # the research record the ML Lab learns from: everything known at t, and what happened after
-                self.lab_records.setdefault(rec["lab"], []).append((rec["t"], rec["raw"], y, yr, rec["fam"], rec["c"], rec.get("K")))
-                self.sig_records.setdefault(rec["lab"], []).append((rec["t"], rec["raw"], y, yr, rec.get("sig")))
-            # 2) observations whose outcome is now known join the evidence
-            for _, h in self.horizons:
-                t = tau - h - 1
-                if t < 0 or t % _step(h):
-                    continue
-                y = self.y[h][t]
-                if y is None:
-                    continue
-                states = [self.regimes[d][t] for d in dims] if h <= REG_MAX_H else ()
-                for s in sigs:
-                    x = z[s][t]
-                    if x is None:
-                        continue
-                    e = S[h][s]
-                    e.n += 1; e.sx += x; e.sy += y; e.sxx += x * x; e.syy += y * y; e.sxy += x * y
-                    if abs(x) > 0.25:
-                        e.hn += 1
-                        if (x > 0) == (y > 0):
-                            e.hh += 1
-                    if x > 0.5:
-                        e.pn += 1; e.py += y
-                    elif x < -0.5:
-                        e.qn += 1; e.qy += y
-                    for st in states:
-                        if st is None:
-                            continue
-                        rg = e.reg.get(st)
-                        if rg is None:
-                            rg = e.reg[st] = [0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                        rg[0] += 1; rg[1] += x; rg[2] += y; rg[3] += x * x; rg[4] += y * y; rg[5] += x * y
-            # 3) signal persistence and co-movement (same-date values only)
-            if checkpoints_only:
-                if tau in refit_set and self.cal[tau][5:7] == "01":
-                    for lab, h in self.horizons:
-                        if h <= PRIOR_MAX_H:
-                            self.yearly.setdefault(self.cal[tau][:4], {})[h] = {s: S[h][s].base() for s in sigs}
+        lab_records: Dict[str, list] = {}
+        sig_records: Dict[str, list] = {}
+        sign_checks: Dict[str, list] = {}
+        first_rec: Dict[str, tuple] = {}         # the dict orders of the step-by-step sweep: first event per horizon
+        first_chk: Dict[str, tuple] = {}
+        jan_base: Dict[tuple, dict] = {}
+        for hi, (lab, h) in enumerate(self.horizons):
+            if checkpoints_only and h > PRIOR_MAX_H:
                 continue
-            if tau >= PERSIST_LAG:
-                for s in sigs:
-                    a, b = z[s][tau], z[s][tau - PERSIST_LAG]
-                    if a is not None and b is not None:
-                        p = pers[s]
-                        p[0] += 1; p[1] += a; p[2] += b; p[3] += a * a; p[4] += b * b; p[5] += a * b
-            if tau % CORR_STEP == 0:
-                for f, pp in pairs.items():
-                    for (a, b), acc in pp.items():
-                        xa, xb = z[a][tau], z[b][tau]
-                        if xa is not None and xb is not None:
-                            acc[0] += 1; acc[1] += xa; acc[2] += xb; acc[3] += xa * xa; acc[4] += xb * xb; acc[5] += xa * xb
-            # 4) monthly refit
-            if tau in refit_set:
-                refit_k += 1
-                for s in sigs:
-                    p = pers[s]
-                    rho = _corr(*p)
-                    pers_now[s] = min(2520.0, -PERSIST_LAG / math.log(rho)) if rho is not None and 0.05 < rho < 1 else 1.0
-                corr_now = {f: {k: (_corr(*acc) or 0.0) for k, acc in pp.items()} for f, pp in pairs.items()}
-                year = self.cal[tau][:4]
-                january = self.cal[tau][5:7] == "01"
-                for lab, h in self.horizons:
-                    for s in sigs:
-                        S[h][s].cp.append(S[h][s].base())
-                        S[h][s].cpn.append(S[h][s].n)
-                    if january and h <= PRIOR_MAX_H:
-                        self.yearly.setdefault(year, {})[h] = {s: S[h][s].base() for s in sigs}
-                    ev[h] = self._evidence(S[h], h, tau, refit_k, pers_now, self._prior_at(tau, h))
-                    vf[h] = self._validation(oos[h]["fam"], h)
-                    calib[h] = self._calibration(oos[h]["pairs"], h)
-            # 5) scores
-            if tau in score_days and refit_k >= 0:
-                for lab, h in self.horizons:
-                    if h not in ev:
+            sums = self._sums(h, n, refits, need, januaries if h <= PRIOR_MAX_H else (), full=not checkpoints_only)
+            for r in (januaries if h <= PRIOR_MAX_H else ()):
+                jan_base[(r, h)] = {s: d[0][r] for s, d in sums.items()}
+            if checkpoints_only:
+                continue
+            o = oos[h] = {"pairs": [], "shadow": [], "fam": {f: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for f in cfg.ALL_FAMILIES}}
+            y_h, yr_h = self.y[h], self.yr[h]
+            matq: List[tuple] = []               # (maturity, record): scores mature in the order they were made
+            qi = 0
+            ev_h = vf_h = calib_h = corr_now = None
+            widx = {r: k for k, r in enumerate(r for r in range(len(refits)) if need[r])}
+            events = sorted([(refits[r], 0, r) for r in widx] + [(d, 1, 0) for d in score_days])
+            for tau, kind, r in events + [(n, 2, 0)]:
+                # 1) matured score records feed the out-of-sample record (validation, calibration)
+                while qi < len(matq) and (matq[qi][0] <= tau if kind < 2 else matq[qi][0] < n):
+                    mat, rec = matq[qi]
+                    qi += 1
+                    y, yr = y_h[rec["t"]], yr_h[rec["t"]]
+                    if y is None:
                         continue
-                    rec = self.score_at(tau, lab, h, ev[h], corr_now, vf[h], calib[h])
-                    if rec["raw"] is None:
-                        if tau == n - 1:
-                            latest[lab] = rec
+                    rec["realized"] = yr
+                    o["pairs"].append((rec["raw"], y, yr, rec["t"]))
+                    for f, fs in rec["fam"].items():
+                        a = o["fam"][f]
+                        a[0] += 1; a[1] += fs; a[2] += y; a[3] += fs * fs; a[4] += y * y; a[5] += fs * y
+                    if not records:
                         continue
-                    if tau + h + 1 < self.n:
-                        shd = rec.get("shadow") or {}
-                        fam = {f["family"]: f["score"] for f in rec["families"]}
-                        fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
-                        pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"), "lab": lab,
-                                                                        "c": {f["family"]: f["contribution"] for f in rec["families"]}, "K": rec.get("K"),
-                                                                        "sig": signal_record(rec),
-                                                                        "sh": {**{f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []},
-                                                                               **{"VARIANT:" + k: (v, v) for k, v in (rec.get("variants") or {}).items() if v is not None}}}))
-                    if rec.get("expected") is not None and rec.get("calibrated") is not None:
-                        chk = self.sign_checks.setdefault(lab, [0, 0, 0])   # shown, total differs from calibrated, evidence part differs
-                        chk[0] += 1
-                        if rec["expected"] * rec["calibrated"] < 0:
-                            chk[1] += 1
-                        if rec["expected_edge"] * rec["calibrated"] < 0 and abs(rec["calibrated"]) > 1e-9 and abs(rec["expected_edge"]) > 1e-12:
-                            chk[2] += 1
-                    if keep_history:
-                        history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
-                        self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"], f["V"]) for f in rec["families"]}))
+                    if rec.get("sh"):
+                        o["shadow"].append((rec["t"], y, rec["raw"], rec["all"], rec["sh"]))
+                    # the research record the ML Lab learns from: everything known at t, and what happened after
+                    first_rec.setdefault(lab, (mat, rec["t"]))
+                    lab_records.setdefault(lab, []).append((rec["t"], rec["raw"], y, yr, rec["fam"], rec["c"], rec.get("K")))
+                    sig_records.setdefault(lab, []).append((rec["t"], rec["raw"], y, yr, rec.get("sig")))
+                if kind == 2:
+                    break
+                # 4) monthly refit
+                if kind == 0:
+                    ev_h = self._evidence(sums, h, tau, r, widx[r], pers_at[r], self._prior_at(tau, h), full=r == len(refits) - 1)
+                    vf_h = self._validation(o["fam"], h)
+                    calib_h = self._calibration(o["pairs"], h)
+                    corr_now = corr_at[r]
+                    continue
+                # 5) scores
+                if ev_h is None:
+                    continue
+                rec = self.score_at(tau, lab, h, ev_h, corr_now, vf_h, calib_h)
+                if rec["raw"] is None:
                     if tau == n - 1:
                         latest[lab] = rec
-        if until is None:
-            save_checkpoints(self.r, self.asset_id, self.cls, self.yearly, sigs)
+                    continue
+                if tau + h + 1 < self.n:
+                    shd = rec.get("shadow") or {}
+                    fam = {f["family"]: f["score"] for f in rec["families"]}
+                    fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
+                    if not records:                # what validation and calibration read
+                        matq.append((tau + h + 1, {"t": tau, "raw": rec["raw"], "fam": fam}))
+                    else:
+                        matq.append((tau + h + 1, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"), "lab": lab,
+                                                   "c": {f["family"]: f["contribution"] for f in rec["families"]}, "K": rec.get("K"),
+                                                   "sig": signal_record(rec),
+                                                   "sh": {**{f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []},
+                                                          **{"VARIANT:" + k: (v, v) for k, v in (rec.get("variants") or {}).items() if v is not None}}}))
+                if records and rec.get("expected") is not None and rec.get("calibrated") is not None:
+                    first_chk.setdefault(lab, (tau, hi))
+                    chk = sign_checks.setdefault(lab, [0, 0, 0])   # shown, total differs from calibrated, evidence part differs
+                    chk[0] += 1
+                    if rec["expected"] * rec["calibrated"] < 0:
+                        chk[1] += 1
+                    if rec["expected_edge"] * rec["calibrated"] < 0 and abs(rec["calibrated"]) > 1e-9 and abs(rec["expected_edge"]) > 1e-12:
+                        chk[2] += 1
+                if keep_history:
+                    history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
+                    if records:
+                        self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"], f["V"]) for f in rec["families"]}))
+                if tau == n - 1:
+                    latest[lab] = rec
+            if ev_h is not None:
+                for e in ev_h.values():
+                    view = e.pop("_reg", None)
+                    if view is not None:
+                        e["regimes"] = view.full()
+                ev[h], vf[h], calib[h] = ev_h, vf_h, calib_h
+        for r in januaries:
+            for lab, h in self.horizons:
+                if (r, h) in jan_base:
+                    self.yearly.setdefault(cal[refits[r]][:4], {})[h] = jan_base[(r, h)]
+        self.lab_records = {lab: lab_records[lab] for lab in sorted(lab_records, key=first_rec.get)}
+        self.sig_records = {lab: sig_records[lab] for lab in sorted(sig_records, key=first_rec.get)}
+        self.sign_checks = {lab: sign_checks[lab] for lab in sorted(sign_checks, key=first_chk.get)}
+        latest = {lab: latest[lab] for lab, _ in self.horizons if lab in latest}
+        if until is None and save:
+            save_checkpoints(self.r, self.asset_id, self.cls, self.yearly, self.signals)
         if checkpoints_only:
             return {"asset_id": self.asset_id, "checkpoints": sorted(self.yearly)}
-        return {"asset_id": self.asset_id, "as_of": self.cal[n - 1], "latest": latest, "history": history,
+        return {"asset_id": self.asset_id, "as_of": cal[n - 1], "latest": latest, "history": history,
                 "evidence": {lab: ev.get(h) for lab, h in self.horizons}, "calibration": {lab: calib.get(h) for lab, h in self.horizons},
                 "validation": {lab: vf.get(h) for lab, h in self.horizons}, "oos": {lab: oos[h]["pairs"] for lab, h in self.horizons},
                 "shadow": {lab: oos[h]["shadow"] for lab, h in self.horizons}, "n": n}
+
+    def _sums(self, h: int, n: int, refits: List[int], need: List[bool], januaries, full: bool = True) -> Dict[str, tuple]:
+        """Per signal, the evidence sums for horizon h at every refit: the observation dated t joins at session
+        t + h + 1 (every `_step(h)`-th date with a known outcome). Returns {signal: (cp, cpn, extra, reg)} where cp[r]
+        = (n, Σx, Σy, Σx², Σy², Σxy) and cpn[r] = n at refit r; for refits in `need` (when `full`), extra[r] = (hits
+        counted, hits, n x>½, Σy x>½, n x<−½, Σy x<−½) and reg = the per-regime-state sums (`_Buckets`, built when first
+        read). Only the January refits are read unless `full`."""
+        z = self.z
+        yh = self.y[h]
+        T = [t for t in range(0, n - h - 1, _step(h)) if yh[t] is not None]
+        yT = _pick(yh, T)
+        joined = [bisect_right(T, tr - h - 1) for tr in refits]           # observations joined by each refit
+        at = list(range(len(refits))) if full else list(januaries)
+        want = [r for r in range(len(refits)) if need[r]] if full else []
+        jw = [joined[r] for r in want]
+        states: Dict[str, tuple] = {}                                   # state -> (positions in T, dimension index)
+        if want and h <= REG_MAX_H:
+            cols = [self.regimes[d] for d in self.regimes]
+            for i, t in enumerate(T):
+                for di, col in enumerate(cols):
+                    st = col[t]
+                    if st is not None:
+                        e = states.get(st)
+                        if e is None:
+                            e = states[st] = ([], [])
+                        e[0].append(i); e[1].append(di)
+        # a signal with a value on every observation date shares the outcome sums (the same numbers, added in order)
+        shared: dict = {}
+        ja = [joined[r] for r in at]
+        y_sums = [_pick(P, ja) for P in (list(accumulate(yT, initial=0.0)), list(accumulate(map(mul, yT, yT), initial=0.0)))]
+        out = {}
+        for s in self.signals:
+            xT = _pick(z[s], T)
+            dense = None not in xT
+            if dense:
+                xs, ys, cnt, m = xT, yT, joined, 0
+            else:
+                keep = [i for i, x in enumerate(xT) if x is not None]
+                xs, ys = _pick(xT, keep), _pick(yT, keep)
+                cnt = [bisect_left(keep, j) for j in joined]
+                m = keep[0] if keep and keep[0] + len(keep) == len(xT) else None      # a value from the m-th date on
+            ca = [cnt[r] for r in at]
+            if dense:
+                sy, syy = y_sums
+            else:
+                sy, syy = (_pick(P, ca) for P in (list(accumulate(ys, initial=0.0)), list(accumulate(map(mul, ys, ys), initial=0.0))))
+            snap = zip(ca, _pick(list(accumulate(xs, initial=0.0)), ca), sy, _pick(list(accumulate(map(mul, xs, xs), initial=0.0)), ca), syy,
+                       _pick(list(accumulate(map(mul, xs, ys), initial=0.0)), ca))
+            if full:
+                cp = list(snap)
+            else:
+                cp = [None] * len(refits)
+                for r, v in zip(at, snap):
+                    cp[r] = v
+            extra: list = [None] * len(refits)
+            reg = None
+            if want:
+                cw = [cnt[r] for r in want]
+                hit = list(map(gt, map(abs, xs), repeat(0.25)))
+                HN = _pick(list(accumulate(hit, initial=0)), cw)
+                HH = _pick(list(accumulate(map(and_, hit, map(eq, map(gt, xs, repeat(0)), map(gt, ys, repeat(0)))), initial=0)), cw)
+                PN = _pick(list(accumulate(map(gt, xs, repeat(0.5)), initial=0)), cw)
+                PPY = _pick(list(accumulate(compress(ys, map(gt, xs, repeat(0.5))), initial=0.0)), PN)
+                QN = _pick(list(accumulate(map(lt, xs, repeat(-0.5)), initial=0)), cw)
+                QQY = _pick(list(accumulate(compress(ys, map(lt, xs, repeat(-0.5))), initial=0.0)), QN)
+                for r, v in zip(want, zip(HN, HH, PN, PPY, QN, QQY)):
+                    extra[r] = v
+                reg = _Buckets(xT, yT, states, jw, m, shared) if states else None
+            out[s] = (cp, cnt, extra, reg)
+        return out
+
+    def _comovement(self, n: int, refits: List[int], need: List[bool]):
+        """Signal persistence (lag-21 autocorrelation) and the within-family correlations at each refit that is read:
+        ({refit: {signal: persistence}}, {refit: {family: {(a, b): correlation}}})."""
+        z, sigs = self.z, self.signals
+        want = [r for r in range(len(refits)) if need[r]]
+        pers_at = {r: {} for r in want}
+        for s in sigs:
+            zs = z[s]
+            taus = [tau for tau in range(PERSIST_LAG, n) if zs[tau] is not None and zs[tau - PERSIST_LAG] is not None]
+            A, B = [zs[t] for t in taus], [zs[t - PERSIST_LAG] for t in taus]
+            P = self._prefix(A, B)
+            for r in want:
+                c = bisect_right(taus, refits[r])
+                rho = _corr(c, P[0][c], P[1][c], P[2][c], P[3][c], P[4][c])
+                pers_at[r][s] = min(2520.0, -PERSIST_LAG / math.log(rho)) if rho is not None and 0.05 < rho < 1 else 1.0
+        corr_at = {r: {} for r in want}
+        for f, ss in self.fam_signals.items():
+            for r in want:
+                corr_at[r][f] = {}
+            for i, a in enumerate(ss):
+                za = z[a]
+                for b in ss[i + 1:]:
+                    zb = z[b]
+                    taus = [tau for tau in range(0, n, CORR_STEP) if za[tau] is not None and zb[tau] is not None]
+                    P = self._prefix([za[t] for t in taus], [zb[t] for t in taus])
+                    for r in want:
+                        c = bisect_right(taus, refits[r])
+                        corr_at[r][f][(a, b)] = _corr(c, P[0][c], P[1][c], P[2][c], P[3][c], P[4][c]) or 0.0
+        return pers_at, corr_at
+
+    @staticmethod
+    def _prefix(xs: list, ys: list) -> tuple:
+        """Prefix sums (Σx, Σy, Σx², Σy², Σxy), each a list starting at 0.0, added in order."""
+        return (list(accumulate(xs, initial=0.0)), list(accumulate(ys, initial=0.0)), list(accumulate(map(mul, xs, xs), initial=0.0)),
+                list(accumulate(map(mul, ys, ys), initial=0.0)), list(accumulate(map(mul, xs, ys), initial=0.0)))
 
     # ------------------------------------------------------------------ evidence at a refit
     def _prior_at(self, tau: int, h: int) -> Optional[dict]:
@@ -328,36 +564,48 @@ class ShafferRun:
         ys = [y for y in self.priors if y <= year]
         return self.priors[max(ys)].get(h) if ys else None
 
-    def _evidence(self, sums: Dict[str, _Sig], h: int, tau: int, k: int, pers_now: Dict[str, float], hier: Optional[dict] = None) -> dict:
+    def _evidence(self, sums: Dict[str, tuple], h: int, tau: int, r: int, k: int, pers_now: Dict[str, float], hier: Optional[dict] = None,
+                  full: bool = True) -> dict:
+        """The evidence of every signal at refit r (session tau; the k-th refit that is read), from `_sums`. The
+        regime-conditional evidence is a `_Regimes` view under "_reg" ("regimes" holds its place in the record):
+        score_at reads today's states from it, and the sweep writes the full dict into the evidence it returns.
+        Unless `full`, a muted signal's record is only what score_at reads of it ({"status", "w": 0.0}); its p-value
+        still enters the q-values of the others."""
         step = _step(h)
         out, pv = {}, {}
-        for s, e in sums.items():
-            if e.n < MIN_ROWS:
-                out[s] = {"status": "insufficient", "n": e.n}
+        for s, (cps, ns, extra, reg) in sums.items():
+            base = cps[r]
+            en = base[0]
+            if en < MIN_ROWS:
+                out[s] = {"status": "insufficient", "n": en}
                 continue
-            rho = _corr(e.n, e.sx, e.sy, e.sxx, e.syy, e.sxy)
+            rho = _corr(*base)
             if rho is None:
-                out[s] = {"status": "insufficient", "n": e.n}
+                out[s] = {"status": "insufficient", "n": en}
                 continue
-            n_eff = max(1.0, e.n * step / max(h, pers_now.get(s, 1.0)))
+            n_eff = max(1.0, en * step / max(h, pers_now.get(s, 1.0)))
             t = _tstat(rho, n_eff)
             p = t_pvalue(t, max(1.0, n_eff - 2)) if n_eff > 3 else 1.0
             pv[s] = p
             ests = [rho]
-            hit = e.hh / e.hn if e.hn >= 20 else None
+            hn, hh, pn, py, qn, qy = extra[r]
+            hit = hh / hn if hn >= 20 else None
             if hit is not None:
                 ests.append(math.sin(math.pi * (hit - 0.5)))
             spread = None
-            if e.pn >= 10 and e.qn >= 10:
-                spread = e.py / e.pn - e.qy / e.qn
-                vy = e.syy / e.n - (e.sy / e.n) ** 2
+            if pn >= 10 and qn >= 10:
+                spread = py / pn - qy / qn
+                vy = base[4] / en - (base[2] / en) ** 2
                 if vy > 1e-12:
                     ests.append(_clip(spread / math.sqrt(vy) / 2.2826, -1.0, 1.0))   # E[x|x>½] − E[x|x<−½] = 2.2826 for N(0,1)
             ps_own = _median(ests)
             ps, ps_prior, prior_n = ps_own, None, 0.0
             pr = (hier or {}).get(s)
             if pr:
-                rc, rg = _corr(*pr[0]) if pr[0][0] >= 30 else None, _corr(*pr[1]) if pr[1][0] >= 30 else None
+                rcg = self._prior_ic.get(id(pr))      # the same sums for every refit of the year
+                if rcg is None or rcg[0] is not pr:
+                    rcg = self._prior_ic[id(pr)] = (pr, _corr(*pr[0]) if pr[0][0] >= 30 else None, _corr(*pr[1]) if pr[1][0] >= 30 else None)
+                rc, rg = rcg[1], rcg[2]
                 nc = pr[0][0] * step / max(h, 1)
                 if rc is not None or rg is not None:
                     if rc is not None and rg is not None:
@@ -366,43 +614,36 @@ class ShafferRun:
                         ps_prior = rc if rc is not None else rg
                     ps = (n_eff * ps_own + PRIOR_N0 * ps_prior) / (n_eff + PRIOR_N0)
                     prior_n = PRIOR_N0
-            # stability: the IC's sign in each third of the matured rows
-            cps = e.cp
-            ns = e.cpn
-            third = e.n / 3.0
-            k1, k2 = bisect_left(ns, third), bisect_left(ns, 2 * third)
-            zero = (0, 0.0, 0.0, 0.0, 0.0, 0.0)
-            segs = [_window(zero, cps[k1] if k1 < len(cps) else cps[-1]),
-                    _window(cps[k1] if k1 < len(cps) else cps[-1], cps[k2] if k2 < len(cps) else cps[-1]),
-                    _window(cps[k2] if k2 < len(cps) else cps[-1], cps[-1])]
-            sics = [_corr(*sg) for sg in segs if sg[0] >= 20]
-            sics = [x for x in sics if x is not None]
-            stab = (sum(1 for x in sics if (x > 0) == (ps > 0)) / len(sics)) if sics else 0.0
-            # windows: last 1, 3, 5 years (12, 36, 60 refits ago)
-            win = {}
-            for lab_w, back in (("1Y", 12), ("3Y", 36), ("5Y", 60)):
-                if len(cps) > back:
-                    wd = _window(cps[-1 - back], cps[-1])
-                    wi = _corr(*wd) if wd[0] >= 10 else None
-                    win[lab_w] = (wi, max(1.0, wd[0] * step / max(h, pers_now.get(s, 1.0))))
-            # data quality: share of the last year with a value
-            pc = self.present[s]
-            lo = max(0, tau - 252)
-            quality = (pc[tau] - pc[lo]) / (tau - lo) if tau > lo else 0.0
-            # direction from the economic prior and the evidence
+            # direction from the economic prior and the evidence (stability, below, only when it can matter)
             prior = cfg.PRIOR.get(s, 0)
             sgn = 1 if ps > 0 else -1
             if prior:
                 if ps * prior >= 0:
                     delta, status = prior, "active"
-                elif abs(t) >= cfg.FLIP_T and n_eff >= cfg.FLIP_N and stab >= 2 / 3:
+                elif abs(t) >= cfg.FLIP_T and n_eff >= cfg.FLIP_N and _stability(cps, ns, r, base, ps) >= 2 / 3:
                     delta, status = -prior, "reversed by evidence"
                 else:
                     delta, status = 0, "muted: evidence against the prior"
-            elif abs(t) >= cfg.AGNOSTIC_T and n_eff >= cfg.AGNOSTIC_N and stab >= 2 / 3:
+            elif abs(t) >= cfg.AGNOSTIC_T and n_eff >= cfg.AGNOSTIC_N and _stability(cps, ns, r, base, ps) >= 2 / 3:
                 delta, status = sgn, "active: direction from evidence"
             else:
                 delta, status = 0, "muted: no reliable direction"
+            if not delta and not full:
+                out[s] = {"status": status, "w": 0.0}
+                continue
+            stab = _stability(cps, ns, r, base, ps)
+            # windows: last 1, 3, 5 years (12, 36, 60 refits ago)
+            win = {}
+            for lab_w, back in (("1Y", 12), ("3Y", 36), ("5Y", 60)):
+                if r >= back:
+                    wa = cps[r - back]
+                    wn = en - wa[0]
+                    wi = _corr_window(wa, base) if wn >= 10 else None
+                    win[lab_w] = (wi, max(1.0, wn * step / max(h, pers_now.get(s, 1.0))))
+            # data quality: share of the last year with a value
+            pc = self.present[s]
+            lo = max(0, tau - 252)
+            quality = (pc[tau] - pc[lo]) / (tau - lo) if tau > lo else 0.0
             # decay: recent windows against the full history, in the direction the signal is used
             base_ic = abs(rho) if abs(rho) > 0.01 else 0.01
             d, dclass = 1.0, "INSUFFICIENT DATA"
@@ -417,10 +658,14 @@ class ShafferRun:
             se = 1.0 / math.sqrt(max(1.0, n_eff - 3))
             ci_strength = abs(rho) / (abs(rho) + 1.96 * se)
             rec = {"status": status, "delta": delta, "ps": ps, "ps_own": ps_own, "ps_prior": ps_prior, "ic": rho, "ic_hit": ests[1] if hit is not None else None,
-                   "hit": hit, "spread": spread, "n": e.n, "n_eff": n_eff, "t": t, "p": p, "stability": stab, "quality": quality,
+                   "hit": hit, "spread": spread, "n": en, "n_eff": n_eff, "t": t, "p": p, "stability": stab, "quality": quality,
                    "windows": {k2_: v[0] for k2_, v in win.items()}, "decay": dclass, "d": d, "ci_strength": ci_strength}
             if h <= REG_MAX_H:
-                rec["regimes"] = {st: (_corr(*acc), max(1.0, acc[0] * step / max(h, pers_now.get(s, 1.0)))) for st, acc in e.reg.items() if acc[0] >= 20}
+                if reg is None:
+                    rec["regimes"] = {}
+                else:
+                    rec["regimes"] = None
+                    rec["_reg"] = _Regimes(reg, k, step, max(h, pers_now.get(s, 1.0)))
             out[s] = rec
         # q-values: production signals among production signals only (so adding candidates cannot move the production
         # score); candidate signals among all signals (as if admitted)
@@ -428,7 +673,7 @@ class ShafferRun:
         q_all = _bh(pv) if pv else {}
         for s, rec in out.items():
             if "ps" not in rec:
-                continue
+                continue                        # insufficient, or (unless full) muted: w is already 0
             rec["q"] = (q_prod if s in cfg.FAMILY_OF else q_all).get(s, 1.0)
             rec["c"] = min(1.0, math.sqrt(rec["n_eff"] / cfg.N_FULL)) * rec["ci_strength"] * (1.0 - 0.5 * rec["q"]) * rec["quality"]
             rec["w"] = abs(rec["ps"]) * (0.25 + 0.75 * rec["stability"]) if rec["delta"] else 0.0
@@ -511,20 +756,30 @@ class ShafferRun:
                 "bins": table, "monotonicity": mono}
 
     # ------------------------------------------------------------------ the one scoring routine
+    def _families_at(self, lab: str) -> list:
+        """(family, members, in production, A, H) for the families that apply to this asset at this horizon."""
+        memo = self._fam_memo
+        if lab not in memo:
+            memo[lab] = [(f, members, cfg.in_production(f, lab), cfg.applicability(f, self.cls), cfg.horizon_fit(f, lab))
+                         for f, members in self.fam_signals.items()]
+            memo[lab] = [x for x in memo[lab] if x[3] * x[4] > 0]
+        return memo[lab]
+
     def score_at(self, tau: int, lab: str, h: int, ev: dict, corr_now: dict, vf: dict, calib: dict) -> dict:
         z = self.z
         state = {d: self.regimes[d][tau] for d in self.regimes}
+        skey = tuple(state.values())
         families, num, ksum = [], 0.0, 0.0
         shadow, shadow_ah = [], {}
-        for f, members in self.fam_signals.items():
-            prod = cfg.in_production(f, lab)
+        s_scale, n_regime, r_min, r_max = cfg.S_SCALE, cfg.N_REGIME, cfg.R_MIN, cfg.R_MAX
+        for f, members, prod, A, H in self._families_at(lab):
             target = families if prod else shadow
-            A, H = cfg.applicability(f, self.cls), cfg.horizon_fit(f, lab)
-            if A * H <= 0:
-                continue
             present, rows = False, []
             for s in members:
-                zs = next((v for v in (z[s][tau], z[s][tau - 1] if tau else None) if v is not None), None)
+                zc = z[s]
+                zs = zc[tau]
+                if zs is None and tau:
+                    zs = zc[tau - 1]
                 if zs is None:
                     continue
                 present = True
@@ -532,17 +787,23 @@ class ShafferRun:
                 if not e.get("w"):
                     rows.append({"signal": s, "z": zs, "status": e.get("status", "insufficient"), "active": False})
                     continue
-                s_val = e["delta"] * _clip(zs / cfg.S_SCALE, -1.0, 1.0)
+                delta = e["delta"]
+                x = zs / s_scale
+                s_val = delta * (-1.0 if x < -1.0 else 1.0 if x > 1.0 else x)           # _clip(x, -1, 1)
                 r = 1.0
-                regs = e.get("regimes") or {}
-                parts = []
-                for d, st in state.items():
-                    if st and st in regs and regs[st][0] is not None:
-                        ric, rne = regs[st]
-                        ratio = _clip(e["delta"] * ric / max(abs(e["ps"]), 0.01), 0.0, 2.0)
-                        parts.append(rne / (rne + cfg.N_REGIME) * (ratio - 1.0))
-                if parts:
-                    r = _clip(1.0 + sum(parts) / len(parts), cfg.R_MIN, cfg.R_MAX)
+                regs = e.get("regimes")
+                if regs is None:
+                    view = e.get("_reg")
+                    regs = view.at(skey) if view is not None else {}
+                if regs:
+                    parts = []
+                    for st in skey:
+                        if st and st in regs and regs[st][0] is not None:
+                            ric, rne = regs[st]
+                            ratio = _clip(delta * ric / max(abs(e["ps"]), 0.01), 0.0, 2.0)
+                            parts.append(rne / (rne + n_regime) * (ratio - 1.0))
+                    if parts:
+                        r = _clip(1.0 + sum(parts) / len(parts), r_min, r_max)
                 term = s_val * e["c"] * r * e["d"]
                 rows.append({"signal": s, "z": zs, "s": s_val, "delta": e["delta"], "w": e["w"], "c": e["c"], "r": r, "d": e["d"], "term": term,
                              "ps": e["ps"], "ic": e["ic"], "q": e.get("q"), "n_eff": e["n_eff"], "decay": e["decay"], "status": e["status"], "active": True})
@@ -655,7 +916,7 @@ def compute_shaffer_score(research, asset_id: str, horizon: str, as_of: Optional
     idx = None
     if as_of is not None:
         idx = research.panel().index_of(as_of)
-    res = run.run(until=idx, keep_history=False)
+    res = run.run(until=idx, keep_history=False, records=False)
     return res["latest"].get(horizon) or {"horizon": horizon, "raw": None, "reason": "no score"}
 
 
@@ -777,17 +1038,12 @@ def _pack(values: List[float]) -> str:
     return base64.b64encode(zlib.compress(array("f", values).tobytes(), 6)).decode("ascii")
 
 
-def _unpack(text: str) -> List[float]:
-    import base64
-    import zlib
-    from array import array
-    a = array("f")
-    a.frombytes(zlib.decompress(base64.b64decode(text)))
-    return list(a)
+def checkpoint_key(asset_id: str) -> str:
+    return f"shaffer_cp:{asset_id}:{cfg.VERSION}"
 
 
-def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict], sigs: List[str]) -> None:
-    """Store this asset's evidence sums at each January (horizons up to 12M) so other assets can use them as priors."""
+def checkpoint_payload(cls: str, yearly: Dict[str, dict], sigs: List[str]) -> dict:
+    """The stored form of an asset's January evidence sums (what `save_checkpoints` writes)."""
     years = sorted(yearly)
     hs = sorted({h for y in years for h in yearly[y]})
     flat = []
@@ -796,13 +1052,28 @@ def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict],
             row = yearly[y].get(h) or {}
             for sg in sigs:
                 flat += list(row.get(sg) or (0, 0.0, 0.0, 0.0, 0.0, 0.0))
-    research.store.kv_set(f"shaffer_cp:{asset_id}:{cfg.VERSION}", {"asset_class": cls, "years": years, "horizons": hs, "signals": sigs, "data": _pack(flat)})
+    return {"asset_class": cls, "years": years, "horizons": hs, "signals": sigs, "data": _pack(flat)}
+
+
+def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict], sigs: List[str]) -> None:
+    """Store this asset's evidence sums at each January (horizons up to 12M) so other assets can use them as priors."""
+    research.store.kv_set(checkpoint_key(asset_id), checkpoint_payload(cls, yearly, sigs))
     research._prior_cache = None
 
 
-def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
-    """{year: {h: {signal: (class sums, global sums)}}} from every OTHER asset's checkpoints (point in time: a
-    January checkpoint only holds outcomes known by that January)."""
+def parse_checkpoints(v: dict) -> tuple:
+    """(asset class, years, horizons, signals, the sums as float32) of a stored checkpoint payload."""
+    import base64
+    import zlib
+    from array import array
+    a = array("f")
+    a.frombytes(zlib.decompress(base64.b64decode(v["data"])))
+    return v["asset_class"], tuple(v["years"]), tuple(v["horizons"]), tuple(v["signals"]), a
+
+
+def prior_cache(research) -> dict:
+    """Every asset's stored checkpoints, {"keys": [kv keys], "per": {asset: parse_checkpoints(...)}} in key order;
+    reread whenever the set of keys changes or this process saved a checkpoint."""
     cache = getattr(research, "_prior_cache", None)
     keys = research.store.kv_keys("shaffer_cp:")
     keys = [k for k in keys if k.endswith(":" + cfg.VERSION)]
@@ -812,28 +1083,48 @@ def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
             v = research.store.kv_get(k)
             if not v:
                 continue
-            flat = _unpack(v["data"])
-            sigs, hs, years = v["signals"], v["horizons"], v["years"]
-            data, pos = {}, 0
-            for y in years:
-                for h in hs:
-                    for sg in sigs:
-                        data[(y, h, sg)] = tuple(flat[pos:pos + 6])
-                        pos += 6
-            per[k.split(":")[1]] = (v["asset_class"], data)
+            per[k.split(":")[1]] = parse_checkpoints(v)
         cache = {"keys": keys, "per": per}
         research._prior_cache = cache
-    agg: Dict[tuple, list] = {}
-    for aid, (acls, data) in cache["per"].items():
-        if aid == asset_id:
-            continue
-        for key, sums in data.items():
-            slot = agg.setdefault(key, [[0.0] * 6, [0.0] * 6])
-            for j in range(6):
-                slot[1][j] += sums[j]
-                if acls == cls:
-                    slot[0][j] += sums[j]
+    return cache
+
+
+def load_priors(research, asset_id: str, cls: str, signals: Optional[List[str]] = None) -> Dict[str, dict]:
+    """{year: {h: {signal: (class sums, global sums)}}} from every OTHER asset's checkpoints (point in time: a
+    January checkpoint only holds outcomes known by that January); only for `signals` when given."""
+    return aggregate_priors(prior_cache(research)["per"], asset_id, cls, signals)
+
+
+def aggregate_priors(per: Dict[str, tuple], asset_id: str, cls: str, signals: Optional[List[str]] = None) -> Dict[str, dict]:
+    """The class and global sums over every asset in `per` but `asset_id`, each added in the order of `per`. With
+    `signals` (the ones the asset has), only those signals' sums are added — the others are never read — while the
+    years and horizons are the same as without."""
+    wanted = None if signals is None else set(signals)
+    layouts: Dict[tuple, tuple] = {}
     out: Dict[str, dict] = {}
+    agg: Dict[tuple, list] = {}
+    for aid, (acls, years, hs, sigs, arr) in per.items():
+        if aid == asset_id or not sigs:
+            continue
+        for y in years:
+            yd = out.setdefault(y, {})
+            for h in hs:
+                yd.setdefault(h, {})
+        lay = layouts.get((years, hs, sigs))
+        if lay is None:
+            keys = [(y, h, sg) for y in years for h in hs for sg in sigs]
+            lay = layouts[(years, hs, sigs)] = [(k, 6 * i) for i, k in enumerate(keys) if wanted is None or k[2] in wanted]
+        vals = arr.tolist()
+        same = acls == cls
+        for key, p in lay:
+            slot = agg.get(key)
+            if slot is None:
+                slot = agg[key] = [[0.0] * 6, [0.0] * 6]
+            g = slot[1]
+            g[0] += vals[p]; g[1] += vals[p + 1]; g[2] += vals[p + 2]; g[3] += vals[p + 3]; g[4] += vals[p + 4]; g[5] += vals[p + 5]
+            if same:
+                c = slot[0]
+                c[0] += vals[p]; c[1] += vals[p + 1]; c[2] += vals[p + 2]; c[3] += vals[p + 3]; c[4] += vals[p + 4]; c[5] += vals[p + 5]
     for (y, h, sg), (c, g) in agg.items():
-        out.setdefault(y, {}).setdefault(h, {})[sg] = (tuple(c), tuple(g))
+        out[y][h][sg] = (tuple(c), tuple(g))
     return out

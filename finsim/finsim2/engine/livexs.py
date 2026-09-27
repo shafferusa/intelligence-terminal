@@ -10,7 +10,8 @@ watchlist), a dozen names, not ~155.
 1. The weekly panel. Once per ISO week (the first daily run of the week), every research-universe asset is scored:
    production (model "shaffer", recorded by the Shaffer sweep) and every Shaffer challenger in live shadow (model
    "shaffer:<version>", lab.record_shadow). Rows are append-only and graded by tracking.score_matured like any forecast.
-   One panel a week keeps 1W observations non-overlapping.
+   One panel a week keeps 1W observations non-overlapping. The production sweeps run in worker processes
+   (research.ShafferBatch): the rows and cached results are exactly those of scoring one asset at a time.
 
 2. The statistic. On each matured panel date: the Spearman rank IC of the challenger's scores with the realised
    returns over the cross-section of assets that have both a challenger and a production forecast (≥ MIN_XS names),
@@ -105,9 +106,15 @@ def due(store, today: str) -> bool:
     return not any(p.get("week") == _week(today) for p in (store.kv_get(PANEL_KEY) or []))
 
 
-def record_panel(research, progress=None, force: bool = False) -> dict:
-    """Score every research-universe asset for production and every Shaffer challenger in live shadow (once a week)."""
+def record_panel(research, progress=None, force: bool = False, workers: Optional[int] = None) -> dict:
+    """Score every research-universe asset for production and every Shaffer challenger in live shadow (once a week).
+
+    The production sweeps run in `workers` processes (default: every CPU; 1 = in this process) through
+    research.ShafferBatch, which returns for every asset exactly what the one-asset-at-a-time loop would compute;
+    every store and ledger write stays here, in asset order."""
     from . import lab
+    from .research import ShafferBatch
+    from .tracking import record_shaffer
     say = progress or (lambda m: None)
     st = research.store
     today = research.panel().calendar()[-1]
@@ -119,15 +126,20 @@ def record_panel(research, progress=None, force: bool = False) -> dict:
     assets = st.lab_record_assets(lab.SIG_VERSION, "1W")
     t0 = time.time()
     n_ok, n_rows, errors = 0, 0, []
-    for k, a in enumerate(assets):
-        say(f"live panel {k + 1}/{len(assets)}: {a}")
-        try:
-            from .tracking import record_shaffer
-            record_shaffer(st, research.panel(), a, research.shaffer_full(a))   # production (idempotent per date)
-            n_rows += lab.record_shadow(research, a)  # every challenger in live shadow, same date
-            n_ok += 1
-        except Exception as e:  # noqa: BLE001
-            errors.append(f"{a}: {type(e).__name__}: {e}")
+    batch = ShafferBatch(research, assets, workers=workers, progress=say)
+    try:
+        for k, a in enumerate(assets):
+            say(f"live panel {k + 1}/{len(assets)}: {a}")
+            try:
+                record_shaffer(st, research.panel(), a, batch.take(a))   # production (idempotent per date)
+                n_rows += lab.record_shadow(research, a)  # every challenger in live shadow, same date
+                n_ok += 1
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"{a}: {type(e).__name__}: {e}")
+    finally:
+        batch.close()
+    if batch.workers:
+        say(f"live panel: {len(batch.fresh)} assets swept on {batch.workers} workers ({batch.here} redone here)")
     rec = {"date": today, "week": _week(today), "assets": n_ok, "challengers": [v["id"] for v in chal], "rows": n_rows,
            "seconds": round(time.time() - t0, 1), "errors": errors[:20]}
     panels = [p for p in (st.kv_get(PANEL_KEY) or []) if p.get("date") != today] + [rec]

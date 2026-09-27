@@ -168,10 +168,26 @@ same window; `benchmark_*` are the old names) and alpha/beta against SPY.
 - `compute_shaffer_score(asset, h, as_of)` is `run(until=as_of)`'s last record. The live score is the same call on
   the latest session.
 
+How it is computed (the output is the step-by-step sweep's, bit for bit — tests `test_fs2_panel.SweepExactness`):
+- Horizon by horizon: nothing crosses horizons but the refit calendar, signal persistence and the within-family
+  correlations (`_comovement`, computed first, at the refits that are read).
+- The running sums are prefix sums over the observations in the order they join (`itertools.accumulate` adds them
+  one at a time, as a running `+=` does), read at each refit (`_sums`). The per-regime-state sums are built only for
+  a signal that is ever active at that horizon (`_Buckets`).
+- Evidence, validation and calibration are computed only at refits scored before the next refit (the others were
+  overwritten unread). At those refits a muted signal's record is only what `score_at` reads (its status, w = 0);
+  the last refit's evidence, which the run returns, is complete.
+- `run(records=False)` (what `shaffer_full` uses) skips the research records the ML Lab and the audit read.
+
 Hierarchy:
 - A full run stores the per-signal evidence sums at each January in kv `shaffer_cp:{asset}:{VERSION}`
   (horizons ≤ 12M).
-- `load_priors` sums every *other* asset's checkpoints by class and globally.
+- `load_priors` sums every *other* asset's checkpoints by class and globally, in the order of their kv keys.
+  Because a full run then stores its own checkpoints, a loop over assets is order-dependent: an asset sees the new
+  checkpoints of the assets swept before it. `research.ShafferBatch` (the weekly panel) reproduces that loop in worker
+  processes: each worker publishes its asset's new checkpoints (they do not depend on the priors), waits for those of
+  the assets before it, and sweeps with the checkpoints the loop would have stored by then; the calling process
+  writes everything in order and re-sweeps an asset itself if a worker's assumption did not hold.
 - At a refit in year Y the asset uses the latest checkpoint year ≤ Y. The class IC is shrunk toward the global
   (N0 = 50), and the asset PS toward the class (N0 = 20).
 
