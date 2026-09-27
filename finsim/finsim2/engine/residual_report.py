@@ -79,6 +79,21 @@ def verdict(res: dict) -> List[str]:
     out.append(f"D vs E: always-D minus always-E = {_f(dd.get('mean'))} (t {_t(dd.get('t'))}); the selector DE-A {'passed' if (de.get('DE-A') or {}).get('passed') else 'did not pass'} "
                f"(Δ {_f(((de.get('DE-A') or {}).get('delta_vs_E') or {}).get('mean'))}), the blend DE-B {'passed' if (de.get('DE-B') or {}).get('passed') else 'did not pass'} "
                f"(Δ {_f(((de.get('DE-B') or {}).get('delta_vs_E') or {}).get('mean'))}).")
+    T = W.get("tails") or {}
+    tp = [f"{k} {side}" for side in ("top", "bottom") for k in ("T2", "T3", "T4") if ((T.get(side) or {}).get(k) or {}).get("passed")]
+    if tp:
+        out.append(f"Tail probabilities improve on E's percentile alone ({', '.join(tp)}): mostly by learning which assets move a lot "
+                   "(asset class, signal disagreement) — magnitude, symmetric across both tails, not direction.")
+    H = res.get("horizons") or {}
+    other = [k for k in ("MH-1M", "MH-3M", "DR-1M") if (H.get(k) or {}).get("passed")] + (["DR-1W"] if (W.get("directional_1W") or {}).get("passed") else [])
+    hp = (res.get("hedge") or {}).get("passed") or []
+    out.append(f"Multi-horizon transfer: {'passed ' + ', '.join(k for k in other if k.startswith('MH')) if any(k.startswith('MH') for k in other) else 'no gain'}; "
+               f"Directional residual: {'passed ' + ', '.join(k for k in other if k.startswith('DR')) if any(k.startswith('DR') for k in other) else 'no gain over prior-only'}; "
+               f"hedge action policy: {len(hp)} of {len((res.get('hedge') or {}).get('cells') or {})} cells passed H1–H5.")
+    if not [k for k in _alpha_items(W) if (A[k] or {}).get("passed")] and not any(((W.get("de") or {}).get(k) or {}).get("passed") for k in ("DE-A", "DE-B")):
+        out.append("**Conclusion: with the information in these 74 signals and context features, E is close to the limit of what this "
+                   "program's models can extract for 1W ranking.** What remains predictable is how big moves will be and how reliable E is "
+                   "given its own conviction — not which way E is wrong.")
     el = res.get("eligible") or []
     out.append(f"Candidates eligible for a live-shadow proposal: {', '.join(e['candidate'] for e in el) if el else 'none'}. "
                "Nothing was put into live shadow; D and E, production, the Directional prior and hedge-2 are unchanged.")
@@ -496,11 +511,46 @@ def _passed_failed(w, res: dict):
         w("Passed every pre-registered gate — eligible to be PROPOSED for live shadow (not activated; a proposal needs a decision, "
           "its own frozen version and a live expectation):")
         w("")
+        W = res.get("1W") or {}
         for e in el:
-            w(f"- [{e['family']}] {e['candidate']} — `{RS.vid_of(e['candidate'])}`")
+            w(f"- [{e['family']}] {e['candidate']} — `{RS.vid_of(e['candidate'])}`. {_assess(e, W)}")
     else:
         w("None. Every candidate stays a research version; the live-shadow set (D, E, the λ-hedge shadow) is unchanged.")
     w("")
+
+
+def _corr(a: List[float], b: List[float]) -> Optional[float]:
+    n = len(a)
+    ma, mb = sum(a) / n, sum(b) / n
+    sa = sum((x - ma) ** 2 for x in a) ** 0.5
+    sb = sum((y - mb) ** 2 for y in b) ** 0.5
+    return sum((x - ma) * (y - mb) for x, y in zip(a, b)) / (sa * sb) if sa > 0 and sb > 0 else None
+
+
+def _assess(e: dict, W: dict) -> str:
+    """What passing actually means for each eligible candidate (computed)."""
+    c = e["candidate"]
+    if c == "REL":
+        bc = (W.get("rel") or {}).get("beyond_conviction") or {}
+        if (bc.get("t") or 0) < 2:
+            return (f"It passed, but its AUC beyond a conviction-only model is {_f(bc.get('mean'), 4)} (t {_t(bc.get('t'))}): it re-expresses E's own "
+                    "|score| — the capability world with an optimal E passes the same gates. Useful as a display of how confident E is; not a "
+                    "reason to change anything. A live-shadow proposal is not recommended.")
+        return "Its AUC beyond E's own conviction is significant: context adds information about when E is right."
+    if c.startswith("T"):
+        side = c.split()[-1]
+        k = c.split()[0]
+        v = ((W.get("tails") or {}).get(side) or {}).get(k) or {}
+        sp = ", ".join(f"`{a}`" for a, _ in (v.get("top_splits") or [])[:4])
+        if k == "T4":
+            td = [r for r in (W.get("today") or []) if r.get("p_top_decile") is not None and r.get("p_bottom_decile") is not None]
+            rho = _corr([r["p_top_decile"] for r in td], [r["p_bottom_decile"] for r in td]) if len(td) > 3 else None
+            return (f"Today P(top decile) and P(bottom decile) correlate {_f(rho, 2)} across {len(td)} assets. Brier gain {_f((v.get('brier_gain') or {}).get('mean'), 5)} (t {_t((v.get('brier_gain') or {}).get('t'))}) in every era; it splits "
+                    f"mostly on {sp} — which assets make large moves, a magnitude effect present in both tails, not a view on direction. "
+                    "It improves tail probabilities for risk display; it is not an Alpha improvement.")
+        return (f"Brier gain {_f((v.get('brier_gain') or {}).get('mean'), 5)} (t {_t((v.get('brier_gain') or {}).get('t'))}), era 2013–16 "
+                f"{_f((v.get('eras') or {}).get('2013–16'), 5)}: a borderline pass, dominated by T4 on the same target.")
+    return ""
 
 
 # ------------------------------------------------------------------ SHAFFER_META_CURRENT.md
@@ -556,7 +606,10 @@ def current_markdown(res: dict) -> str:
           "No residual model passed its gates, so **adjusted Alpha = E**.")))
     w("- **REL**: E reliability (0–1, research display). **P(E)**: probability E is closer to the outcome than D.")
     w("- **Exp. rel.**: the mean 1W return relative to the cross-section in E's percentile bucket (2013–2024); **range** = 95% of single weekly outcomes.")
-    w("- **Top / Bottom**: probability of finishing in the week's top / bottom decile (T1 benchmark unless a richer model passed).")
+    tm = (today[0].get("tail_model") if today else None) or "T1/T1"
+    w(f"- **Top / Bottom**: probability of finishing in the week's top / bottom decile — model {tm.split('/')[0]} (top) and "
+      f"{tm.split('/')[1]} (bottom): the benchmark T1 (E's percentile) unless a richer tail model passed its gates. A passing T4 "
+      "learns mostly which assets move a lot (asset class, signal disagreement), so it raises both tails for volatile assets.")
     w("- **Prior / Adj.**: Directional prior-only P(up) and the Directional residual's capped adjustment (research; the Directional model stays prior-only).")
     w("")
     w("| Asset | Class | E % | D % | Residual | Adj. Alpha | REL | P(E) | Pref. | Exp. rel. | range (95%) | Top | Bottom | Prior | Adj. |")

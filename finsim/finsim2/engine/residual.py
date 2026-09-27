@@ -868,15 +868,18 @@ def finalize_family(items: Dict[str, dict], gate_keys) -> Dict[str, dict]:
 
 # ------------------------------------------------------------------ tail classifiers (T1 benchmark; T2–T4)
 def _tree_boost_logit(R: "Resid", base_lin: array, lab: array, rounds: int = 20, rate: float = 0.1, n_feat: int = 20,
-                      nb: int = 16, sample: int = 12000, seed: int = 9, splits: Optional[Dict[str, int]] = None) -> array:
-    """T4: Newton boosting of depth-2 trees on the logistic residual of a base linear predictor, walk-forward."""
+                      nb: int = 16, sample: int = 12000, seed: int = 9, splits: Optional[Dict[str, int]] = None,
+                      final: Optional[dict] = None) -> array:
+    """T4: Newton boosting of depth-2 trees on the logistic residual of a base linear predictor, walk-forward; with
+    `final`, also the model fitted on every matured record (today's), stored into it after the walk-forward eras (so
+    the walk-forward draws are unchanged)."""
     tab, lr = R.tab, R.ctx.lr
     rnd = random.Random(seed)
     out = array("d", repeat(NAN, tab.n))
     ctx_idx = [i for i, nm in enumerate(tab.names) if nm.startswith("ctx:")]
     cols = tab.X
-    base_in = _tail_base_insample(R, lab)
-    for e, cut in era_cuts():
+    base_in = _tail_base_insample(R, lab, final is not None)
+    for e, cut in era_cuts() + ([(None, L.FINAL)] if final is not None else []):
         if cut not in lr.fits:
             continue
         g_ = lr.fits[cut]["W"][L.K_DEFAULT]["global"]
@@ -912,6 +915,9 @@ def _tree_boost_logit(R: "Resid", base_lin: array, lab: array, rounds: int = 20,
             for i_ in idx:
                 L_ = leaves[0] if Xb[f1][i_] <= t1 else leaves[1]
                 F_[i_] += rate * (L_[2] if L_[0] is None or Xb[L_[0]][i_] <= L_[1] else L_[3])
+        if e is None:
+            final.update({"top": top, "edges": edges, "trees": trees, "rate": rate})
+            continue
         for k in range(tab.n):
             if tab.era[k] != e or base_lin[k] != base_lin[k]:
                 continue
@@ -924,14 +930,14 @@ def _tree_boost_logit(R: "Resid", base_lin: array, lab: array, rounds: int = 20,
     return out
 
 
-def _tail_base_insample(R: "Resid", lab: array) -> Dict[str, array]:
+def _tail_base_insample(R: "Resid", lab: array, final: bool = False) -> Dict[str, array]:
     """T1's in-sample linear predictor on each cut's training records (the starting point T4 boosts from)."""
     tab = R.tab
     pe = R.pE
     cols = [pe, array("d", (x * x for x in pe)), array("d", (x ** 3 for x in pe))]
     out = {}
     ok = [k for k in range(tab.n) if lab[k] == lab[k] and pe[k] == pe[k]]
-    for e, cut in era_cuts():
+    for e, cut in era_cuts() + ([(None, L.FINAL)] if final else []):
         train = [k for k in ok if tab.end[k] < cut]
         arr = array("d", repeat(NAN, tab.n))
         if len(train) >= 1000:
@@ -961,7 +967,8 @@ def tails(R: "Resid") -> dict:
         l2, f2 = era_logistic(R, cub + feat, ["pE", "pE^2", "pE^3"] + fnames, lab)
         l3, f3 = era_logistic(R, cub + feat + cls_cols, ["pE", "pE^2", "pE^3"] + fnames + cls_names, lab)
         t4_splits: Dict[str, int] = {}
-        l4 = _tree_boost_logit(R, l1, lab, splits=t4_splits)
+        t4_final: dict = {}
+        l4 = _tree_boost_logit(R, l1, lab, splits=t4_splits, final=t4_final)
         p1 = array("d", ((_sig(v) if v == v else NAN) for v in l1))
         base = {"name": f"T1 {side}", "prob": p1, "final": f1.get(L.FINAL)}
         res = {"T1": base}
@@ -992,6 +999,7 @@ def tails(R: "Resid") -> dict:
                 res[key]["coefficients"] = f2[L.FINAL]["design"].coef_table(f2[L.FINAL]["b"])[:10]
             if key == "T4":
                 res[key]["top_splits"] = sorted(t4_splits.items(), key=lambda kv: -kv[1])[:8]
+                res[key]["final"] = t4_final or None
             if key == "T3" and f3.get(L.FINAL):
                 res[key]["final"] = f3[L.FINAL]
             if key == "T2" and f2.get(L.FINAL):
@@ -1833,8 +1841,24 @@ def _today_view(data: Data, R: Resid, feats: Dict[str, List[float]], sE, sD, rt,
     zE, pE = _norm_scores(sE)
     zD, pD = _norm_scores(sD)
     rows_b = bk["2013–2024"]["rows"]
-    # the tail classifiers' final fits (benchmark T1 unless a richer model passed)
+    # the tail classifiers' final fits: the benchmark T1 unless a richer model passed its gates
     t1 = {side: tl[side]["T1"].get("final") for side in ("top", "bottom")}
+    tail_model = {side: next((k for k in ("T4", "T2", "T3") if tl[side][k].get("passed") and tl[side][k].get("final")), "T1")
+                  for side in ("top", "bottom")}
+
+    def tail_p(side, a, cub):
+        m = tail_model[side]
+        if m == "T1":
+            return _fit_prob(t1[side], cub)
+        if m == "T4":
+            f4 = tl[side]["T4"]["final"]
+            v = t1[side]["design"].lin_vals(t1[side]["b"], cub) if t1[side] else 0.0
+            bins = [bisect.bisect_right(f4["edges"][q], feats[a][i]) for q, i in enumerate(f4["top"])]
+            for f1_, th, leaves, _g in f4["trees"]:
+                L_ = leaves[0] if bins[f1_] <= th else leaves[1]
+                v += f4["rate"] * (L_[2] if L_[0] is None or bins[L_[0]] <= L_[1] else L_[3])
+            return _sig(v)
+        return _fit_prob(tl[side][m]["final"], cub + list(feats[a]) + ([pE[a] if feats[a][jn[f"ctx:{c}"]] else 0.0 for c in sorted(set(R.cls))] if m == "T3" else []))
     # Directional: prior-only (Platt at FINAL) and the residual's final fit
     drf = dr.get("final_fit") or {}
     lam_f = float(dr["final"].split("|")[0])
@@ -1852,7 +1876,7 @@ def _today_view(data: Data, R: Resid, feats: Dict[str, List[float]], sE, sD, rt,
         relp = _fit_prob(relfit, ctxv(a))
         pde = _fit_prob(defit, ctxv(a))
         cub = [pE[a], pE[a] ** 2, pE[a] ** 3]
-        ptop, pbot = _fit_prob(t1["top"], cub), _fit_prob(t1["bottom"], cub)
+        ptop, pbot = tail_p("top", a, cub), tail_p("bottom", a, cub)
         z = Dm.z_of(t["rec"], Dm.MAIN_PRIOR)
         p0 = _sig(drf["platt"][0] + drf["platt"][1] * z) if (drf.get("platt") and z is not None) else None
         dadj = None
@@ -1882,7 +1906,7 @@ def _today_view(data: Data, R: Resid, feats: Dict[str, List[float]], sE, sD, rt,
                     "residual": r.get("rhat"), "residual_se": r.get("se"), "residual_material": r.get("material"), "residual_drivers": r.get("drivers"),
                     "reliability": relp, "reliability_drivers": e_contrib, "p_E_better": pde, "preferred": (None if pde is None else ("E" if pde >= 0.5 else "D")),
                     "exp_rel_return": b.get("mean"), "exp_ci95": b.get("ci95"), "range95": b.get("range95"), "bucket": b.get("bucket"), "bucket_n": b.get("n"),
-                    "p_top_decile": ptop, "p_bottom_decile": pbot, "dir_prior": p0, "dir_adjustment": dadj})
+                    "p_top_decile": ptop, "p_bottom_decile": pbot, "tail_model": f"{tail_model['top']}/{tail_model['bottom']}", "dir_prior": p0, "dir_adjustment": dadj})
     return sorted(out, key=lambda r: -(r["E_pct"] or 0))
 
 
@@ -2069,6 +2093,9 @@ def register(store, res: dict) -> List[str]:
     for k in ("DE-A", "DE-B"):
         items[k] = ("meta", (W.get("de") or {}).get(k) or {})
     items["PW-L"] = ("meta", W.get("pairwise") or {})
+    for side in ("top", "bottom"):
+        for k in ("T2", "T3", "T4"):
+            items[f"{k} {side}"] = ("tail", ((W.get("tails") or {}).get(side) or {}).get(k) or {})
     items["DR-1W"] = ("shaffer-directional", W.get("directional_1W") or {})
     for k in ("MH-1M", "MH-3M", "DR-1M"):
         if k in H:

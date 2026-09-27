@@ -620,6 +620,48 @@ transaction-cost-sensitive, and no false improvement on a plain world (which set
 group out, today's scores; horizon switch for 1D and 1M–12M) and Shaffer Hedge → Hedge fine-tune (surface by
 horizon and λ, H4 anatomy, Alpha-conditional). Run with `python -m finsim2 lab --finetune`.
 
+### Residual ML / meta-learning on the frozen E (`engine/residual.py`, `hedge/hedgepolicy.py`, reports `SHAFFER_RESIDUAL_ML.md`, `SHAFFER_META_CURRENT.md`)
+
+**Question: what does the learned hierarchy E get wrong, and can ML learn it — without touching E?** D and E stay frozen
+(formulas, backtests, live predictions, G3-XS, clocks); every model here learns only from E's *out-of-sample*
+(walk-forward) scores, so training starts in 2009; evaluation is 2013–2024 in three eras with 2025– untouched. The
+protocol, candidate list, grids and gates were committed before any market result (`SHAFFER_RESIDUAL_PROTOCOL.md`); four
+amendments made after the synthetic capability suite and before market data are listed there.
+
+* **Capability first.** Seven synthetic worlds with a deliberately incomplete baseline — a missing linear signal, a
+  sector-only signal, a volatility-regime interaction, a nonlinear threshold, an optimal baseline (pure-noise residual),
+  a baseline overconfident in one class, two baselines each best in one regime — plus a planted hedge-sizing world and a
+  noise world. The engine must recover what is planted and pass nothing in the noise worlds; the market run aborts
+  otherwise. All pass. The optimal-baseline world showed that a reliability model passes its gates whenever E has any
+  skill (E's conviction predicts its hits), so REL is also reported *beyond* a conviction-only model.
+* **Alpha residual:** r = u − β·zE (u = within-week normal score of the realised return), score β·zE + γ·r̂; ridge,
+  uncertainty-shrunk ridge, elastic net, hierarchical, boosted trees, ensemble, plus multi-task (economic groups),
+  dynamic hierarchy (node deviations scaled by their own OOS evidence) and a pairwise model — all nested, gates A1–A7 +
+  FDR. **Meta:** E reliability, D-vs-E selector and blend. **Tails:** top / bottom decile classifiers vs E's percentile.
+  **Multi-horizon:** 1M / 3M ridge shrunk toward the 1W weights. **Directional residual:** capped logit adjustment of
+  prior-only. **Hedge:** an se-gated sizing / product action policy vs hedge-2 with H1–H5. **Uncertainty:** E percentile
+  buckets → relative return with CI and the 95% range of single outcomes.
+
+**Results (full universe, 121,751 residual records).**
+
+* E's residuals behave like noise to every Alpha model: the best (boosted trees) adds +0.0096 rank IC (t 1.7); none
+  passes A1–A7. What gain there is sits in the equity cross-section (every model's Δ turns negative with equities
+  removed). The multi-task, dynamic-hierarchy and pairwise refits do not beat E either (pairwise is worse, t −4.5).
+* D is worse than E on the same records (−0.021, t −3.3) and no selector or blend beats always-E.
+* E reliability passes its gates (AUC − ½ = 0.015, t 5.7; E's IC 0.026 / 0.043 / 0.082 across reliability terciles) but
+  adds nothing beyond E's own conviction (t −0.8) — a display of confidence, not a correction.
+* Tail probabilities: the boosted tail model beats E's percentile in both tails in every era (t ≈ 20–24) by learning
+  which assets move a lot (asset class, signal disagreement) — magnitude, not direction.
+* Multi-horizon transfer, the Directional residual (1W, 1M) and the hedge action policy (0 of 208 cells) do not pass.
+  The best hedge cells gain utility but upsize the hedge, which the unchanged cost / basis gate H4 rejects.
+* Conclusion: with these 74 signals and context features, E is close to the limit of what this program's models can
+  extract for 1W ranking. Every candidate is a `research` version (`resid-…-exp`); nothing enters live shadow.
+
+**ML Lab view:** Meta learning → Residual / Meta ML (Alpha errors, E reliability, D vs E, Tail probability,
+Directional residual, Hedge policy, Current predictions — research-only view of every asset with E / D, the residual
+correction and its se, adjusted Alpha, reliability, preferred model, expected relative return and its range, tail
+probabilities and the Directional prior). Run with `python -m finsim2 lab --residual`.
+
 ### Live evidence for the learned models (`engine/livexs.py`, `hedge/hedgelive.py`)
 
 **D and E accumulate live outcomes on the statistic they were validated on.** The daily loop scores only the tracked
