@@ -287,7 +287,7 @@ class EulerpoolProbe(unittest.TestCase):
             self.assertIn("4 of 6 delisted companies answer", text)
             self.assertIn("2007-01-03 → 2008-09-12", text)
             self.assertIn("2019-03-01 → 2026-09-01", text, "point-in-time estimate snapshots are dated")
-            self.assertIn("| SPY option chain | 403 | not in your plan |", text)
+            self.assertIn("| SPY option chain | 403 | JSON: not in your plan |", text)
             self.assertIn("(2 paths)", text)
             self.assertNotIn("SECRET-KEY-123", text)
             self.assertTrue(all("SECRET" not in u for u, _ in seen), "the key never goes in a URL")
@@ -299,21 +299,49 @@ class EulerpoolProbe(unittest.TestCase):
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
-    def test_a_refused_key_stops_at_once(self):
+    def _run(self, fake):
         from finsim2.data import eulerpool as EP
-        calls = []
-
-        def fake(url, headers=None, timeout=30):
-            calls.append(url)
-            raise FetchError("HTTP 401", 401, b'{"error": "invalid token"}')
         tmp = tempfile.mkdtemp()
         try:
             with mock.patch.object(EP, "http_get", fake), mock.patch.object(EP.time, "sleep"):
-                text = EP.probe(tmp, key="bad")
-            self.assertIn("The key is refused", text)
-            self.assertEqual(len(calls), 1)
+                return EP.probe(tmp, key="SECRET-KEY-123")
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_access_failures_are_diagnosed_not_guessed(self):
+        calls = []
+
+        def html(url, headers=None, timeout=30):
+            calls.append(url)
+            raise FetchError("HTTP 403", 403, b"<!DOCTYPE html><html><head><title>Attention Required! | Cloudflare</title></head></html>")
+        text = self._run(html)
+        self.assertIn('HTML page "Attention Required! | Cloudflare" (Cloudflare)', text)
+        self.assertIn("stopped before the API", text)
+        self.assertEqual(len(calls), 4, "four documented attempts, then stop")
+        self.assertNotIn("SECRET-KEY-123", text)
+
+        def bad_key(url, headers=None, timeout=30):
+            raise FetchError("HTTP 403", 403, b'{"error": "Invalid API token"}')
+        self.assertIn("the key itself is refused", self._run(bad_key))
+
+        def plan(url, headers=None, timeout=30):
+            raise FetchError("HTTP 403", 403, b'{"message": "Upgrade your plan to access this endpoint"}')
+        self.assertIn("outside the free plan", self._run(plan))
+
+    def test_the_query_form_is_used_when_only_it_works(self):
+        seen = []
+
+        def fake(url, headers=None, timeout=30):
+            seen.append((url, headers))
+            if "token=" not in url:
+                raise FetchError("HTTP 403", 403, b'{"error": "missing token"}')
+            if "overview" in url:
+                return b'{"name": "Apple", "isin": "US0378331005"}'
+            raise FetchError("HTTP 404", 404)
+        text = self._run(fake)
+        self.assertIn("Access works with the ?token= form", text)
+        self.assertNotIn("SECRET-KEY-123", text, "the key is in the request, never in the report")
+        self.assertTrue(all(h.get("User-Agent", "").startswith("FinSim2/") for _, h in seen))
 
 
 class Orchestration(unittest.TestCase):

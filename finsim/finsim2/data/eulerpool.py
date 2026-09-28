@@ -27,6 +27,7 @@ import datetime as _dt
 import json
 import os
 import time
+import urllib.parse
 from typing import Dict, List, Optional, Tuple
 
 from . import FetchError, env_key, http_get, placeholder_key
@@ -42,20 +43,60 @@ DATE_KEYS = ("filingdate", "filing_date", "fileddate", "filed", "reportdate", "r
 MIN_INTERVAL = 0.25
 
 
-def _get(path: str, key: str) -> Tuple[Optional[int], object, Dict[str, str]]:
+UA = "FinSim2/1.0 (personal research client; python)"    # honest client name: Python's default UA is often filtered
+
+
+def _get(path: str, key: str, auth: str = "header") -> Tuple[Optional[int], object, str]:
+    """(HTTP status, JSON payload or None, a short readable note on an error body). auth = "header" (Bearer) or "query"
+    (?token=, Eulerpool's other documented form; errors never carry the URL, so the key is not logged either way)."""
     url = path if path.startswith("http") else BASE + path
+    headers = {"Accept": "application/json", "User-Agent": UA}
+    if auth == "query":
+        url += ("&" if "?" in url else "?") + "token=" + urllib.parse.quote(key, safe="")
+    else:
+        headers["Authorization"] = f"Bearer {key}"
     try:
-        body = http_get(url, {"Authorization": f"Bearer {key}", "Accept": "application/json"}, timeout=45)
+        body = http_get(url, headers, timeout=45)
     except FetchError as e:
+        raw = (e.body or b"").decode("utf-8", "replace")
         try:
-            payload = json.loads((e.body or b"").decode("utf-8", "replace")) if e.body else None
+            payload = json.loads(raw) if raw else None
         except ValueError:
             payload = None
-        return e.status, payload, {}
+        return e.status, payload, _note(raw, payload)
     try:
-        return 200, json.loads(body.decode("utf-8", "replace")), {}
+        return 200, json.loads(body.decode("utf-8", "replace")), ""
     except ValueError:
-        return 200, None, {}
+        return 200, None, "not JSON"
+
+
+def _note(raw: str, payload) -> str:
+    """What an error body says, in a few words (untrusted: truncated, one line, HTML reduced to its title)."""
+    import re
+    if isinstance(payload, dict):
+        msg = payload.get("error") or payload.get("message") or payload.get("detail") or payload
+        return "JSON: " + re.sub(r"\s+", " ", str(msg))[:160]
+    low = raw.lower()
+    if "<html" in low or "<!doctype" in low:
+        t = re.search(r"<title[^>]*>(.*?)</title>", raw, re.I | re.S)
+        title = re.sub(r"\s+", " ", t.group(1)).strip()[:80] if t else ""
+        return "HTML page" + (f' "{title}"' if title else "") + (" (Cloudflare)" if "cloudflare" in low else "")
+    return re.sub(r"\s+", " ", raw)[:160] if raw else "empty body"
+
+
+def diagnose(notes: List[Tuple[str, Optional[int], str]]) -> str:
+    """Why every access attempt failed, from what the server said."""
+    text = " ".join(n for _, _, n in notes).lower()
+    if any(n.startswith("HTML page") for _, _, n in notes) and not any(n.startswith("JSON") for _, _, n in notes):
+        return ("the requests were stopped before the API (an HTML page, not an API answer: a firewall or bot check), so "
+                "the key was never checked. Try again later or from another network; if it persists, ask Eulerpool support "
+                "whether API access from scripts needs anything beyond the key")
+    if any(w in text for w in ("plan", "subscription", "upgrade", "tier")):
+        return "the key works but these endpoints are outside the free plan"
+    if any(w in text for w in ("token", "key", "unauthor", "invalid", "forbidden", "activate", "verify", "confirm")):
+        return ("the key itself is refused: confirm the registration e-mail, check the key on eulerpool.com/developers "
+                "(copy it again, no spaces or quotes), then re-run")
+    return "every attempt failed without a readable reason (see the table)"
 
 
 def _shape(v, depth: int = 0) -> str:
@@ -163,20 +204,42 @@ def probe(home: str, progress=None, key: Optional[str] = None) -> str:
          "own API reference; nothing is scraped (their terms forbid HTML scraping).", ""]
     calls = 0
 
+    mode = "header"
+
     def get(path):
         nonlocal calls
         calls += 1
         time.sleep(MIN_INTERVAL)
-        return _get(path, key)
+        return _get(path, key, mode)
 
-    # the key, and the API description (saved for building a client)
-    st, body, _ = get(f"/api/1/equity/overview/{APPLE}")
-    L += ["## Key", f"Apple overview: HTTP {st}; fields: {_keys(body) if st == 200 else '—'}"]
-    if st in (401, 403):
-        L.append("**The key is refused** — check it at eulerpool.com/developers (nothing else was tried).")
-        return "\n".join(L) + "\n"
+    # access: the documented header form first, then other endpoints, then the documented ?token= form
+    L += ["## Access", "| Attempt | HTTP | Server said |", "|---|---|---|"]
+    attempts = [("header", "/api/1/equity/overview/AAPL", "overview by ticker, Bearer header"),
+                ("header", f"/api/1/equity/profile/{APPLE}", "profile by ISIN, Bearer header"),
+                ("header", "/api/1/forex/list", "forex list, Bearer header"),
+                ("query", f"/api/1/equity/overview/{APPLE}", "overview by ISIN, ?token= form")]
+    notes, ok = [], None
+    for auth, path, label in attempts:
+        calls += 1
+        time.sleep(MIN_INTERVAL)
+        st, body, note = _get(path, key, auth)
+        L.append(f"| {label} | {st} | {'ok, fields: ' + _keys(body) if st == 200 else note} |")
+        notes.append((label, st, note))
+        if st == 200:
+            ok = auth
+            break
+    if ok is None:
+        L += ["", f"**No access: {diagnose(notes)}.** Nothing else was tried ({calls} requests)."]
+        text = "\n".join(L) + "\n"
+        with open(os.path.join(home, "eulerpool_probe.md"), "w", encoding="utf-8") as f:
+            f.write(text)
+        return text
+    mode = ok
+    L.append(f"Access works with the {'Bearer header' if ok == 'header' else '?token= form'}; the probe uses it from here on.")
     try:
-        raw = http_get(BASE + SPEC_URL, {"Authorization": f"Bearer {key}", "Accept": "application/yaml, text/yaml, */*"}, timeout=60)
+        spec_url = BASE + SPEC_URL + (("?token=" + urllib.parse.quote(key, safe="")) if mode == "query" else "")
+        raw = http_get(spec_url, {"User-Agent": UA, "Accept": "application/yaml, text/yaml, */*",
+                                  **({"Authorization": f"Bearer {key}"} if mode == "header" else {})}, timeout=60)
         calls += 1
         with open(os.path.join(home, "eulerpool_openapi.yaml"), "wb") as f:
             f.write(raw)
@@ -189,7 +252,7 @@ def probe(home: str, progress=None, key: Optional[str] = None) -> str:
     L += ["", "## Survivorship: companies that no longer trade", "| Company | HTTP | Fields |", "|---|---|---|"]
     alive = 0
     for name, isin in DEAD.items():
-        st, body, _ = get(f"/api/1/equity/overview/{isin}")
+        st, body, _n = get(f"/api/1/equity/overview/{isin}")
         ok = st == 200 and bool(body)
         alive += ok
         L.append(f"| {name} {isin} | {st} | {_keys(body) if ok else '—'} |")
@@ -200,12 +263,11 @@ def probe(home: str, progress=None, key: Optional[str] = None) -> str:
         if sec != section:
             L += ["", f"## {sec}", "| Test | HTTP | What came back | Fields | A pass would be |", "|---|---|---|---|---|"]
             section = sec
-        st, body, _ = get(path)
+        st, body, note = get(path)
         if st == 200:
             L.append(f"| {label} | 200 | {_span(body)} | {_keys(body)} | {meaning} |")
         else:
-            err = body.get("error") if isinstance(body, dict) else None
-            L.append(f"| {label} | {st} | {str(err)[:80] if err else '—'} | — | {meaning} |")
+            L.append(f"| {label} | {st} | {note[:90] or '—'} | — | {meaning} |")
         say(f"{label}: HTTP {st}")
 
     L += ["", "## Requests used", f"{calls} (the free tier allows 100,000 a month)", "",
