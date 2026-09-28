@@ -69,6 +69,15 @@ finsim2/
     alphahz.py           Shaffer Alpha 1M–5Y for stocks: family weights pooled global → horizon group → horizon → sector →
                          stock, nested depth / shrinkage, vs production on identical records; expected excess return,
                          90% range and P(beat SPY) by decile calibration (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)
+    system.py            THE SHAFFER SYSTEM (SHAFFER_SYSTEM.md): the Shaffer Score = expected % total return per asset
+                         and horizon (Alpha 1M–5Y, Directional 1D / 3D / 1W). Point-in-time records for every class
+                         (lab_records sys1); learner = global elastic net → class deviation → ridge toward the parent
+                         down to the asset (Global → class → product type → sector → industry → asset); candidate
+                         equations E0–E4 chosen out of sample; adoption rule; calibrated robust residuals → mean,
+                         median, P(>0), P(beat benchmark), 50 / 90% ranges; frozen spec frozen/shaffer_system.json;
+                         `for_bundle` attaches the forecast to every asset bundle (bundle["system"])
+    instruments.py       The trade layer: an underlying's Shaffer forecast → a spot, futures, forward or option
+                         position's expected P&L (options: E[payoff] under the forecast's lognormal form − premium)
     ahzlive.py           The 1M Alpha challenger (stage 2's V*) in live shadow, research only: weights frozen with a SHA-256
                          hash in frozen/alpha_hz_1m.json, weekly rows for every stock in the prediction ledger
                          (model alpha-hz:1m), weekly cross-sectional rank IC and Δ vs production (overlap-adjusted),

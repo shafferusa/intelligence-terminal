@@ -229,12 +229,12 @@ def asset_rows(research, a: dict, gprefix, mac, raws: Dict[str, Dict[str, float]
     gs, gc = gprefix.get(group_of(a), ([0.0] * n, [0.0] * n))
     bench = benchmark_of(a)
     rb = bench_rets.get(bench)
-    own_s, own_c = [0.0] * n, [0.0] * n
-    s_, c_ = 0.0, 0.0
+    own_s, own_c, own_q = [0.0] * n, [0.0] * n, [0.0] * n
+    s_, c_, q_ = 0.0, 0.0, 0.0
     for i in range(n):
         if r[i] is not None:
-            s_ += r[i]; c_ += 1.0
-        own_s[i], own_c[i] = s_, c_
+            s_ += r[i]; c_ += 1.0; q_ += r[i] * r[i]
+        own_s[i], own_c[i], own_q[i] = s_, c_, q_
     lo = max(first + WARMUP, bisect.bisect_left(cal, START))
     ts = t_list if t_list is not None else range(lo, n)
     out: Dict[str, list] = {lab: [] for lab, _, _ in HORIZONS}
@@ -284,8 +284,29 @@ def asset_rows(research, a: dict, gprefix, mac, raws: Dict[str, Dict[str, float]
             out[lab].append([cal[t], dend, None if y is None else round(y, 6), None if yb is None else round(yb, 6), round(mday * h, 7),
                              raw if raw is None else round(raw, 3), round(math.log(sd * math.sqrt(252) / 0.2), 5),
                              round(math.log(rel * math.sqrt(252) / 0.2), 5) if rel else None,
-                             *[None if v is None else round(v, 4) for v in fam], round(vix, 4), round(term, 4), round(cred, 4), round(rf, 4)])
+                             *[None if v is None else round(v, 4) for v in fam], round(vix, 4), round(term, 4), round(cred, 4), round(rf, 4),
+                             _loghist(own_s[t], own_c[t], own_q[t])])
     return out
+
+
+def _loghist(s_: float, c_: float, q_: float) -> Optional[float]:
+    """log(expanding full-history annualised volatility / 20%) from running sums of r and r²."""
+    if c_ < 252:
+        return None
+    var = (q_ - s_ * s_ / c_) / (c_ - 1)
+    return round(math.log(math.sqrt(max(var, 1e-12) * 252) / 0.2), 5) if var > 0 else None
+
+
+def horizon_scale(h: int, logvol: float, loghist: Optional[float]) -> float:
+    """σ of the log return over h sessions before the residual scale c: today's 63-session volatility for 1D–1W;
+    from 1M on, an equal blend (in variance) with the asset's long-run volatility, since volatility mean-reverts."""
+    v63 = math.exp(logvol) * 0.2
+    if h >= 21 and loghist is not None:
+        vh = math.exp(loghist) * 0.2
+        v = math.sqrt(0.5 * v63 * v63 + 0.5 * vh * vh)
+    else:
+        v = v63
+    return v * math.sqrt(h / 252.0)
 
 
 def _bench_series(research) -> Dict:
@@ -398,8 +419,8 @@ def load(store, lab: str) -> List[Rec]:
             r.a, r.cls, r.path, r.bench, r.orig = a["id"], cls, path, bench, orig
             r.d, r.end, r.y, r.yb = row[0], row[1], row[2], row[3]
             r.v = design(row)
-            r.s = math.exp(row[6]) * 0.2 * math.sqrt(h / 252.0)
-            r.srel = math.exp(row[7]) * 0.2 * math.sqrt(h / 252.0) if row[7] is not None else r.s
+            r.s = horizon_scale(h, row[6], row[23] if len(row) > 23 else None)
+            r.srel = math.exp(row[7]) * 0.2 * math.sqrt(h / 252.0) * (r.s / (math.exp(row[6]) * 0.2 * math.sqrt(h / 252.0))) if row[7] is not None else r.s
             r.q = min(1.0, step / h)
             out.append(r)
     return out
@@ -556,16 +577,51 @@ def _quantiles(xs: List[float]) -> List[float]:
     return [xs[min(n - 1, int(((k + 0.5) / NQ) * n))] for k in range(NQ)]
 
 
-def resid_model(pairs: List[Tuple[float, float, float]]) -> Optional[dict]:
-    """From (y, μ̂, s) triples: c = std of (y − μ̂)/s and the quantiles of the unit-variance standardised residual."""
-    e = [(y - m) / s for y, m, s in pairs if s and s > 0]
-    if len(e) < 200:
+TAIL_CAP = 6.0                                # standardised residuals are capped at ±6 robust standard deviations
+
+
+def resid_model(pairs: List[Tuple[float, float, float]], shape: Optional[dict] = None) -> Optional[dict]:
+    """From (y, μ̂, s) triples: a robust scale c = 1.4826·MAD of e = (y − μ̂)/s and the quantiles of (e − median)/c,
+    capped at ±TAIL_CAP. With `shape`, a thin group (30–199 residuals) keeps its own scale on the parent's quantiles."""
+    e = sorted((y - m) / s for y, m, s in pairs if s and s > 0)
+    if len(e) < (30 if shape else 200):
         return None
-    mu = sum(e) / len(e)
-    c = math.sqrt(sum((x - mu) ** 2 for x in e) / (len(e) - 1))
+    med = e[len(e) // 2]
+    dev = sorted(abs(x - med) for x in e)
+    c = 1.4826 * dev[len(dev) // 2]
     if c <= 0:
         return None
-    return {"c": c, "q": [round(x / c, 5) for x in _quantiles([x - mu for x in e])], "bias": mu, "n": len(e)}
+    if shape:
+        return {"c": c, "q": shape["q"], "bias": med, "n": len(e), "shape": "parent"}
+    q = [round(max(-TAIL_CAP, min(TAIL_CAP, (x - med) / c)), 5) for x in _quantiles(e)]
+    return {"c": c, "q": q, "bias": med, "n": len(e)}
+
+
+def resid_models(pairs) -> Dict[str, dict]:
+    """Residual models keyed by node — product type (path[2]), asset class (path[1]) and '__pooled__' — from
+    (record, μ̂) pairs. A thin group keeps its own scale on its parent's shape (class, else pooled)."""
+    by: Dict[str, List[Tuple[float, float, float]]] = {}
+    allp = []
+    for r, mu in pairs:
+        t = (r.y, mu, r.s)
+        allp.append(t)
+        by.setdefault(r.path[1], []).append(t)
+        if r.path[2] != r.path[1]:
+            by.setdefault(r.path[2], []).append(t)
+    out: Dict[str, dict] = {}
+    pooled = resid_model(allp)
+    if pooled:
+        out["__pooled__"] = pooled
+    for k in sorted(by, key=lambda x: x.count("|")):          # classes before product types
+        parent = out.get(k.split("|")[0]) if "|" in k else pooled
+        rm = resid_model(by[k]) or (resid_model(by[k], shape=parent) if parent else None)
+        if rm:
+            out[k] = rm
+    return out
+
+
+def rm_for(rms: Dict[str, dict], path: tuple) -> Optional[dict]:
+    return rms.get(path[2]) or rms.get(path[1]) or rms.get("__pooled__")
 
 
 def distribution(mu: float, shat: float, rm: dict) -> dict:
@@ -608,7 +664,7 @@ def choose(leaves, paths, cuts, recs: List[Rec], cut: str, say) -> Tuple[Dict[st
     inner_lo = _add_years(cut, -INNER_YEARS)
     kb_inner = bisect.bisect_right(cuts, inner_lo) - 1       # buckets ending before inner_lo
     nodes = node_stats(leaves, paths, kb_inner)
-    inner = [r for r in recs if inner_lo <= r.d and r.end < cut]
+    inner = [r for r in recs if inner_lo <= r.end < cut]       # outcomes that matured in the inner window
     classes = sorted({r.cls for r in inner})
     # step 1: family × λ at depth 2 (K fixed)
     lam_of: Dict[str, float] = {}
@@ -655,18 +711,20 @@ def choose(leaves, paths, cuts, recs: List[Rec], cut: str, say) -> Tuple[Dict[st
     return choice, fits
 
 
-def _resid_from(fits_inner, choice, recs_inner, preds_bench=None) -> Dict[str, dict]:
-    """Residual models per class from the inner-window predictions of the chosen configuration (honest residuals)."""
-    by: Dict[str, List[Tuple[float, float, float]]] = {}
+def _inner_pairs(fits_inner, choice, recs_inner) -> List[Tuple["Rec", float]]:
+    """(record, μ̂) for the inner window under each class's chosen configuration (honest out-of-sample residuals)."""
+    out = []
     for r in recs_inner:
         cf = choice.get(r.cls)
-        if not cf:
-            continue
-        m = fits_inner.get((cf[0], cf[1], cf[3]))
+        m = fits_inner.get((cf[0], cf[1], cf[3])) if cf else None
         p = predict(m, r, cf[2]) if m else None
         if p is not None:
-            by.setdefault(r.cls, []).append((r.y, p, r.s))
-    return {c: rm for c, v in by.items() if (rm := resid_model(v))}
+            out.append((r, p))
+    return out
+
+
+def _resid_from(fits_inner, choice, recs_inner) -> Dict[str, dict]:
+    return resid_models(_inner_pairs(fits_inner, choice, recs_inner))
 
 
 def _paired_t(by_date: Dict[str, List[float]], h: int, step: int) -> dict:
@@ -702,7 +760,8 @@ def study_horizon(store, lab: str, progress=None) -> dict:
     leaves = leaf_stats(recs, cuts)
     say(f"{lab}: statistics ({time.time() - t0:.0f}s)")
     base_rate: Dict[str, float] = {}
-    rows = []                                           # (rec, μ̂, μ̂_E0, dist-inputs)
+    rows = []                                           # (rec, μ̂, μ̂_E0, distribution, P(beat), era, base rate)
+    rows0 = []                                          # the same for the calibrated prior E0 itself
     eras_done, choices = [], []
     for e, (a, b) in enumerate(ERAS):
         test = [r for r in recs if a <= r.d < b]
@@ -712,8 +771,10 @@ def study_horizon(store, lab: str, progress=None) -> dict:
         if not choice:
             continue
         inner_lo = _add_years(a, -INNER_YEARS)
-        inner = [r for r in recs if inner_lo <= r.d and r.end < a]
+        inner = [r for r in recs if inner_lo <= r.end < a]
         rm = _resid_from(fits_inner, choice, inner)
+        e0_inner = fit(node_stats(leaves, paths, bisect.bisect_right(cuts, inner_lo) - 1), E0_CONFIG[0], E0_CONFIG[1], E0_CONFIG[3], E0_CONFIG[2])
+        rm0 = _resid_from({(E0_CONFIG[0], E0_CONFIG[1], E0_CONFIG[3]): e0_inner}, {c: E0_CONFIG for c in {r.cls for r in inner}}, inner) if e0_inner else {}
         kb = bisect.bisect_right(cuts, a) - 1
         nodes = node_stats(leaves, paths, kb)
         fits = {k: fit(nodes, k[0], k[1], k[2], 6) for k in {(v[0], v[1], v[3]) for v in choice.values()}}
@@ -734,23 +795,35 @@ def study_horizon(store, lab: str, progress=None) -> dict:
                 continue
             mu_of[(r.a, r.d)] = mu
             tmp.append((r, mu, mu0))
+        mu0_of = {(r.a, r.d): mu0 for r, _, mu0 in tmp}
         for r, mu, mu0 in tmp:
-            rmc = rm.get(r.cls)
-            dist = distribution(mu, rmc["c"] * r.s, rmc) if rmc else None
-            pb = None
-            if rmc and r.yb is not None:
-                mub = mu_of.get((r.bench, r.d)) if r.bench else r.yb
-                if mub is not None:
-                    pb = p_beat(mu, mub, rmc["c"] * r.srel, rmc)
-            rows.append((r, mu, mu0, dist, pb, ERA_LABEL[e], base_rate.get(r.cls, 0.5)))
+            out_ = []
+            for m_, rmd, lookup in ((mu, rm, mu_of), (mu0, rm0, mu0_of)):
+                rmc = rm_for(rmd, r.path)
+                dist = distribution(m_, rmc["c"] * r.s, rmc) if rmc else None
+                pb = None
+                if rmc and r.yb is not None:
+                    mub = lookup.get((r.bench, r.d)) if r.bench else r.yb
+                    if mub is not None:
+                        pb = p_beat(m_, mub, rmc["c"] * r.srel, rmc)
+                out_.append((dist, pb))
+            rows.append((r, mu, mu0, out_[0][0], out_[0][1], ERA_LABEL[e], base_rate.get(r.cls, 0.5)))
+            rows0.append((r, mu0, mu0, out_[1][0], out_[1][1], ERA_LABEL[e], base_rate.get(r.cls, 0.5)))
         eras_done.append(ERA_LABEL[e])
         choices.append({"era": ERA_LABEL[e], **{c: {"family": v[0], "lam": v[1], "depth": v[2], "K": v[3]} for c, v in choice.items()}})
         say(f"{lab}: era {ERA_LABEL[e]} — {len(tmp)} test records ({time.time() - t0:.0f}s)")
     by_cls: Dict[str, list] = {}
+    by_cls0: Dict[str, list] = {}
     for x in rows:
         by_cls.setdefault(x[0].cls, []).append(x)
+    for x in rows0:
+        by_cls0.setdefault(x[0].cls, []).append(x)
     res = {"records": len(recs), "assets": len(paths), "eras": eras_done, "choices": choices,
-           "classes": {c: _evaluate(xs, h, step) for c, xs in by_cls.items()}, "all": _evaluate(rows, h, step)}
+           "classes": {c: _evaluate(xs, h, step) for c, xs in by_cls.items()}, "all": _evaluate(rows, h, step),
+           "inner_window": "outcomes that ended in the INNER_YEARS before the cut (by end date)"}
+    for c, xs in by_cls0.items():
+        e0 = _evaluate(xs, h, step)
+        res["classes"][c]["e0"] = {k: e0.get(k) for k in ("calibration", "coverage", "brier_pos", "brier_beat", "rank_ic")}
     for c, ev in res["classes"].items():
         ev["adopted"] = "learned" if (ev["gain"]["mean"] or -1) >= 0 and (ev["calibration"]["slope"] or -1) > 0 else "prior"
         ev["reliability"] = _reliability(ev)
@@ -758,23 +831,40 @@ def study_horizon(store, lab: str, progress=None) -> dict:
     fin_choice, fin_inner_fits = choose(leaves, paths, cuts, recs, _add_years(fin_inner, INNER_YEARS), say)
     kb_all = len(cuts)
     nodes = node_stats(leaves, paths, kb_all)
-    inner = [r for r in recs if fin_inner <= r.d]
+    inner = [r for r in recs if fin_inner <= r.end]
     final_fits = {}
     classes_out = {}
     e0_fin = fit(nodes, E0_CONFIG[0], E0_CONFIG[1], E0_CONFIG[3], E0_CONFIG[2])
     e0_inner = fit(node_stats(leaves, paths, bisect.bisect_right(cuts, fin_inner) - 1), E0_CONFIG[0], E0_CONFIG[1], E0_CONFIG[3], E0_CONFIG[2])
+    adopted_cf: Dict[str, tuple] = {}
+    inner_fits_used: Dict[tuple, dict] = {}
     for c in sorted({r.cls for r in recs}):
         ev = res["classes"].get(c) or {}
         use_learned = ev.get("adopted") == "learned" and c in fin_choice
-        cf = fin_choice[c] if use_learned else E0_CONFIG
+        adopted_cf[c] = fin_choice[c] if use_learned else E0_CONFIG
+        k3 = (adopted_cf[c][0], adopted_cf[c][1], adopted_cf[c][3])
+        f_in = fin_inner_fits.get(k3) if use_learned else e0_inner
+        if f_in:
+            inner_fits_used[k3] = f_in
+    wf_pairs = [(x[0], x[1] if adopted_cf.get(x[0].cls) is not E0_CONFIG else x[2]) for x in rows]
+    rms_final = resid_models(wf_pairs) if wf_pairs else resid_models(_inner_pairs(inner_fits_used, adopted_cf, inner))
+    if wf_pairs:                                   # a class without walk-forward residuals falls back to the final window
+        fb = resid_models(_inner_pairs(inner_fits_used, adopted_cf, inner))
+        for k, v in fb.items():
+            rms_final.setdefault(k, v)
+    for c in sorted({r.cls for r in recs}):
+        ev = res["classes"].get(c) or {}
+        cf = adopted_cf[c]
+        use_learned = cf is not E0_CONFIG
         key = f"{cf[0]}|{cf[1]}|{cf[3]}"
         if key not in final_fits:
             final_fits[key] = fit(nodes, cf[0], cf[1], cf[3], 6) if use_learned else e0_fin
-        inner_fit = fin_inner_fits.get((cf[0], cf[1], cf[3])) if use_learned else e0_inner
-        rm = _resid_from({(cf[0], cf[1], cf[3]): inner_fit}, {c: cf}, [r for r in inner if r.cls == c]).get(c) if inner_fit else None
+        rm = rms_final.get(f"c:{c}") or rms_final.get("__pooled__")
+        rm_pt = {k: v for k, v in rms_final.items() if k.startswith(f"c:{c}|")}
         ys = [r.y > 0 for r in recs if r.cls == c]
-        classes_out[c] = {"adopted": "learned" if use_learned else "prior", "family": cf[0], "lam": cf[1], "depth": cf[2], "K": cf[3],
-                          "fit": key, "resid": rm, "base_rate_pos": sum(ys) / len(ys) if ys else 0.5, "reliability": ev.get("reliability", "Low"),
+        n_assets = len({r.a for r in recs if r.cls == c})
+        classes_out[c] = {"assets": n_assets, "adopted": "learned" if use_learned else "prior", "family": cf[0], "lam": cf[1], "depth": cf[2], "K": cf[3],
+                          "fit": key, "resid": rm, "resid_pt": rm_pt, "base_rate_pos": sum(ys) / len(ys) if ys else 0.5, "reliability": ev.get("reliability", "Low"),
                           "oos": {k: ev.get(k) for k in ("gain", "calibration", "rank_ic", "coverage", "brier_pos", "vs_production")}}
     res["final"] = {"choice": {c: list(v) for c, v in fin_choice.items()}, "inner_from": fin_inner, "classes": classes_out,
                     "fits": {k: _compact(m) for k, m in final_fits.items() if m}}
@@ -956,7 +1046,8 @@ def inputs_today(research, a: dict) -> Optional[dict]:
     vix, term, cred, rf = macro_at(_macro(panel), t)
     own = [x for x in r[:t + 1] if x is not None]
     return {"date": cal[t], "fam": fam, "logvol": math.log(sd * math.sqrt(252) / 0.2), "logrel": math.log(rel * math.sqrt(252) / 0.2) if rel else None,
-            "own_sum": sum(own), "own_n": len(own), "vix": vix, "term": term, "credit": cred, "rf": rf, "bench": bench}
+            "own_sum": sum(own), "own_n": len(own), "vix": vix, "term": term, "credit": cred, "rf": rf, "bench": bench,
+            "loghist": _loghist(sum(own), len(own), sum(x * x for x in own))}
 
 
 class _Row:
@@ -993,14 +1084,15 @@ def forecast(spec: dict, a: dict, inp: dict, raws: Dict[str, Optional[float]], m
         mu = predict(m, rr, cs["depth"])
         if mu is None:
             continue
-        s63 = math.exp(inp["logvol"]) * 0.2 * math.sqrt(h / 252.0)
-        shat = cs["resid"]["c"] * s63
+        s63 = horizon_scale(h, inp["logvol"], inp.get("loghist"))
+        rmx = (cs.get("resid_pt") or {}).get(path[2]) or cs["resid"]
+        shat = rmx["c"] * s63
         disp_src = "Shaffer System residuals"
         if lab in DIRECTIONAL and move:
             ms = _move_sigma(move, lab)
             if ms:
                 shat, disp_src = ms, "move-size model (SHAFFER_MOVE_SIZE.md)" + (" — interpolated for 3D" if lab == "3D" else "")
-        d = distribution(mu, shat, cs["resid"])
+        d = distribution(mu, shat, rmx)
         if lab in DIRECTIONAL and move and lab != "3D" and (move.get(lab) or {}).get("lo_pct") is not None:
             d["r90"] = [move[lab]["lo_pct"], move[lab]["hi_pct"]]
         node = node_used(m, path, cs["depth"])
@@ -1023,9 +1115,16 @@ def forecast(spec: dict, a: dict, inp: dict, raws: Dict[str, Optional[float]], m
         else:
             mub = (bench_mu or {}).get(lab)
         if mub is not None:
-            srel = (math.exp(inp["logrel"]) * 0.2 * math.sqrt(h / 252.0) if inp.get("logrel") is not None else s63) * cs["resid"]["c"]
-            pb = p_beat(mu, mub, srel, cs["resid"])
-        out[lab] = {"horizon": lab, "label": DISPLAY.get(lab, lab), "system": "Directional" if lab in DIRECTIONAL else "Alpha",
+            srel = (math.exp(inp["logrel"]) * 0.2 * math.sqrt(h / 252.0) * s63 / (math.exp(inp["logvol"]) * 0.2 * math.sqrt(h / 252.0))
+                    if inp.get("logrel") is not None else s63) * rmx["c"]
+            pb = p_beat(mu, mub, srel, rmx)
+        notes = []
+        ne = (((cs.get("oos") or {}).get("gain")) or {}).get("n_eff")
+        if ne is not None and ne < 10:
+            notes.append(f"few independent {DISPLAY.get(lab, lab)} outcomes in the test period (≈{ne:.0f}): the out-of-sample record is thin")
+        if (cs.get("assets") or 99) < 5:
+            notes.append(f"thin class: the {cls} equation rests on {cs.get('assets')} assets and their short history")
+        out[lab] = {"notes": notes, "horizon": lab, "label": DISPLAY.get(lab, lab), "system": "Directional" if lab in DIRECTIONAL else "Alpha",
                     "score": 100.0 * d["expected"], "expected": d["expected"], "median": d["median"], "mu_log": mu, "sigma_log": shat,
                     "p_pos": d["p_pos"], "p_beat": pb, "benchmark": inp.get("bench") or "cash (3-month T-bill)",
                     "range50": d["r50"], "range90": d["r90"], "abs_move": d["abs_move"], "dispersion": disp_src,
@@ -1079,8 +1178,9 @@ def markdown(res: dict) -> str:
             continue
         a = hz.get("all") or {}
         L += [f"## {DISPLAY.get(lab, lab)} ({'Directional' if lab in DIRECTIONAL else 'Alpha'}) — {hz.get('records')} records, {hz.get('assets')} assets, eras {', '.join(hz.get('eras') or [])}", "",
-              "| Class | Records | MSE gain vs E0 (t) | Eras won | Slope | Rank IC (t) | Coverage 50 / 90 | Brier P(>0) model / base | Adopted | Reliability | Final equation |",
-              "|---|---|---|---|---|---|---|---|---|---|---|"]
+              "Learned = the nested ML choice. The prior (E0) columns give the calibrated prior's own out-of-sample record; that is the production equation wherever the learned one is not adopted.", "",
+              "| Class | Records | Learned: MSE gain vs E0 (t) | Eras won | Learned slope | Rank IC (t) | Prior (E0): slope · 50 / 90 coverage · Brier P(>0) vs base rate | Adopted | Reliability | Final equation |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
         fin = (hz.get("final") or {}).get("classes") or {}
         for c, ev in sorted((hz.get("classes") or {}).items(), key=lambda x: -x[1].get("n", 0)):
             g, cal, ic, cov, br = ev["gain"], ev["calibration"], ev["rank_ic"], ev["coverage"], ev["brier_pos"]
@@ -1088,9 +1188,11 @@ def markdown(res: dict) -> str:
             fc = fin.get(c) or {}
             eq = f"{fc.get('family')} {FAMILY_NAMES.get(fc.get('family'), '')}, depth {fc.get('depth')}, K {fc.get('K')}" if fc else "—"
             pc = lambda v: "—" if v is None else f"{v:.0%}"  # noqa: E731
+            e0 = ev.get("e0") or {}
+            c0, v0, b0 = e0.get("calibration") or {}, e0.get("coverage") or {}, e0.get("brier_pos") or {}
             L.append(f"| {c} | {ev['n']} | {_n(g.get('mean'), 6)} ({_n(g.get('t'), 1)}) | {won}/{len(ev['eras'])} | {_n(cal.get('slope'), 2)} | "
-                     f"{_n(ic.get('mean'), 3)} ({_n(ic.get('t'), 1)}) | {pc(cov.get('r50'))} / {pc(cov.get('r90'))} | "
-                     f"{_n(br.get('model'), 4)} / {_n(br.get('base_rate'), 4)} | {ev.get('adopted')} | {ev.get('reliability')} | {eq} |")
+                     f"{_n(ic.get('mean'), 3)} ({_n(ic.get('t'), 1)}) | {_n(c0.get('slope'), 2)} · {pc(v0.get('r50'))} / {pc(v0.get('r90'))} · "
+                     f"{_n(b0.get('model'), 4)} vs {_n(b0.get('base_rate'), 4)} | {ev.get('adopted')} | {ev.get('reliability')} | {eq} |")
         L += ["", f"All classes: MSE gain {_n(a.get('gain', {}).get('mean'), 6)} (t {_n(a.get('gain', {}).get('t'), 1)}), slope "
               f"{_n(a.get('calibration', {}).get('slope'), 2)}, 90% coverage {(a.get('coverage') or {}).get('r90') or 0:.0%}.", ""]
         ch = hz.get("choices") or []

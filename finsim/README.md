@@ -118,6 +118,21 @@ python3 -m finsim2 import-estimates FILE | import-options FILE   # licensed anal
   - Hedge research: whether the static hedge was historically too big or too small, per group and objective.
   - Live learning: the forecasts waiting to mature and those already graded.
   - `python3 -m finsim2 lab --build` rebuilds the research records and runs the research.
+- *The Shaffer System* (`finsim2/SHAFFER_SYSTEM.md`). **The Shaffer Score is the expected percentage total
+  return over the selected horizon.**
+  - It comes in two parts: **Shaffer Alpha** (1M–5Y) and **Shaffer Directional** (1D, 3D, 1W).
+  - Each forecast carries its median, P(>0), P(beating its benchmark), 50% and 90% ranges, reliability, the
+    equation and hierarchy node used, and the main contributors.
+  - The equation is learned per horizon and asset type (Global → class → product type → sector → industry →
+    asset) and is used only where it beat the calibrated prior out of sample.
+  - The former −100…+100 score is now the "evidence index", one of its inputs.
+  - Derivatives are forecast through their underlying: the trade layer converts the forecast into the instrument's
+    expected P&L.
+  - The trade ticket's **Shaffer Hedge** report shows the forecast, its uncertainty, the principal unwanted risk,
+    the recommended hedge (hedge-2's sizing), its cost, the expected downside reduction and the expected profit
+    sacrificed.
+  - Commands: `python -m finsim2 system NVDA SPY` prints the forecasts, and `system --all` does the monthly refit.
+    What more data would help is listed in `finsim2/DATA_NEEDS.md`.
 - *Short-term outlook* (asset page). For the next day and the next week it shows three things:
   - **P(up)** from the prior-only Directional model. No signal beats this model at 1D–1W.
   - **The expected move** (±1σ).

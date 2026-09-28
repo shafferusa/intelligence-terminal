@@ -207,3 +207,35 @@ It reports:
 The sizing math stays hedge-2 (validated in SHAFFER_HEDGE_FINETUNE.md, not beaten in SHAFFER_EVENT_HEDGE.md). The
 forecast enters the report and the profit-sacrificed figure, and the hedge keeps optimising the risk / profit trade-off
 rather than neutralising everything.
+
+## 5. Revision log
+
+**2026-09-28: corrections found by the first full runs, before the first live spec was frozen.**
+
+**Adoption is unaffected.** Adoption depends only on the walk-forward squared-error gain and the calibration slope
+of μ̂, and none of the three corrections below changes μ̂.
+
+1. **The inner window is defined by when outcomes end.** The wording above ("the 3 years before the era") is applied
+   to the *end date* of each outcome: the inner window holds the outcomes that matured in the 3 years before the era.
+   Selecting by start date made the nested choice impossible at 3Y and 5Y, because a 3-year outcome that starts
+   within 3 years of the era cannot mature before it. The rule is now the same for every horizon.
+
+2. **Residual distributions are robust and grouped by product type.**
+   - They use a median-absolute-deviation scale, with standardised residuals capped at ±6 robust standard
+     deviations.
+   - They are estimated per product type, falling back to the asset class and then to the pool. A group with
+     30–199 residuals keeps its own scale on its parent's shape.
+   - Why: pooling all ETFs let the leveraged and inverse funds give SPY a 5-year "expected" return of 10¹³%.
+
+3. **Long horizons use a blended scale, and the live residuals come from every era.**
+   - For 1M and longer, ŝ is c · √(½σ63² + ½σ_history²) · √h: today's volatility is blended with the asset's
+     expanding full-history volatility, because volatility mean-reverts. 1D–1W keep σ63, and in the live
+     forecasts the validated move-size model.
+   - The live residual distribution uses every walk-forward out-of-sample residual of the adopted equation
+     (2009 →), not only the last 3 years. The last 3 years alone (a calm, rising market) gave SPY a 12M 90% range
+     of +1% to +29%.
+
+4. **Every forecast carries plain-language caveats.**
+   - When its horizon had fewer than 10 independent outcomes in the test period, which is true at 2Y–5Y, since
+     25 years hold only a handful of independent 5-year windows.
+   - When its asset class has fewer than 5 assets (crypto).
