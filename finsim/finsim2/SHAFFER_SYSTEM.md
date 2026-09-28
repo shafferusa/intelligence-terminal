@@ -106,8 +106,8 @@ The industry is the SEC SIC description for stocks.
 2. **How much they matter:** the coefficients, pooled down the hierarchy.
 3. **Whether interactions matter:** momentum × volatility, valuation × rates (term spread), momentum × VIX, low
    volatility × VIX.
-4. **Whether a response is nonlinear:** hinge terms max(0, x − 1) and max(0, −x − 1) for momentum, valuation and
-   mean reversion. "Only matters when extreme" is learnable.
+4. **Whether a response is nonlinear:** hinge terms max(0, x − 0.5) and max(0, −x − 0.5) for momentum, valuation
+   and mean reversion. A family score is the average of clip(z / 2, −1, 1), so ±0.5 is one standard deviation. "Only matters when extreme" is learnable.
 5. **Which equation family works best,** out of sample, per horizon and asset class, from this fixed candidate set:
 
 | Family | Equation (all predict y = ln(1 + R) over the horizon) |

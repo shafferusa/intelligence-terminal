@@ -62,6 +62,8 @@ def _data_cmd(args) -> int:
                 for f in fixed:
                     print(f"reclassified {f['id']} as {f['asset_class']} ({f['reason']})")
                 print(f"{len(fixed)} expanded assets reclassified as funds" + (" (dry run)" if args.dry_run else ""))
+                if not args.dry_run:
+                    print(f"{len(expand.fill_industry(st, print))} stocks given their SEC industry (the Shaffer System hierarchy)")
                 return 0
             res = expand.expand(st, args.expand, print, dry_run=args.dry_run, allow_partial=args.allow_partial)
             if res.get("note"):
@@ -73,6 +75,55 @@ def _data_cmd(args) -> int:
         from .data import imports
         res = imports.import_file(st, args.file, "estimates" if args.cmd == "import-estimates" else "options", args.source)
         print(f"{res['dataset']}: {res['rows']} values imported; skipped {res['skipped']}")
+        return 0
+    finally:
+        st.close()
+
+
+def _system_cmd(args) -> int:
+    from finsim import app
+    from .data.store import Store
+    from .engine import system as SY
+    from .engine.research import Research
+    db = app.db_path()
+    if args.build or args.all:
+        print(SY.build(db, workers=args.workers, progress=print))
+    if args.study or args.all:
+        res = SY.run_study(db, progress=print, horizons=args.horizons or None, workers=args.workers)
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_SYSTEM_RESULTS.md")
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(SY.markdown(res))
+        print("wrote", out)
+    st = Store(db)
+    try:
+        spec = SY.load_spec(st)
+        if args.freeze:
+            if not st.kv_get(SY.LIVE_KEY):
+                print("no fitted spec in this database: run `system --all` first")
+                return 1
+            SY.write_frozen(st.kv_get(SY.LIVE_KEY))
+            print("wrote", SY.FROZEN_FILE)
+        if not spec:
+            print("no Shaffer System spec: run `python -m finsim2 system --all` (about 1–3 hours) or pull the frozen one")
+            return 1
+        src = "this database's refit" if st.kv_get(SY.LIVE_KEY) else "the committed frozen spec"
+        print(f"Shaffer System {spec['version']}@{spec['hash'][:10]} — fitted {spec.get('fitted')} on data to {spec.get('data_through')} ({src})")
+        if args.status or not args.assets:
+            for lab, hz in spec["horizons"].items():
+                print(f"  {SY.DISPLAY.get(lab, lab):>4}: " + ", ".join(f"{c} {v['adopted'] == 'learned' and v['family'] or 'E0'}/{v['reliability']}"
+                                                                   for c, v in sorted(hz["classes"].items())))
+        r = Research(st)
+        for a in args.assets:
+            b = r.bundle(a.upper())
+            sy = b.get("system") or {}
+            print(f"{a.upper()}:" + ("" if sy else f" no forecast ({b.get('system_error') or 'no inputs'})"))
+            for lab in [x for x, _, _ in SY.HORIZONS if x in sy]:
+                x = sy[lab]
+                pb = "—" if x["p_beat"] is None else f"{x['p_beat']:.0%}"
+                extra = f"P(up) {x['p_pos']:.0%} · expected move ±{x['abs_move']:.1%}" if lab in SY.DIRECTIONAL else \
+                    f"P(>0) {x['p_pos']:.0%} · P(beat {x['benchmark']}) {pb}"
+                print(f"  Shaffer {x['system']:<11} {x['label']:>4}: {100 * x['expected']:+.1f}% (median {100 * x['median']:+.1f}%) · {extra} · "
+                      f"90% {100 * x['range90'][0]:+.1f}% to {100 * x['range90'][1]:+.1f}% · {x['reliability']} · {x['family'] if x['adopted'] == 'learned' else 'E0'}")
         return 0
     finally:
         st.close()
@@ -159,6 +210,15 @@ def main(argv=None) -> int:
         ip = sub.add_parser(nm, help=f"import licensed {what} into the point-in-time store")
         ip.add_argument("file")
         ip.add_argument("--source", default="import")
+    sy = sub.add_parser("system", help="the Shaffer System: expected % return per asset and horizon (SHAFFER_SYSTEM.md)")
+    sy.add_argument("assets", nargs="*", help="print these assets' forecasts")
+    sy.add_argument("--build", action="store_true", help="build the point-in-time records (all asset classes, 1D–5Y)")
+    sy.add_argument("--study", action="store_true", help="walk-forward study + final fit → SHAFFER_SYSTEM_RESULTS.md and the live spec")
+    sy.add_argument("--all", action="store_true", help="--build then --study (the monthly refit; 1–3 hours)")
+    sy.add_argument("--horizons", nargs="*", help="study only these horizons (1D 3D 1W 1M 3M 6M 12M 24M 36M 60M)")
+    sy.add_argument("--workers", type=int, default=2)
+    sy.add_argument("--status", action="store_true", help="the live spec: adopted equation and reliability per horizon and class")
+    sy.add_argument("--freeze", action="store_true", help="write this database's fitted spec to finsim2/frozen/shaffer_system.json")
     ms = sub.add_parser("movesize", help="expected 1D / 1W move and 90% range (the validated move-size model, SHAFFER_MOVE_SIZE.md) with P(up)")
     ms.add_argument("assets", nargs="*", help="show these assets (default: the largest expected moves across the universe)")
     ms.add_argument("--fit", action="store_true", help="refit the frozen model now (otherwise weekly, or when missing)")
@@ -565,6 +625,8 @@ def main(argv=None) -> int:
         return _data_cmd(args)
     if args.cmd == "movesize":
         return _movesize_cmd(args)
+    if args.cmd == "system":
+        return _system_cmd(args)
     if args.cmd == "open":
         return app.cmd_open()
     if args.cmd == "install":

@@ -200,6 +200,31 @@ def expand(store, n: int, progress=None, max_requests: Optional[int] = None, dry
             "complete": ranked_n + sum(1 for v in cache.values() if not v[1]) >= len(cands)}
 
 
+def fill_industry(store, progress=None) -> List[dict]:
+    """The SEC SIC description as the industry of every equity with a CIK that has none (the Shaffer System's
+    industry level; stocks added by `expand` already carry it). One submissions request per stock."""
+    say = progress or (lambda m: None)
+    done = []
+    for a in store.assets("EQUITY"):
+        m = dict(a.get("meta") or {})
+        if m.get("industry") or not a.get("cik"):
+            continue
+        try:
+            sub = json.loads(S._get(f"https://data.sec.gov/submissions/CIK{int(a['cik']):010d}.json").decode("utf-8", "replace"))
+        except Exception as e:  # noqa: BLE001 — one stock never stops the others
+            say(f"{a['id']}: industry unavailable ({type(e).__name__})")
+            continue
+        ind = sub.get("sicDescription") if isinstance(sub, dict) else None
+        if not ind:
+            continue
+        m.update(industry=ind, sic=m.get("sic") or sub.get("sic"))
+        store.upsert_asset({**{k: a.get(k) for k in ("id", "name", "asset_class", "sector", "country", "currency", "yahoo", "cik",
+                                                      "duration", "convexity", "fred")}, "meta": m})
+        done.append({"id": a["id"], "industry": ind})
+        say(f"{a['id']}: {ind}")
+    return done
+
+
 def reclassify_funds(store, dry_run: bool = False) -> List[dict]:
     """Expanded 'equities' that are really exchange-traded trusts or funds (added before the fund filter existed) become
     ETF assets, like GLD and SLV, so they leave the equity cross-section."""

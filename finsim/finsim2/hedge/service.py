@@ -99,6 +99,58 @@ def shaffer_brief(research, asset_id: str) -> Optional[dict]:
             "ml_verified": cur.get("ml_verified")}
 
 
+UNCERTAINTY = {"High": "Low", "Medium": "Medium", "Low": "High"}        # forecast reliability → forecast uncertainty
+
+
+def _system(research, asset_id: str) -> dict:
+    try:
+        return research.bundle(asset_id).get("system") or {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def shaffer_hedge_view(research, m, inst, pr, q: float, horizon: str, ana: dict, metrics: dict) -> dict:
+    """The Shaffer Hedge report for a trade (SHAFFER_SYSTEM.md §4): the trade's Shaffer forecast at its horizon, its
+    uncertainty, the principal unwanted risk, the recommended hedge (hedge-2's package), its cost, the expected
+    downside reduction, and the expected profit sacrificed — the hedge legs' expected P&L under their own
+    underlyings' Shaffer forecasts. Sizing is hedge-2's; this only reports it."""
+    from ..engine import instruments as I
+    from ..engine.system import HMAP, DISPLAY
+    h = E.HORIZON.get(horizon, 21)
+    asof = m.asof
+    sysu = _system(research, inst.underlying)
+    key = min(sysu, key=lambda k: abs(HMAP[k] - h)) if sysu else None
+    fc = sysu.get(key) if key else None
+    upx = m.price(inst.underlying) if inst.type == "OPTION" else None
+    trade_pnl = I.position_expected_pnl(inst, pr, q, sysu, h, asof, upx)
+    legs = []
+    for L in (ana.get("package") or {}).get("final") or []:
+        li = P.parse(L["id"], research.store)
+        lp = P.Priced(li, m, RiskModel(m))
+        ls = _system(research, li.underlying)
+        x = I.position_expected_pnl(li, lp, L["quantity"], ls, h, asof, m.price(li.underlying) if li.type == "OPTION" else None)
+        cost = (L.get("cost") or {}).get("total") if isinstance(L.get("cost"), dict) else L.get("cost")
+        legs.append({"id": L["id"], "name": L.get("name"), "type": li.type, "product_type": li.product_type, "side": L.get("side"), "quantity": L["quantity"],
+                     "notional": L.get("notional"), "cost": cost, "expected_pnl": x.get("expected_pnl"), "note": x.get("note"), "why": L.get("why")})
+    hedge_pnl = sum(x["expected_pnl"] for x in legs if x["expected_pnl"] is not None) if legs else 0.0
+    cost_total = sum(x["cost"] or 0.0 for x in legs)
+    b0, b1 = metrics.get("after_trade") or {}, metrics.get("after_hedge") or {}
+    down = {}
+    for k in ("es95", "var95", "sigma_daily"):
+        if b0.get(k) is not None and b1.get(k) is not None:
+            down[k] = {"before": b0[k], "after": b1[k], "reduction": b0[k] - b1[k], "pct": (b0[k] - b1[k]) / b0[k] if b0[k] else None}
+    kinds = sorted({x["type"].lower() if x["type"] != "SPOT" else x["product_type"] for x in legs})
+    technique = "no hedge — nothing reduces the risk by more than it costs" if not legs else \
+        f"{ana.get('objective_label') or 'hedge'} with " + ", ".join(kinds)
+    return {"horizon": horizon, "sessions": h, "forecast_horizon": DISPLAY.get(key, key) if key else None, "underlying": inst.underlying,
+            "forecast": None if not fc else {k: fc.get(k) for k in ("label", "system", "expected", "median", "p_pos", "range90", "reliability", "adopted", "family_name")},
+            "uncertainty": UNCERTAINTY.get((fc or {}).get("reliability"), "High"),
+            "principal_risk": ana.get("primary_label"), "technique": technique, "legs": legs,
+            "trade_expected_pnl": trade_pnl.get("expected_pnl"), "trade_note": trade_pnl.get("note"),
+            "hedge_expected_pnl": hedge_pnl, "profit_sacrificed": -hedge_pnl, "cost": cost_total,
+            "downside": down, "sizing": "hedge-2 (SHAFFER_HEDGE_FINETUNE.md); the forecast informs this report, not the size"}
+
+
 def trade_preview(app, asset_id: str, side: str, quantity: float, objective: Optional[str] = None, params: Optional[dict] = None) -> dict:
     research, store = app.research, app.store
     led = app.ledger()
@@ -128,7 +180,12 @@ def trade_preview(app, asset_id: str, side: str, quantity: float, objective: Opt
     from .scoring import net_scores
     ns = net_scores(research, asset_id, [(params["horizon"], E.HORIZON.get(params["horizon"], 21))], m)
     under = inst.underlying if inst.type != "SPOT" else asset_id
-    return {"trade": {"asset_id": asset_id, "name": inst.name, "side": side.upper(), "quantity": quantity, "signed": q, "price": pr.price,
+    try:
+        sh_view = shaffer_hedge_view(research, m, inst, pr, q, params["horizon"], ana, metrics)
+    except Exception as e:  # noqa: BLE001 — the ticket never fails because of the forecast layer
+        sh_view = {"error": f"{type(e).__name__}: {e}"}
+    return {"shaffer_hedge": sh_view,
+            "trade": {"asset_id": asset_id, "name": inst.name, "side": side.upper(), "quantity": quantity, "signed": q, "price": pr.price,
                       "notional": abs(q) * (pr.unit_notional() or 0.0), "cash_cost": q * (pr.unit_value() or 0.0), "type": inst.type,
                       "eligible": ok, "reasons": why, "blocked": blocked, "pricing_label": pr.pricing_label, "risk_unit": pr.risk_unit(), "costs": pr.costs(E.HORIZON.get(params["horizon"], 21), "BUY" if q > 0 else "SELL")},
             "nav": nav, "free_cash": led.holdings()["cash"] - (led.holdings().get("requirement") or 0.0),

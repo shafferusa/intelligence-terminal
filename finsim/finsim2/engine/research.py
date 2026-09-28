@@ -20,7 +20,7 @@ from .align import Panel
 from .features import FEATURES, compute_features, family, label, macro_features
 from .signals import percentile_of_last, standardize_all, strength_label, trend
 
-BUNDLE_VERSION = "8"          # bump whenever the engines change what a bundle contains
+BUNDLE_VERSION = "9"          # bump whenever the engines change what a bundle contains (9: Shaffer System inputs)
 
 
 def clean(o):
@@ -149,6 +149,11 @@ class Research:
                 hs["ml_expected"] = m.get("expected")
                 hs["ml_verified"] = m.get("verified", (m.get("score") or 0) != 0)
                 hs["agreement"] = sc.agreement(hs.get("score"), m.get("score"), hs["ml_verified"], (hs.get("confidence") or {}).get("value"))
+        try:                                            # the Shaffer System: expected % return per horizon (SHAFFER_SYSTEM.md)
+            from . import system as SY
+            out["system"] = SY.for_bundle(self, out)
+        except Exception as e:  # noqa: BLE001 — the bundle never fails because of the forecast layer
+            out["system"], out["system_error"] = {}, f"{type(e).__name__}: {e}"
         return out
 
     def _build(self, asset_id: str) -> dict:
@@ -210,10 +215,18 @@ class Research:
             "shaffer_version": ss.get("version"), "history_years": ss.get("history_years"),
             "price_history": downsample(dates, close[first:last + 1]),
             "features_available": sum(1 for c in current if c["value"] is not None), "computed_in": None,
+            "sys_inputs": _sys_inputs(self, asset),
             "data_notes": panel.data_notes(),
         }
         out["computed_in"] = round(time.time() - t0, 2)
         return clean(out)
+
+    def system_mu(self, asset_id: str) -> Dict[str, float]:
+        """A benchmark's Shaffer System log-return forecasts by horizon (for P(beat benchmark)), memoised."""
+        def f():
+            b = self.bundle(asset_id)
+            return {lab: x["mu_log"] for lab, x in (b.get("system") or {}).items() if x.get("mu_log") is not None}
+        return self._memo(f"sysmu:{asset_id}", f)
 
     def light(self, asset_id: str) -> Optional[dict]:
         """Scores per horizon only (tables of many assets)."""
@@ -228,7 +241,10 @@ class Research:
                 "confidence": {k: (v.get("confidence") or {}).get("value") for k, v in hs.items()},
                 "expected": {k: v.get("expected") for k, v in hs.items()},
                 "primary_horizon": b["primary_horizon"], "regime": b["regime"]["description"],
-                "shaffer": {k: v.get("score") for k, v in hs.items()}}
+                "shaffer": {k: v.get("score") for k, v in hs.items()},
+                "system": {x["label"]: x["expected"] for x in (b.get("system") or {}).values()},
+                "system_p": {x["label"]: x["p_pos"] for x in (b.get("system") or {}).values()},
+                "system_rel": {x["label"]: x["reliability"] for x in (b.get("system") or {}).values()}}
 
     def shaffer_inputs(self, b: dict, mat: Optional[dict] = None, z: Optional[dict] = None, state: Optional[dict] = None) -> dict:
         """The documented inputs of the Shaffer Score (see finsim2/shaffer_score.py): today's z-score and raw value of
@@ -494,3 +510,12 @@ def Ledger_holdings(research: "Research") -> Dict[str, float]:
     led = Ledger(research.store, research.panel(), "main")
     an = analytics(research.store, research.panel(), led)
     return {p["asset_id"]: p["market_value"] / an["nav"] for p in an["positions"] if abs(p["quantity"]) > 1e-12 and an["nav"]}
+
+
+def _sys_inputs(research, asset: dict) -> Optional[dict]:
+    try:
+        from . import system as SY
+        return SY.inputs_today(research, asset)
+    except Exception:  # noqa: BLE001
+        return None
+

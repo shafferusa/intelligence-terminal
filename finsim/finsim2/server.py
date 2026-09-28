@@ -162,6 +162,21 @@ class App:
                 out["live_panel"] = livexs.record_panel(self.research, (lambda m: job.progress(0, 1, m)) if job else None)
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"live panel: {e}")
+        try:                                                   # the Shaffer System's forecasts into the append-only ledger (graded at maturity)
+            from .engine import system as SY
+            from .engine.tracking import record as put
+            spec = SY.spec_for(self.store)
+            if spec:
+                last = self.research.panel().calendar()[-1]
+                ver = f"{spec['version']}@{spec['hash'][:10]}"
+                out["system_rows"] = 0
+                for a in ids:
+                    for lab, x in (self.research.bundle(a).get("system") or {}).items():
+                        out["system_rows"] += put(self.store, self.research.panel(), a, last, "shaffer-system", ver, lab, SY.HMAP[lab], x["expected"],
+                                                  None, None, x["score"], {"p_pos": x["p_pos"], "range90": x["range90"], "reliability": x["reliability"],
+                                                                           "adopted": x["adopted"], "family": x["family"]}, source="live") is not None
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"Shaffer System ledger: {e}")
         try:                                                   # the 1M Alpha challenger: frozen, weekly, research only
             from .engine import ahzlive
             if ahzlive.due(self.store, self.research.panel().calendar()[-1]):
@@ -440,7 +455,8 @@ class Router:
                          **qd, "scores": (lt or {}).get("scores"), "calibrated": (lt or {}).get("calibrated"), "agreement": (lt or {}).get("agreement"),
                          "ml": (lt or {}).get("ml"), "confidence": (lt or {}).get("confidence"),
                          "primary_horizon": (lt or {}).get("primary_horizon"), "researched": lt is not None,
-                         "shaffer": (lt or {}).get("shaffer"), "analysis_only": ANALYSIS_ONLY if continuous_series(a) else None})
+                         "shaffer": (lt or {}).get("shaffer"), "analysis_only": ANALYSIS_ONLY if continuous_series(a) else None,
+                         "system": (lt or {}).get("system"), "system_p": (lt or {}).get("system_p"), "system_rel": (lt or {}).get("system_rel")})
         return rows
 
     def asset_routes(self, method, asset_id, rest, q, b):
@@ -674,7 +690,9 @@ class Router:
                     scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "shaffer": hs.get("score"), "calibrated": hs.get("calibrated"), "expected": hs.get("expected"),
                                  "confidence": (hs.get("confidence") or {}).get("value"), "horizon": ph,
                                  "by_horizon": {k: {"score": v.get("score"), "calibrated": v.get("calibrated"), "confidence": (v.get("confidence") or {}).get("value"),
-                                                    "expected": v.get("expected"), "ml": v.get("ml_score")} for k, v in (bd.get("horizons") or {}).items()}}
+                                                    "expected": v.get("expected"), "ml": v.get("ml_score")} for k, v in (bd.get("horizons") or {}).items()},
+                                 "system": {x["label"]: {"expected": x["expected"], "p_pos": x["p_pos"], "reliability": x["reliability"],
+                                                         "range90": x["range90"]} for x in (bd.get("system") or {}).values()}}
             return pf.analytics(store, research.panel(), led, scores)
         if rest == ["transactions"]:
             return sorted(store.transactions("main"), key=lambda t: (t["date"], t["id"]), reverse=True)
