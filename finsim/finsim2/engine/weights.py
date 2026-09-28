@@ -90,9 +90,10 @@ def _week(d: str) -> int:
     return _dt.date.fromisoformat(d).toordinal() // 7
 
 
-def load(store, research, lab: str, extended: bool = False) -> List[Rec]:
+def load(store, research, lab: str, extended: bool = False, assets=None) -> List[Rec]:
     """Signal-level records for one horizon, compact, with PIT regime states and the naive baselines' calls.
-    `extended`: also the research-only pre-2001 records (engine/extrecords.py: no production score; training only)."""
+    `extended`: also the research-only pre-2001 records (engine/extrecords.py: no production score; training only).
+    `assets`: only these assets (a fresh-sample study)."""
     sigs, fams = signals(), families()
     si = {s: i for i, s in enumerate(sigs)}
     fi = {f: i for i, f in enumerate(fams)}
@@ -105,6 +106,9 @@ def load(store, research, lab: str, extended: bool = False) -> List[Rec]:
     dims = ("market", "volatility", "rates", "growth")
     out: List[Rec] = []
     blobs = store.lab_records(SIG_VERSION, lab)
+    if assets is not None:
+        keep = set(assets)
+        blobs = [b_ for b_ in blobs if b_["asset_id"] in keep]
     if extended:
         from .extrecords import ext_version
         ext = {b_["asset_id"]: b_["rows"] for b_ in store.lab_records(ext_version(), lab)}

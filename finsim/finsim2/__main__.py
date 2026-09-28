@@ -171,6 +171,8 @@ def main(argv=None) -> int:
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
+    lb.add_argument("--insider-500", action="store_true", help="re-test insider activity on the stocks added by the universe expansion "
+                    "only (fresh sample; NEW_DATA_INSIDER_500_PROTOCOL.md)")
     lb.add_argument("--new-data", action="store_true", help="batch 2: the new data sources' signal families (NEW_DATA_SIGNALS_PROTOCOL.md)")
     lb.add_argument("--alpha-horizons", choices=["build", "study", "all"], help="Shaffer Alpha 1M–5Y with horizon / sector / stock weights (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)")
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
@@ -445,6 +447,35 @@ def main(argv=None) -> int:
             with open(out, "w", encoding="utf-8") as f:
                 f.write(alphahz.markdown(res, view))
             print(f"alpha horizons: {res['seconds']}s; wrote", out)
+        return 0
+    if args.cmd == "lab" and args.insider_500:
+        from .data.store import Store
+        from .engine import newinfo
+        from .engine.lab import SIG_VERSION
+        st = Store(app.db_path())
+        try:
+            with_recs = set(st.lab_record_assets(SIG_VERSION, "1M"))
+            stocks = [a for a in st.assets("EQUITY") if a.get("cik") and a["id"] in with_recs]
+            fresh = [a["id"] for a in stocks if (a.get("meta") or {}).get("expanded")]
+            every = [a["id"] for a in stocks]
+        finally:
+            st.close()
+        if len(fresh) < 60:
+            print(f"only {len(fresh)} expanded stocks have research records: run `python -m finsim2 universe --expand 500`, "
+                  "`python -m finsim2 refresh`, `python -m finsim2 data sec --force` and `python -m finsim2 lab --build` first")
+            return 1
+        base = {"protocol": "NEW_DATA_INSIDER_500_PROTOCOL.md", "command": "--insider-500"}
+        res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=["insider"], key=newinfo.INSIDER500_KEY,
+                              assets=fresh, sample={**base, "title": "Insider activity on the expanded universe (fresh sample)",
+                                                    "description": "only the stocks added by the universe expansion; the 45 stage-1 stocks are excluded"})
+        info = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=["insider"], key=newinfo.INSIDER500_KEY + ":all",
+                               assets=every, sample={**base, "title": "Insider activity, stage-1 and expanded stocks combined (information only)",
+                                                     "description": "the 45 stage-1 stocks plus the expanded stocks — re-uses the stage-1 sample, not part of the decision"})
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_DATA_INSIDER_500.md")
+        with open(out, "w", encoding="utf-8") as f:
+            import re
+            f.write(newinfo.markdown(res) + "\n---\n\n" + re.sub(r"(?m)^(#+) ", r"#\1 ", newinfo.markdown(info)))   # one level down
+        print(f"insider re-test: {res['seconds']}s + {info['seconds']}s; wrote", out)
         return 0
     if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra or args.new_data):
         from .data.store import Store
