@@ -73,23 +73,29 @@ def parse(payload: dict, field: str) -> List[tuple]:
     return out
 
 
-def fetch(field: str, key: str) -> List[tuple]:
-    sid = SERIES[field][0]
-    out: List[tuple] = []
+def pages(sid: str, key: str, label: str):
+    """Every page of an EIA v2 series-id payload (5,000 observations each)."""
     off = 0
     while True:
         try:
             body = http_get(URL.format(sid=sid, key=key, off=off), {"Accept": "application/json"}, timeout=60)
         except FetchError as e:
-            raise FetchError(f"EIA {field}: HTTP {e.status}" if e.status else f"EIA {field}: network error", e.status) from None
+            raise FetchError(f"EIA {label}: HTTP {e.status}" if e.status else f"EIA {label}: network error", e.status) from None
         payload = json.loads(body.decode("utf-8", "replace"))
-        rows = parse(payload, field)
-        out += rows
-        total = num(((payload.get("response") or {}).get("total"))) if isinstance(payload, dict) else None
+        yield payload
+        resp = payload.get("response") if isinstance(payload, dict) else None
+        data = (resp or {}).get("data") if isinstance(resp, dict) else None
+        total = num((resp or {}).get("total")) if isinstance(resp, dict) else None
         off += 5000
-        if not rows or total is None or off >= total:
+        if not data or total is None or off >= total:
             break
         time.sleep(MIN_INTERVAL)
+
+
+def fetch(field: str, key: str) -> List[tuple]:
+    out: List[tuple] = []
+    for payload in pages(SERIES[field][0], key, field):
+        out += parse(payload, field)
     return out
 
 

@@ -54,7 +54,7 @@ def _data_cmd(args) -> int:
                 print("every source is up to date (use --force to refresh anyway)")
                 return 0
             res = newdata.refresh(st, names, print)
-            return 0 if all(v.get("state") in ("ok", "partial", "skipped") for v in res.values()) else 1
+            return 0 if all(v.get("state") in ("ok", "partial", "skipped", "deferred") for v in res.values()) else 1
         if args.cmd == "universe":
             from .data import expand
             if args.expand is None:
@@ -287,8 +287,8 @@ def main(argv=None) -> int:
     ic = sub.add_parser("import-chain", help="load an option chain (CSV: asof, underlying, expiry, strike, right, bid, ask, last, iv, delta, gamma, vega, theta, rho, open_interest, volume)")
     ic.add_argument("file")
     ic.add_argument("--source", default="import")
-    dt_ = sub.add_parser("data", help="new data sources: SEC insider + 8-K, event calendar, CFTC, EIA, crypto derivatives (NEW_DATA_SOURCES.md)")
-    dt_.add_argument("sources", nargs="*", help="sec calendar cftc eia crypto (default: every source that is due)")
+    dt_ = sub.add_parser("data", help="new data sources: SEC insider + 8-K, event calendar, CFTC, EIA, crypto derivatives, news, Cboe vol indices + option snapshots, futures curves, analyst data (NEW_DATA_SOURCES.md)")
+    dt_.add_argument("sources", nargs="*", help="sec calendar cftc eia crypto news cboe options futures analyst (default: every source that is due)")
     dt_.add_argument("--force", action="store_true", help="refresh the named (or all) sources now, due or not")
     dt_.add_argument("--status", action="store_true", help="rows, coverage and last publication date per dataset")
     uv = sub.add_parser("universe", help="widen the research universe to the N most liquid US common stocks")

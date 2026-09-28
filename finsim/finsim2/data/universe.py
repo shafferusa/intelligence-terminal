@@ -302,6 +302,13 @@ FRED_SERIES: dict[str, dict] = {
     "VXGOGCLS": {"name": "Cboe Equity VIX on Google", "lag_days": 1, "freq": "daily"},
     "VXGSCLS": {"name": "Cboe Equity VIX on Goldman Sachs", "lag_days": 1, "freq": "daily"},
     "VXIBMCLS": {"name": "Cboe Equity VIX on IBM", "lag_days": 1, "freq": "daily"},
+    # discontinued Cboe vol indices: history only (training data for the IV features; no live value)
+    "EVZCLS": {"name": "Cboe EuroCurrency ETF Volatility Index (discontinued 2025-03)", "lag_days": 1, "freq": "daily"},
+    "VXXLECLS": {"name": "Cboe Energy Sector ETF Volatility Index (discontinued 2022-02)", "lag_days": 1, "freq": "daily"},
+    "VXFXICLS": {"name": "Cboe China ETF Volatility Index (discontinued 2022-02)", "lag_days": 1, "freq": "daily"},
+    "VXSLVCLS": {"name": "Cboe Silver ETF Volatility Index (discontinued 2022-02)", "lag_days": 1, "freq": "daily"},
+    "VXGDXCLS": {"name": "Cboe Gold Miners ETF Volatility Index (discontinued 2022-02)", "lag_days": 1, "freq": "daily"},
+    "VXOCLS": {"name": "Cboe S&P 100 Volatility Index, VXO (discontinued 2021-09)", "lag_days": 1, "freq": "daily"},
     # foreign short rates (FX forwards by covered interest parity)
     "ECBDFR": {"name": "ECB deposit facility rate (%)", "lag_days": 1, "freq": "daily"},
     "IUDSOIA": {"name": "Sterling overnight index average, SONIA (%)", "lag_days": 1, "freq": "daily"},

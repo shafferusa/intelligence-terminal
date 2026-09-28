@@ -24,6 +24,10 @@ SOURCES: Dict[str, tuple] = {
     "eia": (7, "EIA weekly petroleum and natural-gas storage (needs EIA_API_KEY)"),
     "crypto": (1, "crypto derivatives: perpetual funding, premium, CME basis"),
     "news": (1, "news headlines: WSJ / MarketWatch public RSS feeds (Dow Jones, one GET per feed), research only (data/news.py)"),
+    "cboe": (1, "Cboe volatility-index history: VIX9D, VIX6M, VVIX, SKEW (cdn.cboe.com), research only"),
+    "options": (1, "daily option-chain snapshots -> IV30/60/90, 25-delta skew, put/call volume and OI (cdn.cboe.com; after 16:15 NY), research only"),
+    "futures": (1, "commodity futures curves, contracts 1–4 (Yahoo contract months; EIA history to April 2024), research only"),
+    "analyst": (7, "Finnhub analyst ratings snapshots and EPS surprises (needs FINNHUB_KEY), research only"),
 }
 
 
@@ -50,6 +54,18 @@ def _runner(name: str) -> Callable:
     if name == "news":
         from . import news
         return lambda store, say: news.refresh(store, say)
+    if name == "cboe":
+        from . import cboe
+        return lambda store, say: cboe.refresh_history(store, say)
+    if name == "options":
+        from . import cboe
+        return lambda store, say: cboe.snapshot(store, say)
+    if name == "futures":
+        from . import futcurve
+        return lambda store, say: futcurve.refresh(store, say)
+    if name == "analyst":
+        from . import analyst
+        return lambda store, say: analyst.refresh(store, say)
     raise KeyError(name)
 
 
@@ -75,7 +91,7 @@ def refresh(store, names: Optional[List[str]] = None, progress=None) -> Dict[str
             res = _runner(name)(store, lambda m, n=name: say(f"[{n}] {m}"))
             state, note = _judge(res)
             out[name] = {"ok": state == "ok", "state": state, "seconds": round(time.time() - t0, 1), "result": res, "error": note}
-            if state != "failed":
+            if state not in ("failed", "deferred"):     # a deferred source runs again at the next opportunity
                 last[name] = _dt.date.today().isoformat()
                 store.kv_set(LAST_KEY, last)
         except Exception as e:  # noqa: BLE001 — one source never stops the others
@@ -86,8 +102,11 @@ def refresh(store, names: Optional[List[str]] = None, progress=None) -> Dict[str
 
 
 def _judge(res) -> tuple:
-    """('ok' | 'partial' | 'skipped' | 'failed', note) from a source's result: nothing stored plus errors is a failure,
-    not success; a missing key is 'skipped'."""
+    """('ok' | 'partial' | 'skipped' | 'deferred' | 'failed', note) from a source's result: nothing stored plus errors is a
+    failure, not success; a missing key is 'skipped'; a source that cannot run yet today (option snapshots while the
+    session is open) is 'deferred'."""
+    if isinstance(res, dict) and res.get("deferred"):
+        return "deferred", res["deferred"]
     parts = res.values() if isinstance(res, dict) and all(isinstance(v, dict) for v in res.values()) and res else [res]
     rows = sum(int(p.get("rows") or 0) + int(p.get("macro_rows") or 0) + int(p.get("fomc_days") or 0) + int(p.get("earnings_rows") or 0)
                for p in parts if isinstance(p, dict))
@@ -108,7 +127,8 @@ def refresh_due(store, progress=None) -> Dict[str, dict]:
 
 
 DATASETS = ["sec_insider", "sec_8k", "event_calendar", "earnings_calendar", "cftc_cot", "eia_weekly", "crypto_deriv",
-            "analyst_estimates", "options_summary", "finra_shvol", "news_dj"]
+            "analyst_estimates", "options_summary", "finra_shvol", "news_dj", "options_cboe", "futures_curve", "analyst_finnhub"]
+MACRO = ["CBOE_VIX9D", "CBOE_VIX6M", "CBOE_VVIX", "CBOE_SKEW"]
 
 
 def status(store) -> List[dict]:
@@ -117,4 +137,7 @@ def status(store) -> List[dict]:
         r = store._q("SELECT COUNT(*) AS n, COUNT(DISTINCT asset_id) AS a, MIN(date) AS lo, MAX(date) AS hi, MAX(published) AS pub "
                      "FROM alt_data WHERE dataset = ?", (ds,))[0]
         rows.append({"dataset": ds, "rows": r["n"], "series": r["a"], "first": r["lo"], "last": r["hi"], "last_published": r["pub"]})
+    for ms in MACRO:
+        r = store._q("SELECT COUNT(*) AS n, MIN(date) AS lo, MAX(date) AS hi, MAX(published) AS pub FROM macro WHERE series = ?", (ms,))[0]
+        rows.append({"dataset": ms, "rows": r["n"], "series": 1 if r["n"] else 0, "first": r["lo"], "last": r["hi"], "last_published": r["pub"]})
     return rows

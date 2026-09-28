@@ -42,7 +42,12 @@ finsim2/
     calendar.py          FOMC / CPI / jobs / GDP / PPI / retail release days -> event_calendar; earnings -> earnings_calendar
     expand.py            widen the universe to the N most liquid US common stocks (meta.expanded = survivorship flag)
     imports.py           CSV importers for licensed analyst estimates and options summaries
-    newdata.py           the new sources together: per-source cadence, ok / partial / skipped / failed, status
+    newdata.py           the new sources together: per-source cadence, ok / partial / skipped / deferred / failed, status
+    cboe.py              research only: Cboe index history (VIX9D / VIX6M / VVIX / SKEW -> macro CBOE_*) and daily option-chain
+                         snapshots reduced to IV30/60/90, 25-delta skew, put/call volume + OI -> options_cboe (after 16:15 NY)
+    futcurve.py          research only: futures contracts 1–4 for 11 commodities (Yahoo contract months, daily) and EIA
+                         NYMEX history to 2024-04-05 -> futures_curve
+    analyst.py           research only: Finnhub rating-count snapshots and EPS surprises (FINNHUB_KEY) -> analyst_finnhub
     news.py              research only: WSJ / MarketWatch public RSS (feeds.content.dowjones.io, one GET per feed a day) and
                          manual imports (wsj.com / barrons.com / marketwatch.com; text never stored) -> news_articles +
                          news_links; known_at = first seen, session = first close at or after it (New York); ticker

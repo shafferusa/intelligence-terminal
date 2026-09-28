@@ -1,0 +1,201 @@
+"""Free data additions (finsim2/data: futcurve, cboe, analyst): parsers on fixtures, point-in-time rules, no network."""
+import datetime as dt
+import json
+import math
+import os
+import shutil
+import tempfile
+import unittest
+from unittest import mock
+
+from finsim2.data import FetchError
+from finsim2.data import analyst as A
+from finsim2.data import cboe as B
+from finsim2.data import futcurve as F
+from finsim2.data import newdata
+from finsim2.data.store import Store
+
+
+def _store():
+    tmp = tempfile.mkdtemp()
+    return tmp, Store(os.path.join(tmp, "x.db"))
+
+
+def _bars(days, closes, off=-14400):
+    ts = [int(dt.datetime(*d, tzinfo=dt.timezone.utc).timestamp()) - off for d in days]
+    return {"meta": {"gmtoffset": off}, "timestamp": ts, "indicators": {"quote": [{"close": closes, "volume": [100] * len(closes)}]}}
+
+
+class FuturesCurve(unittest.TestCase):
+    def test_candidate_months_follow_each_cycle(self):
+        c = F.candidates("CL", "NYM", F.CODES, dt.date(2026, 9, 28), 3)
+        self.assertEqual(c, [("CLU26.NYM", 202609), ("CLV26.NYM", 202610), ("CLX26.NYM", 202611)])
+        z = F.candidates("ZC", "CBT", "HKNUZ", dt.date(2026, 9, 28), 3)
+        self.assertEqual([s for s, _ in z], ["ZCU26.CBT", "ZCZ26.CBT", "ZCH27.CBT"])
+
+    def test_todays_bar_waits_for_the_settlement(self):
+        res = _bars([(2026, 9, 25), (2026, 9, 28)], [92.41, 92.72])
+        self.assertEqual(F.last_bar(res, dt.datetime(2026, 9, 28, 15, 0)), ("2026-09-25", 92.41, 100.0))
+        self.assertEqual(F.last_bar(res, dt.datetime(2026, 9, 28, 17, 30))[:2], ("2026-09-28", 92.72))
+        self.assertIsNone(F.last_bar({"meta": {}}, dt.datetime(2026, 9, 28, 18)))
+
+    def test_a_stale_front_month_is_not_contract_one(self):
+        stale = ("2026-09-22", 90.0, 5.0)
+        live = [(202611, ("2026-09-25", 92.4, 9.0)), (202612, ("2026-09-25", 88.7, 8.0)), (202701, ("2026-09-25", 86.0, 7.0)),
+                (202702, ("2026-09-25", 84.0, 6.0)), (202703, ("2026-09-25", 82.0, 5.0))]
+        rows = F.curve_rows("WTI", [(202610, stale)] + live)
+        got = {r[2]: r[3] for r in rows}
+        self.assertEqual(got["c1"], 92.4)
+        self.assertEqual(got["c1_ym"], 202611.0)
+        self.assertEqual(got["c4"], 84.0)
+        self.assertNotIn("c5", got)
+        self.assertEqual(got["src"], 2.0)
+        self.assertTrue(all(r[0] == "fut:WTI" and r[1] == "2026-09-25" and r[4] == "2026-09-26" for r in rows))
+
+    def test_eia_history_rows_and_recheck(self):
+        payload = {"response": {"total": 2, "data": [{"period": "2024-04-05", "value": 86.91}, {"period": "2024-04-04", "value": None}]}}
+        self.assertEqual(F.eia_rows(payload, "WTI", 1), [("fut:WTI", "2024-04-05", "c1", 86.91, "2024-04-06"),
+                                                         ("fut:WTI", "2024-04-05", "src", 1.0, "2024-04-06")])
+        self.assertEqual(F.eia_rows(payload, "WTI", 2)[0][2], "c2")
+        tmp, st = _store()
+        try:
+            with mock.patch.dict(os.environ, {"EIA_API_KEY": ""}):
+                self.assertIn("skipped", F.eia_history(st))
+            st.kv_set(F.EIA_KEY, dt.date.today().isoformat())
+            self.assertIn("note", F.eia_history(st, key="k"), "checked recently: no request")
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _chain(spot=100.0, iv=0.20, put_skew=0.0, pct=False, session="2026-09-25"):
+    """Calls and puts at strikes 80..120 for expiries 20 and 50 days out; deltas from Black-Scholes with the given IV."""
+    d0 = dt.date.fromisoformat(session)
+    opts = []
+    for days in (3, 20, 50):
+        exp = d0 + dt.timedelta(days=days)
+        t = days / 365
+        for k in range(80, 121, 5):
+            for right in "CP":
+                d1 = (math.log(spot / k) + 0.5 * iv * iv * t) / (iv * math.sqrt(t))
+                nd = 0.5 * (1 + math.erf(d1 / math.sqrt(2)))
+                delta = nd if right == "C" else nd - 1
+                v = iv + (put_skew * max(0.0, (spot - k) / 20) if right == "P" else 0.0)
+                opts.append({"option": f"XYZ{exp:%y%m%d}{right}{k * 1000:08d}", "bid": 1.0, "ask": 1.1, "iv": v * (100 if pct else 1),
+                             "delta": delta, "open_interest": 10 if right == "P" else 5, "volume": 3 if right == "P" else 2})
+    return {"timestamp": "x", "data": {"symbol": "XYZ", "current_price": spot, "iv30": 21.0 if pct else 0.21, "options": opts}}
+
+
+class Cboe(unittest.TestCase):
+    def test_history_csv_both_layouts(self):
+        a = B.parse_history("DATE,OPEN,HIGH,LOW,CLOSE\n01/02/2024,13.1,14.0,12.9,13.5\n01/03/2024,bad,1,1,\n", "VIX9D")
+        self.assertEqual(a, [("2024-01-02", 13.5, "2024-01-03")])
+        b = B.parse_history("DATE,SKEW\n2024-01-02,142.3\n", "SKEW")
+        self.assertEqual(b, [("2024-01-02", 142.3, "2024-01-03")])
+        self.assertEqual(B.parse_history("<html>blocked</html>", "VVIX"), [])
+
+    def test_the_session_a_snapshot_shows(self):
+        self.assertEqual(B.session_for(dt.datetime(2026, 9, 28, 16, 20)), "2026-09-28")
+        self.assertIsNone(B.session_for(dt.datetime(2026, 9, 28, 11, 0)), "the session is open: nothing is stored")
+        self.assertEqual(B.session_for(dt.datetime(2026, 9, 28, 8, 0)), "2026-09-25", "Monday morning shows Friday")
+        self.assertEqual(B.session_for(dt.datetime(2026, 9, 27, 12, 0)), "2026-09-25", "weekend shows Friday")
+
+    def test_features_from_a_flat_and_a_skewed_chain(self):
+        f = B.features(_chain(), "2026-09-25")
+        self.assertAlmostEqual(f["iv30"], 0.20, places=6)
+        self.assertAlmostEqual(f["skew25"], 0.0, places=6)
+        self.assertNotIn("iv60", f, "no expiry beyond 50 days: 60 days is not extrapolated")
+        self.assertEqual((f["put_oi"], f["call_oi"], f["put_volume"], f["call_volume"]), (270.0, 135.0, 81.0, 54.0))
+        self.assertAlmostEqual(f["iv30_cboe"], 0.21)
+        s = B.features(_chain(put_skew=0.05), "2026-09-25")
+        self.assertGreater(s["skew25"], 0.005, "downside puts richer: positive skew")
+        self.assertAlmostEqual(s["iv30"], 0.20 + 0.0, delta=0.02)
+        p = B.features(_chain(pct=True), "2026-09-25")
+        self.assertAlmostEqual(p["iv30"], 0.20, places=6, msg="percent IVs are converted to decimals")
+        self.assertEqual(B.features({"data": {"options": []}}, "2026-09-25"), {})
+
+    def test_total_variance_interpolation(self):
+        v = B.constant_maturity([(20, 0.2), (50, 0.3)], 30)
+        self.assertAlmostEqual(v * v * 30, 0.04 * 20 + (10 / 30) * (0.09 * 50 - 0.04 * 20))
+        self.assertIsNone(B.constant_maturity([(20, 0.2)], 60))
+        self.assertEqual(B.constant_maturity([(45, 0.25)], 30), 0.25)
+
+    def test_symbols_and_snapshot(self):
+        self.assertEqual(B.cboe_symbol({"id": "SPX", "asset_class": "INDEX"}), "_SPX")
+        self.assertEqual(B.cboe_symbol({"id": "BRK-B", "asset_class": "EQUITY", "currency": "USD", "yahoo": "BRK-B"}), "BRK.B")
+        self.assertIsNone(B.cboe_symbol({"id": "SHEL.L", "asset_class": "EQUITY", "currency": "GBP", "yahoo": "SHEL.L"}))
+        self.assertIsNone(B.cboe_symbol({"id": "EURUSD", "asset_class": "FX", "currency": "USD"}))
+        tmp, st = _store()
+        try:
+            open_ = B.snapshot(st, now_utc=dt.datetime(2026, 9, 28, 15, 0), symbols=[("XYZ", "XYZ")])
+            self.assertIn("deferred", open_)
+            calls = []
+
+            def fake(url):
+                calls.append(url)
+                if "BAD" in url:
+                    raise FetchError("HTTP 403", 403)
+                return json.dumps(_chain(session="2026-09-28")).encode()
+            with mock.patch.object(B, "_get", fake), mock.patch.object(B.time, "sleep"):
+                r = B.snapshot(st, now_utc=dt.datetime(2026, 9, 28, 21, 0), symbols=[("XYZ", "XYZ"), ("BAD", "BAD")])
+            self.assertEqual((r["underlyings"], r["session"], len(r["errors"])), (1, "2026-09-28", 1))
+            rows = {f: (d, p) for _, d, f, _, p in st.alt(B.DATASET, "XYZ")}
+            self.assertEqual(rows["iv30"], ("2026-09-28", "2026-09-29"), "a close is published the next day")
+            self.assertTrue(calls[0].startswith("https://cdn.cboe.com/api/global/delayed_quotes/options/XYZ.json"))
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class Analyst(unittest.TestCase):
+    REC = [{"symbol": "AAPL", "period": "2026-08-01", "strongBuy": 13, "buy": 24, "hold": 14, "sell": 3, "strongSell": 0},
+           {"symbol": "AAPL", "period": "2026-09-01", "strongBuy": 12, "buy": 22, "hold": 15, "sell": 3, "strongSell": 1}]
+    EPS = [{"period": "2026-06-30", "actual": 1.91, "estimate": 1.9271, "surprise": -0.0171, "surprisePercent": -0.8873},
+           {"period": "2026-03-31", "actual": 2.01, "estimate": 1.9884, "surprise": 0.0216, "surprisePercent": 1.0863}]
+
+    def test_ratings_are_a_snapshot_of_the_latest_month(self):
+        rows = {f: (d, v, p) for _, d, f, v, p in A.rec_rows(self.REC, "AAPL", "2026-09-28")}
+        self.assertEqual(rows["rec_strong_buy"], ("2026-09-28", 12, "2026-09-29"))
+        self.assertEqual(rows["rec_n"][1], 53)
+        self.assertEqual(rows["rec_period"][1], 202609.0)
+        self.assertAlmostEqual(rows["rec_mean"][1], (12 + 44 + 45 + 12 + 5) / 53)
+        self.assertEqual(A.rec_rows({"error": "x"}, "AAPL", "2026-09-28"), [])
+
+    def test_surprises_are_published_after_the_release_and_never_overwritten(self):
+        rows = A.eps_rows(self.EPS, "AAPL", "2026-09-28", ["2026-05-01", "2026-07-31"], set())
+        pub = {(d, f): p for _, d, f, _, p in rows}
+        self.assertEqual(pub[("2026-06-30", "eps_actual")], "2026-08-01")
+        self.assertEqual(pub[("2026-03-31", "eps_surprise_pct")], "2026-05-02")
+        no_rel = A.eps_rows(self.EPS, "AAPL", "2026-09-28", [], set())
+        self.assertTrue(all(r[4] == "2026-09-29" for r in no_rel), "no release on file: public from the fetch")
+        again = A.eps_rows(self.EPS, "AAPL", "2026-09-28", [], {("2026-06-30", "eps_actual")})
+        self.assertEqual({r[1] for r in again}, {"2026-03-31"})
+
+    def test_no_key_no_request(self):
+        tmp, st = _store()
+        try:
+            with mock.patch.dict(os.environ, {"FINNHUB_KEY": ""}), mock.patch.object(A, "http_get", side_effect=AssertionError):
+                self.assertIn("skipped", A.refresh(st))
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class Orchestration(unittest.TestCase):
+    def test_a_deferred_source_is_retried_and_status_lists_the_new_datasets(self):
+        tmp, st = _store()
+        try:
+            with mock.patch.object(newdata, "_runner", return_value=lambda s, say: {"deferred": "session open"}):
+                out = newdata.refresh(st, ["options"])
+            self.assertEqual(out["options"]["state"], "deferred")
+            self.assertIn("options", newdata.due(st), "not stamped: runs again after the close")
+            names = {r["dataset"] for r in newdata.status(st)}
+            self.assertTrue({"options_cboe", "futures_curve", "analyst_finnhub", "CBOE_VVIX"} <= names)
+            self.assertTrue({"cboe", "options", "futures", "analyst"} <= set(newdata.SOURCES))
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

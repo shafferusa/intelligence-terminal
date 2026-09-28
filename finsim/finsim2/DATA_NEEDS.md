@@ -143,7 +143,9 @@ If you want them, I can add these under the same protocol:
 
 1. **ALFRED** real-time vintages for every macro series (FRED's archive).
 2. **SEC 13F** holdings.
-3. **Cboe** VIX term structure (VIX9D / VIX3M / VIX6M), SKEW, and put/call ratio history.
+3. ~~**Cboe** VIX term structure (VIX9D / VIX3M / VIX6M), SKEW~~ — **built 2026-09-28** (`data/cboe.py`), with daily
+   option-chain snapshots from the same host, futures curves (`data/futcurve.py`) and Finnhub ratings / EPS surprises
+   (`data/analyst.py`); see NEW_DATA_SOURCES.md. Put/call ratio history is not free; the snapshots record it from now on.
 4. **FINRA** short interest (the recent public window).
 5. **Philadelphia Fed SPF** consensus.
 6. **ICI** weekly fund flows.
@@ -162,7 +164,8 @@ Each needs its host added to the environment's allowed domains in the cloud. On 
 4. **Point-in-time fundamentals** (Sharadar SF1).
 5. Borrow fees and short interest.
 6. Newswire full text / transcripts.
-7. Futures curves.
+7. Futures curves — free contracts 1–4 now collected daily and EIA history to April 2024 (`data/futcurve.py`); a paid
+   history would only fill the April 2024 → 2026-09 gap and add deferred months.
 8. Intraday bars.
 
 **Being honest about expectations:** better data raises the ceiling, but it does not guarantee the Shaffer System

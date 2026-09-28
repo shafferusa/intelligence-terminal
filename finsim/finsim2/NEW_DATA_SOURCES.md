@@ -1,5 +1,31 @@
 # New data sources — audit (2026-09-25)
 
+## 2026-09-28 — Free additions: implied volatility, futures curves, option snapshots, analyst data (research only)
+
+`python -m finsim2 data cboe options futures analyst` (the daily loop runs them on their cadence). **Research only**:
+nothing here enters the Shaffer Score, the Hedge or any production output until it passes a protocol fixed before
+results, exactly like every other new source.
+
+| Source | Where it lands | Module | Key / host | Depth | Point in time | Status (2026-09-28) |
+|---|---|---|---|---|---|---|
+| Cboe volatility indices on FRED — VIX, VIX3M (VXV), VXN, RVX, VXD, GVZ, OVX, VXEEM, VXEWZ, single-stock VIXes (Apple, Amazon, Google, Goldman, IBM) | macro (`FRED_SERIES`) | `data/refresh.py` | FRED_API_KEY | 1986–2011 → | next day | **ALREADY IN** — these were added for hedge pricing earlier |
+| Discontinued Cboe vol indices — EVZ (euro, to 2025-03), energy XLE, China FXI, silver, gold miners (to 2022-02), VXO (to 2021-09) | macro (`FRED_SERIES`) | `data/refresh.py` | FRED_API_KEY | 1986 / 2007 / 2011 → end | next day | **ADDED** — history only (training data for IV features); IDs verified against FRED |
+| Cboe index history — VIX9D, VIX6M, VVIX (vol of VIX), SKEW | macro `CBOE_VIX9D`, `CBOE_VIX6M`, `CBOE_VVIX`, `CBOE_SKEW` | `data/cboe.py` | none; `cdn.cboe.com` → redirects to `cdn-api.cboe.com` | each index's full daily history | next day | **FIXTURE-TESTED** — both hosts are blocked in the cloud; runs on your machine |
+| Daily option-chain snapshots → ATM IV 30 / 60 / 90 days, 25-delta skew, put / call volume and OI, Cboe's own IV30 | alt_data `options_cboe` (same field names as `options_summary`) | `data/cboe.py` | none; `cdn.cboe.com` (delayed quotes, ~15 min) | **from the first run** — no free history | snapshot after 16:15 NY = that session, published next day; before 09:30 = previous session; during the session: *deferred*, retried | **FIXTURE-TESTED** — holdings, watchlist and ~60 liquid names (SPX, NDX, RUT, sector ETFs, mega caps), at most 120, one GET a second; the chain itself is not kept |
+| Futures curves, contracts 1–4 — WTI, Brent, natural gas, heating oil, RBOB, gold, silver, copper, corn, soybeans, wheat | alt_data `futures_curve` (asset `fut:<ROOT>`, fields `c1`..`c4`, `cN_ym`, `cN_vol`, `src`) | `data/futcurve.py` | Yahoo contract months (`CLX26.NYM`, `ZCZ26.CBT`, `GCZ26.CMX`) | **from the first run** | settlement published next day; today's bar only after 17:00 NY | **LIVE-TESTED** — 11 curves, 4 contracts each, on 2026-09-25 |
+| EIA NYMEX futures, contracts 1–4 — WTI (1983 →), natural gas (1994 →), heating oil, RBOB (2005 →) | alt_data `futures_curve` (`src` = 1) | `data/futcurve.py` | EIA_API_KEY; `api.eia.gov` | **ends 2024-04-05**: EIA stopped publishing these series | next day | **LIVE-TESTED** — 160,355 rows; re-checked every 30 days in case EIA resumes. The April 2024 → first-run gap has no free source |
+| Finnhub analyst ratings — strong buy … strong sell counts, mean rating, analyst count | alt_data `analyst_finnhub` (`rec_*`) | `data/analyst.py` | FINNHUB_KEY | **from the first run** (Finnhub restates past months, so only snapshots are stored) | fetch date, published next day | **LIVE-TESTED** |
+| Finnhub EPS surprises — actual, consensus, surprise, surprise % (last 4 quarters) | alt_data `analyst_finnhub` (`eps_*`) | `data/analyst.py` | FINNHUB_KEY | 4 quarters back, then forward | day after the 8-K 2.02 release when on file (within 120 days of the period end), else day after the fetch; never overwritten | **LIVE-TESTED** — price targets, EPS estimates and upgrades / downgrades are premium (HTTP 403) |
+
+Notes.
+- Yahoo's option-chain endpoint needs a session cookie and "crumb" token; obtaining one would be working around an
+  anti-bot measure, so FinSim2 does not use it. Cboe's delayed quotes are a plain public JSON file.
+- The option features are computed by FinSim2 (total variance interpolated between listed expiries, never
+  extrapolated; skew from Cboe's deltas), so they differ from a vendor's IV30. They are kept in their own dataset.
+- `python -m finsim2 data --status` now lists these datasets and the four Cboe index series.
+- Cadence: `cboe`, `options`, `futures` daily; `analyst` weekly (two requests per stock, paced under Finnhub's free 60 a
+  minute — about 18 minutes for 500 stocks).
+
 ## 2026-09-28 — News: WSJ · Barron's · MarketWatch headlines (research only)
 
 `python -m finsim2 news` · module `data/news.py` · evaluation `engine/newslive.py` · protocol
