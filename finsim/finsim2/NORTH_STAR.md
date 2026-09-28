@@ -4,6 +4,27 @@ Set by the owner on 2026-09-28. It governs every piece of FinSim2 research and e
 Shaffer System state is the source of truth. `SHAFFER_SYSTEM.md` is the permanent definition of the forecasts, and
 this charter says what they are for.
 
+**The owner's goal statement (2026-09-28, verbatim):**
+
+> Build the Shaffer System into an end-to-end quant investing framework.
+> Shaffer Alpha: 1M–5Y expected return. Shaffer Directional: 1D–1W expected return, P(up), and move size.
+> Shaffer Hedge: best hedge for every trade based on risk, cost, and profit sacrificed.
+> Use point-in-time historical data and ML to learn the best equation and weights by horizon, asset class, sector,
+> industry, and asset, with strict out-of-sample validation and shrinkage to avoid overfitting.
+> Priority is better data first, then better models.
+> Turn the forecasts into a market-neutral long/short portfolio, size positions by validated conviction, hedge unwanted
+> risk, include realistic costs, and compare the full strategy against SPY on return, Sharpe, drawdown, beta, and alpha.
+> FinSim2 is the paper-trading/display front end; the Shaffer ML/data engine can run separately and feed it.
+> Nothing reaches production without proven historical and live evidence plus my approval.
+
+**What follows from it:**
+
+- **Order of work:** data before models.
+- **Sizing:** conviction counts only where it has been validated out of sample. Unvalidated signal gets no weight.
+- **Promotion gate:** historical evidence (walk-forward, pre-registered, FDR) → a live-shadow period with graded
+  forward results → the owner's explicit approval. The ML engine may propose and shadow changes automatically, but it
+  can never promote them.
+
 **Main goal:** find the best historically supported equation and weights for each asset and horizon, turn those
 forecasts into a robust long/short portfolio, and use the Shaffer Hedge to control risk without destroying expected
 profit.
