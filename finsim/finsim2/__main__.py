@@ -72,6 +72,31 @@ def _data_cmd(args) -> int:
             for a in res["added"][:50]:
                 print(f"  {a['id']:<7} {a['sector']:<24} ${a['liquidity_usd'] / 1e6:,.0f}M / day")
             return 0
+        if args.cmd == "import-options-dump":
+            from .data import optionsdump as OD
+            if args.probe:
+                for t in OD.probe(args.file):
+                    print(f"{t['table']}: {t['rows']} rows\n  columns: {', '.join(t['columns'])}\n  mapping: {t['mapping']}")
+                    for r in t["sample"]:
+                        print("   ", r)
+                return 0
+            if not args.quality:
+                if not args.file:
+                    print("give the decompressed .db file (or --quality)")
+                    return 2
+                over = dict(x.split("=", 1) for x in args.map if "=" in x)
+                res = OD.import_file(st, args.file, args.table, over, args.underlying, print)
+                if res.get("error"):
+                    print(res["error"])
+                    return 1
+                print(f"{res['table']}: {res['rows_read']} rows, {res['chains']} chains, {res['stored']} stored; "
+                      f"unknown underlyings: {', '.join(res['skipped_unknown']) or 'none'}; bad rows {res['bad_rows']}")
+            q = OD.quality(st)
+            for a, r in q["names"].items():
+                print(f"  {a}: coverage {r['coverage']:.0%}, corr {r.get('corr') or 0:.3f}, mean |diff| {r.get('mad') or 0:.2f} vol pts -> "
+                      f"{'ok' if r['passed'] else 'FAILED'}")
+            print("quality gate:", "PASSED — the dump can enter research (lab --iv)" if q["passed"] else "FAILED — the dump is not used")
+            return 0
         from .data import imports
         res = imports.import_file(st, args.file, "estimates" if args.cmd == "import-estimates" else "options", args.source)
         print(f"{res['dataset']}: {res['rows']} values imported; skipped {res['skipped']}")
@@ -300,6 +325,16 @@ def main(argv=None) -> int:
         ip = sub.add_parser(nm, help=f"import licensed {what} into the point-in-time store")
         ip.add_argument("file")
         ip.add_argument("--source", default="import")
+    od = sub.add_parser("import-options-dump", help="import a historical options dump (SQLite; e.g. the free 2008–2025 chains) as "
+                        "per-session IV / skew / OI features, then run its quality gate (data/optionsdump.py)")
+    od.add_argument("file", nargs="?", help="the decompressed .db / .sqlite file")
+    od.add_argument("--probe", action="store_true", help="list the tables, columns and the column mapping; import nothing")
+    od.add_argument("--table", help="the table to import (default: the largest with a date and an IV column)")
+    od.add_argument("--map", action="append", default=[], metavar="FIELD=COLUMN", help="override a column (e.g. iv=mid_iv)")
+    od.add_argument("--underlying", help="the underlying when the table has no symbol column (one file per underlying)")
+    od.add_argument("--quality", action="store_true", help="only (re)run the quality gate on what is imported")
+    pr = sub.add_parser("probe", help="test a data provider's claims before building on it")
+    pr.add_argument("provider", choices=["eulerpool"])
     sy = sub.add_parser("system", help="the Shaffer System: expected % return per asset and horizon (SHAFFER_SYSTEM.md)")
     sy.add_argument("assets", nargs="*", help="print these assets' forecasts")
     sy.add_argument("--build", action="store_true", help="build the point-in-time records (all asset classes, 1D–5Y)")
@@ -737,7 +772,13 @@ def main(argv=None) -> int:
             f.write(haudit.markdown(res))
         print("wrote", args.out)
         return 0
-    if args.cmd in ("data", "universe", "import-estimates", "import-options"):
+    if args.cmd == "probe":
+        from finsim import app
+        from .data import eulerpool
+        os.makedirs(app.home(), exist_ok=True)
+        print(eulerpool.probe(app.home(), print))
+        return 0
+    if args.cmd in ("data", "universe", "import-estimates", "import-options", "import-options-dump"):
         return _data_cmd(args)
     if args.cmd == "movesize":
         return _movesize_cmd(args)

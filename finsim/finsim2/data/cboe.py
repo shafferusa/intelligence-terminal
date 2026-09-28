@@ -208,6 +208,12 @@ def constant_maturity(points: List[Tuple[int, float]], days: int, var: bool = Tr
 
 def features(payload, session: str) -> Dict[str, float]:
     spot, iv30c, chain = contracts(payload)
+    return chain_features(spot, chain, session, iv30c)
+
+
+def chain_features(spot: Optional[float], chain: List[dict], session: str, iv30c: Optional[float] = None) -> Dict[str, float]:
+    """The per-session features from a chain (dicts: expiry date, right C/P, strike, iv decimal, delta, oi, volume,
+    quoted); shared by the live snapshots and the historical dump importer (data/optionsdump.py)."""
     if not chain or not spot or spot <= 0:
         return {}
     d0 = _dt.date.fromisoformat(session)

@@ -137,6 +137,24 @@ price and license terms still need checking there.
   25-delta skew, term slope, IV − RV, put / call OI. It would not store every contract.
 - The data stay out of the repository, following the vendor's license.
 
+## The $0 research warehouse (owner's plan, 2026-09-28): what is verified, what is built
+
+Plan: buy nothing yet; test Eulerpool hard; build on Eulerpool + SEC + FRED / ALFRED + Treasury + CFTC + EIA + the free
+historical options dump. Status of each piece:
+
+| Piece | Status in FinSim2 | What is verified | Open question |
+|---|---|---|---|
+| **Eulerpool** (free tier: 100,000 requests / month, non-commercial, "Data by Eulerpool" attribution on anything public; API `https://api.eulerpool.com/api/1/…`, Bearer key) | **probe built** — `python -m finsim2 probe eulerpool` (needs `EULERPOOL_API_KEY`) | only the vendor's own pages (the host is blocked from the cloud research environment) | whether delisted companies answer (survivorship), whether fundamentals carry filing dates (point in time), whether options / futures take a historical date. Nothing is built on it until the probe's report says so |
+| **Free options dump** (GitHub, SaidBahaDev, MIT licence stated) | **importer built** — `python -m finsim2 import-options-dump file.db` (SQLite; `--probe` first) with the pre-registered quality gate vs VIX / VXN / RVX | search shows `options-dataset-hist`: **SPY, QQQ, IWM**, 2008 – 2025, ~53 million contracts with IVs and greeks, SQLite (Zstandard) and Parquet. The "104 names, 9.4 GB" version was not found | where the author got the data (not stated in anything visible); an MIT licence on a repository does not show a right to redistribute exchange / vendor data — fine for private research, not for anything shared. Parquet needs a non-standard library, so use the SQLite files |
+| SEC EDGAR | **already in use** — companyfacts per company (first-reported figures keyed by filing date), Form 4, 8-K | live-tested | the nightly `companyfacts.zip` would speed up a 1,500-stock universe; not needed yet |
+| FRED / ALFRED | **already in use** — first-release vintages with publication dates for revised series (P0-5) | live-tested | — |
+| Treasury yield curves | FRED carries the same constant-maturity curve (DGS1MO … DGS30, 1962 →) and TIPS yields | the Treasury CSVs are reachable | nothing to add |
+| CFTC | **already built** — legacy 1986 →, disaggregated / TFF 2006 → (`data/cftc.py`) | fixture-tested (host blocked in the cloud) | — |
+| EIA | **already built** — weekly inventories, NYMEX contracts 1–4 (to 2024-04-05) via the API key | live-tested | bulk files need no key; the API route already works |
+
+The two gaps are the ones the plan names: point-in-time analyst-estimate revisions and the full OPRA options history
+are not available free.
+
 ## Free additions FinSim2 can make without any purchase
 
 If you want them, I can add these under the same protocol:

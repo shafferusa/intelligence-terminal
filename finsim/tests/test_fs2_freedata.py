@@ -181,6 +181,124 @@ class Analyst(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
 
+def _dump(path, days, iv=0.20, pct=False, occ=False):
+    """A SQLite options dump in a vendor-like layout: one row per contract and day."""
+    import sqlite3
+    con = sqlite3.connect(path)
+    if occ:
+        con.execute("CREATE TABLE opts (quote_date TEXT, option_symbol TEXT, implied_volatility REAL, delta REAL, open_interest REAL, "
+                    "volume REAL, bid REAL, ask REAL, underlying_last REAL)")
+    else:
+        con.execute("CREATE TABLE opts (act_symbol TEXT, date TEXT, expiration TEXT, strike REAL, call_put TEXT, iv REAL, delta REAL, "
+                    "open_interest REAL, volume REAL, bid REAL, ask REAL, underlying_price REAL)")
+    for sym in ("SPY", "ZZZZ"):
+        for d in days:
+            ch = _chain(iv=iv, session=d)["data"]["options"]
+            for o in ch:
+                m = B.OCC.search(o["option"])
+                exp = f"20{m.group(1)}-{m.group(2)}-{m.group(3)}"
+                v = o["iv"] * (100 if pct else 1)
+                if occ:
+                    con.execute("INSERT INTO opts VALUES (?,?,?,?,?,?,?,?,?)", (d, sym + o["option"][3:], v, o["delta"], o["open_interest"],
+                                                                               o["volume"], o["bid"], o["ask"], 100.0))
+                else:
+                    con.execute("INSERT INTO opts VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (sym, d, exp, int(m.group(5)) / 1000, m.group(4), v,
+                                                                                     o["delta"], o["open_interest"], o["volume"], o["bid"], o["ask"], 100.0))
+    con.commit()
+    con.close()
+
+
+class OptionsDump(unittest.TestCase):
+    def test_probe_import_and_quality_gate(self):
+        from finsim2.data import optionsdump as OD
+        tmp, st = _store()
+        try:
+            st.upsert_asset({"id": "SPY", "name": "SPY", "asset_class": "ETF", "sector": "Broad Market", "country": "United States",
+                             "currency": "USD", "yahoo": "SPY", "meta": {}})
+            days = ["2026-09-21", "2026-09-22", "2026-09-23"]
+            for layout in ({"pct": True}, {"occ": True}):
+                path = os.path.join(tmp, f"d{len(layout)}{list(layout)[0]}.db")
+                _dump(path, days, **layout)
+                info = OD.probe(path)
+                self.assertEqual(info[0]["mapping"]["iv"] in ("iv", "implied_volatility"), True)
+                res = OD.import_file(st, path)
+                self.assertEqual((res["stored"], res["skipped_unknown"]), (3, ["ZZZZ"]), res)
+                rows = {(d, f): (v, p) for _, d, f, v, p in st.alt(OD.DATASET, "SPY")}
+                self.assertAlmostEqual(rows[("2026-09-22", "iv30")][0], 0.20, places=6)
+                self.assertEqual(rows[("2026-09-22", "iv30")][1], "2026-09-23", "end-of-day data: public the next day")
+            q = OD.quality(st)
+            self.assertFalse(q["passed"], "three days and no VIX: the gate cannot pass")
+            self.assertFalse(OD.gate_passed(st))
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_quality_gate_passes_only_on_agreement(self):
+        from finsim2.data import optionsdump as OD
+        import random as _r
+        tmp, st = _store()
+        try:
+            rng = _r.Random(1)
+            d0 = dt.date(2008, 1, 2)
+            days = [(d0 + dt.timedelta(days=k)).isoformat() for k in range(0, 700) if (d0 + dt.timedelta(days=k)).weekday() < 5]
+            for a, sid in OD.GATE.items():
+                st.upsert_asset({"id": a, "name": a, "asset_class": "ETF", "sector": "Broad Market", "country": "United States",
+                                 "currency": "USD", "yahoo": a, "meta": {}})
+                st.upsert_prices(a, [{"date": d, "open": 1, "high": 1, "low": 1, "close": 1, "adj_close": 1, "volume": 1} for d in days])
+                lvl = [15 + 10 * math.sin(k / 40) + rng.gauss(0, 0.5) for k in range(len(days))]
+                st.upsert_macro(sid, [(d, v) for d, v in zip(days, lvl)])
+                st.put_alt(OD.DATASET, [(a, d, "iv30", (v + rng.gauss(0, 1)) / 100, d) for d, v in zip(days, lvl)])
+            self.assertTrue(OD.quality(st)["passed"])
+            st.put_alt(OD.DATASET, [("QQQ", d, "iv30", rng.uniform(0.1, 0.4), d) for d in days])     # garbage for one name
+            q = OD.quality(st)
+            self.assertFalse(q["passed"])
+            self.assertFalse(q["names"]["QQQ"]["passed"])
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class EulerpoolProbe(unittest.TestCase):
+    def test_probe_reports_each_claim_without_the_key(self):
+        from finsim2.data import eulerpool as EP
+        spec = {"paths": {"/api/1/equity/overview/{identifier}": {"get": {}},
+                          "/api/1/equity/historical-prices/{identifier}": {"get": {"parameters": [{"name": "from"}]}},
+                          "/api/1/equity/income-statement/{identifier}": {"get": {}},
+                          "/api/1/options/chain/{identifier}": {"get": {"parameters": [{"name": "date"}]}},
+                          "/api/1/futures/curve/{identifier}": {"get": {}}}}
+        seen = []
+
+        def fake(url, headers=None, timeout=30):
+            seen.append((url, headers))
+            if url.endswith("/openapi.json") and "/api/" not in url:
+                return json.dumps(spec).encode()
+            if "overview/US5249081002" in url or "overview/US2935611069" in url:
+                raise FetchError("HTTP 404", 404, b'{"error": "not found"}')
+            if "overview" in url:
+                return b'{"name": "X", "isin": "Y"}'
+            if "historical-prices" in url:
+                return b'[{"date": "2007-01-03", "close": 60.0}, {"date": "2008-09-12", "close": 3.65}]'
+            if "income-statement" in url:
+                return b'[{"period": "2024-09-28", "revenue": 391035}]'
+            raise FetchError("HTTP 404", 404)
+        tmp = tempfile.mkdtemp()
+        try:
+            with mock.patch.object(EP, "http_get", fake), mock.patch.object(EP.time, "sleep"):
+                text = EP.probe(tmp, key="SECRET-KEY-123")
+            self.assertIn("4 of 6 delisted companies answer", text)
+            self.assertIn("2007-01-03 → 2008-09-12", text)
+            self.assertIn("publication-date fields: NONE", text)
+            self.assertIn("/api/1/options/chain/{identifier}` parameters: date → **takes a date**", text)
+            self.assertNotIn("SECRET-KEY-123", text)
+            self.assertTrue(all("SECRET" not in u for u, _ in seen), "the key never goes in a URL")
+            self.assertTrue(all(h["Authorization"] == "Bearer SECRET-KEY-123" for _, h in seen))
+            self.assertTrue(os.path.exists(os.path.join(tmp, "eulerpool_probe.md")))
+            with mock.patch.dict(os.environ, {"EULERPOOL_API_KEY": ""}):
+                self.assertIn("skipped", EP.probe(tmp))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 class Orchestration(unittest.TestCase):
     def test_a_deferred_source_is_retried_and_status_lists_the_new_datasets(self):
         tmp, st = _store()

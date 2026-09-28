@@ -73,6 +73,8 @@ class Families(unittest.TestCase):
         d, pub = self.cal[300], self.cal[301]
         self.st.put_alt("options_hist", [("AAPL", d, "iv30", 0.25, pub), ("AAPL", d, "iv90", 0.30, pub), ("AAPL", d, "skew25", 0.04, pub),
                                          ("AAPL", d, "put_oi", 999.0, pub), ("AAPL", d, "call_oi", 499.0, pub)])
+        self.assertTrue(all(v is None for v in self._b().iv_chain("AAPL")["chain_term"]), "no quality gate passed: not used")
+        self.st.kv_set("optionsdump:quality", {"passed": True})
         f = self._b().iv_chain("AAPL")
         i = self.cal.index(pub)
         self.assertIsNone(f["chain_term"][i - 1], "not visible on the session itself")

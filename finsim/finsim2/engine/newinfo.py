@@ -745,6 +745,12 @@ class Builder:
                 "chain_pc_oi": _combine(c["put_oi"], c["call_oi"], lambda p, q: math.log((p + 1.0) / (q + 1.0))), "log_iv30": liv}
 
     def iv_chain(self, a: str) -> Dict[str, Series]:
+        """The historical dump, only once it has passed its quality gate (data/optionsdump.py)."""
+        from ..data.optionsdump import gate_passed
+        if "_dump_ok" not in self._wide:
+            self._wide["_dump_ok"] = gate_passed(self.store)
+        if not self._wide["_dump_ok"]:
+            return {k: [None] * self.n for k in ("chain_iv_rv_log", "chain_skew25", "chain_term", "chain_pc_oi", "log_iv30")}
         return self.chain_features(CHAIN_DATASETS["iv_chain"], a)
 
     def iv_snapshot(self, a: str) -> Dict[str, Series]:

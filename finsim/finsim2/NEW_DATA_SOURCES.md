@@ -1,5 +1,12 @@
 # New data sources — audit (2026-09-25)
 
+## 2026-09-28 — Historical options dump importer and Eulerpool probe (research only)
+
+| Tool | What it does | Status |
+|---|---|---|
+| `python -m finsim2 import-options-dump FILE.db [--probe] [--table T] [--map iv=col] [--underlying SPY]` (`data/optionsdump.py`) | reads a historical chains SQLite file (schema discovered, columns matched by name or OCC symbol), reduces each underlying × session to the same features as the live Cboe snapshots, stores `options_hist` (published next day), then runs the **quality gate** fixed in SHAFFER_IV_PROTOCOL.md (SPY / QQQ / IWM IV30 vs VIX / VXN / RVX: correlation ≥ 0.90, mean difference < 5 vol points, ≥ 90% of sessions 2008 – 2025). Research reads the dump only after the gate passed | **FIXTURE-TESTED** (two layouts) — the dump itself is on GitHub, which the cloud cannot reach |
+| `python -m finsim2 probe eulerpool` (`data/eulerpool.py`, `EULERPOOL_API_KEY`) | ~30 requests: API description, a known endpoint, six delisted companies (survivorship), a dead company's price history, filing dates on fundamentals (point in time), whether options / futures take a date, quota. Saves `eulerpool_probe.md` and the API description in the FinSim2 home | **FIXTURE-TESTED** — eulerpool.com is blocked in the cloud; run it on your machine |
+
 ## 2026-09-28 — Free additions: implied volatility, futures curves, option snapshots, analyst data (research only)
 
 `python -m finsim2 data cboe options futures analyst` (the daily loop runs them on their cadence). **Research only**:
