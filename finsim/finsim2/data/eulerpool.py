@@ -323,9 +323,12 @@ def parse_estimates(rows, asset: str) -> List[tuple]:
     return [(asset, d, f, v, _plus(d)) for (d, f), v in sorted(out.items())]
 
 
-def parse_surprises(rows, asset: str, releases: List[str]) -> List[tuple]:
+def parse_surprises(rows, asset: str, releases: List[str], today: Optional[str] = None) -> List[tuple]:
     """EPS vs the analyst consensus per fiscal period (date = period end), published the day after the company's release
-    (SEC 8-K item 2.02 within 120 days of the period end) or, without one, 45 days after a quarter / 90 after fiscal Q4."""
+    (SEC 8-K item 2.02 within 120 days of the period end) or, without one, 45 days after a quarter / 90 after fiscal Q4.
+    Eulerpool also lists coming quarters (with a placeholder actual): a period that has not ended, or whose publication
+    date is after `today`, is not a result yet and is skipped."""
+    today = today or _dt.date.today().isoformat()
     out = []
     for r in rows if isinstance(rows, list) else []:
         if not isinstance(r, dict):
@@ -337,6 +340,8 @@ def parse_surprises(rows, asset: str, releases: List[str]) -> List[tuple]:
         lim = _plus(d, 120)
         rel = sorted(p for p in releases if d < p <= lim)
         pub = _plus(rel[0]) if rel else _plus(d, 90 if _num(r.get("quarter")) == 4 else 45)
+        if d >= today or pub > _plus(today):
+            continue
         vals = {"eps_consensus": est, "eps_actual": act, "eps_surprise": act - est, "eps_surprise_pct": _num(r.get("surprisePercent"))}
         out += [(asset, d, f, v, pub) for f, v in vals.items() if v is not None]
     return out
@@ -391,6 +396,14 @@ def parse_vix_futures(rows) -> List[tuple]:
     return out
 
 
+def purge_unreported(store, today: Optional[str] = None) -> int:
+    """Remove surprise rows that were stored before they were results (the 2026-09-28 first collection kept Eulerpool's
+    coming quarters): period not ended, or published after today."""
+    today = today or _dt.date.today().isoformat()
+    return store._write(lambda conn: conn.execute("DELETE FROM alt_data WHERE dataset = ? AND (date >= ? OR published > ?)",
+                                                  (SURPRISE, today, _plus(today))).rowcount)[0]
+
+
 def symbols(store) -> List[str]:
     eq = [a["id"] for a in store.assets("EQUITY") if a.get("currency", "USD") == "USD" and "." not in str(a.get("yahoo") or "")]
     return eq
@@ -421,6 +434,7 @@ def refresh(store, progress=None, key: Optional[str] = None, limit: Optional[int
         if rows:
             store.put_alt(VIXFUT, rows)
             n += len(rows)
+    purge_unreported(store)
     names = symbols(store)[:limit] if limit else symbols(store)
     for k, aid in enumerate(names):
         sym = aid.replace("-", ".")

@@ -364,6 +364,23 @@ class EulerpoolCollector(unittest.TestCase):
         vx = EP.parse_vix_futures([{"date": "2026-09-24", "maturity_days": 52, "value": 19.5}, {"date": "2026-09-24", "maturity_days": 22, "value": 18.0}])
         self.assertEqual([(f, v) for _, _, f, v, _ in vx], [("vx1", 18.0), ("vx1_days", 22.0), ("vx2", 19.5), ("vx2_days", 52.0)])
 
+    def test_coming_quarters_are_not_results(self):
+        from finsim2.data import eulerpool as EP
+        rows = [{"date": "2026-12-31", "epsEstimate": 2.5, "epsActual": 0, "quarter": 1},       # not ended
+                {"date": "2026-09-30", "epsEstimate": 2.0, "epsActual": 0, "quarter": 4},       # ended, not reported yet
+                {"date": "2026-06-30", "epsEstimate": 1.93, "epsActual": 1.91, "quarter": 3}]
+        got = {d for _, d, *_ in EP.parse_surprises(rows, "AAPL", ["2026-07-30"], today="2026-09-29")}
+        self.assertEqual(got, {"2026-06-30"})
+        tmp, st = _store()
+        try:
+            st.put_alt(EP.SURPRISE, [("AAPL", "2026-12-31", "eps_actual", 0.0, "2027-03-31"), ("AAPL", "2026-09-30", "eps_actual", 0.0, "2026-12-29"),
+                                     ("AAPL", "2026-06-30", "eps_actual", 1.91, "2026-07-31")])
+            self.assertEqual(EP.purge_unreported(st, today="2026-09-29"), 2)
+            self.assertEqual([d for _, d, *_ in st.alt(EP.SURPRISE)], ["2026-06-30"])
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
     def test_refresh_stores_and_stops_on_a_refused_key(self):
         from finsim2.data import eulerpool as EP
         tmp, st = _store()
