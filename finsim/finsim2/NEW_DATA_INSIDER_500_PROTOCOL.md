@@ -85,3 +85,18 @@ check showed the data behind it were incomplete:
     before 2025-01-01, and the run is refused when fewer than 80% of the expanded candidates have it.
 - **What did not change.** The features, targets, horizons, eras, gates, FDR scope and decision rule are unchanged.
   The rerun is the identical protocol on complete data. The first run's numbers are not reported as a finding.
+
+**2026-09-28 rerun: the result.** Coverage was 370 of 403 expanded stocks (92%) with Form 4 history before 2025, and
+`ins_sell_z` was present on 92% of records.
+- **Scope.** There were 17 tests, not 18: the hedge (volatility) test runs from 1W, the same as in stage 1.
+- **Fresh sample: NO INCREMENTAL VALUE.** None of the 17 tests passed G1, G2 and the FDR.
+  - Best Alpha Δ rank IC: −0.017 at 6M (t −0.6).
+  - Best Directional Δ Brier: −0.0007 at 12M (t −0.5).
+  - Best hedge: +0.8% of the baseline's error at 12M (t 1.2).
+  - Adding the insider features made short-horizon ranking worse (1D t −8.2, 1W t −3.9). Stage 1 showed the same
+    pattern for every family at 1D.
+- **Combined 45 + 370 (information only): NO INCREMENTAL VALUE.**
+
+**Decision (the pre-registered rule).** Insider activity stays out of every Shaffer model, and free-data insider
+testing stops here. Report: `NEW_DATA_INSIDER_500.md`.
+
