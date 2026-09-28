@@ -385,6 +385,21 @@
     $$('[data-tk]').forEach(b => b.onclick = e => { e.stopPropagation(); openTicket(b.dataset.tk, 'BUY'); });
   };
 
+  // ---------------------------------------------------------------- the 1M Alpha challenger in live shadow (research only)
+  function ahzShadow(g) {
+    const head = '<h2>1M Alpha challenger — live shadow <small>research only · frozen weights · never shown as a score · protocol SHAFFER_ALPHA_1M_SHADOW_PROTOCOL.md</small></h2>';
+    if (!g || g.error) return head + `<div class="muted">${esc((g && g.error) || 'not available')}</div>`;
+    const fr = g.frozen || {}; const bt = fr.backtest || {}; const ck = g.checks || {};
+    const lab = { weeks: `≥ ${g.required} weeks`, edge: 'live IC > 0', vs_production: 'Δ ≥ 0', consistent: 'consistent with backtest', original_stocks: 'original stocks Δ ≥ 0', no_decay_alarm: 'no decay alarm' };
+    return head + `<div class="kv"><span>Frozen model</span><span><b>${esc(fr.id || '')}</b> <span class="faint">sha256 ${esc(String(fr.hash || '').slice(0, 12))}… · fitted ${esc(fr.fitted || '')} on ${fmt.qty(fr.records)} records (${esc(fr.stocks)} stocks) · depth ${esc(fr.depth)} · K ${esc(fr.K)}</span></span>
+      <span>Backtest Δ rank IC vs production</span><span>${fmt.num(bt.d, 4)} <span class="faint">(t ${fmt.num(bt.t, 2)}; original stocks ${fmt.num(bt.d_original, 4)})</span></span>
+      <span>Weeks graded · compared</span><span>${esc(g.weeks_graded)} · ${esc(g.weeks_compared)} / ${esc(g.required)}</span>
+      <span>Live rank IC · Δ vs production</span><span>${fmt.num(g.mean_ic, 4)} · ${fmt.num(g.mean_d, 4)} <span class="faint">(t ${fmt.num(g.t_d, 2)}, overlap-adjusted)</span></span>
+      <span>Checks</span><span>${Object.entries(lab).map(([k, t]) => `${ck[k] ? '<span class="pos">✓</span>' : '<span class="faint">·</span>'} ${esc(t)}`).join(' &nbsp; ')}</span>
+      <span>Status</span><span><span class="pill ${g.passed ? 'pos' : 'warn'}">${esc(g.label)}</span> <span class="faint">better than production: ${esc((g.superiority_vs_production || {}).status || '—')} · weeks needed for a 95% answer ≈ ${esc(g.weeks_needed_vs_production ?? '—')}</span></span>
+      <span>Panels</span><span class="faint">${esc((g.panels || []).map(p => `${p.date} (${p.scored})`).join(' · ') || 'none yet — the first daily run of each week records one')}</span></div>`;
+  }
+
   // ---------------------------------------------------------------- short-term outlook: P(up) (prior-only) + move size (validated)
   function outlookCard(o) {
     const head = '<h2>Short-term outlook <small>direction · expected move · 90% range</small></h2>';
@@ -1532,6 +1547,7 @@
       body.innerHTML = `<div class="card"><h2>Live learning <small>every day FinSim2 makes genuine forecasts; they are stored the day they are made (never edited) and graded when their horizon passes</small></h2><p class="muted" style="margin:0">This is the dataset no backtest can fake: it did not exist when the forecast was made. Challengers in live shadow are recorded next to production (model <code>shaffer:&lt;version&gt;</code>) and compared on the same forecasts.</p></div>
         <div class="card flush" style="margin-top:14px"><h2>Ranking challengers — weekly cross-sectional live evidence <small>gate G3-XS, fixed ${esc(((L.live_xs || {}).gate || {}).fixed || '')} before any live panel was graded · one independent cross-section a week over the whole research universe</small></h2><div id="lvX"></div>
           <p class="muted" style="margin:8px 12px;font-size:12px">Passes when ≥ ${esc(((L.live_xs || {}).gate || {}).min_weeks ?? 52)} weekly cross-sections are graded, the live rank IC is positive at t ≥ 1.65, the live Δ vs production is ≥ 0, the live Δ is within 2 standard errors of the backtest, and the decay alarm (CUSUM) never fired. Beating production at t ≥ 2 is not required live — "weeks needed" shows why. <b>Validated is not superior:</b> a G3-XS pass means positive live ranking skill, no material deterioration from the backtest and not worse than production; whether the model is <i>better</i> than production is the separate superiority column (DEMONSTRABLY SUPERIOR LIVE only when the whole 95% interval of the accumulated live Δ is above zero), and for the hierarchy the same against the global model. Panels recorded: ${esc(((L.live_xs || {}).panels || []).map(p => `${p.date} (${p.assets})`).join(' · ') || 'none yet — the first daily run of each week records one')}.</p></div>
+        <div class="card" style="margin-top:14px" id="lvA"></div>
         <div class="card flush" style="margin-top:14px"><h2>Hedge sizing — λ-specific live utility <small>gate H-LIVE, fixed ${esc(((L.hedge_live || {}).gate || {}).fixed || '')} · hedge-2's package frozen on each panel date, graded at maturity, the claimed multiple scored on U(λ) against hedge-2 on the same cases</small></h2><div id="lvH"></div>
           <p class="muted" style="margin:8px 12px;font-size:12px">Panel: ${esc(Object.entries((L.hedge_live || {}).panel || {}).map(([k, p]) => `${k} ${p.dates} dates (${p.graded} graded, last ${p.last})`).join(' · ') || 'not started — the daily run records one per horizon step')}. Passes per cell when ≥ ${esc(((L.hedge_live || {}).gate || {}).min_dates ?? 26)} graded dates show ΔU ≥ 0, within 2 standard errors of the backtest, with H3 and H4 holding live.</p></div>
         <div class="card flush" style="margin-top:14px"><div id="lvT"></div></div>`;
@@ -1543,6 +1559,7 @@
         { k: 'chk', label: 'dates · ΔU · consistent · H3 · H4', l: 1, f: c => ['dates', 'utility', 'consistent', 'H3', 'H4'].map(k => (c.checks || {})[k] ? '<span class="pos">✓</span>' : '<span class="faint">·</span>').join(' ') },
         { k: 's', label: 'Gate', l: 1, f: c => c.passed ? '<span class="pill pos" style="font-size:10.5px">passed</span>' : '<span class="pill warn" style="font-size:10.5px">accumulating</span>' }],
         { sortKey: null, empty: 'No λ-conditional hedge sizing in live shadow (python -m finsim2 lab --hedge-panel)' });
+      $('#lvA').innerHTML = ahzShadow(L.alpha_1m_shadow);
       const X = Object.entries((L.live_xs || {}).models || {}).map(([id, g]) => ({ id, ...g }));
       const ck = (g, k) => (g.checks || {})[k] ? '<span class="pos">✓</span>' : '<span class="faint">·</span>';
       table($('#lvX'), X, [{ k: 'id', label: 'Version', l: 1, f: g => `<b>${esc(g.id)}</b><span class="sub">${esc(g.lab)} · expectation ${esc((g.expectation || {}).source || '—')}</span>` },

@@ -183,6 +183,8 @@ def main(argv=None) -> int:
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
+    lb.add_argument("--alpha-shadow", choices=["status", "record"], help="the 1M Alpha challenger in live shadow (research only, "
+                    "SHAFFER_ALPHA_1M_SHADOW_PROTOCOL.md): its live evidence, or record this week's panel now")
     lb.add_argument("--move-size", action="store_true", help="stage 3: how big the next 1D / 1W move will be (SHAFFER_MOVE_SIZE_PROTOCOL.md)")
     lb.add_argument("--event-hedge", action="store_true", help="stage 4: does the event-calendar volatility forecast improve Shaffer Hedge outcomes? (SHAFFER_EVENT_HEDGE_PROTOCOL.md)")
     lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
@@ -382,6 +384,18 @@ def main(argv=None) -> int:
                 st.close()
             open(os.path.join(here, "SHAFFER_VNEXT_SUMMARY.md"), "w", encoding="utf-8").write(vnext.summary(ra, rd, rh))
             print("vNext reports written")
+        return 0
+    if args.cmd == "lab" and args.alpha_shadow:
+        from .data.store import Store
+        from .engine import ahzlive
+        from .engine.research import Research
+        st = Store(app.db_path())
+        try:
+            if args.alpha_shadow == "record":
+                print(ahzlive.record(Research(st), progress=print))
+            print(ahzlive.markdown(ahzlive.summary(st)))
+        finally:
+            st.close()
         return 0
     if args.cmd == "lab" and args.move_size:
         from .engine import movesize

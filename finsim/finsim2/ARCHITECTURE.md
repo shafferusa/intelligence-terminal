@@ -69,6 +69,10 @@ finsim2/
     alphahz.py           Shaffer Alpha 1M–5Y for stocks: family weights pooled global → horizon group → horizon → sector →
                          stock, nested depth / shrinkage, vs production on identical records; expected excess return,
                          90% range and P(beat SPY) by decile calibration (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)
+    ahzlive.py           The 1M Alpha challenger (stage 2's V*) in live shadow, research only: weights frozen with a SHA-256
+                         hash in frozen/alpha_hz_1m.json, weekly rows for every stock in the prediction ledger
+                         (model alpha-hz:1m), weekly cross-sectional rank IC and Δ vs production (overlap-adjusted),
+                         live gate fixed 2026-09-28 (SHAFFER_ALPHA_1M_SHADOW_PROTOCOL.md); ML Lab → Live learning
     movesize.py          Directional 1D / 1W move size: volatility forecast with the event calendar and 8-K events,
                          QLIKE walk-forward, calibrated 90% ranges (SHAFFER_MOVE_SIZE_PROTOCOL.md). Live layer (in the
                          app): the validated M3 fitted weekly on every matured record and frozen (kv `movesize:live`),

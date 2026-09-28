@@ -35,6 +35,14 @@ def _hedgelive_summary(store):
         return {"error": str(e)}
 
 
+def _ahz_shadow_summary(store):
+    try:
+        from .engine import ahzlive
+        return ahzlive.summary(store)
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
+
+
 def _livexs_summary(store):
     try:
         from .engine import livexs
@@ -154,6 +162,12 @@ class App:
                 out["live_panel"] = livexs.record_panel(self.research, (lambda m: job.progress(0, 1, m)) if job else None)
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"live panel: {e}")
+        try:                                                   # the 1M Alpha challenger: frozen, weekly, research only
+            from .engine import ahzlive
+            if ahzlive.due(self.store, self.research.panel().calendar()[-1]):
+                out["alpha_1m_shadow"] = ahzlive.record(self.research, (lambda m: job.progress(0, 1, m)) if job else None)
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"1M alpha shadow: {e}")
         try:                                                   # move size (1D / 1W): weekly frozen refit, daily forecasts
             from .engine import movesize
             if movesize.due(self.store, self.research.panel().calendar()[-1]):
@@ -357,7 +371,8 @@ class Router:
                     "dirnext": store.kv_get("lab:dirnext"), "hedgenext": store.kv_get("lab:hedgenext"), "benchmark": lab.benchmark(store) and {k: v for k, v in lab.benchmark(store).items() if k != "content"},
                     "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
-                    "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live, "live_xs": _livexs_summary(store), "hedge_live": _hedgelive_summary(store)}
+                    "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live, "live_xs": _livexs_summary(store), "hedge_live": _hedgelive_summary(store),
+                    "alpha_1m_shadow": _ahz_shadow_summary(store)}
         if r == ["lab", "learned"] and method == "GET":
             from .engine import learned as LW
             return LW.api(store, q.get("h"), q.get("asset"), q.get("node"), q.get("target") or "alpha")
