@@ -313,18 +313,33 @@ def refresh_insider_recent(store, progress=None, assets: Optional[Iterable[str]]
     return {"after": after, "filings": n_filings, "issuer_days": len(out), "rows": len(rows)}
 
 
-def refresh_insider(store, progress=None, until: Optional[_dt.date] = None, force: bool = False) -> dict:
+def _with_history(store, ciks: Dict[int, str], before: str) -> set:
+    """CIKs whose stock has any insider row dated before `before` (i.e. from the stored quarterly data sets, not only
+    from the always re-read latest quarters or the recent-filings pass)."""
+    has = {a for a in set(ciks.values()) if any(str(d)[:10] < before for _, d, *_ in store.alt(INSIDER, a))}
+    return {c for c, a in ciks.items() if a in has}
+
+
+def refresh_insider(store, progress=None, until: Optional[_dt.date] = None, force: bool = False, recheck: bool = False) -> dict:
     """Download every quarter not yet stored (the latest two are always re-read: SEC adds late filings). Issuers added
     since the last full pass (e.g. by ``universe --expand``) get their history from every stored quarter too — read for
-    those issuers only, so existing rows are not rewritten."""
+    those issuers only, so existing rows are not rewritten.
+
+    Which issuers already have their history: the CIKs recorded after the last complete pass. A store from before that
+    record — and `recheck=True` — counts only issuers that actually have rows from before the latest quarters, so an
+    issuer that so far only has recent filings is backfilled (the 2026-09-28 repair: stocks added by the expansion had
+    been counted as covered with only their 2026 filings)."""
     say = progress or (lambda m: None)
     ciks = issuer_map(store)
     done = set(store.kv_get(DONE_KEY) or [])
-    known = store.kv_get(CIKS_KEY)
-    known = set(known) if known is not None else (set(ciks) if done else set())   # stores from before this key
-    new = {c: a for c, a in ciks.items() if c not in known}
     qs = quarters(until)
     recent = set(qs[-2:])
+    known = store.kv_get(CIKS_KEY)
+    if done and (known is None or recheck):
+        hist = _with_history(store, ciks, _quarter_end(qs[-3]) if len(qs) >= 3 else "0000")
+        known = hist if known is None else set(known) & hist
+    known = set(known) if known is not None else set()
+    new = {c: a for c, a in ciks.items() if c not in known}
     todo = [(q, ciks) for q in qs if force or q not in done or q in recent]
     if new and not force:
         todo += [(q, new) for q in qs if q in done and q not in recent]

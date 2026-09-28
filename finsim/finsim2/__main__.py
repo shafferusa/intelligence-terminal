@@ -451,18 +451,17 @@ def main(argv=None) -> int:
     if args.cmd == "lab" and args.insider_500:
         from .data.store import Store
         from .engine import newinfo
-        from .engine.lab import SIG_VERSION
         st = Store(app.db_path())
         try:
-            with_recs = set(st.lab_record_assets(SIG_VERSION, "1M"))
-            stocks = [a for a in st.assets("EQUITY") if a.get("cik") and a["id"] in with_recs]
-            fresh = [a["id"] for a in stocks if (a.get("meta") or {}).get("expanded")]
-            every = [a["id"] for a in stocks]
+            smp = newinfo.insider500_sample(st)
         finally:
             st.close()
-        if len(fresh) < 60:
-            print(f"only {len(fresh)} expanded stocks have research records: run `python -m finsim2 universe --expand 500`, "
-                  "`python -m finsim2 refresh`, `python -m finsim2 data sec --force` and `python -m finsim2 lab --build` first")
+        fresh, every = smp["fresh"], smp["every"]
+        print(f"fresh sample: {len(fresh)} of {smp['candidates']} expanded stocks have Form 4 history before "
+              f"{newinfo.INSIDER_HISTORY_BEFORE} ({smp['coverage']:.0%})")
+        if smp["coverage"] < newinfo.INSIDER_MIN_COVERAGE or len(fresh) < 60:
+            print("the insider history is incomplete: run `python -m finsim2 data sec --force` (and, without research records, "
+                  "`python -m finsim2 lab --build`) first")
             return 1
         base = {"protocol": "NEW_DATA_INSIDER_500_PROTOCOL.md", "command": "--insider-500"}
         res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=["insider"], key=newinfo.INSIDER500_KEY,

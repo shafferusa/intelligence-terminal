@@ -305,6 +305,38 @@ class LaptopRunFixes(unittest.TestCase):
             E.refresh_insider(self.st)
             self.assertEqual(seen, [sorted(base + ["NEWCO"])] * 2, "no backfill once done")
 
+    def test_issuers_counted_as_covered_with_only_recent_filings_are_backfilled_on_recheck(self):
+        from unittest import mock
+        qs = ["2025q1", "2025q2", "2025q3", "2025q4"]
+        seen = []
+        real = E.parse_insider_zip
+
+        def spy(blob, cmap):
+            seen.append(sorted(set(cmap.values())))
+            return real(blob, cmap)
+        with mock.patch.object(E, "quarters", return_value=qs), mock.patch.object(E.S, "_get", return_value=_insider_zip()), \
+                mock.patch.object(E.S, "_throttle"), mock.patch.object(E, "parse_insider_zip", side_effect=spy):
+            E.refresh_insider(self.st)
+            self._equity("LATE", 888888)                       # expanded before the new-issuer record existed
+            self.st.put_alt(E.INSIDER, [("LATE", "2025-11-03", "sellers", 1.0, "2025-11-04")])   # recent filings only
+            self.st.kv_set(E.CIKS_KEY, sorted(E.issuer_map(self.st)))                           # wrongly counted as covered
+            seen.clear()
+            E.refresh_insider(self.st)
+            self.assertFalse(any(x == ["LATE"] for x in seen), "without a recheck the record is trusted")
+            everyone = sorted(set(E.issuer_map(self.st).values()))
+            hist = {self.st.asset(a)["id"] for a in set(E.issuer_map(self.st).values())} & \
+                {a for c, a in E.issuer_map(self.st).items() if c in E._with_history(self.st, E.issuer_map(self.st), "2025-06-30")}
+            seen.clear()
+            res = E.refresh_insider(self.st, recheck=True)
+            back = [x for x in seen if x != everyone]
+            self.assertEqual(len(back), 2, "the two stored, non-recent quarters")
+            self.assertIn("LATE", back[0])
+            self.assertFalse(set(back[0]) & hist, "issuers with history are not re-read")
+            self.assertGreaterEqual(res["new_issuers"], 1)
+            seen.clear()
+            E.refresh_insider(self.st)
+            self.assertEqual(seen, [everyone] * 2, "no backfill once done")
+
     def test_funds_are_not_equities(self):
         from finsim2.data import expand as X2
         payload = {"fields": ["cik", "name", "ticker", "exchange"], "data": [

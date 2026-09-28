@@ -68,3 +68,20 @@ and a fixed live gate. Production is unchanged. Promotion would need the live ga
 
 In every case the result is also reported on the combined 45 + 400 sample, for information only: that sample
 re-uses the stage-1 stocks, so it is not part of the decision.
+
+## Run log
+
+**2026-09-28 13:01 — first run, invalid, discarded.** The run finished ("no incremental value"), but a coverage
+check showed the data behind it were incomplete:
+- **The gap.** The expanded stocks' Form 4 history began in May 2026: a median of 27 insider rows per stock,
+  against 1,467 for the stage-1 stocks, and `ins_sell_z` was present on 1% of records.
+- **The cause.** A state bug in `secevents.refresh_insider`. When the new-issuer record was introduced, the stores
+  from before it counted every issuer as covered. That included the stocks added by the expansion, which only had
+  their recent filings. So the quarterly history was never read for them. The combined-sample run was stopped.
+- **The fix.**
+  - Coverage is now judged from the stored rows (`recheck`), with a test.
+  - The 2006 → 2026 quarterly history was backfilled for those issuers.
+  - An inclusion guard was added before the rerun: a stock counts as having Form 4 history only with insider rows
+    before 2025-01-01, and the run is refused when fewer than 80% of the expanded candidates have it.
+- **What did not change.** The features, targets, horizons, eras, gates, FDR scope and decision rule are unchanged.
+  The rerun is the identical protocol on complete data. The first run's numbers are not reported as a finding.

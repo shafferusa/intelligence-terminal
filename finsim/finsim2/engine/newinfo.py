@@ -1100,6 +1100,24 @@ def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, famili
 
 BATCH2_KEY = "lab:newinfo:b2"
 INSIDER500_KEY = "lab:newinfo:b3"          # the insider re-test on the expanded stocks only (NEW_DATA_INSIDER_500_PROTOCOL.md)
+INSIDER_HISTORY_BEFORE = "2025-01-01"      # a stock "has Form 4 history" with insider rows before this date
+INSIDER_MIN_COVERAGE = 0.8                 # the run is refused when fewer of the fresh stocks have that history
+
+
+def insider500_sample(store) -> dict:
+    """The re-test's samples (NEW_DATA_INSIDER_500_PROTOCOL.md): stocks with a CIK, signal-level research records and
+    Form 4 history; `fresh` = the expanded stocks only, `every` = with the stage-1 stocks (information only). `coverage`
+    = the share of expanded candidates with history (below INSIDER_MIN_COVERAGE the data are incomplete, e.g. the
+    quarterly backfill has not run: `python -m finsim2 data sec --force`)."""
+    from ..data.secevents import INSIDER
+    from .lab import SIG_VERSION
+    with_recs = set(store.lab_record_assets(SIG_VERSION, "1M"))
+    cands = [a for a in store.assets("EQUITY") if a.get("cik") and a["id"] in with_recs]
+    hist = {a["id"] for a in cands if any(str(d)[:10] < INSIDER_HISTORY_BEFORE for _, d, *_ in store.alt(INSIDER, a["id"]))}
+    exp = [a["id"] for a in cands if (a.get("meta") or {}).get("expanded")]
+    fresh = [a for a in exp if a in hist]
+    return {"fresh": fresh, "every": [a["id"] for a in cands if a["id"] in hist], "candidates": len(exp),
+            "coverage": len(fresh) / len(exp) if exp else 0.0}
 
 
 # ------------------------------------------------------------------ live shadow: families that passed every gate
