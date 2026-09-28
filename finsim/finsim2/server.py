@@ -191,6 +191,13 @@ class App:
             out["move_size"] = len(movesize.today_live(self.store, self.research, (lambda m: job.progress(0, 1, m)) if job else None)["items"])
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"move size: {e}")
+        try:                                                   # news (research only): per asset-session features, forward evaluation
+            from .data import news
+            from .engine import newslive
+            agg = news.aggregate(self.store, self.research)    # after move size: snapshots today's σ next to today's news
+            out["news"] = {"rows": agg["rows"], "status": newslive.evaluate(self.store, self.research)["status"]}
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"news: {e}")
         try:                                                   # the λ-aware hedge panel: freeze packages, grade matured ones
             from .hedge import hedgelive
             out["hedge_panel"] = {"graded": hedgelive.grade(self.research), "recorded": hedgelive.record(self.research)}
@@ -331,6 +338,8 @@ class Router:
         # ---------------- Shaffer Hedge
         if r and r[0] == "hedge":
             return self.hedge_routes(method, r[1:], q, b)
+        if r and r[0] == "news":
+            return self.news_routes(method, r[1:], q, b)
         if r == ["markets", "net"]:
             return self.markets_net(q.get("h", "3M"))
         # ---------------- portfolio
@@ -494,6 +503,9 @@ class Router:
         if rest == ["outlook"]:                              # short-term outlook: P(up) (prior-only) + move size (validated)
             from .engine import movesize
             return movesize.asset_view(store, research, store.asset(asset_id))
+        if rest == ["news"]:                                 # research only: linked WSJ / Barron's / MarketWatch articles
+            from .data import news
+            return news.asset_view(store, asset_id, int(_num(q.get("limit"), 30)))
         if rest == ["ml"] and method == "POST":
             return app.start_ml(asset_id).view()
         if rest == ["ml"]:
@@ -522,6 +534,20 @@ class Router:
             others = [x for x in (q.get("with") or "SPY,QQQ,TLT,GOLD,DXY").split(",") if x and x != asset_id and store.asset(x)]
             return [correlation_decay(research.panel(), asset_id, o) for o in others]
         raise NotFound("no such asset route")
+
+    def news_routes(self, method, rest, q, b):
+        """Research-only news: recent articles, the manual import, feed and evaluation status. Nothing here reaches a score."""
+        from .data import news
+        store = self.s.store
+        if rest == [] and method == "GET":
+            aid = (q.get("asset") or "").strip() or None
+            return {"label": news.RESEARCH_ONLY, "articles": news.recent(store, int(_num(q.get("limit"), 50)), aid)}
+        if rest == ["import"] and method == "POST":
+            return news.import_article(store, b.get("url"), b.get("title"), b.get("text"), b.get("published"))
+        if rest == ["status"] and method == "GET":
+            from .engine import newslive
+            return {**news.status(store), "evaluation": newslive.summary(store)}
+        raise NotFound("no such news route")
 
     def markets_net(self, lab: str) -> Dict[str, dict]:
         """Net long / short Shaffer Scores at one horizon for every researched asset (cached per data version)."""

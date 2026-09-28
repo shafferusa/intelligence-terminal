@@ -22,7 +22,7 @@ Market data (Yahoo daily history, FRED macro, SEC fundamentals)  ->  SQLite rese
 
 ```
 finsim2/
-  __main__.py            CLI: serve | open | status | stop | phone | refresh | research | audit | hedge-audit
+  __main__.py            CLI: serve | open | status | stop | phone | refresh | research | audit | hedge-audit | data | news | …
   server.py              HTTP routes (/api/fs2/...), background jobs, static UI
   shaffer_score.py       Shaffer Score v2 configuration: formula, constants, 15 families, priors, A and H tables
   data/
@@ -43,6 +43,10 @@ finsim2/
     expand.py            widen the universe to the N most liquid US common stocks (meta.expanded = survivorship flag)
     imports.py           CSV importers for licensed analyst estimates and options summaries
     newdata.py           the new sources together: per-source cadence, ok / partial / skipped / failed, status
+    news.py              research only: WSJ / MarketWatch public RSS (feeds.content.dowjones.io, one GET per feed a day) and
+                         manual imports (wsj.com / barrons.com / marketwatch.com; text never stored) -> news_articles +
+                         news_links; known_at = first seen, session = first close at or after it (New York); ticker
+                         linking, lex1 features, per-feed ok / http error / stale / parse error; aggregate -> news_dj
   engine/
     align.py             common business-day calendar; aligned price / macro series
     features.py          FeatureEngine
@@ -107,6 +111,9 @@ finsim2/
     residual_report.py   SHAFFER_RESIDUAL_ML.md and SHAFFER_META_CURRENT.md, generated from the results
     livexs.py            live evidence for ranking challengers: weekly full-universe panel, cross-sectional live gate G3-XS
     extrecords.py        research-only extended-history records (1994–2008, training only) and the data-gap audit
+    newslive.py          research only: forward evaluation of the news features (NEWS_SIGNALS_PROTOCOL.md) — ACCUMULATING
+                         until the minimum data, then T1 sentiment rank IC (1D / 1W), T2 news intensity vs the stored
+                         move-size forecast (QLIKE), T3 sign hit rate, BH q = 0.10; kv `news:eval`; never reaches a score
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
@@ -258,6 +265,13 @@ fit is missing or its data is a week old (`movesize.due`), then writes today's 1
 The asset page reads them from `GET /api/fs2/asset/{id}/outlook`. P(up) next to them is the frozen prior-only
 Directional model (`lab:directional:live`). If that model has not been fitted, the page shows the point-in-time
 prior Φ(μ/σ) and labels it uncalibrated.
+
+News (research only, never part of the Shaffer Score): `newdata.refresh_due` fetches the public WSJ / MarketWatch
+feeds once a day (source `news`, cadence 1 day). After the move-size block, `daily_learning` runs `news.aggregate`
+(the last 25 sessions, idempotent, plus today's move-size σ snapshot) and `newslive.evaluate`. Routes:
+`GET /api/fs2/asset/{id}/news` (the asset page's News card), `GET /api/fs2/news`, `POST /api/fs2/news/import`
+(the manual import) and `GET /api/fs2/news/status` (feeds, counts, evaluation); the News page shows them with the
+bookmarklet. CLI: `python -m finsim2 news [--status | add | show TICKER | feeds]`.
 
 `scores.agreement` compares Shaffer with ML, but only when the ML edge is verified. The combined score
 α·SS + (1 − α)·ML is evaluated only in the audit: α is chosen on the first half of the common out-of-sample period
