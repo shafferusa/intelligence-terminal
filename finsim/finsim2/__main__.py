@@ -387,6 +387,8 @@ def main(argv=None) -> int:
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
     lb.add_argument("--alpha-shadow", choices=["status", "record"], help="the 1M Alpha challenger in live shadow (research only, "
                     "SHAFFER_ALPHA_1M_SHADOW_PROTOCOL.md): its live evidence, or record this week's panel now")
+    lb.add_argument("--eulerpool", action="store_true", help="analyst expectations from Eulerpool: consensus surprises and rating "
+                    "actions against the frozen benchmark (SHAFFER_EP_PROTOCOL.md)")
     lb.add_argument("--iv", action="store_true", help="implied volatility and futures curves: batch-iv families + move-size IV study "
                     "(SHAFFER_IV_PROTOCOL.md)")
     lb.add_argument("--move-size", action="store_true", help="stage 3: how big the next 1D / 1W move will be (SHAFFER_MOVE_SIZE_PROTOCOL.md)")
@@ -600,6 +602,35 @@ def main(argv=None) -> int:
             print(ahzlive.markdown(ahzlive.summary(st)))
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and (args.iv or args.eulerpool):
+        from .data.store import Store
+        from .engine.lab import benchmark
+        from .engine.lab import SIG_VERSION
+        st = Store(app.db_path())
+        try:
+            missing = []
+            if not st._q("SELECT 1 FROM lab_records WHERE version = ? LIMIT 1", (SIG_VERSION,)):
+                missing.append("the point-in-time research records: `python -m finsim2 lab --build` (long: hours for 500 stocks)")
+            if not benchmark(st):
+                missing.append("a frozen benchmark: `python -m finsim2 lab` (the weight and Directional research), then "
+                               "`python -m finsim2 lab --freeze-benchmark`")
+            if args.eulerpool and not st._q("SELECT 1 FROM alt_data WHERE dataset = 'ep_surprises' LIMIT 1"):
+                missing.append("the Eulerpool data: `python -m finsim2 data eulerpool --force`")
+        finally:
+            st.close()
+        if missing:
+            print("This research needs, in this order:\n  - " + "\n  - ".join(missing))
+            return 2
+    if args.cmd == "lab" and args.eulerpool:
+        import re
+        from .engine import newinfo
+        res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=newinfo.BATCH_EP, key=newinfo.EP_KEY)
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_EP_RESEARCH.md")
+        with open(out, "w", encoding="utf-8") as f:
+            f.write("# Analyst expectations from Eulerpool — research\n\nProtocol `SHAFFER_EP_PROTOCOL.md` (fixed before any result). "
+                    "Research only; Data by Eulerpool (non-commercial).\n\n" + re.sub(r"(?m)^(#+) ", r"#\1 ", newinfo.markdown(res)))
+        print(f"analyst-expectations research: {res['seconds']}s; wrote", out)
         return 0
     if args.cmd == "lab" and args.iv:
         from .engine import ivstudy, newinfo

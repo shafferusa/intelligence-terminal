@@ -96,6 +96,67 @@ class Families(unittest.TestCase):
         self.assertEqual(N.CURVE_OF["USO"], "WTI")
 
 
+class AnalystFamilies(unittest.TestCase):
+    """SHAFFER_EP_PROTOCOL.md: consensus surprises and rating actions exist only from their publication day."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.st = Store(os.path.join(self.tmp, "x.db"))
+        d0 = dt.date(2015, 1, 5)
+        self.cal = [(d0 + dt.timedelta(days=k)).isoformat() for k in range(0, 900) if (d0 + dt.timedelta(days=k)).weekday() < 5]
+
+    def tearDown(self):
+        self.st.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _b(self):
+        return N.Builder(_Research(_Panel(self.cal, {"AAPL": [100.0] * len(self.cal)})), self.st)
+
+    def test_consensus_surprise(self):
+        c = self.cal
+        rows = []
+        for k, (act, cons) in enumerate([(1.1, 1.0), (0.9, 1.0), (1.2, 1.0)]):
+            d, p = c[50 + 60 * k], c[70 + 60 * k]
+            rows += [("AAPL", d, "eps_actual", act, p), ("AAPL", d, "eps_consensus", cons, p)]
+        self.st.put_alt("ep_surprises", rows)
+        f = self._b().consensus_surprise("AAPL")
+        i1, i2, i3 = c.index(c[70]), c.index(c[130]), c.index(c[190])
+        self.assertIsNone(f["sur_pct"][i1 - 1], "not visible before the release")
+        self.assertAlmostEqual(f["sur_pct"][i1], 0.1)
+        self.assertIsNone(f["beat_rate_4q"][i1], "needs two released quarters")
+        self.assertAlmostEqual(f["sur_pct"][i2], -0.1)
+        self.assertAlmostEqual(f["beat_rate_4q"][i2], 0.5)
+        self.assertAlmostEqual(f["sur_pct_chg"][i3], 0.3)
+        self.assertAlmostEqual(f["beat_rate_4q"][i3], 2 / 3)
+        self.assertIsNone(f["sur_pct"][i3 + 63], "held for 63 sessions only")
+
+    def test_rating_actions(self):
+        c = self.cal
+        self.st.put_alt("ep_grades", [("AAPL", c[99], "grade_up", 2.0, c[100]), ("AAPL", c[119], "grade_down", 1.0, c[120]),
+                                      ("AAPL", c[119], "grade_init", 1.0, c[120])])
+        f = self._b().analyst_grades("AAPL")
+        self.assertIsNone(f["net_grades_63"][99], "before coverage begins: missing")
+        self.assertEqual(f["net_grades_63"][100], 2.0)
+        self.assertEqual(f["net_grades_63"][120], 1.0)
+        self.assertEqual(f["net_grades_21"][125], -1.0, "the upgrade left the 21-session window")
+        self.assertAlmostEqual(f["grade_activity_63"][120], math.log1p(4.0))
+        self.assertEqual(f["net_grades_63"][200], 0.0, "coverage has begun: no actions counts as 0")
+
+    def test_lab_refuses_to_run_without_its_inputs(self):
+        import contextlib
+        import io
+        from unittest import mock
+        from finsim2 import __main__ as M
+        out = io.StringIO()
+        with mock.patch.dict(os.environ, {"FINSIM2_DB": os.path.join(self.tmp, "empty.db"), "FINSIM2_HOME": self.tmp}), \
+                contextlib.redirect_stdout(out):
+            code = M.main(["lab", "--eulerpool"])
+        self.assertEqual(code, 2)
+        text = out.getvalue()
+        for need in ("lab --build", "--freeze-benchmark", "data eulerpool"):
+            self.assertIn(need, text)
+
+
 def _records(n_dates=1300, n_assets=20, iv_assets=16, seed=5):
     """1W-like records: true log vol is known to the own-IV feature (noisy) better than to trailing vol (noisier)."""
     rng = random.Random(seed)

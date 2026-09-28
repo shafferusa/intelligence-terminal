@@ -159,8 +159,20 @@ FAMILIES: Dict[str, dict] = {
         "source": "EIA NYMEX contracts 1–4 (WTI 1983 →, natural gas 1994 →, to 2024-04-05) + Yahoo contract months (2026-09 →)",
         "pit": "settlement, used from the next day", "quality": "high (exchange settlements); April 2024 – September 2026 gap",
         "features": ["roll_1_2", "roll_1_4", "roll_chg_21d"]},
+    # ---- batch ep (2026-09-29): analyst expectations from Eulerpool; own FDR (SHAFFER_EP_PROTOCOL.md)
+    "consensus_surprise": {
+        "label": "Earnings surprise vs the analyst consensus (Eulerpool)", "tier": 1, "track": "historical", "wide": False, "batch": "ep",
+        "source": "Eulerpool earnings surprises (1994 →), data/eulerpool.py -> ep_surprises",
+        "pit": "the day after the 8-K 2.02 release (else period end + 45 / 90 days)", "quality": "vendor consensus; today's stocks only",
+        "features": ["sur_pct", "beat_rate_4q", "sur_pct_chg"]},
+    "analyst_grades": {
+        "label": "Analyst rating actions (Eulerpool)", "tier": 1, "track": "historical", "wide": False, "batch": "ep",
+        "source": "Eulerpool analyst grades (2012 →), data/eulerpool.py -> ep_grades", "pit": "the day after the action",
+        "quality": "vendor coverage; today's stocks only", "features": ["net_grades_21", "net_grades_63", "grade_activity_63"]},
 }
 BATCH2 = [f for f, v in FAMILIES.items() if v.get("batch") == 2]
+BATCH_EP = [f for f, v in FAMILIES.items() if v.get("batch") == "ep"]
+EP_KEY = "lab:newinfo:ep"
 BATCH_IV = [f for f, v in FAMILIES.items() if v.get("batch") == "iv"]
 IV_KEY = "lab:newinfo:iv"
 CHAIN_DATASETS = {"iv_chain": "options_hist", "iv_snapshot": "options_cboe"}
@@ -186,7 +198,7 @@ FX_CARRY = {  # long currency's rate − funding currency's rate (percent); ETFs
 
 def applies(family: str, meta: dict) -> bool:
     cls, sec, a = meta.get("asset_class"), meta.get("sector") or "", meta.get("id")
-    if family in ("earnings_events", "earnings_surprise"):
+    if family in ("earnings_events", "earnings_surprise", "consensus_surprise", "analyst_grades"):
         return cls == "EQUITY"
     if family == "fx_carry":
         return a in FX_CARRY
@@ -675,6 +687,43 @@ class Builder:
             return [pre.window(i, w)[1] if pre.window(i, w)[0] and pre.window(i, w)[0] >= w // 2 else None for i in range(self.n)]
         f7 = mean(fd, 5)
         return {"funding_7d": f7, "funding_z": _roll_z(f7, 63, 40), "cme_basis_5d": mean(bs, 5)}
+
+    # ---- batch ep: analyst expectations (SHAFFER_EP_PROTOCOL.md)
+    def consensus_surprise(self, a: str) -> Dict[str, Series]:
+        from ..data.eulerpool import SURPRISE
+        q: Dict[str, Dict[str, float]] = {}
+        pub: Dict[str, str] = {}
+        for _, d, f, v, p in self.store.alt(SURPRISE, a):
+            if v is not None:
+                q.setdefault(d, {})[f] = v
+                pub[d] = str(p)[:10]
+        released = sorted((pub[d], d) for d, x in q.items() if "eps_actual" in x and "eps_consensus" in x)
+        sur, beat, chg = [], [], []
+        hist: List[Tuple[float, bool]] = []
+        for p, d in released:
+            act, cons = q[d]["eps_actual"], q[d]["eps_consensus"]
+            s = max(-2.0, min(2.0, (act - cons) / max(abs(cons), 0.05)))
+            hist.append((s, act > cons))
+            last4 = hist[-4:]
+            sur.append((p, s))
+            if len(last4) >= 2:
+                beat.append((p, sum(1.0 for _, b in last4 if b) / len(last4)))
+            if len(hist) >= 2:
+                chg.append((p, s - hist[-2][0]))
+        return {"sur_pct": _hold(sur, self.cal, 63), "beat_rate_4q": _hold(beat, self.cal, 63), "sur_pct_chg": _hold(chg, self.cal, 63)}
+
+    def analyst_grades(self, a: str) -> Dict[str, Series]:
+        from ..data.eulerpool import GRADES
+        ev = self._alt_events(GRADES, a)
+        if not ev:
+            return {k: [None] * self.n for k in FAMILIES["analyst_grades"]["features"]}
+        start = self.cal[ev[0][0]]
+        fields = ["grade_up", "grade_down", "grade_init"]
+        w21, w63 = self._window_sums(ev, fields, 21, start), self._window_sums(ev, fields, 63, start)
+        net = lambda w: [(u - d) if u is not None and d is not None else None for u, d in zip(w["grade_up"], w["grade_down"])]  # noqa: E731
+        act = [math.log1p(u + d + i) if u is not None and d is not None and i is not None else None
+               for u, d, i in zip(w63["grade_up"], w63["grade_down"], w63["grade_init"])]
+        return {"net_grades_21": net(w21), "net_grades_63": net(w63), "grade_activity_63": act}
 
     # ---- batch iv: implied volatility and futures curves (SHAFFER_IV_PROTOCOL.md)
     def _iv_series(self, sid: str) -> Series:
