@@ -28,6 +28,8 @@ SOURCES: Dict[str, tuple] = {
     "options": (1, "daily option-chain snapshots -> IV30/60/90, 25-delta skew, put/call volume and OI (cdn.cboe.com; after 16:15 NY), research only"),
     "futures": (1, "commodity futures curves, contracts 1–4 (Yahoo contract months; EIA history to April 2024), research only"),
     "analyst": (7, "Finnhub analyst ratings snapshots and EPS surprises (needs FINNHUB_KEY), research only"),
+    "eulerpool": (7, "Eulerpool: point-in-time estimate snapshots, consensus EPS surprises (1997 →), rating actions, price targets, "
+                     "VIX futures curve (needs EULERPOOL_API_KEY; non-commercial, \"Data by Eulerpool\"), research only"),
 }
 
 
@@ -66,6 +68,9 @@ def _runner(name: str) -> Callable:
     if name == "analyst":
         from . import analyst
         return lambda store, say: analyst.refresh(store, say)
+    if name == "eulerpool":
+        from . import eulerpool
+        return lambda store, say: eulerpool.refresh(store, say)
     raise KeyError(name)
 
 
@@ -127,7 +132,8 @@ def refresh_due(store, progress=None) -> Dict[str, dict]:
 
 
 DATASETS = ["sec_insider", "sec_8k", "event_calendar", "earnings_calendar", "cftc_cot", "eia_weekly", "crypto_deriv",
-            "analyst_estimates", "options_summary", "finra_shvol", "news_dj", "options_cboe", "futures_curve", "analyst_finnhub"]
+            "analyst_estimates", "options_summary", "finra_shvol", "news_dj", "options_cboe", "futures_curve", "analyst_finnhub",
+            "ep_estimates", "ep_surprises", "ep_grades", "ep_targets", "vix_futures"]
 MACRO = ["CBOE_VIX9D", "CBOE_VIX6M", "CBOE_VVIX", "CBOE_SKEW"]
 
 

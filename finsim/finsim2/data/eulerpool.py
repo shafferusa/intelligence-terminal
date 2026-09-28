@@ -276,3 +276,178 @@ def probe(home: str, progress=None, key: Optional[str] = None) -> str:
     with open(os.path.join(home, "eulerpool_probe.md"), "w", encoding="utf-8") as f:
         f.write(text)
     return text
+
+
+# ================================================================== collector (research only)
+# The 2026-09-28 probe found real history in five endpoints; only these are collected. Everything else the free tier
+# offers either lacks history (options, the futures gap, survivorship: Lehman / Enron absent, SVB without prices) or
+# adds nothing FinSim2 lacks (fundamentals without filing dates, Fama-French from 2013). Data by Eulerpool; non-commercial.
+EST, SURPRISE, GRADES, TARGETS, VIXFUT = "ep_estimates", "ep_surprises", "ep_grades", "ep_targets", "vix_futures"
+DATASETS = [EST, SURPRISE, GRADES, TARGETS, VIXFUT]
+LAST_SPAN = "eulerpool:depth"
+
+
+def _day(v) -> Optional[str]:
+    s = str(v or "")[:10]
+    try:
+        _dt.date.fromisoformat(s)
+        return s
+    except ValueError:
+        return None
+
+
+def _plus(d: str, n: int = 1) -> str:
+    return (_dt.date.fromisoformat(d) + _dt.timedelta(days=n)).isoformat()
+
+
+def _num(v) -> Optional[float]:
+    from . import num
+    return num(v)
+
+
+def _field(s) -> Optional[str]:
+    import re
+    s = re.sub(r"[^A-Za-z0-9_]", "", str(s or ""))[:40]
+    return s or None
+
+
+def parse_estimates(rows, asset: str) -> List[tuple]:
+    """Point-in-time consensus snapshots: (asset, as-of date, "<field>@<period yyyy-mm>", value, published next day)."""
+    out = {}
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        d, per, f, v = _day(r.get("as_of_date")), _day(r.get("period")), _field(r.get("field")), _num(r.get("value"))
+        if d and per and f and v is not None:
+            out[(d, f"{f}@{per[:7]}")] = v
+    return [(asset, d, f, v, _plus(d)) for (d, f), v in sorted(out.items())]
+
+
+def parse_surprises(rows, asset: str, releases: List[str]) -> List[tuple]:
+    """EPS vs the analyst consensus per fiscal period (date = period end), published the day after the company's release
+    (SEC 8-K item 2.02 within 120 days of the period end) or, without one, 45 days after a quarter / 90 after fiscal Q4."""
+    out = []
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        d = _day(r.get("date"))
+        act, est = _num(r.get("epsActual")), _num(r.get("epsEstimate"))
+        if not d or act is None or est is None:
+            continue
+        lim = _plus(d, 120)
+        rel = sorted(p for p in releases if d < p <= lim)
+        pub = _plus(rel[0]) if rel else _plus(d, 90 if _num(r.get("quarter")) == 4 else 45)
+        vals = {"eps_consensus": est, "eps_actual": act, "eps_surprise": act - est, "eps_surprise_pct": _num(r.get("surprisePercent"))}
+        out += [(asset, d, f, v, pub) for f, v in vals.items() if v is not None]
+    return out
+
+
+GRADE = {"upgrade": "grade_up", "downgrade": "grade_down", "init": "grade_init", "initiate": "grade_init", "initiated": "grade_init"}
+
+
+def parse_grades(rows, asset: str) -> List[tuple]:
+    """Dated rating actions, counted per day: upgrades, downgrades, initiations, others (maintain / reiterate)."""
+    by: Dict[Tuple[str, str], float] = {}
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        d = _day(r.get("date"))
+        if not d:
+            continue
+        f = GRADE.get(str(r.get("action") or "").strip().lower(), "grade_other")
+        by[(d, f)] = by.get((d, f), 0.0) + 1.0
+    return [(asset, d, f, v, _plus(d)) for (d, f), v in sorted(by.items())]
+
+
+def parse_targets(rows, asset: str) -> List[tuple]:
+    out = {}
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        d = _day(r.get("last_updated"))
+        if not d:
+            continue
+        for src, f in (("target_mean", "pt_mean"), ("target_median", "pt_median"), ("target_high", "pt_high"), ("target_low", "pt_low"),
+                       ("num_analysts", "pt_n")):
+            v = _num(r.get(src))
+            if v is not None:
+                out[(d, f)] = v
+    return [(asset, d, f, v, _plus(d)) for (d, f), v in sorted(out.items())]
+
+
+def parse_vix_futures(rows) -> List[tuple]:
+    """VIX futures by expiry, ranked per day: vx1 = nearest (value, days to maturity)."""
+    by: Dict[str, List[Tuple[float, float]]] = {}
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        d, days, v = _day(r.get("date")), _num(r.get("maturity_days")), _num(r.get("value"))
+        if d and days is not None and v is not None and v > 0:
+            by.setdefault(d, []).append((days, v))
+    out = []
+    for d, pts in sorted(by.items()):
+        for k, (days, v) in enumerate(sorted(pts)[:8], start=1):
+            out += [("vix:futures", d, f"vx{k}", v, _plus(d)), ("vix:futures", d, f"vx{k}_days", days, _plus(d))]
+    return out
+
+
+def symbols(store) -> List[str]:
+    eq = [a["id"] for a in store.assets("EQUITY") if a.get("currency", "USD") == "USD" and "." not in str(a.get("yahoo") or "")]
+    return eq
+
+
+def refresh(store, progress=None, key: Optional[str] = None, limit: Optional[int] = None) -> dict:
+    """Weekly: estimate snapshots, consensus surprises, rating actions and price targets for the US stocks, and the VIX
+    futures curve. A stock without coverage (404) is counted, not an error. Stops at the first refused key."""
+    from .calendar import earnings_history
+    say = progress or (lambda m: None)
+    key = key or env_key(KEY_ENV)
+    if not key:
+        why = f"{KEY_ENV} is still the placeholder text" if placeholder_key(KEY_ENV) else f"set {KEY_ENV}"
+        return {"skipped": f"{why} (free key: https://eulerpool.com/developers/register)"}
+    n, errors, missing, calls = 0, [], 0, 0
+
+    def get(path):
+        nonlocal calls
+        calls += 1
+        time.sleep(MIN_INTERVAL)
+        return _get(path, key)
+
+    st, body, note = get("/api/1/market/vix/term-structure?days=365")
+    if st in (401, 403):
+        return {"rows": 0, "errors": [f"Eulerpool refused the key (HTTP {st}: {note})"]}
+    if st == 200:
+        rows = parse_vix_futures(body)
+        if rows:
+            store.put_alt(VIXFUT, rows)
+            n += len(rows)
+    names = symbols(store)[:limit] if limit else symbols(store)
+    for k, aid in enumerate(names):
+        sym = aid.replace("-", ".")
+        releases = [p for _, _, p in earnings_history(store, aid)]
+        for path, parse, ds in ((f"/api/1/equity/pit/estimates/{sym}?limit=5000", lambda b: parse_estimates(b, aid), EST),
+                                (f"/api/1/calendar/earnings-surprises/{sym}", lambda b: parse_surprises(b, aid, releases), SURPRISE),
+                                (f"/api/1/equity/analyst-grades/{sym}?limit=1000", lambda b: parse_grades(b, aid), GRADES),
+                                (f"/api/1/equity-extended/price-target-history/{sym}", lambda b: parse_targets(b, aid), TARGETS)):
+            st, body, note = get(path)
+            if st == 200:
+                rows = parse(body)
+                if rows:
+                    store.put_alt(ds, rows)
+                    n += len(rows)
+            elif st == 404:
+                missing += 1
+            elif st in (401, 403) and not n:
+                return {"rows": 0, "errors": [f"Eulerpool refused the key (HTTP {st}: {note})"]}
+            else:
+                errors.append(f"{sym} {ds}: HTTP {st} {note[:60]}")
+        if (k + 1) % 50 == 0:
+            say(f"Eulerpool {k + 1}/{len(names)} stocks ({calls} requests)")
+    depth = {ds: store._q("SELECT COUNT(*) AS n, COUNT(DISTINCT asset_id) AS a, MIN(date) AS lo, MAX(date) AS hi FROM alt_data WHERE dataset = ?",
+                          (ds,))[0] for ds in DATASETS}
+    depth = {ds: {"rows": r["n"], "assets": r["a"], "first": r["lo"], "last": r["hi"]} for ds, r in depth.items()}
+    store.kv_set(LAST_SPAN, depth)
+    for ds, r in depth.items():
+        say(f"{ds}: {r['rows']} rows, {r['assets']} series, {r['first'] or '—'} → {r['last'] or '—'}")
+    say(f"Eulerpool: {calls} requests (free tier: 100,000 a month); {missing} not covered")
+    return {"rows": n, "requests": calls, "not_covered": missing, "errors": errors, "depth": depth}

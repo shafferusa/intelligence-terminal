@@ -344,6 +344,60 @@ class EulerpoolProbe(unittest.TestCase):
         self.assertTrue(all(h.get("User-Agent", "").startswith("FinSim2/") for _, h in seen))
 
 
+class EulerpoolCollector(unittest.TestCase):
+    def test_parsers_are_point_in_time(self):
+        from finsim2.data import eulerpool as EP
+        est = EP.parse_estimates([{"field": "epsAvg", "period": "2027-09-30T00:00:00.000Z", "value": 8.1, "as_of_date": "2025-03-03T00:00:00.000Z"},
+                                  {"field": "eps avg!", "period": "2027-09-30", "value": "x", "as_of_date": "2025-03-04"}], "AAPL")
+        self.assertEqual(est, [("AAPL", "2025-03-03", "epsAvg@2027-09", 8.1, "2025-03-04")])
+        rows = [{"date": "2026-06-30T00:00:00.000Z", "epsEstimate": 1.93, "epsActual": 1.91, "surprisePercent": -0.9, "quarter": 3},
+                {"date": "1997-09-30T00:00:00.000Z", "epsEstimate": 0.1, "epsActual": 0.2, "quarter": 4},
+                {"date": "1998-03-31", "epsEstimate": 0.1, "epsActual": 0.12, "quarter": 2}]
+        sur = {(d, f): (v, p) for _, d, f, v, p in EP.parse_surprises(rows, "AAPL", ["2026-07-30"])}
+        self.assertEqual(sur[("2026-06-30", "eps_actual")], (1.91, "2026-07-31"), "public the day after the 8-K release")
+        self.assertAlmostEqual(sur[("2026-06-30", "eps_surprise")][0], -0.02)
+        self.assertEqual(sur[("1997-09-30", "eps_actual")][1], "1997-12-29", "no release on file: fiscal Q4 + 90 days")
+        self.assertEqual(sur[("1998-03-31", "eps_actual")][1], "1998-05-15", "other quarters + 45 days")
+        g = {(d, f): v for _, d, f, v, _ in EP.parse_grades([{"date": "2026-08-10", "action": "upgrade"}, {"date": "2026-08-10", "action": "Upgrade"},
+                                                             {"date": "2026-08-10", "action": "maintain"}, {"date": "bad", "action": "downgrade"}], "AAPL")}
+        self.assertEqual(g, {("2026-08-10", "grade_up"): 2.0, ("2026-08-10", "grade_other"): 1.0})
+        vx = EP.parse_vix_futures([{"date": "2026-09-24", "maturity_days": 52, "value": 19.5}, {"date": "2026-09-24", "maturity_days": 22, "value": 18.0}])
+        self.assertEqual([(f, v) for _, _, f, v, _ in vx], [("vx1", 18.0), ("vx1_days", 22.0), ("vx2", 19.5), ("vx2_days", 52.0)])
+
+    def test_refresh_stores_and_stops_on_a_refused_key(self):
+        from finsim2.data import eulerpool as EP
+        tmp, st = _store()
+        try:
+            st.upsert_asset({"id": "AAPL", "name": "Apple", "asset_class": "EQUITY", "sector": "Tech", "country": "United States",
+                             "currency": "USD", "yahoo": "AAPL", "meta": {}})
+
+            def fake(url, headers=None, timeout=30):
+                if "vix/term-structure" in url:
+                    return b'[{"date": "2026-09-24", "maturity_days": 22, "value": 18.0}]'
+                if "pit/estimates" in url:
+                    return b'[{"field": "epsAvg", "period": "2027-09-30", "value": 8.1, "as_of_date": "2025-03-03"}]'
+                if "earnings-surprises" in url:
+                    return b'[{"date": "2026-06-30", "epsEstimate": 1.93, "epsActual": 1.91, "quarter": 3}]'
+                raise FetchError("HTTP 404", 404, b'{"error": "not found"}')
+            with mock.patch.object(EP, "http_get", fake), mock.patch.object(EP.time, "sleep"), \
+                    mock.patch.object(EP, "symbols", return_value=["AAPL"]):
+                r = EP.refresh(st, key="k")
+            self.assertEqual((r["not_covered"], r["errors"]), (2, []))
+            self.assertEqual(r["depth"]["ep_surprises"]["first"], "2026-06-30")
+            self.assertEqual(len(st.alt(EP.VIXFUT)), 2)
+
+            def refused(url, headers=None, timeout=30):
+                raise FetchError("HTTP 403", 403, b'{"error": "Invalid API token"}')
+            with mock.patch.object(EP, "http_get", refused), mock.patch.object(EP.time, "sleep"):
+                r = EP.refresh(st, key="k")
+            self.assertIn("refused the key", r["errors"][0])
+            with mock.patch.dict(os.environ, {"EULERPOOL_API_KEY": ""}):
+                self.assertIn("skipped", EP.refresh(st))
+        finally:
+            st.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 class Orchestration(unittest.TestCase):
     def test_a_deferred_source_is_retried_and_status_lists_the_new_datasets(self):
         tmp, st = _store()
