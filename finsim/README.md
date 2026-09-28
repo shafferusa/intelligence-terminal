@@ -71,7 +71,9 @@ python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train th
 python3 -m finsim2 audit [--workers 3]      # replay the Shaffer Score and ML over the universe -> finsim2/SHAFFER_AUDIT.md
 python3 -m finsim2 hedge-audit              # walk-forward Shaffer Hedge evaluation + ML-adjustment training -> finsim2/HEDGE_AUDIT.md
 python3 -m finsim2 serve | status | stop | phone on | uninstall
-python3 -m finsim2 data [sec calendar cftc eia crypto] [--force] [--status]   # new data sources (finsim2/NEW_DATA_SOURCES.md)
+python3 -m finsim2 data [sec calendar cftc eia crypto news] [--force] [--status]   # new data sources (finsim2/NEW_DATA_SOURCES.md)
+python3 -m finsim2 news [--status]          # research-only news: fetch the public WSJ / MarketWatch RSS now, aggregate, feed status
+python3 -m finsim2 news add --url URL --file article.txt | show NVDA | feeds [--add URL | --remove URL]
 python3 -m finsim2 universe --expand 500    # add the most liquid US common stocks (then: refresh, data sec --force)
 python3 -m finsim2 import-estimates FILE | import-options FILE   # licensed analyst estimates / option history (CSV)
 ```
@@ -126,6 +128,14 @@ python3 -m finsim2 import-estimates FILE | import-options FILE   # licensed anal
   The move size comes from the validated calendar + 8-K volatility model (`finsim2/SHAFFER_MOVE_SIZE.md`). It is refitted
   weekly by the daily learning job and otherwise frozen. It is informational, not a trade signal.
   `python -m finsim2 movesize [ASSET ...] [--fit]` prints it from the terminal.
+- *News* (the News page, and a News card on the asset page). It is **research only, not part of the Shaffer Score**.
+  - Headlines come from Dow Jones' public RSS feeds for WSJ and MarketWatch: one request per feed a day, never a
+    log-in or an article page.
+  - You can add articles you are reading, including Barron's. The page's bookmarklet copies the article in your own
+    browser, and you paste it into the form. The text is used once for features and never stored.
+  - Each article is dated from when FinSim2 first knew it. Its assets are linked by ticker and company name.
+  - The features are evaluated forward only under `finsim2/NEWS_SIGNALS_PROTOCOL.md`. The status shows ACCUMULATING
+    until there is enough data. Details: `finsim2/NEW_DATA_SOURCES.md`.
 - *Independent ML forecasts (benchmark).* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient
   boosting, all in pure Python. Kept as a benchmark for the Shaffer Score, not as a second recommendation.
   - Training is walk-forward with purged folds, and the last 15% of rows are held out untouched.
