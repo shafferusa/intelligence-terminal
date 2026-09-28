@@ -227,11 +227,12 @@
     hedge: '<path d="M4 12h6M14 12h6M10 7l4 5-4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>',
     health: '<path d="M3 12h4l2-5 4 10 2-5h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     backtests: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    news: '<path d="M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M7 9h7M7 13h7M7 16h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>',
     watchlist: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
     settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   };
-  const NAV = [['', 'Portfolio'], ['dashboard', 'Dashboard'], ['portfolio', 'Portfolio'], ['risk', 'Risk'], ['hedge', 'Shaffer Hedge'], ['watchlist', 'Watchlist'], ['', 'Research'], ['markets', 'Markets'], ['asset', 'Asset Research'], ['analytics', 'Analytics'], ['quant', 'Quant Lab'], ['ml', 'ML Lab'], ['health', 'Model health'], ['backtests', 'Backtests'], ['', ''], ['settings', 'Settings']];
-  const TITLES = { dashboard: 'Dashboard', portfolio: 'Portfolio', risk: 'Risk', hedge: 'Shaffer Hedge', watchlist: 'Watchlist', markets: 'Markets', asset: 'Asset Research', analytics: 'Analytics', quant: 'Quant Lab', ml: 'ML Lab', health: 'Model health', backtests: 'Backtests', settings: 'Settings', setup: 'Getting started' };
+  const NAV = [['', 'Portfolio'], ['dashboard', 'Dashboard'], ['portfolio', 'Portfolio'], ['risk', 'Risk'], ['hedge', 'Shaffer Hedge'], ['watchlist', 'Watchlist'], ['', 'Research'], ['markets', 'Markets'], ['asset', 'Asset Research'], ['analytics', 'Analytics'], ['quant', 'Quant Lab'], ['news', 'News'], ['ml', 'ML Lab'], ['health', 'Model health'], ['backtests', 'Backtests'], ['', ''], ['settings', 'Settings']];
+  const TITLES = { dashboard: 'Dashboard', portfolio: 'Portfolio', risk: 'Risk', hedge: 'Shaffer Hedge', watchlist: 'Watchlist', markets: 'Markets', asset: 'Asset Research', analytics: 'Analytics', quant: 'Quant Lab', news: 'News', ml: 'ML Lab', health: 'Model health', backtests: 'Backtests', settings: 'Settings', setup: 'Getting started' };
   function renderNav(active) {
     $('#nav').innerHTML = NAV.map(([k, label]) => !k ? (label ? `<div class="sec">${label}</div>` : '<div style="height:8px"></div>') : `<a href="#/${k}${['asset', 'analytics', 'quant'].includes(k) ? '/' + encodeURIComponent(S.current) : ''}" class="${active === k ? 'on' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>${label}</a>`).join('');
     $$('#nav a').forEach(a => a.onclick = () => $('#side').classList.remove('open'));
@@ -432,6 +433,7 @@
         ${kpi('Your exposure', pos ? fmt.qty(pos.quantity) : 'none', pos ? `cost ${fmt.money(pos.cost)} · realised ${fmt.signed(pos.realized)}` : '<a href="#/portfolio/transactions">add a position →</a>')}
         ${kpi('ML models', b.ml ? `<span style="font-size:15px">trained</span>` : '<span style="font-size:15px">not trained</span>', b.ml ? `${esc(b.ml.trained_at || '')}` : `<a href="#/ml/forecasts/${encodeURIComponent(a.id)}">train them →</a>`)}</div>
       <div class="card" id="arOutlook"><h2>Short-term outlook <small>direction · expected move · 90% range</small></h2><div class="muted">Loading…</div></div>
+      <div class="card" id="arNews" style="margin-top:16px"><h2>News — WSJ · Barron's · MarketWatch <small>research only</small></h2><div class="muted">Loading…</div></div>
       <div class="card flush" style="margin-top:16px"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs)}</div>
       <div class="grid g3" style="margin-top:16px">
         <div class="card"><h2>What matters right now <small>1D–1M</small></h2>${matters(b.what_matters_now)}</div>
@@ -442,6 +444,7 @@
         <div class="card flush"><h2>Signals today <small>standardised value · best horizon · evidence</small></h2><div id="arSig"></div></div></div>`;
     bindPicker('arPick', x => go('#/asset/' + encodeURIComponent(x)));
     api('/fs2/asset/' + encodeURIComponent(a.id) + '/outlook').then(o => { if (alive() && $('#arOutlook')) $('#arOutlook').innerHTML = outlookCard(o); }).catch(() => { if ($('#arOutlook')) $('#arOutlook').innerHTML = '<h2>Short-term outlook</h2><div class="muted">unavailable</div>'; });
+    api('/fs2/asset/' + encodeURIComponent(a.id) + '/news').then(o => { if (alive() && $('#arNews')) $('#arNews').innerHTML = newsCard(o); }).catch(() => { if ($('#arNews')) $('#arNews').innerHTML = newsCard(null); });
     if ($('#arTrade')) $('#arTrade').onclick = () => openTicket(a.id, 'BUY');
     lineChart($('#arChart'), [{ name: a.id, data: b.price_history.values, area: true }], { labels: b.price_history.dates.map(d => fmt.date(d)), fmtY: v => fmt.px(v), h: 280 });
     table($('#arSig'), b.current.filter(c => c.value != null), [
@@ -2153,6 +2156,83 @@
         <p class="faint" style="font-size:12px">Net scores subtract what each side costs to hold (spread, borrow, no interest on short proceeds, fund decay). ${esc(((ns.horizons || {})['3M'] || {}).expected_source || '')}.</p>`;
     }).catch(e => { $('#pdBody', d).innerHTML = `<p class="muted">${esc(e.message)}</p>`; });
   }
+
+  // ---------------------------------------------------------------- news (WSJ · Barron's · MarketWatch) — research only
+  // Everything shown here is untrusted text from the feeds or from your own import: escaped with esc(), never run.
+  const NEWS_LABEL = 'research only — not part of the Shaffer Score';
+  // The bookmarklet runs only when you click it on an article you are reading in your own browser. It copies
+  // {url without query, title, published, text ≤ 100k characters} to the clipboard and sends nothing anywhere.
+  const NEWS_BOOKMARKLET = "(function(){try{var m=document.querySelector('meta[property=\"article:published_time\"]');var t=document.querySelector('meta[property=\"og:title\"]');"
+    + "var el=document.querySelector('article')||document.querySelector('main')||document.querySelector('[role=main]')||document.body;"
+    + "var s=JSON.stringify({url:location.origin+location.pathname,title:(t&&t.content)||document.title,published:m?m.content:null,text:String(el.innerText||'').slice(0,100000)});"
+    + "var ok=function(){alert('Copied for FinSim2')};var fb=function(){var a=document.createElement('textarea');a.value=s;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();"
+    + "try{document.execCommand('copy');ok()}catch(e){alert('FinSim2: could not copy')}a.remove()};"
+    + "if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(ok,fb)}else{fb()}}catch(e){alert('FinSim2: '+e)}})();";
+  const newsLink = a => String(a.url || '').startsWith('https://') ? `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>` : esc(a.title);
+  const newsSent = v => N(v) == null ? '—' : `<span class="${N(v) > 0.05 ? 'pos' : N(v) < -0.05 ? 'neg' : 'faint'}">${fmt.num(v, 2)}</span>`;
+  const newsWhen = s => s ? esc(String(s).slice(0, 16).replace('T', ' ')) + ' UTC' : '—';
+  function newsCard(o) {
+    const head = `<h2>News — WSJ · Barron's · MarketWatch <small>${NEWS_LABEL}</small></h2>`;
+    if (!o) return head + '<div class="muted">unavailable</div>';
+    const arts = (o.articles || []).slice(0, 8); const d = (o.daily || [])[0];
+    const day = d ? `<div class="faint" style="font-size:12px;margin-bottom:6px">Session ${esc(d.session)}: ${fmt.qty(d.n_articles)} article(s) · sentiment ${newsSent(d.sent_mean)} · novelty ${fmt.num(d.novelty, 2)}</div>` : '';
+    return head + day + (arts.length ? `<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">${arts.map(a => `<div><div>${newsLink(a)}</div>
+      <div class="faint" style="font-size:11.5px">${esc(a.source)} · known ${newsWhen(a.known_at)} · session ${esc(a.session || '—')} · sentiment ${newsSent(a.sent)}${(a.events || []).length ? ' · ' + a.events.map(e => `<span class="pill">${esc(e.replace(/_/g, ' '))}</span>`).join(' ') : ''}${a.kind === 'manual' ? ' · <span class="pill acc">your import</span>' : ''}</div></div>`).join('')}</div>`
+      : `<div class="muted">No linked articles yet. The public WSJ / MarketWatch feeds are read once a day; you can add an article you are reading on the <a href="#/news">News page</a>.</div>`);
+  }
+  function newsEval(ev) {
+    if (!ev) return '<div class="muted">unavailable</div>';
+    const pr = ev.progress || {}; const h = pr.have || {}; const n = pr.need || {};
+    const bar = (k, t) => `<span>${t}</span><span>${fmt.qty(h[k])} / ${fmt.qty(n[k])}</span>`;
+    const tests = Object.entries(ev.tests || {}).map(([k, t]) => `<tr><td class="l"><b>${esc(k)}</b></td><td>${fmt.num(t.mean_ic ?? t.gain ?? t.hit_rate, 4)}</td><td>${fmt.num(t.t, 2)}</td><td>${t.p == null ? '—' : fmt.num(t.p, 4)}</td><td>${t.passed ? '<span class="pill pos">pass</span>' : '<span class="faint">no</span>'}</td></tr>`).join('');
+    return `<div class="kv"><span>Status</span><span><span class="pill ${ev.status === 'ACCUMULATING' ? 'warn' : ''}">${esc(ev.status)}</span></span>${bar('sessions', 'Sessions of ingestion')}${bar('asset_sessions', 'Asset-sessions with news')}${bar('broad_sessions', 'Sessions with news on ≥ 20 assets')}
+      <span>Protocol</span><span class="faint">${esc(ev.protocol || 'NEWS_SIGNALS_PROTOCOL.md')}</span></div>
+      ${tests ? `<div class="tbl-wrap" style="margin-top:10px"><table><thead><tr><th class="l">Test</th><th>Statistic</th><th>t</th><th>p</th><th>BH q 0.10</th></tr></thead><tbody>${tests}</tbody></table></div>` : ''}
+      <p class="faint" style="font-size:12px;margin-top:8px">Forward only, from data collected since 2026-09-28. Nothing is promoted without a separate live-shadow gate and your explicit approval.</p>`;
+  }
+  pages.news = async (main, _, alive) => {
+    const [st, list] = await Promise.all([api('/fs2/news/status'), api('/fs2/news?limit=100')]); if (!alive()) return;
+    main.innerHTML = `<div class="page-head"><div><h1>News <span class="pill warn" style="vertical-align:middle">${NEWS_LABEL}</span></h1>
+        <p>Headlines from Dow Jones' public RSS feeds (WSJ, MarketWatch; one request per feed a day, no log-in) and articles you add yourself. Stored with the time FinSim2 first knew them; the article text you paste is used once for features and never stored.</p></div></div>
+      <div class="grid g2">
+        <div class="card"><h2>Add an article you are reading <small>wsj.com · barrons.com · marketwatch.com</small></h2>
+          <textarea id="nwPaste" rows="6" style="width:100%" placeholder="Paste what the bookmarklet copied (JSON) — or paste the article text and fill in the URL and title below"></textarea>
+          <div class="row" style="margin-top:8px;gap:8px;flex-wrap:wrap"><input id="nwUrl" placeholder="https://www.wsj.com/articles/…" style="flex:2 1 260px"><input id="nwTitle" placeholder="Title" style="flex:2 1 220px"><input id="nwPub" placeholder="Published (optional, ISO)" style="flex:1 1 160px"></div>
+          <div class="row" style="margin-top:8px"><button class="primary" id="nwAdd">Add article</button><span id="nwRes" class="muted" style="font-size:12.5px"></span></div></div>
+        <div class="card"><h2>Bookmarklet <small>copies the article you are reading</small></h2>
+          <p style="font-size:13px">Drag this button to your bookmarks bar: <a class="btn" id="nwBm" href="#">Copy for FinSim2</a></p>
+          <p class="muted" style="font-size:12.5px">While reading an article in your own browser (where you are signed in), click it: it copies the page's URL (without query), title, publication time and text (up to 100,000 characters) to your clipboard and says "Copied for FinSim2". It sends nothing anywhere and runs only when you click it. Then paste here.</p>
+          <p class="faint" style="font-size:12px">FinSim2 itself never signs in to Dow Jones sites, never stores cookies, and never downloads article pages: Dow Jones' subscriber terms forbid automated access.</p></div>
+      </div>
+      <div class="card flush" style="margin-top:16px"><h2>Recent articles <small>newest known first · tickers linked by explicit ticker or company name</small></h2><div id="nwList"></div></div>
+      <div class="grid g2" style="margin-top:16px"><div class="card flush"><h2>Feeds <small>state of the last run: ok · http error · stale (newest item &gt; 3 days) · parse error</small></h2><div id="nwFeeds"></div></div>
+        <div class="card"><h2>Forward evaluation <small>${NEWS_LABEL}</small></h2><div id="nwEval">${newsEval(st.evaluation)}</div></div></div>`;
+    $('#nwBm').setAttribute('href', 'javascript:' + encodeURIComponent(NEWS_BOOKMARKLET));
+    $('#nwBm').onclick = e => { e.preventDefault(); toast('Drag the button to your bookmarks bar, then click it on an article page'); };
+    table($('#nwList'), list.articles || [], [
+      { k: 'known_at', label: 'Known', l: 1, f: a => newsWhen(a.known_at) + `<span class="sub">session ${esc(a.session || '—')}</span>` },
+      { k: 'source', label: 'Source', l: 1, f: a => esc(a.source) + (a.kind === 'manual' ? '<span class="sub">your import</span>' : `<span class="sub">${esc(a.feed || '')}</span>`) },
+      { k: 'title', label: 'Headline', l: 1, cls: () => 'wrap', f: a => newsLink(a) + ((a.events || []).length ? `<span class="sub">${esc(a.events.join(' · ').replace(/_/g, ' '))}</span>` : '') },
+      { k: 'tickers', label: 'Assets', l: 1, v: a => (a.tickers || []).length, f: a => (a.tickers || []).map(t => `<a href="#/asset/${encodeURIComponent(t.asset)}" title="confidence ${esc(t.confidence)} (${esc(t.where)})">${esc(t.asset)}</a>`).join(' ') || '<span class="faint">—</span>' },
+      { k: 'sent', label: 'Sentiment', f: a => newsSent(a.sent) }], { sortKey: 'known_at', maxH: 520, empty: 'No articles yet — they arrive with the daily run (or `python -m finsim2 news`)' });
+    table($('#nwFeeds'), st.feeds || [], [
+      { k: 'name', label: 'Feed', l: 1, f: f => `<b>${esc(f.source)}</b> ${esc(f.name)}<span class="sub">${f.verified ? 'verified' : f.user ? 'added by you' : 'unverified feed name'}</span>` },
+      { k: 'state', label: 'State', l: 1, f: f => `<span class="pill ${f.state === 'ok' ? 'pos' : f.state === 'not run' ? '' : 'warn'}">${esc(f.state)}</span>${f.error ? `<span class="sub">${esc(f.error)}</span>` : ''}` },
+      { k: 'items', label: 'Items', f: f => fmt.qty(f.items) }, { k: 'new', label: 'New', f: f => fmt.qty(f.new) },
+      { k: 'newest', label: 'Newest item', l: 1, f: f => newsWhen(f.newest) }], { sortKey: null });
+    $('#nwAdd').onclick = () => busy($('#nwAdd'), async () => {
+      const raw = $('#nwPaste').value.trim();
+      let body = { url: $('#nwUrl').value.trim(), title: $('#nwTitle').value.trim(), published: $('#nwPub').value.trim() || null, text: raw };
+      if (raw.startsWith('{')) {
+        let j; try { j = JSON.parse(raw); } catch (e) { toast('That is not valid JSON: paste the bookmarklet output as copied, or paste plain text and fill in the fields', true); return; }
+        body = { url: String(j.url || body.url || ''), title: String(j.title || body.title || ''), published: j.published || body.published, text: String(j.text || '') };
+      }
+      if (!body.url || !body.title) { toast('A URL (wsj.com, barrons.com or marketwatch.com) and a title are needed', true); return; }
+      const r = await post('/fs2/news/import', body); const a = r.article || {};
+      $('#nwRes').innerHTML = `${r.duplicate ? 'Already stored' : 'Added'}: ${esc(a.title)} · ${(a.tickers || []).map(t => esc(t.asset)).join(', ') || 'no linked assets'} · sentiment ${newsSent(a.sent)} · text not stored`;
+      $('#nwPaste').value = ''; toast(r.duplicate ? 'Already stored' : 'Article added'); if (!r.duplicate) setTimeout(() => route(), 600);
+    });
+  };
 
   // ---------------------------------------------------------------- settings
   pages.settings = async (main, _, alive) => {

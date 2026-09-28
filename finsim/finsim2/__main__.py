@@ -115,6 +115,96 @@ def _movesize_cmd(args) -> int:
         st.close()
 
 
+def _news_cmd(args) -> int:
+    """`news` (refresh the feeds now, aggregate, per-feed status), `--status`, `add`, `show TICKER`, `feeds`. Research only."""
+    import json
+    from finsim import app
+    from .data import news
+    from .data.store import Store
+    st = Store(app.db_path())
+    try:
+        if args.news_cmd == "feeds":
+            try:
+                if args.add:
+                    news.add_feed(st, args.add)
+                if args.remove:
+                    news.remove_feed(st, args.remove)
+            except ValueError as e:
+                print(f"refused: {e}")
+                return 2
+            for f in news.feeds(st):
+                print(f"{f['source']:<12} {f['name']:<22} {'verified' if f['verified'] else ('yours' if f['user'] else 'unverified'):<10} {f['url']}")
+            return 0
+        if args.news_cmd == "add":
+            try:
+                with open(args.file, encoding="utf-8", errors="replace") as fh:
+                    raw = fh.read(news.MAX_TEXT * 2)
+            except OSError as e:
+                print(f"cannot read {args.file}: {e}")
+                return 2
+            title, text, published = args.title, raw, args.published
+            if raw.lstrip().startswith("{"):                        # the bookmarklet's JSON
+                try:
+                    j = json.loads(raw)
+                    if isinstance(j, dict):
+                        title = title or j.get("title")
+                        text = j.get("text") if isinstance(j.get("text"), str) else ""
+                        published = published or j.get("published")
+                except ValueError:
+                    pass
+            if not title:
+                title = next((ln.strip() for ln in text.splitlines() if ln.strip()), "")
+            try:
+                res = news.import_article(st, args.url, title, text, published)
+            except ValueError as e:
+                print(f"refused: {e}")
+                return 2
+            a = res["article"]
+            print(("already stored" if res["duplicate"] else "imported") + f": {a['title']} ({a['source']}, session {a['session']})")
+            print("  tickers:", ", ".join(f"{t['asset']} {t['confidence']:.1f}" for t in a["tickers"]) or "none",
+                  f"· sentiment {a['sent']:+.2f} · events {', '.join(a['events']) or 'none'} · text not stored ({a['text_length']} characters)")
+            return 0
+        if args.news_cmd == "show":
+            tid = args.ticker.upper().replace(".", "-")
+            if not st.asset(tid):
+                print(f"unknown asset {args.ticker}")
+                return 2
+            rows = news.recent(st, args.limit, tid)
+            print(f"{tid}: {len(rows)} linked articles ({news.RESEARCH_ONLY})")
+            for a in rows:
+                conf = next((t["confidence"] for t in a["tickers"] if t["asset"] == tid), None)
+                print(f"  {a['known_at'][:16]}  {a['source']:<11} {a['sent']:+.2f}  [{conf:.1f}]  {a['title'][:100]}")
+                print(f"      {a['url']}" + (f"  events: {', '.join(a['events'])}" if a["events"] else ""))
+            return 0
+        if not args.status:
+            res = news.refresh(st, print)
+            from .engine.research import Research
+            try:
+                agg = news.aggregate(st, Research(st))
+                print(f"aggregated {agg['asset_sessions']} asset-sessions ({agg['rows']} rows) into news_dj")
+            except LookupError as e:                                # no SPY history yet
+                print(f"not aggregated: {e}")
+            print(f"{res['new']} new articles, {res['ok']}/{res['feeds']} feeds ok")
+        s = news.status(st)
+        for f in s["feeds"]:
+            print(f"{f['state']:<11} {f['source']:<12} {f['name']:<22} items {f.get('items', 0):>3}  new {f.get('new', 0):>3}  newest {f.get('newest') or '—'}"
+                  + (f"  ({f['error']})" if f.get("error") else "") + ("" if f["verified"] or f["user"] else "  [unverified name]"))
+        c = s["counts"]
+        print(f"stored: {c['articles']} articles ({c['manual']} manual) over {c['sessions']} sessions, {c['links']} links to {c['linked_assets']} assets")
+        from .engine import newslive
+        ev = newslive.summary(st)
+        pr = ev["progress"]
+        print(f"forward evaluation: {ev['status']} — sessions {pr['have']['sessions']}/{pr['need']['sessions']}, asset-sessions with news "
+              f"{pr['have']['asset_sessions']}/{pr['need']['asset_sessions']}, sessions with ≥20 assets {pr['have']['broad_sessions']}/{pr['need']['broad_sessions']}")
+        for k, t in (ev.get("tests") or {}).items():
+            stat = t.get("mean_ic", t.get("gain", t.get("hit_rate")))
+            print(f"  {k}: {stat if stat is None else round(stat, 4)}  p {t.get('p') if t.get('p') is None else round(t['p'], 4)}  {'PASS' if t.get('passed') else 'no'}")
+        print(news.RESEARCH_ONLY)
+        return 0
+    finally:
+        st.close()
+
+
 def main(argv=None) -> int:
     configure()
     from finsim import app
@@ -163,6 +253,21 @@ def main(argv=None) -> int:
     ms.add_argument("assets", nargs="*", help="show these assets (default: the largest expected moves across the universe)")
     ms.add_argument("--fit", action="store_true", help="refit the frozen model now (otherwise weekly, or when missing)")
     ms.add_argument("--top", type=int, default=20)
+    nw = sub.add_parser("news", help="research-only news: WSJ / MarketWatch public RSS now + aggregate (NEW_DATA_SOURCES.md, NEWS_SIGNALS_PROTOCOL.md)")
+    nw.add_argument("--status", action="store_true", help="per-feed status, stored counts and the forward evaluation (no fetch)")
+    nws = nw.add_subparsers(dest="news_cmd")
+    na = nws.add_parser("add", help="import an article you are reading (wsj.com / barrons.com / marketwatch.com); its text is not stored")
+    na.add_argument("--url", required=True)
+    na.add_argument("--file", required=True, help="the article text, or the News page bookmarklet's JSON")
+    na.add_argument("--title")
+    na.add_argument("--published", help="ISO time the publisher gives (stored; timing always uses the import time)")
+    nsh = nws.add_parser("show", help="recent articles linked to an asset")
+    nsh.add_argument("ticker")
+    nsh.add_argument("--limit", type=int, default=20)
+    nf = nws.add_parser("feeds", help="list the feeds; add / remove your own (https on feeds.content.dowjones.io only)")
+    nfg = nf.add_mutually_exclusive_group()
+    nfg.add_argument("--add", metavar="URL")
+    nfg.add_argument("--remove", metavar="URL")
     lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
@@ -565,6 +670,8 @@ def main(argv=None) -> int:
         return _data_cmd(args)
     if args.cmd == "movesize":
         return _movesize_cmd(args)
+    if args.cmd == "news":
+        return _news_cmd(args)
     if args.cmd == "open":
         return app.cmd_open()
     if args.cmd == "install":
