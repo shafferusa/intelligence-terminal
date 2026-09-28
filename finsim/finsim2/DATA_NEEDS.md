@@ -112,6 +112,31 @@ more recently futures.
 cloud environment's allowed domains. FinSim2 would then get a Massive importer for delisted-inclusive daily bars
 and option-chain history, tested under the same protocol.
 
+## FirstRate Data: "complete" bundle + fundamentals (reviewed from the samples, 2026-09-28)
+
+These findings come from the vendor's sample files. The pricing page is blocked from the cloud environment, so
+price and license terms still need checking there.
+
+| Part | What the samples and readme show | Fills priority | Value for the Shaffer System |
+|---|---|---|---|
+| Stocks | ~16,300 active + **7,000+ delisted** US stocks, daily and intraday from 2000, unadjusted / split / split + dividend adjusted | **1 (survivorship)** | High: an unbiased, 5× broader cross-section for Alpha, and honest expected returns and tails |
+| Options | EOD chains for 5,800 underlyings (+4,000 delisted) **from 2010**: bid / ask, bid and ask IV, delta / gamma / vega / theta / rho, open interest, volume. The sample is clean near the money: put and call IVs agree, skew is present | **3 (options)** | High for Directional ranges (implied vs realised volatility) and for the Shaffer Hedge (real prices instead of flat volatility). Modest and uncertain for Alpha (skew, IV spread) |
+| Futures | 261 contracts, **each contract separately** plus continuous series, from 2008, with open interest | **5 (curves / carry)** | Medium: commodity carry and term structure, true futures returns |
+| Intraday bars | 1-min … 1-hour | 6 | Medium: overnight / intraday split, 5-minute realised volatility for the move-size model |
+| Earnings | Consensus EPS estimate + actual + before / after the market, per report, 2000 → | part of 2 | Medium: earnings surprise (SUE) and drift. **Not** an estimate-revision history. The sample has an odd duplicate: an unreported 2026-05-07 row after the reported 2026-04-30 one |
+| Valuation metrics | Daily trailing / forward P/E, P/S, EV, 2000 → | part of 2 | Low–medium: the implied forward earnings change only in quarterly steps (13 changes a year in the AAPL sample), so it is a coarse revisions proxy at best. Whether it is point in time must be confirmed |
+| Financials | 70+ fields with **filing dates** (point-in-time usable), "from 2000" (the AAPL sample starts 2011) | 4 | Medium: extends the SEC XBRL history (2009 →) |
+| Short interest / volume | 2021 → | 5 | Low (short history) |
+| Social sentiment | 2025 → | — | Forward research only |
+
+**Not included:** historical index membership, and analyst estimate revisions over time.
+
+**Practical notes:**
+- Full 1-minute data for 23,000 stocks and full option chains since 2010 run to hundreds of GB or more. FinSim2
+  would import daily bars for every stock, and reduce each day's chain to per-underlying features: 30-day ATM IV,
+  25-delta skew, term slope, IV − RV, put / call OI. It would not store every contract.
+- The data stay out of the repository, following the vendor's license.
+
 ## Free additions FinSim2 can make without any purchase
 
 If you want them, I can add these under the same protocol:
