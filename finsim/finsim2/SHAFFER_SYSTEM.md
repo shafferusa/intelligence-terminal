@@ -239,3 +239,10 @@ of μ̂, and none of the three corrections below changes μ̂.
    - When its horizon had fewer than 10 independent outcomes in the test period, which is true at 2Y–5Y, since
      25 years hold only a handful of independent 5-year windows.
    - When its asset class has fewer than 5 assets (crypto).
+
+5. **The uncertainty is floored from 1M on.** The residual scale c is floored at 1, so no forecast is narrower
+   than a random walk at the asset's blended volatility. This is conservative for two reasons:
+   - none of the equations beats the base rate by a meaningful margin (the squared-error gain is about 0);
+   - the long-horizon test outcomes (2009 →) are almost all rising-market windows.
+
+   Without the floor, SPY's 5-year 90% range excluded any loss.

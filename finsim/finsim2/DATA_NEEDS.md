@@ -84,6 +84,34 @@ FinSim2 already has importers for estimates and options CSVs (`python -m finsim2
 |---|---|---|
 | Minute or tick bars with volume; opening auction / imbalance | Overnight vs intraday decomposition, gap behaviour, intraday volatility for better 1D ranges | Polygon.io (affordable), Databento, NYSE TAQ (institutional) |
 
+## Massive (formerly Polygon.io): the cheapest single route to priorities 1, 3 and 6
+
+Massive (massive.com, the 2025 rename of Polygon.io) covers stocks, options, indices, currencies and crypto, and
+more recently futures.
+
+**Free tier (verify on their pricing page; it blocks this environment).**
+- About 5 API calls a minute, end-of-day data, and about 2 years of history. FinSim2's own record of the free key
+  says 2 years, 5 a minute.
+- As far as I know, the free options tier does not include historical implied volatility, greeks or quotes.
+- That is enough to *try* the API, not to research with: the walk-forward needs 15–25 years.
+
+**Paid tiers (individual plans from roughly US$29–199 a month).** These add what matters:
+- Many more years of stock history, **including delisted tickers**. That removes survivorship bias (priority 1),
+  provided the tier reaches back far enough (10–20 years).
+- Options history with IV, greeks and open interest (priority 3). Options history starts later, around the
+  mid-2010s.
+- Minute bars (priority 6).
+- Bulk "flat files" for fast backfills.
+
+**What it does not cover:**
+- Point-in-time analyst estimate revisions (priority 2).
+- Point-in-time fundamentals with restatement vintages. Check whether any partner add-on offers either, as of
+  your sign-up date.
+
+**To use it:** a key in `MASSIVE_API_KEY` (`setx MASSIVE_API_KEY "…"`), plus `api.massive.com` added to the
+cloud environment's allowed domains. FinSim2 would then get a Massive importer for delisted-inclusive daily bars
+and option-chain history, tested under the same protocol.
+
 ## Free additions FinSim2 can make without any purchase
 
 If you want them, I can add these under the same protocol:

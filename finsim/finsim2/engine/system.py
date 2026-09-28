@@ -597,6 +597,16 @@ def resid_model(pairs: List[Tuple[float, float, float]], shape: Optional[dict] =
     return {"c": c, "q": q, "bias": med, "n": len(e)}
 
 
+C_FLOOR_FROM = 21                             # from 1M on, the residual scale c is floored at 1 (see scale_c)
+
+
+def scale_c(rm: dict, h: int) -> float:
+    """The residual scale used for ŝ: from 1M on at least 1, i.e. no narrower than a random walk at the asset's
+    blended volatility. No model has shown predictive power beyond the base rate (MSE gain ≈ 0), and the walk-forward
+    long-horizon outcomes (2009 →) come almost entirely from rising markets, so a calibrated c < 1 would understate risk."""
+    return max(rm["c"], 1.0) if h >= C_FLOOR_FROM else rm["c"]
+
+
 def resid_models(pairs) -> Dict[str, dict]:
     """Residual models keyed by node — product type (path[2]), asset class (path[1]) and '__pooled__' — from
     (record, μ̂) pairs. A thin group keeps its own scale on its parent's shape (class, else pooled)."""
@@ -800,12 +810,12 @@ def study_horizon(store, lab: str, progress=None) -> dict:
             out_ = []
             for m_, rmd, lookup in ((mu, rm, mu_of), (mu0, rm0, mu0_of)):
                 rmc = rm_for(rmd, r.path)
-                dist = distribution(m_, rmc["c"] * r.s, rmc) if rmc else None
+                dist = distribution(m_, scale_c(rmc, h) * r.s, rmc) if rmc else None
                 pb = None
                 if rmc and r.yb is not None:
                     mub = lookup.get((r.bench, r.d)) if r.bench else r.yb
                     if mub is not None:
-                        pb = p_beat(m_, mub, rmc["c"] * r.srel, rmc)
+                        pb = p_beat(m_, mub, scale_c(rmc, h) * r.srel, rmc)
                 out_.append((dist, pb))
             rows.append((r, mu, mu0, out_[0][0], out_[0][1], ERA_LABEL[e], base_rate.get(r.cls, 0.5)))
             rows0.append((r, mu0, mu0, out_[1][0], out_[1][1], ERA_LABEL[e], base_rate.get(r.cls, 0.5)))
@@ -1086,7 +1096,7 @@ def forecast(spec: dict, a: dict, inp: dict, raws: Dict[str, Optional[float]], m
             continue
         s63 = horizon_scale(h, inp["logvol"], inp.get("loghist"))
         rmx = (cs.get("resid_pt") or {}).get(path[2]) or cs["resid"]
-        shat = rmx["c"] * s63
+        shat = scale_c(rmx, h) * s63
         disp_src = "Shaffer System residuals"
         if lab in DIRECTIONAL and move:
             ms = _move_sigma(move, lab)
@@ -1116,7 +1126,7 @@ def forecast(spec: dict, a: dict, inp: dict, raws: Dict[str, Optional[float]], m
             mub = (bench_mu or {}).get(lab)
         if mub is not None:
             srel = (math.exp(inp["logrel"]) * 0.2 * math.sqrt(h / 252.0) * s63 / (math.exp(inp["logvol"]) * 0.2 * math.sqrt(h / 252.0))
-                    if inp.get("logrel") is not None else s63) * rmx["c"]
+                    if inp.get("logrel") is not None else s63) * scale_c(rmx, h)
             pb = p_beat(mu, mub, srel, rmx)
         notes = []
         ne = (((cs.get("oos") or {}).get("gain")) or {}).get("n_eff")

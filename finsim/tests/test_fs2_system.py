@@ -58,8 +58,13 @@ class Learner(unittest.TestCase):
 
     def test_ranges_are_calibrated_out_of_sample(self):
         cov = self.res["classes"]["EQUITY"]["coverage"]
-        self.assertTrue(0.85 <= cov["r90"] <= 0.95, cov)
-        self.assertTrue(0.44 <= cov["r50"] <= 0.56, cov)
+        # the planted noise is below a random walk's, so the 1M floor on the residual scale makes the ranges
+        # conservative: at or above nominal coverage, never grossly wide
+        self.assertTrue(0.88 <= cov["r90"] <= 0.98, cov)
+        self.assertTrue(0.46 <= cov["r50"] <= 0.66, cov)
+        self.assertEqual(S.scale_c({"c": 0.8}, 21), 1.0)
+        self.assertEqual(S.scale_c({"c": 0.8}, 5), 0.8, "no floor below 1M: short horizons are well identified")
+        self.assertEqual(S.scale_c({"c": 1.3}, 252), 1.3)
 
     def test_live_forecast_from_the_spec(self):
         spec = {"version": S.SYS_VERSION, "hash": "x" * 64, "group_mean": {}, "horizons": {"1M": {"classes": self.res["final"]["classes"],
