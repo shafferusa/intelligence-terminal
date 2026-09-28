@@ -261,25 +261,24 @@ class OptionsDump(unittest.TestCase):
 class EulerpoolProbe(unittest.TestCase):
     def test_probe_reports_each_claim_without_the_key(self):
         from finsim2.data import eulerpool as EP
-        spec = {"paths": {"/api/1/equity/overview/{identifier}": {"get": {}},
-                          "/api/1/equity/historical-prices/{identifier}": {"get": {"parameters": [{"name": "from"}]}},
-                          "/api/1/equity/income-statement/{identifier}": {"get": {}},
-                          "/api/1/options/chain/{identifier}": {"get": {"parameters": [{"name": "date"}]}},
-                          "/api/1/futures/curve/{identifier}": {"get": {}}}}
         seen = []
 
         def fake(url, headers=None, timeout=30):
             seen.append((url, headers))
-            if url.endswith("/openapi.json") and "/api/" not in url:
-                return json.dumps(spec).encode()
+            if "documentation/yaml" in url:
+                return b"openapi: 3.0.0\npaths:\n  /api/1/equity/overview/{identifier}:\n    get: {}\n  /api/1/equity/pit/estimates/{ticker}:\n    get: {}\n"
             if "overview/US5249081002" in url or "overview/US2935611069" in url:
                 raise FetchError("HTTP 404", 404, b'{"error": "not found"}')
             if "overview" in url:
                 return b'{"name": "X", "isin": "Y"}'
-            if "historical-prices" in url:
-                return b'[{"date": "2007-01-03", "close": 60.0}, {"date": "2008-09-12", "close": 3.65}]'
-            if "income-statement" in url:
-                return b'[{"period": "2024-09-28", "revenue": 391035}]'
+            if "quotes/US5249081002" in url:
+                return b'[{"timestamp": 1167782400000, "price": 60.0}, {"timestamp": 1221177600000, "price": 3.65}]'
+            if "pit/estimates/AAPL" in url:
+                return b'[{"asof": "2019-03-01T00:00:00.000Z", "epsEstimate": 2.1}, {"asof": "2026-09-01T00:00:00.000Z", "epsEstimate": 7.9}]'
+            if "incomestatement" in url:
+                return b'[{"period": "2024-09-28T00:00:00.000Z", "revenue": 391035}]'
+            if "market/options" in url:
+                raise FetchError("HTTP 403", 403, b'{"error": "not in your plan"}')
             raise FetchError("HTTP 404", 404)
         tmp = tempfile.mkdtemp()
         try:
@@ -287,14 +286,32 @@ class EulerpoolProbe(unittest.TestCase):
                 text = EP.probe(tmp, key="SECRET-KEY-123")
             self.assertIn("4 of 6 delisted companies answer", text)
             self.assertIn("2007-01-03 → 2008-09-12", text)
-            self.assertIn("publication-date fields: NONE", text)
-            self.assertIn("/api/1/options/chain/{identifier}` parameters: date → **takes a date**", text)
+            self.assertIn("2019-03-01 → 2026-09-01", text, "point-in-time estimate snapshots are dated")
+            self.assertIn("| SPY option chain | 403 | not in your plan |", text)
+            self.assertIn("(2 paths)", text)
             self.assertNotIn("SECRET-KEY-123", text)
             self.assertTrue(all("SECRET" not in u for u, _ in seen), "the key never goes in a URL")
             self.assertTrue(all(h["Authorization"] == "Bearer SECRET-KEY-123" for _, h in seen))
-            self.assertTrue(os.path.exists(os.path.join(tmp, "eulerpool_probe.md")))
+            for f in ("eulerpool_probe.md", "eulerpool_openapi.yaml"):
+                self.assertTrue(os.path.exists(os.path.join(tmp, f)))
             with mock.patch.dict(os.environ, {"EULERPOOL_API_KEY": ""}):
                 self.assertIn("skipped", EP.probe(tmp))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_a_refused_key_stops_at_once(self):
+        from finsim2.data import eulerpool as EP
+        calls = []
+
+        def fake(url, headers=None, timeout=30):
+            calls.append(url)
+            raise FetchError("HTTP 401", 401, b'{"error": "invalid token"}')
+        tmp = tempfile.mkdtemp()
+        try:
+            with mock.patch.object(EP, "http_get", fake), mock.patch.object(EP.time, "sleep"):
+                text = EP.probe(tmp, key="bad")
+            self.assertIn("The key is refused", text)
+            self.assertEqual(len(calls), 1)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 
