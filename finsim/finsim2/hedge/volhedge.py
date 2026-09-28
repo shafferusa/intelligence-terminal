@@ -1102,6 +1102,9 @@ def markdown(res: dict) -> str:
     text = (text.replace("--breadth-hedge", f"--{lab}-hedge").replace(CHALLENGER, challenger_id(fam))
             .replace("Breadth", lab.capitalize()).replace("breadth", lab)
             .replace("BREADTH_HEDGE_RESEARCH", "SHAFFER_EVENT_HEDGE"))
+    if fam == "event_calendar":
+        text = text.replace("with the five event features", "with the two market-wide calendar features (scheduled macro "
+                            "releases / FOMC in the next five sessions — the market factor has no earnings window)")
     return text.replace(f"# Does better volatility forecasting improve Shaffer Hedge outcomes? — research",
                         f"# Does the {lab}-calendar volatility forecast improve Shaffer Hedge outcomes? — research (stage 4)", 1)
 
