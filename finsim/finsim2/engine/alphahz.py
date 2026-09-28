@@ -187,10 +187,19 @@ def _build_worker(db_path: str, assets: List[str], extra):
             for lab, rows in recs.items():
                 if rows:
                     st.put_lab_records(a, lab, AHZ_VERSION, dv, rows)
+            _forget(r, a)
             done += 1
         return done
     finally:
         st.close()
+
+
+def _forget(research, a: str):
+    """Release one stock's cached features / z-scores (Research memoises them; ~450 stocks would not fit in memory)."""
+    mem = getattr(research, "_mem", None)
+    if isinstance(mem, dict):
+        for k in (f"z:{a}", f"f:{a}"):
+            mem.pop(k, None)
 
 
 def build(db_path: str, workers: int = 3, extra: Optional[List[Tuple[str, str]]] = None, progress=None) -> dict:
@@ -637,6 +646,7 @@ def today(store, research, res: Optional[dict] = None) -> dict:
             f = builder.features(fam, a) if builder else None
             ex.append(((f or {}).get(feat) or [None] * len(cal))[t])
         cur[a["id"]] = [v if v is not None else 0.0 for v in x + ex]
+        _forget(research, a["id"])
     sectors = {a["id"]: a.get("sector") or "Unclassified" for a in store.assets("EQUITY")}
     out = {"date": cal[t], "horizons": {}}
     for lab, h in HORIZONS:
