@@ -3855,6 +3855,56 @@
    "probability": "base 45-55%",
    "basis": "Sunday Sep 27 outlook scenario matrix; grade which case best described the week.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-28-am-1",
+   "date": "2026-09-28",
+   "slot": "am",
+   "forecast": "10-year Treasury par yield closes above 5.25% on at least one day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "25-35%",
+   "basis": "10Y rose 15-20bp in each of the last two weeks; PCE and payrolls both this week; breakevens flat.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-am-2",
+   "date": "2026-09-28",
+   "slot": "am",
+   "forecast": "FOMC raises the target range at the Oct 27-28 meeting.",
+   "horizon": "2026-10-28",
+   "probability": "60-70%",
+   "basis": "CME FedWatch ~70% (secondary); SEP leans to one more hike; hawkish Barr/Williams/Hammack vs Bessent's public push for patience.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-am-3",
+   "date": "2026-09-28",
+   "slot": "am",
+   "forecast": "Front-month Brent settles above $100 every trading day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "65-75%",
+   "basis": "US rejected Iran's 7-day offer, Iran refuses to soften terms; Brent $106-108 Monday Asia; backwardated curve.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-am-4",
+   "date": "2026-09-28",
+   "slot": "am",
+   "forecast": "Starship Flight 14 launches within its Sep 28-30 window.",
+   "horizon": "2026-09-30",
+   "probability": "55-70%",
+   "basis": "FAA licence issued, rehearsal complete; first V3 flight and ordinary scrub rates.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-am-5",
+   "date": "2026-09-28",
+   "slot": "am",
+   "forecast": "Paramount Skydance-WBD merger closes by Sep 30.",
+   "horizon": "2026-09-30",
+   "probability": "35-50%",
+   "basis": "Judge deferred consent-decree ruling; temporary bar to 3 PM ET Sep 28; short calendar.",
+   "status": "open"
   }
  ]
 }
