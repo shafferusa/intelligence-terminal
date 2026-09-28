@@ -24,6 +24,11 @@ prints it. The result lives in the store key `news:eval`.
 - An article belongs to the **session** whose close is the first close at or after `known_at`, in New York time:
   known before 16:00 on a trading day → that day's session; at or after 16:00, or on a weekend or holiday → the next
   trading session.
+- The daily loop fetches the feeds after the close (the scheduler refreshes from 17:30 New York), so a feed item is
+  normally first seen after 16:00 and belongs to the **next** session: headlines fetched on the evening of day d are
+  features of session d + 1 and are tested on returns from the close of d + 1. The reaction during session d + 1 itself
+  is outside the outcome window by construction. Running `python -m finsim2 news` during the trading day assigns what
+  it finds to that day's session.
 - Feed items published more than 3 days before the fetch are not ingested (they are old news, not news for the
   session they would land in). A manual import of an article already ingested from a feed is kept for display but is
   not counted again (`dup_of`).
