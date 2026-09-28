@@ -1,6 +1,6 @@
 """The new data sources, together: one refresh entry point with a cadence per source, and a status summary.
 
-    python -m finsim2 data                      # every source that is due
+    python -m finsim2 data                      # every source that is due (news: python -m finsim2 news)
     python -m finsim2 data sec cftc --force     # these sources now
     python -m finsim2 data --status
 
@@ -23,6 +23,7 @@ SOURCES: Dict[str, tuple] = {
     "cftc": (7, "CFTC Commitments of Traders (legacy, disaggregated, financial futures)"),
     "eia": (7, "EIA weekly petroleum and natural-gas storage (needs EIA_API_KEY)"),
     "crypto": (1, "crypto derivatives: perpetual funding, premium, CME basis"),
+    "news": (1, "news headlines: WSJ / MarketWatch public RSS feeds (Dow Jones, one GET per feed), research only (data/news.py)"),
 }
 
 
@@ -46,6 +47,9 @@ def _runner(name: str) -> Callable:
     if name == "crypto":
         from . import cryptoderiv
         return lambda store, say: cryptoderiv.refresh(store, say)
+    if name == "news":
+        from . import news
+        return lambda store, say: news.refresh(store, say)
     raise KeyError(name)
 
 
@@ -104,7 +108,7 @@ def refresh_due(store, progress=None) -> Dict[str, dict]:
 
 
 DATASETS = ["sec_insider", "sec_8k", "event_calendar", "earnings_calendar", "cftc_cot", "eia_weekly", "crypto_deriv",
-            "analyst_estimates", "options_summary", "finra_shvol"]
+            "analyst_estimates", "options_summary", "finra_shvol", "news_dj"]
 
 
 def status(store) -> List[dict]:

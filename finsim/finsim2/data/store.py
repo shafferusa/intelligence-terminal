@@ -7,6 +7,8 @@
 * ``macro.published`` (nullable) is the date a value was first published (first-release vintages); databases
   created before it existed get the column added on open (:meth:`Store._migrate`). ``kv`` key
   ``macro_kind:{series}`` records whether a series holds "first_release" or "latest_vintage" values.
+* ``news_articles`` / ``news_links`` hold research-only news metadata (data/news.py): title, URL, times, session,
+  features and linked assets — never an article's text (manual imports keep only its length and SHA-256).
 """
 from __future__ import annotations
 
@@ -66,6 +68,13 @@ CREATE TABLE IF NOT EXISTS lab_records(asset_id TEXT NOT NULL, horizon TEXT NOT 
     created TEXT, n INTEGER, data BLOB, PRIMARY KEY(asset_id, horizon, version));
 CREATE TABLE IF NOT EXISTS alt_data(dataset TEXT NOT NULL, asset_id TEXT NOT NULL, date TEXT NOT NULL, field TEXT NOT NULL,
     value REAL, published TEXT, PRIMARY KEY(dataset, asset_id, date, field));
+CREATE TABLE IF NOT EXISTS news_articles(id TEXT PRIMARY KEY, source TEXT, feed TEXT, url TEXT, title TEXT, summary TEXT,
+    published_at TEXT, first_seen TEXT NOT NULL, known_at TEXT NOT NULL, session TEXT, kind TEXT NOT NULL, tickers TEXT,
+    features TEXT, lex TEXT, text_length INTEGER, text_sha256 TEXT, dup_of TEXT);
+CREATE INDEX IF NOT EXISTS news_articles_s ON news_articles(session);
+CREATE TABLE IF NOT EXISTS news_links(article_id TEXT NOT NULL, asset_id TEXT NOT NULL, confidence REAL, place TEXT,
+    PRIMARY KEY(article_id, asset_id));
+CREATE INDEX IF NOT EXISTS news_links_a ON news_links(asset_id);
 """
 OPTION_COLS = ["asof", "underlying", "expiry", "strike", "right", "bid", "ask", "last", "iv", "delta", "gamma", "vega", "theta", "rho",
                "open_interest", "volume", "source"]
@@ -87,6 +96,9 @@ TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee
 HEDGE_COLS = ["created_at", "made_on", "source", "status", "portfolio_id", "package_id", "objective", "risk_factor", "exposure", "target",
               "horizon", "horizon_days", "eval_date", "candidates", "selected", "raw_ratio", "ml_adjustment", "final_ratio", "expected_cost",
               "expected_reduction", "expected_basis", "regime", "score", "ml_confidence", "detail"]
+# research-only news records (data/news.py): article metadata, links and features — never the article text
+NEWS_COLS = ["id", "source", "feed", "url", "title", "summary", "published_at", "first_seen", "known_at", "session", "kind", "tickers",
+             "features", "lex", "text_length", "text_sha256", "dup_of"]
 HEDGE_GRADE_COLS = ["realized_reduction", "hedge_pnl", "upside_sacrificed", "basis_error", "effectiveness"]
 MACRO_KINDS = ("first_release", "latest_vintage")
 
@@ -492,6 +504,62 @@ class Store:
 
     def alt_dates(self, dataset: str) -> set:
         return {r[0] for r in self._q("SELECT DISTINCT date FROM alt_data WHERE dataset = ?", [dataset])}
+
+    # ------------------------------------------------------------------ news (research only; data/news.py)
+    def add_news(self, rows: list) -> list[str]:
+        """Insert news articles (dicts with NEWS_COLS; ``tickers`` = [(asset_id, confidence, place)], ``features`` = dict).
+        An id already stored is left exactly as it is (its first_seen, known_at, session and features are point in time).
+        Returns the ids that were new. The research panel's data version is not bumped: news never feeds a score."""
+        def fn(conn):
+            new = []
+            for r in rows:
+                vals = [r.get(c) for c in NEWS_COLS]
+                vals[NEWS_COLS.index("tickers")] = _dumps([list(t) for t in r.get("tickers") or []])
+                vals[NEWS_COLS.index("features")] = _dumps(r.get("features") or {})
+                cur = conn.execute("INSERT OR IGNORE INTO news_articles(" + ",".join(NEWS_COLS) + ") VALUES(" + ",".join("?" * len(NEWS_COLS)) + ")", vals)
+                if cur.rowcount == 1:
+                    new.append(r["id"])
+                    conn.executemany("INSERT OR REPLACE INTO news_links(article_id, asset_id, confidence, place) VALUES(?,?,?,?)",
+                                     [(r["id"], a, float(c), w) for a, c, w in r.get("tickers") or []])
+            return new
+        return self._write(fn)[0]
+
+    @staticmethod
+    def _news_row(r) -> dict:
+        d = {c: r[c] for c in NEWS_COLS}
+        d["tickers"] = _loads(d["tickers"], []) or []
+        d["features"] = _loads(d["features"], {}) or {}
+        return d
+
+    def news_article(self, article_id: str) -> dict | None:
+        rows = self._q("SELECT * FROM news_articles WHERE id = ?", (article_id,))
+        return self._news_row(rows[0]) if rows else None
+
+    def news_articles(self, asset_id: str | None = None, since_session: str | None = None, limit: int | None = None,
+                      kind: str | None = None) -> list[dict]:
+        """Articles, newest known first; ``asset_id`` = only those linked to it; ``since_session`` = session >= that date."""
+        sql, args = "SELECT n.* FROM news_articles n", []
+        where = []
+        if asset_id:
+            sql += " JOIN news_links l ON l.article_id = n.id"
+            where.append("l.asset_id = ?"); args.append(asset_id)
+        if since_session:
+            where.append("n.session >= ?"); args.append(since_session)
+        if kind:
+            where.append("n.kind = ?"); args.append(kind)
+        if where:
+            sql += " WHERE " + " AND ".join(where)
+        sql += " ORDER BY n.known_at DESC, n.id"
+        if limit:
+            sql += " LIMIT ?"; args.append(int(limit))
+        return [self._news_row(r) for r in self._q(sql, args)]
+
+    def news_counts(self) -> dict:
+        r = self._q("SELECT COUNT(*) AS n, COUNT(DISTINCT session) AS s, MIN(known_at) AS lo, MAX(known_at) AS hi, "
+                    "SUM(kind = 'manual') AS manual FROM news_articles")[0]
+        links = self._q("SELECT COUNT(*) AS n, COUNT(DISTINCT asset_id) AS a FROM news_links")[0]
+        return {"articles": r["n"], "sessions": r["s"], "first_known": r["lo"], "last_known": r["hi"], "manual": r["manual"] or 0,
+                "links": links["n"], "linked_assets": links["a"]}
 
     def lab_record_assets(self, version: str, horizon: str) -> list[str]:
         """Assets that have research records for this version and horizon (the research universe)."""
