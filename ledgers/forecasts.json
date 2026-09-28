@@ -3905,6 +3905,36 @@
    "probability": "35-50%",
    "basis": "Judge deferred consent-decree ruling; temporary bar to 3 PM ET Sep 28; short calendar.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-28-pm-1",
+   "date": "2026-09-28",
+   "slot": "pm",
+   "forecast": "2-year Treasury par yield closes above 5.00% on at least one day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "25-35%",
+   "basis": "2Y at 4.92% after +11bp; PCE Wed and payrolls Fri can each move the front end 5-10bp; Cook/Barr hawkish tilt.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-pm-2",
+   "date": "2026-09-28",
+   "slot": "pm",
+   "forecast": "VIX closes above 20 on at least one day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "15-25%",
+   "basis": "VIX 16.07 in contango; two major macro releases and Hormuz talks this week, but no inversion or stress signal yet.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-28-pm-3",
+   "date": "2026-09-28",
+   "slot": "pm",
+   "forecast": "US and Iran publicly announce an agreement to reopen the Strait of Hormuz by Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "10-20%",
+   "basis": "Mediation is separate/indirect only; Trump rejected the 7-day plan; Bloomberg reports Iranian doubt of a deal pre-midterms.",
+   "status": "open"
   }
  ]
 }
