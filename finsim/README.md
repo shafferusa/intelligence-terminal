@@ -118,6 +118,14 @@ python3 -m finsim2 import-estimates FILE | import-options FILE   # licensed anal
   - Hedge research: whether the static hedge was historically too big or too small, per group and objective.
   - Live learning: the forecasts waiting to mature and those already graded.
   - `python3 -m finsim2 lab --build` rebuilds the research records and runs the research.
+- *Short-term outlook* (asset page). For the next day and the next week it shows three things:
+  - **P(up)** from the prior-only Directional model. No signal beats this model at 1D–1W.
+  - **The expected move** (±1σ).
+  - **A calibrated 90% range.**
+
+  The move size comes from the validated calendar + 8-K volatility model (`finsim2/SHAFFER_MOVE_SIZE.md`). It is refitted
+  weekly by the daily learning job and otherwise frozen. It is informational, not a trade signal.
+  `python -m finsim2 movesize [ASSET ...] [--fit]` prints it from the terminal.
 - *Independent ML forecasts (benchmark).* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient
   boosting, all in pure Python. Kept as a benchmark for the Shaffer Score, not as a second recommendation.
   - Training is walk-forward with purged folds, and the last 15% of rows are held out untouched.

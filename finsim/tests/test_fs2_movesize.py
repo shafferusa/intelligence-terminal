@@ -66,5 +66,81 @@ class MoveSize(unittest.TestCase):
         self.assertGreater(M.qlike(0.0001, 0.0004), 0.0)
 
 
+class LiveLayer(unittest.TestCase):
+    """The app's move-size layer: weekly frozen fit, today's forecast, the asset view and the refit schedule."""
+
+    def setUp(self):
+        import datetime as dt
+        import os
+        import tempfile
+        from finsim2.data.store import Store
+        self.tmp = tempfile.mkdtemp()
+        self.st = Store(os.path.join(self.tmp, "x.db"))
+        days, d = [], dt.date(2001, 1, 2)
+        while len(days) < 2000:
+            if d.weekday() < 5:
+                days.append(d.isoformat())
+            d += dt.timedelta(days=1)
+        self.days = days
+        rng = random.Random(3)
+        self.vol = {}
+        for k in range(14):
+            aid = "SPY" if k == 0 else f"S{k}"
+            sig = 0.006 if k < 7 else 0.03                       # two volatility levels
+            self.vol[aid] = sig
+            self.st.upsert_asset({"id": aid, "name": aid, "asset_class": "ETF" if k == 0 else "EQUITY", "sector": "Tech",
+                                  "country": "United States", "currency": "USD", "yahoo": aid, "meta": {}})
+            px, rows = 100.0, []
+            for day in days:
+                px *= math.exp(rng.gauss(0, sig))
+                rows.append({"date": day, "open": px, "high": px, "low": px, "close": px, "adj_close": px, "volume": 1e6})
+            self.st.upsert_prices(aid, rows)
+        self.st.upsert_macro("VIXCLS", [(day, 20.0, day) for day in days])
+
+    def tearDown(self):
+        import shutil
+        self.st.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_fit_forecast_view_and_schedule(self):
+        from finsim2.engine.research import Research
+        r = Research(self.st)
+        self.assertTrue(M.due(self.st, self.days[-1]), "no fit yet")
+        self.assertEqual(M.asset_view(self.st, r, self.st.asset("S1"))["available"], False)
+        live = M.fit_live(self.st, r)
+        self.assertEqual(set(live["horizons"]), {"1D", "1W"})
+        self.assertEqual(live["horizons"]["1D"]["model"], "M3")
+        self.assertFalse(M.due(self.st, self.days[-1]))
+        self.assertTrue(M.due(self.st, "2099-01-01"), "a week-old fit is refitted")
+        view = M.today_live(self.st, r)
+        self.assertEqual(len(view["items"]), 14)
+        lo = view["items"]["S1"]["horizons"]["1D"]
+        hi = view["items"]["S10"]["horizons"]["1D"]
+        self.assertAlmostEqual(lo["sigma"], 0.006, delta=0.003)
+        self.assertAlmostEqual(hi["sigma"], 0.03, delta=0.012)
+        self.assertLess(lo["lo"], 0.0)
+        self.assertGreater(lo["hi"], 0.0)
+        wk = view["items"]["S10"]["horizons"]["1W"]
+        self.assertAlmostEqual(wk["sigma"] / hi["sigma"], math.sqrt(5), delta=0.8)
+        v = M.asset_view(self.st, r, self.st.asset("S10"))
+        self.assertTrue(v["available"])
+        x = v["horizons"]["1D"]
+        self.assertAlmostEqual(x["move_pct"], math.expm1(x["sigma"]))
+        self.assertIsNotNone(x["p_up"])
+        self.assertFalse(x["p_up_calibrated"], "no lab:directional:live fit here: the uncalibrated prior is labelled")
+        self.assertTrue(0.0 < x["p_up"] < 1.0)
+
+    def test_frozen_fit_is_used_until_refit(self):
+        from finsim2.engine.research import Research
+        r = Research(self.st)
+        M.fit_live(self.st, r)
+        f1 = M.forecast(self.st, r, self.st.asset("S3"))
+        live = self.st.kv_get(M.LIVE_KEY)
+        live["horizons"]["1D"]["k"] *= 4.0                          # a different frozen level doubles σ
+        self.st.kv_set(M.LIVE_KEY, live)
+        f2 = M.forecast(self.st, r, self.st.asset("S3"))
+        self.assertAlmostEqual(f2["horizons"]["1D"]["sigma"], 2 * f1["horizons"]["1D"]["sigma"], places=9)
+
+
 if __name__ == "__main__":
     unittest.main()

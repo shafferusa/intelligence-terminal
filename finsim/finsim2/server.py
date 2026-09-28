@@ -154,6 +154,14 @@ class App:
                 out["live_panel"] = livexs.record_panel(self.research, (lambda m: job.progress(0, 1, m)) if job else None)
         except Exception as e:  # noqa: BLE001
             out["errors"].append(f"live panel: {e}")
+        try:                                                   # move size (1D / 1W): weekly frozen refit, daily forecasts
+            from .engine import movesize
+            if movesize.due(self.store, self.research.panel().calendar()[-1]):
+                movesize.fit_live(self.store, self.research, (lambda m: job.progress(0, 1, m)) if job else None)
+                out["move_size_refit"] = True
+            out["move_size"] = len(movesize.today_live(self.store, self.research, (lambda m: job.progress(0, 1, m)) if job else None)["items"])
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"move size: {e}")
         try:                                                   # the λ-aware hedge panel: freeze packages, grade matured ones
             from .hedge import hedgelive
             out["hedge_panel"] = {"graded": hedgelive.grade(self.research), "recorded": hedgelive.record(self.research)}
@@ -452,6 +460,9 @@ class Router:
             return downsample(p.calendar()[first:], c[first:], int(q.get("points", 1500)))
         if rest == ["equations"]:
             return research.equations(asset_id)
+        if rest == ["outlook"]:                              # short-term outlook: P(up) (prior-only) + move size (validated)
+            from .engine import movesize
+            return movesize.asset_view(store, research, store.asset(asset_id))
         if rest == ["ml"] and method == "POST":
             return app.start_ml(asset_id).view()
         if rest == ["ml"]:

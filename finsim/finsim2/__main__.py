@@ -78,6 +78,43 @@ def _data_cmd(args) -> int:
         st.close()
 
 
+def _movesize_cmd(args) -> int:
+    from finsim import app
+    from .data.store import Store
+    from .engine import directional, movesize
+    from .engine.research import Research
+    st = Store(app.db_path())
+    try:
+        r = Research(st)
+        if args.fit or movesize.due(st, r.panel().calendar()[-1]):
+            live = movesize.fit_live(st, r, progress=print)
+            if not live["horizons"]:
+                print("not enough history for a move-size fit: run `python -m finsim2 refresh` and `python -m finsim2 data --force` first")
+                return 1
+        if not (st.kv_get(directional.LIVE_KEY) or {}).get("horizons"):   # the calibrated prior-only P(up) shown next to the move size
+            try:
+                if not directional.fit_live(st, r, progress=print).get("horizons"):
+                    print("P(up) will show the uncalibrated point-in-time prior until `python -m finsim2 lab --build` has run")
+            except Exception as e:  # noqa: BLE001
+                print(f"P(up) will show the uncalibrated point-in-time prior ({e})")
+        if args.assets:
+            for a in args.assets:
+                meta = st.asset(a.upper())
+                v = movesize.asset_view(st, r, meta) if meta else None
+                if not v or not v.get("available"):
+                    print(f"{a}: {(v or {}).get('reason', 'unknown asset')}")
+                    continue
+                for lab, x in v["horizons"].items():
+                    pu = "—" if x["p_up"] is None else f"{x['p_up']:.0%}" + ("" if x["p_up_calibrated"] else " (uncalibrated)")
+                    print(f"{meta['id']} {lab}: P(up) {pu} / expected move ±{x['move_pct']:.1%} / 90% range {x['lo_pct']:+.1%} to {x['hi_pct']:+.1%}")
+            return 0
+        view = movesize.today_live(st, r, progress=print)
+        print(movesize.live_markdown(view, st.kv_get(movesize.LIVE_KEY) or {}, args.top))
+        return 0
+    finally:
+        st.close()
+
+
 def main(argv=None) -> int:
     configure()
     from finsim import app
@@ -122,6 +159,10 @@ def main(argv=None) -> int:
         ip = sub.add_parser(nm, help=f"import licensed {what} into the point-in-time store")
         ip.add_argument("file")
         ip.add_argument("--source", default="import")
+    ms = sub.add_parser("movesize", help="expected 1D / 1W move and 90% range (the validated move-size model, SHAFFER_MOVE_SIZE.md) with P(up)")
+    ms.add_argument("assets", nargs="*", help="show these assets (default: the largest expected moves across the universe)")
+    ms.add_argument("--fit", action="store_true", help="refit the frozen model now (otherwise weekly, or when missing)")
+    ms.add_argument("--top", type=int, default=20)
     lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
@@ -478,6 +519,8 @@ def main(argv=None) -> int:
         return 0
     if args.cmd in ("data", "universe", "import-estimates", "import-options"):
         return _data_cmd(args)
+    if args.cmd == "movesize":
+        return _movesize_cmd(args)
     if args.cmd == "open":
         return app.cmd_open()
     if args.cmd == "install":

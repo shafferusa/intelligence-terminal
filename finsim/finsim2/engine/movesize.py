@@ -381,6 +381,211 @@ def markdown(res: dict, view: Optional[dict] = None) -> str:
     return "\n".join(L) + "\n"
 
 
+# ------------------------------------------------------------------ live layer (the app): frozen weekly fit, daily forecasts
+LIVE_KEY = "movesize:live"
+TODAY_KEY = "movesize:today"
+LIVE_VERSION = "ms1"
+VALIDATED = {"1D": "M3", "1W": "M3"}                 # SHAFFER_MOVE_SIZE.md: M3 PASSED at 1D and 1W (stage 3, 2026-09-27)
+REFIT_DAYS = 7
+CALIB_SAMPLE = 120000                                 # records kept (reservoir) for the level and range calibration
+MIN_LIVE_PRICES = 126                                 # an asset needs ~6 months of prices for σ63 and today's inputs
+
+
+def _eligible(store, a: dict, n: int) -> bool:
+    return a.get("asset_class") in CLASSES and store.price_count(a["id"]) >= n
+
+
+def fit_live(store, research, progress=None) -> dict:
+    """Final fit of the validated model per horizon on every matured record (same records and features as the study),
+    streamed asset by asset into sufficient statistics; the level and the 90% range are calibrated on a reservoir sample.
+    Frozen until the next weekly refit."""
+    import random as _random
+    from . import newinfo as N
+    from .alphahz import _forget
+    from .directional import _logret
+    say = progress or (lambda m: None)
+    b = N.Builder(research, store)
+    start_i = bisect.bisect_left(b.cal, START)
+    metas = [a for a in store.assets() if _eligible(store, a, 252 * 6)]
+    stats = {lab: YearStats() for lab, _, _ in HORIZONS}
+    sample: Dict[str, List[Rec]] = {lab: [] for lab, _, _ in HORIZONS}
+    seen = {lab: 0 for lab, _, _ in HORIZONS}
+    rng = _random.Random(11)
+    t0 = time.time()
+    for k, m in enumerate(metas):
+        rets = _logret(b.series(m["id"]))
+        for lab, h, step in HORIZONS:
+            for r in asset_rows(b, m, h, step, start_i, rets):
+                if r.y is None:
+                    continue
+                stats[lab].add(r)
+                seen[lab] += 1
+                if len(sample[lab]) < CALIB_SAMPLE:
+                    sample[lab].append(r)
+                else:
+                    j = rng.randrange(seen[lab])
+                    if j < CALIB_SAMPLE:
+                        sample[lab][j] = r
+        _forget(research, m["id"])
+        if k % 25 == 0:
+            say(f"move-size live fit {k + 1}/{len(metas)} ({time.time() - t0:.0f}s)")
+    out = {"version": LIVE_VERSION, "fitted": time.strftime("%Y-%m-%d %H:%M:%S"), "data_date": b.cal[-1] if b.cal else None,
+           "assets": len(metas), "horizons": {}}
+    for lab, h, _ in HORIZONS:
+        mk = VALIDATED[lab]
+        m = fit({0: stats[lab]}, 1, MODELS[mk], sample[lab])
+        if m is None:
+            say(f"{lab}: too few matured records ({seen[lab]}) for a live move-size fit")
+            continue
+        out["horizons"][lab] = {"model": mk, "w": m["w"], "cols": m["cols"], "k": m["k"], "q": list(m["q"]), "feats": m["feats"],
+                                "records": seen[lab], "calibration_records": len(sample[lab])}
+        say(f"{lab}: move-size model {mk} fitted on {seen[lab]} records")
+    store.kv_set(LIVE_KEY, out)
+    return out
+
+
+def due(store, last_date: Optional[str]) -> bool:
+    """Refit when there is no live fit, it is from another version, or its data is more than a week older than today's."""
+    live = store.kv_get(LIVE_KEY) or {}
+    if live.get("version") != LIVE_VERSION or not live.get("horizons") or not live.get("data_date"):
+        return True
+    if not last_date:
+        return False
+    import datetime as _dt
+    try:
+        age = (_dt.date.fromisoformat(last_date[:10]) - _dt.date.fromisoformat(live["data_date"][:10])).days
+    except ValueError:
+        return True
+    return age >= REFIT_DAYS
+
+
+def _flag(x) -> Optional[bool]:
+    return None if x != x else bool(x)
+
+
+def forecast(store, research, meta: dict, live: Optional[dict] = None, builder=None) -> Optional[dict]:
+    """Today's move-size forecast for one asset from the frozen live fit: per horizon the expected move (1σ of the
+    log return over the horizon), the calibrated 90% range, and the scheduled events behind it. None when not fitted."""
+    from . import newinfo as N
+    from .directional import _logret
+    live = live if live is not None else store.kv_get(LIVE_KEY)
+    if not live or not live.get("horizons") or meta.get("asset_class") not in CLASSES:
+        return None
+    b = builder or N.Builder(research, store)
+    rets = _logret(b.series(meta["id"]))
+    t = next((i for i in range(b.n - 1, max(-1, b.n - 6), -1) if rets[i] is not None), None)
+    if t is None:
+        return None
+    out = {"asset": meta["id"], "date": b.cal[t], "fitted": live.get("fitted"), "data_date": live.get("data_date"), "horizons": {}}
+    for lab, h, _ in HORIZONS:
+        spec = live["horizons"].get(lab)
+        if not spec:
+            continue
+        cur = asset_rows(b, meta, h, 10 ** 9, t, rets)
+        if not cur:
+            continue
+        r = cur[0]
+        v = predict(spec, r)
+        s = math.sqrt(v * h)
+        lo, hi = spec["q"][0] * s, spec["q"][1] * s
+        out["horizons"][lab] = {
+            "model": spec["model"], "sigma": s, "lo": lo, "hi": hi,
+            "move_pct": math.expm1(s), "lo_pct": math.expm1(lo), "hi_pct": math.expm1(hi),
+            "macro_next": _flag(r.x[IDX["macro_next"]]), "fomc_next": _flag(r.x[IDX["fomc_next"]]),
+            "macro_events_5d": None if r.x[IDX["macro_events_5d"]] != r.x[IDX["macro_events_5d"]] else r.x[IDX["macro_events_5d"]],
+            "earn_soon_5d": _flag(r.x[IDX["earn_soon_5d"]])}
+    return out if out["horizons"] else None
+
+
+def today_live(store, research, progress=None, ids: Optional[List[str]] = None) -> dict:
+    """Today's forecasts for every eligible asset (or `ids`), stored for the app. Informational; never a trade signal."""
+    from . import newinfo as N
+    from .alphahz import _forget
+    say = progress or (lambda m: None)
+    live = store.kv_get(LIVE_KEY)
+    b = N.Builder(research, store)
+    view = {"date": b.cal[-1] if b.cal else None, "fitted": (live or {}).get("fitted"), "items": {}}
+    if not live:
+        return view
+    metas = [a for a in store.assets() if (ids is None or a["id"] in ids) and _eligible(store, a, MIN_LIVE_PRICES)]
+    for k, a in enumerate(metas):
+        try:
+            f = forecast(store, research, a, live, b)
+        except Exception:  # noqa: BLE001 — one asset's missing data never stops the others
+            f = None
+        if f:
+            view["items"][a["id"]] = {"date": f["date"], "horizons": f["horizons"]}
+        _forget(research, a["id"])
+        if k % 100 == 0:
+            say(f"move size today {k + 1}/{len(metas)}")
+    store.kv_set(TODAY_KEY, view)
+    return view
+
+
+def p_up(store, research, meta: dict, lab: str) -> Optional[dict]:
+    """The Directional P(up) shown next to the move size: the frozen prior-only model when it is fitted
+    (lab:directional:live), else the uncalibrated point-in-time prior Φ(μ/σ)."""
+    from . import directional as D
+    out = None
+    try:
+        out = D.live_benchmark(store, research, meta, lab, None)
+    except Exception:  # noqa: BLE001
+        out = None
+    if out and out.get("prior_only") is not None:
+        return {"p_up": out["prior_only"], "source": "prior-only model (calibrated)", "calibrated": True}
+    try:
+        ext = D.live_inputs(research, meta, dict(D.LAB_HORIZONS)[lab], {})
+    except Exception:  # noqa: BLE001
+        ext = None
+    if not ext or not ext.get("s"):
+        return None
+    r = D.Rec()
+    r.ext = ext
+    p = D.p_prior(r, D.MAIN_PRIOR)
+    return None if p is None else {"p_up": p, "source": "point-in-time prior Φ(μ/σ) (uncalibrated: run `lab --live-models`)", "calibrated": False}
+
+
+def asset_view(store, research, meta: dict) -> Optional[dict]:
+    """The app's short-term outlook for one asset: P(up) (Directional, prior-only), expected move and 90% range
+    (move size, validated) for 1D and 1W."""
+    live = store.kv_get(LIVE_KEY)
+    if not live:
+        return {"available": False, "reason": "move-size model not fitted yet (runs with the daily learning job, or `python -m finsim2 movesize --fit`)"}
+    last = research.panel().calendar()[-1]
+    saved = ((store.kv_get(TODAY_KEY) or {}).get("items") or {}).get(meta["id"])
+    if saved and saved.get("date") == last:
+        f = {"date": saved["date"], "horizons": saved["horizons"]}
+    else:
+        f = forecast(store, research, meta, live)
+    if not f:
+        return {"available": False, "reason": "not enough recent price history for a move-size forecast"}
+    out = {"available": True, "date": f["date"], "fitted": live.get("fitted"), "data_date": live.get("data_date"),
+           "validation": "SHAFFER_MOVE_SIZE.md (stage 3): QLIKE gain t 8.6 at 1D, 7.5 at 1W; 90% range covered 90.4% / 90.0% out of sample",
+           "horizons": {}}
+    for lab, hz in f["horizons"].items():
+        d = dict(hz)
+        pu = p_up(store, research, meta, lab)
+        d["p_up"] = pu["p_up"] if pu else None
+        d["p_up_source"] = pu["source"] if pu else "unavailable"
+        d["p_up_calibrated"] = bool(pu and pu["calibrated"])
+        out["horizons"][lab] = d
+    return out
+
+
+def live_markdown(view: dict, live: dict, n: int = 20) -> str:
+    L = [f"Move size (validated M3) — fitted {live.get('fitted')} on data to {live.get('data_date')}; forecasts for {view.get('date')}", ""]
+    for lab, _, _ in HORIZONS:
+        spec = (live.get("horizons") or {}).get(lab) or {}
+        items = sorted(((a, v["horizons"][lab]) for a, v in view.get("items", {}).items() if lab in v["horizons"]), key=lambda x: -x[1]["sigma"])
+        L += [f"{lab}: model {spec.get('model')} on {spec.get('records')} records; 90% range quantiles {spec.get('q')}", ""]
+        for a, x in items[:n]:
+            ev = ", ".join(e for e, on in (("macro next session", x.get("macro_next")), ("FOMC next session", x.get("fomc_next")),
+                                           ("earnings within 5 sessions", x.get("earn_soon_5d"))) if on)
+            L.append(f"  {a:<10} ±{x['move_pct']:.1%}  90% [{x['lo_pct']:+.1%}, {x['hi_pct']:+.1%}]  {ev}")
+        L.append("")
+    return "\n".join(L)
+
+
 def run(db_path: str, progress=None) -> Tuple[dict, dict]:
     from ..data.store import Store
     from .research import Research

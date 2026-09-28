@@ -385,6 +385,21 @@
     $$('[data-tk]').forEach(b => b.onclick = e => { e.stopPropagation(); openTicket(b.dataset.tk, 'BUY'); });
   };
 
+  // ---------------------------------------------------------------- short-term outlook: P(up) (prior-only) + move size (validated)
+  function outlookCard(o) {
+    const head = '<h2>Short-term outlook <small>direction · expected move · 90% range</small></h2>';
+    if (!o || !o.available) return head + `<div class="muted">${esc((o && o.reason) || 'unavailable')}</div>`;
+    const pc = v => v == null ? '—' : (v >= 0 ? '+' : '−') + Math.abs(100 * v).toFixed(1) + '%';
+    const cols = ['1D', '1W'].filter(h => o.horizons[h]).map(h => { const x = o.horizons[h];
+      const ev = [x.macro_next ? 'macro release next session' : '', x.fomc_next ? 'FOMC next session' : '', x.earn_soon_5d ? 'earnings within 5 sessions' : ''].filter(Boolean);
+      return `<div><div class="muted" style="font-weight:600">${h === '1D' ? 'Next day' : 'Next week'} (${h})</div>
+        <div class="kv"><span>P(up)</span><span><b>${x.p_up == null ? '—' : Math.round(100 * x.p_up) + '%'}</b>${x.p_up_calibrated ? '' : ' <span class="faint" title="' + esc(x.p_up_source) + '">uncalibrated</span>'}</span>
+        <span>Expected ${h} move</span><span><b>±${(100 * x.move_pct).toFixed(1)}%</b></span>
+        <span>90% range</span><span><b>${pc(x.lo_pct)} to ${pc(x.hi_pct)}</b></span>
+        <span>Scheduled events</span><span>${ev.length ? ev.map(e => `<span class="pill warn">${esc(e)}</span>`).join(' ') : '<span class="faint">none known</span>'}</span></div></div>`; }).join('');
+    return head + `<div class="grid g2">${cols}</div><div class="faint" style="margin-top:8px;font-size:12px">Move size: validated calendar + 8-K model (stage 3, SHAFFER_MOVE_SIZE.md), frozen fit ${esc(String(o.fitted || '').slice(0, 10))} on data to ${esc(o.data_date || '')}, inputs as of ${esc(o.date)}. Direction: the point-in-time prior-only model (no signal beats it at 1D–1W). Informational — not a trade signal.</div>`;
+  }
+
   // ---------------------------------------------------------------- asset research: the one-page answer for an asset
   pages.asset = async (main, args, alive) => {
     const id = args[0] || S.current;
@@ -401,7 +416,8 @@
         ${kpi('Regime', `<span style="font-size:15px">${esc(b.regime.description)}</span>`, Object.values(b.regime.labels).slice(3).join(' · '))}
         ${kpi('Your exposure', pos ? fmt.qty(pos.quantity) : 'none', pos ? `cost ${fmt.money(pos.cost)} · realised ${fmt.signed(pos.realized)}` : '<a href="#/portfolio/transactions">add a position →</a>')}
         ${kpi('ML models', b.ml ? `<span style="font-size:15px">trained</span>` : '<span style="font-size:15px">not trained</span>', b.ml ? `${esc(b.ml.trained_at || '')}` : `<a href="#/ml/forecasts/${encodeURIComponent(a.id)}">train them →</a>`)}</div>
-      <div class="card flush"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs)}</div>
+      <div class="card" id="arOutlook"><h2>Short-term outlook <small>direction · expected move · 90% range</small></h2><div class="muted">Loading…</div></div>
+      <div class="card flush" style="margin-top:16px"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs)}</div>
       <div class="grid g3" style="margin-top:16px">
         <div class="card"><h2>What matters right now <small>1D–1M</small></h2>${matters(b.what_matters_now)}</div>
         <div class="card"><h2>What matters long term <small>12M+</small></h2>${matters(b.what_matters_long)}</div>
@@ -410,6 +426,7 @@
       <div class="grid g-main" style="margin-top:16px"><div class="card"><h2>Price <small>daily close</small></h2><div id="arChart"></div></div>
         <div class="card flush"><h2>Signals today <small>standardised value · best horizon · evidence</small></h2><div id="arSig"></div></div></div>`;
     bindPicker('arPick', x => go('#/asset/' + encodeURIComponent(x)));
+    api('/fs2/asset/' + encodeURIComponent(a.id) + '/outlook').then(o => { if (alive() && $('#arOutlook')) $('#arOutlook').innerHTML = outlookCard(o); }).catch(() => { if ($('#arOutlook')) $('#arOutlook').innerHTML = '<h2>Short-term outlook</h2><div class="muted">unavailable</div>'; });
     if ($('#arTrade')) $('#arTrade').onclick = () => openTicket(a.id, 'BUY');
     lineChart($('#arChart'), [{ name: a.id, data: b.price_history.values, area: true }], { labels: b.price_history.dates.map(d => fmt.date(d)), fmtY: v => fmt.px(v), h: 280 });
     table($('#arSig'), b.current.filter(c => c.value != null), [

@@ -70,7 +70,10 @@ finsim2/
                          stock, nested depth / shrinkage, vs production on identical records; expected excess return,
                          90% range and P(beat SPY) by decile calibration (SHAFFER_ALPHA_HORIZONS_PROTOCOL.md)
     movesize.py          Directional 1D / 1W move size: volatility forecast with the event calendar and 8-K events,
-                         QLIKE walk-forward, calibrated 90% ranges (SHAFFER_MOVE_SIZE_PROTOCOL.md)
+                         QLIKE walk-forward, calibrated 90% ranges (SHAFFER_MOVE_SIZE_PROTOCOL.md). Live layer (in the
+                         app): the validated M3 fitted weekly on every matured record and frozen (kv `movesize:live`),
+                         today's forecasts for every asset (kv `movesize:today`), `asset_view` = the asset page's
+                         Short-term outlook (P(up) prior-only + expected move + 90% range, 1D and 1W)
     alphanext.py         Shaffer vNext Alpha: new PIT information on top of production, hierarchical ridge per horizon (1D–12M),
                          cross-sectional gates + FDR, SHAFFER_ALPHA_VNEXT.md
     dirnext.py           Shaffer vNext Directional: logistic challengers vs the prior-only model (1D/1W; 1M only if one passes),
@@ -236,6 +239,12 @@ The direction, volatility and drawdown models are fitted separately (`_simple_wf
 
 Final models go to kv `mlmodels:{asset}`. `forecast_today` uses them. `server.App.daily_learning` runs after each
 full refresh; it forecasts every day and retrains monthly.
+
+`daily_learning` also keeps the move-size layer current: it refits the validated move-size model when the frozen
+fit is missing or its data is a week old (`movesize.due`), then writes today's 1D / 1W forecasts for every asset.
+The asset page reads them from `GET /api/fs2/asset/{id}/outlook`. P(up) next to them is the frozen prior-only
+Directional model (`lab:directional:live`). If that model has not been fitted, the page shows the point-in-time
+prior Φ(μ/σ) and labels it uncalibrated.
 
 `scores.agreement` compares Shaffer with ML, but only when the ML edge is verified. The combined score
 α·SS + (1 − α)·ML is evaluated only in the audit: α is chosen on the first half of the common out-of-sample period
