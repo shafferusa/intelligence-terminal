@@ -352,6 +352,8 @@ def main(argv=None) -> int:
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
     lb.add_argument("--alpha-shadow", choices=["status", "record"], help="the 1M Alpha challenger in live shadow (research only, "
                     "SHAFFER_ALPHA_1M_SHADOW_PROTOCOL.md): its live evidence, or record this week's panel now")
+    lb.add_argument("--iv", action="store_true", help="implied volatility and futures curves: batch-iv families + move-size IV study "
+                    "(SHAFFER_IV_PROTOCOL.md)")
     lb.add_argument("--move-size", action="store_true", help="stage 3: how big the next 1D / 1W move will be (SHAFFER_MOVE_SIZE_PROTOCOL.md)")
     lb.add_argument("--event-hedge", action="store_true", help="stage 4: does the event-calendar volatility forecast improve Shaffer Hedge outcomes? (SHAFFER_EVENT_HEDGE_PROTOCOL.md)")
     lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
@@ -563,6 +565,15 @@ def main(argv=None) -> int:
             print(ahzlive.markdown(ahzlive.summary(st)))
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and args.iv:
+        from .engine import ivstudy, newinfo
+        fam = newinfo.run_all(app.db_path(), workers=args.workers, progress=print, families=newinfo.BATCH_IV, key=newinfo.IV_KEY)
+        ms = ivstudy.run(app.db_path(), progress=print)
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_IV_RESEARCH.md")
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(ivstudy.report(ms, fam))
+        print(f"implied-volatility research: {fam['seconds']}s families; wrote", out)
         return 0
     if args.cmd == "lab" and args.move_size:
         from .engine import movesize

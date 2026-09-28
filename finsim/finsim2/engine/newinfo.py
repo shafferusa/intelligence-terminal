@@ -130,15 +130,47 @@ FAMILIES: Dict[str, dict] = {
         "label": "Crypto funding and basis", "tier": 2, "track": "limited", "wide": False, "batch": 2,
         "source": "Deribit perpetual funding, CME futures vs spot (Yahoo)", "pit": "UTC day, used from the next day",
         "quality": "medium (CME settles 16:00 New York, spot at midnight UTC)", "features": ["funding_7d", "funding_z", "cme_basis_5d"]},
+    # ---- batch iv (2026-09-28): implied volatility and futures curves; own FDR (SHAFFER_IV_PROTOCOL.md)
+    "iv_index": {
+        "label": "Own implied volatility (Cboe indices on FRED)", "tier": 1, "track": "historical", "wide": False, "batch": "iv",
+        "source": "FRED Cboe volatility indices mapped by candidates.OWN_IV (VIX, VXN, RVX, VXD, GVZ, OVX, VXEEM, VXEWZ, 5 stocks)",
+        "pit": "daily close, used from the next day", "quality": "high (Cboe's own index methodology)", "retest": True,
+        "features": ["iv_rv_log", "iv_z", "iv_chg_5d"]},
+    "vol_term": {
+        "label": "VIX term structure (FRED)", "tier": 1, "track": "historical", "wide": True, "batch": "iv",
+        "source": "FRED VIXCLS / VXVCLS (2007-12 →)", "pit": "daily close, used from the next day", "quality": "high", "retest": True,
+        "features": ["vix_vix3m_log", "d_vix_vix3m_21d"]},
+    "vol_cboe": {
+        "label": "VIX9D, VVIX, SKEW (Cboe CSVs)", "tier": 1, "track": "historical", "wide": True, "batch": "iv",
+        "source": "Cboe daily history CSVs (data/cboe.py; VIX9D 2011 →, VVIX 2007 →, SKEW 1990 →)",
+        "pit": "daily close, used from the next day", "quality": "high", "features": ["vix9d_vix_log", "vvix_z", "skew_z"]},
+    "iv_chain": {
+        "label": "Option-chain features (free 2008–2025 dump)", "tier": 1, "track": "historical", "wide": False, "batch": "iv",
+        "source": "historical chains imported by data/optionsdump.py -> options_hist", "pit": "session close, used from the next day",
+        "quality": "depends on the dump's quality gate (SHAFFER_IV_PROTOCOL.md)",
+        "features": ["chain_iv_rv_log", "chain_skew25", "chain_term", "chain_pc_oi"]},
+    "iv_snapshot": {
+        "label": "Option-chain features (daily Cboe snapshots)", "tier": 1, "track": "limited", "wide": False, "batch": "iv",
+        "source": "Cboe delayed quotes (data/cboe.py -> options_cboe), from 2026-09-28", "pit": "after the close, used from the next day",
+        "quality": "high (delayed quotes, FinSim2's own IV interpolation)",
+        "features": ["chain_iv_rv_log", "chain_skew25", "chain_term", "chain_pc_oi"]},
+    "futures_curve": {
+        "label": "Futures-curve roll yield", "tier": 1, "track": "historical", "wide": False, "batch": "iv",
+        "source": "EIA NYMEX contracts 1–4 (WTI 1983 →, natural gas 1994 →, to 2024-04-05) + Yahoo contract months (2026-09 →)",
+        "pit": "settlement, used from the next day", "quality": "high (exchange settlements); April 2024 – September 2026 gap",
+        "features": ["roll_1_2", "roll_1_4", "roll_chg_21d"]},
 }
 BATCH2 = [f for f, v in FAMILIES.items() if v.get("batch") == 2]
+BATCH_IV = [f for f, v in FAMILIES.items() if v.get("batch") == "iv"]
+IV_KEY = "lab:newinfo:iv"
+CHAIN_DATASETS = {"iv_chain": "options_hist", "iv_snapshot": "options_cboe"}
 BLOCKED = [
     {"family": "analyst_revisions", "label": "Analyst expectations / revisions", "tier": 1,
      "reason": "no point-in-time estimate history on the available tiers (Finnhub estimates / revisions 403; Alpha Vantage 25 requests a day)"},
     {"family": "options_surface", "label": "Option surface / skew", "tier": 1,
-     "reason": "no historical chains (Yahoo options needs authentication; Cboe chain statistics retired); pricing stays MODEL-PRICED — FLAT VOLATILITY ASSUMPTION"},
+     "reason": "no historical chains (Yahoo options needs authentication; Cboe chain statistics retired); pricing stays MODEL-PRICED — FLAT VOLATILITY ASSUMPTION. Since 2026-09-28 tested in batch iv (SHAFFER_IV_PROTOCOL.md)"},
     {"family": "futures_curves", "label": "Dated futures curves", "tier": 1,
-     "reason": "only unexpired contracts are downloadable, so past curves cannot be rebuilt"},
+     "reason": "only unexpired contracts are downloadable, so past curves cannot be rebuilt. Since 2026-09-28: EIA contracts 1–4 to April 2024, tested in batch iv"},
     {"family": "short_interest", "label": "Short interest", "tier": 1, "reason": "only the last year is available (Nasdaq)"},
     {"family": "credit_oas_cds", "label": "IG / HY OAS history, CDS, CDX, ratings", "tier": 1,
      "reason": "ICE OAS on FRED is limited to 3 years; no free CDS / ratings source"},
@@ -172,6 +204,13 @@ def applies(family: str, meta: dict) -> bool:
         return a in INVENTORY
     if family == "crypto_derivs":
         return a in CRYPTO_UNDERLYING
+    if family == "iv_index":
+        from .candidates import OWN_IV
+        return a in OWN_IV
+    if family in CHAIN_DATASETS:
+        return cls in ("EQUITY", "ETF", "INDEX")
+    if family == "futures_curve":
+        return a in CURVE_OF
     return True                                            # market-wide macro families / the event calendar
 
 
@@ -179,6 +218,13 @@ def applies(family: str, meta: dict) -> bool:
 INVENTORY = {"WTI": "crude_stocks", "BRENT": "crude_stocks", "USO": "crude_stocks", "XLE": "crude_stocks",
              "NATGAS": "natgas_storage", "UNG": "natgas_storage"}
 CRYPTO_UNDERLYING = {"BTC": "BTC", "ETH": "ETH", "SOL": "SOL", "IBIT": "BTC", "BITO": "BTC"}
+
+def _curve_of() -> Dict[str, str]:
+    from ..data.futcurve import LINKS
+    return {a: root for root, assets in LINKS.items() for a in assets}
+
+
+CURVE_OF = _curve_of()                                     # asset -> futures-curve root (data/futcurve.py)
 
 
 # ------------------------------------------------------------------ small series helpers (all backward-looking)
@@ -629,6 +675,107 @@ class Builder:
             return [pre.window(i, w)[1] if pre.window(i, w)[0] and pre.window(i, w)[0] >= w // 2 else None for i in range(self.n)]
         f7 = mean(fd, 5)
         return {"funding_7d": f7, "funding_z": _roll_z(f7, 63, 40), "cme_basis_5d": mean(bs, 5)}
+
+    # ---- batch iv: implied volatility and futures curves (SHAFFER_IV_PROTOCOL.md)
+    def _iv_series(self, sid: str) -> Series:
+        """A volatility index as known each day; never carried more than a week past its last value."""
+        key = f"_iv:{sid}"
+        if key not in self._macro:
+            try:
+                self._macro[key] = self.panel.macro(sid, max_age_days=7)
+            except Exception:  # noqa: BLE001
+                self._macro[key] = [None] * self.n
+        return self._macro[key]
+
+    def rv21(self, a: str) -> Series:
+        """Annualised RMS of the last 21 daily log returns (≥ 15 present)."""
+        key = f"_rv21:{a}"
+        if key not in self._wide:
+            self._wide[key] = self._rv21(a)
+        return self._wide[key]
+
+    def _rv21(self, a: str) -> Series:
+        r = _logret(self.series(a))
+        out: Series = [None] * self.n
+        for i in range(21, self.n):
+            seg = [x for x in r[i - 20:i + 1] if x is not None]
+            if len(seg) >= 15:
+                v = math.sqrt(sum(x * x for x in seg) / len(seg) * 252)
+                out[i] = v if v > 0 else None
+        return out
+
+    def log_iv(self, a: str) -> Series:
+        from .candidates import OWN_IV
+        iv = self._iv_series(OWN_IV[a]) if a in OWN_IV else [None] * self.n
+        return [math.log(v / 100.0) if v and v > 0 else None for v in iv]
+
+    def iv_index(self, a: str) -> Dict[str, Series]:
+        liv, rv = self.log_iv(a), self.rv21(a)
+        return {"iv_rv_log": _combine(liv, rv, lambda x, y: x - math.log(y)), "iv_z": _roll_z(liv), "iv_chg_5d": _lag_diff(liv, 5)}
+
+    def vol_term(self) -> Dict[str, Series]:
+        r = _combine(self._iv_series("VIXCLS"), self._iv_series("VXVCLS"), lambda v, w: math.log(v / w) if v > 0 and w > 0 else None)
+        return {"vix_vix3m_log": r, "d_vix_vix3m_21d": _lag_diff(r, 21)}
+
+    def vol_cboe(self) -> Dict[str, Series]:
+        vix = self._iv_series("VIXCLS")
+        v9 = self._iv_series("CBOE_VIX9D")
+        vv = [math.log(v) if v and v > 0 else None for v in self._iv_series("CBOE_VVIX")]
+        return {"vix9d_vix_log": _combine(v9, vix, lambda a, b: math.log(a / b) if a > 0 and b > 0 else None),
+                "vvix_z": _roll_z(vv), "skew_z": _roll_z(self._iv_series("CBOE_SKEW"))}
+
+    def _chain(self, ds: str, a: str) -> Dict[str, Series]:
+        """Per-session option features visible from their publication day (held at most 5 sessions)."""
+        by: Dict[str, Dict[str, float]] = {}
+        pub: Dict[str, str] = {}
+        for _, d, f, v, p in self.store.alt(ds, a):
+            if v is not None:
+                by.setdefault(d, {})[f] = v
+                pub[d] = str(p)[:10]
+        out = {}
+        for fld in ("iv30", "iv90", "skew25", "put_oi", "call_oi"):
+            out[fld] = _hold(sorted((pub[d], x[fld]) for d, x in by.items() if fld in x), self.cal, 5)
+        return out
+
+    def chain_features(self, ds: str, a: str) -> Dict[str, Series]:
+        c, rv = self._chain(ds, a), self.rv21(a)
+        liv = [math.log(v) if v and v > 0 else None for v in c["iv30"]]
+        return {"chain_iv_rv_log": _combine(liv, rv, lambda x, y: x - math.log(y)), "chain_skew25": c["skew25"],
+                "chain_term": _combine(c["iv90"], c["iv30"], lambda x, y: math.log(x / y) if x > 0 and y > 0 else None),
+                "chain_pc_oi": _combine(c["put_oi"], c["call_oi"], lambda p, q: math.log((p + 1.0) / (q + 1.0))), "log_iv30": liv}
+
+    def iv_chain(self, a: str) -> Dict[str, Series]:
+        return self.chain_features(CHAIN_DATASETS["iv_chain"], a)
+
+    def iv_snapshot(self, a: str) -> Dict[str, Series]:
+        return self.chain_features(CHAIN_DATASETS["iv_snapshot"], a)
+
+    def futures_curve(self, a: str) -> Dict[str, Series]:
+        from ..data.futcurve import DATASET
+        root = CURVE_OF[a]
+        key = f"_curve:{root}"
+        if key not in self._wide:
+            by: Dict[str, Dict[str, float]] = {}
+            pub: Dict[str, str] = {}
+            for _, d, f, v, p in self.store.alt(DATASET, f"fut:{root}"):
+                if v is not None:
+                    by.setdefault(d, {})[f] = v
+                    pub[d] = str(p)[:10]
+
+            def months(x, n):
+                y0, yn = x.get("c1_ym"), x.get(f"c{n}_ym")
+                if y0 and yn:
+                    m = (int(yn) // 100 - int(y0) // 100) * 12 + int(yn) % 100 - int(y0) % 100
+                    return m if m > 0 else None
+                return n - 1                                   # EIA: consecutive monthly contracts
+
+            def roll(x, n):
+                c1, cn, m = x.get("c1"), x.get(f"c{n}"), months(x, n)
+                return math.log(c1 / cn) * 12.0 / m if c1 and cn and c1 > 0 and cn > 0 and m else None
+            r12 = _hold(sorted((pub[d], v) for d, x in by.items() if (v := roll(x, 2)) is not None), self.cal, 5)
+            r14 = _hold(sorted((pub[d], v) for d, x in by.items() if (v := roll(x, 4)) is not None), self.cal, 5)
+            self._wide[key] = {"roll_1_2": r12, "roll_1_4": r14, "roll_chg_21d": _lag_diff(r12, 21)}
+        return self._wide[key]
 
     def features(self, family: str, meta: dict) -> Optional[Dict[str, Series]]:
         if not applies(family, meta):
