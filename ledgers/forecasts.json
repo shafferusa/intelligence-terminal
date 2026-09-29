@@ -3985,6 +3985,36 @@
    "probability": "50-65%",
    "basis": "Book reportedly ~4x covered; market off highs.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-29-pm-1",
+   "date": "2026-09-29",
+   "slot": "pm",
+   "forecast": "CME FedWatch-implied probability of an Oct 28 hike is below 50% at Friday Oct 2 close (after payrolls).",
+   "horizon": "2026-10-02",
+   "probability": "35-50%",
+   "basis": "Williams 'no urgency' took odds to ~50% (Seeking Alpha); Barr hawkish; PCE and payrolls still to come, core PCE nowcast 0.27% m/m.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-29-pm-2",
+   "date": "2026-09-29",
+   "slot": "pm",
+   "forecast": "30-year Treasury par yield closes at or above 5.65% on at least one day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "25-35%",
+   "basis": "30Y 5.59% close, intraday ~5.61%; long end rising on term premium independent of oil and Fed timing; needs +6bp in 3 sessions.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-29-pm-3",
+   "date": "2026-09-29",
+   "slot": "pm",
+   "forecast": "Front-month Brent settles below $100 on at least one day through Oct 2.",
+   "horizon": "2026-10-02",
+   "probability": "30-40%",
+   "basis": "Brent $102.59 after two-day fade on Saudi Red Sea exports and SPR exchange; Iran reply pending and infrastructure threats keep upside risk.",
+   "status": "open"
   }
  ]
 }

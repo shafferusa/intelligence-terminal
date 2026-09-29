@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Tue, Sep 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-09-29",
+  "slot": "pm",
+  "title": "Williams Cools October Hike Bets as the 10-Year Closes at 5.26% and Oil Slides",
+  "path": "reports/2026/09/2026-09-29-pm.html",
+  "summary": "New York Fed President Williams said there is no urgency to hike again and October odds fell toward even, but the 10-year Treasury closed at 5.26% and the 30-year touched a 24-year high. Oil fell for a second day, stocks slipped less than 0.4%, Fair Isaac lost a quarter of its value and Oura shelved its IPO.",
+  "headlines": [
+    "Fed's Williams: \"no need for urgency\" on next hike; October odds slip toward 50% even as Barr stays hawkish",
+    "10-year closes 5.26%, 30-year hits highest since 2002; S&P −0.17%, Brent −2.6% to $102.59",
+    "Fair Isaac −26.5% on FHFA credit-score shift; Carnival +13%; Oura postpones IPO"
+  ],
+  "reading_minutes": 31,
+  "generated_at": "2026-09-29T17:40:00-04:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Closing Brief</h1>
+      <p class="paper-dateline">
+        Tuesday, September 29, 2026 <span class="sep">&middot;</span> 31 min read
+      </p>
+      <p class="paper-standfirst">
+        New York Fed President Williams said there is no urgency to raise rates again, and bets on an October hike fell toward even. But the 10-year Treasury still closed at 5.26%, the 30-year touched its highest yield since 2002, and oil fell for a second day. Stocks barely moved at the index level. Fair Isaac had its worst day in decades, and Oura shelved its IPO.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> The major indexes fell slightly after a midday dip and a late recovery:
+            <ul>
+              <li>S&amp;P 500: &minus;0.17%, to 7,670.84</li>
+              <li>Nasdaq Composite: &minus;0.09%, to 26,797.54</li>
+              <li>Dow: &minus;0.26%, to 51,349.92</li>
+              <li>Russell 2000: &minus;0.35%</li>
+            </ul>
+            Underneath, single stocks moved a lot. Fair Isaac fell 26.5%, Carnival rose 13.4%, Apple fell 2.7% and Meta rose 3.2%.</li>
+          <li><b>The Fed.</b> Two officials spoke, and they leaned different ways:
+            <ul>
+              <li>Governor Barr, at midday: &ldquo;further policy adjustments are likely to be needed.&rdquo;</li>
+              <li>New York Fed President Williams, at 2 PM: one more hike &ldquo;may be appropriate late this year,&rdquo; but &ldquo;there is no need for urgency.&rdquo;</li>
+            </ul>
+            Seeking Alpha reported that futures-implied odds of an October hike fell to just over 50%, from about 70%. We could not confirm the closing figure.</li>
+          <li><b>Rates.</b> The front end of the curve rallied and the long end did not. On Treasury&rsquo;s own curve:
+            <ul>
+              <li>2-year: 4.89%, down 3bp</li>
+              <li>10-year: 5.26%, up 2bp. That is the highest close of this selloff and above the 5.25% line this paper has been watching.</li>
+              <li>30-year: 5.59%. It touched about 5.61% intraday, which MarketScreener and Bloomberg put at the highest since 2002.</li>
+            </ul></li>
+          <li><b>Oil.</b> Crude fell for a second day as Saudi Red Sea exports recovered. CNBC reported:
+            <ul>
+              <li>Brent: &minus;2.6%, to $102.59</li>
+              <li>WTI: &minus;3.5%, to $89.38</li>
+            </ul>
+            Gold rose about 0.9%, to about $4,207.</li>
+          <li><b>The world.</b> Iran expected Washington&rsquo;s reply on its Hormuz plan by today. We found no report that it had arrived. Trump said he had offered Tehran &ldquo;NOTHING.&rdquo;</li>
+          <li><b>Tomorrow.</b> Starting at 8:30 AM: August PCE inflation, the third estimate of second-quarter GDP with its annual revision, and quarter-end. Micron reports after the close.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Sep 29, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Sept 29, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>764.20</td><td class="down">&minus;1.41</td><td class="down">&minus;0.18%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 779.37</span><span class="range-bar" style="--pos:90"><i></i></span></td>
+                <td>35M</td><td>44M</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>303.83</td><td class="up">+0.54</td><td class="up">+0.18%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 308.21</span><span class="range-bar" style="--pos:94"><i></i></span></td>
+                <td>1.9M</td><td>2.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>512.88</td><td class="down">&minus;1.14</td><td class="down">&minus;0.22%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:65"><i></i></span></td>
+                <td>2.5M</td><td>3.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>279.01</td><td class="down">&minus;1.01</td><td class="down">&minus;0.36%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:66"><i></i></span></td>
+                <td>21M</td><td>21M</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>71.39</td><td class="down">&minus;0.13</td><td class="down">&minus;0.18%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 73.46</span><span class="range-bar" style="--pos:89"><i></i></span></td>
+                <td>6.2M</td><td>4.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>209.50</td><td class="down">&minus;0.24</td><td class="down">&minus;0.11%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:66"><i></i></span></td>
+                <td>6.4M</td><td>7.2M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>606.90</td><td class="up">+6.89</td><td class="up">+1.15%</td>
+                <td class="range-cell"><span class="range-nums">315.05 &ndash; 671.83</span><span class="range-bar" style="--pos:82"><i></i></span></td>
+                <td>5.5M</td><td>9.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>194.50</td><td class="down">&minus;0.03</td><td class="down">&minus;0.02%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 198.73</span><span class="range-bar" style="--pos:94"><i></i></span></td>
+                <td>6.1M</td><td>7.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>54.01</td><td class="down">&minus;0.18</td><td class="down">&minus;0.33%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:58"><i></i></span></td>
+                <td>53M</td><td>33M</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>69.83</td><td class="down">&minus;0.72</td><td class="down">&minus;1.02%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:59"><i></i></span></td>
+                <td>20M</td><td>13M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>61.54</td><td class="down">&minus;0.56</td><td class="down">&minus;0.90%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:81"><i></i></span></td>
+                <td>31M</td><td>30M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.25%</td><td class="down">&minus;3bp</td><td class="flat">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td>
+                <td>5.26%</td><td class="up">+2bp</td><td class="flat">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>78.23</td><td class="down">&minus;0.39</td><td class="down">&minus;0.50%</td>
+                <td class="range-cell"><span class="range-nums">77.84 &ndash; 92.19</span><span class="range-bar" style="--pos:3"><i></i></span></td>
+                <td>75M</td><td>32M</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>89.45</td><td class="down">&minus;0.08</td><td class="down">&minus;0.09%</td>
+                <td class="range-cell"><span class="range-nums">89.19 &ndash; 98.05</span><span class="range-bar" style="--pos:3"><i></i></span></td>
+                <td>13M</td><td>7.6M</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>104.01</td><td class="down">&minus;0.08</td><td class="down">&minus;0.08%</td>
+                <td class="range-cell"><span class="range-nums">103.85 &ndash; 112.24</span><span class="range-bar" style="--pos:2"><i></i></span></td>
+                <td>3.5M</td><td>1.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>102.41</td><td class="down">&minus;0.06</td><td class="down">&minus;0.06%</td>
+                <td class="range-cell"><span class="range-nums">102.05 &ndash; 112.93</span><span class="range-bar" style="--pos:3"><i></i></span></td>
+                <td>54M</td><td>29M</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>77.36</td><td class="down">&minus;0.18</td><td class="down">&minus;0.23%</td>
+                <td class="range-cell"><span class="range-nums">77.16 &ndash; 81.33</span><span class="range-bar" style="--pos:5"><i></i></span></td>
+                <td>149M</td><td>37M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>382.89</td><td class="up">+4.98</td><td class="up">+1.32%</td>
+                <td class="range-cell"><span class="range-nums">350.87 &ndash; 509.70</span><span class="range-bar" style="--pos:20"><i></i></span></td>
+                <td>7.7M</td><td>9.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>143.35</td><td class="down">&minus;6.66</td><td class="down">&minus;4.44%</td>
+                <td class="range-cell"><span class="range-nums">65.99 &ndash; 163.35</span><span class="range-bar" style="--pos:79"><i></i></span></td>
+                <td>7.0M</td><td>6.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>101.43</td><td class="up">+0.23</td><td class="up">+0.23%</td>
+                <td class="range-cell"><span class="range-nums">95.55 &ndash; 101.80</span><span class="range-bar" style="--pos:94"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>16.04</td><td class="down">&minus;0.03</td><td class="down">&minus;0.19%</td>
+                <td class="range-cell"><span class="range-nums">13.38 &ndash; 35.30</span><span class="range-bar" style="--pos:12"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>67.40</td><td class="up">+0.20</td><td class="up">+0.30%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:79"><i></i></span></td>
+                <td>13M</td><td>21M</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>87.85</td><td class="down">&minus;0.53</td><td class="down">&minus;0.60%</td>
+                <td class="range-cell"><span class="range-nums">77.87 &ndash; 93.29</span><span class="range-bar" style="--pos:65"><i></i></span></td>
+                <td>3.9M</td><td>2.0M</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>36.97</td><td class="up">+0.11</td><td class="up">+0.30%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.96</span><span class="range-bar" style="--pos:37"><i></i></span></td>
+                <td>1.1M</td><td>1.8M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="board-note">Closes from Yahoo Finance (single-venue, free tier), with a Twelve Data spot-check. Average volume is the three-month average. US3M and US10Y come from the Treasury par-yield curve, with changes in basis points. DXY and VIX are index levels. BTC is the Grayscale Bitcoin Mini Trust ETF.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Williams says there is &ldquo;no need for urgency,&rdquo; and October hike bets fall toward a coin flip, but the 10-year still closes at 5.26%</h3>
+          <p class="story-deck">The New York Fed president, the committee&rsquo;s permanent voter and usually its centre, pushed the next hike toward late in the year. Short-term yields fell. Long-term yields rose anyway, so the long end is worried about something other than the next Fed meeting.</p>
+          <div class="story-body">
+            <p>John Williams spoke at 2 PM in Buffalo. In his prepared remarks, as reported by Bloomberg and Reuters, he said: &ldquo;If the economy evolves in a manner broadly consistent with my forecast, one further upward adjustment of the federal funds target range may be appropriate late this year to support a timelier return of inflation to target.&rdquo; He then added: &ldquo;With the policy action we took at our September meeting, there is no need for urgency, and we have time to gather more information.&rdquo; The quotes come from the two wire services, which agree word for word.</p>
+            <p>Governor Michael Barr had spoken earlier. His text on the Board&rsquo;s website was read directly for this edition, and it was plainly more hawkish. &ldquo;In my base case, further policy adjustments are likely to be needed to ensure inflation comes down to target in a timely fashion.&rdquo; He counted &ldquo;only two months of data consistent with 2 percent core PCE inflation over the past 20 months.&rdquo; He described the labour market as &ldquo;in rough balance,&rdquo; with job growth averaging around 80,000 a month.</p>
+            <p>The two do not strictly disagree. Both expect another hike. The difference is timing, and in the market timing is what counts. Seeking Alpha reported that the futures-implied probability of an October 28 hike fell to just over 50% after Williams, from about 70% on Monday. We could not confirm the closing CME FedWatch figure. <span class="chip chip--info">Likely contributor</span> The 2-year yield peaked near 4.96% before Williams spoke and fell back to about 4.88% afterwards, according to a market report. Treasury&rsquo;s official close was 4.89%, down 3bp on the day.</p>
+            <p>The long end went the other way. The 10-year par yield closed at 5.26%, up 2bp, and the 20-year at 5.64%. The 30-year closed at 5.59%, after trading as high as about 5.61% intraday, its highest since June 2002 according to MarketScreener and a Bloomberg headline. As a result, the gap between the 2-year and 10-year yields widened to 37bp from 32bp. Oil fell more than 2% on the day. On Monday, the latest FRED data show, the whole rise in the 10-year came through the real yield (2.83% to 2.90%), while the 10-year breakeven was unchanged at 2.34%. That points to a higher term premium: the extra return investors demand for holding long bonds.</p>
+            <p>Stocks barely registered any of this. The S&amp;P 500 opened at about 7,700 and fell to a session low near 7,654 around 1 PM. It recovered after Williams spoke and closed down 0.17%. The VIX finished at 16.04, almost unchanged.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The Fed can ease its tone and the long end can still sell off. A falling front end with a rising long end is the version of higher rates that hurts housing and anyone refinancing long-term debt, and a patient Fed does not relieve it. The 10-year has now closed above 5.25%, one of the two lines this paper named on Monday as a threat to the equity market&rsquo;s calm. The other, high-yield spreads above 3%, was crossed on Monday.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              August PCE at 8:30 AM Wednesday. The Cleveland Fed&rsquo;s nowcast puts core PCE at about 0.27% for the month and 3.4% over the year, and a single consensus preview has 0.3%. A print of 0.3% or more would undercut Williams&rsquo;s patience. Then ISM on Thursday and payrolls on Friday.
+            </div>
+          </div>
+          <p class="story-sourceline">Federal Reserve Board (Barr speech text, primary) &middot; Bloomberg and Reuters (Williams remarks) &middot; US Treasury par-yield curve and FRED (primary data) &middot; Seeking Alpha (hike odds; single source for the number) &middot; MarketScreener, Bloomberg (30-year intraday).</p>
+        </article>
+
+        <article class="story">
+          <h3>Oil falls for a second day as Saudi Red Sea exports recover; Brent holds above $100</h3>
+          <p class="story-deck">The Saudi pipeline that bypasses Hormuz is running again, and the Energy Department is offering another 40 million barrels from the strategic reserve.</p>
+          <div class="story-body">
+            <p>CNBC reported Brent down 2.6% at $102.59 and WTI down about 3.5% at $89.38. The November contracts on Yahoo agree to within a few cents. Over two sessions Brent has now fallen from Monday&rsquo;s intraday high of $108.83. <span class="chip chip--info">Likely contributor</span> CNBC tied the fall to recovering crude exports from Saudi Arabia&rsquo;s Red Sea ports, as the East-West pipeline runs at about 3.5 million barrels a day. Saudi Aramco has not published a figure. The Energy Department separately issued a request for proposals for a 40-million-barrel exchange from the Strategic Petroleum Reserve&rsquo;s Big Hill and Bryan Mound sites, for November&ndash;December delivery. It is part of the previously announced 172-million-barrel release.</p>
+            <p>The United States oil fund (USO) fell 4.4% and the energy sector fund (XLE) fell 0.9%. CNN, citing Kpler, reported that flows through Hormuz last week were about 13.1 million barrels a day, roughly 80% of pre-war levels. The diplomatic track has not moved (see The World).</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Oil is the main inflation input the Fed has cited all month, and today Brent sits $6 below Monday&rsquo;s high. The risk runs both ways. Iran&rsquo;s negotiator warned today that &ldquo;no infrastructure will remain safe&rdquo; without security guarantees. A strike on the pipeline would reverse all of this within a day.
+            </div>
+          </div>
+          <p class="story-sourceline">CNBC (settlements, Saudi exports) &middot; US Department of Energy (SPR exchange, primary) &middot; CNN/Kpler (Hormuz flows) &middot; Yahoo Finance (contract closes).</p>
+        </article>
+
+        <article class="story">
+          <h3>Fair Isaac falls 26.5% as Fannie and Freddie move to a pricing grid that includes VantageScore</h3>
+          <p class="story-deck">This morning&rsquo;s 18% drop deepened through the day. FICO&rsquo;s hold on mortgage underwriting is the heart of its pricing power, and that is what the market is now marking down.</p>
+          <div class="story-body">
+            <p>Shares closed at $617.87, down $223.02, on about 4.9 million shares, roughly twelve times the normal volume. <span class="chip chip--info">Confirmed catalyst</span> FHFA Director Bill Pulte said late Monday on X that Fannie Mae and Freddie Mac will move to a single loan-pricing grid that includes VantageScore. Rocket Mortgage said it will accept VantageScore. Until now, FICO&rsquo;s classic score has been effectively required on loans the two agencies buy. That is the source of the royalty increases FICO has pushed through in recent years. The stock is now 69% below its 52-week high of $1,998. One report said it was FICO&rsquo;s worst day since 1989. That comparison is single-sourced.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The implementation details are not yet public: the timing, and whether lenders may choose either score. They will decide how much of FICO&rsquo;s mortgage revenue is really at risk.
+            </div>
+          </div>
+          <p class="story-sourceline">FHFA Director&rsquo;s public statement via Yahoo Finance, Motley Fool and MarketScreener &middot; Yahoo Finance (close and volume).</p>
+        </article>
+
+        <article class="story">
+          <h3>Carnival closes up 13.4% after a record quarter and a higher outlook</h3>
+          <p class="story-deck">Its gain widened through the day. It was the one clear consumer bright spot on the day confidence hit a 12-year low.</p>
+          <div class="story-body">
+            <p>Carnival reported third-quarter adjusted earnings of $1.43 a share on record revenue of $8.43 billion, according to its 8-K filed this morning. It raised its full-year adjusted EPS guidance to $2.24 and reported record booked occupancy and pricing for 2027. The shares closed at $25.11, up $2.97, on 75 million shares, 3.7 times the normal volume. <span class="chip chip--info">Confirmed catalyst</span> The rise followed the filing directly. As this morning&rsquo;s edition noted, Carnival is the only large cruise line that does not hedge fuel. Oil&rsquo;s two-day fall helps it more than any rival.</p>
+          </div>
+          <p class="story-sourceline">Carnival Corporation 8-K (SEC EDGAR, primary) &middot; GuruFocus, Investing.com &middot; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Oura shelves its $2.2 billion IPO, the third big postponement as the listing window narrows</h3>
+          <p class="story-deck">The smart-ring maker reportedly had about four times as many orders as shares, and it still pulled the deal, citing uncertainty in the IPO market.</p>
+          <div class="story-body">
+            <p>Oura had planned to sell 50 million shares at $40&ndash;44 on Nasdaq and to price tonight. CNBC, Bloomberg and The Information report that it has postponed, citing &ldquo;uncertainty in the IPO market.&rdquo; CNBC counts it as the third large deal to be delayed recently, after Holtec and Bamboo.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+
+              When an issuer walks away from an oversubscribed book, it usually could not get the price it wanted. The OpenAI and Anthropic listings being discussed would face the same window.
+            </div>
+          </div>
+          <p class="story-sourceline">CNBC, Bloomberg, The Information, IPOScoop.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p><strong>The open.</strong> The S&amp;P opened at about 7,700, above Monday&rsquo;s close, then faded to about 7,676 by 10:00. The 10:00 confidence and job-openings misses nudged short yields lower, but this morning&rsquo;s edition found no measurable shift in Fed pricing right after them.</p>
+        <p><strong>Morning and midday.</strong> Stocks slid after 11:00 and reached a low near 7,654 between 1:00 and 1:30. Barr&rsquo;s speech was released at 12:40. <span class="chip chip--info">Market narrative</span> Market wraps from CNBC and TheStreet named rising Treasury yields and weaker banks as the pressure. Banks did fall (KRE &minus;1.0%, BAC &minus;0.9%). Barr&rsquo;s hawkish text was published during the slide, but there is no evidence it moved prices.</p>
+        <p><strong>Afternoon.</strong> <span class="chip chip--info">Likely contributor</span> Stocks recovered from about 2:00 to about 7,682 by 2:30&ndash;3:00. That coincided with Williams&rsquo;s remarks and the fall in the 2-year yield that followed. CNBC&rsquo;s summary said stocks &ldquo;pared losses late day&rdquo; after them. Waller&rsquo;s 3:00 PM speech was about payments, not policy.</p>
+        <p><strong>The close.</strong> Stocks drifted into the close and finished down 0.1&ndash;0.35%. Quarter-end flows showed up in the bond funds: HYG, TLT and LQD each traded about two to four times their normal volume.
+          <span class="chip chip--info">Unexplained</span> Apple&rsquo;s 2.7% fall and Meta&rsquo;s 3.2% rise had no company news that we could find, and we are not assigning either a cause. The two cancelled each other out, and MAGS finished down 0.2%.</p>
+        <p><strong>Breadth and style.</strong> Equal-weight RSP (&minus;0.11%) edged out SPY (&minus;0.18%), and small caps (IWM &minus;0.36%) lagged. Semiconductors (SMH +1.15%) and utilities (XLU +1.17%) led, the latter despite rising long yields.
+          The VIX term structure is still in normal upward slope: 9-day 14.21, 30-day 16.04, 3-month 18.09.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="story-body">
+        <p><strong>Winners.</strong>
+          <ul>
+            <li>Iovance (IOVA): +31.5%, after raising its full-year revenue guidance to $410&ndash;420 million from $350&ndash;370 million (CNBC).</li>
+            <li>Carnival: +13.4%.</li>
+            <li>Bloom Energy (BE): +10.8%, recovering most of Monday&rsquo;s drop on Oracle&rsquo;s force-majeure notice. It is largely a rebound.</li>
+            <li>Summit Therapeutics (SMMT): +5.9%. AstraZeneca is investing $2 billion in convertible preferred stock, for about 12% of the company (company release and 8-K).</li>
+            <li>CarMax: +4.7%, after a second-quarter beat.</li>
+            <li>Meta: +3.2%, with no identified catalyst.</li>
+            <li>SPCX: +2.6%. TD Cowen started coverage with a buy rating.</li>
+          </ul>
+          Among sectors, utilities (+1.17%) and semiconductors (+1.15%) led.</p>
+        <p><strong>Losers.</strong>
+          <ul>
+            <li>Fair Isaac: &minus;26.5%.</li>
+            <li>AAR (AIR): &minus;7.3%. It reported 24% sales growth on Monday and agreed to buy a controlling stake in MRO Holdings. We found no stated reason for the drop.</li>
+            <li>Rocket Lab: &minus;3.5%.</li>
+            <li>Apple: &minus;2.7%, with no identified catalyst.</li>
+            <li>AST SpaceMobile: &minus;2.6%.</li>
+            <li>Walmart: &minus;1.8%.</li>
+            <li>Tesla: &minus;1.3%.</li>
+          </ul>
+          Among sectors, energy (XLE &minus;0.90%), materials (XLB &minus;0.75%) and regional banks (KRE &minus;1.02%) fell most.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><strong>October hike odds.</strong>
+          <ul>
+            <li>This morning: about 70% priced, and the soft 10:00 data had not moved it measurably.</li>
+            <li>Now: just over 50%, per one market report after Williams said there was &ldquo;no need for urgency.&rdquo;</li>
+            <li>Why it matters: the FOMC&rsquo;s vice chair has taken the urgency out of October, so Wednesday&rsquo;s PCE and Friday&rsquo;s payrolls now decide it.</li>
+            <li>Confidence: moderate on the direction, low on the exact figure.</li>
+          </ul></p>
+        <p><strong>The 10-year.</strong>
+          <ul>
+            <li>This morning: 5.24% (Monday&rsquo;s close), 1bp below the 5.25% line.</li>
+            <li>Now: it closed at 5.26% on Treasury&rsquo;s own curve.</li>
+            <li>Why it matters: the rate-stress threshold this paper has been watching since Sunday has been crossed, and it happened on a day of falling oil and dovish Fed timing. Two open forecasts in our ledger turned on a 10-year close above 5.25%: one already resolved by today&rsquo;s close, and one that runs to Friday. Both will be graded on Saturday.</li>
+            <li>Confidence: high. These are Treasury&rsquo;s own figures.</li>
+          </ul></p>
+        <p><strong>Oura.</strong> This morning the IPO was expected to price tonight. Now it is postponed, and this morning&rsquo;s forecast of a top-of-range price will be graded as missed on Saturday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p><strong>Inflation, where it stands.</strong> Headline CPI rose 3.35% in the year to August and core CPI 2.45%, calculated from the FRED index levels. For tomorrow&rsquo;s August PCE, the Cleveland Fed&rsquo;s nowcast (as of September 24) is 3.78% for headline over the year, and 3.40% over the year and 0.27% for the month for core. July&rsquo;s core was 3.3%. A monthly core reading of 0.3% is roughly as likely as not. This paper&rsquo;s Sunday forecast gave it a 50&ndash;60% chance.</p>
+        <p><strong>Treasury.</strong> Today&rsquo;s bill auctions were routine:
+          <ul>
+            <li>$85 billion of 6-week bills at 3.970% (investment yield 4.044%), bid-to-cover 2.82;</li>
+            <li>$54 billion of 52-week bills at a 4.400% discount rate (4.616% investment yield), bid-to-cover 3.07.</li>
+          </ul>
+          The next test for the long end is the 3-, 10- and 30-year auctions on October 6&ndash;8. SOFR was steady at 3.90% on Monday going into quarter-end.</p>
+        <p><strong>Credit.</strong> The high-yield spread (HY OAS) was 3.02% on Monday. That is the latest print, and today&rsquo;s value posts tomorrow. It is up 36bp in five sessions. HYG&rsquo;s small fall on heavy volume today looked more like quarter-end reallocation than new selling.</p>
+        <p><strong>Global.</strong> European stocks ended roughly flat. ECB President Lagarde said on Monday that she sees &ldquo;higher inflation ahead but no signs yet that it is becoming embedded.&rdquo; The Reserve Bank of Australia&rsquo;s overnight hike to 4.60% did not lift the Australian dollar. The dollar index rose 0.23%, to 101.43.</p>
+        <p><strong>Trade.</strong> A presidential proclamation banning imports of some Canadian alcoholic beverages, dairy, molasses and motorcycles took effect at 12:01 AM today (whitehouse.gov, as summarised). A reported 100% duty on some patented drugs is single-sourced, and we have not seen its text.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><strong>After the bell: Concentrix.</strong> The customer-service outsourcer reported fiscal third-quarter adjusted EPS of $2.92, above the roughly $2.73 expected (Benzinga) and the $2.76 in Finnhub&rsquo;s consensus. It also booked a $1.05 billion goodwill impairment, which produced a GAAP loss of $16.24 a share. It reported record free cash flow of $268 million and raised its dividend. Revenue was $2.45 billion, slightly below Finnhub&rsquo;s $2.53 billion estimate. Its 8-K was filed at 4:10 PM. The shares were about 8% lower after hours. <span class="chip chip--info">Market narrative</span> An impairment that large usually means the company is marking down the value of past acquisitions as AI agents threaten outsourced call-centre work. That is the market&rsquo;s reading. Concentrix has not said so.</p>
+        <p><strong>AI dealmaking.</strong>
+          <ul>
+            <li>AMD&rsquo;s $8.2 billion all-stock purchase of World Labs was signed Monday. AMD closed flat.</li>
+            <li>OpenAI is reported to be seeking at least $30 billion at a $1.4 trillion valuation (see AI &amp; Technology).</li>
+            <li>AstraZeneca is investing $2 billion in Summit Therapeutics.</li>
+          </ul>
+          In each case, companies are paying with stock or taking minority stakes rather than spending cash. That fits a market where borrowing is expensive and equity valuations are high.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Wednesday, September 30 (ET). Consensus figures from a single preview where noted.</caption>
+          <thead><tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr></thead>
+          <tbody>
+            <tr><td>8:15 AM</td><td class="txt">ADP employment (Sept)</td><td>~70K</td><td>+38K</td></tr>
+            <tr><td><b>8:30 AM</b></td><td class="txt"><b>Personal income &amp; outlays: PCE (Aug)</b></td><td><b>Core 0.3% m/m</b></td><td><b>Core 3.3% y/y (Jul)</b></td></tr>
+            <tr><td>8:30 AM</td><td class="txt">GDP Q2, third estimate, with annual revision</td><td>~1.5%</td><td>&mdash;</td></tr>
+            <tr><td>9:45 AM</td><td class="txt">Chicago PMI (Sept)</td><td>51.3</td><td>47.1</td></tr>
+            <tr><td>10:30 AM</td><td class="txt">EIA crude inventories</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>3:25 PM</td><td class="txt">Governor Cook on the rural economy (Asheville)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>After close</td><td class="txt">Micron fiscal Q4</td><td>EPS ~$31.5&ndash;32.3; revenue ~$51&ndash;52B</td><td>&mdash;</td></tr>
+            <tr><td>All day</td><td class="txt">Quarter-end; federal fiscal year-end; Duquesne Light union contract expires</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="story-body">
+        <p><strong>Micron is the day&rsquo;s biggest single-stock event.</strong> Previews put consensus EPS between about $31.5 and $32.3, and revenue estimates vary by source from about $51 billion to $52 billion. The shares rose 1.1% today, to $1,065.08, 15% below their 52-week high. Micron is the clearest public read on AI memory demand.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="stories">
+        <article class="story">
+          <h3>Supreme Court lets third-country deportations resume and sets the case for December argument</h3>
+          <p class="story-deck">The one-page emergency order puts a Massachusetts judge&rsquo;s block on hold, so the administration can again deport people with final removal orders to countries other than their own. The Court will hear the full case in December.</p>
+          <div class="story-body">
+            <p>The unsigned order gave no vote count. Justices Sotomayor, Kagan and Jackson noted they would have denied the stay. The Court asked the parties to address three questions: whether the lower courts had jurisdiction and could grant nationwide relief, whether the policy violates due process, and whether it violates the Convention Against Torture. This is an interim order, not a decision on the merits. A final ruling would likely come in 2027.</p>
+            <div class="story-note"><b>What&rsquo;s next</b> Deportations under the framework can resume now. The Court&rsquo;s new term formally opens Monday, October 5, when the full list of cases granted after this week&rsquo;s long conference is due.</div>
+          </div>
+          <p class="story-sourceline">NPR, Washington Post, CBS News, NBC News, Bloomberg.</p>
+        </article>
+
+        <article class="story">
+          <h3>Pentagon says a breach at its personnel data agency exposed records on about 3 million people</h3>
+          <p class="story-deck">Social Security numbers and military records sat exposed for about nine months before the flaw was found in July.</p>
+          <div class="story-body">
+            <p>The Defense Manpower Data Center breach affected about 2.76 million living people and 294,000 deceased people. Exposed fields included Social Security numbers and military personnel records. Access ran from October 2025 to July 2026, and the problem was discovered around July 16. The Pentagon says the flaw is patched, has seen no evidence of misuse and has not said who was responsible.</p>
+          </div>
+          <p class="story-sourceline">Stars and Stripes, ABC News, SecurityWeek, Federal News Network.</p>
+        </article>
+      </div>
+      <div class="story-body">
+        <p><strong>Also in Washington.</strong>
+          <ul>
+            <li><b>America.gov.</b> President Trump signed an executive order that directs agencies to plug their public-facing online services into America.gov, a single sign-in portal for federal services. It covers services with more than 100,000 users a year. IRS tax filing and national-security systems are excluded. (White House fact sheet.)</li>
+            <li><b>Senate.</b> The Senate held 2:15 PM votes on whether to take up two measures and on one nomination:
+              <ul>
+                <li>Sen. Baldwin&rsquo;s resolution against a rule on Affordable Care Act exchange standards (S.J.Res. 197);</li>
+                <li>the Ratepayer Protection Act (H.R. 9340), which would make data centers above 100 megawatts pay the full cost of the grid upgrades they need and passed the House 417&ndash;3;</li>
+                <li>Keith Sonderling&rsquo;s nomination as Labor Secretary.</li>
+              </ul>
+              We had not confirmed the tallies by publication.</li>
+          </ul></p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="stories">
+        <article class="story">
+          <h3>Iran&rsquo;s Hormuz plan: Washington&rsquo;s reply is still pending, and Trump says he offered Tehran &ldquo;NOTHING&rdquo;</h3>
+          <p class="story-deck">Iran expected a final US answer through Qatar by Tuesday. By publication we found no report that it had been delivered.</p>
+          <div class="story-body">
+            <p>Foreign Minister Araghchi said late Monday that Qatari mediators would take ideas back to the US side, and that Iran expected Washington&rsquo;s answer through Doha by Tuesday. He left New York on Tuesday. Qatar&rsquo;s spokesman Majed Al-Ansari said mediation is continuing and Qatar is &ldquo;relaying messages.&rdquo;</p>
+            <p>Iran&rsquo;s proposal would reopen the strait within seven days. In return it asks for the US naval blockade to be lifted, waivers on oil sanctions, about $12 billion in frozen assets and a regional ceasefire that includes Lebanon. Trump denied an Axios report that the US would offer sanctions relief, writing &ldquo;I offered them NOTHING!&rdquo; A US official said there is no deal without the nuclear programme. Iranian negotiator Ghalibaf warned that &ldquo;if our security is not guaranteed, no infrastructure will remain safe.&rdquo; Separately, the Treasury sanctioned 10 people and entities over weapons procurement for Iran.</p>
+            <div class="story-note"><b>Why it matters</b> Oil fell sharply today even though no reply has been confirmed (see Top Stories). Crude prices are now assuming some easing of supply. A public rejection would test that assumption quickly.</div>
+          </div>
+          <p class="story-sourceline">France 24, Al Jazeera, Reuters via US News, Al-Monitor, AFP via Arab News.</p>
+        </article>
+
+      </div>
+      <div class="story-body">
+        <p><strong>Elsewhere.</strong>
+          <ul>
+            <li><b>US&ndash;China tariff cuts.</b> The two sides published lists of tariff cuts from the Trump&ndash;Xi summit, about $30 billion of goods each way. China cut duties on grains, meat and dairy. Whole soybeans were left out, which the American Soybean Association called disappointing. Bloomberg reported that China&rsquo;s State Council has promised a new stimulus &ldquo;package.&rdquo; (CNN, NBC News, AgWeb, Bloomberg.)</li>
+            <li><b>Ukraine.</b> Russia launched more ballistic missiles at Kyiv early Tuesday, the day after drones set the Academy of Sciences on fire, and struck the Odesa district overnight, injuring eight. The death tolls from the two days of strikes differ by source. President Zelensky put the toll at nine killed nationwide and more than 80 injured, Reuters at ten dead and Al Jazeera at two killed in Kyiv.
+              European Commission President von der Leyen and President Macron condemned the attacks. (Al Jazeera, Reuters via Japan Times, Ukrainska Pravda.)</li>
+          </ul></p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="stories">
+        <article class="story">
+          <h3>OpenAI&rsquo;s DevDay: GPT-6.1 Sol at a fifth of Astra&rsquo;s price, plus always-on agents in ChatGPT</h3>
+          <p class="story-deck">The day after it dropped the Astra upgrade, OpenAI led its developer conference with price, not raw capability.</p>
+          <div class="story-body">
+            <p>Sam Altman&rsquo;s keynote in San Francisco introduced GPT-6.1 Sol. OpenAI says Sol comes close to GPT-6 Astra on agentic coding, computer use and professional work, at about one-fifth of Astra&rsquo;s token price. API prices are $2 per million input tokens, $0.10 for cached input and $10 for output. The company also launched Dots, always-on agents in ChatGPT for Pro and Business Premium subscribers; an &ldquo;Ultrafast&rdquo; speed tier; tools for people and agents to work together; and Codex that runs in the cloud from any device.
+              OpenAI says it announced more than 20 items in all.</p>
+            <p>Bloomberg and TechCrunch separately reported that OpenAI is seeking at least $30 billion at about $1.4 trillion before the new money, as a bridge while its IPO is delayed. Both describe the talks as early, with no term sheet. OpenAI&rsquo;s last round, in March, raised $122 billion at $852 billion after the money.</p>
+            <div class="story-note"><b>Why it matters</b> A cheaper frontier-class model pushes down the price of AI tokens across the industry. That helps software companies that build on these models.</div>
+          </div>
+          <p class="story-sourceline">OpenAI DevDay recap (primary) &middot; CNBC, Axios, The Next Web &middot; Bloomberg and TechCrunch (funding).</p>
+        </article>
+      </div>
+      <div class="story-body">
+        <p><strong>Also in tech.</strong>
+          <ul>
+            <li><b>Anthropic&rsquo;s prospectus.</b> CNN, Quartz and Investing.com reported details from a prospectus that outlets describe as either filed or leaked. We found no document on EDGAR, so this edition treats it as reported. The figures reported for 2025 are revenue of $4.59 billion, an operating loss of $8.06 billion and about $518 billion in compute and cloud commitments. The reported target is a Nasdaq listing at a valuation above $2 trillion.</li>
+                <li>an operating loss of $8.06 billion;</li>
+                <li>a GAAP net loss of $41.97 billion;</li>
+                <li>about $518 billion in compute and cloud commitments.</li>
+              </ul>
+              The reported targets are a Nasdaq listing at a valuation above $2 trillion. The mid-October timing comes from a single source.</li>
+            <li><b>AMD buys World Labs.</b> AMD agreed on Monday to buy Fei-Fei Li&rsquo;s World Labs for $8.2 billion in stock. Li becomes chief scientist. Closing is expected by year-end, pending regulators. AMD&rsquo;s 8-K filed Monday lists an unregistered sale of equity (Item 3.02). AMD closed flat. (CNBC, TechCrunch, SEC EDGAR.)</li>
+            <li><b>Bitget hack.</b> Reported losses from the crypto exchange hack have risen to about $388 million. Bitget says North Korea is &ldquo;very likely&rdquo; responsible. That attribution is the company&rsquo;s own and preliminary, and no government has confirmed it. (BleepingComputer, The Hacker News, The Register.)</li>
+          </ul></p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science</h2>
+      <div class="story-body">
+        <p><strong>Antimatter goes by road.</strong> A paper in <i>Nature</i> describes CERN&rsquo;s BASE-STEP trap carrying 92 antiprotons 7.5 kilometres by truck without losing a single particle, then storing them. The trial took place in March, and this is the peer-reviewed account. It matters because antiprotons have only ever been studied where they are made. A portable trap would let quieter off-site labs, starting with one in D&uuml;sseldorf, measure them far more precisely. (<i>Nature</i>; Physics World; Phys.org.)</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><strong>Starship, the details.</strong> Space.com and Via Satellite added detail on Monday&rsquo;s first orbital Starship flight:
+          <ul>
+            <li>It deployed 26 V3 Starlink satellites, its first operational payload.</li>
+            <li>One Raptor vacuum engine shut down early, and the other engines burned longer to compensate.</li>
+            <li>The planned 10-hour flight was cut to about three hours, ending with a splashdown in the Pacific north of Hawaii.</li>
+          </ul>
+          SpaceX calls the flight a success because it met both primary objectives. SpaceX shares (SPCX) rose 2.6% today, to $149.24. They are now almost 9% above their 50-day average. (Space.com, Via Satellite, CBC.)</p>
+        <p><strong>Crew-13 is on the pad.</strong> NASA&rsquo;s Crew-13 Falcon 9 is at Cape Canaveral for a launch no earlier than Thursday, October 1, at 11:10 AM EDT. The crew is Watkins (commander), Delaney (pilot), Kutryk of the Canadian Space Agency and Teteryatnikov of Roscosmos. (NASA, Launch Library.)</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><strong>Hurricane Polo</strong> made landfall late Monday as a Category 2 storm with 110 mph winds, south of Las Barrancas in Baja California Sur. It flooded Puerto San Carlos, where at least 30 people were evacuated. After weakening, it came ashore a second time in Sonora late Tuesday morning. Its remnants bring a rain threat to the US Southwest. We found no reported deaths. (AP via PBS, CNBC, CBS.)</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+        <article class="local-item">
+          <p class="local-place">Pittsburgh region</p>
+          <h3>Duquesne Light&rsquo;s union contract expires tomorrow, still with no reported deal</h3>
+          <div class="story-body">
+          <p>The contract covering IBEW Local 29 workers at Duquesne Light expires Wednesday, September 30. Members voted 592&ndash;14 on September 16 to authorize a strike. As of this evening we found no report of a tentative agreement. Union business manager Josh Ewing has said the union is committed to reaching one before the deadline. The utility says it has a backup plan to keep power on. In 2023 the two sides settled on the eve of the deadline. That is precedent, not a prediction.</p>
+          </div>
+          <p class="story-sourceline">CBS Pittsburgh, TribLive, Hoodline.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>State House passes a chatbot-safety bill for minors and a fertility-coverage mandate for cancer patients</h3>
+          <div class="story-body">
+          <p>Both bills passed on Monday and now go to the Senate.
+            <ul>
+              <li><b>HB 2006</b> (Rep. Melissa Shusterman) passed 133&ndash;70, with all Democrats and 30 Republicans voting yes. It would require chatbot operators to verify users&rsquo; ages and get parental consent for minors. It would bar chatbots from encouraging suicide or violence or exposing children to sexual content. The Senate passed its own chatbot bill in March, so the two versions would have to be reconciled.</li>
+              <li><b>HB 2649</b> (Rep. Bridget Kosierowski) passed 172&ndash;31. It would require insurers to cover fertility preservation for cancer patients whose treatment may leave them infertile. Twenty-one other states already require this.</li>
+            </ul></p>
+          </div>
+          <p class="story-sourceline">Pennsylvania House Democratic Caucus releases, The Center Square, Local21 News.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Measles passes 900 cases statewide; Pittsburgh schools plan vaccine clinics</h3>
+          <div class="story-body">
+          <p>According to the Department of Health&rsquo;s latest update, as reported by NBC Philadelphia and WFMZ:
+903 confirmed cases in 39 counties this year (13 new since September 25), 176 hospitalisations and four deaths.
+            Lancaster County has the most cases. WESA reports no cases in Allegheny County so far. Pittsburgh Public Schools plans MMR vaccine clinics at several schools through November as the outbreak moves southwest.</p>
+          </div>
+          <p class="story-sourceline">Pennsylvania Department of Health via NBC Philadelphia and WFMZ &middot; WESA.</p>
+        </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-on trend, rates and credit pushing back</span>
+            <ul>
+              <li><b>For the calm reading.</b> SPY sits 0.1% below its 20-day average and 0.2% above its 50-day. It is 6.3% above its 200-day and 90% of the way up its 52-week range. The VIX is 16.04 and its term structure is in normal upward slope. Semiconductors (SMH +1.15%) rose.</li>
+              <li><b>Against it.</b> The 10-year closed at 5.26%, a new high for the selloff. The 30-year is at 5.59%. HY OAS has crossed 3%. TLT, IEF, TIP, LQD and HYG are all within about 1% of their 52-week lows. IWM is 4.9% below its 50-day, and DIA is 2.7% below its.</li>
+              <li><b>What changed today.</b> Oil fell sharply, but yields did not follow it down. That points to a term premium problem at the long end, not an inflation-expectations problem.</li>
+            </ul>
+            Confidence: moderate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Sept 29, 2026 (treasury.gov). Changes vs Sept 28 in basis points.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D chg</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>4.04%</td><td class="flat">0</td></tr>
+                <tr><td>3M</td><td>4.25%</td><td class="down">&minus;3</td></tr>
+                <tr><td>6M</td><td>4.36%</td><td class="down">&minus;5</td></tr>
+                <tr><td>1Y</td><td>4.58%</td><td class="down">&minus;1</td></tr>
+                <tr><td>2Y</td><td>4.89%</td><td class="down">&minus;3</td></tr>
+                <tr><td>3Y</td><td>4.98%</td><td class="down">&minus;3</td></tr>
+                <tr><td>5Y</td><td>5.06%</td><td class="flat">0</td></tr>
+                <tr><td>7Y</td><td>5.16%</td><td class="up">+1</td></tr>
+                <tr><td>10Y</td><td>5.26%</td><td class="up">+2</td></tr>
+                <tr><td>20Y</td><td>5.64%</td><td class="up">+4</td></tr>
+                <tr><td>30Y</td><td>5.59%</td><td class="up">+3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads: 2s10s 37bp (from 32), 3m10y 101bp (from 96), 5s30s 53bp (from 50). The curve twisted steeper: the front end fell on the soft data while the long end kept rising.
+            <ul>
+              <li>FRED, EOD official Sept 28 (the latest posted): 10-year real yield (DFII10) 2.90%, up from 2.83%; 10-year breakeven (T10YIE) 2.34%, unchanged.</li>
+              <li>SOFR was 3.90% on Sept 28.</li>
+            </ul>
+            Monday&rsquo;s rise in the 10-year was entirely in the real yield.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; breadth</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US indexes, EOD official Sept 29, 2026 (Yahoo Finance; closes vs Sept 28).</caption>
+              <thead><tr><th>Index</th><th>Close</th><th>1D</th><th>52-wk high</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,670.84</td><td class="down">&minus;0.17%</td><td>7,816.70</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>26,797.54</td><td class="down">&minus;0.09%</td><td>27,288.79</td></tr>
+                <tr><td class="txt">Dow</td><td>51,349.92</td><td class="down">&minus;0.26%</td><td>54,744.33</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>2,807.92</td><td class="down">&minus;0.35%</td><td>3,069.71</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Distances from moving averages, from Yahoo daily closes:
+            <ul>
+              <li>SPY: &minus;0.1% vs its 20-day, +0.2% vs its 50-day, +6.3% vs its 200-day.</li>
+              <li>QQQ: +2.1% vs its 20-day, +3.3% vs its 50-day, +10.7% vs its 200-day.</li>
+              <li>IWM: &minus;2.8% vs its 20-day, &minus;4.9% vs its 50-day, +1.1% vs its 200-day.</li>
+              <li>DIA: &minus;1.7% vs its 20-day, &minus;2.7% vs its 50-day.</li>
+              <li>TLT: &minus;8.6% vs its 200-day.</li>
+            </ul>
+            <b>Whole-market breadth.</b> These figures are for Monday, Sept 28, the prior session (Massive grouped daily, EOD official). Estimated using an EMA proxy while history accumulates (45 of 200 sessions). Across 5,609 liquid stocks, 1,374 rose and 4,105 fell. Up volume was 3.6 billion shares and down volume 10.7 billion, about one to three. The cumulative advance-decline line over the 46 recorded sessions stands at &minus;12,963, still falling. Percent above the 50- and 200-day proxies: not yet reportable. Today, equal-weight RSP (&minus;0.11%) and cap-weight SPY (&minus;0.18%) were within a few basis points of each other.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <p>Sector funds, EOD official Sept 29 (Yahoo Finance; Twelve Data spot-check agreed within a few cents):
+            <ul>
+              <li><b>Rose:</b> XLU +1.17%, XLC +0.26%, XLI +0.21%, XLY +0.14%.</li>
+              <li><b>Fell:</b> XLRE &minus;0.02%, XLK &minus;0.02%, XLV &minus;0.31%, XLF &minus;0.33%, XLP &minus;0.52%, XLB &minus;0.75%, XLE &minus;0.90%.</li>
+              <li><b>Industries:</b> SMH +1.15%, KRE &minus;1.02%.</li>
+            </ul>
+            Energy fell less than crude did. Utilities led even though long yields rose, which runs against the usual pattern. Heavy utility volume points to quarter-end rebalancing.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>Company closes, EOD official Sept 29 (Yahoo Finance). This list narrates only the notable moves, not every row.
+            <ul>
+              <li><b>Mega-cap:</b> AAPL &minus;2.66%, MSFT &minus;0.05%, NVDA &minus;0.72%, AMZN +0.21%, GOOGL &minus;0.53%, META +3.24%, TSLA &minus;1.29%, SPCX +2.59%.</li>
+              <li><b>AI infrastructure:</b> AVGO +1.58%, MU +1.05% into Wednesday&rsquo;s report, TSM +0.90%, AMD &minus;0.05%.</li>
+              <li><b>Defense/aero:</b> BA +1.78%, a partial rebound after Monday&rsquo;s 6.9% drop.</li>
+              <li><b>Space:</b> RKLB &minus;3.45%, ASTS &minus;2.62%.</li>
+              <li><b>Consumer:</b> CCL +13.41% on 3.7 times normal volume; WMT &minus;1.78%; HD &minus;0.64%, closing within a dollar of its 52-week low.</li>
+              <li><b>Other:</b> FICO &minus;26.52% on about 12 times normal volume.</li>
+            </ul>
+           </p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>
+            <ul>
+              <li><b>HY spread.</b> ICE BofA US High Yield OAS (FRED BAMLH0A0HYM2), EOD official Sept 28: 3.02%. That is up from 2.93% on Sept 25 and 2.66% on Sept 21, a widening of 36bp in five sessions. Today&rsquo;s value posts tomorrow.</li>
+              <li><b>High-yield fund.</b> HYG &minus;0.23% on 149 million shares, four times its average, and 20 cents above its 52-week low.</li>
+              <li><b>Investment-grade fund.</b> LQD &minus;0.06% on 54 million shares, 36 cents above its 52-week low.</li>
+            </ul>
+            The volumes point to quarter-end repositioning as much as to selling. HYG&rsquo;s small price drop on huge volume means the flow was absorbed without much price damage.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility</summary>
+          <p>Cboe indexes, EOD Sept 29 via Yahoo Finance (Cboe&rsquo;s own quote feed redirected this run):
+            <ul>
+              <li>VIX 16.04 (&minus;0.03)</li>
+              <li>VIX9D 14.21 (&minus;0.18)</li>
+              <li>VIX3M 18.09 (&minus;0.14)</li>
+            </ul>
+            The term structure is in contango, with no inversion. Equity volatility is calm while bond yields make new highs. There is no free source for the MOVE index of bond volatility. Dealer gamma is not tracked, since there is no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>
+            <ul>
+              <li><b>Dollar index.</b> DXY 101.43 (+0.23%), Yahoo, EOD Sept 29. That is 0.4% below its 52-week high of 101.80.</li>
+              <li><b>ECB reference rates,</b> EOD official Sept 29, per US dollar: EUR 0.8807 (EURUSD 1.1355), JPY 157.12, GBP 0.7549, CNY 6.7034, CHF 0.8332, CAD 1.4180, AUD 1.4277, MXN 17.897, BRL 5.2115, INR 95.98.</li>
+            </ul>
+            The dollar firmed even as the front end of the curve rallied. The Australian dollar did not strengthen on the RBA hike (AUD per USD rose from 1.4237 to 1.4277).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>
+            <ul>
+              <li><b>Brent:</b> front month (November) settled about $102.59 (&minus;2.6%), CNBC. Yahoo&rsquo;s November contract showed $102.49. Yahoo&rsquo;s continuous series (BZ=F, $95.67) has rolled to December and is not used.</li>
+              <li><b>WTI (CL=F):</b> about $89.38 (&minus;3.5%), CNBC. Yahoo&rsquo;s November contract showed $88.93, delayed about 10 minutes.</li>
+              <li><b>USO</b> &minus;4.44%, <b>XLE</b> &minus;0.90%.</li>
+              <li><b>Gold futures (GC=F):</b> $4,207.30 (+0.93%), Yahoo, delayed about 10 minutes, as of 4:22 PM. GLD +1.32%.</li>
+              <li><b>Copper (HG=F):</b> $6.66/lb (+1.41%).</li>
+              <li><b>Natural gas (NG=F):</b> $3.02 (+0.53%).</li>
+            </ul>
+            Gold recovered about a quarter of Monday&rsquo;s drop.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>
+            <ul>
+              <li><b>Bitcoin:</b> $83,563 (+0.1% on the UTC day), Yahoo BTC-USD at 4:32 PM.</li>
+              <li><b>Ether:</b> $2,690 (flat).</li>
+              <li><b>Solana:</b> $118.98 (+0.1%).</li>
+              <li><b>Total crypto market cap:</b> $2.87 trillion (&minus;2.6% over a rolling 24 hours), live aggregate from CoinGecko. Bitcoin dominance: 58.3%.</li>
+            </ul>
+            CoinGecko&rsquo;s per-coin prices were unavailable this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>
+            <ul>
+              <li><b>Oil and long yields.</b> Oil fell sharply while long yields rose. Energy is not what is driving the long end right now.</li>
+              <li><b>Big tech.</b> The mega-caps split: Apple fell 2.7% while Meta rose 3.2%, so MAGS was flat. The index calm hides large single-stock moves.</li>
+            </ul></p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>
+            <ul>
+              <li><b>Tonight:</b> Concentrix beat on adjusted EPS ($2.92 vs about $2.76), missed on revenue ($2.45B vs about $2.53B), took a $1.05B goodwill impairment and fell about 8% after hours. FedEx Freight was listed to report, but we found no results by publication.</li>
+              <li><b>This morning:</b> Carnival beat and raised, closing +13.4%. CarMax beat, closing +4.7%. Adjusted EPS was $1.16 against about $0.72 expected, per Finnhub.</li>
+              <li><b>Wednesday:</b> Jabil before the open. Micron after the close, with consensus EPS of about $31.5&ndash;32.3 and revenue of about $51&ndash;52B across previews.</li>
+              <li><b>Thursday:</b> Accenture before the open, Nike after the close.</li>
+            </ul></p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p><b>Today&rsquo;s bill auctions</b> (TreasuryDirect, primary):
+            <ul>
+              <li>6-week: $85B at an investment yield of 4.044%, bid-to-cover 2.82.</li>
+              <li>52-week: $54B at 4.616%, bid-to-cover 3.07.</li>
+            </ul>
+            <b>Ahead:</b>
+            <ul>
+              <li>Wednesday: $75B of 17-week bills.</li>
+              <li>Thursday: $100B of 4-week and $95B of 8-week bills.</li>
+              <li>October 6&ndash;8: 3-year notes, then the 10-year (9-year 10-month) and 30-year (29-year 10-month) reopenings.</li>
+            </ul>
+            SOFR at 3.90% (Sept 28) is the rate to watch at quarter-end.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Short volume</summary>
+          <p>FINRA daily short-volume ratio for the Sept 28 session. That is the prior session; today&rsquo;s file is published after this edition. Aggregate: 50.9%. Selected names:
+QQQ 69.7%, AMD 66.5%, SPY 63.0%, IWM 62.3%, CCL 59.4%, SPCX 57.7%, FICO 51.6%, NVDA 32.8%, JPM 23.0%.
+            Daily short volume is not short interest. Short interest is reported by settlement date and runs two to three weeks behind.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Read directly from the source: the Treasury par-yield curve, TreasuryDirect auction results, FRED, Governor Barr&rsquo;s speech text on federalreserve.gov, ECB reference rates (Frankfurter), FINRA short-volume files, Massive grouped daily bars, SEC EDGAR filings and the Launch Library schedule. Market levels come from Yahoo Finance, spot-checked against Twelve Data, and crypto from CoinGecko and Yahoo. News reporting draws on Bloomberg, Reuters, CNBC, NPR, the Washington Post, CBS, NBC, ABC, CNN, Axios, TechCrunch, Al Jazeera, France 24, Stars and Stripes, SecurityWeek, <i>Nature</i>, Space.com, NASA, WESA, TribLive and the Pennsylvania House, named story by story above.</p>
+      <p><strong>Corrections.</strong> This morning&rsquo;s edition listed &ldquo;Cook on AI at 1:25 PM&rdquo; among today&rsquo;s events. Governor Cook gave that speech, &ldquo;An Update on AI and the Economy,&rdquo; on Monday, September 28, according to the Federal Reserve Board&rsquo;s speech listing. Her next scheduled appearance is Wednesday at 3:25 PM. The error does not change any conclusion.</p>
+      <p><strong>Method.</strong> Free-tier quotes come from a single venue and can differ slightly from consolidated closes. Missing data is labelled as missing and never estimated. This paper is written and published automatically, and nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-29-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

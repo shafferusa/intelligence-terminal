@@ -1,133 +1,109 @@
 {
- "fetched_at": "2026-09-29T15:13:07Z",
+ "fetched_at": "2026-09-29T20:45:14Z",
  "treasury_par_curve": {
-  "as_of": "2026-09-28 EOD official",
-  "curve": {
-   "1M": 4.04,
-   "1.5M": 4.14,
-   "2M": 4.2,
-   "3M": 4.28,
-   "4M": 4.33,
-   "6M": 4.41,
-   "1Y": 4.59,
-   "2Y": 4.92,
-   "3Y": 5.01,
-   "5Y": 5.06,
-   "7Y": 5.15,
-   "10Y": 5.24,
-   "20Y": 5.6,
-   "30Y": 5.56
-  },
-  "2s10s_bp": 32,
-  "3m10y_bp": 96,
-  "5s30s_bp": 50,
-  "fetched_at": "2026-09-29T15:13:07Z"
+  "as_of": "2026-09-29 EOD official",
+  "source": "home.treasury.gov",
+  "1M": 4.04,
+  "2M": 4.18,
+  "3M": 4.25,
+  "4M": 4.3,
+  "6M": 4.36,
+  "1Y": 4.58,
+  "2Y": 4.89,
+  "3Y": 4.98,
+  "5Y": 5.06,
+  "7Y": 5.16,
+  "10Y": 5.26,
+  "20Y": 5.64,
+  "30Y": 5.59
  },
  "fred": {
-  "as_of": "2026-09-28 pm run: daily series at 2026-09-25",
-  "series": {
-   "CPIAUCSL": {
-    "value": 334.131,
-    "date": "2026-08-01"
-   },
-   "CPILFESL": {
-    "value": 337.765,
-    "date": "2026-08-01"
-   },
-   "PAYEMS": {
-    "value": 159075.0,
-    "date": "2026-08-01"
-   },
-   "ICSA": {
-    "value": 197000.0,
-    "date": "2026-09-19"
-   },
-   "UNRATE": {
-    "value": 4.1,
-    "date": "2026-08-01"
-   },
-   "T10Y2Y": {
-    "value": 0.36,
-    "date": "2026-09-25"
-   },
-   "DGS2": {
-    "value": 4.81,
-    "date": "2026-09-25"
-   },
-   "DGS10": {
-    "value": 5.17,
-    "date": "2026-09-25"
-   },
-   "T10YIE": {
-    "value": 2.34,
-    "date": "2026-09-25"
-   },
-   "DFII10": {
-    "value": 2.83,
-    "date": "2026-09-25"
-   },
-   "SOFR": {
-    "value": 3.9,
-    "date": "2026-09-25"
-   },
-   "BAMLH0A0HYM2": {
-    "value": 2.93,
-    "date": "2026-09-25"
-   },
-   "DFF": {
-    "value": 3.88,
-    "date": "2026-09-25"
-   }
-  }
+  "as_of_fetch": "2026-09-29T20:45:14Z",
+  "source": "api.stlouisfed.org",
+  "DGS2": [
+   "2026-09-28",
+   4.92
+  ],
+  "DGS10": [
+   "2026-09-28",
+   5.24
+  ],
+  "T10Y2Y": [
+   "2026-09-28",
+   0.32
+  ],
+  "T10YIE": [
+   "2026-09-28",
+   2.34
+  ],
+  "DFII10": [
+   "2026-09-28",
+   2.9
+  ],
+  "SOFR": [
+   "2026-09-28",
+   3.9
+  ],
+  "BAMLH0A0HYM2": [
+   "2026-09-28",
+   3.02
+  ],
+  "ICSA": [
+   "2026-09-19",
+   197000
+  ],
+  "UNRATE": [
+   "2026-08-01",
+   4.1
+  ],
+  "PAYEMS": [
+   "2026-08-01",
+   159075
+  ],
+  "CPIAUCSL": [
+   "2026-08-01",
+   334.131
+  ],
+  "CPILFESL": [
+   "2026-08-01",
+   337.765
+  ]
  },
  "vix_complex": {
-  "vix": 16.07,
-  "vix9d": 14.39,
-  "vix3m": 18.23,
-  "as_of": "2026-09-28 EOD via Yahoo index series (Cboe cdn 307)"
+  "as_of": "2026-09-29 EOD via Yahoo",
+  "VIX": 16.04,
+  "VIX9D": 14.21,
+  "VIX3M": 18.09
  },
  "fx": {
-  "as_of": "2026-09-28 EOD official (ECB reference)",
-  "rates_vs_usd": {
-   "EUR": 0.87889,
-   "JPY": 156.88,
-   "GBP": 0.75396,
-   "CNY": 6.7105,
-   "CHF": 0.83178,
-   "CAD": 1.4166,
-   "AUD": 1.4237,
-   "MXN": 17.765,
-   "BRL": 5.2018,
-   "INR": 95.98
-  }
+  "as_of": "2026-09-29 ECB reference (Frankfurter)",
+  "EUR": 0.88067,
+  "JPY": 157.12,
+  "GBP": 0.75489,
+  "CNY": 6.7034,
+  "CHF": 0.8332,
+  "CAD": 1.418,
+  "AUD": 1.4277,
+  "MXN": 17.897,
+  "BRL": 5.2115,
+  "INR": 95.98,
+  "DXY": 101.431
  },
  "crypto": {
-  "as_of": "2026-09-28 ~16:50 ET live (CoinGecko keyless)",
-  "btc": 83504,
-  "eth": 2679.95,
-  "sol": 118.84,
-  "ada": 0.245451,
-  "total_mkt_cap": 2873741058695.46,
-  "btc_dominance_pct": 58.26
+  "as_of": "2026-09-29T20:45:14Z",
+  "BTC": 83562.51,
+  "ETH": 2689.57,
+  "SOL": 118.98,
+  "total_cap_usd": 2874371404376,
+  "btc_dominance": 58.34,
+  "source": "Yahoo BTC-USD etc; CoinGecko /global"
  },
  "indices": {
-  "as_of": "2026-09-28 EOD official",
-  "sp500": {
-   "price": 7683.69,
-   "pct": -0.77
-  },
-  "nasdaq_composite": {
-   "price": 26820.38,
-   "pct": -0.92
-  },
-  "dow": {
-   "price": 51481.51,
-   "pct": -0.67
-  },
-  "russell2000": {
-   "price": 2817.91,
-   "pct": -0.69
-  }
+  "as_of": "2026-09-29 EOD",
+  "^GSPC": 7670.84,
+  "^IXIC": 26797.54,
+  "^DJI": 51349.92,
+  "^RUT": 2807.92
  },
  "futures_commodities_fx": {
   "as_of": "2026-09-28 ~4:39pm ET Yahoo; oil settles per CNBC",
@@ -434,21 +410,14 @@
   }
  },
  "breadth_latest": {
-  "date": "2026-09-25",
-  "advancers": 3044,
-  "decliners": 2330,
-  "unchanged": 142,
-  "universe": 5547,
-  "up_vol": 7550000000.0,
-  "down_vol": 5810000000.0,
-  "pct_above_e50": null,
-  "pct_above_e200": null,
-  "note": "Sept 24 and Sept 25 folded into breadth.json history this run (EMA state 44/200 sessions)."
+  "date": "2026-09-28",
+  "advancers": 1374,
+  "decliners": 4105,
+  "universe": 5609
  },
  "finra_short_vol": {
-  "session": "2026-09-24",
-  "aggregate_short_vol_ratio_pct": 50.38,
-  "note": "Same previous-session file used by this morning's run (D=Sept24 is the previous NYSE session for both today's am and pm runs). Board standouts (highest): LQD 77.9%, XLF 71.8%, TLT 71.7%, MAGS 71.1%, IEF 70.5%, XLE 67.5%, IWM 67.4%, TIP 65.8%, KRE 63.2%. Lowest: VGK 34.7%, BTC 41.3%, DIA 43.6%, XLK 45.5%. Daily short volume != short interest."
+  "date": "2026-09-28",
+  "aggregate_ratio_pct": 50.9
  },
  "sector_etfs_wk": {
   "as_of": "2026-09-25 EOD official",
@@ -467,28 +436,15 @@
   }
  },
  "commodities": {
-  "wti": {
-   "price": 92.65,
-   "pct": -2.07,
-   "note": "CL=F, close-to-close"
-  },
-  "gold": {
-   "price": 4324.5,
-   "pct": 0.62,
-   "note": "GC=F futures; GLD ETF +0.44%"
-  },
-  "natgas": {
-   "price": 3.239,
-   "pct": -1.76,
-   "note": "NG=F"
-  },
-  "copper": {
-   "price": 6.774,
-   "pct": 0.83,
-   "note": "HG=F"
-  },
-  "label": "EOD official, Sep 25, 2026",
-  "fetched_at": "2026-09-25T20:47:00Z"
+  "as_of": "2026-09-29",
+  "brent_front_settle_cnbc": 102.59,
+  "wti_front_cnbc": 89.38,
+  "BZX26": 102.49,
+  "CLX26": 88.93,
+  "GC=F": 4207.3,
+  "HG=F": 6.6585,
+  "NG=F": 3.016,
+  "note": "BZ=F rolled to Dec (95.67) - not used"
  },
  "sec_edgar_sweep": {
   "date": "2026-09-25",
@@ -515,7 +471,7 @@
   "price": 922.77,
   "pct": 2.93
  },
- "_notes_this_run": "2026-09-29 am: Treasury, Frankfurter, CoinGecko /global, FRED public CSV refreshed. Yahoo 429 on all symbols; Cboe cdn blocked (Cloudflare); CoinGecko simple/price 403. Board/watchlist/vix blocks carry Sep 28 EOD from pm run.",
+ "_notes_this_run": "2026-09-29 pm: curl egress worked for Treasury, FRED (key set), Yahoo, Frankfurter, CoinGecko /global, Twelve Data, Finnhub, Massive, FINRA, SEC, TreasuryDirect, Fed RSS, LL2. Cboe cdn 307; CoinGecko simple/price 403 (no demo key); newyorkfed.org blocked.",
  "yahoo_am_2026_09_28": {
   "fetched_at": "2026-09-28T10:54:34Z",
   "label": "Delayed (+10 min) futures/overnight; Previous close for cash",
@@ -957,229 +913,169 @@
   "btc_dominance": 58.67
  },
  "board": {
-  "as_of": "2026-09-28 EOD official (Yahoo, Finnhub cross-check)",
+  "as_of": "2026-09-29 16:00 ET",
+  "source": "Yahoo v8",
   "rows": {
-   "BTC-USD": {
-    "price": 83441.2,
-    "pct": -1.2,
-    "hi52": 126198.07,
-    "lo52": 57747.766
-   },
    "BTC": {
-    "price": 36.86,
-    "pct": -0.81,
+    "price": 36.97,
+    "prev": 36.86000061035156,
     "hi52": 55.96,
-    "lo52": 25.65
-   },
-   "BZ=F": {
-    "price": 98.61,
-    "pct": -5.47,
-    "hi52": 126.1,
-    "lo52": 58.72
-   },
-   "CL=F": {
-    "price": 93.26,
-    "pct": 0.92,
-    "hi52": 119.48,
-    "lo52": 54.98
+    "lo52": 25.65,
+    "vol": 1135108
    },
    "DIA": {
-    "price": 514.02,
-    "pct": -0.67,
+    "price": 512.88,
+    "prev": 514.02001953125,
     "hi52": 546.75,
-    "lo52": 450.44
+    "lo52": 450.44,
+    "vol": 2547606
    },
    "DX-Y.NYB": {
-    "price": 101.195,
-    "pct": 0.22,
+    "price": 101.431,
+    "prev": 101.19999694824219,
     "hi52": 101.8,
-    "lo52": 95.55
+    "lo52": 95.55,
+    "vol": null
    },
    "EEM": {
-    "price": 67.2,
-    "pct": -1.15,
+    "price": 67.4,
+    "prev": 67.19999694824219,
     "hi52": 71.57,
-    "lo52": 51.82
-   },
-   "ES=F": {
-    "price": 7744.75,
-    "pct": -0.76,
-    "hi52": 7848.5,
-    "lo52": 6353.25
-   },
-   "EURUSD=X": {
-    "price": 1.1374,
-    "pct": -0.04,
-    "hi52": 1.2024,
-    "lo52": 1.1325
-   },
-   "GC=F": {
-    "price": 4148.8,
-    "pct": -3.99,
-    "hi52": 5586.2,
-    "lo52": 3785.5
+    "lo52": 51.82,
+    "vol": 12821274
    },
    "GLD": {
-    "price": 377.91,
-    "pct": -3.94,
+    "price": 382.89,
+    "prev": 377.9100036621094,
     "hi52": 509.7,
-    "lo52": 350.87
-   },
-   "HG=F": {
-    "price": 6.606,
-    "pct": -1.34,
-    "hi52": 6.83,
-    "lo52": 4.708
+    "lo52": 350.87,
+    "vol": 7718834
    },
    "HYG": {
-    "price": 77.54,
-    "pct": -0.41,
+    "price": 77.36,
+    "prev": 77.54000091552734,
     "hi52": 81.33,
-    "lo52": 77.42
+    "lo52": 77.16,
+    "vol": 149304751
    },
    "IEF": {
-    "price": 89.53,
-    "pct": -0.52,
+    "price": 89.45,
+    "prev": 89.52999877929688,
     "hi52": 98.05,
-    "lo52": 89.29
+    "lo52": 89.19,
+    "vol": 12623087
    },
    "IWM": {
-    "price": 280.02,
-    "pct": -0.69,
+    "price": 279.01,
+    "prev": 280.0199890136719,
     "hi52": 305.18,
-    "lo52": 228.9
+    "lo52": 228.9,
+    "vol": 21044947
    },
    "KRE": {
-    "price": 70.55,
-    "pct": -1.4,
+    "price": 69.83,
+    "prev": 70.55000305175781,
     "hi52": 78.35,
-    "lo52": 57.55
+    "lo52": 57.55,
+    "vol": 19511303
    },
    "LQD": {
-    "price": 102.47,
-    "pct": -0.72,
+    "price": 102.41,
+    "prev": 102.47000122070312,
     "hi52": 112.93,
-    "lo52": 102.184
+    "lo52": 102.045,
+    "vol": 54391971
    },
    "MAGS": {
-    "price": 71.52,
-    "pct": -1.54,
+    "price": 71.39,
+    "prev": 71.5199966430664,
     "hi52": 73.46,
-    "lo52": 55.085
-   },
-   "NG=F": {
-    "price": 3.145,
-    "pct": -1.6,
-    "hi52": 7.827,
-    "lo52": 2.483
+    "lo52": 55.085,
+    "vol": 6189528
    },
    "QQQM": {
-    "price": 303.29,
-    "pct": -1.06,
+    "price": 303.83,
+    "prev": 303.2900085449219,
     "hi52": 308.21,
-    "lo52": 228.75
+    "lo52": 228.75,
+    "vol": 1878772
    },
    "RSP": {
-    "price": 209.74,
-    "pct": -0.65,
+    "price": 209.5,
+    "prev": 209.74000549316406,
     "hi52": 223.44,
-    "lo52": 182.11
+    "lo52": 182.11,
+    "vol": 6381750
    },
    "SMH": {
-    "price": 600.01,
-    "pct": -1.08,
+    "price": 606.9,
+    "prev": 600.010009765625,
     "hi52": 671.83,
-    "lo52": 315.05
+    "lo52": 315.05,
+    "vol": 5548821
    },
    "SPY": {
-    "price": 765.61,
-    "pct": -0.74,
+    "price": 764.2,
+    "prev": 765.6099853515625,
     "hi52": 779.37,
-    "lo52": 629.28
+    "lo52": 629.28,
+    "vol": 35427625
    },
    "TIP": {
-    "price": 104.09,
-    "pct": -0.43,
+    "price": 104.01,
+    "prev": 104.08999633789062,
     "hi52": 112.24,
-    "lo52": 103.98
+    "lo52": 103.85,
+    "vol": 3465684
    },
    "TLT": {
-    "price": 78.62,
-    "pct": -0.88,
+    "price": 78.23,
+    "prev": 78.62000274658203,
     "hi52": 92.19,
-    "lo52": 78.27
+    "lo52": 77.84,
+    "vol": 74729837
    },
    "USO": {
-    "price": 150.01,
-    "pct": 1.13,
+    "price": 143.35,
+    "prev": 150.00999450683594,
     "hi52": 163.35,
-    "lo52": 65.99
+    "lo52": 65.99,
+    "vol": 7007236
    },
    "VGK": {
-    "price": 88.38,
-    "pct": -0.28,
+    "price": 87.85,
+    "prev": 88.37999725341797,
     "hi52": 93.29,
-    "lo52": 77.87
+    "lo52": 77.87,
+    "vol": 3921441
    },
    "XLE": {
-    "price": 62.1,
-    "pct": 0.1,
+    "price": 61.54,
+    "prev": 62.099998474121094,
     "hi52": 66.17,
-    "lo52": 42.35
+    "lo52": 42.35,
+    "vol": 30810959
    },
    "XLF": {
-    "price": 54.19,
-    "pct": -1.19,
+    "price": 54.01,
+    "prev": 54.189998626708984,
     "hi52": 58.6,
-    "lo52": 47.67
+    "lo52": 47.67,
+    "vol": 52970384
    },
    "XLK": {
-    "price": 194.53,
-    "pct": -0.89,
+    "price": 194.5,
+    "prev": 194.52999877929688,
     "hi52": 198.73,
-    "lo52": 126.68
-   },
-   "^DJI": {
-    "price": 51481.51,
-    "pct": -0.67,
-    "hi52": 54744.33,
-    "lo52": 45057.28
-   },
-   "^GSPC": {
-    "price": 7683.69,
-    "pct": -0.77,
-    "hi52": 7816.7,
-    "lo52": 6316.91
-   },
-   "^IXIC": {
-    "price": 26820.38,
-    "pct": -0.92,
-    "hi52": 27288.79,
-    "lo52": 20690.25
-   },
-   "^RUT": {
-    "price": 2817.912,
-    "pct": -0.69,
-    "hi52": 3069.71,
-    "lo52": 2303.46
+    "lo52": 126.68,
+    "vol": 6133576
    },
    "^VIX": {
-    "price": 16.07,
-    "pct": 8.07,
+    "price": 16.04,
+    "prev": 16.06999969482422,
     "hi52": 35.3,
-    "lo52": 13.38
-   },
-   "^VIX3M": {
-    "price": 18.23,
-    "pct": 1.67,
-    "hi52": 29.46,
-    "lo52": 10.06
-   },
-   "^VIX9D": {
-    "price": 14.39,
-    "pct": 12.77,
-    "hi52": 35.07,
-    "lo52": 8.99
+    "lo52": 13.38,
+    "vol": 0
    }
   }
  },

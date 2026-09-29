@@ -1,11 +1,143 @@
 {
  "stories": [
   {
-   "id": "confidence-jolts-sep29",
-   "first_seen": "2026-09-29-am",
-   "last_updated": "2026-09-29-am",
+   "id": "pa-measles-900-sep28",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Developing",
+   "headline": "PA measles passes 900 cases; Pittsburgh schools plan MMR clinics",
+   "one_line": "903 cases/39 counties, 176 hosp, 4 deaths; none in Allegheny (WESA).",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "PA DOH via NBC Phila, WFMZ",
+    "WESA"
+   ],
+   "score_rationale": "Local health"
+  },
+  {
+   "id": "pa-house-hb2006-hb2649-sep28",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": false,
+   "status": "New",
+   "headline": "PA House passes HB 2006 (chatbot safety, 133-70) and HB 2649 (oncofertility, 172-31)",
+   "one_line": "Both to Senate.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "PA House releases",
+    "Center Square"
+   ],
+   "score_rationale": "Local PA beat"
+  },
+  {
+   "id": "pentagon-dmdc-breach-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": false,
+   "status": "New",
+   "headline": "Pentagon DMDC breach exposed ~3M people",
+   "one_line": "Oct 2025-Jul 2026 access; patched; no attribution.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Stars and Stripes",
+    "ABC",
+    "SecurityWeek"
+   ],
+   "score_rationale": "US security"
+  },
+  {
+   "id": "openai-devday-sol-funding-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
    "watch": true,
    "status": "New",
+   "headline": "OpenAI DevDay: GPT-6.1 Sol at 1/5 Astra price; Dots agents; reported $30B raise at $1.4T",
+   "one_line": "Funding talks early, no term sheet (Bloomberg, TechCrunch).",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "OpenAI",
+    "CNBC",
+    "Axios",
+    "Bloomberg",
+    "TechCrunch"
+   ],
+   "score_rationale": "AI section lead"
+  },
+  {
+   "id": "scotus-third-country-deportations-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "New",
+   "headline": "SCOTUS stays block on third-country deportations; December argument",
+   "one_line": "Unsigned order; Sotomayor, Kagan, Jackson would deny.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "NPR",
+    "WaPo",
+    "CBS",
+    "NBC",
+    "Bloomberg"
+   ],
+   "score_rationale": "Major US legal story"
+  },
+  {
+   "id": "oura-ipo-postponed-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
+   "watch": false,
+   "status": "Resolved",
+   "headline": "Oura postpones $2.2B IPO citing IPO-market uncertainty",
+   "one_line": "Third big postponement (Holtec, Bamboo). am-5 forecast misses.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "CNBC",
+    "Bloomberg",
+    "The Information"
+   ],
+   "score_rationale": "IPO window signal"
+  },
+  {
+   "id": "oil-second-day-fall-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Materially changed",
+   "headline": "Brent -2.6% to $102.59, WTI -3.5% to $89.38 as Saudi Red Sea exports recover; DOE 40M bbl SPR exchange RFP",
+   "one_line": "Brent still >$100 (am-4 forecast alive).",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "CNBC",
+    "energy.gov",
+    "Yahoo"
+   ],
+   "score_rationale": "Inflation input; Hormuz risk"
+  },
+  {
+   "id": "williams-no-urgency-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "New",
+   "headline": "Williams: one more hike 'may be appropriate late this year', 'no need for urgency'; Oct odds ~50%",
+   "one_line": "Barr same day: further adjustments likely. 2Y 4.89 (-3), 10Y 5.26 (+2), 30Y 5.59, intraday ~5.61 (highest since 2002).",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Bloomberg",
+    "Reuters",
+    "federalreserve.gov (Barr)",
+    "Treasury par curve",
+    "Seeking Alpha (odds)"
+   ],
+   "score_rationale": "Lead: Fed path repricing + long-end new highs"
+  },
+  {
+   "id": "confidence-jolts-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Continuing",
    "headline": "Conference Board confidence 81.9 (12-yr low); JOLTS 7.08M misses",
    "one_line": "Aug conf revised 88.6; July JOLTS revised up to 7.335M; quits 1.9%.",
    "verification": "Confirmed-primary",
@@ -18,16 +150,123 @@
   {
    "id": "hy-oas-crosses-3pct-sep28",
    "first_seen": "2026-09-29-am",
-   "last_updated": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
    "watch": true,
-   "status": "New",
+   "status": "Continuing",
    "headline": "HY OAS 3.02% Sep 28, widest this cycle",
-   "one_line": "+22bp in two sessions; 30Y market yield highest since 2004 (secondary).",
+   "one_line": "3.02% Sep 28 is latest FRED print; HYG heavy quarter-end volume Sep 29.",
    "verification": "Confirmed-primary",
    "sources": [
     "FRED/ICE BofA",
     "Treasury"
    ]
+  },
+  {
+   "id": "carnival-q3-beat-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Continuing",
+   "headline": "Carnival beats, raises FY guide; shares +11%",
+   "one_line": "Closed +13.4% at 25.11; 8-K Q3 adj EPS 1.43, rev 8.43B, FY guide 2.24.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "SEC 8-K",
+    "Investing.com"
+   ]
+  },
+  {
+   "id": "fico-fhfa-vantagescore-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Materially changed",
+   "headline": "FICO -18% as Fannie/Freddie move to single pricing grid incl. VantageScore",
+   "one_line": "Closed -26.5% at 617.87 on ~12x volume.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "CNBC"
+   ]
+  },
+  {
+   "id": "oura-ipo-pricing-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-pm",
+   "watch": false,
+   "status": "Resolved",
+   "headline": "Oura IPO to price Sep 29 at $40-44",
+   "one_line": "Postponed (see oura-ipo-postponed-sep29).",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Investing.com",
+    "GuruFocus"
+   ]
+  },
+  {
+   "id": "bond-selloff-sep28",
+   "first_seen": "2026-09-28-pm",
+   "last_updated": "2026-09-29-pm",
+   "watch": true,
+   "status": "Continuing",
+   "headline": "Bond selloff resumes: 2Y +11bp to 4.92%, 10Y 5.24% cycle high; stocks -0.8%",
+   "one_line": "10Y closed 5.26% Sep 29 (above 5.25 line); 30Y 5.59, intraday ~5.61.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "treasury.gov",
+    "federalreserve.gov",
+    "CNBC",
+    "Bloomberg"
+   ]
+  },
+  {
+   "id": "duquesne-light-ibew-contract-sep30",
+   "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
+   "status": "Continuing",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-29-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "No deal reported as of Sep 29 evening; expires Sep 30.",
+   "score_note": "Local utility reliability; open forecast graded Sept 30.",
+   "sources": [
+    "CBS Pittsburgh",
+    "Hoodline",
+    "WPXI"
+   ],
+   "watch": true
+  },
+  {
+   "id": "trump-rejects-iran-hormuz-offer-sep26",
+   "headline": "Oil jumps, gold falls >3% after Trump rejects Iran Hormuz offer; Trump expects talks this week",
+   "status": "Developing",
+   "first_seen": "2026-09-27-sun",
+   "last_updated": "2026-09-29-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "US reply via Qatar expected Sep 29 not reported delivered; Trump: offered \"NOTHING\".",
+   "score_note": "Lead: most market-moving development.",
+   "sources": [
+    "NPR",
+    "CNN",
+    "Axios",
+    "AP",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "micron-fq4-sep30",
+   "headline": "Micron reports fiscal Q4 Wed Sep 30 after close",
+   "status": "Developing",
+   "first_seen": "2026-09-27-sun",
+   "last_updated": "2026-09-29-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Reports Sep 30 after close; MU +1.05% to 1065.08 Sep 29.",
+   "score_note": "Key AI-demand datapoint after a narrow AI-led rally.",
+   "sources": [
+    "Alphastreet",
+    "Finnhub",
+    "Benzinga"
+   ],
+   "watch": true
   },
   {
    "id": "rba-hike-460-sep29",
@@ -41,33 +280,6 @@
    "sources": [
     "RBA",
     "Reuters"
-   ]
-  },
-  {
-   "id": "carnival-q3-beat-sep29",
-   "first_seen": "2026-09-29-am",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "New",
-   "headline": "Carnival beats, raises FY guide; shares +11%",
-   "one_line": "Adj EPS $1.43 vs 1.36; record rev $8.44B; CarMax also beat.",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "SEC 8-K",
-    "Investing.com"
-   ]
-  },
-  {
-   "id": "fico-fhfa-vantagescore-sep29",
-   "first_seen": "2026-09-29-am",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "New",
-   "headline": "FICO -18% as Fannie/Freddie move to single pricing grid incl. VantageScore",
-   "one_line": "FHFA's Pulte; no effective date; FHFA statement not located.",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "CNBC"
    ]
   },
   {
@@ -96,20 +308,6 @@
    "verification": "Single-reliable-source",
    "sources": [
     "Fortune"
-   ]
-  },
-  {
-   "id": "oura-ipo-pricing-sep29",
-   "first_seen": "2026-09-29-am",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "Developing",
-   "headline": "Oura IPO to price Sep 29 at $40-44",
-   "one_line": "50M shares, ~4x covered; trades Sep 30 on Nasdaq.",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "Investing.com",
-    "GuruFocus"
    ]
   },
   {
@@ -167,20 +365,6 @@
    ]
   },
   {
-   "id": "ai-leaders-self-improving-paper",
-   "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
-   "watch": true,
-   "status": "New",
-   "headline": "20+ AI leaders urge government oversight of self-improving AI",
-   "one_line": "Pachocki, Clark, Horvitz, Hinton, Bengio among authors.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Bloomberg",
-    "WSJ"
-   ]
-  },
-  {
    "id": "allegheny-paid-parental-leave",
    "first_seen": "2026-09-28-pm",
    "last_updated": "2026-09-29-am",
@@ -193,6 +377,82 @@
     "Post-Gazette",
     "WESA",
     "PublicSource"
+   ]
+  },
+  {
+   "id": "oil-fades-saudi-pipeline",
+   "first_seen": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Continuing",
+   "headline": "Oil fades from Hormuz jump; Brent settles $105.28 after $108.83 high; gold -4%",
+   "one_line": "CNBC: Saudi East-West pipeline ~3.5M b/d, Yanbu loadings resumed (unconfirmed by Aramco).",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "CNBC",
+    "Yahoo"
+   ]
+  },
+  {
+   "id": "us-china-tariff-cut-30b-sep26",
+   "first_seen": "2026-09-28-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Continuing",
+   "headline": "US and China cut tariffs on ~$30B of goods; truce extended into 2027",
+   "one_line": "Soybeans, fentanyl precursors, rare earths, US-China Board of Trade; Taiwan arms package undecided.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Washington Times",
+    "Fox",
+    "Bloomberg"
+   ],
+   "score_note": "Trade tail-risk reduction."
+  },
+  {
+   "id": "paramount-wbd-merger-settlement-sep21",
+   "headline": "Judge bars Paramount-WBD close until 3 PM ET Sep 28; consent decree ruling deferred",
+   "status": "Materially changed",
+   "first_seen": "2026-09-21-pm",
+   "last_updated": "2026-09-29-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Judge paused settlement approval; virtual hearing Thursday Oct 1.",
+   "score_note": "Removes the last state-level legal obstacle to a $111B media merger already shareholder-approved.",
+   "sources": [
+    "Deadline",
+    "Variety"
+   ],
+   "watch": true
+  },
+  {
+   "id": "week-of-sep28-pce-payrolls",
+   "headline": "PCE Wed, payrolls Fri; Oct hike ~70% priced; Bessent urges Fed \"open mind\"",
+   "status": "Developing",
+   "first_seen": "2026-09-27-sun",
+   "last_updated": "2026-09-29-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Hammack: inflationary mindset risk. Bessent on Fox Sunday: AI productivity, open mind. Barr Tue 12:40 is key speaker.",
+   "score_note": "Central market catalyst of the week.",
+   "sources": [
+    "Fed Board calendar",
+    "Fox",
+    "Bloomberg",
+    "Reuters"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ai-leaders-self-improving-paper",
+   "first_seen": "2026-09-28-pm",
+   "last_updated": "2026-09-28-pm",
+   "watch": true,
+   "status": "New",
+   "headline": "20+ AI leaders urge government oversight of self-improving AI",
+   "one_line": "Pachocki, Clark, Horvitz, Hinton, Bengio among authors.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Bloomberg",
+    "WSJ"
    ]
   },
   {
@@ -287,34 +547,21 @@
    ]
   },
   {
-   "id": "oil-fades-saudi-pipeline",
-   "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "Continuing",
-   "headline": "Oil fades from Hormuz jump; Brent settles $105.28 after $108.83 high; gold -4%",
-   "one_line": "CNBC: Saudi East-West pipeline ~3.5M b/d, Yanbu loadings resumed (unconfirmed by Aramco).",
-   "verification": "Confirmed-multiple",
+   "id": "iran-7day-hormuz-offer-rejected-sep26",
+   "headline": "Iran offers to reopen Hormuz in 7 days; WSJ reports Trump rejected it and plans strikes after midterms",
+   "status": "Developing",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-28-pm",
+   "verification": "Offer: Confirmed-primary (Araghchi public remarks). Rejection/post-midterm plan: Single-reliable-source (WSJ unnamed officials, relayed widely); no White House comment.",
+   "one_line": "Araghchi said Fri night Iran sent via mediators (reportedly to Witkoff) a plan: reopen Hormuz and resume nuclear talks within 7 days if the US lifts its port blockade, waives oil sanctions and observes a ceasefire incl. Lebanon. WSJ: Trump rejected it, expects to resume bombing after Nov 3 midterms, scale undecided.",
+   "score_note": "Answers the open 'big decision' question if accurate; ties oil/Hormuz to the political calendar.",
    "sources": [
-    "CNBC",
-    "Yahoo"
-   ]
-  },
-  {
-   "id": "bond-selloff-sep28",
-   "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "Continuing",
-   "headline": "Bond selloff resumes: 2Y +11bp to 4.92%, 10Y 5.24% cycle high; stocks -0.8%",
-   "one_line": "Treasury par curve; Cook: inflation ~double target; Oct hike ~72% (single-source FedWatch cite).",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "treasury.gov",
-    "federalreserve.gov",
-    "CNBC",
-    "Bloomberg"
-   ]
+    "WSJ via Bloomberg/CNBC/CBS",
+    "Al Jazeera",
+    "Euronews",
+    "AP"
+   ],
+   "watch": true
   },
   {
    "id": "baldwin-st-mclaughlin-run-bridge",
@@ -392,38 +639,6 @@
    ]
   },
   {
-   "id": "us-china-tariff-cut-30b-sep26",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-29-am",
-   "watch": true,
-   "status": "Continuing",
-   "headline": "US and China cut tariffs on ~$30B of goods; truce extended into 2027",
-   "one_line": "Soybeans, fentanyl precursors, rare earths, US-China Board of Trade; Taiwan arms package undecided.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Washington Times",
-    "Fox",
-    "Bloomberg"
-   ],
-   "score_note": "Trade tail-risk reduction."
-  },
-  {
-   "id": "duquesne-light-ibew-contract-sep30",
-   "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
-   "status": "Continuing",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-29-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Members voted 592-14 to authorize a strike; no 2026 tentative agreement found as of Sept 26 (beware 2023 'deal' stories in search). Company has contingency crews.",
-   "score_note": "Local utility reliability; open forecast graded Sept 30.",
-   "sources": [
-    "CBS Pittsburgh",
-    "Hoodline",
-    "WPXI"
-   ],
-   "watch": true
-  },
-  {
    "id": "scotus-missouri-map-save-sep25",
    "headline": "Supreme Court blocks Missouri's 2025 map a third time; stays ruling to let states use DHS SAVE on voter rolls",
    "status": "Resolved",
@@ -454,56 +669,6 @@
    "sources": [
     "Allegheny County",
     "CBS Pittsburgh"
-   ],
-   "watch": true
-  },
-  {
-   "id": "paramount-wbd-merger-settlement-sep21",
-   "headline": "Judge bars Paramount-WBD close until 3 PM ET Sep 28; consent decree ruling deferred",
-   "status": "Materially changed",
-   "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-29-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Judge paused settlement approval; virtual hearing Thursday Oct 1.",
-   "score_note": "Removes the last state-level legal obstacle to a $111B media merger already shareholder-approved.",
-   "sources": [
-    "Deadline",
-    "Variety"
-   ],
-   "watch": true
-  },
-  {
-   "id": "trump-rejects-iran-hormuz-offer-sep26",
-   "headline": "Oil jumps, gold falls >3% after Trump rejects Iran Hormuz offer; Trump expects talks this week",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-29-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "WTI ~$96.30 (+4.2%) 06:34 ET, Brent $106-108 Asia (AP/AJ); Trump to Axios: talks resume this week; Pezeshkian open to limits/inspectors; Fars claims 19 vessels targeted (unverified).",
-   "score_note": "Lead: most market-moving development.",
-   "sources": [
-    "NPR",
-    "CNN",
-    "Axios",
-    "AP",
-    "CNBC"
-   ],
-   "watch": true
-  },
-  {
-   "id": "week-of-sep28-pce-payrolls",
-   "headline": "PCE Wed, payrolls Fri; Oct hike ~70% priced; Bessent urges Fed \"open mind\"",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-29-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Hammack: inflationary mindset risk. Bessent on Fox Sunday: AI productivity, open mind. Barr Tue 12:40 is key speaker.",
-   "score_note": "Central market catalyst of the week.",
-   "sources": [
-    "Fed Board calendar",
-    "Fox",
-    "Bloomberg",
-    "Reuters"
    ],
    "watch": true
   },
@@ -566,22 +731,6 @@
     "Spotlight PA",
     "Capital-Star",
     "WITF"
-   ],
-   "watch": true
-  },
-  {
-   "id": "micron-fq4-sep30",
-   "headline": "Micron reports fiscal Q4 Wed Sep 30 after close",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Consensus ~$31.56-32.32 EPS on $51.2-52.2B; guidance $31 +/-1, $50B +/-1B; implied move ~8%.",
-   "score_note": "Key AI-demand datapoint after a narrow AI-led rally.",
-   "sources": [
-    "Alphastreet",
-    "Finnhub",
-    "Benzinga"
    ],
    "watch": true
   },
@@ -699,23 +848,6 @@
    "watch": true
   },
   {
-   "id": "iran-7day-hormuz-offer-rejected-sep26",
-   "headline": "Iran offers to reopen Hormuz in 7 days; WSJ reports Trump rejected it and plans strikes after midterms",
-   "status": "Developing",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-28-pm",
-   "verification": "Offer: Confirmed-primary (Araghchi public remarks). Rejection/post-midterm plan: Single-reliable-source (WSJ unnamed officials, relayed widely); no White House comment.",
-   "one_line": "Araghchi said Fri night Iran sent via mediators (reportedly to Witkoff) a plan: reopen Hormuz and resume nuclear talks within 7 days if the US lifts its port blockade, waives oil sanctions and observes a ceasefire incl. Lebanon. WSJ: Trump rejected it, expects to resume bombing after Nov 3 midterms, scale undecided.",
-   "score_note": "Answers the open 'big decision' question if accurate; ties oil/Hormuz to the political calendar.",
-   "sources": [
-    "WSJ via Bloomberg/CNBC/CBS",
-    "Al Jazeera",
-    "Euronews",
-    "AP"
-   ],
-   "watch": true
-  },
-  {
    "id": "pittsburgh-da-charges-sep25",
    "headline": "Pittsburgh DA Zappala: \"People will be charged\" in Gainey-era corruption probe",
    "status": "Continuing",
@@ -795,134 +927,6 @@
     "Bloomberg",
     "Taipei Times",
     "White House officials, via wire"
-   ],
-   "watch": true
-  },
-  {
-   "id": "f5-bigip-zeroday-sep23",
-   "headline": "Critical F5 BIG-IP zero-day added to CISA's exploited-vulnerabilities catalog, Friday deadline",
-   "status": "Continuing",
-   "first_seen": "2026-09-23-am",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "CVE-2026-94127 (CVSS 9.8), a heap-based buffer overflow in BIG-IP Access Policy Manager enabling unauthenticated RCE when APM is configured as an OAuth authorization server, was disclosed and hotfixed by F5 on Sept 22; CISA added it to its KEV catalog the same day with a Sept 25 federal remediation deadline, alongside three lower-profile additions (two Check Point flaws, one Arista VeloCloud Orchestrator bug). Affects BIG-IP APM 21.1.0 and 17.1.x-17.5.x. Update (Sept 25 am): today, Sept 25, is CISA's federal civilian remediation deadline. Shadowserver's internet-wide scan counts more than 14,700 internet-facing IP addresses carrying a BIG-IP APM fingerprint, a rough exposure measure, not a compromise count. No new confirmed exploitation or breach disclosure tied to this CVE since Tuesday. Update (Sept 25 pm): the federal remediation deadline passed today; no compliance-rate data found. The 14,700+ Shadowserver exposure count is the latest available figure, not a post-deadline recount -- an exposed instance past the deadline is still exposed, not necessarily still unpatched by the deadline.",
-   "score_note": "Zero gap between disclosure and confirmed active exploitation on network-perimeter infrastructure.",
-   "sources": [
-    "CISA KEV catalog (primary)",
-    "F5 security advisory (primary)",
-    "SecurityWeek",
-    "The Hacker News"
-   ],
-   "watch": false
-  },
-  {
-   "id": "drc-ebola-diverging-sep25",
-   "headline": "DRC's Ebola outbreak diverges sharply by province",
-   "status": "Materially changed",
-   "first_seen": "2026-09-25-pm",
-   "last_updated": "2026-09-25-pm",
-   "verification": "Confirmed-multiple, figures trace to WHO Disease Outbreak News",
-   "one_line": "7,773 confirmed cases and 3,759 deaths across seven provinces. Ituri (5,966 cases/2,737 deaths, 28 of 36 health zones) is declining roughly 26% over 21 days, with Haut-Uele down ~15%. North Kivu (1,438 cases/872 deaths, 16 of 34 health zones) is up 73% over 21 days. WHO: \"encouraging signs\" in Ituri, but the fight is \"far from over.\"",
-   "score_note": "A genuine two-track outbreak -- meaningful progress in the original epicenter alongside a much newer, faster-growing front.",
-   "sources": [
-    "World Health Organization Disease Outbreak News (primary)",
-    "UN News",
-    "Al Jazeera"
-   ],
-   "watch": true
-  },
-  {
-   "id": "anthropic-founder-voting-control-akamai-sep25",
-   "headline": "Anthropic's founders seek majority voting control ahead of its IPO; a $11.6B Akamai cloud deal surfaces two days late",
-   "status": "New",
-   "first_seen": "2026-09-25-pm",
-   "last_updated": "2026-09-25-pm",
-   "verification": "Single-reliable-source (governance filing, via The Information/TechCrunch); Confirmed-primary (Akamai deal, via 8-K)",
-   "one_line": "Per The Information (via TechCrunch), Anthropic is asking shareholders to approve a structure giving its seven co-founders, including CEO Dario Amodei, combined 50.1% voting control on most matters, contingent on at least three founders maintaining a minimum stake; no second independent outlet found. Separately, Akamai announced an $11.6B, 7-year cloud-computing deal with Anthropic Thursday evening (expandable to ~$20B), via its own press release and 8-K -- an announcement this outlet's research did not surface in time for Thursday's or this morning's edition; disclosed as a coverage-omission correction.",
-   "score_note": "Both items land in the run-up to a reported November IPO listing this outlet has tracked closely.",
-   "sources": [
-    "Akamai press release and 8-K (primary, SEC EDGAR)",
-    "The Information via TechCrunch",
-    "Bloomberg"
-   ],
-   "watch": true
-  },
-  {
-   "id": "frontier-ai-standards-agency-sep25",
-   "headline": "Google, OpenAI and Anthropic reportedly courting a chief for an industry-run AI safety self-regulator",
-   "status": "New",
-   "first_seen": "2026-09-25-am",
-   "last_updated": "2026-09-25-am",
-   "verification": "Single-reliable-source, Preliminary",
-   "one_line": "Trade-press reports say the three labs are courting Sriram Krishnan, the White House's former AI policy adviser (left that role in June), to lead a proposed FINRA-style, industry-run AI safety self-regulator with no government oversight, targeting a late-2026/early-2027 launch. Other names reportedly approached: Arati Prabhakar, Condoleezza Rice, David Friedberg. No joint statement or confirmation from any of the three companies found; resting on a small number of trade-press outlets.",
-   "score_note": "Genuinely new development touching Anthropic and the ongoing congressional AI-oversight thread; weakly sourced, watch for corroboration or denial.",
-   "sources": [
-    "Trade-press reporting (secondary, small number of outlets)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pa-garrity-shapiro-tax-split-sep25",
-   "headline": "Garrity and Shapiro's tax-cut divide sharpens ahead of the 2026 governor's race",
-   "status": "New",
-   "first_seen": "2026-09-25-am",
-   "last_updated": "2026-09-25-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "State Treasurer Stacy Garrity, a likely 2026 gubernatorial contender, campaigns on cutting PA's flat income-tax rate below 3.07% (a state House bill targets 2.8%), eliminating the inheritance tax, and rolling back the 5.9% utility gross-receipts tax. Shapiro has not proposed cutting the income-tax rate; his platform centers on the targeted Working Pennsylvanians Tax Credit (up to $805 on top of the federal EITC). Fresh coverage this week confirms the divide is sharpening, not narrowing.",
-   "score_note": "Emerging statewide policy contrast ahead of next year's gubernatorial race.",
-   "sources": [
-    "WESA",
-    "Northeast Times",
-    "South Philly Review"
-   ],
-   "watch": true
-  },
-  {
-   "id": "meta-muse-amazon-block-sep24",
-   "headline": "Amazon blocks Meta's Muse AI agent from Amazon.com as Meta unveils a dedicated Muse hardware device",
-   "status": "Materially changed",
-   "first_seen": "2026-09-24-am",
-   "last_updated": "2026-09-25-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Meta unveiled a palm-sized 'Muse Charm' hardware device for its Muse AI agent on Sept 23; a widely-cited but Single-reliable-source ranking claim says Muse became the top free app on Apple's App Store, unseating ChatGPT. Separately, Amazon blocked Meta's Muse agent from accessing Amazon.com, saying 'continued access by an unauthorized AI agent violates Amazon's Conditions of Service' -- an interoperability dispute between two of the largest AI/commerce platforms, with no resolution or further statement from either company yet. Update (Sept 24 pm): META rallied 4.50% to $777.59 after JPMorgan upgraded the stock citing early Muse traction, calling it (per reports) the most promising consumer AI app since ChatGPT; Wells Fargo had separately raised its price target to $796 from $640 ahead of Meta Connect. One outlet reported a possible Muse authentication-token security flaw today; unclear whether new or a restatement of the access issue already reported in the Amazon dispute -- flagged unverified, not independently confirmed this run. Update (Sept 25 am): Meta shares are now up more than 20% over the two weeks since Muse's introduction; multiple outlets report Muse reached the #1 spot on Apple's App Store ahead of ChatGPT, a ranking claim this outlet has not independently verified. Muse Charm (a roughly 2-inch, AirPods-case-sized device with its own 5G connection) ships for the holidays in December. The Amazon access block remains unresolved; neither company has commented further. Update (Sept 25 pm): the rally reversed -- META closed $751.66, -3.33%, giving back most of Thursday's 4.5% gain. Multiple outlets attributed the reversal to a Goldman Sachs note estimating AI hyperscalers need roughly $300B/year in AI-services revenue just to break even on this year's ~$800B (rising to ~$1.1T next year) capex; a sector-wide caution note, not Meta-specific, though Meta fell more than most peers. Detailed reporting on the authentication-token security flaw (Techdirt, Digital Trends) describes it as unpatched as of this run; Amazon's block remains in place.",
-   "score_note": "A concrete, first-of-its-kind access block between mega-cap platforms over agentic-AI interoperability.",
-   "sources": [
-    "Bloomberg",
-    "TechCrunch",
-    "Yahoo Finance"
-   ],
-   "watch": true
-  },
-  {
-   "id": "spcx-shotwell-sale-lockup-sep23",
-   "headline": "SpaceX shares slide on an insider stock-sale disclosure ahead of Thursday's lockup expiration",
-   "status": "Resolved",
-   "first_seen": "2026-09-23-pm",
-   "last_updated": "2026-09-25-am",
-   "verification": "Single-reliable-source (trade coverage, not independently verified against EDGAR this run)",
-   "one_line": "SPCX closed at $148.36, down 4.11% and underperforming the broad market's risk-off move. Trade coverage (TradingKey) attributes the decline to a disclosed stock-sale filing by President/COO Gwynne Shotwell, compounded by a lockup expiration Thursday Sept 24 (up to ~328.4M additional shares eligible to trade, first since the June 12 IPO). Not verified directly against SEC EDGAR this run; appears to be a supply-driven move, unrelated to launch cadence, Starlink or Starship. Update (Sept 24 am): today is the lockup-expiration date itself -- up to roughly 328.4 million additional shares become eligible to trade for the first time since the June 12 IPO. No new insider-sale filings found since Wednesday's Shotwell disclosure. SPCX closed Wednesday at $148.36 (-4.11%) and was reported modestly softer in premarket trading Thursday; any actual selling pressure from the unlock will only be observable once the regular session opens. Update (Sept 24 pm): the lockup opened today as scheduled (~328.4M shares); SPCX closed at $148.03, -0.22%, a materially calmer session than Wednesday's Shotwell-sale-driven -4.11% move. No major dislocation observed on the unlock itself. Update (Sept 25 am): Shotwell's Form 4 covers 342,170 shares, worth roughly $52 million. Further lockup tranches are scheduled for October 9 and October 24, then a larger release tied to Q3 earnings -- Thursday's calm unlock session doesn't resolve what happens at those larger unlocks.",
-   "score_note": "First insider-sale-driven move in SPCX since the IPO; the lockup expiration is a genuine, dated catalyst.",
-   "sources": [
-    "TradingKey (single outlet)",
-    "registry/entities.json (SpaceX status, EDGAR-verified separately)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "ukraine-refinery-strikes-poland-train-sep13",
-   "headline": "Zelensky disputes Trump's claimed refinery-strike truce; NATO's Rutte confirms alliance will boost support",
-   "status": "Materially changed",
-   "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-25-am",
-   "verification": "Confirmed-multiple/primary",
-   "one_line": "Zelensky confirmed Ukraine struck the Syzran refinery in Russia's Samara region Monday, undercutting Trump's claimed mutual pause on energy-strikes. Russia launched roughly 149-200 drones (source range) at Ukraine overnight Monday into Tuesday; Ukraine says it downed 128. A Sumy shopping-mall strike killed at least two, injured 23. NATO aviation assets flew over Polish airspace overnight, continuing from Sunday's Rutte support pledge. Update (Sept 17): Ukraine says Russia fired 3,500+ drones and ~190 missiles at it in September; a Wednesday barrage of 100+ drones hit Zaporizhzhia, killing one and injuring 18+. Update (Sept 24 pm): a further, distinct overnight barrage (Zircon and Iskander missiles plus 282 drones) hit Kyiv and Odesa, killing at least two in Kyiv -- separate from this morning's reported 6 dead in the Kharkiv region. Zelensky floated the G20 Miami summit as a possible venue for a Trump-Putin-Zelensky meeting; the Kremlin's Peskov again called such a meeting 'premature' and a 'waste of time.' Update (Sept 25 am, single-sourced): Russian drones struck Odesa again overnight, killing at least one and injuring two per Ukrainian officials only (not independently corroborated); Ukraine's air force says it intercepted 267 of 295 drones launched nationwide overnight, a separate and smaller barrage than Wednesday night's larger Kyiv/Odesa strike. Zelensky's push for a Trump-Putin-Zelensky trilateral remains rebuffed by the Kremlin's Peskov, who calls it premature pending expert-level talks first.",
-   "score_note": "Confirms the disputed truce was never operative on either side.",
-   "sources": [
-    "Zelensky's Telegram post (primary)",
-    "Rutte's remarks (primary, via wire)",
-    "UPI",
-    "PBS",
-    "Al Jazeera"
    ],
    "watch": true
   }
