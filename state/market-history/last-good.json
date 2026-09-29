@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-28T20:55:15Z",
+ "fetched_at": "2026-09-29T15:13:07Z",
  "treasury_par_curve": {
   "as_of": "2026-09-28 EOD official",
   "curve": {
@@ -20,7 +20,8 @@
   },
   "2s10s_bp": 32,
   "3m10y_bp": 96,
-  "5s30s_bp": 50
+  "5s30s_bp": 50,
+  "fetched_at": "2026-09-29T15:13:07Z"
  },
  "fred": {
   "as_of": "2026-09-28 pm run: daily series at 2026-09-25",
@@ -514,7 +515,7 @@
   "price": 922.77,
   "pct": 2.93
  },
- "_notes_this_run": "2026-09-27 sun: CoinGecko live refreshed; FRED checked (no observations newer than Sep 24/25); Yahoo reachable (ES=F last 7803.75, Friday). All other blocks carry Friday Sep 25 EOD from the Sep 26 sat run.",
+ "_notes_this_run": "2026-09-29 am: Treasury, Frankfurter, CoinGecko /global, FRED public CSV refreshed. Yahoo 429 on all symbols; Cboe cdn blocked (Cloudflare); CoinGecko simple/price 403. Board/watchlist/vix blocks carry Sep 28 EOD from pm run.",
  "yahoo_am_2026_09_28": {
   "fetched_at": "2026-09-28T10:54:34Z",
   "label": "Delayed (+10 min) futures/overnight; Previous close for cash",
@@ -931,20 +932,20 @@
   }
  },
  "frankfurter": {
-  "date": "2026-09-25",
+  "date": "2026-09-29",
   "rates": {
-   "AUD": 1.4224,
-   "BRL": 5.1821,
-   "CAD": 1.4143,
-   "CHF": 0.82829,
-   "CNY": 6.7132,
-   "EUR": 0.87696,
-   "GBP": 0.75458,
-   "INR": 95.82,
-   "JPY": 157.59,
-   "MXN": 17.6989
+   "AUD": 1.4277,
+   "BRL": 5.2115,
+   "CAD": 1.418,
+   "CHF": 0.8332,
+   "CNY": 6.7034,
+   "EUR": 0.88067,
+   "GBP": 0.75489,
+   "INR": 95.98,
+   "JPY": 157.12,
+   "MXN": 17.897
   },
-  "fetched_at": "2026-09-28T10:54:34Z"
+  "fetched_at": "2026-09-29T15:13:07Z"
  },
  "coingecko": {
   "fetched_at": "2026-09-28T10:54:34Z",
@@ -1180,6 +1181,35 @@
     "hi52": 35.07,
     "lo52": 8.99
    }
+  }
+ },
+ "coingecko_global": {
+  "fetched_at": "2026-09-29T15:13:07Z",
+  "total_cap_usd": 2875339756365,
+  "btc_dominance": 58.19,
+  "cap_chg_24h_pct": -1.92
+ },
+ "fred_csv_2026_09_29": {
+  "fetched_at": "2026-09-29T15:13:07Z",
+  "BAMLH0A0HYM2": {
+   "value": 3.02,
+   "date": "2026-09-28"
+  },
+  "T10YIE": {
+   "value": 2.34,
+   "date": "2026-09-28"
+  },
+  "SOFR": {
+   "value": 3.9,
+   "date": "2026-09-28"
+  },
+  "DFII10": {
+   "value": 2.83,
+   "date": "2026-09-25"
+  },
+  "ICSA": {
+   "value": 197000,
+   "date": "2026-09-19"
   }
  }
 }

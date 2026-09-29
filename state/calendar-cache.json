@@ -38,7 +38,7 @@
   {
    "ts_et": "2026-09-29T00:30:00-04:00",
    "type": "central_bank",
-   "name": "RBA decision (hike to 4.60% expected)",
+   "name": "RBA decision: hiked 25bp to 4.60%",
    "importance": "Medium",
    "reason": "Global tightening cycle",
    "source": "investingLive/CBA"
@@ -62,7 +62,7 @@
   {
    "ts_et": "2026-09-29T10:00:00-04:00",
    "type": "econ",
-   "name": "JOLTS job openings (Aug); July 7.3M",
+   "name": "JOLTS job openings (Aug): 7.079M actual vs ~7.23M; July rev 7.335M",
    "importance": "High",
    "reason": "Labor demand before payrolls",
    "source": "bls.gov ICS (primary)"
@@ -70,7 +70,7 @@
   {
    "ts_et": "2026-09-29T10:00:00-04:00",
    "type": "econ",
-   "name": "Conference Board consumer confidence (Sept); Aug 89.4",
+   "name": "Conference Board consumer confidence (Sept): 81.9 actual vs ~89; Aug rev 88.6",
    "importance": "Medium",
    "reason": "Consumer",
    "source": "Conference Board"
@@ -97,6 +97,14 @@
    "name": "Gov. Barr, 'Economic Outlook' (Detroit)",
    "importance": "High",
    "reason": "Leading hawk; October hike signal",
+   "source": "federalreserve.gov calendar"
+  },
+  {
+   "ts_et": "2026-09-29T13:25:00-04:00",
+   "type": "fed",
+   "name": "Gov. Cook, AI and emerging tech (Oakland Tech Week)",
+   "importance": "Low",
+   "reason": "Topic not policy-specific",
    "source": "federalreserve.gov calendar"
   },
   {
@@ -212,6 +220,14 @@
    "source": "NASA (primary)"
   },
   {
+   "ts_et": "2026-10-01T12:00:00-04:00",
+   "type": "legal",
+   "name": "Paramount-WBD settlement virtual hearing (N.D. Cal.)",
+   "importance": "Medium",
+   "reason": "$111B merger closing",
+   "source": "Deadline"
+  },
+  {
    "ts_et": "2026-10-01T13:30:00-04:00",
    "type": "fed",
    "name": "Vice Chair Jefferson, 'U.S. Economy and Monetary Policy' (with Q&A)",
@@ -250,6 +266,14 @@
    "importance": "Medium",
    "reason": "EM/oil",
    "source": "Datafolha/ODIHR/Energy Connects"
+  },
+  {
+   "ts_et": "2026-10-04T09:00:00-04:00",
+   "type": "energy",
+   "name": "OPEC+ eight/seven-country meeting",
+   "importance": "Medium",
+   "reason": "Output amid Hormuz disruption",
+   "source": "CNBC"
   },
   {
    "ts_et": "2026-10-05T05:30:00-04:00",

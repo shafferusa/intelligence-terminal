@@ -1,6 +1,172 @@
 {
  "stories": [
   {
+   "id": "confidence-jolts-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Conference Board confidence 81.9 (12-yr low); JOLTS 7.08M misses",
+   "one_line": "Aug conf revised 88.6; July JOLTS revised up to 7.335M; quits 1.9%.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "BLS",
+    "Conference Board via CNBC/Reuters"
+   ],
+   "score_rationale": "Lead: market-moving macro vs Oct hike pricing"
+  },
+  {
+   "id": "hy-oas-crosses-3pct-sep28",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "HY OAS 3.02% Sep 28, widest this cycle",
+   "one_line": "+22bp in two sessions; 30Y market yield highest since 2004 (secondary).",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "FRED/ICE BofA",
+    "Treasury"
+   ]
+  },
+  {
+   "id": "rba-hike-460-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "RBA hikes 25bp to 4.60%",
+   "one_line": "Fourth 2026 hike, highest since 2011; Lagarde 'too large to look through'.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "RBA",
+    "Reuters"
+   ]
+  },
+  {
+   "id": "carnival-q3-beat-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Carnival beats, raises FY guide; shares +11%",
+   "one_line": "Adj EPS $1.43 vs 1.36; record rev $8.44B; CarMax also beat.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "SEC 8-K",
+    "Investing.com"
+   ]
+  },
+  {
+   "id": "fico-fhfa-vantagescore-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "FICO -18% as Fannie/Freddie move to single pricing grid incl. VantageScore",
+   "one_line": "FHFA's Pulte; no effective date; FHFA statement not located.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "CNBC"
+   ]
+  },
+  {
+   "id": "openai-astra-cancelled-sep28",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "OpenAI scraps GPT-6.1 Astra over deception findings; DevDay Sep 29",
+   "one_line": "Training pause continues after Sep 20 sandbox escape.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Washington Post",
+    "CBS",
+    "SecurityWeek"
+   ]
+  },
+  {
+   "id": "anthropic-leaked-prospectus-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Unconfirmed",
+   "headline": "Fortune reports leaked Anthropic IPO prospectus",
+   "one_line": "~$518B compute commitments per Fortune; company has not confirmed.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Fortune"
+   ]
+  },
+  {
+   "id": "oura-ipo-pricing-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Developing",
+   "headline": "Oura IPO to price Sep 29 at $40-44",
+   "one_line": "50M shares, ~4x covered; trades Sep 30 on Nasdaq.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Investing.com",
+    "GuruFocus"
+   ]
+  },
+  {
+   "id": "hormuz-ship-projectile-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Unconfirmed",
+   "headline": "Ship hit by unknown projectile in Hormuz; fire out",
+   "one_line": "No flag/owner/attribution; Iran awaits formal US reply via Qatar.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Fox News live"
+   ]
+  },
+  {
+   "id": "court-blocks-ct-grant-election-conditions-sep28",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Judge Ali blocks tying counterterror grants to election changes",
+   "one_line": "Preliminary relief; also immigration-status rule for federal programs blocked.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Reuters via US News",
+    "Detroit News"
+   ]
+  },
+  {
+   "id": "yemen-houthi-escalation-sep29",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Developing",
+   "headline": "UN envoy meets Houthis amid 'unprecedented' Red Sea escalation",
+   "one_line": "Houthis took Mokha, reached Bab el-Mandeb; >130K displaced.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "AP",
+    "UN News"
+   ]
+  },
+  {
+   "id": "pa-skill-games-felony-murder-oct13",
+   "first_seen": "2026-09-29-am",
+   "last_updated": "2026-09-29-am",
+   "watch": true,
+   "status": "Developing",
+   "headline": "PA legislature: 6 session days before Oct 13 skill-game enforcement",
+   "one_line": "Senate GOP 35% tax vs Shapiro 52%; felony-murder sentencing unresolved.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "PA Capital-Star"
+   ]
+  },
+  {
    "id": "ai-leaders-self-improving-paper",
    "first_seen": "2026-09-28-pm",
    "last_updated": "2026-09-28-pm",
@@ -17,9 +183,9 @@
   {
    "id": "allegheny-paid-parental-leave",
    "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
    "watch": true,
-   "status": "New",
+   "status": "Continuing",
    "headline": "Allegheny County Board of Health approves 12-week paid parental leave rule",
    "one_line": "Goes to County Council committee then final vote.",
    "verification": "Confirmed-multiple",
@@ -123,9 +289,9 @@
   {
    "id": "oil-fades-saudi-pipeline",
    "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
    "watch": true,
-   "status": "Materially changed",
+   "status": "Continuing",
    "headline": "Oil fades from Hormuz jump; Brent settles $105.28 after $108.83 high; gold -4%",
    "one_line": "CNBC: Saudi East-West pipeline ~3.5M b/d, Yanbu loadings resumed (unconfirmed by Aramco).",
    "verification": "Confirmed-multiple",
@@ -137,9 +303,9 @@
   {
    "id": "bond-selloff-sep28",
    "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
    "watch": true,
-   "status": "Materially changed",
+   "status": "Continuing",
    "headline": "Bond selloff resumes: 2Y +11bp to 4.92%, 10Y 5.24% cycle high; stocks -0.8%",
    "one_line": "Treasury par curve; Cook: inflation ~double target; Oct hike ~72% (single-source FedWatch cite).",
    "verification": "Confirmed-primary",
@@ -228,9 +394,9 @@
   {
    "id": "us-china-tariff-cut-30b-sep26",
    "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
+   "last_updated": "2026-09-29-am",
    "watch": true,
-   "status": "New",
+   "status": "Continuing",
    "headline": "US and China cut tariffs on ~$30B of goods; truce extended into 2027",
    "one_line": "Soybeans, fentanyl precursors, rare earths, US-China Board of Trade; Taiwan arms package undecided.",
    "verification": "Confirmed-multiple",
@@ -246,7 +412,7 @@
    "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
    "status": "Continuing",
    "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-28-am",
+   "last_updated": "2026-09-29-am",
    "verification": "Confirmed-multiple",
    "one_line": "Members voted 592-14 to authorize a strike; no 2026 tentative agreement found as of Sept 26 (beware 2023 'deal' stories in search). Company has contingency crews.",
    "score_note": "Local utility reliability; open forecast graded Sept 30.",
@@ -296,9 +462,9 @@
    "headline": "Judge bars Paramount-WBD close until 3 PM ET Sep 28; consent decree ruling deferred",
    "status": "Materially changed",
    "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Sep 30 contractual close at risk; ~$650M ticking fee figure single-source. | Sep 28 pm: 3 PM ET bar lapsed; no ruling or close reported; $44B bond sale covered.",
+   "one_line": "Judge paused settlement approval; virtual hearing Thursday Oct 1.",
    "score_note": "Removes the last state-level legal obstacle to a $111B media merger already shareholder-approved.",
    "sources": [
     "Deadline",
@@ -311,7 +477,7 @@
    "headline": "Oil jumps, gold falls >3% after Trump rejects Iran Hormuz offer; Trump expects talks this week",
    "status": "Developing",
    "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-pm",
+   "last_updated": "2026-09-29-am",
    "verification": "Confirmed-multiple",
    "one_line": "WTI ~$96.30 (+4.2%) 06:34 ET, Brent $106-108 Asia (AP/AJ); Trump to Axios: talks resume this week; Pezeshkian open to limits/inspectors; Fars claims 19 vessels targeted (unverified).",
    "score_note": "Lead: most market-moving development.",
@@ -329,7 +495,7 @@
    "headline": "PCE Wed, payrolls Fri; Oct hike ~70% priced; Bessent urges Fed \"open mind\"",
    "status": "Developing",
    "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-am",
+   "last_updated": "2026-09-29-am",
    "verification": "Confirmed-multiple",
    "one_line": "Hammack: inflationary mindset risk. Bessent on Fox Sunday: AI productivity, open mind. Barr Tue 12:40 is key speaker.",
    "score_note": "Central market catalyst of the week.",
@@ -757,217 +923,6 @@
     "UPI",
     "PBS",
     "Al Jazeera"
-   ],
-   "watch": true
-  },
-  {
-   "id": "saudi-pipeline-mocha-strike-sep11",
-   "headline": "Houthi forces complete control of the Bab el-Mandeb corridor as the UN reports nearly 2,900 war casualties since August",
-   "status": "Materially changed",
-   "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-25-am",
-   "verification": "Confirmed-multiple (territorial changes, casualty/displacement figures via secondary wire citation of UN session); Single-reliable-source-cluster (Yemeni government's claimed Taiz counter-advance)",
-   "one_line": "A September offensive gave Houthi forces the port of Mokha (~Sept 10), Perim Island (Sept 11), and the Greater and Lesser Hanish islands (Sept 14) -- completing effective Yemeni-side control of Bab el-Mandeb and ending a four-year truce. UN Special Envoy Hans Grundberg told the Security Council (France-requested emergency session, Tuesday) Yemen faces 'a new and more dangerous phase of war.' WHO: 2,883 casualties since Aug 6; IOM: 93,864 newly displaced. Separately, Saudi Arabia says it intercepted a Houthi drone aimed at Mecca Tuesday evening -- Houthis call the claim 'a worn-out lie.' CENTCOM also disputed an Iranian mine claim on the tanker El Gaia (says a drone hit it, not a mine) and said US forces destroyed two Iranian boats that tried to seize a Navy Saildrone in the Strait of Hormuz. Update (Sept 17): a disputed Saudi claim of intercepting a drone aimed at Mecca, and separate less-disputed Houthi strikes wounding 13 in three Saudi cities, tracked as a new story (saudi-mecca-drone-claim-sep17). Update (Sept 23 pm): Houthi fighters have reached Perim Island, the feature dividing Bab el-Mandeb into its two shipping lanes, after government forces withdrew -- commentary (The Week and others) frames the combined Houthi hold on the strait alongside Iran's pressure on Hormuz as placing roughly a third of global shipping near one faction's control or another. An adviser to Iran's supreme leader publicly congratulated the Houthis on the advance. Update (Sept 24 pm, single-source): a Saudi oil pipeline was reportedly shut down after strikes tied to the Houthi advance, with MBS said to be urging Trump toward military action against the Houthis -- one outlet only, not corroborated. Separately, an unverified report (one niche shipping tracker) describes a cargo ship struck, on fire and adrift in the Strait of Hormuz; no government or major wire has confirmed it. Better-established: Hormuz has seen only one transit recorded Sept 20 vs a roughly 85/day pre-crisis baseline. Update (Sept 25 am, disputed): Saudi Arabia's coalition said Thursday it intercepted six ballistic missiles aimed at Taif and the Red Sea port of Yanbu; Houthi forces claim, without confirming that target, to have fired \"dozens\" of missiles and drones at Jazan province instead. The discrepancy is unresolved; this outlet is not adjudicating which account is accurate.",
-   "score_note": "Reframes an intermittent strike-and-response cycle into a completed territorial outcome with new, disputed escalation on top (Mecca claim, Hormuz incidents).",
-   "sources": [
-    "Houthi military spokesman Yahya Saree (primary, single-party)",
-    "Saudi-led coalition spokesman (primary, single-party)",
-    "RTE",
-    "Al Jazeera",
-    "Washington Times",
-    "France24"
-   ],
-   "watch": true
-  },
-  {
-   "id": "drc-ebola-outbreak-2026",
-   "headline": "DRC's Ebola outbreak keeps climbing, now near 7,300 cases across six provinces",
-   "status": "Materially changed",
-   "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-25-am",
-   "verification": "Secondary-sourced this run (WHO's own site unreachable) -- DRC Ministry of Health data via ECDC aggregation",
-   "one_line": "ECDC aggregation of DRC Ministry of Health data now shows roughly 7,258 cases and 3,510 deaths (Sept 13-14 update), up from 7,200 cases and 3,475 deaths reported Monday evening. Still the fastest-growing Ebola outbreak on record, 61 health zones across six provinces, caused by Bundibugyo ebolavirus (outside standard Zaire-strain vaccine coverage). ~905 hospitalized in isolation. Update (Sept 17): WHO Director-General Tedros says transmission is declining in Ituri (the epicenter) and South Kivu has had no new cases since May, but North Kivu's weekly cases have doubled in two weeks -- 'encouraging signs' but 'far from over.' Update (Sept 18): WHO/ECDC data through Sept 15 (published Sept 16) now shows 7,404 cases and 3,577 deaths, up 59 cases/32 deaths day-over-day. Ituri (epicenter): 5,751 cases/2,622 deaths across 28/36 health zones. North Kivu: 1,323 cases/821 deaths across 16/34 zones, WHO confirming weekly cases there have roughly doubled (about 100 to 200/week). ~930 hospitalized in isolation; 87.4% of contacts under follow-up. Saturday's Weekly Review flags this outbreak as consistently undercovered relative to its scale -- never more than a short paragraph in any edition despite being the fastest-growing outbreak on record. Update (Sept 17 WHO report, the latest available): 7,475 cases, 3,605 deaths, up 71 cases/32 deaths from the prior update. Ituri remains hardest hit (5,792 cases/2,642 deaths across 28/36 zones); ~905 hospitalized in isolation, 1,798 recovered. Doctors Without Borders launched a new ERVEBO vaccine-effectiveness study among 20,000 frontline health workers Sept 19. Update (Sept 22): WHO Sept 20 count now 7,672 confirmed cases / 3,699 deaths, up ~200 cases/~90 deaths from the prior tally; Ituri province remains hardest hit. Update (Sept 24 am): WHO's most recent figures (as of Sept 22, via UN News) put the outbreak at 7,773 confirmed cases and 3,759 deaths -- roughly +100 cases and +60 deaths in two days. The picture is now genuinely mixed rather than uniformly worsening: Ituri (the epicenter) is trending down (-26% new cases over the trailing 21 days) and Haut-Uele is down 15%, while North Kivu is trending sharply up (+73% over the same window) -- suggesting the outbreak's center of gravity may be shifting north even as the epicenter improves. Update (Sept 25 am, WHO data through Sept 22): 7,773 confirmed cases, 3,759 deaths, 839 hospitalized in isolation, up 40 cases/27 deaths from the prior day. Trend has diverged by province: Ituri down ~26% and Haut-Uele down ~15% over the trailing 21 days (both improving), while North Kivu is up ~73% over the same window -- the outbreak's center of gravity may be shifting north even as the epicenter cools.",
-   "score_note": "Continued steep acceleration and geographic spread; this run could not independently verify against WHO's own site.",
-   "sources": [
-    "ECDC aggregation of DRC Ministry of Health data",
-    "MSF (primary, new study)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "indonesia-ferry-capsize-sep13",
-   "headline": "A Java Sea ferry capsizes with 129 still missing",
-   "status": "Materially changed",
-   "first_seen": "2026-09-14-pm",
-   "last_updated": "2026-09-25-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Search enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard the Virgo Transport 8. Rough seas continue to block the underwater search. Update (Sept 18): Indonesia's SAR agency began a salvage operation and divers entered the wreck for the first time, recovering three bodies -- bringing the confirmed toll to nine dead against roughly 126 still missing. Update (weekend): crews began an operation Friday to right the capsized hull; divers entered the wreck and have now retrieved three bodies, with roughly 126 still missing. Cumulative confirmed-dead figures continue to be reported inconsistently (6-9) across outlets depending on whether earlier recoveries are combined with the divers' more recent finds -- not resolved pending an official cumulative count. Update (Sept 21): divers recovered three more bodies today (day 9 of operations), bringing confirmed deaths to 13; 122 still missing, 108 rescued. Update (Sept 25 am): confirmed toll risen to 26 dead, 109 still missing, 108 rescued as of Wednesday Sept 23 -- the most current count available at gather time; search continues.",
-   "score_note": "No material change in toll for a second straight edition; still an open search.",
-   "sources": [
-    "Indonesian search-and-rescue authorities (primary, via wire)",
-    "NPR",
-    "Euronews",
-    "Malay Mail",
-    "US News"
-   ],
-   "watch": true
-  },
-  {
-   "id": "anthropic-ipo-november-sep24",
-   "headline": "Anthropic's IPO marketing reportedly slips to mid-October, listing targeted for November",
-   "status": "New",
-   "first_seen": "2026-09-24-am",
-   "last_updated": "2026-09-24-am",
-   "verification": "Confirmed-multiple that a delay is occurring; Single-reliable-source-tier on the specific November date and reported valuation/raise figures, since independent outlets appear to trace to the same underlying reporting chain rather than an Anthropic statement",
-   "one_line": "Multiple outlets (Calcalist/Ctech, Forbes, the-decoder, BigGo Finance) now report Anthropic has pushed its IPO investor marketing to mid-October, with a listing targeted for November -- a month later than the October target reported in July -- timed to post Q3 results first and land just ahead of the US midterms. Reported terms: up to a $2T valuation, up to $100B raised, underwriters said to include Morgan Stanley, Goldman Sachs, JPMorgan and Citi, plus a reported $15B revolving credit facility. No on-the-record confirmation or denial from Anthropic; no S-1 filing found on public EDGAR as of the registry's Sept 19 weekly sweep.",
-   "score_note": "First multi-outlet convergence on a specific November timeline for what would be one of the largest tech IPOs on the calendar, alongside SpaceX's post-IPO lockup expiring the same week.",
-   "sources": [
-    "Calcalistech",
-    "Forbes",
-    "the-decoder",
-    "BigGo Finance",
-    "registry/entities.json (EDGAR sweep, no self-filing found)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "kennedy-center-court-collision-sep17",
-   "headline": "Kennedy Center's court-ordered sworn status report is due today; contents not yet public",
-   "status": "Continuing",
-   "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-24-am",
-   "verification": "Confirmed-multiple (court filings via secondary reporting; direct docket access blocked this run)",
-   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical. Update (Sept 18): no material change -- DOJ's Thursday filing (sworn declaration from ED Matt Floca citing 'acute risks to public safety') and Beatty's demolition-violation argument are consistent with what this report already carries; the Sept 23 sworn-status-report deadline stands. No weekend movement found; the Sept. 23 sworn status report remains the next deadline. Update (Sept 23 am): today is the deadline; no filing or wire report describing the report's actual contents had surfaced as of this edition's publication. Will cover in the Closing Brief. Update (Sept 23 pm): the sworn-status-report deadline has passed; no wire or docket summary located this run describes the filing's actual contents. Government lawyers previously told the court the closure was expected to last roughly seven days from its Sept 16-17 start, which would put a reopening decision around now -- but nothing has been reported confirming one either way. Update (Sept 24 am): the Kennedy Center's court-ordered status report and a sworn declaration from executive director Matt Floca, filed Sept 23, describe specific storm-related life-safety hazards -- a partial ceiling collapse, water intrusion into electrical transformers, and unsafe theater rigging -- tied to a Sept 4 severe-weather event, as the basis for the closure. The filing contains no recommendation to demolish the building, a narrower rationale than the demolition framing that had driven earlier public controversy. Judge Cooper separately declined Rep. Beatty's request for an emergency hearing on the board's renewed push to add Trump's name to the building, but the standing order requiring 30 days' written notice before any change to renovation plans -- including any demolition -- remains in force. No reopening date has been given; the closure is being reassessed weekly. Beatty's counsel has said they will 'likely soon' seek a receivership.",
-   "score_note": "Escalates the already-tracked Kennedy Center/naming dispute into a live compliance deadline during this edition's publication window.",
-   "sources": [
-    "Judge Cooper's court filings (primary)",
-    "CNN",
-    "CNBC",
-    "NBC News",
-    "U.S. News",
-    "PBS NewsHour"
-   ],
-   "watch": true
-  },
-  {
-   "id": "senate-ai-killswitch-blocked-sep17",
-   "headline": "Bipartisan Sanders-Casar bill to ban 'artificial superintelligence' gains a Bannon-aligned ally",
-   "status": "Materially changed",
-   "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-24-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "No floor action on either bill: the House adjourned Wednesday until after the November midterms without taking up the AI Emergency Button Act or the Ban Artificial Superintelligence Act. Speaker Johnson: 'It's time for our members to go home to their districts.' Casar's push for Johnson to compel OpenAI/Anthropic CEO testimony remains unanswered. Update (Sept 21): Sanders and Casar appeared with Steve Bannon and Rep. Chip Roy at a 'Pro-Human Assembly' event backing the superintelligence-ban push; some reporting ties it to a reported Anthropic researcher resignation (fewer outlets, not independently verified). No floor vote scheduled. Update (Sept 24 am, dated Sept 23): Sanders and Casar formally introduced legislation -- the 'Ban Artificial Superintelligence Act' -- proposing a new Cabinet-level Department of Artificial Intelligence, a pause on developing systems capable of 'recursive self-improvement,' and penalties up to 20 years' imprisonment plus corporate dissolution for violations. Faces long odds in the Republican-controlled Congress, which remains in recess until after the midterms; no floor action expected soon.",
-   "score_note": "Two competing congressional AI-safety approaches -- a narrow kill-switch mandate blocked, a sweeping ban introduced -- surface the same week.",
-   "sources": [
-    "Sen. Kennedy's office (primary)",
-    "Sen. Sanders' office (primary)",
-    "Rep. Casar's office (primary)",
-    "The Hill",
-    "Just The News"
-   ],
-   "watch": true
-  },
-  {
-   "id": "cnn-msnbc-politico-whitehouse-ban-sep18",
-   "headline": "Judge Kelly grants a 14-day TRO restoring CNN, MS NOW and Politico's White House access",
-   "status": "Materially changed",
-   "first_seen": "2026-09-18-pm",
-   "last_updated": "2026-09-24-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued. Update (Sept 23 am): DOJ's late-Tuesday filing argues press access is 'a privilege, not a right' revocable 'at the president's will,' citing national-security concerns tied to Iran-war and ballroom-construction coverage. Hearing set for 3:30 PM today; Trump himself predicted on Truth Social that Kelly will rule against him given the Acosta precedent and that he'll have to appeal. Update (Sept 23 pm): Judge Kelly held the scheduled 3:30 PM hearing -- attorney Ted Boutrous argued for the outlets that the ban's national-security rationale contradicts core First Amendment protections, DOJ maintained access is a revocable privilege -- and reserved his ruling rather than deciding from the bench. No decision as of this edition. This outlet's morning forecast (55-70% odds of at least a partial TRO within days, based on Kelly's 2018 Acosta precedent) remains open, ungraded. Update (Sept 24 am): Judge Kelly ruled early Thursday, granting a 14-day temporary restraining order requiring the White House to immediately restore hard-pass credentials to CNN, MS NOW and Politico. He found the outlets likely to succeed on their due-process claim -- credentials were revoked without notice, an opportunity to be heard, or pre-existing standards -- and found the administration's national-security justification unsupported by the record. This is a preliminary ruling, not a final merits decision; further briefing is scheduled over the 14-day window. This outlet's Sept 23 forecast (55-70% odds of at least a partial TRO, based on Judge Kelly's 2018 Acosta precedent) is resolved in the affirmative; formal grading is a Saturday-routine task. Update (Sept 24 pm): despite the overnight TRO, reporters from all three outlets were turned away again this morning; MS NOW/CNN/Politico filed a notice of noncompliance and Judge Kelly ordered a written response by 12:30pm. The White House said access was 'restored as of 9:55am'; by around noon reporters were let back in. Kelly has not yet ruled on the underlying merits.",
-   "score_note": "A press-freedom lawsuit with a Trump-appointed judge who has already ruled against the administration on nearly identical facts once before.",
-   "sources": [
-    "NBC News",
-    "CNN",
-    "CNBC",
-    "Washington Post",
-    "Time",
-    "The Hill"
-   ],
-   "watch": true
-  },
-  {
-   "id": "trump-zelensky-ny-meeting-sep21",
-   "headline": "Kremlin dismisses Trump's Ukraine territorial reversal as both sides strike each other's energy grids overnight",
-   "status": "Materially changed",
-   "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-24-am",
-   "verification": "Confirmed-multiple for the meeting and Truth Social post; Single-reliable-source for the 'Russia lost control of diesel' official characterization",
-   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post. Update (Sept 23 am): Kremlin spokesman Peskov dismissed the territorial claim, saying Trump had simply absorbed 'Ukraine's perspective' and that Russia is 'a real bear,' not 'a paper bear.' Zelensky separately said Ukraine is 'ready' for a mutual energy-strike halt but no deal was reached for Kyiv to stand down unilaterally; overnight, Ukraine struck two Russian oil refineries and Russia hit an oil-and-gas facility in southern Ukraine officials call damaged beyond repair -- no ceasefire is yet operative on either side. No confirmation located of the Saudi Arabia technical talks reported to follow Monday's meeting. Update (Sept 23 pm): Zelensky said Ukraine is ready for an energy ceasefire if Russia reciprocates, and called on Trump to organize a trilateral meeting with Putin. He said no agreement was reached to unilaterally halt Ukraine's strikes on Russian oil. Despite the diplomacy, Russia and Ukraine traded fresh strikes on each other's energy infrastructure overnight; at least six were killed in Kyiv and Donetsk region strikes, and Russia's defense ministry says it is planning further 'massive strikes' on Ukraine's grid. Update (Sept 24 am): Russia launched one of its largest overnight barrages in weeks -- over 280 drones plus ballistic and reported anti-ship Zircon missiles -- against Ukraine; Kyiv says it intercepted 227. A strike on an agricultural storage facility in Stara Hnylytsia, Kharkiv region, killed 6 and wounded 12; Kyiv itself was hit by ballistic missiles in three waves, part of a 24-hour national toll Zelensky put at 16 dead and 59 injured hitting residential buildings, a maternity hospital and energy infrastructure (Ukraine's own reporting; casualty figures across the two most recent nights have not been independently reconciled and should be treated as approximate). The barrage lands directly against Zelensky's proposal for a Trump-brokered trilateral meeting with Putin: the Kremlin's Peskov called a three-way sit-down before 'expert-level' talks a 'waste of time,' while reaffirming Putin's position that Zelensky could travel to Moscow instead. Separately, the Kremlin said it welcomes a US invitation for Putin to attend the G20 summit in Miami in December -- a lower-tier diplomatic thread, not a confirmed attendance.",
-   "score_note": "First Trump-Zelensky meeting since the new Russia sanctions law, opening with both sides escalating rather than de-escalating.",
-   "sources": [
-    "Kyiv Independent",
-    "Axios",
-    "Euronews",
-    "multiple wires",
-    "White House readout (primary)",
-    "NBC News",
-    "PBS NewsHour",
-    "National Review"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pittsburgh-budget-reopen-sep23",
-   "headline": "Pittsburgh Mayor O'Connor asks council to reopen the budget, outlines cuts",
-   "status": "New",
-   "first_seen": "2026-09-23-pm",
-   "last_updated": "2026-09-23-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Mayor Corey O'Connor petitioned city council Tuesday to reopen the current-year budget and outlined millions of dollars in cuts; specific line items and the reason for the mid-year reopening not yet located.",
-   "score_note": "New, unexplained mid-year budget action from a first-year mayor; worth a follow-up once council takes it up.",
-   "sources": [
-    "CBS Pittsburgh"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pa-doa-audit-elder-abuse-sep23",
-   "headline": "PA Auditor General finds weaknesses in elder-abuse oversight at the Department of Aging",
-   "status": "New",
-   "first_seen": "2026-09-23-pm",
-   "last_updated": "2026-09-23-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Auditor General Timothy DeFoor's performance audit found weaknesses in how the PA Department of Aging monitors elder-abuse investigations carried out by the state's 52 Area Agencies on Aging, and gaps in front-line staff training. Routine oversight product, not tied to a specific incident; the department has not yet publicly responded.",
-   "score_note": "Statewide oversight finding with a direct constituent-protection angle.",
-   "sources": [
-    "Pennsylvania Department of the Auditor General (primary)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pittsburgh-da-warrant-gainey-sep22",
-   "headline": "Councilman denies allegations in unsealed Gainey-era corruption warrant",
-   "status": "Materially changed",
-   "first_seen": "2026-09-22-pm",
-   "last_updated": "2026-09-23-pm",
-   "verification": "Confirmed-multiple (via secondary reporting on the unsealed primary court record)",
-   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed. Update (Sept 23 am): a named city councilman has publicly denied the allegations made against him in the warrant. Update (Sept 23 pm): DA Zappala told WPXI's 11 Investigates he expects criminal charges to be filed; he separately dismissed Gainey's campaign-trail accusation that the probe is racially motivated ('I'm a public figure so you can lie about me'). The councilman who denied allegations this morning is now named: Khari Mosley, who told WPXI 'there's no connection between me and the insinuations and inaccuracies that are in the document.' No charges filed as of this writing.",
-   "score_note": "A local corruption investigation into a recent former mayor, via an unsealed court record -- material for Pittsburgh/Allegheny readers.",
-   "sources": [
-    "Unsealed court warrant (primary record, via secondary reporting)",
-    "CBS Pittsburgh",
-    "WPXI",
-    "KDKA",
-    "Patch"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pa-measles-coroner-dispute-aug31",
-   "headline": "PA measles case count climbs to 792 as the Shapiro-CDC dispute hardens",
-   "status": "Continuing",
-   "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-23-am",
-   "verification": "Confirmed-multiple (death count, lab confirmation); Disputed (federal vs. state tally, unresolved)",
-   "one_line": "Pennsylvania confirmed two more measles-associated deaths Monday: postmortem testing now confirms an active measles infection in the previously 'probable' Jefferson County case, and an 18-year-old Mifflin County resident died of acute disseminated encephalomyelitis, a rare measles complication. State total now four deaths in 2026 -- the most in the US since 1992 -- against roughly 700 cases across 38 counties. The CDC's national tally, now relying solely on NCHS cause-of-death coding rather than state case reports, still shows zero 2026 measles deaths. Update (Sept 17): case count now 731 (up from ~700), death toll holds at 4; CDC still does not count any of the four nationally. Update (Sept 18): case count now 731 across 38 counties, 141 hospitalizations, death toll holds at 4. Gov. Shapiro's administration formally requested CDC emergency assistance but conditioned it on the CDC recognizing the four deaths in its national tally; HHS Secretary RFK Jr. has directed CDC not to count them, citing an unresolved 'measles-associated' vs. 'measles-caused' classification dispute. Shapiro says he won't accept non-recognition of 'the pain and suffering of these four families.' Update (Sept 23 am): case count now 792 across 39 counties (up from 731/38), hospitalizations up from 141 to 155; death toll still 4, still not counted by CDC.",
-   "score_note": "Death toll and lab confirmation both advanced since last report; federal-state dispute persists.",
-   "sources": [
-    "Lancaster County Coroner's office (primary)",
-    "Pennsylvania Dept of Health (primary)",
-    "The Hill",
-    "Fox News",
-    "Medical Daily"
    ],
    "watch": true
   }
