@@ -2,19 +2,172 @@
  "stories": [
   {
    "id": "pce-gdp-annual-update-sep30",
-   "first_seen": "2026-09-30-am",
-   "last_updated": "2026-09-30-am",
-   "watch": true,
-   "status": "New",
-   "headline": "Aug PCE + Q2 GDP third estimate with BEA annual update at 8:30",
-   "one_line": "Consensus headline 3.7% y/y, core 0.3% m/m, core y/y 3.3-3.4% (previews split); Cleveland nowcast core 0.27%/3.40%; Oct hike ~51.5% per FedWatch via Admiral Markets (single).",
+   "status": "Materially changed",
+   "headline": "Aug PCE core 0.25% m/m, 3.01% y/y; annual update cut July core to 2.98% from 3.34%; Q2 GDP 2.2% from 1.5%",
+   "one_line": "Monthly core near consensus; y/y miss is revision-driven (ALFRED vintages). Oct hike odds below 50% (CNBC 37%; readings conflict). Long end sold off anyway: 30Y 5.64%.",
    "verification": "Confirmed-primary",
    "sources": [
-    "BEA schedule",
-    "Cleveland Fed",
-    "Reuters/FXStreet previews"
+    "FRED/ALFRED",
+    "BEA via Fox Business/FXStreet/CNSNews/Haver",
+    "CNBC"
    ],
-   "score_rationale": "Lead: Fed path decider"
+   "score_rationale": "Lead: Fed path and revision reset",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "long-end-selloff-30y-2002-high",
+   "status": "Continuing",
+   "headline": "30Y par closes 5.64% (+5bp), 10Y 5.29%, 2s10s 41bp; bear steepening despite softer inflation",
+   "one_line": "Second day front end eased while long end rose; term-premium story; HY OAS 3.08% (9/29).",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Treasury par curve",
+    "FRED"
+   ],
+   "score_rationale": "Market regime driver",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "micron-fq4-sep30",
+   "status": "Materially changed",
+   "headline": "Micron FQ4 rev $54.23B, non-GAAP EPS $33.42, GM 87.0%; FQ1 guide $61.5B +/-1.5B, EPS $38.15, GM ~86.25%",
+   "one_line": "Beat and raise vs LSEG ~$51.1B/$31.61 and FQ1 ~$57.0B; AH ~+2% early (Yahoo 4:34 PM).",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Micron 8-K EX-99.1",
+    "LSEG via CNBC"
+   ],
+   "score_rationale": "AI hardware bellwether",
+   "first_seen": "2026-09-27-sun",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "q3-close-split-market",
+   "status": "New",
+   "headline": "Q3 ends: S&P +2.0%, Nasdaq +2.5%, Dow -2.7%, R2K -7.5%; Sept Dow -4.3%, RSP -5.2%, XLF -7.5%",
+   "one_line": "Narrow tech-led market; 10 of 11 sector funds fell 9/30.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Yahoo closes (own calc)",
+    "CNBC"
+   ],
+   "score_rationale": "Quarter-end context",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "europe-inflation-sept-flash",
+   "status": "Continuing",
+   "headline": "German Sept flash CPI 3.3% (core 2.4%); FR HICP 3.4%, IT 4.1%; EA est ~3.8% (MUFG)",
+   "one_line": "Energy-driven; Stoxx 600 lost early gains; euro ~1.135.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Destatis via Reuters/FXStreet",
+    "MUFG"
+   ],
+   "score_rationale": "Global rates pressure",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "iran-hormuz-us-reply",
+   "status": "Continuing",
+   "headline": "Iran cabinet reviewing US reply on 7-day Hormuz plan; Trump denies Axios sanctions-relief report",
+   "one_line": "WTI ~+1.3% to ~$90.55; Brent Nov expired, continuous now Dec ~$98.11.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Reuters via IranWire",
+    "AP",
+    "CNBC"
+   ],
+   "score_rationale": "Oil path",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "adp-chicago-pmi-sep",
+   "status": "New",
+   "headline": "ADP Sept +90K vs ~70K; Chicago PMI 58.8 (conflict: 55.8) vs ~51",
+   "one_line": "First ADP acceleration since May; ISM Thu, payrolls Fri.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "ADP via CNBC/Bloomberg",
+    "Newsquawk/MarketScreener"
+   ],
+   "score_rationale": "Labor/growth",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "duquesne-light-ibew29-contract",
+   "status": "Continuing",
+   "headline": "IBEW Local 29 no-confidence statement; contract expires midnight 9/30; no confirmed 2026 deal",
+   "one_line": "Tentative-deal search hits match 2023; strike possible Oct 1.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Post-Gazette",
+    "TribLive",
+    "KDKA"
+   ],
+   "score_rationale": "Local: power reliability",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "cmu-griffin-3b",
+   "status": "New",
+   "headline": "Ken Griffin gives CMU $3B: $2B Miami campus, $1B Pittsburgh",
+   "one_line": "Largest individual higher-ed gift per CMU.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "CMU",
+    "CNN"
+   ],
+   "score_rationale": "Local",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "senate-stock-ban-ratepayer-fail",
+   "status": "New",
+   "headline": "Senate cloture fails on stock-trading ban (53-47) and Ratepayer Protection Act (57-43)",
+   "one_line": "Last day before recess.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "CNBC",
+    "Roll Call"
+   ],
+   "score_rationale": "US politics",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
+  },
+  {
+   "id": "iraq-withdrawal-erbil",
+   "status": "New",
+   "headline": "US completes withdrawal from Erbil; Operation Inherent Resolve mission in Iraq ends",
+   "one_line": "Per 2024 agreement.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "AP",
+    "NPR",
+    "Stars and Stripes"
+   ],
+   "score_rationale": "Security",
+   "first_seen": "2026-09-30-pm",
+   "last_updated": "2026-09-30-pm",
+   "watch": true
   },
   {
    "id": "europe-sept-flash-inflation-sep30",
@@ -185,22 +338,6 @@
     "CBS Pittsburgh",
     "Hoodline",
     "WPXI"
-   ],
-   "watch": true
-  },
-  {
-   "id": "micron-fq4-sep30",
-   "headline": "Micron reports fiscal Q4 Wed Sep 30 after close",
-   "status": "Continuing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-30-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Reports tonight; consensus rev ~$50.8-51.2B, EPS ~$31.5; guide $50B+/-1B, EPS $31+/-1.",
-   "score_note": "Key AI-demand datapoint after a narrow AI-led rally.",
-   "sources": [
-    "Alphastreet",
-    "Finnhub",
-    "Benzinga"
    ],
    "watch": true
   },
@@ -775,150 +912,6 @@
     "AP",
     "Fortune"
    ]
-  },
-  {
-   "id": "scotus-missouri-map-save-sep25",
-   "headline": "Supreme Court blocks Missouri's 2025 map a third time; stays ruling to let states use DHS SAVE on voter rolls",
-   "status": "Resolved",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-28-am",
-   "verification": "Confirmed-primary (Court orders)",
-   "one_line": "Unsigned order Fri evening keeps Missouri on 2022 lines for Nov 3; separately 6-3 stay (Jackson, Sotomayor, Kagan dissenting) lets DHS's SSA-linked SAVE database be used for voter-roll citizenship checks.",
-   "score_note": "Ends Missouri map fight for this cycle.",
-   "sources": [
-    "Washington Post",
-    "Roll Call",
-    "Missouri Independent",
-    "NPR",
-    "CNN",
-    "Votebeat"
-   ],
-   "watch": false
-  },
-  {
-   "id": "allegheny-parental-leave-scaleback-sep16",
-   "headline": "Board of Health votes Sep 28 on 12-week paid parental leave revision",
-   "status": "Developing",
-   "first_seen": "2026-09-17-pm",
-   "last_updated": "2026-09-28-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "15+ employees, 180-day wait; then County Council.",
-   "score_note": "Live, in-progress change to what would have been one of the most generous local paid-leave mandates in the country.",
-   "sources": [
-    "Allegheny County",
-    "CBS Pittsburgh"
-   ],
-   "watch": true
-  },
-  {
-   "id": "swiss-neutrality-initiative-rejected-sep27",
-   "headline": "Swiss voters reject neutrality initiative ~71% (projection)",
-   "status": "Resolved",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-am",
-   "verification": "Preliminary",
-   "one_line": "Final: 70.15% no (admin.ch).",
-   "score_note": "National referendum with Russia-sanctions implications.",
-   "sources": [
-    "GFS Bern/SRG projection",
-    "Al Jazeera"
-   ],
-   "watch": false
-  },
-  {
-   "id": "nubank-monzo-talks-sep26",
-   "headline": "Nubank reported in early talks to buy Monzo at up to GBP10B",
-   "status": "Continuing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-am",
-   "verification": "Single-reliable-source",
-   "one_line": "Sky News: Nu Holdings in early talks valuing Monzo at GBP8-10B, cash and stock; Monzo also weighing a >GBP8B round. No company comment.",
-   "score_note": "Large cross-border fintech M&A if it happens.",
-   "sources": [
-    "Sky News",
-    "Bloomberg"
-   ],
-   "watch": true
-  },
-  {
-   "id": "starship-flight14-crew13",
-   "headline": "Starship Flight 14 window opens 8:15 AM ET Sep 28 (backups Sep 29-30); Crew-13 Thu Oct 1 11:10 AM",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-am",
-   "verification": "Confirmed-primary",
-   "one_line": "FAA licence issued Sep 26; 26 Starlink V3; no catch. Outcome not known at press time -- report in pm.",
-   "score_note": "Major spaceflight milestones; SPCX catalyst.",
-   "sources": [
-    "SpaceX",
-    "Aviation Week",
-    "NASA"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pa-skill-games-session-sep28",
-   "headline": "Legislature returns Sep 28; skill-game enforcement Oct 13",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-28-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "SB 1079/HB 2213; Roae: deal unlikely.",
-   "score_note": "Top Pennsylvania beat item.",
-   "sources": [
-    "Spotlight PA",
-    "Capital-Star",
-    "WITF"
-   ],
-   "watch": true
-  },
-  {
-   "id": "south-africa-bar-shootings-sep26",
-   "headline": "Two South Africa bar attacks kill at least 27",
-   "status": "New",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "17 killed west of Johannesburg (Sat ~9:30 PM), 10 in Lwandle near Cape Town (Sun ~1:45 AM); no arrests; follows Durban-area shooting that killed 11.",
-   "score_note": "Mass-casualty violence, three attacks in a week.",
-   "sources": [
-    "SAPS (primary)",
-    "AP",
-    "CNN"
-   ],
-   "watch": true
-  },
-  {
-   "id": "china-scarborough-drills-sep27",
-   "headline": "PLA and China Coast Guard drills around Scarborough Shoal",
-   "status": "New",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Southern Theater Command naval/air exercise and CCG boarding/towing drills Sun Sep 27, two days after Xi's Washington visit.",
-   "score_note": "South China Sea pressure despite summit crisis-comms memo.",
-   "sources": [
-    "PLA/CCG statements (primary)",
-    "Bloomberg",
-    "Reuters"
-   ],
-   "watch": true
-  },
-  {
-   "id": "russia-kyiv-third-night-sep27",
-   "headline": "Russia strikes Kyiv third straight night (170 drones); Ilsky refinery halted per Fire Point",
-   "status": "Continuing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Single-reliable-source",
-   "one_line": "Ukrainian Air Force: 170 drones, 147 downed; 8 killed/42 injured Sat-Sun per Ukrainian officials; Fire Point says Ilsky refinery suspended operations; Zelensky sanctions 44 over occupied-territory Duma vote.",
-   "score_note": "Energy war continues; no Abu Dhabi date.",
-   "sources": [
-    "Ukrainian Air Force (primary)",
-    "Kyiv Independent",
-    "Bloomberg"
-   ],
-   "watch": true
   }
  ]
 }

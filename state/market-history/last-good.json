@@ -1,361 +1,534 @@
 {
- "fetched_at": "2026-09-30T10:40:00Z",
+ "fetched_at": "2026-09-30T20:40:00Z",
  "treasury_par_curve": {
-  "as_of": "2026-09-29 EOD official",
+  "as_of": "2026-09-30 EOD official",
   "source": "home.treasury.gov",
-  "1M": 4.04,
-  "2M": 4.18,
-  "3M": 4.25,
-  "4M": 4.3,
-  "6M": 4.36,
-  "1Y": 4.58,
-  "2Y": 4.89,
-  "3Y": 4.98,
-  "5Y": 5.06,
-  "7Y": 5.16,
-  "10Y": 5.26,
-  "20Y": 5.64,
-  "30Y": 5.59
+  "1M": 4.02,
+  "2M": 4.16,
+  "3M": 4.2,
+  "4M": 4.29,
+  "6M": 4.33,
+  "1Y": 4.54,
+  "2Y": 4.88,
+  "3Y": 5.0,
+  "5Y": 5.09,
+  "7Y": 5.19,
+  "10Y": 5.29,
+  "20Y": 5.68,
+  "30Y": 5.64
  },
  "fred": {
-  "as_of_fetch": "2026-09-30T10:40:00Z",
-  "source": "api.stlouisfed.org",
-  "DGS2": [
-   "2026-09-28",
-   4.92
-  ],
-  "DGS10": [
-   "2026-09-28",
-   5.24
-  ],
-  "T10Y2Y": [
-   "2026-09-29",
-   0.37
-  ],
-  "T10YIE": [
-   "2026-09-29",
-   2.35
-  ],
-  "DFII10": [
-   "2026-09-28",
-   2.9
-  ],
-  "SOFR": [
-   "2026-09-28",
-   3.9
-  ],
-  "BAMLH0A0HYM2": [
-   "2026-09-28",
-   3.02
-  ],
-  "ICSA": [
-   "2026-09-19",
-   197000
-  ],
-  "UNRATE": [
-   "2026-08-01",
-   4.1
-  ],
-  "PAYEMS": [
-   "2026-08-01",
-   159075
-  ],
-  "CPIAUCSL": [
-   "2026-08-01",
-   334.131
-  ],
-  "CPILFESL": [
-   "2026-08-01",
-   337.765
-  ]
- },
- "vix_complex": {
-  "as_of": "2026-09-29 EOD via Yahoo",
-  "VIX": 16.04,
-  "VIX9D": 14.21,
-  "VIX3M": 18.09
- },
- "fx": {
-  "as_of": "2026-09-29 ECB reference (Frankfurter)",
-  "EUR": 0.88067,
-  "JPY": 157.12,
-  "GBP": 0.75489,
-  "CNY": 6.7034,
-  "CHF": 0.8332,
-  "CAD": 1.418,
-  "AUD": 1.4277,
-  "MXN": 17.897,
-  "BRL": 5.2115,
-  "INR": 95.98,
-  "DXY": 101.195,
-  "DXY_asof": "2026-09-30 ~6:24 ET Yahoo"
- },
- "crypto": {
-  "as_of": "2026-09-30T10:40:00Z",
-  "BTC": 83875,
-  "ETH": 2696.25,
-  "total_cap_usd": 2882697827539,
-  "btc_dominance": 58.31,
-  "source": "Twelve Data; CoinGecko /global"
- },
- "indices": {
-  "as_of": "2026-09-29 EOD",
-  "^GSPC": 7670.84,
-  "^IXIC": 26797.54,
-  "^DJI": 51349.92,
-  "^RUT": 2807.92
- },
- "futures_commodities_fx": {
-  "as_of": "2026-09-28 ~4:39pm ET Yahoo; oil settles per CNBC",
-  "es_f": {
-   "price": 7744.75,
-   "pct": -0.76
+  "as_of": "2026-09-30 fetch",
+  "source": "FRED",
+  "CPIAUCSL": {
+   "date": "2026-08-01",
+   "value": "334.131"
   },
-  "cl_settle": 92.6,
-  "brent_front_settle": 105.28,
-  "gc_f": {
-   "price": 4148.8,
-   "pct": -3.99
+  "CPILFESL": {
+   "date": "2026-08-01",
+   "value": "337.765"
   },
-  "hg_f": {
-   "price": 6.61,
-   "pct": -1.34
+  "PAYEMS": {
+   "date": "2026-08-01",
+   "value": "159075"
   },
-  "ng_f": {
-   "price": 3.15,
-   "pct": -1.6
+  "ICSA": {
+   "date": "2026-09-19",
+   "value": "197000"
   },
-  "dxy": {
-   "price": 101.19,
-   "pct": 0.22
+  "UNRATE": {
+   "date": "2026-08-01",
+   "value": "4.1"
+  },
+  "T10Y2Y": {
+   "date": "2026-09-29",
+   "value": "0.37"
+  },
+  "DGS2": {
+   "date": "2026-09-29",
+   "value": "4.89"
+  },
+  "DGS10": {
+   "date": "2026-09-29",
+   "value": "5.26"
+  },
+  "T10YIE": {
+   "date": "2026-09-29",
+   "value": "2.35"
+  },
+  "DFII10": {
+   "date": "2026-09-29",
+   "value": "2.91"
+  },
+  "SOFR": {
+   "date": "2026-09-29",
+   "value": "3.88"
+  },
+  "BAMLH0A0HYM2": {
+   "date": "2026-09-29",
+   "value": "3.08"
+  },
+  "PCEPI": {
+   "date": "2026-08-01",
+   "value": "131.579"
+  },
+  "PCEPILFE": {
+   "date": "2026-08-01",
+   "value": "130.455"
   }
  },
+ "vix_complex": {
+  "as_of": "2026-09-30 ~16:15 ET via Yahoo",
+  "VIX": 16.34,
+  "VIX9D": 14.2,
+  "VIX3M": 18.37
+ },
+ "fx": {
+  "as_of": "2026-09-30 ECB reference (Frankfurter)",
+  "EUR": 0.88067,
+  "JPY": 157.0,
+  "GBP": 0.75265,
+  "CNY": 6.7045,
+  "CHF": 0.8347,
+  "CAD": 1.4183,
+  "AUD": 1.4352,
+  "MXN": 18.1259,
+  "BRL": 5.2027,
+  "INR": 95.83,
+  "DXY": 101.5,
+  "DXY_asof": "2026-09-30 ~16:20 ET Yahoo DX-Y.NYB"
+ },
+ "crypto": {
+  "as_of": "2026-09-30 ~16:34 ET CoinGecko /global",
+  "total_mcap_usd": 2878324502313,
+  "btc_dominance": 58.33,
+  "mcap_chg_24h_pct": -2.51,
+  "btc_price_note": "~83,000-84,500 intraday per Coinbase/Fortune; simple/price needs demo key"
+ },
+ "indices": {
+  "as_of": "2026-09-30 EOD",
+  "^GSPC": 7651.54,
+  "^IXIC": 26861.06,
+  "^DJI": 50906.05,
+  "^RUT": 2796.86
+ },
+ "futures_commodities_fx": {
+  "as_of": "2026-09-30 ~16:22 ET Yahoo, delayed +10",
+  "CL=F": 90.55,
+  "BZ=F": 98.11,
+  "BZ_note": "continuous now Dec after Nov expiry",
+  "GC=F": 4188.5,
+  "NG=F": 3.02,
+  "HG=F": 6.63,
+  "ES=F": 7724.5,
+  "NQ=F": 30740.75,
+  "EURUSD": 1.1355
+ },
  "watchlist": {
+  "as_of": "2026-09-30 EOD Yahoo",
   "SPY": {
-   "price": 771.35,
-   "prev": 767.18,
-   "chg": 4.17,
-   "pct": 0.54,
-   "vol": 34116693,
-   "hi52": 779.37,
-   "lo52": 629.28,
-   "as_of": "2026-09-25 EOD official"
+   "close": 762.63,
+   "prev": 764.2
   },
   "QQQM": {
-   "price": 306.54,
-   "prev": 305.14,
-   "chg": 1.4,
-   "pct": 0.46,
-   "vol": 2402866,
-   "hi52": 308.21,
-   "lo52": 228.75,
-   "as_of": "2026-09-25 EOD official"
+   "close": 304.64,
+   "prev": 303.83
   },
   "DIA": {
-   "price": 517.49,
-   "prev": 512.68,
-   "chg": 4.81,
-   "pct": 0.94,
-   "vol": 2708382,
-   "hi52": 546.75,
-   "lo52": 450.44,
-   "as_of": "2026-09-25 EOD official"
+   "close": 508.55,
+   "prev": 512.88
   },
   "IWM": {
-   "price": 281.97,
-   "prev": 281.66,
-   "chg": 0.31,
-   "pct": 0.11,
-   "vol": 22126129,
-   "hi52": 305.18,
-   "lo52": 228.9,
-   "as_of": "2026-09-25 EOD official"
+   "close": 277.89,
+   "prev": 279.01
   },
   "MAGS": {
-   "price": 72.64,
-   "prev": 72.51,
-   "chg": 0.13,
-   "pct": 0.18,
-   "vol": 2693271,
-   "hi52": 73.46,
-   "lo52": 55.085,
-   "as_of": "2026-09-25 EOD official"
+   "close": 71.69,
+   "prev": 71.39
   },
   "RSP": {
-   "price": 211.11,
-   "prev": 210.26,
-   "chg": 0.85,
-   "pct": 0.4,
-   "vol": 5459369,
-   "hi52": 223.44,
-   "lo52": 182.11,
-   "as_of": "2026-09-25 EOD official"
+   "close": 208.02,
+   "prev": 209.5
   },
   "SMH": {
-   "price": 606.56,
-   "prev": 600.52,
-   "chg": 6.04,
-   "pct": 1.01,
-   "vol": 4489579,
-   "hi52": 671.83,
-   "lo52": 315.05,
-   "as_of": "2026-09-25 EOD official"
+   "close": 609.0,
+   "prev": 606.9
   },
   "XLK": {
-   "price": 196.27,
-   "prev": 194.71,
-   "chg": 1.56,
-   "pct": 0.8,
-   "vol": 5965183,
-   "hi52": 198.73,
-   "lo52": 126.68,
-   "as_of": "2026-09-25 EOD official"
+   "close": 195.75,
+   "prev": 194.5
   },
   "XLF": {
-   "price": 54.84,
-   "prev": 54.53,
-   "chg": 0.31,
-   "pct": 0.57,
-   "vol": 28767254,
-   "hi52": 58.6,
-   "lo52": 47.67,
-   "as_of": "2026-09-25 EOD official"
+   "close": 53.4,
+   "prev": 54.01
   },
   "KRE": {
-   "price": 71.55,
-   "prev": 70.94,
-   "chg": 0.61,
-   "pct": 0.86,
-   "vol": 12258619,
-   "hi52": 78.35,
-   "lo52": 57.55,
-   "as_of": "2026-09-25 EOD official"
+   "close": 69.44,
+   "prev": 69.83
   },
   "XLE": {
-   "price": 62.04,
-   "prev": 62.6,
-   "chg": -0.56,
-   "pct": -0.89,
-   "vol": 37398357,
-   "hi52": 66.17,
-   "lo52": 42.35,
-   "as_of": "2026-09-25 EOD official"
+   "close": 61.5,
+   "prev": 61.54
   },
   "TLT": {
-   "price": 79.32,
-   "prev": 79.42,
-   "chg": -0.1,
-   "pct": -0.13,
-   "vol": 60249382,
-   "hi52": 92.19,
-   "lo52": 78.83,
-   "as_of": "2026-09-25 EOD official",
-   "note": "new 52-week low this week"
+   "close": 77.78,
+   "prev": 78.23
   },
   "IEF": {
-   "price": 90.0,
-   "prev": 89.69,
-   "chg": 0.31,
-   "pct": 0.35,
-   "vol": 17134151,
-   "hi52": 98.05,
-   "lo52": 89.54,
-   "as_of": "2026-09-25 EOD official",
-   "note": "new 52-week low this week"
+   "close": 89.31,
+   "prev": 89.45
   },
   "TIP": {
-   "price": 104.54,
-   "prev": 104.3,
-   "chg": 0.24,
-   "pct": 0.23,
-   "vol": 2127319,
-   "hi52": 112.24,
-   "lo52": 104.2,
-   "as_of": "2026-09-25 EOD official",
-   "note": "new 52-week low this week"
+   "close": 104.04,
+   "prev": 104.01
   },
   "LQD": {
-   "price": 103.21,
-   "prev": 103.15,
-   "chg": 0.06,
-   "pct": 0.06,
-   "vol": 43963497,
-   "hi52": 112.93,
-   "lo52": 102.74,
-   "as_of": "2026-09-25 EOD official",
-   "note": "new 52-week low this week"
+   "close": 102.18,
+   "prev": 102.41
   },
   "HYG": {
-   "price": 77.86,
-   "prev": 77.89,
-   "chg": -0.03,
-   "pct": -0.04,
-   "vol": 56552201,
-   "hi52": 81.33,
-   "lo52": 77.67,
-   "as_of": "2026-09-25 EOD official",
-   "note": "new 52-week low this week"
+   "close": 77.21,
+   "prev": 77.36
   },
   "GLD": {
-   "price": 393.41,
-   "prev": 391.69,
-   "chg": 1.72,
-   "pct": 0.44,
-   "vol": 7002878,
-   "hi52": 509.7,
-   "lo52": 345.31,
-   "as_of": "2026-09-25 EOD official"
+   "close": 380.84,
+   "prev": 382.89
   },
   "USO": {
-   "price": 148.33,
-   "prev": 153.09,
-   "chg": -4.76,
-   "pct": -3.11,
-   "vol": 7128728,
-   "hi52": 163.35,
-   "lo52": 65.99,
-   "as_of": "2026-09-25 EOD official"
+   "close": 145.66,
+   "prev": 143.35
+  },
+  "DX-Y.NYB": {
+   "close": 101.5,
+   "prev": 101.37
   },
   "EEM": {
-   "price": 67.98,
-   "prev": 67.25,
-   "chg": 0.73,
-   "pct": 1.09,
-   "vol": 19055343,
-   "hi52": 71.57,
-   "lo52": 51.82,
-   "as_of": "2026-09-25 EOD official"
+   "close": 66.79,
+   "prev": 67.4
   },
   "VGK": {
-   "price": 88.63,
-   "prev": 88.07,
-   "chg": 0.56,
-   "pct": 0.64,
-   "vol": 1136813,
-   "hi52": 93.29,
-   "lo52": 77.82,
-   "as_of": "2026-09-25 EOD official"
+   "close": 86.8,
+   "prev": 87.85
   },
   "BTC": {
-   "price": 37.16,
-   "prev": 37.31,
-   "chg": -0.15,
-   "pct": -0.4,
-   "vol": 1260126,
-   "hi52": 55.96,
-   "lo52": 25.65,
-   "as_of": "2026-09-25 EOD official",
-   "note": "Grayscale Bitcoin Mini Trust ETF"
+   "close": 36.95,
+   "prev": 36.97
   },
-  "DXY": {
-   "price": 101.015,
-   "prev": 101.29,
-   "chg": -0.275,
-   "pct": -0.27,
-   "vol": null,
-   "hi52": 101.8,
-   "lo52": 95.55,
-   "as_of": "2026-09-25 EOD official"
+  "QQQ": {
+   "close": 739.77,
+   "prev": 737.93
+  },
+  "XLC": {
+   "close": 110.97,
+   "prev": 111.47
+  },
+  "XLY": {
+   "close": 108.84,
+   "prev": 109.15
+  },
+  "XLP": {
+   "close": 80.6,
+   "prev": 81.85
+  },
+  "XLV": {
+   "close": 168.42,
+   "prev": 170.73
+  },
+  "XLI": {
+   "close": 166.98,
+   "prev": 169.13
+  },
+  "XLB": {
+   "close": 48.7,
+   "prev": 49.1
+  },
+  "XLU": {
+   "close": 39.44,
+   "prev": 39.71
+  },
+  "XLRE": {
+   "close": 40.91,
+   "prev": 41.34
+  },
+  "AAPL": {
+   "close": 333.02,
+   "prev": 329.4
+  },
+  "MSFT": {
+   "close": 512.9,
+   "prev": 508.96
+  },
+  "NVDA": {
+   "close": 228.38,
+   "prev": 227.21
+  },
+  "AMZN": {
+   "close": 249.15,
+   "prev": 246.67
+  },
+  "GOOGL": {
+   "close": 344.08,
+   "prev": 340.92
+  },
+  "META": {
+   "close": 725.18,
+   "prev": 738.79
+  },
+  "TSLA": {
+   "close": 354.81,
+   "prev": 352.84
+  },
+  "SPCX": {
+   "close": 150.86,
+   "prev": 149.24
+  },
+  "AMD": {
+   "close": 611.76,
+   "prev": 607.57
+  },
+  "AVGO": {
+   "close": 351.19,
+   "prev": 355.1
+  },
+  "TSM": {
+   "close": 456.19,
+   "prev": 456.94
+  },
+  "ASML": {
+   "close": 1811.67,
+   "prev": 1834.39
+  },
+  "MU": {
+   "close": 1065.11,
+   "prev": 1065.08
+  },
+  "MRVL": {
+   "close": 264.21,
+   "prev": 263.27
+  },
+  "ANET": {
+   "close": 203.59,
+   "prev": 202.86
+  },
+  "VRT": {
+   "close": 241.31,
+   "prev": 248.34
+  },
+  "ETN": {
+   "close": 429.71,
+   "prev": 433.27
+  },
+  "PWR": {
+   "close": 642.51,
+   "prev": 651.79
+  },
+  "CEG": {
+   "close": 254.02,
+   "prev": 264.58
+  },
+  "VST": {
+   "close": 138.35,
+   "prev": 140.83
+  },
+  "LMT": {
+   "close": 509.25,
+   "prev": 512.21
+  },
+  "RTX": {
+   "close": 185.65,
+   "prev": 186.94
+  },
+  "NOC": {
+   "close": 483.48,
+   "prev": 504.61
+  },
+  "GD": {
+   "close": 331.83,
+   "prev": 332.34
+  },
+  "BA": {
+   "close": 186.05,
+   "prev": 187.68
+  },
+  "PLTR": {
+   "close": 187.05,
+   "prev": 186.97
+  },
+  "RKLB": {
+   "close": 69.68,
+   "prev": 69.7
+  },
+  "ASTS": {
+   "close": 58.86,
+   "prev": 59.4
+  },
+  "LUNR": {
+   "close": 14.24,
+   "prev": 14.55
+  },
+  "JPM": {
+   "close": 330.83,
+   "prev": 334.98
+  },
+  "BAC": {
+   "close": 54.43,
+   "prev": 54.96
+  },
+  "C": {
+   "close": 129.48,
+   "prev": 130.8
+  },
+  "WFC": {
+   "close": 80.05,
+   "prev": 80.48
+  },
+  "GS": {
+   "close": 900.36,
+   "prev": 916.24
+  },
+  "MS": {
+   "close": 188.08,
+   "prev": 192.76
+  },
+  "SCHW": {
+   "close": 97.74,
+   "prev": 99.1
+  },
+  "HOOD": {
+   "close": 112.5,
+   "prev": 116.22
+  },
+  "COIN": {
+   "close": 186.41,
+   "prev": 190.02
+  },
+  "BLK": {
+   "close": 1058.29,
+   "prev": 1067.94
+  },
+  "BX": {
+   "close": 112.09,
+   "prev": 114.0
+  },
+  "KKR": {
+   "close": 91.3,
+   "prev": 93.18
+  },
+  "APO": {
+   "close": 116.06,
+   "prev": 119.0
+  },
+  "LLY": {
+   "close": 1157.08,
+   "prev": 1184.63
+  },
+  "NVO": {
+   "close": 37.91,
+   "prev": 38.31
+  },
+  "UNH": {
+   "close": 367.08,
+   "prev": 374.94
+  },
+  "JNJ": {
+   "close": 264.74,
+   "prev": 267.57
+  },
+  "ABBV": {
+   "close": 261.59,
+   "prev": 263.29
+  },
+  "MRK": {
+   "close": 145.31,
+   "prev": 149.28
+  },
+  "PFE": {
+   "close": 28.52,
+   "prev": 28.72
+  },
+  "WMT": {
+   "close": 103.92,
+   "prev": 106.8
+  },
+  "COST": {
+   "close": 910.34,
+   "prev": 924.59
+  },
+  "TGT": {
+   "close": 156.69,
+   "prev": 156.43
+  },
+  "HD": {
+   "close": 284.49,
+   "prev": 288.04
+  },
+  "MCD": {
+   "close": 230.94,
+   "prev": 233.98
+  },
+  "NKE": {
+   "close": 35.4,
+   "prev": 35.84
+  },
+  "ACN": {
+   "close": 183.37,
+   "prev": 177.12
+  },
+  "ORCL": {
+   "close": 137.3,
+   "prev": 137.79
+  },
+  "DAL": {
+   "close": 83.46,
+   "prev": 84.87
+  },
+  "UAL": {
+   "close": 110.95,
+   "prev": 112.65
+  },
+  "RCL": {
+   "close": 265.86,
+   "prev": 260.67
+  },
+  "CCL": {
+   "close": 24.54,
+   "prev": 25.11
+  },
+  "UTHR": {
+   "close": 541.89,
+   "prev": 481.47
+  },
+  "LQDA": {
+   "close": 30.26,
+   "prev": 70.69
+  },
+  "ROG": {
+   "close": 152.99,
+   "prev": 138.17
+  },
+  "FORM": {
+   "close": 149.31,
+   "prev": 136.25
+  },
+  "MRNA": {
+   "close": 192.57,
+   "prev": 203.46
+  },
+  "JBL": {
+   "close": 286.86,
+   "prev": 318.84
+  },
+  "CNXC": {
+   "close": 24.95,
+   "prev": 24.88
+  },
+  "HPE": {
+   "close": 63.89,
+   "prev": 61.49
+  },
+  "MKC": {
+   "close": 46.4,
+   "prev": 48.4
   }
  },
  "global_indices": {},
