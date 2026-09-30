@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Rule Behind Your GPS, Your Thermostat, and Your Streaming Feed — Learning Brief, Wed, Sep 30, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-30",
+    "slot": "learn",
+    "title": "The Rule Behind Your GPS, Your Thermostat, and Your Streaming Feed",
+    "path": "reports/2026/09/2026-09-30-learn.html",
+    "summary": "Day 3 of the Academy: the function, the rule that turns one changing quantity into another, from Leibniz's 1673 coinage and Euler's f(x) notation to Dirichlet's 1837 definition that let go of needing a formula at all.",
+    "headlines": [
+      "Day 3 of 300 · Mathematics: a function is a rule that gives every input exactly one output, never two",
+      "Why a thermostat, a GPS chip and a quadratic equation are all doing the same kind of math"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-09-30T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Rule Behind Your GPS, Your Thermostat, and Your Streaming Feed</h1>
+      <p class="paper-dateline">
+        Wednesday, September 30, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        GPS turns satellite timing into a location, a thermostat turns a temperature into a
+        decision, and a streaming service turns your watch history into a recommendation &mdash;
+        different machines, doing the same three-and-a-half-century-old kind of math: the function.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 3 of 300 &middot; Mathematics 3 of 20 &middot; Functions: the language of change and relationship</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Think about a vending machine. You press B4, and out comes a bag of pretzels &mdash; the
+        same bag of pretzels, every single time you press B4. It never sometimes gives you
+        pretzels and sometimes gives you a soda for the same code. That reliability, one input
+        always producing exactly one specific output, is the entire idea behind one of the most
+        important concepts in all of mathematics: the <strong>function</strong>.
+      </p>
+      <p>
+        A function is a rule that takes something in (an input) and hands back exactly one thing
+        out (an output), every time, for every allowed input. Day 1 built the number system and
+        introduced proof; Day 2 showed you how to solve an equation for a single unknown number.
+        Today's idea is different in kind: instead of asking &ldquo;what one number makes this
+        equation true,&rdquo; a function describes an entire relationship &mdash; how an output
+        changes as you feed it different inputs, all at once, as a single object you can study,
+        graph, and reason about.
+      </p>
+      <p>
+        This is the idea that quietly runs a huge share of the modern world. A GPS chip is running
+        a rule that turns satellite signal timings into a location. A thermostat is running a rule
+        that turns a room's temperature into a decision about whether to fire the furnace. A
+        streaming service is running a (much more complicated) rule that turns your watch history
+        into a ranked list of suggestions. All of them are functions, in the precise mathematical
+        sense this lesson defines.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Formally: a function is a rule that connects two sets. The set of allowed inputs is called
+        the <strong>domain</strong>; the set of outputs the rule actually produces is called the
+        <strong>range</strong>. The one non-negotiable requirement, the thing that separates a
+        function from just any old relationship between two quantities, is this: every input in the
+        domain must produce <em>exactly one</em> output. Not zero, not two, not &ldquo;it
+        depends.&rdquo; One. A rule that sometimes gives an input two different outputs isn't a
+        function &mdash; mathematicians just call it a relation, a broader and less useful category.
+      </p>
+      <p>
+        The other direction is unrestricted, and this trips people up on first contact: two
+        <em>different</em> inputs are completely allowed to share the same output. The vending
+        machine can only ever give one thing for B4, but nothing stops both B4 and C7 from
+        dispensing the same brand of pretzels. Mathematically, <em>f</em>(3) and <em>f</em>(&minus;3)
+        can both equal 9 (they do, for the rule &ldquo;square the input&rdquo;) without breaking
+        anything. What's forbidden is one input splitting into two outputs, never two inputs
+        landing on one output.
+      </p>
+      <p>
+        Once you can plot a function on a coordinate plane &mdash; each input on the horizontal
+        axis, its one matching output plotted directly above or below it on the vertical axis
+        &mdash; that one-output rule turns into a visual test. Sweep an imaginary vertical line
+        across the graph. If it ever crosses the curve at two points at once, two different
+        outputs are being claimed for the same input, and whatever you've drawn is not a function.
+        This check has a standard name, the <strong>vertical line test</strong>, and it's exactly
+        the domain/range rule translated into a picture: a circle drawn on a graph fails it (a
+        single x-value hits the circle twice, once on top and once on the bottom), which is the
+        quick way to see that &ldquo;a circle&rdquo; is not, itself, a function.
+      </p>
+      <p>
+        A function doesn't have to show up as an equation to count. The same rule can appear as a
+        formula (&ldquo;multiply the input by 1.8 and add 32&rdquo;), as a graph (a line or curve
+        on a coordinate plane), as a table (a list of inputs next to their matching outputs, the
+        way a tide chart lists times next to water heights), or just as a sentence in plain
+        English. All four are the same function, described four different ways; part of getting
+        comfortable with functions is learning to move between these representations, since a
+        table of tide heights and the trigonometric formula that generates it are, mathematically,
+        the identical object.
+      </p>
+      <p>
+        The word itself is older than you might guess. Gottfried Leibniz &mdash; the same
+        mathematician and philosopher who developed calculus independently of Isaac Newton &mdash;
+        coined the term <em>functio</em> in a 1673 manuscript, though he used it narrowly at first,
+        for quantities tied to a curve's geometry, like the length of a tangent line at a given
+        point. Over the following decades Leibniz and his correspondent Johann Bernoulli broadened
+        the word until, by around 1700, it meant roughly what it means today: a quantity that
+        depends on another quantity. The compact notation you've probably already seen, <em>f</em>(<em>x</em>),
+        came later still &mdash; the mathematician Leonhard Euler introduced it in a 1734 paper,
+        writing &ldquo;if <em>f</em>(<em>x</em>) denotes any function of <em>x</em>&hellip;&rdquo;
+        It took decades more before that notation became the everyday standard; textbooks weren't
+        using it consistently until the early 1800s.
+      </p>
+      <p>
+        The definition got one more, more radical upgrade in 1837, from the mathematician Peter
+        Gustav Lejeune Dirichlet. Before Dirichlet, most mathematicians still assumed a
+        &ldquo;real&rdquo; function had to be expressible as some kind of formula &mdash; an
+        equation you could write down and compute with. Dirichlet's definition dropped that
+        requirement entirely: a function is any rule at all that assigns exactly one output to
+        each input, whether or not anyone can ever write that rule as a tidy equation. To prove the
+        point, he described a genuinely strange rule now called the Dirichlet function: output 1
+        when the input is a rational number, output 0 when it's irrational &mdash; the same
+        rational/irrational split from Day 1. It satisfies every requirement of the definition
+        (every real number is either rational or irrational, never both, so every input gets
+        exactly one output), even though its graph can't be drawn in any ordinary sense &mdash; it
+        would look like an infinitely dense scatter of points at height 0 and height 1, with no
+        curve connecting them. Dirichlet's version is the one mathematicians still use today.
+      </p>
+      <p>
+        Domains matter because not every rule accepts every possible input. The rule &ldquo;take
+        the square root&rdquo; is a perfectly good function over the domain of non-negative real
+        numbers, but it simply has nothing to return for an input like &minus;4 (not among the real
+        numbers, at least &mdash; that story is for a later lesson): so the domain of that function
+        has to explicitly exclude negative numbers, or the rule breaks. Stating a function's domain
+        is part of stating the function; two rules with the same formula but different domains
+        are, strictly, different functions.
+      </p>
+      <p>
+        Last piece: how a function's output responds to changes in its input splits functions into
+        two broad families. A <strong>linear</strong> function changes at a constant rate &mdash;
+        every time the input goes up by 1, the output goes up (or down) by the same fixed amount,
+        no matter where you start, which is exactly why its graph is a straight line. Day 2's
+        equations of the form <em>ax</em> + <em>b</em> = 0 describe where a linear function crosses
+        zero. A <strong>nonlinear</strong> function's rate of change isn't constant &mdash; the
+        quadratic functions behind Day 2's quadratic formula are the simplest example: for
+        <em>f</em>(<em>x</em>) = <em>x</em>&sup2;, going from input 1 to input 2 raises the output
+        by 3 (from 1 to 4), but going from input 2 to input 3 raises it by 5 (from 4 to 9). The
+        rate itself is changing, which is exactly what makes the graph curve instead of running
+        straight.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Function</dt>
+        <dd>A rule that assigns to every input in its domain exactly one output &mdash; never zero, never two.</dd>
+        <dt>Input / output</dt>
+        <dd>The value you feed into a function (input) and the single value the rule hands back (output). Two different inputs are allowed to share an output; one input can never produce two.</dd>
+        <dt>Domain</dt>
+        <dd>The complete set of inputs a function is allowed to accept. Excluding a value from the domain is often how a rule that would otherwise break (like square-rooting a negative number) stays a valid function.</dd>
+        <dt>Range</dt>
+        <dd>The set of outputs a function actually produces across its whole domain.</dd>
+        <dt>Graph</dt>
+        <dd>The picture of a function: every input plotted on one axis against its one matching output on the other. A curve represents a function only if it passes the vertical line test.</dd>
+        <dt>Linear vs. nonlinear</dt>
+        <dd>Linear: the output changes at a constant rate as the input changes, producing a straight-line graph. Nonlinear: the rate of change itself varies, producing a curve.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Start with a function you've almost certainly used without naming it: converting a
+        temperature between Celsius and Fahrenheit. It's a linear function &mdash; a fixed rule,
+        one input (a Celsius reading), one output (the Fahrenheit reading) &mdash; and it's exactly
+        the kind of rule a thermostat evaluates constantly to decide what to show you and, in a
+        more elaborate version, whether to turn the furnace on.
+      </p>
+      <div class="worked">
+        <p><strong>Converting Celsius to Fahrenheit:</strong> <em>F</em> = 1.8<em>C</em> + 32</p>
+        <p>Room temperature, 20&deg;C: <em>F</em> = 1.8(20) + 32 = 36 + 32 = <strong>68&deg;F</strong>.</p>
+        <p>Body temperature, 37&deg;C: <em>F</em> = 1.8(37) + 32 = 66.6 + 32 = <strong>98.6&deg;F</strong>.</p>
+        <p>Every Celsius input has exactly one Fahrenheit output, and the output climbs at a
+        constant rate &mdash; 1.8&deg;F for every 1&deg;C &mdash; which is why this particular
+        function's graph is a straight line.</p>
+      </div>
+      <p>
+        A thermostat's actual furnace decision is a different, and nonlinear, function of the very
+        same input. Set a target of 68&deg;F, and the rule might be: output &ldquo;heat on&rdquo;
+        for any room temperature at or below 66&deg;F, output &ldquo;heat off&rdquo; for anything
+        at or above 70&deg;F, and hold the previous state in between (so it doesn't flick on and
+        off every few seconds near the target). That's still a genuine function &mdash; every
+        input temperature still gets exactly one output decision &mdash; but its rate of change
+        isn't constant at all; it jumps abruptly at two thresholds and sits flat everywhere else.
+        Graphed, it looks like a staircase, not a line: mathematicians call this general shape a
+        <em>step function</em>, one of the more common nonlinear rules in ordinary engineering.
+      </p>
+      <p>
+        A GPS chip works on the same principle at much higher stakes. Each satellite signal your
+        phone receives carries a timestamp; comparing that timestamp against the phone's own clock
+        gives the signal's travel time, and travel time times the speed of light gives a distance
+        to that one satellite &mdash; which by itself only narrows your location down to a sphere
+        of possible points, every point the same distance from that satellite. One satellite's
+        signal is one input producing one distance; add a second satellite and you've narrowed
+        your position to the ring where two spheres intersect; a third narrows it to (almost
+        always) a single point. The whole calculation, from a handful of signal timestamps in to
+        one coordinate out, is a function in exactly today's sense &mdash; the same timestamps will
+        always produce the same computed position.
+      </p>
+      <p>
+        A streaming service's recommendation engine is a function too, just with a vastly larger
+        domain (your entire viewing history, encoded as numbers) and a vastly larger range (a
+        ranked list of shows) &mdash; the input/output logic is identical in kind to the thermostat
+        example, even though the rule itself is far too complicated for any person to write down as
+        a single formula, exactly the kind of function Dirichlet's 1837 definition made room for:
+        no one needs to be able to write the equation for it to still be, formally, a function.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Euler's notation is worth writing out explicitly, because you'll see it in every
+        mathematics lesson from here forward.
+      </p>
+      <div class="formula">
+        <p class="expr">y = f(x)</p>
+        <p class="expr-spoken visually-hidden">y equals f of x.</p>
+        <dl>
+          <dt>x</dt>
+          <dd>the input, chosen from the function's domain</dd>
+          <dt>f</dt>
+          <dd>the name of the rule itself &mdash; the specific function being applied (you could just as well call it g or h; f is only a common default)</dd>
+          <dt>f(x)</dt>
+          <dd>read aloud as &ldquo;f of x&rdquo;: the one output the rule f produces when applied to input x &mdash; not f multiplied by x, a common first-glance mistake</dd>
+          <dt>y</dt>
+          <dd>a short name commonly given to that output, especially when graphing, so the graph's two axes can be labelled x and y</dd>
+        </dl>
+      </div>
+      <p>
+        &ldquo;<em>y</em> = <em>f</em>(<em>x</em>)&rdquo; is doing nothing more exotic than saying
+        &ldquo;whatever comes out, call it <em>y</em>.&rdquo; The real content of a function is
+        always in what <em>f</em> actually does &mdash; the specific rule, like &ldquo;multiply by
+        1.8 and add 32&rdquo; or &ldquo;square it.&rdquo; Once you fix that rule, <em>f</em>(3) is
+        just shorthand for &ldquo;go plug 3 into the rule and see what comes out,&rdquo; the same
+        way you'd read a recipe by substituting in whatever ingredient it names.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Functions are the object mathematics actually studies, far more than any single equation.
+        Day 2 taught you to solve <em>ax</em>&sup2; + <em>bx</em> + <em>c</em> = 0 for the specific
+        inputs where a quadratic function happens to equal zero &mdash; useful, but it only asks
+        about one output value. Once you have the function itself, <em>f</em>(<em>x</em>) =
+        <em>ax</em>&sup2; + <em>bx</em> + <em>c</em>, you can ask a much richer set of questions: how
+        fast is it changing at any given input, where is it at its largest or smallest, what shape
+        does its whole graph trace out, how does changing <em>a</em>, <em>b</em>, or <em>c</em>
+        reshape the entire curve rather than just one root. That shift, from solving for a single
+        number to studying an entire rule, is what opens the door to almost everything else this
+        subject will cover.
+      </p>
+      <p>
+        It also matters far outside a classroom. Any system that has to reliably turn one
+        measurable thing into another &mdash; a sensor reading into a control decision, a set of
+        satellite delays into a coordinate, an account's history into a recommendation &mdash; is,
+        underneath its engineering, implementing a function, and every guarantee that system can
+        make (it will never give you two different answers for the same input; it always terminates
+        with exactly one result) is really a guarantee about the mathematical object this lesson
+        just defined.
+      </p>
+      <p>
+        One more habit worth building now: functions can feed into each other. Take the
+        Fahrenheit-Celsius rule from the worked example, and imagine piping its output straight
+        into a second rule &mdash; say, one that decides whether to display a &ldquo;wear a
+        coat&rdquo; alert whenever the Fahrenheit reading drops below 40. The temperature-to-alert
+        pipeline is itself a function, built entirely out of chaining two simpler functions
+        together: a Celsius input goes in, and a single yes/no output comes out the far end,
+        having passed through both rules along the way. That chaining, called
+        <strong>composition</strong>, is how genuinely complicated systems &mdash; a
+        recommendation engine, a GPS receiver, a thermostat's full control loop &mdash; get built
+        at all: not as one impossibly intricate formula, but as ordinary functions, each simple on
+        its own, linked so one's output becomes the next one's input.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A function assigns exactly one output to every input in its domain &mdash; never two, though two different inputs can share the same output.</li>
+        <li>Domain = the inputs a function is allowed to accept; range = the outputs it actually produces.</li>
+        <li>&ldquo;y = f(x)&rdquo; (Euler, 1734) just means &ldquo;the output y is whatever the rule f produces from input x.&rdquo;</li>
+        <li>Linear functions change at a constant rate (straight-line graphs); nonlinear functions change at a varying rate (curved or stepped graphs).</li>
+        <li>Dirichlet's 1837 definition dropped the old requirement that a function be expressible as a formula &mdash; any consistent one-output-per-input rule qualifies, however strange.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        A function guarantees exactly one output for every input &mdash; but nothing in the
+        definition guarantees the reverse. Knowing the thermostat's furnace is &ldquo;on&rdquo;
+        doesn't tell you the exact room temperature, only that it's somewhere at or below 66&deg;F.
+        Knowing <em>f</em>(<em>x</em>) = <em>x</em>&sup2; equals 9 doesn't tell you whether the
+        input was 3 or &minus;3. What would have to be true of a function's rule for the reverse
+        guarantee to hold too &mdash; for every output to trace back to exactly one input, with no
+        ambiguity?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The history of the term &ldquo;function&rdquo; (Leibniz's 1673
+      coinage, its broadening by Leibniz and Johann Bernoulli, Euler's 1734 introduction of
+      <em>f</em>(<em>x</em>) notation in the <em>Commentarii Academiae Scientiarum Petropolitanae</em>,
+      and its slow adoption into the early 1800s) via the MacTutor History of Mathematics archive
+      (University of St Andrews). Dirichlet's 1837 definition of a function and the Dirichlet
+      function example via standard secondary accounts of the history of the function concept.
+      The Fahrenheit-Celsius conversion and body/room temperature figures are standard reference
+      values. Everything else written for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-29-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

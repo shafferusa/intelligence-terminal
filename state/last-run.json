@@ -1,6 +1,10 @@
 {
-  "last_success": "2026-09-29-pm",
+  "last_success": "2026-09-30-learn",
   "runs": {
+    "2026-09-30-learn": {
+      "status": "success",
+      "ts": "2026-09-30T08:55:42Z"
+    },
     "2026-09-29-learn": {
       "status": "success",
       "ts": "2026-09-29T09:10:00Z"
@@ -88,10 +92,6 @@
     "2026-08-31-learn": {
       "status": "success",
       "ts": "2026-08-31T10:09:34Z"
-    },
-    "2026-08-30-sun": {
-      "status": "success",
-      "ts": "2026-08-30T13:33:00Z"
     },
     "2026-08-31-am": {
       "status": "success",
