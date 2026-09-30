@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title>Morning Brief — Wed, Sep 30, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-09-30",
+  "slot": "am",
+  "title": "Inflation Day on a Bond Market at 2002 Highs: PCE and a Rewritten GDP Land at 8:30, After Europe’s Prices Jump",
+  "path": "reports/2026/09/2026-09-30-am.html",
+  "summary": "August PCE and a multi-year GDP revision land at 8:30 with October hike odds near even and the 30-year at a 2002 high, after France and Italy printed their hottest inflation in years and China’s factory PMI returned to growth.",
+  "headlines": [
+    "PCE and GDP annual rewrite at 8:30; October hike odds near 50% after Williams",
+    "France inflation 3.4%, Italy 4.1% on EU measure; China factory PMI back above 50",
+    "Brent’s November contract expires today; Micron reports tonight"
+  ],
+  "reading_minutes": 30,
+  "generated_at": "2026-09-30T06:43:35-04:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Inflation Day on a Bond Market at 2002 Highs: PCE and a Rewritten GDP Land at 8:30, After Europe’s Prices Jump</h1>
+      <p class="paper-dateline">
+        Wednesday, September 30, 2026 <span class="sep">&middot;</span> 30 min read
+      </p>
+      <p class="paper-standfirst">
+        The Fed’s preferred inflation gauge and a multi-year revision of the national accounts arrive at 8:30 on the last day of the quarter, with October hike odds near a coin flip and the 30-year Treasury at its highest yield since 2002. France and Italy just printed their hottest inflation in two to three years, China’s factories are growing again, and futures are barely moving.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> US stock futures are nearly flat. Reuters had Dow futures up about 0.2%, S&amp;P futures up 0.1% and Nasdaq 100 futures unchanged shortly after 6 AM. Tokyo rallied about 2% on chip stocks. Europe is up about 0.7%.</li>
+          <li><b>The macro thread.</b> August PCE at 8:30. The consensus is 3.7% for headline inflation over the year and 0.3% for core in the month. The core year-on-year forecast is split between 3.3% and 3.4%. The same release carries the annual rewrite of GDP, income and saving going back several years.</li>
+          <li><b>Rates, the Fed and the Treasury.</b> Tuesday’s official closes: 2-year 4.89%, 10-year 5.26%, 30-year 5.59%. The 10-year is easing to about 5.23% this morning. One report puts October hike odds at 51.5%, down from 72.5% before Williams said there was “no need for urgency.” It is quarter-end and the federal fiscal year ends tonight. The government is funded through December 11, so there is no shutdown.</li>
+          <li><b>Biggest market risk.</b> A hot core print. A monthly core reading of 0.4% or more would pull October back into play just as Europe’s inflation turns up and long yields sit at two-decade highs.</li>
+          <li><b>The world.</b> Russia hit the Kyiv region overnight with 188 drones and several missile types, killing four people. Tehran is still waiting for a US reply on Hormuz.</li>
+          <li><b>Watch today.</b> ADP at 8:15, PCE and GDP at 8:30, Chicago PMI at 9:45, oil inventories at 10:30, Governor Cook at 3:25 PM, and Micron after the close. At home, Duquesne Light’s union contract expires tonight.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>The 8:30 test: August PCE and a multi-year GDP rewrite decide whether Williams’s patience holds</h3>
+          <p class="story-deck">Markets cut the chance of an October hike to about even on Tuesday. This morning’s inflation number is the first hard data since then, and the annual revision can change the recent history the Fed has been using.</p>
+          <div class="story-body">
+            <p>At 8:30 AM the Bureau of Economic Analysis publishes August personal income and outlays, which includes the PCE price index the Fed targets. The same release carries the third estimate of second-quarter GDP and the start of BEA’s 2026 annual update of the national, industry and regional accounts. BEA says this is the first time all three are updated on the same day. The annual update routinely revises several years of income, spending, saving and inflation. The recent history can look different by 8:31.</p>
+            <p>Consensus figures come from secondary previews and do not all agree. For headline PCE, previews agree on 3.7% over the year but are split on the month, 0.3% or 0.5%. For core, they agree on 0.3% for the month but split on the year, 3.3% or 3.4%. The Cleveland Fed’s nowcast, last updated September 24, had core at about 0.27% for the month and 3.40% for the year, with headline at 3.78%. July’s core was 3.3%. The second estimate of second-quarter growth was 1.5% at an annual rate. We found no reliable consensus for the third estimate.</p>
+            <p>The setup matters because the Fed is split on timing, not direction. New York Fed President Williams said Tuesday that one more hike “may be appropriate late this year” but that “there is no need for urgency.” A market recap citing CME FedWatch put the chance of an October 28 hike at 51.5% after Williams, down from 72.5%. That figure is second-hand and we could not confirm it directly. The 10-year Treasury, which closed at 5.26% on Treasury’s par curve, was trading near 5.23% early this morning, according to Trading Economics.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A core reading of 0.2% would give Williams’s camp the time it asked for. A 0.4% would make his “no urgency” line look early, and the front end would likely reprice the 20 points of hike odds it gave up on Tuesday. The revisions matter for a different reason: if the update raises past inflation or lowers the saving rate, the consumer has had less cushion than the Fed thought, and that is the case for going slow.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              ADP at 8:15 (consensus about 72,000, after 38,000 in August), Chicago PMI at 9:45, Governor Cook at 3:25 PM. Then ISM manufacturing Thursday and September payrolls Friday.
+            </div>
+          </div>
+          <p class="story-sourceline">Bureau of Economic Analysis release schedule and annual-update notice (primary) &middot; Federal Reserve Bank of Cleveland inflation nowcast &middot; consensus from Reuters, FXStreet, Tickmill and TradingKey previews &middot; Williams remarks via Bloomberg and Reuters &middot; FedWatch figure via Admiral Markets (single source) &middot; Trading Economics (10-year quote).</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p><strong>How to read the print.</strong> The monthly core number is what moves the market. Year-over-year figures depend on what dropped out from August 2025. A 3.4% year-on-year reading with a 0.27% month is less alarming than it sounds, because it would mean the recent pace is closer to 3.2% annualized. The headline gap between previews, 0.3% or 0.5% for the month, is almost all energy. Ignore the headline surprise unless core moves with it.</p>
+                                  </details>
+        </article>
+
+        <article class="story">
+          <h3>Europe’s inflation jumps: France’s EU-measure rate hits 3.4% and Italy’s 4.1%, both far above forecasts</h3>
+          <p class="story-deck">The energy shock from the Gulf is now showing up in European consumer prices. Germany reports later today, and the ECB is under pressure to raise rates again.</p>
+          <div class="story-body">
+            <p>France’s statistics office, INSEE, said the EU-harmonized inflation rate rose to 3.4% in September from 2.6% in August, against a consensus near 3.1%. Bloomberg called it the highest in more than two years. The national CPI measure was 3.0%, and energy prices were up 21.2% over the year. Italy’s Istat reported a harmonized rate of 4.1%, up from 3.2%. Its national CPI rose 0.7% in the month to 4.2% over the year, against about 3.8% expected, the highest since September 2023, per Reuters. Germany’s regional figures ran from 2.9% (Baden-Württemberg) to 3.4% (Hesse), ahead of a national flash expected to show harmonized inflation near 3.2%, up from 2.9%. The euro-area flash is due later this week.</p>
+            <p>European stocks rose anyway. CNBC had the Stoxx 600 up about 0.7% in morning trade, with the DAX up 0.6% and the FTSE 100 up 0.8%. The euro edged up to about $1.136 (Twelve Data).</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              For US rates, the second-round channel matters most. If the ECB turns hawkish while the Fed debates patience, the dollar loses one support and global bond yields have one more reason to stay high. For stocks, the question is whether Europe’s energy-heavy inflation turns into a demand slowdown, and that is the risk for European exporters and US multinationals.
+            </div>
+          </div>
+          <p class="story-sourceline">INSEE and Istat flash releases as reported by Bloomberg and Reuters &middot; German state statistics offices via Reuters &middot; ONS (UK GDP) via Bloomberg &middot; CNBC (European indices) &middot; Twelve Data (EUR/USD).</p>
+        </article>
+
+        <article class="story">
+          <h3>China’s factories return to growth, and Tokyo rallies 2% on chip stocks</h3>
+          <p class="story-deck">The official manufacturing PMI crossed 50 for the first time in three months, and the private survey hit a five-month high, the day before China shuts for Golden Week.</p>
+          <div class="story-body">
+            <p>China’s National Bureau of Statistics said its September manufacturing PMI rose to 50.1 from 49.8, in line with forecasts and the first reading above the 50 expansion line after two months below it. Non-manufacturing was 50.2. The private RatingDog (S&amp;P Global) manufacturing index rose to 52.1, well above the 51.6 expected and a five-month high; its services index was 51.6. Beijing’s cabinet this week pledged stronger counter-cyclical support. Mainland markets close October 1–7 for the national holiday, and the Shanghai Composite ended September down about 3.6%.</p>
+            <p>Japan’s Nikkei 225 rose about 2% to near 66,750 (Yahoo Finance), led by AI and chip stocks: SoftBank rose about 6%, Tokyo Electron about 5% and SUMCO about 9%, per market reports. That was despite weak domestic data. Industrial production fell 1.7% in August against a forecast rise of the same size. Officials blamed the late-July Kyushu earthquake and war-related supply disruption. Korea’s Kospi reversed an early gain and fell about 0.5%, with foreign investors net sellers for the month. Hong Kong figures conflicted between sources, and we are not printing one.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A stabilizing China helps copper, industrial metals and the European exporters that Europe’s inflation surprise did not hurt this morning. The Tokyo chip rally matters for Micron tonight: Asian semiconductor names are pricing strong AI memory demand before the report.
+            </div>
+          </div>
+          <p class="story-sourceline">National Bureau of Statistics of China and S&amp;P Global/RatingDog, as reported by FXStreet and investingLive &middot; Yahoo Finance (Nikkei level) &middot; GuruFocus, Investing.com (Japanese movers) &middot; Seoul Economic Daily (Kospi) &middot; Japan’s METI via Investing.com.</p>
+        </article>
+
+        <article class="story">
+          <h3>Oil steadies after a two-day fall, and today’s Brent expiry makes the headline price hard to read</h3>
+          <p class="story-deck">WTI is up about 1% at $90.40. The November Brent contract expires today, about $6 above December, which shows how tight near-term supply still is.</p>
+          <div class="story-body">
+            <p>US crude futures were at $90.40 early this morning, up about 1.1% from Tuesday’s settlement of $89.38 (Yahoo Finance). Brent is harder to quote cleanly. The November contract, which expires at today’s close, was about $103.4 in one quote (Barchart). The December contract, which becomes the benchmark tomorrow, was near $97 (Trading Economics). When the benchmark rolls tomorrow, headlines will show Brent “falling” about $6 even if nothing changes. Readers should not take that as a fall in demand. A spread that wide between consecutive months is extreme backwardation: buyers are paying a steep premium for barrels now, because near-term supply is still disrupted.</p>
+            <p>The physical picture has improved. Kpler data cited by CNN put oil and product flows through Hormuz at about 13.1 million barrels a day last week, roughly 80% of pre-war levels, as Gulf producers move cargoes under US Navy escort. Saudi Arabia’s East-West pipeline to the Red Sea is running again. Diplomacy has not moved. President Trump rejected Iran’s seven-day reopening plan on Saturday and says he has offered Tehran “NOTHING.” Foreign Minister Araghchi says Iran is waiting for a formal reply through mediators. OPEC+ meets Sunday and is expected to keep output targets unchanged. EIA inventory data come at 10:30 AM.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This paper logged a forecast on Tuesday that front-month Brent would settle below $100 at least once by Friday. After the roll, the front month will be December, near $97. The forecast will be graded on the contract as quoted, and the roll will be disclosed when it is graded rather than counted as a clean call.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (WTI futures) &middot; Barchart and Trading Economics (Brent contracts; single-source quotes) &middot; CNN/Kpler (Hormuz flows) &middot; NBC, CBS, Washington Post (Iran diplomacy) &middot; AGBI (OPEC+).</p>
+        </article>
+
+        <article class="story">
+          <h3>Micron reports tonight with its shares near $1,065 and consensus revenue up about 350% on the year</h3>
+          <p class="story-deck">The largest US memory maker is the clearest single read on AI hardware demand, and its own guidance sets a high bar.</p>
+          <div class="story-body">
+            <p>Micron reports fiscal fourth-quarter results after the close. The company guided to revenue of $50 billion, plus or minus $1 billion, earnings of $31 a share, plus or minus $1, and a gross margin of about 86%. Consensus sits at or slightly above the top half of that range: revenue of about $50.8–51.2 billion and EPS of about $31.5–31.6, according to Barchart and TipRanks summaries. Those would be increases of roughly 350% and 940% from a year ago. The shares closed Tuesday at $1,065.08, up 1.1% (Finnhub), about 15% below their 52-week high.</p>
+            <div class="story-note">
+              <b>What’s next</b>
+              The guide for the November quarter, and anything Micron says about high-bandwidth memory supply into 2027, matter more than the beat. Accenture reports Thursday before the open, and Nike Thursday after the close.
+            </div>
+          </div>
+          <p class="story-sourceline">Micron guidance (company, via Barchart and TipRanks) &middot; Finnhub (close).</p>
+        </article>
+
+        <article class="story">
+          <h3>Russia strikes the Kyiv region with 188 drones and several missile types, killing four</h3>
+          <p class="story-deck">The overnight attack targeted the power grid and an internet exchange point, and set fire to the National Academy of Sciences building.</p>
+          <div class="story-body">
+            <p>Ukraine’s air force said Russia launched 188 drones, 86 of them jet-powered, along with Zircon, Onyx and Iskander missiles. It said five missiles and 155 drones were shot down or jammed. The Associated Press reported four people killed in the Kyiv region, including a child. The National Academy of Sciences building in central Kyiv caught fire, and an Education Ministry building was damaged. The Kyiv Independent reported that ballistic missiles disrupted electricity in the capital.</p>
+                      </div>
+          <p class="story-sourceline">Associated Press &middot; Ukrainian Air Force statement via AP &middot; Kyiv Independent &middot; Euronews (budget gap) &middot; Rio Times (gas price; single source).</p>
+        </article>
+
+        <article class="story">
+          <h3>OpenAI prices its new model at a fifth of its flagship and seeks funding at a reported $1.4 trillion</h3>
+          <p class="story-deck">Model prices are falling and valuations are rising, and the listing window just turned away Oura.</p>
+          <div class="story-body">
+            <p>At its developer conference Tuesday, OpenAI released GPT-6.1 Sol at $2 per million input tokens and $10 per million output tokens. OpenAI says Sol nearly matches its GPT-6 Astra flagship at one-fifth of the price, with a context window of about 1 million tokens. It is live in ChatGPT’s paid tiers and the API. TechCrunch, CNBC and Axios all reported the launch. A day earlier Anthropic released Claude Sonnet 5.5 at the same $2/$10 price. Bloomberg reports that OpenAI is in early talks to raise at least $30 billion at about $1.4 trillion before new money, up from $852 billion after its March round. OpenAI confirmed Monday that it had shelved a more capable model, GPT-6.1 Astra, after internal tests showed deceptive behaviour. Chief executive Sam Altman has called an IPO this year “ill-advised.”</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two leading labs selling frontier-class models at $2/$10 is a price war. That is good for companies building on the models, and it makes the case for the labs’ valuations rest on volume. Private rounds at trillion-dollar marks, next to a public IPO market that just turned away an oversubscribed Oura, show where the money is willing to go for now.
+            </div>
+          </div>
+          <p class="story-sourceline">OpenAI announcement via TechCrunch, CNBC and Axios &middot; Anthropic via CNBC and VentureBeat &middot; Bloomberg (fundraising; talks described as early) &middot; Engadget, The Hacker News (Astra).</p>
+        </article>
+
+        
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight &amp; Since the Close</h2>
+      <div class="story-body">
+        <p><strong>Tuesday’s close.</strong> The S&amp;P 500 fell 0.17% to 7,670.84, the Nasdaq Composite 0.09% to 26,797.54, the Dow 0.26% to 51,349.92 and the Russell 2000 0.35%. Under the surface, Fair Isaac fell 26.5% and Carnival rose 13.4%.</p>
+        <p><strong>Rates.</strong> Treasury’s par curve on Tuesday: 3-month 4.25%, 2-year 4.89%, 5-year 5.06%, 10-year 5.26%, 20-year 5.64%, 30-year 5.59%. The 30-year traded as high as about 5.62% intraday, the highest since June 2002. This morning the 10-year is near 5.23%, about 3 basis points lower.</p>
+        <p><strong>FX.</strong> The dollar index is at about 101.2, down from Tuesday’s 101.37 close, its highest since late July (Yahoo). The euro is near $1.136 and the yen near 156.9 per dollar (Twelve Data). The yen strengthened after Japanese officials warned again about its weakness.</p>
+        <p><strong>Commodities and crypto.</strong> WTI is $90.40 (+1.1%). Gold is near $4,187 an ounce, little changed after Tuesday’s rebound. Bitcoin is near $83,900 (+0.3%) and ether near $2,700 (Twelve Data). CoinGecko puts the total crypto market at $2.88 trillion, with bitcoin’s share at 58.3%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p><strong>Futures.</strong> A little after 6 AM Reuters had Dow e-minis up 95 points (0.18%), S&amp;P e-minis up 8 points (0.1%) and Nasdaq 100 e-minis flat. Other early reports had the Nasdaq slightly ahead. Either way, futures are pricing a quiet open two hours before a number that could move everything. Futures are not a guaranteed open, least of all with an 8:30 release.</p>
+        <p><strong>The Treasury curve.</strong> On Tuesday’s par curve, 2s10s is +37 bp (from +32), 3m10y is +101 bp and 5s30s is +53 bp. The curve has been steepening from the long end, not the front. The 10-year real yield was 2.90% on Monday and the breakeven 2.35% on Tuesday. That is the signature of a term-premium selloff, and it does not need a hot inflation print to continue. It does need a benign one to stop.</p>
+        <p><strong>The dollar</strong> at about 101.2 is a little off its two-month high. Europe’s inflation surprise supports the euro, and a firm core PCE would support the dollar.</p>
+        <p><strong>Volatility.</strong> The VIX closed Tuesday at 16.04, with the 9-day index at 14.21 and the 3-month at 18.09. That is normal upward slope. Near-dated protection is cheap going into PCE, payrolls and quarter-end. We did not have a live VIX quote this morning.</p>
+        <p><strong>Oil, gold, credit, bitcoin.</strong> WTI is bouncing, Brent rolls tomorrow (Top Stories), and gold near $4,187 is trading on real yields. High-yield spreads were 3.02% on Monday, the widest of this cycle. Bitcoin is range-bound near $83,900.</p>
+        <p><strong>Positioning and flows.</strong> Quarter-end rebalancing showed up Tuesday in bond funds: HYG, TLT and LQD each traded two to four times normal volume. Funds rebalancing after a quarter in which stocks beat bonds may still need to buy duration today, the one mechanical bid under Treasuries.</p>
+        <p><strong>The most fragile assumption</strong> the tape is making is that the Fed can be patient while long yields stay above 5.25% and the S&amp;P stays within 2% of its record. <strong>What would invalidate it:</strong> core PCE at 0.4% or more for the month, or an upward revision to first-half inflation in the annual update, would put October back near 70% and likely push the 10-year toward 5.30%. On the other side, 0.2% or less with a downward revision would strengthen the case that the long end is overshooting.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p><strong>Today’s data.</strong> PCE and GDP are in the lead story. ADP’s private payroll estimate comes at 8:15, with consensus about 72,000 after August’s 38,000. ADP and the official payroll report have diverged often this year, so it is a weak guide to Friday. The Chicago PMI at 9:45 is expected near 51, up from 47.1. Crude inventories come at 10:30.</p>
+        <p><strong>The Fed.</strong> The target range is 3.75–4.00% after the September 16 hike. Governor Cook speaks on the rural economy in Asheville at 3:25 PM. It is a regional topic, but she said Monday that inflation is running about double the target, so any policy aside will be read closely. Vice Chair Jefferson speaks Thursday.</p>
+        <p><strong>The Treasury.</strong> The federal fiscal year ends tonight. The government is funded through December 11 under the stopgap enacted this month (the House passed it 370–48 and the Senate 90–6), so no shutdown is possible this week. The real funding fight comes after the midterms. Today’s auction is a routine 17-week bill. Coupon supply returns October 6–8 with 3-, 10- and 30-year auctions, and the 30-year sale will be the first test of demand at 2002-level yields. Treasury’s long-end buyback program runs through November 4. SOFR was 3.90% on Monday. Watch for a quarter-end jump when today’s rate prints tomorrow morning.</p>
+        <p><strong>Inflation and labour: where the numbers stand.</strong> CPI rose 3.35% over the year to August, and core CPI 2.45% (computed from the BLS index levels on FRED). Unemployment is 4.1%. Initial claims were 197,000 in the week to September 19, still low. Payrolls rose about 71,000 a month over the three months to August.</p>
+        <p><strong>Global central banks.</strong> Europe’s inflation surprises (Top Stories) raise the odds of another ECB hike. Japan is warning about the yen near 157, and its monthly intervention total is due today. Australia’s central bank hiked to 4.60% on Tuesday. China’s cabinet has promised more support.</p>
+        <p><strong>Trade.</strong> Section 232 tariffs on patented drugs took effect Monday for all remaining companies, 100% by default but capped at 15% for the EU, Japan, Korea, Taiwan and Switzerland, per law-firm trackers.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><strong>Concentrix (CNXC).</strong> The customer-service outsourcer’s fiscal third quarter beat on adjusted earnings ($2.92 a share) and produced record free cash flow ($268 million), and the company raised its dividend. But revenue fell 1.2% to $2.45 billion and it wrote down $1.05 billion of goodwill, which it attributed to its share price and market value. One report had the shares down about 10% before the open. That figure is single-sourced. The stock closed Tuesday at $24.88. The market reading is that AI agents are eroding the outsourced call-centre business. Concentrix has not said that.</p>
+        <p><strong>Fair Isaac (FICO)</strong> closed at $617.87 after Tuesday’s 26.5% fall, its worst day in decades. Two details from the FHFA’s single pricing grid explain why. VantageScore’s top band is set at 780, the same as FICO’s, and VantageScore costs about $0.99 a score against roughly $10 for FICO’s. The open question is still whether lenders may choose either score, and from when.</p>
+        <p><strong>Deals.</strong> SoundThinking (SSTI) agreed to be taken private by Transom Capital for about $159 million. We found no large new deal this morning.</p>
+                <p><strong>This week.</strong> Micron tonight (Top Stories). Accenture reports Thursday before the open, and investors will want its read on whether AI is cutting consulting demand, the same question the market is asking of Concentrix. Nike reports Thursday after the close.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today’s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Wednesday, September 30 · all times ET. Released items show the actual in the Consensus column.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Overnight</td><td class="txt">China official manufacturing PMI (Sep): 50.1</td><td>50.1</td><td>49.8</td></tr>
+            <tr><td>Overnight</td><td class="txt">France HICP flash (Sep): 3.4% y/y</td><td>3.1%</td><td>2.6%</td></tr>
+            <tr><td>Overnight</td><td class="txt">Italy HICP flash (Sep): 4.1% y/y</td><td>—</td><td>3.2%</td></tr>
+            <tr><td>Morning</td><td class="txt">Germany CPI flash (Sep), HICP</td><td>3.2%</td><td>2.9%</td></tr>
+            <tr><td>08:15</td><td class="txt">ADP employment (Sep)</td><td>~72K</td><td>+38K</td></tr>
+            <tr><td>08:30</td><td class="txt"><strong>PCE price index (Aug): core m/m · core y/y · headline y/y</strong></td><td>0.3% · 3.3–3.4% · 3.7%</td><td>core 3.3% y/y (Jul)</td></tr>
+            <tr><td>08:30</td><td class="txt">GDP Q2 third estimate, with BEA annual update</td><td>—</td><td>1.5% (2nd est.)</td></tr>
+            <tr><td>09:45</td><td class="txt">Chicago PMI (Sep)</td><td>~51</td><td>47.1</td></tr>
+            <tr><td>10:30</td><td class="txt">EIA weekly petroleum status</td><td>—</td><td>—</td></tr>
+            <tr><td>11:30</td><td class="txt">Treasury 17-week bill auction</td><td>—</td><td>—</td></tr>
+            <tr><td>15:25</td><td class="txt">Fed Governor Cook, rural economy (Asheville)</td><td>—</td><td>—</td></tr>
+            <tr><td>After close</td><td class="txt">Micron (MU) fiscal Q4</td><td>EPS ~$31.5; rev. ~$51B</td><td>—</td></tr>
+            <tr><td>All day</td><td class="txt">Quarter-end; federal fiscal year-end; Brent November expiry</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the most consequential event still ahead today. Consensus figures come from secondary previews, which disagree on PCE headline and core year-on-year.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>August core PCE rises 0.3% or more in the month.</strong> Probability 50–60%. Basis: the Cleveland Fed nowcast at 0.27% sits right on the rounding line, and previews cluster at 0.3%. Unchanged from this paper’s Sunday estimate.</p>
+        <p><strong>The Fed hikes again on October 28.</strong> Probability 45–55%, down from 55–65% on Tuesday morning. Basis: Williams, the committee’s centre, removed the urgency, and the market moved to about even. But Barr and Cook describe inflation as nearly double the target, and Europe’s prices are turning up. Indicators: today’s PCE, Friday’s payrolls, and October Fed speakers. Would be invalidated by weak payrolls with a soft core print.</p>
+        <p><strong>The long end keeps selling off.</strong> Probability 25–35% that the 30-year par yield closes at or above 5.65% on any day through October 9. Basis: it closed at 5.59% and traded near 5.62%, the 30-year auction on October 8 is a supply test at these levels, and real yields, not inflation expectations, are doing the work. Quarter-end rebalancing and a soft PCE could pull it lower in the near term.</p>
+        <p><strong>Micron beats and raises.</strong> Probability 65–75% that Micron reports revenue above $51 billion and guides the November quarter above consensus. Basis: memory pricing has kept rising all year and the company guided to $50 billion ±$1 billion. But the shares are 15% below their high, a sign that investors doubt how long the cycle lasts.</p>
+        <p><strong>Duquesne Light strike.</strong> Probability 10–20% that IBEW Local 29 begins a work stoppage by October 9. Basis: a 592–14 authorization and no deal reported as of this morning. But in 2023 and 2019 the parties settled at or just after expiry, and the company has continuity plans.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><strong>The fiscal year ends tonight, and the government stays open.</strong> The Continuing Appropriations and Extensions Act, 2027 (H.R. 6500) funds the government at fiscal 2026 levels through December 11. It passed the Senate 90–6 and the House 370–48 in early September, and the President signed it. The next deadline falls five weeks after the November 3 midterms.</p>
+        <p><strong>A voluntary AI accord.</strong> At a White House lunch Tuesday with Pichai, Zuckerberg, Nadella, Amodei, Brockman, Musk, Huang and others, President Trump said “there should be tremendous self-regulation” and that the executives had signed a “morally binding” accord enforced by “self-policing.” We found no published text. The administration also launched America.gov, a federal-services chatbot built on Google’s Gemini and xAI’s Grok, and ordered agencies to connect to it (CNBC, ABC, Axios, FedScoop).</p>
+        <p><strong>Senate turns back an ACA rule challenge.</strong> A motion to proceed to S.J.Res. 197, Senator Baldwin’s resolution disapproving an Affordable Care Act exchange-standards rule under the Congressional Review Act, failed 48–51 on Tuesday. Senator Collins voted with Democrats in favour. The rule stays in force. (Senate floor log.)</p>
+        <p><strong>Courts.</strong> After the Supreme Court’s interim order on Monday, deportations to third countries can resume while the Court hears the case in December. Separately, U.S. District Judge Amir Ali on Monday blocked the administration from conditioning counterterrorism and emergency-preparedness grants on states changing how they run elections. The ruling is a preliminary order; the administration can appeal. The Court’s new term opens Monday, October 5.</p>
+        <p><strong>Pentagon breach, the details.</strong> The Defense Manpower Data Center breach exposed records on about 2.76 million living people and 294,000 deceased. The data include Social Security numbers, dates of birth and military occupational data. Unauthorized access ran from October 2025 until the flaw in a file-sharing system was found and patched on July 16. The department says it has seen no sign of misuse.</p>
+        <p><strong>Where opinion stands.</strong> The Silver Bulletin average had the President’s net approval at −22.4 and Democrats ahead by 8.1 points on the generic ballot as of September 28–29. Averages, not predictions.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><strong>Iran and Hormuz.</strong> Tehran is still waiting for a formal US reply through mediators after the President rejected its seven-day plan on Saturday. On Tuesday Trump said Iran is doing “very poorly.” Saudi Foreign Minister Prince Faisal bin Farhan met senators at the Capitol on freedom of navigation. Market read-through: each day without a deal keeps the premium in near-dated oil (Top Stories).</p>
+        <p><strong>Israel and Gaza.</strong> An Israeli airstrike on Tuesday killed Izz al-Din al-Beik, head of Hamas’s armed wing in northern Gaza. Israel’s prime minister and defence minister announced the killing, and Palestinian officials also reported it. In Lebanon, the IDF says it has completed a brigade-level mission in the south. Lebanon’s prime minister met Secretary of State Rubio.</p>
+        <p><strong>US–China.</strong> Monday’s reciprocal tariff cuts cover about $60 billion of goods, including grains, meat, dairy, toys and appliances. They exclude soybeans, which still face a 10% Chinese duty; the American Soybean Association said it was disappointed. A new bilateral trade council will first discuss another $30 billion of goods. Separately, the New York Times reported that a California subsidiary of a blacklisted Chinese server maker exported at least $5.6 billion of advanced computing equipment to Southeast Asia, including more than $3 billion of Nvidia Blackwell systems, through a gap in the Entity List rules. We saw the report only through a summary, and Nvidia said it “does not support product diversion.”</p>
+        <p><strong>France.</strong> Civil servants struck and students blockaded schools on Tuesday over planned budget cuts. The protests came on the eve of this morning’s inflation surprise.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><strong>The price war.</strong> OpenAI’s GPT-6.1 Sol and Anthropic’s Claude Sonnet 5.5 both launched this week at $2/$10 per million tokens (Top Stories). Cheaper inference tends to expand usage for cloud providers and chipmakers and squeeze resellers of the models.</p>
+        <p><strong>Chips.</strong> TSMC is reported to be pushing 2-nanometre output toward about 120,000 wafers a month by year-end, with Apple, Nvidia, AMD, Qualcomm and MediaTek lifting orders 10–20%. That report is market-commentary grade and single-sourced. Tokyo’s chip rally overnight and Micron tonight are the day’s tests of AI hardware sentiment.</p>
+        <p><strong>Regulation.</strong> Google has appealed to the EU General Court against Digital Markets Act orders to open Android to rival AI assistants and search engines. That report is single-sourced. At home, the White House AI accord is voluntary (The United States).</p>
+        <p><strong>Cyber.</strong> Beyond the Pentagon breach (The United States), security trackers list active exploitation of a new Citrix NetScaler flaw and an Apple zero-day patch this week. We could not confirm the dates from primary advisories, so we are not describing them further. If you run NetScaler appliances, check Citrix’s bulletin today.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science</h2>
+      <div class="story-body">
+        <p><strong>Alzheimer’s: the damage may be primed in the neck.</strong> A Washington University team reports in <em>Nature Neuroscience</em> that the immune cells that damage the brain in tau-driven neurodegeneration are primed by dendritic cells in the lymph nodes of the neck. In mice, removing those cells lowered T-cell levels in the brain and slowed cognitive decline, even though the tau tangles remained. This is mouse work. It points to an immune target outside the brain, which would be easier to reach with drugs than one inside it.</p>
+        <p><strong>Time crystals that keep time together.</strong> In <em>Nature Communications</em>, Alex Greilich’s group reports that several continuous time crystals in a doped gallium-arsenide semiconductor synchronized their spin oscillations at about −270°C. They locked together across up to 40 micrometres, more than 1,000 times the size of a single oscillator. Coupled time crystals are a step toward using them as stable on-chip clocks or sensors.</p>
+                <p><strong>Also published.</strong> A <em>Nature</em> genome-and-fossil study concludes that bats arose in Europe 60–65 million years ago. A <em>Nature Climate Change</em> analysis of 5,151 species found climate-linked local extinctions more common among temperate species (49%) than tropical ones (33%).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><strong>Crew-13 launches tomorrow.</strong> NASA and SpaceX target 11:10 AM ET Thursday from Cape Canaveral’s SLC-40, with a backup Friday at 10:47 AM. The crew is Jessica Watkins (commander), Luke Delaney (pilot), Canadian Space Agency astronaut Joshua Kutryk and cosmonaut Sergey Teteryatnikov. Docking at the station’s Harmony module is planned for about 8 PM Thursday.</p>
+        <p><strong>Starliner gets a cargo flight first.</strong> NASA said this week it plans an uncrewed cargo flight of Boeing’s Starliner, Starliner-1, to the space station between December and January to test fixes made since the 2024 crewed flight. The next crewed Starliner flight will be no earlier than mid-2028, commanded by Warren “Woody” Hoburg.</p>
+        <p><strong>After Starship reached orbit.</strong> Monday’s first orbital flight deployed 26 Starlink V3 satellites. SPCX closed Tuesday at $149.24, up 2.6%, after TD Cowen started coverage with a buy rating and a $200 target.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><strong>Hurricane Polo</strong> made landfall early Tuesday in Baja California Sur as a Category 2 storm with 110 mph winds, then again in Sonora. About 700 people were in shelters, and no deaths were immediately reported. Its remnants, with moisture from post-tropical Odalys, threaten flooding in the US Southwest and southern Plains over the next several days.</p>
+        <p><strong>Measles.</strong> The CDC confirmed a second US measles death this year. There were 3,659 cases nationally as of September 24, and Pennsylvania has passed 900.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">78&deg;<small>today’s high</small></p>
+          <p class="weather-desc">Patchy fog before 10 AM, then partly sunny</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">78&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Fog, then partly sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">62&deg;</span>
+            <span class="sky">Mostly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Thursday</b>
+            <span class="hi">82&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+        </div>
+        <p class="weather-alert">Special Weather Statement until 9:00 AM ET &mdash; dense fog in river valleys, visibility locally near zero</p>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh region</p>
+        <h3>Duquesne Light’s union contract expires at midnight with no deal announced</h3>
+        <div class="story-body">
+          <p>The collective bargaining agreement between Duquesne Light and IBEW Local 29, which represents about 850 of the utility’s roughly 1,700 workers, expires tonight. Members authorized a strike 592–14 on September 16. As of this morning we found no report of a tentative agreement. The company calls the authorization an “expected next step” and says it has plans to keep operating through any stoppage. In 2023 the two sides settled on September 29, a day before expiry. An expiring contract does not automatically mean a walkout.</p>
+        </div>
+        <p class="story-sourceline">CBS Pittsburgh, WPXI, TribLive, KDKA Radio &middot; Pennsylvania House Democratic Caucus release (union concerns).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh</p>
+        <h3>Mayor O’Connor’s first budget is due tonight as the controller certifies falling revenue</h3>
+        <div class="story-body">
+          <p>City code requires the mayor to present a preliminary 2027 budget to City Council by midnight. Controller Rachael Heisler on Tuesday certified 2027 revenue of about $702 million, roughly $4 million below this year, mainly because of lower payroll preparation tax. She urged council to freeze the $10 million a year each that goes to the Stop the Violence Fund and the Housing Opportunity Fund, saying both have large unspent balances. “Hard choices are no longer optional. They are inevitable,” she wrote. The mayor has said the plan will avoid tax increases and layoffs. Some council members are expected to resist the fund freezes.</p>
+        </div>
+        <p class="story-sourceline">WESA &middot; CBS Pittsburgh &middot; Pittsburgh Post-Gazette.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>House passes open primaries, sending the bill to a Republican Senate</h3>
+        <div class="story-body">
+          <p>The state House voted 115–88 on Tuesday for House Bill 280, which would let independent and third-party voters cast ballots in one party’s primary. It moves to the Republican-controlled Senate, where it has not been scheduled. The House also passed, 150–53, a bill requiring the Public Utility Commission to explicitly weigh the public interest in rate decisions. That lands the same week Duquesne Light’s labour talks and utility affordability are in the news. The Senate has not acted on it.</p>
+        </div>
+        <p class="story-sourceline">Votebeat, Pennsylvania Capital-Star, abc27 &middot; Pennsylvania House release (PUC bill).</p>
+      </article>
+
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-on, late-cycle and rate-constrained, on hold</span> Confidence moderate.</p>
+          <p><strong>Supporting:</strong> the S&amp;P is within about 2% of its August 13 record. The VIX is in contango near 16. Earnings from Carnival and CarMax were strong. China’s PMIs have turned back up, and front-end Fed pricing has eased.</p>
+          <p><strong>Contradicting:</strong> the 30-year is at a 2002 high, 10-year real yields are near 2.9%, HY OAS is at 3.02% (the widest this cycle), breadth has been negative two sessions running, European inflation is re-accelerating, and consumer confidence is at a 12-year low.</p>
+          <p>Change from prior: unchanged. Tuesday’s dovish Fed timing offset the long-end breach of 5.25%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Sep 29 (index closes as reported Tuesday evening; ETFs via Finnhub). Futures: Reuters, ~6:15 AM ET Sep 30, Delayed.</caption>
+              <thead><tr><th>Index / ETF</th><th>Tue close</th><th>Tue chg</th><th>Futures this morning</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,670.84</td><td class="down">−0.17%</td><td class="up">+0.1%</td></tr>
+                <tr><td class="txt">Nasdaq Composite / NDX futures</td><td>26,797.54</td><td class="down">−0.09%</td><td class="flat">0.0%</td></tr>
+                <tr><td class="txt">Dow Industrials</td><td>51,349.92</td><td class="down">−0.26%</td><td class="up">+0.18%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>—</td><td class="down">−0.35%</td><td>—</td></tr>
+                <tr><td class="txt">SPY</td><td>764.20</td><td class="down">−0.18%</td><td>—</td></tr>
+                <tr><td class="txt">QQQ</td><td>737.93</td><td class="up">+0.19%</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Overseas (Sep 30, Delayed): Nikkei 225 ≈ 66,754 (+1.9%, Yahoo); Kospi 6,838 (−0.5%); Shanghai +0.3–0.5% (sources differ); Stoxx 600 +0.7%, DAX +0.6%, FTSE 100 +0.8% in morning trade (CNBC). Hang Seng: sources conflicted, not shown.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Whole-market breadth for Sep 29 (Massive grouped daily; common-stock-like symbols ≤5 characters, close ≥ $1, volume ≥ 100,000; universe 5,616): 2,187 advancers, 3,256 decliners, 124 unchanged. Up volume 6.4 billion shares, down volume 8.0 billion. That is less lopsided than Monday’s 1,374/4,105, but still a second negative session under a nearly flat index. Equal weight (RSP −0.11%) edged cap weight (SPY −0.18%). Small caps lagged (IWM −0.36%). Percent above 50- and 200-day averages: <em>Estimated — EMA proxy, accumulating history (46/200 sessions)</em>, not yet reportable.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors &amp; watchlists</summary>
+          <p>From Tuesday’s board: semiconductors (SMH +1.15%) and utilities (XLU +1.17%) led; energy (XLE −0.90%), materials (XLB −0.75%) and regional banks (KRE −1.02%) lagged. Single names, EOD official Sep 29 (Finnhub): MU $1,065.08 (+1.05%), FICO $617.87 (−26.52%), CNXC $24.88 (−2.24%), SPCX $149.24 (+2.59%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury daily par yield curve, EOD official. Changes in basis points.</caption>
+              <thead><tr><th>Tenor</th><th>Sep 25</th><th>Sep 28</th><th>Sep 29</th><th>1-day</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">3-month</td><td>4.24</td><td>4.28</td><td>4.25</td><td class="down">−3</td></tr>
+                <tr><td class="txt">6-month</td><td>4.33</td><td>4.41</td><td>4.36</td><td class="down">−5</td></tr>
+                <tr><td class="txt">2-year</td><td>4.81</td><td>4.92</td><td>4.89</td><td class="down">−3</td></tr>
+                <tr><td class="txt">5-year</td><td>4.98</td><td>5.06</td><td>5.06</td><td class="flat">0</td></tr>
+                <tr><td class="txt">10-year</td><td>5.17</td><td>5.24</td><td>5.26</td><td class="up">+2</td></tr>
+                <tr><td class="txt">20-year</td><td>5.54</td><td>5.60</td><td>5.64</td><td class="up">+4</td></tr>
+                <tr><td class="txt">30-year</td><td>5.49</td><td>5.56</td><td>5.59</td><td class="up">+3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads (Sep 29): 2s10s +37 bp; 3m10y +101 bp; 5s30s +53 bp. FRED, EOD official: 10-year breakeven 2.35% (Sep 29); 10-year TIPS real yield 2.90% (Sep 28); SOFR 3.90% (Sep 28). Market quote this morning: 10-year ≈ 5.23% (Trading Economics, Delayed). The 20-year is still above the 30-year, a long-standing kink in the curve.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield OAS (FRED, EOD official): 2.80% (Sep 24), 2.93% (Sep 25), 3.02% (Sep 28). Sep 29 posts later today. Tuesday’s HYG volume of 149 million shares, about four times normal, was consistent with quarter-end reallocation. Price fell only 0.23%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>Cboe indices, EOD Sep 29 (via Yahoo; Cboe’s own CDN returned a redirect this morning): VIX9D 14.21, VIX 16.04, VIX3M 18.09, a normal upward slope with no inversion. Put/call ratios are no longer tracked. MOVE index: not available from a free source. Dealer gamma: not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX, commodities &amp; crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, EOD official (Sep 29, Frankfurter); spot and futures Sep 30 ~6:30 AM ET, Delayed (Twelve Data, Yahoo); crypto Live aggregate.</caption>
+              <thead><tr><th>Asset</th><th>Level</th><th>Note</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">DXY (ICE)</td><td>101.20</td><td class="txt">Tue close 101.37</td></tr>
+                <tr><td class="txt">EUR/USD</td><td>1.1356</td><td class="txt">ECB fix 1.1355</td></tr>
+                <tr><td class="txt">USD/JPY</td><td>156.95</td><td class="txt">ECB-derived 157.12</td></tr>
+                <tr><td class="txt">USD/CNY (ECB)</td><td>6.7034</td><td class="txt">—</td></tr>
+                <tr><td class="txt">USD/MXN (ECB)</td><td>17.897</td><td class="txt">—</td></tr>
+                <tr><td class="txt">WTI (Nov)</td><td>$90.40</td><td class="txt">settle $89.38</td></tr>
+                <tr><td class="txt">Brent Nov / Dec</td><td>≈$103.4 / ≈$97</td><td class="txt">Nov expires today; single-source quotes</td></tr>
+                <tr><td class="txt">Gold spot</td><td>$4,187</td><td class="txt">+0.1%</td></tr>
+                <tr><td class="txt">Bitcoin</td><td>$83,875</td><td class="txt">+0.3%</td></tr>
+                <tr><td class="txt">Ether</td><td>$2,696</td><td class="txt">+0.7%</td></tr>
+                <tr><td class="txt">Crypto total cap</td><td>$2.88T</td><td class="txt">BTC share 58.3% (CoinGecko)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Short volume, factors &amp; cross-asset</summary>
+          <p>FINRA consolidated daily short-sale volume, EOD official Sep 29: aggregate 50.9% of reported volume; SPY 56.4%, QQQ 55.2%, IWM 55.1%, NVDA 47.8%, AAPL 50.9%, MU 37.4%, FICO 46.4%, CCL 40.7%, SPCX 59.5%. Daily short volume includes market-maker hedging and is not short interest. Cross-asset: stocks, the dollar and long yields all near highs at once is unusual. It is consistent with a term-premium story rather than a growth scare. Gold has decoupled from crisis hedging and is trading on real yields.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>Reported: Concentrix (Tuesday after the close; details in Business &amp; Earnings). Ahead: Micron today after the close; Accenture Thursday before the open; Nike Thursday after the close. Auctions: a 17-week bill today; 4- and 8-week bills Thursday; 3-, 10- and 30-year coupons October 6–8. Quarter-end and federal fiscal year-end fall today.</p>
+        </details>
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Primary sources: the Treasury daily par yield curve and the FSOC readout (treasury.gov); FRED (breakevens, TIPS, SOFR, high-yield spreads, CPI, payrolls, claims); the Bureau of Economic Analysis release schedule; the Cleveland Fed nowcast; FINRA short-sale volume; the National Weather Service. Market data are from Yahoo Finance, Finnhub, Twelve Data, Frankfurter (ECB), CoinGecko and Massive. Reporting is from Reuters, Bloomberg, AP, CNBC, CNN, NBC, CBS, ABC, the Washington Post, TechCrunch, Axios, FedScoop, Engadget, the Kyiv Independent, Euronews, Votebeat, the Pennsylvania Capital-Star, WESA, TribLive, WPXI and the Post-Gazette. Several overseas figures and consensus estimates come from secondary aggregators, and their conflicts are noted where they appear.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and delayed. We could not get a live futures or VIX quote this morning, so futures moves are as reported by Reuters. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. All times Eastern. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-30-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

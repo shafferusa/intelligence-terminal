@@ -1,6 +1,210 @@
 {
  "stories": [
   {
+   "id": "pce-gdp-annual-update-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Aug PCE + Q2 GDP third estimate with BEA annual update at 8:30",
+   "one_line": "Consensus headline 3.7% y/y, core 0.3% m/m, core y/y 3.3-3.4% (previews split); Cleveland nowcast core 0.27%/3.40%; Oct hike ~51.5% per FedWatch via Admiral Markets (single).",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "BEA schedule",
+    "Cleveland Fed",
+    "Reuters/FXStreet previews"
+   ],
+   "score_rationale": "Lead: Fed path decider"
+  },
+  {
+   "id": "europe-sept-flash-inflation-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "France HICP 3.4%, Italy HICP 4.1% (CPI 4.2%) Sept flash; German states 2.9-3.4%",
+   "one_line": "All well above consensus; France energy +21.2% y/y; ECB hike pressure.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "INSEE/Istat via Bloomberg, Reuters"
+   ],
+   "score_rationale": "Global inflation turn"
+  },
+  {
+   "id": "china-pmi-expansion-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "China NBS mfg PMI 50.1 (first >50 in 3 months); RatingDog 52.1; Nikkei +~2% on chips",
+   "one_line": "Golden Week closure Oct 1-7; Japan IP -1.7% m/m.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "NBS/RatingDog via FXStreet, investingLive",
+    "Yahoo"
+   ],
+   "score_rationale": "Global growth"
+  },
+  {
+   "id": "brent-nov-expiry-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Brent Nov contract expires Sep 30 ~$103.4 vs Dec ~$97; WTI $90.40 +1.1%",
+   "one_line": "Roll will show ~$6 'drop'; grade 2026-09-29-pm-3 with roll disclosed. OPEC+ Oct 4.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Barchart",
+    "Trading Economics",
+    "Yahoo"
+   ],
+   "score_rationale": "Oil/inflation"
+  },
+  {
+   "id": "kyiv-strike-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Russia strikes Kyiv region: 188 drones + Zircon/Onyx/Iskander; 4 killed; Academy of Sciences building burned",
+   "one_line": "Grid and internet exchange targeted.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "AP",
+    "Kyiv Independent"
+   ],
+   "score_rationale": "War"
+  },
+  {
+   "id": "wh-ai-accord-america-gov-sep29",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "White House AI lunch: 'morally binding' self-policing accord; America.gov chatbot portal + EO",
+   "one_line": "No published accord text.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "CNBC",
+    "ABC",
+    "Axios",
+    "FedScoop"
+   ],
+   "score_rationale": "AI policy"
+  },
+  {
+   "id": "pgh-2027-budget-sep30",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Pittsburgh 2027 preliminary budget due by midnight Sep 30; controller certifies ~$702M revenue",
+   "one_line": "Heisler urges freezing $10M/yr each to Stop the Violence and Housing Opportunity funds.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "WESA",
+    "CBS Pittsburgh"
+   ],
+   "score_rationale": "Local"
+  },
+  {
+   "id": "pa-house-open-primaries-sep29",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "PA House passes HB 280 open primaries 115-88; PUC public-interest bill 150-53",
+   "one_line": "To GOP Senate.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Votebeat",
+    "Capital-Star",
+    "pahouse.com"
+   ],
+   "score_rationale": "PA"
+  },
+  {
+   "id": "concentrix-impairment-sep29",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "New",
+   "headline": "Concentrix FQ3: adj EPS $2.92, rev $2.45B (-1.2%), $1.05B goodwill impairment",
+   "one_line": "Shares ~-10% premarket (single source).",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Concentrix 8-K/GlobeNewswire"
+   ],
+   "score_rationale": "AI disruption read"
+  },
+  {
+   "id": "pentagon-dmdc-breach-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-30-am",
+   "watch": false,
+   "status": "Continuing",
+   "headline": "Pentagon DMDC breach exposed ~3M people",
+   "one_line": "2.76M living + 294K deceased; access Oct 2025-Jul 2026.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Stars and Stripes",
+    "ABC",
+    "SecurityWeek"
+   ],
+   "score_rationale": "US security"
+  },
+  {
+   "id": "openai-devday-sol-funding-sep29",
+   "first_seen": "2026-09-29-pm",
+   "last_updated": "2026-09-30-am",
+   "watch": true,
+   "status": "Continuing",
+   "headline": "OpenAI DevDay: GPT-6.1 Sol at 1/5 Astra price; Dots agents; reported $30B raise at $1.4T",
+   "one_line": "Carried in am Top Stories.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "OpenAI",
+    "CNBC",
+    "Axios",
+    "Bloomberg",
+    "TechCrunch"
+   ],
+   "score_rationale": "AI section lead"
+  },
+  {
+   "id": "duquesne-light-ibew-contract-sep30",
+   "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
+   "status": "Continuing",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-30-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Contract expires midnight Sep 30; no TA reported as of 6:40 AM.",
+   "score_note": "Local utility reliability; open forecast graded Sept 30.",
+   "sources": [
+    "CBS Pittsburgh",
+    "Hoodline",
+    "WPXI"
+   ],
+   "watch": true
+  },
+  {
+   "id": "micron-fq4-sep30",
+   "headline": "Micron reports fiscal Q4 Wed Sep 30 after close",
+   "status": "Continuing",
+   "first_seen": "2026-09-27-sun",
+   "last_updated": "2026-09-30-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Reports tonight; consensus rev ~$50.8-51.2B, EPS ~$31.5; guide $50B+/-1B, EPS $31+/-1.",
+   "score_note": "Key AI-demand datapoint after a narrow AI-led rally.",
+   "sources": [
+    "Alphastreet",
+    "Finnhub",
+    "Benzinga"
+   ],
+   "watch": true
+  },
+  {
    "id": "pa-measles-900-sep28",
    "first_seen": "2026-09-29-pm",
    "last_updated": "2026-09-29-pm",
@@ -29,40 +233,6 @@
     "Center Square"
    ],
    "score_rationale": "Local PA beat"
-  },
-  {
-   "id": "pentagon-dmdc-breach-sep29",
-   "first_seen": "2026-09-29-pm",
-   "last_updated": "2026-09-29-pm",
-   "watch": false,
-   "status": "New",
-   "headline": "Pentagon DMDC breach exposed ~3M people",
-   "one_line": "Oct 2025-Jul 2026 access; patched; no attribution.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Stars and Stripes",
-    "ABC",
-    "SecurityWeek"
-   ],
-   "score_rationale": "US security"
-  },
-  {
-   "id": "openai-devday-sol-funding-sep29",
-   "first_seen": "2026-09-29-pm",
-   "last_updated": "2026-09-29-pm",
-   "watch": true,
-   "status": "New",
-   "headline": "OpenAI DevDay: GPT-6.1 Sol at 1/5 Astra price; Dots agents; reported $30B raise at $1.4T",
-   "one_line": "Funding talks early, no term sheet (Bloomberg, TechCrunch).",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "OpenAI",
-    "CNBC",
-    "Axios",
-    "Bloomberg",
-    "TechCrunch"
-   ],
-   "score_rationale": "AI section lead"
   },
   {
    "id": "scotus-third-country-deportations-sep29",
@@ -219,22 +389,6 @@
    ]
   },
   {
-   "id": "duquesne-light-ibew-contract-sep30",
-   "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
-   "status": "Continuing",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-29-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "No deal reported as of Sep 29 evening; expires Sep 30.",
-   "score_note": "Local utility reliability; open forecast graded Sept 30.",
-   "sources": [
-    "CBS Pittsburgh",
-    "Hoodline",
-    "WPXI"
-   ],
-   "watch": true
-  },
-  {
    "id": "trump-rejects-iran-hormuz-offer-sep26",
    "headline": "Oil jumps, gold falls >3% after Trump rejects Iran Hormuz offer; Trump expects talks this week",
    "status": "Developing",
@@ -249,22 +403,6 @@
     "Axios",
     "AP",
     "CNBC"
-   ],
-   "watch": true
-  },
-  {
-   "id": "micron-fq4-sep30",
-   "headline": "Micron reports fiscal Q4 Wed Sep 30 after close",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-29-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Reports Sep 30 after close; MU +1.05% to 1065.08 Sep 29.",
-   "score_note": "Key AI-demand datapoint after a narrow AI-led rally.",
-   "sources": [
-    "Alphastreet",
-    "Finnhub",
-    "Benzinga"
    ],
    "watch": true
   },
@@ -779,154 +917,6 @@
     "Ukrainian Air Force (primary)",
     "Kyiv Independent",
     "Bloomberg"
-   ],
-   "watch": true
-  },
-  {
-   "id": "hurricanes-nolo-polo-sep27",
-   "headline": "Hurricane Nolo south of Hawaii; Polo toward Baja",
-   "status": "Developing",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Nolo expected major Sun, 10-20in rain on Big Island; Polo peaked Cat 5 at 892 mb, Cat 3, Baja landfall expected Mon.",
-   "score_note": "Pacific disaster risk.",
-   "sources": [
-    "CPHC/NHC (primary)",
-    "Honolulu Star-Advertiser",
-    "CBS"
-   ],
-   "watch": true
-  },
-  {
-   "id": "oura-ipo-sep29",
-   "headline": "Oura IPO expected to price Tue Sep 29",
-   "status": "New",
-   "first_seen": "2026-09-27-sun",
-   "last_updated": "2026-09-27-sun",
-   "verification": "Single-reliable-source",
-   "one_line": "50M shares at $40-44 on Nasdaq (OURA), ~$2B.",
-   "score_note": "IPO window gauge.",
-   "sources": [
-    "Segmara",
-    "MobiHealthNews"
-   ],
-   "watch": true
-  },
-  {
-   "id": "taiwan-arms-package-decision",
-   "headline": "Trump to decide $14B Taiwan arms package 'in a fairly short time' after Xi visit",
-   "status": "Continuing",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "Post-summit, package still unsigned; bipartisan senators urge proceeding; Beijing calls it a red line. Open forecast: decision within two weeks (40-55%).",
-   "score_note": "Market-relevant for China-exposed and chip names; tests the truce.",
-   "sources": [
-    "White House officials via wire",
-    "Taipei Times",
-    "Xinhua"
-   ],
-   "watch": true
-  },
-  {
-   "id": "houthi-khamis-mushait-riyadh-sep26",
-   "headline": "Houthi missiles and drones at Khamis Mushait and Riyadh intercepted after Saudi-Turkey-Pakistan military chiefs meet",
-   "status": "New",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-multiple (coalition statement, AP)",
-   "one_line": "Coalition says it intercepted 2 ballistic missiles toward Khamis Mushait and 2 drones toward Riyadh early Sept 26; no damage reported. GCC: 'grave escalation.' Came hours after Saudi, Turkish and Pakistani military chiefs met in Riyadh under the Aug 7 Mecca Joint Defence Agreement.",
-   "score_note": "Watch for Pakistan/Turkey entry into the Yemen war.",
-   "sources": [
-    "AP",
-    "Euronews",
-    "Haaretz",
-    "Arab News",
-    "Al Jazeera"
-   ],
-   "watch": true
-  },
-  {
-   "id": "pittsburgh-da-charges-sep25",
-   "headline": "Pittsburgh DA Zappala: \"People will be charged\" in Gainey-era corruption probe",
-   "status": "Continuing",
-   "first_seen": "2026-09-25-pm",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-primary (on-record quote); no charges filed -- Confirmed-multiple",
-   "one_line": "In a WESA report published today, DA Stephen Zappala said \"We have charges, yes\" and \"People will be charged\" -- his first public statement since the nine-page warrant affidavit was unsealed alleging Gainey-administration officials steered roughly $2M in \"Stop the Violence\" grants and other no-bid contracts to campaign-supporting organizations (SEIU, Working Families Party), and that the city's no-bid contract rate roughly doubled under his administration. Councilman Khari Mosley, named in the affidavit, continues to deny any connection, calling the probe \"a witch hunt.\" No charges have actually been filed. This is a real escalation in tone from Zappala's earlier \"I expect criminal charges to be filed\" -- the legal stage itself (allegation, under investigation) has not formally advanced.",
-   "score_note": "First unambiguous on-record commitment from the DA that charges are coming, in a probe touching a recent former mayor's administration.",
-   "sources": [
-    "WESA"
-   ],
-   "watch": true
-  },
-  {
-   "id": "prt-bus-order-vote-sep25",
-   "headline": "Pittsburgh Regional Transit's board votes today on a $94.1 million, 102-bus order",
-   "status": "Unconfirmed",
-   "first_seen": "2026-09-25-am",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-primary (board agenda); outcome unconfirmed",
-   "one_line": "PRT board vote on $94.1M, 102-bus New Flyer order was scheduled Sept 25; no outcome reported as of Sat Sept 26 morning.",
-   "score_note": "Concrete, dated local infrastructure decision with a specific dollar figure and timeline.",
-   "sources": [
-    "Pittsburgh Regional Transit board agenda (primary)",
-    "Pittsburgh Post-Gazette",
-    "WPXI"
-   ],
-   "watch": true
-  },
-  {
-   "id": "costco-q4-earnings-sep24",
-   "headline": "Costco's Q4 beats estimates but leans on the same tariff-refund boost flagged as a risk",
-   "status": "Resolved",
-   "first_seen": "2026-09-24-pm",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-primary",
-   "one_line": "Costco's own 8-K (filed 4:17pm ET) shows Q4 diluted EPS of $6.75 (vs $5.87 a year ago), beating both vendor consensus estimates ($6.48/$6.67) that had diverged; net sales $93.9B (+11.2% y/y) landed just under the ~$94.9B analyst consensus even as comparable sales rose 9.4% total company (6.7% ex-gas/FX) across every region. The company's own release attributes $0.15/share of the EPS beat to a non-recurring IEEPA tariff-refund benefit, 'less partial reinvestment of those refunds in increased member values' -- the same dynamic Oppenheimer's Rupesh Parikh flagged as a risk to reading the underlying business off the headline number ahead of this report. No after-hours share reaction was available by publication; earnings call 2pm PT. Update (Sept 25 am): Costco's own materials say the IEEPA tariff-refund dynamic will keep affecting quarterly comparisons into fiscal 2027, and the company has committed to disclosing the net impact every quarter going forward. Analyst reaction was incremental: Truist to $909 from $873 (Hold), BMO to $980 from $950 (Outperform), DA Davidson to $880 from $780 (Neutral). No reliable Friday premarket quote obtained this run. Update (Sept 25 pm): COST closed $922.77, +2.93%, recovering from an early Friday dip. New headwind surfaced in Friday coverage: a roughly $152M charge to the electronics business tied to memory-chip price inflation. Analyst targets were mixed despite the rally -- Bernstein trimmed to $1,143 from $1,144 (Outperform), Mizuho cut to $1,065 from $1,100 (Outperform); consensus average roughly $1,073-1,089.",
-   "score_note": "Primary-source earnings landing same-session, with a genuine one-time-benefit caveat worth tracking into next quarter.",
-   "sources": [
-    "Costco Wholesale Corp. 8-K, Exhibit 99.1 (primary, SEC EDGAR)"
-   ],
-   "watch": false
-  },
-  {
-   "id": "yield-spike-pmi-auction-sep23",
-   "headline": "10-year Treasury yield hits highest since 2007 as hot PMI, hawkish Barr and a weak 5-year auction combine",
-   "status": "Continuing",
-   "first_seen": "2026-09-23-pm",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-primary (PMI release, Fed speech text, Treasury auction results)",
-   "one_line": "Week: 10Y +16bp to 5.17% (5.18% Thu, highest since 2007), 30Y 5.49%, 20Y 5.54%; move entirely in real yields (DFII10 2.68->2.85, T10YIE ~flat). Weak 5Y auction (2.21 cover, 3.1bp tail), 7Y at highest yield since 1993. Oct 27-28 hike odds ~70-78% per secondary trackers.",
-   "score_note": "First session since the Sept 16 hawkish hike where hard data, a Fed governor and an actual Treasury auction all confirmed the same hawkish direction at once.",
-   "sources": [
-    "S&P Global PMI release (primary)",
-    "Federal Reserve, Governor Barr's remarks (primary)",
-    "TreasuryDirect auction results (primary)",
-    "Treasury par-yield curve",
-    "CNBC",
-    "Yahoo Finance",
-    "TheStreet"
-   ],
-   "watch": true
-  },
-  {
-   "id": "trump-xi-summit-arrival-sep23",
-   "headline": "Xi arrives in Washington today, first visit in over a decade, as China presses Trump on Taiwan arms",
-   "status": "Resolved",
-   "first_seen": "2026-09-23-am",
-   "last_updated": "2026-09-26-sat",
-   "verification": "Confirmed-multiple on the visit/itinerary; Disputed on a reported cancellation threat over the Taiwan arms package",
-   "one_line": "Summit ended Sept 25 with no joint statement; truce extended to Jan 10, 2027 (Bessent on record); AI-incident channel agreed; Beijing lists an eight-point consensus incl. ~$30B reciprocal tariff cut not confirmed by the White House. $14B Taiwan arms package still undecided -- keep watching for that decision.",
-   "score_note": "First Xi visit to Washington in 11 years, opening under an explicit Chinese arms-sales objection and a timed AI-hardware show of strength.",
-   "sources": [
-    "China MFA statements (primary)",
-    "Reuters",
-    "South China Morning Post",
-    "Bloomberg",
-    "Taipei Times",
-    "White House officials, via wire"
    ],
    "watch": true
   }
