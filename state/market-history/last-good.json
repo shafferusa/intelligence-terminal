@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-30T20:40:00Z",
+ "fetched_at": "2026-10-01T10:44:50Z",
  "treasury_par_curve": {
   "as_of": "2026-09-30 EOD official",
   "source": "home.treasury.gov",
@@ -18,7 +18,7 @@
   "30Y": 5.64
  },
  "fred": {
-  "as_of": "2026-09-30 fetch",
+  "as_of": "2026-10-01 fetch",
   "source": "FRED",
   "CPIAUCSL": {
    "date": "2026-08-01",
@@ -41,8 +41,8 @@
    "value": "4.1"
   },
   "T10Y2Y": {
-   "date": "2026-09-29",
-   "value": "0.37"
+   "date": "2026-09-30",
+   "value": "0.41"
   },
   "DGS2": {
    "date": "2026-09-29",
@@ -53,8 +53,8 @@
    "value": "5.26"
   },
   "T10YIE": {
-   "date": "2026-09-29",
-   "value": "2.35"
+   "date": "2026-09-30",
+   "value": "2.36"
   },
   "DFII10": {
    "date": "2026-09-29",
@@ -99,11 +99,14 @@
   "DXY_asof": "2026-09-30 ~16:20 ET Yahoo DX-Y.NYB"
  },
  "crypto": {
-  "as_of": "2026-09-30 ~16:34 ET CoinGecko /global",
-  "total_mcap_usd": 2878324502313,
-  "btc_dominance": 58.33,
-  "mcap_chg_24h_pct": -2.51,
-  "btc_price_note": "~83,000-84,500 intraday per Coinbase/Fortune; simple/price needs demo key"
+  "as_of": "2026-10-01 ~06:40 ET CoinGecko",
+  "total_mcap_usd": 2846923270768,
+  "btc_dominance": 58.86,
+  "mcap_chg_24h_pct": -3.66,
+  "btc": 83744,
+  "eth": 2691.3,
+  "sol": 117.65,
+  "ada": 0.245933
  },
  "indices": {
   "as_of": "2026-09-30 EOD",
@@ -583,15 +586,15 @@
   }
  },
  "breadth_latest": {
-  "date": "2026-09-29",
-  "advancers": 2187,
-  "decliners": 3256,
-  "unchanged": 124,
-  "universe": 5616
+  "date": "2026-09-30",
+  "advancers": 1903,
+  "decliners": 3732,
+  "unchanged": 119,
+  "universe": 5841
  },
  "finra_short_vol": {
-  "date": "2026-09-28",
-  "aggregate_ratio_pct": 50.9
+  "date": "2026-09-30",
+  "aggregate_ratio_pct": 51.7
  },
  "sector_etfs_wk": {
   "as_of": "2026-09-25 EOD official",
@@ -645,7 +648,7 @@
   "price": 922.77,
   "pct": 2.93
  },
- "_notes_this_run": "2026-09-29 pm: curl egress worked for Treasury, FRED (key set), Yahoo, Frankfurter, CoinGecko /global, Twelve Data, Finnhub, Massive, FINRA, SEC, TreasuryDirect, Fed RSS, LL2. Cboe cdn 307; CoinGecko simple/price 403 (no demo key); newyorkfed.org blocked.",
+ "_notes_this_run": "2026-10-01 am: Yahoo v8 HTTP 429 on all symbols (query1/query2); Cboe cdn 307 to cdn-api.cboe.com (not allowlisted, not followed). Treasury, FRED, Frankfurter, CoinGecko global+simple/price, Twelve Data, Finnhub, Massive, FINRA, SEC, TreasuryDirect, Fed RSS, NWS worked.",
  "yahoo_am_2026_09_28": {
   "fetched_at": "2026-09-28T10:54:34Z",
   "label": "Delayed (+10 min) futures/overnight; Previous close for cash",
@@ -1298,5 +1301,39 @@
    "SPCX": 149.24
   },
   "finra_short_ratio_0929": 50.9
+ },
+ "am_2026_10_01": {
+  "as_of": "2026-10-01T10:44:50Z",
+  "twelve_data": {
+   "EURUSD": 1.12911,
+   "USDJPY": 158.21054,
+   "GBPUSD": 1.32226,
+   "USDCNY": 6.70528,
+   "XAUUSD": 4168.4552
+  },
+  "finnhub_close_0930": {
+   "SPY": 762.63,
+   "QQQ": 739.77,
+   "IWM": 277.89,
+   "MU": 1065.11,
+   "NVDA": 228.38,
+   "SPCX": 150.86,
+   "BA": 186.05,
+   "NOC": 483.48,
+   "LYFT": 15.01,
+   "PSKY": 10.33,
+   "WBD": 30.95,
+   "NKE": 35.4,
+   "MKC": 46.4,
+   "TSLA": 354.81,
+   "AMD": 611.76
+  },
+  "reported_secondary": {
+   "UST10Y_intraday_high": "~5.34 (Reuters/LSEG)",
+   "UST30Y_intraday_high": "~5.66",
+   "UK30Y_gilt": "~6.03",
+   "Brent_Dec": "~96.8 (Trading Economics)",
+   "WTI": "~90.06"
+  }
  }
 }

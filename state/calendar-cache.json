@@ -1,87 +1,15 @@
 {
- "fetched": "2026-09-29T17:30:00-04:00",
+ "fetched": "2026-10-01T06:50:00-04:00",
  "earnings_fetched": "2026-09-29",
  "earnings_fetched_note": "2026-09-29 pm: Finnhub calendar Sep 29-Oct 2 (MU, JBL, ACN, NKE); Alpha Vantage not called.",
  "events": [
   {
-   "ts_et": "2026-09-30T08:15:00-04:00",
-   "type": "econ",
-   "name": "ADP employment (Sept); Aug +38K",
-   "importance": "Medium",
-   "reason": "Payroll preview",
-   "source": "ADP"
-  },
-  {
-   "ts_et": "2026-09-30T08:30:00-04:00",
-   "type": "econ",
-   "name": "Personal income & outlays / PCE (Aug); July core 3.3% y/y",
-   "importance": "Critical",
-   "reason": "Fed's preferred inflation gauge with Oct hike ~70-76% priced",
-   "source": "BEA via previews"
-  },
-  {
-   "ts_et": "2026-09-30T08:30:00-04:00",
-   "type": "econ",
-   "name": "GDP Q2 third estimate + corporate profits, with annual update",
-   "importance": "High",
-   "reason": "Revisions to income/saving",
-   "source": "BEA via previews"
-  },
-  {
-   "ts_et": "2026-09-30T09:45:00-04:00",
-   "type": "econ",
-   "name": "Chicago PMI (Sept)",
-   "importance": "Low",
-   "reason": "Regional",
-   "source": "MNI"
-  },
-  {
-   "ts_et": "2026-09-30T10:30:00-04:00",
-   "type": "econ",
-   "name": "EIA weekly petroleum status",
-   "importance": "Medium",
-   "reason": "Oil two-day slide; SPR exchange",
-   "source": "EIA schedule"
-  },
-  {
-   "ts_et": "2026-09-30T15:25:00-04:00",
-   "type": "fed",
-   "name": "Gov. Cook on the rural economy (Asheville)",
-   "importance": "Low",
-   "reason": "Board speaker; regional topic",
-   "source": "federalreserve.gov calendar"
-  },
-  {
-   "ts_et": "2026-09-30T16:05:00-04:00",
+   "ts_et": "2026-10-01T08:00:00-04:00",
    "type": "earnings",
-   "name": "Micron (MU) fiscal Q4, after close; cons ~$31.56-32.32 / $51.2-52.2B",
-   "importance": "Critical",
-   "reason": "AI hardware demand referee",
-   "source": "Alphastreet/Finnhub"
-  },
-  {
-   "ts_et": "2026-09-30T17:00:00-04:00",
-   "type": "local",
-   "name": "Duquesne Light-IBEW Local 29 contract expires; PRT Bus Line Refresh comment closes 5 PM; Pittsburgh five-year plan deadline",
+   "name": "McCormick (MKC) Q3; cons EPS ~$0.76, rev ~$1.98B",
    "importance": "Medium",
-   "reason": "Local",
-   "source": "Post-Gazette/PRT"
-  },
-  {
-   "ts_et": "2026-09-30T23:59:00-04:00",
-   "type": "markets",
-   "name": "Quarter-end and federal fiscal year-end (no shutdown: CR through Dec 111)",
-   "importance": "Medium",
-   "reason": "Funding/rebalancing",
-   "source": "Congress/CR"
-  },
-  {
-   "ts_et": "2026-10-01T07:00:00-04:00",
-   "type": "earnings",
-   "name": "McCormick (MKC) Q3; Accenture (ACN, per Finnhub, unconfirmed)",
-   "importance": "Medium",
-   "reason": "Staples; consulting/AI budgets",
-   "source": "company/Finnhub"
+   "reason": "Staples; Unilever food deal",
+   "source": "McCormick IR/Alphastreet"
   },
   {
    "ts_et": "2026-10-01T08:30:00-04:00",
@@ -100,6 +28,14 @@
    "source": "ISM"
   },
   {
+   "ts_et": "2026-10-01T10:00:00-04:00",
+   "type": "fed",
+   "name": "Gov. Waller, FRED Con (St. Louis)",
+   "importance": "High",
+   "reason": "Hawkish-leaning voter on Oct path",
+   "source": "federalreserve.gov (primary)"
+  },
+  {
    "ts_et": "2026-10-01T11:10:00-04:00",
    "type": "space",
    "name": "SpaceX Crew-13 to ISS (backup Oct 2 10:47)",
@@ -114,6 +50,14 @@
    "importance": "Medium",
    "reason": "ISS crew rotation; LL2 status Go",
    "source": "NASA + ll.thespacedevs.com"
+  },
+  {
+   "ts_et": "2026-10-01T11:30:00-04:00",
+   "type": "treasury_auction",
+   "name": "4-week ($100B) and 8-week ($95B) bills",
+   "importance": "Low",
+   "reason": "",
+   "source": "treasurydirect.gov (primary)"
   },
   {
    "ts_et": "2026-10-01T12:00:00-04:00",
@@ -132,12 +76,36 @@
    "source": "federalreserve.gov calendar"
   },
   {
+   "ts_et": "2026-10-01T15:00:00-04:00",
+   "type": "fed",
+   "name": "VC Supervision Bowman, Atlantic Council",
+   "importance": "Medium",
+   "reason": "Regulation",
+   "source": "federalreserve.gov (primary)"
+  },
+  {
+   "ts_et": "2026-10-01T15:30:00-04:00",
+   "type": "fed",
+   "name": "Gov. Cook, global central banking (virtual)",
+   "importance": "Medium",
+   "reason": "",
+   "source": "federalreserve.gov (primary)"
+  },
+  {
    "ts_et": "2026-10-01T16:15:00-04:00",
    "type": "earnings",
    "name": "Nike (NKE) fiscal Q1 FY27, after close; cons ~$0.44 / $11.3B",
    "importance": "High",
    "reason": "Consumer/China/tariffs",
    "source": "Nike IR (primary)"
+  },
+  {
+   "ts_et": "2026-10-02T05:00:00-04:00",
+   "type": "econ",
+   "name": "Euro-area flash HICP (Sep); cons 3.6%, MUFG 3.8%; Aug 3.2%",
+   "importance": "High",
+   "reason": "ECB path, global yields",
+   "source": "Eurostat calendar / FXStreet"
   },
   {
    "ts_et": "2026-10-02T08:30:00-04:00",
@@ -212,12 +180,36 @@
    "source": "treasurydirect.gov upcoming"
   },
   {
+   "ts_et": "2026-10-06T16:05:00-04:00",
+   "type": "earnings",
+   "name": "Constellation Brands (STZ) FQ2, after close",
+   "importance": "Low",
+   "reason": "",
+   "source": "company IR"
+  },
+  {
+   "ts_et": "2026-10-07T10:00:00-04:00",
+   "type": "world",
+   "name": "RBI policy decision (repo 5.25%)",
+   "importance": "Low",
+   "reason": "",
+   "source": "Forbes India"
+  },
+  {
    "ts_et": "2026-10-07T13:00:00-04:00",
    "type": "auction",
    "name": "10-year note reopening (9Y10M)",
    "importance": "High",
    "reason": "Long-end demand test with 10Y at 5.26%",
    "source": "treasurydirect.gov upcoming"
+  },
+  {
+   "ts_et": "2026-10-07T14:00:00-04:00",
+   "type": "fed",
+   "name": "FOMC minutes (Sep 15-16 meeting)",
+   "importance": "High",
+   "reason": "",
+   "source": "federalreserve.gov"
   },
   {
    "ts_et": "2026-10-07T20:00:00-04:00",

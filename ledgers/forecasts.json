@@ -4065,6 +4065,36 @@
    "probability": "10-20%",
    "basis": "592-14 strike authorization, no deal reported; 2019 and 2023 settled at expiry; company continuity plans.",
    "status": "open"
+  },
+  {
+   "id": "2026-10-01-am-1",
+   "date": "2026-10-01",
+   "slot": "am",
+   "forecast": "10-year Treasury par yield closes at or above 5.35% on at least one day through Oct 9.",
+   "horizon": "2026-10-09",
+   "probability": "40-55%",
+   "basis": "Overnight intraday high ~5.34%; Oct 6-8 coupon auctions; gilts/JGBs selling off in parallel; offsets: soft payrolls, falling oil.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-01-am-2",
+   "date": "2026-10-01",
+   "slot": "am",
+   "forecast": "September nonfarm payrolls first print below +100,000.",
+   "horizon": "2026-10-02",
+   "probability": "55-70%",
+   "basis": "Consensus ~90K (Bloomberg), BofA ~60K; claims low argues against.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-01-am-3",
+   "date": "2026-10-01",
+   "slot": "am",
+   "forecast": "Euro-area September flash HICP at or above 3.7% y/y.",
+   "horizon": "2026-10-02",
+   "probability": "40-55%",
+   "basis": "Consensus 3.6%, MUFG tracking 3.8%; DE/FR/IT flashes all beat forecasts.",
+   "status": "open"
   }
  ]
 }

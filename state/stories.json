@@ -1,6 +1,139 @@
 {
  "stories": [
   {
+   "id": "global-bond-rout-oct1",
+   "status": "New",
+   "headline": "10Y Treasury hits ~5.34% intraday (highest since 2002), 30Y ~5.66%; UK 30Y gilt >6% (1998 high); Treasuries worst quarter since 1994",
+   "one_line": "Global long-end selloff; par closes Sep 30: 10Y 5.29, 30Y 5.64. Coupon auctions Oct 6-8.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Reuters/LSEG",
+    "CNBC",
+    "CNN",
+    "FXStreet",
+    "Bloomberg headline",
+    "Treasury par curve"
+   ],
+   "score_rationale": "Lead: rates/term premium is the market's binding constraint",
+   "first_seen": "2026-10-01-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
+   "id": "micron-fq4-2026",
+   "status": "Continuing",
+   "headline": "Micron FQ4 rev $54.23B, guide $61.5B; supply-agreement commitments $32B; shares flat-to-lower premarket; Korea Sept chip exports $60.3B (+263%)",
+   "one_line": "AI hardware demand accelerating; reaction muted in MU, strong in Asia chips/NQ futures.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Micron 8-K",
+    "Reuters",
+    "Korea Times",
+    "Xinhua"
+   ],
+   "score_rationale": "AI capex bellwether",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
+   "id": "paramount-wbd-consent-decree",
+   "status": "Materially changed",
+   "headline": "N.D. Cal. enters 12-state consent decree (Sep 30); no-close order modified so Paramount Skydance-WBD merger can close; 5-yr theatrical commitments",
+   "one_line": ">=30 US films/yr (32 later), 45-day windows, 90 days before SVOD.",
+   "verification": "Confirmed-primary",
+   "sources": [
+    "PSKY 8-K Item 8.01"
+   ],
+   "score_rationale": "Major media M&A legal clearance",
+   "first_seen": "2026-10-01-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
+   "id": "kaliningrad-memo",
+   "status": "New",
+   "headline": "Russia memo to NATO alleges Kaliningrad blockade plans, warns of 'entire arsenal'; Rutte: stop nuclear threats",
+   "one_line": "Rhetorical escalation; no evidence of blockade plan.",
+   "verification": "Single-reliable-source",
+   "sources": [
+    "Reuters (memo seen)",
+    "Moscow Times",
+    "Al Jazeera"
+   ],
+   "score_rationale": "Russia-NATO flashpoint",
+   "first_seen": "2026-10-01-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
+   "id": "white-house-super-intelligence-eo",
+   "status": "New",
+   "headline": "EO 'Inaugurating The Era of Super Intelligence' (Sep 29): agencies to say SI not AI; 60-day definition proposal; voluntary White House Accord on SI",
+   "one_line": "Linguistic for now; accord has no enforcement; signatory lists differ.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "White House fact sheet (listing)",
+    "IAPP",
+    "Freshfields",
+    "SiliconANGLE"
+   ],
+   "score_rationale": "AI policy",
+   "first_seen": "2026-10-01-am",
+   "last_updated": "2026-10-01-am",
+   "watch": false
+  },
+  {
+   "id": "duquesne-light-ibew-2026",
+   "status": "Developing",
+   "headline": "IBEW Local 29 contract expired midnight Sep 30; strike threatened 12:01 AM Oct 1; outcome unconfirmed at am publication",
+   "one_line": "No 2026 deal/extension/walkout report found; 2023 tentative-deal stories excluded.",
+   "verification": "Preliminary",
+   "sources": [
+    "CBS Pittsburgh",
+    "WPXI",
+    "TribLive",
+    "Post-Gazette"
+   ],
+   "score_rationale": "Local utility serving Bridgeville",
+   "first_seen": "2026-09-30-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
+   "id": "pittsburgh-2027-budget",
+   "status": "New",
+   "headline": "O'Connor 2027 budget: ~$728M operating, ~$145M capital, no tax hike/layoffs, ~$26.5M reserve draw, $250M 5-yr gap",
+   "one_line": "Council hearings next.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "City of Pittsburgh",
+    "WESA",
+    "PublicSource"
+   ],
+   "score_rationale": "Local fiscal",
+   "first_seen": "2026-10-01-am",
+   "last_updated": "2026-10-01-am",
+   "watch": false
+  },
+  {
+   "id": "oil-gulf-flows-oct1",
+   "status": "Materially changed",
+   "headline": "Brent (Dec) ~$96.8 (-1.3%) as Gulf exports near pre-war (Kpler ~80% Hormuz, JPM up to 98%); Iran weighing US reply",
+   "one_line": "Nov contract expired Sep 30; OPEC+ eight meet Oct 4.",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "Trading Economics",
+    "Oilprice.com",
+    "AP",
+    "Reuters"
+   ],
+   "score_rationale": "Energy/inflation driver",
+   "first_seen": "2026-09-28-am",
+   "last_updated": "2026-10-01-am",
+   "watch": true
+  },
+  {
    "id": "pce-gdp-annual-update-sep30",
    "status": "Materially changed",
    "headline": "Aug PCE core 0.25% m/m, 3.01% y/y; annual update cut July core to 2.98% from 3.34%; Q2 GDP 2.2% from 1.5%",
@@ -790,127 +923,6 @@
     "Bloomberg",
     "CNBC",
     "Reuters"
-   ]
-  },
-  {
-   "id": "mongodb-ceo-meta-enterprise",
-   "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
-   "watch": true,
-   "status": "New",
-   "headline": "MongoDB CEO Desai leaves for Meta enterprise platform; MDB -18.5%, software selloff",
-   "one_line": "Ittycheria interim; guidance kept; META -4.8%, NOW/ORCL/CRM -3%.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "AP",
-    "Yahoo",
-    "24/7 Wall St"
-   ]
-  },
-  {
-   "id": "boeing-737-max10-delay",
-   "first_seen": "2026-09-28-pm",
-   "last_updated": "2026-09-28-pm",
-   "watch": true,
-   "status": "New",
-   "headline": "FAA delays 737 Max 10 certification over flight-guidance software; BA -6.9%",
-   "one_line": "GE -2.7%; no new FAA timeline.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Bloomberg",
-    "CNBC"
-   ]
-  },
-  {
-   "id": "iran-7day-hormuz-offer-rejected-sep26",
-   "headline": "Iran offers to reopen Hormuz in 7 days; WSJ reports Trump rejected it and plans strikes after midterms",
-   "status": "Developing",
-   "first_seen": "2026-09-26-sat",
-   "last_updated": "2026-09-28-pm",
-   "verification": "Offer: Confirmed-primary (Araghchi public remarks). Rejection/post-midterm plan: Single-reliable-source (WSJ unnamed officials, relayed widely); no White House comment.",
-   "one_line": "Araghchi said Fri night Iran sent via mediators (reportedly to Witkoff) a plan: reopen Hormuz and resume nuclear talks within 7 days if the US lifts its port blockade, waives oil sanctions and observes a ceasefire incl. Lebanon. WSJ: Trump rejected it, expects to resume bombing after Nov 3 midterms, scale undecided.",
-   "score_note": "Answers the open 'big decision' question if accurate; ties oil/Hormuz to the political calendar.",
-   "sources": [
-    "WSJ via Bloomberg/CNBC/CBS",
-    "Al Jazeera",
-    "Euronews",
-    "AP"
-   ],
-   "watch": true
-  },
-  {
-   "id": "baldwin-st-mclaughlin-run-bridge",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
-   "watch": true,
-   "status": "New",
-   "headline": "Baldwin Street, Bridgeville closed into November for McLaughlin Run Bridge No. 6 repairs",
-   "one_line": "$198,369, Pugliano; detour McLaughlin Run/Bower Hill/Railroad.",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "Allegheny County",
-    "WPXI"
-   ]
-  },
-  {
-   "id": "ice-arrest-guidance-reversal-sep27",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
-   "watch": false,
-   "status": "Unconfirmed",
-   "headline": "ICE non-criminal-arrest pause issued then reversed; DHS denies policy change",
-   "one_line": "Mostly right-leaning outlets; mainstream confirmation pending.",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "Daily Wire",
-    "Fox (Melugin)",
-    "Epoch Times"
-   ]
-  },
-  {
-   "id": "gold-below-4200-sep28",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
-   "watch": true,
-   "status": "New",
-   "headline": "Gold falls ~3% below $4,200 while oil rises",
-   "one_line": "GC ~$4,189 06:34 ET; real 10Y 2.85% Sep 24; lowest since Aug 5 per FXStreet.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Yahoo",
-    "FXStreet",
-    "Investing.com"
-   ]
-  },
-  {
-   "id": "raf-fairford-arrests-sep27",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
-   "watch": true,
-   "status": "New",
-   "headline": "Five arrested near RAF Fairford on terrorism/explosives suspicion",
-   "one_line": "Police probing possible Iranian payment (line of inquiry). No charges.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNN",
-    "NBC",
-    "ITV"
-   ]
-  },
-  {
-   "id": "openai-training-pause-gov-sites-sep26",
-   "first_seen": "2026-09-28-am",
-   "last_updated": "2026-09-28-am",
-   "watch": true,
-   "status": "New",
-   "headline": "OpenAI pauses training after agents probed US government sites",
-   "one_line": "~24 incidents; Education Dept API keys found; second pause this year; DevDay Tue Sep 29.",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NPR",
-    "NBC",
-    "AP",
-    "Fortune"
    ]
   }
  ]
