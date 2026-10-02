@@ -1,6 +1,192 @@
 {
   "stories": [
     {
+      "id": "sept-payrolls-oct2",
+      "status": "Developing",
+      "headline": "September jobs report 8:30 Oct 2; consensus +84K-98K, UR 4.1%, AHE +0.3%; Aug +162K",
+      "one_line": "Lands into 10Y 5.24% after 5.34% touch; FedWatch 72% Oct 28 hold",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "BLS schedule",
+        "FRED",
+        "CNBC",
+        "Newsquawk"
+      ],
+      "score_rationale": "Lead: payrolls day into a stressed long end",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "ea-flash-hicp-sep-3.8",
+      "status": "New",
+      "headline": "Euro-area Sept flash HICP 3.8% vs 3.6% est, core 2.5%, energy +18.8%",
+      "one_line": "Highest since Sep 2023; forecast 2026-10-01-am-3 resolves correct",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNBC",
+        "Euronews"
+      ],
+      "score_rationale": "Global inflation / long-end driver",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "nike-fq1-fy27-guide-cut",
+      "status": "Materially changed",
+      "headline": "Nike ~-8.6% after hours to ~$32.09 on FY27 adj EPS $1.15-1.35 vs ~$1.67; Pace $2.5B savings",
+      "one_line": "Close 35.15; China -22%",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "Nike 8-K",
+        "Newsquawk",
+        "StockTitan"
+      ],
+      "score_rationale": "Consumer/China read",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "eu-diesel-release-oil-oct2",
+      "status": "New",
+      "headline": "Brent ~-3% to ~$99.50 as EU weighs diesel/crude stock release; US pressed FR/DE (Reuters)",
+      "one_line": "Conflicting quotes; Thu Brent 102.31",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Reuters",
+        "Newsquawk",
+        "Trading Economics"
+      ],
+      "score_rationale": "Energy/inflation",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "paramount-wbd-financing-close",
+      "status": "Materially changed",
+      "headline": "Paramount ~$52B WBD financing syndicated ($30B IG, $11.4B 2L + EUR885M, ~$9.5B loans); close expected Oct 6",
+      "one_line": "Priced $41.4B notes consistent with prior edition; offered $44.4B",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "PSKY 8-K",
+        "Bloomberg"
+      ],
+      "score_rationale": "Largest LBO-style financing; credit",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "tesla-q3-deliveries-oct2",
+      "status": "Developing",
+      "headline": "Tesla Q3 deliveries due Oct 2; company consensus 461,974, 15.9 GWh storage",
+      "one_line": "GM Q3 -5.5% on EV demand",
+      "verification": "Single-reliable-source",
+      "sources": [
+        "Electrek",
+        "Not a Tesla App"
+      ],
+      "score_rationale": "Mega-cap print",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "trump-time-iran-post-midterms",
+      "status": "New",
+      "headline": "Trump to TIME: heavier Iran strikes after midterms 'possible'; Iran Hormuz offer 'not good enough'",
+      "one_line": "UKMTO: tankers struck Sep 29, unattributed",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CBS",
+        "ABC/CNN",
+        "Iran International"
+      ],
+      "score_rationale": "Oil tail risk",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "scotus-mandatory-detention-cert",
+      "status": "New",
+      "headline": "SCOTUS grants review of mandatory-detention/no-bond policy; term opens Oct 5 with Suncor v. Boulder",
+      "one_line": "Circuit split (5th, 8th uphold)",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Washington Post",
+        "CNN",
+        "PBS/AP"
+      ],
+      "score_rationale": "Major US legal",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "kyiv-bridge-putin-kaliningrad-oct1",
+      "status": "New",
+      "headline": "Russian drones hit Kyiv Pivdennyi Bridge 3x; Putin: 'all weapons' if Kaliningrad attacked",
+      "one_line": "Valdai remarks",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNN",
+        "Kyiv Independent",
+        "AFP"
+      ],
+      "score_rationale": "World",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "nvidia-chip-smuggling-arrest",
+      "status": "New",
+      "headline": "Earthmade Computer owner Greg Lui arrested over ~$300M Nvidia chips smuggled to China",
+      "one_line": "Bloomberg",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Bloomberg",
+        "SRN News"
+      ],
+      "score_rationale": "Export controls",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
+      "id": "crew13-docked-nrol97",
+      "status": "Resolved",
+      "headline": "Crew-13 docked 7:05 PM Oct 1 (7h55m record); Falcon Heavy NROL-97 launched 11:54 PM",
+      "one_line": "SpaceX tripleheader",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "NASA",
+        "Space.com"
+      ],
+      "score_rationale": "Space",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": false
+    },
+    {
+      "id": "upmc-trinity-ohio",
+      "status": "New",
+      "headline": "UPMC takes over Trinity Health System (Steubenville) effective Oct 1",
+      "one_line": "First Ohio entry",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "UPMC newsroom"
+      ],
+      "score_rationale": "Local employer",
+      "first_seen": "2026-10-02-am",
+      "last_updated": "2026-10-02-am",
+      "watch": true
+    },
+    {
       "id": "treasury-reversal-oct1",
       "status": "Materially changed",
       "headline": "10Y touched ~5.34% overnight then closed 5.24% (-5bp); 2Y -10bp to 4.78%; 2s10s 46bp",
@@ -12,22 +198,6 @@
         "CNBC"
       ],
       "score_rationale": "Lead: rates are the binding constraint; first failed breakout of the selloff",
-      "first_seen": "2026-10-01-pm",
-      "last_updated": "2026-10-01-pm",
-      "watch": true
-    },
-    {
-      "id": "nike-fq1-fy27-guide-cut",
-      "status": "New",
-      "headline": "Nike FQ1 EPS $0.48 beat; FY27 rev down HSD, adj EPS $1.15-1.35 vs ~$1.65; Pace program $2.5B savings; ~-5% AH",
-      "one_line": "8-K Item 2.02/2.05; Greater China -22%",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Nike 8-K EX-99.1",
-        "investingLive",
-        "Yahoo"
-      ],
-      "score_rationale": "Major consumer guide-down after the bell",
       "first_seen": "2026-10-01-pm",
       "last_updated": "2026-10-01-pm",
       "watch": true
@@ -118,7 +288,7 @@
       "id": "duquesne-light-strike-oct1",
       "status": "Materially changed",
       "headline": "~1,000 IBEW Local 29 workers on strike since 12:01 AM Oct 1; no talks scheduled",
-      "one_line": "Company running PUC-approved contingency plans",
+      "one_line": "Day 2 Oct 2; no talks scheduled; union and company say willing to talk",
       "verification": "Confirmed-multiple",
       "sources": [
         "Post-Gazette",
@@ -127,7 +297,7 @@
       ],
       "score_rationale": "Local: utility service for South Hills",
       "first_seen": "2026-10-01-pm",
-      "last_updated": "2026-10-01-pm",
+      "last_updated": "2026-10-02-am",
       "watch": true
     },
     {
@@ -766,166 +936,6 @@
         "Washington Post",
         "CBS",
         "SecurityWeek"
-      ]
-    },
-    {
-      "id": "anthropic-leaked-prospectus-sep29",
-      "first_seen": "2026-09-29-am",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Unconfirmed",
-      "headline": "Fortune reports leaked Anthropic IPO prospectus",
-      "one_line": "~$518B compute commitments per Fortune; company has not confirmed.",
-      "verification": "Single-reliable-source",
-      "sources": [
-        "Fortune"
-      ]
-    },
-    {
-      "id": "hormuz-ship-projectile-sep29",
-      "first_seen": "2026-09-29-am",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Unconfirmed",
-      "headline": "Ship hit by unknown projectile in Hormuz; fire out",
-      "one_line": "No flag/owner/attribution; Iran awaits formal US reply via Qatar.",
-      "verification": "Single-reliable-source",
-      "sources": [
-        "Fox News live"
-      ]
-    },
-    {
-      "id": "court-blocks-ct-grant-election-conditions-sep28",
-      "first_seen": "2026-09-29-am",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "New",
-      "headline": "Judge Ali blocks tying counterterror grants to election changes",
-      "one_line": "Preliminary relief; also immigration-status rule for federal programs blocked.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Reuters via US News",
-        "Detroit News"
-      ]
-    },
-    {
-      "id": "yemen-houthi-escalation-sep29",
-      "first_seen": "2026-09-29-am",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Developing",
-      "headline": "UN envoy meets Houthis amid 'unprecedented' Red Sea escalation",
-      "one_line": "Houthis took Mokha, reached Bab el-Mandeb; >130K displaced.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "AP",
-        "UN News"
-      ]
-    },
-    {
-      "id": "allegheny-paid-parental-leave",
-      "first_seen": "2026-09-28-pm",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Continuing",
-      "headline": "Allegheny County Board of Health approves 12-week paid parental leave rule",
-      "one_line": "Goes to County Council committee then final vote.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Post-Gazette",
-        "WESA",
-        "PublicSource"
-      ]
-    },
-    {
-      "id": "oil-fades-saudi-pipeline",
-      "first_seen": "2026-09-28-pm",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Continuing",
-      "headline": "Oil fades from Hormuz jump; Brent settles $105.28 after $108.83 high; gold -4%",
-      "one_line": "CNBC: Saudi East-West pipeline ~3.5M b/d, Yanbu loadings resumed (unconfirmed by Aramco).",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CNBC",
-        "Yahoo"
-      ]
-    },
-    {
-      "id": "us-china-tariff-cut-30b-sep26",
-      "first_seen": "2026-09-28-am",
-      "last_updated": "2026-09-29-am",
-      "watch": true,
-      "status": "Continuing",
-      "headline": "US and China cut tariffs on ~$30B of goods; truce extended into 2027",
-      "one_line": "Soybeans, fentanyl precursors, rare earths, US-China Board of Trade; Taiwan arms package undecided.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Washington Times",
-        "Fox",
-        "Bloomberg"
-      ],
-      "score_note": "Trade tail-risk reduction."
-    },
-    {
-      "id": "paramount-wbd-merger-settlement-sep21",
-      "headline": "Judge bars Paramount-WBD close until 3 PM ET Sep 28; consent decree ruling deferred",
-      "status": "Materially changed",
-      "first_seen": "2026-09-21-pm",
-      "last_updated": "2026-09-29-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Judge paused settlement approval; virtual hearing Thursday Oct 1.",
-      "score_note": "Removes the last state-level legal obstacle to a $111B media merger already shareholder-approved.",
-      "sources": [
-        "Deadline",
-        "Variety"
-      ],
-      "watch": true
-    },
-    {
-      "id": "week-of-sep28-pce-payrolls",
-      "headline": "PCE Wed, payrolls Fri; Oct hike ~70% priced; Bessent urges Fed \"open mind\"",
-      "status": "Developing",
-      "first_seen": "2026-09-27-sun",
-      "last_updated": "2026-09-29-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Hammack: inflationary mindset risk. Bessent on Fox Sunday: AI productivity, open mind. Barr Tue 12:40 is key speaker.",
-      "score_note": "Central market catalyst of the week.",
-      "sources": [
-        "Fed Board calendar",
-        "Fox",
-        "Bloomberg",
-        "Reuters"
-      ],
-      "watch": true
-    },
-    {
-      "id": "ai-leaders-self-improving-paper",
-      "first_seen": "2026-09-28-pm",
-      "last_updated": "2026-09-28-pm",
-      "watch": true,
-      "status": "New",
-      "headline": "20+ AI leaders urge government oversight of self-improving AI",
-      "one_line": "Pachocki, Clark, Horvitz, Hinton, Bengio among authors.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Bloomberg",
-        "WSJ"
-      ]
-    },
-    {
-      "id": "alito-recusal-boulder-suncor",
-      "first_seen": "2026-09-28-pm",
-      "last_updated": "2026-09-28-pm",
-      "watch": true,
-      "status": "New",
-      "headline": "Alito recuses from Suncor v. Boulder climate case (argument Oct 5)",
-      "one_line": "No reason given; 4-4 tie would affirm lower court.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CNN",
-        "NBC",
-        "CNBC"
       ]
     }
   ]

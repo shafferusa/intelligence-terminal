@@ -1,273 +1,265 @@
 {
- "fetched": "2026-10-01T06:50:00-04:00",
- "earnings_fetched": "2026-09-29",
- "earnings_fetched_note": "2026-09-29 pm: Finnhub calendar Sep 29-Oct 2 (MU, JBL, ACN, NKE); Alpha Vantage not called.",
- "events": [
-  {
-   "ts_et": "2026-10-01T08:00:00-04:00",
-   "type": "earnings",
-   "name": "McCormick (MKC) Q3; cons EPS ~$0.76, rev ~$1.98B",
-   "importance": "Medium",
-   "reason": "Staples; Unilever food deal",
-   "source": "McCormick IR/Alphastreet"
-  },
-  {
-   "ts_et": "2026-10-01T08:30:00-04:00",
-   "type": "econ",
-   "name": "Initial jobless claims; prior 197K",
-   "importance": "Medium",
-   "reason": "Labor",
-   "source": "DOL"
-  },
-  {
-   "ts_et": "2026-10-01T10:00:00-04:00",
-   "type": "econ",
-   "name": "ISM manufacturing (Sept); Aug 55.2, S&P flash 57.0",
-   "importance": "High",
-   "reason": "Goods cycle",
-   "source": "ISM"
-  },
-  {
-   "ts_et": "2026-10-01T10:00:00-04:00",
-   "type": "fed",
-   "name": "Gov. Waller, FRED Con (St. Louis)",
-   "importance": "High",
-   "reason": "Hawkish-leaning voter on Oct path",
-   "source": "federalreserve.gov (primary)"
-  },
-  {
-   "ts_et": "2026-10-01T11:10:00-04:00",
-   "type": "space",
-   "name": "SpaceX Crew-13 to ISS (backup Oct 2 10:47)",
-   "importance": "Medium",
-   "reason": "Human spaceflight",
-   "source": "NASA (primary)"
-  },
-  {
-   "ts_et": "2026-10-01T11:10:00-04:00",
-   "type": "space",
-   "name": "NASA SpaceX Crew-13 launch (Falcon 9, Cape Canaveral)",
-   "importance": "Medium",
-   "reason": "ISS crew rotation; LL2 status Go",
-   "source": "NASA + ll.thespacedevs.com"
-  },
-  {
-   "ts_et": "2026-10-01T11:30:00-04:00",
-   "type": "treasury_auction",
-   "name": "4-week ($100B) and 8-week ($95B) bills",
-   "importance": "Low",
-   "reason": "",
-   "source": "treasurydirect.gov (primary)"
-  },
-  {
-   "ts_et": "2026-10-01T12:00:00-04:00",
-   "type": "legal",
-   "name": "Paramount-WBD settlement virtual hearing (N.D. Cal.)",
-   "importance": "Medium",
-   "reason": "$111B merger closing",
-   "source": "Deadline"
-  },
-  {
-   "ts_et": "2026-10-01T13:30:00-04:00",
-   "type": "fed",
-   "name": "Vice Chair Jefferson, 'U.S. Economy and Monetary Policy' (with Q&A)",
-   "importance": "High",
-   "reason": "Leadership view on October",
-   "source": "federalreserve.gov calendar"
-  },
-  {
-   "ts_et": "2026-10-01T15:00:00-04:00",
-   "type": "fed",
-   "name": "VC Supervision Bowman, Atlantic Council",
-   "importance": "Medium",
-   "reason": "Regulation",
-   "source": "federalreserve.gov (primary)"
-  },
-  {
-   "ts_et": "2026-10-01T15:30:00-04:00",
-   "type": "fed",
-   "name": "Gov. Cook, global central banking (virtual)",
-   "importance": "Medium",
-   "reason": "",
-   "source": "federalreserve.gov (primary)"
-  },
-  {
-   "ts_et": "2026-10-01T16:15:00-04:00",
-   "type": "earnings",
-   "name": "Nike (NKE) fiscal Q1 FY27, after close; cons ~$0.44 / $11.3B",
-   "importance": "High",
-   "reason": "Consumer/China/tariffs",
-   "source": "Nike IR (primary)"
-  },
-  {
-   "ts_et": "2026-10-02T05:00:00-04:00",
-   "type": "econ",
-   "name": "Euro-area flash HICP (Sep); cons 3.6%, MUFG 3.8%; Aug 3.2%",
-   "importance": "High",
-   "reason": "ECB path, global yields",
-   "source": "Eurostat calendar / FXStreet"
-  },
-  {
-   "ts_et": "2026-10-02T08:30:00-04:00",
-   "type": "econ",
-   "name": "Employment Situation (Sept); cons ~85-100K, UR 4.1-4.2%; Aug +162K",
-   "importance": "Critical",
-   "reason": "Oct FOMC hinge",
-   "source": "bls.gov ICS (primary)"
-  },
-  {
-   "ts_et": "2026-10-02T08:30:00-04:00",
-   "type": "econ",
-   "name": "Employment Situation (Sept)",
-   "importance": "Critical",
-   "reason": "Decides Oct 28 hike after Williams 'no urgency'",
-   "source": "bls.gov ICS"
-  },
-  {
-   "ts_et": "2026-10-02T10:00:00-04:00",
-   "type": "econ",
-   "name": "Factory orders (Aug)",
-   "importance": "Low",
-   "reason": "",
-   "source": "Census"
-  },
-  {
-   "ts_et": "2026-10-04T00:00:00-04:00",
-   "type": "world",
-   "name": "Brazil general election first round; Bosnia general election; OPEC+ eight-country meeting (reported)",
-   "importance": "Medium",
-   "reason": "EM/oil",
-   "source": "Datafolha/ODIHR/Energy Connects"
-  },
-  {
-   "ts_et": "2026-10-04T09:00:00-04:00",
-   "type": "energy",
-   "name": "OPEC+ eight/seven-country meeting",
-   "importance": "Medium",
-   "reason": "Output amid Hormuz disruption",
-   "source": "CNBC"
-  },
-  {
-   "ts_et": "2026-10-05T05:30:00-04:00",
-   "type": "science",
-   "name": "Nobel Prize in Physiology or Medicine (physics Oct 6, chemistry Oct 7, literature Oct 8, peace Oct 9, economics Oct 12)",
-   "importance": "Medium",
-   "reason": "",
-   "source": "nobelprize.org"
-  },
-  {
-   "ts_et": "2026-10-05T10:00:00-04:00",
-   "type": "legal",
-   "name": "Supreme Court October Term opens (Suncor v. Boulder County)",
-   "importance": "Medium",
-   "reason": "",
-   "source": "supremecourt.gov"
-  },
-  {
-   "ts_et": "2026-10-06T11:30:00-04:00",
-   "type": "treasury_auction",
-   "name": "3-year note auction (10-year reopening Oct 7, 30-year Oct 8)",
-   "importance": "High",
-   "reason": "Foreign demand test after weak 5y/7y",
-   "source": "treasurydirect.gov"
-  },
-  {
-   "ts_et": "2026-10-06T13:00:00-04:00",
-   "type": "auction",
-   "name": "3-year note auction",
-   "importance": "Medium",
-   "reason": "First of the Oct 6-8 coupon trio",
-   "source": "treasurydirect.gov upcoming"
-  },
-  {
-   "ts_et": "2026-10-06T16:05:00-04:00",
-   "type": "earnings",
-   "name": "Constellation Brands (STZ) FQ2, after close",
-   "importance": "Low",
-   "reason": "",
-   "source": "company IR"
-  },
-  {
-   "ts_et": "2026-10-07T10:00:00-04:00",
-   "type": "world",
-   "name": "RBI policy decision (repo 5.25%)",
-   "importance": "Low",
-   "reason": "",
-   "source": "Forbes India"
-  },
-  {
-   "ts_et": "2026-10-07T13:00:00-04:00",
-   "type": "auction",
-   "name": "10-year note reopening (9Y10M)",
-   "importance": "High",
-   "reason": "Long-end demand test with 10Y at 5.26%",
-   "source": "treasurydirect.gov upcoming"
-  },
-  {
-   "ts_et": "2026-10-07T14:00:00-04:00",
-   "type": "fed",
-   "name": "FOMC minutes (Sep 15-16 meeting)",
-   "importance": "High",
-   "reason": "",
-   "source": "federalreserve.gov"
-  },
-  {
-   "ts_et": "2026-10-07T20:00:00-04:00",
-   "type": "local",
-   "name": "Shapiro-Garrity PA governor debate (Harrisburg)",
-   "importance": "Medium",
-   "reason": "",
-   "source": "Inquirer/abc27"
-  },
-  {
-   "ts_et": "2026-10-08T13:00:00-04:00",
-   "type": "auction",
-   "name": "30-year bond reopening (29Y10M)",
-   "importance": "High",
-   "reason": "30Y at highest since 2002",
-   "source": "treasurydirect.gov upcoming"
-  },
-  {
-   "ts_et": "2026-10-09T00:00:00-04:00",
-   "type": "markets",
-   "name": "SpaceX (SPCX) lockup tranche (~328M shares)",
-   "importance": "Medium",
-   "reason": "SPCX supply",
-   "source": "secondary"
-  },
-  {
-   "ts_et": "2026-10-10T00:00:00-04:00",
-   "type": "legal",
-   "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
-   "importance": "Low",
-   "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
-   "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
-  },
-  {
-   "ts_et": "2026-10-13T00:00:00-04:00",
-   "type": "local",
-   "name": "PA skill-games enforcement begins (Supreme Court ruling)",
-   "importance": "Medium",
-   "reason": "",
-   "source": "PA State Police"
-  },
-  {
-   "ts_et": "2026-10-14T08:30:00-04:00",
-   "type": "econ",
-   "name": "CPI (Sept)",
-   "importance": "Critical",
-   "reason": "",
-   "source": "bls.gov (primary)"
-  },
-  {
-   "ts_et": "2026-10-28T14:00:00-04:00",
-   "type": "fed",
-   "name": "FOMC decision (press conference 2:30)",
-   "importance": "Critical",
-   "reason": "",
-   "source": "federalreserve.gov"
-  }
- ],
- "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
- "fomc_next": "2026-10-28"
+  "fetched": "2026-10-02T06:45:00-04:00",
+  "earnings_fetched": "2026-09-29",
+  "earnings_fetched_note": "2026-09-29 pm: Finnhub calendar Sep 29-Oct 2 (MU, JBL, ACN, NKE); Alpha Vantage not called.",
+  "events": [
+    {
+      "ts_et": "2026-10-02T05:00:00-04:00",
+      "type": "econ",
+      "name": "Euro-area flash HICP (Sep); cons 3.6%, MUFG 3.8%; Aug 3.2%",
+      "importance": "High",
+      "reason": "ECB path, global yields",
+      "source": "Eurostat calendar / FXStreet"
+    },
+    {
+      "ts_et": "2026-10-02T08:30",
+      "type": "econ",
+      "name": "Employment Situation (Sep)",
+      "importance": "Critical",
+      "reason": "First payrolls after Sept hike; long end stressed",
+      "source": "BLS ICS"
+    },
+    {
+      "ts_et": "2026-10-02T08:30:00-04:00",
+      "type": "econ",
+      "name": "Employment Situation (Sept); cons ~85-100K, UR 4.1-4.2%; Aug +162K",
+      "importance": "Critical",
+      "reason": "Oct FOMC hinge",
+      "source": "bls.gov ICS (primary)"
+    },
+    {
+      "ts_et": "2026-10-02T08:30:00-04:00",
+      "type": "econ",
+      "name": "Employment Situation (Sept)",
+      "importance": "Critical",
+      "reason": "Decides Oct 28 hike after Williams 'no urgency'",
+      "source": "bls.gov ICS"
+    },
+    {
+      "ts_et": "2026-10-02T10:00",
+      "type": "econ",
+      "name": "Factory orders (Aug)",
+      "importance": "Low",
+      "reason": "Secondary",
+      "source": "news"
+    },
+    {
+      "ts_et": "2026-10-04T00:00:00-04:00",
+      "type": "world",
+      "name": "Brazil general election first round; Bosnia general election; OPEC+ eight-country meeting (reported)",
+      "importance": "Medium",
+      "reason": "EM/oil",
+      "source": "Datafolha/ODIHR/Energy Connects"
+    },
+    {
+      "ts_et": "2026-10-04T09:00:00-04:00",
+      "type": "energy",
+      "name": "OPEC+ eight/seven-country meeting",
+      "importance": "Medium",
+      "reason": "Output amid Hormuz disruption",
+      "source": "CNBC"
+    },
+    {
+      "ts_et": "2026-10-05T05:30:00-04:00",
+      "type": "science",
+      "name": "Nobel Prize in Physiology or Medicine (physics Oct 6, chemistry Oct 7, literature Oct 8, peace Oct 9, economics Oct 12)",
+      "importance": "Medium",
+      "reason": "",
+      "source": "nobelprize.org"
+    },
+    {
+      "ts_et": "2026-10-05T07:17",
+      "type": "launch",
+      "name": "Falcon 9 SDA Tranche 1 Transport Layer A",
+      "importance": "Low",
+      "reason": "Defense space",
+      "source": "Launch Library 2"
+    },
+    {
+      "ts_et": "2026-10-05T10:00",
+      "type": "econ",
+      "name": "ISM services (Sep)",
+      "importance": "High",
+      "reason": "Prices paid after ISM mfg 77.9",
+      "source": "news"
+    },
+    {
+      "ts_et": "2026-10-05T10:00:00-04:00",
+      "type": "legal",
+      "name": "Supreme Court October Term opens (Suncor v. Boulder County)",
+      "importance": "Medium",
+      "reason": "",
+      "source": "supremecourt.gov"
+    },
+    {
+      "ts_et": "2026-10-05T11:30",
+      "type": "auction",
+      "name": "13-week $95B / 26-week $82B bills",
+      "importance": "Low",
+      "reason": "Routine bills",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-06T11:30:00-04:00",
+      "type": "treasury_auction",
+      "name": "3-year note auction (10-year reopening Oct 7, 30-year Oct 8)",
+      "importance": "High",
+      "reason": "Foreign demand test after weak 5y/7y",
+      "source": "treasurydirect.gov"
+    },
+    {
+      "ts_et": "2026-10-06T13:00",
+      "type": "auction",
+      "name": "3-year note $58B; 6-week bill $95B",
+      "importance": "High",
+      "reason": "First of refunding-week coupons",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-06T13:00:00-04:00",
+      "type": "auction",
+      "name": "3-year note auction",
+      "importance": "Medium",
+      "reason": "First of the Oct 6-8 coupon trio",
+      "source": "treasurydirect.gov upcoming"
+    },
+    {
+      "ts_et": "2026-10-06T16:05:00-04:00",
+      "type": "earnings",
+      "name": "Constellation Brands (STZ) FQ2, after close",
+      "importance": "Low",
+      "reason": "",
+      "source": "company IR"
+    },
+    {
+      "ts_et": "2026-10-07T10:00:00-04:00",
+      "type": "world",
+      "name": "RBI policy decision (repo 5.25%)",
+      "importance": "Low",
+      "reason": "",
+      "source": "Forbes India"
+    },
+    {
+      "ts_et": "2026-10-07T13:00",
+      "type": "auction",
+      "name": "10-year reopening $39B",
+      "importance": "Critical",
+      "reason": "10Y near 2002 highs",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-07T13:00:00-04:00",
+      "type": "auction",
+      "name": "10-year note reopening (9Y10M)",
+      "importance": "High",
+      "reason": "Long-end demand test with 10Y at 5.26%",
+      "source": "treasurydirect.gov upcoming"
+    },
+    {
+      "ts_et": "2026-10-07T14:00",
+      "type": "fed",
+      "name": "FOMC minutes (Sep 15-16)",
+      "importance": "High",
+      "reason": "Minutes of hiking meeting",
+      "source": "federalreserve.gov"
+    },
+    {
+      "ts_et": "2026-10-07T14:00:00-04:00",
+      "type": "fed",
+      "name": "FOMC minutes (Sep 15-16 meeting)",
+      "importance": "High",
+      "reason": "",
+      "source": "federalreserve.gov"
+    },
+    {
+      "ts_et": "2026-10-07T20:00:00-04:00",
+      "type": "local",
+      "name": "Shapiro-Garrity PA governor debate (Harrisburg)",
+      "importance": "Medium",
+      "reason": "",
+      "source": "Inquirer/abc27"
+    },
+    {
+      "ts_et": "2026-10-08T13:00",
+      "type": "auction",
+      "name": "30-year reopening $22B",
+      "importance": "Critical",
+      "reason": "30Y near 24-year high",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-08T13:00:00-04:00",
+      "type": "auction",
+      "name": "30-year bond reopening (29Y10M)",
+      "importance": "High",
+      "reason": "30Y at highest since 2002",
+      "source": "treasurydirect.gov upcoming"
+    },
+    {
+      "ts_et": "2026-10-09T00:00:00-04:00",
+      "type": "markets",
+      "name": "SpaceX (SPCX) lockup tranche (~328M shares)",
+      "importance": "Medium",
+      "reason": "SPCX supply",
+      "source": "secondary"
+    },
+    {
+      "ts_et": "2026-10-10T00:00:00-04:00",
+      "type": "legal",
+      "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
+      "importance": "Low",
+      "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
+      "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
+    },
+    {
+      "ts_et": "2026-10-13T00:00:00-04:00",
+      "type": "local",
+      "name": "PA skill-games enforcement begins (Supreme Court ruling)",
+      "importance": "Medium",
+      "reason": "",
+      "source": "PA State Police"
+    },
+    {
+      "ts_et": "2026-10-14T08:30",
+      "type": "econ",
+      "name": "CPI (Sep)",
+      "importance": "Critical",
+      "reason": "Inflation after Fed hike",
+      "source": "BLS ICS"
+    },
+    {
+      "ts_et": "2026-10-14T08:30:00-04:00",
+      "type": "econ",
+      "name": "CPI (Sept)",
+      "importance": "Critical",
+      "reason": "",
+      "source": "bls.gov (primary)"
+    },
+    {
+      "ts_et": "2026-10-15T08:30",
+      "type": "econ",
+      "name": "PPI (Sep)",
+      "importance": "Medium",
+      "reason": "Pipeline inflation",
+      "source": "BLS ICS"
+    },
+    {
+      "ts_et": "2026-10-28T14:00",
+      "type": "fed",
+      "name": "FOMC decision",
+      "importance": "Critical",
+      "reason": "Hold vs hike",
+      "source": "federalreserve.gov"
+    },
+    {
+      "ts_et": "2026-10-28T14:00:00-04:00",
+      "type": "fed",
+      "name": "FOMC decision (press conference 2:30)",
+      "importance": "Critical",
+      "reason": "",
+      "source": "federalreserve.gov"
+    }
+  ],
+  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
+  "fomc_next": "2026-10-28"
 }
