@@ -4125,6 +4125,26 @@
       "probability": "45-60%",
       "basis": "Estimate range ~422K-482K; GM Q3 EV weakness; consensus near middle of range",
       "status": "open"
+    },
+    {
+      "id": "2026-10-02-pm-1",
+      "date": "2026-10-02",
+      "slot": "pm",
+      "forecast": "FOMC holds the target range at 3.75-4.00% at the Oct 27-28 meeting.",
+      "horizon": "2026-10-28",
+      "probability": "80-90%",
+      "basis": "Sep payrolls +29K, UR 4.2%, AHE +0.1%; CNBC FedWatch ~17% Oct hike, Kalshi 18%, Reuters <15%; Logan wants 50bp+ more (Dec priced >60%).",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-02-pm-2",
+      "date": "2026-10-02",
+      "slot": "pm",
+      "forecast": "10-year Treasury par yield closes at or above 5.35% on at least one day through Oct 9 (revision of 2026-10-01-am-1, 40-55%).",
+      "horizon": "2026-10-09",
+      "probability": "30-45%",
+      "basis": "Par close 5.28% after rising on a weak jobs report; Oct 6-8 coupon auctions (19B) and Brent ~$102 argue for; soft labor data and Bund rally argue against.",
+      "status": "open"
     }
   ]
 }

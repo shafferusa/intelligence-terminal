@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title>Closing Brief — Fri, Oct 2, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-10-02",
+  "slot": "pm",
+  "title": "Payrolls Rise Just 29,000 and Unemployment Hits 4.2%; October Hike Odds Collapse but the 10-Year Ends Higher; G7 Agrees a 100-Million-Barrel Release",
+  "path": "reports/2026/10/2026-10-02-pm.html",
+  "summary": "September payrolls rose only 29,000 with unemployment at 4.2% and downward revisions, cutting October Fed-hike odds sharply, yet the 10-year Treasury closed higher at 5.28% while stocks rose on chips and a Tesla delivery beat and Brent ended flat despite a G7 agreement to release up to 100 million barrels.",
+  "headlines": [
+    "Payrolls +29K, Jul-Aug revised down 60K, unemployment 4.2%, pay +3.0% y/y; October hike odds fall to ~15-18%",
+    "10-year closes up 4bp at 5.28% despite the miss; S&P +0.73%, Nasdaq +1.19% after an intraday record",
+    "G7 agrees up to 100M-barrel release, Brent still flat near $102; Tesla deliveries beat, Nike at 13-year low"
+  ],
+  "reading_minutes": 34,
+  "generated_at": "2026-10-02T17:25:00-04:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Closing Brief</h1>
+      <p class="paper-dateline">
+        Friday, October 2, 2026 <span class="sep">&middot;</span> 34 min read
+      </p>
+      <p class="paper-standfirst">
+        September payrolls rose just 29,000 and unemployment ticked up to 4.2%. Bets on an October rate hike collapsed, but long Treasury yields finished higher anyway. Stocks rose, led by chips and a Tesla delivery beat, and oil ended about where it started even after the G7 agreed to release up to 100 million barrels.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> Stocks rose on the soft jobs number, peaked in the first hour, and held most of the gain:
+            <ul>
+              <li>S&amp;P 500: +0.73%, to 7,722.72</li>
+              <li>Nasdaq Composite: +1.19%, to 27,190.86, after an intraday record</li>
+              <li>Dow: +0.49%, to 51,176.96</li>
+              <li>Russell 2000: +0.94%, to 2,832.90</li>
+            </ul>
+            On the week the S&amp;P fell 0.3% and the Dow 1.3%, while the Nasdaq gained 0.5% (AP).</li>
+          <li><b>The macro thread.</b> Payrolls rose 29,000 in September against a consensus near 84,000&ndash;98,000. July and August were revised down a combined 60,000, and July is now negative. Unemployment rose to 4.2%. Hourly pay grew 0.1% on the month and 3.0% on the year, the slowest annual pace since 2021 (BLS, CNBC).</li>
+          <li><b>Rates, the Fed and the Treasury.</b> The 10-year fell to about 5.16% after 8:30, then rose all day. It closed at 5.28% on Treasury&rsquo;s curve, up 4bp. The 2-year closed at 4.83%, up 5bp. Futures now put the chance of an October hike at roughly 15&ndash;18%, down from about one in three, but still price a December hike as more likely than not.</li>
+          <li><b>Biggest market risk.</b> Long yields rose on a weak jobs day, the outcome this morning&rsquo;s edition called the tape&rsquo;s most fragile assumption. $119 billion of 3-, 10- and 30-year supply comes Tuesday through Thursday.</li>
+          <li><b>Oil.</b> The G7 and partners agreed to release up to 100 million barrels of crude and diesel over four months, front-loading diesel. Brent nevertheless finished near $102, roughly flat, after trading below $100 this morning. WTI fell about 1.5&ndash;2% to near $91.</li>
+          <li><b>Companies.</b> Tesla delivered 486,532 vehicles, about 24,500 above its own compiled consensus, and rose 4.7%. Nike fell 3.6% to a 13-year low. Seagate fell 10% on a report that Toshiba will double its hard-drive capacity.</li>
+          <li><b>At home.</b> The Duquesne Light strike is in its second day. Talks were expected to resume today, and rain is the first test for replacement crews.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Oct 2, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Oct 2, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>769.64</td><td class="up">+5.65</td><td class="up">+0.74%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 779.37</span><span class="range-bar" style="--pos:94"><i></i></span></td>
+                <td>45M</td><td>44M</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>308.69</td><td class="up">+3.12</td><td class="up">+1.02%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 310.66</span><span class="range-bar" style="--pos:98"><i></i></span></td>
+                <td>3.0M</td><td>2.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>511.10</td><td class="up">+2.48</td><td class="up">+0.49%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:63"><i></i></span></td>
+                <td>3.7M</td><td>3.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>281.52</td><td class="up">+2.50</td><td class="up">+0.90%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:69"><i></i></span></td>
+                <td>29M</td><td>21M</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>72.59</td><td class="up">+1.15</td><td class="up">+1.61%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 73.46</span><span class="range-bar" style="--pos:95"><i></i></span></td>
+                <td>3.8M</td><td>3.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>209.73</td><td class="up">+0.73</td><td class="up">+0.35%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:67"><i></i></span></td>
+                <td>9.4M</td><td>7.1M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>630.60</td><td class="up">+12.79</td><td class="up">+2.07%</td>
+                <td class="range-cell"><span class="range-nums">315.05 &ndash; 671.83</span><span class="range-bar" style="--pos:88"><i></i></span></td>
+                <td>7.3M</td><td>8.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>199.81</td><td class="up">+2.00</td><td class="up">+1.01%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 201.39</span><span class="range-bar" style="--pos:98"><i></i></span></td>
+                <td>8.9M</td><td>7.6M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>53.49</td><td class="up">+0.03</td><td class="up">+0.06%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:53"><i></i></span></td>
+                <td>30M</td><td>33M</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>70.78</td><td class="up">+0.83</td><td class="up">+1.19%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:64"><i></i></span></td>
+                <td>19M</td><td>13M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>62.82</td><td class="up">+0.12</td><td class="up">+0.19%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:86"><i></i></span></td>
+                <td>29M</td><td>30M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.19%</td><td class="up">+2bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td>
+                <td>5.28%</td><td class="up">+4bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>77.48</td><td class="down">-0.23</td><td class="down">-0.30%</td>
+                <td class="range-cell"><span class="range-nums">76.76 &ndash; 92.19</span><span class="range-bar" style="--pos:5"><i></i></span></td>
+                <td>61M</td><td>34M</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>89.05</td><td class="down">-0.25</td><td class="down">-0.28%</td>
+                <td class="range-cell"><span class="range-nums">88.64 &ndash; 98.05</span><span class="range-bar" style="--pos:4"><i></i></span></td>
+                <td>17M</td><td>7.8M</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>104.11</td><td class="down">-0.20</td><td class="down">-0.19%</td>
+                <td class="range-cell"><span class="range-nums">103.76 &ndash; 112.24</span><span class="range-bar" style="--pos:4"><i></i></span></td>
+                <td>2.0M</td><td>1.8M</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>101.83</td><td class="down">-0.20</td><td class="down">-0.20%</td>
+                <td class="range-cell"><span class="range-nums">101.20 &ndash; 112.93</span><span class="range-bar" style="--pos:5"><i></i></span></td>
+                <td>49M</td><td>30M</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>76.91</td><td class="up">+0.01</td><td class="up">+0.01%</td>
+                <td class="range-cell"><span class="range-nums">76.39 &ndash; 81.33</span><span class="range-bar" style="--pos:11"><i></i></span></td>
+                <td>82M</td><td>39M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>380.14</td><td class="down">-2.62</td><td class="down">-0.68%</td>
+                <td class="range-cell"><span class="range-nums">355.80 &ndash; 509.70</span><span class="range-bar" style="--pos:16"><i></i></span></td>
+                <td>8.9M</td><td>9.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>147.37</td><td class="down">-2.65</td><td class="down">-1.77%</td>
+                <td class="range-cell"><span class="range-nums">65.99 &ndash; 163.35</span><span class="range-bar" style="--pos:84"><i></i></span></td>
+                <td>7.7M</td><td>6.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>101.92</td><td class="down">-0.18</td><td class="down">-0.18%</td>
+                <td class="range-cell"><span class="range-nums">95.55 &ndash; 102.21</span><span class="range-bar" style="--pos:96"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>15.31</td><td class="down">-1.08</td><td class="down">-6.59%</td>
+                <td class="range-cell"><span class="range-nums">13.38 &ndash; 35.30</span><span class="range-bar" style="--pos:9"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>67.67</td><td class="up">+0.86</td><td class="up">+1.29%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:80"><i></i></span></td>
+                <td>18M</td><td>20M</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>86.38</td><td class="up">+0.89</td><td class="up">+1.04%</td>
+                <td class="range-cell"><span class="range-nums">77.87 &ndash; 93.29</span><span class="range-bar" style="--pos:55"><i></i></span></td>
+                <td>1.8M</td><td>2.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>37.25</td><td class="down">-0.19</td><td class="down">-0.51%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.96</span><span class="range-bar" style="--pos:38"><i></i></span></td>
+                <td>2.9M</td><td>1.7M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="board-caption">EOD official closes from Yahoo Finance, spot-checked against Twelve Data (eight symbols agreed to within a cent or two). Yields are Treasury par yields (EOD official), with changes in basis points. VIX and DXY are index levels as of about 4:15 PM ET. Average volume is the trailing three-month daily average. Bond funds traded heavily: TLT, LQD and HYG each traded about 1.6 to 2.1 times normal volume. We found no single reason for that.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Payrolls rise just 29,000 and unemployment hits 4.2%, but long Treasury yields end the day higher</h3>
+          <p class="story-deck">The three-month average for job growth is now about 51,000. The 2-year yield fell about 5bp in the first minutes and then closed 5bp higher. The bond market treated a weak labor report as a reason to stop pricing an October hike, not as a reason to buy duration.</p>
+          <div class="story-body">
+            <p>The Bureau of Labor Statistics reported at 8:30 that nonfarm payrolls rose by 29,000 in September. Forecasts had clustered between 84,000 and 98,000. Revisions made it weaker still:</p>
+            <ul>
+              <li>July: revised to &minus;10,000, from +21,000</li>
+              <li>August: revised to +133,000, from +162,000</li>
+              <li>Combined: 60,000 fewer jobs than previously reported</li>
+            </ul>
+            <p>The three-month average is now about 51,000 a month. Unemployment rose to 4.2% from 4.1%, with about 7.1 million people unemployed. Part of the rise came from more people entering the labor force: participation rose to 61.8%, its highest in four months, and the broader U-6 underemployment rate fell to 7.6% from 7.7%. Average hourly earnings rose 5 cents, or 0.1%, to $37.81. That is 3.0% above a year ago, the slowest annual pace since 2021 and below the 0.3% monthly and 3.2% annual gains expected. Health care added 17,000 jobs, about half its average of the past year. Construction added 11,000, manufacturing 9,000, and financial activities lost 7,000. We read the BLS release and FRED series directly. The figures are seasonally adjusted, and the level of payrolls, 159.04 million, is only about 150,000 above June.</p>
+            <p>The bond market&rsquo;s reaction came in two halves. Yields fell at 8:30, and the 10-year touched about 5.16%. From late morning they rose steadily, and the 10-year peaked near 5.30% around 1:30 PM. Treasury&rsquo;s official closes:</p>
+            <ul>
+              <li>2-year: 4.83%, up 5bp</li>
+              <li>10-year: 5.28%, up 4bp</li>
+              <li>30-year: 5.63%, up 2bp</li>
+            </ul>
+            <p>For the week, the 10-year rose 11bp and the 30-year 14bp. <span class="chip chip--info">Market narrative</span> Traders and commentators pointed to several factors: Dallas Fed President Lorie Logan&rsquo;s call on Thursday evening for 50bp or more of further hikes, oil recovering from its morning drop, and next week&rsquo;s auctions. None of them is confirmed as the cause. Germany&rsquo;s 10-year Bund yield fell about 6bp on the day (Reuters), so the afternoon rise in Treasuries was a US move, not a global one.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A soft jobs report with weak wages is the textbook case for lower yields. The front end did reprice the Fed: October hike odds roughly halved. But the 10-year closed higher on the day and the week. That says the long end is being priced on supply, term premium and inflation risk from oil, not on US growth. That leaves equity valuations exposed if the auctions go badly.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              ISM services Monday. The $58 billion 3-year Tuesday, the $39 billion 10-year reopening and the September FOMC minutes Wednesday, and the $22 billion 30-year Thursday. September CPI is October 14.
+            </div>
+          </div>
+          <p class="story-sourceline">BLS Employment Situation, USDL-26-1435 (primary) &middot; FRED: PAYEMS, UNRATE, CES0500000003, CIVPART, U6RATE (primary) &middot; US Treasury par yield curve (primary) &middot; CNBC, CNN, Reuters (reaction) &middot; Yahoo Finance (intraday 10-year path).</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p><b>How this morning&rsquo;s calls did.</b> We gave a 55&ndash;70% chance that the first print would be below 100,000, and it was. We gave 25&ndash;40% for unemployment at 4.2% or higher, and it was 4.2%. We said the tape&rsquo;s most fragile assumption was that a soft US report could coexist with a stable 10-year. What would break it, we wrote, was the 10-year rising toward 5.35% on a soft payrolls day. It rose to 5.30% intraday and closed at 5.28%, short of that line but in that direction. These calls are graded formally on Saturday.</p>
+            <p><b>Real pay.</b> Hourly pay is up 3.0% from a year earlier. Core PCE inflation was about 3.0% in August, so real wage growth is roughly zero. That weakens the &ldquo;wage-price&rdquo; argument for more hikes, but August CPI rose 0.40% on the month, and the Fed has said energy pass-through is its worry.</p>
+            <p><b>The curve.</b> 2s10s is 45bp (from 46), 5s30s 57bp, and 3-month bills to 10-year 109bp. The 10-year real yield was 2.88% on Thursday and the 10-year breakeven 2.36% (FRED, October 1). Today&rsquo;s split between those two is not yet published.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>October hike odds collapse, but markets still lean toward a December move</h3>
+          <p class="story-deck">The jobs report took most of the October risk off the table. Logan&rsquo;s call for at least 50bp more kept December on it.</p>
+          <div class="story-body">
+            <p>After the report, CNBC put the probability of a quarter-point hike at the October 27&ndash;28 meeting at about 17%, from about 36% a week earlier. Kalshi&rsquo;s market showed about 18%, and Reuters said less than 15%. The figures differ by time of day. A hike by December is still priced as more likely than not: CNBC put it above 75% and Kalshi at about 65%. The funds rate is 3.75&ndash;4.00% after September&rsquo;s 12&ndash;0 hike.</p>
+            <p>On Thursday evening Dallas Fed President Lorie Logan said the target range &ldquo;needs to rise an additional 50 basis points or more.&rdquo; She also said inflation is unlikely to fall much below 2.5% without further tightening (Reuters, Investing.com, FXStreet). We found no Fed remarks today that changed the picture.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A front end that eases while the long end does not is a bear steepener. It tells the Fed that financial conditions are tightening without its help, which is an argument for patience in October. FOMC minutes Wednesday will show how many officials wanted to go further in September.
+            </div>
+          </div>
+          <p class="story-sourceline">CNBC (CME FedWatch) &middot; Kalshi &middot; Reuters, BNN Bloomberg &middot; Reuters, Investing.com, FXStreet (Logan, October 1; we could not open the Dallas Fed text) &middot; federalreserve.gov (policy rate).</p>
+        </article>
+
+        <article class="story">
+          <h3>The G7 agrees to release up to 100 million barrels, and Brent ends the day where it began</h3>
+          <p class="story-deck">The release is front-loaded with diesel. Brent fell below $100 this morning and then recovered every cent of the drop, which says the market is pricing Hormuz, not stockpiles.</p>
+          <div class="story-body">
+            <p>G7 countries and partners agreed through the International Energy Agency to release up to 100 million barrels of crude oil and diesel over four months, &ldquo;with a frontloaded substantial diesel release within the first 20 days,&rdquo; according to the joint statement reported by CNBC, NBC, BNN Bloomberg and The National. Separately, the EU is weighing its own release of about 50 million barrels, roughly 17% of its emergency diesel stocks, over 20 days. That follows US pressure on France and Germany and the threat of a US diesel-export restriction. The EU figure is not final.</p>
+            <p>Prices did not hold the move. WTI touched a one-month low near $88 (Trading Economics) and settled about $1.76 lower at $91.11. Brent traded near $99.70 this morning and settled at $102.25, down 6 cents, according to a wire report. Those settlement figures are from a single source, and Yahoo&rsquo;s front-month quotes after 4 PM were close to them. The oil fund USO fell 1.8%.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A 100-million-barrel release is about one day of world consumption spread over four months. It helps diesel, the fuel behind Europe&rsquo;s 18.8% energy inflation, more than it helps crude. Brent finishing flat means traders are still pricing a closed Strait of Hormuz and a US military buildup that is due to be complete by November (see The World).
+            </div>
+          </div>
+          <p class="story-sourceline">G7/IEA joint statement as reported by CNBC, NBC, BNN Bloomberg and The National &middot; wire report (settlements, single source) &middot; Trading Economics &middot; Yahoo Finance (front-month quotes, USO).</p>
+        </article>
+
+        <article class="story">
+          <h3>Tesla delivers 486,532 vehicles, beating its own consensus by about 24,500</h3>
+          <p class="story-deck">Deliveries ran about 22,000 above production, drawing down inventory. The shares rose 4.7%.</p>
+          <div class="story-body">
+            <p>Tesla&rsquo;s release, filed as an 8-K exhibit, reported third-quarter deliveries of 486,532: 478,237 Model 3 and Model Y and 8,295 other models. Production was 464,391, and energy-storage deployments were 13.7 gigawatt-hours. The company-compiled consensus was 461,974 vehicles and 15.9 GWh. Deliveries were about 2% below the record 497,099 a year earlier. Storage came in below its consensus. Morgan Stanley wrote that Tesla may be &ldquo;exiting the EV winter&rdquo; (CNBC). The shares closed at $370.59, up 4.65%, on about 1.4 times normal volume. Third-quarter results are due October 21.</p>
+            <p>This morning we gave a 45&ndash;60% chance that deliveries would come in below the consensus. They did not; the forecast was wrong and will be graded Saturday.</p>
+          </div>
+          <p class="story-sourceline">Tesla 8-K, Exhibit 99.1 (SEC EDGAR, primary) &middot; CNBC, Electrek &middot; Yahoo Finance (close).</p>
+        </article>
+
+        <article class="story">
+          <h3>Nike falls to a 13-year low, but closes well off its early losses</h3>
+          <p class="story-deck">The shares traded about 9% lower before the open on the guidance cut, then recovered to close down 3.6% on almost four times normal volume.</p>
+          <div class="story-body">
+            <p>Nike closed at $33.87, its lowest close since about 2013 (CNBC), after Thursday evening&rsquo;s forecast that fiscal 2027 revenue will fall by a high-single-digit percentage and adjusted EPS will be $1.15&ndash;$1.35, against about $1.65 expected. About 142 million shares traded, against a three-month average near 38 million. Its new Pace operating program targets $2.5 billion of savings through fiscal 2031, and CNBC reports more layoffs are planned from 2027. Analysts quoted by CNBC say the selling may not be over.</p>
+          </div>
+          <p class="story-sourceline">Nike 8-K (SEC EDGAR, primary, read Thursday) &middot; CNBC &middot; Yahoo Finance (close, volume).</p>
+        </article>
+
+        <article class="story">
+          <h3>ON Semiconductor cuts its Synaptics price to $123 a share, and both stocks jump</h3>
+          <p class="story-deck">The amended all-cash deal values Synaptics at about $5.7 billion, against about $7 billion under the earlier terms. The revision followed an unsolicited third-party proposal.</p>
+          <div class="story-body">
+            <p>ON Semiconductor filed an 8-K disclosing an amended merger agreement signed October 1. Synaptics holders will now receive $123 a share in cash. The filing says the terms were revised after Synaptics received an unsolicited proposal from a third party, which it does not name. Closing is still expected in mid-2027. Synaptics rose 14.1% to $121.10, below the cash price, and ON rose 6.0% to $84.89. A cheaper, all-cash deal pleased ON&rsquo;s holders. The gap between Synaptics&rsquo; price and $123 reflects a long wait and regulatory risk.</p>
+          </div>
+          <p class="story-sourceline">ON Semiconductor 8-K and DEFA14A (SEC EDGAR, primary) &middot; Yahoo Finance (closes).</p>
+        </article>
+
+        <article class="story">
+          <h3>Seagate drops 10% on a report that Toshiba will double its hard-drive capacity</h3>
+          <p class="story-deck">The fall hit one of the year&rsquo;s biggest AI-storage winners. Western Digital fell about 7%.</p>
+          <div class="story-body">
+            <p>Nikkei Asia reported that Toshiba plans to invest about &yen;60 billion to double its hard-drive production capacity by fiscal 2027, at its facility in the Philippines. Seagate fell 10.2% to $848.99. <span class="chip chip--info">Likely contributor</span> The report is the only company-specific news we found. More supply in a market Seagate and Western Digital share with Toshiba threatens the pricing power that drove both stocks&rsquo; rallies this year. Toshiba has not confirmed the plan, as far as we could find.</p>
+          </div>
+          <p class="story-sourceline">Nikkei Asia as reported by Yahoo Finance and Investing.com &middot; Yahoo Finance (closes).</p>
+        </article>
+
+        <article class="story">
+          <h3>Chips lead the Nasdaq to an intraday record; Broadcom rises on a reported $42 billion Anthropic loan</h3>
+          <p class="story-deck">SMH rose 2.1% and Nvidia touched a record. The Broadcom report rests on one outlet.</p>
+          <div class="story-body">
+            <p>The Nasdaq Composite hit an intraday record of about 27,354 in the first hour before closing up 1.19% (Reuters, Yahoo). The semiconductor ETF SMH rose 2.1%, AMD 3.0%, TSMC 3.0% and Nvidia 1.3% to $233.95, after an intraday record near $237.55. Broadcom rose 3.35%. CNBC, citing Reuters, reported that Broadcom agreed to lend Anthropic up to $42 billion for infrastructure purchases. <span class="flag">Single source</span> We could not confirm the figure elsewhere, and earlier reports had described a larger debt package. Micron fell 2.0%, giving back Thursday&rsquo;s gain.</p>
+          </div>
+          <p class="story-sourceline">Reuters and CNBC via search &middot; Yahoo Finance (closes and intraday).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p><strong>Before the open.</strong> <span class="chip chip--info">Confirmed catalyst</span> The 8:30 jobs report. Payrolls missed, revisions were negative, and pay was soft. The 10-year fell to about 5.16% and the 2-year to about 4.73%. Bitcoin jumped above $87,000 (CoinDesk). Tesla&rsquo;s delivery beat and the Synaptics&ndash;ON terms were already out.</p>
+        <p><strong>The open and the morning.</strong> The S&amp;P opened near 7,726 and reached its high of 7,754.67 in the 10:00&ndash;10:30 window. The Nasdaq set its intraday record at the same time. Factory orders for August, at 10:00, rose 0.1%. Core capital-goods orders rose 1.6%, a firm reading for business investment.</p>
+        <p><strong>Late morning.</strong> <span class="chip chip--info">Unexplained</span> Between about 10:30 and 11:30 the S&amp;P fell to its low of 7,700.51 while the 10-year climbed from about 5.19% to 5.25%. The timing lines up with the rise in yields, but no outlet we found tied the two together, and we found no news in that window.</p>
+        <p><strong>Midday and afternoon.</strong> A narrow range, about 7,712&ndash;7,729, while the 10-year peaked near 5.30% around 1:30. <span class="chip chip--info">Likely contributor</span> Oil climbed back from its morning lows after the G7 announcement, which tends to lift breakevens and long yields.</p>
+        <p><strong>The close.</strong> All four indexes finished higher, with the S&amp;P near the middle of its range. Europe had closed higher: the Stoxx 600 rose 0.75% after Thursday&rsquo;s three-month low, the DAX 1.2% and the FTSE 100 0.3% (Reuters, Yahoo).</p>
+        <p><strong>Style and breadth.</strong> SPY +0.74%, QQQ +1.02%, IWM +0.90%, RSP +0.35%, MAGS +1.61%. The megacaps led again and equal weight lagged, reversing Thursday&rsquo;s pattern. Consumer discretionary (+1.1%) and technology (+1.0%) led the sectors. Health care (&minus;0.01%) and financials (+0.06%) lagged, and regional banks (KRE +1.2%) beat the big banks.</p>
+        <p><strong>Volatility.</strong> The VIX fell 1.08 to 15.31. The 9-day VIX fell to 12.06 and the 3-month to 18.01, so the curve slopes upward steeply. That is a calm market with the risk priced further out.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="story-body">
+        <p><b>Winners.</b>
+          <ul>
+            <li>Synaptics: +14.1%, on ON Semiconductor&rsquo;s amended $123 cash offer.</li>
+            <li>SpaceX: +7.4%, to $158.96, on 1.3 times normal volume. We found no company news. A tranche of shares locked up since the IPO, about 328 million, becomes free to trade on October 9.</li>
+            <li>ON Semiconductor: +6.0%, on the cheaper deal terms.</li>
+            <li>Rocket Lab: +4.9%.</li>
+            <li>Tesla: +4.7%, on its delivery beat.</li>
+            <li>Dell: +3.8%. We found no news.</li>
+            <li>Broadcom: +3.35%, on the reported Anthropic loan (single source).</li>
+            <li>Oracle: +3.1%.</li>
+            <li>AMD and TSMC: each +3.0%.</li>
+          </ul></p>
+        <p><b>Losers.</b>
+          <ul>
+            <li>Nexalin Technology: about &minus;26%, after a distribution and manufacturing deal (CNBC, single source).</li>
+            <li>Seagate: &minus;10.2%, after the Toshiba capacity report. Western Digital fell about 7%.</li>
+            <li>Accenture: &minus;6.3%, to $198.90, giving back part of Thursday&rsquo;s 15.8% gain.</li>
+            <li>Nike: &minus;3.6%, to a 13-year low.</li>
+            <li>Coinbase: &minus;3.3%. It filed an 8-K on an officer or director change, which we have not read in full.</li>
+            <li>Rivian: &minus;3.1%.</li>
+            <li>Micron: &minus;2.0%.</li>
+          </ul></p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><b>The labor market.</b>
+          <ul>
+            <li><b>Before:</b> payrolls averaging about 100,000 a month, unemployment steady at 4.1%, and wage growth of 3.1%.</li>
+            <li><b>Now:</b> a three-month average near 51,000, July negative, unemployment at 4.2%, and wage growth of 3.0%.</li>
+            <li><b>Why it matters:</b> this is the weakest hiring trend of the cycle, arriving one meeting after a rate hike.</li>
+            <li><b>Confidence:</b> high on the figures. Revisions can still move them.</li>
+          </ul></p>
+        <p><b>The Fed path.</b>
+          <ul>
+            <li><b>Before:</b> about a one-in-three chance of an October hike.</li>
+            <li><b>Now:</b> roughly 15&ndash;18% for October, with December still priced as more likely than not.</li>
+            <li><b>Why it matters:</b> the hike debate moves to December, after two more CPI reports.</li>
+            <li><b>Confidence:</b> moderate. Market-implied odds move with every data point.</li>
+          </ul></p>
+        <p><b>Oil policy.</b>
+          <ul>
+            <li><b>Before:</b> Europe was considering a release of diesel stocks.</li>
+            <li><b>Now:</b> a G7/IEA agreement for up to 100 million barrels over four months.</li>
+            <li><b>Why it matters:</b> the first coordinated policy aimed at price rather than at the shipping route, and Brent shrugged it off.</li>
+            <li><b>Confidence:</b> high on the agreement, low on the settlement detail.</li>
+          </ul></p>
+        <p><b>The long end.</b>
+          <ul>
+            <li><b>Before:</b> the 10-year closed at 5.24% after failing at 5.34%.</li>
+            <li><b>Now:</b> 5.28%, higher on bad economic news.</li>
+            <li><b>Why it matters:</b> the selloff is not about US growth.</li>
+            <li><b>Confidence:</b> high on the levels, low on the cause.</li>
+          </ul></p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p><b>Labor.</b> Payrolls rose 29,000 in September, and the July and August revisions subtracted 60,000. Unemployment rose to 4.2%, a level, not yet a trend. It was 4.2% in June too. Participation rose to 61.8% from 61.6%, so part of the rise in unemployment reflects people coming back into the labor force rather than layoffs, and U-6 fell to 7.6%. Jobless claims, at 197,000 last week, still show few layoffs. The picture is low hiring and low firing, with pay slowing. Average hourly earnings rose 0.1% in September and 3.0% from a year earlier, the slowest since 2021. The workweek held at 34.4 hours.</p>
+        <p><b>Factory orders.</b> August orders rose 0.1% to $663.5 billion, after a revised 0.8% gain in July (Census, primary). Core capital-goods orders, nondefense excluding aircraft, rose 1.6%, a strong reading for business investment that is consistent with the AI capital-spending boom. Civilian aircraft orders fell 4.3% (Reuters). Durable goods slipped 0.1%.</p>
+        <p><b>Autos.</b> One industry tracker puts September&rsquo;s seasonally adjusted annual sales rate at about 16.4 million (Headlight.news, single source). That is above the 16.1&ndash;16.3 million forecasts and below August&rsquo;s 16.8 million.</p>
+        <p><b>The Fed.</b> The funds rate is 3.75&ndash;4.00%. The soft report cut October hike odds to roughly 15&ndash;18%. Logan&rsquo;s call on Thursday for at least 50bp more is the hawkish marker. Williams and Bowman speak Tuesday, Logan and Williams again Wednesday, Musalem Thursday and Collins Friday, according to one published schedule we could not check against the Fed&rsquo;s calendar. SOFR was 3.87% on Thursday (FRED).</p>
+        <p><b>The Treasury.</b> Next week&rsquo;s coupon supply is $119 billion: $58 billion of 3-year notes Tuesday, a $39 billion 10-year reopening Wednesday and a $22 billion 30-year reopening Thursday, plus $272 billion of bills (TreasuryDirect). The 10-year auction lands an hour before the FOMC minutes. The Treasury Department today announced sanctions on a Hamas financing network. We found no statement from Secretary Bessent on the bond market.</p>
+        <p><b>Rates and credit.</b> High-yield spreads widened again on Thursday: the ICE BofA US high-yield option-adjusted spread rose to 3.24% from 3.12%, the widest in our records and 22bp wider in three sessions (FRED). HYG ended flat today on twice its normal volume, and sits within 1% of its 52-week low of 76.39. Investment-grade LQD fell 0.2% and sits within 1% of its 52-week low.</p>
+        <p><b>Global.</b> Germany&rsquo;s 10-year Bund yield fell about 6bp to 3.45% (Reuters), while Treasuries rose, a rare split this week. Euro-area inflation was 3.8% in this morning&rsquo;s flash estimate, with core at 2.5%. We found no new ECB remarks today. Hong Kong&rsquo;s Hang Seng fell 2.6% in its first session after the National Day holiday. Mainland China is closed until October 8.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p>Tesla, Nike, Synaptics&ndash;ON, Seagate and Broadcom are covered in Top Stories.</p>
+        <p><b>Paramount&ndash;Warner Bros. Discovery.</b> The deal is expected to close Tuesday, October 6, after the court-entered consent decree. We found no fresh confirmation of that date today. Paramount rose 1.7% to $9.50, recovering a little of Thursday&rsquo;s 9.6% fall.</p>
+        <p><b>Filings after the bell (SEC EDGAR).</b> Snowflake, Newell Brands, Flex, Trimble, Schneider National and UGI filed Item 1.01/2.03 notices, a material agreement creating a direct financial obligation, which usually means new debt or a new credit facility. Coinbase, Freddie Mac, Voya and Amentum filed Item 5.02 notices of officer or director changes. Western Union filed an Item 8.01 &ldquo;other events&rdquo; notice. We have not read these exhibits, so treat them as pointers.</p>
+        <p><b>Not confirmed.</b> One aggregator showed Tutor Perini down 80% after hours. Yahoo shows it closed up 4.2% at $86.73 with no after-hours collapse, so we treat that figure as a data error. We found no reliable after-hours earnings movers today.</p>
+        <p><b>Next week.</b> Constellation Brands reports Tuesday after the close (company release). PepsiCo reports Thursday before the open, with consensus EPS of about $2.30 on revenue of about $25 billion (MarketBeat). Delta reports Friday, with a call at 10:00 AM.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="story-body">
+        <p><b>The weekend.</b> Eight OPEC+ countries are reported to be meeting Sunday on November output. Brazil holds the first round of its general election Sunday, and Bosnia votes too. Watch Hormuz shipping reports and any US or Iranian response on the reopening plan.</p>
+        <p><b>Monday.</b> ISM services for September at 10:00 (consensus about 55.1, previous 55.4). $95 billion of 13-week and $82 billion of 26-week bills. The Supreme Court&rsquo;s term opens with the climate-liability case Suncor v. Boulder County. The Nobel prize in medicine is announced at 5:30 AM.</p>
+        <p><b>The market lens.</b> The 10-year closed at 5.28%, and our open forecast gives a 40&ndash;55% chance that it closes at or above 5.35% at least once by October 9. We are lowering that range to 30&ndash;45%: today&rsquo;s labor data argue against it, while three auctions and higher oil argue for it. We now put the chance that the Fed holds in October at 80&ndash;90%, up from 65&ndash;80% this morning, close to the futures market. Wednesday is the pivot: the 10-year reopening at 1:00 PM and the minutes at 2:00.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>The campaign.</b> President Trump holds a rally tonight at the Mitchell Center in Mobile, Alabama, a day after one in Oklahoma, according to the RNC, the AP and PBS. The AP notes that he is opening his midterm push in safe Republican states rather than battlegrounds. Mobile is next to Alabama&rsquo;s 2nd District, where state Rep. Rhett Marques (R) is challenging Rep. Shomari Figures (D). The election is a month away, on November 3.</p>
+        <p><b>Executive orders.</b> The Federal Register&rsquo;s executive-order listing shows three orders signed September 29 and published today: &ldquo;Inaugurating the Era of Super Intelligence,&rdquo; one on disease-carrying pests, and one creating a single America.gov portal for government services. <span class="flag">Single source</span> We saw the listing only through a search excerpt and could not read the texts before publication. The super-intelligence order follows the voluntary White House accord that frontier AI companies signed on September 29.</p>
+        <p><b>Justice Department.</b> Federal prosecutors in Louisiana and Florida unsealed an indictment against what they describe as a Hamas financing network. Three men were arrested in the US. One of them, Raed Yousef, 56, of Lutz, Florida, is alleged to have sent almost $50,000. French police arrested three people in a coordinated operation. These are charges, not findings of guilt. The source is the Justice Department&rsquo;s own releases. We could not confirm their exact date, which is October 1 or 2.</p>
+        <p><b>Courts.</b> Judge Paul Engelmayer in Manhattan has ordered the Justice Department to give him, for private review within two weeks, the Office of Legal Counsel memo that authorized the military strikes on boats in the Caribbean and Pacific. His opinion runs 66 pages (The Hill). The ruling dates from mid-week. A separate fight over the President&rsquo;s order on mail voting is back at the Supreme Court on an emergency application, with lower-court blocks still in place as ballots go out. We found no Supreme Court action on it today.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Iran and Hormuz.</b> The US buildup continues. The USS Theodore Roosevelt carrier strike group and the USS Makin Island amphibious group, with about 2,000 Marines, have left San Diego. Reports say the full force around Iran, three carriers and two amphibious groups, should be in place by November (Al Jazeera, Northeast Times and wire syndications). The Strait of Hormuz remains effectively closed to commercial shipping. Britain&rsquo;s UKMTO reported another tanker hit by an unidentified projectile while transiting; the fire was put out and the crew is safe. Reports of the week&rsquo;s tanker incidents overlap, and we could not match each report to a specific ship. There is no public sign of movement on Iran&rsquo;s seven-day reopening plan since Tehran received Washington&rsquo;s reply on Tuesday. Brent settled above $100 again despite this morning&rsquo;s talk of European stock releases.</p>
+        <p><b>Ukraine.</b> Russia hit Kyiv&rsquo;s Southern Bridge again overnight, its fourth strike on the crossing in two days. One person was killed and two injured in the capital. The city switched three other bridges to one-way traffic (Kyiv Independent, Kyiv Post). Elsewhere a drone hit a passenger bus in Kramatorsk. Ukraine&rsquo;s General Staff claims 46,230 Russian casualties in September, its highest monthly figure of the year; that is a Ukrainian estimate that cannot be independently checked. Britain sanctioned seven Russians over the deportation of Ukrainian children.</p>
+        <p><b>Russia and NATO.</b> We found no new official reaction today to President Putin&rsquo;s statement on Thursday that Russia would use &ldquo;all weapons&rdquo; if Kaliningrad were attacked. German Chancellor Merz said Thursday that any weakening of Germany&rsquo;s support for Ukraine would have consequences across Europe.</p>
+        <p><b>China.</b> Mainland markets are shut for the Golden Week holiday through October 7. Hong Kong&rsquo;s fall to a three-month low this morning had no single reported cause.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>Washington asks AI labs to keep new models from Britain&rsquo;s testers.</b> The White House, through the Office of the National Cyber Director, asked OpenAI and Anthropic not to share new models with the UK AI Security Institute until US testing is complete, Politico reported. The Next Web and ITPro followed it. The request cuts against the joint US&ndash;UK pre-deployment testing that both labs had offered since 2024. It comes days after the voluntary White House accord on &ldquo;frontier super-intelligence&rdquo; responsibilities and the executive order published today (see The United States).</p>
+        <p><b>Anthropic&rsquo;s IPO timing.</b> Reports still conflict. A Reuters report has a roadshow starting in mid-October. The New York Times has a November listing, so that third-quarter numbers can be included. Valuation figures in circulation vary too widely to use. Anthropic has not commented, and nothing has been filed publicly.</p>
+        <p><b>Chip smuggling.</b> This morning&rsquo;s edition described a California server reseller charged with smuggling about $300 million of Nvidia chips to China. We could not find that case again this afternoon. The related cases we could confirm are a $2.5 billion server-smuggling conspiracy that names a Super Micro senior vice president and a separate Los Angeles-area case. We are checking the morning&rsquo;s figure and will correct it if it does not hold.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science</h2>
+      <div class="story-body">
+        <p><b>Nobel week starts Monday.</b> The Nobel Assembly at Karolinska Institutet announces the prize in physiology or medicine on Monday, October 5, no earlier than 11:30 AM in Stockholm (5:30 AM Eastern). Physics, chemistry, literature, peace and economics follow through the week (nobelprize.org).</p>
+        <p><b>The bat family tree, redrawn.</b> This week&rsquo;s issue of <i>Nature</i> carries genomes for 103 bat species. The authors use them to argue that bats arose about 60 to 65 million years ago, in Europe. That is just after the asteroid impact that ended the age of dinosaurs. A genome set this broad is a resource as much as a finding: bats carry viruses that spill over into people, and better genomes help explain why the animals tolerate them. We saw the paper&rsquo;s summary, not the full text.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>SpaceX shares jump.</b> SPCX rose 7.4% to $158.96 on about 1.3 times its normal volume. Over the week it is up about 7%. We found no company announcement to explain it. <span class="chip chip--info">Unexplained</span> Rocket Lab rose 4.9% and AST SpaceMobile 2.5%.</p>
+        <p><b>What we could not confirm.</b> One summary said Falcon Heavy launched the NRO&rsquo;s NROL-97 mission early today. Launch trackers still list that mission much later, so we are not reporting a launch. Starship&rsquo;s next flight is targeted for October, with no firm date.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><b>An Atlantic hurricane season without a hurricane, so far.</b> October has arrived with no Atlantic hurricane yet this year, which forecasters describe as a first of the satellite era. The season has produced eight named storms, against a normal of about eleven storms and five hurricanes by now. The National Hurricane Center expects no new storms in the next seven days. Forecasters attribute the quiet to a very strong El Ni&ntilde;o, whose upper-level winds tear developing storms apart (NHC, Tampa Bay Times). For Gulf energy production and insurers, that is the cheapest hurricane season in years.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+        <article class="local-item">
+          <p class="local-place">Pittsburgh region</p>
+          <h3>Duquesne Light strike, day two: talks were expected to resume, and rain tests the contingency crews</h3>
+          <div class="story-body">
+          <p>Nearly 1,000 members of IBEW Local 29, linemen and customer-service staff, are on the second day of their strike against Duquesne Light. WPXI reported no deal on the first day. Union members said negotiations were expected to resume today; we found no report on how they went. The company&rsquo;s description of its offer is now more specific: double-digit raises over the life of the contract and 120 more union positions. The union&rsquo;s business manager, Josh Ewing, says the dispute is about staffing, equipment and safety rather than pay. He says the company has tripled its non-union workforce and leans on contractors.</p>
+          <p>Non-union employees and contractors, some from out of state, are covering the work under PUC-approved contingency plans, and picket lines are staffed around the clock. Thursday was dry and calm, and outages were restored quickly. Today&rsquo;s rain is the first real test. The utility serves about 610,000 customers in Allegheny and Beaver counties, Bridgeville and the South Hills included. We found no statement from the PUC or local officials.</p>
+          </div>
+          <p class="story-sourceline">Pittsburgh Post-Gazette, WPXI, KDKA-TV and KDKA Radio, TribLive (read through search excerpts).</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pittsburgh region</p>
+          <h3>Pittsburgh names Mat Davis, a former Dormont chief, as permanent fire chief</h3>
+          <div class="story-body">
+          <p>Mayor Corey O&rsquo;Connor appointed Acting Chief Mat Davis to lead the Bureau of Fire. Davis has 22 years in the fire service. He started in Dormont and became its chief before joining the city bureau about three years ago. He succeeds Darryl Jones, who was placed on leave in June during an internal review and retired in September. City Council must confirm the appointment.</p>
+          </div>
+          <p class="story-sourceline">KDKA Radio, WPXI.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Skill games: three session days left before the October 13 deadline</h3>
+          <div class="story-body">
+          <p>Lawmakers met three days this week without taking up skill games. Both chambers return Monday for three more session days before the Supreme Court&rsquo;s deadline. From October 14, State Police say, about 70,000 unlicensed machines in bars, stores and clubs can be seized and their owners charged, and Attorney General Dave Sunday has urged businesses to remove them. Senate Majority Leader Joe Pittman says there are &ldquo;plenty of legislative days.&rdquo; House Majority Leader Matt Bradford says the legislature should have acted years ago. The licensing bills (SB 1079 and HB 2213, with a $500 monthly fee per machine) and House proposals to extend the deadline are all still pending.</p>
+          </div>
+          <p class="story-sourceline">Spotlight PA, City &amp; State PA, WITF, abc27.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Regulators approve a UGI gas rate increase and move to put data centers first in line for grid cutoffs</h3>
+          <div class="story-body">
+          <p>The Public Utility Commission voted 3&ndash;1 on Thursday to approve a $65 million settlement for UGI Gas, about two-thirds of the $99.4 million the company asked for, over Vice Chair Kimberly Barrow&rsquo;s dissent. UGI does not serve the Pittsburgh area. At the same meeting the commission advanced a tentative order rewriting emergency load-curtailment rules, so that large data centers are cut first in a grid emergency. That follows Governor Shapiro&rsquo;s August executive order. The tentative order is open to comment, and we have not seen its text.</p>
+          </div>
+          <p class="story-sourceline">Daily Energy Insider, WILK (PUC October 1 public meeting).</p>
+        </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Megacap risk-on over a bear-steepening curve; credit still widening</span>
+            <ul>
+              <li><b>Supporting the calm reading.</b> The VIX is 15.31, and its term structure slopes steeply upward (9-day 12.06, 3-month 18.01). QQQ is 4.6% above its 50-day average and 12.1% above its 200-day. SMH is 10.7% above its 50-day. The Nasdaq set an intraday record.</li>
+              <li><b>Contradicting it.</b> The 10-year rose on a weak jobs report. HY OAS reached 3.24% on Thursday, the widest in our records. TLT, IEF, LQD and HYG are all within about 1% of their 52-week lows. IWM, RSP and DIA sit 3&ndash;4% below their 50-day averages, and XLF is 5.8% below its own. Leadership is narrow.</li>
+              <li><b>What changed today.</b> The labor market weakened, and the front end stopped pricing an October hike. The long end did not rally, and that is the regime&rsquo;s central tension.</li>
+            </ul>
+            Confidence: moderate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Closes, Oct 2, 2026. EOD official via Yahoo Finance. Weekly changes for the indexes from the AP. Moving-average distances computed from Yahoo daily closes.</caption>
+              <thead><tr><th>Index / ETF</th><th>Close</th><th>1D</th><th>Week</th><th>vs 50-DMA</th><th>vs 200-DMA</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,722.72</td><td class="up">+0.73%</td><td class="down">&minus;0.3%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>27,190.86</td><td class="up">+1.19%</td><td class="up">+0.5%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td class="txt">Dow</td><td>51,176.96</td><td class="up">+0.49%</td><td class="down">&minus;1.3%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>2,832.90</td><td class="up">+0.94%</td><td class="down">&minus;0.2%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td class="txt">SPY</td><td>769.64</td><td class="up">+0.74%</td><td class="down">&minus;0.2%</td><td>+0.8%</td><td>+6.8%</td></tr>
+                <tr><td class="txt">QQQ</td><td>749.58</td><td class="up">+1.02%</td><td class="up">+0.7%</td><td>+4.6%</td><td>+12.1%</td></tr>
+                <tr><td class="txt">IWM</td><td>281.52</td><td class="up">+0.90%</td><td class="down">&minus;0.2%</td><td>&minus;3.8%</td><td>+1.9%</td></tr>
+                <tr><td class="txt">DIA</td><td>511.10</td><td class="up">+0.49%</td><td class="down">&minus;1.2%</td><td>&minus;3.0%</td><td>+1.7%</td></tr>
+                <tr><td class="txt">RSP</td><td>209.73</td><td class="up">+0.35%</td><td class="down">&minus;0.7%</td><td>&minus;3.2%</td><td>+1.9%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The S&amp;P is 1.2% below its 52-week high of 7,816.70. Year to date, per the AP, the S&amp;P is up 12.8%, the Nasdaq 17.0%, the Russell 2000 14.1% and the Dow 6.5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Whole-market advance-decline figures for today will be computed from the full day&rsquo;s bars in the next weekday run. Thursday&rsquo;s figures: 2,972 advancers and 2,692 decliners across a 5,837-stock universe, with up-volume about 1.6 times down-volume by dollar value (Massive grouped daily, EOD official, Oct 1). The percentage of stocks above their 50- and 200-day averages is still building history (48 of 200 sessions). Proxy for today: RSP rose 0.35% against SPY&rsquo;s 0.74%, so the average stock lagged the index.</p>
+          <p>FINRA daily short volume for Thursday (EOD official, Oct 1): 51.7% of reported volume across all symbols was short sales. Among names in the news: Paramount 72%, QQQ 69%, IWM 63%, Nike 62%, SpaceX 57%, SPY 52%, Tesla 48%, Micron 42%. Daily short volume includes market-maker hedging and is not short interest. Short interest is settlement-dated and two to three weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, Oct 2, 2026. EOD official via Yahoo Finance. Week = vs Sep 25 close.</caption>
+              <thead><tr><th>Sector</th><th>ETF</th><th>1D</th><th>Week</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Consumer discretionary</td><td>XLY</td><td class="up">+1.13%</td><td class="down">&minus;0.5%</td></tr>
+                <tr><td class="txt">Technology</td><td>XLK</td><td class="up">+1.01%</td><td class="up">+1.8%</td></tr>
+                <tr><td class="txt">Industrials</td><td>XLI</td><td class="up">+0.78%</td><td class="down">&minus;0.3%</td></tr>
+                <tr><td class="txt">Materials</td><td>XLB</td><td class="up">+0.66%</td><td class="down">&minus;1.9%</td></tr>
+                <tr><td class="txt">Utilities</td><td>XLU</td><td class="up">+0.38%</td><td class="up">+0.8%</td></tr>
+                <tr><td class="txt">Communication services</td><td>XLC</td><td class="up">+0.35%</td><td class="down">&minus;2.3%</td></tr>
+                <tr><td class="txt">Real estate</td><td>XLRE</td><td class="up">+0.32%</td><td class="down">&minus;1.8%</td></tr>
+                <tr><td class="txt">Consumer staples</td><td>XLP</td><td class="up">+0.25%</td><td class="down">&minus;1.9%</td></tr>
+                <tr><td class="txt">Energy</td><td>XLE</td><td class="up">+0.19%</td><td class="up">+1.3%</td></tr>
+                <tr><td class="txt">Financials</td><td>XLF</td><td class="up">+0.06%</td><td class="down">&minus;2.5%</td></tr>
+                <tr><td class="txt">Health care</td><td>XLV</td><td class="flat">&minus;0.01%</td><td class="down">&minus;2.6%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Only technology, energy and utilities rose over the week. Health care and financials were the weakest groups for the week. Utilities traded more than twice their normal volume today, with no news found.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p><b>Megacaps</b> (EOD official, Yahoo): Apple +1.0%, Microsoft +0.9%, Nvidia +1.3%, Amazon +1.3%, Alphabet +1.6%, Meta +0.3%, Tesla +4.7%, SpaceX +7.4%.</p>
+          <p><b>AI infrastructure:</b> AMD +3.0%, Broadcom +3.35%, TSMC +3.0%, Micron &minus;2.0%. Storage was the weak spot after the Toshiba report: Seagate &minus;10.2% and Western Digital about &minus;7%.</p>
+          <p><b>Financials:</b> JPMorgan &minus;0.2%, Goldman +0.7%, Bank of America flat, Robinhood +1.4%, Coinbase &minus;3.3%, Blackstone &minus;0.4%. Regional banks (KRE +1.2%) beat money-centers.</p>
+          <p><b>Health:</b> Lilly &minus;0.6%, UnitedHealth +1.8%. <b>Defense:</b> Lockheed flat, RTX &minus;0.2%, Palantir &minus;0.7%. <b>Space:</b> Rocket Lab +4.9%, AST SpaceMobile +2.5%. <b>Consumer:</b> Walmart flat, Costco +0.6%, Nike &minus;3.6%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury par yield curve, EOD official (home.treasury.gov). Changes in basis points.</caption>
+              <thead><tr><th>Tenor</th><th>Oct 2</th><th>1D</th><th>Week (vs Sep 25)</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">1-month</td><td>4.04%</td><td class="down">&minus;2</td><td class="flat">0</td></tr>
+                <tr><td class="txt">3-month</td><td>4.19%</td><td class="up">+2</td><td class="down">&minus;5</td></tr>
+                <tr><td class="txt">6-month</td><td>4.27%</td><td class="flat">0</td><td class="down">&minus;6</td></tr>
+                <tr><td class="txt">1-year</td><td>4.46%</td><td class="up">+2</td><td class="down">&minus;4</td></tr>
+                <tr><td class="txt">2-year</td><td>4.83%</td><td class="up">+5</td><td class="up">+2</td></tr>
+                <tr><td class="txt">5-year</td><td>5.06%</td><td class="up">+5</td><td class="up">+8</td></tr>
+                <tr><td class="txt">10-year</td><td>5.28%</td><td class="up">+4</td><td class="up">+11</td></tr>
+                <tr><td class="txt">20-year</td><td>5.67%</td><td class="up">+3</td><td class="up">+13</td></tr>
+                <tr><td class="txt">30-year</td><td>5.63%</td><td class="up">+2</td><td class="up">+14</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads: 2s10s 45bp (Thursday 46), 5s30s 57bp, 3-month to 10-year 109bp. Over the week the curve steepened from the long end: bills fell and the 30-year rose 14bp. Real yields and breakevens (FRED, EOD official, Oct 1): 10-year TIPS 2.88%, 10-year breakeven 2.36%. SOFR 3.87% (Oct 1). The MOVE index has no allowlisted free source and is not shown.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield OAS (FRED, EOD official): 3.02% Sep 28 &rarr; 3.08% &rarr; 3.12% &rarr; <b>3.24% Oct 1</b>. That is 22bp in three sessions and the widest in our records. HYG closed at $76.91, flat, on 82 million shares against a 39 million average. LQD fell 0.2% to $101.83 on 1.6 times normal volume. Both sit within about 0.7% of their 52-week lows. Heavy volume in credit funds on a flat day can reflect month-start rebalancing or redemptions; we have no flow data to tell which. Paramount&rsquo;s $52 billion financing is the largest new supply this month.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.31 (&minus;1.08), VIX9D 12.06, VIX3M 18.01, all Cboe index closes via Yahoo, about 4:15 PM ET. The 9-day/VIX/3-month curve is in contango: near-term volatility is priced well below longer-dated. The VIX traded 15.30&ndash;16.24 today. Put/call ratios are not tracked. Dealer gamma positioning is not tracked either, because there is no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, Oct 2 (Frankfurter, EOD official), and Yahoo spot about 4:30 PM ET (delayed).</caption>
+              <thead><tr><th>Pair</th><th>ECB fix</th><th>Spot (Yahoo)</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">DXY</td><td>&mdash;</td><td>101.92 (&minus;0.18%)</td></tr>
+                <tr><td class="txt">EUR/USD</td><td>1.1225</td><td>1.1259</td></tr>
+                <tr><td class="txt">USD/JPY</td><td>157.67</td><td>157.85</td></tr>
+                <tr><td class="txt">GBP/USD</td><td>1.3201</td><td>1.3244</td></tr>
+                <tr><td class="txt">USD/CNY</td><td>6.7046</td><td>&mdash;</td></tr>
+                <tr><td class="txt">USD/CAD</td><td>1.4240</td><td>&mdash;</td></tr>
+                <tr><td class="txt">USD/MXN</td><td>18.335</td><td>&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The dollar eased from Thursday&rsquo;s 17-month high (DXY 102.10) after the jobs report but finished the week up about 0.9%. A soft US report would normally weaken the dollar more. Higher Treasury yields limited the move.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Brent settled at $102.25 (&minus;$0.06) and WTI at $91.11 (&minus;$1.76), per a single wire report. Yahoo&rsquo;s delayed front-month quotes after 4 PM were Brent about $102.84 and WTI about $91.51. WTI&rsquo;s intraday low was about $88.06, a one-month low. Gold (December COMEX) was about $4,172, down 0.7% on the day and about 3.5% on the week, its second weekly loss. Copper rose 1.6% to about $6.59 a pound, and natural gas 2.5% to about $3.04. Futures quotes are delayed 10 minutes.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>CoinGecko aggregate, about 4:50 PM ET (live): bitcoin $84,389 (&minus;0.4% over 24 hours), ether $2,668 (&minus;1.2%), solana $118.11 (&minus;0.1%), cardano $0.2407 (&minus;3.2%). Total market value is about $2.88 trillion, and bitcoin&rsquo;s share is 58.8%. Bitcoin briefly topped $87,000 after the jobs report (CoinDesk), then gave the gain back.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Growth beat value and size: MAGS +1.6%, QQQ +1.0%, IWM +0.9%, RSP +0.35%. Over the week, technology (+1.8%) and energy (+1.3%) were the only cyclical winners. Stocks and bonds moved in opposite directions today, with equities up and Treasuries down. That is the pattern of a term-premium selloff rather than a growth scare. Gold fell with real yields rising, which fits the textbook. Oil was flat despite the G7 release, and the dollar eased.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings, auctions &amp; liquidity</summary>
+          <p>Reported or pre-announced today: Tesla deliveries (beat). Next week: Constellation Brands Tuesday after the close, PepsiCo Thursday before the open, Delta Friday. Treasury auctions next week: $95 billion of 13-week and $82 billion of 26-week bills Monday, the $58 billion 3-year and $95 billion of 6-week bills Tuesday, the $39 billion 10-year reopening Wednesday at 1:00 PM, and the $22 billion 30-year reopening Thursday (TreasuryDirect). About 328 million SpaceX shares come off lockup on October 9.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Read directly from the source: the BLS Employment Situation and FRED labor series, the Census factory-orders report, the Treasury par-yield curve, TreasuryDirect, FRED rates and credit series, the 8-K filings of Tesla and ON Semiconductor on SEC EDGAR, ECB reference rates (Frankfurter) and FINRA short-volume files. Market levels come from Yahoo Finance, Twelve Data and CoinGecko. News reporting draws on Reuters, the AP, CNBC, Bloomberg, CNN, Nikkei Asia, Politico, Kyiv Independent, Kyiv Post, Al Jazeera, Spotlight PA, the Post-Gazette, WPXI and KDKA. Much of it was read through search excerpts rather than full articles.</p>
+      <p><strong>Corrections.</strong> This morning&rsquo;s edition listed Dallas Fed President Lorie Logan as speaking today. Her widely reported remarks, calling for 50bp or more of further hikes, were made Thursday evening, and we found no remarks from her today. The morning edition also said a California server reseller had been charged with smuggling about $300 million of Nvidia chips. We could not re-confirm that case this afternoon and are still checking it.</p>
+      <p><strong>Method.</strong> Free-tier quotes come from a single venue and can differ slightly from consolidated closes. Missing data is labelled as missing and never estimated. This paper is written and published automatically, and nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-02-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

@@ -269,6 +269,15 @@
    "error_source": "Morning edition carried a stale calendar entry instead of checking the Board's speech feed.",
    "conclusions_changed": false,
    "note": "Corrected in 2026-09-29-pm colophon."
+  },
+  {
+   "found": "2026-10-02",
+   "report": "reports/2026/10/2026-10-02-am.html",
+   "original": "Dallas Fed President Lorie Logan speaks today (Oct 2).",
+   "corrected": "Logan's widely reported remarks ('the target range needs to rise an additional 50 basis points or more') were made Thursday evening, Oct 1 (FXStreet 2026-10-01 23:40, Reuters/Investing.com); no Logan remarks dated Oct 2 were found.",
+   "error_source": "Morning calendar carried a speaker entry without checking the Dallas Fed's own event listing; the remarks were already public before the morning edition.",
+   "conclusions_changed": false,
+   "note": "Surfaced in the 2026-10-02 pm colophon. Separately, the am edition's '~$300M Nvidia chip smuggling by a California server reseller' could not be re-confirmed in the pm run; flagged as under check in the colophon, not yet logged as an error."
   }
  ]
 }
