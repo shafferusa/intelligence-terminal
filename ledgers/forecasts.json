@@ -8,7 +8,10 @@
       "horizon": "2026-10-02",
       "probability": "45-60%",
       "basis": "Officials cited by Axios named the UNGA-adjacent Gulf-leaders meeting as a likely moment of clarity; VP Vance separately said the war enters a 'fundamentally different phase' within a month or two, a similar timeframe.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Trump did not announce a single 'big decision', but over Sep 26-Oct 2 he rejected Iran's seven-day Hormuz plan, called it 'unacceptable', and said renewed strikes after the Nov 3 midterms are possible and the war ends 'probably right after the midterms'. Direction clarified; no discrete decision announced.",
+      "graded": "2026-10-03",
+      "lesson": "Vague trigger language ('clarifies') makes grading soft; future forecasts should name a concrete observable act."
     },
     {
       "id": "2026-09-18-pm-2",
@@ -28,7 +31,10 @@
       "horizon": "2026-09-30",
       "probability": "55-70%",
       "basis": "FRED's Sept 17-dated SOFR reading jumped 23 basis points to 3.85% in a single day, a move this report could not attribute to any identified news event; quarter-end repo/funding pressure is a well-documented recurring seasonal pattern.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "SOFR printed 3.87-3.90% from Sep 22 to Oct 1, within 2bp of the 3.88% effective fed funds rate. The Sep 17 'jump' was the first print after the Sep 16 hike, not funding stress.",
+      "graded": "2026-10-03",
+      "lesson": "Check a jump in an overnight rate against the policy-rate change before calling it an anomaly: the 23bp move was the hike passing through."
     },
     {
       "id": "2026-09-14-am-1",
@@ -3362,7 +3368,10 @@
       "horizon": "2026-09-30",
       "probability": "25-35%",
       "basis": "Continuation of this week's pattern (disputed tanker strike, Saildrone-seizure attempt) with no diplomatic track currently open -- the Salalah Iran-GCC talks remain postponed with no new date.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "The IRGC said on Sep 27 that it seized a US Remus 600 underwater drone in the Strait of Hormuz; US officials disputed its description of the drone, and no exchange of fire between US and Iranian forces was confirmed by Sep 30.",
+      "graded": "2026-10-03",
+      "lesson": "A seizure fits the pattern the forecast described but is not clearly 'kinetic'; define the event class precisely."
     },
     {
       "id": "2026-09-16-pm-1",
@@ -3382,7 +3391,10 @@
       "horizon": "2026-09-30",
       "probability": "60-75%",
       "basis": "A nearly identical 711-14 strike-authorization vote in September 2023 preceded a last-minute three-year deal reached just before that contract's expiration; today's 592-14 vote follows the same pattern of using authorization as leverage rather than a declared intent to walk out.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No deal. About 1,000 IBEW Local 29 workers struck Duquesne Light at midnight Oct 1; the strike was in its third day on Oct 3.",
+      "graded": "2026-10-03",
+      "lesson": "The 2023 precedent was given too much weight; this year's issues (retiree health, non-union jobs) and the company's out-of-state contractor plan were signals of a harder dispute."
     },
     {
       "id": "2026-09-16-pm-3",
@@ -3392,7 +3404,10 @@
       "horizon": "2026-09-30",
       "probability": "40-55%",
       "basis": "Both companies have generally responded to high-profile public criticism from peer labs within one to two weeks in prior incidents this year (e.g., the distillation accusation, the 'pace the frontier' exchange), though a philosophy-of-mind dispute is less commercially pointed than those prior incidents and could go unanswered.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No public response from Anthropic or OpenAI to Suleyman's critique was found by Sep 30.",
+      "graded": "2026-10-03",
+      "lesson": "Philosophy-of-mind disputes draw fewer replies than commercial ones; the basis already said so and the range should have been lower."
     },
     {
       "id": "2026-09-17-am-1",
@@ -3468,7 +3483,10 @@
       "horizon": "2026-10-03",
       "probability": "50-65%",
       "basis": "No available workaround exists; comparable no-workaround CISA KEV entries this year have produced follow-on victims after their own deadlines.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No newly confirmed victim organization of the Cisco ISE flaw was found in reporting through Oct 3.",
+      "graded": "2026-10-03",
+      "lesson": "Absence of reported victims is not proof of none, but the forecast was about confirmed victims, and none surfaced; the comparable-KEV base rate was overstated."
     },
     {
       "id": "2026-09-20-sun-1",
@@ -3615,7 +3633,10 @@
       "horizon": "2026-09-30",
       "probability": "55-70%",
       "basis": "Kelly, a first Trump-term appointee, ruled for CNN's Jim Acosta on nearly identical due-process facts in 2018; DOJ's national-security argument for excluding three specific outlets is comparatively thin, and Trump himself has publicly predicted he will lose and have to appeal.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Judge Kelly issued a 14-day temporary restraining order restoring CNN, MS NOW and Politico's access; access was restored on Sep 24 after a noncompliance notice.",
+      "graded": "2026-10-03",
+      "lesson": "Close factual precedent (Acosta 2018) was a good guide."
     },
     {
       "id": "2026-09-23-am-2",
@@ -3658,7 +3679,10 @@
       "horizon": "2026-09-30",
       "probability": "55-70%",
       "basis": "DOJ's own framing in mid-September described the closure as roughly a week, subject to weekly reassessment -- a timeline that would point to a decision around now -- but today's sworn-status-report deadline passed with no reported reopening announcement, and the underlying structural damage (ceiling collapse, roof-terrace concerns) has not been reported resolved.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Kennedy Center's sworn declaration extended the closure through at least Sept 30 with weekly reviews; no reopening was reported by Sept 30.",
+      "graded": "2026-10-03",
+      "lesson": "Operator's own safety filing was the best evidence; it pointed the right way."
     },
     {
       "id": "2026-09-24-am-1",
@@ -3714,7 +3738,10 @@
       "horizon": "2026-10-02",
       "probability": "55-65%",
       "basis": "Closed 5.17% Sep 25 with bear-steepening momentum, hawkish Barr/Williams and soft auctions; a soft consensus payroll print (85-100K) is the main downside risk.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The 10-year par yield closed at 5.28% on Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "Momentum plus supply held even through a weak payrolls print."
     },
     {
       "id": "2026-09-27-sun-2",
@@ -3724,7 +3751,10 @@
       "horizon": "2026-09-30",
       "probability": "50-60%",
       "basis": "Hot August CPI/PPI translation; the only usable consensus (FinancialJuice) is +0.3% m/m, low confidence.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "August core PCE rose 0.25% (index 130.455 vs 130.133, about 0.2% rounded); the annual revision cut the y/y rate to 3.0%.",
+      "graded": "2026-10-03",
+      "lesson": "The hot CPI/PPI translation overstated core PCE; the single consensus source was a weak anchor."
     },
     {
       "id": "2026-09-27-sun-3",
@@ -3734,7 +3764,10 @@
       "horizon": "2026-10-02",
       "probability": "40-50%",
       "basis": "Consensus 85-100K (CNBC, Reuters, FinancialJuice); claims near 197K argue firm, ADP +38K in August and weekly ADP ~20K/wk argue soft.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "September payrolls rose 29,000, with July revised to -10,000 and August to +133,000.",
+      "graded": "2026-10-03",
+      "lesson": "Weekly ADP and the soft August ADP were the better signal than low claims."
     },
     {
       "id": "2026-09-27-sun-4",
@@ -3744,7 +3777,10 @@
       "horizon": "2026-09-30",
       "probability": "55-65%",
       "basis": "Strong memory/HBM pricing momentum and guidance of $31.00 +/- 1.00; offset by extremely high expectations after a 500% one-year run.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Micron reported non-GAAP EPS of $33.42 vs about $31.56 consensus and guided fiscal Q1 revenue to $61.5B vs about $57.0B.",
+      "graded": "2026-10-03",
+      "lesson": "Guide-to-consensus gaps in a shortage market tend to be large."
     },
     {
       "id": "2026-09-27-sun-5",
@@ -3754,7 +3790,10 @@
       "horizon": "2026-09-29",
       "probability": "85-95%",
       "basis": "All four big Australian banks forecast a hike; market pricing reported above 90%.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The RBA raised its cash rate 25bp to 4.60% on Sep 29.",
+      "graded": "2026-10-03",
+      "lesson": "Unanimous bank forecasts plus >90% pricing is reliable for scheduled central-bank decisions."
     },
     {
       "id": "2026-09-27-sun-6",
@@ -3764,7 +3803,10 @@
       "horizon": "2026-10-02",
       "probability": "75-85%",
       "basis": "2.80% on Sep 24 after a 12bp weekly widening; credit has lagged rather than led the rates move.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "ICE BofA HY OAS rose to 3.02% on Sep 28 and 3.24% by Oct 1.",
+      "graded": "2026-10-03",
+      "lesson": "Credit was lagging, not immune; a 12bp weekly widening into a rates selloff was a warning sign, not reassurance."
     },
     {
       "id": "2026-09-27-sun-7",
@@ -3774,7 +3816,10 @@
       "horizon": "2026-10-02",
       "probability": "30-40%",
       "basis": "Risk-register item: needs a hot PCE/payrolls pair on top of existing momentum.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The 10-year closed the week at 5.28%.",
+      "graded": "2026-10-03",
+      "lesson": "The 'needs a hot data pair' condition was wrong: yields rose on cool data too. Supply and term premium were underweighted."
     },
     {
       "id": "2026-09-27-sun-8",
@@ -3784,7 +3829,10 @@
       "horizon": "2026-10-02",
       "probability": "35-45%",
       "basis": "Trump's on-record rejection of Iran's Hormuz offer removes last week's deal premium (WTI -7.9% to $92.41); US says it is 'not in a rush', mediation continues.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Front-month WTI settled at $91.11 on Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "Saudi pipeline flows and the SPR/IEA releases capped crude despite no Hormuz deal."
     },
     {
       "id": "2026-09-27-sun-9",
@@ -3794,7 +3842,10 @@
       "horizon": "2026-10-02",
       "probability": "5-12%",
       "basis": "WSJ-reported timetable puts any resumption after the Nov 3 midterms; White House says Trump remains open to talks; no war-powers notice or Pentagon briefing.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No US strike on Iranian territory or forces was reported through Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "Low probability was appropriate; the event did not occur."
     },
     {
       "id": "2026-09-27-sun-10",
@@ -3804,7 +3855,10 @@
       "horizon": "2026-10-01",
       "probability": "25-35%",
       "basis": "Implied move ~8%; extreme run-up; high expectations.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Micron rose about 3% on Oct 1, its first full session after the report, and ended the week down 0.7%.",
+      "graded": "2026-10-03",
+      "lesson": "Low-to-moderate probability was appropriate; the event did not occur."
     },
     {
       "id": "2026-09-27-sun-11",
@@ -3814,7 +3868,10 @@
       "horizon": "2026-10-02",
       "probability": "10-20%",
       "basis": "SOFR has tracked the policy rate since the Sept 16 hike; standing repo facility caps stress; reserves fell as TGA rose.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "SOFR's largest gap over effective fed funds during Sep 28-Oct 1 was 2bp (3.90% vs 3.88%), including quarter-end.",
+      "graded": "2026-10-03",
+      "lesson": "Low probability was appropriate; the standing repo facility capped quarter-end stress."
     },
     {
       "id": "2026-09-27-sun-12",
@@ -3824,7 +3881,10 @@
       "horizon": "2026-10-02",
       "probability": "20-30%",
       "basis": "Official said 'fairly short time', but Trump's 'last thing we need right now is a war' remark and analyst expectations of a delay to APEC/G20.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No decision on the $14 billion Taiwan arms package was announced by Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "Low probability was appropriate; the event did not occur."
     },
     {
       "id": "2026-09-27-sun-13",
@@ -3834,7 +3894,10 @@
       "horizon": "2026-10-02",
       "probability": "50-65%",
       "basis": "LL2 status Go for Sep 28, vehicle stacked, flight restrictions posted to Oct 7; FAA licence not confirmed from a primary source and V3 debut slip risk.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Starship Flight 14 launched Sep 28 and reached orbit for the first time.",
+      "graded": "2026-10-03",
+      "lesson": "Licence plus stacked vehicle plus posted restrictions was a good signal."
     },
     {
       "id": "2026-09-27-sun-14",
@@ -3844,7 +3907,10 @@
       "horizon": "2026-10-02",
       "probability": "65-80%",
       "basis": "NASA targeting Oct 1 11:10 ET with Oct 2 backup after prelaunch prep completed; weather and Dragon issues are the usual slip risks.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Crew-13 launched Oct 1 at 11:10 AM EDT and docked about eight hours later.",
+      "graded": "2026-10-03",
+      "lesson": "NASA's own target with a completed valve fix was reliable."
     },
     {
       "id": "2026-09-27-sun-15",
@@ -3854,7 +3920,10 @@
       "horizon": "2026-10-02",
       "probability": "base 45-55%",
       "basis": "Sunday Sep 27 outlook scenario matrix; grade which case best described the week.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Mixed: data came in cool (core PCE 0.25%, payrolls +29K) as in the bull case, but the 10-year closed at 5.28% and HY OAS reached 3.24%, the bear case's market outcome. The S&P stayed within about 1.2% of its record (base case), and Brent stayed above $100 without a new Gulf escalation through Friday.",
+      "graded": "2026-10-03",
+      "lesson": "The matrix tied market outcomes to data outcomes; this week they decoupled. Future scenarios should separate the long end (supply/term premium) from Fed-sensitive pricing."
     },
     {
       "id": "2026-09-28-am-1",
@@ -3864,7 +3933,10 @@
       "horizon": "2026-10-02",
       "probability": "25-35%",
       "basis": "10Y rose 15-20bp in each of the last two weeks; PCE and payrolls both this week; breakevens flat.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The 10-year closed at 5.26%, 5.29% and 5.28% on Sep 29, Sep 30 and Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "Momentum in term premium was underpriced at 25-35%."
     },
     {
       "id": "2026-09-28-am-2",
@@ -3884,7 +3956,10 @@
       "horizon": "2026-10-02",
       "probability": "65-75%",
       "basis": "US rejected Iran's 7-day offer, Iran refuses to soften terms; Brent $106-108 Monday Asia; backwardated curve.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Front-month Brent settled above $100 every day: 105.28, 102.59, 103.53, 102.31, 102.25.",
+      "graded": "2026-10-03",
+      "lesson": "The floor held despite pipeline flows and the IEA release; Hormuz risk dominates stockpiles."
     },
     {
       "id": "2026-09-28-am-4",
@@ -3894,7 +3969,10 @@
       "horizon": "2026-09-30",
       "probability": "55-70%",
       "basis": "FAA licence issued, rehearsal complete; first V3 flight and ordinary scrub rates.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Starship Flight 14 launched Sep 28.",
+      "graded": "2026-10-03",
+      "lesson": "As above."
     },
     {
       "id": "2026-09-28-am-5",
@@ -3904,7 +3982,10 @@
       "horizon": "2026-09-30",
       "probability": "35-50%",
       "basis": "Judge deferred consent-decree ruling; temporary bar to 3 PM ET Sep 28; short calendar.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The Paramount Skydance-WBD merger had not closed by Sep 30; the AP reports an expected close on Oct 6 after Paramount priced about $41 billion of notes on Oct 1.",
+      "graded": "2026-10-03",
+      "lesson": "Financing logistics, not only legal approval, set closing dates."
     },
     {
       "id": "2026-09-28-pm-1",
@@ -3914,7 +3995,10 @@
       "horizon": "2026-10-02",
       "probability": "25-35%",
       "basis": "2Y at 4.92% after +11bp; PCE Wed and payrolls Fri can each move the front end 5-10bp; Cook/Barr hawkish tilt.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The 2-year peaked at 4.92% (Sep 28 close) and closed the week at 4.83%.",
+      "graded": "2026-10-03",
+      "lesson": "Fed-speaker patience (Williams) and soft data capped the front end; the long end, not the 2-year, carried the selloff."
     },
     {
       "id": "2026-09-28-pm-2",
@@ -3924,7 +4008,10 @@
       "horizon": "2026-10-02",
       "probability": "15-25%",
       "basis": "VIX 16.07 in contango; two major macro releases and Hormuz talks this week, but no inversion or stress signal yet.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "VIX's highest close was 16.39 (Oct 1).",
+      "graded": "2026-10-03",
+      "lesson": "Low probability was appropriate; equity volatility stayed contained while bonds sold off."
     },
     {
       "id": "2026-09-28-pm-3",
@@ -3934,7 +4021,10 @@
       "horizon": "2026-10-02",
       "probability": "10-20%",
       "basis": "Mediation is separate/indirect only; Trump rejected the 7-day plan; Bloomberg reports Iranian doubt of a deal pre-midterms.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No US-Iran agreement to reopen Hormuz; Trump called Iran's plan 'unacceptable' and Rubio ordered Iran's UN delegation out of New York.",
+      "graded": "2026-10-03",
+      "lesson": "Low probability was appropriate."
     },
     {
       "id": "2026-09-29-am-1",
@@ -3954,7 +4044,10 @@
       "horizon": "2026-10-02",
       "probability": "20-30%",
       "basis": "Par 5.24% Sep 28; soft data and lower oil pulling yields down Sep 29; breakevens flat.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The 10-year's highest close was 5.29% (Sep 30); it touched about 5.34% intraday on Oct 1 but closed 5.24%.",
+      "graded": "2026-10-03",
+      "lesson": "Close-based lines can miss by a basis point; intraday highs do not count."
     },
     {
       "id": "2026-09-29-am-3",
@@ -3974,7 +4067,10 @@
       "horizon": "2026-10-02",
       "probability": "60-70%",
       "basis": "~$104 Sep 29 morning; Hormuz flows ~80% of pre-war; US reply pending; Saudi pipeline restored.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Brent settled above $100 every day through Oct 2.",
+      "graded": "2026-10-03",
+      "lesson": "As above."
     },
     {
       "id": "2026-09-29-am-5",
@@ -3984,7 +4080,10 @@
       "horizon": "2026-09-30",
       "probability": "50-65%",
       "basis": "Book reportedly ~4x covered; market off highs.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Oura postponed its IPO on Sep 29, citing uncertainty in the IPO market, despite reported ~4x demand.",
+      "graded": "2026-10-03",
+      "lesson": "Order-book strength does not guarantee pricing when rates and market tone turn."
     },
     {
       "id": "2026-09-29-pm-1",
@@ -3994,7 +4093,10 @@
       "horizon": "2026-10-02",
       "probability": "35-50%",
       "basis": "Williams 'no urgency' took odds to ~50% (Seeking Alpha); Barr hawkish; PCE and payrolls still to come, core PCE nowcast 0.27% m/m.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "After payrolls, CNBC put October hike odds near 17%, Kalshi about 18%, Reuters below 15%.",
+      "graded": "2026-10-03",
+      "lesson": "Two soft data points in a week moved Fed pricing decisively; the range was too low."
     },
     {
       "id": "2026-09-29-pm-2",
@@ -4004,7 +4106,10 @@
       "horizon": "2026-10-02",
       "probability": "25-35%",
       "basis": "30Y 5.59% close, intraday ~5.61%; long end rising on term premium independent of oil and Fed timing; needs +6bp in 3 sessions.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The 30-year's highest close was 5.64% (Sep 30), one basis point short of 5.65%.",
+      "graded": "2026-10-03",
+      "lesson": "Near miss; the direction was right."
     },
     {
       "id": "2026-09-29-pm-3",
@@ -4014,7 +4119,10 @@
       "horizon": "2026-10-02",
       "probability": "30-40%",
       "basis": "Brent $102.59 after two-day fade on Saudi Red Sea exports and SPR exchange; Iran reply pending and infrastructure threats keep upside risk.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Brent traded near $99.70 on Oct 2 but settled at $102.25; no settlement below $100.",
+      "graded": "2026-10-03",
+      "lesson": "Intraday dips below a line do not translate to settlements in a backwardated, risk-premium market."
     },
     {
       "id": "2026-09-30-am-1",
@@ -4024,7 +4132,10 @@
       "horizon": "2026-09-30",
       "probability": "50-60%",
       "basis": "Cleveland nowcast 0.27%; previews cluster at 0.3%.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Core PCE rose 0.25% in August, about 0.2% rounded.",
+      "graded": "2026-10-03",
+      "lesson": "Cleveland's 0.27% nowcast was the better anchor than previews clustering at 0.3%."
     },
     {
       "id": "2026-09-30-am-2",
@@ -4054,7 +4165,10 @@
       "horizon": "2026-09-30",
       "probability": "65-75%",
       "basis": "Company guide $50B+/-1B; memory pricing strong; consensus ~$50.8-51.2B.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Revenue $54.23B and fiscal Q1 guide $61.5B vs about $57.0B consensus.",
+      "graded": "2026-10-03",
+      "lesson": "As above."
     },
     {
       "id": "2026-09-30-am-5",
@@ -4084,7 +4198,10 @@
       "horizon": "2026-10-02",
       "probability": "55-70%",
       "basis": "Consensus ~90K (Bloomberg), BofA ~60K; claims low argues against.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "September payrolls first print +29,000.",
+      "graded": "2026-10-03",
+      "lesson": "Bank-economist low-end forecasts (BofA ~60K) were closer than consensus."
     },
     {
       "id": "2026-10-01-am-3",
@@ -4094,7 +4211,10 @@
       "horizon": "2026-10-02",
       "probability": "40-55%",
       "basis": "Consensus 3.6%, MUFG tracking 3.8%; DE/FR/IT flashes all beat forecasts.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Euro-area September flash HICP was 3.8% y/y.",
+      "graded": "2026-10-03",
+      "lesson": "National flashes were the best guide."
     },
     {
       "id": "2026-10-02-am-1",
@@ -4104,7 +4224,10 @@
       "horizon": "2026-10-02",
       "probability": "25-40%",
       "basis": "Consensus 4.1%, held two months; claims ~197K; 0.1pt within sampling noise",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Unemployment rose to 4.2%.",
+      "graded": "2026-10-03",
+      "lesson": "Rising participation pushed the rate up; 0.1pt moves are close to coin flips."
     },
     {
       "id": "2026-10-02-am-2",
@@ -4124,7 +4247,10 @@
       "horizon": "2026-10-02",
       "probability": "45-60%",
       "basis": "Estimate range ~422K-482K; GM Q3 EV weakness; consensus near middle of range",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Tesla delivered 486,532 vehicles, about 24,500 above its compiled consensus of 461,974.",
+      "graded": "2026-10-03",
+      "lesson": "Inventory drawdown (deliveries ~22,000 above production) was not anticipated."
     },
     {
       "id": "2026-10-02-pm-1",

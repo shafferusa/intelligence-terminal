@@ -1,6 +1,98 @@
 {
   "stories": [
     {
+      "id": "hormuz-tankers-riyadh-fire-oct3",
+      "status": "New",
+      "headline": "Two crude tankers hit by unidentified projectiles near Hormuz overnight (one Kuwait-flagged Kazimah III); fire near Aramco facility in Riyadh (single Reuters witness + FIRMS)",
+      "one_line": "Unclaimed; UKMTO no casualties vs one outlet 2 injured; OPEC+ Sunday; futures reopen Sun 6 PM",
+      "verification": "Confirmed-multiple (tankers); Single-reliable-source (Riyadh)",
+      "sources": [
+        "UKMTO via Reuters",
+        "Gulf News",
+        "Malay Mail",
+        "ANI"
+      ],
+      "score_rationale": "Weekend lead; first energy attacks after G7 release",
+      "first_seen": "2026-10-03-sat",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
+      "id": "camp-david-iran-yemen-oct2",
+      "status": "New",
+      "headline": "Axios: Vance-chaired Camp David meeting Oct 2 on Iran and Yemen; Trump says war ends 'probably right after the midterms'",
+      "one_line": "Single scoop, anonymous sources; third carrier possible by late Oct",
+      "verification": "Single-reliable-source",
+      "sources": [
+        "Axios",
+        "The Hill",
+        "NewsNation"
+      ],
+      "score_rationale": "Signals post-election timetable",
+      "first_seen": "2026-10-03-sat",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
+      "id": "moldova-russian-munitions-oct3",
+      "status": "New",
+      "headline": "3 missiles + 2 drones land in Moldova during overnight Russian strikes on Ukraine; Kyiv Northern Bridge hit",
+      "one_line": "No casualties in Moldova; Ukraine 6-8 killed (AP vs KI)",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Kyiv Independent",
+        "AP",
+        "Euromaidan Press"
+      ],
+      "score_rationale": "Spillover onto NATO-adjacent state",
+      "first_seen": "2026-10-03-sat",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
+      "id": "saudi-yemen-red-sea-offensive-oct2",
+      "status": "Unconfirmed",
+      "headline": "Reuters (anonymous officials): Saudi Arabia preparing to back Yemeni government ground push to retake Mokha, Dhubab, Perim",
+      "one_line": "Earlier undated Saudi/UAE denial; Bab al-Mandab",
+      "verification": "Single-reliable-source",
+      "sources": [
+        "Reuters via JPost",
+        "Critical Threats"
+      ],
+      "score_rationale": "Second chokepoint",
+      "first_seen": "2026-10-03-sat",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
+      "id": "hy-oas-above-3-week",
+      "status": "Developing",
+      "headline": "ICE BofA HY OAS 2.93% -> 3.24% (Sep 25 -> Oct 1), first >3% this cycle",
+      "one_line": "Open forecast: >=3.25% any day by Oct 9 (35-45%)",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "FRED"
+      ],
+      "score_rationale": "Credit joins rates warning",
+      "first_seen": "2026-09-28-pm",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
+      "id": "treasury-auctions-oct6-8",
+      "status": "Continuing",
+      "headline": "8B 3Y Tue, 9B 10Y Wed, 2B 30Y Thu; FOMC minutes Wed 2 PM",
+      "one_line": "10Y 5.28%, 30Y 5.63% into supply",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "fiscaldata.treasury.gov"
+      ],
+      "score_rationale": "Main risk for the long end",
+      "first_seen": "2026-10-02-pm",
+      "last_updated": "2026-10-03-sat",
+      "watch": true
+    },
+    {
       "id": "sept-payrolls-oct2",
       "status": "Resolved",
       "headline": "Sept payrolls +29K; Jul -10K, Aug +133K (-60K revisions); UR 4.2%; AHE +0.1% m/m, 3.0% y/y",
@@ -15,7 +107,7 @@
       "score_rationale": "Lead: weakest hiring trend of cycle, one meeting after a hike",
       "first_seen": "2026-10-02-am",
       "last_updated": "2026-10-02-pm",
-      "watch": true
+      "watch": false
     },
     {
       "id": "long-end-up-on-weak-jobs-oct2",
