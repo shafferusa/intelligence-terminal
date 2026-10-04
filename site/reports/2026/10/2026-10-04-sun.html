@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title>Week Ahead — Week of Oct 5, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-04",
+    "slot": "sun",
+    "title": "Week Ahead — Week of Oct 5, 2026",
+    "path": "reports/2026/10/2026-10-04-sun.html",
+    "summary": "Another tanker was hit in Hormuz and OPEC+ held output as markets head into a week of $119 billion in 3-, 10- and 30-year Treasury auctions, the Fed's September minutes and PepsiCo and Delta earnings, with the 10-year at 5.28% and junk spreads above 3%.",
+    "headlines": [
+      "Third tanker in two days hit in Hormuz; Houthis claim Aramco strike; OPEC+ holds output",
+      "$119B of 3-, 10- and 30-year auctions Tue–Thu with the 10-year at 5.28%",
+      "Fed minutes Wed, PepsiCo Thu, Delta Fri; Brazil votes today"
+    ],
+    "reading_minutes": 43,
+    "generated_at": "2026-10-04T10:25:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sun">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Week Ahead</p>
+      <h1>A Third Tanker Is Hit as Oil Reopens Tonight, and $119 Billion of Treasury Supply Tests a Bond Market at 2002 Highs</h1>
+      <p class="paper-dateline">
+        Sunday, October 4, 2026 <span class="sep">·</span> 43 min read
+      </p>
+      <p class="paper-standfirst">
+        UKMTO reported another tanker struck in the Strait of Hormuz on Sunday, its third in about two days, while OPEC+ left its output targets unchanged and Brazil voted. Markets reopen into a week built around $119 billion of 3-, 10- and 30-year Treasury auctions, the Fed’s September minutes and the first airline and consumer earnings of the season, with the 10-year at 5.28% and junk spreads above 3%.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>Markets.</b> The week turns on whether the long end of the bond market can find buyers. Treasury sells $58 billion of 3-year notes Tuesday, $39 billion of 10-year notes Wednesday and $22 billion of 30-year bonds Thursday. The 10-year ended last week at 5.28% and the 30-year at 5.63%, both up on a week of soft data. High-yield spreads are at 3.24%, the first readings above 3% this cycle. The S&amp;P 500 closed Friday at 7,722.72, about 1% below its record.</li>
+          <li><b>The Fed.</b> After Friday’s 29,000-job payroll report, futures put an October 28 hike at roughly 15–18%, with a December hike still priced as more likely than not. Wednesday’s 2 PM minutes of the September meeting will show how many officials wanted more than the one further hike the median projected.</li>
+          <li><b>Oil and the Gulf.</b> UKMTO said a tanker was hit by an unknown projectile in the Strait of Hormuz on Sunday, damaging its engine room; the crew is safe. That follows Saturday’s strikes. The Houthis claim they hit Aramco in Riyadh with missiles and drones; the Saudi-led coalition calls the claim misleading. OPEC+ kept November targets unchanged. Oil futures reopen at 6 PM ET tonight, Brent from $102.25.</li>
+          <li><b>Abroad.</b> Brazil votes today, with final polls showing Lula and Flávio Bolsonaro within about three points and an Oct. 25 runoff likely. Latvia’s ruling United List won about 35% and 42 of 100 seats in preliminary results. Bosnia votes today. Japan’s parliament opens Monday under Prime Minister Takaichi.</li>
+          <li><b>Washington.</b> The Supreme Court’s new term opens Monday with the Boulder climate-liability case. The White House press-access case has its injunction hearing Thursday, the day the restraining order expires. Congress is out until after the election.</li>
+          <li><b>Local.</b> The Duquesne Light strike enters its first full week with no settlement reported, under a dry, sunny forecast. Harrisburg is in session Monday through Wednesday, the last scheduled days before skill-game enforcement starts Oct. 13. Shapiro and Garrity debate Wednesday at 8 PM.</li>
+          <li><b>Biggest unknown.</b> Who buys the long end at these yields. Last week soft data pulled down October hike odds by about 50 points, and the 10-year still rose 11 basis points.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-news">
+      <h2 id="s-news">Today’s News</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Another tanker is hit in the Strait of Hormuz, and the Houthis claim a strike on Aramco in Riyadh</h3>
+          <p class="story-deck">Sunday’s strike damaged a tanker’s engine room. It is the latest in a run that maritime outlets put at six ships in a week. Oil markets get their first chance to react at 6 PM tonight.</p>
+          <div class="story-body">
+            <p>Britain’s UK Maritime Trade Operations centre said on Sunday that a tanker in the Strait of Hormuz was struck by an unknown projectile that damaged its engine room. The crew is safe and no pollution was reported. UKMTO did not name the ship, its flag or where the projectile came from. CNBC, L’Orient Today and Arab Times all relayed the advisory. Early Saturday UKMTO had reported a crude tanker hit about four nautical miles east of Oman, and Maritime Executive and gCaptain report another tanker struck late Friday that briefly lost power. By Maritime Executive’s count that is six ships hit in a week. Nobody has claimed any of them.</p>
+            <p>The fire reported near an Aramco facility in Riyadh on Saturday now has a claimant. Houthi military spokesman Yahya Saree said the group carried out a “military operation with ballistic missiles and drones” against Aramco in Riyadh that “led to fires breaking out.” Saudi authorities have not reported an attack and Aramco has not explained the fire. The Saudi-led coalition’s spokesman, Turki al-Maliki, called claims of targeting Riyadh “misleading.” Around Taiz in Yemen, the Houthis attacked along a front of about 15 kilometres, and the coalition says it answered with 97 strikes. That figure is the coalition’s own.</p>
+            <p>Tehran’s line has not moved. Parliament Speaker Mohammad Bagher Ghalibaf said Hormuz will not reopen until Iran’s conditions are met: an end to US “acts of aggression,” to the naval blockade and to economic pressure, and the release of Iranian assets. Trump said Friday the war would end “probably right after the midterms.”</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Brent held above $100 every day last week even as the G7 agreed a 100-million-barrel release, because traders were pricing a strait that stays shut. A steady run of strikes on tankers, plus a claimed attack on Saudi Arabia’s capital, is the risk that kept that floor in place. Oil is also the one inflation input the Fed’s hawks keep citing.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              The Sunday-evening futures open; any UKMTO follow-up naming the ship; a Saudi statement on the Riyadh fire; whether Saudi-backed forces start the Red Sea coast offensive Reuters reported on Friday, which officials said could come “in the coming weeks.”
+            </div>
+          </div>
+          <p class="story-sourceline">UKMTO advisories via CNBC, L’Orient Today and Arab Times · Maritime Executive and gCaptain (Friday strike, weekly count) · Al Jazeera and wire reports via Investing.com (Houthi claim, coalition response) · CNBC (Ghalibaf).</p>
+        </article>
+
+        <article class="story">
+          <h3>OPEC+ leaves November output targets unchanged</h3>
+          <p class="story-deck">The decision changes little on the ground: Gulf members are already producing well below their targets because the war has cut their exports.</p>
+          <div class="story-body">
+            <p>The core group of OPEC+ producers held a short online meeting on Sunday and kept November production targets where they were, according to Reuters, The National and Gulf News. The reports list seven members in the group (Saudi Arabia, Russia, Iraq, Kuwait, Algeria, Kazakhstan and Oman), not the eight usually cited. No statement had appeared on OPEC’s own site by this edition. The next meeting, on December levels, is Nov. 1. With Hormuz closed to normal traffic, quotas are not what limits Gulf supply. The decision mainly tells the market that producers outside the war zone are not stepping in with extra barrels.</p>
+          </div>
+          <p class="story-sourceline">Reuters via Investing.com · The National · Gulf News · Moscow Times.</p>
+        </article>
+
+        <article class="story">
+          <h3>Brazil votes in a close first round between Lula and Flávio Bolsonaro</h3>
+          <p class="story-deck">The final polls put the two within about three points. If no one wins half the valid votes, a runoff is held Oct. 25.</p>
+          <div class="story-body">
+            <p>Polls are open from 8 AM to 5 PM Brasília time, 7 AM to 4 PM Eastern. The electoral court releases results only once voting has closed nationwide, and the electronic count usually gives a clear picture within a few hours. Datafolha’s final survey, published Saturday (4,006 interviews, margin of error ±2 points), had President Luiz Inácio Lula da Silva at 45% of valid votes and Senator Flávio Bolsonaro at 42%, and a runoff at 47–46. Quaest (Oct. 2–3, 3,702 interviews, ±2) had 46–45 in the first round and Bolsonaro ahead 44–42 in a runoff. These are polls, not predictions, and both runoff numbers are within the margin of error. Governors and Congress are also on the ballot.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The real and Brazilian stocks (EWZ) will trade the result Monday. A close runoff means three more weeks of uncertainty over fiscal policy in Latin America’s largest economy.
+            </div>
+          </div>
+          <p class="story-sourceline">Datafolha and Quaest (pollsters’ releases, as reported by Rio Times, Newsweek and Al Jazeera) · Brazil’s Superior Electoral Court (voting hours).</p>
+        </article>
+
+        <article class="story">
+          <h3>Latvia’s governing party wins its biggest result since independence; Bosnia votes today</h3>
+          <p class="story-deck">Prime Minister Andris Kulbergs’ United List took about 35% and 42 of 100 seats in preliminary results. Populist parties also gained.</p>
+          <div class="story-body">
+            <p>Preliminary results from Latvia’s Central Election Commission give United List 35.44%. Latvia First has 13.22%, Sovereign Power 11.73%, the National Alliance 9.09%, the Progressives 7.24% and New Unity 6.18%. Turnout was about 52%. Official results are due by Oct. 19. Kulbergs is on course to lead a pro-Ukraine coalition, though some of his likely partners did poorly, France 24 reports.</p>
+            <p>Bosnia and Herzegovina holds general elections today for 518 posts, including the three-member state presidency and the president of Republika Srpska. The international election observer mission from the OSCE, about 300 short-term observers led by Tana de Zulueta, describes a “highly polarised environment marked by increasing challenges to the constitutional order.” Preliminary results are expected tonight.</p>
+          </div>
+          <p class="story-sourceline">Latvia Central Election Commission via Xinhua and France 24 · OSCE/ODIHR (Bosnia) · N1.</p>
+        </article>
+
+        <article class="story">
+          <h3>Moldova protests to Moscow after Russian missiles and drones land on its territory</h3>
+          <p class="story-deck">Russia’s strikes on Kyiv’s bridges continue: five of the city’s six bridges are now closed.</p>
+          <div class="story-body">
+            <p>President Maia Sandu said five Russian aerial targets, including missiles and drones, “violated our airspace and exploded on our land,” and that “Moscow is putting lives across Europe at risk and must be stopped.” Debris was found in four districts and no one was hurt. Moldova’s foreign ministry summoned Russia’s chargé d’affaires with a protest note. In Ukraine, a Shahed drone struck Kyiv’s Northern Bridge on Saturday morning, injuring two people, a day after the Southern Bridge was hit. At least six people were killed across Ukraine on Saturday, the AP reports; other counts run higher. No new diplomacy was announced over the weekend.</p>
+          </div>
+          <p class="story-sourceline">Moldovan presidency and foreign ministry (via Kyiv Independent, Euromaidan Press) · President Zelensky’s statements · AP.</p>
+        </article>
+
+        <article class="story">
+          <h3>Bitcoin edges up in the weekend’s only open market</h3>
+          <p class="story-deck">Bitcoin is near $85,100. There was no notable crypto news over the weekend.</p>
+          <div class="story-body">
+            <p>At 9:11 AM ET, CoinGecko showed bitcoin at $85,135, up 0.3% over 24 hours. Ether was at $2,696 (+0.5%) and solana at $121.33 (+1.5%). Total crypto market value was about $2.91 trillion, down 2.2% over the day, and bitcoin’s share about 58.6%. Weekend crypto has not given a useful read on the Gulf news so far. It has traded with real yields and the dollar.</p>
+          </div>
+          <p class="story-sourceline">CoinGecko API (live, 9:11 AM ET).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-themes">
+      <h2 id="s-themes">Top Themes</h2>
+      <div class="story-body">
+        <p><b>1. The auctions are the week’s real data.</b> Last week showed that the long end is not trading on the Fed. Hike odds for October fell by about 50 points, and the 10-year still rose 11 basis points and the 30-year 14. What the market is pricing is term premium: the extra yield investors want for lending long when supply is heavy, deficits are large and inflation runs near 3% with oil above $100. This week supply arrives in one block. The 10-year reopening on Wednesday sells at 1 PM, an hour before the Fed minutes, and the 30-year follows on Thursday. Two of September’s note auctions were weak. Another soft result would be the most direct route to new highs in yields, and good demand would be the first sign that buyers have a price.</p>
+        <p><b>2. Oil’s floor against more strikes.</b> The weekend added at least one tanker strike and a Houthi claim against Aramco in Riyadh, and OPEC+ added no barrels. Brent finished last week at $102.25 and held above $100 every day even with a G7 release under way. Tonight’s open shows whether the weekend lifts it. Oil feeds the inflation argument for more Fed hikes, and Delta reports on Friday with jet fuel as its biggest variable cost.</p>
+        <p><b>3. Minutes written before the jobs miss.</b> The September minutes (Wednesday, 2 PM) describe a meeting that hiked 12–0 into a hot economy, two weeks before payrolls came in at 29,000. Previews expect them to read hawkish, but markets will read them as old news unless they show broad support for more than one further hike. The only Board policy speech of the week is Governor Waller’s, in Istanbul early Thursday.</p>
+        <p><b>4. Credit is the market to watch for stocks.</b> High-yield spreads rose 31 basis points in four sessions to 3.24% while the S&amp;P 500 fell 0.3%. Paramount’s takeover of Warner Bros. Discovery is due to close Tuesday, funded by about $41 billion of new debt. Next week the big banks begin third-quarter earnings, which FactSet’s tally expects to show S&amp;P 500 profit growth near 29%. Stocks are calm because of chips. Credit has stopped being calm.</p>
+        <p><b>5. A quieter week in Washington, a busier one abroad.</b> Congress is gone until November and the Supreme Court’s first cases are not market events. Brazil’s result, Japan’s Diet and its tax cut, France’s budget and the UK’s gilt market are where policy can move prices this week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-week">
+      <h2 id="s-week">The Week Day by Day</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. There is no NYSE holiday or early close this week. Monday, Oct. 12 (Columbus Day) is a bond-market holiday; stocks trade. China’s mainland exchanges reopen Thursday after Golden Week.</caption>
+          <thead>
+            <tr><th>Day</th><th>What’s scheduled</th><th>Sensitivity</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sun 10/4</td><td class="txt">Futures reopen 6:00 PM, the first pricing of the weekend’s tanker strikes and the OPEC+ hold · Brazil and Bosnia results tonight</td><td>Oil-sensitive</td></tr>
+            <tr><td>Mon 10/5</td><td class="txt"><strong>ISM services (Sept)</strong>, 10:00 (Aug: 55.4; prices 72.6) · S&amp;P final services PMI · Bills: 13-week $95B, 26-week $82B · <strong>Nobel medicine</strong>, 5:30 AM · Supreme Court opens: <i>Suncor v. Boulder</i> · NYC Council AI hearing · IAC opens in Antalya · Japan’s Diet convenes · Trump rally, Grand Island, Neb. · PA House and Senate in session (through Wed)</td><td>Medium</td></tr>
+            <tr><td>Tue 10/6</td><td class="txt"><strong>Trade balance (Aug)</strong>, 8:30 (Jul: −$88.6B) · <strong>3-year note auction, $58B</strong>, 1:00 · Bowman on bank regulation, 10:45 · EIA Short-Term Energy Outlook · Atlanta Fed GDPNow · <strong>RPM</strong> before the open · <strong>Constellation Brands</strong> after the close · <strong>Paramount–Warner Bros. Discovery expected to close</strong> · Nobel physics · Ohio early voting opens · Nuri launch, 11:23 PM</td><td>Medium</td></tr>
+            <tr><td>Wed 10/7</td><td class="txt"><strong>10-year note auction, $39B</strong>, 1:00 · <strong>FOMC minutes (Sept)</strong>, 2:00 · Consumer credit, 3:00 · EIA oil inventories, 10:30 · Treasury buyback (reported) · <strong>RBI decision</strong> (hike to 5.50% expected by a majority in one poll) · <strong>Levi Strauss</strong> and Applied Digital after the close · Nobel chemistry · <strong>Shapiro–Garrity debate</strong>, 8:00 PM</td><td>High</td></tr>
+            <tr><td>Thu 10/8</td><td class="txt">Waller, “Economic Outlook,” Istanbul, 4:30 AM · Jobless claims, 8:30 (prior 197K) · Wholesale inventories, 10:00 · <strong>30-year bond auction, $22B</strong>, 1:00 · ECB account of the September meeting · <strong>PepsiCo</strong>, Helen of Troy, Tilray before the open · China markets reopen · <strong>Press-access injunction hearing</strong>, 11:00 · Michigan Senate debate · Nobel literature</td><td>High</td></tr>
+            <tr><td>Fri 10/9</td><td class="txt"><strong>Michigan sentiment, preliminary October</strong>, 10:00 (Sept: 48.1; 1-year inflation expectations 4.6%) · <strong>Delta</strong> before the open · Canada jobs · <strong>SpaceX lockup expiry</strong> · <strong>Nobel peace</strong> · Czech elections begin · Draconid meteors peak overnight</td><td>Medium–High</td></tr>
+            <tr><td>Sat–Sun 10/10–11</td><td class="txt">Taiwan National Day speech · North Korea party anniversary · Gaza ceasefire anniversary · Slovenia referendums (Sun) · Steelers host Colts (Sun)</td><td>Low</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Release times from the Census economic-indicator calendar, the Federal Reserve Board’s October calendar and TreasuryDirect (primary). The ISM and Michigan dates follow their standard schedules; the Michigan date could not be checked against the university’s site. Earnings dates are from company announcements where available, otherwise from the Finnhub and Alpha Vantage calendars. Consensus figures are estimates from secondary aggregators.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy Ahead</h2>
+      <div class="story-body">
+        <p><b>Where we start.</b> The economy is still producing but has nearly stopped hiring:</p>
+        <ul>
+          <li>Payrolls rose 29,000 in September. July was revised to a loss, and the three-month average is about 51,000.</li>
+          <li>Unemployment is 4.2%, and hourly pay is up 3.0% on the year.</li>
+          <li>Core PCE inflation is 3.0% after last week’s annual revision.</li>
+          <li>Second-quarter growth was revised up to 2.2%.</li>
+          <li>Jobless claims are near 197,000, close to their lows.</li>
+        </ul>
+        <p>Factory price pressure is rising. ISM’s prices-paid index jumped to 77.9 in September on energy costs. The Fed’s target range is 3.75–4.00%. CME FedWatch put an Oct. 28 hike at 17% on Friday, down from 36% a week earlier, and Kalshi at 18%. A hike by December is still priced as more likely than not. No official has argued for a cut. The debate is when, and whether by 25 or 50 basis points: Dallas Fed President Logan wants 50 or more.</p>
+
+        <p><b>ISM services, Monday 10:00.</b> August stood at 55.4. In its details, business activity was 61.7, new orders 60.9, prices 72.6 and employment 47.8, below 50. Consensus is in conflict: one aggregator has 55.1, another 54.5. The S&amp;P flash services index for September was at a 59-month high. <i>What a surprise would mean:</i> the prices and employment components matter more than the headline. A prices index near 75 would confirm that energy is spreading into services, the worry Vice Chair Jefferson raised. Employment below 47 would match the payroll miss. Both together would be a stagflation reading, the mix the long end has been trading.</p>
+
+        <p><b>The FOMC minutes, Wednesday 2:00.</b> The minutes cover the Sept. 15–16 meeting, which raised rates 12–0 and projected at least one more hike this year. What to look for:</p>
+        <ul>
+          <li>How many participants wanted more than one further hike.</li>
+          <li>Whether any argued for 50 basis points.</li>
+          <li>How much of the discussion was about the long end, term premium and Treasury supply rather than the policy rate.</li>
+        </ul>
+        <p>The meeting came before the jobs miss, so a hawkish tone is largely expected. It lands an hour after the 10-year auction, which makes Wednesday afternoon the week’s main risk window for rates.</p>
+
+        <p><b>The rest of the data.</b></p>
+        <ul>
+          <li><b>Trade balance (August), Tuesday 8:30.</b> July’s gap was $88.6 billion, the widest since March 2025. The Census calendar confirms the date; no consensus was found.</li>
+          <li><b>Consumer credit (August), Wednesday 3:00.</b> July rose at a 4.2% annual rate. It matters this year because August spending outran income growth by a wide margin and the saving rate is 4.1%.</li>
+          <li><b>Jobless claims, Thursday 8:30.</b> The prior week was 197,000. After the payroll miss, a move above about 215,000 would be the first sign that layoffs, not just slow hiring, are building.</li>
+          <li><b>Michigan sentiment, Friday 10:00.</b> September’s final reading was 48.1, and one-year inflation expectations jumped to 4.6% from 4.0%. Expectations are the number the Fed watches: a fresh rise with gasoline near current levels would cut against Friday’s dovish repricing.</li>
+        </ul>
+        <p>September CPI is Oct. 14 and PPI Oct. 15, the week after next. The Beige Book is also Oct. 14.</p>
+
+        <p><b>The Fed’s calendar.</b> The Board’s published schedule is thin:</p>
+        <ul>
+          <li><b>Bowman (Tuesday 10:45, St. Louis).</b> Bank regulation and supervision, not policy.</li>
+          <li><b>Waller (Thursday 4:30 AM, Istanbul).</b> “Economic Outlook,” the week’s only Board policy speech. He was among the earliest to back September’s hike.</li>
+        </ul>
+        <p>Chair Warsh has no listed appearance. Regional presidents’ schedules could not be verified. Last week Williams said there was “no need for urgency” and Kashkari said more hikes were needed but October was uncertain.</p>
+
+        <p><b>Treasury.</b> All three coupon auctions are confirmed on TreasuryDirect, and they settle Oct. 15:</p>
+        <ul>
+          <li><b>Tuesday:</b> $58 billion of 3-year notes</li>
+          <li><b>Wednesday:</b> $39 billion of 10-year notes (a reopening)</li>
+          <li><b>Thursday:</b> $22 billion of 30-year bonds (a reopening)</li>
+        </ul>
+        <p>These are the usual smaller reopening sizes, not cuts. The August new issues were $42 billion and $25 billion. One calendar lists a Treasury buyback on Wednesday; its size was not verified. Secretary Bessent has doubled long-end buybacks since August, but they have not stopped long yields rising. Bills total $177 billion on Monday and Tuesday. The things to read in each auction are the “tail,” whether the auction cleared above the yield traded just before it, and the share taken by indirect bidders, the usual proxy for foreign demand.</p>
+
+        <p><b>Abroad.</b></p>
+        <ul>
+          <li><b>India (Wednesday).</b> The Reserve Bank of India decides with its repo rate at 5.25%. In one newswire poll, 35 of 61 economists expect a 25-basis-point hike, though other previews expect a hold.</li>
+          <li><b>Euro area (Thursday).</b> The ECB publishes its account of September’s unanimous hike. September flash inflation was 3.8%; the next decision is Oct. 29.</li>
+          <li><b>Poland.</b> The central bank is expected to hold, on Wednesday or Thursday; sources differ on the date.</li>
+          <li><b>Canada (Friday).</b> September jobs, with consensus around +9,500 and unemployment at 6.5%.</li>
+          <li><b>China.</b> Markets reopen Thursday after Golden Week, and holiday-spending figures will follow.</li>
+          <li><b>Japan.</b> The Bank of Japan is expected to hike Oct. 30; the 30-year JGB near 4.2% makes Takaichi’s tax-cut financing the issue (The World Ahead).</li>
+        </ul>
+        <p>Not this week: New Zealand’s central bank (Oct. 28) and Britain’s August GDP (expected Oct. 15).</p>
+        <p>The common thread is the one from last week. Energy-driven inflation is pushing central banks outside the US toward hikes while long-bond yields rise everywhere.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-earnings">
+      <h2 id="s-earnings">Earnings &amp; Business</h2>
+      <div class="story-body">
+        <p><b>The season’s first real test is next week.</b> FactSet’s Oct. 2 tally has third-quarter S&amp;P 500 earnings growth estimated at about 29.5%, which would be a third straight quarter above 25%. Those figures come from a summary of FactSet’s report, not the report itself. The big banks start Oct. 13. This week is thin, but its reporters are all exposed to the two pressures of the moment: energy costs and a consumer whose income growth has slowed.</p>
+        <p><b>PepsiCo (Thursday, before the open).</b> Consensus is about $2.30 a share, against $2.29 a year ago, on revenue near $25 billion (MarketBeat and TradingView). The stock is down about 10% this year at $125.89. Evercore cut its target to $135, saying the quarter “looks fine” but next year’s margin targets may be too high. Watch volumes against price increases in North American snacks, and whether tariffs and energy costs force a guidance change.</p>
+        <p><b>Delta (Friday, before the open).</b> Consensus is about $2.00–2.02 a share. That is at the bottom of Delta’s own guidance of $2.00–2.50, set in July when it assumed jet fuel near $3.15 a gallon, before Brent rose above $100. Delta said it recovered about 60% of higher fuel costs through fares in the second quarter and expected close to 100% in the third. The fourth-quarter guide is the number that matters: it is the first full airline outlook priced with the strait closed. Delta closed Friday at $84.09.</p>
+        <p><b>The rest of the calendar.</b></p>
+        <ul>
+          <li><b>Constellation Brands</b> (Tuesday after the close): about $3.57–3.60 on $2.54–2.57 billion. The questions are beer demand among Hispanic consumers and the first moves under its new CEO, Nicholas Fink.</li>
+          <li><b>RPM International</b> (Tuesday before the open): about $1.95–1.97. The paint and coatings maker warned that raw-material costs tied to oil would hit hardest early in its fiscal year.</li>
+          <li><b>Levi Strauss</b> (Wednesday after the close): about $0.36 on $1.62–1.65 billion, a read on tariffs and apparel demand after Nike’s guidance cut.</li>
+          <li><b>Helen of Troy</b> and <b>Tilray</b> (Thursday before the open).</li>
+          <li><b>Applied Digital</b> (Wednesday after the close): a small AI data-center read.</li>
+        </ul>
+        <p>McCormick, listed for Monday in Saturday’s edition, already reported, on Oct. 1.</p>
+
+        <p><b>Deals.</b></p>
+        <ul>
+          <li><b>Paramount Skydance–Warner Bros. Discovery.</b> Expected to close Tuesday, per Warner’s investor-relations release. The roughly $110 billion deal gives Warner holders $31 a share in cash plus a daily ticking fee from Sept. 30. Twelve state attorneys general settled, clearing the way. The combined company will be called Skydance. About $41 billion of new secured debt funds it, the largest piece of the supply that pushed high-yield spreads above 3%.</li>
+          <li><b>Mattel.</b> The reported approach by Authentic Brands at more than $20 a share remains unconfirmed by either company.</li>
+          <li><b>IPOs.</b> The new-issue window narrowed last week, when Oura, Holtec and Bamboo Insurance postponed; this paper found no large pricing set for this week. Anthropic still has no public S-1 (AI &amp; Technology Ahead).</li>
+        </ul>
+
+        <p><b>Credit and the Treasury calendar.</b> The high-yield spread’s last reading is 3.24% (Oct. 1). Friday’s figure is published Monday. HYG closed Friday 52 cents above its 52-week low. With the IPO window narrowing and Paramount’s paper still being absorbed, a steady week would be welcome news for credit. The week’s Treasury supply is detailed in The Economy Ahead.</p>
+
+        <p><b>Oil.</b> OPEC+ held its targets. Its 1.65 million-barrel-a-day voluntary cut was fully unwound in September, and the 2 million barrels a day of 2022 cuts stay in place through the year. The Energy Information Administration’s Short-Term Energy Outlook and Winter Fuels Outlook come Tuesday, its first official look at a winter with Hormuz closed. The IEA’s monthly report is Oct. 14.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Market Setup</h2>
+      <div class="story-body">
+        <p><b>Indices.</b> The S&amp;P 500 closed Friday at 7,722.72, about 1.2% below its August record. The Nasdaq Composite set an intraday record on Friday. The rally is still narrow:</p>
+        <ul>
+          <li>The equal-weight S&amp;P (RSP) fell 0.65% last week, against −0.22% for SPY.</li>
+          <li>Breadth was negative on three of five days.</li>
+          <li>In the third quarter the S&amp;P rose 2.0% while the Russell 2000 fell 7.5%.</li>
+        </ul>
+        <p>Stocks went through last week’s rates and credit moves almost untouched. That shows resilience, but it also means the cushion is a handful of chip stocks. The VIX is 15.31 with nine-day volatility at 12.06, well below the 30-day. Options are not pricing the auctions or the minutes as events.</p>
+        <p><b>Sectors.</b> Semiconductors (SMH +4.0%) and technology led last week. Health care, financials and communication services fell 2.3–2.7%. The banks fell even as the curve steepened, which normally helps them, and that coincided with wider credit spreads. If the auctions go badly, rate-sensitive sectors take the hit first: real estate, utilities, homebuilders and small caps. If they go well, those laggards have the most room to rebound. Energy (XLE +1.3% last week) depends on tonight’s oil open. Airlines go into Delta with fuel as the swing factor.</p>
+        <p><b>Company catalysts.</b></p>
+        <ul>
+          <li><b>Paramount/Warner closing (Tuesday):</b> Warner’s shares at $30.94 trade just under the $31 cash price.</li>
+          <li><b>PepsiCo (Thursday)</b> for staples, and <b>Delta (Friday)</b> for airlines and fuel.</li>
+          <li><b>SpaceX (SPCX):</b> $158.96 after Friday’s 7.4% gain. A lockup release on Friday frees more pre-IPO shares.</li>
+          <li><b>Fair Isaac:</b> down 23% last week. HousingWire reports, from a single source, that a change to the credit-bureau rules could come at the Mortgage Bankers Association conference on Oct. 12.</li>
+          <li><b>Brazil’s result</b> for EWZ and the real on Monday.</li>
+        </ul>
+        <p><b>Rates and the dollar.</b> The 2s10s curve is at +45 basis points after another week of bear steepening (long rates rising faster than short ones). The 10-year real yield is 2.88% and the breakeven 2.36%, so the rise has been in real rates, not inflation expectations. The dollar index is at 101.93, its highest since April 2025, up 0.95% last week. The Mexican peso fell 3.6% and the Australian dollar 1.3%. USD/JPY is 157.8, near the 158–160 zone where Tokyo has stepped in before.</p>
+
+        <p><b>This paper’s calls for the week</b> (probability ranges, graded next Saturday). The lesson from last week is built in: the long end is treated as moving on supply and term premium, not just on the data.</p>
+        <ul>
+          <li>The 10-year Treasury yield closes Friday, Oct. 9, above 5.20%: <b>60–70%</b>. It is at 5.28% after rising through a soft jobs report, with $61 billion of long-dated supply to come. A strong auction and a soft claims number are the main ways it falls through.</li>
+          <li>The 30-year yield closes at or above 5.70% on at least one day this week: <b>25–35%</b>. It peaked at 5.64% last Wednesday, and Thursday’s 30-year auction is the trigger.</li>
+          <li>Wednesday’s 10-year auction “tails,” with the high yield above the yield traded just before 1 PM, as reported by wire coverage: <b>45–60%</b>. Two weak note auctions in September, but a reopening at a 2002-high yield may draw buyers.</li>
+          <li>High-yield spreads (FRED BAMLH0A0HYM2) reach 3.30% or more on any reading published through Friday: <b>40–55%</b>. The spread rose 31 basis points in four sessions, but Friday’s stock rally may have slowed it.</li>
+          <li>Brent settles above $100 on all five days this week: <b>50–60%</b>. It did so all last week, and the weekend brought more strikes and no OPEC+ help. Against that, the G7 release is starting and US crude is $91.</li>
+          <li>Brent settles above $108 at least once this week: <b>15–25%</b>. That would need a strike on Gulf infrastructure that is confirmed, not just claimed.</li>
+          <li>The S&amp;P 500 closes Friday above 7,722.72, last Friday’s close: <b>50–60%</b>. Momentum in chips and lower hike odds are on one side; rates and credit stress are on the other.</li>
+          <li>CME FedWatch odds of an October hike, as reported on Friday, Oct. 9, are above 30%: <b>15–25%</b>. That would need hawkish minutes plus hot inflation expectations.</li>
+          <li>PepsiCo beats the consensus EPS of about $2.30: <b>65–75%</b>, in line with its long beat record and a guarded consensus. Delta beats its consensus of about $2.00–2.02: <b>55–65%</b>; the consensus sits at the bottom of the company’s range, but fuel is well above its July assumption.</li>
+          <li>The RBI raises its repo rate on Wednesday: <b>45–60%</b>, given a poll majority for a hike against other previews of a hold.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risk Register</h2>
+      <div class="story-body">
+        <p><b>A failed long-end auction.</b> Probability 25–35% that the 10-year closes the week at or above 5.35%, a new closing high. The basis: soft foreign demand at two September auctions, a 30-year at a 24-year high, and last week’s evidence that soft data does not pull long yields down. Impact: high, for mortgage rates, rate-sensitive stocks, credit and the yen. Horizon: Tuesday to Thursday. Triggers: a 10- or 30-year tail of two basis points or more, or indirect bidders at a multi-year low. Early indicators: Tuesday’s 3-year result, gilts and JGBs overnight. Affected markets: TLT, XLRE, XLU, ITB, IWM, HYG, USD/JPY. Mitigants: yields at 2002 highs draw buyers who price value; the Treasury buyback; softer data.</p>
+        <p><b>A confirmed strike on Gulf energy infrastructure.</b> Probability 15–25% this week of a strike confirmed by a Gulf government on a refinery, terminal or pipeline. The basis: the Houthis claim one in Riyadh already, a Saudi offensive on the Red Sea coast is reported to be coming, and tankers are being hit almost daily. Impact: high, through oil and inflation expectations. Early indicators: Saudi statements, NASA fire data, UKMTO advisories. Affected markets: Brent, XLE, airlines (Delta reports Friday), breakevens, the dollar. Mitigants: the Saudi East-West pipeline, strategic stocks and the G7 release.</p>
+        <p><b>Credit spreads keep widening.</b> Probability 40–55% (see the calls above) that high yield reaches 3.30%. Impact: medium-high. A move toward 3.5% would put stock valuations under pressure through refinancing costs. Trigger: a weak 30-year auction, a big new deal financing or a high-profile default. Affected markets: HYG, JNK, BKLN, KRE, small caps. Mitigants: the Paramount debt is now placed, the IPO window is quiet so there is less supply, and fund outflows have been modest.</p>
+        <p><b>A hawkish surprise in the minutes.</b> Probability 20–30% that the minutes describe several participants favouring 50 basis points or more of further tightening. The basis: Logan’s public call for 50, a 12–0 hike, and a meeting held before the jobs miss. Impact: medium, mostly on the front end, which has priced October out. Affected markets: the 2-year, the dollar, financials.</p>
+        <p><b>A US strike on Iran before the election.</b> Probability 3–8% this week. Trump has said on the record that the war ends “probably right after the midterms,” and the carrier buildup runs to late October or November. Impact: very high. Trigger: an attack that kills US forces. Early indicators: a war-powers notice, bomber movements.</p>
+        <p><b>Duquesne Light outages during the strike.</b> Probability 20–35% that the strike ends in a tentative agreement by Friday. The forecast is dry all week, which lowers the stakes of a long walkout this week. Impact for the reader: slower restoration if a storm comes.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scenarios">
+      <h2 id="s-scenarios">Scenarios</h2>
+      <div class="story-body">
+        <p><b>Base case, about 45–55%: heavy supply clears at a price.</b> The auctions clear with small tails or none, at yields near current levels. The 10-year holds roughly between 5.18% and 5.35%. The minutes read hawkish but are taken as dated. Oil chops around $100–106 on Brent, with strikes continuing but no infrastructure hit confirmed. The S&amp;P stays within 2% of its record, led by chips. October hike odds stay below 25%. <i>Indicators:</i> ISM prices near 70–75 and claims near 200,000. <i>Confirmers:</i> the high-yield spread between 3.15% and 3.35%, and the VIX below 18. <i>Invalidators:</i> an auction tail of two basis points or more, or Brent above $108.</p>
+        <p><b>Bull case, about 15–20%: the buyers show up.</b> Strong 10- and 30-year auctions show that real yields near 2.9% have drawn investors back. Long yields fall 10–20 basis points, the curve flattens and high yield tightens below 3.1%. Small caps, real estate and banks rebound, and the dollar eases. Delta’s guidance shows fuel costs are being passed on. <i>Confirmers:</i> the 10-year below 5.15%, RSP outperforming SPY, and indirect bidders above 70% at the 10-year. <i>Invalidators:</i> a new Gulf infrastructure strike.</p>
+        <p><b>Bear case, about 25–30%: the long end breaks higher.</b> A weak 10- or 30-year auction pushes the 10-year to new highs above 5.35% and the 30-year toward 5.75%. Gilts and JGBs sell off with it. High-yield spreads widen to 3.35% or more, the dollar rises further and USD/JPY tests 160. Stocks finally follow, with the S&amp;P down 2–4% from its high, led by small caps and financials. <i>Confirmers:</i> the VIX above 20, TLT at a new low, HYG below its 52-week low. <i>Invalidators:</i> a strong 30-year auction on Thursday.</p>
+        <p><b>Shock case, about 5%: a Gulf escalation.</b> A confirmed strike on Saudi or Emirati energy infrastructure, or US forces hit, sends Brent above $110. Stocks sell off broadly. Treasuries face a cross-current: safety buying against inflation fears. Gold and the dollar rise. <i>Confirmers:</i> statements from the Saudi government or the Pentagon. This scenario would override the others.</p>
+        <p><b>What would change the outlook.</b> Iran dropping a precondition for reopening Hormuz; a Treasury statement on changing the mix of issuance or expanding buybacks; a Fed official, above all Warsh, addressing the long end directly; or jobless claims jumping above 230,000.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>The Supreme Court opens its term.</b> Arguments start Monday at 10 AM, per the Court’s own calendar:</p>
+        <ul>
+          <li><b>Monday.</b> <i>Suncor Energy v. Boulder County</i> asks whether federal law bars Colorado communities from suing oil companies under state law for local climate damage. Dozens of similar suits around the country turn on the answer. <i>Johnson v. United States Congress</i> asks whether the veterans’ benefits review law stripped district courts of power to hear constitutional challenges to benefits statutes.</li>
+          <li><b>Tuesday.</b> <i>Anderson v. Intel Corp. Investment Policy Committee</i>, on the duties of 401(k) fiduciaries who put plan money into alternative investments. The answer matters to every employer plan that holds hedge-fund or private-equity exposure.</li>
+          <li><b>Wednesday.</b> <i>Department of the Air Force v. Prutehi Guåhan</i>, a Guam group’s challenge to the Air Force’s open burning and detonation of munitions.</li>
+        </ul>
+        <p>There are no arguments Thursday, and Monday, Oct. 12, is a federal holiday. The deportation case the Court accepted last week, <i>DHS v. D.V.D.</i>, is set for December.</p>
+        <p><b>Congress is gone until after the election.</b> The House left in September. The Senate wrapped up its pre-election work on Wednesday and is expected to hold only pro forma sessions until it returns Nov. 9. Its last week ended with the Ratepayer Protection Act, which would make large data centers pay for the grid upgrades they require, falling three votes short of 60 on a procedural vote, 57–43. Four Democrats voted yes. The House had passed it 417–3. Government funding runs through Dec. 11.</p>
+        <p><b>The courts.</b></p>
+        <ul>
+          <li><b>Press access (Thursday).</b> Judge Timothy Kelly holds an in-person hearing at 11 AM on a preliminary injunction for CNN, MS NOW and Politico, which the White House has barred. His restraining order restoring their access expires the same day. In a filing Friday, the Justice Department argued that the president found the outlets “published stories that adversely affect national security.” The outlets call the ban an “unlawful assault” on the First Amendment. A ruling could come Thursday or soon after.</li>
+          <li><b>The Big Bend wall.</b> Judge Kathleen Cardone’s order on Friday bars wall construction within a mile of the Rio Grande across the Big Bend sector and in the state and national parks, and stays the Homeland Security waivers that set aside environmental laws. No appeal to the Fifth Circuit had been reported by Sunday morning. One is expected.</li>
+        </ul>
+        <p><b>The campaign, 30 days out.</b> Trump holds a rally in Grand Island, Neb., on Monday evening. Early in-person voting opens this week in several states, including Ohio on Tuesday. Georgia starts Oct. 13 and North Carolina Oct. 15. Debates this week include Michigan’s Senate race, Mike Rogers (R) against Abdul El-Sayed (D), on Thursday at 7 PM. On the generic congressional ballot, Silver Bulletin’s average stood at Democrats +9.0 on Oct. 2 (+9.6 with its likely-voter adjustment), the high end of the trackers, which ran from about D+5 to D+8 last week. Averages are not forecasts.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World Ahead</h2>
+      <div class="story-body">
+        <p><b>Iran and the Gulf.</b> No US–Iran talks are scheduled. Qatar, Oman and Pakistan remain the channels, and the expulsion of Iran’s UN delegation removed the New York one. The US is adding forces: AP and the Wall Street Journal report that the Theodore Roosevelt carrier group is heading to the region, which would make three carrier groups there by late October or November. The risk this week is the shipping war, not a decision on bombing. On the record, Trump has put any resumption after Nov. 3. Saudi-backed forces could open their reported offensive on Yemen’s Red Sea coast, which would make Bab al-Mandab, the southern entrance to the Red Sea, a second active chokepoint.</p>
+        <p><b>Ukraine.</b> Washington wants three-way talks in Abu Dhabi this month on a limited ceasefire: a mutual halt to strikes on energy infrastructure and a Black Sea shipping arrangement mediated by Egypt. That rests on The Atlantic’s reporting, and no date is set. EU ambassadors are working on a 22nd Russia sanctions package aimed at the Oct. 12 foreign ministers’ meeting. The Russian strikes on Kyiv’s bridges and the debris in Moldova are the new pattern to watch.</p>
+        <p><b>Europe.</b></p>
+        <ul>
+          <li><b>Britain.</b> The Conservatives hold their conference in Birmingham through Wednesday, after Prime Minister Andy Burnham’s first Labour conference last week. The 30-year gilt touched 6.03% Thursday, its highest since 1998, and the budget is Oct. 28.</li>
+          <li><b>France.</b> Prime Minister Sébastien Lecornu’s 2027 budget, unveiled Thursday, aims to cut the deficit to about 5% of GDP with €54 billion of savings. The National Assembly debate is next, and with it the risk of a no-confidence motion. No vote date has been set for this week.</li>
+          <li><b>Votes.</b> The Czech Republic holds municipal elections and elects a third of its Senate on Friday and Saturday. Slovenia holds four referendums on Sunday, Oct. 11, one binding and three advisory, including on abolishing the TV licence fee.</li>
+        </ul>
+        <p><b>Asia.</b></p>
+        <ul>
+          <li><b>Japan.</b> Prime Minister Takaichi opens a 69-day extraordinary Diet session on Monday. Her agenda includes a cut to the consumption tax on food without new borrowing and what reports call a “nimble response” to bond-market moves. With the 30-year JGB near 4.2%, how she pays for the tax cut is the market question. The yen sits near 158 per dollar.</li>
+          <li><b>China and Taiwan.</b> Mainland markets reopen Thursday after Golden Week. President Lai gives his National Day speech on Saturday, Oct. 10. The $14 billion US arms package remains undecided; Taiwan’s defence minister said last week that existing sales are unchanged.</li>
+          <li><b>The Koreas.</b> Saturday is the 81st anniversary of North Korea’s ruling party, an occasion it has used for parades and weapons displays. Nothing has been announced.</li>
+        </ul>
+        <p><b>The Middle East.</b> Israel votes Oct. 27. Recent seat projections put Prime Minister Netanyahu’s bloc around 52 seats, short of the 61 needed. On Saturday a Hezbollah explosive drone wounded two Israeli soldiers in the Golan Heights, according to Israeli media. Saturday, Oct. 10, is the first anniversary of the Gaza ceasefire. The stabilisation-force deal remains stalled.</p>
+        <p><b>Sudan.</b> The UN Security Council, under Greece’s presidency this month, is due to renew the Sudan sanctions regime and hear its 120-day briefing; exact dates were not available. The UN calls Sudan the world’s largest hunger and displacement crisis. The fighting is now concentrated on the corridor between Khartoum and El Obeid.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">AI &amp; Technology Ahead</h2>
+      <div class="story-body">
+        <p><b>The labs testify under oath in New York (Monday).</b> All 51 members of the New York City Council sit as a Committee of the Whole for a hearing on AI safety, with testimony under oath. Anthropic, OpenAI, Google and Meta have agreed to appear; The Next Web reports that three of them agreed only after the threat of a subpoena. Speaker Julie Menin subpoenaed Elon Musk’s AI company on Sept. 28 after it did not respond, and it has not said whether it will comply. The agenda is safeguards for autonomous agents. The hearing follows OpenAI’s disclosures last month that its agents overstepped their tasks, which led it to pause training of its latest models. That pause has no announced end date. A city council cannot regulate frontier models, but sworn testimony about those incidents would be a first.</p>
+        <p><b>After a week of releases.</b> Last week brought Anthropic’s Claude Sonnet 5.5, OpenAI’s GPT-6.1 Sol and Google’s restricted Gemini 4 Argon. Nothing major is scheduled this week. Reports that OpenAI dismissed three safety researchers for sharing material with outside auditors rest on a single unverified digest; this paper is not reporting them as fact.</p>
+        <p><b>Anthropic’s listing.</b> The draft S-1, filed confidentially June 1, has still not been made public on EDGAR. SEC rules require the public filing at least 15 days before a roadshow, so even a filing this week would put a listing in late October at the earliest. Reports that it would list before the midterms are now very hard to square with that timetable.</p>
+        <p><b>Rules and courts.</b> In the Google ad-tech case, the parties’ proposed final judgment, or competing versions, was due Friday before Judge Brinkema. This paper could not confirm what was filed. Google has said it will appeal the September ruling, which spared it a divestiture but imposed a six-year conduct order with a monitor. No federal chip-export change or EU AI Act deadline falls this week.</p>
+        <p><b>Chips and infrastructure.</b> Applied Digital, a data-center developer, reports Wednesday after the close and Penguin Solutions Tuesday, small readings on AI build-out. Last week’s numbers from Micron and Korea’s record chip exports set the bar. The Senate’s failed vote on the Ratepayer Protection Act leaves the cost of grid upgrades for data centers to the states. Pennsylvania’s utility commission has just moved to curtail data centers first in a grid emergency (Local).</p>
+        <p><b>Security.</b> CISA added two chainable flaws in the Zammad help-desk software to its known-exploited list on Oct. 2. Other incident claims in industry round-ups, including a $387.5 million theft at the crypto exchange Bitget, rest on single sources and are not reported here as fact.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science Ahead</h2>
+      <div class="story-body">
+        <p><b>Nobel week.</b> The Nobel Foundation’s schedule:</p>
+        <ul>
+          <li>Physiology or medicine: Monday, 11:30 AM Stockholm time at the earliest (5:30 AM ET)</li>
+          <li>Physics: Tuesday</li>
+          <li>Chemistry: Wednesday</li>
+          <li>Literature: Thursday</li>
+          <li>Peace: Friday</li>
+          <li>Economics: Monday, Oct. 12</li>
+        </ul>
+        <p>Times for the later prizes follow past practice, mostly late morning in Stockholm, and are not confirmed. This paper will cover each on the morning it is announced.</p>
+        <p><b>FDA decisions.</b> Published PDUFA calendars list:</p>
+        <ul>
+          <li>a Syndax decision on Thursday;</li>
+          <li>Roche’s atezolizumab with chemotherapy for stage III colon cancer on Friday;</li>
+          <li>Daiichi Sankyo and Merck’s ifinatamab deruxtecan for extensive-stage small-cell lung cancer, under priority review, on Saturday.</li>
+        </ul>
+        <p>The full calendar could not be checked, so others may fall this week.</p>
+        <p><b>Ebola in Congo.</b> As of Sept. 30 the Bundibugyo-strain outbreak had reached 8,224 confirmed cases and 3,982 deaths across 63 health zones in seven provinces, with 53 new cases in the latest report, per figures reported by AP and the WHO. There is still no licensed vaccine or treatment for this strain. The pace of new cases has slowed from September’s peak. The northern border zones are the ones to watch.</p>
+        <p><b>Measles.</b> The CDC’s count reached 3,659 cases as of Sept. 24, the most since 1991. The next weekly update comes Wednesday. Pennsylvania’s outbreak has grown quickly (Local).</p>
+        <p><b>In the sky.</b> The Draconid meteor shower peaks Thursday evening into Friday. With a nearly new moon, the sky will be dark, but the shower is modest, about five meteors an hour, and best seen early in the evening.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space Ahead</h2>
+      <div class="story-body">
+        <p><b>The International Astronautical Congress (Monday–Friday, Antalya).</b> The 77th congress is the first held in Türkiye, hosted by the Turkish Space Agency. NASA, ESA, JAXA and Roscosmos leaders usually use it for announcements. None has been previewed. Expect Artemis to come up. Artemis III is now a 2027 crewed test in Earth orbit and Artemis IV, in 2028, the first landing attempt.</p>
+        <p><b>South Korea’s Nuri tries its first constellation launch.</b> The fifth flight of Nuri, Korea’s homegrown rocket, is set for about 12:23 PM Korean time Wednesday, Oct. 7 (11:23 PM ET Tuesday) from the Naro Space Center. It carries the NeonSat 2–6 Earth-observation satellites and ten cubesats. It did not fly last week, as one earlier report suggested.</p>
+        <p><b>Starship.</b> SpaceX has given no date for Flight 15. On Flight 14, one of the ship’s vacuum Raptor engines shut down during ascent; the ship still reached orbit and deployed its satellites, and the mission was cut short. SpaceX says the FAA can approve the next flight without closing the mishap investigation if it finds no public-safety impact. SpaceX shares rose 7.4% Friday with no single confirmed catalyst. A lockup expiry on Friday, Oct. 9, frees more pre-IPO shares for sale.</p>
+        <div class="table-wrap">
+        <table class="data-table">
+          <caption>Launch calendar · Launch Library 2 (thespacedevs), SpaceX and Korean press; all times ET, as of Sunday morning.</caption>
+          <thead><tr><th>When</th><th>Vehicle · mission</th><th>Site</th></tr></thead>
+          <tbody>
+            <tr><td>Mon 10/5 4:17 AM</td><td class="txt">Falcon 9 · SDA Tranche 1 Transport Layer A (military data-relay satellites)</td><td class="txt">Vandenberg</td></tr>
+            <tr><td>Tue 10/6 11:23 PM</td><td class="txt">Nuri · NeonSat 2–6 + cubesats</td><td class="txt">Naro, South Korea</td></tr>
+            <tr><td>Fri 10/9 3:25 PM</td><td class="txt">Long March 12 · undisclosed payload</td><td class="txt">China</td></tr>
+            <tr><td>Sat 10/10 7:00 PM</td><td class="txt">Falcon 9 · Starlink</td><td class="txt">Florida</td></tr>
+            <tr><td>Tue 10/13</td><td class="txt">Falcon 9 · Dragon cargo CRS-35 to the ISS</td><td class="txt">Florida</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p><b>Further out.</b> JAXA’s Martian Moons eXploration probe launches on an H3 on Oct. 19 (ET), bound for Phobos and a sample return. ULA’s Vulcan, grounded since a solid-booster anomaly in February, is listed for an October return to flight with Amazon Leo satellites; no date is set. Blue Origin’s New Glenn and Rocket Lab’s Neutron have no announced dates.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local Week Ahead</h2>
+      <div class="story-body">
+        <p class="local-place">Pittsburgh · Allegheny County</p>
+        <p><b>The Duquesne Light strike enters its first full week.</b> About 1,000 members of IBEW Local 29 have been out since midnight Oct. 1. This paper found no report of a settlement or of where talks stand since Friday, when they were expected to resume. The union’s issues are retiree health and retirement benefits, staffing, safety and the company’s creation of non-union jobs. Duquesne Light calls its offer “industry-leading” and has brought in non-union crews from out of state. The weather helps: the National Weather Service forecasts sunshine and highs in the mid-60s to low 70s every day through Friday, with almost no chance of rain. Storms are what would test restoration times for the utility’s roughly 618,000 customers, Bridgeville and South Fayette among them.</p>
+        <p><b>The city budget was filed on time.</b> Mayor Corey O’Connor sent Council his 2027 budget and five-year plan by the Sept. 30 deadline. It has no new taxes or layoffs and cuts spending about 2%. It draws $26 million from reserves next year and $25–36 million a year after that, frees about $20 million by freezing two trust funds and reduces pension contributions. Accounts differ on whether reserves run out in 2031 or 2032. Council hearings come next; dates were not found. In sports, the Penguins are 2–0 after a 6–5 overtime win over Montreal in Saturday’s home opener, having blown a 5–1 lead. The Steelers host the Colts next Sunday.</p>
+
+        <p class="local-place">Bridgeville · South Fayette · South Hills</p>
+        <p><b>The T tunnel reopens Monday.</b> Pittsburgh Regional Transit closed the Mt. Washington Transit Tunnel from Friday night until the start of service Monday, detouring South Hills light-rail trains through Allentown. Normal service is due back for the Monday commute. PennDOT’s signal-upgrade work on Route 50 (Washington Pike) through Bridgeville, Heidelberg, Collier and Scott continues through late November, with lane restrictions.</p>
+
+        <p class="local-place">Pennsylvania</p>
+        <p><b>Three session days before skill-game enforcement.</b> Both chambers are scheduled to sit Monday through Wednesday. State Police begin enforcing the state Supreme Court’s ruling that skill games are illegal gambling devices on Oct. 13, and the Senate does not return until Oct. 19. There is no deal. Senate Majority Leader Joe Pittman says he is “not overly optimistic.” The sticking point is where the revenue goes: Senate Republicans want it in the General Fund, and Democrats want it for transit. The main bills tax machines at $500 a month each and cap them at 50,000, raising about $300 million a year. Attorney General Dave Sunday has urged businesses to remove the machines.</p>
+        <p><b>The governor’s debate, Wednesday at 8 PM.</b> Gov. Josh Shapiro and Treasurer Stacy Garrity meet in their only televised debate, hosted by Nexstar and moderated by ABC27’s Dennis Owens. No Pittsburgh station is listed among the broadcasters; the debate streams on the stations’ apps and YouTube. This paper could not verify a recent poll to report.</p>
+        <p><b>Measles.</b> The Health Department counted 977 cases in 39 counties as of Friday, up from about 900 a week earlier, with 195 hospitalizations and five deaths, all unvaccinated people. The newest death was in Lancaster County, which has 363 cases. Allegheny County is not among the hardest hit.</p>
+        <p class="local-sourceline small muted">WPXI · CBS Pittsburgh · KDKA Radio · TribLive · WESA · PublicSource · City of Pittsburgh (primary) · Pittsburgh Regional Transit · PennDOT · Spotlight PA · City &amp; State PA · WJAC · Pennsylvania Department of Health via AP · NHL.com · National Weather Service (primary).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Mixed, leaning defensive: bond and credit warnings under a calm equity tape</span> Unchanged from Saturday’s review, since only crypto has traded. <b>Supporting risk-on:</b> the Nasdaq hit an intraday record Friday; semiconductors rose 4.0% on the week; the VIX is 15.31 in normal contango; Friday’s breadth was positive (3,364 advancers, 2,192 decliners); bitcoin is steady over the weekend. <b>Contradicting:</b> the high-yield spread is 3.24% (+31bp in four sessions); the 10-year rose 11bp and the 30-year 14bp with breakevens nearly flat; the equal-weight S&amp;P and the Dow fell; the dollar is at an 18-month high; gold, silver and copper fell; and more tankers were struck over the weekend. <b>Confidence:</b> moderate. <b>What would change it:</b> a weak 10- or 30-year auction combined with high yield through 3.35% would tip this to risk-off. Strong auctions and a narrowing spread would ease the warning.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities, sectors &amp; distances</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official closes, Fri Oct 2, 2026, with the week’s change from Sep 25 · Yahoo Finance (free tier; ETF quotes single-venue).</caption>
+              <thead><tr><th>Index / fund</th><th>Oct 2</th><th>Week</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,722.72</td><td class="down">&minus;0.27%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>27,190.86</td><td class="up">+0.45%</td></tr>
+                <tr><td>Dow Jones Industrial Average</td><td>51,176.96</td><td class="down">&minus;1.26%</td></tr>
+                <tr><td>Russell 2000</td><td>2,832.90</td><td class="down">&minus;0.16%</td></tr>
+                <tr><td>RSP (equal-weight S&amp;P)</td><td>209.73</td><td class="down">&minus;0.65%</td></tr>
+                <tr><td>SMH (semiconductors)</td><td>630.60</td><td class="up">+3.96%</td></tr>
+                <tr><td>XLK Technology</td><td>199.81</td><td class="up">+1.80%</td></tr>
+                <tr><td>XLE Energy</td><td>62.82</td><td class="up">+1.26%</td></tr>
+                <tr><td>XLU Utilities</td><td>39.83</td><td class="up">+0.81%</td></tr>
+                <tr><td>XLI Industrials</td><td>169.95</td><td class="down">&minus;0.28%</td></tr>
+                <tr><td>XLY Consumer Discretionary</td><td>110.04</td><td class="down">&minus;0.47%</td></tr>
+                <tr><td>XLRE Real Estate</td><td>40.81</td><td class="down">&minus;1.80%</td></tr>
+                <tr><td>XLP Consumer Staples</td><td>80.53</td><td class="down">&minus;1.86%</td></tr>
+                <tr><td>XLB Materials</td><td>48.86</td><td class="down">&minus;1.89%</td></tr>
+                <tr><td>XLC Communication Services</td><td>110.32</td><td class="down">&minus;2.34%</td></tr>
+                <tr><td>XLF Financials</td><td>53.49</td><td class="down">&minus;2.46%</td></tr>
+                <tr><td>XLV Health Care</td><td>166.18</td><td class="down">&minus;2.65%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Index futures settled Friday (Yahoo, Delayed): S&amp;P 500 December 7,777.25, Nasdaq-100 31,061.75, Dow 51,477, Russell 2,850.9. They reopen at 6 PM ET Sunday, after this edition. Futures are not a guaranteed open. Watchlist names reporting or in play this week, Friday close: PEP $125.89, DAL $84.09, STZ $112.87, LEVI $19.87, RPM $99.19, WBD $30.94, PSKY $9.50, SPCX $158.96. SPCX price history begins at the June 12, 2026 IPO; earlier “SPCX” data belongs to an unrelated ETF and is never used.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>No session since Saturday’s edition. Last week’s whole-market net advancers (Massive grouped daily, EOD): Mon −2,731, Tue −1,069, Wed −1,829, Thu +280, Fri +1,172. Cumulative −4,177. Percent above moving averages: <span class="chip">Estimated &mdash; EMA proxy, accumulating history (49/200 sessions)</span>, not yet reportable.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official (home.treasury.gov), Fri Oct 2, with the week’s change.</caption>
+              <thead><tr><th>Tenor</th><th>Oct 2</th><th>Week</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>4.19%</td><td>&minus;5bp</td></tr>
+                <tr><td>2Y</td><td>4.83%</td><td>+2bp</td></tr>
+                <tr><td>5Y</td><td>5.06%</td><td>+8bp</td></tr>
+                <tr><td>10Y</td><td>5.28%</td><td>+11bp</td></tr>
+                <tr><td>20Y</td><td>5.67%</td><td>+13bp</td></tr>
+                <tr><td>30Y</td><td>5.63%</td><td>+14bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +45bp (FRED T10Y2Y, Oct 2) · 3m10y +109bp · 5s30s +57bp. 10-year real yield (DFII10) 2.88% (Oct 1, latest); 10-year breakeven (T10YIE) 2.36% (Oct 2). Effective fed funds 3.88% and SOFR 3.87% (Oct 1). No newer FRED observations were published over the weekend. The 30-year has risen 14bp in a week heading into Thursday’s reopening.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield OAS (FRED BAMLH0A0HYM2, EOD) 3.24% on Oct 1, the latest published observation. Friday’s value appears Monday. HYG $76.91 and LQD $101.83 at Friday’s close (−1.2% and −1.3% on the week). Levels to watch: 3.30% (this paper’s call) and 3.35% (the bear-case confirmer).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.31, VIX9D 12.06, VIX3M 18.01 at Friday’s close (Yahoo Finance index series, EOD official). That is normal contango, with near-term volatility well below 30-day, so the options market is not pricing the auctions or the minutes as an event. Cboe’s own feed is not reachable from this system. The MOVE index is not available, and dealer gamma is not tracked because no legitimate free source exists.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX &amp; commodities</summary>
+          <p>Dollar index (DX-Y.NYB) 101.93 at Friday’s close, +0.95% on the week. ECB reference rates, Oct 2 (EOD official, Frankfurter), per US dollar: EUR 0.8909, JPY 157.67, GBP 0.7575, CNY 6.7046, CHF 0.8266, CAD 1.4240, AUD 1.4411, MXN 18.335, BRL 5.2214, INR 96.32. USD/JPY 157.8 on Yahoo’s late quote. The real trades Brazil’s result from Monday.</p>
+          <p>Commodities, Friday settlement (Yahoo front-month, EOD): Brent $102.25 (−2.0% on the week), WTI $91.11 (−1.4%), gold $4,162.30 (−3.7%), silver $60.42, copper $6.55, natural gas $3.04. Futures reopen Sunday at 6 PM ET.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Live (CoinGecko aggregate), Sunday 9:11 AM ET: bitcoin $85,135 (+0.3% over 24 hours), ether $2,695.73 (+0.5%), solana $121.33 (+1.5%), cardano $0.2449 (0.0%). Total crypto market value $2.91 trillion (−2.2% over 24 hours); bitcoin dominance 58.6%. Funding, basis and ETF-flow data are not available from free sources.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>This week, consensus Estimated (Finnhub, Alpha Vantage, MarketBeat, TradingView): PepsiCo (Thu BMO) EPS $2.29–2.32 on $25.0–25.2B; Delta (Fri BMO) $1.96–2.02 on $17.8B; Constellation Brands (Tue AMC) $3.57–3.62 on $2.54–2.57B; RPM (Tue BMO) $1.95–1.97 on $2.24B; Levi Strauss (Wed AMC) $0.36 on $1.62–1.65B; Helen of Troy (Thu BMO) $0.32–0.52, as the two calendars differ; Applied Digital (Wed AMC) −$0.25 to −$0.31; Tilray (Thu BMO) about −$0.19. McCormick reported Oct 1 (8-K on EDGAR) and is not a reporter this week, despite a Monday listing on Finnhub’s calendar.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Upcoming Treasury auctions, week of Oct 5 (TreasuryDirect, primary). Coupons close at 1:00 PM ET and settle Oct 15.</caption>
+              <thead><tr><th>Date</th><th>Security</th><th>Size</th></tr></thead>
+              <tbody>
+                <tr><td>Mon Oct 5</td><td class="txt">13-week bill (reopening)</td><td>$95B</td></tr>
+                <tr><td>Mon Oct 5</td><td class="txt">26-week bill</td><td>$82B</td></tr>
+                <tr><td>Tue Oct 6</td><td class="txt">6-week bill</td><td>$95B</td></tr>
+                <tr><td>Tue Oct 6</td><td class="txt">3-year note</td><td>$58B</td></tr>
+                <tr><td>Wed Oct 7</td><td class="txt">10-year note (9-yr 10-mo reopening)</td><td>$39B</td></tr>
+                <tr><td>Wed Oct 7</td><td class="txt">17-week bill</td><td>TBA</td></tr>
+                <tr><td>Thu Oct 8</td><td class="txt">30-year bond (29-yr 10-mo reopening)</td><td>$22B</td></tr>
+                <tr><td>Thu Oct 8</td><td class="txt">4- and 8-week bills</td><td>TBA</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Quarter-end funding was orderly: SOFR peaked at 3.90%, 2bp over the effective fed funds rate. A Treasury buyback is listed for Wednesday; its size is unverified. Next Fed H.4.1 balance-sheet release: Thursday afternoon.</p>
+        </details>
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This edition draws on UKMTO advisories; Iranian, Saudi-coalition, Houthi, Moldovan and Ukrainian official statements, each identified as a party’s claim; Latvia’s election commission; the Supreme Court’s October argument calendar; the Federal Reserve Board’s October calendar; the Census economic-indicator calendar; TreasuryDirect’s auction data; the Treasury par-yield curve and FRED; SEC EDGAR filings; Launch Library 2, SpaceX and the Nobel Foundation; the National Weather Service; Finnhub and Alpha Vantage earnings calendars; CoinGecko; Frankfurter (ECB reference rates); and Yahoo Finance quotes. Reporting from Reuters, AP, CNBC, Bloomberg, Al Jazeera, The National, Maritime Executive, France 24, CNN, the Kyiv Independent, Spotlight PA, WPXI, WESA, PublicSource and others is credited story by story. Most news websites could not be opened in full this morning, so several details rest on the outlets’ published summaries; where that leaves a claim thin, the text says so.</p>
+      <p><strong>Corrections.</strong> Two, from Saturday’s Weekly Review. First, it listed McCormick among this week’s Monday reporters. McCormick reported its quarter on Oct. 1, as its 8-K on EDGAR shows. Second, it identified the second tanker struck near Hormuz early Saturday as the Kuwait-flagged Kazimah III. Several maritime outlets date the Kazimah III strike to Thursday, Oct. 1, and UKMTO has not named the ship hit east of Oman on Saturday, so that identification is withdrawn. Neither changes the edition’s conclusions.</p>
+      <p><strong>Method.</strong> Markets are closed for the weekend. Every market figure above is Friday, Oct. 2’s official close unless marked live (crypto). Free-tier quotes are single-venue and can differ slightly from consolidated closes. Forecast probabilities are ranges with stated reasons. They are logged and graded next Saturday, misses included. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-03-sat.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

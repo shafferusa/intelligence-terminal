@@ -1020,17 +1020,141 @@
     {
       "id": "pa-measles-900-sep28",
       "first_seen": "2026-09-29-pm",
-      "last_updated": "2026-09-29-pm",
+      "last_updated": "2026-10-04-sun",
       "watch": true,
       "status": "Developing",
       "headline": "PA measles passes 900 cases; Pittsburgh schools plan MMR clinics",
-      "one_line": "903 cases/39 counties, 176 hosp, 4 deaths; none in Allegheny (WESA).",
+      "one_line": "977 cases/39 counties, 195 hosp, 5 deaths as of Oct 2 DOH (AP).",
       "verification": "Confirmed-multiple",
       "sources": [
         "PA DOH via NBC Phila, WFMZ",
         "WESA"
       ],
       "score_rationale": "Local health"
+    },
+    {
+      "id": "hormuz-tanker-strikes-oct3-4",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "Third tanker in two days hit in Hormuz Sunday; Houthis claim Riyadh Aramco strike",
+      "one_line": "UKMTO: engine-room hit Sunday, crew safe; Houthi Saree claims missiles/drones on Aramco Riyadh, Saudi coalition calls claims misleading.",
+      "verification": "Confirmed-primary (UKMTO); Houthi claim unverified",
+      "sources": [
+        "UKMTO via CNBC, L'Orient Today",
+        "Al Jazeera",
+        "Investing.com wire"
+      ],
+      "score_rationale": "Lead: oil reopen Sunday 6 PM"
+    },
+    {
+      "id": "opec-hold-nov-oct4",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "OPEC+ core group holds November targets",
+      "one_line": "Short online meeting; Gulf output already below quota from war disruption; next meeting Nov 1.",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Reuters via Investing.com",
+        "The National",
+        "Gulf News"
+      ],
+      "score_rationale": "Oil supply"
+    },
+    {
+      "id": "latvia-election-oct3",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "Latvia: PM Kulbergs' United List wins 35.4%, 42 of 100 seats (prelim)",
+      "one_line": "CVK preliminary; official by Oct 19.",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CVK via Xinhua",
+        "France24"
+      ],
+      "score_rationale": "Europe election"
+    },
+    {
+      "id": "brazil-first-round-oct4",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "Brazil votes: Lula vs Flavio Bolsonaro, runoff Oct 25 likely",
+      "one_line": "Datafolha final 45-42 valid votes; Quaest 46-45.",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Datafolha",
+        "Quaest",
+        "Rio Times",
+        "Al Jazeera"
+      ],
+      "score_rationale": "EM markets Monday"
+    },
+    {
+      "id": "us-auctions-week-oct5",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "$119B of 3/10/30-year Treasury supply Tue-Thu",
+      "one_line": "Test of long-end demand after 10Y 5.28%, 30Y 5.63%.",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "TreasuryDirect"
+      ],
+      "score_rationale": "Week's main market event"
+    },
+    {
+      "id": "fomc-minutes-oct7",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "September FOMC minutes Wed Oct 7 2 PM",
+      "one_line": "How many wanted more than one more hike.",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "Federal Reserve"
+      ],
+      "score_rationale": "Fed path"
+    },
+    {
+      "id": "press-access-pi-hearing-oct8",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "Press-access PI hearing Thu Oct 8 11 AM; TRO expires same day",
+      "one_line": "Judge Kelly, D.D.C.",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNN",
+        "Deadline",
+        "KYMA"
+      ],
+      "score_rationale": "US courts"
+    },
+    {
+      "id": "pa-skill-games-oct13",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-04-sun",
+      "watch": true,
+      "status": "Developing",
+      "headline": "PA skill games: session Oct 5-7, no deal; enforcement Oct 13",
+      "one_line": "Revenue destination is sticking point.",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Spotlight PA",
+        "City & State",
+        "WJAC"
+      ],
+      "score_rationale": "Local PA"
     }
   ]
 }
