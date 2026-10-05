@@ -1,6 +1,159 @@
 {
   "stories": [
     {
+      "id": "brazil-first-round-oct4",
+      "status": "New",
+      "headline": "Flávio Bolsonaro 47.03% vs Lula 45.16% in Brazil first round; runoff Oct 25",
+      "one_line": "Beat polls; right won key governorships; abstention 21.08%; EWZ reportedly +~10% overnight (single source)",
+      "verification": "Confirmed-multiple (Agência Brasil official count + CNN/NPR/WaPo/Bloomberg)",
+      "sources": [
+        "Agência Brasil",
+        "CNN",
+        "NPR",
+        "Washington Post",
+        "Bloomberg",
+        "Rio Times"
+      ],
+      "score_rationale": "Am lead: upset with direct market read-through (BRL, EWZ, Ibovespa)",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "ust-auction-week-oct5",
+      "status": "Continuing",
+      "headline": "Long end into $119B coupon week: 10Y 5.28%, 30Y 5.63% (Oct 2 par); 3y Tue, 10y Wed, 30y Thu",
+      "one_line": "10Y +11bp on week while front end flat; HY OAS 3.24%; FOMC minutes Wed 2PM",
+      "verification": "Confirmed-primary (Treasury, TreasuryDirect)",
+      "sources": [
+        "Treasury par curve",
+        "TreasuryDirect",
+        "FRED"
+      ],
+      "score_rationale": "Central market story of the week",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "schneider-ptc-oct5",
+      "status": "New",
+      "headline": "Schneider Electric to acquire PTC for $205/sh cash (~$22.6B equity), 42.3% premium",
+      "one_line": "Close ~Q3 2027; bridge from MS/SocGen; EUR5-6B equity + EUR16-17B debt; Schneider ~-7% Paris",
+      "verification": "Confirmed-multiple (Bloomberg, Reuters, GuruFocus); PTC 8-K not yet on EDGAR at 06:35 ET",
+      "sources": [
+        "Bloomberg",
+        "Reuters",
+        "GuruFocus",
+        "Investing.com"
+      ],
+      "score_rationale": "Largest M&A of the cycle; watchlist-adjacent industrial software",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "spain-snap-election-euro-oct5",
+      "status": "New",
+      "headline": "Sánchez calls Spanish snap election for Nov 29 after housing decrees defeated; euro near 17-month low",
+      "one_line": "EUR/USD ~1.121 (low ~1.116 single report); OAT-Bund >130bp; CAC -1%",
+      "verification": "Confirmed-multiple (CNN, CNBC, Al Jazeera, Bloomberg); euro low single report",
+      "sources": [
+        "CNN",
+        "CNBC",
+        "Al Jazeera",
+        "Bloomberg",
+        "Yahoo"
+      ],
+      "score_rationale": "European sovereign/political risk spreading; dollar",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "hormuz-tanker-oct4-fairford",
+      "status": "Materially changed",
+      "headline": "UKMTO: another tanker hit in Hormuz Sun Oct 4; Araghchi 'within seven days' plan; Camp David Fri; B-1s withdrawn from RAF Fairford",
+      "one_line": "Count of October attacks disputed (3 vs 4); Monday 'explosions' report single-source; Brent ~$102.3",
+      "verification": "Confirmed-multiple (tanker, Fairford); Single-reliable-source (Monday explosions); Camp David Axios-led, not confirmed by WH",
+      "sources": [
+        "UKMTO via Iran International/Gulf News/The Hill",
+        "The National",
+        "Axios",
+        "Reuters via US News"
+      ],
+      "score_rationale": "Oil floor driver",
+      "first_seen": "2026-10-03-sat",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "clayton-ai-czar-oct4",
+      "status": "New",
+      "headline": "Trump names DNI Jay Clayton AI czar to lead 'Super Intelligence Force' (Ferguson, Michael, Kupor)",
+      "one_line": "120 days to report (per reports); no rules issued",
+      "verification": "Confirmed-multiple (NPR, CNBC, UPI, MS NOW)",
+      "sources": [
+        "NPR",
+        "CNBC",
+        "UPI",
+        "MS NOW"
+      ],
+      "score_rationale": "AI policy structure; FTC inside group",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": true
+    },
+    {
+      "id": "takaichi-diet-oct5",
+      "status": "New",
+      "headline": "Takaichi opens 222nd Diet: food consumption tax 8%->1% for two years, debt-issuance pledge; Nikkei +2.4% to 69,946.86",
+      "one_line": "JGB yields at record highs (FXStreet); session to Dec 12",
+      "verification": "Confirmed-multiple (Jiji/Nippon.com, Japan Today, FXStreet)",
+      "sources": [
+        "Nippon.com",
+        "Japan Today",
+        "FXStreet",
+        "Yahoo"
+      ],
+      "score_rationale": "Global long-end pressure",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": false
+    },
+    {
+      "id": "scotus-boulder-oct5",
+      "status": "New",
+      "headline": "SCOTUS term opens with Suncor v. Boulder County climate-liability case",
+      "one_line": "Decision likely by June; >=60 similar suits",
+      "verification": "Confirmed-primary (docket 25-170)",
+      "sources": [
+        "Supreme Court docket",
+        "SCOTUSblog"
+      ],
+      "score_rationale": "Energy-sector legal exposure",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": false
+    },
+    {
+      "id": "nobel-medicine-2026-optogenetics",
+      "status": "New",
+      "headline": "Nobel Prize in Physiology or Medicine 2026: Deisseroth, Hegemann, Nagel for optogenetics",
+      "one_line": "Physics Tue, Chemistry Wed",
+      "verification": "Confirmed-multiple (CNN, STAT, ETV Bharat, China Daily)",
+      "sources": [
+        "CNN",
+        "STAT",
+        "ETV Bharat",
+        "China Daily"
+      ],
+      "score_rationale": "Science section lead",
+      "first_seen": "2026-10-05-am",
+      "last_updated": "2026-10-05-am",
+      "watch": false
+    },
+    {
       "id": "hormuz-tankers-riyadh-fire-oct3",
       "status": "New",
       "headline": "Two crude tankers hit by unidentified projectiles near Hormuz overnight (one Kuwait-flagged Kazimah III); fire near Aramco facility in Riyadh (single Reuters witness + FIRMS)",
@@ -799,362 +952,6 @@
       "first_seen": "2026-09-30-pm",
       "last_updated": "2026-09-30-pm",
       "watch": true
-    },
-    {
-      "id": "adp-chicago-pmi-sep",
-      "status": "New",
-      "headline": "ADP Sept +90K vs ~70K; Chicago PMI 58.8 (conflict: 55.8) vs ~51",
-      "one_line": "First ADP acceleration since May; ISM Thu, payrolls Fri.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "ADP via CNBC/Bloomberg",
-        "Newsquawk/MarketScreener"
-      ],
-      "score_rationale": "Labor/growth",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "cmu-griffin-3b",
-      "status": "New",
-      "headline": "Ken Griffin gives CMU $3B: $2B Miami campus, $1B Pittsburgh",
-      "one_line": "Largest individual higher-ed gift per CMU.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "CMU",
-        "CNN"
-      ],
-      "score_rationale": "Local",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "senate-stock-ban-ratepayer-fail",
-      "status": "New",
-      "headline": "Senate cloture fails on stock-trading ban (53-47) and Ratepayer Protection Act (57-43)",
-      "one_line": "Last day before recess.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CNBC",
-        "Roll Call"
-      ],
-      "score_rationale": "US politics",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "iraq-withdrawal-erbil",
-      "status": "New",
-      "headline": "US completes withdrawal from Erbil; Operation Inherent Resolve mission in Iraq ends",
-      "one_line": "Per 2024 agreement.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "AP",
-        "NPR",
-        "Stars and Stripes"
-      ],
-      "score_rationale": "Security",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "europe-sept-flash-inflation-sep30",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "France HICP 3.4%, Italy HICP 4.1% (CPI 4.2%) Sept flash; German states 2.9-3.4%",
-      "one_line": "All well above consensus; France energy +21.2% y/y; ECB hike pressure.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "INSEE/Istat via Bloomberg, Reuters"
-      ],
-      "score_rationale": "Global inflation turn"
-    },
-    {
-      "id": "china-pmi-expansion-sep30",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "China NBS mfg PMI 50.1 (first >50 in 3 months); RatingDog 52.1; Nikkei +~2% on chips",
-      "one_line": "Golden Week closure Oct 1-7; Japan IP -1.7% m/m.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "NBS/RatingDog via FXStreet, investingLive",
-        "Yahoo"
-      ],
-      "score_rationale": "Global growth"
-    },
-    {
-      "id": "brent-nov-expiry-sep30",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "Brent Nov contract expires Sep 30 ~$103.4 vs Dec ~$97; WTI $90.40 +1.1%",
-      "one_line": "Roll will show ~$6 'drop'; grade 2026-09-29-pm-3 with roll disclosed. OPEC+ Oct 4.",
-      "verification": "Single-reliable-source",
-      "sources": [
-        "Barchart",
-        "Trading Economics",
-        "Yahoo"
-      ],
-      "score_rationale": "Oil/inflation"
-    },
-    {
-      "id": "kyiv-strike-sep30",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "Russia strikes Kyiv region: 188 drones + Zircon/Onyx/Iskander; 4 killed; Academy of Sciences building burned",
-      "one_line": "Grid and internet exchange targeted.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "AP",
-        "Kyiv Independent"
-      ],
-      "score_rationale": "War"
-    },
-    {
-      "id": "wh-ai-accord-america-gov-sep29",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "White House AI lunch: 'morally binding' self-policing accord; America.gov chatbot portal + EO",
-      "one_line": "No published accord text.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CNBC",
-        "ABC",
-        "Axios",
-        "FedScoop"
-      ],
-      "score_rationale": "AI policy"
-    },
-    {
-      "id": "pgh-2027-budget-sep30",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "Pittsburgh 2027 preliminary budget due by midnight Sep 30; controller certifies ~$702M revenue",
-      "one_line": "Heisler urges freezing $10M/yr each to Stop the Violence and Housing Opportunity funds.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "WESA",
-        "CBS Pittsburgh"
-      ],
-      "score_rationale": "Local"
-    },
-    {
-      "id": "pa-house-open-primaries-sep29",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "PA House passes HB 280 open primaries 115-88; PUC public-interest bill 150-53",
-      "one_line": "To GOP Senate.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Votebeat",
-        "Capital-Star",
-        "pahouse.com"
-      ],
-      "score_rationale": "PA"
-    },
-    {
-      "id": "concentrix-impairment-sep29",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "New",
-      "headline": "Concentrix FQ3: adj EPS $2.92, rev $2.45B (-1.2%), $1.05B goodwill impairment",
-      "one_line": "Shares ~-10% premarket (single source).",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Concentrix 8-K/GlobeNewswire"
-      ],
-      "score_rationale": "AI disruption read"
-    },
-    {
-      "id": "pentagon-dmdc-breach-sep29",
-      "first_seen": "2026-09-29-pm",
-      "last_updated": "2026-09-30-am",
-      "watch": false,
-      "status": "Continuing",
-      "headline": "Pentagon DMDC breach exposed ~3M people",
-      "one_line": "2.76M living + 294K deceased; access Oct 2025-Jul 2026.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Stars and Stripes",
-        "ABC",
-        "SecurityWeek"
-      ],
-      "score_rationale": "US security"
-    },
-    {
-      "id": "openai-devday-sol-funding-sep29",
-      "first_seen": "2026-09-29-pm",
-      "last_updated": "2026-09-30-am",
-      "watch": true,
-      "status": "Continuing",
-      "headline": "OpenAI DevDay: GPT-6.1 Sol at 1/5 Astra price; Dots agents; reported $30B raise at $1.4T",
-      "one_line": "Carried in am Top Stories.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "OpenAI",
-        "CNBC",
-        "Axios",
-        "Bloomberg",
-        "TechCrunch"
-      ],
-      "score_rationale": "AI section lead"
-    },
-    {
-      "id": "pa-measles-900-sep28",
-      "first_seen": "2026-09-29-pm",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "PA measles passes 900 cases; Pittsburgh schools plan MMR clinics",
-      "one_line": "977 cases/39 counties, 195 hosp, 5 deaths as of Oct 2 DOH (AP).",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "PA DOH via NBC Phila, WFMZ",
-        "WESA"
-      ],
-      "score_rationale": "Local health"
-    },
-    {
-      "id": "hormuz-tanker-strikes-oct3-4",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "Third tanker in two days hit in Hormuz Sunday; Houthis claim Riyadh Aramco strike",
-      "one_line": "UKMTO: engine-room hit Sunday, crew safe; Houthi Saree claims missiles/drones on Aramco Riyadh, Saudi coalition calls claims misleading.",
-      "verification": "Confirmed-primary (UKMTO); Houthi claim unverified",
-      "sources": [
-        "UKMTO via CNBC, L'Orient Today",
-        "Al Jazeera",
-        "Investing.com wire"
-      ],
-      "score_rationale": "Lead: oil reopen Sunday 6 PM"
-    },
-    {
-      "id": "opec-hold-nov-oct4",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "OPEC+ core group holds November targets",
-      "one_line": "Short online meeting; Gulf output already below quota from war disruption; next meeting Nov 1.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Reuters via Investing.com",
-        "The National",
-        "Gulf News"
-      ],
-      "score_rationale": "Oil supply"
-    },
-    {
-      "id": "latvia-election-oct3",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "Latvia: PM Kulbergs' United List wins 35.4%, 42 of 100 seats (prelim)",
-      "one_line": "CVK preliminary; official by Oct 19.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CVK via Xinhua",
-        "France24"
-      ],
-      "score_rationale": "Europe election"
-    },
-    {
-      "id": "brazil-first-round-oct4",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "Brazil votes: Lula vs Flavio Bolsonaro, runoff Oct 25 likely",
-      "one_line": "Datafolha final 45-42 valid votes; Quaest 46-45.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Datafolha",
-        "Quaest",
-        "Rio Times",
-        "Al Jazeera"
-      ],
-      "score_rationale": "EM markets Monday"
-    },
-    {
-      "id": "us-auctions-week-oct5",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "$119B of 3/10/30-year Treasury supply Tue-Thu",
-      "one_line": "Test of long-end demand after 10Y 5.28%, 30Y 5.63%.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "TreasuryDirect"
-      ],
-      "score_rationale": "Week's main market event"
-    },
-    {
-      "id": "fomc-minutes-oct7",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "September FOMC minutes Wed Oct 7 2 PM",
-      "one_line": "How many wanted more than one more hike.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Federal Reserve"
-      ],
-      "score_rationale": "Fed path"
-    },
-    {
-      "id": "press-access-pi-hearing-oct8",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "Press-access PI hearing Thu Oct 8 11 AM; TRO expires same day",
-      "one_line": "Judge Kelly, D.D.C.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "CNN",
-        "Deadline",
-        "KYMA"
-      ],
-      "score_rationale": "US courts"
-    },
-    {
-      "id": "pa-skill-games-oct13",
-      "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-04-sun",
-      "watch": true,
-      "status": "Developing",
-      "headline": "PA skill games: session Oct 5-7, no deal; enforcement Oct 13",
-      "one_line": "Revenue destination is sticking point.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Spotlight PA",
-        "City & State",
-        "WJAC"
-      ],
-      "score_rationale": "Local PA"
     }
   ]
 }
