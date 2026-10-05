@@ -1,10 +1,57 @@
 {
   "stories": [
     {
-      "id": "brazil-first-round-oct4",
+      "id": "spcx-rally-lockup-oct9",
       "status": "New",
+      "headline": "SpaceX +7.6% to $171.09, highest close since June; ~328M-share lockup expires Oct 9",
+      "one_line": "MS Jonas $300 PT note; 'SpaceXSI' rename; Einhorn 'speculative top' warning",
+      "verification": "Confirmed-multiple (Yahoo, CNBC, Benzinga)",
+      "sources": [
+        "Yahoo",
+        "CNBC",
+        "Benzinga"
+      ],
+      "score_rationale": "Watchlist name, supply event Friday",
+      "first_seen": "2026-10-05-pm",
+      "last_updated": "2026-10-05-pm",
+      "watch": true
+    },
+    {
+      "id": "chrw-rxo-oct5",
+      "status": "New",
+      "headline": "C.H. Robinson to buy RXO for ~$5.8B ($17.25 cash + 0.0856 CHRW/sh); CHRW -10.9%",
+      "one_line": "8-K 08:20 ET; freight recession backdrop",
+      "verification": "Confirmed-primary (CHRW 8-K)",
+      "sources": [
+        "SEC EDGAR",
+        "StockTitan"
+      ],
+      "score_rationale": "Sizable M&A with big buyer reaction",
+      "first_seen": "2026-10-05-pm",
+      "last_updated": "2026-10-05-pm",
+      "watch": false
+    },
+    {
+      "id": "ism-services-sep-oct5",
+      "status": "New",
+      "headline": "ISM services 54.9 (cons 55.2, prior 55.4); prices 74.0 highest since Jul 2022; employment 50.1",
+      "one_line": "Hot input-cost signal vs Friday's soft payrolls; keeps December hike in play",
+      "verification": "Confirmed-primary (ISM) + Reuters",
+      "sources": [
+        "ISM",
+        "Reuters",
+        "AP"
+      ],
+      "score_rationale": "Fed-relevant inflation data in a hiking cycle",
+      "first_seen": "2026-10-05-pm",
+      "last_updated": "2026-10-05-pm",
+      "watch": true
+    },
+    {
+      "id": "brazil-first-round-oct4",
+      "status": "Materially changed",
       "headline": "Flávio Bolsonaro 47.03% vs Lula 45.16% in Brazil first round; runoff Oct 25",
-      "one_line": "Beat polls; right won key governorships; abstention 21.08%; EWZ reportedly +~10% overnight (single source)",
+      "one_line": "Ibovespa +7.70% to record 206,911.89 (CNN Brasil); BRL ~+4%; EWZ +12.54% on 7x vol; no endorsements from eliminated candidates",
       "verification": "Confirmed-multiple (Agência Brasil official count + CNN/NPR/WaPo/Bloomberg)",
       "sources": [
         "Agência Brasil",
@@ -16,14 +63,14 @@
       ],
       "score_rationale": "Am lead: upset with direct market read-through (BRL, EWZ, Ibovespa)",
       "first_seen": "2026-10-05-am",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": true
     },
     {
       "id": "ust-auction-week-oct5",
-      "status": "Continuing",
-      "headline": "Long end into $119B coupon week: 10Y 5.28%, 30Y 5.63% (Oct 2 par); 3y Tue, 10y Wed, 30y Thu",
-      "one_line": "10Y +11bp on week while front end flat; HY OAS 3.24%; FOMC minutes Wed 2PM",
+      "status": "Materially changed",
+      "headline": "10Y par 5.31% (+3bp), ~5.35% intraday = highest since 2002, before $119B coupons (3y Tue, 10y Wed, 30y Thu)",
+      "one_line": "2s10s 47bp; HY OAS 3.10% Oct 2 (from 3.24); FOMC minutes Wed 2PM; Nasdaq record same day",
       "verification": "Confirmed-primary (Treasury, TreasuryDirect)",
       "sources": [
         "Treasury par curve",
@@ -32,15 +79,15 @@
       ],
       "score_rationale": "Central market story of the week",
       "first_seen": "2026-10-04-sun",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": true
     },
     {
       "id": "schneider-ptc-oct5",
-      "status": "New",
+      "status": "Continuing",
       "headline": "Schneider Electric to acquire PTC for $205/sh cash (~$22.6B equity), 42.3% premium",
-      "one_line": "Close ~Q3 2027; bridge from MS/SocGen; EUR5-6B equity + EUR16-17B debt; Schneider ~-7% Paris",
-      "verification": "Confirmed-multiple (Bloomberg, Reuters, GuruFocus); PTC 8-K not yet on EDGAR at 06:35 ET",
+      "one_line": "PTC +33.5% to $192.26 (6.6% spread to $205); PTC 8-K filed 07:22; Schneider ~-10% Paris (Yahoo EUR272.80)",
+      "verification": "Confirmed-primary (PTC 8-K, EDGAR)",
       "sources": [
         "Bloomberg",
         "Reuters",
@@ -49,14 +96,14 @@
       ],
       "score_rationale": "Largest M&A of the cycle; watchlist-adjacent industrial software",
       "first_seen": "2026-10-05-am",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": true
     },
     {
       "id": "spain-snap-election-euro-oct5",
-      "status": "New",
+      "status": "Continuing",
       "headline": "Sánchez calls Spanish snap election for Nov 29 after housing decrees defeated; euro near 17-month low",
-      "one_line": "EUR/USD ~1.121 (low ~1.116 single report); OAT-Bund >130bp; CAC -1%",
+      "one_line": "EUR/USD low ~1.1118 (17-month low, Reuters/Yahoo), ~1.1222 late; DXY 102.16 near 52w high; Spain 10y ~4.08%",
       "verification": "Confirmed-multiple (CNN, CNBC, Al Jazeera, Bloomberg); euro low single report",
       "sources": [
         "CNN",
@@ -67,14 +114,14 @@
       ],
       "score_rationale": "European sovereign/political risk spreading; dollar",
       "first_seen": "2026-10-05-am",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": true
     },
     {
       "id": "hormuz-tanker-oct4-fairford",
       "status": "Materially changed",
       "headline": "UKMTO: another tanker hit in Hormuz Sun Oct 4; Araghchi 'within seven days' plan; Camp David Fri; B-1s withdrawn from RAF Fairford",
-      "one_line": "Count of October attacks disputed (3 vs 4); Monday 'explosions' report single-source; Brent ~$102.3",
+      "one_line": "UKMTO: 3rd tanker hit in 48h Mon (engine-room fire); IRGC turned tanker back off Khasab; Pezeshkian: talks 'meaningless'; Brent settled $100.32 (-1.9%) after $103 on Houthi Aramco claim",
       "verification": "Confirmed-multiple (tanker, Fairford); Single-reliable-source (Monday explosions); Camp David Axios-led, not confirmed by WH",
       "sources": [
         "UKMTO via Iran International/Gulf News/The Hill",
@@ -84,7 +131,7 @@
       ],
       "score_rationale": "Oil floor driver",
       "first_seen": "2026-10-03-sat",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": true
     },
     {
@@ -124,16 +171,18 @@
     {
       "id": "scotus-boulder-oct5",
       "status": "New",
-      "headline": "SCOTUS term opens with Suncor v. Boulder County climate-liability case",
-      "one_line": "Decision likely by June; >=60 similar suits",
-      "verification": "Confirmed-primary (docket 25-170)",
+      "headline": "SCOTUS hears Suncor v. Boulder County (No. 25-170); coverage split on leanings; first orders list denies Mosby, Moore",
+      "one_line": "Preemption of state-law climate suits; ruling by June 2027",
+      "verification": "Confirmed-multiple",
       "sources": [
-        "Supreme Court docket",
-        "SCOTUSblog"
+        "NBC",
+        "The Hill",
+        "Daily Signal",
+        "CNN"
       ],
-      "score_rationale": "Energy-sector legal exposure",
+      "score_rationale": "Energy-sector liability exposure",
       "first_seen": "2026-10-05-am",
-      "last_updated": "2026-10-05-am",
+      "last_updated": "2026-10-05-pm",
       "watch": false
     },
     {
@@ -904,52 +953,6 @@
       ],
       "score_rationale": "AI hardware bellwether",
       "first_seen": "2026-09-27-sun",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "q3-close-split-market",
-      "status": "New",
-      "headline": "Q3 ends: S&P +2.0%, Nasdaq +2.5%, Dow -2.7%, R2K -7.5%; Sept Dow -4.3%, RSP -5.2%, XLF -7.5%",
-      "one_line": "Narrow tech-led market; 10 of 11 sector funds fell 9/30.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Yahoo closes (own calc)",
-        "CNBC"
-      ],
-      "score_rationale": "Quarter-end context",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "europe-inflation-sept-flash",
-      "status": "Continuing",
-      "headline": "German Sept flash CPI 3.3% (core 2.4%); FR HICP 3.4%, IT 4.1%; EA est ~3.8% (MUFG)",
-      "one_line": "Energy-driven; Stoxx 600 lost early gains; euro ~1.135.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Destatis via Reuters/FXStreet",
-        "MUFG"
-      ],
-      "score_rationale": "Global rates pressure",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "iran-hormuz-us-reply",
-      "status": "Continuing",
-      "headline": "Iran cabinet reviewing US reply on 7-day Hormuz plan; Trump denies Axios sanctions-relief report",
-      "one_line": "WTI ~+1.3% to ~$90.55; Brent Nov expired, continuous now Dec ~$98.11.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Reuters via IranWire",
-        "AP",
-        "CNBC"
-      ],
-      "score_rationale": "Oil path",
-      "first_seen": "2026-09-30-pm",
       "last_updated": "2026-09-30-pm",
       "watch": true
     }
