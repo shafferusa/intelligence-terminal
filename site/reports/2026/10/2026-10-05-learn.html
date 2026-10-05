@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Growth Curve Behind Every Chain Reaction, Epidemic, and Bacterial Colony — Learning Brief, Mon, Oct 5, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-05",
+    "slot": "learn",
+    "title": "The Growth Curve Behind Every Chain Reaction, Epidemic, and Bacterial Colony",
+    "path": "reports/2026/10/2026-10-05-learn.html",
+    "summary": "Day 6 of the Academy: why growth that feeds on itself always traces the same exponential curve, how the logarithm is built as its exact inverse, and why scientists measure earthquakes, sound and acidity on log scales instead of ordinary ones.",
+    "headlines": [
+      "Day 6 of 300 · Mathematics: exponential growth is what happens when a quantity's own size drives its own growth rate",
+      "The logarithm answers the opposite question: how many multiplications did it take to get here"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-05T04:58:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Growth Curve Behind Every Chain Reaction, Epidemic, and Bacterial Colony</h1>
+      <p class="paper-dateline">
+        Monday, October 5, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        One mathematical shape describes a splitting nucleus, a spreading outbreak and a dish of
+        bacteria alike &mdash; because in all three, the thing that is growing is also what drives
+        its own growth &mdash; and the logarithm is the tool built to run that shape backward.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 6 of 300 &middot; Mathematics 6 of 20 &middot; Exponents and logarithms: the mathematics of growth and scale</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Most of the change you can picture by instinct is additive: a savings jar gets five more
+        dollars a week, a commute takes the same twelve minutes every day, a candle burns down at a
+        steady rate. Add the same fixed amount each step, and after <em>x</em> steps you have simply
+        added that amount <em>x</em> times &mdash; a straight line.
+      </p>
+      <p>
+        <strong>Exponential growth</strong> is a different kind of change, and it is far stranger
+        than a straight line, because the amount added at each step is not fixed &mdash; it is a
+        constant <em>fraction of whatever the quantity has already grown to</em>. A population that
+        grows 10% a year adds more people in year ten than it did in year one, because by year ten
+        there are more people to grow from. The quantity doing the growing is also the engine that
+        drives its own future growth. That feedback loop is the entire difference between a straight
+        line and a curve that starts out looking almost flat and then, without ever changing its
+        rule, turns vertical.
+      </p>
+      <p>
+        The <strong>logarithm</strong> is the question this process raises in reverse. Exponential
+        growth answers &ldquo;if I start here and grow by this factor <em>x</em> times, where do I
+        end up?&rdquo; The logarithm answers the opposite question: &ldquo;I ended up here &mdash;
+        how many times did I have to multiply by that factor to get here?&rdquo; One function, and
+        the one question built to undo it &mdash; that pairing is today&rsquo;s entire lesson, and it
+        turns out to be the single most useful tool mathematics has for describing anything that
+        compounds on itself, from a nuclear chain reaction to a spreading outbreak to the decay of a
+        radioactive atom running the same process backward.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the exponent itself, stripped down to what it literally means.
+        <strong>b<sup>x</sup></strong>, read &ldquo;b to the power of x,&rdquo; began as shorthand for
+        repeated multiplication: b<sup>3</sup> means b&nbsp;&times;&nbsp;b&nbsp;&times;&nbsp;b. That
+        definition works cleanly for whole-number exponents, and it hands you two rules for free,
+        just from counting factors: multiplying b<sup>x</sup> by b<sup>y</sup> means laying down
+        (<em>x</em>&nbsp;+&nbsp;<em>y</em>) copies of b in a row, so b<sup>x</sup>&nbsp;&times;&nbsp;b<sup>y</sup>&nbsp;=&nbsp;b<sup>x+y</sup>;
+        and raising a power to a power multiplies the exponents, (b<sup>x</sup>)<sup>y</sup> =
+        b<sup>xy</sup>.
+      </p>
+      <p>
+        Mathematicians then asked what would have to be true for those same two rules to keep working
+        once <em>x</em> stops being a whole number &mdash; and the answers follow almost by force.
+        Since b<sup>x</sup>&nbsp;&times;&nbsp;b<sup>0</sup> must equal b<sup>x+0</sup>&nbsp;=&nbsp;b<sup>x</sup>,
+        b<sup>0</sup> has to equal 1, for any nonzero b. Since b<sup>x</sup>&nbsp;&times;&nbsp;b<sup>&minus;x</sup>
+        must equal b<sup>0</sup>&nbsp;=&nbsp;1, a negative exponent has to mean &ldquo;one over the
+        positive version&rdquo;: b<sup>&minus;x</sup>&nbsp;=&nbsp;1/b<sup>x</sup>. And since
+        (b<sup>1/2</sup>)<sup>2</sup> must equal b<sup>1</sup>&nbsp;=&nbsp;b, a fractional exponent of
+        1/2 has to mean the square root. Nobody had to invent these rules separately; they are the
+        only choices that keep the one rule for whole numbers consistent everywhere else.
+      </p>
+      <p>
+        With that groundwork, define the <strong>exponential function</strong> itself:
+        <em>y</em>&nbsp;=&nbsp;<em>a</em>&nbsp;&times;&nbsp;<em>b</em><sup><em>x</em></sup>, where
+        <em>a</em> is the starting amount (the value when <em>x</em> is 0) and <em>b</em> is the
+        growth factor applied each time <em>x</em> increases by one step. When <em>b</em> is greater
+        than 1, the quantity grows &mdash; <em>b</em>&nbsp;=&nbsp;1.10 means it grows 10% per step, and
+        <em>b</em>&nbsp;=&nbsp;2 means it doubles every step. When <em>b</em> sits between 0 and 1, the
+        same formula describes decay instead &mdash; <em>b</em>&nbsp;=&nbsp;0.5 halves the quantity
+        every step, which is exactly how radioactive decay and the fading of a drug in the
+        bloodstream are modeled, running the identical process backward from growth to shrinkage.
+      </p>
+      <p>
+        Real growth is rarely so tidy that it jumps in whole steps, though, and that gap is what
+        introduces mathematics&rsquo; most famous constant. In 1683 the Swiss mathematician Jacob
+        Bernoulli was studying compound interest and asked what happens as you compound more and more
+        often &mdash; yearly, then monthly, then daily, then continuously, with the compounding
+        interval shrinking toward zero. The value of (1&nbsp;+&nbsp;1/<em>n</em>)<sup><em>n</em></sup>,
+        he found, does not grow without bound as <em>n</em> gets larger; it settles down and approaches
+        a fixed number near 2.71828. Leonhard Euler spent the 1720s formalizing that constant&rsquo;s
+        properties, started writing it as the single letter <strong>e</strong> around 1727&ndash;28,
+        used it in a 1731 letter to fellow mathematician Christian Goldbach, and put it in print for
+        the first time in his 1736 book <em>Mechanica</em>. <strong>e</strong> is irrational &mdash;
+        its decimal digits never terminate or repeat, exactly like last lesson&rsquo;s square root of
+        2 &mdash; and it is the natural base for describing growth that compounds continuously rather
+        than in discrete jumps: <em>y</em>&nbsp;=&nbsp;<em>a</em>&nbsp;&times;&nbsp;e<sup><em>kt</em></sup>,
+        where <em>k</em> is the continuous growth rate (positive for growth, negative for decay) and
+        <em>t</em> is time. Nothing about <em>e</em> is arbitrary the way 360 degrees in a circle is
+        arbitrary; it falls directly out of asking what continuous, self-compounding growth looks like.
+      </p>
+      <p>
+        Now turn the question around. If you know the growth factor <em>b</em> and the number of
+        steps <em>x</em>, finding <em>y</em> is exponentiation. If instead you know <em>b</em> and
+        <em>y</em> and want to know how many steps it took &mdash; how many times you had to multiply
+        by <em>b</em> to reach <em>y</em> &mdash; that is the <strong>logarithm</strong>, written
+        log<sub><em>b</em></sub>(<em>y</em>) and defined so that log<sub><em>b</em></sub>(<em>y</em>)&nbsp;=&nbsp;<em>x</em>
+        exactly when b<sup><em>x</em></sup>&nbsp;=&nbsp;<em>y</em>. It is, by construction, the exact
+        inverse of exponentiation: raise <em>b</em> to the logarithm and you get back <em>y</em>; take
+        the logarithm of b<sup><em>x</em></sup> and you get back <em>x</em>. Three bases come up
+        constantly, each with its own shorthand: base&nbsp;10 (the <strong>common logarithm</strong>,
+        often written just &ldquo;log&rdquo;), base <em>e</em> (the <strong>natural logarithm</strong>,
+        written &ldquo;ln&rdquo;, the natural partner to continuous growth), and base 2 (the
+        <strong>binary logarithm</strong>, which counts doublings and underlies computer science&rsquo;s
+        measures of information).
+      </p>
+      <p>
+        Because the logarithm inherits its structure directly from the exponent rules, it converts
+        multiplication into addition: log(<em>xy</em>)&nbsp;=&nbsp;log(<em>x</em>)&nbsp;+&nbsp;log(<em>y</em>),
+        log(<em>x</em>/<em>y</em>)&nbsp;=&nbsp;log(<em>x</em>)&nbsp;&minus;&nbsp;log(<em>y</em>), and
+        log(<em>x<sup>n</sup></em>)&nbsp;=&nbsp;<em>n</em>&nbsp;&times;&nbsp;log(<em>x</em>). That one
+        property is exactly why logarithms were invented in the first place, by the Scottish laird
+        John Napier, who spent roughly two decades developing what he called &ldquo;artificial
+        numbers&rdquo; to ease the brutal hand-arithmetic of 16th-century astronomy, and published them
+        in 1614 as <em>Mirifici Logarithmorum Canonis Descriptio</em>. Turning a multiplication problem
+        into an addition problem &mdash; look up two logarithms, add them, look up which number that
+        sum belongs to &mdash; let astronomers, navigators and surveyors do in minutes what had taken
+        hours, three and a half centuries before an electronic calculator existed. The slide rule, the
+        dominant calculating tool from the 17th century until the 1970s, is nothing more than two
+        logarithmic scales slid against each other to perform that addition mechanically.
+      </p>
+      <p>
+        That same addition-for-multiplication trick is also why logarithms are the right tool whenever
+        a quantity spans many <strong>orders of magnitude</strong> &mdash; many multiples of ten &mdash;
+        rather than a modest range. Plotting such a quantity on an ordinary scale crushes the small
+        values into invisibility near zero while the large ones run off the page; plotting it on a
+        <strong>log scale</strong>, where each equal step represents an equal multiplicative factor
+        rather than an equal additive amount, keeps every value legibly spaced. Three familiar
+        measurements are built this way. The moment magnitude scale used for earthquakes is
+        logarithmic: each whole step up represents about 10 times the ground-shaking amplitude and
+        roughly 31&ndash;32 times the energy released, which is why a magnitude 7 quake is not &ldquo;a
+        bit worse&rdquo; than a magnitude 6 but on the order of thirty times more energetic. The
+        decibel scale for sound works the same way: every 10&nbsp;dB increase means ten times the sound
+        intensity, chosen because human hearing itself responds to loudness roughly logarithmically
+        rather than linearly. And a solution&rsquo;s pH is defined as the negative common logarithm of
+        its hydrogen-ion concentration, so each whole step down in pH means ten times more acidity.
+        None of these fields are the subject of today&rsquo;s lesson &mdash; chemistry and earth
+        science get their own blocks later in this curriculum &mdash; but all three are, underneath,
+        exactly the same mathematical move: replace a quantity that varies multiplicatively with its
+        logarithm, so equal steps mean equal ratios instead of equal differences.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Exponent</dt>
+        <dd>The power <em>x</em> in b<sup>x</sup>, originally shorthand for multiplying b by itself <em>x</em> times; extended by its own rules to zero, negative and fractional values.</dd>
+        <dt>Exponential growth / decay</dt>
+        <dd>Change in which a quantity's rate of change is a constant proportion of its current size, <em>y</em> = <em>a</em> &times; <em>b<sup>x</sup></em>: growth when the base <em>b</em> exceeds 1, decay when it sits between 0 and 1.</dd>
+        <dt>Logarithm</dt>
+        <dd>The exact inverse of exponentiation: log<sub>b</sub>(<em>y</em>) is the power you must raise <em>b</em> to in order to get <em>y</em>. Turns multiplication into addition.</dd>
+        <dt>Order of magnitude</dt>
+        <dd>A factor of ten. Two quantities differing by one order of magnitude differ by a factor of 10; by two orders, a factor of 100.</dd>
+        <dt>Log scale</dt>
+        <dd>A way of spacing a scale so that equal steps represent equal multiplicative factors (such as &times;10) rather than equal additive differences &mdash; the right choice whenever a quantity spans many orders of magnitude.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        <em>Escherichia coli</em>, one of the best-studied bacteria on Earth, divides in two under
+        optimal laboratory conditions roughly every 20 minutes &mdash; its <strong>doubling time</strong>.
+        That single fact, combined with nothing more than the exponent rules above, is enough to show
+        why exponential growth so reliably catches people off guard.
+      </p>
+      <div class="worked">
+        <p>
+          <strong>One cell, eight hours, optimal conditions.</strong> Starting from a single bacterium
+          doubling every 20 minutes, the population after <em>n</em> doublings is 2<sup><em>n</em></sup>.
+        </p>
+        <p>
+          After 1 hour (3 doublings): 2<sup>3</sup> = 8 cells.<br>
+          After 2 hours (6 doublings): 2<sup>6</sup> = 64 cells.<br>
+          After 4 hours (12 doublings): 2<sup>12</sup> = 4,096 cells.<br>
+          After 8 hours (24 doublings): 2<sup>24</sup> = 16,777,216 cells.
+        </p>
+        <p>
+          Notice the shape of that list: linear time, but the population jumps by larger and larger
+          absolute amounts at every step &mdash; the signature of exponential growth. A single cell
+          that is invisible to the eye becomes almost 17 million cells, still well under a gram of
+          mass, in the length of a single workday, purely from doubling on a fixed clock. (In practice,
+          real colonies eventually run out of nutrients and stop doubling at this pace &mdash; the
+          formula above describes only the exponential phase, before that limit bites.)
+        </p>
+      </div>
+      <p>
+        The same arithmetic, with a different doubling time, describes a chain reaction: each fissioning
+        atom in a critical mass releases neutrons that go on to split further atoms, so the number of
+        fissions per instant depends on how many are already happening, exactly the self-reinforcing
+        structure this lesson opened with. It describes an uncontrolled infectious outbreak the same
+        way, early on, before behavior change, immunity or public-health measures bend the curve: the
+        number of new cases on a given day depends on how many infectious people are already spreading
+        it, so cases also double on a roughly fixed interval until something intervenes. A chain
+        reaction, an early outbreak and a bacterial colony have essentially nothing else in common
+        &mdash; a splitting nucleus, a virus and a microorganism obey completely different physical
+        laws &mdash; but all three are counted by a process where the next instant&rsquo;s rate of
+        increase is proportional to the current total, and that structural fact alone is enough to
+        force the identical curve onto all three.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        The exponential function and the logarithm are two statements of the same fact, one solved for
+        <em>y</em> and one solved for <em>x</em>:
+      </p>
+      <div class="formula">
+        <p class="expr">y = a &times; b<sup>x</sup> &nbsp;&nbsp;&hArr;&nbsp;&nbsp; x = log<sub>b</sub>(y/a)</p>
+        <p class="expr-spoken visually-hidden">y equals a times b to the x, if and only if, x equals log base b of y over a.</p>
+        <dl>
+          <dt>a</dt>
+          <dd>the starting value, at x = 0</dd>
+          <dt>b</dt>
+          <dd>the growth factor per step (greater than 1 for growth, between 0 and 1 for decay)</dd>
+          <dt>x</dt>
+          <dd>the number of steps (or elapsed time, in a continuous model)</dd>
+          <dt>y</dt>
+          <dd>the quantity's value after x steps</dd>
+        </dl>
+      </div>
+      <p>
+        One consequence of that pairing is worth deriving in full, because it is the exact question
+        the bacteria example above kept asking by brute force: given a continuous growth rate
+        <em>k</em>, how long does doubling actually take? Start from the continuous model and set the
+        quantity equal to twice its starting value:
+      </p>
+      <div class="formula">
+        <p class="expr">a &times; e<sup>kt</sup> = 2a</p>
+        <p class="expr-spoken visually-hidden">a times e to the k t equals two a.</p>
+      </div>
+      <p>
+        Divide both sides by <em>a</em> &mdash; the starting amount cancels out completely, which is
+        itself worth noticing: the time it takes anything growing exponentially to double never
+        depends on how big it started out, only on its growth rate. That leaves e<sup>kt</sup>&nbsp;=&nbsp;2.
+        To pull <em>t</em> out of the exponent, apply the natural logarithm to both sides &mdash; the
+        one operation defined to undo exactly this:
+      </p>
+      <div class="formula">
+        <p class="expr">ln(e<sup>kt</sup>) = ln(2) &nbsp;&nbsp;&rArr;&nbsp;&nbsp; kt = ln(2) &nbsp;&nbsp;&rArr;&nbsp;&nbsp; t = ln(2) / k</p>
+        <p class="expr-spoken visually-hidden">The natural log of e to the k t equals the natural log of 2, so k t equals the natural log of 2, so t equals the natural log of 2 divided by k.</p>
+      </div>
+      <p>
+        That last line, <strong>doubling time = ln(2)/k</strong>, is one of the most quietly useful
+        formulas in applied mathematics &mdash; it is the same relationship, run with a minus sign,
+        that gives a radioactive isotope&rsquo;s half-life from its decay rate. ln(2) is a fixed number,
+        about 0.693, so the formula says plainly: double the growth rate, and you halve the doubling
+        time. There is no way around that trade-off, because it falls directly out of what the
+        logarithm is built to do.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        The deepest reason exponential growth turns up in so many unrelated places is that it is the
+        answer to a single, very common question in nature and in engineered systems alike: what does
+        change look like when the rate of change is proportional to the amount already present? That
+        question has a name &mdash; it is a differential equation, d<em>y</em>/d<em>t</em>&nbsp;=&nbsp;<em>ky</em>
+        &mdash; and this lesson has just solved it without using that language yet. Day 10&rsquo;s
+        derivative gives rate-of-change a precise meaning, and Day 12&rsquo;s differential equations
+        will show that &ldquo;exponential&rdquo; is, in a specific sense made rigorous there, the
+        <em>only</em> family of functions whose own rate of change is proportional to themselves. Today
+        you have met that function and its inverse directly, from first principles, well before the
+        machinery that explains why nothing else behaves quite the same way.
+      </p>
+      <p>
+        There is a second, more practical payoff, and it is about intuition rather than formulas. Human
+        perception is built for additive change and is reliably bad at exponential change: a curve that
+        looks nearly flat for a long stretch can be only a handful of doublings away from overwhelming
+        whatever scale you are watching it on, and by the time the growth is visible to the naked eye on
+        an ordinary chart, a very large share of the total growth has frequently already happened.
+        Recognizing the shape &mdash; a quantity whose next increase depends on its current size, not a
+        fixed schedule &mdash; is what lets you ask the right question early (what is the doubling time?)
+        instead of being surprised later by a number that was entirely predictable from the rule
+        governing it the whole time.
+      </p>
+      <p>
+        One more thread worth holding onto: the constant <em>e</em> introduced here as the base of
+        continuous growth is not a one-off curiosity confined to this lesson. Day 7&rsquo;s complex
+        numbers will show that raising <em>e</em> to an imaginary power produces sine and cosine
+        themselves, tying today&rsquo;s growth curve directly to Day 5&rsquo;s circle; and Day 8&rsquo;s
+        look at infinite series will show exactly how Euler computed <em>e</em> and its powers to
+        unlimited precision. The single constant that fell out of Bernoulli&rsquo;s question about
+        compounding keeps reappearing, in increasingly unexpected company, for the rest of this block.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Exponential growth happens when a quantity's rate of increase is a constant proportion of
+        its current size &mdash; the quantity drives its own future growth, which is why the curve
+        starts slow and then turns sharply upward.</li>
+        <li>y = a &times; b<sup>x</sup>: a is the starting value, b is the growth factor per step;
+        b &gt; 1 is growth, 0 &lt; b &lt; 1 is decay.</li>
+        <li>The logarithm is the exact inverse of the exponent: log<sub>b</sub>(y) asks how many times
+        you must multiply by b to reach y, and it turns multiplication into addition.</li>
+        <li>Doubling time = ln(2)/k: how long exponential growth takes to double depends only on the
+        growth rate, never on the starting amount.</li>
+        <li>A log scale spaces equal multiplicative steps evenly &mdash; the right tool whenever a
+        quantity, like earthquake energy or sound intensity, spans many orders of magnitude.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        A lily pond contains one patch of algae that doubles in area every single day. Left alone, the
+        algae will cover the entire pond in exactly 30 days. On which day is the pond exactly half
+        covered? Using that answer, what does this tell you about how deceptive exponential growth
+        looks to someone watching it happen in real time &mdash; and why &ldquo;it only covers a small
+        fraction today&rdquo; is not, by itself, a reason to expect tomorrow to look similar?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> John Napier's 1614 <em>Mirifici Logarithmorum Canonis Descriptio</em>
+      and his roughly twenty years developing logarithms for astronomical calculation (National Museums
+      Scotland and standard history-of-mathematics accounts). Jacob Bernoulli's 1683 compound-interest
+      problem and Leonhard Euler's 1727&ndash;1731 formalization and naming of <em>e</em>, first printed
+      in his 1736 <em>Mechanica</em> (standard history-of-mathematics accounts). <em>E. coli</em>'s
+      roughly 20-minute doubling time under optimal laboratory conditions (standard microbiology
+      reference sources). The moment magnitude scale's roughly tenfold amplitude and 31&ndash;32-fold
+      energy increase per whole step, the decibel's tenfold-intensity-per-10dB definition, and the
+      pH scale's definition as the negative log of hydrogen-ion concentration are each standard,
+      undisputed scientific definitions, cited here only as illustrations of a log scale, not as
+      chemistry or seismology lessons in their own right.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-04-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
