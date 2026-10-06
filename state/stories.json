@@ -1,6 +1,164 @@
 {
   "stories": [
     {
+      "id": "spx-record-7800-oct6",
+      "status": "New",
+      "headline": "S&P 500 record close 7,818.93 (+0.58%), first above 7,800; Nasdaq record 27,599.79; Russell 2000 -0.59%",
+      "one_line": "Intraday high 7,844.52; 10Y par 5.27% (-4bp); narrow leadership",
+      "verification": "Confirmed-multiple (Yahoo, TheStreet, CNBC)",
+      "sources": [
+        "Yahoo",
+        "TheStreet",
+        "CNBC",
+        "Treasury"
+      ],
+      "score_rationale": "Lead: record + yields easing",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "ceg-google-nuclear-ppa-oct6",
+      "status": "New",
+      "headline": "Google 20-yr PPA for 890MW new nuclear from Constellation (+2,700MW supply); CEG +12.3%, VST +10.8%, XLU +3.0%",
+      "one_line": "Supports >$4.3B CEG investment per reports; PJM grid",
+      "verification": "Confirmed-multiple (CNBC, GuruFocus, 24/7)",
+      "sources": [
+        "CNBC",
+        "GuruFocus",
+        "24/7 Wall St"
+      ],
+      "score_rationale": "Market-moving, sector-wide, PJM local read",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "trade-deficit-aug-oct6",
+      "status": "New",
+      "headline": "Aug trade deficit $105.6B (cons ~$102B), widest since early 2025; imports record $420.8B; Jul rev to $92.8B",
+      "one_line": "GDPNow net exports ~-2.6pp (search summary)",
+      "verification": "Confirmed-primary (BEA)",
+      "sources": [
+        "BEA",
+        "CNBC",
+        "Reuters"
+      ],
+      "score_rationale": "Macro data, Q3 GDP",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "ust-3y-auction-oct6",
+      "status": "Materially changed",
+      "headline": "$58B 3Y at 4.932%, 0.2bp stop-through; BTC 2.62; indirects 57.6% (avg 65.9%), directs 31.7%",
+      "one_line": "10Y reopening Wed, minutes Wed 2PM; 30Y Thu",
+      "verification": "Confirmed-multiple (MNI, investingLive)",
+      "sources": [
+        "MNI",
+        "investingLive",
+        "Newsquawk"
+      ],
+      "score_rationale": "Auction week",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "paramount-wbd-close-oct6",
+      "status": "Resolved",
+      "headline": "Paramount Skydance closes WBD takeover (~$110B), Ellison CEO; 12-state settlement with 5-yr conditions",
+      "one_line": "Closing 8-K not read; name 'Skydance' as reported",
+      "verification": "Confirmed-multiple (CNBC, NBC)",
+      "sources": [
+        "CNBC",
+        "NBC News"
+      ],
+      "score_rationale": "Major M&A close, credit issuer",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "mrvl-investor-day-oct6",
+      "status": "New",
+      "headline": "Marvell lifts FY28 revenue target to $20B (from $18B; cons ~$18.2B); MRVL +5.8%, CIEN +13.9%, ALAB +7.6%",
+      "one_line": "FY31 $70-90B; TAM $400B by 2030",
+      "verification": "Confirmed-multiple (GuruFocus, Invezz, CNBC)",
+      "sources": [
+        "GuruFocus",
+        "Invezz",
+        "CNBC"
+      ],
+      "score_rationale": "AI networking leadership",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "moscow-drone-attack-oct6",
+      "status": "New",
+      "headline": "Ukraine mass drone attack on Moscow region (Sobyanin ~650; others ~290); 2 killed; Volodarskaya depot hit; airports halted",
+      "one_line": "Grain ship sunk in Romanian EEZ Oct 5; ships hit off Bulgaria unconfirmed",
+      "verification": "Confirmed-multiple (Al Jazeera, Kyiv Post); counts disputed",
+      "sources": [
+        "Al Jazeera",
+        "Kyiv Post",
+        "Euronews"
+      ],
+      "score_rationale": "War, refined products",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "yemen-mocha-saudi-airports-oct6",
+      "status": "Materially changed",
+      "headline": "Saudi-backed Yemeni forces say they retook Mocha; Houthi strikes hit Jazan, Najran airports (3 wounded)",
+      "one_line": "Houthis deny; ~20 ships attacked in Gulf in past month; no new confirmed tanker strike Oct 6",
+      "verification": "Single-reliable-source (Bloomberg) on Mocha; Al Jazeera on airports",
+      "sources": [
+        "Bloomberg",
+        "Al Jazeera",
+        "CNBC"
+      ],
+      "score_rationale": "Red Sea/Bab el-Mandeb risk",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "nobel-physics-2026-halzen",
+      "status": "New",
+      "headline": "Nobel Prize in Physics 2026: Francis Halzen (UW-Madison), IceCube and astrophysical high-energy neutrinos",
+      "one_line": "Sole laureate",
+      "verification": "Confirmed-primary (KVA/NobelPrize.org)",
+      "sources": [
+        "NobelPrize.org",
+        "NPR",
+        "Nature"
+      ],
+      "score_rationale": "Science headline",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "stz-fq2-oct6",
+      "status": "New",
+      "headline": "Constellation Brands FQ2 comparable EPS $3.74 vs ~$3.55; sales $2.63B +6%; comparable FY27 EPS $11.20-11.90 reaffirmed",
+      "one_line": "Beer sales +5%, OI +1%",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "SEC EDGAR 8-K"
+      ],
+      "score_rationale": "Earnings",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
       "id": "spcx-rally-lockup-oct9",
       "status": "New",
       "headline": "SpaceX +7.6% to $171.09, highest close since June; ~328M-share lockup expires Oct 9",
@@ -13,7 +171,7 @@
       ],
       "score_rationale": "Watchlist name, supply event Friday",
       "first_seen": "2026-10-05-pm",
-      "last_updated": "2026-10-05-pm",
+      "last_updated": "2026-10-06-pm",
       "watch": true
     },
     {
@@ -503,7 +661,7 @@
       "id": "duquesne-light-strike-oct1",
       "status": "Continuing",
       "headline": "Duquesne Light strike day 2: ~1,000 IBEW Local 29; talks expected to resume Oct 2, outcome unknown; company offer double-digit raises + 120 union positions",
-      "one_line": "Contingency crews; rain Friday first test",
+      "one_line": "Day 6 (Oct 6): no deal, no talks reported",
       "verification": "Confirmed-multiple",
       "sources": [
         "Post-Gazette",
@@ -513,7 +671,7 @@
       ],
       "score_rationale": "Local: serves Bridgeville/South Hills",
       "first_seen": "2026-10-01-am",
-      "last_updated": "2026-10-02-pm",
+      "last_updated": "2026-10-06-pm",
       "watch": true
     },
     {
@@ -797,163 +955,6 @@
       "score_rationale": "Removal-power precedent",
       "first_seen": "2026-10-01-pm",
       "last_updated": "2026-10-01-pm",
-      "watch": true
-    },
-    {
-      "id": "crew13-launch-oct1",
-      "status": "Developing",
-      "headline": "Crew-13 launched 11:10 AM on Falcon 9 (Dragon Grace); docking ~7 PM; Falcon Heavy NROL-97 11:53 PM",
-      "one_line": "Transporter-18 with Google Suncatcher",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "NASA",
-        "UPI",
-        "NASASpaceFlight"
-      ],
-      "score_rationale": "Space section",
-      "first_seen": "2026-10-01-pm",
-      "last_updated": "2026-10-01-pm",
-      "watch": true
-    },
-    {
-      "id": "pa-skill-games-oct13-deadline",
-      "status": "Developing",
-      "headline": "PA skill games: legislature deadline Oct 13; State Police to seize unlicensed machines from Oct 14",
-      "one_line": "HB 2213/SB 1079, stopgaps HB 2793/2795 pending",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Spotlight PA",
-        "NBC10"
-      ],
-      "score_rationale": "Local PA",
-      "first_seen": "2026-10-01-pm",
-      "last_updated": "2026-10-01-pm",
-      "watch": true
-    },
-    {
-      "id": "micron-fq4-2026",
-      "status": "Continuing",
-      "headline": "Micron FQ4 rev $54.23B, guide $61.5B; supply-agreement commitments $32B; shares flat-to-lower premarket; Korea Sept chip exports $60.3B (+263%)",
-      "one_line": "AI hardware demand accelerating; reaction muted in MU, strong in Asia chips/NQ futures.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Micron 8-K",
-        "Reuters",
-        "Korea Times",
-        "Xinhua"
-      ],
-      "score_rationale": "AI capex bellwether",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-10-01-am",
-      "watch": true
-    },
-    {
-      "id": "paramount-wbd-consent-decree",
-      "status": "Materially changed",
-      "headline": "N.D. Cal. enters 12-state consent decree (Sep 30); no-close order modified so Paramount Skydance-WBD merger can close; 5-yr theatrical commitments",
-      "one_line": ">=30 US films/yr (32 later), 45-day windows, 90 days before SVOD.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "PSKY 8-K Item 8.01"
-      ],
-      "score_rationale": "Major media M&A legal clearance",
-      "first_seen": "2026-10-01-am",
-      "last_updated": "2026-10-01-am",
-      "watch": true
-    },
-    {
-      "id": "kaliningrad-memo",
-      "status": "New",
-      "headline": "Russia memo to NATO alleges Kaliningrad blockade plans, warns of 'entire arsenal'; Rutte: stop nuclear threats",
-      "one_line": "Rhetorical escalation; no evidence of blockade plan.",
-      "verification": "Single-reliable-source",
-      "sources": [
-        "Reuters (memo seen)",
-        "Moscow Times",
-        "Al Jazeera"
-      ],
-      "score_rationale": "Russia-NATO flashpoint",
-      "first_seen": "2026-10-01-am",
-      "last_updated": "2026-10-01-am",
-      "watch": true
-    },
-    {
-      "id": "white-house-super-intelligence-eo",
-      "status": "New",
-      "headline": "EO 'Inaugurating The Era of Super Intelligence' (Sep 29): agencies to say SI not AI; 60-day definition proposal; voluntary White House Accord on SI",
-      "one_line": "Linguistic for now; accord has no enforcement; signatory lists differ.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "White House fact sheet (listing)",
-        "IAPP",
-        "Freshfields",
-        "SiliconANGLE"
-      ],
-      "score_rationale": "AI policy",
-      "first_seen": "2026-10-01-am",
-      "last_updated": "2026-10-01-am",
-      "watch": false
-    },
-    {
-      "id": "pittsburgh-2027-budget",
-      "status": "New",
-      "headline": "O'Connor 2027 budget: ~$728M operating, ~$145M capital, no tax hike/layoffs, ~$26.5M reserve draw, $250M 5-yr gap",
-      "one_line": "Council hearings next.",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "City of Pittsburgh",
-        "WESA",
-        "PublicSource"
-      ],
-      "score_rationale": "Local fiscal",
-      "first_seen": "2026-10-01-am",
-      "last_updated": "2026-10-01-am",
-      "watch": false
-    },
-    {
-      "id": "pce-gdp-annual-update-sep30",
-      "status": "Materially changed",
-      "headline": "Aug PCE core 0.25% m/m, 3.01% y/y; annual update cut July core to 2.98% from 3.34%; Q2 GDP 2.2% from 1.5%",
-      "one_line": "Monthly core near consensus; y/y miss is revision-driven (ALFRED vintages). Oct hike odds below 50% (CNBC 37%; readings conflict). Long end sold off anyway: 30Y 5.64%.",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "FRED/ALFRED",
-        "BEA via Fox Business/FXStreet/CNSNews/Haver",
-        "CNBC"
-      ],
-      "score_rationale": "Lead: Fed path and revision reset",
-      "first_seen": "2026-09-30-am",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "long-end-selloff-30y-2002-high",
-      "status": "Continuing",
-      "headline": "30Y par closes 5.64% (+5bp), 10Y 5.29%, 2s10s 41bp; bear steepening despite softer inflation",
-      "one_line": "Second day front end eased while long end rose; term-premium story; HY OAS 3.08% (9/29).",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Treasury par curve",
-        "FRED"
-      ],
-      "score_rationale": "Market regime driver",
-      "first_seen": "2026-09-30-pm",
-      "last_updated": "2026-09-30-pm",
-      "watch": true
-    },
-    {
-      "id": "micron-fq4-sep30",
-      "status": "Materially changed",
-      "headline": "Micron FQ4 rev $54.23B, non-GAAP EPS $33.42, GM 87.0%; FQ1 guide $61.5B +/-1.5B, EPS $38.15, GM ~86.25%",
-      "one_line": "Beat and raise vs LSEG ~$51.1B/$31.61 and FQ1 ~$57.0B; AH ~+2% early (Yahoo 4:34 PM).",
-      "verification": "Confirmed-primary",
-      "sources": [
-        "Micron 8-K EX-99.1",
-        "LSEG via CNBC"
-      ],
-      "score_rationale": "AI hardware bellwether",
-      "first_seen": "2026-09-27-sun",
-      "last_updated": "2026-09-30-pm",
       "watch": true
     }
   ]

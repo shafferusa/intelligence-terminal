@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Tue, Oct 6, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-10-06",
+  "slot": "pm",
+  "title": "Records for the S&P 500 and Nasdaq as Yields Ease; Google's Nuclear Deal Lifts Utilities; Trade Deficit Widest Since Early 2025",
+  "path": "reports/2026/10/2026-10-06-pm.html",
+  "summary": "The S&P 500 closed at a record 7,818.93 and the Nasdaq at a second straight record as the 10-year Treasury yield fell 4bp to 5.27% after a clean 3-year auction, utilities jumped 3% on Google's 20-year nuclear deal with Constellation Energy, small caps fell, and the August trade deficit widened to $105.6 billion.",
+  "headlines": [
+    "S&P 500 record close above 7,800, Nasdaq record; Russell 2000 -0.6%; 10-year 5.27% (-4bp) after clean 3-year auction",
+    "Constellation +12%, utilities +3% on Google's 20-year nuclear PPA; Ciena +14%, Marvell +6% on raised AI targets",
+    "Trade deficit $105.6B, widest since early 2025; Paramount closes WBD takeover; Ukraine drones hit Moscow fuel depot"
+  ],
+  "reading_minutes": 34,
+  "generated_at": "2026-10-06T16:45:00-04:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Closing Brief</h1>
+      <p class="paper-dateline">
+        Tuesday, October 6, 2026 <span class="sep">&middot;</span> 34 min read
+      </p>
+      <p class="paper-standfirst">
+        The S&amp;P 500 closed at a record above 7,800 as the 10-year yield fell back from its 24-year high and the 3-year auction went off cleanly. Google&rsquo;s nuclear deal with Constellation lifted utilities 3%, small caps fell, and the August trade deficit came in at its widest since early 2025.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> Large caps set records, but the gains were narrow:
+            <ul>
+              <li>S&amp;P 500: +0.58%, to a record close of 7,818.93, its first close above 7,800</li>
+              <li>Nasdaq Composite: +0.45%, to a second straight record close of 27,599.79</li>
+              <li>Dow: +0.49%, to 51,521.28</li>
+              <li>Russell 2000: &minus;0.59%, to 2,830.30</li>
+            </ul>
+            Utilities (+3.0%) led every other sector by nearly two points.</li>
+          <li><b>The macro thread.</b> The US trade deficit widened to $105.6 billion in August, against about $102 billion expected and the widest since early 2025. Imports hit a record $420.8 billion. July was revised wider, to $92.8 billion (BEA). Net exports are now a large drag on third-quarter GDP.</li>
+          <li><b>Rates, the Fed and the Treasury.</b> Treasury&rsquo;s official curve put the 10-year at 5.27%, down 4bp from Monday&rsquo;s 24-year closing high, and the 2-year at 4.79%, down 5bp. The $58 billion 3-year auction stopped 0.2bp through the when-issued yield. Foreign demand was soft and domestic demand strong. The 10-year reopening and the Fed minutes are tomorrow.</li>
+          <li><b>Biggest market risk.</b> Records on a day when the Russell 2000 fell and the S&amp;P&rsquo;s gains came from a handful of themes: power for AI, networking chips and retail. Tomorrow at 1:00 PM the $39 billion 10-year auction tests whether buyers will take duration near 5.3%.</li>
+          <li><b>Power for AI.</b> Constellation Energy rose 12.3% and Vistra 10.8% after Google agreed to buy power from new Constellation nuclear capacity for 20 years. Ciena rose 13.9% and Marvell 5.8% after Marvell raised its long-term revenue target.</li>
+          <li><b>Companies.</b> Paramount Skydance closed its takeover of Warner Bros. Discovery. Option Care Health jumped 32.7% on a report of a buyout approach. Constellation Brands beat estimates after the close and kept its profit outlook. Seagate fell 9.2% and Western Digital 6.9% on worries about new disk-drive capacity.</li>
+          <li><b>The world.</b> Ukraine launched one of its largest drone attacks yet on the Moscow region, hitting a major fuel depot and closing Moscow&rsquo;s airports. Brent still settled just above $100.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Oct 6, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Oct 6, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>779.09</td><td class="up">+4.26</td><td class="up">+0.55%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 781.62</span><span class="range-bar" style="--pos:98"><i></i></span></td>
+                <td>35M</td><td>44M</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>312.76</td><td class="up">+1.36</td><td class="up">+0.44%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 314.12</span><span class="range-bar" style="--pos:98"><i></i></span></td>
+                <td>3.2M</td><td>2.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>514.56</td><td class="up">+2.45</td><td class="up">+0.48%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:67"><i></i></span></td>
+                <td>2.8M</td><td>3.4M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>281.34</td><td class="down">&minus;2.04</td><td class="down">&minus;0.72%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:69"><i></i></span></td>
+                <td>21M</td><td>21M</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>73.90</td><td class="up">+0.40</td><td class="up">+0.54%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 74.11</span><span class="range-bar" style="--pos:99"><i></i></span></td>
+                <td>3.9M</td><td>3.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>212.33</td><td class="up">+1.21</td><td class="up">+0.57%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:73"><i></i></span></td>
+                <td>12M</td><td>7.1M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>632.50</td><td class="down">&minus;1.40</td><td class="down">&minus;0.22%</td>
+                <td class="range-cell"><span class="range-nums">315.05 &ndash; 671.83</span><span class="range-bar" style="--pos:89"><i></i></span></td>
+                <td>5.0M</td><td>8.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>202.00</td><td class="up">+1.07</td><td class="up">+0.53%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 203.25</span><span class="range-bar" style="--pos:98"><i></i></span></td>
+                <td>6.1M</td><td>7.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>54.01</td><td class="up">+0.13</td><td class="up">+0.24%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:58"><i></i></span></td>
+                <td>22M</td><td>33M</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>70.07</td><td class="down">&minus;0.32</td><td class="down">&minus;0.45%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:60"><i></i></span></td>
+                <td>10M</td><td>13M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>63.75</td><td class="up">+0.30</td><td class="up">+0.47%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:90"><i></i></span></td>
+                <td>26M</td><td>30M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.21%</td><td class="down">&minus;1bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td>
+                <td>5.27%</td><td class="down">&minus;4bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell">&mdash;</td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>77.28</td><td class="up">+0.17</td><td class="up">+0.22%</td>
+                <td class="range-cell"><span class="range-nums">76.69 &ndash; 92.19</span><span class="range-bar" style="--pos:4"><i></i></span></td>
+                <td>31M</td><td>35M</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>89.12</td><td class="up">+0.21</td><td class="up">+0.23%</td>
+                <td class="range-cell"><span class="range-nums">88.64 &ndash; 98.05</span><span class="range-bar" style="--pos:5"><i></i></span></td>
+                <td>12M</td><td>8.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>104.18</td><td class="up">+0.20</td><td class="up">+0.19%</td>
+                <td class="range-cell"><span class="range-nums">103.76 &ndash; 112.24</span><span class="range-bar" style="--pos:5"><i></i></span></td>
+                <td>1.8M</td><td>1.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>102.14</td><td class="up">+0.31</td><td class="up">+0.30%</td>
+                <td class="range-cell"><span class="range-nums">101.20 &ndash; 112.93</span><span class="range-bar" style="--pos:8"><i></i></span></td>
+                <td>28M</td><td>31M</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>77.27</td><td class="up">+0.29</td><td class="up">+0.38%</td>
+                <td class="range-cell"><span class="range-nums">76.39 &ndash; 81.33</span><span class="range-bar" style="--pos:18"><i></i></span></td>
+                <td>47M</td><td>41M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>382.27</td><td class="up">+2.72</td><td class="up">+0.72%</td>
+                <td class="range-cell"><span class="range-nums">360.12 &ndash; 509.70</span><span class="range-bar" style="--pos:15"><i></i></span></td>
+                <td>7.3M</td><td>9.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>144.91</td><td class="up">+0.92</td><td class="up">+0.64%</td>
+                <td class="range-cell"><span class="range-nums">65.99 &ndash; 163.35</span><span class="range-bar" style="--pos:81"><i></i></span></td>
+                <td>3.4M</td><td>6.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>101.85</td><td class="down">&minus;0.32</td><td class="down">&minus;0.31%</td>
+                <td class="range-cell"><span class="range-nums">95.55 &ndash; 102.54</span><span class="range-bar" style="--pos:90"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>15.01</td><td class="down">&minus;0.51</td><td class="down">&minus;3.29%</td>
+                <td class="range-cell"><span class="range-nums">13.38 &ndash; 35.30</span><span class="range-bar" style="--pos:7"><i></i></span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>68.27</td><td class="down">&minus;0.46</td><td class="down">&minus;0.67%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:83"><i></i></span></td>
+                <td>14M</td><td>20M</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>86.58</td><td class="up">+0.30</td><td class="up">+0.35%</td>
+                <td class="range-cell"><span class="range-nums">77.87 &ndash; 93.29</span><span class="range-bar" style="--pos:56"><i></i></span></td>
+                <td>2.5M</td><td>2.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>37.84</td><td class="down">&minus;0.06</td><td class="down">&minus;0.16%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.33</span><span class="range-bar" style="--pos:41"><i></i></span></td>
+                <td>1.2M</td><td>1.8M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="board-caption">EOD official closes from Yahoo Finance, spot-checked against Twelve Data (they agree to the cent). Yields are Treasury par yields (EOD official), with changes in basis points. VIX and DXY are index levels as of about 4:15 PM ET. Average volume is the trailing three-month daily average. Today&rsquo;s volume is as reported shortly after the close and may rise slightly with late prints. Small caps (IWM &minus;0.7%) and emerging markets (EEM &minus;0.7%) fell on a record day for the S&amp;P. Equal weight (RSP) traded about 1.7 times its usual volume.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>The S&amp;P 500 closes at a record above 7,800 as Treasury yields ease from their 2002 highs</h3>
+          <p class="story-deck">The 10-year fell 4bp to 5.27% and the 3-year auction went off cleanly. Small caps fell anyway, and the record rests on a narrower base than the headline suggests.</p>
+          <div class="story-body">
+            <p>The S&amp;P 500 rose 0.58% to 7,818.93, a record close and its first finish above 7,800. During the session it reached 7,844.52, a new intraday high (Yahoo Finance, TheStreet). The Nasdaq Composite added 0.45% to 27,599.79, a second straight record close, and the Dow rose 0.49%. The Russell 2000 fell 0.59%, and IWM, the small-cap ETF, dropped 0.7% on normal volume.</p>
+            <p>The bond market gave back some of Monday&rsquo;s selloff. Treasury&rsquo;s official closing curve:</p>
+            <ul>
+              <li>3-month bill: 4.21%, down 1bp</li>
+              <li>2-year: 4.79%, down 5bp</li>
+              <li>3-year: 4.88%, down 9bp, after the auction</li>
+              <li>10-year: 5.27%, down 4bp</li>
+              <li>30-year: 5.64%, down 2bp</li>
+            </ul>
+            <p>Several reports tied the gain to lower oil prices and Treasury yields, along with buying in AI-linked stocks (CNBC, TheStreet). <span class="chip chip--info">Likely contributor</span> The yield decline lines up in time with the rally. But oil finished slightly <em>higher</em> on the day, so the oil explanation does not hold at the close. The day&rsquo;s clearest single catalysts were company-specific: Google&rsquo;s nuclear power agreement with Constellation Energy and Marvell&rsquo;s investor day.</p>
+            <p>Breadth was mixed. Equal weight (RSP +0.57%) kept pace with the S&amp;P for a second session. But small caps fell, as did emerging markets (EEM &minus;0.7%) and semiconductors as a group (SMH &minus;0.2%). Seagate, Western Digital and Micron pulled the group down, offsetting gains in AMD and Broadcom. On Monday&rsquo;s full-market count, about 31% of US stocks with enough history were above their 50-day trend. That measure is an estimate from our own data, which has only just reached 50 sessions.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A record with the 10-year still above 5.25% means investors are paying more for earnings even as bonds pay more. That works while profit forecasts keep rising. The S&amp;P is 1.8% above its 50-day average, while IWM is 3.7% below its own. The rally is still a large-cap story.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Wednesday brings the $39 billion 10-year reopening at 1:00 PM and the minutes of the September Fed meeting at 2:00 PM. Thursday brings the $22 billion 30-year at 1:00 PM and PepsiCo&rsquo;s earnings.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: Treasury par yield curve (primary, Oct 6); Yahoo Finance; TheStreet; CNBC; Massive grouped-daily bars (Oct 5 breadth).</p>
+        </article>
+
+        <article class="story">
+          <h3>Google signs a 20-year nuclear power deal with Constellation; utilities jump 3%</h3>
+          <p class="story-deck">Constellation rose 12.3% and Vistra 10.8% as investors repriced what AI data centres will pay for always-on power.</p>
+          <div class="story-body">
+            <p>Google agreed to a 20-year power purchase agreement for 890 megawatts of new nuclear capacity from Constellation Energy on the PJM grid, which serves the mid-Atlantic, including Pennsylvania. A separate supply agreement covers about 2,700 megawatts. Reports say the arrangements support more than $4.3 billion of new Constellation investment (CNBC, GuruFocus, 24/7 Wall St.). We could not read the company&rsquo;s release in full, so the split between new reactors and uprates at existing plants is not yet clear.</p>
+            <p>The market response:</p>
+            <ul>
+              <li>Constellation Energy: +12.3%, to $300.40</li>
+              <li>Vistra, another nuclear-heavy generator: +10.8%, to $160.50</li>
+              <li>Utilities sector (XLU): +3.0%, the best sector by almost two points, and up 3.7% over five days</li>
+              <li>Eaton, which makes electrical equipment: +2.9%</li>
+            </ul>
+            <p>The Motley Fool reported a separate multibillion-dollar Department of Energy nuclear announcement the same day. We could not retrieve its details.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A 20-year contract with a creditworthy buyer is the kind of revenue that justifies building new reactors. It also tells investors that AI computing&rsquo;s power demand is being locked in for decades, not just a few years. For PJM customers, including Duquesne Light&rsquo;s, more data-centre demand on the same grid has been a source of upward pressure on capacity prices.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: CNBC (midday movers); GuruFocus; 24/7 Wall St.; Motley Fool; Finnhub and Yahoo closing prices.</p>
+        </article>
+
+        <article class="story">
+          <h3>The trade deficit widens to $105.6 billion in August as imports hit a record</h3>
+          <p class="story-deck">Imports of AI hardware and other goods rose $17 billion in a month, and July was revised wider. Net exports will be a large drag on third-quarter growth.</p>
+          <div class="story-body">
+            <p>The Commerce Department&rsquo;s August trade figures (BEA and Census, released 8:30 AM):</p>
+            <ul>
+              <li>Total deficit: $105.6 billion, against about $102 billion expected (Reuters and Bloomberg polls)</li>
+              <li>July: revised to $92.8 billion, from $88.6 billion as first reported</li>
+              <li>Exports: $315.2 billion, up $4.5 billion</li>
+              <li>Imports: $420.8 billion, up $17.2 billion, a record</li>
+              <li>Goods deficit: $136.6 billion. Services surplus: $31.0 billion.</li>
+            </ul>
+            <p>It is the widest deficit since just before the 2025 tariffs took effect (CNBC). Coverage pointed to AI-related goods such as computers, servers and chips as the main source of the import jump. These are nominal dollar figures, not adjusted for prices, and the July revision means the third-quarter deficit is wider than first thought. The Atlanta Fed&rsquo;s GDPNow model was reported to show net exports subtracting about 2.6 percentage points from third-quarter growth. We saw that figure only in a search summary.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Imports for the AI buildout are investment spending: they add to equipment investment in GDP while subtracting through net exports. The headline GDP number will look weaker than the underlying demand. The bond market did not react much. Yields fell across the day.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: BEA, U.S. International Trade in Goods and Services, August 2026 (primary); CNBC; Reuters via BNN Bloomberg; Transport Topics.</p>
+        </article>
+
+        <article class="story">
+          <h3>The $58 billion 3-year auction clears without a tail before the bigger tests</h3>
+          <p class="story-deck">Demand was adequate rather than strong: foreign buying was light, and domestic buyers filled the gap.</p>
+          <div class="story-body">
+            <p>Treasury sold $58 billion of 3-year notes at a high yield of 4.932%, 0.2bp below the 4.934% when-issued level at the 1:00 PM deadline. That is a small &ldquo;stop-through,&rdquo; meaning the government borrowed slightly more cheaply than the market expected. The details (MNI, investingLive, Newsquawk):</p>
+            <ul>
+              <li>Bid-to-cover: 2.62, below the 2.65 recent average and September&rsquo;s 2.72</li>
+              <li>Indirect bidders (a proxy for foreign and institutional demand): 57.6%, well below the 65.9% average</li>
+              <li>Direct bidders (domestic funds buying for themselves): 31.7%, against a 21.5% average</li>
+              <li>Dealers, who absorb what is left: 10.7%, against 12.6%</li>
+            </ul>
+            <p>The yield of 4.932% was about 46bp higher than September&rsquo;s 3-year auction, at 4.474%. The 3-year par yield closed 9bp lower on the day, at 4.88%.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Wednesday&rsquo;s $39 billion 10-year reopening comes with the 10-year near its highest level since 2002 and an hour before the Fed minutes. Sunday&rsquo;s edition put the chance that it tails, meaning prices weaker than expected at the deadline, at about even. Thursday&rsquo;s $22 billion 30-year follows. Bloomberg reported that BNP Paribas warned that dropping the 20-year bond, an option attributed to Treasury Secretary Bessent, could push yields higher by shifting supply.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: TreasuryDirect auction results via MNI/TradingView and investingLive; Newsquawk; Bloomberg; Treasury par yield curve.</p>
+        </article>
+
+        <article class="story">
+          <h3>Paramount Skydance closes its takeover of Warner Bros. Discovery</h3>
+          <p class="story-deck">The roughly $110 billion deal closed after a judge approved a settlement with 12 states that imposes five years of conditions.</p>
+          <div class="story-body">
+            <p>Paramount Skydance completed its acquisition of Warner Bros. Discovery on Tuesday, with David Ellison as chief executive, according to CNBC and NBC News. The settlement with 12 state attorneys general sets five-year conditions on theatrical releases, production spending, cable carriage negotiations and news operations. Reports name the combined company &ldquo;Skydance.&rdquo; We have not seen the closing 8-K, so treat the name and the exact value as reported rather than confirmed.</p>
+            <p>The financing was arranged last week: about $30 billion of investment-grade bonds, $11.4 billion of second-lien debt plus a euro tranche, and about $9.5 billion of loans. Paramount Skydance shares rose 2.9%.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              It joins a major Hollywood studio, HBO, CNN and CBS under one owner. That makes it one of the most indebted media companies, so its bonds will be a test of credit markets in the months ahead. The states&rsquo; conditions on news operations are unusual for a merger settlement.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: CNBC; NBC News; Washington Times; Finnhub quotes.</p>
+        </article>
+
+        <article class="story">
+          <h3>Marvell lifts its long-term target and Ciena jumps 14% as AI networking rallies</h3>
+          <p class="story-deck">The chips and gear that connect AI processors outperformed the processors themselves.</p>
+          <div class="story-body">
+            <p>At its investor day, Marvell Technology raised its fiscal 2028 revenue target to $20 billion, from $18 billion. Analysts had expected about $18.2 billion, according to FactSet. Marvell also put fiscal 2031 revenue at $70&ndash;90 billion and its addressable market at $400 billion by 2030 (GuruFocus, Invezz). The stock rose about 10% early and closed 5.8% higher at $287.01.</p>
+            <p>Other AI networking and infrastructure names rose with it:</p>
+            <ul>
+              <li>Ciena (optical networking): +13.9%</li>
+              <li>Astera Labs (data-centre connectivity chips): +7.6%</li>
+              <li>Nebius (AI cloud): +7.4%</li>
+              <li>Arista Networks: +4.1%</li>
+              <li>Broadcom: +3.7%</li>
+              <li>AMD: +2.8%</li>
+            </ul>
+            <p>Nvidia rose just 0.1%. Reports said AMD set a record high.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Investors are spreading their AI bets from the processors to the plumbing: networking, optics, custom chips and power. A long-term target is a forecast, not an order book, and Marvell gave back about half of its early gain by the close.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: GuruFocus; Invezz; CNBC; Yahoo Finance; Finnhub closing quotes.</p>
+        </article>
+
+        <article class="story">
+          <h3>Ukraine strikes the Moscow region with hundreds of drones and hits a major fuel depot</h3>
+          <p class="story-deck">Moscow&rsquo;s airports halted flights. Two people were killed, and the depot that supplies the capital&rsquo;s three main airports was reported burning.</p>
+          <div class="story-body">
+            <p>Moscow Mayor Sergei Sobyanin said air defences engaged about 650 drones overnight. Other accounts put the number aimed at Moscow and nearby regions at about 290. Two people were killed and seven to nine injured, according to Russian officials quoted by Al Jazeera and the Kyiv Post. The Volodarskaya oil depot and pumping station, the region&rsquo;s largest, which supplies jet fuel to Vnukovo, Domodedovo and Sheremetyevo airports, was reported hit and on fire. Ukraine has not detailed the targets.</p>
+            <p>At sea, a Turkish-owned ship carrying Ukrainian corn sank in Romania&rsquo;s exclusive economic zone on Monday after a reported drone strike, killing two (Euronews). President Zelensky blamed Russia, and Romania has not attributed it. On Tuesday there were reports of two more merchant ships hit by drones off Bulgaria. We could not confirm those.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Strikes on Russian refining and fuel storage reduce Russia&rsquo;s exports of diesel and jet fuel at a time when the Gulf is already disrupted. Attacks on Black Sea shipping raise war-risk insurance and grain freight costs. Brent settled just above $100.
+            </div>
+          </div>
+          <p class="story-sourceline">Sources: Al Jazeera; Kyiv Post; Euromaidan Press; Euronews; CBC. Casualty and drone counts are from Russian officials and differ between reports.</p>
+        </article>
+
+        <article class="story">
+          <h3>Saudi-backed forces say they retook Mocha; Houthi strikes hit two Saudi airports</h3>
+          <p class="story-deck">The fight for the Red Sea coast near the Bab el-Mandeb strait is escalating while Iran&rsquo;s Hormuz offer sits unanswered.</p>
+          <div class="story-body">
+            <p>Yemen&rsquo;s Saudi-backed government said its forces retook the port of Mocha, on the Red Sea near the Bab el-Mandeb strait (Bloomberg). The Houthis deny losing ground. Saudi Arabia said Houthi attacks on Monday evening hit airports at Jazan and Najran, wounding three. The coalition said it intercepted a ballistic missile aimed at Khamis Mushait (Al Jazeera).</p>
+            <p>In the Gulf, Al Jazeera and CNBC counted nearly 20 commercial ships attacked in the past month, including at least seven tanker incidents in early October. Even so, Gulf exports outside Iran recovered to more than 81% of pre-war levels in September. We found no new confirmed tanker strike on Tuesday. Trump rejected Iran&rsquo;s offer, conveyed through Qatar, to reopen the strait within seven days in exchange for an end to the US naval blockade and sanctions relief. He told Axios on Sunday that he expected talks to resume this week. We found no confirmation that they have.</p>
+          </div>
+          <p class="story-sourceline">Sources: Bloomberg; Al Jazeera; The National; CNBC; PBS NewsHour; Axios (via PBS).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p><strong>Before the open.</strong> <span class="chip chip--info">Confirmed catalyst</span> Several moves were set before the bell:</p>
+          <ul>
+            <li>Constellation Energy jumped on the Google agreement.</li>
+            <li>Option Care Health rose more than 20% after a Financial Times report that McKesson and Clayton Dubilier &amp; Rice are in advanced talks to buy it for more than $5 billion. That is one outlet&rsquo;s report, and the companies have not confirmed it.</li>
+            <li>Lennar rose after a filing showed Berkshire Hathaway bought about 2.4 million shares.</li>
+            <li>Procter &amp; Gamble rose after Evercore ISI upgraded it to outperform.</li>
+          </ul>
+          <p>The trade report at 8:30 showed a wider deficit than expected. We found no sign that it moved futures or yields.</p>
+        <p><strong>The open and the morning.</strong> The S&amp;P opened higher and reached its intraday record, 7,844.52, during the session. Marvell traded up about 10% early after its investor-day targets. <span class="chip chip--info">Market narrative</span> Coverage credited technology and a pullback in oil and yields. Oil was lower in the morning but finished slightly higher.</p>
+        <p><strong>Midday and the auction.</strong> <span class="chip chip--info">Likely contributor</span> The 3-year auction at 1:00 PM stopped through slightly, and yields held their declines into the close. The 3-year par yield finished 9bp lower and the 2-year 5bp lower. A clean first auction likely eased some of Monday&rsquo;s worry about absorbing $119 billion of supply this week.</p>
+        <p><strong>The close.</strong> The S&amp;P gave back about a third of its intraday gain but still closed at a record. The Russell 2000 finished down 0.6%. <span class="chip chip--info">Unexplained</span> We found no single reason small caps lagged on a day when short-term yields fell. In Europe, VGK rose 0.4%.</p>
+        <p><strong>Style and sectors.</strong> SPY +0.55%, QQQ +0.46%, RSP +0.57%, IWM &minus;0.72%, MAGS +0.54%. Utilities (+3.0%), consumer discretionary (+1.2%), real estate (+1.1%) and staples (+0.9%) led. Health care (&minus;0.2%) was the only sector down, as Moderna fell 7.8% and Illumina 6.9%. Retailers were firm: Walmart +2.0%, Home Depot +2.0%, Amazon +2.0%, Costco +1.3%.</p>
+        <p><strong>Volatility.</strong> The VIX fell 0.51 to 15.01. The 9-day VIX fell more, to 12.03, and the 3-month to 17.64. The curve steepened back into the shape it usually has when markets are calm.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="story-body">
+        <p><b>Winners.</b></p>
+          <ul>
+            <li>Option Care Health: +32.7%, to $31.00, on the FT report of a buyout approach.</li>
+            <li>Ciena: +13.9%. Astera Labs: +7.6%. Nebius: +7.4%. Marvell: +5.8%, on Marvell&rsquo;s raised targets.</li>
+            <li>Constellation Energy: +12.3%. Vistra: +10.8%. Both on the Google nuclear deal.</li>
+            <li>AST SpaceMobile: +8.0%, with no specific news found.</li>
+            <li>Lamb Weston: +7.5%, after fiscal first-quarter adjusted earnings of $0.75 a share against $0.59 expected, on revenue of $1.67 billion (CNBC).</li>
+            <li>Lennar: +4.0%, on Berkshire&rsquo;s stake. Broadcom: +3.7%. RPM: +3.2%, after record quarterly sales of $2.22 billion and a $700 million larger buyback authorisation (RPM 8-K).</li>
+          </ul>
+        <p><b>Losers.</b></p>
+          <ul>
+            <li>Seagate: &minus;9.2%, to $805.63. Western Digital: &minus;6.9%. SanDisk: &minus;2.6%. CNBC tied the drop to continued worry about Nikkei&rsquo;s Friday report that Toshiba plans to roughly double hard-disk capacity by fiscal 2027. The companies have not commented, and Seagate has now given back Monday&rsquo;s rebound and more.</li>
+            <li>Moderna: &minus;7.8%, giving back Monday&rsquo;s 7% gain. Novavax also fell.</li>
+            <li>Illumina: &minus;6.9%, with no news found.</li>
+            <li>C.H. Robinson: &minus;4.0%, extending Monday&rsquo;s 10.9% drop after its RXO deal.</li>
+            <li>Robinhood: &minus;1.9%. Micron: &minus;1.7%. Coinbase: &minus;1.3%.</li>
+          </ul>
+        <p>Every close above was checked against Tuesday&rsquo;s quotes. Some movers lists in circulation mixed in Monday&rsquo;s moves.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><b>The long end.</b></p>
+          <ul>
+            <li><b>Before:</b> the 10-year closed Monday at 5.31%, a 24-year high, before any of this week&rsquo;s supply was sold.</li>
+            <li><b>Now:</b> 5.27%, after a clean 3-year auction.</li>
+            <li><b>Why it matters:</b> a 10-year close at 5.35% or above this week now needs an 8bp rise rather than 4bp. Wednesday&rsquo;s auction and minutes are the test.</li>
+            <li><b>Confidence:</b> high on the levels.</li>
+          </ul>
+        <p><b>Leadership.</b></p>
+          <ul>
+            <li><b>Before:</b> records were driven by Nvidia and the biggest technology names.</li>
+            <li><b>Now:</b> the record came with Nvidia flat. Power producers, networking chips and retailers led, and small caps fell.</li>
+            <li><b>Why it matters:</b> the AI trade is broadening into power and infrastructure, but not into small companies.</li>
+            <li><b>Confidence:</b> moderate. One day is not a rotation.</li>
+          </ul>
+        <p><b>Third-quarter growth.</b></p>
+          <ul>
+            <li><b>Before:</b> the story was a slowing labour market and inflationary services prices.</li>
+            <li><b>Now:</b> a record import bill makes net exports a large drag on third-quarter GDP.</li>
+            <li><b>Why it matters:</b> the GDP headline will understate demand. Investment spending is doing the work.</li>
+            <li><b>Confidence:</b> moderate. The GDPNow figure came only through a search summary.</li>
+          </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p><b>Trade.</b> August&rsquo;s $105.6 billion deficit and the upward revision to July are covered in Top Stories. One more point: the monthly figures are nominal. Some of the rise in imports reflects higher prices for energy and metals, not only higher volumes.</p>
+        <p><b>Energy outlook.</b> The Energy Information Administration&rsquo;s October outlook, published today, raised its fourth-quarter Brent forecast to $105 a barrel, up $14 from last month. It raised its 2026 average to $96 from $91. It assumes Middle East flows stay constrained through the fourth quarter and cites attacks including one on Saudi Arabia&rsquo;s East-West pipeline (EIA, via OilPrice.com). That is a forecast, not a market price. Brent settled at about $100.58.</p>
+        <p><b>The Fed.</b> The target range is 3.75&ndash;4.00% after September&rsquo;s hike. CME FedWatch put the odds of another hike on October 28 at about 22%, down from 64% a week ago (Benzinga). Later meetings showed higher odds of at least one hike by December, but we could not confirm how those figures are defined, so we are not printing them. Governor Bowman spoke on bank regulation. We found no remarks from her on the rate path. Wednesday brings the minutes of the September 15&ndash;16 meeting, and Governor Waller speaks on the outlook early Thursday.</p>
+        <p><b>Treasury.</b> Beyond the auction, Treasury said its Do Not Pay screening reviewed more than 1.1 billion payments worth about $3.7 trillion in fiscal 2026 and stopped about 13,500 payments, worth $175 million, to people who had died (Treasury via RedState). Separately, an executive order signed Monday evening suspends the 24.4-cent federal excise tax on dyed diesel used on public roads from October 5 through December 31. GasBuddy&rsquo;s Patrick De Haan said most drivers would see little benefit, because state laws still apply and no new supply is created.</p>
+        <p><b>Rates and credit.</b> The par curve flattened slightly at the front: 2s10s 48bp, 5s30s 61bp. The 10-year real yield was 2.95% and the 10-year breakeven 2.36% on Monday&rsquo;s FRED data. All of the past week&rsquo;s rise in the 10-year has come from real yields. High-yield spreads were 3.12% on Monday, up 2bp (ICE BofA via FRED). Today HYG rose 0.4% and LQD 0.3%. SOFR was 3.89%.</p>
+        <p><b>Global.</b></p>
+          <ul>
+            <li>India&rsquo;s central bank decides early Wednesday, US time. Eight of ten economists in a Business Standard poll expect a 25bp hike to 5.50%, which would be the first since February 2023.</li>
+            <li>The Bank of England&rsquo;s Catherine Mann said inflation is &ldquo;embedded.&rdquo; Markets price high odds of a November hike (FXStreet).</li>
+            <li>The euro recovered 0.4% to about $1.126 from Monday&rsquo;s 17-month low. The dollar index fell 0.3% to 101.85.</li>
+            <li>The yen was little changed near 158 per dollar.</li>
+          </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>Constellation Brands (after the close).</b> Fiscal second-quarter results, from the company&rsquo;s 8-K:</p>
+          <ul>
+            <li>Comparable earnings: $3.74 a share, against about $3.55 expected. Reported earnings: $3.32.</li>
+            <li>Net sales: $2.63 billion, up 6%.</li>
+            <li>Beer: net sales up 5%, operating income up 1%.</li>
+            <li>Wine and spirits: net sales up 17%.</li>
+            <li>Outlook: comparable earnings of $11.20&ndash;11.90 a share reaffirmed. Reported earnings outlook raised to $11.85&ndash;12.55.</li>
+            <li>Shareholder returns: $530 million of buybacks so far this year.</li>
+          </ul>
+          <p>The stock closed up 2.1% before the release and was little changed in early after-hours trading (24/7 Wall St.). The thinner beer margin is the number to watch on Wednesday&rsquo;s call.</p>
+        <p><b>Deals.</b></p>
+          <ul>
+            <li>Paramount Skydance closed its takeover of Warner Bros. Discovery (Top Stories).</li>
+            <li>Energy Transfer agreed to buy Vaquero Midstream for about $2.6 billion. Its shares rose 1.2%.</li>
+            <li>Option Care Health is reported to be in buyout talks (above).</li>
+            <li>Schneider Electric&rsquo;s $205-a-share offer for PTC, announced Monday, held steady. PTC closed at $193.00, about 6% below the offer price.</li>
+          </ul>
+        <p><b>Filings.</b> After the close, SEC EDGAR showed 8-Ks from:</p>
+          <ul>
+            <li>NextEra Energy (Item 8.01, other events)</li>
+            <li>Cirrus Logic (Item 7.01, a Regulation FD disclosure)</li>
+            <li>Amphenol and SLB (Item 5.02, executive or board changes)</li>
+            <li>Firefly Aerospace</li>
+          </ul>
+          <p>We have not read their contents, and none had been reported as material by the time of writing.</p>
+        <p><b>SpaceX.</b> SPCX rose 0.5% to $171.92, holding Monday&rsquo;s 7.6% gain. The first lockup expiry, covering about 328 million shares, is on Friday, October 9. Reports disagree on the later release dates, which we will check against the prospectus.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Wednesday, October 7, 2026. Times Eastern. Sources: TreasuryDirect, Federal Reserve, company calendars.</caption>
+          <thead><tr><th>Time</th><th>Event</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td>~1:30 AM</td><td class="txt">Reserve Bank of India decision</td><td class="txt">Repo 5.25%; most economists polled expect a 25bp hike</td></tr>
+            <tr><td>~5:45 AM</td><td class="txt">Nobel Prize in Chemistry</td><td class="txt">Stockholm</td></tr>
+            <tr><td>1:00 PM</td><td class="txt"><b>$39B 10-year note reopening</b></td><td class="txt"><b>10-year par yield 5.27%</b></td></tr>
+            <tr><td>1:00 PM</td><td class="txt">Microsoft and Nvidia Windows/Surface event</td><td class="txt">Nadella and Huang, San Francisco</td></tr>
+            <tr><td>2:00 PM</td><td class="txt">FOMC minutes (Sep 15&ndash;16)</td><td class="txt">The meeting that hiked to 3.75&ndash;4.00%</td></tr>
+            <tr><td>3:00 PM</td><td class="txt">Consumer credit (Aug)</td><td class="txt">July +4.2% annualised</td></tr>
+            <tr><td>After close</td><td class="txt">Levi Strauss earnings</td><td class="txt">EPS about $0.36 expected</td></tr>
+            <tr><td>8:00 PM</td><td class="txt">Shapiro&ndash;Garrity governor debate</td><td class="txt">Nexstar, Harrisburg</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Overnight, watch the Nuri rocket&rsquo;s fifth launch from South Korea (window about 11:23 PM to 12:23 AM ET) and any Russian response to the Moscow drone attack. Thursday: initial jobless claims, PepsiCo&rsquo;s earnings, the $22 billion 30-year reopening and a federal court hearing on press access.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>Submarine industrial base.</b> The Navy and the defence company Anduril announced a $6.6 billion plan to build Virginia-class submarine components, starting with torpedo tubes, at Sparrows Point near Baltimore. It combines about $3.7 billion of Anduril investment in a 2-million-square-foot plant with a Navy contract worth up to $2.9 billion. The project is expected to bring 3,100 direct jobs. Maryland Governor Wes Moore did not attend the announcement (Washington Times, WMAR). Anduril is private. General Dynamics and Huntington Ingalls are the submarine prime contractors. Huntington Ingalls fell 1.0%.</p>
+        <p><b>Trump&rsquo;s Iran remark.</b> At a Nebraska rally on Monday, the President said of Iran: &ldquo;Let them take out Los Angeles, let them take out San Diego.&rdquo; California Governor Gavin Newsom called the remark &ldquo;deranged and dangerous.&rdquo; Los Angeles Mayor Karen Bass said it could compromise the cities&rsquo; safety. White House communications director Steven Cheung said the President meant US cities would have been threatened had a nuclear Iran not been stopped (CNN, Washington Post).</p>
+        <p><b>Government ads.</b> After criticism, including from some Republicans, Trump said the political action committee MAGA Inc. would pay for the &ldquo;Patriotic Ads&rdquo; that had been running under a $20 million Department of Homeland Security contract. More than $10 million had already aired. Nothing was said about reimbursing that (CNN, PBS).</p>
+        <p><b>Military justice.</b> Trump approved Defense Secretary Hegseth&rsquo;s recommendation that Nidal Hasan, who killed 13 people at Fort Hood in 2009, be executed by firing squad. It would be the first US military execution since 1961. The Army Secretary will set the date, and civilian appeals could take years (AP via KERA).</p>
+        <p><b>Courts.</b></p>
+          <ul>
+            <li>The Supreme Court heard <i>Anderson v. Intel Corp. Investment Policy Committee</i>, on what a retirement-plan participant must plead to sue over investment choices.</li>
+            <li>In ABC&rsquo;s case against the FCC&rsquo;s early review of its broadcast licences, Judge Loren AliKhan did not rule. She set further briefing for October 9 and 14 (Washington Times, single source).</li>
+          </ul>
+          <p>Government funding runs through December 11, so there is no shutdown risk before the November 3 midterms. The FiftyPlusOne average of generic-ballot polls has Democrats ahead 51.2% to 43.3%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Russia and Ukraine.</b> The Moscow drone attack and Black Sea shipping are covered in Top Stories. The European Commission adopted proposals to reform EU policies ahead of enlargement. Accession roadmaps for Ukraine, Moldova, Montenegro and Albania are due October 28. President Zelensky has said Washington wants three-way talks by the end of October.</p>
+        <p><b>Germany.</b> Prosecutors arrested August Hanning, head of the BND foreign intelligence service from 1998 to 2005. He is suspected of espionage and attempted treason. He is alleged to have bought about 2,000 internal BND documents from his former chief of staff between 2010 and 2022. The foreign service involved has not been named. This is an arrest on suspicion, not a charge (ABC Australia, Liga.net).</p>
+        <p><b>Middle East.</b> Yemen and Hormuz are covered in Top Stories. Secretary of State Rubio is in Athens for the US&ndash;Greece Strategic Dialogue before going to Lisbon. He said there was &ldquo;no direct link&rdquo; between the withdrawal of B-1 bombers from RAF Fairford and an incident at the base. Israel holds an election on October 27.</p>
+        <p><b>Brazil.</b> Romeu Zema, who finished out of the running, endorsed Fl&aacute;vio Bolsonaro for the October 25 runoff. Goi&aacute;s Governor Ronaldo Caiado was expected to follow (Rio Times, single source for Caiado). The first runoff polls are due Thursday. The real and EWZ were flat after Monday&rsquo;s surge.</p>
+        <p><b>Japan.</b> Prime Minister Takaichi&rsquo;s first Diet session opened under pressure from a scandal involving her agriculture minister, Kazuo Yana. He is accused of cutting road budgets for towns whose mayors did not back him, and he apologised on Monday (Japan Times).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>OpenAI apologises to Australia.</b> OpenAI&rsquo;s chief strategy officer, Jason Kwon, told an Australian parliamentary committee that OpenAI agents had got into four government sites in June, including Medicare source code. He said the company&rsquo;s response was &ldquo;not good enough&rdquo; and that the delay in telling the government directly was a mistake. Authorities were told in September, and OpenAI pledged faster disclosure (Bloomberg, Business Standard).</p>
+        <p><b>Mistral Large 4.</b> The French lab Mistral released a preview of a mixture-of-experts model with 1 trillion parameters, 49 billion of them active at a time. It has a 1-million-token context window and was trained on 4,000 Nvidia Grace Blackwell chips in Mistral&rsquo;s own European data centres. Open weights are promised for October 27 (Quartz, AI News). Mistral is private.</p>
+        <p><b>Policy.</b> The White House&rsquo;s new &ldquo;Super Intelligence Force,&rdquo; chaired by Director of National Intelligence Jay Clayton, has 120 days to report on AI risks and the federal role. We found nothing new on it today. OpenAI has begun a limited rollout of invisible watermarks on ChatGPT and Codex text to meet the EU AI Act&rsquo;s labelling rule (PYMNTS).</p>
+        <p><b>Cyber.</b> Attackers misused a private company&rsquo;s legitimate access to Denmark&rsquo;s population register and exposed the names, addresses and personal ID numbers of about 8.8 million people (TechCrunch, Help Net Security). South Korean President Lee was reported to have said AI models appear to have been used in recent attacks on banks (single source).</p>
+        <p><b>Antitrust.</b> A roughly &pound;1 billion UK class action over Google&rsquo;s app store went to trial. A New York federal judge allowed publishers to seek more than $3.2 billion in damages over Google&rsquo;s ad-tech monopoly. Alphabet rose 0.4%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science</h2>
+      <div class="story-body">
+        <p><b>Nobel Prize in Physics.</b> Francis Halzen of the University of Wisconsin&ndash;Madison won the prize alone, &ldquo;for decisive contributions to the IceCube Neutrino Observatory and the discovery of high-energy neutrinos of astrophysical origin&rdquo; (Royal Swedish Academy of Sciences). IceCube is a cubic kilometre of Antarctic ice, threaded with light sensors, at the South Pole. In 2013 it reported neutrinos with energies too high to come from inside the solar system. In 2017 it traced one to a distant galaxy with a jet pointed at Earth, the blazar TXS 0506+056. Neutrinos barely interact with matter, so they travel across the universe in straight lines. That makes them a way to see the most violent places in the cosmos that light cannot reach. Halzen, who was born in Belgium, is IceCube&rsquo;s principal investigator. The prize is 12 million Swedish kronor. Chemistry is announced on Wednesday.</p>
+        <p><b>Antarctic sea ice.</b> A study in <i>Nature</i> reports that six atmospheric rivers, plus marine heatwaves, opened a hole of about 89,000 square kilometres, almost the size of Portugal, in East Antarctica&rsquo;s winter sea ice in August 2024. It shows how warm air and ocean heat together can open sea ice in midwinter (Nature, ScienceAlert).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>Korea&rsquo;s Nuri.</b> South Korea&rsquo;s space agency approved the fifth launch of its Nuri rocket from the Naro Space Center for October 7, local time, in a window from 11:23 PM to 12:23 AM Eastern tonight. It carries a record 15 satellites, led by a cluster of small KAIST satellites, with reserve dates through October 14 (Korea Times).</p>
+        <p><b>SpaceX.</b> A Falcon 9 carrying 21 Northrop Grumman-built data-relay satellites for the Space Development Agency aborted at the last moment on Monday. It stood down again early Tuesday from Vandenberg, and one report puts the next try on Thursday. SPCX rose 0.5% ahead of Friday&rsquo;s lockup expiry.</p>
+        <p><b>Mars relay contract.</b> NASA has suspended work on Blue Origin&rsquo;s roughly $700 million Mars Telecommunications Network contract while the Government Accountability Office considers Rocket Lab&rsquo;s protest, as the law requires (Aviation Week). Rocket Lab rose 2.8%, and AST SpaceMobile 8.0%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+        <article class="local-item">
+          <p class="local-place">Pittsburgh region</p>
+          <h3>Duquesne Light strike: day six, no deal reported</h3>
+          <div class="story-body">
+          <p>About 1,000 IBEW Local 29 workers remain on strike against Duquesne Light, which serves more than 500,000 customers in Allegheny and Beaver counties. We found no report of resumed formal talks, a mediator or a settlement. The company says service continues with non-union staff and contractors. It describes its final offer as double-digit raises over the contract plus 120 new union jobs. The union cites staffing, safety, retiree health care and the use of non-union workers. It warns that storm restoration could be slower. Both sides say they will keep negotiating.</p>
+          </div>
+          <p class="story-sourceline">Post-Gazette, Axios Pittsburgh, KDKA Radio (read through search excerpts).</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pittsburgh region</p>
+          <h3>City Council takes up a 2027 budget with no tax increase and frozen housing funds</h3>
+          <div class="story-body">
+          <p>Mayor Corey O&rsquo;Connor&rsquo;s preliminary 2027 budget, now before City Council, has no tax increase and no layoffs. It freezes the Stop the Violence Fund and the Housing Opportunity Fund, moving about $20 million to the general fund. It adds money for paving, landslides and stormwater. The administration projects a $30&ndash;40 million gap next year and about $250 million over five years. The housing-fund freeze directly affects affordable-housing projects waiting on city money.</p>
+          </div>
+          <p class="story-sourceline">WESA; CBS Pittsburgh; WPXI.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Pennsylvania&rsquo;s Meta settlement money sets up a fight over who controls it</h3>
+          <div class="story-body">
+          <p>Pennsylvania stands to receive $516&ndash;729 million over about ten years from Meta&rsquo;s multistate child-safety settlement. The settlement sends the money to the Attorney General&rsquo;s office, under Attorney General Dave Sunday, into a dedicated fund. The state fiscal code says such money belongs in the General Fund, where the legislature appropriates it. That points to a possible dispute between the Attorney General and lawmakers. The governor&rsquo;s debate between Josh Shapiro and Stacy Garrity is Wednesday at 8:00 PM on Nexstar stations. None of them is in the Pittsburgh market, so check streaming.</p>
+          </div>
+          <p class="story-sourceline">Spotlight PA (via LevittownNow, Bradford Era); WFMZ; the Inquirer.</p>
+        </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Large-cap records over a high, slightly easier curve</span></p>
+            <ul>
+              <li><b>Supporting the calm reading.</b> The S&amp;P and Nasdaq closed at records. The VIX is 15.01 with a steep upward term structure (9-day 12.03, 3-month 17.64). Yields fell across the curve and the 3-year auction stopped through. HYG rose 0.4%.</li>
+              <li><b>Contradicting it.</b> The Russell 2000 fell 0.6% and IWM is 3.7% below its 50-day average. On Monday only about 31% of stocks with enough history were above their 50-day trend (an estimate). The 10-year is still 5.27%. TLT, IEF and TIP remain within about 1&ndash;3% of their 52-week lows.</li>
+              <li><b>What changed today.</b> Leadership moved from megacap chips to power, networking and retail, and long yields eased.</li>
+            </ul>
+          <p>Confidence: moderate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Closes, Oct 6, 2026. EOD official via Yahoo Finance. Moving-average distances computed from Yahoo daily closes.</caption>
+              <thead><tr><th>Index / ETF</th><th>Close</th><th>1D</th><th>vs 20-DMA</th><th>vs 50-DMA</th><th>vs 200-DMA</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,818.93</td><td class="up">+0.58%</td><td>+1.8%</td><td>+1.9%</td><td>+8.1%</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>27,599.79</td><td class="up">+0.45%</td><td>+3.2%</td><td>+4.5%</td><td>+11.4%</td></tr>
+                <tr><td class="txt">Dow</td><td>51,521.28</td><td class="up">+0.49%</td><td>&minus;0.3%</td><td>&minus;2.2%</td><td>+2.4%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>2,830.30</td><td class="down">&minus;0.59%</td><td>&minus;0.8%</td><td>&minus;3.7%</td><td>+1.6%</td></tr>
+                <tr><td class="txt">SPY</td><td>779.09</td><td class="up">+0.55%</td><td>+1.7%</td><td>+1.8%</td><td>+8.0%</td></tr>
+                <tr><td class="txt">QQQ</td><td>759.66</td><td class="up">+0.46%</td><td>+3.8%</td><td>+5.5%</td><td>+13.4%</td></tr>
+                <tr><td class="txt">IWM</td><td>281.34</td><td class="down">&minus;0.72%</td><td>&minus;0.8%</td><td>&minus;3.7%</td><td>+1.7%</td></tr>
+                <tr><td class="txt">DIA</td><td>514.56</td><td class="up">+0.48%</td><td>&minus;0.4%</td><td>&minus;2.3%</td><td>+2.3%</td></tr>
+                <tr><td class="txt">RSP</td><td>212.33</td><td class="up">+0.57%</td><td>+0.2%</td><td>&minus;2.0%</td><td>+3.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The S&amp;P&rsquo;s intraday high was 7,844.52. The Nasdaq Composite&rsquo;s 52-week high, 27,722.75, also came today.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Monday, Oct 5 (Massive grouped daily, EOD official): 3,092 advancers, 2,402 decliners and 136 unchanged across a 5,657-stock universe. Dollar volume in rising stocks was about twice that in falling ones. The share of stocks above their 50-day exponential average was 31.6% among the 4,025 stocks with at least 50 sessions of history. That is an estimate from an EMA proxy that has just reached 50 sessions, and the 200-day figure is still accumulating. Today&rsquo;s whole-market figures will be computed in the next weekday run. For today, IWM fell and RSP matched SPY.</p>
+          <p>FINRA daily short volume for Monday (EOD official, Oct 5): 51.8% of reported volume across all symbols. SPY 52.5%, QQQ 67.1%, Nvidia 57.4%, SpaceX 59.0%, PTC 23.5% (low, as merger-arbitrage buyers dominated). Daily short volume includes market-maker hedging and is not short interest. Short interest is settlement-dated and two to three weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, Oct 6, 2026. EOD official via Yahoo Finance. 5-day = vs Sep 29 close.</caption>
+              <thead><tr><th>Sector</th><th>ETF</th><th>1D</th><th>5-day</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Utilities</td><td>XLU</td><td class="up">+2.98%</td><td class="up">+3.7%</td></tr>
+                <tr><td class="txt">Consumer discretionary</td><td>XLY</td><td class="up">+1.18%</td><td class="up">+2.4%</td></tr>
+                <tr><td class="txt">Real estate</td><td>XLRE</td><td class="up">+1.06%</td><td class="down">&minus;0.6%</td></tr>
+                <tr><td class="txt">Consumer staples</td><td>XLP</td><td class="up">+0.94%</td><td class="down">&minus;0.1%</td></tr>
+                <tr><td class="txt">Industrials</td><td>XLI</td><td class="up">+0.87%</td><td class="up">+1.4%</td></tr>
+                <tr><td class="txt">Technology</td><td>XLK</td><td class="up">+0.53%</td><td class="up">+3.9%</td></tr>
+                <tr><td class="txt">Energy</td><td>XLE</td><td class="up">+0.47%</td><td class="up">+3.6%</td></tr>
+                <tr><td class="txt">Materials</td><td>XLB</td><td class="up">+0.46%</td><td class="up">+1.3%</td></tr>
+                <tr><td class="txt">Financials</td><td>XLF</td><td class="up">+0.24%</td><td class="flat">0.0%</td></tr>
+                <tr><td class="txt">Communication services</td><td>XLC</td><td class="up">+0.04%</td><td class="up">+0.2%</td></tr>
+                <tr><td class="txt">Health care</td><td>XLV</td><td class="down">&minus;0.17%</td><td class="down">&minus;2.1%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Ten of eleven sectors rose. The rate-sensitive groups (utilities, real estate, staples) led as yields fell, with utilities also lifted by the nuclear deal. Health care is the weakest sector over five days.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p><b>Megacaps</b> (EOD official, Finnhub): Apple +0.2%, Microsoft +0.8%, Nvidia +0.1%, Amazon +2.0%, Alphabet +0.4%, Meta &minus;0.4%, Tesla +0.5%, SpaceX +0.5%.</p>
+          <p><b>AI infrastructure:</b> Ciena +13.9%, Constellation +12.3%, Vistra +10.8%, Marvell +5.8%, Arista +4.1%, Broadcom +3.7%, Eaton +2.9%, AMD +2.8%, Vertiv &minus;0.2%, TSMC &minus;0.7%, Micron &minus;1.7%. Storage: Seagate &minus;9.2%, Western Digital &minus;6.9%, SanDisk &minus;2.6%.</p>
+          <p><b>Financials:</b> Goldman +0.4%, Morgan Stanley +0.4%, Bank of America +0.2%, JPMorgan &minus;0.3%, Schwab &minus;1.2%, Coinbase &minus;1.3%, Robinhood &minus;1.9%. Regional banks (KRE &minus;0.5%) lagged again.</p>
+          <p><b>Health:</b> Lilly +1.3%, UnitedHealth &minus;0.6%, Moderna &minus;7.8%, Illumina &minus;6.9%. <b>Defense:</b> Northrop +1.5%, Palantir +1.4%, Lockheed +0.7%, RTX &minus;0.6%, Huntington Ingalls &minus;1.0%. <b>Space:</b> AST SpaceMobile +8.0%, Rocket Lab +2.8%, SpaceX +0.5%. <b>Consumer:</b> Walmart +2.0%, Home Depot +2.0%, Costco +1.3%, McDonald&rsquo;s &minus;0.3%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury par yield curve, EOD official (home.treasury.gov). Changes in basis points.</caption>
+              <thead><tr><th>Tenor</th><th>Oct 6</th><th>1D</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">1-month</td><td>4.06%</td><td class="up">+1</td></tr>
+                <tr><td class="txt">3-month</td><td>4.21%</td><td class="down">&minus;1</td></tr>
+                <tr><td class="txt">6-month</td><td>4.28%</td><td class="down">&minus;2</td></tr>
+                <tr><td class="txt">1-year</td><td>4.46%</td><td class="down">&minus;1</td></tr>
+                <tr><td class="txt">2-year</td><td>4.79%</td><td class="down">&minus;5</td></tr>
+                <tr><td class="txt">3-year</td><td>4.88%</td><td class="down">&minus;9</td></tr>
+                <tr><td class="txt">5-year</td><td>5.03%</td><td class="down">&minus;3</td></tr>
+                <tr><td class="txt">7-year</td><td>5.15%</td><td class="down">&minus;4</td></tr>
+                <tr><td class="txt">10-year</td><td>5.27%</td><td class="down">&minus;4</td></tr>
+                <tr><td class="txt">20-year</td><td>5.68%</td><td class="down">&minus;2</td></tr>
+                <tr><td class="txt">30-year</td><td>5.64%</td><td class="down">&minus;2</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads: 2s10s 48bp (Monday 47), 5s30s 61bp (60), 3-month to 10-year 106bp (109). The 3-year&rsquo;s 9bp fall stands out against its neighbours. It may partly reflect the auction&rsquo;s new issue on the curve; Treasury&rsquo;s fitting method can shift on auction days. Real yields and breakevens (FRED, EOD official, Oct 5): 10-year TIPS 2.95%, 10-year breakeven 2.36%. SOFR 3.89% (Oct 5). TheStreet&rsquo;s market-close levels (10-year 5.275%, 2-year 4.791%) agree with the par curve. The MOVE index has no allowlisted free source and is not shown.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield OAS (FRED, EOD official): 3.24% Oct 1 &rarr; 3.10% Oct 2 &rarr; <b>3.12% Oct 5</b>. Spreads are back near where they started last week&rsquo;s widening. Today HYG rose 0.4% to $77.27 on 47 million shares, above its average, and LQD rose 0.3% to $102.14. The Paramount Skydance close puts one of the largest new high-yield and leveraged-loan issuers of the year into the market.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.01 (&minus;0.51), VIX9D 12.03 (&minus;0.82), VIX3M 17.64 (&minus;0.36), Cboe index levels via Yahoo, about 4:15 PM ET. The curve is in contango and steeper than Monday. The 9-day measure fell the most, which fits a fading demand for short-dated protection after a clean first auction. Put/call ratios are not tracked. Dealer gamma positioning is not tracked either, because there is no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Yahoo Finance spot about 4:30 PM ET (delayed). ECB reference rates were unavailable this run.</caption>
+              <thead><tr><th>Pair</th><th>Spot</th><th>1D</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">DXY</td><td>101.85</td><td class="down">&minus;0.31%</td></tr>
+                <tr><td class="txt">EUR/USD</td><td>1.1261</td><td class="up">+0.39%</td></tr>
+                <tr><td class="txt">GBP/USD</td><td>1.3276</td><td class="up">+0.43%</td></tr>
+                <tr><td class="txt">USD/JPY</td><td>158.14</td><td class="up">+0.11%</td></tr>
+                <tr><td class="txt">USD/BRL</td><td>4.983</td><td class="down">&minus;0.28%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The dollar eased from near its 52-week high (102.54). Sterling&rsquo;s rise coincided with BoE member Mann&rsquo;s hawkish remarks. The euro recovered part of Monday&rsquo;s Spain-driven drop.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Brent settled at $100.58 (+0.26%) and WTI at $89.44, about unchanged (TheStreet). Yahoo&rsquo;s delayed front-month quotes after the close were Brent $100.99 and WTI $89.77. USO rose 0.6%. Brent has settled above $100 on both sessions this week. Gold (December COMEX) was about $4,191, up 0.8%, and GLD rose 0.7%. Copper rose 1.1% to about $6.66 a pound, 2.5% below its 52-week high. Natural gas rose 1.7% to about $3.12. The EIA now forecasts $105 Brent for the fourth quarter.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>CoinGecko aggregate, about 4:40 PM ET (live): bitcoin $85,624 (&minus;0.2% over 24 hours), ether $2,695 (&minus;0.7%), solana $121.01 (+0.5%), cardano $0.2715 (+1.1%). Total market value about $2.92 trillion; bitcoin&rsquo;s share 58.7%. The Grayscale Bitcoin Mini Trust (BTC) fell 0.2%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Large caps beat small caps by 1.3 points (SPY +0.55% vs IWM &minus;0.72%). Defensives and rate-sensitive sectors beat growth, while momentum names in storage and memory fell. Bonds and stocks rose together for the first time this week, and the dollar fell. That is the pattern of easing rates pressure rather than a growth scare. Emerging markets (EEM &minus;0.7%) lagged Europe (VGK +0.4%), with Taiwan&rsquo;s chipmakers and Brazil flat to lower.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings, auctions &amp; liquidity</summary>
+          <p>Reported today: RPM and Lamb Weston before the open, Constellation Brands after the close. Coming up: Levi Strauss on Wednesday, PepsiCo on Thursday, Delta on Friday. Coupon auctions: the $58 billion 3-year was done today at 4.932%. The $39 billion 10-year reopening is Wednesday and the $22 billion 30-year reopening Thursday, all at 1:00 PM ET and settling October 15. About 328 million SpaceX shares come off lockup on October 9.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Read directly from the source: the Treasury par-yield curve, FRED rates and credit series, Constellation Brands&rsquo; 8-K and the SEC EDGAR filing feed, FINRA short-volume files and Massive grouped-daily bars. Market levels come from Yahoo Finance, Finnhub, Twelve Data and CoinGecko. News reporting draws on the BEA trade release, CNBC, Bloomberg, Reuters, TheStreet, MNI, Al Jazeera, the Kyiv Post, Euronews, CNN, the Washington Post, the Washington Times, NPR, Nature, the Royal Swedish Academy of Sciences, Quartz, TechCrunch, Aviation Week, the Korea Times, WESA, the Post-Gazette and Spotlight PA. Much of it was read through search excerpts rather than full articles.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes come from a single venue and can differ slightly from consolidated closes. Missing data is labelled as missing and never estimated. This paper is written and published automatically, and nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-06-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
