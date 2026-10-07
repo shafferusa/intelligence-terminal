@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Ancient Paradox That Taught Mathematicians How Infinity Adds Up — Learning Brief, Wed, Oct 7, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-07",
+    "slot": "learn",
+    "title": "The Ancient Paradox That Taught Mathematicians How Infinity Adds Up",
+    "path": "reports/2026/10/2026-10-07-learn.html",
+    "summary": "Day 8 of the Academy: how Zeno's paradox of Achilles and the tortoise is resolved by the sum of an infinite geometric series — the same shrinking-pieces trick Archimedes used to measure the area under a parabola two centuries later.",
+    "headlines": [
+      "Day 8 of 300 · Mathematics: a shrinking geometric series can add infinitely many numbers to a finite total",
+      "That's exactly why Achilles does catch the tortoise, and how Archimedes measured a parabola by hand"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-07T04:58:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Ancient Paradox That Taught Mathematicians How Infinity Adds Up</h1>
+      <p class="paper-dateline">
+        Wednesday, October 7, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        Zeno argued that a runner can never overtake a tortoise with a head start, because closing
+        the gap takes infinitely many steps &mdash; and the geometric series that resolves his
+        paradox, the same tool Archimedes used to measure the area under a parabola two centuries
+        later, shows that infinitely many steps can still add up to a perfectly ordinary, finite
+        distance.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 8 of 300 &middot; Mathematics 8 of 20 &middot; Sequences, series, and taming infinity</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Imagine Achilles, the fastest runner in the Greek army, racing a tortoise that gets a head
+        start. Common sense says Achilles catches and passes the tortoise almost immediately. The
+        fifth-century BCE philosopher Zeno of Elea argued the opposite: that Achilles can
+        <em>never</em> catch the tortoise at all. His reasoning ran like this. Before Achilles can
+        overtake the tortoise, he must first reach the point where the tortoise started. But by the
+        time he gets there, the tortoise &mdash; however slowly &mdash; has crawled a little further
+        ahead. So Achilles must next reach <em>that</em> new point. But by the time he arrives, the
+        tortoise has again moved a little further. This repeats forever: every time Achilles reaches
+        where the tortoise just was, the tortoise is already somewhere new. Zeno&rsquo;s conclusion
+        was that catching the tortoise requires completing infinitely many of these steps, and since,
+        he argued, you cannot complete an infinite number of anything, Achilles can never actually
+        catch up. Motion itself, on this argument, is a kind of logical embarrassment: provably
+        impossible, yet observably happening every day.
+      </p>
+      <p>
+        Zeno&rsquo;s argument survives almost unchanged in Aristotle&rsquo;s <em>Physics</em>, written
+        roughly a century later &mdash; which is, in fact, the only reason anyone knows about it at
+        all, since none of Zeno&rsquo;s own writing has survived. Aristotle didn&rsquo;t fully solve
+        it (his own answer, that the later subdivisions exist only &ldquo;potentially,&rdquo; satisfied
+        few later readers), and the puzzle sat as a live irritant for roughly two thousand years. What
+        finally dissolves it is not philosophy but arithmetic: the realization that adding together
+        infinitely many numbers does not automatically produce an infinite total. If the numbers
+        you&rsquo;re adding shrink fast enough, their endless sum can settle on an entirely ordinary,
+        finite number. That one fact &mdash; that infinity, handled correctly, can add up to something
+        finite &mdash; is the subject of today&rsquo;s lesson, and it is the tool that finally lets
+        Achilles win his race.
+      </p>
+      <p>
+        Getting there takes two new pieces of vocabulary, <strong>sequence</strong> and
+        <strong>series</strong>, and one sharp distinction between the two basic ways a list of
+        numbers can grow or shrink: sequences that add the same amount every step, and sequences that
+        multiply by the same amount every step. Only one of those two behaves well enough, when summed
+        forever, to rescue Achilles &mdash; and the very same trick that rescues him is, essentially
+        unchanged, the tool Archimedes used roughly two centuries later to calculate the exact area
+        enclosed by a parabola, without any of the calculus that wouldn&rsquo;t exist for another
+        nineteen hundred years.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A <strong>sequence</strong> is simply an ordered list of numbers, one after another, each one
+        called a <strong>term</strong>. Write the terms as a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>
+        and so on &mdash; a<sub>1</sub> is the first term, a<sub>2</sub> the second, and a<sub>n</sub>
+        stands for &ldquo;whichever term comes n-th.&rdquo; A <strong>series</strong> is what you get
+        when you add a sequence&rsquo;s terms together: a<sub>1</sub>&nbsp;+&nbsp;a<sub>2</sub>&nbsp;+&nbsp;a<sub>3</sub>&nbsp;+&nbsp;&hellip;
+        Two families of sequences come up constantly, and today&rsquo;s lesson needs both, because
+        they behave completely differently once you try to sum them forever.
+      </p>
+      <p>
+        An <strong>arithmetic sequence</strong> adds the same fixed amount &mdash; the
+        <strong>common difference</strong>, <em>d</em> &mdash; to get from one term to the next:
+        2, 5, 8, 11, 14, &hellip; adds <em>d</em>&nbsp;=&nbsp;3 each time. The n-th term is
+        a<sub>n</sub>&nbsp;=&nbsp;a<sub>1</sub>&nbsp;+&nbsp;(n&minus;1)<em>d</em>. Summing <em>n</em>
+        terms of an arithmetic sequence has a shortcut worth knowing on its own: pair the first term
+        with the last, the second with the second-to-last, and so on; each pair adds to the same total
+        (a<sub>1</sub>&nbsp;+&nbsp;a<sub>n</sub>), and there are <em>n</em>/2 such pairs, so the sum of
+        the first <em>n</em> terms is S<sub>n</sub>&nbsp;=&nbsp;<em>n</em>(a<sub>1</sub>&nbsp;+&nbsp;a<sub>n</sub>)/2.
+        A well-known school anecdote has the ten-year-old Carl Friedrich Gauss discovering this
+        pairing trick on the spot around 1787, summing 1 through 100 almost instantly while his
+        classmates added the long way; the story has been retold so many times, with so many
+        conflicting details across versions, that historians treat its specifics as embellished
+        rather than verified &mdash; but the pairing trick it illustrates is real, and still the
+        fastest way to sum an arithmetic series by hand. On a smaller example you can check yourself:
+        1&nbsp;+&nbsp;2&nbsp;+&nbsp;&hellip;&nbsp;+&nbsp;10 has 10 terms, each pair (1&nbsp;+&nbsp;10,
+        2&nbsp;+&nbsp;9, and so on) adds to 11, and there are 10/2&nbsp;=&nbsp;5 such pairs, so the
+        total is 5&nbsp;&times;&nbsp;11&nbsp;=&nbsp;55 &mdash; no need to add ten numbers one at a
+        time. Either way, summing an arithmetic sequence
+        <em>forever</em> is hopeless: because the terms never shrink &mdash; the same difference is
+        added again and again &mdash; the running total only ever grows without bound.
+        1&nbsp;+&nbsp;2&nbsp;+&nbsp;3&nbsp;+&nbsp;4&nbsp;+&nbsp;&hellip; has no finite sum, and neither
+        does any other infinite arithmetic series except the trivial case where every term is zero.
+      </p>
+      <p>
+        A <strong>geometric sequence</strong> instead multiplies by the same fixed amount &mdash; the
+        <strong>common ratio</strong>, <em>r</em> &mdash; to get from one term to the next: 3, 6, 12,
+        24, &hellip; multiplies by <em>r</em>&nbsp;=&nbsp;2 each time; 1, &frac12;, &frac14;, &frac18;,
+        &hellip; multiplies by <em>r</em>&nbsp;=&nbsp;&frac12; each time. The n-th term is
+        a<sub>n</sub>&nbsp;=&nbsp;a<sub>1</sub><em>r</em><sup>n&minus;1</sup>. This is the family that
+        matters for Zeno, because unlike an arithmetic sequence, a geometric sequence <em>can</em>
+        shrink toward zero &mdash; and when it does, summing it forever stops being hopeless.
+      </p>
+      <p>
+        To see why, look at the running total as you add more and more terms &mdash; mathematicians
+        call this the <strong>partial sum</strong>, S<sub>n</sub>: the sum of just the first
+        <em>n</em> terms, stopping there. A series is said to <strong>converge</strong> if, as
+        <em>n</em> keeps growing, these partial sums settle down and approach one fixed number ever
+        more closely, rather than wandering off toward infinity or never settling at all (which is
+        called <strong>diverging</strong>). For a geometric series, whether it converges comes down
+        entirely to the size of <em>r</em>: if the ratio&rsquo;s size is less than 1 (written
+        |<em>r</em>|&nbsp;&lt;&nbsp;1), each new term is smaller than the last by the same proportion
+        every time, and the partial sums creep toward a fixed ceiling they never quite cross. If
+        |<em>r</em>| is 1 or larger, each term stays the same size or grows, and the partial sums never
+        settle &mdash; the series diverges.
+      </p>
+      <p>
+        Now apply exactly this to Zeno. Take the simplest version of his argument, often called the
+        Dichotomy: before you can cross a room, it seems you must first cross half of it. Before you
+        can cross the remaining half, you must cross half of <em>that</em> remainder &mdash; a quarter
+        of the original distance. Before crossing that remaining quarter, you must cross half of it
+        &mdash; an eighth. And so on, forever: &frac12;, &frac14;, &frac18;, 1/16, &hellip; &mdash; a
+        geometric sequence with first term a<sub>1</sub>&nbsp;=&nbsp;&frac12; and ratio
+        <em>r</em>&nbsp;=&nbsp;&frac12;. Zeno is entirely right that this produces infinitely many
+        steps. But add them up: &frac12;&nbsp;+&nbsp;&frac14;&nbsp;+&nbsp;&frac18;&nbsp;+&nbsp;1/16&nbsp;+&nbsp;&hellip;
+        Each partial sum is 1 minus whatever fraction is still left to cross: after one step
+        you&rsquo;ve covered &frac12;&nbsp;=&nbsp;1&nbsp;&minus;&nbsp;&frac12;; after two,
+        &frac34;&nbsp;=&nbsp;1&nbsp;&minus;&nbsp;&frac14;; after three,
+        &frac78;&nbsp;=&nbsp;1&nbsp;&minus;&nbsp;&frac18; &mdash; and that missing piece shrinks toward
+        zero forever without ever quite reaching it. The infinite sum is exactly 1: the whole room, no
+        more and no less. Infinitely many steps, each one genuinely completed, adding up to a perfectly
+        ordinary finite distance. Zeno&rsquo;s hidden assumption &mdash; that infinitely many steps
+        must take an infinite distance or an infinite time &mdash; is simply false, once you know how
+        to add a shrinking geometric sequence.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Sequence</dt>
+        <dd>An ordered list of numbers, each one called a term (written a<sub>1</sub>, a<sub>2</sub>, a<sub>3</sub>, &hellip;).</dd>
+        <dt>Series</dt>
+        <dd>The sum produced by adding a sequence&rsquo;s terms together, one after another.</dd>
+        <dt>Arithmetic vs. geometric</dt>
+        <dd>An arithmetic sequence adds the same fixed amount each step and never shrinks; a geometric sequence multiplies by the same fixed ratio each step, and shrinks toward zero when the ratio's size is less than 1.</dd>
+        <dt>Convergence</dt>
+        <dd>What a series does when its partial sums settle on one fixed number as more terms are added, rather than growing without bound or never settling (diverging).</dd>
+        <dt>Zeno&rsquo;s paradox</dt>
+        <dd>The ancient argument that motion is impossible because covering any distance seems to require completing infinitely many smaller steps first; resolved once those steps are recognized as a convergent geometric series.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Zeno&rsquo;s original version of the paradox &mdash; Achilles and the tortoise &mdash; uses
+        exactly the same resolution, but with real speeds attached, so the geometric series plays out
+        in actual seconds rather than fractions of a room.
+      </p>
+      <div class="worked">
+        <p>
+          <strong>Achilles catches the tortoise.</strong> Give the tortoise a 100-meter head start.
+          Achilles runs at 10 meters per second; the tortoise crawls at 1 meter per second.
+        </p>
+        <p>
+          Step 1: Achilles needs 100/10&nbsp;=&nbsp;10 seconds to reach the tortoise&rsquo;s starting
+          point. In those 10 seconds the tortoise crawls 1&nbsp;&times;&nbsp;10&nbsp;=&nbsp;10 more
+          meters, to the 110-meter mark.
+        </p>
+        <p>
+          Step 2: Achilles needs another 10/10&nbsp;=&nbsp;1 second to reach that new 110-meter mark.
+          In that 1 second the tortoise crawls 1 more meter, to 111.
+        </p>
+        <p>
+          Step 3: Achilles needs 1/10&nbsp;=&nbsp;0.1 second to reach 111. The tortoise crawls 0.1 more
+          meters, to 111.1 &mdash; and the pattern continues.
+        </p>
+        <p>
+          Every step takes exactly one-tenth the time of the step before it: 10, 1, 0.1, 0.01,
+          &hellip; &mdash; a geometric sequence with a<sub>1</sub>&nbsp;=&nbsp;10 seconds and
+          <em>r</em>&nbsp;=&nbsp;1/10. Summed forever:
+        </p>
+        <p>
+          Total time = 10/(1&nbsp;&minus;&nbsp;1/10) = 10/0.9 = 11.111&hellip; seconds = 100/9 seconds.
+        </p>
+        <p>
+          Check this against plain algebra, with no series at all: Achilles closes the 100-meter gap
+          at a relative speed of 10&nbsp;&minus;&nbsp;1&nbsp;=&nbsp;9 meters per second, so the
+          catch-up time is 100/9&nbsp;=&nbsp;11.111&hellip; seconds &mdash; exactly what the infinite
+          geometric series gave. Zeno&rsquo;s infinitely many steps are completely real; they simply
+          all finish inside an ordinary 11.11-second span. After that instant, Achilles isn&rsquo;t
+          just even with the tortoise &mdash; he&rsquo;s ahead of it.
+        </p>
+      </div>
+      <p>
+        This is not merely a cute fix for a Greek puzzle. Roughly two centuries after Zeno, Archimedes
+        used the identical idea &mdash; summing a sequence of shrinking geometric pieces &mdash; to
+        solve a genuine open problem: finding the exact area enclosed by a parabola and a straight line
+        cutting across it. His method, laid out in <em>Quadrature of the Parabola</em> (3rd century
+        BCE), filled the parabolic region with a sequence of triangles, where each new layer
+        contributed exactly a quarter of the area the previous layer had contributed &mdash; a
+        geometric sequence with ratio <em>r</em>&nbsp;=&nbsp;&frac14;. If that first, largest triangle
+        has area 1, the running total after each added layer is 1, then
+        1&nbsp;+&nbsp;&frac14;&nbsp;=&nbsp;1&frac14;, then 1&frac14;&nbsp;+&nbsp;1/16, creeping toward
+        the same ceiling the infinite-geometric-series formula predicts:
+        S&nbsp;=&nbsp;1/(1&nbsp;&minus;&nbsp;&frac14;)&nbsp;=&nbsp;4/3. Archimedes reached that
+        four-thirds figure using only the method of exhaustion &mdash; comparing finite partial sums
+        against the true area from both sides &mdash; because the formal idea of an infinite limit was
+        still two thousand years away. The same kind of calculation, essentially unchanged, just
+        resolved Achilles&rsquo;s race.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Every example above is one instance of a single general fact: a geometric series with first
+        term <em>a</em> and ratio <em>r</em> converges, provided the size of <em>r</em> is less than
+        1, to a finite sum.
+      </p>
+      <div class="formula">
+        <p class="expr">S = a / (1 &minus; r), for |r| &lt; 1</p>
+        <p class="expr-spoken visually-hidden">S equals a over the quantity one minus r, valid when the size of r is less than one.</p>
+        <dl>
+          <dt>S</dt>
+          <dd>the sum of the infinite series a + ar + ar&sup2; + ar&sup3; + &hellip;</dd>
+          <dt>a</dt>
+          <dd>the first term of the sequence</dd>
+          <dt>r</dt>
+          <dd>the common ratio between consecutive terms; the formula applies only when the size of r is less than one</dd>
+        </dl>
+      </div>
+      <p>
+        The formula isn&rsquo;t a guess; it falls out of one algebraic trick applied to the
+        <em>finite</em> partial sum first, then pushed to its limit. Write the sum of the first
+        <em>n</em> terms, then write that same sum multiplied by <em>r</em>:
+      </p>
+      <div class="formula">
+        <p class="expr">S<sub>n</sub> = a + ar + ar&sup2; + &hellip; + ar<sup>n&minus;1</sup></p>
+        <p class="expr-spoken visually-hidden">S sub n equals a plus a r plus a r squared, and so on, up to a r to the n minus one.</p>
+      </div>
+      <div class="formula">
+        <p class="expr">rS<sub>n</sub> = ar + ar&sup2; + ar&sup3; + &hellip; + ar<sup>n</sup></p>
+        <p class="expr-spoken visually-hidden">r times S sub n equals a r plus a r squared plus a r cubed, and so on, up to a r to the n.</p>
+      </div>
+      <p>
+        Subtract the second line from the first. Every middle term &mdash; ar, ar&sup2;, and so on
+        through ar<sup>n&minus;1</sup> &mdash; appears in both rows and cancels exactly, leaving only
+        the one term each row didn&rsquo;t share:
+      </p>
+      <div class="formula">
+        <p class="expr">S<sub>n</sub> &minus; rS<sub>n</sub> = a &minus; ar<sup>n</sup></p>
+        <p class="expr-spoken visually-hidden">S sub n minus r S sub n equals a minus a r to the n.</p>
+      </div>
+      <p>
+        Factor S<sub>n</sub> out of the left side and divide: S<sub>n</sub>(1&nbsp;&minus;&nbsp;r) =
+        a(1&nbsp;&minus;&nbsp;r<sup>n</sup>), so S<sub>n</sub> =
+        a(1&nbsp;&minus;&nbsp;r<sup>n</sup>)/(1&nbsp;&minus;&nbsp;r). That is an exact formula for the
+        sum of any finite number of terms, true for any <em>r</em>. The infinite case comes from asking
+        what happens to this formula as <em>n</em> grows without bound: if |<em>r</em>|&nbsp;&lt;&nbsp;1,
+        repeated multiplication by <em>r</em> drives r<sup>n</sup> toward zero
+        (0.1<sup>10</sup>&nbsp;=&nbsp;0.0000000001), so the term ar<sup>n</sup> in the numerator
+        vanishes in the limit, leaving S&nbsp;=&nbsp;a/(1&nbsp;&minus;&nbsp;r) exactly. If
+        |<em>r</em>|&nbsp;&ge;&nbsp;1 instead, r<sup>n</sup> never shrinks &mdash; it either stays put
+        or grows &mdash; and the partial sums never settle on a fixed number at all, which is why the
+        formula only applies, and only converges, when |<em>r</em>|&nbsp;&lt;&nbsp;1.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Zeno&rsquo;s paradox is often treated as a cute logical trick, but it posed a genuine problem
+        for two thousand years: nobody had a rigorous way to say what an infinite sum even
+        <em>means</em>, so arguments like his could be argued around but not definitively answered.
+        Today&rsquo;s result answers it completely: an infinite sum is not automatically infinite, and
+        whether it is finite or infinite depends entirely on how fast its terms shrink. That reframes
+        the paradox from a flaw in logic into a solved arithmetic problem &mdash; exactly the kind of
+        victory that marks real mathematical progress, not avoiding a hard question but building the
+        tools that make it stop being hard.
+      </p>
+      <p>
+        It also previews something this curriculum will need constantly from here on. The phrase used
+        above &mdash; partial sums &ldquo;settle down and approach one fixed number ever more
+        closely&rdquo; &mdash; is doing real work, but it is deliberately informal; it hasn&rsquo;t said
+        precisely how close counts as close enough, or what &ldquo;approach&rdquo; means for sequences
+        that don&rsquo;t come with a tidy ratio <em>r</em> attached. Day 9, <em>The limit:
+        approaching forever without arriving</em>, formalizes exactly that idea into a single rigorous
+        definition that applies not just to geometric series but to any sequence or function at all
+        &mdash; the definition that finally let mathematicians trust infinity instead of merely working
+        around it.
+      </p>
+      <p>
+        And the Archimedes example above is not a historical curiosity either: summing infinitely many
+        shrinking pieces to find an exact area is the core idea behind integral calculus, developed
+        independently by Newton and Leibniz roughly nineteen centuries after Archimedes used a cruder,
+        entirely manual version of the same trick. The geometric series in today&rsquo;s lesson is the
+        direct, simplest ancestor of that much larger machine.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A sequence is an ordered list of numbers (terms); a series is the running sum of that list.</li>
+        <li>Arithmetic sequences add a fixed amount each step and never shrink; geometric sequences multiply by a fixed ratio <em>r</em>, and shrink toward zero when the size of <em>r</em> is less than 1.</li>
+        <li>An infinite geometric series converges to a finite sum, S&nbsp;=&nbsp;a/(1&minus;r), only when |r|&nbsp;&lt;&nbsp;1; otherwise it diverges.</li>
+        <li>Zeno&rsquo;s paradox assumed infinitely many steps must take infinite time or distance; a convergent geometric series shows that assumption is false.</li>
+        <li>Archimedes used the same shrinking-geometric-series idea, two centuries after Zeno, to compute an exact area &mdash; the direct ancestor of integral calculus.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        The formula S&nbsp;=&nbsp;a/(1&minus;r) breaks down the moment |r| reaches 1 &mdash; at
+        r&nbsp;=&nbsp;1 you&rsquo;d be dividing by zero, and the derivation itself relied on
+        r<sup>n</sup> shrinking to zero, which stops being true once |r|&nbsp;&ge;&nbsp;1. Using the
+        room-crossing version of Zeno&rsquo;s argument, what would it mean, physically, for the ratio
+        between your steps to be r&nbsp;=&nbsp;1 instead of r&nbsp;=&nbsp;&frac12; &mdash; and why does
+        that case match Zeno&rsquo;s original intuition, that the steps really would add up to
+        something infinite, instead of resolving it?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Zeno of Elea's Achilles paradox and its preservation in
+      Aristotle's <em>Physics</em> (Book VI:9, 239b15), per Wikipedia's "Zeno's paradoxes" entry and
+      Britannica's "Achilles paradox" article. Archimedes' <em>Quadrature of the Parabola</em>
+      (3rd century BCE) and its ratio-&frac14; geometric series summing to four-thirds the first
+      triangle, per AMSI's history-of-mathematics materials and an MAA Convergence account of the
+      method of exhaustion. The provenance and embellishment of the young-Gauss schoolroom anecdote,
+      per Brian Hayes's "Gauss's Day of Reckoning" (American Scientist) and Science News's own
+      account. The geometric-series formula and its derivation were worked from first principles for
+      this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-06-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
