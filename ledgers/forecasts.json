@@ -4561,6 +4561,26 @@
       "probability": "65-80%",
       "basis": "NHC forecast (via AccuWeather/CNN) of hurricane strength Thursday and northern-Gulf approach Fri night; intensity-at-landfall disagreement and 3-day track uncertainty",
       "status": "open"
+    },
+    {
+      "id": "2026-10-07-pm-1",
+      "date": "2026-10-07",
+      "slot": "pm",
+      "forecast": "The $22B 30-year bond reopening on Oct 8 prices at or below its when-issued yield at the 1 PM bidding deadline (no tail).",
+      "horizon": "2026-10-08",
+      "probability": "45-60%",
+      "basis": "Both 3Y (0.2bp) and 10Y (~1.7bp) stopped through this week with strong indirect demand; 30Y trades ~36bp above September's 5.308% stop, attracting yield buyers; but the long end is the most exposed to term-premium concerns the minutes flagged.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-07-pm-2",
+      "date": "2026-10-07",
+      "slot": "pm",
+      "forecast": "The 10-year Treasury par yield (Treasury daily curve) closes at or above 5.35% on any day through Friday, Oct 9.",
+      "horizon": "2026-10-09",
+      "probability": "20-35%",
+      "basis": "Closed 5.28%; intraday 5.365% today was bought at the auction; 30Y auction, claims and oil >$100 are the remaining catalysts; a 7bp rise in two sessions is within recent ranges.",
+      "status": "open"
     }
   ]
 }
