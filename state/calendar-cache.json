@@ -1,168 +1,8 @@
 {
-  "fetched": "2026-10-04T09:30:00-04:00",
-  "earnings_fetched": "2026-10-04",
-  "earnings_fetched_note": "AV 3-month CSV + Finnhub Oct 5-9 fetched 2026-10-04; MKC Finnhub Oct 5 listing is wrong (reported Oct 1 per EDGAR).",
+  "fetched": "2026-10-08T06:45:00-04:00",
+  "earnings_fetched": "2026-10-08",
+  "earnings_fetched_note": "2026-10-08 am: Finnhub day-of (Oct 8-9) only; Alpha Vantage 3-month CSV not fetched this run.",
   "events": [
-    {
-      "ts_et": "2026-10-04T18:00:00-04:00",
-      "type": "market",
-      "name": "Futures reopen after weekend tanker strikes / OPEC+ hold",
-      "importance": "High",
-      "reason": "First pricing of weekend Gulf news",
-      "source": "CME"
-    },
-    {
-      "ts_et": "2026-10-05T10:00:00-04:00",
-      "type": "econ",
-      "name": "ISM services PMI (Sep); Aug 55.4, prices 72.6; cons 54.5-55.1 (conflict)",
-      "importance": "High",
-      "reason": "Energy pass-through into services",
-      "source": "ISM / Newsquawk"
-    },
-    {
-      "ts_et": "2026-10-05T11:30:00-04:00",
-      "type": "auction",
-      "name": "13-wk $95B, 26-wk $82B bills",
-      "importance": "Low",
-      "reason": "Routine",
-      "source": "TreasuryDirect"
-    },
-    {
-      "ts_et": "2026-10-05T10:00:00-04:00",
-      "type": "legal",
-      "name": "SCOTUS term opens: Suncor v. Boulder County; Johnson v. US Congress",
-      "importance": "Medium",
-      "reason": "Climate-liability suits nationwide",
-      "source": "supremecourt.gov"
-    },
-    {
-      "ts_et": "2026-10-05T05:30:00-04:00",
-      "type": "science",
-      "name": "Nobel Prize in physiology or medicine",
-      "importance": "Low",
-      "reason": "Nobel week",
-      "source": "nobelprize.org"
-    },
-    {
-      "ts_et": "2026-10-05T04:17:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 SDA Tranche 1 Transport Layer A, Vandenberg",
-      "importance": "Low",
-      "reason": "Defense space",
-      "source": "LL2 / SpaceX"
-    },
-    {
-      "ts_et": "2026-10-06T08:30:00-04:00",
-      "type": "econ",
-      "name": "Trade balance (Aug); Jul -$88.6B",
-      "importance": "Medium",
-      "reason": "GDP net exports",
-      "source": "Census calendar"
-    },
-    {
-      "ts_et": "2026-10-06T10:45:00-04:00",
-      "type": "fed",
-      "name": "Bowman: Modernizing Regulation and Supervision (St. Louis)",
-      "importance": "Low",
-      "reason": "Regulation, not policy",
-      "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-10-06T13:00:00-04:00",
-      "type": "auction",
-      "name": "3-year note $58B",
-      "importance": "High",
-      "reason": "Start of long-end supply test",
-      "source": "TreasuryDirect"
-    },
-    {
-      "ts_et": "2026-10-06T07:00:00-04:00",
-      "type": "earnings",
-      "name": "RPM BMO (EPS ~$1.95-1.97)",
-      "importance": "Low",
-      "reason": "Raw-material costs",
-      "source": "Finnhub/AV"
-    },
-    {
-      "ts_et": "2026-10-06T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Constellation Brands AMC (EPS ~$3.57-3.62)",
-      "importance": "Medium",
-      "reason": "Consumer, new CEO",
-      "source": "company IR"
-    },
-    {
-      "ts_et": "2026-10-06T09:00:00-04:00",
-      "type": "corporate",
-      "name": "Paramount Skydance-WBD expected close",
-      "importance": "Medium",
-      "reason": "Credit supply, media",
-      "source": "WBD IR"
-    },
-    {
-      "ts_et": "2026-10-06T12:00:00-04:00",
-      "type": "energy",
-      "name": "EIA STEO + Winter Fuels Outlook",
-      "importance": "Medium",
-      "reason": "Oil/heating price path",
-      "source": "EIA"
-    },
-    {
-      "ts_et": "2026-10-06T23:23:00-04:00",
-      "type": "launch",
-      "name": "Nuri 5th launch (NeonSat 2-6), Naro",
-      "importance": "Low",
-      "reason": "Korea space",
-      "source": "Korea Herald / LL2"
-    },
-    {
-      "ts_et": "2026-10-07T13:00:00-04:00",
-      "type": "auction",
-      "name": "10-year note reopening $39B",
-      "importance": "Critical",
-      "reason": "Long-end demand at 2002-high yields",
-      "source": "TreasuryDirect"
-    },
-    {
-      "ts_et": "2026-10-07T14:00:00-04:00",
-      "type": "fed",
-      "name": "FOMC minutes (Sep 15-16)",
-      "importance": "High",
-      "reason": "Hike-path breadth; pre-payrolls meeting",
-      "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-10-07T15:00:00-04:00",
-      "type": "econ",
-      "name": "Consumer credit (Aug); Jul +4.2% ann.",
-      "importance": "Low",
-      "reason": "Consumer leverage",
-      "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-10-07T00:30:00-04:00",
-      "type": "cb",
-      "name": "RBI decision; repo 5.25%, poll majority expects hike",
-      "importance": "Medium",
-      "reason": "EM tightening",
-      "source": "Newsquawk"
-    },
-    {
-      "ts_et": "2026-10-07T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Levi Strauss AMC (EPS ~$0.36)",
-      "importance": "Low",
-      "reason": "Apparel/tariffs",
-      "source": "BusinessWire"
-    },
-    {
-      "ts_et": "2026-10-07T20:00:00-04:00",
-      "type": "local",
-      "name": "Shapiro-Garrity PA governor debate (Nexstar)",
-      "importance": "Medium",
-      "reason": "PA governor race",
-      "source": "Nexstar / ABC27"
-    },
     {
       "ts_et": "2026-10-08T04:30:00-04:00",
       "type": "fed",
@@ -170,14 +10,6 @@
       "importance": "High",
       "reason": "Only Board policy speech",
       "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-10-08T08:30:00-04:00",
-      "type": "econ",
-      "name": "Initial jobless claims; prior 197K",
-      "importance": "Medium",
-      "reason": "Layoffs after payroll miss",
-      "source": "DOL"
     },
     {
       "ts_et": "2026-10-08T07:00:00-04:00",
@@ -188,20 +20,12 @@
       "source": "MarketBeat/Finnhub"
     },
     {
-      "ts_et": "2026-10-08T11:00:00-04:00",
-      "type": "legal",
-      "name": "Press-access PI hearing (Judge Kelly); TRO expires",
-      "importance": "Medium",
-      "reason": "First Amendment / White House",
-      "source": "CNN / Deadline"
-    },
-    {
-      "ts_et": "2026-10-08T13:00:00-04:00",
-      "type": "auction",
-      "name": "30-year bond reopening $22B",
-      "importance": "Critical",
-      "reason": "Long-end demand",
-      "source": "TreasuryDirect"
+      "ts_et": "2026-10-08T07:00:00-04:00",
+      "type": "science",
+      "name": "Nobel Prize in Literature",
+      "importance": "Low",
+      "reason": "Nobel week",
+      "source": "nobelprize.org"
     },
     {
       "ts_et": "2026-10-08T07:30:00-04:00",
@@ -212,20 +36,92 @@
       "source": "ECB"
     },
     {
+      "ts_et": "2026-10-08T08:30:00-04:00",
+      "type": "econ",
+      "name": "Initial jobless claims; prior 197K",
+      "importance": "Medium",
+      "reason": "Layoffs after payroll miss",
+      "source": "DOL"
+    },
+    {
+      "ts_et": "2026-10-08T08:30:00-04:00",
+      "type": "econ",
+      "name": "Continuing claims; cons 1.71M, prior 1.70M",
+      "importance": "Low",
+      "reason": "Labor",
+      "source": "Investing.com"
+    },
+    {
+      "ts_et": "2026-10-08T10:30:00-04:00",
+      "type": "econ",
+      "name": "EIA natural gas storage",
+      "importance": "Low",
+      "reason": "Energy",
+      "source": "EIA"
+    },
+    {
+      "ts_et": "2026-10-08T10:40:00-04:00",
+      "type": "fed",
+      "name": "Kashkari panel (time unconfirmed)",
+      "importance": "Medium",
+      "reason": "2026 voter",
+      "source": "Newsquawk"
+    },
+    {
+      "ts_et": "2026-10-08T11:00:00-04:00",
+      "type": "legal",
+      "name": "Press-access PI hearing (Judge Kelly); TRO expires",
+      "importance": "Medium",
+      "reason": "First Amendment / White House",
+      "source": "CNN / Deadline"
+    },
+    {
+      "ts_et": "2026-10-08T11:30:00-04:00",
+      "type": "auction",
+      "name": "4-week $110B, 8-week $105B bills",
+      "importance": "Low",
+      "reason": "Bill supply",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-08T13:00:00-04:00",
+      "type": "auction",
+      "name": "30-year bond reopening $22B",
+      "importance": "Critical",
+      "reason": "Long-end demand",
+      "source": "TreasuryDirect"
+    },
+    {
+      "ts_et": "2026-10-08T13:40:00-04:00",
+      "type": "fed",
+      "name": "Musalem outlook (time unconfirmed)",
+      "importance": "Medium",
+      "reason": "Fed path",
+      "source": "Newsquawk"
+    },
+    {
+      "ts_et": "2026-10-08T16:30:00-04:00",
+      "type": "fed",
+      "name": "H.4.1 balance sheet",
+      "importance": "Low",
+      "reason": "Liquidity",
+      "source": "federalreserve.gov"
+    },
+    {
+      "ts_et": "2026-10-09T05:00:00-04:00",
+      "type": "science",
+      "name": "Nobel Peace Prize",
+      "importance": "Low",
+      "reason": "Nobel week",
+      "source": "nobelprize.org"
+    },
+    {
       "ts_et": "2026-10-09T07:00:00-04:00",
       "type": "earnings",
       "name": "Delta BMO (EPS ~$2.00-2.02)",
       "importance": "High",
       "reason": "Fuel pass-through, Q4 guide",
       "source": "MarketBeat/Finnhub"
-    },
-    {
-      "ts_et": "2026-10-09T10:00:00-04:00",
-      "type": "econ",
-      "name": "UMich prelim Oct sentiment; Sep 48.1, 1-yr exp 4.6%",
-      "importance": "High",
-      "reason": "Inflation expectations",
-      "source": "UMich (standard schedule)"
     },
     {
       "ts_et": "2026-10-09T09:30:00-04:00",
@@ -236,12 +132,12 @@
       "source": "prior editions"
     },
     {
-      "ts_et": "2026-10-09T05:00:00-04:00",
-      "type": "science",
-      "name": "Nobel Peace Prize",
-      "importance": "Low",
-      "reason": "Nobel week",
-      "source": "nobelprize.org"
+      "ts_et": "2026-10-09T10:00:00-04:00",
+      "type": "econ",
+      "name": "UMich prelim Oct sentiment; Sep 48.1, 1-yr exp 4.6%",
+      "importance": "High",
+      "reason": "Inflation expectations",
+      "source": "UMich (standard schedule)"
     },
     {
       "ts_et": "2026-10-10T00:00:00-04:00",
@@ -282,6 +178,22 @@
       "importance": "High",
       "reason": "Inflation",
       "source": "BLS ICS"
+    },
+    {
+      "ts_et": "2026-10-15T08:30:00-04:00",
+      "type": "econ",
+      "name": "IEA board on G7 crude/diesel release (Oct 14-15)",
+      "importance": "High",
+      "reason": "Oil supply",
+      "source": "Reuters"
+    },
+    {
+      "ts_et": "2026-10-28T14:00:00-04:00",
+      "type": "fed",
+      "name": "FOMC decision (Oct 27-28)",
+      "importance": "Critical",
+      "reason": "Rates",
+      "source": "federalreserve.gov"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

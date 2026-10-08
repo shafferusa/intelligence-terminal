@@ -4581,6 +4581,46 @@
       "probability": "20-35%",
       "basis": "Closed 5.28%; intraday 5.365% today was bought at the auction; 30Y auction, claims and oil >$100 are the remaining catalysts; a 7bp rise in two sessions is within recent ranges.",
       "status": "open"
+    },
+    {
+      "id": "2026-10-08-am-1",
+      "forecast": "Today's $22B 30-year bond reopening clears at or through its when-issued yield at the 1 PM deadline (no tail).",
+      "horizon": "2026-10-08",
+      "probability": "50-65%",
+      "basis": "10Y reopening stopped through with ~2.5% dealer takedown; long-end yields 5.6-5.7% drew buyers all week; against: oil +4% and long bond most exposed to inflation/term premium.",
+      "date": "2026-10-08",
+      "slot": "am",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-08-am-2",
+      "forecast": "The FOMC raises the federal funds target range at its October 27-28 meeting.",
+      "horizon": "2026-10-28",
+      "probability": "15-30%",
+      "basis": "Futures ~18-22% per CNBC relays of CME; Waller allowed skipping meetings; soft payrolls; oil >$100 and minutes' energy emphasis argue for; Sep CPI Oct 14 decisive.",
+      "date": "2026-10-08",
+      "slot": "am",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-08-am-3",
+      "forecast": "The US announces or carries out new strikes on Iranian territory before November 3, 2026.",
+      "horizon": "2026-11-03",
+      "probability": "20-40%",
+      "basis": "The Atlantic and Axios report strike options being prepared with no decision; talks stalled and Trump rejected Iran's latest proposal; option preparation is routine and often unused.",
+      "date": "2026-10-08",
+      "slot": "am",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-08-am-4",
+      "forecast": "Isaias makes US landfall as a hurricane (Category 1 or stronger) by October 11.",
+      "horizon": "2026-10-11",
+      "probability": "85-95%",
+      "basis": "Already 80 mph hurricane at NHC 5 AM advisory; warnings MS-FL Panhandle; forecast strengthening before late-Fri/early-Sat landfall.",
+      "date": "2026-10-08",
+      "slot": "am",
+      "status": "open"
     }
   ]
 }

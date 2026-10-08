@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-10-07T20:45:00Z",
+ "fetched_at": "2026-10-08T10:40:00Z",
  "treasury_par_curve": {
   "as_of": "2026-10-07 EOD official",
   "source": "home.treasury.gov",
@@ -16,13 +16,13 @@
   "30Y": 5.67
  },
  "fred": {
-  "fetched": "2026-10-07T20:36:00Z",
+  "fetched": "2026-10-08T10:33:00Z",
   "DFII10": [
    "2026-10-06",
    2.91
   ],
   "T10YIE": [
-   "2026-10-06",
+   "2026-10-07",
    2.36
   ],
   "SOFR": [
@@ -42,8 +42,20 @@
    4.79
   ],
   "T10Y2Y": [
+   "2026-10-07",
+   0.51
+  ],
+  "DFF": [
    "2026-10-06",
-   0.48
+   3.88
+  ],
+  "ICSA": [
+   "2026-09-26",
+   197000
+  ],
+  "UNRATE": [
+   "2026-09-01",
+   4.2
   ]
  },
  "vix_complex": {
@@ -530,7 +542,7 @@
   "price": 922.77,
   "pct": 2.93
  },
- "_notes_this_run": "2026-10-01 am: Yahoo v8 HTTP 429 on all symbols (query1/query2); Cboe cdn 307 to cdn-api.cboe.com (not allowlisted, not followed). Treasury, FRED, Frankfurter, CoinGecko global+simple/price, Twelve Data, Finnhub, Massive, FINRA, SEC, TreasuryDirect, Fed RSS, NWS worked.",
+ "_notes_this_run": "2026-10-08 am: Yahoo v8 curl worked (200 on all). Cboe cdn 307 (not followed). Treasury, FRED, Frankfurter, CoinGecko, Massive, FINRA, SEC, TreasuryDirect, BLS ICS, Fed RSS, NWS, Finnhub, LL2 worked.",
  "yahoo_am_2026_09_28": {
   "fetched_at": "2026-09-28T10:54:34Z",
   "label": "Delayed (+10 min) futures/overnight; Previous close for cash",
@@ -966,13 +978,14 @@
   }
  },
  "coingecko": {
-  "fetched": "2026-10-07T20:45:00Z",
-  "bitcoin": 83520,
-  "ethereum": 2576.15,
-  "solana": 116.3,
-  "cardano": 0.254916,
-  "total_cap_usd": 2848040115001,
-  "btc_dominance": 58.81
+  "fetched": "2026-10-08T10:35:00Z",
+  "bitcoin": 82750,
+  "ethereum": 2556.12,
+  "solana": 114.53,
+  "cardano": 0.253747,
+  "total_cap_usd": 2794389520703,
+  "btc_dominance": 59.26,
+  "cap_chg_24h_pct": -3.93
  },
  "board": {
   "as_of": "2026-10-07 EOD Yahoo (Twelve Data spot-check agreed)",
@@ -2518,7 +2531,7 @@
   }
  },
  "treasury": {
-  "fetched": "2026-10-07T20:35:00Z",
+  "fetched": "2026-10-08T10:32:00Z",
   "date": "2026-10-07",
   "curve": {
    "1M": 4.07,
@@ -2640,5 +2653,67 @@
   "n225": 70035.71,
   "hsi": 24130.5,
   "source": "Yahoo v8 query1 ~16:30 ET (futures/commodities delayed +10)"
+ },
+ "am_2026_10_08": {
+  "as_of": "2026-10-08 ~06:22-06:32 ET Yahoo v8 (curl, delayed)",
+  "quotes": {
+   "ES=F": 7819.0,
+   "NQ=F": 31201.0,
+   "YM=F": 51034.0,
+   "RTY=F": 2786.8,
+   "CL=F": 92.06,
+   "BZ=F": 104.42,
+   "GC=F": 4146.2,
+   "SI=F": 59.1,
+   "HG=F": 6.657,
+   "NG=F": 3.257,
+   "DX-Y.NYB": 102.403,
+   "EURUSD=X": 1.1183,
+   "JPY=X": 158.211,
+   "^VIX": 15.75,
+   "^N225": 69042.11,
+   "^KS11": 6625.93,
+   "^HSI": 23785.79,
+   "000001.SS": 3811.9,
+   "^BSESN": 71593.24,
+   "^STOXX": 624.35,
+   "^STOXX50E": 6107.16,
+   "^GDAXI": 24870.49,
+   "^FTSE": 10412.59,
+   "BTC-USD": 82750.8
+  },
+  "prev_settle_bars": {
+   "ES=F": 7852.75,
+   "NQ=F": 31402.25,
+   "YM=F": 51449.0,
+   "RTY=F": 2812.2,
+   "CL=F": 88.28,
+   "BZ=F": 100.2,
+   "GC=F": 4140.7
+  },
+  "eod_1007": {
+   "^GSPC": 7801.77,
+   "^IXIC": 27538.69,
+   "^DJI": 51179.87,
+   "^RUT": 2793.2,
+   "^VIX": 15.08,
+   "^VIX9D": 11.78,
+   "^VIX3M": 17.72,
+   "^TNX": 5.277,
+   "^TYX": 5.661
+  },
+  "premarket": {
+   "CAT": 795.61,
+   "PEP": 124.31,
+   "LEVI": 19.28,
+   "SPCX": 166.94,
+   "NVDA": 235.06
+  },
+  "breadth_1007": {
+   "adv": 1405,
+   "dec": 4044,
+   "pct_e50": 28.8
+  },
+  "finra_1007_agg_short_ratio": 0.5244
  }
 }

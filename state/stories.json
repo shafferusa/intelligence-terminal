@@ -1,6 +1,168 @@
 {
  "stories": [
   {
+   "id": "oil-iran-strike-options-oct8",
+   "status": "New",
+   "headline": "Brent ~$104.42 (+4.2%), WTI ~$92.06 (+4.3%) after The Atlantic: White House asked Pentagon for Iran strike options usable before Nov 3; Axios: CENTCOM told to prepare; no decision",
+   "one_line": "Oil-led risk-off; strike options reported, not ordered",
+   "verification": "Confirmed-multiple (relays of The Atlantic; Axios separate); prices Yahoo delayed",
+   "sources": [
+    "The Atlantic",
+    "Axios",
+    "CBS",
+    "Bloomberg",
+    "Yahoo"
+   ],
+   "score_rationale": "Lead: most market-moving development; energy feeds Fed hike case",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "qatar-tanker-hit-oct7",
+   "status": "New",
+   "headline": "UKMTO: tanker hit by multiple projectiles ~51nm N of Madinat ash Shamal, Qatar, Wed evening; western Gulf; unclaimed; On Peace 12 crew hurt Oct 6",
+   "one_line": "Attacks spreading inside the Gulf",
+   "verification": "Single-reliable-source (UKMTO relayed)",
+   "sources": [
+    "UKMTO via Al Jazeera",
+    "Tribune India",
+    "Indian MEA"
+   ],
+   "score_rationale": "Oil supply risk",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "ust-30y-reopen-oct8",
+   "status": "Developing",
+   "headline": "$22B 30Y reopening 1 PM Oct 8 (CUSIP 912810UW6); 30Y par 5.67%, 20Y 5.71%; 2s10s 51bp",
+   "one_line": "Final coupon test of the week, oil up 4%",
+   "verification": "Confirmed-primary (TreasuryDirect)",
+   "sources": [
+    "TreasuryDirect",
+    "Treasury"
+   ],
+   "score_rationale": "Long-end supply at 2002 highs",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "waller-istanbul-oct8",
+   "status": "New",
+   "headline": "Waller (Istanbul 4:30 ET): more hikes likely but flexibility on timing, not necessarily consecutive meetings (Reuters/Bloomberg summaries)",
+   "one_line": "Leaves room to hold Oct 28",
+   "verification": "Confirmed-multiple (secondary)",
+   "sources": [
+    "Fed calendar",
+    "Reuters",
+    "Bloomberg"
+   ],
+   "score_rationale": "Fed path",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "global-selloff-oct8",
+   "status": "New",
+   "headline": "Kospi -2.62% despite Samsung Q3 OP 107.4T won; Nikkei -1.42%; HSI -1.43%; Sensex -1.44%; Stoxx 600 ~-0.9%; ES -0.43%, RTY -0.90%; Oct 7 breadth 1,405/4,044",
+   "one_line": "Broad risk-off; narrow US leadership",
+   "verification": "Confirmed-primary data (Yahoo, Massive)",
+   "sources": [
+    "Yahoo",
+    "AP",
+    "Business Standard",
+    "Massive"
+   ],
+   "score_rationale": "Cross-asset tape",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "hurricane-isaias-oct8",
+   "status": "Materially changed",
+   "headline": "Isaias hurricane 80 mph (NHC 5 AM adv 7), hurricane warning Ocean Springs MS to Bay/Gulf line FL; Cat 2 forecast; landfall late Fri/early Sat; ~511k b/d GoM shut in",
+   "one_line": "First hurricane of season, Gulf energy exposure",
+   "verification": "Confirmed-multiple (NHC relayed)",
+   "sources": [
+    "NHC via CNN/CBS/weather.com",
+    "CNBC/Reuters"
+   ],
+   "score_rationale": "Energy, insurers, public safety",
+   "first_seen": "2026-10-07-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "pep-q3-oct8",
+   "status": "New",
+   "headline": "PepsiCo Q3 rev $25.27B (+5.6%, org +3.1%) vs ~$24.96B; core EPS $2.34 vs ~$2.30; FY core EPS cut to +2.5-3.5% (cc +1-2%); rev guide ~+6%; tariff refund 4pt benefit",
+   "one_line": "Revenue beat, profit guide cut, cost actions",
+   "verification": "Confirmed-primary (8-K Ex 99.1)",
+   "sources": [
+    "PepsiCo 8-K",
+    "CNBC"
+   ],
+   "score_rationale": "Staples margins vs input costs",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "gd-ceo-deep-oct7",
+   "status": "New",
+   "headline": "General Dynamics: Danny Deep CEO effective Jan 1, 2027; Novakovic to executive chairman (8-K)",
+   "one_line": "Planned succession at defense prime",
+   "verification": "Confirmed-primary (8-K)",
+   "sources": [
+    "GD 8-K"
+   ],
+   "score_rationale": "Leadership change at watchlist name",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "broadcom-openai-private-credit-oct7",
+   "status": "New",
+   "headline": "WSJ: Broadcom seeking >$50B private credit (Apollo, Blackstone) for OpenAI custom chip; Oracle in talks on chip lease vehicle with Apollo/Goldman",
+   "one_line": "AI capex moving to debt",
+   "verification": "Single-reliable-source (WSJ)",
+   "sources": [
+    "WSJ via Investinglive/MarketScreener",
+    "TipRanks"
+   ],
+   "score_rationale": "Credit/AI read-through",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "ukraine-oct7-toll-28",
+   "status": "Materially changed",
+   "headline": "Ukraine Interior Ministry: 28 killed nationwide in Oct 7 strike; Pryluky toll 22 incl 5 children (SES via bne); ~70 missiles",
+   "one_line": "Toll rising",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "bne IntelliNews",
+    "Kyiv Independent",
+    "Euromaidan Press"
+   ],
+   "score_rationale": "War casualties",
+   "first_seen": "2026-10-07-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
+   "id": "pa-gov-debate-oct7",
+   "status": "New",
+   "headline": "Shapiro-Garrity only debate Oct 7 (abc27); RCP avg Shapiro +23.2; Susquehanna 52-31 LV; Siena 58-38 RV; Quinnipiac 59-34 unconfirmed",
+   "one_line": "Familiar themes, no consensus winner",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "WESA",
+    "abc27",
+    "PoliticsPA"
+   ],
+   "score_rationale": "Statewide election",
+   "first_seen": "2026-10-08-am",
+   "last_updated": "2026-10-08-am"
+  },
+  {
    "id": "ust-10y-auction-oct7",
    "status": "Materially changed",
    "headline": "10Y hit 5.365% intraday (2002 high), $39B reopening stopped through at 5.300% (WI 5.317), BTC 2.77, indirect 80%, dealers 2.5%; 10Y par 5.28% (+1bp), 30Y 5.67% (+3)",
@@ -30,22 +192,6 @@
    ],
    "score_rationale": "Fed path, market-moving",
    "first_seen": "2026-10-07-pm",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "russia-birthday-strike-oct7",
-   "status": "Materially changed",
-   "headline": "Russia ~70 missiles/~130 drones on Ukraine; at least 19 killed (AP), ~14 in Pryluky apartment block; toll rising",
-   "one_line": "Ukraine hit Perm/Samara/Astrakhan oil sites; Patriot-shortage claims unsourced",
-   "verification": "Confirmed-multiple; casualty count Preliminary",
-   "sources": [
-    "AP/WaPo",
-    "France 24",
-    "ABC",
-    "Globe and Mail"
-   ],
-   "score_rationale": "Major war escalation, energy targets",
-   "first_seen": "2026-10-07-am",
    "last_updated": "2026-10-07-pm"
   },
   {
@@ -190,23 +336,6 @@
     "Benzinga"
    ],
    "score_rationale": "AI power capex on utility balance sheets",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "ts-isaias-gulf-oct7",
-   "status": "New",
-   "headline": "TS Isaias forms in Gulf; forecast hurricane Thu, northern Gulf Coast landfall late Fri/early Sat, LA to FL Panhandle",
-   "one_line": "Peak ~100 mph; intensity at landfall disputed",
-   "verification": "Confirmed-multiple (NHC via outlets)",
-   "sources": [
-    "AccuWeather",
-    "CNN",
-    "WSFA",
-    "Newsweek"
-   ],
-   "score_rationale": "Gulf energy/refining, P&C insurers",
    "first_seen": "2026-10-07-am",
    "last_updated": "2026-10-07-am",
    "watch": true
@@ -817,143 +946,6 @@
     "The National"
    ],
    "score_rationale": "First coordinated price-side oil policy; market shrugged it off",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "tesla-q3-deliveries-oct2",
-   "status": "Resolved",
-   "headline": "Tesla Q3 deliveries 486,532 vs 461,974 company consensus; production 464,391; storage 13.7 GWh",
-   "one_line": "TSLA +4.65% to $370.59; forecast 2026-10-02-am-3 (below consensus) resolves wrong; earnings Oct 21",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "Tesla 8-K",
-    "CNBC",
-    "Electrek"
-   ],
-   "score_rationale": "Delivery beat, inventory drawdown",
-   "first_seen": "2026-10-02-am",
-   "last_updated": "2026-10-02-pm",
-   "watch": false
-  },
-  {
-   "id": "nike-fq1-fy27-guide-cut",
-   "status": "Continuing",
-   "headline": "Nike closes $33.87 (-3.6%), 13-year low, ~3.7x volume after FY27 guide cut",
-   "one_line": "Premarket ~-9%; Pace program $2.5B savings through FY31",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "Nike 8-K",
-    "CNBC",
-    "Yahoo"
-   ],
-   "score_rationale": "Global consumer/China read",
-   "first_seen": "2026-10-01-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "on-synaptics-amended-123-oct2",
-   "status": "New",
-   "headline": "ON Semi amends Synaptics deal to $123/sh cash (~$5.7B vs ~$7B) after unsolicited third-party proposal",
-   "one_line": "SYNA +14.1% to $121.10, ON +6.0%; close mid-2027",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "ON 8-K/DEFA14A",
-    "Yahoo"
-   ],
-   "score_rationale": "Semis M&A, merger-arb spread",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "seagate-toshiba-hdd-capacity-oct2",
-   "status": "New",
-   "headline": "Seagate -10.2% to $848.99, WDC ~-7% on Nikkei report Toshiba to double HDD capacity (~JPY60B, Philippines, by FY2027)",
-   "one_line": "Likely contributor; Toshiba unconfirmed",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "Nikkei Asia via Yahoo/Investing.com"
-   ],
-   "score_rationale": "AI-storage pricing power",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "broadcom-anthropic-42b-loan-oct2",
-   "status": "Unconfirmed",
-   "headline": "CNBC citing Reuters: Broadcom to lend Anthropic up to $42B for infrastructure; AVGO +3.35%",
-   "one_line": "Single source; earlier reports described larger debt package",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "CNBC citing Reuters"
-   ],
-   "score_rationale": "AI financing; Anthropic IPO timing still conflicting",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "nasdaq-intraday-record-oct2",
-   "status": "New",
-   "headline": "Nasdaq Comp intraday record ~27,354, close 27,190.86 (+1.19%); S&P 7,722.72 (+0.73%); week S&P -0.3%, Dow -1.3%",
-   "one_line": "SMH +2.1%, NVDA intraday record; equal weight lagged",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Yahoo",
-    "AP",
-    "Reuters"
-   ],
-   "score_rationale": "Narrow megacap leadership",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": false
-  },
-  {
-   "id": "hy-oas-324-oct1",
-   "status": "Materially changed",
-   "headline": "HY OAS 3.24% Oct 1 (+12bp), widest in records; +22bp in three sessions",
-   "one_line": "HYG/LQD within ~0.7% of 52w lows on heavy volume",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "FRED"
-   ],
-   "score_rationale": "Credit warning under rising equity",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "hormuz-us-buildup-oct2",
-   "status": "Continuing",
-   "headline": "TR carrier group and Makin Island ARG (~2,000 Marines) leave San Diego; 3-carrier buildup due by November; another tanker hit",
-   "one_line": "No movement reported on Iran 7-day plan",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Al Jazeera",
-    "Northeast Times",
-    "UKMTO reports"
-   ],
-   "score_rationale": "Oil tail risk",
-   "first_seen": "2026-10-02-pm",
-   "last_updated": "2026-10-02-pm",
-   "watch": true
-  },
-  {
-   "id": "wh-asks-labs-withhold-ukaisi-oct2",
-   "status": "New",
-   "headline": "White House (ONCD) asked OpenAI, Anthropic not to share new models with UK AI Security Institute until US testing done",
-   "one_line": "Politico via TNW, ITPro",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Politico",
-    "The Next Web",
-    "ITPro"
-   ],
-   "score_rationale": "AI governance",
    "first_seen": "2026-10-02-pm",
    "last_updated": "2026-10-02-pm",
    "watch": true
