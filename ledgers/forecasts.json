@@ -4621,6 +4621,26 @@
       "date": "2026-10-08",
       "slot": "am",
       "status": "open"
+    },
+    {
+      "id": "2026-10-08-pm-1",
+      "date": "2026-10-08",
+      "slot": "pm",
+      "forecast": "Hurricane Isaias makes US landfall at Category 2 or stronger (sustained winds >=96 mph) by October 11.",
+      "horizon": "2026-10-11",
+      "probability": "45-65%",
+      "basis": "Cat 1 85 mph at NHC 1 PM CDT advisory with further strengthening forecast; coverage cites NHC favoring strong Cat 2; about 30 hours over water remain.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-08-pm-2",
+      "date": "2026-10-08",
+      "slot": "pm",
+      "forecast": "Brent front-month futures settle below $100 on at least one day by October 16.",
+      "horizon": "2026-10-16",
+      "probability": "30-45%",
+      "basis": "Trump's no-strike pledge removed a dated trigger and GoM shut-ins usually return within days; against: tanker attacks spreading beyond Hormuz, Hormuz traffic at 2-month low, blockade unchanged.",
+      "status": "open"
     }
   ]
 }
