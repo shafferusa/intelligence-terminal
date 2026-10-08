@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>How to Get Infinitely Close to a Number and Still Call It Exact — Learning Brief, Thu, Oct 8, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-08",
+    "slot": "learn",
+    "title": "How to Get Infinitely Close to a Number and Still Call It Exact",
+    "path": "reports/2026/10/2026-10-08-learn.html",
+    "summary": "Day 9 of the Academy: how the epsilon-delta definition of a limit, finished by Weierstrass in 1861, replaced calculus's undefined \"infinitesimals\" with a tolerance test anyone can check, and gave the word \"approaches\" an exact, provable meaning.",
+    "headlines": [
+      "Day 9 of 300 · Mathematics: a limit is a provable guarantee about tolerances, not a guess about motion",
+      "That fix is what lets tomorrow's lesson define the derivative without ever naming an infinitely small number"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-08T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>How to Get Infinitely Close to a Number and Still Call It Exact</h1>
+      <p class="paper-dateline">
+        Thursday, October 8, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        For roughly a century and a half, calculus produced correct answers by leaning on
+        quantities nobody could define without contradiction; the limit, finished off by Karl
+        Weierstrass in 1861, replaced them with a tolerance test anyone can check, and it is the
+        foundation every calculus idea in this subject now stands on.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 9 of 300 &middot; Mathematics 9 of 20 &middot; The limit: approaching forever without arriving</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Some quantities refuse to hand themselves over by direct calculation. Ask for the slope of
+        a curving line at one single instant, and you run into a wall immediately: slope, by its
+        ordinary definition, needs two points to compare &mdash; rise over run &mdash; and a single
+        instant is only one point. Ask what 1 divided by a number equals as that number grows
+        without any bound, and you run into a different wall: the quotient keeps shrinking, gets as
+        close to zero as you like, and yet, for any actual number you could name, never quite
+        touches it.
+      </p>
+      <p>
+        Both walls dissolve once you stop asking &ldquo;what is the value, exactly, right there,&rdquo;
+        and start asking a more patient question instead: what value does this quantity keep
+        closing in on, as you push closer and closer to the point that is causing trouble &mdash;
+        whether or not you ever actually arrive? That closing-in value is called a
+        <strong>limit</strong>, and it is one of the two or three ideas the rest of this subject&rsquo;s
+        calculus block is built entirely out of.
+      </p>
+      <p>
+        The idea sounds almost too simple to need a whole lesson, and for about a hundred and fifty
+        years mathematicians treated it that way &mdash; as an intuition, not a definition, and
+        calculus ran into real trouble because of it. Isaac Newton and Gottfried Leibniz, working
+        independently in the 1660s and 1670s, built the whole machinery of calculus on something
+        that acted like a limit but was never pinned down: an &ldquo;infinitesimal,&rdquo; a
+        quantity small enough to vanish from an equation when it was inconvenient, yet large enough
+        to divide by when it wasn&rsquo;t. In 1734 the philosopher George Berkeley attacked exactly
+        that sleight of hand in a pamphlet called <em>The Analyst</em>, asking what these vanishing
+        quantities actually were and answering, memorably, that they could only be
+        &ldquo;the ghosts of departed quantities&rdquo; &mdash; something that had to be nonzero one
+        line and zero the next. Calculus kept giving correct answers regardless, which is the only
+        reason nobody abandoned it. But it took until the 19th century for mathematicians to build a
+        definition rigorous enough to answer Berkeley on his own terms. That definition is today&rsquo;s
+        lesson.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with a concrete case. Define a function f(x) = (x&sup2; &minus; 4) / (x &minus; 2), and
+        ask for its value at x = 2. Plug in directly and you get 0/0 &mdash; undefined, a dead end.
+        But instead of insisting on x = 2 itself, watch what f(x) does as x creeps toward 2 without
+        ever landing on it, from both directions:
+      </p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>f(x) = (x&sup2; &minus; 4) / (x &minus; 2), evaluated near x = 2. Illustrative arithmetic, not external data.</caption>
+          <thead><tr><th>x</th><th>1.9</th><th>1.99</th><th>1.999</th><th>2.001</th><th>2.01</th><th>2.1</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">f(x)</td><td>3.9</td><td>3.99</td><td>3.999</td><td>4.001</td><td>4.01</td><td>4.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        From either side, f(x) closes in on 4 &mdash; and you can check algebraically why: for any x
+        other than 2, (x&sup2; &minus; 4)/(x &minus; 2) factors to (x &minus; 2)(x + 2)/(x &minus; 2),
+        and the (x &minus; 2) terms cancel legitimately (they&rsquo;re nonzero, since x isn&rsquo;t 2
+        yet), leaving plain x + 2, which equals 4 exactly when x = 2. So you can say, with total
+        confidence, that the <strong>limit</strong> of f(x) as x approaches 2 is 4 &mdash; written
+        lim<sub>x&rarr;2</sub> f(x) = 4 &mdash; even though f(2) itself is not defined at all. That
+        gap between what a function does <em>near</em> a point and what it equals <em>at</em> that
+        point is the first thing to hold onto: a limit is a statement about
+        <strong>approaches vs. equals</strong>, and the two can genuinely disagree.
+      </p>
+      <p>
+        A pattern in a table of six numbers, though, is evidence, not proof &mdash; it tells you
+        what seems to be happening, not what must happen in every case, however small the gap gets.
+        For most of calculus&rsquo;s history, mathematicians didn&rsquo;t have anything better: the
+        standard language was that x &ldquo;moves toward&rdquo; 2 and f(x) &ldquo;moves toward&rdquo;
+        4, as if a point were physically traveling along the number line. That phrasing gets the
+        right answer most of the time, but it smuggles in a notion of motion and time that has no
+        proper place in pure logic, and worse, it never says how close is close enough to count as
+        proof. The Czech mathematician Bernard Bolzano sketched a more careful version as early as
+        1817; the French mathematician Augustin-Louis Cauchy introduced the Greek letter used for it
+        today in his 1821 textbook; but it was the German mathematician Karl Weierstrass, in lectures
+        delivered in Berlin and fully worked out by 1861, who finished the job and gave the limit the
+        exact form every textbook has used since.
+      </p>
+      <p>
+        That form reframes &ldquo;gets arbitrarily close&rdquo; as a challenge-and-response game
+        about tolerances, with no motion anywhere in it. Call the tolerance you&rsquo;re willing to
+        accept on the output side <strong>epsilon</strong> (&epsilon;, the conventional Greek letter
+        for it) &mdash; however small you demand it be. The claim lim<sub>x&rarr;c</sub> f(x) = L
+        says: whatever epsilon you throw at it, no matter how tiny, a matching tolerance on the
+        input side, called <strong>delta</strong> (&delta;), can always be produced, with the
+        guarantee that every x within delta of c (other than c itself) lands f(x) within epsilon of
+        L. If even one impossibly small epsilon exists for which no delta can be found, the limit
+        isn&rsquo;t L &mdash; or doesn&rsquo;t exist at all. The exact mechanics, worked through on a
+        real example, are in the Equation / Model section below; the concept to take from this
+        paragraph is the shape of the deal: a limit is not &ldquo;it looks like it&rsquo;s heading
+        there,&rdquo; it is &ldquo;for every possible tolerance you name, here is the window that
+        guarantees it,&rdquo; produced on demand.
+      </p>
+      <p>
+        That same machinery gives you <strong>continuity</strong> almost for free. A function is
+        continuous at a point c if three things line up: the limit as x approaches c exists, f(c) is
+        actually defined, and the two are equal &mdash; no jump, no hole, no break in the graph at
+        that point. The example above fails this test at x = 2: the limit exists and equals 4, but
+        f(2) itself is undefined, so f has what&rsquo;s called a removable discontinuity there &mdash;
+        a single-point hole you could patch by simply declaring f(2) = 4 and nothing else about the
+        function would change. A genuine jump discontinuity is different in kind: a tax bracket or a
+        shipping-rate schedule that charges a flat fee up to a weight threshold and a different flat
+        fee the instant you cross it has no single value the function is closing in on from both
+        sides at that threshold &mdash; approaching from below gives one number, approaching from
+        above gives another, so no limit exists there at all, let alone a continuous one.
+      </p>
+      <p>
+        The geometric picture of a limit is an <strong>asymptote</strong>: a line a curve gets
+        arbitrarily close to but never reaches. Graph y = 1/x. As x grows without any bound in the
+        positive direction, y shrinks toward 0 but never touches it &mdash; a horizontal asymptote.
+        As x itself shrinks toward 0 from the positive side, y grows without any bound &mdash; a
+        vertical asymptote at x = 0, the one point where the function has no value to give at all.
+        Every asymptote on a graph is a limit statement drawn as a picture: &ldquo;this curve
+        approaches this line forever, and the gap between them can be made smaller than any
+        tolerance you name, without the gap ever reaching zero.&rdquo;
+      </p>
+      <p>
+        That phrase &mdash; approaching forever without arriving &mdash; should sound familiar from
+        two lessons ago. Day 8&rsquo;s infinite series, the one that resolved Zeno&rsquo;s paradox
+        of Achilles and the tortoise, worked by adding infinitely many shrinking pieces and watching
+        the running total close in on a fixed number without any single partial sum ever reaching
+        it. That was a limit the whole time, described informally. Today supplies the machinery that
+        makes a claim like &ldquo;this infinite sum equals exactly 2, not approximately 2&rdquo; a
+        provable statement rather than a plausible one.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Limit</dt>
+        <dd>The value a function (or sequence) gets arbitrarily close to as its input approaches some point, regardless of whether the function is even defined at that exact point.</dd>
+        <dt>Approaches vs. equals</dt>
+        <dd>What a function does in the immediate neighborhood of a point (what it approaches) can differ from, or simply not exist at, what the function is defined to equal at that exact point.</dd>
+        <dt>Continuity</dt>
+        <dd>A function is continuous at a point when the limit there exists, the function is actually defined there, and the two values are equal &mdash; no jump and no hole in the graph.</dd>
+        <dt>Asymptote</dt>
+        <dd>A line that a curve gets arbitrarily close to without ever touching &mdash; the geometric picture of a limit, horizontal (as the input grows without bound) or vertical (near a point the function blows up at).</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Here is where the limit earns its keep outside pure algebra: measuring a rate of change at
+        a single instant, which is exactly the kind of question that opened this lesson.
+      </p>
+      <div class="worked">
+        <p>
+          Suppose a company&rsquo;s quarterly revenue, in thousands of dollars, follows R(t) = 3t&sup2;,
+          with t measured in years since launch. The average growth rate over any stretch of time is
+          easy: change in revenue divided by change in time. Over year 4 to year 5, that&rsquo;s
+          [R(5) &minus; R(4)] / (5 &minus; 4) = (75 &minus; 48) / 1 = 27 &mdash; revenue grew at an
+          average rate of $27,000 per year over that stretch. But what is the growth rate at the
+          single instant t = 4, not averaged over any stretch at all? Shrink the stretch and watch
+          the average rate as the gap, h, shrinks toward zero:
+        </p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <caption>Average growth rate of R(t) = 3t&sup2; over the interval [4, 4 + h], for shrinking h.</caption>
+            <thead><tr><th>h (years)</th><th>1</th><th>0.1</th><th>0.01</th><th>0.001</th></tr></thead>
+            <tbody>
+              <tr><td class="txt">Average rate, [R(4+h) &minus; R(4)] / h</td><td>27</td><td>24.3</td><td>24.03</td><td>24.003</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The pattern closes in on 24, and algebra confirms it&rsquo;s exact, not just a trend in the
+          table: [R(4+h) &minus; R(4)]/h = [3(4+h)&sup2; &minus; 3(4)&sup2;]/h = [3(16 + 8h + h&sup2;)
+          &minus; 48]/h = (24h + 3h&sup2;)/h = 24 + 3h, for any h other than zero. As h shrinks toward
+          0 &mdash; without ever equaling it, since dividing by h = 0 is exactly the dead end this
+          lesson started with &mdash; the expression 24 + 3h closes in on 24 with no ambiguity at
+          all. The instantaneous growth rate at year 4 is $24,000 per year, obtained entirely by
+          taking a limit of an average.
+        </p>
+      </div>
+      <p>
+        Hold onto that calculation. &ldquo;The limit of an average rate of change, as the interval
+        it&rsquo;s averaged over shrinks to nothing&rdquo; is not just a trick for this one example
+        &mdash; it is, word for word, the definition of the <strong>derivative</strong> that tomorrow&rsquo;s
+        lesson builds in general.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Here is the definition itself &mdash; the one Weierstrass finished in 1861, and the one
+        every later use of the word &ldquo;limit&rdquo; in this subject means precisely.
+      </p>
+      <div class="formula">
+        <p class="expr">lim<sub>x&rarr;c</sub> f(x) = L &nbsp;&hArr;&nbsp; &forall;&epsilon;&gt;0, &exist;&delta;&gt;0 : 0&lt;|x&minus;c|&lt;&delta; &rArr; |f(x)&minus;L|&lt;&epsilon;</p>
+        <p class="expr-spoken visually-hidden">The limit of f of x, as x approaches c, equals L, if and only if: for every epsilon greater than zero, there exists a delta greater than zero, such that for every x, if the distance between x and c is greater than zero and less than delta, then the distance between f of x and L is less than epsilon.</p>
+        <dl>
+          <dt>x</dt>
+          <dd>the input to the function, the variable being moved toward c</dd>
+          <dt>c</dt>
+          <dd>the point x is approaching (the function need not be defined at c itself)</dd>
+          <dt>f(x)</dt>
+          <dd>the function, or quantity, whose behavior near c is being measured</dd>
+          <dt>L</dt>
+          <dd>the proposed limit &mdash; the value being claimed as what f(x) approaches</dd>
+          <dt>&epsilon; (epsilon)</dt>
+          <dd>the tolerance demanded on the output: how close to L the claim requires f(x) to land, however small a number is chosen</dd>
+          <dt>&delta; (delta)</dt>
+          <dd>the matching tolerance on the input: a window around c, dependent on the chosen epsilon, guaranteeing the output lands within it</dd>
+          <dt>0&lt;|x&minus;c|&lt;&delta;</dt>
+          <dd>x is within delta of c, but is explicitly not equal to c &mdash; the definition never requires, or even looks at, the value of f at c itself</dd>
+        </dl>
+      </div>
+      <p>
+        That reads as pure logic, so it&rsquo;s worth seeing it actually used once, on the simplest
+        case there is: f(x) = 3x + 1, c = 2, and the claim is lim<sub>x&rarr;2</sub> f(x) = 7 (plain
+        substitution gives the same answer here, since this function has no hole to worry about;
+        the point is to show the machinery working, not to solve a hard case). Take the quantity the
+        definition needs to control, |f(x) &minus; L|, and simplify it:
+      </p>
+      <div class="formula">
+        <p class="expr">|f(x) &minus; 7| = |(3x + 1) &minus; 7| = |3x &minus; 6| = 3|x &minus; 2|</p>
+        <p class="expr-spoken visually-hidden">The absolute value of f of x minus 7 equals the absolute value of 3x plus 1 minus 7, which equals the absolute value of 3x minus 6, which equals 3 times the absolute value of x minus 2.</p>
+      </div>
+      <p>
+        That one algebraic line is the whole proof, because it hands you the matching delta
+        directly: you need 3|x &minus; 2| &lt; &epsilon;, which is exactly the same demand as
+        |x &minus; 2| &lt; &epsilon;/3. So for any epsilon at all, choose &delta; = &epsilon;/3.
+        Whenever 0 &lt; |x &minus; 2| &lt; &delta;, you get |f(x) &minus; 7| = 3|x &minus; 2| &lt;
+        3&middot;(&epsilon;/3) = &epsilon;, exactly as required. Because that delta exists for
+        <em>every</em> epsilon you could ever name &mdash; not just the ones checked in a table
+        &mdash; the limit is proven, not merely observed.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        For about a century and a half after Newton and Leibniz, calculus was in an odd position:
+        it worked. Planetary orbits, bridges, the motion of projectiles &mdash; it predicted all of
+        them correctly, using a method nobody could fully justify. The flaw wasn&rsquo;t in the
+        arithmetic; it was in the foundation underneath it, the infinitesimal that Berkeley had
+        correctly identified as needing to be both something and nothing. The limit, in its finished
+        epsilon-delta form, is the actual answer to Berkeley&rsquo;s challenge: it lets every
+        calculus statement that ever said &ldquo;as x gets infinitely close to c&rdquo; be rewritten
+        using nothing but ordinary numbers, ordinary subtraction, and ordinary inequalities &mdash;
+        no mysterious vanishing quantity required anywhere in the argument.
+      </p>
+      <p>
+        That rewrite is also, very concretely, your onramp into the rest of this block. Tomorrow&rsquo;s
+        lesson defines the <strong>derivative</strong> &mdash; the slope of a curve at a single point,
+        the rate of change of one quantity with respect to another &mdash; as exactly the calculation
+        you just did with the revenue example: the limit of an average rate of change, as the
+        interval it&rsquo;s measured over shrinks to nothing. Two lessons after that, the integral is
+        built the same way, as the limit of a sum of infinitely many infinitesimally thin slices.
+        Neither idea needs a single new logical tool beyond what sits in today&rsquo;s formula plate
+        &mdash; they need you to trust that &ldquo;approaching forever without arriving&rdquo; can
+        mean something exact. That trust is what today bought.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A limit describes what a quantity approaches as its input approaches some value &mdash;
+        it says nothing about, and doesn&rsquo;t require, what the quantity equals at that value
+        itself.</li>
+        <li>Calculus ran for roughly 150 years on undefined &ldquo;infinitesimals&rdquo; before the
+        limit, finished by Weierstrass in 1861, gave it a logically solid foundation.</li>
+        <li>The epsilon-delta definition turns &ldquo;gets arbitrarily close&rdquo; into a provable
+        guarantee: for every output tolerance (epsilon) demanded, a matching input window (delta)
+        can always be produced.</li>
+        <li>Continuity means the limit at a point equals the function&rsquo;s actual value there
+        &mdash; no jump, no hole.</li>
+        <li>An asymptote is a limit drawn as a picture: a line a curve approaches forever and never
+        touches.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        The epsilon-delta definition explicitly excludes x = c &mdash; the condition is
+        0 &lt; |x &minus; c| &lt; &delta;, never x = c itself. That&rsquo;s exactly why the limit of
+        (x&sup2; &minus; 4)/(x &minus; 2) at x = 2 can equal 4 even though the function has no value
+        at x = 2 at all. Given that the definition never looks at f(c), what is a limit actually
+        measuring, if it isn&rsquo;t &ldquo;what the function does at that point&rdquo;? What does
+        that tell you about why continuity &mdash; the case where the limit and the function&rsquo;s
+        actual value happen to agree &mdash; needs to be stated as a separate, extra condition
+        rather than being automatic?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The history of the epsilon-delta definition &mdash; Bolzano&rsquo;s
+      1817 sketch, Cauchy&rsquo;s 1821 notation, and Weierstrass&rsquo;s completed 1861 version
+      &mdash; and George Berkeley&rsquo;s 1734 critique in <em>The Analyst</em>, including the
+      &ldquo;ghosts of departed quantities&rdquo; phrase, were checked this morning against standard
+      histories of analysis rather than written from memory, since historians still debate how much
+      credit Cauchy&rsquo;s own proofs deserve. All arithmetic and worked examples were written for
+      this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-07-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
