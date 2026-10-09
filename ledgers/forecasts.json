@@ -4671,6 +4671,36 @@
       "probability": "70-80%",
       "basis": "NHC/AccuWeather forecast track and intensity (100-110 mph Thu night/Fri); intensity error near landfall.",
       "status": "open"
+    },
+    {
+      "id": "2026-10-09-pm-1",
+      "date": "2026-10-09",
+      "slot": "pm",
+      "forecast": "The FOMC leaves the federal funds target range unchanged at 3.75-4.00% at its Oct 27-28 meeting.",
+      "horizon": "2026-10-28",
+      "probability": "75-85%",
+      "basis": "CME FedWatch ~18% hike odds (Oct 8); Waller signalled flexibility on timing; Sep CPI (Oct 14) could shift it.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-09-pm-2",
+      "date": "2026-10-09",
+      "slot": "pm",
+      "forecast": "JPMorgan's Q3 EPS, reported Oct 13, exceeds the LSEG consensus of about $5.94.",
+      "horizon": "2026-10-13",
+      "probability": "70-80%",
+      "basis": "JPM has beaten consensus in most recent quarters; volatile Q3 markets favour trading revenue; consensus figure single-sourced via CNBC.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-09-pm-3",
+      "date": "2026-10-09",
+      "slot": "pm",
+      "forecast": "Hurricane Isaias makes landfall at Category 3 or stronger between Pensacola and Destin, FL.",
+      "horizon": "2026-10-10",
+      "probability": "60-75%",
+      "basis": "NHC 11 AM ET advisory 120 mph/959 mb with landfall forecast 9 PM-midnight ET; near-landfall intensity error ~10-15 mph.",
+      "status": "open"
     }
   ]
 }
