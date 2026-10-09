@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Fri, Oct 9, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+{
+  "date": "2026-10-09",
+  "slot": "am",
+  "title": "Morning Brief — Fri, Oct 9, 2026",
+  "path": "reports/2026/10/2026-10-09-am.html",
+  "summary": "Delta cut its full-year profit outlook by about a fifth as jet fuel nears $4.25 a gallon, SpaceX agreed to buy nationwide low-band spectrum and sent AT&T, Verizon and T-Mobile down 7-8% after hours, oil eased and tech futures rose after Thursday's AI sell-off, and Hurricane Isaias, now a strong Category 2, is due ashore tonight.",
+  "headlines": [
+    "Delta misses its own range and cuts full-year EPS to $5.10-5.60 from $6.50-7.50 on ~$4.25 fuel",
+    "SpaceX buys nationwide 800 MHz spectrum; AT&T, Verizon, T-Mobile down 7-8% after hours",
+    "Isaias a strong Cat 2, landfall tonight Alabama to Florida Panhandle; Nobel Peace Prize to Navi Pillay"
+  ],
+  "reading_minutes": 35,
+  "generated_at": "2026-10-09T07:05:00-04:00",
+  "timezone": "America/New_York"
+}
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Delta Cuts Its Year as Fuel Bites, SpaceX Buys Spectrum and Hits the Phone Companies, and Isaias Strengthens Toward the Gulf Coast</h1>
+      <p class="paper-dateline">
+        Friday, October 9, 2026 <span class="sep">&middot;</span> 35 min read
+      </p>
+      <p class="paper-standfirst">
+        Delta missed its own forecast and cut its full-year profit outlook by about a fifth on jet fuel near $4.25 a gallon. SpaceX agreed to buy nationwide low-band spectrum and AT&amp;T, Verizon and T-Mobile fell 7&ndash;8% after hours. Oil is easing and tech-led futures are higher after Thursday&rsquo;s AI sell-off, and Hurricane Isaias, now a strong Category 2, is due ashore tonight with most Gulf oil output shut in.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> Futures are higher, led by tech. At about 6:30, S&amp;P 500 futures were near 7,844 (+0.4%), Nasdaq 100 futures +0.7%, Russell 2000 +0.3% and Dow futures flat. That partly reverses Thursday, when the Nasdaq fell 1.25% on a report about OpenAI&rsquo;s revenue. Europe is up nearly 1%. Bitcoin is near $82,600.</li>
+          <li><b>The macro thread.</b> Energy is now reaching company results. Delta&rsquo;s third-quarter profit came in below the range it gave in July, and it cut its full-year outlook to $5.10&ndash;5.60 a share from $6.50&ndash;7.50. Fuel is now expected at about $4.25 a gallon this quarter; its July guidance assumed $3.15. Brent is near $102.95, down 1.3% overnight after President Trump said there will be no US attack on Iran before November 3.</li>
+          <li><b>Rates, the Fed and the Treasury.</b> The 10-year closed Thursday at 5.22% and the 30-year at 5.60%, both down about 6&ndash;7 basis points after a clean 30-year auction. Fed officials Waller and Musalem both said Thursday that more hikes are likely. The bond market is closed Monday for Columbus Day. September CPI is Wednesday.</li>
+          <li><b>Biggest market risk.</b> The AI-capex debt chain. Thursday&rsquo;s sell-off showed how sensitive chip and cloud stocks are to any doubt about OpenAI&rsquo;s revenue, at a time when Broadcom, Oracle and SpaceX are reported to be raising tens of billions of dollars in debt against that demand.</li>
+          <li><b>The world and home.</b> Isaias has 100&ndash;110 mph winds and is expected to come ashore between Dauphin Island, Alabama, and Destin, Florida, late tonight. Its remnants bring a soaking Sunday to the Pittsburgh area. The Nobel Peace Prize went to Navi Pillay, the South African jurist who led UN war-crimes courts.</li>
+          <li><b>Watch today.</b> University of Michigan sentiment at 10:00; Delta&rsquo;s call at 10:00; the first SpaceX lock-up expiry; Humana, up about 13% after hours on its Medicare star ratings; and Isaias&rsquo;s landfall tonight.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Delta misses its own range and cuts its full-year outlook by about a fifth as jet fuel climbs</h3>
+          <p class="story-deck">Demand held up: revenue was a September-quarter record. Fuel is what changed. Delta now expects to pay about $4.25 a gallon this quarter, against the $3.15 it assumed in July for last quarter, and calls the year a $6 billion fuel-cost increase.</p>
+          <div class="story-body">
+            <p>Delta Air Lines reported adjusted earnings of $1.72 a share for the September quarter this morning, below the $2.00&ndash;2.50 range it gave in July. Analyst forecasts compiled by several outlets ranged from about $1.76 to $1.96, so it is a miss on those too. GAAP earnings were $1.15 a share. Adjusted operating margin was 9.4%, against the 11&ndash;13% Delta guided in July.</p>
+            <p>The revenue side was strong. Adjusted revenue was a record $17.6 billion, up 16% on flat capacity; GAAP revenue was $20.2 billion. Unit revenue rose 15%, with domestic up 16% and Latin America up 22%. Chief executive Ed Bastian said pre-tax profit of $1.5 billion matched last year&rsquo;s.</p>
+            <p>The outlook is what moves the story. For the December quarter Delta expects revenue up about 20% and earnings of $1.15&ndash;1.65 a share, with an operating margin of 7&ndash;9%. For the full year it now expects $5.10&ndash;5.60 a share and about $2.5 billion of free cash flow. In July it expected $6.50&ndash;7.50 and $3&ndash;4 billion. At the midpoint, that is a cut of about 23% to earnings guidance. The new quarter assumes fuel at the October 2 forward curve, about $4.25 a gallon all-in, including a refinery benefit of about 40 cents. Delta says it will absorb &ldquo;a $6 billion increase in fuel costs&rdquo; for the year and still make about $4.5 billion pre-tax. Delta shares closed Thursday at $82.14, before the release. Pre-market trading had not been reported by the time this was written.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the first big third-quarter report to show what months of $100-plus Brent are doing to a fuel-heavy business. Customers are absorbing higher fares, since unit revenue is up 15%, but not enough to offset fuel. Watch for the same pattern in other airlines, chemicals and freight. For the Fed, it shows the energy shock passing into prices, which is the risk officials named in their September minutes. Exposure, not direction: airlines (UAL, AAL, LUV), refiners (Delta owns one), travel.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The 10:00 call: how much of the $4.25 fuel assumption is hedged, and whether demand is holding into the holidays. Oil eased overnight; if it holds near $103 rather than $105, December-quarter guidance becomes easier to meet.
+            </div>
+          </div>
+          <p class="story-sourceline">Delta Air Lines Form 8-K, exhibit 99.1, Oct 9 and Jul 10 (primary) &middot; StockTitan, Zacks, Benzinga, GuruFocus (consensus range) &middot; Finnhub (Thursday close)</p>
+        </article>
+
+        <article class="story">
+          <h3>SpaceX buys nationwide low-band spectrum; AT&amp;T, Verizon and T-Mobile fall 7&ndash;8% after hours</h3>
+          <p class="story-deck">The 800 MHz licenses give Starlink&rsquo;s phone service the kind of frequencies carriers use to reach rural areas and the inside of buildings. The FCC still has to approve the deal.</p>
+          <div class="story-body">
+            <p>After Thursday&rsquo;s close, SpaceX said it will buy Grain Management&rsquo;s nationwide 800 MHz spectrum portfolio, up to 14 MHz of paired low-band frequencies, for its Starlink Mobile service. Elon Musk called it the &ldquo;last critical piece.&rdquo; SpaceX did not give a price. The Wall Street Journal puts it at about $8 billion in cash. <span class="flag">Price from one outlet</span></p>
+            <p>The carriers fell hard after hours: AT&amp;T about 8%, Verizon about 7%, T-Mobile about 7% and Comcast about 2% (CNBC). In the regular session they had risen 1&ndash;2%. SpaceX (SPCX) was up about 3&ndash;4% after hours, recovering part of Thursday&rsquo;s 4.2% fall to $160.57. European telecom stocks are lagging this morning (Reuters). Morgan Stanley expects the threat to carriers to build slowly, starting in rural markets.</p>
+            <p>The deal comes a day after the FCC&rsquo;s Space Bureau authorized SpaceX&rsquo;s plan for about 15,000 direct-to-cell satellites; a bureau-level order can still be reviewed by the full commission. AST SpaceMobile, the rival direct-to-phone company, fell 6.1% Thursday to $56.93. SpaceX&rsquo;s first lock-up also expires today. A Motley Fool report from September puts the first tranche at about 328 million shares, with another on October 24. <span class="flag">Single outlet</span> We found no same-day confirmation of the schedule.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Satellite service has been a complement to wireless networks. Low-band spectrum makes it a possible competitor for some customers. That is a direct threat to the most stable cash flows in US telecom, which are owned by income funds and are large weights in XLC and dividend ETFs.
+            </div>
+          </div>
+          <p class="story-sourceline">SpaceX announcement via Bloomberg, Reuters/US News, CNBC &middot; The Wall Street Journal (price) &middot; Morgan Stanley via CNBC &middot; FCC Space Bureau order via DCD, TechSpot &middot; Motley Fool (lock-up) &middot; Finnhub (closes)</p>
+        </article>
+
+        <article class="story">
+          <h3>Isaias strengthens to a strong Category 2, with landfall tonight and most Gulf oil output shut in</h3>
+          <p class="story-deck">The season&rsquo;s first hurricane could briefly reach Category 3 before landfall between Dauphin Island, Alabama, and Destin, Florida. About 2.7 million barrels a day of refining capacity is near its path.</p>
+          <div class="story-body">
+            <p>The National Hurricane Center had Isaias at 100 mph at its Thursday evening update, and NBC reported 110 mph early Friday. The forecast is for a brief run at Category 3 today before slight weakening. AccuWeather expects landfall between 8 p.m. Friday and 1 a.m. Saturday, between Dauphin Island and Destin. A hurricane warning runs from Ocean Springs, Mississippi, to the Bay&ndash;Gulf county line in Florida. Forecasters warn of up to 7 feet of storm surge and up to 15 inches of rain.</p>
+            <p>Alabama, Florida and Georgia have declared emergencies. Gulf Shores, Orange Beach, Dauphin Island and parts of the Florida Panhandle are under mandatory evacuation. Pensacola&rsquo;s airport closes to commercial flights this morning. We found no federal emergency declaration yet.</p>
+            <p>Offshore, the federal regulator reported Thursday that 62.9% of Gulf of Mexico oil output, about 1.28 million barrels a day, and 57.4% of gas output were shut in, with 121 platforms evacuated. Analysts estimate about 9 million barrels of lost output. CNN reports that about 2.7 million barrels a day of refining capacity, roughly 14% of the US total, is near the path. The track is east of the Louisiana and Texas refining centers.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Landfall overnight. Platforms usually restart within days of a storm passing unless they are damaged, so the oil impact should be short. Gasoline and diesel depend on whether the Mobile- and Pascagoula-area refineries lose power.
+            </div>
+          </div>
+          <p class="story-sourceline">National Hurricane Center via NBC, CNN, ABC &middot; AccuWeather &middot; Fox Weather, WSFA (state declarations) &middot; federal offshore regulator via BOE Report/Reuters &middot; CNN (refining)</p>
+        </article>
+
+        <article class="story">
+          <h3>Oil eases and futures rise as Trump&rsquo;s no-strike pledge sinks in</h3>
+          <p class="story-deck">Brent is down 1.3% to about $102.95, but still up for the week. The blockade stays, Iran is still reviewing Washington&rsquo;s reply, and tankers are still being attacked.</p>
+          <div class="story-body">
+            <p>Brent crude was near $102.95 at 6:30, down from Thursday&rsquo;s $104.28 settlement; US crude was near $90.65, down 0.9% (Yahoo, delayed). On Thursday the president posted that &ldquo;we will not be attacking Iran at any time prior to the Midterm Elections,&rdquo; citing &ldquo;productive&rdquo; talks. That came a day after reports that his team had discussed strike options, and after his Wednesday rally remark that a deal &ldquo;isn&rsquo;t really something that I want to do.&rdquo; The US naval blockade remains.</p>
+            <p>Iran&rsquo;s foreign minister, Abbas Araghchi, said Thursday that Tehran is still reviewing the US response to its seven-day plan for reopening Hormuz, received through Qatari mediators, and may reply &ldquo;within days.&rdquo; The plan asks the US to lift the blockade, waive oil sanctions and release about $12 billion of frozen assets. In return Iran would reopen the strait on day six, with talks starting on day seven. The contents of the US reply have not been disclosed.</p>
+            <p>The shipping risk has not gone away. UKMTO has verified 14 tanker attacks since September 30. The ship tracker Kpler counted seven transits of the strait on Tuesday, a two-month low, and ten on Wednesday. A Houthi missile hit Riyadh&rsquo;s airport on Thursday and killed three people (see The World).</p>
+            <p>Stock futures rose with the oil retreat: Nasdaq 100 +0.7%, S&amp;P 500 +0.4% at 6:30. Gold is up 1.2% to about $4,208. The dollar index is flat at 102.14.</p>
+          </div>
+          <p class="story-sourceline">Truth Social post via CNBC, CBS, Times of Israel &middot; Araghchi via Tasnim, Dawn &middot; Iran International, Al Jazeera (plan terms) &middot; UKMTO, Kpler via Reuters &middot; Yahoo Finance (prices; delayed)</p>
+        </article>
+
+        <article class="story">
+          <h3>Two Fed officials say more hikes are coming as the bond market eases from its highs</h3>
+          <p class="story-deck">Waller and Musalem used almost the same words. Markets see an October hike as unlikely and December as likely, and Wednesday&rsquo;s CPI is the next test.</p>
+          <div class="story-body">
+            <p>Governor Christopher Waller said in Istanbul on Thursday: &ldquo;If economic data continue to meet expectations, I expect further rate hikes will be needed&hellip; We do not have to hike at consecutive meetings.&rdquo; St. Louis Fed President Alberto Musalem said in New York that &ldquo;more monetary policy firming will be required.&rdquo; He pointed to the next six to nine months but said he has not prejudged the October 27&ndash;28 meeting. Secondary reports put futures-implied odds near 17% for an October hike and above 80% for December. <span class="flag">Unconfirmed figures</span> The target range is 3.75&ndash;4.00%.</p>
+            <p>Treasuries rallied anyway. The 10-year par yield closed Thursday at 5.22%, down 6 basis points, and the 30-year at 5.60%, down 7, after the $22 billion 30-year reopening sold at 5.618% with almost no tail (Treasury). The 2-year was 4.75%, so the curve flattened to 47 basis points from 51. The 10-year breakeven was 2.35% Thursday and has barely moved for two weeks. The bond market&rsquo;s inflation expectations are not rising with oil.</p>
+          </div>
+          <p class="story-sourceline">Federal Reserve Board (Waller prepared text) &middot; Federal Reserve Bank of St. Louis (Musalem remarks) &middot; US Treasury daily par yield curve, TreasuryDirect (primary) &middot; FRED (breakevens) &middot; CME FedWatch via secondary reports</p>
+        </article>
+
+        <article class="story">
+          <h3>Medicare star ratings: Humana up about 13% after hours, Alignment down about 20%</h3>
+          <p class="story-deck">CMS released 2027 Medicare Advantage star ratings Thursday. Quality ratings decide bonus payments worth billions to insurers.</p>
+          <div class="story-body">
+            <p>Humana said in an 8-K this morning that it beat its goal of &ldquo;Top Quartile&rdquo; results. It defines that as star-related revenue per member at least 10% above the median of a peer group that includes UnitedHealth, CVS, Elevance and Centene. Reports say its largest contract, about 2.4 million members, was upgraded to 4 stars from 3.5. The stock rose about 13% after hours, after closing Thursday down 2.4% at $387.12.</p>
+            <p>Alignment Healthcare fell about 20&ndash;23% after hours. Its main contract, about three-quarters of its members, reportedly dropped to 3.5 stars. The company filed an 8-K Thursday evening and plans to appeal. CVS, Clover and UnitedHealth were also active after hours, and Clover filed an 8-K too.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Star ratings set 2028 bonus payments. For Humana, an upgrade on its largest contract changes its earnings path. For the sector, it shows how much insurer margins depend on a government formula rather than on medical-cost trends.
+            </div>
+          </div>
+          <p class="story-sourceline">Humana Form 8-K (primary) &middot; Alignment Healthcare and Clover Health 8-K filings (EDGAR) &middot; Investing.com, CNBC (after-hours moves) &middot; Finnhub (closes)</p>
+        </article>
+
+        <article class="story">
+          <h3>After Thursday&rsquo;s AI sell-off, OpenAI has still said nothing on the record about its revenue</h3>
+          <p class="story-deck">The gap between the $50 billion and $70 billion figures seems to come mostly from how cloud-partner sales are counted. Bloomberg reports that OpenAI expects to pass $70 billion by year-end.</p>
+          <div class="story-body">
+            <p>Thursday&rsquo;s fall started with a Financial Times report, later confirmed by CNBC and Reuters through their own sources. It said OpenAI told investors its annualized revenue was about $50 billion at the end of September, well below the roughly $68&ndash;70 billion that had been reported. People familiar with the figures say the higher number counted gross revenue from cloud partners, as Anthropic does in its own run-rate. OpenAI&rsquo;s figure does not. Bloomberg reported hours later that OpenAI expects annualized revenue of $70 billion or more by the end of 2026. The company has made no on-record statement.</p>
+            <p>The market damage was large: Micron fell 4.8%, Broadcom 4.3%, Oracle 5.5%, CoreWeave 7.8% and AMD 3.9%. The semiconductor ETF (SMH) fell 2.8% and the Nasdaq 1.25%, its worst day since mid-August. Even so, more stocks rose than fell across the market as a whole: 2,993 against 2,537 on our count, and equal-weight S&amp;P rose 0.6%. Money moved out of AI rather than out of stocks. Nasdaq futures are up 0.7% this morning.</p>
+          </div>
+          <p class="story-sourceline">Financial Times via Bloomberg, CNBC, Reuters &middot; Bloomberg (year-end expectation) &middot; Finnhub (closes) &middot; Massive (breadth, our calculation)</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight &amp; Since the Close</h2>
+      <p>Thursday ended with the S&amp;P 500 down 0.47% at 7,765.36 and the Nasdaq down 1.25% near 27,193. The Dow rose 0.1% to 51,231.64 and the Russell 2000 was flat at 2,794.13 (AP, Washington Post). Behind those numbers, the market rotated rather than fell. Energy rose 3.0%, consumer staples 2.1% and financials 0.9%. Technology fell 1.8%. More stocks rose than fell across the whole market.</p>
+      <p>Asia was mixed and thin, with Seoul and Taipei closed for holidays. Tokyo&rsquo;s Nikkei fell 0.8% to 68,512, Shanghai 1.4% to 3,758 and Hong Kong rose 1.1% to 24,047 (AP). Europe is firmer: the Stoxx 600 was up about 0.9% at 631 in the early session, with Germany&rsquo;s DAX up about 1% and London and Paris up about 0.8%. Reuters links the gains to the easing in oil. Telecom stocks lag on the SpaceX news.</p>
+      <p>Commodities and currencies: Brent is $102.95 (&minus;1.3%), WTI $90.65 (&minus;0.9%) and gold $4,208 (+1.2%). The dollar index is flat at 102.14 and the euro is at $1.1215. Bitcoin is near $82,600, little changed over 24 hours. Ether is down 2.2% and solana 3.8%. The total crypto market is down about 3.9% over 24 hours (CoinGecko).</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <p><strong>What futures price.</strong> At about 6:30, S&amp;P 500 futures were near 7,844, up 0.4% from Thursday&rsquo;s settlement. Nasdaq 100 futures were near 31,200 (+0.7%), Russell 2000 futures near 2,817 (+0.3%) and Dow futures near 51,514 (flat). The tape is pricing a partial rebound in technology after Thursday&rsquo;s fall, with oil off its highs. It is not pricing a broad re-acceleration: small caps and the Dow are barely moving. Futures are not a guaranteed open, and Delta&rsquo;s call, Michigan sentiment and the telecom sell-off all land in the first half hour.</p>
+      <p><strong>The curve.</strong> On Thursday&rsquo;s official close, the 3-month bill yielded 4.23%, the 2-year 4.75%, the 5-year 4.99%, the 10-year 5.22% and the 30-year 5.60%. 2s10s is 47 basis points, 3-month/10-year 99 and 5s30s 61. Long yields fell most on Thursday, after strong demand at the 10-year and 30-year auctions. The 10-year is now 14 basis points below Wednesday&rsquo;s intraday high near 5.365%. The real 10-year yield was 2.92% on Wednesday and the 10-year breakeven 2.35% Thursday. Most of the level of long yields is real yield and term premium, not expected inflation. There is no cash Treasury trading Monday.</p>
+      <p><strong>Dollar, volatility, credit.</strong> The dollar index is flat at 102.14, just below this week&rsquo;s 17-month high. The VIX closed Thursday at 15.24, despite the Nasdaq&rsquo;s fall. Its term structure is in normal contango, with the 9-day at 12.21 and the 3-month at 18.08, so traders are not buying short-dated protection. High-yield spreads were 3.09% on Wednesday, near cycle tights (ICE BofA via FRED). Credit has not confirmed the AI-stock scare.</p>
+      <p><strong>Commodities and crypto.</strong> Oil is easing on the no-strike pledge, but the hurricane shut-ins and the Hormuz attacks keep a floor under it. Gold&rsquo;s 1.2% rise with a flat dollar is notable: it is a bid for safety while equity volatility stays quiet. Bitcoin is flat while smaller coins fall, so crypto is not joining the rebound.</p>
+      <p><strong>The most fragile assumption.</strong> The tape assumes Thursday was a one-day scare about one company&rsquo;s accounting and that AI demand is intact. What would invalidate it: an on-record OpenAI figure that confirms the lower number with no reconciliation, or any sign that the private-credit deals being lined up for Broadcom, Oracle and SpaceX are being repriced. Second: that oil has peaked for now. A collapse in the Iran talks or Isaias damage to Gulf refineries would undo the overnight move.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <p><strong>Today&rsquo;s data.</strong> The University of Michigan&rsquo;s preliminary October consumer sentiment is at 10:00. Consensus is about 47.6, against September&rsquo;s final 48.1. That is already near record lows, and the year-ahead inflation expectation was 4.6% in September. With gasoline tracking crude above $100, the inflation-expectations line matters more than the headline. The Fed has said it watches expectations for signs that the energy shock is spreading into prices generally.</p>
+      <p><strong>Where the labor market stands.</strong> Payrolls grew 29,000 in September and 133,000 in August, and unemployment rose to 4.2% from 4.1% (BLS via FRED; preliminary, subject to revision). Initial jobless claims were 197,000 last week, and the four-week average is the lowest since October 2022. Few layoffs, little hiring: a cooling but not breaking labor market. The Fed reads that as room to keep tightening against inflation.</p>
+      <p><strong>Inflation.</strong> The August CPI index rose 0.39% from July, and core rose 0.29% (BLS via FRED; month-on-month, seasonally adjusted). September CPI comes Wednesday at 8:30, with the Beige Book that afternoon. It is the last CPI before the October 27&ndash;28 meeting, and the first full month of Brent above $100.</p>
+      <p><strong>The Fed path.</strong> Waller and Musalem were both explicit Thursday that more hikes are coming. Waller&rsquo;s point that they need not be at consecutive meetings is the important one: it allows the Fed to skip October and hike in December, which is roughly what futures price. Kansas City Fed President Jeffrey Schmid is listed for 9:30 this morning on one calendar; we could not confirm it on the Fed&rsquo;s schedule.</p>
+      <p><strong>Treasury.</strong> This week&rsquo;s $119 billion of coupon supply is done. The 3-year stopped through, the 10-year stopped through strongly and the 30-year tailed by only 0.1 basis point. Foreign and domestic buyers met the supply at these yields, which helped long bonds rally Thursday. The bond market is closed Monday for Columbus Day, and stocks are open. Treasury says automatic enrollment of under-18s in the new &ldquo;Trump Accounts&rdquo; is complete. AP and the Treasury Secretary give different counts, about 70 million and &ldquo;60 million plus.&rdquo;</p>
+      <p><strong>Abroad.</strong> No major central-bank decision overnight. The Bank of Japan, which hiked September 18, said Thursday that small and mid-size firms are only about halfway through passing on higher costs. That points to more inflation pressure in Japan with the yen at 158 per dollar. China&rsquo;s third-quarter GDP and UK monthly GDP come next week.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <p><strong>Delta</strong> is the day&rsquo;s report (see Top Stories). Read it for the margin squeeze: revenue up 16%, adjusted operating margin of 9.4% against 11&ndash;13% guided, and a full-year earnings outlook cut by about 23%. Delta still plans to repay more than $2 billion of debt this year.</p>
+      <p><strong>Telecoms vs SpaceX.</strong> For AT&amp;T, Verizon and T-Mobile, 7&ndash;8% after-hours falls are large for stocks this steady. The regular session will show whether investors treat it as a pricing threat now or, as Morgan Stanley argues, a slow rural one. SpaceX also picked up a Goldman Sachs price-target increase to $230 from $220.</p>
+      <p><strong>Health insurers.</strong> The Medicare star ratings are the sector&rsquo;s biggest event outside earnings (see Top Stories). Humana and Clover filed 8-Ks this morning and Alignment last night. Expect UnitedHealth and CVS to say how their own contracts scored.</p>
+      <p><strong>AI financing.</strong> No new details overnight on the reported Broadcom private-credit package, more than $50 billion with Apollo and Blackstone in talks to fund OpenAI&rsquo;s custom chips through a vehicle that leases them to Oracle (WSJ). The same goes for SpaceX&rsquo;s reported $40 billion of debt for Nvidia chips (FT; Reuters could not verify it). All parties have declined to comment. After Thursday, the question is what these lenders assume about OpenAI&rsquo;s revenue.</p>
+      <p><strong>Other filings this morning.</strong> 8-Ks from American Express, Super Micro Computer, Prudential, International Paper, Citizens Financial and Transocean are on EDGAR. None was material enough on a first read to lead with. PepsiCo, up 3.7% Thursday after beating estimates and cutting its outlook, is one example of what is working: defensive stocks with pricing power.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Friday, October 9 &middot; all times ET</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>~5:00</td><td class="txt">Nobel Peace Prize (done: Navi Pillay)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>6:30</td><td class="txt">Delta Q3 (reported; call 10:00)</td><td>Adj. EPS ~$1.76&ndash;1.96</td><td>Actual $1.72</td></tr>
+            <tr><td>9:30</td><td class="txt">SpaceX first lock-up expiry (reported schedule)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>9:30</td><td class="txt">KC Fed&rsquo;s Schmid (unconfirmed)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td><b>10:00</b></td><td class="txt"><b>UMich sentiment, prelim. October</b></td><td><b>47.6</b></td><td><b>48.1; 1-yr infl. exp. 4.6%</b></td></tr>
+            <tr><td>13:00</td><td class="txt">Baker Hughes rig count</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Tonight</td><td class="txt">Isaias landfall, Dauphin Island AL to Destin FL</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sat</td><td class="txt">Taiwan National Day speech; North Korea party anniversary</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon</td><td class="txt">Columbus Day: bond market closed, stocks open; Nobel economics</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Wed</td><td class="txt">September CPI 8:30; Beige Book 2:00</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <p><strong>Consumer sentiment.</strong> Michigan&rsquo;s preliminary October reading is more likely than not to come in below September&rsquo;s 48.1. We put that at 55&ndash;65%: consensus is 47.6 and fuel prices have risen through the survey window, but this series often surprises in both directions. The inflation-expectations line is the bigger market risk. A year-ahead figure above 4.6% would add to the case for a December hike.</p>
+      <p><strong>Oil.</strong> Brent is more likely than not to settle today below Thursday&rsquo;s $104.28. We put that at 65&ndash;80%: it is already $1.33 below, and the no-strike pledge removes a dated risk. Against: the storm&rsquo;s refinery path and the continuing tanker attacks.</p>
+      <p><strong>Isaias.</strong> We put landfall as a hurricane of at least Category 2, between Dauphin Island and Destin, by Saturday noon at 70&ndash;80%. That is the NHC&rsquo;s and AccuWeather&rsquo;s forecast, but intensity forecasts near landfall carry real error. The market risk is refinery power loss, not the offshore shut-ins, which are usually brief.</p>
+      <p><strong>The AI trade.</strong> The worst case is that the revenue question spreads to the lenders: wider spreads on AI-linked private credit, or a delayed financing. We see no sign of that yet. High-yield spreads near 3.1% and a VIX of 15 say the market is not pricing it.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <article class="story">
+        <h3>Gulf Coast braces for Isaias</h3>
+        <div class="story-body">
+          <p>Alabama Governor Kay Ivey&rsquo;s emergency declaration covers 40 counties, and Florida and Georgia have their own. Evacuations are mandatory for Gulf Shores, Orange Beach, Dauphin Island, south Baldwin County and parts of Escambia, Okaloosa, Walton and Franklin counties in Florida. Amtrak service in Louisiana and Alabama is disrupted. No deaths have been reported. Details and the oil picture are in Top Stories.</p>
+        </div>
+        <p class="story-sourceline">WSFA &middot; AccuWeather &middot; Fox Weather &middot; CNN &middot; ABC News</p>
+      </article>
+      <article class="story">
+        <h3>Judge extends the order blocking the White House press ban and will rule by Tuesday</h3>
+        <div class="story-body">
+          <p>At a hearing Thursday, US District Judge Timothy Kelly extended his temporary restraining order in the case over the White House&rsquo;s exclusion of CNN, MS NOW and Politico. He said he will rule on a preliminary injunction by Tuesday. CNN&rsquo;s account says he appeared skeptical of the government&rsquo;s arguments. About 78 journalists&rsquo; passes are at issue. Stage: preliminary relief, not a ruling on the merits.</p>
+        </div>
+        <p class="story-sourceline">CNN &middot; Deadline &middot; TheWrap &middot; The Washington Times</p>
+      </article>
+      <article class="story">
+        <h3>The campaign: Congress is away until after the election</h3>
+        <div class="story-body">
+          <p>The government is funded through December 11 by the stopgap the House passed 370&ndash;48, so there is no shutdown risk before the election. Polling averages of the generic congressional ballot show Democrats ahead by about 8 to 9 points. That is D+8.9 in the Silver Bulletin average as of October 8, D+7.9 at RealClearPolling (fieldwork September 16&ndash;October 5) and D+7.8 at FiftyPlusOne. These are averages, not predictions.</p>
+        </div>
+        <p class="story-sourceline">NASFAA (stopgap) &middot; Silver Bulletin, RealClearPolling, FiftyPlusOne</p>
+      </article>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <article class="story">
+        <h3>Navi Pillay wins the Nobel Peace Prize</h3>
+        <p class="story-deck">The 85-year-old South African, a former anti-apartheid lawyer, war-crimes judge and UN human rights chief, was honored for her work to make sure genocide and war crimes are prosecuted.</p>
+        <div class="story-body">
+          <p>The Norwegian Nobel Committee said this morning that her cases showed legal accountability can help prevent war and violence. Committee chair J&oslash;rgen Watne Frydnes called the award &ldquo;definitely a message to those who are undermining the international system and institutions.&rdquo; Pillay defended anti-apartheid activists, sat as a judge on the Rwanda tribunal and the International Criminal Court, and was UN High Commissioner for Human Rights. More recently she chaired the UN commission of inquiry that accused Israel of genocide in Gaza, which Israel rejects. The committee could not reach her before the announcement, and she told reporters she &ldquo;thought it must be a joke.&rdquo; The prize is presented December 10.</p>
+        </div>
+        <p class="story-sourceline">Norwegian Nobel Committee / NobelPrize.org &middot; Al Jazeera &middot; CBS &middot; CNN &middot; Times of Israel</p>
+      </article>
+      <article class="story">
+        <h3>Houthi missile kills three at Riyadh airport</h3>
+        <div class="story-body">
+          <p>A ballistic missile claimed by the Houthis struck Riyadh&rsquo;s airport on Thursday, killing three Saudis, including a Saudia pilot. Flights have resumed. The attack, reported by Reuters and Time among others, comes during a Saudi-backed offensive in Yemen. It adds to the Gulf shipping risk that has kept Brent above $100.</p>
+        </div>
+        <p class="story-sourceline">Reuters (via Investing.com) &middot; Time &middot; Times of Israel</p>
+      </article>
+      <article class="story">
+        <h3>Ukraine counts more than 60 dead in two days of Russian strikes</h3>
+        <div class="story-body">
+          <p>Ukraine&rsquo;s emergency service puts the toll from Wednesday&rsquo;s strike on two buses in Kramatorsk at 33 dead. Reports differ on whether a glide bomb or rockets were used. Police have opened a war-crimes investigation, and public transport in Kramatorsk and Sloviansk is suspended. With Tuesday&rsquo;s mass drone-and-missile attack, at least 60 people have been killed in 48 hours, including 22 in Pryluky. President Zelensky said the attack &ldquo;will not go unanswered.&rdquo; Moscow has not commented. EU ambassadors are reported to have agreed a new package of about 1,646 sanctions listings for adoption on Monday. <span class="flag">Single outlet</span></p>
+        </div>
+        <p class="story-sourceline">Ukraine State Emergency Service via CBC, NPR, NBC, Al Jazeera, Kyiv Post &middot; Rio Times (sanctions)</p>
+      </article>
+      <article class="story">
+        <h3>Elsewhere</h3>
+        <div class="story-body">
+          <p><strong>Israel and Lebanon.</strong> An Israeli officer was killed in southern Lebanon on Thursday, and the military says it killed three militants in Gaza City strikes. Talks with Lebanon are stalled. A year into the Gaza ceasefire, reports say no hospital there is fully working.</p>
+          <p><strong>UK and Germany.</strong> Prime Minister Andy Burnham and Chancellor Friedrich Merz met in Berlin and finalized ratification of their bilateral treaty, adding a hybrid-threats partnership and an AI and industry corridor (GOV.UK joint statement).</p>
+          <p><strong>Asia this weekend.</strong> Taiwan&rsquo;s President Lai gives his National Day speech Saturday, after Taipei accused Beijing of disinformation and coercion this week. North Korea marks its ruling party&rsquo;s anniversary the same day; Seoul expects no large parade. In Japan, Prime Minister Takaichi told parliament she will keep her embattled farm minister.</p>
+          <p><strong>Brazil.</strong> The October 25 runoff between Fl&aacute;vio Bolsonaro and President Lula is close. Polls from October 3 had Datafolha at Lula 47, Bolsonaro 46 and Quaest at Bolsonaro 44, Lula 42. New polls are due this week.</p>
+        </div>
+        <p class="story-sourceline">Jerusalem Post, Times of Israel &middot; GOV.UK &middot; Taipei Times, Korea Times, Japan Times &middot; TSE, Datafolha, Quaest</p>
+      </article>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <p><strong>GPT-6 reaches free users.</strong> OpenAI&rsquo;s GPT-6 &ldquo;Luna&rdquo; started rolling out to Free and Go users Thursday, a day after the larger &ldquo;Sol&rdquo; model reached paid tiers. Its main feature answers with interactive charts, buttons and forms. Coverage comes from tech outlets relaying OpenAI&rsquo;s announcement; we did not see the original post. The launch landed on the same day as the revenue story, which matters more to the market.</p>
+      <p><strong>Funding.</strong> Arena, the AI model leaderboard, raised $200 million at a $3.1 billion valuation, led by Lightspeed and Khosla (Bloomberg, TechCrunch). The AI agent company Manus raised more than $500 million, led by Boyu and IDG, after China blocked Meta&rsquo;s acquisition.</p>
+      <p><strong>Export controls.</strong> One aggregator reports that a Commerce Department package this week writes earlier informal chip-tool restrictions into the export rules. It would cover 14-nanometer-and-finer tools and require licenses for overseas subsidiaries of Chinese firms. <span class="flag">Single outlet</span> We found nothing yet in the Federal Register. If confirmed, it matters for ASML, Applied Materials, Lam and KLA.</p>
+      <p><strong>Cyber.</strong> The FBI and six partner agencies say hackers &ldquo;tied to&rdquo; Integrity Technology Group, a sanctioned Chinese firm, stole email from Southeast Asian governments and others; that is the agencies&rsquo; attribution, made with stated confidence. Security firm SOCRadar claims about 86,600 Fortinet devices in 194 countries have been compromised, a vendor figure not yet confirmed by Fortinet. Southern Company says about 400,000 customer accounts were exposed through its portal, including partial Social Security numbers.</p>
+      <p><strong>Anthropic.</strong> The company launched a cybersecurity program to support defenders, following the Pentagon&rsquo;s confirmation this week that it has stopped using Anthropic products. Anthropic is privately held; Bloomberg reported on October 1 that it is targeting a listing in mid-November.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science</h2>
+      <p><strong>The most distant fast radio burst yet.</strong> A team led from the University of Sydney reports in <i>Science</i> that the burst FRB 20240304B came from redshift 2.148, when the universe was about 3 billion years old. That roughly doubles the previous record of about 1.0. JWST imaging traced it to a small, metal-poor, star-forming galaxy. The team says that fits a young magnetar as the source but does not prove it. Bursts this distant make it possible to measure the gas between galaxies, the so-called missing baryons, at much earlier times. (<i>Science</i> First Release, doi:10.1126/science.adz2675.)</p>
+      <p><strong>Human brain tissue in mice.</strong> The cover paper of this week&rsquo;s <i>Nature</i>, from Sergiu Pa&#x219;ca&rsquo;s lab at Stanford, describes mice engineered to lack most of their own cortex and hippocampus. Grafted human cortical organoids then integrated into the animals&rsquo; brain circuits. It is a platform for studying human brain development and disease in a living system, and it will reopen the ethics debate about human-animal neural chimeras.</p>
+      <p><strong>Why big dogs age faster.</strong> A study of about 900 dogs from roughly 120 breeds links faster aging in large breeds to changes in the epigenome and to activity of &ldquo;jumping genes,&rdquo; according to <i>Nature</i>&rsquo;s news coverage.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <p><strong>SpaceX&rsquo;s phone ambitions.</strong> In two days SpaceX got Space Bureau approval for about 15,000 direct-to-cell satellites and agreed to buy nationwide low-band spectrum. Satellite service is becoming a possible substitute for some wireless customers (see Top Stories). Starship Flight 14 on September 28 was the program&rsquo;s first orbital flight; no date is set for Flight 15.</p>
+      <p><strong>Artemis II science.</strong> NASA released more than 800 gigabytes of Artemis II lunar observations, including images, audio and crew notes, with a preliminary lunar science report.</p>
+      <p><strong>Rocket Lab.</strong> Barclays started coverage at Overweight with an $85 target. Rocket Lab shares fell 4.9% Thursday to $68.40 with the rest of the sector. Neutron is due at the pad this quarter, but a first orbital flight this year now looks unlikely.</p>
+      <p><strong>Launches ahead</strong> (UTC, tentative): Saturday 07:29, Falcon 9 with 21 Northrop Grumman satellites for the Space Development Agency&rsquo;s Tranche 1 Transport Layer, from Vandenberg. Sunday night into Monday, Falcon 9 Starlink 15-25 from Vandenberg. Tuesday 10:33, CRS-35 Dragon cargo to the ISS from Cape Canaveral. Later in the month, JAXA&rsquo;s H3 launches the Martian Moons eXploration probe (October 19). South Korea&rsquo;s Nuri rocket deployed 14 satellites this week, though one cubesat failed to separate.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <p><strong>Ebola in Kenya.</strong> Kenya has confirmed its first Ebola case. The patient, a man from the Democratic Republic of Congo who had the Bundibugyo strain, died in Nairobi. Contact tracing is under way (AP, Al Jazeera, PBS).</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">71&deg;<small>high today</small></p>
+          <p class="weather-desc">Sunny, light southwest wind</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">71&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Sunny; SW wind 0&ndash;5 mph</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">49&deg;</span>
+            <span class="sky">Mostly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Saturday</b>
+            <span class="hi">74&deg;</span> <span class="lo">57&deg;</span>
+            <span class="sky">Mostly cloudy; showers after 8 p.m. (90%)</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Isaias&rsquo;s remnants bring a soaking Sunday and a wet Columbus Day morning</h3>
+        <p>The hurricane&rsquo;s remains merge with an upper-level low over the Ohio Valley. The Weather Service forecast has showers arriving Saturday night. Local forecasters expect widespread rain from Sunday morning into Monday morning, about 0.75 to 1.25 inches with a chance of 2, and gusts near 25 mph. Spread over a day, the rain carries a low flood risk, but leaf-clogged drains could flood streets. There are no watches or warnings for Bridgeville this morning.</p>
+        <p class="story-sourceline">National Weather Service Pittsburgh (forecast, alerts) &middot; CBS Pittsburgh &middot; WPXI</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>A second measles case, linked to a North Hills private school</h3>
+        <p>Another unvaccinated minor has measles, the second case in the county this year, according to WPXI and PublicSource. PublicSource reports the child attends a private Christian school in the North Hills. Eden Christian Academy, which has three North Hills campuses, said its students were affected but did not name the campus. The first case, confirmed Monday, included an exposure at the McKnight Road Target on October 1. Unvaccinated contacts can face 21-day quarantines. Pennsylvania has reported more than 1,000 cases and five deaths this year. The health department&rsquo;s own page still listed one case as of Wednesday.</p>
+        <p class="story-sourceline">PublicSource &middot; WPXI &middot; Allegheny County Health Department</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Skill-game machines face a Tuesday deadline; a second court petition is reported</h3>
+        <p>The state Supreme Court ruled 4&ndash;2 in June that skill games are illegal slot machines and stayed its ruling for 120 days, until Monday, October 13. State Police and the Attorney General say enforcement, including seizures, can start Tuesday. Lawmakers withdrew a request to extend the stay to February within hours of filing it. WESA reports that Rep. Jonathan Fritz and Sens. Anthony Williams and Gene Yaw signed a second petition, but we could not confirm it was filed. A law professor told WESA rejection is &ldquo;very likely.&rdquo; About 70,000 machines sit in bars, clubs and convenience stores statewide.</p>
+        <p class="story-sourceline">WESA &middot; WPSU &middot; Pennsylvania Capital-Star &middot; Pennsylvania State Police</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>New polls widen Shapiro&rsquo;s lead after the only debate</h3>
+        <p>A Quinnipiac poll of likely voters released October 7 has Governor Josh Shapiro at 59% to Stacy Garrity&rsquo;s 34%, with the Libertarian at 2%, and his job approval at 63%. A Susquehanna poll the same day had 52&ndash;31 among likely voters (&plusmn;3.7). An October 1 PennLive/Bravo Group poll had 55&ndash;28. The election is November 3.</p>
+        <p class="story-sourceline">Quinnipiac via City &amp; State PA &middot; Political Wire &middot; PennLive</p>
+      </article>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Mixed: rotation out of AI, broad market steadier</span> Confidence moderate.</p>
+          <p><strong>Supporting risk-on:</strong> advancers beat decliners 2,993 to 2,537 on a day the Nasdaq fell 1.25%; equal weight (RSP) +0.6% vs SPY &minus;0.4%; regional banks (KRE) +1.0%; VIX 15.24 in contango; HY spreads 3.09%, near cycle tights; long yields down 6&ndash;7bp after strong auctions; futures higher this morning.</p>
+          <p><strong>Contradicting:</strong> AI leadership broke (SMH &minus;2.8%, MU &minus;4.8%, ORCL &minus;5.5%, CRWV &minus;7.8%); only about 29% of stocks are above our 50-day proxy; Brent above $100 for a second week; the 10-year above 5.2%; Fed officials signalling more hikes; gold up 1.2% overnight; Delta&rsquo;s guidance cut shows the fuel shock reaching earnings.</p>
+          <p>Change from Thursday morning: leadership is narrowing away from AI. Breadth improved, but from a weak base.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; futures</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Cash indices: EOD official, Thu Oct 8 (AP, Washington Post). ETFs: EOD official, Thu Oct 8 (Finnhub). Futures: Delayed (+10 min), Yahoo via proxy fetch, ~06:32 ET Oct 9; change vs prior settlement.</caption>
+              <thead><tr><th>Market</th><th>Level</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,765.36</td><td class="down">&minus;0.47%</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>~27,193</td><td class="down">&minus;1.25%</td></tr>
+                <tr><td class="txt">Dow</td><td>51,231.64</td><td class="up">+0.1%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>2,794.13</td><td class="flat">+0.03%</td></tr>
+                <tr><td class="txt">SPY / QQQ / IWM / DIA / RSP</td><td>773.93 / 747.58 / 277.57 / 511.65 / 211.87</td><td>&minus;0.42% / &minus;1.34% / &minus;0.05% / +0.12% / +0.60%</td></tr>
+                <tr><td class="txt">MAGS (Mag 7)</td><td>73.03</td><td class="down">&minus;0.90%</td></tr>
+                <tr><td class="txt">S&amp;P 500 futures (Dec)</td><td>7,844.00</td><td class="up">+0.36%</td></tr>
+                <tr><td class="txt">Nasdaq 100 futures</td><td>31,199.50</td><td class="up">+0.74%</td></tr>
+                <tr><td class="txt">Dow futures</td><td>51,514</td><td class="flat">+0.04%</td></tr>
+                <tr><td class="txt">Russell 2000 futures</td><td>2,816.70</td><td class="up">+0.25%</td></tr>
+                <tr><td class="txt">Nikkei 225 / Hang Seng / Shanghai</td><td>68,512 / 24,047 / 3,758</td><td>&minus;0.8% / +1.1% / &minus;1.4%</td></tr>
+                <tr><td class="txt">Stoxx 600 (early session)</td><td>~631</td><td class="up">~+0.9%</td></tr>
+                <tr><td class="txt">EEM / VGK</td><td>66.10 / 85.43</td><td>&minus;1.89% / &minus;0.15%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Moving-average distances and 52-week ranges are unavailable this morning (quote vendor rate-limited); Thursday&rsquo;s closing edition carried them.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Whole-market, Thu Oct 8 (Massive grouped daily, our calculation; EOD official): 2,993 advancers, 2,537 decliners, 113 unchanged in a 5,660-stock universe (close &ge;$1, volume &ge;100K). Up volume about $415B vs down volume about $660B in dollar terms, so the heaviest money still went out of the big names. Share above our 50-day EMA proxy: 28.9% (Estimated &mdash; EMA proxy, accumulating history, 53/200 sessions), flat from 28.8% Wednesday. The A/D line turned up after Wednesday&rsquo;s 1,405/4,044 rout. Read: broad but shallow, a rotation day, not a washout.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, EOD official, Thu Oct 8 (Finnhub)</caption>
+              <thead><tr><th>Sector</th><th>Close</th><th>Day</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Energy (XLE)</td><td>65.24</td><td class="up">+2.97%</td></tr>
+                <tr><td class="txt">Staples (XLP)</td><td>83.42</td><td class="up">+2.11%</td></tr>
+                <tr><td class="txt">Financials (XLF)</td><td>54.23</td><td class="up">+0.89%</td></tr>
+                <tr><td class="txt">Comm. services (XLC)</td><td>112.07</td><td class="up">+0.73%</td></tr>
+                <tr><td class="txt">Real estate (XLRE)</td><td>40.85</td><td class="up">+0.69%</td></tr>
+                <tr><td class="txt">Materials (XLB)</td><td>49.27</td><td class="up">+0.59%</td></tr>
+                <tr><td class="txt">Industrials (XLI)</td><td>168.40</td><td class="up">+0.33%</td></tr>
+                <tr><td class="txt">Discretionary (XLY)</td><td>111.71</td><td class="up">+0.31%</td></tr>
+                <tr><td class="txt">Utilities (XLU)</td><td>41.07</td><td class="down">&minus;0.19%</td></tr>
+                <tr><td class="txt">Health care (XLV)</td><td>168.16</td><td class="down">&minus;0.39%</td></tr>
+                <tr><td class="txt">Technology (XLK)</td><td>197.78</td><td class="down">&minus;1.79%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Rotation: energy and staples leading, technology lagging. Defensive plus inflation-hedge leadership is consistent with an energy shock, not a growth scare. Communication services finished up, but the telecom after-hours falls will hit XLC today.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Thu Oct 8 (Finnhub). After-hours moves from CNBC, Investing.com and TradingView; Delayed, unverified.</caption>
+              <thead><tr><th>Name</th><th>Close</th><th>Day</th><th>After hours</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">NVDA</td><td>230.48</td><td class="down">&minus;2.94%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">AVGO</td><td>360.14</td><td class="down">&minus;4.35%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">MU</td><td>1,035.84</td><td class="down">&minus;4.79%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">AMD</td><td>620.68</td><td class="down">&minus;3.90%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">TSM</td><td>457.99</td><td class="down">&minus;3.01%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">ORCL</td><td>135.69</td><td class="down">&minus;5.48%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">CRWV</td><td>81.58</td><td class="down">&minus;7.77%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">MSFT / AAPL / AMZN</td><td>522.61 / 340.42 / 254.06</td><td>&minus;1.35% / +1.11% / &minus;2.25%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">GOOGL / META / TSLA</td><td>348.29 / 720.89 / 375.00</td><td>&minus;0.63% / &minus;0.06% / &minus;0.74%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">SPCX (SpaceX)</td><td>160.57</td><td class="down">&minus;4.19%</td><td>~+3&ndash;4%</td></tr>
+                <tr><td class="txt">ASTS / RKLB</td><td>56.93 / 68.40</td><td>&minus;6.13% / &minus;4.89%</td><td>&mdash;</td></tr>
+                <tr><td class="txt">T / VZ / TMUS</td><td>24.87 / 46.35 / 171.31</td><td>+1.63% / +1.27% / +2.18%</td><td>~&minus;8% / ~&minus;7% / ~&minus;7%</td></tr>
+                <tr><td class="txt">HUM</td><td>387.12</td><td class="down">&minus;2.37%</td><td>~+13%</td></tr>
+                <tr><td class="txt">ALHC</td><td>8.71</td><td class="up">+1.87%</td><td>~&minus;20%</td></tr>
+                <tr><td class="txt">DAL</td><td>82.14</td><td class="down">&minus;1.00%</td><td>Reported 6:30</td></tr>
+                <tr><td class="txt">PEP</td><td>128.34</td><td class="up">+3.73%</td><td>&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Short volume (FINRA consolidated daily, EOD official Oct 8): aggregate 51.6% of reported volume. Standouts: QQQ 68.2%, ASTS 66.9%, CRWV 62.3%, SPCX 62.1%. Daily short volume is not short interest; short interest is settlement-dated and 2&ndash;3 weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury daily par yield curve, EOD official (Oct 8, Oct 7)</caption>
+              <thead><tr><th>Tenor</th><th>Oct 8</th><th>Oct 7</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">1M</td><td>4.14%</td><td>4.07%</td><td>+7bp</td></tr>
+                <tr><td class="txt">3M</td><td>4.23%</td><td>4.22%</td><td>+1bp</td></tr>
+                <tr><td class="txt">6M</td><td>4.30%</td><td>4.28%</td><td>+2bp</td></tr>
+                <tr><td class="txt">1Y</td><td>4.44%</td><td>4.42%</td><td>+2bp</td></tr>
+                <tr><td class="txt">2Y</td><td>4.75%</td><td>4.77%</td><td>&minus;2bp</td></tr>
+                <tr><td class="txt">5Y</td><td>4.99%</td><td>5.03%</td><td>&minus;4bp</td></tr>
+                <tr><td class="txt">10Y</td><td>5.22%</td><td>5.28%</td><td>&minus;6bp</td></tr>
+                <tr><td class="txt">20Y</td><td>5.64%</td><td>5.71%</td><td>&minus;7bp</td></tr>
+                <tr><td class="txt">30Y</td><td>5.60%</td><td>5.67%</td><td>&minus;7bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads (Oct 8): 2s10s +47bp (from +51), 3m10y +99bp, 5s30s +61bp. 10Y real (TIPS) 2.92% (Oct 7), 10Y breakeven 2.35% (Oct 8), SOFR 3.88% (Oct 7), fed funds target 3.75&ndash;4.00% (FRED; EOD official). A bull flattener led by the long end after strong auction demand. Front-end yields edged up as the Fed signalled more hikes. Bond prices rise when yields fall: TLT +0.94%, IEF +0.38%, TIP +0.27% Thursday (Finnhub). MOVE index: no free source, not available.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield OAS 3.09% (Oct 7, FRED; EOD official), up from 3.03% Oct 6 and near the low end of the year. HYG $77.14 (&minus;0.05%) and LQD $102.47 (+0.36%) Thursday (Finnhub). Credit did not confirm the AI-stock sell-off. The pressure point to watch is AI-linked private credit, which has no public price.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.24 at Thursday&rsquo;s close (15.41 Wed). VIX9D 12.21, VIX3M 18.08 (Yahoo via proxy fetch; EOD official Oct 8). Contango: short-dated implied volatility sits well below three-month, so traders are not paying up for near-term protection despite single-stock damage in AI names. No inversion. Put/call ratios: not tracked (no free source). Dealer gamma: not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ECB reference rates, EOD official Oct 8 (Frankfurter), per US dollar: EUR 0.8940 (EURUSD 1.1186), JPY 158.28, GBP 0.7572, CNY 6.7023, CHF 0.8337, CAD 1.4262, AUD 1.4402, MXN 18.01, BRL 5.017, INR 96.78. Dollar index (DX-Y.NYB) 102.14, flat overnight; EURUSD 1.1215 (Yahoo via proxy fetch; Delayed). The yen near 158 keeps intervention risk in view as the BOJ talks about cost pass-through.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Delayed (+10 min), Yahoo via proxy fetch, ~06:32 ET Oct 9: Brent $102.95 (settled $104.28 Thu; &minus;1.3%), WTI $90.65 ($91.49; &minus;0.9%), gold $4,207.9 ($4,157.0; +1.2%). USO +2.55% and GLD +0.73% on Thursday (Finnhub). Drivers: the Iran no-strike pledge (lower), Gulf of Mexico shut-ins of 62.9% of oil and 57.4% of gas (higher, temporary), Hormuz attacks (14 verified since Sep 30). Other commodities (natural gas, copper, grains, softs): not fetched this morning.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Live (CoinGecko aggregate, ~06:33 ET Oct 9): BTC $82,613 (&minus;0.2% 24h), ETH $2,499 (&minus;2.2%), SOL $110.29 (&minus;3.8%), ADA $0.239 (&minus;5.8%). Total market cap about $2.78 trillion (&minus;3.9% 24h); BTC dominance 59.6%. Selling is concentrated in smaller coins; no regulatory or network event found. Leverage data not available.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>RSP/SPY rose about 1% Thursday, a clear equal-weight win. Defensive (XLP) over growth (XLK) by nearly 4 points. Cross-asset: stocks and bonds both bid in the end; gold rising with a flat dollar and falling real yields; oil and breakevens diverging, with breakevens flat while Brent is above $100; semis vs AI capex is the broken link this week. Space stocks fell with AI (RKLB &minus;4.9%, ASTS &minus;6.1%) even as SpaceX&rsquo;s spectrum news landed after the close.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p><strong>Delta (pre-market):</strong> adj. EPS $1.72 vs July guide $2.00&ndash;2.50 and consensus ~$1.76&ndash;1.96; adj. revenue $17.6B (+16%); adj. operating margin 9.4% (guide 11&ndash;13%); Q4 EPS guide $1.15&ndash;1.65, revenue ~+20%, margin 7&ndash;9%; FY EPS $5.10&ndash;5.60 (was $6.50&ndash;7.50), FCF ~$2.5B (was $3&ndash;4B); fuel ~$4.25/gal Q4 (8-K). Reaction: not yet available at writing. <strong>Next week:</strong> TSMC full results Oct 15.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Oct 8, 30-year reopening $22B: high yield 5.618%, tail ~0.1bp, bid-to-cover 2.54, indirects 72.3%, dealers 6.8% (TreasuryDirect). Oct 7, 10-year $39B at 5.300% (stop-through, bid-to-cover 2.77, dealers ~2.5%). Oct 6, 3-year $58B at 4.932%. This week&rsquo;s $119B coupon supply was absorbed well. Monday: Columbus Day, bond market closed. Next week&rsquo;s auction sizes were not available at writing.</p>
+        </details>
+
+      </details>
+    </section>
+
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Primary sources: the US Treasury daily par yield curve and TreasuryDirect auction results; FRED (payrolls, unemployment, claims, CPI, real yields, breakevens, SOFR, high-yield spreads); the Federal Reserve Board and St. Louis Fed (Waller and Musalem remarks); SEC EDGAR filings from Delta, Humana, Alignment Healthcare and others; the Norwegian Nobel Committee; the National Weather Service; and <i>Science</i> and <i>Nature</i>. Market data: Yahoo Finance, Finnhub, Frankfurter (ECB reference rates), CoinGecko, Massive (breadth) and FINRA (short volume). Reporting from Reuters, Bloomberg, CNBC, AP, The Wall Street Journal, the Financial Times, CNN, NBC, Al Jazeera, WESA, PublicSource, WPXI and others is named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition. Thursday morning&rsquo;s edition described Isaias at 80 mph; it has since strengthened to a strong Category 2. That is new information, not a correction.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and delayed. Much of this morning&rsquo;s news reporting came from search summaries rather than full articles; those items are attributed, and flagged where they rest on a single outlet or are unconfirmed. Missing data is declared missing, never estimated. Written and published automatically. <a href="../../../status.html">System status</a></p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-09-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

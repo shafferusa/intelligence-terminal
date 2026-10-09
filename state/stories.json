@@ -1,950 +1,931 @@
 {
- "stories": [
-  {
-   "id": "openai-revenue-50b-ai-selloff-oct8",
-   "status": "New",
-   "headline": "FT/CNBC: OpenAI told investors ~$50B annualized revenue end-Sep vs ~$68B widely reported; SMH -2.8%, MU -4.8%, AVGO -4.4%, NVDA -2.9%; RSP +0.6% vs SPY -0.4%",
-   "one_line": "AI trade hit; rotation not de-risking",
-   "verification": "Confirmed-multiple (FT + CNBC independent source); figure reported not disclosed",
-   "sources": [
-    "Financial Times",
-    "CNBC",
-    "CNN",
-    "Yahoo"
-   ],
-   "score_rationale": "Lead: most market-moving development of the session; AI-capex debt chain",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "trump-no-iran-attack-before-midterms-oct8",
-   "status": "New",
-   "headline": "Trump (Truth Social): no US attack on Iran before Nov 3; blockade stays; Brent ~$103-104 still +3-4%",
-   "one_line": "Dated strike trigger removed; supply risks remain",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNBC",
-    "ABC",
-    "Reuters",
-    "The Hill",
-    "UPI",
-    "CBS"
-   ],
-   "score_rationale": "Resolves am lead's political trigger; bears on forecast 2026-10-08-am-3",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "ust-30y-reopen-result-oct8",
-   "status": "Resolved",
-   "headline": "$22B 30Y reopening 5.618% (highest since 2000), 0.1bp tail, BTC 2.54, indirect 72.3%, dealers 6.8%; 10Y par 5.22% (-6), 30Y 5.60% (-7)",
-   "one_line": "Long end absorbed; bull flattening",
-   "verification": "Confirmed-primary (TreasuryDirect, Treasury curve)",
-   "sources": [
-    "TreasuryDirect",
-    "Treasury",
-    "investingLive",
-    "Newsquawk",
-    "CNBC"
-   ],
-   "score_rationale": "Week's last coupon test; am forecast 2026-10-08-am-1 missed on strict wording",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "isaias-gom-shutins-63pct-oct8",
-   "status": "Materially changed",
-   "headline": "Isaias Cat 1 85 mph (NHC 8A); GoM shut-ins 62.89% oil (~1.28M b/d), 57.35% gas; 121 platforms evacuated; landfall late Fri-Sat MS-FL Panhandle; Pittsburgh soaking rain Sunday",
-   "one_line": "Supply loss rising; refinery risk",
-   "verification": "Confirmed-multiple (NHC primary; shut-in agency name unverified)",
-   "sources": [
-    "NHC",
-    "Reuters",
-    "Oilprice",
-    "CNN",
-    "CBS",
-    "Post-Gazette"
-   ],
-   "score_rationale": "Market + US + local relevance",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "kramatorsk-bus-strike-oct8",
-   "status": "New",
-   "headline": "Russian strike on two buses in Kramatorsk: 33 dead, 18 injured per Ukraine SES/Donetsk governor; Ukraine talks with Kushner/Witkoff from Oct 9",
-   "one_line": "War escalation before talks",
-   "verification": "Single-party official figures, multiple outlets",
-   "sources": [
-    "NBC",
-    "Al Jazeera",
-    "Meduza",
-    "Ukrainska Pravda"
-   ],
-   "score_rationale": "Major world story",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "pep-q3-oct8",
-   "status": "Continuing",
-   "headline": "PEP adj EPS $2.34 vs $2.29, rev $25.27B; FY core EPS growth cut to 2.5-3.5%; stock +3.73% to $128.34",
-   "one_line": "Staples led +2.1%",
-   "verification": "Single-reliable-source (CNBC) for guide figure",
-   "sources": [
-    "CNBC",
-    "Yahoo"
-   ],
-   "score_rationale": "Earnings",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "fcc-spacex-d2c-asts-oct8",
-   "status": "New",
-   "headline": "FCC Space Bureau reportedly authorizes SpaceX ~15,000-sat direct-to-cell network on EchoStar spectrum; ASTS -6.1%, RKLB -4.9%, SPCX -4.2% to $160.57 (lockup Oct 9)",
-   "one_line": "Space names hit",
-   "verification": "Secondary (24/7 Wall St, Benzinga); FCC order not located",
-   "sources": [
-    "24/7 Wall St",
-    "Benzinga",
-    "Yahoo"
-   ],
-   "score_rationale": "Space + market",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "tsmc-sep-revenue-oct8",
-   "status": "New",
-   "headline": "TSMC Sep revenue NT$511.9B (+54.6% y/y); Q3 ~NT$1,494B by our sum, above guide at NT$32; TSM -3.0%",
-   "one_line": "AI demand datapoint",
-   "verification": "Confirmed-primary (6-K)",
-   "sources": [
-    "SEC EDGAR",
-    "Focus Taiwan"
-   ],
-   "score_rationale": "AI & Tech",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "claims-197k-oct8",
-   "status": "New",
-   "headline": "Initial claims 197K (cons ~200K), 4-wk avg 198K lowest since Oct 2022, continuing 1.716M",
-   "one_line": "Layoffs low",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "DOL via Reuters",
-    "FRED"
-   ],
-   "score_rationale": "Economy",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "nobel-literature-2026-carson",
-   "status": "New",
-   "headline": "Anne Carson wins 2026 Nobel in Literature",
-   "one_line": "Nobel week",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNN",
-    "NBC",
-    "Washington Post"
-   ],
-   "score_rationale": "Science/culture",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "pa-skill-games-deadline-oct13",
-   "status": "New",
-   "headline": "PA skill-games stay expires Oct 13; lawmakers withdrew extension request Oct 7; business consortium petition pending",
-   "one_line": "Machines must be removed",
-   "verification": "Confirmed-multiple; petition status unverified",
-   "sources": [
-    "Capital-Star",
-    "WNEP",
-    "PSP"
-   ],
-   "score_rationale": "Local PA",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "allegheny-measles-oct5",
-   "status": "New",
-   "headline": "ACHD first 2026 county measles case; Target McKnight Rd exposure Oct 1; PA 1,004 cases 5 deaths",
-   "one_line": "Public health",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "WESA",
-    "KDKA",
-    "CBS Pittsburgh"
-   ],
-   "score_rationale": "Local",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "oil-iran-strike-options-oct8",
-   "status": "New",
-   "headline": "Brent ~$104.42 (+4.2%), WTI ~$92.06 (+4.3%) after The Atlantic: White House asked Pentagon for Iran strike options usable before Nov 3; Axios: CENTCOM told to prepare; no decision",
-   "one_line": "Oil-led risk-off; strike options reported, not ordered",
-   "verification": "Confirmed-multiple (relays of The Atlantic; Axios separate); prices Yahoo delayed",
-   "sources": [
-    "The Atlantic",
-    "Axios",
-    "CBS",
-    "Bloomberg",
-    "Yahoo"
-   ],
-   "score_rationale": "Lead: most market-moving development; energy feeds Fed hike case",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "qatar-tanker-hit-oct7",
-   "status": "New",
-   "headline": "UKMTO: tanker hit by multiple projectiles ~51nm N of Madinat ash Shamal, Qatar, Wed evening; western Gulf; unclaimed; On Peace 12 crew hurt Oct 6",
-   "one_line": "Attacks spreading inside the Gulf",
-   "verification": "Single-reliable-source (UKMTO relayed)",
-   "sources": [
-    "UKMTO via Al Jazeera",
-    "Tribune India",
-    "Indian MEA"
-   ],
-   "score_rationale": "Oil supply risk",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "ust-30y-reopen-oct8",
-   "status": "Developing",
-   "headline": "$22B 30Y reopening 1 PM Oct 8 (CUSIP 912810UW6); 30Y par 5.67%, 20Y 5.71%; 2s10s 51bp",
-   "one_line": "Final coupon test of the week, oil up 4%",
-   "verification": "Confirmed-primary (TreasuryDirect)",
-   "sources": [
-    "TreasuryDirect",
-    "Treasury"
-   ],
-   "score_rationale": "Long-end supply at 2002 highs",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "waller-istanbul-oct8",
-   "status": "New",
-   "headline": "Waller (Istanbul 4:30 ET): more hikes likely but flexibility on timing, not necessarily consecutive meetings (Reuters/Bloomberg summaries)",
-   "one_line": "Leaves room to hold Oct 28",
-   "verification": "Confirmed-multiple (secondary)",
-   "sources": [
-    "Fed calendar",
-    "Reuters",
-    "Bloomberg"
-   ],
-   "score_rationale": "Fed path",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "global-selloff-oct8",
-   "status": "New",
-   "headline": "Kospi -2.62% despite Samsung Q3 OP 107.4T won; Nikkei -1.42%; HSI -1.43%; Sensex -1.44%; Stoxx 600 ~-0.9%; ES -0.43%, RTY -0.90%; Oct 7 breadth 1,405/4,044",
-   "one_line": "Broad risk-off; narrow US leadership",
-   "verification": "Confirmed-primary data (Yahoo, Massive)",
-   "sources": [
-    "Yahoo",
-    "AP",
-    "Business Standard",
-    "Massive"
-   ],
-   "score_rationale": "Cross-asset tape",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "hurricane-isaias-oct8",
-   "status": "Materially changed",
-   "headline": "Isaias hurricane 80 mph (NHC 5 AM adv 7), hurricane warning Ocean Springs MS to Bay/Gulf line FL; Cat 2 forecast; landfall late Fri/early Sat; ~511k b/d GoM shut in",
-   "one_line": "First hurricane of season, Gulf energy exposure",
-   "verification": "Confirmed-multiple (NHC relayed)",
-   "sources": [
-    "NHC via CNN/CBS/weather.com",
-    "CNBC/Reuters"
-   ],
-   "score_rationale": "Energy, insurers, public safety",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "gd-ceo-deep-oct7",
-   "status": "New",
-   "headline": "General Dynamics: Danny Deep CEO effective Jan 1, 2027; Novakovic to executive chairman (8-K)",
-   "one_line": "Planned succession at defense prime",
-   "verification": "Confirmed-primary (8-K)",
-   "sources": [
-    "GD 8-K"
-   ],
-   "score_rationale": "Leadership change at watchlist name",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "broadcom-openai-private-credit-oct7",
-   "status": "New",
-   "headline": "WSJ: Broadcom seeking >$50B private credit (Apollo, Blackstone) for OpenAI custom chip; Oracle in talks on chip lease vehicle with Apollo/Goldman",
-   "one_line": "AI capex moving to debt",
-   "verification": "Single-reliable-source (WSJ)",
-   "sources": [
-    "WSJ via Investinglive/MarketScreener",
-    "TipRanks"
-   ],
-   "score_rationale": "Credit/AI read-through",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "ukraine-oct7-toll-28",
-   "status": "Materially changed",
-   "headline": "Ukraine Interior Ministry: 28 killed nationwide in Oct 7 strike; Pryluky toll 22 incl 5 children (SES via bne); ~70 missiles",
-   "one_line": "Toll rising",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "bne IntelliNews",
-    "Kyiv Independent",
-    "Euromaidan Press"
-   ],
-   "score_rationale": "War casualties",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "pa-gov-debate-oct7",
-   "status": "New",
-   "headline": "Shapiro-Garrity only debate Oct 7 (abc27); RCP avg Shapiro +23.2; Susquehanna 52-31 LV; Siena 58-38 RV; Quinnipiac 59-34 unconfirmed",
-   "one_line": "Familiar themes, no consensus winner",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "WESA",
-    "abc27",
-    "PoliticsPA"
-   ],
-   "score_rationale": "Statewide election",
-   "first_seen": "2026-10-08-am",
-   "last_updated": "2026-10-08-am"
-  },
-  {
-   "id": "ust-10y-auction-oct7",
-   "status": "Materially changed",
-   "headline": "10Y hit 5.365% intraday (2002 high), $39B reopening stopped through at 5.300% (WI 5.317), BTC 2.77, indirect 80%, dealers 2.5%; 10Y par 5.28% (+1bp), 30Y 5.67% (+3)",
-   "one_line": "Demand exists at 5.30%; 30Y $22B reopening Oct 8 next test",
-   "verification": "Confirmed-primary (TreasuryDirect, Treasury curve) + Confirmed-multiple",
-   "sources": [
-    "TreasuryDirect",
-    "Treasury",
-    "CNBC",
-    "investingLive",
-    "RTTNews"
-   ],
-   "score_rationale": "Lead: long end at 24-year highs, supply week",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "fomc-sep-minutes",
-   "status": "New",
-   "headline": "FOMC Sep minutes: most participants see another hike likely by year end; many flag energy prices; no Oct/Dec timing",
-   "one_line": "Confirms am forecast (majority for more hikes); Oct 28 vs Dec turns on CPI Oct 14",
-   "verification": "Confirmed-primary (federalreserve.gov)",
-   "sources": [
-    "Federal Reserve",
-    "AP",
-    "Reuters"
-   ],
-   "score_rationale": "Fed path, market-moving",
-   "first_seen": "2026-10-07-pm",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "hormuz-attacks-weekly-high",
-   "status": "Materially changed",
-   "headline": "Reuters: >=12 tanker attacks around Hormuz Sep 28-Oct 5, wartime weekly high; IMO counts 9 (prior high 8); Brent ~$101",
-   "one_line": "Attackers unattributed (UKMTO 'unknown'); EIA crude -3.2M vs +1.7M est; IEA board met on stock release",
-   "verification": "Confirmed-multiple (Reuters, IMO)",
-   "sources": [
-    "Reuters",
-    "IMO",
-    "UKMTO",
-    "EIA"
-   ],
-   "score_rationale": "Oil >$100 feeds Fed energy concern",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "industrials-selloff-oct7",
-   "status": "New",
-   "headline": "XLI -2.18%: CAT -5.75%, DE -3.8%, PH -3.3%, GEV -3.1%, ETN -3.1%; no catalyst found",
-   "one_line": "Unexplained; Russell -1.31%, RSP -0.81%",
-   "verification": "System inference (prices confirmed; cause unknown)",
-   "sources": [
-    "Yahoo Finance",
-    "Finnhub"
-   ],
-   "score_rationale": "Largest sector move, breadth signal",
-   "first_seen": "2026-10-07-pm",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "spacex-40b-chip-debt",
-   "status": "New",
-   "headline": "Bloomberg: SpaceX arranging ~$40B debt (~$10B loans, ~$30B IG) for Nvidia chips, Apollo involved; SPCX -2.51% to $167.60",
-   "one_line": "Unconfirmed by company; 328M-share lockup reportedly Oct 9 (single feed)",
-   "verification": "Single-reliable-source (Bloomberg) cited by Reuters/FT via Benzinga",
-   "sources": [
-    "Bloomberg",
-    "Benzinga",
-    "CNBC",
-    "Yahoo"
-   ],
-   "score_rationale": "Watchlist mega-name, AI capex financing",
-   "first_seen": "2026-10-07-pm",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "levi-q3-beat",
-   "status": "New",
-   "headline": "Levi Strauss Q3 adj EPS $0.48 vs ~$0.36; rev $1.61B vs $1.62B; EPS guide raised to $1.54-1.56, revenue growth cut to ~7%; +5% AH",
-   "one_line": "490bp of 13.8% margin from tariff refunds",
-   "verification": "Confirmed-primary (release/8-K) + CNBC",
-   "sources": [
-    "Levi release",
-    "CNBC"
-   ],
-   "score_rationale": "After-hours earnings",
-   "first_seen": "2026-10-07-pm",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "penguin-blackhills-ai-power",
-   "status": "Continuing",
-   "headline": "Penguin Solutions +13.1% on AI guidance 8-K; Black Hills +7.2% on Google Cheyenne 8-K; CEG -0.3% holds Tuesday's gain",
-   "one_line": "AI power/infrastructure contracts",
-   "verification": "Confirmed-primary (8-Ks)",
-   "sources": [
-    "SEC EDGAR",
-    "Yahoo"
-   ],
-   "score_rationale": "Confirmed-catalyst movers",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-pm"
-  },
-  {
-   "id": "ust-10y-reopen-minutes-oct7",
-   "status": "Materially changed",
-   "headline": "$39B 10Y reopening 1 PM + FOMC Sep minutes 2 PM; 10Y back ~5.31% (CNBC) after 5.27% par close Tue",
-   "one_line": "Daly: more hikes depend on whether shocks 'fade or compound'; FedWatch ~22% Oct hike",
-   "verification": "Confirmed-primary (Treasury, FiscalData) + Confirmed-multiple",
-   "sources": [
-    "Treasury",
-    "FiscalData",
-    "FRED",
-    "CNBC",
-    "Reuters via AOL",
-    "FXStreet",
-    "Benzinga/CME"
-   ],
-   "score_rationale": "Lead: auction + minutes same hour, long end at 2002 highs",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "hormuz-nine-attacks-oct7",
-   "status": "Materially changed",
-   "headline": "UKMTO: nine ship attacks in October; Brent ~$101.9 (+1.3%); Houthi strikes on Aden airport, missile intercepted north of Riyadh",
-   "one_line": "Saudi + S.Korean-owned tankers hit Oct 5 eve; ME exports 18.6M bpd 14-day avg (Bloomberg)",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Bloomberg",
-    "NBC",
-    "CNBC",
-    "The National",
-    "France24"
-   ],
-   "score_rationale": "Oil/inflation channel to Fed",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "dxy-17mo-high-oct7",
-   "status": "New",
-   "headline": "DXY ~102.31 (+0.5%) 17-month high; EUR 1.119; Europe -0.8%, Kospi -2.0%, Nikkei -0.9%; gold -1.1%, BTC ~83.7K",
-   "one_line": "Overnight risk-off vs US record",
-   "verification": "Confirmed (market data)",
-   "sources": [
-    "Yahoo",
-    "Twelve Data",
-    "Investing.com",
-    "JoongAng",
-    "CoinDesk"
-   ],
-   "score_rationale": "Cross-asset tightening",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "bkh-google-cheyenne-oct6",
-   "status": "New",
-   "headline": "Black Hills 8-K: agreements to serve Google Cheyenne data center through 2048; $1.8B new gas gen; ~$150M NI 2030; +~5% AH",
-   "one_line": "Second Google power deal in two days after CEG",
-   "verification": "Confirmed-primary (8-K)",
-   "sources": [
-    "SEC EDGAR",
-    "GlobeNewswire",
-    "Benzinga"
-   ],
-   "score_rationale": "AI power capex on utility balance sheets",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "pentagon-stops-anthropic-oct6",
-   "status": "New",
-   "headline": "DoD official to BBC: department 'has ceased the use of Anthropic products' (Feb order, 6-month phase-down)",
-   "one_line": "Claude was in Palantir Maven; IPO reportedly Nov",
-   "verification": "Single-reliable-source (BBC)",
-   "sources": [
-    "BBC via Yahoo"
-   ],
-   "score_rationale": "PLTR read-through; Anthropic pre-IPO",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "peng-fq4-guide-oct6",
-   "status": "New",
-   "headline": "Penguin Solutions FQ4 sales $567M (+68%); FY27 ~+40% (~$2.43B mid), adj EPS $4.45; 6 new AI customers (4 neoclouds); ~+6% premarket",
-   "one_line": "",
-   "verification": "Confirmed-primary (8-K)",
-   "sources": [
-    "SEC EDGAR",
-    "Benzinga"
-   ],
-   "score_rationale": "Neocloud capex read",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "rbi-hike-oct7",
-   "status": "Unconfirmed",
-   "headline": "Business Standard: RBI raises repo 25bp to 5.50%, 'calibrated tightening', FY27 CPI 5.2%; Sensex +0.35% (Yahoo)",
-   "one_line": "RBI statement not read",
-   "verification": "Single-reliable-source",
-   "sources": [
-    "Business Standard (via search)"
-   ],
-   "score_rationale": "EM tightening",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "nobel-chemistry-2026-kagan-soai",
-   "status": "New",
-   "headline": "Nobel Chemistry 2026: Henri Kagan and Kenso Soai, non-linear effects and autocatalysis in asymmetric synthesis",
-   "one_line": "",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "nobelprize.org",
-    "NPR",
-    "CNN"
-   ],
-   "score_rationale": "Science",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "allegheny-2027-budget-oct6",
-   "status": "New",
-   "headline": "Innamorato 2027 budget ~$1.25B (+4.7%), no tax hike, no layoffs, 150 vacancies cut (~$9M), +$21M children/family",
-   "one_line": "Council must pass by year-end",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "WESA",
-    "Post-Gazette"
-   ],
-   "score_rationale": "Local taxes",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "trump-superpac-ads-oct6",
-   "status": "New",
-   "headline": "Trump says super PAC, not taxpayers, will pay for administration ads (~$1.5M AP / >$1.7M ABC, >=13 ads)",
-   "one_line": "Thune criticism; experts cite publicity-or-propaganda ban, Hatch Act",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "AP",
-    "ABC",
-    "Scripps"
-   ],
-   "score_rationale": "US politics",
-   "first_seen": "2026-10-07-am",
-   "last_updated": "2026-10-07-am",
-   "watch": true
-  },
-  {
-   "id": "spx-record-7800-oct6",
-   "status": "New",
-   "headline": "S&P 500 record close 7,818.93 (+0.58%), first above 7,800; Nasdaq record 27,599.79; Russell 2000 -0.59%",
-   "one_line": "Intraday high 7,844.52; 10Y par 5.27% (-4bp); narrow leadership",
-   "verification": "Confirmed-multiple (Yahoo, TheStreet, CNBC)",
-   "sources": [
-    "Yahoo",
-    "TheStreet",
-    "CNBC",
-    "Treasury"
-   ],
-   "score_rationale": "Lead: record + yields easing",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "ceg-google-nuclear-ppa-oct6",
-   "status": "New",
-   "headline": "Google 20-yr PPA for 890MW new nuclear from Constellation (+2,700MW supply); CEG +12.3%, VST +10.8%, XLU +3.0%",
-   "one_line": "Supports >$4.3B CEG investment per reports; PJM grid",
-   "verification": "Confirmed-multiple (CNBC, GuruFocus, 24/7)",
-   "sources": [
-    "CNBC",
-    "GuruFocus",
-    "24/7 Wall St"
-   ],
-   "score_rationale": "Market-moving, sector-wide, PJM local read",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "trade-deficit-aug-oct6",
-   "status": "New",
-   "headline": "Aug trade deficit $105.6B (cons ~$102B), widest since early 2025; imports record $420.8B; Jul rev to $92.8B",
-   "one_line": "GDPNow net exports ~-2.6pp (search summary)",
-   "verification": "Confirmed-primary (BEA)",
-   "sources": [
-    "BEA",
-    "CNBC",
-    "Reuters"
-   ],
-   "score_rationale": "Macro data, Q3 GDP",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "ust-3y-auction-oct6",
-   "status": "Materially changed",
-   "headline": "$58B 3Y at 4.932%, 0.2bp stop-through; BTC 2.62; indirects 57.6% (avg 65.9%), directs 31.7%",
-   "one_line": "10Y reopening Wed, minutes Wed 2PM; 30Y Thu",
-   "verification": "Confirmed-multiple (MNI, investingLive)",
-   "sources": [
-    "MNI",
-    "investingLive",
-    "Newsquawk"
-   ],
-   "score_rationale": "Auction week",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "paramount-wbd-close-oct6",
-   "status": "Resolved",
-   "headline": "Paramount Skydance closes WBD takeover (~$110B), Ellison CEO; 12-state settlement with 5-yr conditions",
-   "one_line": "Closing 8-K not read; name 'Skydance' as reported",
-   "verification": "Confirmed-multiple (CNBC, NBC)",
-   "sources": [
-    "CNBC",
-    "NBC News"
-   ],
-   "score_rationale": "Major M&A close, credit issuer",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "mrvl-investor-day-oct6",
-   "status": "New",
-   "headline": "Marvell lifts FY28 revenue target to $20B (from $18B; cons ~$18.2B); MRVL +5.8%, CIEN +13.9%, ALAB +7.6%",
-   "one_line": "FY31 $70-90B; TAM $400B by 2030",
-   "verification": "Confirmed-multiple (GuruFocus, Invezz, CNBC)",
-   "sources": [
-    "GuruFocus",
-    "Invezz",
-    "CNBC"
-   ],
-   "score_rationale": "AI networking leadership",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "moscow-drone-attack-oct6",
-   "status": "New",
-   "headline": "Ukraine mass drone attack on Moscow region (Sobyanin ~650; others ~290); 2 killed; Volodarskaya depot hit; airports halted",
-   "one_line": "Grain ship sunk in Romanian EEZ Oct 5; ships hit off Bulgaria unconfirmed",
-   "verification": "Confirmed-multiple (Al Jazeera, Kyiv Post); counts disputed",
-   "sources": [
-    "Al Jazeera",
-    "Kyiv Post",
-    "Euronews"
-   ],
-   "score_rationale": "War, refined products",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "yemen-mocha-saudi-airports-oct6",
-   "status": "Materially changed",
-   "headline": "Saudi-backed Yemeni forces say they retook Mocha; Houthi strikes hit Jazan, Najran airports (3 wounded)",
-   "one_line": "Houthis deny; ~20 ships attacked in Gulf in past month; no new confirmed tanker strike Oct 6",
-   "verification": "Single-reliable-source (Bloomberg) on Mocha; Al Jazeera on airports",
-   "sources": [
-    "Bloomberg",
-    "Al Jazeera",
-    "CNBC"
-   ],
-   "score_rationale": "Red Sea/Bab el-Mandeb risk",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "nobel-physics-2026-halzen",
-   "status": "New",
-   "headline": "Nobel Prize in Physics 2026: Francis Halzen (UW-Madison), IceCube and astrophysical high-energy neutrinos",
-   "one_line": "Sole laureate",
-   "verification": "Confirmed-primary (KVA/NobelPrize.org)",
-   "sources": [
-    "NobelPrize.org",
-    "NPR",
-    "Nature"
-   ],
-   "score_rationale": "Science headline",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "stz-fq2-oct6",
-   "status": "New",
-   "headline": "Constellation Brands FQ2 comparable EPS $3.74 vs ~$3.55; sales $2.63B +6%; comparable FY27 EPS $11.20-11.90 reaffirmed",
-   "one_line": "Beer sales +5%, OI +1%",
-   "verification": "Confirmed-primary (8-K)",
-   "sources": [
-    "SEC EDGAR 8-K"
-   ],
-   "score_rationale": "Earnings",
-   "first_seen": "2026-10-06-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "spcx-rally-lockup-oct9",
-   "status": "New",
-   "headline": "SpaceX +7.6% to $171.09, highest close since June; ~328M-share lockup expires Oct 9",
-   "one_line": "MS Jonas $300 PT note; 'SpaceXSI' rename; Einhorn 'speculative top' warning",
-   "verification": "Confirmed-multiple (Yahoo, CNBC, Benzinga)",
-   "sources": [
-    "Yahoo",
-    "CNBC",
-    "Benzinga"
-   ],
-   "score_rationale": "Watchlist name, supply event Friday",
-   "first_seen": "2026-10-05-pm",
-   "last_updated": "2026-10-06-pm",
-   "watch": true
-  },
-  {
-   "id": "chrw-rxo-oct5",
-   "status": "New",
-   "headline": "C.H. Robinson to buy RXO for ~$5.8B ($17.25 cash + 0.0856 CHRW/sh); CHRW -10.9%",
-   "one_line": "8-K 08:20 ET; freight recession backdrop",
-   "verification": "Confirmed-primary (CHRW 8-K)",
-   "sources": [
-    "SEC EDGAR",
-    "StockTitan"
-   ],
-   "score_rationale": "Sizable M&A with big buyer reaction",
-   "first_seen": "2026-10-05-pm",
-   "last_updated": "2026-10-05-pm",
-   "watch": false
-  },
-  {
-   "id": "ism-services-sep-oct5",
-   "status": "New",
-   "headline": "ISM services 54.9 (cons 55.2, prior 55.4); prices 74.0 highest since Jul 2022; employment 50.1",
-   "one_line": "Hot input-cost signal vs Friday's soft payrolls; keeps December hike in play",
-   "verification": "Confirmed-primary (ISM) + Reuters",
-   "sources": [
-    "ISM",
-    "Reuters",
-    "AP"
-   ],
-   "score_rationale": "Fed-relevant inflation data in a hiking cycle",
-   "first_seen": "2026-10-05-pm",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "brazil-first-round-oct4",
-   "status": "Materially changed",
-   "headline": "Flávio Bolsonaro 47.03% vs Lula 45.16% in Brazil first round; runoff Oct 25",
-   "one_line": "Ibovespa +7.70% to record 206,911.89 (CNN Brasil); BRL ~+4%; EWZ +12.54% on 7x vol; no endorsements from eliminated candidates",
-   "verification": "Confirmed-multiple (Agência Brasil official count + CNN/NPR/WaPo/Bloomberg)",
-   "sources": [
-    "Agência Brasil",
-    "CNN",
-    "NPR",
-    "Washington Post",
-    "Bloomberg",
-    "Rio Times"
-   ],
-   "score_rationale": "Am lead: upset with direct market read-through (BRL, EWZ, Ibovespa)",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "ust-auction-week-oct5",
-   "status": "Materially changed",
-   "headline": "10Y par 5.31% (+3bp), ~5.35% intraday = highest since 2002, before $119B coupons (3y Tue, 10y Wed, 30y Thu)",
-   "one_line": "2s10s 47bp; HY OAS 3.10% Oct 2 (from 3.24); FOMC minutes Wed 2PM; Nasdaq record same day",
-   "verification": "Confirmed-primary (Treasury, TreasuryDirect)",
-   "sources": [
-    "Treasury par curve",
-    "TreasuryDirect",
-    "FRED"
-   ],
-   "score_rationale": "Central market story of the week",
-   "first_seen": "2026-10-04-sun",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "schneider-ptc-oct5",
-   "status": "Continuing",
-   "headline": "Schneider Electric to acquire PTC for $205/sh cash (~$22.6B equity), 42.3% premium",
-   "one_line": "PTC +33.5% to $192.26 (6.6% spread to $205); PTC 8-K filed 07:22; Schneider ~-10% Paris (Yahoo EUR272.80)",
-   "verification": "Confirmed-primary (PTC 8-K, EDGAR)",
-   "sources": [
-    "Bloomberg",
-    "Reuters",
-    "GuruFocus",
-    "Investing.com"
-   ],
-   "score_rationale": "Largest M&A of the cycle; watchlist-adjacent industrial software",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "spain-snap-election-euro-oct5",
-   "status": "Continuing",
-   "headline": "Sánchez calls Spanish snap election for Nov 29 after housing decrees defeated; euro near 17-month low",
-   "one_line": "EUR/USD low ~1.1118 (17-month low, Reuters/Yahoo), ~1.1222 late; DXY 102.16 near 52w high; Spain 10y ~4.08%",
-   "verification": "Confirmed-multiple (CNN, CNBC, Al Jazeera, Bloomberg); euro low single report",
-   "sources": [
-    "CNN",
-    "CNBC",
-    "Al Jazeera",
-    "Bloomberg",
-    "Yahoo"
-   ],
-   "score_rationale": "European sovereign/political risk spreading; dollar",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "hormuz-tanker-oct4-fairford",
-   "status": "Materially changed",
-   "headline": "UKMTO: another tanker hit in Hormuz Sun Oct 4; Araghchi 'within seven days' plan; Camp David Fri; B-1s withdrawn from RAF Fairford",
-   "one_line": "UKMTO: 3rd tanker hit in 48h Mon (engine-room fire); IRGC turned tanker back off Khasab; Pezeshkian: talks 'meaningless'; Brent settled $100.32 (-1.9%) after $103 on Houthi Aramco claim",
-   "verification": "Confirmed-multiple (tanker, Fairford); Single-reliable-source (Monday explosions); Camp David Axios-led, not confirmed by WH",
-   "sources": [
-    "UKMTO via Iran International/Gulf News/The Hill",
-    "The National",
-    "Axios",
-    "Reuters via US News"
-   ],
-   "score_rationale": "Oil floor driver",
-   "first_seen": "2026-10-03-sat",
-   "last_updated": "2026-10-05-pm",
-   "watch": true
-  },
-  {
-   "id": "clayton-ai-czar-oct4",
-   "status": "New",
-   "headline": "Trump names DNI Jay Clayton AI czar to lead 'Super Intelligence Force' (Ferguson, Michael, Kupor)",
-   "one_line": "120 days to report (per reports); no rules issued",
-   "verification": "Confirmed-multiple (NPR, CNBC, UPI, MS NOW)",
-   "sources": [
-    "NPR",
-    "CNBC",
-    "UPI",
-    "MS NOW"
-   ],
-   "score_rationale": "AI policy structure; FTC inside group",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-am",
-   "watch": true
-  },
-  {
-   "id": "takaichi-diet-oct5",
-   "status": "New",
-   "headline": "Takaichi opens 222nd Diet: food consumption tax 8%->1% for two years, debt-issuance pledge; Nikkei +2.4% to 69,946.86",
-   "one_line": "JGB yields at record highs (FXStreet); session to Dec 12",
-   "verification": "Confirmed-multiple (Jiji/Nippon.com, Japan Today, FXStreet)",
-   "sources": [
-    "Nippon.com",
-    "Japan Today",
-    "FXStreet",
-    "Yahoo"
-   ],
-   "score_rationale": "Global long-end pressure",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-am",
-   "watch": false
-  },
-  {
-   "id": "scotus-boulder-oct5",
-   "status": "New",
-   "headline": "SCOTUS hears Suncor v. Boulder County (No. 25-170); coverage split on leanings; first orders list denies Mosby, Moore",
-   "one_line": "Preemption of state-law climate suits; ruling by June 2027",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NBC",
-    "The Hill",
-    "Daily Signal",
-    "CNN"
-   ],
-   "score_rationale": "Energy-sector liability exposure",
-   "first_seen": "2026-10-05-am",
-   "last_updated": "2026-10-05-pm",
-   "watch": false
-  }
- ]
+  "stories": [
+    {
+      "id": "delta-q3-guide-cut-oct9",
+      "status": "New",
+      "headline": "Delta Q3 adj EPS $1.72 vs July guide $2.00-2.50; FY EPS cut to $5.10-5.60 from $6.50-7.50; Q4 fuel ~$4.25/gal; adj rev $17.6B +16%",
+      "one_line": "Delta Q3 adj EPS $1.72 vs July guide $2.00-2.50; FY EPS cut ",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "Delta 8-K Oct 9",
+        "Delta 8-K Jul 10"
+      ],
+      "score_rationale": "Lead: first major Q3 read of the energy shock in earnings; Fed/inflation thread",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "spacex-800mhz-spectrum-telcos-oct8",
+      "status": "New",
+      "headline": "SpaceX to buy Grain's nationwide 800 MHz portfolio (up to 14 MHz paired) for Starlink Mobile; WSJ ~$8B; T ~-8%, VZ/TMUS ~-7% AH; SPCX +3-4% AH; FCC approval needed",
+      "one_line": "SpaceX to buy Grain's nationwide 800 MHz portfolio (up to 14",
+      "verification": "Confirmed-multiple (price single-source WSJ)",
+      "sources": [
+        "Bloomberg",
+        "Reuters",
+        "CNBC",
+        "WSJ"
+      ],
+      "score_rationale": "Large-cap telecom repricing; follows FCC D2C order",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "isaias-cat2-landfall-oct9",
+      "status": "Materially changed",
+      "headline": "Isaias strong Cat 2 (100 mph NHC Thu eve; 110 NBC Fri), possible brief Cat 3; landfall ~8PM Fri-1AM Sat Dauphin Island-Destin; GoM 62.9% oil shut in; ~2.7M b/d refining near path",
+      "one_line": "Isaias strong Cat 2 (100 mph NHC Thu eve; 110 NBC Fri), poss",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "NHC via NBC/CNN",
+        "AccuWeather",
+        "BOE Report/Reuters"
+      ],
+      "score_rationale": "Dominant US story with oil/refining read-through",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "oil-eases-no-strike-pledge-oct9",
+      "status": "Materially changed",
+      "headline": "Brent ~$102.95 (-1.3%) after Trump no-strike-before-Nov-3 pledge; Iran reviewing US reply to 7-day plan; UKMTO 14 tanker attacks since Sep 30",
+      "one_line": "Brent ~$102.95 (-1.3%) after Trump no-strike-before-Nov-3 pl",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNBC",
+        "Reuters",
+        "Dawn/Tasnim"
+      ],
+      "score_rationale": "Macro thread",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "fed-waller-musalem-hikes-oct8",
+      "status": "New",
+      "headline": "Waller: further hikes needed, not necessarily consecutive; Musalem: more firming required; 10Y par 5.22% (-6), 30Y 5.60%, 2s10s 47bp",
+      "one_line": "Waller: further hikes needed, not necessarily consecutive; M",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "federalreserve.gov",
+        "stlouisfed.org",
+        "Treasury"
+      ],
+      "score_rationale": "Fed path ahead of Oct 14 CPI",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "ma-star-ratings-2027-oct8",
+      "status": "New",
+      "headline": "CMS 2027 MA star ratings: Humana beat Top Quartile goal (8-K), ~+13% AH; Alignment main contract to 3.5 stars, ~-20% AH, will appeal",
+      "one_line": "CMS 2027 MA star ratings: Humana beat Top Quartile goal (8-K",
+      "verification": "Confirmed-primary (8-Ks) + multiple for moves",
+      "sources": [
+        "Humana 8-K",
+        "Alignment 8-K",
+        "Investing.com",
+        "CNBC"
+      ],
+      "score_rationale": "Sector event",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "openai-revenue-followup-oct9",
+      "status": "Continuing",
+      "headline": "No on-record OpenAI statement; Bloomberg: expects $70B+ annualized by end-2026; gap from cloud-partner gross revenue accounting; breadth 2,993/2,537 Thu",
+      "one_line": "No on-record OpenAI statement; Bloomberg: expects $70B+ annu",
+      "verification": "Confirmed-multiple (reported figures)",
+      "sources": [
+        "FT",
+        "Bloomberg",
+        "CNBC",
+        "Reuters"
+      ],
+      "score_rationale": "AI-capex debt chain risk",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "nobel-peace-2026-pillay",
+      "status": "New",
+      "headline": "Nobel Peace Prize 2026: Navi Pillay (South Africa), for work ensuring war crimes/genocide prosecuted",
+      "one_line": "Nobel Peace Prize 2026: Navi Pillay (South Africa), for work",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "NobelPrize.org",
+        "Al Jazeera",
+        "CBS",
+        "CNN"
+      ],
+      "score_rationale": "World",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "houthi-riyadh-airport-oct8",
+      "status": "New",
+      "headline": "Houthi ballistic missile hits Riyadh airport, 3 Saudis killed incl Saudia pilot; ops resumed",
+      "one_line": "Houthi ballistic missile hits Riyadh airport, 3 Saudis kille",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Reuters",
+        "Time"
+      ],
+      "score_rationale": "Gulf risk",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "allegheny-measles-second-case-oct8",
+      "status": "Materially changed",
+      "headline": "Second Allegheny County measles case, unvaccinated minor, North Hills private school (Eden Christian Academy acknowledged)",
+      "one_line": "Second Allegheny County measles case, unvaccinated minor, No",
+      "verification": "Confirmed-multiple (ACHD page lagged)",
+      "sources": [
+        "PublicSource",
+        "WPXI"
+      ],
+      "score_rationale": "Local public health",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "pa-skill-games-second-petition-oct9",
+      "status": "Materially changed",
+      "headline": "Second petition reportedly signed (Fritz, Williams, Yaw); filing unconfirmed; stay ends Oct 13, enforcement Oct 14",
+      "one_line": "Second petition reportedly signed (Fritz, Williams, Yaw); fi",
+      "verification": "Single-reliable-source (WESA) for petition",
+      "sources": [
+        "WESA",
+        "WPSU",
+        "Capital-Star"
+      ],
+      "score_rationale": "PA",
+      "first_seen": "2026-10-09-am",
+      "last_updated": "2026-10-09-am"
+    },
+    {
+      "id": "openai-revenue-50b-ai-selloff-oct8",
+      "status": "New",
+      "headline": "FT/CNBC: OpenAI told investors ~$50B annualized revenue end-Sep vs ~$68B widely reported; SMH -2.8%, MU -4.8%, AVGO -4.4%, NVDA -2.9%; RSP +0.6% vs SPY -0.4%",
+      "one_line": "AI trade hit; rotation not de-risking",
+      "verification": "Confirmed-multiple (FT + CNBC independent source); figure reported not disclosed",
+      "sources": [
+        "Financial Times",
+        "CNBC",
+        "CNN",
+        "Yahoo"
+      ],
+      "score_rationale": "Lead: most market-moving development of the session; AI-capex debt chain",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "trump-no-iran-attack-before-midterms-oct8",
+      "status": "New",
+      "headline": "Trump (Truth Social): no US attack on Iran before Nov 3; blockade stays; Brent ~$103-104 still +3-4%",
+      "one_line": "Dated strike trigger removed; supply risks remain",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNBC",
+        "ABC",
+        "Reuters",
+        "The Hill",
+        "UPI",
+        "CBS"
+      ],
+      "score_rationale": "Resolves am lead's political trigger; bears on forecast 2026-10-08-am-3",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "ust-30y-reopen-result-oct8",
+      "status": "Resolved",
+      "headline": "$22B 30Y reopening 5.618% (highest since 2000), 0.1bp tail, BTC 2.54, indirect 72.3%, dealers 6.8%; 10Y par 5.22% (-6), 30Y 5.60% (-7)",
+      "one_line": "Long end absorbed; bull flattening",
+      "verification": "Confirmed-primary (TreasuryDirect, Treasury curve)",
+      "sources": [
+        "TreasuryDirect",
+        "Treasury",
+        "investingLive",
+        "Newsquawk",
+        "CNBC"
+      ],
+      "score_rationale": "Week's last coupon test; am forecast 2026-10-08-am-1 missed on strict wording",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "isaias-gom-shutins-63pct-oct8",
+      "status": "Materially changed",
+      "headline": "Isaias Cat 1 85 mph (NHC 8A); GoM shut-ins 62.89% oil (~1.28M b/d), 57.35% gas; 121 platforms evacuated; landfall late Fri-Sat MS-FL Panhandle; Pittsburgh soaking rain Sunday",
+      "one_line": "Supply loss rising; refinery risk",
+      "verification": "Confirmed-multiple (NHC primary; shut-in agency name unverified)",
+      "sources": [
+        "NHC",
+        "Reuters",
+        "Oilprice",
+        "CNN",
+        "CBS",
+        "Post-Gazette"
+      ],
+      "score_rationale": "Market + US + local relevance",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "kramatorsk-bus-strike-oct8",
+      "status": "New",
+      "headline": "Russian strike on two buses in Kramatorsk: 33 dead, 18 injured per Ukraine SES/Donetsk governor; Ukraine talks with Kushner/Witkoff from Oct 9",
+      "one_line": "War escalation before talks",
+      "verification": "Single-party official figures, multiple outlets",
+      "sources": [
+        "NBC",
+        "Al Jazeera",
+        "Meduza",
+        "Ukrainska Pravda"
+      ],
+      "score_rationale": "Major world story",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "pep-q3-oct8",
+      "status": "Continuing",
+      "headline": "PEP adj EPS $2.34 vs $2.29, rev $25.27B; FY core EPS growth cut to 2.5-3.5%; stock +3.73% to $128.34",
+      "one_line": "Staples led +2.1%",
+      "verification": "Single-reliable-source (CNBC) for guide figure",
+      "sources": [
+        "CNBC",
+        "Yahoo"
+      ],
+      "score_rationale": "Earnings",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "fcc-spacex-d2c-asts-oct8",
+      "status": "New",
+      "headline": "FCC Space Bureau reportedly authorizes SpaceX ~15,000-sat direct-to-cell network on EchoStar spectrum; ASTS -6.1%, RKLB -4.9%, SPCX -4.2% to $160.57 (lockup Oct 9)",
+      "one_line": "Space names hit",
+      "verification": "Secondary (24/7 Wall St, Benzinga); FCC order not located",
+      "sources": [
+        "24/7 Wall St",
+        "Benzinga",
+        "Yahoo"
+      ],
+      "score_rationale": "Space + market",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "tsmc-sep-revenue-oct8",
+      "status": "New",
+      "headline": "TSMC Sep revenue NT$511.9B (+54.6% y/y); Q3 ~NT$1,494B by our sum, above guide at NT$32; TSM -3.0%",
+      "one_line": "AI demand datapoint",
+      "verification": "Confirmed-primary (6-K)",
+      "sources": [
+        "SEC EDGAR",
+        "Focus Taiwan"
+      ],
+      "score_rationale": "AI & Tech",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "claims-197k-oct8",
+      "status": "New",
+      "headline": "Initial claims 197K (cons ~200K), 4-wk avg 198K lowest since Oct 2022, continuing 1.716M",
+      "one_line": "Layoffs low",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "DOL via Reuters",
+        "FRED"
+      ],
+      "score_rationale": "Economy",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "nobel-literature-2026-carson",
+      "status": "New",
+      "headline": "Anne Carson wins 2026 Nobel in Literature",
+      "one_line": "Nobel week",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNN",
+        "NBC",
+        "Washington Post"
+      ],
+      "score_rationale": "Science/culture",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "pa-skill-games-deadline-oct13",
+      "status": "New",
+      "headline": "PA skill-games stay expires Oct 13; lawmakers withdrew extension request Oct 7; business consortium petition pending",
+      "one_line": "Machines must be removed",
+      "verification": "Confirmed-multiple; petition status unverified",
+      "sources": [
+        "Capital-Star",
+        "WNEP",
+        "PSP"
+      ],
+      "score_rationale": "Local PA",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "allegheny-measles-oct5",
+      "status": "New",
+      "headline": "ACHD first 2026 county measles case; Target McKnight Rd exposure Oct 1; PA 1,004 cases 5 deaths",
+      "one_line": "Public health",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "WESA",
+        "KDKA",
+        "CBS Pittsburgh"
+      ],
+      "score_rationale": "Local",
+      "first_seen": "2026-10-08-pm",
+      "last_updated": "2026-10-08-pm"
+    },
+    {
+      "id": "oil-iran-strike-options-oct8",
+      "status": "New",
+      "headline": "Brent ~$104.42 (+4.2%), WTI ~$92.06 (+4.3%) after The Atlantic: White House asked Pentagon for Iran strike options usable before Nov 3; Axios: CENTCOM told to prepare; no decision",
+      "one_line": "Oil-led risk-off; strike options reported, not ordered",
+      "verification": "Confirmed-multiple (relays of The Atlantic; Axios separate); prices Yahoo delayed",
+      "sources": [
+        "The Atlantic",
+        "Axios",
+        "CBS",
+        "Bloomberg",
+        "Yahoo"
+      ],
+      "score_rationale": "Lead: most market-moving development; energy feeds Fed hike case",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "qatar-tanker-hit-oct7",
+      "status": "New",
+      "headline": "UKMTO: tanker hit by multiple projectiles ~51nm N of Madinat ash Shamal, Qatar, Wed evening; western Gulf; unclaimed; On Peace 12 crew hurt Oct 6",
+      "one_line": "Attacks spreading inside the Gulf",
+      "verification": "Single-reliable-source (UKMTO relayed)",
+      "sources": [
+        "UKMTO via Al Jazeera",
+        "Tribune India",
+        "Indian MEA"
+      ],
+      "score_rationale": "Oil supply risk",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "ust-30y-reopen-oct8",
+      "status": "Developing",
+      "headline": "$22B 30Y reopening 1 PM Oct 8 (CUSIP 912810UW6); 30Y par 5.67%, 20Y 5.71%; 2s10s 51bp",
+      "one_line": "Final coupon test of the week, oil up 4%",
+      "verification": "Confirmed-primary (TreasuryDirect)",
+      "sources": [
+        "TreasuryDirect",
+        "Treasury"
+      ],
+      "score_rationale": "Long-end supply at 2002 highs",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "waller-istanbul-oct8",
+      "status": "New",
+      "headline": "Waller (Istanbul 4:30 ET): more hikes likely but flexibility on timing, not necessarily consecutive meetings (Reuters/Bloomberg summaries)",
+      "one_line": "Leaves room to hold Oct 28",
+      "verification": "Confirmed-multiple (secondary)",
+      "sources": [
+        "Fed calendar",
+        "Reuters",
+        "Bloomberg"
+      ],
+      "score_rationale": "Fed path",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "global-selloff-oct8",
+      "status": "New",
+      "headline": "Kospi -2.62% despite Samsung Q3 OP 107.4T won; Nikkei -1.42%; HSI -1.43%; Sensex -1.44%; Stoxx 600 ~-0.9%; ES -0.43%, RTY -0.90%; Oct 7 breadth 1,405/4,044",
+      "one_line": "Broad risk-off; narrow US leadership",
+      "verification": "Confirmed-primary data (Yahoo, Massive)",
+      "sources": [
+        "Yahoo",
+        "AP",
+        "Business Standard",
+        "Massive"
+      ],
+      "score_rationale": "Cross-asset tape",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "hurricane-isaias-oct8",
+      "status": "Materially changed",
+      "headline": "Isaias hurricane 80 mph (NHC 5 AM adv 7), hurricane warning Ocean Springs MS to Bay/Gulf line FL; Cat 2 forecast; landfall late Fri/early Sat; ~511k b/d GoM shut in",
+      "one_line": "First hurricane of season, Gulf energy exposure",
+      "verification": "Confirmed-multiple (NHC relayed)",
+      "sources": [
+        "NHC via CNN/CBS/weather.com",
+        "CNBC/Reuters"
+      ],
+      "score_rationale": "Energy, insurers, public safety",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "gd-ceo-deep-oct7",
+      "status": "New",
+      "headline": "General Dynamics: Danny Deep CEO effective Jan 1, 2027; Novakovic to executive chairman (8-K)",
+      "one_line": "Planned succession at defense prime",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "GD 8-K"
+      ],
+      "score_rationale": "Leadership change at watchlist name",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "broadcom-openai-private-credit-oct7",
+      "status": "New",
+      "headline": "WSJ: Broadcom seeking >$50B private credit (Apollo, Blackstone) for OpenAI custom chip; Oracle in talks on chip lease vehicle with Apollo/Goldman",
+      "one_line": "AI capex moving to debt",
+      "verification": "Single-reliable-source (WSJ)",
+      "sources": [
+        "WSJ via Investinglive/MarketScreener",
+        "TipRanks"
+      ],
+      "score_rationale": "Credit/AI read-through",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "ukraine-oct7-toll-28",
+      "status": "Materially changed",
+      "headline": "Ukraine Interior Ministry: 28 killed nationwide in Oct 7 strike; Pryluky toll 22 incl 5 children (SES via bne); ~70 missiles",
+      "one_line": "Toll rising",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "bne IntelliNews",
+        "Kyiv Independent",
+        "Euromaidan Press"
+      ],
+      "score_rationale": "War casualties",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "pa-gov-debate-oct7",
+      "status": "New",
+      "headline": "Shapiro-Garrity only debate Oct 7 (abc27); RCP avg Shapiro +23.2; Susquehanna 52-31 LV; Siena 58-38 RV; Quinnipiac 59-34 unconfirmed",
+      "one_line": "Familiar themes, no consensus winner",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "WESA",
+        "abc27",
+        "PoliticsPA"
+      ],
+      "score_rationale": "Statewide election",
+      "first_seen": "2026-10-08-am",
+      "last_updated": "2026-10-08-am"
+    },
+    {
+      "id": "ust-10y-auction-oct7",
+      "status": "Materially changed",
+      "headline": "10Y hit 5.365% intraday (2002 high), $39B reopening stopped through at 5.300% (WI 5.317), BTC 2.77, indirect 80%, dealers 2.5%; 10Y par 5.28% (+1bp), 30Y 5.67% (+3)",
+      "one_line": "Demand exists at 5.30%; 30Y $22B reopening Oct 8 next test",
+      "verification": "Confirmed-primary (TreasuryDirect, Treasury curve) + Confirmed-multiple",
+      "sources": [
+        "TreasuryDirect",
+        "Treasury",
+        "CNBC",
+        "investingLive",
+        "RTTNews"
+      ],
+      "score_rationale": "Lead: long end at 24-year highs, supply week",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "fomc-sep-minutes",
+      "status": "New",
+      "headline": "FOMC Sep minutes: most participants see another hike likely by year end; many flag energy prices; no Oct/Dec timing",
+      "one_line": "Confirms am forecast (majority for more hikes); Oct 28 vs Dec turns on CPI Oct 14",
+      "verification": "Confirmed-primary (federalreserve.gov)",
+      "sources": [
+        "Federal Reserve",
+        "AP",
+        "Reuters"
+      ],
+      "score_rationale": "Fed path, market-moving",
+      "first_seen": "2026-10-07-pm",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "hormuz-attacks-weekly-high",
+      "status": "Materially changed",
+      "headline": "Reuters: >=12 tanker attacks around Hormuz Sep 28-Oct 5, wartime weekly high; IMO counts 9 (prior high 8); Brent ~$101",
+      "one_line": "Attackers unattributed (UKMTO 'unknown'); EIA crude -3.2M vs +1.7M est; IEA board met on stock release",
+      "verification": "Confirmed-multiple (Reuters, IMO)",
+      "sources": [
+        "Reuters",
+        "IMO",
+        "UKMTO",
+        "EIA"
+      ],
+      "score_rationale": "Oil >$100 feeds Fed energy concern",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "industrials-selloff-oct7",
+      "status": "New",
+      "headline": "XLI -2.18%: CAT -5.75%, DE -3.8%, PH -3.3%, GEV -3.1%, ETN -3.1%; no catalyst found",
+      "one_line": "Unexplained; Russell -1.31%, RSP -0.81%",
+      "verification": "System inference (prices confirmed; cause unknown)",
+      "sources": [
+        "Yahoo Finance",
+        "Finnhub"
+      ],
+      "score_rationale": "Largest sector move, breadth signal",
+      "first_seen": "2026-10-07-pm",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "spacex-40b-chip-debt",
+      "status": "New",
+      "headline": "Bloomberg: SpaceX arranging ~$40B debt (~$10B loans, ~$30B IG) for Nvidia chips, Apollo involved; SPCX -2.51% to $167.60",
+      "one_line": "Unconfirmed by company; 328M-share lockup reportedly Oct 9 (single feed)",
+      "verification": "Single-reliable-source (Bloomberg) cited by Reuters/FT via Benzinga",
+      "sources": [
+        "Bloomberg",
+        "Benzinga",
+        "CNBC",
+        "Yahoo"
+      ],
+      "score_rationale": "Watchlist mega-name, AI capex financing",
+      "first_seen": "2026-10-07-pm",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "levi-q3-beat",
+      "status": "New",
+      "headline": "Levi Strauss Q3 adj EPS $0.48 vs ~$0.36; rev $1.61B vs $1.62B; EPS guide raised to $1.54-1.56, revenue growth cut to ~7%; +5% AH",
+      "one_line": "490bp of 13.8% margin from tariff refunds",
+      "verification": "Confirmed-primary (release/8-K) + CNBC",
+      "sources": [
+        "Levi release",
+        "CNBC"
+      ],
+      "score_rationale": "After-hours earnings",
+      "first_seen": "2026-10-07-pm",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "penguin-blackhills-ai-power",
+      "status": "Continuing",
+      "headline": "Penguin Solutions +13.1% on AI guidance 8-K; Black Hills +7.2% on Google Cheyenne 8-K; CEG -0.3% holds Tuesday's gain",
+      "one_line": "AI power/infrastructure contracts",
+      "verification": "Confirmed-primary (8-Ks)",
+      "sources": [
+        "SEC EDGAR",
+        "Yahoo"
+      ],
+      "score_rationale": "Confirmed-catalyst movers",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-pm"
+    },
+    {
+      "id": "ust-10y-reopen-minutes-oct7",
+      "status": "Materially changed",
+      "headline": "$39B 10Y reopening 1 PM + FOMC Sep minutes 2 PM; 10Y back ~5.31% (CNBC) after 5.27% par close Tue",
+      "one_line": "Daly: more hikes depend on whether shocks 'fade or compound'; FedWatch ~22% Oct hike",
+      "verification": "Confirmed-primary (Treasury, FiscalData) + Confirmed-multiple",
+      "sources": [
+        "Treasury",
+        "FiscalData",
+        "FRED",
+        "CNBC",
+        "Reuters via AOL",
+        "FXStreet",
+        "Benzinga/CME"
+      ],
+      "score_rationale": "Lead: auction + minutes same hour, long end at 2002 highs",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "hormuz-nine-attacks-oct7",
+      "status": "Materially changed",
+      "headline": "UKMTO: nine ship attacks in October; Brent ~$101.9 (+1.3%); Houthi strikes on Aden airport, missile intercepted north of Riyadh",
+      "one_line": "Saudi + S.Korean-owned tankers hit Oct 5 eve; ME exports 18.6M bpd 14-day avg (Bloomberg)",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Bloomberg",
+        "NBC",
+        "CNBC",
+        "The National",
+        "France24"
+      ],
+      "score_rationale": "Oil/inflation channel to Fed",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "dxy-17mo-high-oct7",
+      "status": "New",
+      "headline": "DXY ~102.31 (+0.5%) 17-month high; EUR 1.119; Europe -0.8%, Kospi -2.0%, Nikkei -0.9%; gold -1.1%, BTC ~83.7K",
+      "one_line": "Overnight risk-off vs US record",
+      "verification": "Confirmed (market data)",
+      "sources": [
+        "Yahoo",
+        "Twelve Data",
+        "Investing.com",
+        "JoongAng",
+        "CoinDesk"
+      ],
+      "score_rationale": "Cross-asset tightening",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "bkh-google-cheyenne-oct6",
+      "status": "New",
+      "headline": "Black Hills 8-K: agreements to serve Google Cheyenne data center through 2048; $1.8B new gas gen; ~$150M NI 2030; +~5% AH",
+      "one_line": "Second Google power deal in two days after CEG",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "SEC EDGAR",
+        "GlobeNewswire",
+        "Benzinga"
+      ],
+      "score_rationale": "AI power capex on utility balance sheets",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "pentagon-stops-anthropic-oct6",
+      "status": "New",
+      "headline": "DoD official to BBC: department 'has ceased the use of Anthropic products' (Feb order, 6-month phase-down)",
+      "one_line": "Claude was in Palantir Maven; IPO reportedly Nov",
+      "verification": "Single-reliable-source (BBC)",
+      "sources": [
+        "BBC via Yahoo"
+      ],
+      "score_rationale": "PLTR read-through; Anthropic pre-IPO",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "peng-fq4-guide-oct6",
+      "status": "New",
+      "headline": "Penguin Solutions FQ4 sales $567M (+68%); FY27 ~+40% (~$2.43B mid), adj EPS $4.45; 6 new AI customers (4 neoclouds); ~+6% premarket",
+      "one_line": "",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "SEC EDGAR",
+        "Benzinga"
+      ],
+      "score_rationale": "Neocloud capex read",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "rbi-hike-oct7",
+      "status": "Unconfirmed",
+      "headline": "Business Standard: RBI raises repo 25bp to 5.50%, 'calibrated tightening', FY27 CPI 5.2%; Sensex +0.35% (Yahoo)",
+      "one_line": "RBI statement not read",
+      "verification": "Single-reliable-source",
+      "sources": [
+        "Business Standard (via search)"
+      ],
+      "score_rationale": "EM tightening",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "nobel-chemistry-2026-kagan-soai",
+      "status": "New",
+      "headline": "Nobel Chemistry 2026: Henri Kagan and Kenso Soai, non-linear effects and autocatalysis in asymmetric synthesis",
+      "one_line": "",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "nobelprize.org",
+        "NPR",
+        "CNN"
+      ],
+      "score_rationale": "Science",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "allegheny-2027-budget-oct6",
+      "status": "New",
+      "headline": "Innamorato 2027 budget ~$1.25B (+4.7%), no tax hike, no layoffs, 150 vacancies cut (~$9M), +$21M children/family",
+      "one_line": "Council must pass by year-end",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "WESA",
+        "Post-Gazette"
+      ],
+      "score_rationale": "Local taxes",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "trump-superpac-ads-oct6",
+      "status": "New",
+      "headline": "Trump says super PAC, not taxpayers, will pay for administration ads (~$1.5M AP / >$1.7M ABC, >=13 ads)",
+      "one_line": "Thune criticism; experts cite publicity-or-propaganda ban, Hatch Act",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "AP",
+        "ABC",
+        "Scripps"
+      ],
+      "score_rationale": "US politics",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-07-am",
+      "watch": true
+    },
+    {
+      "id": "spx-record-7800-oct6",
+      "status": "New",
+      "headline": "S&P 500 record close 7,818.93 (+0.58%), first above 7,800; Nasdaq record 27,599.79; Russell 2000 -0.59%",
+      "one_line": "Intraday high 7,844.52; 10Y par 5.27% (-4bp); narrow leadership",
+      "verification": "Confirmed-multiple (Yahoo, TheStreet, CNBC)",
+      "sources": [
+        "Yahoo",
+        "TheStreet",
+        "CNBC",
+        "Treasury"
+      ],
+      "score_rationale": "Lead: record + yields easing",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "ceg-google-nuclear-ppa-oct6",
+      "status": "New",
+      "headline": "Google 20-yr PPA for 890MW new nuclear from Constellation (+2,700MW supply); CEG +12.3%, VST +10.8%, XLU +3.0%",
+      "one_line": "Supports >$4.3B CEG investment per reports; PJM grid",
+      "verification": "Confirmed-multiple (CNBC, GuruFocus, 24/7)",
+      "sources": [
+        "CNBC",
+        "GuruFocus",
+        "24/7 Wall St"
+      ],
+      "score_rationale": "Market-moving, sector-wide, PJM local read",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "trade-deficit-aug-oct6",
+      "status": "New",
+      "headline": "Aug trade deficit $105.6B (cons ~$102B), widest since early 2025; imports record $420.8B; Jul rev to $92.8B",
+      "one_line": "GDPNow net exports ~-2.6pp (search summary)",
+      "verification": "Confirmed-primary (BEA)",
+      "sources": [
+        "BEA",
+        "CNBC",
+        "Reuters"
+      ],
+      "score_rationale": "Macro data, Q3 GDP",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "ust-3y-auction-oct6",
+      "status": "Materially changed",
+      "headline": "$58B 3Y at 4.932%, 0.2bp stop-through; BTC 2.62; indirects 57.6% (avg 65.9%), directs 31.7%",
+      "one_line": "10Y reopening Wed, minutes Wed 2PM; 30Y Thu",
+      "verification": "Confirmed-multiple (MNI, investingLive)",
+      "sources": [
+        "MNI",
+        "investingLive",
+        "Newsquawk"
+      ],
+      "score_rationale": "Auction week",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "paramount-wbd-close-oct6",
+      "status": "Resolved",
+      "headline": "Paramount Skydance closes WBD takeover (~$110B), Ellison CEO; 12-state settlement with 5-yr conditions",
+      "one_line": "Closing 8-K not read; name 'Skydance' as reported",
+      "verification": "Confirmed-multiple (CNBC, NBC)",
+      "sources": [
+        "CNBC",
+        "NBC News"
+      ],
+      "score_rationale": "Major M&A close, credit issuer",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "mrvl-investor-day-oct6",
+      "status": "New",
+      "headline": "Marvell lifts FY28 revenue target to $20B (from $18B; cons ~$18.2B); MRVL +5.8%, CIEN +13.9%, ALAB +7.6%",
+      "one_line": "FY31 $70-90B; TAM $400B by 2030",
+      "verification": "Confirmed-multiple (GuruFocus, Invezz, CNBC)",
+      "sources": [
+        "GuruFocus",
+        "Invezz",
+        "CNBC"
+      ],
+      "score_rationale": "AI networking leadership",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "moscow-drone-attack-oct6",
+      "status": "New",
+      "headline": "Ukraine mass drone attack on Moscow region (Sobyanin ~650; others ~290); 2 killed; Volodarskaya depot hit; airports halted",
+      "one_line": "Grain ship sunk in Romanian EEZ Oct 5; ships hit off Bulgaria unconfirmed",
+      "verification": "Confirmed-multiple (Al Jazeera, Kyiv Post); counts disputed",
+      "sources": [
+        "Al Jazeera",
+        "Kyiv Post",
+        "Euronews"
+      ],
+      "score_rationale": "War, refined products",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "yemen-mocha-saudi-airports-oct6",
+      "status": "Materially changed",
+      "headline": "Saudi-backed Yemeni forces say they retook Mocha; Houthi strikes hit Jazan, Najran airports (3 wounded)",
+      "one_line": "Houthis deny; ~20 ships attacked in Gulf in past month; no new confirmed tanker strike Oct 6",
+      "verification": "Single-reliable-source (Bloomberg) on Mocha; Al Jazeera on airports",
+      "sources": [
+        "Bloomberg",
+        "Al Jazeera",
+        "CNBC"
+      ],
+      "score_rationale": "Red Sea/Bab el-Mandeb risk",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "nobel-physics-2026-halzen",
+      "status": "New",
+      "headline": "Nobel Prize in Physics 2026: Francis Halzen (UW-Madison), IceCube and astrophysical high-energy neutrinos",
+      "one_line": "Sole laureate",
+      "verification": "Confirmed-primary (KVA/NobelPrize.org)",
+      "sources": [
+        "NobelPrize.org",
+        "NPR",
+        "Nature"
+      ],
+      "score_rationale": "Science headline",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    },
+    {
+      "id": "stz-fq2-oct6",
+      "status": "New",
+      "headline": "Constellation Brands FQ2 comparable EPS $3.74 vs ~$3.55; sales $2.63B +6%; comparable FY27 EPS $11.20-11.90 reaffirmed",
+      "one_line": "Beer sales +5%, OI +1%",
+      "verification": "Confirmed-primary (8-K)",
+      "sources": [
+        "SEC EDGAR 8-K"
+      ],
+      "score_rationale": "Earnings",
+      "first_seen": "2026-10-06-pm",
+      "last_updated": "2026-10-06-pm",
+      "watch": true
+    }
+  ]
 }
