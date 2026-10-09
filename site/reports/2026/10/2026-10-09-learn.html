@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>How to Measure a Speed That Never Stands Still — Learning Brief, Fri, Oct 9, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-09",
+    "slot": "learn",
+    "title": "How to Measure a Speed That Never Stands Still",
+    "path": "reports/2026/10/2026-10-09-learn.html",
+    "summary": "Day 10 of the Academy: how the derivative, built directly from yesterday's limit, turns a speedometer's impossible-sounding question — your speed at one frozen instant — into an exact, provable number.",
+    "headlines": [
+      "Day 10 of 300 · Mathematics: the derivative is a limit of a shrinking slope, not a guess at an instant",
+      "It's the single tool that turns position into velocity, cost into margin, and any smooth change into a measurable rate"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-09T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>How to Measure a Speed That Never Stands Still</h1>
+      <p class="paper-dateline">
+        Friday, October 9, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A speedometer claims to tell you your speed right now, at this exact instant, even though
+        speed is ordinarily a ratio of distance to time &mdash; and at a single instant, no time has
+        passed to divide by; the derivative, built directly from yesterday&rsquo;s limit, is the
+        precise idea that makes that claim true rather than a convenient fiction.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 10 of 300 &middot; Mathematics 10 of 20 &middot; The derivative: the mathematics of instantaneous change</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Here is a question that sounds too simple to be a trap, and is one anyway. Your car&rsquo;s
+        speedometer says 60 miles per hour. But speed, by its ordinary definition, is distance
+        traveled divided by time elapsed &mdash; and the speedometer is reporting a reading for this
+        exact instant, not for some stretch of road you just covered. At a single instant, zero time
+        has elapsed and zero distance has been covered. Zero divided by zero is not sixty; it is not
+        anything. So what, precisely, is the speedometer measuring?
+      </p>
+      <p>
+        The answer is the same move yesterday&rsquo;s lesson made formal: stop demanding the ratio
+        <em>at</em> the instant, which is a dead end, and ask instead what the ratio
+        <strong>approaches</strong> as you measure over shorter and shorter stretches of time
+        surrounding that instant &mdash; a second, a tenth of a second, a thousandth &mdash; without
+        ever actually letting the stretch reach zero. That approached value is called the
+        <strong>derivative</strong>, and a speedometer is, in effect, a machine that estimates one in
+        real time. It is the slope of a curve at one single point, measured exactly, not
+        approximated, and it is built from nothing but the limit you already have in hand.
+      </p>
+      <p>
+        The derivative is not only about speed. It is the general answer to &ldquo;how fast is this
+        quantity changing, right now,&rdquo; for any quantity that changes smoothly &mdash; a
+        population, a temperature, a bank balance, the concentration of a chemical mid-reaction. That
+        generality, more than any one application, is why this single idea from the 1660s and 1670s
+        still sits underneath an enormous share of modern science, engineering, and quantitative
+        reasoning.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start where yesterday&rsquo;s revenue example already left off, because it did almost all of
+        the work. There, the quantity R(t) = 3t&sup2; had an <em>average</em> growth rate over any
+        stretch of time &mdash; change in R divided by change in t &mdash; and the question was what
+        that average approached as the stretch, called h, shrank toward zero. That shrinking-stretch
+        limit, computed for one specific function at one specific instant, is exactly what the
+        derivative generalizes to <em>any</em> function, at <em>any</em> point.
+      </p>
+      <p>
+        Formally: start with two points on the curve of a function f, a distance h apart along the
+        input axis &mdash; the points (x, f(x)) and (x + h, f(x + h)). The line connecting them is
+        called a <strong>secant line</strong>, and its slope, [f(x + h) &minus; f(x)] / h, is called
+        the <strong>difference quotient</strong> &mdash; it is the average rate of change of f over
+        that stretch of length h, in exactly the same shape as &ldquo;rise over run&rdquo; from
+        ordinary slope. Now shrink h toward zero. Geometrically, the second point slides along the
+        curve back toward the first, and the secant line connecting them rotates, approaching a
+        limiting position: the <strong>tangent line</strong>, the line that touches the curve at
+        exactly one point and matches its direction there, rather than cutting across it. The slope
+        of that tangent line &mdash; the limit of the secant&rsquo;s slope as h shrinks to zero,
+        provided the limit exists &mdash; is the <strong>derivative</strong> of f at x, written f&prime;(x).
+      </p>
+      <p>
+        That one operation answers several questions at once, depending only on what the original
+        function represents. If f(t) is an object&rsquo;s position at time t, f&prime;(t) is its
+        instantaneous velocity &mdash; precisely the speedometer question from the Big Idea. If f(t)
+        is velocity, f&prime;(t) is instantaneous acceleration. If f(x) is the total cost of producing
+        x units of something, f&prime;(x) is the marginal cost: roughly, the cost of producing one more
+        unit right at that output level. The mathematics never changes; only the label on what f
+        measures does. Finding a derivative, or working with the general rules for doing so, is
+        called <strong>differentiation</strong>.
+      </p>
+      <p>
+        Computing a derivative directly from the limit definition every time, as done above, is
+        called differentiating &ldquo;from first principles,&rdquo; and it works for any function
+        where the limit exists &mdash; but it is slow, and doing it line by line for every function
+        you ever meet would make calculus impractical. What makes it practical is that first
+        principles, applied once to a whole family of functions (powers of x, for instance), produces
+        a reusable shortcut &mdash; a pattern proven once and reused forever rather than re-derived
+        each time. The Equation / Model section below carries out exactly that proof for the simplest
+        case, x&sup2;, and the pattern it reveals is the seed of the fuller toolkit of differentiation
+        rules this subject will keep building on.
+      </p>
+      <p>
+        One more thing is worth knowing before you meet a derivative in the wild: it goes by three
+        different-looking notations, and all three mean precisely the same thing. Isaac Newton, who
+        developed his version of this machinery privately in the 1660s without publishing it at the
+        time, wrote a derivative with respect to time as a dot over the letter &mdash; <em>&#7823;</em>
+        for the derivative of y &mdash; a notation still favored in physics for exactly that reason,
+        rates of change over time. Gottfried Wilhelm Leibniz, who developed an independent version of
+        calculus roughly a decade later, in the mid-1670s, and published his account of it first, in
+        1684, sketched a different-looking notation in his manuscripts that treated the derivative as
+        a ratio of two infinitesimally small differences &mdash; dy/dx &mdash; a form that spread
+        through print mainly via Leibniz&rsquo;s students and collaborators, the Bernoulli brothers
+        and Guillaume de l&rsquo;H&ocirc;pital, in the 1690s. That dy/dx notation is the one most
+        useful when the units themselves need tracking, which is why engineers and physicists reach
+        for it constantly. More than a century later, in 1797, the mathematician Joseph-Louis
+        Lagrange popularized a third option in his book <em>Th&eacute;orie des fonctions
+        analytiques</em> &mdash; the plain prime mark, f&prime;(x), sometimes credited to Leonhard
+        Euler before him &mdash; and it is from that book&rsquo;s own name for these quantities,
+        &ldquo;fonctions d&eacute;riv&eacute;es,&rdquo; that the modern word <strong>derivative</strong>
+        itself descends. Newton and Leibniz each thought the other had stolen the idea; a Royal
+        Society investigation in 1712 formally sided with Newton, but its conclusion was written by
+        Newton himself, in his capacity as the Society&rsquo;s president at the time &mdash; and most
+        historians today treat the two as independent discoverers who happened to arrive within a
+        decade of each other.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Derivative</dt>
+        <dd>The instantaneous rate of change of a function at a point &mdash; the limit of its average rate of change over shrinking intervals as the interval length approaches zero. Written f&prime;(x).</dd>
+        <dt>Instantaneous rate of change</dt>
+        <dd>How fast a quantity is changing at one exact point or moment, as opposed to its average rate of change over some stretch &mdash; the thing a derivative measures.</dd>
+        <dt>Tangent line</dt>
+        <dd>The line that touches a curve at exactly one point and matches the curve&rsquo;s direction there; its slope is the derivative at that point.</dd>
+        <dt>Difference quotient</dt>
+        <dd>[f(x + h) &minus; f(x)] / h &mdash; the average rate of change of f over an interval of length h; the derivative is this quotient&rsquo;s limit as h approaches zero.</dd>
+        <dt>Differentiation</dt>
+        <dd>The process, or operation, of finding a derivative, whether from the limit definition directly or using a proven shortcut rule.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Return to the speedometer question with real numbers. Drop an object from rest near Earth&rsquo;s
+        surface, ignoring air resistance. Its height fallen after t seconds is given by s(t) =
+        4.9t&sup2; meters &mdash; a figure built from the standard acceleration of gravity, about 9.8
+        meters per second squared, halved, a relationship the next lesson&rsquo;s companion idea, the
+        integral, will explain the origin of. The question: what is the object&rsquo;s instantaneous
+        velocity at exactly t = 3 seconds &mdash; not its average speed over some interval containing
+        that instant, but its speed at that precise moment?
+      </p>
+      <div class="worked">
+        <p>
+          Apply the difference-quotient definition directly at x = 3, with s in place of f:
+        </p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <caption>Average fall speed over the interval [3, 3 + h], for shrinking h, using s(t) = 4.9t&sup2;.</caption>
+            <thead><tr><th>h (seconds)</th><th>1</th><th>0.1</th><th>0.01</th><th>0.001</th></tr></thead>
+            <tbody>
+              <tr><td class="txt">Average speed, [s(3+h) &minus; s(3)] / h</td><td>34.3</td><td>29.89</td><td>29.449</td><td>29.4049</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The pattern closes in on 29.4, and algebra confirms it exactly, the same way yesterday&rsquo;s
+          revenue table did: [s(3+h) &minus; s(3)] / h = [4.9(3+h)&sup2; &minus; 4.9(3)&sup2;] / h =
+          4.9[(9 + 6h + h&sup2;) &minus; 9] / h = 4.9(6h + h&sup2;) / h = 4.9(6 + h) = 29.4 + 4.9h, for
+          any h other than zero. As h shrinks toward 0, that expression closes in on 29.4 with no
+          ambiguity left. The object is falling at exactly 29.4 meters per second &mdash; about 66
+          miles per hour &mdash; at the single instant t = 3, even though no actual stretch of time,
+          however short, was used to arrive at that number. That is the derivative s&prime;(3) = 29.4,
+          and it is the same calculation, on a different function, that a car&rsquo;s speedometer is
+          built to approximate continuously as you drive.
+        </p>
+      </div>
+      <p>
+        Swap the function and the label changes, not the mathematics. If C(x) were the total cost in
+        dollars of producing x units of something instead of a fall height in meters, this exact same
+        shrinking-interval calculation applied to C would give C&prime;(x): the marginal cost at that
+        output level, roughly what the next unit costs to produce. A falling object and a factory have
+        nothing in common except that both are described by a function that changes smoothly &mdash;
+        and that is all the derivative ever actually needs.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Here is the definition itself, built from yesterday&rsquo;s limit with nothing extra added:
+      </p>
+      <div class="formula">
+        <p class="expr">f&prime;(x) = lim<sub>h&rarr;0</sub> [f(x + h) &minus; f(x)] / h</p>
+        <p class="expr-spoken visually-hidden">f prime of x equals the limit, as h approaches zero, of the quantity f of x plus h, minus f of x, all divided by h.</p>
+        <dl>
+          <dt>f(x)</dt>
+          <dd>the original function, whose instantaneous rate of change is being measured at the point x</dd>
+          <dt>f&prime;(x)</dt>
+          <dd>the derivative of f at x &mdash; the instantaneous rate of change, or the slope of the tangent line, at that point</dd>
+          <dt>h</dt>
+          <dd>the length of the shrinking interval between x and the second point used to form the secant line; never actually equal to zero, only approaching it</dd>
+          <dt>[f(x+h) &minus; f(x)] / h</dt>
+          <dd>the difference quotient &mdash; the average rate of change of f over the interval from x to x + h, i.e. the slope of the secant line through those two points</dd>
+        </dl>
+      </div>
+      <p>
+        That reads as pure definition, so it is worth watching it actually produce a reusable rule,
+        the way the lesson promised above. Apply it to f(x) = x&sup2;, leaving x general rather than
+        fixing it at a number:
+      </p>
+      <div class="formula">
+        <p class="expr">f&prime;(x) = lim<sub>h&rarr;0</sub> [(x+h)&sup2; &minus; x&sup2;] / h = lim<sub>h&rarr;0</sub> (2x + h) = 2x</p>
+        <p class="expr-spoken visually-hidden">f prime of x equals the limit, as h approaches zero, of the quantity x plus h, squared, minus x squared, all divided by h &mdash; which equals the limit, as h approaches zero, of 2x plus h &mdash; which equals 2x.</p>
+      </div>
+      <p>
+        The decisive step is the middle one. Expanding (x + h)&sup2; gives x&sup2; + 2xh + h&sup2;, so
+        the numerator (x + h)&sup2; &minus; x&sup2; simplifies to 2xh + h&sup2;, in which every term
+        already carries a factor of h &mdash; dividing that whole numerator by h leaves
+        2x + h, exactly, for any h that is not itself zero (the same legitimate cancellation yesterday&rsquo;s
+        lesson used, since h is approaching zero but is never actually equal to it). Only after that
+        cancellation is it safe to let h shrink to zero, at which point 2x + h simply closes in on 2x,
+        with no 0/0 anywhere in sight. The result, f&prime;(x) = 2x, is not a one-off fact about one
+        function; it is a proven rule good for every input x, derived once and reusable forever. It
+        also checks directly against yesterday&rsquo;s own arithmetic: for R(t) = 3t&sup2;, this same
+        pattern gives R&prime;(t) = 6t, and R&prime;(4) = 24 &mdash; the exact $24,000-per-year figure
+        yesterday&rsquo;s table closed in on by brute force, now produced in one line instead of a
+        table of shrinking intervals.
+      </p>
+      <p>
+        Run the identical first-principles argument on x&sup3; instead of x&sup2;, and the same
+        cancellation trick produces f&prime;(x) = 3x&sup2;; run it on x raised to the fourth power and
+        it produces 4x&sup3;. The pattern staring back &mdash; bring the exponent down in front, then
+        reduce it by one &mdash; is the <strong>power rule</strong>, one of the first general
+        shortcuts this block&rsquo;s later lessons will put to proper use, so that differentiating x
+        raised to the 199th power no longer requires expanding a 199-term binomial by hand.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        The derivative is the mathematical language almost every quantitative field reaches for the
+        moment a quantity changes over time or in response to something else, and the reader asks
+        &ldquo;how fast, right now.&rdquo; A physicist writing Newton&rsquo;s laws of motion is writing
+        derivatives of position. An economist describing marginal cost or marginal utility is
+        describing a derivative of a cost or satisfaction function. An epidemiologist asking whether
+        an outbreak is accelerating or slowing is asking about the derivative of a case count. None of
+        those fields needed to reinvent the idea; they all borrowed the same tool built here.
+      </p>
+      <p>
+        Modern artificial intelligence leans on the same idea at enormous scale. Training a neural
+        network means adjusting millions, sometimes billions, of internal numbers so a single
+        quantity &mdash; a loss function, measuring how wrong the network&rsquo;s current guesses are
+        &mdash; gets smaller. The standard method for deciding which direction to nudge each number,
+        called gradient descent, works by computing the derivative of that loss with respect to each
+        parameter and stepping in whichever direction decreases it fastest. Because a network is
+        really one enormous chain of simpler functions stacked on top of each other, computing all of
+        those derivatives efficiently requires repeatedly applying the <strong>chain rule</strong>
+        &mdash; a differentiation rule built directly from today&rsquo;s own limit definition, though
+        this block has not yet derived it. The algorithm that applies it systematically across an
+        entire network is called backpropagation; underneath the name, it is nothing more exotic than
+        derivatives of derivatives, chained together exactly the way this lesson chains a shrinking
+        interval into a slope.
+      </p>
+      <p>
+        One particular use is worth planting now, even though this subject will not build it out in
+        full: wherever a smooth curve reaches a peak or a valley &mdash; a maximum profit, a minimum
+        cost, the top of a thrown ball&rsquo;s arc &mdash; the tangent line at that exact point is
+        momentarily flat, meaning the derivative there equals zero. That single observation, that
+        locating the best or worst case of something smooth means finding where its rate of change
+        vanishes, turns the derivative from a description of motion into a tool for optimization, one
+        of the most widely used applications of calculus anywhere outside pure mathematics.
+      </p>
+      <p>
+        Within this subject, today&rsquo;s idea points directly at tomorrow&rsquo;s. Day 11 takes up
+        the reverse question: given a rate of change, how do you recover the total amount
+        accumulated? That is the <strong>integral</strong>, and the Fundamental Theorem of Calculus
+        proves that integration and differentiation are, in a precise sense, inverse operations of
+        each other &mdash; two faces of the same limit-built machine this lesson and yesterday&rsquo;s
+        assembled together.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A derivative is the limit of a difference quotient &mdash; the average rate of change
+        over an interval &mdash; as that interval shrinks to zero; it is never computed by setting
+        the interval to zero directly.</li>
+        <li>Geometrically, the derivative is the slope of the tangent line at a point; physically, it
+        is the instantaneous rate of change of whatever the function represents (velocity, marginal
+        cost, and so on).</li>
+        <li>The same operation, differentiation, answers every &ldquo;how fast, right now&rdquo;
+        question &mdash; only the label on the function changes between fields.</li>
+        <li>Three notations &mdash; Newton&rsquo;s dot, Leibniz&rsquo;s dy/dx, and Lagrange&rsquo;s
+        prime, f&prime;(x) &mdash; all mean exactly the same derivative; Lagrange&rsquo;s own name for
+        it is where the word &ldquo;derivative&rdquo; itself comes from.</li>
+        <li>Proving a derivative rule once for a whole family of functions, as with x&sup2; above,
+        replaces re-deriving it from scratch every time &mdash; the foundation of calculus&rsquo;s
+        larger rulebook.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        The derivative&rsquo;s definition only works if the secant line's slope approaches the
+        <em>same</em> value whether h shrinks toward zero from the positive side or the negative side
+        &mdash; approaching the point from the right or from the left. Picture the graph of f(x) =
+        |x|, the absolute value function, which forms a sharp V-shaped corner at x = 0. What do you
+        think happens to the secant line's slope as h shrinks to zero from the right at that corner,
+        versus from the left? Based on that, does this function have a derivative at x = 0 at all,
+        and what does that tell you about whether every continuous function &mdash; one with no
+        jumps or holes &mdash; is automatically differentiable too?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The history of derivative notation and the Newton&ndash;Leibniz
+      priority dispute &mdash; Newton&rsquo;s unpublished 1660s dot notation, Leibniz&rsquo;s
+      independent mid-1670s development and 1684 publication, the Bernoulli/de l&rsquo;H&ocirc;pital
+      popularization of dy/dx in the 1690s, Lagrange&rsquo;s 1797 <em>Th&eacute;orie des fonctions
+      analytiques</em> and its disputed relationship to Euler&rsquo;s earlier prime notation, and the
+      compromised 1712 Royal Society report &mdash; were checked this morning against standard
+      histories of mathematics rather than written from memory, since several of these dates and
+      attributions are genuinely disputed among historians. The acceleration of gravity (9.8 m/s&sup2;)
+      is a standard physical constant. All arithmetic and worked examples were written for this
+      report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-08-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
