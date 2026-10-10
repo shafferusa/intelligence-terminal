@@ -1,6 +1,56 @@
 {
   "stories": [
     {
+      "id": "isaias-landfall-oct9",
+      "status": "Materially changed",
+      "headline": "Isaias landfall near Destin FL ~9:30 PM ET Oct 9 as Cat 2 (105 mph, 971 mb), weaker than Cat 3 forecast; post-tropical near Montgomery AL Sat; ~874-900K customers out FL/AL/GA; one death reported by CNN, unconfirmed by state",
+      "one_line": "Cat 2 landfall near Destin; ~900K out; Gulf shut-in restart pending",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "NHC via NBC/CBS/AccuWeather",
+        "PowerOutage via CBS",
+        "CNN"
+      ],
+      "score_rationale": "Lead of Saturday edition; energy and Gulf Coast impact",
+      "first_seen": "2026-10-07-am",
+      "last_updated": "2026-10-10-sat",
+      "watch": true
+    },
+    {
+      "id": "duquesne-light-tentative-deal-oct8",
+      "status": "Corrected",
+      "headline": "Duquesne Light and IBEW Local 29 reached a tentative 5-year agreement Thursday night Oct 8; ratification pending; Oct 9 editions wrongly said talks stalled",
+      "one_line": "Tentative 5-yr deal; ratification vote date unknown",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "WPXI",
+        "CBS Pittsburgh",
+        "KDKA",
+        "Patch"
+      ],
+      "score_rationale": "Local; correction",
+      "first_seen": "2026-10-01-am",
+      "last_updated": "2026-10-10-sat",
+      "watch": true
+    },
+    {
+      "id": "putin-iran-channel-diesel-license-oct9",
+      "status": "New",
+      "headline": "Kremlin says Putin relayed Iran's terms to Trump in Oct 9 call; Treasury general license lets Russian diesel flow through April 2027 (300K t now, 500K Nov, 1M after); Zelensky offers refinery-for-grid strike halt",
+      "one_line": "Russia as Iran go-between; diesel sanctions waiver",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Kremlin via Al Jazeera",
+        "Reuters",
+        "CNBC",
+        "AP"
+      ],
+      "score_rationale": "Iran war diplomacy, sanctions policy, fuel prices",
+      "first_seen": "2026-10-10-sat",
+      "last_updated": "2026-10-10-sat",
+      "watch": true
+    },
+    {
       "id": "spacex-800mhz-telco-rout-oct9",
       "status": "Materially changed",
       "headline": "TMUS -13.3%, T -10.8%, VZ -10.1% (Yahoo close) on 3-4x volume after SpaceX-Grain 800 MHz deal (~$8B reported, FCC approval needed); towers CCI +15.6%, AMT +9.3%; ASTS -10.5%; SPCX +1.3% on lockup day",

@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-09T20:40:23Z",
+  "fetched_at": "2026-10-10T13:26:54Z",
   "treasury_par_curve": {
     "as_of": "2026-10-08 EOD official",
     "source": "home.treasury.gov",
@@ -3353,5 +3353,71 @@
       "BRL": 5.005,
       "INR": 96.73
     }
+  },
+  "sat_2026_10_10": {
+    "as_of": "2026-10-09 EOD official (Treasury, FRED, cached Yahoo pm closes); crypto live 2026-10-10 13:10Z",
+    "treasury_par_2026_10_09": {
+      "1M": 4.13,
+      "3M": 4.25,
+      "2Y": 4.8,
+      "5Y": 5.02,
+      "7Y": 5.13,
+      "10Y": 5.24,
+      "20Y": 5.65,
+      "30Y": 5.6
+    },
+    "fred": {
+      "DGS2": [
+        "2026-10-08",
+        4.75
+      ],
+      "DGS10": [
+        "2026-10-08",
+        5.22
+      ],
+      "T10Y2Y": [
+        "2026-10-09",
+        0.44
+      ],
+      "T10YIE": [
+        "2026-10-09",
+        2.33
+      ],
+      "DFII10": [
+        "2026-10-08",
+        2.87
+      ],
+      "SOFR": [
+        "2026-10-08",
+        3.87
+      ],
+      "BAMLH0A0HYM2": [
+        "2026-10-08",
+        3.15
+      ],
+      "ICSA": [
+        "2026-10-03",
+        197000
+      ],
+      "DFF": [
+        "2026-10-08",
+        3.88
+      ]
+    },
+    "oil_settles_2026_10_09": {
+      "brent": 104.72,
+      "wti": 91.85,
+      "source": "Reuters-derived reports (two outlets)"
+    },
+    "crypto": {
+      "bitcoin": 82756,
+      "ethereum": 2494.83,
+      "source": "CoinGecko simple/price 2026-10-10 13:10Z"
+    },
+    "ceg_2026_10_09": {
+      "close": 298.07,
+      "source": "Finnhub quote"
+    },
+    "notes": "Yahoo v8 429 (Too Many Requests) on every symbol this run; Cboe CDN 307; weekly changes computed from pm_2026_10_09 and sat_2026_10_03 caches."
   }
 }

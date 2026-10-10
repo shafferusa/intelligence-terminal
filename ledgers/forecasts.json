@@ -21,7 +21,10 @@
       "horizon": "2026-10-04",
       "probability": "30-45%",
       "basis": "An unnamed European security official cited a figure of up to 300,000 additional conscripts by year-end, and Zelensky has said he expects a call-up in late September or early October; the range's lower end reflects Putin's on-record, flat denial that any such plan exists, and the combatant/opposing-side origin of the underlying claims.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No new Russian mobilization or conscription wave was announced in the two weeks after the Duma election; none reported through Oct 4 or since.",
+      "graded": "2026-10-10",
+      "lesson": "Combatant-side predictions of a call-up (Zelensky, an unnamed European official) were weak evidence against Putin's flat denial; the low end of the range was the better anchor."
     },
     {
       "id": "2026-09-18-pm-3",
@@ -3587,7 +3590,10 @@
       "horizon": "2026-10-05",
       "probability": "30-45%",
       "basis": "Two of four affected tools (Copilot, Gemini CLI) remain unpatched, and early disclosures reporting 'no exploitation found' have historically undercounted incidents that surface within weeks.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No further organization confirmed a Plugin4Shell compromise before the horizon; Google retired Gemini CLI rather than patch it and other tools were patched.",
+      "graded": "2026-10-10",
+      "lesson": "Disclosure lag is real, but without a named victim pipeline the base rate for a new confirmed compromise in two weeks was lower than assumed."
     },
     {
       "id": "2026-09-22-am-1",
@@ -3597,7 +3603,10 @@
       "horizon": "2026-10-06",
       "probability": "20-35%",
       "basis": "Two unclaimed strikes this month with no claim yet; prior unclaimed incidents in this conflict have eventually drawn an official attribution within weeks, not days.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No confirmed attribution of the September tanker strikes emerged; UKMTO still calls the projectiles 'unknown'. Media attribute later attacks to Iran, and the IRGC claimed one LPG carrier on Oct 8 (owner denies), but none confirms the September incidents.",
+      "graded": "2026-10-10",
+      "lesson": "In this war, attribution stays at the media-inference level; 'official attribution within weeks' did not hold."
     },
     {
       "id": "2026-09-22-am-2",
@@ -3659,7 +3668,10 @@
       "horizon": "2026-10-07",
       "probability": "20-35%",
       "basis": "Trump has twice declined direct strikes despite Saudi requests, most recently standing down Sunday at the last minute; the Kahboub Mountains escalation and continuing Riyadh-area strikes raise pressure, but a Muscat-brokered channel and the G7's diplomatic-first statement point the other way.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No US strike on Houthi targets through Oct 7; all strikes on the Houthis were by the Saudi-led coalition, and Axios reported Trump leaning against US strikes.",
+      "graded": "2026-10-10",
+      "lesson": "Repeated presidential restraint was the stronger signal than Saudi pressure."
     },
     {
       "id": "2026-09-23-pm-1",
@@ -3718,7 +3730,10 @@
       "horizon": "2026-10-09",
       "probability": "30-40%",
       "basis": "Four consecutive sessions of higher yields, two soft Treasury auctions and two hawkish Fed officials (Barr, Williams) this week, weighed against no Treasury auction scheduled this week and next week's data (Durable Goods, UMich sentiment) able to cut either way.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "10-year par closed 5.26% (Sep 29), 5.29% (Sep 30) and 5.31% (Oct 5); 30-year 5.64% (Sep 30), 5.66% (Oct 5), 5.67% (Oct 7). Both thresholds were exceeded.",
+      "graded": "2026-10-10",
+      "lesson": "The 30-40% range was too low: the long-end move was global and supply-driven, not data-driven."
     },
     {
       "id": "2026-09-25-am-2",
@@ -3728,7 +3743,10 @@
       "horizon": "2026-10-09",
       "probability": "40-55%",
       "basis": "A senior administration official said Thursday Trump would decide 'in a fairly short time,' plus bipartisan congressional pressure for clarity, weighed against the vagueness of that timeframe and the administration's pattern of extended deliberation on this specific question so far.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No decision on the $14 billion Taiwan arms package by Oct 9; Bloomberg (Oct 9) describes it as stalled amid Trump-Xi diplomacy.",
+      "graded": "2026-10-10",
+      "lesson": "'In a fairly short time' from an administration official is not a deadline; the deliberation pattern was the better guide."
     },
     {
       "id": "2026-09-27-sun-1",
@@ -4057,7 +4075,10 @@
       "horizon": "2026-10-09",
       "probability": "35-45%",
       "basis": "+22bp in two sessions to 3.02%; refinancing at 5%+ base rates vs strong earnings, no default cluster.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "HY OAS peaked at 3.24% on Oct 1 (FRED), 1bp short, then 3.10, 3.12, 3.03, 3.09 and 3.15 (Oct 8).",
+      "graded": "2026-10-10",
+      "lesson": "Spread widening stalled as equities recovered; a near miss, and credit has not confirmed the rates stress since."
     },
     {
       "id": "2026-09-29-am-4",
@@ -4155,7 +4176,10 @@
       "horizon": "2026-10-09",
       "probability": "25-35%",
       "basis": "Closed 5.59% Sep 29, ~5.62% intraday; 30Y auction Oct 8; real yields driving.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "30-year par closed 5.66% on Oct 5 and 5.67% on Oct 7 (Treasury).",
+      "graded": "2026-10-10",
+      "lesson": "Directionally right on the long end; the move peaked before the auctions cleared."
     },
     {
       "id": "2026-09-30-am-4",
@@ -4178,7 +4202,10 @@
       "horizon": "2026-10-09",
       "probability": "10-20%",
       "basis": "592-14 strike authorization, no deal reported; 2019 and 2023 settled at expiry; company continuity plans.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "IBEW Local 29 struck Duquesne Light from 12:01 AM Oct 1, its first strike in about half a century.",
+      "graded": "2026-10-10",
+      "lesson": "The 2019 and 2023 at-expiry settlements were a poor base rate this time; the 10-20% range was too low."
     },
     {
       "id": "2026-10-01-am-1",
@@ -4188,7 +4215,10 @@
       "horizon": "2026-10-09",
       "probability": "40-55%",
       "basis": "Overnight intraday high ~5.34%; Oct 6-8 coupon auctions; gilts/JGBs selling off in parallel; offsets: soft payrolls, falling oil.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Highest 10-year par close through Oct 9 was 5.31% (Oct 5). Intraday highs of about 5.347% (Oct 5) and 5.365% (Oct 7) were not closes.",
+      "graded": "2026-10-10",
+      "lesson": "Strong auction demand at 5.30% capped closes; intraday spikes are not closes, and lines set just beyond the recent range miss often."
     },
     {
       "id": "2026-10-01-am-2",
@@ -4270,7 +4300,10 @@
       "horizon": "2026-10-09",
       "probability": "30-45%",
       "basis": "Par close 5.28% after rising on a weak jobs report; Oct 6-8 coupon auctions (19B) and Brent ~$102 argue for; soft labor data and Bund rally argue against.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Highest 10-year par close was 5.31% (Oct 5).",
+      "graded": "2026-10-10",
+      "lesson": "Same as the 2026-10-01 call: the 10-year auction stopped through at 5.300% and defined a ceiling for the week."
     },
     {
       "id": "2026-10-04-sun-1",
@@ -4280,7 +4313,10 @@
       "horizon": "2026-10-09",
       "probability": "60-70%",
       "basis": "Closed 5.28% Oct 2 after rising through a soft payroll print; $61B of 10/30-year supply this week; strong auction and soft claims are the main downside paths.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "10-year par closed 5.24% on Oct 9.",
+      "graded": "2026-10-10",
+      "lesson": "Right; the range was sensibly sized."
     },
     {
       "id": "2026-10-04-sun-2",
@@ -4290,7 +4326,10 @@
       "horizon": "2026-10-09",
       "probability": "25-35%",
       "basis": "Peak close 5.64% Sep 30; 5.63% Oct 2; Thursday's 30-year reopening is the trigger.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "30-year par closes 5.66, 5.64, 5.67, 5.60, 5.60; the ~5.72% intraday high on Oct 7 was not a close.",
+      "graded": "2026-10-10",
+      "lesson": "The auction week brought buyers; 3bp above the high close was a real hurdle."
     },
     {
       "id": "2026-10-04-sun-3",
@@ -4300,7 +4339,10 @@
       "horizon": "2026-10-07",
       "probability": "45-60%",
       "basis": "Two weak September note auctions; offset by a reopening at 2002-high yields that may attract value buyers.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The $39B 10-year reopening sold at 5.300% vs ~5.317% when-issued, a ~1.7bp stop-through, with dealers left 2.5% (TreasuryDirect).",
+      "graded": "2026-10-10",
+      "lesson": "Record-high auction yields drew value buyers; two weak September auctions were the wrong anchor."
     },
     {
       "id": "2026-10-04-sun-4",
@@ -4310,7 +4352,10 @@
       "horizon": "2026-10-09",
       "probability": "40-55%",
       "basis": "+31bp in four sessions to 3.24% (Oct 1); Friday's equity rally may have slowed widening.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "HY OAS observations published Oct 5-9: 3.10, 3.12, 3.03, 3.09, 3.15. Max 3.15%.",
+      "graded": "2026-10-10",
+      "lesson": "Equity strength pulled spreads back from the Oct 1 peak; spreads followed stocks, not yields."
     },
     {
       "id": "2026-10-04-sun-5",
@@ -4320,7 +4365,10 @@
       "horizon": "2026-10-09",
       "probability": "50-60%",
       "basis": "Held above $100 every day last week; weekend tanker strikes and OPEC+ hold; G7 release beginning and WTI at $91.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Brent settled $100.32, $100.58, about $100.20, $104.28 and $104.72 (Oct 9 per Reuters-derived reports).",
+      "graded": "2026-10-10",
+      "lesson": "Right, though Monday and Wednesday cleared $100 by only 20-60 cents."
     },
     {
       "id": "2026-10-04-sun-6",
@@ -4330,7 +4378,10 @@
       "horizon": "2026-10-09",
       "probability": "15-25%",
       "basis": "Requires a confirmed (not merely claimed) strike on Gulf energy infrastructure; last week's intraday high was about $108.8 on Sep 28.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Highest Brent settlement was $104.72 (Oct 9); intraday high just above $105 on Oct 8.",
+      "graded": "2026-10-10",
+      "lesson": "Required a confirmed infrastructure hit, which did not come; sized appropriately."
     },
     {
       "id": "2026-10-04-sun-7",
@@ -4340,7 +4391,10 @@
       "horizon": "2026-10-09",
       "probability": "50-60%",
       "basis": "Chip momentum and lower hike odds versus rates and credit stress.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "S&P 500 closed Oct 9 at 7,811.54.",
+      "graded": "2026-10-10",
+      "lesson": "Right; equity momentum outlasted the rates and credit worries."
     },
     {
       "id": "2026-10-04-sun-8",
@@ -4350,7 +4404,10 @@
       "horizon": "2026-10-09",
       "probability": "15-25%",
       "basis": "17% on Oct 2 (CNBC); needs hawkish minutes plus hot inflation expectations.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "CME FedWatch put an October hike at about 17-18% on Oct 8-9 (FXStreet relay).",
+      "graded": "2026-10-10",
+      "lesson": "Correctly sized as unlikely; hawkish minutes moved December, not October."
     },
     {
       "id": "2026-10-04-sun-9",
@@ -4360,7 +4417,10 @@
       "horizon": "2026-10-08",
       "probability": "65-75%",
       "basis": "Long beat record; guarded consensus.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "PepsiCo core EPS $2.34 vs ~$2.29-2.30 consensus; revenue $25.27B vs $24.96B (CNBC).",
+      "graded": "2026-10-10",
+      "lesson": "The beat record held even as guidance was cut."
     },
     {
       "id": "2026-10-04-sun-10",
@@ -4370,7 +4430,10 @@
       "horizon": "2026-10-09",
       "probability": "55-65%",
       "basis": "Consensus at bottom of $2.00-2.50 guide; fuel well above the July assumption.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Delta adjusted EPS $1.72, below consensus (~$1.75-1.96 by Friday) and its own $2.00-2.50 guide.",
+      "graded": "2026-10-10",
+      "lesson": "Fuel was the variable we named and then underweighted: ~$4.25/gal vs $3.15 assumed in July made a miss more likely than a beat."
     },
     {
       "id": "2026-10-04-sun-11",
@@ -4380,7 +4443,10 @@
       "horizon": "2026-10-07",
       "probability": "45-60%",
       "basis": "Newswire poll: 35 of 61 economists expect a hike to 5.50%; other previews expect a hold.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The RBI raised the repo rate 25bp to 5.50% on Oct 7, its first hike since February 2023 (Business Standard and other Indian outlets; RBI statement not read).",
+      "graded": "2026-10-10",
+      "lesson": "The newswire poll majority was the right guide."
     },
     {
       "id": "2026-10-04-sun-12",
@@ -4390,7 +4456,10 @@
       "horizon": "2026-10-09",
       "probability": "25-35%",
       "basis": "Risk Register: weak September auctions, 30-year at 24-year high, long end not responding to soft data.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "10-year par closed the week at 5.24%.",
+      "graded": "2026-10-10",
+      "lesson": "The bear case on the long end did not materialize once auctions cleared."
     },
     {
       "id": "2026-10-04-sun-13",
@@ -4400,7 +4469,10 @@
       "horizon": "2026-10-09",
       "probability": "15-25%",
       "basis": "Houthi claim of an Aramco Riyadh strike unconfirmed; Saudi Red Sea offensive reported; near-daily tanker strikes.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No Gulf government confirmed a strike on a refinery, terminal or pipeline Oct 4-9. Saudi Arabia confirmed airport hits (Jazan, Najran, Riyadh King Khalid), and the coalition called Houthi Aramco claims 'misleading'.",
+      "graded": "2026-10-10",
+      "lesson": "Houthi claims against energy sites have repeatedly gone unconfirmed; their confirmed hits were on airports."
     },
     {
       "id": "2026-10-04-sun-14",
@@ -4410,7 +4482,10 @@
       "horizon": "2026-10-07",
       "probability": "20-30%",
       "basis": "Logan's public call for 50bp+; 12-0 hike before the payroll miss.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The September minutes said 'most participants' expect another increase likely appropriate by year end; no reported language describes several favouring 50bp or more.",
+      "graded": "2026-10-10",
+      "lesson": "One official's public call (Logan) did not generalize to the committee."
     },
     {
       "id": "2026-10-04-sun-15",
@@ -4420,7 +4495,10 @@
       "horizon": "2026-10-09",
       "probability": "3-8%",
       "basis": "Trump on record: war ends 'probably right after the midterms'; carrier buildup runs to late Oct/Nov.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No US strike on Iranian territory; on Oct 8 Trump pledged no attack before Nov 3.",
+      "graded": "2026-10-10",
+      "lesson": "Correctly sized as very unlikely."
     },
     {
       "id": "2026-10-04-sun-16",
@@ -4430,7 +4508,10 @@
       "horizon": "2026-10-09",
       "probability": "20-35%",
       "basis": "No talks outcome reported since Oct 2; dry forecast reduces pressure on both sides this week.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Duquesne Light said Thursday night, Oct 8, that it reached a tentative five-year agreement with IBEW Local 29 (WPXI, CBS Pittsburgh, KDKA); ratification still pending.",
+      "graded": "2026-10-10",
+      "lesson": "Right, though this paper's own Friday editions missed the announcement (see corrections)."
     },
     {
       "id": "2026-10-04-sun-17",
@@ -4440,7 +4521,10 @@
       "horizon": "2026-10-09",
       "probability": "45-55%",
       "basis": "Scenario matrix base case.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "10-year closes 5.31, 5.27, 5.28, 5.22, 5.24 (all inside 5.18-5.35%); no Gulf government confirmed an energy-infrastructure hit; S&P 7,811.54, 0.1% below its record.",
+      "graded": "2026-10-10",
+      "lesson": "The base case held on all three stated conditions."
     },
     {
       "id": "2026-10-04-sun-18",
@@ -4450,7 +4534,10 @@
       "horizon": "2026-10-09",
       "probability": "15-20%",
       "basis": "Scenario matrix bull case: strong auctions.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "10-year closed 5.24% and the latest HY OAS was 3.15%.",
+      "graded": "2026-10-10",
+      "lesson": "Strong auctions lowered yields only modestly."
     },
     {
       "id": "2026-10-04-sun-19",
@@ -4460,7 +4547,10 @@
       "horizon": "2026-10-09",
       "probability": "25-30%",
       "basis": "Scenario matrix bear case: weak long-end auction.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Max 10-year close 5.31%; max HY OAS reading this week 3.15%.",
+      "graded": "2026-10-10",
+      "lesson": "Neither leg of the bear case triggered."
     },
     {
       "id": "2026-10-04-sun-20",
@@ -4470,7 +4560,10 @@
       "horizon": "2026-10-09",
       "probability": "about 5%",
       "basis": "Scenario matrix shock case.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Max Brent settle $104.72.",
+      "graded": "2026-10-10",
+      "lesson": "No confirmed Gulf escalation; sized appropriately."
     },
     {
       "id": "2026-10-04-sun-21",
@@ -4480,7 +4573,10 @@
       "horizon": "2026-10-05",
       "probability": "85-95%",
       "basis": "Final Datafolha 45-42 and Quaest 46-45 valid-vote shares leave both well short of 50%.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Flavio Bolsonaro 47.03%, Lula 45.16% (TSE); runoff Oct 25.",
+      "graded": "2026-10-10",
+      "lesson": "Right. Note the polls underestimated Bolsonaro: Datafolha had Lula 45-42."
     },
     {
       "id": "2026-10-05-am-1",
@@ -4490,7 +4586,10 @@
       "horizon": "2026-10-09",
       "probability": "70-80%",
       "basis": "At 5.28% Oct 2; front end anchored after Sept hike; $119B coupon supply; rising foreign long-end yields. Downside needs sharp oil drop or very soft data.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "10-year par closed 5.24% on Oct 9.",
+      "graded": "2026-10-10",
+      "lesson": "Right."
     },
     {
       "id": "2026-10-05-am-2",
@@ -4500,7 +4599,10 @@
       "horizon": "2026-10-09",
       "probability": "60-75%",
       "basis": "Held above $100 all last week despite G7 100M bbl release and near-pre-war Gulf exports; Iran's Hormuz conditions unchanged; tanker attacks continuing.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Brent settled $104.72 on Oct 9 (Reuters-derived reports).",
+      "graded": "2026-10-10",
+      "lesson": "Right."
     },
     {
       "id": "2026-10-05-am-3",
@@ -4520,7 +4622,10 @@
       "horizon": "2026-10-09",
       "probability": "50-60%",
       "basis": "Closed 7,818.93 (0.2% cushion) at a record; 10Y reopening, FOMC minutes and 30Y auction ahead with 10Y near 24-year highs; VIX 15 implies ~1% daily moves.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "S&P 500 closed Oct 9 at 7,811.54, above 7,800.",
+      "graded": "2026-10-10",
+      "lesson": "Right, by 0.15%."
     },
     {
       "id": "2026-10-06-pm-2",
@@ -4530,7 +4635,10 @@
       "horizon": "2026-10-09",
       "probability": "60-70%",
       "basis": "Gain rests on a signed 20-year PPA (contracted revenue, not a narrative); utilities sector confirmed the move; risk is profit-taking after a 12% day.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Constellation Energy closed Oct 9 at $298.07 (Finnhub), above $284.",
+      "graded": "2026-10-10",
+      "lesson": "Contracted revenue held; the gain was kept."
     },
     {
       "id": "2026-10-07-am-1",
@@ -4540,7 +4648,10 @@
       "horizon": "2026-10-07",
       "probability": "65-80%",
       "basis": "12 of 18 dots projected another hike; unanimous vote; Logan and others argued for more since",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Minutes: 'Most participants assessed that another increase in the target range ... would likely be appropriate by year end' (Federal Reserve).",
+      "graded": "2026-10-10",
+      "lesson": "Right; the dot plot was a reliable guide to the minutes."
     },
     {
       "id": "2026-10-07-am-2",
@@ -4560,7 +4671,10 @@
       "horizon": "2026-10-11",
       "probability": "65-80%",
       "basis": "NHC forecast (via AccuWeather/CNN) of hurricane strength Thursday and northern-Gulf approach Fri night; intensity-at-landfall disagreement and 3-day track uncertainty",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Isaias made landfall near Destin, FL, about 9:30 PM ET Oct 9 as a Category 2 hurricane, 105 mph (NHC via NBC, CBS, AccuWeather).",
+      "graded": "2026-10-10",
+      "lesson": "Right."
     },
     {
       "id": "2026-10-07-pm-1",
@@ -4570,7 +4684,10 @@
       "horizon": "2026-10-08",
       "probability": "45-60%",
       "basis": "Both 3Y (0.2bp) and 10Y (~1.7bp) stopped through this week with strong indirect demand; 30Y trades ~36bp above September's 5.308% stop, attracting yield buyers; but the long end is the most exposed to term-premium concerns the minutes flagged.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "30-year reopening sold at 5.618% vs 5.617% when-issued, a 0.1bp tail (investingLive, Newsquawk).",
+      "graded": "2026-10-10",
+      "lesson": "Missed by a tenth of a basis point; the long end lacked the 10-year's foreign bid."
     },
     {
       "id": "2026-10-07-pm-2",
@@ -4580,7 +4697,10 @@
       "horizon": "2026-10-09",
       "probability": "20-35%",
       "basis": "Closed 5.28%; intraday 5.365% today was bought at the auction; 30Y auction, claims and oil >$100 are the remaining catalysts; a 7bp rise in two sessions is within recent ranges.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "10-year par closed 5.28%, 5.22%, 5.24% Oct 7-9.",
+      "graded": "2026-10-10",
+      "lesson": "Right to keep it low; the auction ceiling held."
     },
     {
       "id": "2026-10-08-am-1",
@@ -4590,7 +4710,10 @@
       "basis": "10Y reopening stopped through with ~2.5% dealer takedown; long-end yields 5.6-5.7% drew buyers all week; against: oil +4% and long bond most exposed to inflation/term premium.",
       "date": "2026-10-08",
       "slot": "am",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "0.1bp tail at 5.618%.",
+      "graded": "2026-10-10",
+      "lesson": "Same as 2026-10-07-pm-1."
     },
     {
       "id": "2026-10-08-am-2",
@@ -4620,7 +4743,10 @@
       "basis": "Already 80 mph hurricane at NHC 5 AM advisory; warnings MS-FL Panhandle; forecast strengthening before late-Fri/early-Sat landfall.",
       "date": "2026-10-08",
       "slot": "am",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Isaias made landfall near Destin, FL, as a 105 mph Category 2 on the evening of Oct 9.",
+      "graded": "2026-10-10",
+      "lesson": "Right."
     },
     {
       "id": "2026-10-08-pm-1",
@@ -4630,7 +4756,10 @@
       "horizon": "2026-10-11",
       "probability": "45-65%",
       "basis": "Cat 1 85 mph at NHC 1 PM CDT advisory with further strengthening forecast; coverage cites NHC favoring strong Cat 2; about 30 hours over water remain.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Landfall at 105 mph (Category 2), above the 96 mph threshold.",
+      "graded": "2026-10-10",
+      "lesson": "Right."
     },
     {
       "id": "2026-10-08-pm-2",
@@ -4650,7 +4779,10 @@
       "horizon": "2026-10-09",
       "probability": "55-65%",
       "basis": "Consensus ~47.6; fuel prices rose through the survey window; series is volatile around consensus.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "UMich preliminary October sentiment 46.3 (reported via Trading Economics and Yahoo; release not opened).",
+      "graded": "2026-10-10",
+      "lesson": "Right; fuel prices through the survey window were the tell."
     },
     {
       "id": "2026-10-09-am-2",
@@ -4660,7 +4792,10 @@
       "horizon": "2026-10-09",
       "probability": "65-80%",
       "basis": "Trading ~$102.95 at 6:30 ET after Trump's no-strike pledge; risks: Isaias refinery path, continuing tanker attacks.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Brent settled $104.72, up $0.44 from $104.28 (Reuters-derived reports via two outlets). A late Yahoo quote near $104.17 was not the settlement.",
+      "graded": "2026-10-10",
+      "lesson": "The no-strike pledge's early effect faded through the day; a 1.3% opening drop is not a settlement."
     },
     {
       "id": "2026-10-09-am-3",
@@ -4670,7 +4805,10 @@
       "horizon": "2026-10-10",
       "probability": "70-80%",
       "basis": "NHC/AccuWeather forecast track and intensity (100-110 mph Thu night/Fri); intensity error near landfall.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Landfall near Destin, FL (the eastern end of the stated span) about 9:30 PM ET Oct 9 at Category 2, 105 mph.",
+      "graded": "2026-10-10",
+      "lesson": "Right, though landfall came at the edge of the range."
     },
     {
       "id": "2026-10-09-pm-1",
@@ -4700,7 +4838,10 @@
       "horizon": "2026-10-10",
       "probability": "60-75%",
       "basis": "NHC 11 AM ET advisory 120 mph/959 mb with landfall forecast 9 PM-midnight ET; near-landfall intensity error ~10-15 mph.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Isaias weakened before landfall: Category 2, 105 mph, 971 mb near Destin, not Category 3 (NHC via multiple outlets).",
+      "graded": "2026-10-10",
+      "lesson": "Near-landfall weakening is common in the northern Gulf; 120 mph eight hours out left too little cushion for a Cat 3 call at 60-75%."
     }
   ]
 }

@@ -296,6 +296,51 @@
       "error_source": "Regional outlet reports conflated an earlier strike with Saturday's incident; search-summary sourcing.",
       "conclusions_changed": false,
       "note": "Stated in the 2026-10-04 sun colophon."
+    },
+    {
+      "found": "2026-10-10",
+      "report": "reports/2026/10/2026-10-09-pm.html",
+      "original": "The Duquesne Light strike enters its second week with talks stalled ... The two sides have tentative agreements on subcontracting and technology.",
+      "corrected": "Duquesne Light announced Thursday night, Oct 8, a tentative five-year agreement with IBEW Local 29 covering the whole contract (WPXI, CBS Pittsburgh, KDKA Radio, Patch). Terms were not released; the strike formally ends only after union ratification.",
+      "error_source": "Research relied on earlier-dated local coverage (the Oct 7 rally and partial tentative agreements) and missed the Thursday-night announcement; the Oct 9 morning edition also missed it.",
+      "conclusions_changed": true,
+      "note": "Stated in the 2026-10-10 sat Local section and colophon. Also flips forecast 2026-10-04-sun-16 to correct."
+    },
+    {
+      "found": "2026-10-10",
+      "report": "reports/2026/10/2026-10-09-pm.html",
+      "original": "On the week, the 10-year is down 4bp from Monday's 5.28%",
+      "corrected": "On the week, the 10-year is down 4bp from the previous Friday's (Oct 2) 5.28%; Monday Oct 5 closed at 5.31%.",
+      "error_source": "Wrong reference day in drafting.",
+      "conclusions_changed": false,
+      "note": "Stated in the 2026-10-10 sat colophon."
+    },
+    {
+      "found": "2026-10-10",
+      "report": "reports/2026/10/2026-10-09-am.html",
+      "original": "stayed its ruling for 120 days, until Monday, October 13 ... enforcement can start Tuesday (also 2026-10-08-am: 'must go by Monday; State Police begin seizures Tuesday')",
+      "corrected": "October 13, 2026 is a Tuesday. Machines must be removed by Tuesday, Oct 13; State Police say enforcement can begin Wednesday, Oct 14.",
+      "error_source": "Weekday miscomputed for the date; the closing editions had it right.",
+      "conclusions_changed": false,
+      "note": "Stated in the 2026-10-10 sat colophon."
+    },
+    {
+      "found": "2026-10-10",
+      "report": "reports/2026/10/2026-10-09-am.html",
+      "original": "Wednesday's strike on two buses in Kramatorsk",
+      "corrected": "The Kramatorsk bus strike (33 dead per Ukrainian officials) was on Thursday, Oct 8.",
+      "error_source": "Day misattributed in drafting.",
+      "conclusions_changed": false,
+      "note": "Stated in the 2026-10-10 sat colophon."
+    },
+    {
+      "found": "2026-10-10",
+      "report": "reports/2026/10/2026-10-07-pm.html",
+      "original": "University of Michigan sentiment (previous 50.9)",
+      "corrected": "The previous (September final) sentiment reading was 48.1; 50.9 was September's current-conditions index.",
+      "error_source": "Sub-index confused with the headline index.",
+      "conclusions_changed": false,
+      "note": "Stated in the 2026-10-10 sat colophon."
     }
   ]
 }
