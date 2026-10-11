@@ -1,9 +1,92 @@
 {
   "stories": [
     {
+      "id": "riyadh-airport-strike-oct10",
+      "status": "New",
+      "headline": "Missile strike on Riyadh King Khalid airport Oct 10 kills 12 (incl. one American), 309 wounded per Saudi GACA; coalition blames Houthis (no Houthi claim by Sun am); Trump: US will 'look at' joining strikes on Houthis; flights suspended to at least midnight Oct 12 Saudi time",
+      "one_line": "Deadliest Gulf-state attack of the war; US-Houthi action now in play",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Saudi GACA via Arab News/Gulf News/Al Jazeera",
+        "Rubio via CNBC/CBS",
+        "AP via CNBC"
+      ],
+      "score_rationale": "Lead of Sunday edition; oil/war-escalation risk",
+      "first_seen": "2026-10-11-sun",
+      "last_updated": "2026-10-11-sun",
+      "watch": true
+    },
+    {
+      "id": "trump-zelensky-new-president-oct10",
+      "status": "New",
+      "headline": "Trump says Ukraine should 'get a new president' after Zelensky criticized the Russian diesel license; Zaporizhzhia guided-bomb attack kills 20",
+      "one_line": "US-Ukraine rift over refinery strikes and diesel",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Washington Post",
+        "CNN",
+        "CBC",
+        "Axios",
+        "Ukraine SES via Ukrinform"
+      ],
+      "score_rationale": "Geopolitics; diesel prices",
+      "first_seen": "2026-10-11-sun",
+      "last_updated": "2026-10-11-sun",
+      "watch": true
+    },
+    {
+      "id": "week-oct12-cpi",
+      "status": "Continuing",
+      "headline": "Sept CPI Wed Oct 14 8:30 ET (cons +0.6% m/m, 3.6% y/y; core +0.2%, 2.5%); retail sales/PPI Thu; Warsh-Georgieva Thu 11:30 PM ET; blackout Oct 17",
+      "one_line": "Last inflation print before Oct 27-28 FOMC",
+      "verification": "Confirmed-primary",
+      "sources": [
+        "BLS calendar",
+        "Census",
+        "Federal Reserve calendar"
+      ],
+      "score_rationale": "Week's key macro event",
+      "first_seen": "2026-10-11-sun",
+      "last_updated": "2026-10-11-sun",
+      "watch": true
+    },
+    {
+      "id": "q3-bank-earnings-oct13",
+      "status": "Continuing",
+      "headline": "Bank earnings: JPM/GS/C/WFC Tue Oct 13; BAC/MS/BLK Wed; PNC/USB/SCHW Thu; TRV/TFC/MTB/RF/CFG Fri; ASML Wed, TSMC Thu",
+      "one_line": "Season opens; consumer credit and AI demand the reads",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Finnhub",
+        "company IR",
+        "FactSet via aggregators"
+      ],
+      "score_rationale": "Finance-first lead theme",
+      "first_seen": "2026-10-11-sun",
+      "last_updated": "2026-10-11-sun",
+      "watch": true
+    },
+    {
+      "id": "pa-skill-games-deadline-oct13",
+      "status": "Continuing",
+      "headline": "PA skill-game ruling takes effect Tue Oct 13; State Police enforcement from Oct 14; PSP and AG say machines must be physically removed, Pace-O-Matic says 'rendered inoperable' suffices",
+      "one_line": "Deadline Tuesday; dispute over what compliance means",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "PhillyVoice",
+        "LancasterOnline",
+        "Capital-Star",
+        "WJAC"
+      ],
+      "score_rationale": "Local/PA",
+      "first_seen": "2026-10-04-sun",
+      "last_updated": "2026-10-11-sun",
+      "watch": true
+    },
+    {
       "id": "isaias-landfall-oct9",
       "status": "Materially changed",
-      "headline": "Isaias landfall near Destin FL ~9:30 PM ET Oct 9 as Cat 2 (105 mph, 971 mb), weaker than Cat 3 forecast; post-tropical near Montgomery AL Sat; ~874-900K customers out FL/AL/GA; one death reported by CNN, unconfirmed by state",
+      "headline": "Isaias landfall near Destin FL ~9:30 PM ET Oct 9 as Cat 2 (105 mph, 971 mb), weaker than Cat 3 forecast; post-tropical near Montgomery AL Sat; ~874-900K customers out FL/AL/GA; one death reported by CNN, unconfirmed by state; Sun Oct 11: at least 4 deaths (2 FL, 2 AL), outages down to ~480K Sat night, emergency declarations FL/AL/GA, no Gulf restart data yet",
       "one_line": "Cat 2 landfall near Destin; ~900K out; Gulf shut-in restart pending",
       "verification": "Confirmed-multiple",
       "sources": [
@@ -13,7 +96,7 @@
       ],
       "score_rationale": "Lead of Saturday edition; energy and Gulf Coast impact",
       "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-10-sat",
+      "last_updated": "2026-10-11-sun",
       "watch": true
     },
     {
@@ -480,21 +563,6 @@
         "Washington Post"
       ],
       "score_rationale": "Science/culture",
-      "first_seen": "2026-10-08-pm",
-      "last_updated": "2026-10-08-pm"
-    },
-    {
-      "id": "pa-skill-games-deadline-oct13",
-      "status": "New",
-      "headline": "PA skill-games stay expires Oct 13; lawmakers withdrew extension request Oct 7; business consortium petition pending",
-      "one_line": "Machines must be removed",
-      "verification": "Confirmed-multiple; petition status unverified",
-      "sources": [
-        "Capital-Star",
-        "WNEP",
-        "PSP"
-      ],
-      "score_rationale": "Local PA",
       "first_seen": "2026-10-08-pm",
       "last_updated": "2026-10-08-pm"
     },

@@ -1,114 +1,111 @@
 {
-  "fetched_at": "2026-10-10T13:26:54Z",
+  "fetched_at": "2026-10-11T13:15:00Z",
   "treasury_par_curve": {
-    "as_of": "2026-10-08 EOD official",
+    "as_of": "2026-10-09 EOD official",
     "source": "home.treasury.gov",
-    "1M": 4.14,
-    "3M": 4.23,
-    "6M": 4.3,
-    "1Y": 4.44,
-    "2Y": 4.75,
-    "5Y": 4.99,
-    "7Y": 5.11,
-    "10Y": 5.22,
-    "20Y": 5.64,
+    "1M": 4.13,
+    "3M": 4.25,
+    "6M": 4.32,
+    "1Y": 4.47,
+    "2Y": 4.8,
+    "3Y": 4.89,
+    "5Y": 5.02,
+    "7Y": 5.13,
+    "10Y": 5.24,
+    "20Y": 5.65,
     "30Y": 5.6
   },
   "fred": {
-    "fetched": "2026-10-08T20:42:04Z",
+    "fetched": "2026-10-11T13:15:00Z",
     "DFII10": [
-      "2026-10-07",
-      2.92
+      "2026-10-08",
+      2.87
     ],
     "T10YIE": [
-      "2026-10-07",
-      2.36
+      "2026-10-09",
+      2.33
     ],
     "SOFR": [
-      "2026-10-07",
-      3.88
+      "2026-10-08",
+      3.87
     ],
     "BAMLH0A0HYM2": [
-      "2026-10-07",
-      3.09
+      "2026-10-08",
+      3.15
     ],
     "DGS10": [
-      "2026-10-06",
-      5.27
+      "2026-10-08",
+      5.22
     ],
     "DGS2": [
-      "2026-10-06",
-      4.79
+      "2026-10-08",
+      4.75
     ],
     "T10Y2Y": [
-      "2026-10-07",
-      0.51
+      "2026-10-09",
+      0.44
     ],
     "DFF": [
-      "2026-10-06",
+      "2026-10-08",
       3.88
     ],
     "ICSA": [
       "2026-10-03",
       197000
-    ],
-    "UNRATE": [
-      "2026-09-01",
-      4.2
     ]
   },
   "vix_complex": {
-    "as_of": "2026-10-08 ~16:15 ET via Yahoo",
-    "VIX": 15.41,
-    "VIX9D": 12.21,
-    "VIX3M": 18.08
+    "as_of": "2026-10-09 EOD via Yahoo",
+    "VIX": 14.84,
+    "VIX9D": 11.26,
+    "VIX3M": 17.77
   },
   "fx": {
-    "as_of": "2026-10-08 ECB reference (Frankfurter)",
-    "EUR": 0.89397,
-    "JPY": 158.28,
-    "GBP": 0.75718,
-    "CNY": 6.7023,
-    "CHF": 0.83372,
-    "CAD": 1.4262,
-    "AUD": 1.4402,
-    "MXN": 18.0127,
-    "BRL": 5.0168,
-    "INR": 96.78,
-    "DXY": 102.099,
-    "DXY_asof": "2026-10-08 ~16:15 ET Yahoo DX-Y.NYB"
+    "as_of": "2026-10-09 ECB reference (Frankfurter)",
+    "EUR": 0.89238,
+    "JPY": 158.25,
+    "GBP": 0.75641,
+    "CNY": 6.6921,
+    "CHF": 0.83107,
+    "CAD": 1.4226,
+    "AUD": 1.4324,
+    "MXN": 18.2001,
+    "BRL": 5.005,
+    "INR": 96.73,
+    "DXY": 102.231,
+    "DXY_asof": "2026-10-09 EOD Yahoo DX-Y.NYB"
   },
   "crypto": {
-    "as_of": "2026-10-05 ~16:35 ET CoinGecko",
-    "total_mcap_usd": 2932565895201,
-    "btc_dominance": 58.68,
-    "btc": 85764,
-    "eth": 2712.07,
-    "sol": 120.23,
-    "ada": 0.268295
+    "as_of": "2026-10-11 ~09:08 ET Yahoo (CoinGecko simple/price 429)",
+    "btc": 82988.4,
+    "eth": 2500.56,
+    "sol": 109.26,
+    "total_mcap_usd": 2814265253465,
+    "btc_dominance": 59.14,
+    "total_mcap_src": "CoinGecko /global 2026-10-11 ~09:10 ET"
   },
   "indices": {
-    "as_of": "2026-10-05 EOD (Yahoo)",
-    "^GSPC": 7773.95,
-    "^IXIC": 27477.31,
-    "^DJI": 51267.9,
-    "^RUT": 2847.14,
-    "^RUT_note": "TheStreet 2853.27"
+    "as_of": "2026-10-09 EOD (Yahoo)",
+    "^GSPC": 7811.54,
+    "^IXIC": 27366.17,
+    "^DJI": 51654.95,
+    "^RUT": 2806.98
   },
   "futures_commodities_fx": {
-    "as_of": "2026-10-05 ~16:22 ET Yahoo, delayed +10",
-    "CL=F": 89.3,
-    "BZ=F": 100.33,
-    "GC=F": 4168.7,
-    "NG=F": 3.074,
-    "HG=F": 6.639,
-    "ES=F": 7830.75,
-    "NQ=F": 31341.75,
-    "EURUSD": 1.1222,
-    "settles_cnbc": {
-      "Brent": 100.32,
-      "WTI": 89.43
-    }
+    "as_of": "2026-10-09 EOD Yahoo front-month",
+    "CL=F": 91.85,
+    "BZ=F": 104.72,
+    "GC=F": 4216.3,
+    "SI=F": 61.05,
+    "NG=F": 3.22,
+    "HG=F": 6.692,
+    "ES=F": 7859.75,
+    "NQ=F": 31108.75,
+    "YM=F": 51926,
+    "RTY=F": 2822.1,
+    "EURUSD": 1.1206,
+    "USDJPY": 158.246,
+    "DXY": 102.231
   },
   "watchlist": {
     "as_of": "2026-10-02 EOD Yahoo",
@@ -541,7 +538,7 @@
     "price": 922.77,
     "pct": 2.93
   },
-  "_notes_this_run": "2026-10-08 am: Yahoo v8 curl worked (200 on all). Cboe cdn 307 (not followed). Treasury, FRED, Frankfurter, CoinGecko, Massive, FINRA, SEC, TreasuryDirect, BLS ICS, Fed RSS, NWS, Finnhub, LL2 worked.",
+  "_notes_this_run": "2026-10-11 sun: Yahoo v8 OK, Treasury OK, FRED OK (no new HY OAS), TreasuryDirect/BLS/BEA/Fed RSS/LL2/Finnhub/AlphaVantage OK, Frankfurter OK, CoinGecko simple/price 429 (global OK), Cboe cdn 307.",
   "yahoo_am_2026_09_28": {
     "fetched_at": "2026-09-28T10:54:34Z",
     "label": "Delayed (+10 min) futures/overnight; Previous close for cash",
@@ -1207,10 +1204,10 @@
     }
   },
   "coingecko_global": {
-    "as_of": "2026-10-08T20:42:04Z",
-    "total_mcap_usd": 2776118287105,
-    "btc_dominance": 59.1,
-    "mcap_chg_24h_pct": -5.1
+    "as_of": "2026-10-11T13:10:00Z",
+    "total_mcap_usd": 2814265253465,
+    "btc_dominance": 59.14,
+    "mcap_chg_24h_pct": -2.58
   },
   "fred_csv_2026_09_29": {
     "fetched_at": "2026-09-29T15:13:07Z",
@@ -3419,5 +3416,69 @@
       "source": "Finnhub quote"
     },
     "notes": "Yahoo v8 429 (Too Many Requests) on every symbol this run; Cboe CDN 307; weekly changes computed from pm_2026_10_09 and sat_2026_10_03 caches."
+  },
+  "sun_2026_10_11": {
+    "note": "Sunday gather; Yahoo v8 worked (200); equities/rates/commodities Fri Oct 9 EOD; crypto live",
+    "yahoo_closes": {
+      "^GSPC": 7811.5400390625,
+      "^IXIC": 27366.169921875,
+      "^DJI": 51654.94921875,
+      "^RUT": 2806.97998046875,
+      "ES=F": 7859.75,
+      "NQ=F": 31108.75,
+      "YM=F": 51926.0,
+      "RTY=F": 2822.10009765625,
+      "^VIX": 14.84000015258789,
+      "^VIX9D": 11.260000228881836,
+      "^VIX3M": 17.770000457763672,
+      "^TNX": 5.24399995803833,
+      "BZ=F": 104.72000122070312,
+      "CL=F": 91.8499984741211,
+      "GC=F": 4216.2998046875,
+      "SI=F": 61.04800033569336,
+      "NG=F": 3.2200000286102295,
+      "HG=F": 6.691999912261963,
+      "EURUSD=X": 1.1205737590789795,
+      "JPY=X": 158.24600219726562,
+      "DX-Y.NYB": 102.20999908447266,
+      "BTC-USD": 82988.3984375,
+      "ETH-USD": 2500.56005859375,
+      "SOL-USD": 109.26000213623047,
+      "SPY": 778.5700073242188,
+      "QQQ": 751.27001953125,
+      "IWM": 278.94000244140625,
+      "RSP": 213.0399932861328,
+      "SMH": 603.3300170898438,
+      "XLK": 198.77999877929688,
+      "XLE": 65.08000183105469,
+      "XLU": 41.40999984741211,
+      "XLF": 54.72999954223633,
+      "XLV": 170.80999755859375,
+      "XLP": 83.43000030517578,
+      "XLY": 112.8499984741211,
+      "XLI": 169.25,
+      "XLB": 49.43000030517578,
+      "XLRE": 41.61000061035156,
+      "XLC": 110.37999725341797,
+      "KRE": 69.01000213623047,
+      "HYG": 77.2300033569336,
+      "LQD": 102.41000366210938,
+      "TLT": 77.9800033569336,
+      "JPM": 332.989990234375,
+      "GS": 895.3200073242188,
+      "C": 129.63999938964844,
+      "WFC": 83.55000305175781,
+      "BAC": 54.31999969482422,
+      "MS": 190.02000427246094,
+      "PNC": 219.2100067138672,
+      "ASML": 1780.3399658203125,
+      "TSM": 453.30999755859375,
+      "SPCX": 162.57000732421875,
+      "NVDA": 229.27999877929688,
+      "JNJ": 261.44000244140625,
+      "UNH": 379.29998779296875,
+      "ABT": 99.5999984741211,
+      "NFLX": 70.30000305175781
+    }
   }
 }
