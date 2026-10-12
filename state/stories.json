@@ -1,19 +1,141 @@
 {
   "stories": [
     {
-      "id": "riyadh-airport-strike-oct10",
+      "id": "dhs-ads-tro",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
       "status": "New",
-      "headline": "Missile strike on Riyadh King Khalid airport Oct 10 kills 12 (incl. one American), 309 wounded per Saudi GACA; coalition blames Houthis (no Houthi claim by Sun am); Trump: US will 'look at' joining strikes on Houthis; flights suspended to at least midnight Oct 12 Saudi time",
-      "one_line": "Deadliest Gulf-state attack of the war; US-Houthi action now in play",
+      "headline": "SDNY Judge Rochon TRO Oct 11 halts DHS ~$20M TV ad campaign for 2 weeks (Common Cause suit)",
+      "one_line": "Courts/midterms",
       "verification": "Confirmed-multiple",
       "sources": [
-        "Saudi GACA via Arab News/Gulf News/Al Jazeera",
-        "Rubio via CNBC/CBS",
-        "AP via CNBC"
+        "CNN",
+        "CNBC",
+        "The Hill"
       ],
-      "score_rationale": "Lead of Sunday edition; oil/war-escalation risk",
+      "score_rationale": "US"
+    },
+    {
+      "id": "doj-network-antitrust",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "DOJ Antitrust Division sent CIDs to ABC, CBS, CNN, Fox, NBC over Sept 21 pool suspension ('group boycott' theory); investigation stage",
+      "one_line": "Press/antitrust",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "NYT",
+        "NBC",
+        "CNN",
+        "NPR"
+      ],
+      "score_rationale": "US"
+    },
+    {
+      "id": "nk-missiles-oct12",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "North Korea fired several ballistic missiles ~9:20 AM KST Oct 12, some >900 km (prelim, JCS); 2nd launch since Oct 3, 16th of 2026",
+      "one_line": "Regional security",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Korea Herald",
+        "UPI",
+        "Bangkok Post"
+      ],
+      "score_rationale": "World"
+    },
+    {
+      "id": "duquesne-light-strike",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "Resolved",
+      "headline": "IBEW Local 29 ratified 5-yr Duquesne Light contract Oct 11, 526-184; ~1,000 workers return Oct 12; strike began Oct 1; terms not released",
+      "one_line": "Strike over",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Post-Gazette",
+        "WESA",
+        "WPXI"
+      ],
+      "score_rationale": "Local utility"
+    },
+    {
+      "id": "nobel-econ-2026",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "Economics Nobel 2026 to Robert E. Hall and Michael Woodford 'for the microeconomic foundations of macroeconomic stabilisation'",
+      "one_line": "Monetary-policy toolkit honored",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "CNN",
+        "CNBC",
+        "Japan Times"
+      ],
+      "score_rationale": "Finance/econ relevance"
+    },
+    {
+      "id": "kospi-chip-selloff-oct12",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "Kospi -3.65% to 6,384.24 Oct 12 (first session since Thu); Samsung -4.39%, SK hynix -4.52%; 10th straight day of foreign net selling (2.02T won)",
+      "one_line": "AI-capex confidence check before ASML Wed/TSMC Thu",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Yahoo (index)",
+        "Pomegra/GuruFocus/Ajupress"
+      ],
+      "score_rationale": "Chip leadership"
+    },
+    {
+      "id": "energy-ceasefire-oct11",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "Trump announces Russia-Ukraine 'energy ceasefire' on Truth Social Oct 11; Kremlin: 'contacts are ongoing', no confirmation; Russia hit Kharkiv CHP-5 hours later; Zelensky: 'Putin doesn't read Truth Social'",
+      "one_line": "Diesel read-through if real; unconfirmed",
+      "verification": "Confirmed-multiple (announcement); Unverified (agreement)",
+      "sources": [
+        "CNBC",
+        "Axios",
+        "CBS",
+        "Time",
+        "Forbes"
+      ],
+      "score_rationale": "Diesel/inflation expectations"
+    },
+    {
+      "id": "iran-hormuz-reply-oct12",
+      "first_seen": "2026-10-12-am",
+      "last_updated": "2026-10-12-am",
+      "status": "New",
+      "headline": "Iran SNSC secretary Rezaei calls US reply to 7 Hormuz conditions 'insufficient', says Iran 'no longer in the process of responding'; FM says still reviewing via mediators; threat to undersea cables/AI data centers",
+      "one_line": "Hormuz talks stall; mixed Iranian signals",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "Haaretz",
+        "Times of Israel",
+        "Breitbart"
+      ],
+      "score_rationale": "Oil/Hormuz"
+    },
+    {
+      "id": "riyadh-airport-strike-oct10",
+      "status": "Materially changed",
+      "headline": "Houthis (Saree) claimed Riyadh airport attacks Oct 11; second strike hit Terminal 4 Oct 11 (injuries, no count); toll 12 official per GACA, 13 per CNN incl. Indian national; airport closed Mon; Saudi vows to 'respond decisively'; US: intel/targeting support, 'no kinetic action for now' (Axios)",
+      "one_line": "Lead of Oct 12 am; US-Houthi action still in play",
+      "verification": "Confirmed-multiple",
+      "sources": [
+        "France 24/Al Jazeera/CBS (claim)",
+        "Al Arabiya/Saudi Gazette (T4)",
+        "Axios, CNN"
+      ],
+      "score_rationale": "Oil war-premium driver; lead",
       "first_seen": "2026-10-11-sun",
-      "last_updated": "2026-10-11-sun",
+      "last_updated": "2026-10-12-am",
       "watch": true
     },
     {
@@ -760,242 +882,6 @@
       "score_rationale": "Fed path, market-moving",
       "first_seen": "2026-10-07-pm",
       "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "hormuz-attacks-weekly-high",
-      "status": "Materially changed",
-      "headline": "Reuters: >=12 tanker attacks around Hormuz Sep 28-Oct 5, wartime weekly high; IMO counts 9 (prior high 8); Brent ~$101",
-      "one_line": "Attackers unattributed (UKMTO 'unknown'); EIA crude -3.2M vs +1.7M est; IEA board met on stock release",
-      "verification": "Confirmed-multiple (Reuters, IMO)",
-      "sources": [
-        "Reuters",
-        "IMO",
-        "UKMTO",
-        "EIA"
-      ],
-      "score_rationale": "Oil >$100 feeds Fed energy concern",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "industrials-selloff-oct7",
-      "status": "New",
-      "headline": "XLI -2.18%: CAT -5.75%, DE -3.8%, PH -3.3%, GEV -3.1%, ETN -3.1%; no catalyst found",
-      "one_line": "Unexplained; Russell -1.31%, RSP -0.81%",
-      "verification": "System inference (prices confirmed; cause unknown)",
-      "sources": [
-        "Yahoo Finance",
-        "Finnhub"
-      ],
-      "score_rationale": "Largest sector move, breadth signal",
-      "first_seen": "2026-10-07-pm",
-      "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "spacex-40b-chip-debt",
-      "status": "New",
-      "headline": "Bloomberg: SpaceX arranging ~$40B debt (~$10B loans, ~$30B IG) for Nvidia chips, Apollo involved; SPCX -2.51% to $167.60",
-      "one_line": "Unconfirmed by company; 328M-share lockup reportedly Oct 9 (single feed)",
-      "verification": "Single-reliable-source (Bloomberg) cited by Reuters/FT via Benzinga",
-      "sources": [
-        "Bloomberg",
-        "Benzinga",
-        "CNBC",
-        "Yahoo"
-      ],
-      "score_rationale": "Watchlist mega-name, AI capex financing",
-      "first_seen": "2026-10-07-pm",
-      "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "levi-q3-beat",
-      "status": "New",
-      "headline": "Levi Strauss Q3 adj EPS $0.48 vs ~$0.36; rev $1.61B vs $1.62B; EPS guide raised to $1.54-1.56, revenue growth cut to ~7%; +5% AH",
-      "one_line": "490bp of 13.8% margin from tariff refunds",
-      "verification": "Confirmed-primary (release/8-K) + CNBC",
-      "sources": [
-        "Levi release",
-        "CNBC"
-      ],
-      "score_rationale": "After-hours earnings",
-      "first_seen": "2026-10-07-pm",
-      "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "penguin-blackhills-ai-power",
-      "status": "Continuing",
-      "headline": "Penguin Solutions +13.1% on AI guidance 8-K; Black Hills +7.2% on Google Cheyenne 8-K; CEG -0.3% holds Tuesday's gain",
-      "one_line": "AI power/infrastructure contracts",
-      "verification": "Confirmed-primary (8-Ks)",
-      "sources": [
-        "SEC EDGAR",
-        "Yahoo"
-      ],
-      "score_rationale": "Confirmed-catalyst movers",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-pm"
-    },
-    {
-      "id": "ust-10y-reopen-minutes-oct7",
-      "status": "Materially changed",
-      "headline": "$39B 10Y reopening 1 PM + FOMC Sep minutes 2 PM; 10Y back ~5.31% (CNBC) after 5.27% par close Tue",
-      "one_line": "Daly: more hikes depend on whether shocks 'fade or compound'; FedWatch ~22% Oct hike",
-      "verification": "Confirmed-primary (Treasury, FiscalData) + Confirmed-multiple",
-      "sources": [
-        "Treasury",
-        "FiscalData",
-        "FRED",
-        "CNBC",
-        "Reuters via AOL",
-        "FXStreet",
-        "Benzinga/CME"
-      ],
-      "score_rationale": "Lead: auction + minutes same hour, long end at 2002 highs",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "hormuz-nine-attacks-oct7",
-      "status": "Materially changed",
-      "headline": "UKMTO: nine ship attacks in October; Brent ~$101.9 (+1.3%); Houthi strikes on Aden airport, missile intercepted north of Riyadh",
-      "one_line": "Saudi + S.Korean-owned tankers hit Oct 5 eve; ME exports 18.6M bpd 14-day avg (Bloomberg)",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "Bloomberg",
-        "NBC",
-        "CNBC",
-        "The National",
-        "France24"
-      ],
-      "score_rationale": "Oil/inflation channel to Fed",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "dxy-17mo-high-oct7",
-      "status": "New",
-      "headline": "DXY ~102.31 (+0.5%) 17-month high; EUR 1.119; Europe -0.8%, Kospi -2.0%, Nikkei -0.9%; gold -1.1%, BTC ~83.7K",
-      "one_line": "Overnight risk-off vs US record",
-      "verification": "Confirmed (market data)",
-      "sources": [
-        "Yahoo",
-        "Twelve Data",
-        "Investing.com",
-        "JoongAng",
-        "CoinDesk"
-      ],
-      "score_rationale": "Cross-asset tightening",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "bkh-google-cheyenne-oct6",
-      "status": "New",
-      "headline": "Black Hills 8-K: agreements to serve Google Cheyenne data center through 2048; $1.8B new gas gen; ~$150M NI 2030; +~5% AH",
-      "one_line": "Second Google power deal in two days after CEG",
-      "verification": "Confirmed-primary (8-K)",
-      "sources": [
-        "SEC EDGAR",
-        "GlobeNewswire",
-        "Benzinga"
-      ],
-      "score_rationale": "AI power capex on utility balance sheets",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "pentagon-stops-anthropic-oct6",
-      "status": "New",
-      "headline": "DoD official to BBC: department 'has ceased the use of Anthropic products' (Feb order, 6-month phase-down)",
-      "one_line": "Claude was in Palantir Maven; IPO reportedly Nov",
-      "verification": "Single-reliable-source (BBC)",
-      "sources": [
-        "BBC via Yahoo"
-      ],
-      "score_rationale": "PLTR read-through; Anthropic pre-IPO",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "peng-fq4-guide-oct6",
-      "status": "New",
-      "headline": "Penguin Solutions FQ4 sales $567M (+68%); FY27 ~+40% (~$2.43B mid), adj EPS $4.45; 6 new AI customers (4 neoclouds); ~+6% premarket",
-      "one_line": "",
-      "verification": "Confirmed-primary (8-K)",
-      "sources": [
-        "SEC EDGAR",
-        "Benzinga"
-      ],
-      "score_rationale": "Neocloud capex read",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "rbi-hike-oct7",
-      "status": "Unconfirmed",
-      "headline": "Business Standard: RBI raises repo 25bp to 5.50%, 'calibrated tightening', FY27 CPI 5.2%; Sensex +0.35% (Yahoo)",
-      "one_line": "RBI statement not read",
-      "verification": "Single-reliable-source",
-      "sources": [
-        "Business Standard (via search)"
-      ],
-      "score_rationale": "EM tightening",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "nobel-chemistry-2026-kagan-soai",
-      "status": "New",
-      "headline": "Nobel Chemistry 2026: Henri Kagan and Kenso Soai, non-linear effects and autocatalysis in asymmetric synthesis",
-      "one_line": "",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "nobelprize.org",
-        "NPR",
-        "CNN"
-      ],
-      "score_rationale": "Science",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "allegheny-2027-budget-oct6",
-      "status": "New",
-      "headline": "Innamorato 2027 budget ~$1.25B (+4.7%), no tax hike, no layoffs, 150 vacancies cut (~$9M), +$21M children/family",
-      "one_line": "Council must pass by year-end",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "WESA",
-        "Post-Gazette"
-      ],
-      "score_rationale": "Local taxes",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
-    },
-    {
-      "id": "trump-superpac-ads-oct6",
-      "status": "New",
-      "headline": "Trump says super PAC, not taxpayers, will pay for administration ads (~$1.5M AP / >$1.7M ABC, >=13 ads)",
-      "one_line": "Thune criticism; experts cite publicity-or-propaganda ban, Hatch Act",
-      "verification": "Confirmed-multiple",
-      "sources": [
-        "AP",
-        "ABC",
-        "Scripps"
-      ],
-      "score_rationale": "US politics",
-      "first_seen": "2026-10-07-am",
-      "last_updated": "2026-10-07-am",
-      "watch": true
     }
   ]
 }

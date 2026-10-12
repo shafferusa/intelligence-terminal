@@ -5032,6 +5032,46 @@
       "probability": "5-10%",
       "basis": "Low base rate but new Houthi-front escalation risk.",
       "status": "open"
+    },
+    {
+      "id": "2026-10-12-am-1",
+      "date": "2026-10-12",
+      "slot": "am",
+      "forecast": "Brent front-month futures settle on Oct 12 above Friday's $104.72.",
+      "horizon": "2026-10-12",
+      "probability": "55-70%",
+      "basis": "Brent $105.59 at ~06:20 ET after weekend Houthi strikes, tanker attacks and Iran rejecting US terms; against: unconfirmed Russia-Ukraine energy truce, Gulf exports ~98% of pre-war.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-am-2",
+      "date": "2026-10-12",
+      "slot": "am",
+      "forecast": "The S&P 500 closes Oct 12 above 7,811.54.",
+      "horizon": "2026-10-12",
+      "probability": "50-60%",
+      "basis": "ES futures +0.1% at ~06:25 ET; thin holiday volume; Kospi chip sell-off a headwind for megacap weights.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-am-3",
+      "date": "2026-10-12",
+      "slot": "am",
+      "forecast": "The Kremlin publicly confirms Russia has agreed to halt strikes on Ukraine's energy system, by Oct 16.",
+      "horizon": "2026-10-16",
+      "probability": "25-40%",
+      "basis": "Kremlin said only 'contacts are ongoing'; Russia struck Kharkiv CHP-5 after the announcement; a similar announcement last month went unconfirmed.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-am-4",
+      "date": "2026-10-12",
+      "slot": "am",
+      "forecast": "At least some commercial flights resume at Riyadh's King Khalid International Airport by Oct 14.",
+      "horizon": "2026-10-14",
+      "probability": "45-60%",
+      "basis": "Closure extended day-by-day; two further attacks Oct 11; airport is the capital's main gateway.",
+      "status": "open"
     }
   ]
 }
