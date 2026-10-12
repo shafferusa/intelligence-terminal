@@ -5072,6 +5072,46 @@
       "probability": "45-60%",
       "basis": "Closure extended day-by-day; two further attacks Oct 11; airport is the capital's main gateway.",
       "status": "open"
+    },
+    {
+      "id": "2026-10-12-pm-1",
+      "date": "2026-10-12",
+      "slot": "pm",
+      "forecast": "Brent front-month futures settle on Oct 13 above $105.00.",
+      "horizon": "2026-10-13",
+      "probability": "55-70%",
+      "basis": "Oct 12 settle $106.65 after absorbing a truce-driven dip; Gulf attacks continuing daily; Riyadh airport closed to Oct 17.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-pm-2",
+      "date": "2026-10-12",
+      "slot": "pm",
+      "forecast": "September CPI headline (released Oct 14) rises at least 0.5% m/m, seasonally adjusted.",
+      "horizon": "2026-10-14",
+      "probability": "60-75%",
+      "basis": "Consensus +0.5-0.6% on gasoline; Brent averaged above $100 in September.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-pm-3",
+      "date": "2026-10-12",
+      "slot": "pm",
+      "forecast": "The United States conducts acknowledged military strikes on Houthi targets in Yemen by Oct 19.",
+      "horizon": "2026-10-19",
+      "probability": "20-35%",
+      "basis": "President said US 'may' join and would 'look at it'; Axios reported no kinetic action for now; he turned down two Saudi requests in September.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-12-pm-4",
+      "date": "2026-10-12",
+      "slot": "pm",
+      "forecast": "The US 10-year Treasury par yield on Oct 13 closes at or above 5.24% (Friday's level).",
+      "horizon": "2026-10-13",
+      "probability": "55-65%",
+      "basis": "Oil +1.8% and DXY +0.4% during the holiday, Hammack hawkish; Treasury futures were only slightly lower in holiday trade.",
+      "status": "open"
     }
   ]
 }
