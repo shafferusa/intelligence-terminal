@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Impossible Sum That Becomes a Simple Subtraction — Learning Brief, Mon, Oct 12, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-12",
+    "slot": "learn",
+    "title": "The Impossible Sum That Becomes a Simple Subtraction",
+    "path": "reports/2026/10/2026-10-12-learn.html",
+    "summary": "Day 11 of the Academy: how summing infinitely many infinitesimal slices gives an exact area, and how the Fundamental Theorem of Calculus reveals that this new problem, integration, was secretly the derivative running backward all along.",
+    "headlines": [
+      "Day 11 of 300 · Mathematics: the integral is a limit of a sum, and the Fundamental Theorem shows it undoes the derivative",
+      "It turns an infinite, impossible-looking sum into one subtraction: find an antiderivative, evaluate it twice"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-12T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Impossible Sum That Becomes a Simple Subtraction</h1>
+      <p class="paper-dateline">
+        Monday, October 12, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        Yesterday&rsquo;s lesson turned an instant into an exact slope; today&rsquo;s turns an
+        infinite sum into an exact total &mdash; and a single theorem then reveals that the two
+        machines, built to answer completely different questions, are secretly running in reverse
+        of each other.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 11 of 300 &middot; Mathematics 11 of 20 &middot; The integral and the Fundamental Theorem of Calculus</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Finding area is easy as long as your shape has straight edges. A rectangle&rsquo;s area is
+        length times width. A triangle&rsquo;s is half of that. Even an odd polygon can be cut into
+        triangles and added up. But what if one edge of your shape is a curve &mdash; the kind that
+        bends continuously, so its height above the baseline is different at every single point?
+        Length times width stops working immediately, because there is no single &ldquo;width&rdquo;
+        to multiply by: the curve is a different height everywhere you look. For most of mathematical
+        history, the area under a genuinely curved boundary was something you could estimate, but
+        not compute exactly.
+      </p>
+      <p>
+        The fix is the same move that made yesterday&rsquo;s derivative possible, turned on a
+        different question. Instead of asking for the area directly, chop the region into a large
+        number of thin vertical strips, each one narrow enough that the curve barely bends across its
+        width &mdash; so narrow that each strip looks almost like a rectangle. Add up the areas of all
+        those almost-rectangles, and you get an approximation of the true area. It will not be exact,
+        but here is the key move: as you make the strips thinner and thinner, and therefore use more
+        and more of them, that approximation gets better and better, in exactly the sense yesterday&rsquo;s
+        <strong>limit</strong> made precise. Push the strip width toward zero without ever letting it
+        reach zero, and the sum of ever-thinner rectangles approaches one specific number &mdash; not
+        an estimate anymore, but an exact value.
+      </p>
+      <p>
+        That limiting value is called the <strong>integral</strong>, and &ldquo;area under a
+        curve&rdquo; turns out to be only its most visual meaning. The same slicing-and-summing idea
+        computes the total of <em>any</em> quantity that accumulates from a changing rate: total
+        distance from a changing speed, total volume from a changing flow rate, total rainfall from a
+        changing rate of rainfall. Whatever is changing moment to moment, the integral adds up all
+        those moments into one total. And then comes the payoff this lesson is really about: a result
+        called the <strong>Fundamental Theorem of Calculus</strong> shows that this seemingly brand
+        new problem &mdash; summing infinitely many slices &mdash; was never actually a separate skill
+        from yesterday&rsquo;s derivative. It is the derivative, run backward. Once you see why, an
+        infinite sum turns into a single subtraction.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start by making the slicing-and-summing idea precise. Take a function <em>f</em> and an
+        interval from <em>a</em> to <em>b</em> along the x-axis, and suppose you want the exact area
+        between the curve and the axis across that interval. Split the interval into <em>n</em> equal
+        strips, each of width &Delta;<em>x</em> = (<em>b</em> &minus; <em>a</em>)/<em>n</em>. In each
+        strip, treat the curve as if it were flat at some sample height &mdash; say, the function&rsquo;s
+        value at the strip&rsquo;s left edge &mdash; and you get a thin rectangle with a known area:
+        height times &Delta;<em>x</em>. Add up all <em>n</em> of these rectangle areas and you have an
+        approximation of the true area under the curve. This construction has a name of its own, the
+        <strong>Riemann sum</strong>, after the 19th-century mathematician Bernhard Riemann who gave it
+        its rigorous modern form.
+      </p>
+      <p>
+        A quick numeric example makes the convergence concrete. Take the curve <em>f</em>(<em>x</em>)
+        = <em>x</em>&sup2; from <em>x</em> = 0 to <em>x</em> = 1, and split that interval into 4
+        strips of width 0.25, sampling each strip&rsquo;s height at its left edge: the heights are
+        0&sup2;, 0.25&sup2;, 0.5&sup2;, and 0.75&sup2; &mdash; that is, 0, 0.0625, 0.25, and 0.5625.
+        Multiply each by the strip width 0.25 and add: the four rectangles give a total approximate
+        area of 0.21875. Double the number of strips to 8, each 0.125 wide, and the same process
+        gives 0.2734. Keep doubling &mdash; 16 strips, 32, 1,024 &mdash; and the running total keeps
+        climbing, homing in tighter and tighter on a single number: one third, or 0.3333&hellip;. That
+        is the actual area under the parabola across this interval, and no finite number of
+        rectangles, however many, reaches it exactly &mdash; only the limit does. This is the same
+        shrinking-gap pattern Day 9&rsquo;s limit made rigorous, now applied to a running sum instead
+        of a ratio.
+      </p>
+      <p>
+        A Riemann sum with a handful of fat rectangles is a crude approximation &mdash; it either
+        overshoots or undershoots the curve&rsquo;s true bends, strip by strip. But let <em>n</em> grow
+        without bound, so &Delta;<em>x</em> shrinks toward zero, and each rectangle&rsquo;s error
+        shrinks with it, because a continuous curve looks almost flat over a vanishingly small width.
+        The limit of this process &mdash; the number the Riemann sum approaches as the number of
+        strips goes to infinity &mdash; is the <strong>definite integral</strong>, written
+        &int;<sub>a</sub><sup>b</sup>&thinsp;<em>f</em>(<em>x</em>)&thinsp;<em>dx</em>. The symbol
+        &int; is an elongated &ldquo;S,&rdquo; chosen deliberately by Gottfried Leibniz in the 1670s
+        to evoke a <em>sum</em>, and <em>dx</em> is a reminder that each sliver being summed has an
+        infinitesimally thin width. Read the whole expression as: the sum, as the slices shrink to
+        nothing, of <em>f</em>(<em>x</em>) times an infinitesimal width, from <em>a</em> to <em>b</em>.
+      </p>
+      <p>
+        That is the geometric picture, but the integral is not really about area &mdash; area is just
+        the easiest case to draw. If <em>f</em> is a rate of change rather than a height &mdash; a
+        velocity, a flow rate, a rate of rainfall &mdash; then the same construction computes the
+        total amount accumulated: velocity integrated over time gives total distance traveled, flow
+        rate integrated over time gives total volume collected. &ldquo;Area under the curve&rdquo; and
+        &ldquo;total accumulated amount&rdquo; are the same calculation; which description fits
+        depends only on what the curve represents.
+      </p>
+      <p>
+        Here is the problem that made this discovery urgent rather than merely clever: computing a
+        Riemann sum&rsquo;s limit directly, strip by strip, by brute-force algebra, is painfully slow
+        even for the simplest curves, and effectively hopeless for most real ones. For about two
+        thousand years after the ancient Greeks first wrestled with areas under curves &mdash;
+        Archimedes computed the area of a parabolic segment this way, by an exhausting method of
+        ever-finer approximating shapes &mdash; no one had a fast, general way to do it. The
+        breakthrough came in the mid-to-late 1600s. Isaac Barrow, Isaac Newton&rsquo;s own teacher at
+        Cambridge, published an early geometric version of the key relationship in 1670, in a lecture
+        later shown to have influenced both of the two mathematicians who get the real credit: Newton,
+        who worked out a general version privately around 1665&ndash;1666, and Gottfried Leibniz, who
+        developed his own version independently about a decade later and published first, in 1684. The
+        two men spent much of the rest of their lives in a bitter, nationalistic dispute over priority
+        &mdash; one an avowedly one-sided 1712 Royal Society committee, convened under Newton&rsquo;s
+        own presidency, resolved in Newton&rsquo;s favor. History&rsquo;s actual verdict is more
+        evenhanded: both reached the same destination independently, and the notation still used
+        today &mdash; &int;, <em>dx</em>, and the whole apparatus of this lesson &mdash; is
+        Leibniz&rsquo;s.
+      </p>
+      <p>
+        The insight itself is this. Call <em>F</em> an <strong>antiderivative</strong> of <em>f</em>
+        if differentiating <em>F</em> gives you back <em>f</em> &mdash; that is, <em>F</em>&prime; =
+        <em>f</em>. Now define an &ldquo;accumulation function&rdquo; <em>A</em>(<em>x</em>) that
+        measures the running area under <em>f</em> from the fixed starting point <em>a</em> up to some
+        movable point <em>x</em>. Ask how fast <em>A</em> itself changes as <em>x</em> creeps forward
+        by a tiny amount. Nudging <em>x</em> forward by a sliver adds one more thin rectangle of area
+        to the running total, and that sliver&rsquo;s area is approximately <em>f</em>(<em>x</em>)
+        times the sliver&rsquo;s width &mdash; so the <em>rate</em> at which the accumulated area grows,
+        at the point <em>x</em>, is just <em>f</em>(<em>x</em>) itself. In other words,
+        <em>A</em>&prime;(<em>x</em>) = <em>f</em>(<em>x</em>): the accumulation function is itself an
+        antiderivative of <em>f</em>. That is the first half of the Fundamental Theorem of Calculus,
+        and it is the whole reason the theorem is called fundamental &mdash; it says that
+        accumulating (integrating) and the instantaneous rate of that accumulation (differentiating)
+        are inverse operations, each one undoing the other, the way subtraction undoes addition.
+      </p>
+      <p>
+        The second half is the part that actually makes the integral computable without ever summing
+        a single slice. If <em>F</em> is <em>any</em> antiderivative of <em>f</em> &mdash; not
+        necessarily the specific accumulation function above, just some function whose derivative is
+        <em>f</em> &mdash; then the definite integral from <em>a</em> to <em>b</em> equals
+        <em>F</em>(<em>b</em>) minus <em>F</em>(<em>a</em>). The reasoning follows directly from the
+        first half: since <em>A</em> and <em>F</em> both have derivative <em>f</em>, they can only
+        differ by a fixed constant (two functions with identical slopes everywhere are the same curve
+        shifted up or down), and that constant cancels out the moment you subtract <em>F</em>(<em>a</em>)
+        from <em>F</em>(<em>b</em>). The entire infinite-slicing process collapses into finding one
+        antiderivative and evaluating it twice.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Integral</dt>
+        <dd>The exact limiting value of a sum of infinitely many, infinitesimally thin slices of a
+        quantity &mdash; written &int;<sub>a</sub><sup>b</sup>&thinsp;<em>f</em>(<em>x</em>)&thinsp;<em>dx</em>,
+        read as the total accumulation of <em>f</em> from <em>a</em> to <em>b</em>.</dd>
+        <dt>Area under a curve</dt>
+        <dd>The region bounded by a curve and a baseline &mdash; the integral&rsquo;s most visual
+        meaning, and the one that motivated it, though far from its only use.</dd>
+        <dt>Riemann sum</dt>
+        <dd>An approximation of an integral made by adding up the areas of finitely many thin
+        rectangles fitted to the curve; the integral is the exact number this sum approaches as the
+        rectangles narrow toward zero width.</dd>
+        <dt>Antiderivative</dt>
+        <dd>A function <em>F</em> whose derivative is a given function <em>f</em> (so <em>F</em>&prime;
+        = <em>f</em>) &mdash; integration undone, or run in reverse.</dd>
+        <dt>Fundamental Theorem of Calculus</dt>
+        <dd>The result showing that integration and differentiation are inverse operations: the rate
+        of change of an accumulated total is the original rate itself, and a definite integral can be
+        computed by evaluating any antiderivative at the two endpoints and subtracting.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Yesterday&rsquo;s lesson built the derivative out of a speedometer: an instrument that reports
+        your instantaneous speed by tracking how your position changes over a shrinking interval of
+        time. The integral builds the exact opposite instrument out of the same raw material: given a
+        speedometer&rsquo;s reading at every moment, the integral recovers your <strong>odometer</strong>
+        &mdash; the total distance covered &mdash; without needing to watch the odometer directly at
+        all.
+      </p>
+      <div class="worked">
+        <p>
+          Suppose a car starts from rest and accelerates steadily, so its velocity at time
+          <em>t</em> seconds is <em>v</em>(<em>t</em>) = 4<em>t</em> meters per second (a constant
+          acceleration of 4 m/s&sup2;). How far does the car travel in the first 6 seconds?
+        </p>
+        <p>
+          <strong>By the Fundamental Theorem:</strong> find an antiderivative of 4<em>t</em>. Since the
+          derivative of 2<em>t</em>&sup2; is 4<em>t</em>, take <em>F</em>(<em>t</em>) = 2<em>t</em>&sup2;.
+          The distance traveled is <em>F</em>(6) &minus; <em>F</em>(0) = 2(36) &minus; 2(0) = 72
+          &minus; 0 = <strong>72 meters</strong>. No summing of slices required &mdash; two
+          evaluations and a subtraction.
+        </p>
+        <p>
+          <strong>Check against the geometric picture:</strong> a graph of velocity against time is a
+          straight line climbing from 0 to 4(6) = 24 m/s. The distance traveled is, by definition, the
+          area under that velocity line &mdash; a triangle with base 6 (seconds) and height 24
+          (meters per second). Its area is &frac12;&thinsp;&times;&thinsp;6&thinsp;&times;&thinsp;24 =
+          <strong>72 meters</strong>. The two methods agree exactly, because they are computing the
+          same thing: the Fundamental Theorem just reached the triangle&rsquo;s area without ever
+          needing the triangle-area formula, or any geometry at all &mdash; a method that still works
+          when the velocity curve is nothing as tidy as a straight line.
+        </p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">A&prime;(x) = f(x)</p>
+        <p class="expr-spoken visually-hidden">A prime of x equals f of x.</p>
+        <p class="expr">&int;<sub>a</sub><sup>b</sup>&thinsp;f(x)&thinsp;dx = F(b) &minus; F(a), &nbsp; where F&prime;(x) = f(x)</p>
+        <p class="expr-spoken visually-hidden">The integral from a to b of f of x dx equals F of b minus F of a, where F prime of x equals f of x.</p>
+        <dl>
+          <dt>f</dt>
+          <dd>the function being integrated &mdash; the rate, or the curve&rsquo;s height, at each point</dd>
+          <dt>A(x)</dt>
+          <dd>the running accumulation (area) of f from the fixed start a up to the movable point x</dd>
+          <dt>F</dt>
+          <dd>any antiderivative of f &mdash; a function whose own derivative is f</dd>
+          <dt>a, b</dt>
+          <dd>the starting and ending points of the interval being accumulated over</dd>
+          <dt>dx</dt>
+          <dd>the infinitesimally thin width of each slice being summed, in the limit</dd>
+        </dl>
+      </div>
+      <p>
+        The first line is the Fundamental Theorem&rsquo;s own engine, argued in How It Works: nudging
+        the upper limit of accumulation forward by a sliver adds a sliver of area approximately equal
+        to <em>f</em>(<em>x</em>) times that sliver&rsquo;s width, so the accumulation&rsquo;s own rate
+        of change, at every point, is exactly <em>f</em>. The second line is the one you actually use
+        to compute a number: it is true for <em>any</em> antiderivative <em>F</em>, not just the
+        specific accumulation function <em>A</em>, because any two antiderivatives of the same
+        <em>f</em> differ only by a constant &mdash; and subtracting <em>F</em>(<em>a</em>) from
+        <em>F</em>(<em>b</em>) cancels that constant out before it can matter.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        This is the theorem that makes &ldquo;calculus&rdquo; one subject rather than two unrelated
+        ones. The derivative grew out of a question about tangent lines and instantaneous rates;
+        the integral grew out of a completely different question about areas and accumulated totals.
+        Nothing about the two problems looks related on the surface &mdash; one is about a single
+        point, the other about summing infinitely many of them. The Fundamental Theorem is the proof
+        that they were never separate: differentiating and integrating are mirror-image operations,
+        each one exactly undoing the other, the way subtraction undoes addition or division undoes
+        multiplication. That unification, more than either piece alone, is why Newton and Leibniz are
+        remembered as calculus&rsquo;s inventors rather than Barrow or Archimedes, who had each
+        glimpsed one side of it without seeing that it was the flip side of the other.
+      </p>
+      <p>
+        The practical payoff is just as large. Before this theorem, computing an exact total built
+        from a continuously changing rate meant grinding through an infinite summing process by hand
+        &mdash; viable only for a handful of simple shapes, as Archimedes&rsquo; painstaking work on
+        the parabola shows. After it, the same calculation becomes: find one antiderivative, plug in
+        two numbers, subtract. That single shortcut is what turned calculus from a small set of
+        heroic one-off geometric arguments into a general, reusable tool &mdash; one that, from here
+        on, applies to area, distance, volume, and every other quantity built by accumulating a
+        changing rate.
+      </p>
+      <p>
+        It is also worth sitting with how strange this result actually is, because familiarity can
+        hide it. The accumulation function <em>A</em>(<em>x</em>) is built from a global, backward-
+        looking process: to know its value at any point, you would seem to need the entire history of
+        <em>f</em> from <em>a</em> up to that point, summed in full. Yet its derivative &mdash; a
+        purely local, instantaneous property, concerned with nothing but the immediate neighborhood
+        of a single point &mdash; turns out to equal <em>f</em> at that point exactly, with no trace
+        of the summing left in the formula. A quantity defined by everything that happened before it
+        behaves, under differentiation, as if it only ever cared about what is happening right now.
+        That is not a coincidence to be memorized; it is the sliver argument from How It Works,
+        working exactly as advertised.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Area under a curved boundary can&rsquo;t be found by simple multiplication, but the limit
+        of ever-thinner rectangle sums &mdash; a Riemann sum, pushed to its limit &mdash; approaches
+        one exact number: the definite integral.</li>
+        <li>The integral is not just &ldquo;area&rdquo; &mdash; it is the general tool for total
+        accumulation from any changing rate: distance from velocity, volume from flow rate, and so on.</li>
+        <li>The Fundamental Theorem of Calculus says integration and differentiation are inverse
+        operations: each one undoes the other.</li>
+        <li>In practice this means you almost never sum infinitely many slices by hand: find an
+        antiderivative <em>F</em> (so <em>F</em>&prime; = <em>f</em>) and compute
+        <em>F</em>(<em>b</em>) &minus; <em>F</em>(<em>a</em>).</li>
+        <li>Newton and Leibniz each built the general theorem independently in the late 1600s;
+        Leibniz&rsquo;s notation, &int; and <em>dx</em>, is the one still in use today, even though a
+        partisan 1712 inquiry initially ruled for Newton.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        The Fundamental Theorem says a definite integral depends on only two numbers &mdash; an
+        antiderivative&rsquo;s value at the start, <em>a</em>, and at the end, <em>b</em> &mdash; with
+        nothing in the formula referring to whatever the function does in between. Yet the function
+        could speed up, slow down, or reverse direction any number of times across that interval.
+        Using the sliver argument from How It Works, why doesn&rsquo;t any of that interior behavior
+        need to appear separately in the final answer?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Written for this report. The history of Barrow&rsquo;s 1670
+      <em>Lectiones Geometricae</em>, Newton and Leibniz&rsquo;s independent work, and the partisan
+      1712 Royal Society inquiry was checked this run against the MacTutor History of Mathematics
+      archive (University of St Andrews) and Royal Society historical records.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-11-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+</body>
+</html>
