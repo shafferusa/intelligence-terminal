@@ -5152,6 +5152,36 @@
       "probability": "15-30%",
       "basis": "NOTAM closure runs through Oct 17; attacks continued Oct 12; closure extended in steps.",
       "status": "open"
+    },
+    {
+      "id": "2026-10-13-pm-1",
+      "date": "2026-10-13",
+      "slot": "pm",
+      "forecast": "Core CPI for September (released Oct 14) rises 0.2% m/m or less, seasonally adjusted.",
+      "horizon": "2026-10-14",
+      "probability": "55-65%",
+      "basis": "Dow Jones consensus +0.2%; Cleveland Fed nowcast 0.20%; August core +0.29%.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-13-pm-2",
+      "date": "2026-10-13",
+      "slot": "pm",
+      "forecast": "Brent front-month futures settle on Oct 14 above $105.00.",
+      "horizon": "2026-10-14",
+      "probability": "50-65%",
+      "basis": "Oct 13 settle $105.69; Gulf attacks ongoing vs Russian diesel supply hopes.",
+      "status": "open"
+    },
+    {
+      "id": "2026-10-13-pm-3",
+      "date": "2026-10-13",
+      "slot": "pm",
+      "forecast": "The S&P 500 closes Oct 14 above 7,805.45.",
+      "horizon": "2026-10-14",
+      "probability": "45-55%",
+      "basis": "Index flat three sessions; CPI is the swing factor; no directional edge.",
+      "status": "open"
     }
   ]
 }
