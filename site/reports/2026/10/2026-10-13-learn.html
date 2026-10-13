@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>An Equation That Solves for a Future, Not a Number — Learning Brief, Tue, Oct 13, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-13",
+    "slot": "learn",
+    "title": "An Equation That Solves for a Future, Not a Number",
+    "path": "reports/2026/10/2026-10-13-learn.html",
+    "summary": "Day 12 of the Academy: the differential equation, an equation that relates a quantity to its own rate of change, and how one initial fact turns its whole family of possible futures into one.",
+    "headlines": [
+      "Day 12 of 300 · Mathematics: a differential equation describes a rule for change, not a single number",
+      "One extra fact, an initial condition, is what turns that rule into one specific future"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-13T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>An Equation That Solves for a Future, Not a Number</h1>
+      <p class="paper-dateline">
+        Tuesday, October 13, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        Most equations you&rsquo;ve ever solved hand you a number; today&rsquo;s kind hands you a
+        rule for how something changes instead &mdash; and a single extra fact about where it
+        starts is all it takes to turn that rule into one exact, unfolding future.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 12 of 300 &middot; Mathematics 12 of 20 &middot; Differential equations: writing down how things change</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        An equation like <em>x</em> + 5 = 12 asks a narrow question and has a narrow answer: find
+        the one number that makes the statement true. Almost every equation from Day 2&rsquo;s
+        algebra onward works this way &mdash; solve for a number, or a short list of numbers, and
+        you&rsquo;re done. A <strong>differential equation</strong> asks a different kind of
+        question entirely. Instead of relating a quantity to some other numbers, it relates a
+        quantity to its own rate of change &mdash; how fast it is currently growing or shrinking,
+        written as part of the very equation that describes it. Solve one of these, and the answer
+        isn&rsquo;t a number. It&rsquo;s an entire function: a complete rule for how the quantity
+        behaves at every moment in time.
+      </p>
+      <p>
+        Here is why that is a genuinely useful thing to be able to write down. Nobody can hand you
+        a direct formula for how hot a cup of coffee will be in exactly six minutes, or how many
+        bacteria will be in a petri dish by Thursday &mdash; those numbers depend on physics and
+        biology too complicated to summarize in one line. But you often <em>can</em> say something
+        simpler and just as powerful: how fast the coffee is losing heat right now depends only on
+        how much hotter it currently is than the room around it; how fast the bacteria colony is
+        gaining new cells right now depends only on how many cells are already there to divide.
+        Neither of those statements mentions a specific time or a specific temperature or count at
+        all &mdash; they just describe the <em>rule</em> the system is following. A differential
+        equation is simply that rule, written in mathematical notation. Everything else &mdash; the
+        actual temperature at 6 minutes, the actual bacteria count on Thursday &mdash; falls out of
+        the rule once you know where things started.
+      </p>
+      <p>
+        This lesson is about learning to see that kind of equation for what it is, and about the
+        two ideas &mdash; a whole family of possible futures, and the one extra fact that picks a
+        single one out of it &mdash; that make it usable. The actual toolbox for finding a
+        solution from scratch, for an arbitrary differential equation, is a skill of its own; today
+        is about the shape of the question, not yet the full machinery for answering every version
+        of it.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the notation. If <em>y</em> is some quantity changing over time <em>t</em>,
+        its instantaneous rate of change &mdash; the same idea Day 10 built out of a shrinking
+        time interval &mdash; is written <em>dy</em>/<em>dt</em>. A differential equation is any
+        equation that includes a derivative like this one, where the thing being solved for is not
+        a number but the function <em>y</em> itself. Building one is called a
+        <strong>rate-of-change model</strong>: take a plain-English description of how a process
+        behaves (&ldquo;the colony grows faster the more bacteria are already in it&rdquo;) and
+        turn it directly into an equation relating the rate of change to the quantity itself,
+        without ever having to say what the quantity&rsquo;s value actually is at any particular
+        moment.
+      </p>
+      <p>
+        The single most common rate-of-change model in basic science is almost insultingly short:
+        <em>dy</em>/<em>dt</em> = <em>ky</em>, for some constant <em>k</em>. In words: the rate of
+        change of <em>y</em> is directly proportional to <em>y</em> itself. When <em>k</em> is
+        positive, this describes a quantity whose growth keeps accelerating simply because there is
+        now more of it to grow &mdash; more bacteria means more cells currently able to split, so
+        the colony adds new cells faster and faster as it gets bigger. When <em>k</em> is negative,
+        it describes the mirror image: a quantity that shrinks, and shrinks more slowly as there is
+        less of it left to lose. Nothing about the equation names a specific process &mdash;
+        population growth, radioactive decay, and compounding of a quantity over time are all the
+        identical rule, differing only in the sign and size of <em>k</em>.
+      </p>
+      <p>
+        Here is the first subtlety worth sitting with. The equation <em>dy</em>/<em>dt</em> =
+        <em>ky</em> does not describe one curve. It describes every function that obeys that rule
+        &mdash; and it turns out there are infinitely many of them, one for every possible starting
+        value. A colony that begins with 10 bacteria and one that begins with 10 billion, growing
+        under the exact same rule with the exact same <em>k</em>, trace out two wildly different
+        curves in absolute numbers, yet both are equally valid solutions of the identical
+        differential equation. That entire family of possible curves is called the
+        <strong>general solution</strong>. What turns the general solution into one specific,
+        actually-happening future is a single extra fact: the quantity&rsquo;s value at some
+        starting moment, almost always written as its value when <em>t</em> = 0. That one fact is
+        called the <strong>initial condition</strong>, and supplying it selects exactly one curve
+        out of the whole family &mdash; the <strong>particular solution</strong> that matches the
+        real situation you actually care about.
+      </p>
+      <p>
+        The second idea worth building now is <strong>equilibrium</strong>, and it shows up most
+        clearly in a close cousin of the growth equation: Newton&rsquo;s law of cooling, first
+        studied experimentally by Isaac Newton in a 1701 paper on how a heated block of iron loses
+        heat, and given its familiar modern form somewhat later. Written as a rate-of-change model,
+        it says <em>dT</em>/<em>dt</em> = &minus;<em>k</em>(<em>T</em> &minus; <em>T</em><sub>room</sub>):
+        the rate at which an object&rsquo;s temperature <em>T</em> changes is proportional to how
+        far it currently is from the room&rsquo;s temperature, and always points back toward it. A
+        180&deg;F cup of coffee in a 70&deg;F room cools quickly at first, because the gap is large;
+        as it approaches 70&deg;F the gap narrows and the cooling slows, exactly the way the
+        population equation&rsquo;s growth accelerates as the population grows, only running in
+        reverse. Now ask: what happens if the coffee somehow starts out already at exactly
+        70&deg;F, the room&rsquo;s own temperature? The gap is zero, so the rate of change is zero
+        &mdash; nothing happens, forever. That constant value, where the rate of change is
+        permanently zero, is an equilibrium: a value a system stays at once it&rsquo;s there, and
+        which other starting values drift toward (or, in other models, away from) over time. The
+        plain growth equation has an equilibrium too, at <em>y</em> = 0 &mdash; a population of
+        zero stays zero forever, for the unglamorous reason that there is nothing left to
+        reproduce &mdash; but it is the cooling equation where the idea actually earns its keep,
+        since 70&deg;F is a genuinely useful long-run prediction, not just a mathematical curiosity.
+      </p>
+      <p>
+        One more thing is worth being honest about before moving on: nothing above has shown you
+        how to <em>find</em> the curve that satisfies a differential equation like
+        <em>dy</em>/<em>dt</em> = <em>ky</em> from a blank page. That is a real skill, with its own
+        techniques, and it is not today&rsquo;s job. What you can already do, and what the Equation
+        / Model section below walks through, is check whether a candidate function actually
+        satisfies a given rule once someone hands you a guess &mdash; which turns out to be most of
+        what you need to understand what a &ldquo;solution&rdquo; to a differential equation even
+        means.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Differential equation</dt>
+        <dd>An equation that relates a quantity to its own rate of change (one or more
+        derivatives). Its unknown is an entire function, not a number.</dd>
+        <dt>Rate-of-change model</dt>
+        <dd>The act of turning a plain description of a changing process into a differential
+        equation, by writing the quantity&rsquo;s rate of change directly in terms of the quantity
+        itself (and sometimes time), without needing its value at any one moment.</dd>
+        <dt>General solution</dt>
+        <dd>The entire family of functions that satisfy a given differential equation &mdash; every
+        member obeys the identical rule for change, differing only in where each one happens to
+        start.</dd>
+        <dt>Initial condition</dt>
+        <dd>One extra fact &mdash; the quantity&rsquo;s value at a starting moment &mdash; that
+        selects a single curve, the particular solution, out of the general solution&rsquo;s whole
+        family.</dd>
+        <dt>Equilibrium</dt>
+        <dd>A constant value at which a system&rsquo;s rate of change is permanently zero. A system
+        already there stays there forever; starting elsewhere, it typically drifts toward or away
+        from it over time.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Many real populations really do grow, at least before resources run short, in almost
+        exactly the shape of <em>dy</em>/<em>dt</em> = <em>ky</em>. <em>Escherichia coli</em>
+        bacteria reproduce by splitting cleanly in two, and in a nutrient-rich lab culture held at
+        an ideal temperature, a culture can double in number in about 20 minutes &mdash; a figure
+        widely cited in microbiology (Gibson et al., 2018). That is the rate-of-change model in its
+        rawest form: the number of new cells appearing in any instant is proportional to how many
+        cells already exist to split, which is exactly what makes the growth rate proportional to
+        the current population.
+      </p>
+      <div class="worked">
+        <p>
+          Start a culture with 1,000 cells, growing under <em>dy</em>/<em>dt</em> = <em>ky</em>
+          with a 20-minute doubling time. How many cells are there after one hour?
+        </p>
+        <p>
+          <strong>Find <em>k</em> from the doubling time.</strong> A doubling time of 20 minutes
+          means <em>k</em> = ln(2) / 20 &asymp; 0.0347 per minute (the reasoning: plugging a
+          doubling, <em>y</em> &rarr; 2<em>y</em>, into the solution form below and solving for
+          <em>k</em> is exactly this calculation run in reverse).
+        </p>
+        <p>
+          <strong>Apply the solution.</strong> Using <em>y</em>(<em>t</em>) =
+          <em>y</em><sub>0</sub><em>e</em><sup><em>kt</em></sup> (derived in Equation / Model
+          below) with <em>y</em><sub>0</sub> = 1,000 and <em>t</em> = 60 minutes:
+          <em>y</em>(60) = 1,000 &middot; <em>e</em><sup>0.0347&times;60</sup> &asymp; 1,000
+          &middot; <em>e</em><sup>2.08</sup> &asymp; <strong>8,000 cells</strong>.
+        </p>
+        <p>
+          <strong>Check against simpler reasoning.</strong> Sixty minutes is exactly three
+          20-minute doubling periods, so the population should double three times over: 1,000
+          &rarr; 2,000 &rarr; 4,000 &rarr; 8,000. Both routes agree. Nothing in the calculation ever
+          referenced a clock reading directly &mdash; only how many cells already existed, at every
+          step along the way.
+        </p>
+      </div>
+      <p>
+        The same bare equation, applied to something with no biology in it at all, is one of the
+        most famous arguments in the history of ideas. In his 1798 <em>An Essay on the Principle
+        of Population</em>, the economist Thomas Malthus argued that an unconstrained human
+        population grows &ldquo;geometrically&rdquo; &mdash; in the language of this lesson,
+        following <em>dy</em>/<em>dt</em> = <em>ky</em> with <em>k</em> &gt; 0 &mdash; while he
+        argued food production could only grow &ldquo;arithmetically,&rdquo; adding a roughly fixed
+        amount each year rather than multiplying. Whatever one makes of the conclusions Malthus drew
+        from that contrast, or of how later economists and demographers have challenged them over
+        the two centuries since, his underlying mathematical point stands on its own: a quantity
+        growing in proportion to its own size will eventually overtake any quantity that only adds a
+        fixed amount per year, no matter how large that fixed amount is. It is the same curve as the
+        bacteria culture, just relabeled.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">dy/dt = ky</p>
+        <p class="expr-spoken visually-hidden">dy dt equals k times y.</p>
+        <dl>
+          <dt>y</dt>
+          <dd>the changing quantity, as a function of time</dd>
+          <dt>t</dt>
+          <dd>time, the independent variable the rate of change is measured against</dd>
+          <dt>dy/dt</dt>
+          <dd>the instantaneous rate of change of y with respect to time</dd>
+          <dt>k</dt>
+          <dd>the constant of proportionality: positive k means y grows faster the larger it already is; negative k means y shrinks, and more slowly as it gets smaller</dd>
+        </dl>
+      </div>
+      <p>
+        Finding the general solution to an arbitrary differential equation from a blank page takes
+        a technique of its own, not today&rsquo;s job. But you can already check a good guess, and
+        doing so once is worth it, because it shows exactly what &ldquo;satisfies the equation&rdquo;
+        means. Guess that <em>y</em> = <em>Ce</em><sup><em>kt</em></sup>, for some constant
+        <em>C</em>, might work &mdash; exponential growth is exactly the shape a rate proportional to
+        the current amount tends to produce (Day 6&rsquo;s lesson on exponents already named this
+        shape). Differentiate the guess, the way Day 10 taught:
+      </p>
+      <div class="formula">
+        <p class="expr">d/dt (Ce<sup>kt</sup>) = kCe<sup>kt</sup> = k&middot;y</p>
+        <p class="expr-spoken visually-hidden">The derivative of C times e to the kt equals k times C times e to the kt, which equals k times y.</p>
+      </div>
+      <p>
+        The derivative of <em>Ce</em><sup><em>kt</em></sup> with respect to <em>t</em> is
+        <em>kCe</em><sup><em>kt</em></sup> &mdash; the chain rule carries the constant <em>k</em> out
+        front and leaves the exponential otherwise unchanged. But <em>Ce</em><sup><em>kt</em></sup>
+        is just <em>y</em> again, by the guess itself, so that last expression is exactly
+        <em>k</em>&middot;<em>y</em>. The derivative of the guess equals <em>k</em> times the guess,
+        for every value of <em>t</em> and for <em>any</em> constant <em>C</em> whatsoever &mdash;
+        which is precisely what <em>dy</em>/<em>dt</em> = <em>ky</em> demands. The guess checks out.
+      </p>
+      <p>
+        And &ldquo;for any constant <em>C</em>&rdquo; is exactly the general solution promised
+        above: every choice of <em>C</em> traces out a different curve, and all of them obey the
+        identical rule. Set <em>t</em> = 0 in <em>y</em> = <em>Ce</em><sup><em>kt</em></sup> and
+        <em>C</em> is just <em>y</em>(0), the quantity&rsquo;s value at the very start &mdash; which
+        is exactly the initial condition, the one fact that reaches into the infinite family and
+        pulls out the single curve matching reality.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Day 10&rsquo;s derivative gave you a tool for measuring how fast something is changing
+        right now. Day 11&rsquo;s integral and its Fundamental Theorem gave you a tool for turning a
+        known rate back into a total. A differential equation is the natural next question raised by
+        both: what do you do when the rate of change is all you&rsquo;re given, with no ready-made
+        formula for the quantity itself handed to you in advance? That is the situation almost every
+        real quantitative model of a changing system actually starts from &mdash; nobody discovers a
+        direct formula for population or temperature by observation; they discover the local rule it
+        obeys, moment to moment, and then have to recover the global behavior from it.
+      </p>
+      <p>
+        That is also why this equation keeps reappearing far outside mathematics. Equations shaped
+        like <em>dy</em>/<em>dt</em> = <em>ky</em>, or close variations on it, describe radioactive
+        decay, the cooling or heating of an object, the charging of a capacitor, the growth of an
+        investment compounding continuously, and the early stage of almost any population or
+        epidemic, long before any of those fields had a name for what they were writing down. The
+        same short equation, same reasoning, same two extra ideas &mdash; a whole family of curves,
+        and one starting fact that picks the real one out of it.
+      </p>
+      <p>
+        It is also worth noticing something a little strange about the reasoning in Equation /
+        Model: checking that a guess works only required differentiating it and comparing the
+        result to the original equation &mdash; a purely mechanical step. Nothing about that check
+        explains why exponential growth, of all possible shapes, is the right guess for this
+        particular rule. That deeper question &mdash; why a rate proportional to the current amount
+        forces exponential behavior, and not some other curve &mdash; is exactly what a genuine
+        method for solving differential equations from scratch would need to answer. Today&rsquo;s
+        lesson deliberately stops at verification, so that the shape of the question is solid before
+        the machinery for answering it gets built on top.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A differential equation relates a quantity to its own rate of change; solving one means
+        finding a function, not a number.</li>
+        <li><em>dy</em>/<em>dt</em> = <em>ky</em> is the most common basic model: a rate of change
+        directly proportional to the quantity itself &mdash; growth if k is positive, decay if k is
+        negative.</li>
+        <li>A differential equation alone describes a whole family of curves, the general solution;
+        one initial condition &mdash; the starting value &mdash; picks out the one particular
+        solution that actually happens.</li>
+        <li>An equilibrium is a constant value where the rate of change is zero; a system already
+        there stays there, and other starting values typically drift toward or away from it.</li>
+        <li>You can check whether a guessed function solves a differential equation by
+        differentiating it and comparing the result to the rule &mdash; long before you know how to
+        find that guess from scratch.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        Under <em>dy</em>/<em>dt</em> = <em>ky</em> with <em>k</em> &gt; 0, a population grows
+        without any limit at all, forever &mdash; the model has no equilibrium except zero, and
+        nothing in the equation ever slows the growth down. No real population, bacterial or
+        otherwise, actually does this indefinitely; every real colony eventually runs short of food,
+        space, or something else it needs. Using the idea of equilibrium from today&rsquo;s lesson,
+        what would have to be true of a more realistic growth equation &mdash; one built for a
+        population approaching a limited environment&rsquo;s capacity &mdash; that isn&rsquo;t true
+        of this one?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Written for this report. The 20-minute <em>E. coli</em>
+      doubling-time figure (Gibson et al., 2018) and the account of Thomas Malthus&rsquo;s 1798
+      <em>An Essay on the Principle of Population</em> were checked this run against standard
+      microbiology and history-of-economics references. Isaac Newton&rsquo;s 1701 paper on cooling
+      iron is noted as the origin of the law&rsquo;s name; its familiar proportional form was given
+      its modern statement somewhat later.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-12-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
