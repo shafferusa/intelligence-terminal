@@ -1,6 +1,116 @@
 {
  "stories": [
   {
+   "id": "pa-skill-games-illegal",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "Materially changed",
+   "headline": "PA skill-game stay expired with no deal; enforcement begins Oct 14; Legislature returns Oct 19.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Local/PA"
+  },
+  {
+   "id": "guilfoyle-resigns-greece",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "Kimberly Guilfoyle resigned as ambassador to Greece at WH request after WSJ report on $100K AmEx bill; she denies.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "US politics"
+  },
+  {
+   "id": "openai-espionage-arrest",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "OpenAI engineer Abdulrahman Alfozan charged with intercepting oral communications (recorder in exec conference room); detention hearing Oct 19.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "AI security"
+  },
+  {
+   "id": "ukraine-energy-truce-kyiv",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "Continuing",
+   "headline": "Energy ceasefire unconfirmed by Moscow; missiles on Kyiv energy Oct 13; Al Jazeera reports 6+ killed overnight (single source); Zelensky says US threatened intel cut over refinery strikes.",
+   "one_line": null,
+   "verification": "Preliminary",
+   "sources": null,
+   "score_rationale": "War/diesel"
+  },
+  {
+   "id": "black-sea-bulgaria-ships",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "Materially changed",
+   "headline": "Drones sank HS Dignity off Bulgaria Oct 13, 11 of 16 crew missing; Sofia summoned Russian ambassador; attribution unconfirmed.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "NATO-waters shipping attacks"
+  },
+  {
+   "id": "china-exports-sept-2026",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "China Sept exports +36.3% y/y vs 25.5% est; surplus $133.5B; chip exports +108%; to US +39.6%.",
+   "one_line": null,
+   "verification": "Single-reliable-source",
+   "sources": null,
+   "score_rationale": "Trade/inflation/chips"
+  },
+  {
+   "id": "hormuz-iran-escalation-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "Materially changed",
+   "headline": "Reuters: Iranian officials say shipping attacks stepped up before US vote ('complete closure soon'); JMIC threat 'severe'; Houthi missile hit Aramco admin HQ Dhahran Oct 13 (limited fire). Brent 106.40.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Oil/CPI/war risk"
+  },
+  {
+   "id": "bac-aml-penalty-q3",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "BAC fined $1.2B by FinCEN (credits OCC $750M record) + $11.6M OFAC; admitted willful BSA violations; Q3 results Oct 14 ~6:45 (not out at press).",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Largest consumer bank; record OCC penalty"
+  },
+  {
+   "id": "asml-q3-2026",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "ASML Q3: net income ~EUR5.0B vs 4.13B est, sales ~EUR11.7B, FY26 guide raised to EUR44-45B; says 2027-28 supply may not meet demand.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "AI capex read-through amid memory rout"
+  },
+  {
+   "id": "cpi-sept-2026",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-am",
+   "status": "New",
+   "headline": "September CPI due 8:30 Oct 14: consensus +0.6% m/m headline (3.6% y/y), +0.2% core; last print before Oct 27-28 FOMC; COLA set from it.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Top market event; Fed path; rates at 5.2%"
+  },
+  {
    "id": "bumble-take-private-oct13",
    "first_seen": "2026-10-13",
    "last_updated": "2026-10-13-pm",
@@ -287,22 +397,6 @@
    "score_rationale": "US"
   },
   {
-   "id": "doj-network-antitrust",
-   "first_seen": "2026-10-12-am",
-   "last_updated": "2026-10-12-am",
-   "status": "New",
-   "headline": "DOJ Antitrust Division sent CIDs to ABC, CBS, CNN, Fox, NBC over Sept 21 pool suspension ('group boycott' theory); investigation stage",
-   "one_line": "Press/antitrust",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NYT",
-    "NBC",
-    "CNN",
-    "NPR"
-   ],
-   "score_rationale": "US"
-  },
-  {
    "id": "nk-missiles-oct12",
    "first_seen": "2026-10-12-am",
    "last_updated": "2026-10-12-pm",
@@ -410,6 +504,39 @@
    "watch": true
   },
   {
+   "id": "pa-skill-games-deadline-oct13",
+   "status": "Continuing",
+   "headline": "PA skill-game ruling takes effect Tue Oct 13; State Police enforcement from Oct 14; PSP and AG say machines must be physically removed, Pace-O-Matic says 'rendered inoperable' suffices",
+   "one_line": "Deadline Tuesday; dispute over what compliance means",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "PhillyVoice",
+    "LancasterOnline",
+    "Capital-Star",
+    "WJAC"
+   ],
+   "score_rationale": "Local/PA",
+   "first_seen": "2026-10-04-sun",
+   "last_updated": "2026-10-12-pm",
+   "watch": true
+  },
+  {
+   "id": "doj-network-antitrust",
+   "first_seen": "2026-10-12-am",
+   "last_updated": "2026-10-12-am",
+   "status": "New",
+   "headline": "DOJ Antitrust Division sent CIDs to ABC, CBS, CNN, Fox, NBC over Sept 21 pool suspension ('group boycott' theory); investigation stage",
+   "one_line": "Press/antitrust",
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "NYT",
+    "NBC",
+    "CNN",
+    "NPR"
+   ],
+   "score_rationale": "US"
+  },
+  {
    "id": "trump-zelensky-new-president-oct10",
    "status": "New",
    "headline": "Trump says Ukraine should 'get a new president' after Zelensky criticized the Russian diesel license; Zaporizhzhia guided-bomb attack kills 20",
@@ -441,23 +568,6 @@
    "score_rationale": "Week's key macro event",
    "first_seen": "2026-10-11-sun",
    "last_updated": "2026-10-11-sun",
-   "watch": true
-  },
-  {
-   "id": "pa-skill-games-deadline-oct13",
-   "status": "Continuing",
-   "headline": "PA skill-game ruling takes effect Tue Oct 13; State Police enforcement from Oct 14; PSP and AG say machines must be physically removed, Pace-O-Matic says 'rendered inoperable' suffices",
-   "one_line": "Deadline Tuesday; dispute over what compliance means",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "PhillyVoice",
-    "LancasterOnline",
-    "Capital-Star",
-    "WJAC"
-   ],
-   "score_rationale": "Local/PA",
-   "first_seen": "2026-10-04-sun",
-   "last_updated": "2026-10-12-pm",
    "watch": true
   },
   {
@@ -664,161 +774,6 @@
    "score_rationale": "Dominant US story with oil/refining read-through",
    "first_seen": "2026-10-09-am",
    "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "oil-eases-no-strike-pledge-oct9",
-   "status": "Materially changed",
-   "headline": "Brent ~$102.95 (-1.3%) after Trump no-strike-before-Nov-3 pledge; Iran reviewing US reply to 7-day plan; UKMTO 14 tanker attacks since Sep 30",
-   "one_line": "Brent ~$102.95 (-1.3%) after Trump no-strike-before-Nov-3 pl",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNBC",
-    "Reuters",
-    "Dawn/Tasnim"
-   ],
-   "score_rationale": "Macro thread",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "fed-waller-musalem-hikes-oct8",
-   "status": "New",
-   "headline": "Waller: further hikes needed, not necessarily consecutive; Musalem: more firming required; 10Y par 5.22% (-6), 30Y 5.60%, 2s10s 47bp",
-   "one_line": "Waller: further hikes needed, not necessarily consecutive; M",
-   "verification": "Confirmed-primary",
-   "sources": [
-    "federalreserve.gov",
-    "stlouisfed.org",
-    "Treasury"
-   ],
-   "score_rationale": "Fed path ahead of Oct 14 CPI",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "ma-star-ratings-2027-oct8",
-   "status": "New",
-   "headline": "CMS 2027 MA star ratings: Humana beat Top Quartile goal (8-K), ~+13% AH; Alignment main contract to 3.5 stars, ~-20% AH, will appeal",
-   "one_line": "CMS 2027 MA star ratings: Humana beat Top Quartile goal (8-K",
-   "verification": "Confirmed-primary (8-Ks) + multiple for moves",
-   "sources": [
-    "Humana 8-K",
-    "Alignment 8-K",
-    "Investing.com",
-    "CNBC"
-   ],
-   "score_rationale": "Sector event",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "openai-revenue-followup-oct9",
-   "status": "Continuing",
-   "headline": "No on-record OpenAI statement; Bloomberg: expects $70B+ annualized by end-2026; gap from cloud-partner gross revenue accounting; breadth 2,993/2,537 Thu",
-   "one_line": "No on-record OpenAI statement; Bloomberg: expects $70B+ annu",
-   "verification": "Confirmed-multiple (reported figures)",
-   "sources": [
-    "FT",
-    "Bloomberg",
-    "CNBC",
-    "Reuters"
-   ],
-   "score_rationale": "AI-capex debt chain risk",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "nobel-peace-2026-pillay",
-   "status": "New",
-   "headline": "Nobel Peace Prize 2026: Navi Pillay (South Africa), for work ensuring war crimes/genocide prosecuted",
-   "one_line": "Nobel Peace Prize 2026: Navi Pillay (South Africa), for work",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NobelPrize.org",
-    "Al Jazeera",
-    "CBS",
-    "CNN"
-   ],
-   "score_rationale": "World",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "houthi-riyadh-airport-oct8",
-   "status": "New",
-   "headline": "Houthi ballistic missile hits Riyadh airport, 3 Saudis killed incl Saudia pilot; ops resumed",
-   "one_line": "Houthi ballistic missile hits Riyadh airport, 3 Saudis kille",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Reuters",
-    "Time"
-   ],
-   "score_rationale": "Gulf risk",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "allegheny-measles-second-case-oct8",
-   "status": "Materially changed",
-   "headline": "Second Allegheny County measles case, unvaccinated minor, North Hills private school (Eden Christian Academy acknowledged)",
-   "one_line": "Second Allegheny County measles case, unvaccinated minor, No",
-   "verification": "Confirmed-multiple (ACHD page lagged)",
-   "sources": [
-    "PublicSource",
-    "WPXI"
-   ],
-   "score_rationale": "Local public health",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "pa-skill-games-second-petition-oct9",
-   "status": "Materially changed",
-   "headline": "Second petition reportedly signed (Fritz, Williams, Yaw); filing unconfirmed; stay ends Oct 13, enforcement Oct 14",
-   "one_line": "Second petition reportedly signed (Fritz, Williams, Yaw); fi",
-   "verification": "Single-reliable-source (WESA) for petition",
-   "sources": [
-    "WESA",
-    "WPSU",
-    "Capital-Star"
-   ],
-   "score_rationale": "PA",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "openai-revenue-50b-ai-selloff-oct8",
-   "status": "New",
-   "headline": "FT/CNBC: OpenAI told investors ~$50B annualized revenue end-Sep vs ~$68B widely reported; SMH -2.8%, MU -4.8%, AVGO -4.4%, NVDA -2.9%; RSP +0.6% vs SPY -0.4%",
-   "one_line": "AI trade hit; rotation not de-risking",
-   "verification": "Confirmed-multiple (FT + CNBC independent source); figure reported not disclosed",
-   "sources": [
-    "Financial Times",
-    "CNBC",
-    "CNN",
-    "Yahoo"
-   ],
-   "score_rationale": "Lead: most market-moving development of the session; AI-capex debt chain",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
-  },
-  {
-   "id": "trump-no-iran-attack-before-midterms-oct8",
-   "status": "New",
-   "headline": "Trump (Truth Social): no US attack on Iran before Nov 3; blockade stays; Brent ~$103-104 still +3-4%",
-   "one_line": "Dated strike trigger removed; supply risks remain",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNBC",
-    "ABC",
-    "Reuters",
-    "The Hill",
-    "UPI",
-    "CBS"
-   ],
-   "score_rationale": "Resolves am lead's political trigger; bears on forecast 2026-10-08-am-3",
-   "first_seen": "2026-10-08-pm",
-   "last_updated": "2026-10-08-pm"
   }
  ]
 }

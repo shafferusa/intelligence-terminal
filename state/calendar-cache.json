@@ -1,330 +1,82 @@
 {
-  "fetched": "2026-10-11T09:45:00-04:00",
-  "earnings_fetched": "2026-10-11",
-  "earnings_fetched_note": "2026-10-11 sun: Alpha Vantage 3-month CSV and Finnhub Oct 12-16 both fetched; ASML/TSM dates from AV/Wall Street Horizon.",
-  "events": [
-    {
-      "ts_et": "2026-10-12T05:45:00-04:00",
-      "type": "science",
-      "name": "Nobel economics prize",
-      "importance": "Low",
-      "reason": "Last Nobel",
-      "source": "nobelprize.org"
-    },
-    {
-      "ts_et": "2026-10-12T12:10:00-04:00",
-      "type": "fed",
-      "name": "Hammack",
-      "importance": "Low",
-      "reason": "Fed path",
-      "source": "Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-12T18:00:00-04:00",
-      "type": "politics",
-      "name": "Trump rally, Youngstown OH",
-      "importance": "Low",
-      "reason": "Midterms",
-      "source": "WFMJ/press"
-    },
-    {
-      "ts_et": "2026-10-12T19:00:00-04:00",
-      "type": "space",
-      "name": "Falcon 9 Starlink 15-25, Vandenberg",
-      "importance": "Low",
-      "reason": "Launch",
-      "source": "LL2"
-    },
-    {
-      "ts_et": "2026-10-12T22:00:00-04:00",
-      "type": "cb",
-      "name": "IMF World Economic Outlook + GFSR (Bangkok)",
-      "importance": "Medium",
-      "reason": "Global growth/inflation forecasts",
-      "source": "imf.org"
-    },
-    {
-      "ts_et": "2026-10-13T03:45:00-04:00",
-      "type": "fed",
-      "name": "Waller on AI, New Delhi",
-      "importance": "Medium",
-      "reason": "Board governor",
-      "source": "federalreserve.gov/Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-13T06:33:00-04:00",
-      "type": "space",
-      "name": "Falcon 9 Dragon CRS-35 to ISS",
-      "importance": "Low",
-      "reason": "Station cargo",
-      "source": "NASA/LL2"
-    },
-    {
-      "ts_et": "2026-10-13T07:00:00-04:00",
-      "type": "earnings",
-      "name": "JPMorgan, Goldman Sachs, Citigroup, Wells Fargo, J&J, UnitedHealth BMO",
-      "importance": "Critical",
-      "reason": "Season opener; consumer credit",
-      "source": "Finnhub/company IR"
-    },
-    {
-      "ts_et": "2026-10-13T11:30:00-04:00",
-      "type": "auction",
-      "name": "6-, 13-, 26-week bills ($95B/$95B/$82B)",
-      "importance": "Low",
-      "reason": "Bill supply",
-      "source": "TreasuryDirect"
-    },
-    {
-      "ts_et": "2026-10-13T13:00:00-04:00",
-      "type": "fed",
-      "name": "Barkin",
-      "importance": "Low",
-      "reason": "Fed path",
-      "source": "Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-13T14:00:00-04:00",
-      "type": "fiscal",
-      "name": "Monthly Treasury Statement, Sept/FY2026 (date unconfirmed)",
-      "importance": "Medium",
-      "reason": "FY deficit",
-      "source": "Treasury rule of thumb"
-    },
-    {
-      "ts_et": "2026-10-13T16:00:00-04:00",
-      "type": "fed",
-      "name": "Collins",
-      "importance": "Low",
-      "reason": "Fed path",
-      "source": "Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-13T21:30:00-04:00",
-      "type": "econ",
-      "name": "China CPI/PPI (Sept)",
-      "importance": "Medium",
-      "reason": "Global prices",
-      "source": "NBS via calendars"
-    },
-    {
-      "ts_et": "2026-10-13T00:00:00-04:00",
-      "type": "local",
-      "name": "PA skill-game ruling takes effect; enforcement from Oct 14",
-      "importance": "Medium",
-      "reason": "Local/PA",
-      "source": "PSP/AG"
-    },
-    {
-      "ts_et": "2026-10-13T00:00:00-04:00",
-      "type": "politics",
-      "name": "Georgia early voting opens",
-      "importance": "Low",
-      "reason": "Midterms",
-      "source": "GA SoS"
-    },
-    {
-      "ts_et": "2026-10-14T04:00:00-04:00",
-      "type": "energy",
-      "name": "IEA Oil Market Report",
-      "importance": "Medium",
-      "reason": "Oil",
-      "source": "IEA"
-    },
-    {
-      "ts_et": "2026-10-14T05:40:00-04:00",
-      "type": "fed",
-      "name": "Bowman, IIF Bangkok",
-      "importance": "Low",
-      "reason": "Supervision",
-      "source": "Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-14T07:00:00-04:00",
-      "type": "earnings",
-      "name": "Bank of America, Morgan Stanley, BlackRock, ASML, Progressive BMO",
-      "importance": "High",
-      "reason": "Banks; chip equipment",
-      "source": "Finnhub/AV/company IR"
-    },
-    {
-      "ts_et": "2026-10-14T08:30:00-04:00",
-      "type": "econ",
-      "name": "CPI (Sept); cons +0.6% m/m, 3.6% y/y; core +0.2%, 2.5%",
-      "importance": "Critical",
-      "reason": "Last CPI before FOMC",
-      "source": "BLS (date); aggregators (cons)"
-    },
-    {
-      "ts_et": "2026-10-14T10:00:00-04:00",
-      "type": "legal",
-      "name": "SCOTUS: Salazar v. Paramount Global (VPPA)",
-      "importance": "Low",
-      "reason": "Privacy litigation",
-      "source": "supremecourt.gov"
-    },
-    {
-      "ts_et": "2026-10-14T13:30:00-04:00",
-      "type": "fed",
-      "name": "Barkin",
-      "importance": "Low",
-      "reason": "Fed path",
-      "source": "Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-14T14:00:00-04:00",
-      "type": "fed",
-      "name": "Beige Book",
-      "importance": "Medium",
-      "reason": "Regional anecdotes",
-      "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-10-14T16:30:00-04:00",
-      "type": "energy",
-      "name": "API oil stocks (delayed)",
-      "importance": "Low",
-      "reason": "Oil",
-      "source": "Reuters"
-    },
-    {
-      "ts_et": "2026-10-14T20:30:00-04:00",
-      "type": "econ",
-      "name": "Australia jobs (Sept)",
-      "importance": "Low",
-      "reason": "Global",
-      "source": "ABS"
-    },
-    {
-      "ts_et": "2026-10-15T07:00:00-04:00",
-      "type": "earnings",
-      "name": "TSMC, PNC, US Bancorp, Schwab, Prologis BMO",
-      "importance": "High",
-      "reason": "AI demand; Pittsburgh bank",
-      "source": "Wall Street Horizon/PNC IR/Finnhub"
-    },
-    {
-      "ts_et": "2026-10-15T08:30:00-04:00",
-      "type": "econ",
-      "name": "Retail sales (Sept) cons +0.3%, control +0.3%; PPI cons +0.5%/core +0.3%; Philly Fed cons 26.5; jobless claims",
-      "importance": "High",
-      "reason": "Consumer and prices",
-      "source": "Census/BLS/Philly Fed; aggregators"
-    },
-    {
-      "ts_et": "2026-10-15T00:00:00-04:00",
-      "type": "cb",
-      "name": "G20 finance ministers & central bankers, Bangkok; European Council Oct 15-16",
-      "importance": "Medium",
-      "reason": "Global policy",
-      "source": "Treasury/consilium"
-    },
-    {
-      "ts_et": "2026-10-15T12:00:00-04:00",
-      "type": "energy",
-      "name": "EIA weekly petroleum (delayed)",
-      "importance": "Low",
-      "reason": "Oil",
-      "source": "Reuters"
-    },
-    {
-      "ts_et": "2026-10-15T16:30:00-04:00",
-      "type": "fed",
-      "name": "Hammack; H.4.1",
-      "importance": "Low",
-      "reason": "Fed path",
-      "source": "Kiplinger/Fed"
-    },
-    {
-      "ts_et": "2026-10-15T19:44:00-04:00",
-      "type": "space",
-      "name": "Falcon 9 USSF-481, Vandenberg",
-      "importance": "Low",
-      "reason": "Launch",
-      "source": "SpaceX/LL2"
-    },
-    {
-      "ts_et": "2026-10-15T20:00:00-04:00",
-      "type": "politics",
-      "name": "Michigan governor debate (James v. Benson)",
-      "importance": "Low",
-      "reason": "Midterms",
-      "source": "WDIV"
-    },
-    {
-      "ts_et": "2026-10-15T23:30:00-04:00",
-      "type": "fed",
-      "name": "Warsh fireside with IMF's Georgieva, Bangkok",
-      "importance": "High",
-      "reason": "Last word before blackout",
-      "source": "federalreserve.gov/Kiplinger"
-    },
-    {
-      "ts_et": "2026-10-16T07:00:00-04:00",
-      "type": "earnings",
-      "name": "Travelers, Truist, M&T, Regions, Citizens BMO",
-      "importance": "Medium",
-      "reason": "Insurance/regionals",
-      "source": "Finnhub"
-    },
-    {
-      "ts_et": "2026-10-16T08:30:00-04:00",
-      "type": "econ",
-      "name": "Import/export prices (Sept)",
-      "importance": "Low",
-      "reason": "Prices",
-      "source": "BLS"
-    },
-    {
-      "ts_et": "2026-10-16T09:15:00-04:00",
-      "type": "econ",
-      "name": "Industrial production (Sept)",
-      "importance": "Medium",
-      "reason": "Output",
-      "source": "Fed G.17"
-    },
-    {
-      "ts_et": "2026-10-17T00:00:00-04:00",
-      "type": "fed",
-      "name": "FOMC blackout begins (through Oct 29)",
-      "importance": "Medium",
-      "reason": "Fed",
-      "source": "Fed rules"
-    },
-    {
-      "ts_et": "2026-10-17T20:00:00-04:00",
-      "type": "local",
-      "name": "PRT tech systems offline 7-10 hrs (data-center move)",
-      "importance": "Low",
-      "reason": "Local transit",
-      "source": "PRT via WPXI"
-    },
-    {
-      "ts_et": "2026-10-19T15:41:00-04:00",
-      "type": "space",
-      "name": "H3 / JAXA MMX",
-      "importance": "Low",
-      "reason": "Mars moons mission",
-      "source": "JAXA"
-    },
-    {
-      "ts_et": "2026-10-19T00:00:00-04:00",
-      "type": "local",
-      "name": "PA voter registration deadline; PA Senate and House return",
-      "importance": "Medium",
-      "reason": "Local/PA",
-      "source": "vote.pa.gov via outlets"
-    },
-    {
-      "ts_et": "2026-10-21T13:00:00-04:00",
-      "type": "auction",
-      "name": "20-year bond reopening",
-      "importance": "Medium",
-      "reason": "Long-end supply",
-      "source": "TreasuryDirect"
-    }
-  ],
-  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
-  "fomc_next": "2026-10-28",
-  "holiday_note": "Week of Oct 12: no NYSE holiday/early close (data/nyse-holidays.json); Mon Oct 12 Columbus Day = SIFMA bond-market holiday, federal holiday."
+ "fetched": "2026-10-14T06:40:49-04:00",
+ "earnings_fetched": "2026-10-11",
+ "earnings_fetched_note": "2026-10-11 sun: Alpha Vantage 3-month CSV and Finnhub Oct 12-16 both fetched; ASML/TSM dates from AV/Wall Street Horizon.",
+ "events": [
+  {
+   "ts_et": "2026-10-14T08:30",
+   "type": "data",
+   "name": "CPI (Sept)",
+   "importance": "Critical",
+   "reason": "Last inflation print before Oct 28 FOMC",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-10-14T14:00",
+   "type": "fed",
+   "name": "Beige Book",
+   "importance": "Medium",
+   "reason": "Regional read pre-FOMC",
+   "source": "federalreserve.gov"
+  },
+  {
+   "ts_et": "2026-10-14T11:30",
+   "type": "auction",
+   "name": "17-week bill $75B",
+   "importance": "Low",
+   "reason": "Routine bill",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-15T08:30",
+   "type": "data",
+   "name": "PPI (Sept); retail sales; claims",
+   "importance": "High",
+   "reason": "Inflation pipeline + consumer",
+   "source": "bls.ics / research"
+  },
+  {
+   "ts_et": "2026-10-15T00:00",
+   "type": "earnings",
+   "name": "TSMC, PNC, SCHW, USB, PLD; IBKR/JBHT amc",
+   "importance": "High",
+   "reason": "AI capex + banks",
+   "source": "finnhub"
+  },
+  {
+   "ts_et": "2026-10-16T08:30",
+   "type": "data",
+   "name": "Import/export prices",
+   "importance": "Low",
+   "reason": "",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-10-21T13:00",
+   "type": "auction",
+   "name": "20-year bond reopening",
+   "importance": "Medium",
+   "reason": "Long-end demand test",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-22T13:00",
+   "type": "auction",
+   "name": "5-year TIPS",
+   "importance": "Low",
+   "reason": "",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-28T14:00",
+   "type": "fed",
+   "name": "FOMC decision",
+   "importance": "Critical",
+   "reason": "Hike odds <20%",
+   "source": "federalreserve.gov"
+  }
+ ],
+ "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
+ "fomc_next": "2026-10-28",
+ "holiday_note": "Week of Oct 12: no NYSE holiday/early close (data/nyse-holidays.json); Mon Oct 12 Columbus Day = SIFMA bond-market holiday, federal holiday."
 }
