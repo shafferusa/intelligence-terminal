@@ -1,15 +1,125 @@
 {
  "stories": [
   {
+   "id": "cpi-sept-2026",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "Sept CPI +0.6% m/m, 3.7% y/y (vs 3.6%); core +0.3%/2.6% (vs 0.2/2.5); Oct hike odds ~22%->35-55%; COLA 3.6%.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Lead: market-moving macro; BLS primary"
+  },
+  {
+   "id": "chip-ai-power-selloff-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "Materially changed",
+   "headline": "SMH -3.9% (7th down day), AMD -5.7%, ASML -3.9% despite beat, VST -6.5%; cause disputed (rates vs CXMT).",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Markets; TSMC Oct 15"
+  },
+  {
+   "id": "bac-ms-blk-q3-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "BAC EPS $0.91 incl $1.2B penalty, -4.8%; MS $3.03 beat, -2.8%; BLK adj $15.93, AUM $15.5T, +0.7%; STT beat -4.1%.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Corporate/earnings"
+  },
+  {
+   "id": "hormuz-sinkings-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "Materially changed",
+   "headline": "Container ship sank south of Hormuz: IRGC says mine, US official says missile; GFS Pride sank, 21 crew safe; UKMTO 20 attacks since Oct 1.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Oil/geopolitics"
+  },
+  {
+   "id": "beige-book-oct2026",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "Beige Book: modest growth, flat consumer, 'higher oil prices permeated all District reports'.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Fed"
+  },
+  {
+   "id": "defensive-rotation-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "Health care +2.5%, staples +2.2%, defense up; S&P -1.11% to 7,718.94, worst since July.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Markets"
+  },
+  {
+   "id": "doj-california-voter-list-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "DOJ letter gives California 48 hours to verify citizenship on federal list; threatens emergency relief.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "US politics/elections"
+  },
+  {
+   "id": "ukraine-grid-strikes-oct14",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "Materially changed",
+   "headline": "Russia: 120+ drones, 39 ballistic missiles on grid; 600k+ without power; tolls 3-9 disputed; energy truce in doubt.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "World"
+  },
+  {
+   "id": "pope-leo-lung-cancer-oct13",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "Pope Leo XIV: lung adenocarcinoma, lower right lobe removed; stage undetermined; audiences cancelled to Oct 20.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "World"
+  },
+  {
    "id": "pa-skill-games-illegal",
    "first_seen": "2026-10-14",
-   "last_updated": "2026-10-14-am",
+   "last_updated": "2026-10-14-pm",
    "status": "Materially changed",
-   "headline": "PA skill-game stay expired with no deal; enforcement begins Oct 14; Legislature returns Oct 19.",
+   "headline": "PA skill-game enforcement began Oct 14: seizure of machines/cash, possible charges; legislature returns Oct 19.",
    "one_line": null,
    "verification": "Confirmed-multiple",
    "sources": null,
    "score_rationale": "Local/PA"
+  },
+  {
+   "id": "allegheny-paid-leave-vote",
+   "first_seen": "2026-10-14",
+   "last_updated": "2026-10-14-pm",
+   "status": "New",
+   "headline": "Allegheny County 12-week paid parental leave bill heads to final council vote (date unconfirmed, possibly Oct 20).",
+   "one_line": null,
+   "verification": "Single-reliable-source",
+   "sources": null,
+   "score_rationale": "Local"
   },
   {
    "id": "guilfoyle-resigns-greece",
@@ -98,17 +208,6 @@
    "verification": "Confirmed-primary",
    "sources": null,
    "score_rationale": "AI capex read-through amid memory rout"
-  },
-  {
-   "id": "cpi-sept-2026",
-   "first_seen": "2026-10-14",
-   "last_updated": "2026-10-14-am",
-   "status": "New",
-   "headline": "September CPI due 8:30 Oct 14: consensus +0.6% m/m headline (3.6% y/y), +0.2% core; last print before Oct 27-28 FOMC; COLA set from it.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "Top market event; Fed path; rates at 5.2%"
   },
   {
    "id": "bumble-take-private-oct13",
@@ -663,117 +762,6 @@
    "score_rationale": "US disaster + energy supply",
    "first_seen": "2026-10-09-pm",
    "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "openai-70b-outlook-oct9",
-   "status": "Materially changed",
-   "headline": "Bloomberg: OpenAI expects >=$70B annualized by end-2026; chips bounced premarket then faded (NVDA -0.5%, AMD -2.0%, SMH -0.6%); ORCL +4.2%",
-   "one_line": "Bloomberg: OpenAI expects >=$70B annualized by end-2026; chi",
-   "verification": "Single-reliable-source",
-   "sources": [],
-   "score_rationale": "AI demand thread",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "umich-oct-prelim-oct9",
-   "status": "New",
-   "headline": "UMich prelim Oct 46.3 vs 47.6 cons, Sep 48.1; 1-yr exp 4.7%, 5-10yr 3.5% (via TradingEconomics/Yahoo, release not opened); 2Y +5bp to 4.80%",
-   "one_line": "UMich prelim Oct 46.3 vs 47.6 cons, Sep 48.1; 1-yr exp 4.7%,",
-   "verification": "Single-reliable-source",
-   "sources": [],
-   "score_rationale": "Inflation expectations / Fed path",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "iran-revised-proposals-uae-vessel-oct9",
-   "status": "Developing",
-   "headline": "Pezeshkian told Putin Iran revised proposals, to finalize via mediators; UKMTO vessel struck 13nm W of Al Jazeera UAE (Reuters only); Brent ~flat ~$104 after early -1.3%",
-   "one_line": "Pezeshkian told Putin Iran revised proposals, to finalize vi",
-   "verification": "Confirmed-multiple / single for UKMTO",
-   "sources": [],
-   "score_rationale": "Oil/geopolitics",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "pa-skill-games-denied-oct9",
-   "status": "Materially changed",
-   "headline": "PA Supreme Court denied lawmakers' and VFW/Legion petitions Oct 9; Oct 13 deadline stands, enforcement Oct 14",
-   "one_line": "PA Supreme Court denied lawmakers' and VFW/Legion petitions ",
-   "verification": "Confirmed-multiple",
-   "sources": [],
-   "score_rationale": "PA beat; small business impact",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "generic-ballot-d8-oct9",
-   "status": "New",
-   "headline": "Generic ballot averages D+8.9 (Silver Bulletin), D+8 (FiftyPlusOne), D+7.9 (RCP)",
-   "one_line": "Generic ballot averages D+8.9 (Silver Bulletin), D+8 (FiftyP",
-   "verification": "Confirmed-multiple",
-   "sources": [],
-   "score_rationale": "Midterms Nov 3",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "duquesne-light-strike-week2-oct9",
-   "status": "Continuing",
-   "headline": "~1,000 IBEW Local 29 on strike since Oct 1; talks stalled; tentative deals on subcontracting/tech",
-   "one_line": "~1,000 IBEW Local 29 on strike since Oct 1; talks stalled; t",
-   "verification": "Confirmed-multiple",
-   "sources": [],
-   "score_rationale": "Pittsburgh utility; storm Sunday",
-   "first_seen": "2026-10-09-pm",
-   "last_updated": "2026-10-09-pm"
-  },
-  {
-   "id": "delta-q3-guide-cut-oct9",
-   "status": "New",
-   "headline": "Delta Q3 adj EPS $1.72 vs July guide $2.00-2.50; FY EPS cut to $5.10-5.60 from $6.50-7.50; Q4 fuel ~$4.25/gal; adj rev $17.6B +16%",
-   "one_line": "Delta Q3 adj EPS $1.72 vs July guide $2.00-2.50; FY EPS cut ",
-   "verification": "Confirmed-primary (8-K)",
-   "sources": [
-    "Delta 8-K Oct 9",
-    "Delta 8-K Jul 10"
-   ],
-   "score_rationale": "Lead: first major Q3 read of the energy shock in earnings; Fed/inflation thread",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "spacex-800mhz-spectrum-telcos-oct8",
-   "status": "New",
-   "headline": "SpaceX to buy Grain's nationwide 800 MHz portfolio (up to 14 MHz paired) for Starlink Mobile; WSJ ~$8B; T ~-8%, VZ/TMUS ~-7% AH; SPCX +3-4% AH; FCC approval needed",
-   "one_line": "SpaceX to buy Grain's nationwide 800 MHz portfolio (up to 14",
-   "verification": "Confirmed-multiple (price single-source WSJ)",
-   "sources": [
-    "Bloomberg",
-    "Reuters",
-    "CNBC",
-    "WSJ"
-   ],
-   "score_rationale": "Large-cap telecom repricing; follows FCC D2C order",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
-  },
-  {
-   "id": "isaias-cat2-landfall-oct9",
-   "status": "Materially changed",
-   "headline": "Isaias strong Cat 2 (100 mph NHC Thu eve; 110 NBC Fri), possible brief Cat 3; landfall ~8PM Fri-1AM Sat Dauphin Island-Destin; GoM 62.9% oil shut in; ~2.7M b/d refining near path",
-   "one_line": "Isaias strong Cat 2 (100 mph NHC Thu eve; 110 NBC Fri), poss",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NHC via NBC/CNN",
-    "AccuWeather",
-    "BOE Report/Reuters"
-   ],
-   "score_rationale": "Dominant US story with oil/refining read-through",
-   "first_seen": "2026-10-09-am",
-   "last_updated": "2026-10-09-am"
   }
  ]
 }

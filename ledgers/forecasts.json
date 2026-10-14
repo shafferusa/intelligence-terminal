@@ -5232,6 +5232,36 @@
    "probability": "70-85%",
    "basis": "Two of three Q3 CPI-W months known; projections cluster 3.4-3.6%.",
    "status": "open"
+  },
+  {
+   "id": "2026-10-14-pm-1",
+   "date": "2026-10-14",
+   "slot": "pm",
+   "forecast": "TSMC Q3 2026 net profit (reported Oct 15) exceeds the LSEG SmartEstimate of about NT$746.3 billion.",
+   "horizon": "2026-10-15",
+   "probability": "55-70%",
+   "basis": "Revenue already reported at a record NT$1.494T; TSMC's record of beating profit estimates; margin guidance 65-67%.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-14-pm-2",
+   "date": "2026-10-14",
+   "slot": "pm",
+   "forecast": "September 2026 core PPI (released Oct 15) rises 0.3% m/m or more.",
+   "horizon": "2026-10-15",
+   "probability": "50-60%",
+   "basis": "Consensus +0.3%; CPI core hot at 0.3%; Beige Book reports fuel-surcharge pass-through.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-14-pm-3",
+   "date": "2026-10-14",
+   "slot": "pm",
+   "forecast": "The S&P 500 closes Oct 15 above 7,718.94.",
+   "horizon": "2026-10-15",
+   "probability": "45-55%",
+   "basis": "Coin flip after a -1.1% day; PPI and TSMC are the swing factors.",
+   "status": "open"
   }
  ]
 }
