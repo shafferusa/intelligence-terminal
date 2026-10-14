@@ -1,0 +1,826 @@
+"""Trade engine for a once-per-day world.
+
+Orders entered by the player are instructions for the *next* daily update
+("market-on-next-update") — except a LIVE ticket in a save that tracks the real
+market, which fills immediately at the latest quote (engines/live.py) through the
+same fill logic. During the update every working order is evaluated against that
+day's session bar (open/high/low/close, volume) with realistic liquidity. An
+instruction entered while the session was already running (`execute_at` CLOSE)
+executes against the close instead of an open that had already printed:
+
+  MARKET          fills at the open, crossing the spread and paying square-root
+                  market impact scaled by volatility and participation
+  LIMIT / TAKE_PROFIT   fills only if the session traded through the price;
+                  a favourable gap at the open fills at the open
+  STOP / STOP_LIMIT     triggers if the session traded through the stop, then
+                  fills like a market (or limit) order from the trigger price,
+                  or from the open if the market gapped through it
+  TRAILING_STOP   a stop that ratchets with each day's close
+  condition       any order can carry "only if X <= / >= value" on a security
+                  close, a curve tenor yield (CURVE:10Y) or a commodity spot
+                  (SPOT:CL); evaluated at the close, then executed at the close
+
+Orders above 20% of the session's volume partially fill and keep working
+(GTC) or expire (DAY = good for the next session).
+
+Futures are margined instruments: positions can be short, settle daily through
+variation margin (futures.py), commissions settle same day through the
+clearing broker, and there is no DVP settlement instruction.
+"""
+from __future__ import annotations
+
+import math
+import random
+from datetime import date
+from decimal import Decimal
+from typing import Dict, List, Optional, Tuple
+
+from ..calendar import settlement_date
+from ..domain.events import E, Event
+from ..domain.models import Bar, Lot, Order, Portfolio, Security, Trade
+from ..engines.ledger import dr, cr, cost_account, adj_account
+from ..engines.pricing import BondPricer, interp_rate
+from ..money import D, money, price as qprice, qty as qqty, ZERO
+
+PARTICIPATION_CAP = 0.20
+IMPACT_K = 0.6
+EQUITY_COMMISSION_PER_SHARE = D("0.005")
+EQUITY_COMMISSION_MIN = D("1.00")
+BOND_COMMISSION_BPS = D("0.5")
+FUTURES_COMMISSION_PER_CONTRACT = D("2.50")
+OPTION_COMMISSION_PER_CONTRACT = D("0.65")
+OPTION_SIGMA_DAILY = 0.03
+ORDER_TYPES = ("MARKET", "LIMIT", "STOP", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP")
+
+
+class TradingEngine:
+    def __init__(self, world):
+        self.w = world
+
+    def register(self) -> None:
+        w = self.w
+        w.on(E.ORDER_ENTERED, lambda world, ev: self._h_order_entered(ev))
+        w.on(E.ORDER_REJECTED, lambda world, ev: self._h_order_rejected(ev))
+        w.on(E.ORDER_CANCELLED, lambda world, ev: self._h_order_cancelled(ev))
+        w.on(E.ORDER_STATUS_CHANGED, lambda world, ev: self._h_order_status(ev))
+        w.on(E.TRADE_EXECUTED, lambda world, ev: self._h_trade_executed(ev))
+        w.on(E.TRADE_STATUS_CHANGED, lambda world, ev: self._h_trade_status(ev))
+
+    # ------------------------------------------------------------------ commands
+    def enter_order(self, portfolio_id: str, security_id: str, side: str, quantity, order_type: str, limit_price, stop_price,
+                    time_in_force: str, strategy_tag: Optional[str], trail_pct: Optional[float] = None, condition: Optional[Dict] = None,
+                    execute_at: str = "OPEN", execution: str = "NEXT_UPDATE", executes_at: Optional[str] = None) -> Order:
+        from ..world import CommandError
+        w = self.w
+        pf = w.portfolio(portfolio_id)
+        sec = w.security(security_id)
+        side, order_type, tif = side.upper(), order_type.upper(), time_in_force.upper()
+        q = D(str(quantity)).quantize(sec.qty_step) if sec.qty_step != 1 else qqty(quantity)
+        lb = self._bar(sec)
+        last = lb.close if lb else ZERO
+        trail_level = None
+        if order_type == "TRAILING_STOP" and trail_pct:
+            trail_level = qprice(last * D(1 - float(trail_pct))) if side == "SELL" else qprice(last * D(1 + float(trail_pct)))
+        base = {"portfolio_id": pf.id, "security_id": sec.id, "side": side, "order_type": order_type, "quantity": q,
+                "limit_price": qprice(limit_price) if limit_price is not None else None,
+                "stop_price": qprice(stop_price) if stop_price is not None else None, "time_in_force": tif, "strategy_tag": strategy_tag,
+                "trail_pct": float(trail_pct) if trail_pct else None, "trail_level": trail_level, "condition": self._norm_condition(condition),
+                "execute_at": "CLOSE" if str(execute_at).upper() == "CLOSE" else "OPEN", "execution": "LIVE" if str(execution).upper() == "LIVE" else "NEXT_UPDATE",
+                "executes_at": executes_at}
+        reason = self._validate(pf, sec, side, order_type, q, base["limit_price"], base["stop_price"], tif, base["trail_pct"], base["condition"], strategy_tag)
+        if reason:
+            w.emit(E.ORDER_REJECTED, {**base, "order_id": w.new_id("ORD"), "reason": reason}, portfolio_id=pf.id)
+            raise CommandError(f"Order rejected: {reason}")
+        oid = w.new_id("ORD")
+        w.emit(E.ORDER_ENTERED, {**base, "order_id": oid}, portfolio_id=pf.id)
+        return pf.orders[oid]
+
+    def _norm_condition(self, c: Optional[Dict]) -> Optional[Dict]:
+        if not c or not c.get("ref"):
+            return None
+        return {"ref": str(c["ref"]).upper().strip(), "op": c.get("op", "<="), "value": float(c["value"])}
+
+    def cancel(self, portfolio_id: str, order_id: str) -> Order:
+        from ..world import CommandError
+        pf = self.w.portfolio(portfolio_id)
+        if order_id not in pf.orders:
+            raise CommandError(f"Unknown order {order_id}")
+        o = pf.orders[order_id]
+        if o.status not in ("WORKING", "PARTIALLY_FILLED", "ENTERED"):
+            raise CommandError(f"Order {order_id} is {o.status} and cannot be cancelled")
+        self.w.emit(E.ORDER_CANCELLED, {"portfolio_id": pf.id, "order_id": order_id}, portfolio_id=pf.id)
+        return o
+
+    def _validate(self, pf: Portfolio, sec: Security, side: str, order_type: str, q: Decimal, limit, stop, tif, trail_pct, condition,
+                  strategy_tag: Optional[str] = None) -> Optional[str]:
+        w = self.w
+        if side not in ("BUY", "SELL"):
+            return f"side must be BUY or SELL, got {side}"
+        if order_type not in ORDER_TYPES:
+            return f"unsupported order type {order_type}"
+        if tif not in ("DAY", "GTC"):
+            return "time in force must be DAY (good for the next session) or GTC"
+        if q <= 0:
+            return "quantity must be positive"
+        if sec.asset_class == "INDEX":
+            return f"{sec.id} is an index, not a security: trade its futures, options or an ETF that tracks it"
+        if sec.lot_size > 1 and q % sec.lot_size != 0:
+            return f"{sec.id} trades in multiples of {sec.lot_size:,} face"
+        if order_type in ("LIMIT", "STOP_LIMIT", "TAKE_PROFIT") and (limit is None or limit <= 0):
+            return "limit price required"
+        if order_type in ("STOP", "STOP_LIMIT") and (stop is None or stop <= 0):
+            return "stop price required"
+        if order_type == "TRAILING_STOP" and (not trail_pct or trail_pct <= 0 or trail_pct >= 0.5):
+            return "trailing stop needs a trail percentage between 0 and 50%"
+        if condition:
+            if condition["op"] not in ("<=", ">="):
+                return "condition operator must be <= or >="
+            ref = condition["ref"]
+            if not (ref in w.securities or (ref.startswith("CURVE:") and ref[6:].rstrip("Y").replace(".", "").isdigit())
+                    or (ref.startswith("SPOT:") and ref[5:] in w.market.commodities.state)):
+                return f"unknown condition reference {ref} (use a ticker, CURVE:10Y, or SPOT:CL)"
+        if sec.is_bond and date.fromisoformat(sec.maturity) <= w.current_date:
+            return f"{sec.id} has matured"
+        if sec.delisted:
+            return f"{sec.id} has been delisted"
+        if sec.is_future and (sec.expired or (sec.expiry and date.fromisoformat(sec.expiry) <= w.current_date)):
+            return f"{sec.id} has expired / is in its last session; use a later contract month"
+        job = w.careers.job_for(pf)
+        if job and job.allowed_classes and self._class_key(sec) not in job.allowed_classes:
+            return f"{sec.id} ({self._class_key(sec)}) is outside this job's mandate ({', '.join(sorted(job.allowed_classes))})"
+        blocked = w.risk.blocks_order(pf, sec, side)
+        if blocked:
+            return blocked
+        if sec.is_option:
+            return self._validate_option(pf, sec, side, order_type, q, limit, strategy_tag)
+        if sec.is_future:
+            # margin check: initial margin for the resulting position must be financeable
+            im = self.w.futures.initial_margin_per_contract(sec) * q
+            pos = pf.positions.get(sec.id)
+            reduces = pos is not None and ((pos.quantity > 0 and side == "SELL") or (pos.quantity < 0 and side == "BUY"))
+            if not reduces:
+                why = w.prime.affordable(pf, im, None)
+                if why:
+                    return f"initial margin not financeable: {why}"
+            return None
+        if side == "SELL" and sec.is_mbs and not w.market.mbs.delivered(sec, w.current_date):
+            pass                                                     # selling a TBA forward is how the market shorts mortgages: no borrow, but cover or roll before delivery
+        elif side == "SELL":
+            pos = pf.positions.get(sec.id)
+            open_sells = sum((o.quantity - o.filled_quantity for o in pf.orders.values()
+                              if o.security_id == sec.id and o.side == "SELL" and o.status in ("WORKING", "PARTIALLY_FILLED")), ZERO)
+            deliverable = (w.collateral.available_quantity(pf, sec.id) + (pos.pending_receive if pos else ZERO)) - open_sells
+            if deliverable < q:
+                borrowed = pos.borrowed_quantity if pos else ZERO
+                pledged = pf.pledged_quantity(sec.id)
+                reserved = w.options.covered_shares_needed(pf, sec.id)
+                hint = (f"; {pledged:,} pledged as collateral cannot be sold" if pledged else "") + \
+                       (f"; {reserved:,} shares are reserved to cover written calls (buy the calls back first)" if reserved else "")
+                if deliverable <= 0 and borrowed == 0:
+                    return (f"nothing to deliver in {sec.id}: to sell short, request a locate and borrow the shares on the securities-lending desk first{hint}")
+                return f"sell quantity {q:,} exceeds deliverable shares {max(ZERO, deliverable):,} (custody incl. borrowed, net of pledges, pending deliveries and working sells){hint}"
+        if side == "BUY":
+            bar = w.market.last_bar(sec.id)
+            px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else bar.ask
+            est = self._estimate_cost(sec, q, px)
+            pos = pf.positions.get(sec.id)
+            covering = pos is not None and pos.quantity < 0
+            why = w.prime.affordable(pf, est, w.collateral.haircut(sec, "PRIME") if not covering else 0.0, sec.currency)
+            if why:
+                return f"insufficient {sec.currency} cash or financing: order {why}"
+        return None
+
+    def _validate_option(self, pf: Portfolio, sec: Security, side: str, order_type: str, q: Decimal, limit, strategy_tag: Optional[str]) -> Optional[str]:
+        """Listed options: expiry, then premium affordability (buys) or transparent margin (sells to open)."""
+        w = self.w
+        if sec.expired or (sec.expiry and sec.expiry < w.current_date.isoformat()):
+            return f"{sec.id} has expired"
+        if sec.expiry == w.current_date.isoformat():
+            return f"{sec.id} expires today: it cannot be traded in the next session (it is settled at today's close)"
+        pos = pf.positions.get(sec.id)
+        held = pos.quantity if pos else ZERO
+        mult = D(str(sec.multiplier))
+        # a strategy ticket was checked as a package (net premium + margin) when it was placed
+        packaged = strategy_tag in pf.strategies and pf.strategies[strategy_tag].status == "WORKING"
+        working_same = sum((o.quantity - o.filled_quantity for o in pf.orders.values()
+                            if o.security_id == sec.id and o.side == side and o.status in ("WORKING", "PARTIALLY_FILLED")), ZERO)
+        q_option = w.options.quote(sec)
+        if side == "BUY":
+            px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else D(repr(q_option["ask"]))
+            est = money(q * px * mult) + self._commission(sec, q)
+            closing = min(q, max(ZERO, -held - working_same))
+            released = w.options.incremental_margin_release(pf, sec, closing) if closing > 0 else ZERO
+            if packaged:
+                return None
+            why = w.prime.affordable(pf, max(ZERO, est - released), None)
+            if why:
+                return f"premium not financeable (long options are not marginable): {why}"
+            return None
+        # SELL: close long first, the rest opens a short subject to margin
+        closing = min(q, max(ZERO, held - working_same))
+        opening = q - closing
+        if opening <= 0 or packaged:
+            return None
+        px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else D(repr(q_option["bid"]))
+        premium = money(opening * px * mult) - self._commission(sec, opening)
+        need = w.options.incremental_margin(pf, sec, -opening)
+        why = w.prime.affordable(pf, max(ZERO, need - premium), None) if need > premium else None
+        if why:
+            return f"option margin of {need:,.0f} for writing {opening:,} {sec.id} is not financeable: {why}"
+        return None
+
+    def _bar(self, sec: Security) -> Optional[Bar]:
+        """Today's session bar: listed options are priced off the underlying's session through the options engine."""
+        w = self.w
+        if sec.is_option:
+            src = sec.index_level_source or sec.underlying
+            return w.options.option_bar(sec) if w.market.history.get(src) else None
+        return w.market.last_bar(sec.id) if w.market.history.get(sec.id) else None
+
+    @staticmethod
+    def _class_key(sec: Security) -> str:
+        if sec.is_option:
+            return "OPTION"
+        if sec.is_future:
+            return sec.underlying_class or "FUTURE"
+        if sec.is_bond:
+            return sec.asset_class
+        if sec.asset_class == "PHYSICAL":
+            return "PHYSICAL"
+        if sec.asset_class == "CRYPTO":
+            return "CRYPTO"
+        return "EQUITY"
+
+    @staticmethod
+    def _unit(sec: Security) -> Decimal:
+        """Cash per unit of quantity at a price of 1: bonds trade per 100 face, options and futures carry a multiplier."""
+        if sec.is_bond:
+            return D(1) / 100
+        if sec.is_future or sec.is_option:
+            return D(str(sec.multiplier))
+        return D(1)
+
+    def _estimate_cost(self, sec: Security, q: Decimal, px: Decimal) -> Decimal:
+        if sec.is_future:
+            return self.w.futures.initial_margin_per_contract(sec) * q
+        if sec.is_bond:
+            gross = money(q * px / 100)
+            acc = money(q * BondPricer.accrued_per_100(sec, self.w.current_date) / 100)
+            return gross + acc + self._commission(sec, q)
+        return money(q * px * self._unit(sec)) + self._commission(sec, q)
+
+    def projected_cash(self, pf: Portfolio, ccy: str) -> Decimal:
+        """Settled cash + sale receivables - purchase payables - working buys (+ working sells at the bid) - margin for futures orders.
+
+        Expected proceeds of working sell orders count as projected liquidity, as a treasury projection would; if
+        the sell does not fill, a purchase relying on it fails at settlement and retries."""
+        w = self.w
+        cash = pf.cash_account(ccy).balance
+        recv = sum((si.cash_amount for si in pf.settlements.values() if si.instruction_type == "DVP" and si.currency == ccy
+                    and si.status in ("PENDING", "MATCHED", "FAILED")), ZERO)
+        pay = sum((si.cash_amount for si in pf.settlements.values() if si.instruction_type == "RVP" and si.currency == ccy
+                   and si.status in ("PENDING", "MATCHED", "FAILED")), ZERO)
+        working = ZERO
+        for o in pf.orders.values():
+            if o.status in ("WORKING", "PARTIALLY_FILLED"):
+                sec = w.securities[o.security_id]
+                if sec.currency != ccy:
+                    continue
+                if sec.is_future:
+                    working += self._estimate_cost(sec, o.quantity - o.filled_quantity, ZERO)
+                elif o.side == "BUY":
+                    bar = self._bar(sec)
+                    px = o.limit_price or (bar.ask if bar else ZERO)
+                    working += self._estimate_cost(sec, o.quantity - o.filled_quantity, px)
+                else:
+                    bar = self._bar(sec)
+                    px = o.limit_price if o.order_type in ("LIMIT", "TAKE_PROFIT") and o.limit_price else (bar.bid if bar else ZERO)
+                    rem = o.quantity - o.filled_quantity
+                    working -= money(rem * px * self._unit(sec)) - self._commission(sec, rem)
+        # spot FX already dealt and settling: the currency bought arrives, the currency sold leaves (a ticket paid in
+        # another currency deals the conversion first, and the purchase counts on it)
+        fx_in = sum((t.buy_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.buy_ccy == ccy), ZERO)
+        fx_out = sum((t.sell_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.sell_ccy == ccy), ZERO)
+        return cash + recv - pay - working + fx_in - fx_out
+
+    # ------------------------------------------------------------------ execution during the daily update
+    def _commission(self, sec: Security, q: Decimal) -> Decimal:
+        if sec.is_option:
+            return money(q * OPTION_COMMISSION_PER_CONTRACT)
+        if sec.is_future:
+            return money(q * FUTURES_COMMISSION_PER_CONTRACT)
+        if sec.is_bond:
+            return money(q * BOND_COMMISSION_BPS / 10000)
+        return max(EQUITY_COMMISSION_MIN, money(q * EQUITY_COMMISSION_PER_SHARE))
+
+    def _ref_value(self, ref: str) -> Optional[float]:
+        w = self.w
+        if ref.startswith("CURVE:"):
+            t = float(ref[6:].rstrip("Y"))
+            return interp_rate(w.market.curve(), t) * 100.0
+        if ref.startswith("SPOT:"):
+            return w.market.spot(ref[5:])
+        if ref in w.securities and w.market.history.get(ref):
+            return float(w.market.last_bar(ref).close)
+        return None
+
+    def work_orders(self, cause: Event) -> None:
+        """Evaluate every working order against today's session. Strategy tickets are all-or-none: every leg fills
+        at the open only if the package's net debit/credit is within its limit and every leg has the depth to fill whole."""
+        w = self.w
+        for pf in w.portfolios.values():
+            grouped: Dict[str, List[Order]] = {}
+            for o in list(pf.orders.values()):
+                if o.status in ("WORKING", "PARTIALLY_FILLED"):
+                    if o.strategy_tag in pf.strategies:
+                        grouped.setdefault(o.strategy_tag, []).append(o)
+                    else:
+                        self._evaluate(o, cause)
+            for sid, legs in grouped.items():
+                st = pf.strategies[sid]
+                ok, note = self._strategy_ok(pf, st, legs)
+                if not ok:
+                    for o in legs:
+                        self._note(o, cause, note)
+                    continue
+                for o in legs:
+                    self._evaluate(o, cause)
+
+    def _strategy_ok(self, pf: Portfolio, st, legs: List[Order]) -> Tuple[bool, str]:
+        w = self.w
+        for o in legs:
+            sec = w.securities[o.security_id]
+            bar = self._bar(sec)
+            if bar is None:
+                return False, "no session data"
+            if (sec.is_option or sec.is_future) and sec.expired:
+                return False, "a leg has expired"
+            cap = max(1, int(max(1, int(bar.volume)) * PARTICIPATION_CAP))
+            if o.quantity - o.filled_quantity > cap:
+                return False, f"all-or-none: leg {sec.id} needs {o.quantity - o.filled_quantity:,} contracts, session depth allows {cap:,}"
+        if st.net_limit is not None:
+            net = w.options.strategy_net_at(pf, st, "OPEN")
+            if net > st.net_limit:
+                kind = "debit" if st.net_limit >= 0 else "credit"
+                return False, f"all-or-none: package net {net:+,.2f}/unit at the open is outside the {kind} limit {st.net_limit:+,.2f}"
+        return True, ""
+
+    def _evaluate(self, order: Order, cause: Event) -> None:
+        w = self.w
+        pf = w.portfolios[order.portfolio_id]
+        sec = w.securities[order.security_id]
+        if (sec.is_future or sec.is_option) and (sec.expired or (sec.expiry and sec.expiry < w.current_date.isoformat())):
+            self._set_status(order, "CANCELLED", cause, "contract expired before the order could execute")
+            return
+        if sec.delisted:
+            self._set_status(order, "CANCELLED", cause, "security delisted")
+            return
+        bar = self._bar(sec)
+        if bar is None:
+            return
+        today = w.current_date.isoformat()
+        remaining = order.quantity - order.filled_quantity
+        if remaining <= 0:
+            return
+        half = (bar.ask - bar.bid) / 2
+        session = "CLOSE" if order.execute_at == "CLOSE" else "OPEN"     # entered mid-session: the open had already printed
+        if w.quote_ticks_active():
+            # a career save with live quotes works instructions at the 15-minute quote updates; the daily update is only a
+            # safety net (the terminal slept through the session): the close counts, never a range the updates never showed,
+            # and nothing entered after the session's last quote update (it waits for tomorrow's 09:45)
+            if order.executes_at and order.executes_at[:10] > today:
+                return
+            session = "CLOSE"
+        base: Optional[Decimal] = None
+
+        # condition gate: evaluated at the close, executed at the close
+        if order.condition and not order.condition_met_date:
+            v = self._ref_value(order.condition["ref"])
+            if v is None:
+                return
+            ok = (v <= order.condition["value"]) if order.condition["op"] == "<=" else (v >= order.condition["value"])
+            if not ok:
+                self._note(order, cause, f"condition not met: {order.condition['ref']} = {v:,.4g}")
+                return
+            w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "condition_met_date": today,
+                                            "note": f"condition met: {order.condition['ref']} = {v:,.4g} {order.condition['op']} {order.condition['value']}"},
+                   cause_id=cause.id, portfolio_id=pf.id)
+        if order.condition:
+            session = "CLOSE"
+
+        otype = order.order_type
+        ref_lo, ref_hi = (bar.close, bar.close) if session == "CLOSE" else (bar.low, bar.high)   # at the close only the close counts
+        if otype == "TRAILING_STOP":
+            level = order.trail_level
+            hit = (ref_lo <= level) if order.side == "SELL" else (ref_hi >= level)
+            if not hit:
+                new_level = qprice(bar.close * D(1 - order.trail_pct)) if order.side == "SELL" else qprice(bar.close * D(1 + order.trail_pct))
+                better = (new_level > level) if order.side == "SELL" else (new_level < level)
+                if better:
+                    w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "trail_level": new_level,
+                                                    "note": f"trailing stop ratchets to {new_level}"}, cause_id=cause.id, portfolio_id=pf.id)
+                return
+            ref_open = bar.close if session == "CLOSE" else bar.open
+            gapped = (ref_open <= level) if order.side == "SELL" else (ref_open >= level)
+            base = ref_open if gapped else level
+            if not order.triggered:
+                w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
+                                                "note": f"trailing stop {level} triggered"}, cause_id=cause.id, portfolio_id=pf.id)
+        elif otype in ("STOP", "STOP_LIMIT"):
+            ref_open = bar.close if session == "CLOSE" else bar.open
+            if not order.triggered:
+                hit = (ref_hi >= order.stop_price) if order.side == "BUY" else (ref_lo <= order.stop_price)
+                if not hit:
+                    return
+                w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
+                                                "note": f"stop {order.stop_price} triggered"}, cause_id=cause.id, portfolio_id=pf.id)
+                gapped = (ref_open >= order.stop_price) if order.side == "BUY" else (ref_open <= order.stop_price)
+                base = ref_open if gapped else order.stop_price
+            else:
+                base = ref_open
+            if otype == "STOP_LIMIT":
+                lim = order.limit_price
+                tradable = (ref_lo <= lim) if order.side == "BUY" else (ref_hi >= lim)
+                if not tradable or ((base > lim) if order.side == "BUY" else (base < lim)):
+                    self._note(order, cause, "stop triggered but limit not reached")
+                    return
+        elif otype in ("LIMIT", "TAKE_PROFIT"):
+            lim = order.limit_price
+            if session == "CLOSE":
+                ok = (bar.close <= lim) if order.side == "BUY" else (bar.close >= lim)
+                if not ok:
+                    self._note(order, cause, "limit not marketable at the close")
+                    return
+                base = bar.close
+            else:
+                tradable = (bar.low <= lim) if order.side == "BUY" else (bar.high >= lim)
+                if not tradable:
+                    self._note(order, cause, f"limit {lim} not reached (session {bar.low}-{bar.high})")
+                    return
+                base = min(bar.open, lim) if order.side == "BUY" else max(bar.open, lim)
+        else:  # MARKET
+            base = bar.close if session == "CLOSE" else bar.open
+
+        self._fill(order, sec, bar, base, half, session, cause)
+
+    def _fill(self, order: Order, sec: Security, bar: Bar, base: Decimal, half: Decimal, session: str, cause: Event,
+              forced: bool = False, note: str = "", fixed_price: Optional[Decimal] = None, commission_free: bool = False,
+              extra_detail: Optional[Dict] = None) -> Optional[Trade]:
+        w = self.w
+        pf = w.portfolios[order.portfolio_id]
+        remaining = order.quantity - order.filled_quantity
+        rng = random.Random(f"{w.seed}|exec|{order.id}|{w.current_date.isoformat()}")
+        regime = w.market.regime()
+        session_volume = max(1, int(bar.volume))
+        cap = (D(session_volume) * D(PARTICIPATION_CAP)).quantize(sec.qty_step) if sec.qty_step != 1 else qqty(D(session_volume) * D(PARTICIPATION_CAP))
+        if sec.lot_size > 1:
+            cap = max(D(sec.lot_size), cap - (cap % sec.lot_size))
+        cap = max(sec.qty_step, cap)
+        fill_qty = min(remaining, cap) if not (forced or fixed_price is not None) else remaining
+        if sec.is_bond:
+            sigma_daily = 0.003
+        elif sec.is_future:
+            sigma_daily = max(0.003, sec.sigma_annual / math.sqrt(252.0))
+        elif sec.is_option:
+            sigma_daily = OPTION_SIGMA_DAILY
+        else:
+            sigma_daily = max(0.002, w.market.realized_vol(sec.id) / math.sqrt(252.0))
+        participation = float(fill_qty) / max(1.0, float(sec.adv) * regime.depth_mult)
+        impact_frac = IMPACT_K * sigma_daily * math.sqrt(participation) * rng.uniform(0.8, 1.2)
+        if sec.is_bond:
+            impact_frac *= 0.5
+        if forced:
+            impact_frac += 0.005
+        if fixed_price is not None:
+            # contractual price (exercise/assignment at the strike, expiry settlement): no spread, no impact
+            half, impact_frac, participation, base = ZERO, 0.0, 0.0, qprice(fixed_price)
+        if order.side == "BUY":
+            px = qprice(float(base + half) * (1 + impact_frac))
+            if order.limit_price is not None and order.order_type in ("LIMIT", "STOP_LIMIT", "TAKE_PROFIT") and px > order.limit_price:
+                px = order.limit_price
+        else:
+            px = qprice(float(base - half) * (1 - impact_frac))
+            if order.limit_price is not None and order.order_type in ("LIMIT", "STOP_LIMIT", "TAKE_PROFIT") and px < order.limit_price:
+                px = order.limit_price
+        if sec.is_future and sec.tick_size:
+            t = D(str(sec.tick_size))
+            px = qprice((px / t).quantize(Decimal("1")) * t)
+        unit = self._unit(sec)
+        spread_cost = money(half * fill_qty * unit)
+        impact_cost = money(abs(px - (base + half if order.side == "BUY" else base - half)) * fill_qty * unit)
+        commission = ZERO if commission_free else self._commission(sec, fill_qty)
+        if sec.is_bond:
+            gross = money(fill_qty * px / 100)
+            accrued = money(fill_qty * BondPricer.accrued_per_100(sec, w.current_date) / 100)
+        elif sec.is_future:
+            gross = money(fill_qty * px * D(str(sec.multiplier)))    # notional, informational
+            accrued = ZERO
+        else:
+            gross = money(fill_qty * px * unit)
+            accrued = ZERO
+        if sec.is_future:
+            net = commission
+        else:
+            net = gross + accrued + commission if order.side == "BUY" else gross + accrued - commission
+        sd = settlement_date(w.calendar, w.settlement_config, sec.market, w.current_date)
+        if sec.is_mbs:
+            sd = max(sd, date.fromisoformat(sec.issue_date))       # a TBA is a forward: cash and pool move on the delivery day
+        tid = w.new_id("TRD")
+        payload = {
+            "trade_id": tid, "order_id": order.id, "portfolio_id": pf.id, "security_id": sec.id, "side": order.side,
+            "quantity": fill_qty, "price": px, "gross_amount": gross, "accrued_interest": accrued, "commission": commission,
+            "net_amount": net, "currency": sec.currency, "trade_date": w.current_date.isoformat(), "settlement_date": sd.isoformat(),
+            "fx_rate": w.fx.k(sec.currency),
+            "execution_detail": {"session": session, "fx_rate": w.fx.k(sec.currency), "reference_open": bar.open, "reference_high": bar.high, "reference_low": bar.low,
+                                 "reference_close": bar.close, "base_price": base, "spread_cost": spread_cost, "impact_cost": impact_cost,
+                                 "impact_bps": round(impact_frac * 1e4, 2), "participation_of_adv": round(participation, 4),
+                                 "session_volume": session_volume, "partial": bool(fill_qty < remaining), "regime": regime.name,
+                                 "forced": forced, "note": note, "contractual": fixed_price is not None, **(extra_detail or {})},
+        }
+        ev = w.emit(E.TRADE_EXECUTED, payload, cause_id=cause.id, portfolio_id=pf.id)
+        return pf.trades[tid]
+
+    def _note(self, order: Order, cause: Event, note: str) -> None:
+        order.reason = note
+        order.history.append({"date": self.w.current_date.isoformat(), "note": note})
+
+    def _set_status(self, order: Order, status: str, cause: Event, note: str = "") -> None:
+        if order.status != status:
+            self.w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": order.portfolio_id, "order_id": order.id, "status": status, "note": note},
+                        cause_id=cause.id, portfolio_id=order.portfolio_id)
+
+    def expire_day_orders(self, cause: Event) -> None:
+        today = self.w.current_date.isoformat()
+        for pf in self.w.portfolios.values():
+            for o in list(pf.orders.values()):
+                if o.time_in_force != "DAY" or o.status not in ("WORKING", "PARTIALLY_FILLED", "ENTERED"):
+                    continue
+                # good for the session it executes in: the session of its first quote update (career saves), else the next after entry
+                done = (o.executes_at[:10] <= today) if o.executes_at else (o.entered_date < today)
+                if done:
+                    self._set_status(o, "EXPIRED", cause, "good-for-day order expired unfilled" if o.filled_quantity == 0 else "day order expired after partial fill")
+
+    def system_order(self, pf: Portfolio, sec: Security, side: str, qty: Decimal, cause: Event, reason: str, forced: bool,
+                     fixed_price: Optional[Decimal] = None, allow_short: bool = False, commission_free: bool = False) -> Optional[Trade]:
+        """Order created by the system (contract expiry, forced liquidation, exercise and assignment). Fills at the close with
+        slippage, or at `fixed_price` (a contractual price such as a strike) with no spread or impact."""
+        w = self.w
+        oid = w.new_id("ORD")
+        w.emit(E.ORDER_ENTERED, {"portfolio_id": pf.id, "security_id": sec.id, "side": side, "order_type": "MARKET", "quantity": qty,
+                                 "limit_price": None, "stop_price": None, "time_in_force": "DAY", "strategy_tag": "SYSTEM", "order_id": oid,
+                                 "trail_pct": None, "trail_level": None, "condition": None, "system_reason": reason}, cause_id=cause.id, portfolio_id=pf.id)
+        order = pf.orders[oid]
+        bar = self._bar(sec)
+        if bar is None:
+            raise RuntimeError(f"no session data for {sec.id}")
+        return self._fill(order, sec, bar, bar.close, (bar.ask - bar.bid) / 2, "CLOSE", cause, forced=forced, note=reason, fixed_price=fixed_price,
+                          commission_free=commission_free)
+
+    # ------------------------------------------------------------------ handlers
+    def _order_from_payload(self, p: Dict, status: str, ev: Event) -> Order:
+        o = Order(id=p["order_id"], portfolio_id=p["portfolio_id"], security_id=p["security_id"], side=p["side"], order_type=p["order_type"],
+                  quantity=D(p["quantity"]), limit_price=D(p["limit_price"]) if p.get("limit_price") is not None else None,
+                  stop_price=D(p["stop_price"]) if p.get("stop_price") is not None else None, time_in_force=p["time_in_force"],
+                  status=status, entered_date=ev.sim_date, strategy_tag=p.get("strategy_tag"), reason=p.get("reason") or p.get("system_reason"),
+                  trail_pct=p.get("trail_pct"), trail_level=D(p["trail_level"]) if p.get("trail_level") is not None else None,
+                  condition=p.get("condition"), execute_at=p.get("execute_at", "OPEN"), execution=p.get("execution", "NEXT_UPDATE"),
+                  executes_at=p.get("executes_at"))
+        first = ("entered — executes now at the live quote" if o.execution == "LIVE"
+                 else f"entered — executes at the {o.executes_at[11:16]} quote update on {o.executes_at[:10]} (New York)" if o.executes_at
+                 else "entered while the session runs — executes at its close at the next daily update" if o.execute_at == "CLOSE"
+                 else "entered — executes at the next daily update")
+        o.history.append({"date": ev.sim_date, "note": first if status == "WORKING" else p.get("reason", "")})
+        return o
+
+    def _h_order_entered(self, ev: Event) -> None:
+        p = ev.payload
+        pf = self.w.portfolios[p["portfolio_id"]]
+        o = pf.orders[p["order_id"]] = self._order_from_payload(p, "WORKING", ev)
+        if o.strategy_tag in pf.strategies:
+            self.w.options.link_leg(pf, o)
+
+    def _h_order_rejected(self, ev: Event) -> None:
+        p = ev.payload
+        pf = self.w.portfolios[p["portfolio_id"]]
+        pf.orders[p["order_id"]] = self._order_from_payload(p, "REJECTED", ev)
+
+    def _h_order_cancelled(self, ev: Event) -> None:
+        o = self.w.portfolios[ev.payload["portfolio_id"]].orders[ev.payload["order_id"]]
+        o.status = "CANCELLED"
+        o.history.append({"date": ev.sim_date, "note": "cancelled by player"})
+
+    def _h_order_status(self, ev: Event) -> None:
+        p = ev.payload
+        o = self.w.portfolios[p["portfolio_id"]].orders[p["order_id"]]
+        o.status = p["status"]
+        if p.get("triggered"):
+            o.triggered = True
+        if p.get("trail_level") is not None:
+            o.trail_level = D(p["trail_level"])
+        if p.get("condition_met_date"):
+            o.condition_met_date = p["condition_met_date"]
+        if p.get("note"):
+            o.reason = p["note"]
+            o.history.append({"date": ev.sim_date, "note": p["note"]})
+
+    def _h_trade_executed(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        sec = w.securities[p["security_id"]]
+        q, px = D(p["quantity"]), D(p["price"])
+        gross, accrued, commission, net = D(p["gross_amount"]), D(p["accrued_interest"]), D(p["commission"]), D(p["net_amount"])
+        trade = Trade(id=p["trade_id"], order_id=p["order_id"], portfolio_id=pf.id, security_id=sec.id, side=p["side"], quantity=q,
+                      price=px, gross_amount=gross, accrued_interest=accrued, commission=commission, net_amount=net,
+                      currency=p["currency"], trade_date=p["trade_date"], settlement_date=p["settlement_date"], status="EXECUTED",
+                      execution_detail={k: (D(v) if isinstance(v, str) and _looks_decimal(v) else v) for k, v in p["execution_detail"].items()})
+        trade.status_history.append({"status": "EXECUTED", "date": ev.sim_date, "event_id": ev.id,
+                                     "note": "filled by clearing broker" if sec.is_future else ("filled on Cboe Options Exchange; cleared via the options clearinghouse"
+                                                                                                 if sec.is_option else "filled by executing broker")})
+        if sec.is_future:
+            trade.broker = "Goldman Sachs (futures clearing member)"
+        if sec.is_option:
+            trade.broker = "OCC (Options Clearing Corporation)"
+        pf.trades[trade.id] = trade
+        pf.day_trade_ids.append(trade.id)
+        pos = pf.position(sec.id)
+        pos.trade_ids.append(trade.id)
+        k = D(str(p.get("fx_rate", 1)))
+        if k != 1:                                   # a security in another currency: the book, the ledger and the lots carry base-currency amounts
+            gross, accrued, commission = money(gross * k), money(accrued * k), money(commission * k)
+        pos.commissions += commission
+        order = pf.orders[trade.order_id]
+        prev_filled = order.filled_quantity
+        order.filled_quantity += q
+        order.avg_fill_price = qprice((order.avg_fill_price * prev_filled + px * q) / order.filled_quantity)
+        order.trade_ids.append(trade.id)
+        order.status = "FILLED" if order.filled_quantity >= order.quantity else "PARTIALLY_FILLED"
+
+        if sec.is_future:
+            self._apply_futures_trade(pf, pos, sec, trade, ev)
+            return
+
+        cost_acct = cost_account(sec, False)
+        short_acct = cost_account(sec, True)
+        if sec.is_option:
+            pos.is_option = True
+        lines: List[Dict] = []
+        memo = f"{trade.side} {q:,} {sec.id} @ {px} (trade {trade.id})"
+        if trade.side == "BUY":
+            q_cover = min(q, max(ZERO, -pos.quantity))      # covering a short first
+            q_long = q - q_cover
+            if q_cover > 0:
+                frac = q_cover / q
+                gross_c, comm_c = money(gross * frac), money(commission * frac)
+                relieved, proceeds_relieved = self._relieve_fifo(pos, -q_cover, ev)     # negative lots: proceeds come back positive
+                realized = proceeds_relieved - gross_c
+                trade.realized_pnl += realized
+                trade.lots_relieved += relieved
+                pos.quantity += q_cover
+                pos.cost_basis += proceeds_relieved        # cost basis was -proceeds
+                pos.realized_pnl += realized
+                pos.pending_receive += q_cover
+                memo += f" cover realized {realized:,.2f}"
+                lines += [dr(short_acct, proceeds_relieved, sec.id, "premium received relieved (FIFO)" if sec.is_option else "short proceeds relieved (FIFO)"),
+                          dr("5000", comm_c, sec.id, "commission"),
+                          cr("2100", gross_c + comm_c, sec.id, f"payable to broker, settles {trade.settlement_date}"), cr("4000", realized, sec.id, "realized on short cover")]
+            if q_long > 0:
+                frac = q_long / q
+                gross_l, comm_l = gross - (money(gross * (q_cover / q)) if q_cover else ZERO), commission - (money(commission * (q_cover / q)) if q_cover else ZERO)
+                acc_l = accrued
+                lot = Lot(id=f"LOT-{ev.seq:06d}", trade_id=trade.id, open_date=trade.trade_date, quantity=q_long, original_quantity=q_long,
+                          cost_per_unit=px, cost_total=gross_l)
+                pos.lots.append(lot)
+                pos.quantity += q_long
+                pos.cost_basis += gross_l
+                pos.pending_receive += q_long
+                if sec.is_bond:
+                    pos.accrued_interest += acc_l
+                lines += [dr(cost_acct, gross_l, sec.id, "premium paid on options purchased" if sec.is_option else "cost of securities purchased"),
+                          dr("1220", acc_l, sec.id, "accrued interest purchased") if sec.is_bond else None,
+                          dr("5000", comm_l, sec.id, "commission"),
+                          cr("2100", gross_l + acc_l + comm_l, sec.id, f"payable to broker, settles {trade.settlement_date}")]
+        else:
+            q_long = min(q, max(ZERO, pos.quantity))        # selling long inventory first
+            q_short = q - q_long
+            if q_long > 0:
+                frac = q_long / q
+                gross_l, comm_l, acc_l = money(gross * frac), money(commission * frac), money(accrued * frac)
+                trueup = ZERO
+                if sec.is_bond:
+                    target = money(pos.quantity * BondPricer.accrued_per_100(sec, date.fromisoformat(trade.trade_date)) / 100 * D(str(p.get("fx_rate", 1))))
+                    trueup = target - pos.accrued_interest
+                    pos.accrued_interest = target
+                    pos.interest_income += trueup
+                relieved, cost_relieved = self._relieve_fifo(pos, q_long, ev)
+                realized = gross_l - cost_relieved
+                trade.realized_pnl += realized
+                trade.lots_relieved += relieved
+                pos.quantity -= q_long
+                pos.cost_basis -= cost_relieved
+                pos.realized_pnl += realized
+                pos.pending_deliver += q_long
+                if sec.is_bond:
+                    pos.accrued_interest -= acc_l
+                memo += f" realized {realized:,.2f}"
+                lines += [dr("1220", trueup, sec.id, "accrual to trade date") if trueup else None,
+                          cr("4300", trueup, sec.id, "interest income to trade date") if trueup else None,
+                          dr("1200", gross_l + acc_l - comm_l, sec.id, f"receivable from broker, settles {trade.settlement_date}"),
+                          dr("5000", comm_l, sec.id, "commission"),
+                          cr(cost_acct, cost_relieved, sec.id, "cost of securities sold (FIFO)"),
+                          cr("1220", acc_l, sec.id, "accrued interest sold") if sec.is_bond else None,
+                          cr("4000", realized, sec.id, "realized gain/loss")]
+            if q_short > 0:
+                gross_s = gross - (money(gross * (q_long / q)) if q_long else ZERO)
+                comm_s = commission - (money(commission * (q_long / q)) if q_long else ZERO)
+                lot = Lot(id=f"LOT-{ev.seq:06d}S", trade_id=trade.id, open_date=trade.trade_date, quantity=-q_short, original_quantity=-q_short,
+                          cost_per_unit=px, cost_total=-gross_s)
+                pos.lots.append(lot)
+                pos.quantity -= q_short
+                pos.cost_basis -= gross_s
+                pos.pending_deliver += q_short
+                memo += " options written" if sec.is_option else " short sale (delivering borrowed shares)"
+                lines += [dr("1200", gross_s - comm_s, sec.id, f"{'premium' if sec.is_option else 'short-sale proceeds'} receivable, settles {trade.settlement_date}"),
+                          dr("5000", comm_s, sec.id, "commission"),
+                          cr(short_acct, gross_s, sec.id, "options written, at premium received" if sec.is_option else "obligation to return borrowed shares, at proceeds")]
+        lines = [l for l in lines if l]
+        w.post(pf.id, memo, lines, ev, {"trade_id": trade.id, "order_id": order.id, "security_id": sec.id})
+        w.derive(E.SETTLEMENT_INSTRUCTION_CREATED, {
+            "si_id": f"SI-{w.next_seq():06d}", "trade_id": trade.id, "portfolio_id": pf.id, "security_id": sec.id, "isin": sec.isin,
+            "cusip": sec.cusip, "instruction_type": "RVP" if trade.side == "BUY" else "DVP", "quantity": q, "cash_amount": net,
+            "currency": sec.currency, "trade_date": trade.trade_date, "settlement_date": trade.settlement_date,
+            "delivering_party": trade.broker if trade.side == "BUY" else pf.custody_account,
+            "receiving_party": pf.custody_account if trade.side == "BUY" else trade.broker,
+            "custodian": "OCC (Options Clearing Corporation)" if sec.is_option else "BNY Mellon Asset Servicing"}, ev, portfolio_id=pf.id)
+        w.pnl.mark_position(pf, sec.id, ev)
+
+    def _apply_futures_trade(self, pf: Portfolio, pos, sec: Security, trade: Trade, ev: Event) -> None:
+        """Futures: signed contract position; P&L flows through daily variation margin (futures.py)."""
+        w = self.w
+        signed = trade.quantity if trade.side == "BUY" else -trade.quantity
+        pos.is_future = True
+        old = pos.quantity
+        new = old + signed
+        if old == 0 or (old > 0) != (new > 0) and new != 0:
+            pos.cost_basis = ZERO
+            avg = trade.price if new != 0 else ZERO
+        elif abs(new) > abs(old):
+            avg = qprice((pos.average_cost_future * abs(old) + trade.price * trade.quantity) / abs(new))
+        else:
+            avg = pos.average_cost_future
+        pos.quantity = new
+        pos.settled_quantity = new
+        pos.average_cost_future = avg if new != 0 else ZERO
+        if pos.settlement_price == 0:
+            pos.settlement_price = trade.price
+        pos.day_fills.append({"quantity": signed, "price": trade.price, "trade_id": trade.id})
+        trade.status = "CLEARED"
+        trade.status_history.append({"status": "CLEARED", "date": ev.sim_date, "event_id": ev.id, "note": "cleared through the futures clearing member; margined daily"})
+        if sec.currency != pf.base_currency:
+            paid = -w.fx._adjust_cash(pf, sec.currency, -trade.commission, ev, "COMMISSION", f"Futures commission {trade.id} {sec.id}")
+        else:
+            paid = trade.commission
+            pf.cash_account(sec.currency).balance -= trade.commission
+            w.record_cash_movement(pf, sec.currency, -trade.commission, "COMMISSION", f"Futures commission {trade.id} {sec.id}", ev)
+        w.post(pf.id, f"{trade.side} {trade.quantity:,} {sec.id} @ {trade.price} (trade {trade.id}, cleared)",
+               [dr("5000", paid, sec.id, "futures commission"), cr(f"1010:{sec.currency}", paid, sec.id, "paid to clearing broker")],
+               ev, {"trade_id": trade.id, "order_id": trade.order_id, "security_id": sec.id})
+
+    def _relieve_fifo(self, pos, q: Decimal, ev: Event) -> Tuple[List[Dict], Decimal]:
+        """Relieve |q| units FIFO. q > 0 relieves long lots and returns cost; q < 0 relieves short lots and returns proceeds."""
+        sign = 1 if q > 0 else -1
+        remaining = abs(q)
+        relieved = []
+        cost = ZERO
+        for lot in pos.lots:
+            if remaining <= 0:
+                break
+            if (lot.quantity <= 0) if sign > 0 else (lot.quantity >= 0):
+                continue
+            lq = abs(lot.quantity)
+            take = min(lq, remaining)
+            lot_cost = money(abs(lot.cost_total) * take / lq) if take < lq else abs(lot.cost_total)
+            lot.quantity -= sign * take
+            lot.cost_total += -sign * lot_cost if sign > 0 else lot_cost
+            remaining -= take
+            cost += lot_cost
+            relieved.append({"lot_id": lot.id, "quantity": take, "cost": lot_cost, "cost_per_unit": lot.cost_per_unit, "open_date": lot.open_date,
+                             "side": "LONG" if sign > 0 else "SHORT"})
+        if remaining > 0:
+            raise RuntimeError(f"FIFO relief short by {remaining} — validation should have prevented this")
+        pos.lots = [l for l in pos.lots if l.quantity != 0]
+        return relieved, cost
+
+    def _h_trade_status(self, ev: Event) -> None:
+        p = ev.payload
+        t = self.w.portfolios[p["portfolio_id"]].trades[p["trade_id"]]
+        t.status = p["status"]
+        t.status_history.append({"status": p["status"], "date": ev.sim_date, "event_id": ev.id, "note": p.get("note", "")})
+
+
+def _looks_decimal(s: str) -> bool:
+    try:
+        D(s)
+        return any(ch.isdigit() for ch in s) and not any(ch.isalpha() for ch in s)
+    except Exception:
+        return False

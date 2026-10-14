@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finsim"
+version = "0.1.0"
+description = "Institutional financial-markets simulation: event-sourced ledger, markets, settlement, custody, P&L explain"
+requires-python = ">=3.11"
+dependencies = []          # standard library only by design (see README: optional extras)
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.110", "uvicorn>=0.29"]
+test = ["pytest>=8"]
+
+[project.scripts]
+finsim = "finsim.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["finsim*"]
+
+[tool.setuptools.package-data]
+finsim = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

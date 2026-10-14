@@ -1,0 +1,163 @@
+"""Implied-volatility surfaces.
+
+Each optionable underlying carries a small state: ATM implied volatility (30-day),
+a skew slope, a smile curvature and a term-structure slope. The ATM level is
+persistent and mean-reverts toward a target blending the underlying's structural
+volatility, its 20-day realized volatility, the market's volatility index and the
+regime; it also jumps with the market's volatility index. Skew steepens and the
+term structure inverts (front above back) in stress.
+
+IV(K, T) = ATM(T) * exp(skew_T * m + curv * m^2),  m = ln(K / F),
+ATM(T)   = ATM_30 * (1 + term * (sqrt(T) - sqrt(30/365))),
+skew_T   = skew * (30/365 / T)^0.3   (short-dated skew is steeper).
+
+State is stored in the MARKET_CLOSE payload so replay ingests it.
+"""
+from __future__ import annotations
+
+import math
+import random
+from dataclasses import dataclass
+from datetime import date
+from typing import Dict, List, Optional, Tuple
+
+REGIME_IV = {"NORMAL_GROWTH": 0.0, "RATE_CUTTING": 0.0, "RATE_HIKING": 0.03, "RECESSION": 0.10, "LIQUIDITY_STRESS": 0.25}
+REGIME_SKEW = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.1, "RECESSION": 1.4, "LIQUIDITY_STRESS": 1.8}
+REGIME_TERM = {"NORMAL_GROWTH": 0.08, "RATE_CUTTING": 0.08, "RATE_HIKING": 0.04, "RECESSION": -0.05, "LIQUIDITY_STRESS": -0.15}
+BASE_T = 30 / 365
+
+
+@dataclass
+class VolState:
+    atm: float          # 30-day ATM implied vol
+    skew: float         # slope per unit log-moneyness (negative for equities)
+    curv: float         # smile curvature
+    term: float         # term slope: positive = upward-sloping ATM term structure
+
+
+class VolSurfaceModel:
+    def __init__(self, seed: int):
+        self.seed = seed
+        self.state: Dict[str, VolState] = {}
+        self.history: Dict[str, List[Tuple[str, float, float, float]]] = {}   # (date, atm, skew, term)
+
+    def init_underlying(self, sid: str, structural_vol: float, is_index: bool = False) -> None:
+        if sid in self.state:
+            return
+        base_skew = -0.35 if is_index else -0.22
+        self.state[sid] = VolState(atm=max(min(0.08, structural_vol * 0.8), structural_vol * 1.05), skew=base_skew, curv=0.12 if not is_index else 0.06, term=0.08)
+        self.history[sid] = []
+
+    def step(self, d: date, sid: str, structural_vol: float, realized_20d: float, vol_index: float, vol_index_change: float, regime: str,
+             is_index: bool = False) -> Dict:
+        st = self.state[sid]
+        rng = random.Random(f"{self.seed}|iv|{sid}|{d.isoformat()}")
+        target = 0.45 * structural_vol + 0.30 * realized_20d + 0.25 * (vol_index / 100.0) * (structural_vol / 0.18) + REGIME_IV[regime] * (structural_vol / 0.18) * 0.5
+        target = max(min(0.06, structural_vol * 0.75), min(1.5, target))
+        st.atm = st.atm + 0.08 * (target - st.atm) + 0.35 * st.atm * vol_index_change + 0.012 * st.atm * rng.gauss(0, 1)
+        st.atm = max(min(0.05, structural_vol * 0.6), min(2.0, st.atm))
+        base_skew = -0.35 if is_index else -0.22
+        st.skew = st.skew + 0.15 * (base_skew * REGIME_SKEW[regime] - st.skew) + 0.01 * rng.gauss(0, 1)
+        st.term = st.term + 0.15 * (REGIME_TERM[regime] - st.term) + 0.004 * rng.gauss(0, 1)
+        self.history[sid].append((d.isoformat(), st.atm, st.skew, st.term))
+        return {"atm": st.atm, "skew": st.skew, "curv": st.curv, "term": st.term}
+
+    def ingest(self, d: date, payload: Dict[str, Dict]) -> None:
+        for sid, p in payload.items():
+            st = self.state.get(sid)
+            if st is None:
+                st = VolState(p["atm"], p["skew"], p["curv"], p["term"])
+                self.state[sid] = st
+                self.history[sid] = []
+            st.atm, st.skew, st.curv, st.term = float(p["atm"]), float(p["skew"]), float(p["curv"]), float(p["term"])
+            self.history[sid].append((d.isoformat(), st.atm, st.skew, st.term))
+
+    def atm_for_tenor(self, sid: str, T: float) -> float:
+        st = self.state[sid]
+        T = max(1 / 365, T)
+        return max(min(0.03, st.atm * 0.5), st.atm * (1 + st.term * (math.sqrt(T) - math.sqrt(BASE_T))))
+
+    def iv(self, sid: str, strike: float, forward: float, T: float) -> float:
+        st = self.state[sid]
+        T = max(1 / 365, T)
+        m = math.log(max(1e-9, strike) / max(1e-9, forward))
+        skew_T = st.skew * (BASE_T / T) ** 0.3
+        v = self.atm_for_tenor(sid, T) * math.exp(skew_T * m + st.curv * m * m)
+        return max(min(0.03, st.atm * 0.5), min(3.0, v))          # the floor scales with the underlying: a rate future is not an equity
+
+    def iv_rank(self, sid: str, window: int = 252) -> Optional[Dict]:
+        h = self.history.get(sid, [])[-window:]
+        if len(h) < 20:
+            return None
+        atms = [x[1] for x in h]
+        cur = atms[-1]
+        lo, hi = min(atms), max(atms)
+        rank = (cur - lo) / (hi - lo) if hi > lo else 0.5
+        pct = sum(1 for a in atms if a <= cur) / len(atms)
+        return {"iv_rank": rank, "iv_percentile": pct, "low": lo, "high": hi, "current": cur, "days": len(atms)}
+
+
+OPTIONABLE_CLASSES = ("EQUITY", "ETF", "REIT", "ADR", "CRYPTO")
+INDEX_ID = "SPX"
+INDEX_SOURCE = "SPY"
+# cash-settled European index options: index -> (the ETF whose price × factor is the index level, factor)
+INDICES = {"SPX": ("SPY", 10.0), "NDX": ("QQQ", 41.3), "RUT": ("IWM", 10.35)}
+
+
+def is_index(under) -> bool:
+    return under in INDICES
+
+
+def index_source(under: str) -> str:
+    return INDICES[under][0] if under in INDICES else under
+
+
+def index_factor(under: str) -> float:
+    return INDICES[under][1] if under in INDICES else 1.0
+
+
+# single-stock options outside the US: country -> (exchange, shares per contract). Saudi names have no listed options.
+OPTION_VENUES = {"DE": ("Eurex", 100), "FR": ("Eurex", 100), "NL": ("Eurex", 100), "CH": ("Eurex", 100), "IT": ("Eurex", 100), "ES": ("Eurex", 100),
+                 "GB": ("ICE Futures Europe", 1000), "JP": ("Osaka Exchange", 100), "HK": ("HKEX", 100), "KR": ("KRX", 10),
+                 "TW": ("TAIFEX", 2000), "IN": ("NSE", 500), "AU": ("ASX", 100)}
+# Hong Kong contracts are one board lot, which differs by stock
+OPTION_LOT = {"9988-HK": 500, "1299-HK": 1000, "0941-HK": 500}
+
+
+def has_listed_options(s) -> bool:
+    """Whether the real market lists options on this stock or fund: every US-listed stock, REIT and ADR in the universe,
+    every US fund that trades at least 100,000 shares a day, and foreign stocks where their home exchange lists them."""
+    if s.asset_class not in ("EQUITY", "ETF", "REIT", "ADR") or not s.shares_outstanding:
+        return False
+    if s.currency == "USD":
+        return s.asset_class != "ETF" or s.adv >= 100_000
+    return s.country in OPTION_VENUES
+
+
+def option_multiplier(s) -> int:
+    """Shares per contract: 100 in the US, the home exchange's contract size abroad."""
+    if s.currency == "USD":
+        return 100
+    return OPTION_LOT.get(s.id, OPTION_VENUES.get(s.country, ("", 100))[1])
+
+
+def option_venue(s) -> str:
+    return "Cboe Options Exchange" if s.currency == "USD" else OPTION_VENUES.get(s.country, ("local exchange", 100))[0]
+
+
+def is_core_optionable(s) -> bool:
+    """The deep chains (six expiries, thirteen strikes): large US names. Everything else lists three monthlies, nine strikes."""
+    return s.currency == "USD" and s.liquidity_tier == "LARGE"
+
+
+def optionable_underlyings(securities: Dict) -> List[str]:
+    """Underlyings that carry a listed option chain and a vol surface (stocks and funds with listed options, plus the cash indices)."""
+    out = [s.id for s in securities.values() if has_listed_options(s)]
+    return sorted(out) + [i for i in INDICES if INDICES[i][0] in securities]
+
+
+def structural_vol(securities: Dict, under: str) -> float:
+    if under in INDICES:
+        return {"SPX": 0.16, "NDX": 0.21, "RUT": 0.22}.get(under, 0.16)
+    sec = securities[under]
+    return math.sqrt((sec.beta * 0.16) ** 2 + sec.sigma_annual ** 2)
