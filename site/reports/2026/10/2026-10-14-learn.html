@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Why Speed Alone Can&rsquo;t Tell You Where You&rsquo;re Going — Learning Brief, Wed, Oct 14, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-14",
+    "slot": "learn",
+    "title": "Why Speed Alone Can’t Tell You Where You’re Going",
+    "path": "reports/2026/10/2026-10-14-learn.html",
+    "summary": "Day 13 of the Academy: the vector, a quantity that needs both a size and a direction to mean anything, and the two equivalent ways — arrows and components — of adding them together.",
+    "headlines": [
+      "Day 13 of 300 · Mathematics: a vector is a quantity with both a size and a direction, and both parts matter",
+      "Vectors add tip-to-tail or component by component — the two methods always agree"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-14T05:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Why Speed Alone Can&rsquo;t Tell You Where You&rsquo;re Going</h1>
+      <p class="paper-dateline">
+        Wednesday, October 14, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A number by itself can only say how much of something there is; it takes a second piece of
+        information, direction, to say where it&rsquo;s going &mdash; the one idea behind an
+        airplane correcting for crosswind, a cable holding up a bridge, and every arrow on a weather
+        map.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 13 of 300 &middot; Mathematics 13 of 20 &middot; Vectors: quantities with direction</span>
+    </div>
+
+    <article class="lesson-body">
+      <h3>The Big Idea</h3>
+      <p>
+        Your car&rsquo;s speedometer reads 60. That number is complete in itself &mdash; it tells
+        you exactly how fast you are going, and nothing more is needed to make the statement true or
+        false. Quantities like that, fully described by a single number and a unit, are called
+        <strong>scalars</strong>: mass, time, temperature, distance, energy, speed. Now ask a
+        different question &mdash; not how fast, but which way &mdash; and the speedometer has
+        nothing to say. Answering it needs a second car driving 60 the opposite direction, or a
+        compass heading, or an arrow on a map. A quantity that needs both a size and a direction
+        before it means anything at all is called a <strong>vector</strong>: velocity, force,
+        displacement, acceleration, and momentum all work this way.
+      </p>
+      <p>
+        The distinction is not academic hair-splitting; it changes what the numbers actually tell
+        you. Two cars each going 60 miles an hour toward each other are about to collide; two cars
+        each going 60 miles an hour away from each other are getting safer by the second &mdash; same
+        <em>speed</em>, opposite <em>velocity</em>, and the difference is everything. Walk once
+        around your block and come back to your front door: you have covered real distance, a
+        scalar that just keeps adding up step by step, yet your net <strong>displacement</strong>
+        &mdash; how far you ended up from where you started, and in which direction &mdash; is
+        exactly zero. Two ropes pulling on the same hook with equal force, directly opposite each
+        other, hold it perfectly still; the same two forces pulling at right angles instead drag the
+        hook off at an angle neither rope points in alone. The size of a push or a pull is never the
+        whole story; which way it points decides what actually happens.
+      </p>
+      <p>
+        The picture to carry forward is an arrow: its length stands for the vector&rsquo;s
+        magnitude (how much), and the way it points stands for its direction. Two arrows count as
+        the exact same vector if they have the same length and point the same way, no matter where
+        on the page you happen to draw them &mdash; a vector describes a size-and-direction, not a
+        fixed location, which is exactly what lets the next section&rsquo;s addition rule work at
+        all.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Two ways of writing a vector down turn out to matter, and they describe the same thing from
+        different angles. The first is geometric: draw it as an arrow, give its length (the
+        magnitude) and the angle it makes with some reference direction. The second is algebraic:
+        break the arrow down into how far it reaches along each axis of a coordinate grid &mdash;
+        its <strong>components</strong>. A vector pointing 3 units east and 4 units north is written
+        (3, 4); the first number is its east&ndash;west component, the second its north&ndash;south
+        component. Day 5&rsquo;s trigonometry is exactly the tool that converts between the two
+        pictures: a vector of magnitude <em>r</em> at angle <em>&theta;</em> from the east axis has
+        components (<em>r</em>&nbsp;cos&nbsp;<em>&theta;</em>, <em>r</em>&nbsp;sin&nbsp;<em>&theta;</em>),
+        and the reverse conversion runs through the Pythagorean theorem and the arctangent.
+      </p>
+      <p>
+        Adding vectors is where the two pictures earn their keep, because each gives you a different
+        way to do the identical calculation. The geometric method is called
+        <strong>head-to-tail</strong>: draw the first vector, then draw the second starting from the
+        tip (head) of the first rather than from the origin, and the <strong>resultant</strong>
+        &mdash; the sum &mdash; is the single arrow running from the very start of the first vector
+        to the very end of the second. This is exactly how combined motion behaves in the physical
+        world: if you swim at a steady speed and direction relative to the water, while a current
+        carries the water itself in some other direction, your actual path over the riverbed is the
+        head-to-tail sum of the two. The algebraic method, component-wise addition, says the same
+        thing without needing a single drawing: add the two vectors&rsquo; east&ndash;west components
+        to get the resultant&rsquo;s east&ndash;west component, and separately add their
+        north&ndash;south components to get its north&ndash;south component. The two methods always
+        agree, because the head-to-tail picture and the component grid are two descriptions of the
+        identical arrow; component addition is simply the version you can compute with a calculator
+        instead of a ruler and protractor, and it is the version used almost everywhere vectors
+        actually get calculated, because it generalizes cleanly to three dimensions and beyond,
+        where a careful drawing stops being practical.
+      </p>
+      <p>
+        One more operation rounds out the toolkit: multiplying a vector by an ordinary number (a
+        scalar). Multiplying by a positive number stretches or shrinks the arrow without turning it
+        &mdash; double a vector and you get an arrow twice as long, pointing the identical way.
+        Multiplying by a negative number does that and also flips the direction a full 180 degrees;
+        multiplying a vector by &minus;1 produces the vector of the exact same length pointing
+        exactly the opposite way, which is also how vector <em>subtraction</em> works: <strong>A</strong>
+        &minus; <strong>B</strong> is just <strong>A</strong> plus the reverse of <strong>B</strong>.
+        A vector of length exactly 1, pointing in some direction, is called a <strong>unit
+        vector</strong>; it carries pure direction with none of the scale, and any vector at all can
+        be rebuilt by multiplying its own length by its own unit vector &mdash; a way of splitting
+        &ldquo;how much&rdquo; apart from &ldquo;which way&rdquo; completely cleanly.
+      </p>
+      <p>
+        Everything so far used two components, east and north, because a flat map only needs two
+        axes to pin down a point. Nothing about the idea stops there: add a third component,
+        straight up, and the identical head-to-tail and component-wise rules describe a vector in
+        three-dimensional space exactly as well as in two, with the resultant&rsquo;s third
+        component found by adding the two inputs&rsquo; third components separately, and its length
+        found by a direct extension of the same Pythagorean reasoning &mdash; summing the squares of
+        all three components instead of two before taking the square root. A GPS receiver lives in
+        exactly this three-component world: your position is a single vector with an east, a north,
+        and an up part, and your velocity is another three-component vector describing how fast,
+        and in which of those three directions, you are currently moving. None of the underlying
+        algebra changes; there is simply one more number to carry along through every step of it.
+      </p>
+      <p>
+        The arrow-and-components picture used throughout this lesson is itself the product of a
+        fairly late argument. In 1843, the Irish mathematician William Rowan Hamilton introduced
+        <strong>quaternions</strong>, a four-part number system built specifically to handle
+        three-dimensional rotation and direction, and spent much of the rest of his career convinced
+        it was the right language for all of physics. It took until the 1880s &mdash; working
+        independently of each other, after Hamilton&rsquo;s death &mdash; for the American physicist
+        Josiah Willard Gibbs and the British physicist Oliver Heaviside to strip Hamilton&rsquo;s
+        four-part system down to the simpler three-component vectors taught here, arguing that most
+        of the physics people actually wanted (forces, velocities, fields) only ever needed the
+        three-component piece and none of the baggage quaternions carried alongside it. Their
+        stripped-down version won out slowly, after decades of genuine argument among mathematicians
+        and physicists about which system was really more useful, with historians of mathematics
+        generally dating its full acceptance to around 1910. The notation in your hands today is the
+        side that won.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Scalar</dt>
+        <dd>A quantity fully described by a single number and a unit &mdash; mass, time, temperature,
+        speed. Has a size, no direction.</dd>
+        <dt>Vector</dt>
+        <dd>A quantity that needs both a magnitude (size) and a direction to be fully specified
+        &mdash; velocity, force, displacement, acceleration.</dd>
+        <dt>Magnitude and direction</dt>
+        <dd>The two pieces of information every vector carries: how much (its length, as an arrow)
+        and which way (the angle it points).</dd>
+        <dt>Components</dt>
+        <dd>A vector rewritten as how far it reaches along each axis of a coordinate grid (e.g. its
+        east&ndash;west and north&ndash;south parts) &mdash; the algebraic alternative to drawing an
+        arrow.</dd>
+        <dt>Resultant (vector addition)</dt>
+        <dd>The single vector produced by adding two or more vectors together, found either by
+        joining them head-to-tail or by adding their components separately.</dd>
+        <dt>Unit vector</dt>
+        <dd>A vector of length exactly 1, used to represent pure direction with the size stripped
+        away; any vector equals its own length times its own unit vector.</dd>
+      </dl>
+      </div>
+
+      <h3>Example / Application</h3>
+      <p>
+        Pilots solve a vector-addition problem, by name, on every flight with any crosswind at all.
+        An aircraft moves through the air at its <strong>airspeed</strong>, in whatever direction the
+        nose points; but the air itself is usually moving too, as wind, relative to the ground. The
+        plane&rsquo;s actual path over the ground &mdash; its <strong>track</strong> &mdash; is the
+        head-to-tail sum of those two vectors: airspeed plus wind. Point the nose exactly where you
+        want to end up and a crosswind will carry you steadily off that line; the fix pilots use,
+        called the <strong>wind correction angle</strong>, is to aim the nose slightly into the wind
+        so the sideways push cancels out and the actual track comes out straight.
+      </p>
+      <div class="worked">
+        <p>
+          A pilot wants to fly a track of due north. True airspeed is 150 knots. The wind is blowing
+          from the east (090&deg;) at 30 knots &mdash; a pure 90-degree crosswind, pushing the
+          aircraft toward the west. What heading should the pilot fly, and how fast will the plane
+          actually cover ground?
+        </p>
+        <p>
+          <strong>Set up the components.</strong> Put north and east as the two axes. The wind
+          vector has an east&ndash;west component of &minus;30 knots (pushing west) and a
+          north&ndash;south component of 0 (it is a pure crosswind, blowing squarely across the
+          intended track). For the ground track to come out due north, the airspeed vector&rsquo;s
+          east&ndash;west component must exactly cancel the wind&rsquo;s: it needs a +30-knot
+          (eastward) component of its own.
+        </p>
+        <p>
+          <strong>Find the heading (the wind correction angle).</strong> The airspeed vector has
+          length 150 and needs an eastward component of 30, so the angle it must lean away from due
+          north is <em>&theta;</em> = asin(30/150) = asin(0.2) &asymp; 11.5&deg;. Since the push is
+          westward, the correction leans the nose eastward to counter it: fly a heading of roughly
+          011&deg; &mdash; about 11.5&deg; east of north &mdash; not the 000&deg; you might first
+          assume.
+        </p>
+        <p>
+          <strong>Find the actual ground speed.</strong> With the sideways components now cancelling
+          exactly, what&rsquo;s left is the airspeed vector&rsquo;s northward component, found with
+          the Pythagorean theorem: ground speed = &radic;(150&sup2; &minus; 30&sup2;) =
+          &radic;(22,500 &minus; 900) = &radic;21,600 &asymp; <strong>147 knots</strong>, a little
+          slower over the ground than the 150-knot airspeed, because part of the plane&rsquo;s effort
+          is now spent fighting the crosswind sideways rather than moving north.
+        </p>
+      </div>
+      <p>
+        The identical head-to-tail logic governs forces pulling on a single point from different
+        directions, not just motion through air. Picture two tow trucks hooked to the same stuck
+        vehicle: one crew pulls due north with 400 pounds of force; a second crew, positioned off to
+        the side, pulls due east with 300 pounds.
+      </p>
+      <div class="worked">
+        <p>
+          Added as vectors rather than as plain numbers, the two forces combine into a single
+          resultant force. Its magnitude, by the Pythagorean theorem: &radic;(400&sup2; + 300&sup2;)
+          = &radic;(160,000 + 90,000) = &radic;250,000 = <strong>500 pounds</strong>. Its direction,
+          by the arctangent of the two components: arctan(300/400) &asymp;
+          <strong>36.9&deg; east of north</strong>.
+        </p>
+        <p>
+          The vehicle does not move twice &mdash; once north, once east. It moves once, along that
+          single diagonal resultant, at a size and bearing neither crew&rsquo;s own rope alone would
+          produce. It is the same two-step reasoning, components then the Pythagorean theorem, that
+          the wind-triangle example used a moment ago, applied to forces instead of velocities.
+        </p>
+      </div>
+      <p>
+        Nothing in either calculation is special to aviation or towing. The identical reasoning
+        &mdash; two vectors, head-to-tail or component by component, producing one resultant &mdash;
+        is how a ship&rsquo;s navigator corrects for ocean current, how a weather map&rsquo;s
+        wind-direction arrows combine with a storm&rsquo;s own forward motion to predict where it
+        will actually go next, and how a structural engineer checks a bridge or a crane: at every
+        stable joint, every incoming force vector has to sum to exactly zero, with nothing left over
+        to accelerate anything.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Component-wise vector addition, the version almost all real calculation actually uses, says
+        this: to add two vectors, add their matching components separately.
+      </p>
+      <div class="formula">
+        <p class="expr">R<sub>x</sub> = A<sub>x</sub> + B<sub>x</sub> &nbsp;&nbsp; R<sub>y</sub> = A<sub>y</sub> + B<sub>y</sub></p>
+        <p class="expr-spoken visually-hidden">R sub x equals A sub x plus B sub x; R sub y equals A sub y plus B sub y.</p>
+        <dl>
+          <dt>A, B</dt>
+          <dd>the two vectors being added</dd>
+          <dt>A<sub>x</sub>, A<sub>y</sub></dt>
+          <dd>vector A&rsquo;s east&ndash;west and north&ndash;south components</dd>
+          <dt>B<sub>x</sub>, B<sub>y</sub></dt>
+          <dd>vector B&rsquo;s east&ndash;west and north&ndash;south components</dd>
+          <dt>R</dt>
+          <dd>the resultant: the single vector equal to A + B</dd>
+          <dt>R<sub>x</sub>, R<sub>y</sub></dt>
+          <dd>the resultant&rsquo;s own components, each simply the sum of the matching components
+          of A and B</dd>
+        </dl>
+      </div>
+      <p>
+        Once the resultant&rsquo;s components are known, converting back to the magnitude-and-angle
+        picture takes exactly the tools from How It Works: the resultant&rsquo;s length comes from
+        the Pythagorean theorem applied to its own components, treating them as the two legs of a
+        right triangle.
+      </p>
+      <div class="formula">
+        <p class="expr">|R| = &radic;(R<sub>x</sub>&sup2; + R<sub>y</sub>&sup2;)</p>
+        <p class="expr-spoken visually-hidden">The magnitude of R equals the square root of R sub x squared plus R sub y squared.</p>
+        <dl>
+          <dt>|R|</dt>
+          <dd>the magnitude (length) of the resultant vector &mdash; a single non-negative number</dd>
+        </dl>
+      </div>
+      <p>
+        That last step is exactly the calculation the worked wind-triangle example ran twice over
+        &mdash; once to pick the heading that zeroes out the crosswind component, and once more to
+        find the ground speed left over once it was cancelled.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Scalars are enough for a great deal of ordinary measurement, but the moment a quantity has
+        to describe motion, force, or anything else that happens somewhere and points somewhere,
+        a single number stops being able to carry the whole idea. Vectors are the fix, and once
+        you&rsquo;re used to reading the world that way &mdash; asking not just &ldquo;how much&rdquo;
+        but &ldquo;which way, too&rdquo; &mdash; a great deal of physics, engineering, navigation, and
+        even a video game character&rsquo;s on-screen motion turns out to be the identical
+        head-to-tail or component-wise addition rule from today, applied over and over to different
+        quantities.
+      </p>
+      <p>
+        It also sets up the next twist directly. Everything here involved one vector or two at a
+        time, each a short list of numbers. Day 14 extends the idea to a <strong>matrix</strong>
+        &mdash; a whole rectangular grid of numbers that acts on a vector all at once, rotating,
+        scaling, or stretching it into a new vector in a single operation, the way a flight
+        simulator rotates an entire 3D scene around a moving aircraft or a search engine ranks an
+        entire web of pages simultaneously. None of that machinery means anything without first
+        having a solid, computable idea of what a vector actually is &mdash; which is exactly what
+        today built.
+      </p>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A scalar is fully described by a single number and a unit; a vector needs a magnitude
+        <em>and</em> a direction before it means anything.</li>
+        <li>Two vectors add either head-to-tail (geometrically, as arrows) or component by component
+        (algebraically) &mdash; the two methods always produce the identical resultant.</li>
+        <li>Multiplying a vector by a positive number only changes its length; multiplying by a
+        negative number also reverses its direction.</li>
+        <li>Displacement (how far, and which way, you ended up) is a vector; distance traveled is a
+        scalar &mdash; walking a full loop gives real distance but zero displacement.</li>
+        <li>The component method &mdash; breaking a vector into its parts along each axis using
+        trigonometry &mdash; is how virtually every real vector calculation, from flight navigation
+        to physics, actually gets done.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Think About It</b>
+      <p>
+        Suppose the same pilot wants to fly due north again, but today the wind is blowing from the
+        west instead of the east, at the same 30 knots, with the same 150-knot airspeed. Using the
+        same reasoning as the worked example &mdash; cancelling the sideways push with a component of
+        the airspeed vector &mdash; should the compass heading now point east of north, west of
+        north, or still exactly north, and why?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Written for this report. The history of vector notation &mdash;
+      William Rowan Hamilton&rsquo;s 1843 quaternions and Josiah Willard Gibbs and Oliver
+      Heaviside&rsquo;s independent 1880s simplification of them into the three-component system
+      used today, with full acceptance generally dated to around 1910 &mdash; was checked this run
+      against Michael Crowe&rsquo;s standard history of vector analysis. The wind-correction-angle
+      formula and its arithmetic are standard aviation navigation, recomputed independently for this
+      edition.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-13-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
