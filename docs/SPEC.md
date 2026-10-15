@@ -164,7 +164,15 @@ then *"i want a restart on this path, so day 1."*
   sequence early, Systems Thinking early as the connective toolkit, and a **Systems Case** closing
   each block that traces one real system through Logan's chain (need → invention → physical
   constraints → engineering → financing and production → regulation → adoption → consequences →
-  feedback), taught as a loop, with the car revisited as a spiral case. TOTAL_DAYS_PLACEHOLDER
+  feedback), taught as a loop, with the car revisited as a spiral case. **293 lessons** (275
+  lessons + 18 Systems Cases) in 18 blocks, Day 1 on 2026-10-15, last day about 2027-11-29:
+  Mathematics with How We Know (1–24) · Systems Thinking (25–36) · Philosophy I: Knowledge,
+  Evidence and Values (37–49) · Physics (50–66) · Energy, Chemistry & Materials (67–86) ·
+  Engineering (87–103) · Computing (104–116) · Space & Astronomy (117–131) · Biology, Medicine &
+  Health (132–152) · Psychology (153–169) · AI (170–184) · History I (185–200) · Sociology
+  (201–216) · History II: The Great Enrichment and the Modern World (217–235) · Government
+  (236–249) · Law (250–263) · International Relations (264–277) · Philosophy II: Persons, God,
+  Progress and the Good (278–293). The car returns at days 24, 103, 216 and 293.
 - **No Economics or Finance/Accounting blocks** (Logan, 2026-10-15: "can remove these … as i am
   studying for cfa"), replaced at his choice by Energy, Chemistry & Materials; Biology, Medicine &
   Health; and Space & Astronomy. The economic history his book needs (the Great Enrichment debate,
