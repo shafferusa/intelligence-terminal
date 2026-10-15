@@ -262,7 +262,10 @@ these changes. Their job is Logan's chain: one real system traced through every 
 **The one resource.**
 - **Default:** the entry's `resource`, used exactly as given — title, creator, length and URL
   copied character for character. Never write a URL from memory; never construct, guess, shorten
-  or "fix" one. An empty `url` means cite it without a link.
+  or "fix" one. An empty `url` means cite it without a link — unless one or two quick WebSearches
+  (about a minute; never more) show the resource's exact URL on its creator's or publisher's own
+  site or official channel, with a second result corroborating the title and creator: then link
+  it. Same resource only — never swap in a different one to get a link.
 - **Fallback** — only when the entry has no `resource`: one pick found by WebSearch that meets all
   of: its URL appears verbatim in a WebSearch result this run; it is hosted by its creator or
   publisher (never an aggregator, summary, transcript or mirror site); a second result
