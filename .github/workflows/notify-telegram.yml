@@ -47,9 +47,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # notify.py compares with the parent commit's index
 
       - name: Send Telegram notification
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # main as it was before this push: notify.py only announces when the
+          # push put a NEW edition on top of the index, not on any index edit.
+          PREV_SHA: ${{ github.event.before }}
         run: python3 .github/scripts/notify.py
