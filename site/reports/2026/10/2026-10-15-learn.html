@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Enrico Fermi Guessed an Atomic Bomb's Size by Dropping Scraps of Paper. He Landed Within a Factor of Two. — Learning Brief, Thu, Oct 15, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-15",
+    "slot": "learn",
+    "title": "Enrico Fermi Guessed an Atomic Bomb's Size by Dropping Scraps of Paper. He Landed Within a Factor of Two.",
+    "path": "reports/2026/10/2026-10-15-learn.html",
+    "summary": "Day 1 of the Connected Path: how to reach a usable estimate of almost anything by breaking it into rough factors you can guess, multiplying them while tracking units, and aiming to be right within a factor of a few.",
+    "headlines": [
+      "Day 1 of 293 · Mathematics: a Fermi estimate chains rough factors to land on the right order of magnitude",
+      "Independent errors partly cancel — which is also why Fermi's lone data point landed within a factor of two of Trinity's real yield",
+      "Watch or Read: Powers of Ten (1977) (about 9 min)"
+    ],
+    "reading_minutes": 16,
+    "generated_at": "2026-10-15T04:53:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Enrico Fermi Guessed an Atomic Bomb&rsquo;s Size by Dropping Scraps of Paper. He Landed Within a Factor of Two.</h1>
+      <p class="paper-dateline">
+        Thursday, October 15, 2026 <span class="sep">&middot;</span> 16 min read
+      </p>
+      <p class="paper-standfirst">
+        A method sturdy enough to size a nuclear blast with torn paper and no instruments works the
+        same way on a battery pack: break the unknown into factors you can actually guess, carry the
+        units through every step, and aim to land within a factor of a few rather than demand an
+        exact number.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 1 of 293 &middot; Mathematics 1 of 24 &middot; Orders of magnitude: estimating the world in powers of ten</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Ten miles from the first atomic bomb, a physicist tears up a sheet of paper</h3>
+      <p>
+        At 5:29 a.m. Mountain War Time on July 16, 1945, the United States detonated the world&rsquo;s
+        first nuclear weapon atop a 100-foot steel tower at the Trinity test site in the New Mexico
+        desert. Enrico Fermi, one of the physicists who had helped design the device, watched from
+        the base camp roughly 10 miles (16 km) away &mdash; close enough to see the fireball, far
+        enough that the shock wave took its time arriving. By his own account, written up within days
+        as a short memo, the air blast reached him about 40 seconds after the flash.
+      </p>
+      <p>
+        Fermi had come prepared with nothing more sophisticated than a handful of torn paper. As the
+        shock wave approached, he held small scraps about six feet above the ground and let them fall
+        &mdash; before the blast arrived, as it passed, and afterward. The pieces released during the
+        blast were carried roughly two and a half meters from where he stood; the ones dropped before
+        and after barely moved. From that single measurement &mdash; a distance he could have paced
+        off in four strides &mdash; he wrote down an estimate: the device had released energy
+        equivalent to about ten thousand tons of TNT.
+      </p>
+      <p>
+        He had no seismograph at hand, no blast-pressure gauge, and no result yet from the
+        instrumented stations ringing the site, which took days to read. When those real instruments
+        were analyzed, the 1945 figure came in at 18.6 kilotons. It was later revised to a
+        long-standing official figure of about 21 kilotons, and a 2021 reanalysis of melted,
+        radioactive desert sand from the site (H. D. Selby and colleagues, using mass spectrometry)
+        put it at 24.8 kilotons, give or take 2. Three real answers, refined across 76 years, all in
+        the same neighborhood of twenty-odd kilotons.
+      </p>
+      <p>
+        Fermi&rsquo;s paper-scrap guess of ten thousand tons was roughly half that neighborhood
+        &mdash; within a factor of about two. He had no formula written down for how a few feet of
+        sideways drift at ten miles translates into a nuclear yield; physicist J. I. Katz,
+        reconstructing the reasoning in 2021, found no record of the calibration step at all, only
+        the observation and the number it produced. How does tearing up a sheet of paper, with no
+        instrument faster than a wristwatch, get you within a factor of two of a number specialists
+        with mass spectrometers are still refining three-quarters of a century later &mdash; and what
+        kind of &ldquo;right&rdquo; is that?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        You can reach a usable estimate of almost any quantity &mdash; even one you could never
+        measure directly &mdash; by breaking it into a handful of rough factors you actually can
+        guess, multiplying them while carefully tracking their units and their powers of ten, and
+        aiming to land within a factor of a few of the truth rather than demanding an exact figure.
+        This way of reasoning is named after Fermi himself: a <strong>Fermi estimate</strong> (or
+        Fermi problem) is any calculation built this way, the classic classroom example being
+        &ldquo;how many piano tuners work in Chicago?&rdquo; &mdash; a question nobody can look up,
+        built from a chain of smaller ones almost anyone can guess at (how many people live there, how
+        many own pianos, how often a piano needs tuning, how many tunings one tuner can do in a
+        year).
+      </p>
+      <p>
+        The method works because most of the hard quantities in the world are not single mysteries;
+        they are the product of several much easier ones, chained together. You rarely know a
+        bomb&rsquo;s yield directly, but a physicist standing in the open with paper and a stopwatch
+        can reason from a handful of things that are each individually guessable. Each factor in the
+        chain carries its own uncertainty &mdash; you might be off by a factor of two or three on any
+        one of them &mdash; but, for a reason the next section explains, the chain as a whole is often
+        far more reliable than any single piece of it feels like it should be.
+      </p>
+      <p>
+        The goal is never a decimal point. It is the power of ten: is the answer close to ten, a
+        hundred, a thousand, ten thousand? Getting that right, quickly, using only reasoning, is worth
+        more in practice than it sounds &mdash; it is the sanity check that catches a wildly wrong
+        number before it goes into a design, a budget, or a decision.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A Fermi estimate begins by rewriting the unknown quantity as a product of factors, each one
+        easier to guess than the original question. Call the quantity you want <em>Q</em>; you write
+        it as Q &asymp; f<sub>1</sub> &times; f<sub>2</sub> &times; &hellip; &times; f<sub>n</sub>,
+        choosing factors you can each put a number on from general knowledge, a quick calculation, or
+        a reasonable guess &mdash; rather than factors that would require you to already know the
+        answer. For the piano-tuner question: Chicago&rsquo;s population, the fraction of households
+        owning a piano, how often each piano gets tuned per year, and how many tunings one full-time
+        tuner can complete in a year. None of those four numbers is exact, and none of them needs to
+        be &mdash; you only need each one to be in the right ballpark.
+      </p>
+      <p>
+        Because the factors can each span many powers of ten, Fermi estimates are almost always
+        carried in <strong>scientific notation</strong> &mdash; a number written as a single leading
+        digit (or one decimal place) times ten raised to a power, such as 3 &times; 10<sup>6</sup> for
+        three million. Multiplying numbers written this way is mostly just adding the powers of ten:
+        (3 &times; 10<sup>6</sup>) &times; (2 &times; 10<sup>3</sup>) = 6 &times; 10<sup>9</sup>. That
+        is why, underneath the multiplication, a Fermi estimate is really an addition: taking the
+        base-ten logarithm of both sides turns the product f<sub>1</sub> &times; f<sub>2</sub> &times;
+        &hellip; into the sum log<sub>10</sub>&thinsp;f<sub>1</sub> + log<sub>10</sub>&thinsp;f<sub>2</sub>
+        + &hellip;, and the whole estimate becomes a running tally of how many powers of ten each
+        factor contributes. This is the same logarithm whose job is to compress enormous ranges onto
+        one line &mdash; the Richter scale for earthquakes and the decibel scale for sound both work
+        for exactly this reason, and both are built the same way a Fermi estimate is: as a sum of
+        log-scale contributions rather than a product of raw numbers.
+      </p>
+      <p>
+        Every factor also carries a unit, and the units have to cancel cleanly on the way to the
+        answer &mdash; this bookkeeping is called <strong>dimensional analysis</strong>. If you are
+        estimating gallons of gasoline burned per year and one of your factors is in miles per gallon,
+        it had better multiply against a quantity in miles, not kilometers or minutes, or the units
+        left over at the end will not be gallons at all. Writing every number down with its unit
+        attached, and checking that the units you expect to cancel actually do, catches a large share
+        of Fermi-estimate errors before you ever get to checking the arithmetic &mdash; a wrong unit
+        produces an answer that is off by whatever conversion factor you dropped, often one or more
+        entire powers of ten.
+      </p>
+      <p>
+        Each factor is rounded, deliberately, to about one significant digit and the nearest sensible
+        power of ten &mdash; not because more precision is unavailable, but because more precision in
+        any one factor is wasted effort when the other factors in the chain are themselves only
+        guesses. Having multiplied everything out, the last step is a sanity check: does the
+        answer&rsquo;s order of magnitude make sense against anything else you already know? An
+        estimate of Chicago&rsquo;s piano tuners that comes out in the millions, or in the single
+        digits, should send you back to look for a dropped factor of a thousand before you trust it.
+      </p>
+      <p>
+        Here is the part that makes the method work better than it has any right to. If you had to
+        guess four or five independent factors and each one might be off by a factor of two or three
+        in either direction, it would be reasonable to worry the errors all stack up &mdash; that
+        being off by 2&times; on every factor leaves you off by 2<sup>4</sup> = 16&times; or worse on
+        the final answer. In practice this almost never happens, because the errors are
+        <strong>independent</strong>: there is no reason your guess at piano-ownership rates and your
+        guess at tunings-per-tuner should both happen to be too high, or both too low, at the same
+        time. Some of your errors overshoot, some undershoot, and they partly cancel in the product
+        rather than compounding. The rule of thumb carried forward from this is that <em>n</em>
+        independent errors, each a factor of about <em>k</em>, tend to leave the product off by
+        roughly <em>k</em> raised to the square root of <em>n</em>, not <em>k</em> raised to the full
+        <em>n</em> &mdash; four independent factor-of-two errors behave more like a single
+        factor-of-four error than a factor-of-sixteen one. Day 16 derives exactly why a square root
+        shows up here, when it covers how the same kind of averaging-out of independent errors sets
+        the margin of error on an opinion poll.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Fermi was not measuring the bomb directly; nothing he was holding could do that. He was
+        chaining a short, specific series of physical facts. The paper scraps were light enough that
+        their fall was governed by the moving air itself rather than by their own weight &mdash; what
+        physicist J. I. Katz, reconstructing the calculation in 2021, called their low &ldquo;ballistic
+        coefficient&rdquo; &mdash; so their sideways drift traced the speed of the air in the blast
+        wave at the moment it passed him. That air speed relates, through the physics of a shock wave,
+        to the wave&rsquo;s overpressure; overpressure at a known distance from an explosion relates,
+        through blast scaling worked out well before Trinity on conventional high explosives, to the
+        explosion&rsquo;s energy. Each link is its own small, estimable quantity &mdash; a distance, a
+        time, a known relationship from earlier tests &mdash; chained the same way the piano-tuner
+        factors are chained. Fermi&rsquo;s own memo does not spell out that middle step; by Katz&rsquo;s
+        account, no written record of it survives, only the observation and the number it produced.
+        What the story asked you to explain is exactly this: a Fermi estimate does not require perfect
+        data, just enough independently-guessable links, each roughly right, to land on the correct
+        power of ten &mdash; and landing on 10,000 tons against a true value in the high teens to
+        mid-twenties of thousands is squarely that kind of right. Part of the remaining gap may be
+        physical, not just a reasoning shortfall: a nuclear explosion also sends real energy out as
+        heat and light, which never moved the paper at all, so a method built entirely on the
+        mechanical blast wave was always going to read a little low.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Order of magnitude</dt>
+        <dd>The power of ten closest to a quantity&rsquo;s size &mdash; the question &ldquo;is it
+        closer to ten, a hundred, or a thousand?&rdquo; rather than its exact value.</dd>
+        <dt>Fermi estimate</dt>
+        <dd>An estimate built by decomposing an unknown quantity into a product of smaller,
+        independently guessable factors, rather than trying to know or look up the answer
+        directly.</dd>
+        <dt>Scientific notation</dt>
+        <dd>Writing a number as a single leading digit times ten raised to a power (3 &times;
+        10<sup>6</sup> for three million), which keeps very large or very small quantities readable
+        and makes multiplication mostly a matter of adding exponents.</dd>
+        <dt>Unit bookkeeping (dimensional analysis)</dt>
+        <dd>Carrying every factor&rsquo;s unit through the calculation and checking that the units
+        left over at the end are the ones you actually wanted &mdash; a quick check that catches many
+        Fermi-estimate errors before the arithmetic is even reviewed.</dd>
+        <dt>Energy density per kilogram</dt>
+        <dd>How much usable energy a fuel or battery stores for each kilogram it weighs &mdash; the
+        single number that decides how heavy a given amount of stored energy has to be.</dd>
+        <dt>Factor-of-a-few accuracy</dt>
+        <dd>The standard a Fermi estimate is actually held to: landing within roughly two to five
+        times the true value, not within a percentage point of it.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Why an Electric Car&rsquo;s Battery Weighs What It Does</h3>
+      <p>
+        Early in the car&rsquo;s own story &mdash; at the physical-constraint link, well before anyone
+        designs a vehicle, finances it, or regulates it &mdash; sits a Fermi question an engineer has
+        to size up before going further: roughly how much heavier does a battery pack have to be than
+        a tank of gasoline, to store the same usable energy? You do not need a chemist&rsquo;s
+        precision for a useful first pass; you need a Fermi estimate, built from a few factors anyone
+        can look up or approximate.
+      </p>
+      <div class="worked">
+        <p><strong>1. Gasoline&rsquo;s raw energy per kilogram.</strong> The EPA&rsquo;s own
+        conversion factor for a gallon of gasoline is 33.7 kWh (its basis for rating plug-in cars&rsquo;
+        &ldquo;MPGe&rdquo;). A U.S. gallon of gasoline weighs about 2.8 kg, so gasoline holds roughly
+        33.7 &divide; 2.8 &asymp; 12 kWh per kilogram.</p>
+        <p><strong>2. A lithium-ion pack&rsquo;s raw energy per kilogram.</strong> A mid-2020s
+        electric-car battery <em>pack</em> &mdash; not a bare cell, which does better, but the full
+        pack with its casing, cooling and wiring &mdash; stores roughly 0.15 to 0.20 kWh per
+        kilogram.</p>
+        <p><strong>3. The raw gap.</strong> Dividing, 12 &divide; 0.15&ndash;0.20 &asymp; 60 to 80
+        times. Gasoline simply packs far more raw energy into each kilogram than a battery pack does
+        &mdash; the fact every electric-car designer has to design around.</p>
+        <p><strong>4. But raw energy is not useful energy.</strong> A gasoline engine wastes most of
+        what it burns as heat; the Department of Energy puts a typical gasoline car&rsquo;s overall
+        tank-to-wheels efficiency at around 30% (older federal estimates range from about 12% in
+        stop-and-go city driving up to 30%). An electric motor and battery system waste far less:
+        fueleconomy.gov puts an EV at roughly 60&ndash;73% of its battery energy reaching the wheels
+        before counting regenerative braking (the DOE figure counting regeneration is 87&ndash;91%;
+        use the pre-regeneration number here, since gasoline&rsquo;s 30% gets no braking credit
+        either).</p>
+        <p><strong>5. The useful-energy gap.</strong> Multiply each side by its own efficiency:
+        gasoline&rsquo;s useful energy per kilogram is roughly 12 &times; 0.20 &asymp; 2.4 kWh/kg
+        (20%, a round middle of the 12&ndash;30% range); the battery&rsquo;s is roughly 0.175 &times;
+        0.65 &asymp; 0.11 kWh/kg. The ratio lands at roughly <strong>twenty times</strong> &mdash; one
+        clean order of magnitude smaller than the raw 60&ndash;80&times; gap, because the battery
+        system&rsquo;s efficiency advantage claws back a meaningful chunk of it.</p>
+      </div>
+      <p>
+        Call it &ldquo;about twenty times,&rdquo; not 21.8&times; &mdash; every input above was itself
+        a range, and the Fermi answer here is the range, not a false decimal. That factor of roughly
+        twenty is the real number an electric-car engineer designs against: the reason an EV battery
+        pack weighs many hundreds of kilograms to match what a gasoline tank does in a few dozen.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        Underneath every Fermi estimate&rsquo;s multiplication is an addition, because of how
+        exponents work.
+      </p>
+      <div class="formula">
+        <p class="expr">Q &asymp; f<sub>1</sub> &times; f<sub>2</sub> &times; &hellip; &times; f<sub>n</sub> &nbsp;&nbsp;&rArr;&nbsp;&nbsp; log<sub>10</sub>Q = log<sub>10</sub>f<sub>1</sub> + log<sub>10</sub>f<sub>2</sub> + &hellip; + log<sub>10</sub>f<sub>n</sub></p>
+        <p class="expr-spoken visually-hidden">Q is approximately equal to f sub 1 times f sub 2 times, and so on, times f sub n; therefore the base-ten logarithm of Q equals the sum of the base-ten logarithms of each factor.</p>
+        <dl>
+          <dt>Q</dt>
+          <dd>the quantity you actually want to estimate</dd>
+          <dt>f<sub>1</sub>, f<sub>2</sub>, &hellip;, f<sub>n</sub></dt>
+          <dd>the chain of smaller, independently guessable factors whose product approximates
+          Q</dd>
+          <dt>log<sub>10</sub></dt>
+          <dd>the base-ten logarithm &mdash; the power you would raise 10 to, to get the number in
+          question; log<sub>10</sub>(1,000) = 3</dd>
+        </dl>
+      </div>
+      <p>
+        Writing an estimate as a sum of logarithms is what makes the method&rsquo;s error-cancellation
+        work the way it does: each factor&rsquo;s error contributes its own small, independent term to
+        that sum, and independent terms of mixed sign partly cancel rather than all pushing the total
+        the same way. The resulting rule of thumb, carried forward from How It Works, is worth stating
+        as its own working formula.
+      </p>
+      <div class="formula">
+        <p class="expr">Typical error &asymp; k<sup>&radic;n</sup> &nbsp; (rather than k<sup>n</sup>)</p>
+        <p class="expr-spoken visually-hidden">The typical error is approximately k to the power of
+        the square root of n, rather than k to the power of n.</p>
+        <dl>
+          <dt>k</dt>
+          <dd>the typical factor-of-error on any one of the chain&rsquo;s factors (for example, 2,
+          meaning a given guess might be half or double the truth)</dd>
+          <dt>n</dt>
+          <dd>the number of independent factors chained together</dd>
+        </dl>
+      </div>
+      <p>
+        This is a rule of thumb here, not a derivation &mdash; Day 16 derives the square root
+        honestly, in the different-looking but mathematically related setting of why a poll of a few
+        thousand people can estimate an entire country&rsquo;s opinion to within a percentage point or
+        two.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        A Fermi estimate is rarely the final answer to anything; it is the fast, cheap check that
+        tells you whether a precise calculation, a vendor&rsquo;s quote, or someone else&rsquo;s
+        confident number is even in the right neighborhood before you spend real effort on it. An
+        engineer who can size the battery-weight gap above in two minutes, on the back of an envelope,
+        is positioned to immediately spot a claimed pack weight that is off by a factor of five
+        &mdash; long before a detailed spec sheet would catch the same error, and without needing
+        one.
+      </p>
+      <p>
+        The habit matters as much as the arithmetic: breaking a hard, unanswerable-seeming question
+        into a chain of smaller, answerable ones is a transferable move, not a trick specific to bombs
+        or batteries. It is also the first appearance of a theme this course returns to again and
+        again &mdash; that a complicated-looking system is very often a chain of simpler, individually
+        tractable links, and that the discipline of pulling a problem apart along those links, one
+        factor at a time, is worth more than any single fact you could memorize about any one of
+        them.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Across.</b> The Fermi-estimate chain you just used on a battery pack is, structurally, the
+        same device Frank Drake built to estimate something far stranger: the number of communicating
+        civilizations elsewhere in the galaxy. Preparing the agenda for a small meeting of radio
+        astronomers and biologists at the Green Bank Observatory in West Virginia in November 1961,
+        Drake wrote the galaxy&rsquo;s count of detectable civilizations as a product of seven factors
+        &mdash; the rate stars form, the fraction with planets, the fraction of those habitable, and
+        on through the fraction of intelligent species that develop detectable technology and how long
+        such a civilization keeps broadcasting. It is a Fermi chain in the exact sense of today&rsquo;s
+        lesson: break an unanswerable number into smaller, individually guessable pieces and multiply
+        them. It is also where the method shows its own breaking point. Several of the Drake
+        equation&rsquo;s factors &mdash; especially the fraction of habitable planets where
+        intelligent life actually arises, and how long a broadcasting civilization survives &mdash;
+        are not just uncertain by a factor of two or three, the comfortable range this lesson&rsquo;s
+        error-cancellation argument covers, but by many factors of ten in each direction, so
+        independently honest estimates of the final product can span ten or more orders of magnitude.
+        The equation was built, by Drake&rsquo;s own account, to organize a conversation rather than to
+        produce a trustworthy number, and that is exactly the outcome its wildly uncertain factors
+        still produce today.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://www.eamesoffice.com/the-work/powers-of-ten/">Powers of Ten</a> (1977)
+        &mdash; Charles and Ray Eames (Eames Office), narrated by Philip Morrison &middot; Video
+        &middot; about 9 minutes</p>
+        <p>Starting from a picnic beside Lake Michigan, the film pulls the camera back by a factor of
+        ten at regular intervals out to the scale of galaxies, then dives back inward to the
+        subatomic scale &mdash; giving a felt sense of powers of ten that no amount of prose can.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A Fermi estimate breaks an unanswerable question into a chain of smaller, independently
+        guessable factors and multiplies them.</li>
+        <li>Carry units through every step; units that don&rsquo;t cancel to the answer you expect
+        are the fastest way to catch a dropped factor of ten.</li>
+        <li>Round each factor to about one significant digit &mdash; more precision in one link is
+        wasted when the others are themselves only guesses.</li>
+        <li>Independent errors partly cancel: <em>n</em> factors each off by about <em>k</em> tend to
+        leave the product off by roughly k<sup>&radic;n</sup>, not k<sup>n</sup>.</li>
+        <li>The target is the right power of ten, not a decimal point &mdash; &ldquo;about twenty
+        times,&rdquo; not &ldquo;21.8 times.&rdquo;</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        A narrow-body airliner weighing about 75 tonnes at takeoff burns roughly 5 tonnes of jet fuel
+        (energy-per-kilogram close enough to gasoline&rsquo;s to use the same figure) on a two-hour
+        flight: even granting batteries the car example&rsquo;s roughly twenty-times useful-energy gap
+        &mdash; generous, since a jet engine converts fuel to thrust more efficiently than a car
+        engine converts it to motion at the wheels &mdash; could a battery storing the same useful
+        energy fit within that airframe&rsquo;s takeoff weight?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Fermi&rsquo;s own 1945 Trinity memo; J. I. Katz, &ldquo;Fermi at
+      Trinity&rdquo; (2021), for the reconstructed physical chain behind the estimate; H. D. Selby et
+      al.&rsquo;s 2021 yield reassessment. Gasoline and battery energy-density and drivetrain-efficiency
+      figures (EPA, DOE, fueleconomy.gov) and the Drake equation&rsquo;s 1961 Green Bank meeting were
+      checked via web search this run; current pack-level lithium-ion energy density is a moving
+      target and stated here as a range rather than a single figure.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System
+      status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-14-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+    <!-- ================= THE BRIEF =================
+         The short read. Five to seven bullets, each a complete thought.
+         This replaces the old "Two-Minute Executive Brief" section block. -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> One sentence on the day&rsquo;s global picture &mdash; what is genuinely new, what is merely continuing. (Sample.)</li>
+          <li><b>Markets.</b> One sentence across equities, rates, the dollar and volatility. Tables live further down.</li>
+          <li><b>The thread.</b> The single theme connecting today&rsquo;s stories.</li>
+          <li><b>Biggest risk.</b> Stated with its trigger and its horizon.</li>
+          <li><b>Watch today.</b> The one scheduled event most likely to move things, with its time.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= WATCHLIST BOARD =================
+         CLOSING BRIEF ONLY (slot pm). Fixed 25-row board from
+         config/watchlists.yml -> `board` list, in that file's order, grouped.
+         Omitted entirely from am / sat / sun / learn editions.
+         --pos on .range-bar is the 52-week position, 0 = low, 100 = high:
+             pos = round(100 * (price - low52) / (high52 - low52))
+         Clamp to 0-100; if either 52-week bound is missing, render the cell
+         as an em dash and omit the bar rather than guessing. -->
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Jul 24, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume. Sample data.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>776.34</td><td class="down">&minus;1.54</td><td class="down">&minus;0.20%</td>
+                <td class="range-cell">
+                  <span class="range-nums">629.28 &ndash; 779.37</span>
+                  <span class="range-bar" style="--pos:98"><i></i></span>
+                </td>
+                <td>31M</td><td>52M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>305.09</td><td class="up">+1.59</td><td class="up">+0.52%</td>
+                <td class="range-cell">
+                  <span class="range-nums">223.69 &ndash; 305.05</span>
+                  <span class="range-bar" style="--pos:100"><i></i></span>
+                </td>
+                <td>13M</td><td>25M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US 10Y<small>10-year Treasury note</small></td>
+                <td>4.697%</td><td class="flat">&mdash;</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Official closes. Yields from the Treasury par-yield curve; index levels are not tradeable instruments.</p>
+    </section>
+
+    <!-- ================= TOP STORIES =================
+         8-12 stories. The first carries .story--lead (bigger headline,
+         drop cap). Each story: headline, deck, body prose, and at most two
+         .story-note blocks (Why it matters / What's next). The old seven
+         labelled subheads are gone - write it as prose.
+         .flag appears ONLY on a genuinely shaky claim.
+         Expanded analysis stays in a collapsed <details>. -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Central bank signals slower balance-sheet runoff</h3>
+          <p class="story-deck">A policymaker said the committee is &ldquo;close to the point&rdquo; where runoff should slow &mdash; the clearest signal yet, and the first to name a condition.</p>
+          <div class="story-body">
+            <p>In prepared remarks published on the central bank&rsquo;s site at 2:15 AM ET, the policymaker said the committee is &ldquo;close to the point&rdquo; at which the pace of balance-sheet runoff should slow. Runoff has proceeded at the current cap for fourteen months, and reserves have declined toward the range staff have described as ample. (Sample text.)</p>
+            <p>The remark is the individual&rsquo;s, not the committee&rsquo;s: no vote has occurred, and the next scheduled decision is on the calendar below. Two wire services carried the speech within the hour; the text itself is the primary source.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The pace of runoff drives bank reserves and, through them, money-market conditions and how easily the market absorbs Treasury supply. The front end is the most sensitive part of the curve to it.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Minutes in two weeks, which will show whether the view is shared. Watch SHY, IEF, TLT, SGOV and the regional banks for the transmission &mdash; exposure, not direction.
+            </div>
+          </div>
+          <p class="story-sourceline">Central bank speech text (primary) &middot; two wire reports &middot; desk commentary, labelled as analysis.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Two to five paragraphs weighing prior communications, market pricing before and after, and what would confirm or invalidate the read. Analysis is always labelled as analysis; causality is never asserted without evidence &mdash; &ldquo;yields fell after the remarks,&rdquo; not &ldquo;because of&rdquo; them.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Launch provider slips crewed mission to September</h3>
+          <p class="story-deck">A six-week slip for valve requalification, reported by one trade outlet and not yet confirmed by the operator.</p>
+          <div class="story-body">
+            <p><span class="flag">Single source</span> A single trade outlet reports the mission has slipped six weeks for valve requalification. The operator has not commented, and nothing has appeared on its mission page. (Sample text.)</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The operator&rsquo;s weekly update is expected today; this will be re-checked in the closing brief.
+            </div>
+          </div>
+          <p class="story-sourceline">One trade outlet &middot; operator statement pending.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= DOMAIN SECTIONS =================
+         Finance-first (2026-09-25): The Economy · Business & Earnings lead;
+         then The United States · The World · AI & Technology · Science ·
+         Space (separate sections) · Also in the News (catch-all).
+         Section order per edition: prompts/weekday.md Step 4 /
+         prompts/weekend.md S4, U3.
+         Write each as prose under the .story-body class. A section with
+         nothing material to say is OMITTED - never padded to fill the slot. -->
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Two to five short paragraphs. Releases are described in prose with the number, the expectation, the surprise and the revision, rather than in a fact-card grid. Level versus rate-of-change stays explicit; nominal versus real stays explicit.</p>
+        <p>Initial jobless claims came in at 219,000 for the week ending July 18, against a 225,000 consensus, with the prior week revised up to 221,000 from 218,000. The four-week average sits at 222,000 and has drifted sideways since spring &mdash; a labour market cooling without cracking, and not on its own enough to move the policy path. (Sample.)</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. Sample data.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">Durable goods orders (Jun)</td><td>+0.5%</td><td>&minus;0.8%</td></tr>
+            <tr><td>11:30</td><td class="txt"><strong>Fed speaker Q&amp;A</strong> &mdash; rate path in focus</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">7-year Treasury auction, $44B</td><td>&mdash;</td><td>tail 0.6bp</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event.</p>
+    </section>
+
+    <!-- ================= MARKET SETUP =================
+         am: "Before the Open"   pm: "What Moved Markets" + "Winners & Losers"
+         sat/sun: replaced by the weekly/forward sections. -->
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Prose, not a table: where futures sit, where yields and the dollar sit, what the overnight tape appears to price, which assumption in that pricing is most fragile, and what would invalidate it before the open. Futures are not a guaranteed open and the report says so once, here, rather than in a label on every row.</p>
+      </div>
+    </section>
+
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Auction tails badly.</strong> Preconditions: soft indirect demand at the 1:00 PM auction. Probability 15&ndash;25%, on the basis of the last three auction tails. Indicators: bid-to-cover, dealer take-down. If it happens: long-end yields up, rate-sensitive equities lag. Invalidated by a stop-through or strong indirects. (Sample.)</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL NEWS =================
+         THREE beats, each covered in its own right, in this order:
+           1. Bridgeville / South Fayette / South Hills
+           2. Pittsburgh & Allegheny County
+           3. Pennsylvania
+         Up to two items per beat, each with a .local-place label naming which
+         beat it belongs to. Quality-gated, never padded: a beat with nothing
+         worth reporting is simply absent that day, and some days only one of
+         the three appears. Crime blotter, event listings and weather chatter
+         are not news.
+
+         The weather strip is MORNING EDITION ONLY, from the National Weather
+         Service gridpoint for Bridgeville, PA. It leads this section. -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">64&deg;<small>now</small></p>
+          <p class="weather-desc">Partly cloudy, wind SW 8 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">81&deg;</span> <span class="lo">63&deg;</span>
+            <span class="sky">PM storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">61&deg;</span>
+            <span class="sky">Showers</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">77&deg;</span> <span class="lo">58&deg;</span>
+            <span class="sky">Sunny</span>
+          </div>
+        </div>
+        <!-- Rendered only when the NWS has an active alert for the zone. -->
+        <p class="weather-alert">Flood Watch until 8:00 PM ET &mdash; Allegheny County</p>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>Sample: borough council approves Washington Pike traffic study</h3>
+        <div class="story-body">
+          <p>One or two short paragraphs. What was decided, by whom, what changes, and when. The same standards apply as anywhere else in the paper: primary source where one exists (meeting minutes, the borough or township site), and a plain statement of what remains undecided. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Borough council minutes (primary) &middot; one local outlet.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh</p>
+        <h3>Sample: county authority votes on a transit service change</h3>
+        <div class="story-body">
+          <p>City and Allegheny County government, the major employers and universities, the airport, the sports franchises when something real happens, infrastructure and transit. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Authority board documents (primary) &middot; two Pittsburgh outlets.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Sample: Harrisburg advances a bill with statewide effect</h3>
+        <div class="story-body">
+          <p>The legislature, the governor, statewide courts and agencies, the PUC, and the state economy. Bill number, sponsor, stage and what changes if it passes &mdash; the same discipline as the national politics section. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Legislative record (primary) &middot; statewide outlet.</p>
+      </article>
+    </section>
+
+    <!-- ================= MARKET APPENDIX =================
+         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
+         It costs the reader nothing while closed, and it is where every
+         number with a delay label now lives. -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, moderate</span> Supporting evidence (trend, breadth, credit) and contradicting evidence (narrow leadership) both listed; confidence stated; change from the prior report noted.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>As of 07:05 ET &middot; changes in basis points &middot; sample data.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D</th><th>1W</th><th>1M</th></tr></thead>
+              <tbody>
+                <tr><td>2Y</td><td>3.92%</td><td class="down">&minus;2</td><td class="down">&minus;6</td><td class="down">&minus;11</td></tr>
+                <tr><td>10Y</td><td>4.18%</td><td class="down">&minus;3</td><td class="down">&minus;4</td><td class="up">+2</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <!-- Real reports carry the remaining SPEC section-22 blocks in this
+             same pattern: broad equities, breadth, sectors, industries,
+             watchlists, credit, volatility, FX, commodities, factors,
+             cross-asset, earnings, auctions & liquidity. -->
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Central bank speech text; SEC EDGAR filings; FRED series CPIAUCSL and DGS10; two wire services. Primary sources are preferred and named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition. Corrections appear here and in the correction ledger, with the original preserved in version history &mdash; never silently edited.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION =================
+         The routine fills the previous-report link with the actual prior
+         report's relative path (same month: ./2026-07-23-pm.html; across a
+         month boundary: ../06/2026-06-30-pm.html). The next link stays
+         disabled at publish time and is never backfilled. -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a class="is-disabled" aria-disabled="true">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
