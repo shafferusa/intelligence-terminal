@@ -176,7 +176,9 @@ then *"i want a restart on this path, so day 1."*
   an `across` link to another field; an `application`; an `apply_question`; an `evidence_note`;
   and one `resource` chosen and checked by web search when the curriculum was written (the routine
   cannot open YouTube or most reference sites).
-- **Format** (`prompts/learning.md` Step 2): headline → The Big Idea → How It Works → Key Concepts
+- **Format** (`prompts/learning.md` Step 2): headline → **The Story** (a real, specific, verified
+  moment that poses the puzzle — the opening stories of the original track, back at Logan's
+  request) → The Big Idea → How It Works (ending "Back to the story") → Key Concepts
   → Example / Application → Equation / Model (when useful) → Why It Matters (+ Evidence check when
   contested) → **Connections** (Back / Across, each passing a genuineness test) → **Watch or Read**
   (one resource) → Remember These → **Apply It** (one application question; replaces Think About

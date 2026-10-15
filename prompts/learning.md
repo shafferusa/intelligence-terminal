@@ -50,7 +50,7 @@ Three rules follow:
 
 1. **ONE concept per report**, taught properly, never a thin survey of four.
 2. **Connected, honestly.** Every brief links back to what Logan has already learned and across to
-   another field — but only by links that pass the genuineness test (Step 2.8). A forced link
+   another field — but only by links that pass the genuineness test (Step 2.9). A forced link
    teaches a false picture of how the world fits together; that is worse than none.
 3. **Evidence, uncertainty and value kept apart.** Logan is writing a book; he needs to see at a
    glance which claims are settled, which are debated, and which are moral judgments (Labels,
@@ -103,7 +103,9 @@ Today's lesson is `curriculum/academy-connected.json` → `days[]` where `day` e
   `position` (`"N of M"` in the block);
 - `topic`, `headline_hint`, `concept` (the ONE concept, one sentence), `focus`, `key_concepts`
   (3–6 terms), `model_or_equation` (or empty — never force one in);
-- `application` — the real system the lesson is anchored on;
+- `story` — the opening story `{title, hook, puzzle, payoff, sources, legend}`: a real, specific
+  moment that poses the puzzle today's concept resolves (checked when the plan was written);
+- `application` — the real system for the Example section (usually different from the story);
 - `builds_on` — candidate back-links `[{day, why}]` (earlier days only);
 - `across` — a candidate link `{field, link}` to another field;
 - `apply_question` — a seed for Apply It;
@@ -117,7 +119,7 @@ Today's lesson is `curriculum/academy-connected.json` → `days[]` where `day` e
 
 The curriculum fields were researched and verified when the plan was built, but they are a plan,
 not a script: `builds_on` and `across` are candidates that must still pass the genuineness test
-(Step 2.8), and every fact you write is checked again in Step 2b.
+(Step 2.9), and every fact you write is checked again in Step 2b.
 
 **After the last day the curriculum is complete.** If `learning.day` > `T`: publish nothing, leave
 `index.json` alone (so no Telegram push), append the run-log line
@@ -149,18 +151,29 @@ in the reader's own language, except the three closing blocks (Watch or Read, Re
 Apply It), which open with their own `<b>` label instead. Headings may be reworded where another
 phrasing teaches better; the shape and the order cannot. Word counts are guides, not quotas.
 
-1. **The headline** (the page's `<h1>`, not a body heading) — a clear, specific title about the
-   idea, the way a good newspaper would title a short explainer (`Why sine and cosine are
-   coordinates on a circle`, not `Trigonometry`). Use `headline_hint` as a starting point.
-2. **The Big Idea** (150–250 words). Its first sentence states today's one concept in plain
+1. **The headline** (the page's `<h1>`, not a body heading) — a specific title with the story's
+   energy, the way the original track titled its best lessons ("A Falling Cat Starts With Zero
+   Angular Momentum. It Still Lands on Its Feet."; "NASA Crashed a Vending Machine Into an
+   Asteroid. The Math Said Seven Minutes — the Orbit Moved Thirty-Three."). Use `headline_hint`
+   as a starting point.
+2. **The Story** (250–400 words; the `<h3>` is the story's own scene title, e.g. "A number in
+   Caterpillar's own footnotes that seems wrong"). Logan asked for the stories of his original
+   track back: open with the entry's `story` — a real moment told as a scene, with its date,
+   place, people and real numbers, ending on the puzzle it poses, which the reader cannot yet
+   answer. Tell it vividly but exactly: every detail in it goes through Step 2b like any other
+   claim. A traditional or apocryphal tale (`legend: true`) is told as legend ("later tradition
+   holds…"), never as fact. Don't explain the concept here — that is the next section's job.
+3. **The Big Idea** (150–250 words). Its first sentence states today's one concept in plain
    words. Then the concept in plain English, no notation, no jargon left undefined. Two or three
    paragraphs — a hard limit.
-3. **How It Works** (1,000–1,500 words). The mechanism, the logic, the reasoning — walked through,
+4. **How It Works** (900–1,300 words). The mechanism, the logic, the reasoning — walked through,
    not asserted. This is where most of the fifteen minutes lives. `key_concepts` is the vocabulary
-   this section must cover, not an exhaustive list.
-4. **Key Concepts** (120–250 words). A `.key-terms` block (`<dl>`): three to six terms Logan needs
+   this section must cover, not an exhaustive list. **End it with "Back to the story"** — a short
+   final paragraph (or its own `<h3>Back to …</h3>`) that resolves the opening puzzle with the
+   concept just taught (the entry's `story.payoff`), so the story pays off.
+5. **Key Concepts** (120–250 words). A `.key-terms` block (`<dl>`): three to six terms Logan needs
    to recognize this idea in the wild, plainly defined, not circularly.
-5. **Example / Application** (300–550 words). The entry's `application`: one real system where
+6. **Example / Application** (250–450 words). The entry's `application`: one real system where
    today's concept is actually at work — a genuine case, a real number, a real historical moment.
    Applications come early: from Mathematics on, every lesson shows its concept doing real work.
    When the system is the car (or another recurring system — the power grid, money and lending, a
@@ -168,19 +181,19 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
    invention, physical constraint, engineering, financing and production, regulation, adoption,
    consequences, feedback). Never force the car in where the concept does not operate. A
    quantitative example goes in a `.worked` block with the arithmetic shown.
-6. **Equation / Model** (150–400 words) — **only when `model_or_equation`, or your own judgment,
+7. **Equation / Model** (150–400 words) — **only when `model_or_equation`, or your own judgment,
    says one genuinely helps**; skip the section otherwise. In a `.formula` plate: the `.expr`
    line stating the lesson's central equation or claim, then `<p class="expr-spoken
    visually-hidden">` reading it aloud in words, then a `<dl>` naming **every symbol**. When the
    model is a proof or derivation, write its decisive step out as a displayed line — never
    "the terms cancel". A named model without an equation (a causal-loop diagram, Shannon's model,
    the separation of powers) belongs here too, described in prose or a `<dl>` of its parts.
-7. **Why It Matters** (120–220 words). The payoff — what understanding this lets Logan do or see
+8. **Why It Matters** (120–220 words). The payoff — what understanding this lets Logan do or see
    that was out of reach before; not a restatement of the Big Idea. You may point ahead to a later
    day only by its day number and topic, and only for what that day's `focus` actually names —
    never promise what a future lesson will say. When today's topic is contested or normative (the
    entry's `evidence_note` says so), end this section with the Evidence check (Labels, below).
-8. **Connections** (150–250 words). Two short paragraphs, each opening with a bold lead-in:
+9. **Connections** (150–250 words). Two short paragraphs, each opening with a bold lead-in:
    - `<p><b>Back.</b> …</p>` — one or two lessons already taught, named by day number and topic
      ("Day 13, Vectors"), each with the specific idea today builds on or shares. Only days
      `<` today's `day`. Same-subject links count; from the first block after Mathematics on, at
@@ -197,15 +210,15 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
      analogy with where it breaks stated. "Both involve change" and "both are systems" fail. A
      link that fails is cut, not softened. If no Across link passes, say in one sentence that
      today's idea has no strong link outside its field yet — rare, and better than a forced one.
-9. **Watch or Read** (50–90 words). An `<aside class="watch-read">` opening with
+10. **Watch or Read** (50–90 words). An `<aside class="watch-read">` opening with
    `<b>Watch or Read</b>`. Exactly one resource — never a list. First line: the title (linked when
    the entry has a `url`, copied character for character) — creator (publisher, year) · Video or
    Reading · length · Free or Paid. Then one or two sentences on what it adds that the lesson
    cannot, drawn only from the entry's `resource.why` (you cannot watch or open it; never describe
    its content beyond that, never cite a timestamp). See "The one resource" below.
-10. **Remember These** (60–120 words). A `.recap` block, labeled "Remember These": three to five
+11. **Remember These** (60–120 words). A `.recap` block, labeled "Remember These": three to five
     concise bullets worth retaining a month from now.
-11. **Apply It** (50–110 words). The closing block: `<div class="think-about-it">` opening with
+12. **Apply It** (50–110 words). The closing block: `<div class="think-about-it">` opening with
     `<b>Apply It</b>`. One question that makes Logan use today's concept on a concrete real system
     — a different system from the Example section, so it tests transfer (start from the entry's
     `apply_question`). Answerable from today's lesson plus earlier ones, by reasoning; it has a
@@ -216,8 +229,9 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
 
 **Systems Case lessons** (`kind: "case"`) use the same page and the same closing blocks, with
 these changes. Their job is Logan's chain: one real system traced through every field it touches.
-- **The Big Idea**: the system and the one question the case answers (e.g. "Why did the car win,
-  and what did winning cost?").
+- **The Story** is the system's opening moment (e.g. Bertha Benz's 1888 drive from Mannheim to
+  Pforzheim), and **The Big Idea** states the one question the case answers (e.g. "Why did the
+  car win, and what did winning cost?").
 - **How It Works** becomes **The Chain** — the entry's `chain`, link by link, each a short
   paragraph opening with the link's name and its field in bold. Go deep only on `depth: "deep"`
   links (taught days — name them); give each `"preview"` link one or two sentences and say which
@@ -328,8 +342,10 @@ SR §12, with these specifics:
 
   ```html
   <article class="lesson-body">
+    <h3>A number in Caterpillar's own footnotes that seems wrong</h3> <p>…</p>   <!-- The Story: its own scene title -->
     <h3>The Big Idea</h3> <p>…</p>
     <h3>How It Works</h3> <p>…</p>            <!-- "The Chain" on a case -->
+    <h3>Back to the story</h3> <p>…</p>       <!-- or a closing paragraph of How It Works -->
     <h3>Key Concepts</h3> <div class="key-terms"><dl><dt>…</dt><dd>…</dd></dl></div>
     <h3>Example: …</h3> <p>…</p> <div class="worked">…</div>
     <h3>Equation / Model</h3> <div class="formula"><p class="expr">…</p>
