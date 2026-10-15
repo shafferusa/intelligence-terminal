@@ -1,70 +1,126 @@
 {
- "fetched": "2026-10-14T06:40:49-04:00",
+ "fetched": "2026-10-15T06:38:00-04:00",
  "earnings_fetched": "2026-10-11",
  "earnings_fetched_note": "2026-10-11 sun: Alpha Vantage 3-month CSV and Finnhub Oct 12-16 both fetched; ASML/TSM dates from AV/Wall Street Horizon.",
  "events": [
   {
-   "ts_et": "2026-10-14T08:30",
+   "ts_et": "2026-10-15T08:30",
    "type": "data",
-   "name": "CPI (Sept)",
+   "name": "PPI (Sept)",
    "importance": "Critical",
-   "reason": "Last inflation print before Oct 28 FOMC",
+   "reason": "Pipeline inflation after hot core CPI; Oct 28 hike odds",
    "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-10-14T14:00",
-   "type": "fed",
-   "name": "Beige Book",
-   "importance": "Medium",
-   "reason": "Regional read pre-FOMC",
-   "source": "federalreserve.gov"
-  },
-  {
-   "ts_et": "2026-10-14T11:30",
-   "type": "auction",
-   "name": "17-week bill $75B",
-   "importance": "Low",
-   "reason": "Routine bill",
-   "source": "treasurydirect"
   },
   {
    "ts_et": "2026-10-15T08:30",
    "type": "data",
-   "name": "PPI (Sept); retail sales; claims",
+   "name": "Retail sales (Sept)",
    "importance": "High",
-   "reason": "Inflation pipeline + consumer",
-   "source": "bls.ics / research"
+   "reason": "Consumer demand under oil shock",
+   "source": "research"
   },
   {
-   "ts_et": "2026-10-15T00:00",
+   "ts_et": "2026-10-15T08:30",
+   "type": "data",
+   "name": "Initial jobless claims",
+   "importance": "Medium",
+   "reason": "Labor stall vs crack",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-15T08:30",
+   "type": "data",
+   "name": "Philly Fed / Empire State (Oct)",
+   "importance": "Medium",
+   "reason": "Factory prices paid",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-15T07:00",
    "type": "earnings",
-   "name": "TSMC, PNC, SCHW, USB, PLD; IBKR/JBHT amc",
+   "name": "PNC, USB, SCHW, MRSH (BNY out)",
    "importance": "High",
-   "reason": "AI capex + banks",
+   "reason": "Regional bank read; PNC local employer",
    "source": "finnhub"
+  },
+  {
+   "ts_et": "2026-10-15T11:30",
+   "type": "auction",
+   "name": "4- and 8-week bills",
+   "importance": "Low",
+   "reason": "Routine bills",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-15T13:30",
+   "type": "fed",
+   "name": "Barkin speaks",
+   "importance": "Medium",
+   "reason": "Pre-blackout Fed signal",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-15T15:00",
+   "type": "fed",
+   "name": "Goolsbee (Yahoo Finance)",
+   "importance": "Medium",
+   "reason": "Pre-blackout Fed signal",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-15T19:44",
+   "type": "launch",
+   "name": "Falcon 9 USSF-481",
+   "importance": "Low",
+   "reason": "NSSL mission",
+   "source": "thespacedevs"
   },
   {
    "ts_et": "2026-10-16T08:30",
    "type": "data",
-   "name": "Import/export prices",
-   "importance": "Low",
-   "reason": "",
+   "name": "Import/export prices (Sept)",
+   "importance": "Medium",
+   "reason": "China PPI pass-through",
    "source": "bls.ics"
   },
   {
-   "ts_et": "2026-10-21T13:00",
+   "ts_et": "2026-10-16T08:00",
+   "type": "fed",
+   "name": "Warsh speaks in Bangkok (time TBC)",
+   "importance": "High",
+   "reason": "Last chair remarks before blackout",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-16T07:00",
+   "type": "earnings",
+   "name": "Truist, Travelers, Regions, Fifth Third, SLB",
+   "importance": "Medium",
+   "reason": "Regional banks/insurers",
+   "source": "finnhub"
+  },
+  {
+   "ts_et": "2026-10-19T19:41",
+   "type": "launch",
+   "name": "H3 / MMX (JAXA)",
+   "importance": "Low",
+   "reason": "Phobos sample return",
+   "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-21T11:30",
    "type": "auction",
    "name": "20-year bond reopening",
    "importance": "Medium",
-   "reason": "Long-end demand test",
+   "reason": "Long-end demand at 5.5%+",
    "source": "treasurydirect"
   },
   {
-   "ts_et": "2026-10-22T13:00",
+   "ts_et": "2026-10-22T11:30",
    "type": "auction",
-   "name": "5-year TIPS",
-   "importance": "Low",
-   "reason": "",
+   "name": "5-year note",
+   "importance": "Medium",
+   "reason": "Coupon supply",
    "source": "treasurydirect"
   },
   {
@@ -72,8 +128,8 @@
    "type": "fed",
    "name": "FOMC decision",
    "importance": "Critical",
-   "reason": "Hike odds <20%",
-   "source": "federalreserve.gov"
+   "reason": "Hike odds ~35-50%",
+   "source": "research"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

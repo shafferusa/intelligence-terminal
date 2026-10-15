@@ -1,5 +1,5 @@
 {
-  "last_success": "2026-10-15-learn",
+  "last_success": "2026-10-15-am",
   "runs": {
     "2026-10-14-learn": {
       "status": "success",
@@ -60,18 +60,6 @@
     "2026-09-15-learn": {
       "status": "success",
       "ts": "2026-09-15T10:12:25Z"
-    },
-    "2026-09-14-am": {
-      "status": "success",
-      "ts": "2026-09-14T10:55:00Z"
-    },
-    "2026-09-14-learn": {
-      "status": "success",
-      "ts": "2026-09-14T10:10:00Z"
-    },
-    "2026-09-14-pm": {
-      "status": "success",
-      "ts": "2026-09-14T20:55:39Z"
     },
     "2026-09-15-am": {
       "status": "success",
@@ -308,6 +296,10 @@
     "2026-10-15-learn": {
       "status": "success",
       "ts": "2026-10-15T08:59:29Z"
+    },
+    "2026-10-15-am": {
+      "status": "success",
+      "ts": "2026-10-15T10:43:39Z"
     }
   }
 }
