@@ -94,11 +94,13 @@
       var p = iso.split("-"), dt = new Date(+p[0], +p[1] - 1, +p[2]);
       return DAYS[dt.getDay()] + " " + MONTHS[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
     }
-    /* "Day 37 of 300 · Mathematics: ...". The retired curriculum's pages read "Day N
-       of 150" -- excluded by requiring the parsed total to match this curriculum's
-       own total_days, not just any "Day N of M" shape. */
-    function lessonDay(entry, totalDays) {
+    /* "Day 37 of 300 · Mathematics: ...". Earlier curricula's pages share that
+       shape (and one shared the same total), so a lesson counts only if its total
+       matches this curriculum's total_days AND it ran on or after the curriculum's
+       first_date -- a restart begins again at Day 1 without inheriting old pages. */
+    function lessonDay(entry, totalDays, firstDate) {
       if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
+      if (firstDate && String(entry.date || "") < firstDate) return null;
       var m = /^Day\s+(\d+)\s+of\s+(\d+)/i.exec(String(entry.headlines[0] || ""));
       if (!m || +m[2] !== totalDays) return null;
       return { day: +m[1], total: +m[2] };
@@ -131,7 +133,7 @@
          so the first entry seen for a day wins. */
       var taught = {};
       index.forEach(function (e) {
-        var d = lessonDay(e, totalDays);
+        var d = lessonDay(e, totalDays, curriculum.first_date);
         if (d && !taught[d.day]) taught[d.day] = e;
       });
 
