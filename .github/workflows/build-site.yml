@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "site/**"
-      - "curriculum/academy-300.json"   # copied into the site as academy.json
+      - "curriculum/*.json"   # the live one is copied into the site as academy.json
   workflow_dispatch:
   # PR-path publishes: after publish-report merges a claude/* report PR, this
   # workflow_run trigger rebuilds and deploys from main (merges made with
@@ -52,7 +52,11 @@ jobs:
       # in curriculum/, outside the site root, and academy.html lists every
       # lesson from it (SPEC Sec.0c, 2026-09-25).
       - name: Publish the curriculum for the Academy page
-        run: cp curriculum/academy-300.json site/academy.json || echo "no curriculum yet"
+        # The live curriculum is whichever one state/learning.json names, so a
+        # restart needs no workflow edit.
+        run: |
+          CUR=$(python3 -c "import json; print(json.load(open('state/learning.json'))['curriculum'])" 2>/dev/null || echo academy-300)
+          cp "curriculum/$CUR.json" site/academy.json || echo "no curriculum $CUR yet"
 
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
