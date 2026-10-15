@@ -170,10 +170,14 @@
         s.total++;
         if (taught[d.day]) s.done++;
       });
+      /* One row per subject, in order of first appearance. A field split into two
+         blocks (History I and II) is one subject; Systems Case lessons get a row too. */
+      var subjectOrder = [];
+      allDays.forEach(function (d) {
+        if (d.subject && subjectOrder.indexOf(d.subject) < 0) subjectOrder.push(d.subject);
+      });
       var ul = el("ul", { class: "subjects" });
-      groups.forEach(function (g) {
-        var name = g.days.length ? g.days[0].subject : null;
-        if (!name) return;
+      subjectOrder.forEach(function (name) {
         var s = perSubject[name];
         var li = el("li");
         li.appendChild(el("span", { class: "subject-name" }, [
