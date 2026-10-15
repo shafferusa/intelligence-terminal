@@ -348,9 +348,9 @@ in it.
 
 SR §12, with these specifics:
 
-- Copy `site/report-template.html` → `site/reports/YYYY/MM/$TODAY-learn.html`. The template's
-  header comment contains a literal `<title>`: replace only the `<title>…</title>` element inside
-  `<head>`, never with a regex that can span lines.
+- Copy `site/report-template.html` → `site/reports/YYYY/MM/$TODAY-learn.html`. Edit only the real
+  TITLE element in the head — never a find-and-replace across the whole file (SR §12.4: a pattern
+  that matched inside the template's comment once published eight unstyled pages).
 - `<title>`: `<headline> — Learning Brief, <Dow, Mon D, YYYY> · Logan's Daily Newspaper`.
 - `<main class="paper" data-slot="learn">`. Masthead: `.paper-edition` = `Learning Brief`;
   `<h1>` = the headline; a one-sentence `.paper-standfirst`.
@@ -391,6 +391,9 @@ SR §12, with these specifics:
 - Keep the `assets/report.js` script tag; there is no audio of any kind.
 - End with the template's `report-nav` per SR §12.3: Previous = the entry directly below yours in
   `index.json`, whatever edition it is; Next stays disabled.
+- **Check the page before committing:** `python3 .github/scripts/check_report.py
+  site/reports/YYYY/MM/$TODAY-learn.html` must print `OK` (SR §12.10). On FAIL, fix the page and
+  re-run; if the head is damaged, re-copy the template rather than patching.
 - `reading_minutes` = words inside `<article class="lesson-body">` (tags stripped; not the
   standfirst, track head or colophon) / 220, rounded up (SR §12.7):
   `python3 -c "import re,sys,math,html;h=open(sys.argv[1]).read();a=re.search(r'<article class=\"lesson-body\">(.*?)</article>',h,re.S).group(1);a=re.sub(r'<p class=\"expr-spoken[^\"]*\">.*?</p>','',a,flags=re.S);print(math.ceil(len(html.unescape(re.sub(r'<[^>]+>',' ',a)).split())/220))" <page>`.
