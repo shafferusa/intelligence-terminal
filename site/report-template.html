@@ -4,16 +4,22 @@
 
   HOW THE CLOUD ROUTINE USES THIS FILE
   1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
-  2. Replace the <title> text.
-  3. Replace the JSON inside the report-meta script block in <head>
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
      (keep its id and type attributes exactly as they are).
-  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
      That one attribute drives the edition colour throughout the page.
   5. Replace everything between the REPORT:START and REPORT:END marker comments
      with the new report body. Everything outside the markers is boilerplate
      shared by every report page - do not edit it per run.
   6. Prepend a matching entry to site/reports/index.json
      ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
 
   RELATIVE PATH DEPTH RULE (read before touching any href/src)
   Published reports live exactly three directories below the site root:

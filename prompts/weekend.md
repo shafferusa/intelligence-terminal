@@ -82,7 +82,8 @@ depth; general news is kept real — **The United States**, **The World**, **AI 
 **Science**, **Space** and **Local** (incl. Pennsylvania) all stay dedicated weekly reviews. **Also in
 the News** is only a small weekly catch-all for what none of them cover.
 
-1. **Masthead** — edition "Weekly Review", title, date range, standfirst.
+1. **Masthead** — edition "Weekly Review", the lead headline as `<h1>` (SR §11: the week's defining
+   story, finance/economy-first), date range, standfirst.
 2. **The Brief** — 5–7 bullets, markets-led, covering BOTH the week just gone and anything that broke
    since Friday's close. Keep a bullet for the biggest US/world/local story. If the biggest thing in
    the reader's world happened last night, it leads.
@@ -128,7 +129,8 @@ it here, do not read `state/curriculum.json` (retired), and do not touch `state/
 the weekend routine has no learning role at all.
 
 Voice per SR §11b; causality per SR §5; neutrality per SR §6. No health footer — run health goes to
-the run log and `site/status.html`. Title: `Weekly Review — <Mon date> to <Fri date>`.
+the run log and `site/status.html`. Edition title (SR §11): `Weekly Review — Mmm D – Mmm D, YYYY` (Monday – Friday of the week reviewed),
+used for `<title>`, report-meta and the index; the `<h1>` is the headline.
 
 ---
 
@@ -158,7 +160,8 @@ depth; general news is kept real — **The United States**, **The World Ahead**,
 Ahead**, **Science Ahead**, **Space Ahead** (incl. the launch calendar) and **Local Week Ahead** all
 stay dedicated. **Also in the News Ahead** is only a small catch-all for what none of them cover.
 
-1. **Masthead** — edition "Week Ahead", title, week label, standfirst.
+1. **Masthead** — edition "Week Ahead", the lead headline as `<h1>` (SR §11: what the week turns on,
+   finance/economy-first), week label, standfirst.
 2. **The Brief** — 5–7 bullets, markets-led, covering both what happened over the weekend and what the
    coming week turns on. Keep a bullet for the biggest US/world/local item.
 3. **Today's News** — **the Sunday edition still carries the day's news.** Everything since
@@ -202,7 +205,8 @@ per SR §10 — ids `$TODAY-sun-N`, `status:"open"`, horizon usually next Friday
 RANGE with basis. Next Saturday grades exactly these entries; an unlogged forecast is a spec
 violation. The IDs are ledger keys — do not print them in the report.
 
-Title: `Week Ahead — Week of <Mon date>`.
+Edition title (SR §11): `Week Ahead — Week of Mmm D, YYYY` (the coming Monday), used for `<title>`,
+report-meta and the index; the `<h1>` is the headline.
 
 ---
 
@@ -217,7 +221,8 @@ Title: `Week Ahead — Week of <Mon date>`.
    watch items for the week), `state/calendar-cache.json`, `state/market-history/*`.
 4. **Ledgers / registry** — Saturday's gradings and the sweep results.
 5. **Run log + `last-run.json`** — SR §15.4 and §1.5, written before committing.
-6. **Commit all of it together** (`report: $TODAY $SLOT`) and push. One commit per run (SR §15.2).
+6. Run `python3 .github/scripts/check_report.py` on the page — it must print `OK` (SR §12.10). Then
+   **commit all of it together** (`report: $TODAY $SLOT`) and push. One commit per run (SR §15.2).
 7. **Verify** — poll the Pages URL (~3 min). **Never send a Telegram message from the run**
    (SR §14); the push triggers it. Record `telegram_ok: "delegated"`.
 
