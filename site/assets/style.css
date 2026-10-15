@@ -1588,3 +1588,26 @@ details.tracker > summary { cursor: pointer; font-family: var(--sans); font-weig
 .lesson-row.is-next { background: var(--tone-info-bg); border-radius: 6px; padding-left: 0.5rem; padding-right: 0.5rem; }
 .lesson-row.is-next .lesson-subject::after { content: " · next"; letter-spacing: 0; text-transform: none; font-weight: 600; }
 .lesson-row.is-future .lesson-topic { font-weight: 400; color: var(--muted); }
+
+/* Watch or Read -- the Learning Brief's one recommended video or reading
+   (prompts/learning.md Step 2.9). Sits between Connections and the recap. */
+.watch-read {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--edition, var(--accent));
+  border-radius: 0 8px 8px 0;
+  padding: 0.8rem 1.1rem;
+  margin: 1.4em 0 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  background: var(--card);
+}
+.watch-read > b {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+.watch-read p { margin: 0 0 0.4em; }
+.watch-read p:last-child { margin-bottom: 0; }
