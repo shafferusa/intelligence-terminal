@@ -165,10 +165,28 @@ ratings, version numbers, market open/closed status, which API failed — is inv
 recorded in `state/run-log.jsonl` and surfaced on `site/status.html`, and that is the ONLY place
 it belongs. This was changed 2026-08-16; reports published before that date look different.
 
+**Edition title — one fixed string per edition (standardised 2026-10-15).** The `<title>` element,
+`report-meta.title` and the `reports/index.json` `title` all use it, so the archive list and the
+Telegram push look the same every day. Do not put the headline here; it goes in the `<h1>`.
+
+| Slot | Edition title (example) |
+|---|---|
+| am | `Morning Brief — Wed, Oct 14, 2026` |
+| pm | `Closing Brief — Wed, Oct 14, 2026` |
+| sat | `Weekly Review — Oct 5 – Oct 9, 2026` (that week's Monday – Friday; en dash with spaces) |
+| sun | `Week Ahead — Week of Oct 12, 2026` (the coming Monday) |
+
+Day and month are three-letter abbreviations, the day of the month has no leading zero, and the
+separator is an em dash with spaces. The `<title>` element adds ` · Logan’s Daily Newspaper`.
+
 **Masthead** (`.paper-head`) carries exactly four things:
 
 1. `.paper-edition` — Morning Edition / Closing Edition / Weekly Review / Week Ahead / Learning Brief.
-2. `<h1>` — the report title.
+2. `<h1>` — **the edition's lead headline**: the lead Top Story written as a real news headline,
+   finance/economy-first like the rest of the paper (a non-market story leads only when it is
+   genuinely the day's dominant event). One line's worth — aim for ≤ 90 characters. Never just the
+   edition name ("Closing Brief"); the eyebrow and dateline already say which edition it is.
+   (Newspaper editions — Learning Brief and SIE follow their own procedures.)
 3. `.paper-dateline` — the long-form date, then reading time. Nothing else. No generation time,
    no timezone note, no "all times Eastern" (say it once in the colophon if at all).
 4. `.paper-standfirst` — ONE sentence, written last, that gives the whole edition in a breath.
@@ -227,11 +245,15 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html`
    `site/reports/index.json` (relative path, e.g. `./2026-07-23-pm.html` same month or
    `../06/2026-06-30-pm.html` across a boundary; keep it disabled if no prior report exists), keep
    "Next report" disabled (never backfilled), keep the Archive link `../../../index.html`.
-4. Set `<title>` to the report title (e.g. `Morning Brief — Mon, Jul 27, 2026 · Logan's Daily Newspaper`).
+4. Set the page title to the **edition title** from §11 plus ` · Logan’s Daily Newspaper` (e.g.
+   `Morning Brief — Mon, Jul 27, 2026 · Logan’s Daily Newspaper`). Edit only the real TITLE element in
+   the head (just below the robots meta). **Never use a find-and-replace across the whole file** —
+   the template's instruction comment is part of the file, and a pattern that matched inside it
+   commented out the whole head and published eight unstyled pages (2026-09-30 → 10-14).
 5. Set `data-slot` on `<main class="paper" data-slot="…">` to this run's slot.
 6. Fill the JSON inside `<script type="application/json" id="report-meta">`. Preserve the template's
    exact key set and fill every key:
-   `{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N,"generated_at":"<ISO8601 with ET offset>","timezone":"America/New_York"}`
+   `{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"<am/pm/sat/sun: the §11 edition title>","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N,"generated_at":"<ISO8601 with ET offset>","timezone":"America/New_York"}`
    Every key must match the `reports/index.json` entry (§13). `headlines` is 2–3 short clauses — it
    is what the Telegram push renders as bullets, so write them for someone reading a lock screen.
 7. Compute `reading_minutes` = total body word count / 220, rounded up.
@@ -242,6 +264,12 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html`
    audio bar or player.
 9. Follow the design tokens in the template — calm, newspaper character; no red/green flood
    (semantic up/down colours in data cells only).
+10. **Check the page before committing** (newspaper editions — am, pm, sat, sun):
+    `python3 .github/scripts/check_report.py site/reports/YYYY/MM/<file>.html` must print `OK`. It
+    checks what the browser will actually render: stylesheet and viewport not commented out, one
+    title, the edition title format, a real `<h1>` headline, `data-slot`, the report-meta block.
+    On FAIL, fix the page and re-run — do not commit a failing page. If the head is damaged,
+    re-copy the template and redo steps 3–6 rather than patching.
 
 ## 12b. Formatting rules (v2 — 2026-08-16)
 
@@ -267,7 +295,7 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html`
 ## 13. Archive index update (`site/reports/index.json`)
 
 Read the file (JSON array, newest first), **prepend**:
-`{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N}`
+`{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"<am/pm/sat/sun: the §11 edition title>","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N}`
 
 `headlines` (2–3 short clauses, no trailing periods) is **required** — GitHub Actions builds the
 Telegram push from this entry and has no other way to know the top developments. Omitting it
