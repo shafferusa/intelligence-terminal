@@ -313,7 +313,9 @@ count may run leaner. Masthead per SR §11, voice per SR §11b, markup per SR §
 
 **Morning (am) — this order:**
 
-1. **Masthead** — edition, title, date + reading time, one-sentence standfirst.
+1. **Masthead** — edition eyebrow, the lead headline as `<h1>` (SR §11: finance/economy-first, never
+   just "Morning Brief"), date + reading time, one-sentence standfirst. The edition title
+   `Morning Brief — Ddd, Mmm D, YYYY` goes in `<title>`, report-meta and the index (SR §11).
 2. **The Brief** — 5–7 bullets, markets-led: the tape · the macro thread · rates/Fed/Treasury/credit ·
    biggest market risk · what to watch today. Keep at least one bullet for the biggest US/world/local
    story so the general-news reader is served too.
@@ -356,7 +358,8 @@ count may run leaner. Masthead per SR §11, voice per SR §11b, markup per SR §
 
 **Closing (pm) — this order:**
 
-1. **Masthead** — 2. **The Brief** — markets-led, same shape as the am Brief (one US/world/local bullet).
+1. **Masthead** — same rules as the am edition; edition title `Closing Brief — Ddd, Mmm D, YYYY`.
+2. **The Brief** — markets-led, same shape as the am Brief (one US/world/local bullet).
 3. **The Board** — the watchlist chart, SR §17. Closing edition only.
 4. **Top Stories** — finance-weighted; what developed since the morning edition, new stories lead.
 5. **What Moved Markets** — expanded, and high in the edition: open/morning/midday/close phases;
@@ -398,7 +401,8 @@ No health footer. Run health goes in the `state/run-log.jsonl` line (SR §15.4) 
 4. **Ledgers** — forecasts (SR §10), corrections (SR §9).
 5. **Run log** — append the SR §15.4 line NOW, before committing.
 6. **`state/last-run.json`** — mark `runs["$TODAY-$SLOT"]` success (SR §1.5).
-7. Validate both JSON blobs parse, then **commit all of it together** (`report: $TODAY $SLOT`) and
+7. Validate both JSON blobs parse and run `python3 .github/scripts/check_report.py` on the page —
+   it must print `OK` (SR §12.10). Then **commit all of it together** (`report: $TODAY $SLOT`) and
    push per SR §15.1–15.2. One commit per run — see SR §15.2 for why.
 
 ## Step 6 — Verify

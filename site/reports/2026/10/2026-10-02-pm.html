@@ -4,7 +4,50 @@
 
   HOW THE CLOUD ROUTINE USES THIS FILE
   1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
-  2. Replace the <title>Closing Brief — Fri, Oct 2, 2026 · Logan’s Daily Newspaper</title>
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Fri, Oct 2, 2026 · Logan’s Daily Newspaper</title>
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
   <link rel="manifest" href="../../../manifest.webmanifest">
@@ -31,7 +74,7 @@
 {
   "date": "2026-10-02",
   "slot": "pm",
-  "title": "Payrolls Rise Just 29,000 and Unemployment Hits 4.2%; October Hike Odds Collapse but the 10-Year Ends Higher; G7 Agrees a 100-Million-Barrel Release",
+  "title": "Closing Brief — Fri, Oct 2, 2026",
   "path": "reports/2026/10/2026-10-02-pm.html",
   "summary": "September payrolls rose only 29,000 with unemployment at 4.2% and downward revisions, cutting October Fed-hike odds sharply, yet the 10-year Treasury closed higher at 5.28% while stocks rose on chips and a Tesla delivery beat and Brent ended flat despite a G7 agreement to release up to 100 million barrels.",
   "headlines": [

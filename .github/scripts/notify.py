@@ -29,6 +29,7 @@ Env:   TG_TOKEN, TG_CHAT.
 import html
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.error
@@ -128,6 +129,40 @@ def wait_for_page(url):
         time.sleep(PAGE_POLL)
 
 
+def already_announced(entry):
+    """True if main's index already led with this same edition before this push.
+
+    The direct-push workflow fires on ANY change to site/reports/index.json,
+    and this script always announces the newest entry. So an edit that is not a
+    new edition -- a title clean-up, a correction to an old entry, a summary fix
+    -- would re-send the latest edition as a duplicate push. Compare with the
+    index as it was before this push (PREV_SHA = github.event.before; HEAD^ as a
+    fallback): if it already had this date+slot on top, nothing new was
+    published. Comparing with the push's start, not one commit back, keeps a
+    two-commit push (report, then a log line) from hiding its own edition.
+    Any failure to read the old index answers False (send): a rare duplicate is
+    better than a missed edition.
+    """
+    if os.environ.get("NOTIFY_IGNORE_PARENT") == "1":
+        return False
+    rev = os.environ.get("PREV_SHA", "").strip()
+    if not rev or set(rev) == {"0"}:          # unset, or a branch's first push
+        rev = "HEAD^"
+    else:
+        subprocess.run(["git", "fetch", "--no-tags", "--depth=1", "origin", rev],
+                       capture_output=True, timeout=60)   # best effort; show() decides
+    try:
+        prev = subprocess.run(
+            ["git", "show", rev + ":site/reports/index.json"],
+            capture_output=True, text=True, timeout=15, check=True,
+        ).stdout
+        top = (json.loads(prev) or [{}])[0]
+    except Exception as exc:  # noqa: BLE001 - shallow clone, first commit, bad JSON
+        print("cannot read the previous index (%s) -- treating as a new edition" % exc)
+        return False
+    return (top.get("date"), top.get("slot")) == (entry.get("date"), entry.get("slot"))
+
+
 def main():
     token = os.environ.get("TG_TOKEN")
     chat = os.environ.get("TG_CHAT")
@@ -147,6 +182,10 @@ def main():
         return 0
 
     entry = index[0]
+    if already_announced(entry):
+        print("newest entry %s %s was already on top before this push -- "
+              "index edit, not a new edition; nothing sent." % (entry.get("date"), entry.get("slot")))
+        return 0
     text = build_message(entry)
 
     # Waiting is an optimisation; sending is the job. Nothing in the wait may
