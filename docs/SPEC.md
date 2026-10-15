@@ -147,6 +147,47 @@ vocabulary and major ideas of each field, enough foundation to go deeper later.
 - **Index headline**: a learn entry's `headlines[0]` reads `Day N of 300 · <Subject>: <clause>`;
   `site/academy.html` counts a lesson as taught only from that exact shape with a total of 300.
 
+### 0d. Amendment of 2026-10-15 — the Connected Path, restarted at Day 1 (SUPERSEDES §0c's curriculum, format and §16)
+
+Logan: *"Help me build a connected understanding of how the world works… For each learning brief,
+explain one concept, connect it to previous lessons and another field, recommend one strong video
+or reading, and give me one application question. My eventual goal is to write an evidence-based
+book about these connections and morally beneficial progress, informed by my Christian worldview.
+Distinguish empirical findings, uncertainty, and moral judgments; challenge weak assumptions"* —
+then *"i want a restart on this path, so day 1."*
+
+- **Curriculum**: `curriculum/academy-connected.json` replaces `academy-300.json` (retired at day
+  14: 13 Mathematics lessons taught, 2026-09-28 to 2026-10-14; kept as a record). Logan's fifteen
+  fields — Mathematics, Physics, Engineering, Computing, AI, Systems Thinking, Economics, Finance &
+  Basic Accounting, Psychology, Sociology, History, Government, Law, International Relations,
+  Philosophy — Mathematics first with applications from lesson 1, a statistics and causal-inference
+  sequence early, Systems Thinking early as the connective toolkit, and a **Systems Case** closing
+  each block that traces one real system through Logan's chain (need → invention → physical
+  constraints → engineering → financing and production → regulation → adoption → consequences →
+  feedback), taught as a loop, with the car revisited as a spiral case. TOTAL_DAYS_PLACEHOLDER
+- **Not listed by Logan, folded in rather than dropped**: the chemistry, biology, public health,
+  demography, energy and earth-science content his cases and book depend on (combustion and
+  batteries, germ theory, vaccines and sanitation, the mortality revolution, Haber–Bosch and food,
+  climate as a system) sits inside the listed fields. Economics and Finance are Logan's main
+  education, so they are pitched as connective (institutions, growth and the Great Enrichment
+  debate, innovation, externalities, credit and the corporation), with basic accounting covered
+  because he asked for it.
+- **Each lesson** (curriculum entry): one `concept`; `builds_on` back-links to earlier days only;
+  an `across` link to another field; an `application`; an `apply_question`; an `evidence_note`;
+  and one `resource` chosen and checked by web search when the curriculum was written (the routine
+  cannot open YouTube or most reference sites).
+- **Format** (`prompts/learning.md` Step 2): headline → The Big Idea → How It Works → Key Concepts
+  → Example / Application → Equation / Model (when useful) → Why It Matters (+ Evidence check when
+  contested) → **Connections** (Back / Across, each passing a genuineness test) → **Watch or Read**
+  (one resource) → Remember These → **Apply It** (one application question; replaces Think About
+  It). ~15 minutes. Settled / Debated / Value-judgment labels keep evidence, uncertainty and moral
+  claims distinct; Christian positions are presented accurately among others, never as the house
+  verdict, and claims that flatter or indict Christianity meet one evidence standard. Still no
+  quizzes, problem sets, spaced repetition or answer keys.
+- **Book notebook**: each run appends one labelled, verified claim to `ledgers/book-notes.jsonl`.
+- **Schedule and routine unchanged** (4:50 AM ET start, delivered by 5:30); the routine's prompt
+  defers to `prompts/learning.md` and `state/learning.json`, so the restart needed no routine edit.
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.
@@ -219,23 +260,13 @@ Never hardcode public/private status. Per entity: official + common name, status
 
 ## 16. The Learning Brief (weekday ~5:00 AM ET, delivered by 5:30) — replaces the in-report learning tracks
 
-**Superseded in full on 2026-08-16, then again in full on 2026-09-25 (§0c).** There are no
-lessons in the news editions.
-
-A separate fifth edition, strictly learning, weekdays only. **One lesson per report**: one subject,
-one topic, about fifteen minutes (2,600–4,000 words), taught properly. Same masthead and typography
-as the news editions; the voice is a sharp private tutor — get to the idea, teach it well, stop.
-
-Shape: The Big Idea → How It Works → Key Concepts → Example / Application → Equation / Model (only
-when one genuinely helps) → Why It Matters → Remember These (3–5 takeaways) → Think About It (one
-reflective question). No quizzes, no problem sets, no spaced repetition, no self-assessment. No
-audio.
-
-Curriculum: `curriculum/academy-300.json` — 300 weekday lessons, **fifteen subjects, twenty
-lessons each, run strictly in sequence** (order in §0c). Position in `state/learning.json`.
-Procedure in `prompts/learning.md`. Progress: `site/academy.html`. The retired
-`curriculum/academy-150.json` is a record only. At day 300 the curriculum is complete; what
-follows is Logan's call. The sequence never restarts.
+**Superseded in full on 2026-08-16, on 2026-09-25 (§0c) and again on 2026-10-15 (§0d).** There
+are no lessons in the news editions. A separate fifth edition, strictly learning, weekdays only:
+**one concept per report**, about fifteen minutes, connected back to earlier lessons and across to
+another field, with one recommended video or reading and one application question. Curriculum:
+`curriculum/academy-connected.json` (§0d). Position in `state/learning.json`. Procedure in
+`prompts/learning.md`. Progress: `site/academy.html`. No audio. The sequence never restarts on its
+own; a restart is Logan's call.
 
 ## 17. Calendars
 
