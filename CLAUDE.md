@@ -52,8 +52,8 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); were
   source material for the retired 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
-- `site/` — GitHub Pages root: `index.html`, `academy.html` (the 300-lesson plan, taught lessons
-  linked), `status.html`, `assets/` (css/js/icons, incl. `report.js` = SIE quiz answer sheet +
+- `site/` — GitHub Pages root: `index.html`, `academy.html` (the Learning Brief's lesson plan,
+  taught lessons linked), `status.html`, `assets/` (css/js/icons, incl. `report.js` = SIE quiz answer sheet +
   study-guide ticks; report audio retired 2026-09-25), `report-template.html`,
   `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
   `manifest.webmanifest`, `sw.js`. Pagefind assets, `status.jsonl` and `academy.json` are

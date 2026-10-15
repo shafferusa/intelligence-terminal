@@ -1,7 +1,8 @@
 # Learning Brief — Run Procedure (weekday ~5:00 AM ET, delivered by 5:30)
 
 You are the scheduled weekday-morning learning routine for Logan's Daily Newspaper. You have
-already read `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below). This report is **not news**.
+already read `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below) — for a learn run only SR §1,
+§4, §6, §9 and §11–§15 apply; skip the Board, Local, markets, appendix and forecast sections. This report is **not news**.
 It contains no headlines, no markets, no calendar, no local section. Its only job is to teach
 Logan one concept properly, in about fifteen minutes, and connect it to what he already knows.
 
@@ -179,7 +180,8 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
    concept just taught (the entry's `story.payoff`), so the story pays off.
 5. **Key Concepts** (120–250 words). A `.key-terms` block (`<dl>`): three to six terms Logan needs
    to recognize this idea in the wild, plainly defined, not circularly.
-6. **Example / Application** (250–450 words). The entry's `application`: one real system where
+6. **Example / Application** (250–450 words, the `.worked` block included; keep a worked example to
+   five steps or fewer and cut the prose around it rather than exceed 450). The entry's `application`: one real system where
    today's concept is actually at work — a genuine case, a real number, a real historical moment.
    Applications come early: from Mathematics on, every lesson shows its concept doing real work.
    When the system is the car (or another recurring system — the power grid, money and lending, a
@@ -210,7 +212,9 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
      must be a named, checkable instance — a real model, institution, case, law or invention.
      "Matrices matter in economics too" fails; "Wassily Leontief's input-output model (1973 Nobel
      Memorial Prize in Economic Sciences) writes a whole economy's purchases between industries as
-     one matrix" passes.
+     one matrix" passes. The Across paragraph must never contradict what How It Works or the
+     Equation / Model just taught (if the lesson teaches that independent errors partly cancel,
+     don't say elsewhere that they "do not cancel" — say what breaks the method instead).
    - **The genuineness test, for every link:** you can name in one sentence the mechanism the two
      share — the same mathematics; a prerequisite; a causal or historical path; or a structural
      analogy with where it breaks stated. "Both involve change" and "both are systems" fail. A
@@ -219,15 +223,19 @@ phrasing teaches better; the shape and the order cannot. Word counts are guides,
 10. **Watch or Read** (50–90 words). An `<aside class="watch-read">` opening with
    `<b>Watch or Read</b>`. Exactly one resource — never a list. First line: the title (linked when
    the entry has a `url`, copied character for character) — creator (publisher, year) · Video or
-   Reading · length · Free or Paid. Then one or two sentences on what it adds that the lesson
+   Reading · length, then ` · Free` or ` · Paid` only when the entry has a `cost` field (if not,
+   write nothing there rather than searching). Add nothing after it — no hosting notes, no
+   "search the title". Then one or two sentences on what it adds that the lesson
    cannot, drawn only from the entry's `resource.why` (you cannot watch or open it; never describe
    its content beyond that, never cite a timestamp). See "The one resource" below.
 11. **Remember These** (60–120 words). A `.recap` block, labeled "Remember These": three to five
-    concise bullets worth retaining a month from now.
+    bullets of one sentence each, worth retaining a month from now.
 12. **Apply It** (50–110 words). The closing block: `<div class="think-about-it">` opening with
     `<b>Apply It</b>`. One question that makes Logan use today's concept on a concrete real system
     — a different system from the Example section, so it tests transfer (start from the entry's
-    `apply_question`). Answerable from today's lesson plus earlier ones, by reasoning; it has a
+    `apply_question`). If it reuses a number from the Example, that number's assumptions
+    (efficiencies, boundaries, units) must hold for the new system, or the question must say it is
+    a deliberate bound ("even granting…"). One sentence ending in one question mark. Answerable from today's lesson plus earlier ones, by reasoning; it has a
     real answer (or, for a value question, a defensible reasoned position); one question — no
     sub-parts, no multiple choice, no answer key; at most one simple arithmetic step. On a lesson
     carrying a Value judgment label, it may ask Logan to separate what he would need to *know*
@@ -330,20 +338,26 @@ and every superlative or causal claim ("the first", "the oldest", "the only", "e
 "proved"). Verify each one you did not already confirm this run (WebSearch), or cut it, or hedge
 it. Every Connections link and the Watch or Read citation are claims like any other. Any figure
 that appears more than once must be identical everywhere (body, Connections, Apply It, index
-headlines). A two-paragraph lesson that is right beats a four-paragraph one with a confident error
+headlines) — and so must any characterization of one quantity ("about half", "a factor of 2.5":
+pick one wording for the headline, the Story, Back to the story and Remember These). Sections that
+refer to each other (Why It Matters → Apply It) must describe the same system. Cut rhetorical
+flourishes the source doesn't support ("no instrument, no clock"). A two-paragraph lesson that is right beats a four-paragraph one with a confident error
 in it.
 
 ## Step 3 — Build the page
 
 SR §12, with these specifics:
 
-- Copy `site/report-template.html` → `site/reports/YYYY/MM/$TODAY-learn.html`.
+- Copy `site/report-template.html` → `site/reports/YYYY/MM/$TODAY-learn.html`. The template's
+  header comment contains a literal `<title>`: replace only the `<title>…</title>` element inside
+  `<head>`, never with a regex that can span lines.
 - `<title>`: `<headline> — Learning Brief, <Dow, Mon D, YYYY> · Logan's Daily Newspaper`.
 - `<main class="paper" data-slot="learn">`. Masthead: `.paper-edition` = `Learning Brief`;
   `<h1>` = the headline; a one-sentence `.paper-standfirst`.
 - Immediately under the masthead, a `.track-head`: `<p class="track-subject">` = the entry's
-  `subject`, and `<span class="track-progress">Day N of T · <phase> · <position> · <topic></span>`
-  (e.g. `Day 1 of T · Mathematics · 1 of 20 · <topic>`).
+  `subject`, and `<span class="track-progress">Day N of T · <subject> <position> · <topic></span>`
+  (e.g. `Day 1 of 293 · Mathematics 1 of 24 · Orders of magnitude: estimating the world in powers
+  of ten`).
 - The whole lesson is one `<article class="lesson-body">`. Skeleton (sections in Step 2 order):
 
   ```html
@@ -366,9 +380,12 @@ SR §12, with these specifics:
 
 - **Omit entirely:** The Brief, The Board, Top Stories, all domain sections, the calendar, Local,
   the weather strip, and the Market Appendix.
-- Colophon: what the lesson drew on (named sources you actually checked this run — "checked via
-  web search" unless you fetched the page), the resource line ("Resource: from the Academy's
-  curated list" or the fallback path you took), and any correction to an earlier lesson.
+- Colophon (SR §11's three short paragraphs): **Sources** — the sources the lesson drew on, in
+  about 90 words at most, "checked via web search" said once, any detail you could not confirm
+  named in one clause; never describe the run's own process ("recomputed independently", "this
+  run"). **Corrections** — any correction to an earlier lesson, or "None." **Method** — the
+  standing line, plus the resource line ("Resource: from the Connected Path's curated list", or
+  the fallback path you took).
   Corrections go in `ledgers/corrections.json` exactly like news corrections (SR §9). Never show
   repo file paths or state keys anywhere a reader can see; say "Day N of the Connected Path".
 - Keep the `assets/report.js` script tag; there is no audio of any kind.
@@ -376,7 +393,7 @@ SR §12, with these specifics:
   `index.json`, whatever edition it is; Next stays disabled.
 - `reading_minutes` = words inside `<article class="lesson-body">` (tags stripped; not the
   standfirst, track head or colophon) / 220, rounded up (SR §12.7):
-  `python3 -c "import re,sys,math;h=open(sys.argv[1]).read();a=re.search(r'<article class=\"lesson-body\">(.*?)</article>',h,re.S).group(1);print(math.ceil(len(re.sub(r'<[^>]+>',' ',a).split())/220))" <page>`.
+  `python3 -c "import re,sys,math,html;h=open(sys.argv[1]).read();a=re.search(r'<article class=\"lesson-body\">(.*?)</article>',h,re.S).group(1);a=re.sub(r'<p class=\"expr-spoken[^\"]*\">.*?</p>','',a,flags=re.S);print(math.ceil(len(html.unescape(re.sub(r'<[^>]+>',' ',a)).split())/220))" <page>`.
   Expect 12–18.
 
 ## Step 4 — Index entry
