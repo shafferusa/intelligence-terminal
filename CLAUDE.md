@@ -24,7 +24,7 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
 **The 2026-10-15 restart:** the Learning Brief now teaches `curriculum/academy-connected.json` —
-Logan's fifteen fields, Mathematics first, with a Systems Case closing each block (SPEC §0d),
+Logan's sixteen fields, Mathematics first, with a Systems Case closing each block (SPEC §0d),
 restarted at Day 1. If the routine prompt that started you names `academy-150.json`,
 `academy-300.json`, "25-30 minutes" or 6:00 AM, it predates the restart: follow
 `prompts/learning.md` and `state/learning.json`, which win.
@@ -39,7 +39,7 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
 - `curriculum/academy-connected.json` — **the live curriculum** for the Learning Brief: Logan's
-  fifteen fields with a Systems Case closing each block, each lesson carrying its concept,
+  sixteen fields with a Systems Case closing each block, each lesson opening with a real story and carrying its concept,
   back-links, an across-field link, an application question and one pre-verified resource
   (restarted at Day 1 on 2026-10-15, SPEC §0d). RETIRED records, never read:
   `curriculum/academy-300.json` (13 lessons taught, 2026-09-28 to 2026-10-14) and

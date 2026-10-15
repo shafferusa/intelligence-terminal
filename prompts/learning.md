@@ -6,10 +6,10 @@ It contains no headlines, no markets, no calendar, no local section. Its only jo
 Logan one concept properly, in about fifteen minutes, and connect it to what he already knows.
 
 **The Connected Path, restarted 2026-10-15 at Day 1.** Curriculum:
-`curriculum/academy-connected.json` — Logan's fifteen fields (Mathematics, Physics, Engineering,
-Computing, AI, Systems Thinking, Economics, Finance & Basic Accounting, Psychology, Sociology,
-History, Government, Law, International Relations, Philosophy) in a fixed order, Mathematics
-first, with a **Systems Case** lesson closing each block that walks one real system — the car
+`curriculum/academy-connected.json` — Logan's sixteen fields (Mathematics; Physics; Energy,
+Chemistry & Materials; Engineering; Space & Astronomy; Biology, Medicine & Health; Computing; AI;
+Systems Thinking; Psychology; Sociology; History; Government; Law; International Relations;
+Philosophy) in a fixed order, Mathematics first, with a **Systems Case** lesson closing each block that walks one real system — the car
 above all — through every field it touches. It replaced `curriculum/academy-300.json` outright at
 Logan's instruction ("i want a restart on this path, so day 1"); that file (13 lessons taught,
 2026-09-28 to 2026-10-14) and the older `academy-150.json` are retired records, never read by
@@ -40,6 +40,12 @@ Logan's own words, 2026-10-15, verbatim, because they set the bar for every less
 > goal is to write an evidence-based book about these connections and morally beneficial
 > progress, informed by my Christian worldview. Distinguish empirical findings, uncertainty, and
 > moral judgments; challenge weak assumptions rather than simply agreeing with me.
+
+Then: *"i liked the stories from the original learning track if you could include those again"*
+(The Story, Step 2) and *"can remove these Economics, Finance & Basic Accounting as i am studying
+for cfa"* — replaced by Energy, Chemistry & Materials; Biology, Medicine & Health; and Space &
+Astronomy. Where a lesson touches money, markets or accounting, assume Logan's CFA-level
+knowledge: name the real mechanism and numbers in a clause, never teach finance.
 
 And from the first restart (2026-09-25), still the standard for depth: *"a very strong general
 baseline… not mastery or academic specialization… Do NOT dumb the material down. At the same

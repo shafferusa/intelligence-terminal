@@ -157,21 +157,20 @@ Distinguish empirical findings, uncertainty, and moral judgments; challenge weak
 then *"i want a restart on this path, so day 1."*
 
 - **Curriculum**: `curriculum/academy-connected.json` replaces `academy-300.json` (retired at day
-  14: 13 Mathematics lessons taught, 2026-09-28 to 2026-10-14; kept as a record). Logan's fifteen
-  fields — Mathematics, Physics, Engineering, Computing, AI, Systems Thinking, Economics, Finance &
-  Basic Accounting, Psychology, Sociology, History, Government, Law, International Relations,
-  Philosophy — Mathematics first with applications from lesson 1, a statistics and causal-inference
+  14: 13 Mathematics lessons taught, 2026-09-28 to 2026-10-14; kept as a record). Logan's sixteen
+  fields — Mathematics; Physics; Energy, Chemistry & Materials; Engineering; Space & Astronomy;
+  Biology, Medicine & Health; Computing; AI; Systems Thinking; Psychology; Sociology; History;
+  Government; Law; International Relations; Philosophy — Mathematics first with applications from lesson 1, a statistics and causal-inference
   sequence early, Systems Thinking early as the connective toolkit, and a **Systems Case** closing
   each block that traces one real system through Logan's chain (need → invention → physical
   constraints → engineering → financing and production → regulation → adoption → consequences →
   feedback), taught as a loop, with the car revisited as a spiral case. TOTAL_DAYS_PLACEHOLDER
-- **Not listed by Logan, folded in rather than dropped**: the chemistry, biology, public health,
-  demography, energy and earth-science content his cases and book depend on (combustion and
-  batteries, germ theory, vaccines and sanitation, the mortality revolution, Haber–Bosch and food,
-  climate as a system) sits inside the listed fields. Economics and Finance are Logan's main
-  education, so they are pitched as connective (institutions, growth and the Great Enrichment
-  debate, innovation, externalities, credit and the corporation), with basic accounting covered
-  because he asked for it.
+- **No Economics or Finance/Accounting blocks** (Logan, 2026-10-15: "can remove these … as i am
+  studying for cfa"), replaced at his choice by Energy, Chemistry & Materials; Biology, Medicine &
+  Health; and Space & Astronomy. The economic history his book needs (the Great Enrichment debate,
+  measuring progress) lives in History; elsewhere money and markets are named at CFA level in a
+  clause, never taught. Each lesson opens with a real story, as in the original track
+  (*"i liked the stories from the original learning track"*).
 - **Each lesson** (curriculum entry): one `concept`; `builds_on` back-links to earlier days only;
   an `across` link to another field; an `application`; an `apply_question`; an `evidence_note`;
   and one `resource` chosen and checked by web search when the curriculum was written (the routine

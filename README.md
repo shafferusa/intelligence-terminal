@@ -40,7 +40,7 @@ A personal, automated intelligence terminal. Scheduled Claude Code cloud routine
 - `site/` — the published static site: report pages, archive index, equations, PWA assets.
 - `prompts/` + `CLAUDE.md` — run procedures the cloud routines execute.
 - `state/`, `ledgers/`, `registry/` — story memory, corrections and forecast ledgers, entity registry.
-- `curriculum/` — `academy-connected.json`, the Learning Brief's curriculum (Logan's fifteen
+- `curriculum/` — `academy-connected.json`, the Learning Brief's curriculum (Logan's sixteen
   fields, Mathematics first, a Systems Case closing each block; restarted at Day 1 on 2026-10-15),
   plus the SIE Program's files and retired earlier curricula kept as a record.
 - `docs/SPEC.md` — the authoritative product specification.
