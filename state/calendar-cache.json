@@ -1,106 +1,66 @@
 {
- "fetched": "2026-10-15T06:38:00-04:00",
+ "fetched": "2026-10-16T06:40:00-04:00",
  "earnings_fetched": "2026-10-11",
  "earnings_fetched_note": "2026-10-11 sun: Alpha Vantage 3-month CSV and Finnhub Oct 12-16 both fetched; ASML/TSM dates from AV/Wall Street Horizon.",
  "events": [
   {
-   "ts_et": "2026-10-15T08:30",
+   "ts_et": "2026-10-16T07:00",
+   "type": "earnings",
+   "name": "Travelers Q3 (Truist, M&T, Regions, Citizens already out)",
+   "importance": "Medium",
+   "reason": "Insurer/regional bank read",
+   "source": "finnhub+EDGAR"
+  },
+  {
+   "ts_et": "2026-10-16T08:30",
    "type": "data",
-   "name": "PPI (Sept)",
-   "importance": "Critical",
-   "reason": "Pipeline inflation after hot core CPI; Oct 28 hike odds",
+   "name": "Import prices (Sept)",
+   "importance": "Medium",
+   "reason": "Oil pass-through to border prices",
    "source": "bls.ics"
   },
   {
-   "ts_et": "2026-10-15T08:30",
+   "ts_et": "2026-10-16T09:15",
    "type": "data",
-   "name": "Retail sales (Sept)",
-   "importance": "High",
-   "reason": "Consumer demand under oil shock",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-15T08:30",
-   "type": "data",
-   "name": "Initial jobless claims",
+   "name": "Industrial production (Sept), cons ~+0.4%",
    "importance": "Medium",
-   "reason": "Labor stall vs crack",
+   "reason": "Hurricane shut-ins; manufacturing",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-15T08:30",
-   "type": "data",
-   "name": "Philly Fed / Empire State (Oct)",
-   "importance": "Medium",
-   "reason": "Factory prices paid",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-15T07:00",
-   "type": "earnings",
-   "name": "PNC, USB, SCHW, MRSH (BNY out)",
+   "ts_et": "2026-10-17T00:00",
+   "type": "fed",
+   "name": "Fed blackout begins (FOMC Oct 27-28)",
    "importance": "High",
-   "reason": "Regional bank read; PNC local employer",
-   "source": "finnhub"
+   "reason": "No policy speeches until decision",
+   "source": "research"
   },
   {
-   "ts_et": "2026-10-15T11:30",
+   "ts_et": "2026-10-18T22:00",
+   "type": "data",
+   "name": "China Q3 GDP + Sept activity (Reuters poll 4.4% y/y)",
+   "importance": "High",
+   "reason": "Global demand read",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-19T06:30",
+   "type": "launch",
+   "name": "Falcon 9 Bandwagon-5 rideshare",
+   "importance": "Low",
+   "reason": "Rideshare",
+   "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-19T11:30",
    "type": "auction",
-   "name": "4- and 8-week bills",
+   "name": "13-wk $95B / 26-wk $82B bills",
    "importance": "Low",
    "reason": "Routine bills",
    "source": "treasurydirect"
   },
   {
-   "ts_et": "2026-10-15T13:30",
-   "type": "fed",
-   "name": "Barkin speaks",
-   "importance": "Medium",
-   "reason": "Pre-blackout Fed signal",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-15T15:00",
-   "type": "fed",
-   "name": "Goolsbee (Yahoo Finance)",
-   "importance": "Medium",
-   "reason": "Pre-blackout Fed signal",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-15T19:44",
-   "type": "launch",
-   "name": "Falcon 9 USSF-481",
-   "importance": "Low",
-   "reason": "NSSL mission",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-10-16T08:30",
-   "type": "data",
-   "name": "Import/export prices (Sept)",
-   "importance": "Medium",
-   "reason": "China PPI pass-through",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-10-16T08:00",
-   "type": "fed",
-   "name": "Warsh speaks in Bangkok (time TBC)",
-   "importance": "High",
-   "reason": "Last chair remarks before blackout",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-16T07:00",
-   "type": "earnings",
-   "name": "Truist, Travelers, Regions, Fifth Third, SLB",
-   "importance": "Medium",
-   "reason": "Regional banks/insurers",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-10-19T19:41",
+   "ts_et": "2026-10-19T15:41",
    "type": "launch",
    "name": "H3 / MMX (JAXA)",
    "importance": "Low",
@@ -108,27 +68,83 @@
    "source": "thespacedevs"
   },
   {
-   "ts_et": "2026-10-21T11:30",
-   "type": "auction",
-   "name": "20-year bond reopening",
+   "ts_et": "2026-10-20T08:30",
+   "type": "data",
+   "name": "Housing starts/permits (Sept)",
    "importance": "Medium",
-   "reason": "Long-end demand at 5.5%+",
+   "reason": "Housing at 5%+ yields",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-20T11:30",
+   "type": "auction",
+   "name": "6-wk bill $95B",
+   "importance": "Low",
+   "reason": "Routine",
    "source": "treasurydirect"
   },
   {
-   "ts_et": "2026-10-22T11:30",
+   "ts_et": "2026-10-20T16:00",
+   "type": "earnings",
+   "name": "Netflix (also GM, GE Aerospace, 3M, PM, ISRG during day)",
+   "importance": "High",
+   "reason": "Mega-cap results",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-21T13:00",
    "type": "auction",
-   "name": "5-year note",
+   "name": "20-yr bond reopening $13B",
    "importance": "Medium",
-   "reason": "Coupon supply",
+   "reason": "Long-end demand",
    "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-21T16:00",
+   "type": "earnings",
+   "name": "Tesla (time unconfirmed), IBM, Lam Research",
+   "importance": "High",
+   "reason": "Mega-cap results",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-22T13:00",
+   "type": "auction",
+   "name": "5-yr TIPS $26B (new)",
+   "importance": "Medium",
+   "reason": "Real-yield demand",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-23T07:00",
+   "type": "earnings",
+   "name": "American Express, SLB (estimated)",
+   "importance": "Medium",
+   "reason": "Consumer/energy services",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-23T10:00",
+   "type": "data",
+   "name": "UMich sentiment final (Oct), prelim 46.3",
+   "importance": "Medium",
+   "reason": "Consumer mood",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-23T00:00",
+   "type": "local",
+   "name": "PRT board vote on Wabash Tunnel closure",
+   "importance": "Low",
+   "reason": "Local transit",
+   "source": "research"
   },
   {
    "ts_et": "2026-10-28T14:00",
    "type": "fed",
    "name": "FOMC decision",
    "importance": "Critical",
-   "reason": "Hike odds ~35-50%",
+   "reason": "Hike vs pause",
    "source": "research"
   }
  ],

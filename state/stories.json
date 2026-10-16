@@ -1,6 +1,116 @@
 {
  "stories": [
   {
+   "id": "wabash-tunnel-oct15",
+   "first_seen": "2026-10-15",
+   "last_updated": "2026-10-16-am",
+   "status": "Developing",
+   "headline": "PRT proposes permanent Wabash Tunnel closure Dec 1 (~$43M repair); board vote Oct 23. Now multi-sourced (WESA, KDKA, WPXI, TribLive).",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Local"
+  },
+  {
+   "id": "ftc-cid-openai-anthropic",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "New",
+   "headline": "FTC civil investigative demands to OpenAI and Anthropic (security incidents, safeguards, marketing, privacy); FTC confirmed to CBS. Eight states sued OpenAI Oct 14 over minors.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "AI regulation"
+  },
+  {
+   "id": "ukraine-refinery-strikes-resume",
+   "first_seen": "2026-10-15",
+   "last_updated": "2026-10-16-am",
+   "status": "Materially changed",
+   "headline": "Zelensky 'done' with energy truce; Ryazan refinery fire; Russia ~850 drones/24h (Zelensky), tolls 10-17 disputed; Starshield speed cap dispute; SPCX -2.3% to 148.62.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "World/energy"
+  },
+  {
+   "id": "doj-california-suit-oct15",
+   "first_seen": "2026-10-15",
+   "last_updated": "2026-10-16-am",
+   "status": "Materially changed",
+   "headline": "DOJ sued CA SoS Weber and LA registrar Logan in C.D. Cal. Oct 15 to bar counting mail ballots of ~20,000 alleged noncitizens; no hearing date as of Oct 16 am.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "US politics/election"
+  },
+  {
+   "id": "hormuz-tanker-fire-oct15",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "Developing",
+   "headline": "Iran army: 'violating' tanker on fire in Hormuz; CENTCOM says strait controlled, 40+ transits/24h; Bessent new Iran sanctions; IEA 20M+ bbl diesel release; Brent 105.44 Oct 16 am.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Oil/inflation"
+  },
+  {
+   "id": "take-privates-oct15",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "New",
+   "headline": "Proofpoint-Varonis $49.75 (~$6.3B); GTCR-CCC $7.75 (~$6.1B); Penske Automotive $212 (EV ~$16.3B).",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "M&A"
+  },
+  {
+   "id": "regional-banks-oct16",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "New",
+   "headline": "TFC adj EPS 1.16 vs ~1.05, GAAP 0.56 after $1.4B AFS loss, LightStream $7.7B sale to Carlyle; MTB 5.08 op vs ~4.93; RF 0.73 adj; CFG 1.41 (single-source); TRV due. IBKR/AA/JBHT after close Oct 15.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Earnings"
+  },
+  {
+   "id": "ai-debt-coreweave-oct16",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "Materially changed",
+   "headline": "Kospi +2.05%, Nikkei +1.39% Oct 16 after crash; SOX 7th straight loss, >20% below June high; CRWV +5.9% to 69.69 but 2032 notes ~78c, CDS ~1,000bp; Indonesia -11% on MSCI warning.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "AI credit risk; biggest market risk"
+  },
+  {
+   "id": "treasury-rally-oct15-close",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "Materially changed",
+   "headline": "10Y par 5.10 Oct 15 (-9bp), lowest since Sep 22; 2Y 4.77; 2s10s 33bp; DXY 101.62 Oct 16 am; overnight 10Y ~5.06-5.08 (reports).",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Rates/dollar"
+  },
+  {
+   "id": "warsh-no-signal-oct16",
+   "first_seen": "2026-10-16",
+   "last_updated": "2026-10-16-am",
+   "status": "Developing",
+   "headline": "Warsh (IMF, Bangkok ~23:30 ET Oct 15): 'I don't prejudge meetings'; no Oct 28 signal. CME: hike odds peaked 53%, now <30%; Goldman expects Oct pause, Dec hike. Blackout from Oct 17.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Lead: Fed path is the market's central question"
+  },
+  {
    "id": "ppi-sept-2026",
    "first_seen": "2026-10-15",
    "last_updated": "2026-10-15-pm",
@@ -49,22 +159,11 @@
    "first_seen": "2026-10-15",
    "last_updated": "2026-10-15-pm",
    "status": "Developing",
-   "headline": "EIA crude -8.56M bbl (hurricane shut-ins); WTI settled 97.97 per CNBC (Yahoo late 96.19); Brent 105.92. GFS Pride sinking confirmed by Singapore MPA (crew evacuated; one wire says a death \u2014 disputed); GFS Giselle struck Oct 14.",
+   "headline": "EIA crude -8.56M bbl (hurricane shut-ins); WTI settled 97.97 per CNBC (Yahoo late 96.19); Brent 105.92. GFS Pride sinking confirmed by Singapore MPA (crew evacuated; one wire says a death — disputed); GFS Giselle struck Oct 14.",
    "one_line": null,
    "verification": "Confirmed-multiple",
    "sources": null,
    "score_rationale": "Energy/geopolitics"
-  },
-  {
-   "id": "doj-california-suit-oct15",
-   "first_seen": "2026-10-15",
-   "last_updated": "2026-10-15-pm",
-   "status": "Materially changed",
-   "headline": "DOJ sued California in federal court (LA) to stop counting mail ballots of suspected noncitizens after 48-hour deadline passed; Weber disputes data reliability.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "US politics/election"
   },
   {
    "id": "ukraine-ryazan-oct15",
@@ -89,17 +188,6 @@
    "score_rationale": "Fed"
   },
   {
-   "id": "wabash-tunnel-oct15",
-   "first_seen": "2026-10-15",
-   "last_updated": "2026-10-15-pm",
-   "status": "New",
-   "headline": "PRT staff propose permanent Wabash Tunnel closure Dec 1 (~$43M repair); board vote Oct 23. Single source (WESA).",
-   "one_line": null,
-   "verification": "Single-reliable-source",
-   "sources": null,
-   "score_rationale": "Local"
-  },
-  {
    "id": "rklb-neutron-2027",
    "first_seen": "2026-10-15",
    "last_updated": "2026-10-15-am",
@@ -109,17 +197,6 @@
    "verification": "Confirmed-primary",
    "sources": null,
    "score_rationale": "Space/markets"
-  },
-  {
-   "id": "ukraine-refinery-strikes-resume",
-   "first_seen": "2026-10-15",
-   "last_updated": "2026-10-15-am",
-   "status": "Materially changed",
-   "headline": "Zelensky (FT): refinery strikes resume; Ryazan Rosneft refinery fire Oct 15; Starlink speed cap Oct 14; grid attack 600k without power, tolls 4-9 disputed.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "War/energy"
   },
   {
    "id": "hormuz-gfs-pride-oct15",
@@ -586,112 +663,6 @@
     "Investing.com"
    ],
    "score_rationale": "Most market-moving development; lead"
-  },
-  {
-   "id": "energy-truce-unconfirmed-oct12",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "Kremlin won't confirm energy truce, rejects 60-day ceasefire; Zelensky says Russia violated it",
-   "one_line": "Russia-Ukraine",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Moscow Times",
-    "AP",
-    "NPR",
-    "Axios"
-   ],
-   "score_rationale": "World/energy"
-  },
-  {
-   "id": "riyadh-airport-closed-notam-oct12",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "KKIA closed (NOTAM to Oct 17); Sun strike 1 killed 11 wounded; missile intercepted over Riyadh Mon; Houthis say Saudi strikes on Sanaa",
-   "one_line": "Gulf war",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNN",
-    "CBS",
-    "Gulf News"
-   ],
-   "score_rationale": "World/oil"
-  },
-  {
-   "id": "chip-selloff-us-oct12",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "Kospi -3.65%; SNDK -6%, MU -3.9%, CIEN -10%, LITE -9.8%, SMH -2.1%; cause disputed",
-   "one_line": "Markets/chips",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Korea Times",
-    "CNBC",
-    "Finnhub"
-   ],
-   "score_rationale": "Markets"
-  },
-  {
-   "id": "hammack-smaller-frequent-oct12",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "Hammack: restrictive stance appropriate, prefers smaller frequent moves; Oct hike odds ~18-19%; DXY 102.59 1-yr high",
-   "one_line": "Fed",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "Bloomberg",
-    "CNBC",
-    "FXStreet"
-   ],
-   "score_rationale": "Fed/FX"
-  },
-  {
-   "id": "maia300-muse-wonder-oct12",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "Microsoft Maia 300 inference chip (2027); Meta Muse Wonder models, META +3.4%",
-   "one_line": "AI",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "UPI",
-    "Reuters",
-    "Axios",
-    "CNBC"
-   ],
-   "score_rationale": "AI/markets"
-  },
-  {
-   "id": "pittsburgh-red-light-cameras-oct11",
-   "first_seen": "2026-10-12-pm",
-   "last_updated": "2026-10-12-pm",
-   "status": "New",
-   "headline": "Pittsburgh red-light cameras ticketing from Oct 11 incl. Saw Mill Run/Woodruff",
-   "one_line": "Local",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "WPXI",
-    "CBS Pittsburgh"
-   ],
-   "score_rationale": "Local"
-  },
-  {
-   "id": "dhs-ads-tro",
-   "first_seen": "2026-10-12-am",
-   "last_updated": "2026-10-12-pm",
-   "status": "Continuing",
-   "headline": "SDNY Judge Rochon TRO Oct 11 halts DHS ~$20M TV ad campaign for 2 weeks (Common Cause suit)",
-   "one_line": "Courts/midterms",
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "CNN",
-    "CNBC",
-    "The Hill"
-   ],
-   "score_rationale": "US"
   }
  ]
 }

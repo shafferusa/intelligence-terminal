@@ -5342,6 +5342,46 @@
    "probability": "40-55%",
    "basis": "Consensus spans +0.1% to +0.4%; Empire strong but Philly weaker; hurricane shut-ins weigh on mining output.",
    "status": "open"
+  },
+  {
+   "id": "2026-10-16-am-1",
+   "date": "2026-10-16",
+   "slot": "am",
+   "forecast": "The FOMC holds rates unchanged at its Oct 27-28 meeting (no hike).",
+   "horizon": "2026-10-28",
+   "probability": "65-80%",
+   "basis": "CME says hike odds fell below 30% from 53%; Goldman expects an October pause; Warsh declined to push back.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-16-am-2",
+   "date": "2026-10-16",
+   "slot": "am",
+   "forecast": "The S&P 500 closes Oct 16 above 7,744.06.",
+   "horizon": "2026-10-16",
+   "probability": "55-65%",
+   "basis": "S&P futures +0.14% at 06:22; Asia/Europe higher; yields and dollar lower; Nasdaq futures flat and opex noise.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-16-am-3",
+   "date": "2026-10-16",
+   "slot": "am",
+   "forecast": "The 10-year Treasury par yield closes Oct 16 at 5.12% or lower.",
+   "horizon": "2026-10-16",
+   "probability": "60-75%",
+   "basis": "Closed 5.10% Oct 15; reported ~5.06-5.08% overnight; invalidator a hot import-price print.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-16-am-4",
+   "date": "2026-10-16",
+   "slot": "am",
+   "forecast": "China Q3 GDP (released Oct 19) is 4.4% y/y or higher.",
+   "horizon": "2026-10-19",
+   "probability": "45-60%",
+   "basis": "Reuters poll 4.4% after Q2 4.3%; Sept exports +36%; weak domestic demand against.",
+   "status": "open"
   }
  ]
 }
