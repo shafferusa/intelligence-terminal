@@ -377,6 +377,15 @@
       "error_source": "An advocacy group's Oct 20 date was printed as settled without the council's posted agenda.",
       "conclusions_changed": false,
       "note": "Stated in the 2026-10-15 pm colophon and Local."
+    },
+    {
+      "found": "2026-10-16",
+      "report": "reports/2026/10/2026-10-15-learn.html",
+      "original": "The published Day 1 Learning Brief page retained the full template design-reference content (The Brief, The Board, Top Stories, The Economy, Today's Calendar, Before the Open, Risks & Scenarios, Local, Market Appendix, and a second colophon/nav — all marked as illustrative sample content in the template's own comments) appended after the real lesson's colophon and navigation.",
+      "corrected": "Removed the leftover template sample sections from the live page; it now ends cleanly after the lesson's own colophon and report-nav, as prompts/learning.md Step 3 requires ('Omit entirely: The Brief, The Board, Top Stories, all domain sections, the calendar, Local, the weather strip, and the Market Appendix').",
+      "error_source": "The 2026-10-15 run that built the Day 1 page under the restarted curriculum copied the report template but did not delete the boilerplate between the real lesson's closing nav and the REPORT:END marker before publishing.",
+      "conclusions_changed": false,
+      "note": "Found while reviewing the prior edition's page before writing Day 2. Did not affect reading_minutes (computed only from <article class=\"lesson-body\">) or the lesson content itself -- only extra, clearly-marked sample material a reader could have scrolled into below the real lesson. Checked the other learn-edition pages (2026-10-01, 2026-09-25, 2026-10-14); none of them show this defect, so it was isolated to the Day 1 restart page. Fixed directly on the live file and stated in today's (2026-10-16-learn) colophon."
     }
   ]
 }

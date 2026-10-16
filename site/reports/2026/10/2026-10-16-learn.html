@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1965, Gordon Moore Drew a Straight Line Through a Few Dots and Called 65,000. A Decade Later, the Chips Were Roughly There. — Learning Brief, Fri, Oct 16, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-16",
+    "slot": "learn",
+    "title": "In 1965, Gordon Moore Drew a Straight Line Through a Few Dots and Called 65,000. A Decade Later, the Chips Were Roughly There.",
+    "path": "reports/2026/10/2026-10-16-learn.html",
+    "summary": "Day 2 of the Connected Path: why constant-percentage growth compounds, and why a logarithmic scale turns that compounding into a straight line you can read, compare and cautiously extend.",
+    "headlines": [
+      "Day 2 of 293 · Mathematics: a logarithmic scale turns constant-percentage growth into a straight line you can read and extend",
+      "The same straight-line-on-a-log-plot method later clocked AI training compute doubling every 3.4 months, far faster than Moore's chips",
+      "Watch or Read: Exponential growth and epidemics (about 8-9 min)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-16T04:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>In 1965, Gordon Moore Drew a Straight Line Through a Few Dots and Called 65,000. A Decade Later, the Chips Were Roughly There.</h1>
+      <p class="paper-dateline">
+        Friday, October 16, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A quantity that grows by a constant percentage compounds, and a logarithmic scale turns that
+        compounding into a straight line &mdash; the same reading trick that let one engineer stretch
+        ten dots into a decade&rsquo;s forecast, and that later showed, days before the daily case count
+        did, when a pandemic&rsquo;s spread was actually slowing.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 2 of 293 &middot; Mathematics 2 of 24 &middot; Exponential growth and logarithms</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A few dots on a log scale, extended ten years</h3>
+      <p>
+        The April 19, 1965 issue of <em>Electronics</em> magazine carried a short article by Gordon
+        Moore, a chemist by training who was then director of research and development at Fairchild
+        Semiconductor. Moore plotted the number of components &mdash; transistors, resistors,
+        capacitors &mdash; on the most cost-effective integrated circuit his industry could build, for
+        a handful of years from 1959 to 1965. The count rose from a single component to about 64. When
+        he put those five or six points on a vertical axis marked off in powers of ten rather than
+        equal steps, they fell close to a straight line, doubling roughly once a year.
+      </p>
+      <p>
+        Moore then did something bolder than describing what had already happened: he extended that
+        line a full decade past his last data point and wrote that, by 1975, the leading chip would
+        hold on the order of 65,000 components. He later called this &ldquo;a wild extrapolation&rdquo;
+        &mdash; five or six points, one more doubling than the number of points themselves, stretched
+        into a thousand-fold forecast. A decade on, in a 1975 paper, he reported that complexity had in
+        fact kept roughly to that annual-doubling pace, pointing to a 16,384-bit charge-coupled-device
+        memory chip then in development as evidence. In that same 1975 paper he revised his own
+        forecast going forward, slowing the doubling from every year to roughly every two.
+      </p>
+      <p>
+        Why would anyone trust a straight line through a handful of points enough to forecast a
+        thousand-fold increase a decade out &mdash; and why did putting those points on a scale marked
+        in powers of ten, rather than equal steps, make that forecast look so much more reasonable than
+        it would have on an ordinary chart?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        When something grows by a constant <em>percentage</em> of its current size each period &mdash;
+        rather than by a constant amount &mdash; it compounds, and compounding grows explosively
+        compared with anything that just adds a fixed quantity each time. A logarithmic scale is an
+        axis marked off in constant ratios (steps of &times;10, or &times;2, or any other factor)
+        instead of constant additions. On that kind of axis, constant-percentage growth draws a
+        straight line, because equal distances up the axis now represent equal multiplications rather
+        than equal additions.
+      </p>
+      <p>
+        The slope of that line is the growth rate itself. That is what makes a log-scale chart a
+        reading instrument rather than just a different-looking picture: it is the fastest way to read
+        a growth rate off a curve, to compare two different growth rates side by side, and &mdash;
+        cautiously, as the story above already warns &mdash; to extend a trend forward the way Moore
+        did with his handful of dots.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the distinction a straight line on an ordinary chart hides. Linear growth adds the
+        same amount every period: a savings account earning a flat $50 a year, say. <strong>Exponential
+        growth</strong> multiplies by the same factor every period instead: a savings account earning
+        5% interest a year does not add $50 each year: it adds 5% of whatever balance it has already
+        reached, so the dollar amount added keeps rising as the balance itself rises. The same
+        mechanism drives early bacterial division, viral spread before anything slows it down, and
+        compound interest &mdash; anything where the next period&rsquo;s increase scales with the
+        current total rather than staying fixed.
+      </p>
+      <p>
+        A convenient way to characterize exponential growth is its <strong>doubling time</strong>: how
+        long it takes the quantity to double, which stays constant even as the quantity itself grows
+        ever larger in absolute terms. There is a shortcut for estimating it, the rule of 70: for a
+        quantity growing at <em>r</em> percent per period, the doubling time is roughly 70 divided by
+        <em>r</em>. Growing at 7% a year doubles in about ten years (70 &divide; 7); growing at 1% a
+        year doubles in about seventy. The &ldquo;70&rdquo; comes from the natural logarithm of 2
+        (about 0.693) expressed as a percentage, and the shortcut is most accurate for modest growth
+        rates &mdash; under roughly 15&ndash;20% per period &mdash; where each period&rsquo;s compounding
+        step is still small enough that the approximation holds up. The percentage rate itself is the
+        same thing finance calls the compound annual growth rate: nothing new there for you, only a
+        new reason to care what it looks like once it is plotted.
+      </p>
+      <p>
+        The <strong>logarithm</strong> is what makes a straight line out of this in the first place. The
+        base-ten logarithm of a number is the power you would have to raise 10 to, to get that number:
+        log<sub>10</sub>(1,000) = 3, because 10<sup>3</sup> = 1,000. A logarithm is the inverse of
+        exponentiation in exactly the sense subtraction is the inverse of addition. That inverse
+        relationship is what lets a logarithm turn multiplication into addition: the logarithm of a
+        product equals the sum of the logarithms of its factors. Applied to a quantity that doubles
+        every fixed interval, taking the logarithm of &ldquo;how big is it after <em>t</em> periods&rdquo;
+        converts a repeated <em>multiplication</em> by 2 into a repeated <em>addition</em> of
+        log<sub>10</sub>(2) &mdash; and a quantity that grows by repeated addition, plotted against
+        time, is a straight line.
+      </p>
+      <p>
+        That is exactly what a <strong>logarithmic (ratio) scale</strong> does on paper: it is an axis
+        where equal vertical distances mean equal ratios rather than equal differences. The gap from 1
+        to 10 takes the same space as the gap from 10 to 100, or from 1,000 to 10,000, because each
+        step is the same multiplicative factor. Once you are plotting on an axis built that way, a curve
+        that climbs ever more steeply on an ordinary linear chart &mdash; the visual signature everyone
+        associates with &ldquo;exponential&rdquo; &mdash; flattens into a straight line, and the line&rsquo;s
+        slope <em>is</em> the growth rate, directly readable with a ruler rather than estimated by eye
+        from a curve&rsquo;s changing steepness. A chart that looks like a dead-straight line on a log
+        axis but curves on a linear one is one of the most reliable fingerprints of constant-percentage
+        growth there is.
+      </p>
+      <p>
+        That same reading advantage turns the log chart into a diagnostic for the opposite case too: a
+        <em>bend</em> in a log-scale line means the growth rate itself is changing, not just the
+        quantity. A line that bends upward on a log scale means growth is accelerating; a line that
+        bends over and flattens means growth is slowing, even while the raw quantity is still rising.
+        Either way, the bend is often visible on a log chart well before it would be obvious by eye on
+        a linear one, where a slowing exponential can still look like it is racing upward because the
+        absolute numbers keep climbing.
+      </p>
+      <p>
+        That reading power comes with a sharp limit, and it is the one Moore&rsquo;s own 1975 revision
+        illustrates directly: a straight line fit to past data describes the <em>past</em> rate. It is
+        not a law of nature obligated to continue. Whether &ldquo;Moore&rsquo;s Law&rdquo; in its
+        original form has truly ended, and when, is <span class="chip chip--warn">Debated</span> among
+        semiconductor engineers and historians &mdash; transistor <em>density</em> and <em>cost per
+        transistor</em> tell different stories about the trend&rsquo;s health, and a related scaling
+        rule governing transistor power (Dennard scaling) is widely agreed to have broken down by the
+        mid-2000s even while density kept climbing for years afterward. Some historians of technology
+        argue the original pace held as well as it did for as long as it did partly because chipmakers
+        planned their own roadmaps around hitting it &mdash; meaning the trend was, in part, a target
+        the industry organized itself around, not a force acting on the industry from outside. A line
+        on a log chart tells you the slope that held up to today. It does not tell you why, or whether
+        it will keep holding.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Moore&rsquo;s handful of points was enough precisely because a log scale turns constant-percentage
+        growth into a straight line: once five or six dots agree on a slope, extending that slope ten
+        more years is simple arithmetic, not a new measurement. Sixty-four components doubling once a
+        year for ten years is 64 &times; 2<sup>10</sup>, which comes out to about 65,000 &mdash; the
+        number Moore wrote down. The forecast held, roughly, for a decade. But the method&rsquo;s own
+        limit, explained just above, is exactly what caught up with the forecast next: a straight line
+        describes the rate that held in the past, and in 1975 Moore himself revised the slope going
+        forward, because the rate that had held for a decade was not a law of nature guaranteed to hold
+        forever.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Exponential growth</dt>
+        <dd>Growth in which each period&rsquo;s increase is a constant percentage of the current total,
+        not a constant amount &mdash; so the absolute size of each increase keeps rising as the total
+        itself rises.</dd>
+        <dt>Doubling time &amp; the rule of 70</dt>
+        <dd>How long a quantity growing at a constant percentage rate takes to double; approximated as
+        70 divided by the growth rate in percent per period, most accurate under roughly 15&ndash;20%
+        growth.</dd>
+        <dt>Logarithm</dt>
+        <dd>The inverse of exponentiation: the base-ten logarithm of a number is the power 10 must be
+        raised to in order to produce it. Logarithms turn multiplication into addition.</dd>
+        <dt>Logarithmic (ratio) scale</dt>
+        <dd>An axis on which equal distances represent equal multiplicative ratios rather than equal
+        additive differences &mdash; on which constant-percentage growth draws a straight line.</dd>
+        <dt>Extrapolation</dt>
+        <dd>Extending an observed trend beyond the data that established it; reliable only as long as
+        whatever drove the trend keeps operating the same way, which a fitted line itself cannot tell
+        you.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Reading a Pandemic&rsquo;s Log Chart in Real Time</h3>
+      <p>
+        In March 2020, confirmed COVID-19 case counts in many countries were growing by roughly
+        15&ndash;30% a day. Journalists covering the outbreak, most visibly John Burn-Murdoch at the
+        <em>Financial Times</em>, popularized log-scale charts that plotted each country&rsquo;s
+        cumulative cases against days since some common starting point, rather than against calendar
+        date on an ordinary linear axis. Burn-Murdoch argued directly for the log scale&rsquo;s honesty
+        here: on a linear chart, a country early in its own outbreak can look reassuringly flat next to
+        one further along, when in fact both are compounding at a similar rate and one is simply a few
+        doublings behind the other.
+      </p>
+      <div class="worked">
+        <p><strong>1. Convert a daily growth rate to a doubling time.</strong> The rule of 70 (really
+        natural-log-based, so more precisely &ldquo;ln 2 divided by the daily growth rate&rdquo;) gives,
+        for 15% daily growth: ln(2) &divide; ln(1.15) &asymp; 0.693 &divide; 0.140 &asymp; 5 days.</p>
+        <p><strong>2. Do the same for the faster end of the range.</strong> For 25% daily growth:
+        ln(2) &divide; ln(1.25) &asymp; 0.693 &divide; 0.223 &asymp; 3.1 days.</p>
+        <p><strong>3. Read what a bend means.</strong> When public-health measures or behavior change
+        slowed the daily growth rate, the log-scale line of cumulative cases bent visibly flatter days
+        before the linear-scale curve of new daily cases turned over and started falling &mdash; because
+        the log chart shows the <em>rate</em> changing directly, while the linear chart of daily new
+        cases has to wait for that changing rate to show up as an actual decline in the raw count.</p>
+      </div>
+      <p>
+        Doubling times during the pandemic varied by country, by wave, and were distorted at times by
+        changes in testing capacity rather than the virus&rsquo;s own spread &mdash; a reminder that a
+        clean mathematical doubling time is only as good as the data feeding it. The reading method
+        itself, though, is the same one Moore&rsquo;s five dots relied on: put compounding data on a log
+        axis, and the slope &mdash; and any bend in it &mdash; tells you the story days before the raw
+        numbers would.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        A quantity growing exponentially with doubling time <em>T<sub>d</sub></em> follows:
+      </p>
+      <div class="formula">
+        <p class="expr">N(t) = N<sub>0</sub> &times; 2<sup>t/T<sub>d</sub></sup> &nbsp;&nbsp;&rArr;&nbsp;&nbsp; log<sub>10</sub>N(t) = log<sub>10</sub>N<sub>0</sub> + (t/T<sub>d</sub>)&thinsp;log<sub>10</sub>2</p>
+        <p class="expr-spoken visually-hidden">N of t equals N sub 0 times 2 to the power of t divided by T sub d; therefore the base-ten logarithm of N of t equals the base-ten logarithm of N sub 0, plus the quantity t divided by T sub d, times the base-ten logarithm of 2.</p>
+        <dl>
+          <dt>N(t)</dt>
+          <dd>the quantity&rsquo;s size after time <em>t</em></dd>
+          <dt>N<sub>0</sub></dt>
+          <dd>the starting size, at t = 0</dd>
+          <dt>T<sub>d</sub></dt>
+          <dd>the doubling time &mdash; how long the quantity takes to double</dd>
+          <dt>log<sub>10</sub></dt>
+          <dd>the base-ten logarithm; taking it of both sides turns the doubling (multiplicative) relation into a straight line in <em>t</em></dd>
+        </dl>
+      </div>
+      <p>
+        The right-hand form is exactly why the chart is straight on a log axis: it says log<sub>10</sub>N
+        is log<sub>10</sub>N<sub>0</sub> plus a term that grows in direct proportion to <em>t</em>
+        &mdash; the defining shape of a straight line. The rule of thumb connecting a percentage growth
+        rate to a doubling time follows the same logarithmic logic:
+      </p>
+      <div class="formula">
+        <p class="expr">T<sub>d</sub> &asymp; 70 / r</p>
+        <p class="expr-spoken visually-hidden">T sub d is approximately equal to 70 divided by r.</p>
+        <dl>
+          <dt>T<sub>d</sub></dt>
+          <dd>doubling time, in the same periods as the growth rate (years, days, and so on)</dd>
+          <dt>r</dt>
+          <dd>the growth rate, in percent per period</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can read a log-scale chart, you can tell, at a glance, whether something is truly
+        compounding at a steady rate, speeding up, or slowing down &mdash; a distinction that is nearly
+        impossible to make by eye on an ordinary chart, where every exponential curve looks like it is
+        racing upward right up until it suddenly does not. That distinction is worth having well before
+        you need it for anything specific: it is the same reading skill whether the quantity on the
+        axis is a chip&rsquo;s component count, a disease&rsquo;s case count, a population, or a bank
+        balance.
+      </p>
+      <p>
+        The habit that matters even more than the chart-reading is the caution built into How It Works:
+        a fitted straight line, however confidently drawn, is a statement about the past, and extending
+        it is a bet that whatever made the rate what it was keeps operating unchanged. Moore&rsquo;s own
+        revision, one decade after his own forecast, is the method&rsquo;s inventor making exactly that
+        correction in public.
+      </p>
+      <p>
+        The same two-sided lesson &mdash; read the slope, then doubt the slope&rsquo;s permanence
+        &mdash; is why log-scale thinking shows up wherever someone has to plan years ahead against a
+        compounding quantity: a chipmaker sizing a factory, a public-health official sizing hospital
+        capacity, an actuary pricing a long-dated liability. In each case the chart answers &ldquo;how
+        fast, really, and is that changing,&rdquo; and in each case the honest next question is what
+        would have to be true for the rate to hold.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 1&rsquo;s Fermi estimates were built from factors tracked in scientific
+        notation &mdash; powers of ten kept explicit at every step. A logarithmic scale is that same
+        powers-of-ten bookkeeping turned into a picture: an axis marked off in orders of magnitude,
+        which is why reading one comes naturally once you have already learned to think in them.
+      </p>
+      <p>
+        <b>Across.</b> In 2018, OpenAI researchers Dario Amodei and Danny Hernandez published an
+        analysis, &ldquo;AI and Compute,&rdquo; finding that the amount of computing power used in the
+        largest AI training runs had grown roughly 300,000-fold since 2012 &mdash; doubling about every
+        3.4 months, versus Moore&rsquo;s original one-year and later two-year doubling for transistor
+        counts. It is the identical method applied to a far faster-moving process: fit a straight line
+        to a log-scale plot of a compounding quantity, and read the slope as the rate. The same caution
+        applies doubly here &mdash; a growth rate measured over six years of a new, fast-moving field is
+        an even thinner basis for extrapolation than Moore&rsquo;s own, and compute growth has itself
+        since slowed from that 2012&ndash;2018 pace.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://www.youtube.com/watch?v=Kas0tIxDvrg">Exponential growth and epidemics</a>
+        &mdash; Grant Sanderson, 3Blue1Brown (2020) &middot; Video &middot; about 8-9 minutes (running
+        time not confirmed)</p>
+        <p>Published days into the COVID-19 outbreak, it animates exactly the two things prose can only
+        describe: what a straight line on a log-scale chart looks like as it is built up point by
+        point, and how that line bends toward a flattening S-curve as growth slows.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Exponential growth adds a constant <em>percentage</em> of the current total each period,
+        not a constant amount &mdash; which is why the absolute increase keeps rising.</li>
+        <li>The rule of 70: doubling time &asymp; 70 &divide; (percent growth per period).</li>
+        <li>A logarithm turns multiplication into addition; on a logarithmic (ratio) scale,
+        constant-percentage growth draws a straight line.</li>
+        <li>A bend in a log-scale line means the growth rate itself is changing &mdash; often visible
+        before it shows up in the raw numbers.</li>
+        <li>A trend line fitted to the past describes the past rate; extending it is a bet that
+        whatever drove that rate keeps operating unchanged.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        World population grew a little over 2 percent a year at its late-1960s peak and under 1 percent
+        a year in the early 2020s: using the doubling time each rate implies, how would that slowdown
+        actually show up on a log-scale chart of world population since 1800&mdash;as a sudden drop, or
+        as something else?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Gordon Moore&rsquo;s 1965 <em>Electronics</em> article and his 1975
+      IEEE paper revising the doubling period, both checked via web search this run against the
+      Computer History Museum&rsquo;s and IEEE&rsquo;s own accounts; John Burn-Murdoch&rsquo;s March
+      2020 <em>Financial Times</em> log-scale pandemic charts, checked via web search against secondary
+      coverage of his own stated reasoning; Dario Amodei and Danny Hernandez, &ldquo;AI and Compute&rdquo;
+      (OpenAI, 2018). The COVID-19 daily growth-rate range (15&ndash;30%) reflects multiple countries and
+      weeks in March 2020, not one fixed figure.</p>
+      <p><strong>Corrections.</strong> A formatting defect in yesterday&rsquo;s Day 1 edition &mdash;
+      leftover template sample sections that had not been removed before publishing &mdash; was found
+      and fixed on the live page today; see the correction ledger. No factual correction to Day 1&rsquo;s
+      lesson content.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System
+      status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-15-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
