@@ -5382,6 +5382,36 @@
    "probability": "45-60%",
    "basis": "Reuters poll 4.4% after Q2 4.3%; Sept exports +36%; weak domestic demand against.",
    "status": "open"
+  },
+  {
+   "id": "2026-10-16-pm-1",
+   "date": "2026-10-16",
+   "slot": "pm",
+   "forecast": "10-year Treasury par yield closes Fri Oct 23 at or below 5.15%",
+   "horizon": "2026-10-23",
+   "probability": "55-70%",
+   "basis": "Closed 5.09% Oct 16 after -15bp week; Oct hike odds fell to ~13-18%; tech selloff supports Treasuries. Invalidator: oil spike feeding hike bets, weak 20-yr auction Oct 21.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-16-pm-2",
+   "date": "2026-10-16",
+   "slot": "pm",
+   "forecast": "Brent front-month settles above $105 on Fri Oct 23",
+   "horizon": "2026-10-23",
+   "probability": "55-70%",
+   "basis": "Settled $109.86 Oct 16 (CNBC); Kpler Hormuz flows ~68% of normal; attacks continuing; US-Iran talks stalled. Invalidator: a US-Iran de-escalation or reopened strait.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-16-pm-3",
+   "date": "2026-10-16",
+   "slot": "pm",
+   "forecast": "VIX closes below 20 on Fri Oct 23",
+   "horizon": "2026-10-23",
+   "probability": "45-60%",
+   "basis": "Closed 19.99 Oct 16 with VIX3M 20.50 above spot (no full inversion); stress concentrated in AI-infrastructure credit. Against: VIX9D above spot, CoreWeave financing unresolved, big-tech earnings week.",
+   "status": "open"
   }
  ]
 }

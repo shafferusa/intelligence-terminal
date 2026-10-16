@@ -386,6 +386,15 @@
       "error_source": "The 2026-10-15 run that built the Day 1 page under the restarted curriculum copied the report template but did not delete the boilerplate between the real lesson's closing nav and the REPORT:END marker before publishing.",
       "conclusions_changed": false,
       "note": "Found while reviewing the prior edition's page before writing Day 2. Did not affect reading_minutes (computed only from <article class=\"lesson-body\">) or the lesson content itself -- only extra, clearly-marked sample material a reader could have scrolled into below the real lesson. Checked the other learn-edition pages (2026-10-01, 2026-09-25, 2026-10-14); none of them show this defect, so it was isolated to the Day 1 restart page. Fixed directly on the live file and stated in today's (2026-10-16-learn) colophon."
+    },
+    {
+      "found": "2026-10-16",
+      "report": "reports/2026/10/2026-10-15-pm.html",
+      "original": "The VanEck semiconductor fund fell 1.0%, its seventh straight loss.",
+      "corrected": "Oct 15 was SMH's eighth straight decline (declines Oct 6, 7, 8, 9, 12, 13, 14, 15 per Yahoo closes); Oct 16 the ninth.",
+      "error_source": "Streak counted from secondary reporting on the SOX index rather than SMH closing data.",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-16 pm colophon."
     }
   ]
 }
