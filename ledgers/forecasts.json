@@ -3088,7 +3088,10 @@
    "horizon": "2026-10-11",
    "probability": "15-25%",
    "basis": "Chief Justice Powell's ruling that Hoskins 'purged himself of contempt' by complying left his earlier defiance itself unaddressed rather than closed -- an open question, not a foreclosed one.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No further Missouri Supreme Court sanction of Secretary of State Hoskins was found through Oct 11; the Sept 10 contempt order was purged in the same order (Missouri Independent, STLPR).",
+   "graded": "2026-10-17",
+   "lesson": "Once a court rules a contempt purged, further sanctions are rare; the base rate for follow-on action was lower than 15-25%."
   },
   {
    "id": "2026-09-11-pm-1",
@@ -4769,7 +4772,10 @@
    "horizon": "2026-10-16",
    "probability": "30-45%",
    "basis": "Trump's no-strike pledge removed a dated trigger and GoM shut-ins usually return within days; against: tanker attacks spreading beyond Hormuz, Hormuz traffic at 2-month low, blockade unchanged.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Brent never settled below $100 Oct 9-16; the low settlement was $104.72 (Oct 9) and the week ended at $109.86.",
+   "graded": "2026-10-17",
+   "lesson": "Gulf attacks kept adding to the risk premium; a sub-$100 call needed a de-escalation catalyst that never came."
   },
   {
    "id": "2026-10-09-am-1",
@@ -4828,7 +4834,10 @@
    "horizon": "2026-10-13",
    "probability": "70-80%",
    "basis": "JPM has beaten consensus in most recent quarters; volatile Q3 markets favour trading revenue; consensus figure single-sourced via CNBC.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "JPMorgan reported Q3 EPS of $5.57 against roughly $5.85-5.94 consensus, its first miss in nearly three years (Reuters count; company release).",
+   "graded": "2026-10-17",
+   "lesson": "A long beat streak is weak evidence; the miss came from slower deal flow and rates, which the forecast did not weigh."
   },
   {
    "id": "2026-10-09-pm-3",
@@ -4851,7 +4860,10 @@
    "horizon": "2026-10-14",
    "probability": "35-50%",
    "basis": "Consensus 0.2% (aggregators) but August core was 0.3% and fuel costs pass into services; Cleveland Fed nowcast core y/y 2.39%.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "September core CPI rose 0.3% m/m (BLS, Oct 14), against 0.2% consensus.",
+   "graded": "2026-10-17",
+   "lesson": "Energy pass-through into core was visible in the PPI pipeline; leaning toward a hot core at near-even odds was right."
   },
   {
    "id": "2026-10-11-sun-2",
@@ -4861,7 +4873,10 @@
    "horizon": "2026-10-14",
    "probability": "60-75%",
    "basis": "Consensus 3.6% (aggregators), one at 3.7%; Cleveland Fed nowcast 3.60%; gasoline up again in September.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Headline CPI rose 3.7% y/y (BLS), above the 3.6% consensus.",
+   "graded": "2026-10-17",
+   "lesson": "Gasoline (+9.1% m/m) made the high headline the likely outcome."
   },
   {
    "id": "2026-10-11-sun-3",
@@ -4871,7 +4886,10 @@
    "horizon": "2026-10-16",
    "probability": "65-75%",
    "basis": "Closed 5.22-5.31% for two weeks; no coupon auctions this week; CPI is the main mover.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The 10-year par yield closed Friday Oct 16 at 5.09%, one basis point below the 5.10% floor (Treasury).",
+   "graded": "2026-10-17",
+   "lesson": "The range was centred on the starting level; it did not allow enough for a growth-scare rally in long bonds after hot inflation data."
   },
   {
    "id": "2026-10-11-sun-4",
@@ -4881,7 +4899,10 @@
    "horizon": "2026-10-16",
    "probability": "15-25%",
    "basis": "Cycle closing high 5.31% (Oct 5); needs a hot core CPI; buyers appeared at 5.30% at last week's auction.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Highest 10-year par-yield close Oct 13-16 was 5.21% (Oct 13); the 5.32% touched after CPI on Oct 14 was intraday only, close 5.19%.",
+   "graded": "2026-10-17",
+   "lesson": "Sized correctly at 15-25%; intraday spikes are not closes."
   },
   {
    "id": "2026-10-11-sun-5",
@@ -4891,7 +4912,10 @@
    "horizon": "2026-10-16",
    "probability": "15-25%",
    "basis": "~18% on Oct 9; needs a hot core CPI plus hawkish Warsh/Beige Book.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CME FedWatch odds of an October hike were about 13-18% on Friday Oct 16, after peaking near 50% on Oct 14 (Benzinga, CNBC, Cointelegraph).",
+   "graded": "2026-10-17",
+   "lesson": "Sized correctly at 15-25%; the odds did go above 30% midweek but the forecast asked about Friday."
   },
   {
    "id": "2026-10-11-sun-6",
@@ -4901,7 +4925,10 @@
    "horizon": "2026-10-16",
    "probability": "55-65%",
    "basis": "Held above $100 every day last week; weekend Riyadh strike and Hormuz tanker fire add risk; Gulf of Mexico restart and G7 release push the other way.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled above $100 every session: $106.65, $105.69, $106.06, $105.92, $109.86 (CNBC, Reuters-derived reports).",
+   "graded": "2026-10-17",
+   "lesson": "With a $5 cushion and an active Gulf war, holding above $100 was the higher-probability path."
   },
   {
    "id": "2026-10-11-sun-7",
@@ -4911,7 +4938,10 @@
    "horizon": "2026-10-16",
    "probability": "10-20%",
    "basis": "Requires a confirmed Gulf energy-infrastructure hit or US-Houthi escalation drawing a wider response.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Brent's highest settlement was $109.86 on Oct 16; it touched $110 intraday but did not settle above it.",
+   "graded": "2026-10-17",
+   "lesson": "A near miss: Friday's late rally ended 14 cents short. Sizing at 10-20% was reasonable."
   },
   {
    "id": "2026-10-11-sun-8",
@@ -4921,7 +4951,10 @@
    "horizon": "2026-10-16",
    "probability": "50-60%",
    "basis": "0.1% below record with low VIX; CPI and bank earnings are two-sided.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 closed Friday Oct 16 at 7,659.44, below 7,811.54 (-1.95% on the week).",
+   "graded": "2026-10-17",
+   "lesson": "The AI-credit selloff was not in the forecast's frame; concentration risk in chips deserved more weight."
   },
   {
    "id": "2026-10-11-sun-9",
@@ -4931,7 +4964,10 @@
    "horizon": "2026-10-16",
    "probability": "45-60%",
    "basis": "Only 0.1% away; one strong session suffices; Gulf risk and a hot CPI are the obstacles.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No record close; the week's high close was 7,807.24 (Oct 12), short of 7,818.93.",
+   "graded": "2026-10-17",
+   "lesson": "Starting 0.1% below a record makes a new high look close to a coin toss, but a hot-CPI week argued for less than 45-60%."
   },
   {
    "id": "2026-10-11-sun-10",
@@ -4941,7 +4977,10 @@
    "horizon": "2026-10-13",
    "probability": "70-80%",
    "basis": "Big banks usually beat; strong trading/deal quarter; consensus dispersion (esp. GS) adds definitional risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Goldman ($17.01 vs ~$13), Citigroup ($2.85 vs $2.65) and Wells Fargo ($1.87, slightly above) beat EPS consensus; JPMorgan missed ($5.57).",
+   "graded": "2026-10-17",
+   "lesson": "Trading strength made beats likely; the forecast got there with one to spare."
   },
   {
    "id": "2026-10-11-sun-11",
@@ -4951,7 +4990,10 @@
    "horizon": "2026-10-15",
    "probability": "60-75%",
    "basis": "July-September monthly revenue NT$1.494T vs LSEG estimate NT$1.46T; FX conversion is the main risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "TSMC Q3 revenue was about $46.7 billion, above the top of its $44.6-45.8 billion guidance (CNBC, company).",
+   "graded": "2026-10-17",
+   "lesson": "TSMC has topped its guidance repeatedly in the AI cycle."
   },
   {
    "id": "2026-10-11-sun-12",
@@ -4961,7 +5003,10 @@
    "horizon": "2026-10-16",
    "probability": "20-35%",
    "basis": "An American killed in the Oct 10 Riyadh strike; Trump said 'we're going to look at it'; Saudi request reported (single source); against: pre-election caution.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No acknowledged US strikes on Houthi targets Oct 11-16; US officials said the US is giving intelligence and targeting support only (Axios, TIME).",
+   "graded": "2026-10-17",
+   "lesson": "Sized correctly at 20-35%; the president's pre-election restraint extended to Yemen."
   },
   {
    "id": "2026-10-11-sun-13",
@@ -4971,7 +5016,10 @@
    "horizon": "2026-10-16",
    "probability": "15-25%",
    "basis": "Three airport strikes in Riyadh in a week; energy targets only claimed so far.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Saudi Arabia's energy ministry confirmed a Houthi missile hit an Aramco administrative building in Dhahran (limited fire, no injuries); no refinery, terminal or pipeline hit was confirmed (Bloomberg, Haaretz, PBS/AP).",
+   "graded": "2026-10-17",
+   "lesson": "The Houthis did reach Aramco, but an office tower is not the production infrastructure the forecast named. Define the target class tightly and grade it tightly."
   },
   {
    "id": "2026-10-11-sun-14",
@@ -4981,7 +5029,10 @@
    "horizon": "2026-10-14",
    "probability": "25-40%",
    "basis": "Card balances shrank in August, sentiment near record low; labor market still has low layoffs.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No card-loss outlook was raised: JPMorgan reiterated ~3.2% card NCO guidance; Bank of America's card NCO rate fell to 3.22% and its allowance fell; Wells Fargo's provision was below estimates; Citi built $208M of card reserves tied to its macro outlook with no consensus comparison found.",
+   "graded": "2026-10-17",
+   "lesson": "Consumer credit stayed cleaner than the inflation narrative implied."
   },
   {
    "id": "2026-10-11-sun-15",
@@ -4991,7 +5042,10 @@
    "horizon": "2026-10-16",
    "probability": "35-50%",
    "basis": "Tentative deal Oct 8; no vote date announced; ratifications typically take one to three weeks.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "IBEW Local 29 ratified the Duquesne Light five-year contract on Sunday Oct 11, 526 to 184 (WESA, WPXI, TribLive).",
+   "graded": "2026-10-17",
+   "lesson": "Tentative deals after long strikes usually ratify quickly; the 35-50% range was too cautious."
   },
   {
    "id": "2026-10-11-sun-16",
@@ -5001,7 +5055,10 @@
    "horizon": "2026-10-16",
    "probability": "45-55%",
    "basis": "Consensus path; quiet supply week; oil premium stable.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Base case failed on core CPI (0.3%, not 0.2% or lower) and on the 10-year (5.09%, below 5.10%); FedWatch ended under 30% and Brent stayed in $100-110.",
+   "graded": "2026-10-17",
+   "lesson": "Two of four conditions held; a multi-condition base case is fragile when one input (core CPI) is near a coin toss."
   },
   {
    "id": "2026-10-11-sun-17",
@@ -5011,7 +5068,10 @@
    "horizon": "2026-10-16",
    "probability": "15-20%",
    "basis": "Needs cool inflation plus strong TSMC/ASML guidance.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Core CPI was 0.3% and SMH fell 10.5% on the week; only the 10-year below 5.15% held.",
+   "graded": "2026-10-17",
+   "lesson": "Correctly sized as a tail."
   },
   {
    "id": "2026-10-11-sun-18",
@@ -5021,7 +5081,10 @@
    "horizon": "2026-10-16",
    "probability": "20-30%",
    "basis": "Hot core plus hawkish Warsh and weak bank credit commentary.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "All three conditions held: core CPI 0.3%; FedWatch October hike odds near 50% on Oct 14; S&P 500 closed Friday at 7,659.44, 2.04% below the 7,818.93 record.",
+   "graded": "2026-10-17",
+   "lesson": "The bear case came true by four hundredths of a point on the S&P leg, and through chips rather than the small caps and consumer stocks it described. Right outcome, partly wrong mechanism."
   },
   {
    "id": "2026-10-11-sun-19",
@@ -5031,7 +5094,10 @@
    "horizon": "2026-10-16",
    "probability": "5-10%",
    "basis": "Low base rate but new Houthi-front escalation risk.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No US strikes in Yemen and no confirmed energy-infrastructure hit; Brent's high settlement was $109.86.",
+   "graded": "2026-10-17",
+   "lesson": "Correctly sized as a tail."
   },
   {
    "id": "2026-10-12-am-1",
@@ -5041,7 +5107,10 @@
    "horizon": "2026-10-12",
    "probability": "55-70%",
    "basis": "Brent $105.59 at ~06:20 ET after weekend Houthi strikes, tanker attacks and Iran rejecting US terms; against: unconfirmed Russia-Ukraine energy truce, Gulf exports ~98% of pre-war.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled $106.65 on Oct 12, above $104.72.",
+   "graded": "2026-10-17",
+   "lesson": "Weekend Gulf escalation carried through."
   },
   {
    "id": "2026-10-12-am-2",
@@ -5051,7 +5120,10 @@
    "horizon": "2026-10-12",
    "probability": "50-60%",
    "basis": "ES futures +0.1% at ~06:25 ET; thin holiday volume; Kospi chip sell-off a headwind for megacap weights.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 closed Oct 12 at 7,807.24, just below 7,811.54.",
+   "graded": "2026-10-17",
+   "lesson": "Holiday-thin coin toss; missed by 4 points."
   },
   {
    "id": "2026-10-12-am-3",
@@ -5061,7 +5133,10 @@
    "horizon": "2026-10-16",
    "probability": "25-40%",
    "basis": "Kremlin said only 'contacts are ongoing'; Russia struck Kharkiv CHP-5 after the announcement; a similar announcement last month went unconfirmed.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Kremlin never confirmed an energy-strike halt; Peskov said on Oct 14 the truce had 'never been specified' (Kyiv Post, AP).",
+   "graded": "2026-10-17",
+   "lesson": "Announcements by one party are not agreements; Moscow's silence was the signal."
   },
   {
    "id": "2026-10-12-am-4",
@@ -5071,7 +5146,10 @@
    "horizon": "2026-10-14",
    "probability": "45-60%",
    "basis": "Closure extended day-by-day; two further attacks Oct 11; airport is the capital's main gateway.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Riyadh King Khalid airport stayed closed under a NOTAM through Oct 17 (AeroCorner, Air Data News).",
+   "graded": "2026-10-17",
+   "lesson": "Repeated strikes on the same airport make quick reopening unlikely; 45-60% was too high."
   },
   {
    "id": "2026-10-12-pm-1",
@@ -5081,7 +5159,10 @@
    "horizon": "2026-10-13",
    "probability": "55-70%",
    "basis": "Oct 12 settle $106.65 after absorbing a truce-driven dip; Gulf attacks continuing daily; Riyadh airport closed to Oct 17.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled $105.69 on Oct 13, above $105.00.",
+   "graded": "2026-10-17",
+   "lesson": "Narrow cushion held."
   },
   {
    "id": "2026-10-12-pm-2",
@@ -5091,7 +5172,10 @@
    "horizon": "2026-10-14",
    "probability": "60-75%",
    "basis": "Consensus +0.5-0.6% on gasoline; Brent averaged above $100 in September.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "September headline CPI rose 0.6% m/m (BLS).",
+   "graded": "2026-10-17",
+   "lesson": "Gasoline arithmetic made this the likely outcome."
   },
   {
    "id": "2026-10-12-pm-3",
@@ -5111,7 +5195,10 @@
    "horizon": "2026-10-13",
    "probability": "55-65%",
    "basis": "Oil +1.8% and DXY +0.4% during the holiday, Hammack hawkish; Treasury futures were only slightly lower in holiday trade.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The 10-year par yield closed Oct 13 at 5.21%, below 5.24%.",
+   "graded": "2026-10-17",
+   "lesson": "Bonds firmed after the holiday; the forecast leaned on momentum that had already faded."
   },
   {
    "id": "2026-10-13-am-1",
@@ -5121,7 +5208,10 @@
    "horizon": "2026-10-13",
    "probability": "55-70%",
    "basis": "Kospi -5.5%, European chipmakers -3 to -5%, Nasdaq 100 futures -0.47% at 6:23 ET; against: US names already fell Monday, dip-buying strong all year.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "SMH closed Oct 13 at 588.19, below 590.99.",
+   "graded": "2026-10-17",
+   "lesson": "Asian chip selling carried over."
   },
   {
    "id": "2026-10-13-am-2",
@@ -5131,7 +5221,10 @@
    "horizon": "2026-10-13",
    "probability": "40-55%",
    "basis": "S&P futures flat (+0.05%), cheaper oil helps non-tech, but largest weights under chip pressure.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 closed Oct 13 at 7,805.45, below 7,807.24.",
+   "graded": "2026-10-17",
+   "lesson": "Another near-flat coin toss lost by 2 points."
   },
   {
    "id": "2026-10-13-am-3",
@@ -5141,7 +5234,10 @@
    "horizon": "2026-10-13",
    "probability": "65-80%",
    "basis": "Brent $104.50 at 6:22 ET, -2.0%; reversal needs a strike on Gulf energy infrastructure.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled $105.69 on Oct 13, below $106.65.",
+   "graded": "2026-10-17",
+   "lesson": "Saudi export reassurance and the diesel deal weighed."
   },
   {
    "id": "2026-10-13-am-4",
@@ -5151,7 +5247,8 @@
    "horizon": "2026-10-17",
    "probability": "15-30%",
    "basis": "NOTAM closure runs through Oct 17; attacks continued Oct 12; closure extended in steps.",
-   "status": "open"
+   "status": "open",
+   "note": "Not gradable at Saturday's run: the NOTAM closure ran to 5 PM ET Oct 17. Graded 2026-10-24."
   },
   {
    "id": "2026-10-13-pm-1",
@@ -5161,7 +5258,10 @@
    "horizon": "2026-10-14",
    "probability": "55-65%",
    "basis": "Dow Jones consensus +0.2%; Cleveland Fed nowcast 0.20%; August core +0.29%.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Core CPI rose 0.3% m/m, not 0.2% or less (BLS).",
+   "graded": "2026-10-17",
+   "lesson": "This contradicted the Sunday and Wednesday-morning editions' lean; consistency across editions should be checked."
   },
   {
    "id": "2026-10-13-pm-2",
@@ -5171,7 +5271,10 @@
    "horizon": "2026-10-14",
    "probability": "50-65%",
    "basis": "Oct 13 settle $105.69; Gulf attacks ongoing vs Russian diesel supply hopes.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled $106.06 on Oct 14, above $105.00.",
+   "graded": "2026-10-17",
+   "lesson": "Held."
   },
   {
    "id": "2026-10-13-pm-3",
@@ -5181,7 +5284,10 @@
    "horizon": "2026-10-14",
    "probability": "45-55%",
    "basis": "Index flat three sessions; CPI is the swing factor; no directional edge.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 fell 1.11% on Oct 14 to 7,718.94.",
+   "graded": "2026-10-17",
+   "lesson": "A hot-core risk was flagged and then not priced into the index call."
   },
   {
    "id": "2026-10-14-am-1",
@@ -5191,7 +5297,10 @@
    "horizon": "2026-10-14",
    "probability": "35-45%",
    "basis": "Consensus 0.2%; August 0.3%; fuel pass-through to transport services possible.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Core CPI 0.3% m/m (BLS).",
+   "graded": "2026-10-17",
+   "lesson": "Right lean."
   },
   {
    "id": "2026-10-14-am-2",
@@ -5201,7 +5310,10 @@
    "horizon": "2026-10-14",
    "probability": "55-70%",
    "basis": "Consensus 3.6-3.7%; gasoline well above year-ago.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Headline CPI 3.7% y/y (BLS).",
+   "graded": "2026-10-17",
+   "lesson": "Right lean."
   },
   {
    "id": "2026-10-14-am-3",
@@ -5231,7 +5343,10 @@
    "horizon": "2026-10-14",
    "probability": "70-85%",
    "basis": "Two of three Q3 CPI-W months known; projections cluster 3.4-3.6%.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The 2027 Social Security COLA is 3.6% (SSA).",
+   "graded": "2026-10-17",
+   "lesson": "Formula-driven and well forecast."
   },
   {
    "id": "2026-10-14-pm-1",
@@ -5241,7 +5356,10 @@
    "horizon": "2026-10-15",
    "probability": "55-70%",
    "basis": "Revenue already reported at a record NT$1.494T; TSMC's record of beating profit estimates; margin guidance 65-67%.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "TSMC Q3 net income NT$763.1 billion vs ~NT$746 billion LSEG estimate (CNBC).",
+   "graded": "2026-10-17",
+   "lesson": "Monthly sales data had already pointed to a beat."
   },
   {
    "id": "2026-10-14-pm-2",
@@ -5251,7 +5369,10 @@
    "horizon": "2026-10-15",
    "probability": "50-60%",
    "basis": "Consensus +0.3%; CPI core hot at 0.3%; Beige Book reports fuel-surcharge pass-through.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Core PPI (final demand less foods and energy) rose 0.7% m/m (BLS, Oct 15).",
+   "graded": "2026-10-17",
+   "lesson": "Energy pass-through showed up in core PPI too."
   },
   {
    "id": "2026-10-14-pm-3",
@@ -5261,7 +5382,10 @@
    "horizon": "2026-10-15",
    "probability": "45-55%",
    "basis": "Coin flip after a -1.1% day; PPI and TSMC are the swing factors.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The S&P 500 closed Oct 15 at 7,744.06, above 7,718.94.",
+   "graded": "2026-10-17",
+   "lesson": "Rotation day; right."
   },
   {
    "id": "2026-10-15-am-1",
@@ -5271,7 +5395,10 @@
    "horizon": "2026-10-15",
    "probability": "50-65%",
    "basis": "Consensus +0.3%; energy/freight pass-through after hot core CPI.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Core PPI +0.7% m/m (BLS).",
+   "graded": "2026-10-17",
+   "lesson": "Right lean."
   },
   {
    "id": "2026-10-15-am-2",
@@ -5281,7 +5408,10 @@
    "horizon": "2026-10-15",
    "probability": "50-65%",
    "basis": "ES -0.32%, NQ -1.13% at 06:23; Asia chip rout; Dow/RTY futures up.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 rose 0.33% on Oct 15 to 7,744.06.",
+   "graded": "2026-10-17",
+   "lesson": "Overweighted the overnight Asian rout; US cash markets rotated instead of falling."
   },
   {
    "id": "2026-10-15-am-3",
@@ -5291,7 +5421,10 @@
    "horizon": "2026-10-15",
    "probability": "55-70%",
    "basis": "Reported ~5.10% overnight vs 5.19% Oct 14 close; PPI/retail risk.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.10% on Oct 15 (Treasury).",
+   "graded": "2026-10-17",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-15-am-4",
@@ -5321,7 +5454,10 @@
    "horizon": "2026-10-16",
    "probability": "45-55%",
    "basis": "Rotation day with positive breadth but chips still falling; opex Friday and Warsh overnight add two-way risk; no edge either way.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 fell 1.09% on Oct 16 to 7,659.44.",
+   "graded": "2026-10-17",
+   "lesson": "Thursday's rotation was read as exhaustion of the chip selloff; it was not."
   },
   {
    "id": "2026-10-15-pm-2",
@@ -5331,7 +5467,10 @@
    "horizon": "2026-10-16",
    "probability": "60-75%",
    "basis": "Closed 5.10 after a 9bp rally; a hawkish Warsh could retrace part of it, but a 5bp+ rise in one session is less likely than not.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.09% on Oct 16 (Treasury).",
+   "graded": "2026-10-17",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-15-pm-3",
@@ -5341,7 +5480,10 @@
    "horizon": "2026-10-16",
    "probability": "40-55%",
    "basis": "Consensus spans +0.1% to +0.4%; Empire strong but Philly weaker; hurricane shut-ins weigh on mining output.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Industrial production rose 0.7% m/m in September (Federal Reserve G.17).",
+   "graded": "2026-10-17",
+   "lesson": "Utilities output did most of it."
   },
   {
    "id": "2026-10-16-am-1",
@@ -5361,7 +5503,10 @@
    "horizon": "2026-10-16",
    "probability": "55-65%",
    "basis": "S&P futures +0.14% at 06:22; Asia/Europe higher; yields and dollar lower; Nasdaq futures flat and opex noise.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The S&P 500 fell 1.09% on Oct 16 to 7,659.44.",
+   "graded": "2026-10-17",
+   "lesson": "Same miss as Thursday evening's call."
   },
   {
    "id": "2026-10-16-am-3",
@@ -5371,7 +5516,10 @@
    "horizon": "2026-10-16",
    "probability": "60-75%",
    "basis": "Closed 5.10% Oct 15; reported ~5.06-5.08% overnight; invalidator a hot import-price print.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.09% on Oct 16 (Treasury).",
+   "graded": "2026-10-17",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-16-am-4",

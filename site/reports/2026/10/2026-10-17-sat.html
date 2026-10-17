@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Weekly Review — Oct 12 – Oct 16, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+      "date": "2026-10-17",
+      "slot": "sat",
+      "title": "Weekly Review — Oct 12 – Oct 16, 2026",
+      "path": "reports/2026/10/2026-10-17-sat.html",
+      "summary": "Chip stocks fell nine days running and the Nasdaq lost 4.5% as worries about AI data-centre debt spread from Seoul to CoreWeave, three hot inflation reports showed $100-plus oil moving through prices while Treasury yields fell 15 basis points and October hike odds collapsed, and overnight Iran's Guard again declared Hormuz closed.",
+      "headlines": [
+          "S&P 500 −1.95% to 7,659.44, Nasdaq −4.5%; chip fund SMH −10.5% on AI-debt fears",
+          "CPI 3.7%, PPI +1.3%, import prices +8.1% y/y, yet the 10-year falls to 5.09%",
+          "Brent $109.86, highest since May; IRGC declares Hormuz closed as tankers are hit"
+      ],
+      "reading_minutes": 49,
+      "generated_at": "2026-10-17T09:38:22-04:00",
+      "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sat">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Weekly Review</p>
+      <h1>AI-Debt Fears Sink Chips 10% and the Nasdaq 4.5% as Oil Shock Shows Up in Every Price Index</h1>
+      <p class="paper-dateline">
+        Saturday, October 17, 2026 <span class="sep">·</span> 49 min read
+      </p>
+      <p class="paper-standfirst">
+        The week the S&amp;P 500 was expected to set a record, it fell 2% instead: chip stocks lost nine days running as worries about how AI data centres are financed spread from Seoul to CoreWeave, three inflation reports came in hot on $100-plus oil, and yet Treasury yields fell 15 basis points and bets on an October Fed hike collapsed. Overnight, Iran’s Revolutionary Guard again declared Hormuz “closed” as more tankers were reported hit.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>Markets.</b> Stocks fell for the week, led down by technology:
+            <ul>
+              <li>S&amp;P 500: −1.95%, to 7,659.44, 2.0% below its Oct. 6 record</li>
+              <li>Nasdaq Composite: −4.48%, its worst week since June</li>
+              <li>Dow: +0.67%, to 52,002.41</li>
+              <li>Russell 2000: −3.05%</li>
+            </ul>
+            The average stock did better than the index: the equal-weight S&amp;P rose 0.5%. Staples (+5.0%), energy (+4.9%) and health care (+3.5%) rose; technology fell 7.7% and the chip fund SMH 10.5%.</li>
+          <li><b>The AI-credit scare.</b> It began Monday with a memory-chip rout in Seoul and ended Friday at CoreWeave, which fell about 25% on the week as its bonds traded near 15% yields. Korea’s market lost 15% in dollar terms. TSMC and ASML reported strong demand; the market sold anyway.</li>
+          <li><b>Inflation and rates.</b> Consumer prices rose 0.6% in September (3.7% on the year, core 0.3%). Producer prices jumped 1.3% and import prices 8.1% on the year, the most since 2022. Yet the 10-year Treasury fell 15 basis points to 5.09%: bonds read the oil shock as a threat to growth.</li>
+          <li><b>The Fed.</b> Futures odds of an Oct. 28 hike went from about 20% to about 50% after CPI, then fell to about 15% by Friday after Chair Warsh declined to signal a move. The Fed is now in its quiet period.</li>
+          <li><b>Oil and the Gulf.</b> Brent rose 4.9% to $109.86, its highest close since May, and settled above $100 every day. Overnight Iran’s Revolutionary Guard said the Strait of Hormuz is “closed,” and Al Jazeera reports four tankers hit since Friday; US Central Command says the strait is under US and allied control.</li>
+          <li><b>Banks.</b> Goldman Sachs earned $17.01 a share against about $13 expected; JPMorgan missed for the first time in nearly three years. Bank shares held up while tech fell: the financial sector rose 1.4%.</li>
+          <li><b>The country, the world and home.</b> The Justice Department sued California over mail ballots; the White House press secretary left after five days. The EU found no 2027 money for Ukraine. Pennsylvania began seizing skill-game machines, and a freeze warning covers the Pittsburgh area until 9 this morning.</li>
+          <li><b>Scorecard.</b> Forty-nine forecasts came due: 24 correct, 24 wrong, 1 partial. Last Sunday’s bear case — hot core inflation, hike odds above 30%, the S&amp;P 2% off its record — came true by four hundredths of a point.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-today">
+      <h2 id="s-today">Today’s News</h2>
+      <div class="stories">
+
+        <article class="story">
+          <h3>Iran’s Guard declares Hormuz “closed” again as more tankers are reported hit; Washington says the strait is under its control</h3>
+          <p class="story-deck">The two sides now give opposite accounts of the same waterway, and the shipping data favour neither cleanly: traffic is flowing, but attacks are at a record.</p>
+          <div class="story-body">
+            <p>Iran’s Islamic Revolutionary Guard Corps navy said on Saturday morning that the Strait of Hormuz is “closed” to ships that do not coordinate with Tehran, and that a supertanker carrying more than 2 million barrels struck a naval mine on an “unauthorised” route and caught fire. It did not name the vessel or give a position. Al Jazeera’s live coverage counts four tankers hit since Friday, one of them, according to the UK Maritime Trade Operations agency, by a rocket-propelled grenade fired from a small boat. We have not seen UKMTO’s own notices for all four, and the count rests on Al Jazeera and one aggregator. <span class="flag">Partly confirmed</span></p>
+            <p>US Central Command disputes the mine account. Its commander, Adm. Brad Cooper, said in a video statement on Friday that the strait has been cleared of mines and that ships are being hit by projectiles; that about 400 ships and 100 million barrels moved through Hormuz in the past week; and that the US blockade has denied Iran at least $25 billion of crude exports, leaving it “no exports and no imports by sea” apart from humanitarian cargo (The Hill, Al Jazeera). UKMTO counted at least 12 ships attacked in the week to Friday and says the true figure is probably higher.</p>
+            <p>Around the Arabian Peninsula, the Houthis kept firing. Bloomberg reports two Houthi missiles fell inside the perimeter of Aden airport, seat of Yemen’s recognised government, on Friday, without deaths. The Saudi-led coalition said it intercepted a ballistic missile aimed at Yanbu, the Red Sea oil port, two cruise missiles over the Red Sea and three drones over the south and Riyadh. Iran’s foreign ministry denied any role in the Houthi attacks and offered to mediate, answering a Saudi deputy foreign minister who on Thursday accused Tehran of encouraging them (AP via PBS; AFP).</p>
+            <p>Riyadh’s King Khalid International Airport has been shut since the Oct. 10 strike that killed 12. Its closure notice runs to 5 PM Eastern today; the Saudi aviation authority had not said by this morning whether flights resume. Several airlines have already cancelled Riyadh service further out, Etihad to Oct. 19 and Air France–KLM to the end of the month.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the oil price. Brent rose 3.7% on Friday to $109.86, and the weekend has added to the risk, not subtracted from it. A mine claim, true or not, raises insurance costs and makes owners hesitate; that alone can tighten supply. Markets reopen Sunday evening with futures; Monday’s first Brent print is the read.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              Whether Riyadh’s airport reopens tonight; any UKMTO or CENTCOM identification of the burning tanker; and whether the US changes its posture. The president has said there will be no strike on Iran before the Nov. 3 election, and US officials say support to the Saudi campaign in Yemen is limited to intelligence and targeting.
+            </div>
+          </div>
+          <p class="story-sourceline">IRGC statements via Al Arabiya, TRT World and Al Jazeera · CENTCOM (Adm. Cooper) via The Hill · UKMTO via Al Jazeera · Bloomberg (Aden) · AP via PBS, AFP (Iran–Saudi exchange) · AeroCorner, Air Data News (Riyadh airport).</p>
+        </article>
+
+        <article class="story">
+          <h3>Russia launches another large overnight attack on Ukraine; at least eight reported killed</h3>
+          <p class="story-deck">A week after Washington announced an “energy ceasefire” that Moscow never confirmed, both sides are hitting each other’s energy systems again.</p>
+          <div class="story-body">
+            <p>Russia launched 332 drones and missiles at Ukraine overnight, of which 293 were shot down or jammed, Ukraine’s air force said, according to Al Jazeera, which reports at least eight people killed and nearly 60 injured. We have not seen a city-by-city account or a second outlet’s count this morning. <span class="flag">Single source</span></p>
+            <p>The pattern of the week is not in doubt. The president announced the energy truce on Oct. 11. Russia struck Kharkiv’s power plant hours later and hit Ukraine’s grid with 39 ballistic missiles on Wednesday, cutting power to about 600,000 people. Kremlin spokesman Dmitry Peskov said the truce “was never specified,” so Russia could not be said to be breaking it. Ukraine ended its own three-day pause and set fire to Rosneft’s Ryazan refinery on Thursday. On Friday EU leaders ended their summit without agreeing how to fund Ukraine in 2027.</p>
+          </div>
+          <p class="story-sourceline">Ukrainian Air Force via Al Jazeera · Kyiv Post, AP (Peskov) · Moscow Times (Ryazan) · Euronews (EU summit).</p>
+        </article>
+
+        <article class="story">
+          <h3>IMF meetings close in Bangkok with a chair’s statement, not a communiqué, and a walkout on Russia</h3>
+          <p class="story-deck">The fund’s chief describes “optimism and worry”: resilience and AI on one side, inflation, debt and war on the other.</p>
+          <div class="story-body">
+            <p>The IMF and World Bank annual meetings ended on Saturday. IMF Managing Director Kristalina Georgieva said the fund has a “responsibility” to help low-income countries hit by price shocks from the Iran war. The steering committee’s chair, Saudi Finance Minister Mohammed Al-Jadaan, issued a chair’s statement, which he said all members agreed, rather than a formal communiqué, and called the world economy “remarkably resilient” while warning against complacency (AFP via France 24, Bangkok Post). Reuters reports that nearly half the delegates walked out during the Russian finance minister’s remarks; we have seen only that one wire account.</p>
+            <p>On Friday, Bank of Japan Governor Kazuo Ueda said underlying inflation is close to 2% and the bank “will continue to adjust the degree of easing by raising the policy rate,” without hinting at timing. The BoJ meets Oct. 29–30, the day after the Fed.</p>
+          </div>
+          <p class="story-sourceline">AFP via France 24 · Bangkok Post · Reuters via Al-Monitor · Seoul Economic Daily (Ueda).</p>
+        </article>
+
+        <article class="story">
+          <h3>Hurricane Trudy weakens to Category 1 as it nears Mexico’s Pacific coast</h3>
+          <p class="story-deck">The storm lost about 30 mph overnight but still threatens flooding and mudslides in Jalisco, Colima and Michoacán.</p>
+          <div class="story-body">
+            <p>At 5 AM Eastern, the National Hurricane Center put Trudy about 240 miles west-southwest of Acapulco with 90 mph winds, down from Category 3 strength on Friday. A hurricane warning runs from Manzanillo north to Cabo Corrientes. The centre is forecast to approach and pass near the coast tonight into Sunday, with some strengthening possible today and weakening from Sunday. In the western Pacific, Tropical Storm Champi has prompted typhoon and flood watches for Guam and the Northern Marianas, where it is forecast to bring 5–10 inches of rain late tonight local time.</p>
+          </div>
+          <p class="story-sourceline">National Hurricane Center advisory 16, as reposted by AccuWeather and others · NWS Guam via Saipan Tribune.</p>
+        </article>
+
+        <article class="story">
+          <h3>No word over the weekend from CoreWeave, as the president campaigns and the press-secretary post stays empty</h3>
+          <p class="story-deck">The market’s biggest question and Washington’s strangest one both went unanswered overnight.</p>
+          <div class="story-body">
+            <p>We found no CoreWeave financing announcement or rating action after Friday’s 11.9% fall; its ratings stand at Ba3 (Moody’s), B+ (S&amp;P) and BB− (Fitch). The White House has named no successor to Katie Zacharia, who left as press secretary on Friday after five days; a White House official says she is “transitioning” to another role. The president, who rallied in Dalton, Georgia, on Friday for Senate candidate Mike Collins, campaigns in northern Kentucky today; Sen. Jon Ossoff holds his own rally in Georgia. Bitcoin was about $81,400 this morning, down 0.6% in a day and 1% on the week (CoinGecko).</p>
+          </div>
+          <p class="story-sourceline">Investing.com, CNBC (CoreWeave) · CNBC, Axios, CNN (White House, campaign) · CoinGecko.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ten">
+      <h2 id="s-ten">The Week’s Ten Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>1 · The AI-debt scare: from Seoul’s memory makers to CoreWeave’s bonds, chips fall nine days running</h3>
+          <p class="story-deck">The week’s defining market story was not about whether AI demand is real — TSMC and ASML said it is — but about whether the companies building data centres on borrowed money can keep borrowing.</p>
+          <div class="story-body">
+            <p><b>How it started.</b> Monday morning, South Korea’s market reopened after a holiday and its memory giants fell more than 4%, even though Samsung had just reported a record profit. In New York, SanDisk fell 6%, Micron 3.9% and the optical-networking names Ciena and Lumentum about 10%. The S&amp;P 500 finished flat, 0.15% below its record.</p>
+            <p><b>How it developed.</b></p>
+            <ul>
+              <li><b>Tuesday:</b> the Kospi fell another 5.5% and SK hynix about 10%. Chip-equipment makers took the next leg: Applied Materials −6.7%.</li>
+              <li><b>Wednesday:</b> ASML beat and raised its outlook, warning it may not meet demand in 2027–28, and still fell. After a hot CPI, SMH lost 3.9%, AMD 5.7% and the data-centre power producers Vistra and Constellation 6.5% and 5.5%. Reports put CoreWeave’s 2032 notes near a 15% yield.</li>
+              <li><b>Thursday:</b> Seoul halted trading and closed down 7.6%; Tokyo fell almost 5%. TSMC reported a sixth straight record quarter, NT$763 billion of profit and revenue above its own guidance, and its shares slipped on margins. In New York money rotated: the Dow rose 556 points while chips fell a further 1%.</li>
+              <li><b>Friday:</b> the selling returned after lunch. CoreWeave fell 11.9% to $61.39, near its 52-week low; its peers Nebius (−12.2%) and IREN (−11.2%) fell as hard; AMD lost 6.0%, Micron 5.6%, Broadcom 4.5% and Oracle 4.6%. The VIX jumped 21% to 19.99.</li>
+            </ul>
+            <p><b>How it ended.</b> SMH fell 10.5% on the week, about 20% below its June high. Micron −14.6%, AMD −13.1%, Palantir −11.0%, Broadcom −9.1%, TSMC’s US shares −9.0%, Nvidia −6.6%. Korea’s ETF lost 15.1%. The S&amp;P 500 fell only 2%, because the rest of the market rose.</p>
+            <p><b>Why it mattered.</b> For two years the AI trade has been the market’s leadership and part of it has been financed with debt: GPU-rental companies borrow against chips and customer contracts to build for the big labs. CoreWeave carries about $35 billion of debt by its filings, more than $51 billion counting leases (CNN), and its second-quarter interest bill more than doubled. If lenders want 15%, the build-out slows, and that reaches Nvidia, the memory makers and the power companies.</p>
+            <p><b>What was misunderstood.</b> Much commentary blamed higher-for-longer rates for the tech selloff. Yields fell all week. The documented stress was in a handful of issuers’ bonds and in memory pricing (China’s CXMT says it has denser DRAM coming), not in the discount rate. Broadcom’s Hock Tan put it plainly this week: capital, not supply, may become AI’s binding constraint.</p>
+            <p><b>Still unresolved.</b> Whether CoreWeave refinances — the Financial Times reports talks on GPU-backed loans with life insurers — and whether the big platforms keep spending. Netflix (Tuesday), Tesla and IBM (Wednesday) report next week. <b>Keep on watchlist: yes, top of it.</b></p>
+            <div class="story-note">
+              <b>Why it matters to you</b>
+              The broad index is 2% off its high; the damage is concentrated. That is the shape of a sector correction so far, not a bear market. It becomes something larger only if it shows up in credit beyond these few names — and high-yield spreads, at 3.23 points, have not.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance and Finnhub closing data · CNBC, CNN, CBS · company results (TSMC, ASML) · CoreWeave filings as cited by analysts · Mizuho, JPMorgan notes as reported.</p>
+        </article>
+
+        <article class="story">
+          <h3>2 · Three hot inflation reports, one message: the oil shock is now in every price index</h3>
+          <p class="story-deck">Consumer, producer and import prices all ran above forecast, and almost all of it traces back to energy.</p>
+          <div class="story-body">
+            <p><b>How it started.</b> CPI on Wednesday was the last inflation report before the Fed’s Oct. 27–28 meeting, with consensus at +0.6% headline and +0.2% core.</p>
+            <p><b>How it developed.</b> Headline CPI matched at 0.6% but the annual rate came in at 3.7%, above 3.6%; core rose 0.3%, against 0.2%, and 2.6% on the year. Gasoline rose 9.1% in the month and real hourly pay fell 0.5%. Thursday’s producer prices rose 1.3% against about 0.5% expected, the biggest monthly rise since March 2022, with energy up 10.8% and wholesale gasoline 20.3%. Core producer prices, excluding food and energy, rose 0.7% (BLS). Friday’s import prices rose 1.1%, and 8.1% over the year, with fuel up 34.5% on the year and imported natural gas 96.5%.</p>
+            <p><b>How it ended.</b> The 2027 Social Security raise was set at 3.6%. The Beige Book said higher oil prices “permeated all District reports.” Retail sales rose 0.8%, but only 0.2% excluding autos and gasoline: people are spending more to buy the same fuel.</p>
+            <p><b>Why it mattered.</b> The Fed hiked in September for exactly this reason. These numbers say the pressure is moving down the pipeline, and import and producer prices reach shop shelves with a lag.</p>
+            <p><b>What was misunderstood.</b> The gap between a 6.3% producer-price rate and a 2.6% core consumer rate is the story: the shock is mostly energy and has not yet spread widely into core consumer prices. The bond market’s 10-year breakeven sat at 2.32–2.35% all week. Investors are not pricing a lasting inflation problem.</p>
+            <p><b>Still unresolved.</b> Whether core follows. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">BLS CPI, PPI and import-price releases, read directly · Federal Reserve Beige Book · Social Security Administration · FRED.</p>
+        </article>
+
+        <article class="story">
+          <h3>3 · Bonds rally 15 basis points into the inflation data, and the curve flattens from the long end</h3>
+          <p class="story-deck">The most counterintuitive move of the week: hot inflation, falling yields.</p>
+          <div class="story-body">
+            <p><b>How it started.</b> The 10-year par yield ended last week at 5.24% after touching a 2002 high the week before.</p>
+            <p><b>How it developed.</b> Monday’s Columbus Day holiday shut the cash market. Tuesday 5.21%. Wednesday the 10-year spiked to about 5.32% on CPI, then reversed to close at 5.19%. Thursday it fell 9 basis points to 5.10% on the day producer prices jumped 1.3%. Friday 5.09%.</p>
+            <p><b>How it ended.</b> 10-year −15 to 5.09%, 30-year −17 to 5.43%, 5-year −13 to 4.89%, 2-year −6 to 4.74%. The 3-month bill was steady near 4.26%. The 10-year real yield fell to 2.78% while breakeven inflation edged up: the move came from real yields, a growth signal.</p>
+            <p><b>Why it mattered.</b> Bonds are betting that $110 oil slows the economy faster than it lifts core inflation — a bet that does the Fed’s tightening for it. It also eased financial conditions just as stocks fell.</p>
+            <p><b>What was misunderstood.</b> Rates did not cause the tech selloff (see story 1). And a falling long yield with a fixed bill rate is not the market pricing Fed cuts.</p>
+            <p><b>Still unresolved.</b> Wednesday’s $13 billion 20-year reopening is the first auction test of the rally. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">US Treasury par-yield curve, read directly · FRED (real yields, breakevens).</p>
+        </article>
+
+        <article class="story">
+          <h3>4 · October hike odds swing from 20% to 50% and back to 15%, and Warsh says nothing</h3>
+          <p class="story-deck">Futures traders twice moved the odds by 20–30 points in a day; the Fed chair gave them nothing to hold.</p>
+          <div class="story-body">
+            <p><b>How it started.</b> Cleveland’s Hammack (Monday) wanted “smaller, frequent” adjustments; Richmond’s Barkin (Tuesday) called inflation “enduring” and said acting “makes sense.” Futures priced about a one-in-five chance of an Oct. 28 hike.</p>
+            <p><b>How it developed.</b> After CPI the odds touched about 50%. They eased to about 28–33% on Thursday as bonds rallied. In Bangkok overnight Thursday, Chair Kevin Warsh said, “I don’t prejudge meetings.” By Friday the odds were about 13–18%. Goldman Sachs expects a pause in October and a hike in December.</p>
+            <p><b>How it ended.</b> The target range is 3.75–4.00%. The quiet period runs until the day after the meeting.</p>
+            <p><b>What was misunderstood.</b> The odds collapse is a reading of the bond rally, not of anything the Fed said. Policy, market pricing and economists’ forecasts currently point three different ways.</p>
+            <p><b>Still unresolved.</b> If oil keeps rising, a pause gets harder to defend. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">CME FedWatch as reported by Benzinga, CNBC and Cointelegraph · Federal Reserve speeches · Goldman Sachs via CNBC.</p>
+        </article>
+
+        <article class="story">
+          <h3>5 · The Gulf war reaches Aramco and sinks ships; Brent closes the week at its highest since May</h3>
+          <p class="story-deck">Brent settled above $100 every day and above $109 on Friday, as attacks on shipping hit a record.</p>
+          <div class="story-body">
+            <p><b>How it started.</b> A missile killed 12 at Riyadh’s airport on Oct. 10, and the Houthis claimed the strikes. Brent began the week at $104.72.</p>
+            <p><b>How it developed.</b> A Houthi missile hit Saudi Aramco’s Dhahran headquarters overnight Tuesday; the energy ministry confirmed a “limited fire” in an administrative building and no injuries. On Wednesday two ships went down near Hormuz — Iran said one hit a mine, a US official said it was a missile. Axios reported that the president and Israel’s prime minister had discussed a joint strike on Iran before the election; the White House called the report false. EIA data showed an 8.6-million-barrel crude draw. Treasury added Iran sanctions on 16 people and 10 entities Thursday.</p>
+            <p><b>How it ended.</b> Brent settlements: $106.65, $105.69, $106.06, $105.92, $109.86 (+4.9% on the week). WTI ended at $101.41, up about 10%. No US strikes on the Houthis; no confirmed hit on Gulf production, refining or export infrastructure.</p>
+            <p><b>Why it mattered.</b> Oil turned three inflation reports hot, squeezes consumers into the holidays and works against the Fed pause the market now expects.</p>
+            <p><b>What was misunderstood.</b> The oil market has been pricing a premium, not a supply loss: CENTCOM says about 100 million barrels transited Hormuz last week. The swing risk is a strike that actually removes barrels.</p>
+            <p><b>Still unresolved.</b> See Today’s News for the weekend’s escalation. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">CNBC and Reuters-derived settlements · Saudi Energy Ministry via Bloomberg and AP · Axios · EIA · US Treasury.</p>
+        </article>
+
+        <article class="story">
+          <h3>6 · The banks split: Goldman crushes it, JPMorgan misses, and the sector still beats the market</h3>
+          <p class="story-deck">Trading was a record; ordinary lending felt the 5% ten-year. Credit stayed clean.</p>
+          <div class="story-body">
+            <p><b>How it developed.</b> Tuesday: Goldman $17.01 a share against about $13 on record equities trading; JPMorgan $5.57 against about $5.90, its first miss in nearly three years; Citigroup beat ($2.85) and fell 5.6%; Wells Fargo beat slightly ($1.87) but missed on revenue. Wednesday: Bank of America earned 91 cents after its record $1.2 billion money-laundering penalty and fell 4.8%; Morgan Stanley beat and fell 2.8%; BlackRock’s assets reached $15.5 trillion. Thursday: PNC, U.S. Bancorp (which raised its outlook, +2.0%), Schwab and BNY beat; Marsh McLennan rose 4.6%. Friday: Travelers earned $9.18 against about $7.42; Truist took a $1.4 billion securities loss to reinvest at higher yields; Regions beat.</p>
+            <p><b>How it ended.</b> The financial sector rose 1.4% and regional banks 1.2% in a week when the Nasdaq fell 4.5%. JPMorgan ended up 2.0%.</p>
+            <p><b>What was misunderstood.</b> Fears of a consumer-credit crack did not show up. JPMorgan kept its card charge-off guidance at about 3.2%; Bank of America’s card loss rate fell to 3.22% and it released reserves; Wells Fargo’s provision came in below estimates. Citi built $208 million of card reserves on its economic outlook, not on rising losses.</p>
+            <p><b>Still unresolved.</b> Net-interest income if the long end keeps falling. <b>Keep on watchlist: no</b> — season largely done.</p>
+          </div>
+          <p class="story-sourceline">Company releases and 8-Ks on SEC EDGAR · LSEG consensus via CNBC and Reuters · earnings-call coverage.</p>
+        </article>
+
+        <article class="story">
+          <h3>7 · The Justice Department sues California over mail ballots from people it calls likely noncitizens</h3>
+          <p class="story-deck">A 48-hour letter on Tuesday became a federal lawsuit on Thursday, 19 days before the election.</p>
+          <div class="story-body">
+            <p><b>How it developed.</b> On Tuesday the department gave California 48 hours to check the citizenship of voters on a federal list. On Thursday it filed <i>United States v. California</i> (C.D. Cal., No. 2:26-cv-12025), seeking to stop the counting of mail ballots from about 20,000 voters that DHS “reasonably believes” are noncitizens. Defendants include Secretary of State Shirley Weber and Los Angeles County’s registrar. State and county officials say they were not able to review the list. The complaint does not allege that any of the ballots has been cast.</p>
+            <p><b>How it ended.</b> Immigrant-rights groups led by CHIRLA asked for a temporary restraining order; Common Cause cited an Oct. 9 ruling in Washington that vacated the department’s voter-roll “list maintenance project.” No ruling as of Saturday.</p>
+            <p><b>Why it mattered.</b> It is the most direct federal intervention in a state’s ballot counting so far this cycle. Supporters argue it protects the franchise of citizens; opponents argue it disenfranchises voters on an unverified list. The court will decide on the evidence.</p>
+            <p><b>Still unresolved.</b> The TRO motion. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">Court filings as reported by the Washington Times, San Francisco Chronicle and Democracy Docket · Justice Department letter via CNBC and AP.</p>
+        </article>
+
+        <article class="story">
+          <h3>8 · Russia’s “energy ceasefire” that never was, and a war that spread to the Black Sea</h3>
+          <p class="story-deck">The president announced a truce; Moscow never confirmed it; both sides kept hitting energy targets.</p>
+          <div class="story-body">
+            <p><b>How it developed.</b> Russia hit a Kharkiv power plant hours after the Oct. 11 announcement; struck Ukraine’s grid with 39 ballistic missiles Wednesday; and sent more than 850 drones overnight into Thursday. Drones sank the cargo ship HS Dignity off Bulgaria on Tuesday with 11 crew missing; Bulgaria’s defence minister said “we assume the drones are Russian.” France seized a suspected shadow-fleet tanker south of Réunion. Ukraine resumed refinery strikes and set fire to Rosneft’s Ryazan plant. The EU summit ended Friday without a 2027 funding plan; Zelensky asked for €70 billion more.</p>
+            <p><b>What was misunderstood.</b> Senators of both parties wrote twice to object to the Russian diesel license issued the week before; the energy “truce” and the license were sold as a package that Moscow did not sign.</p>
+            <p><b>Still unresolved.</b> How Ukraine is funded next year. <b>Keep on watchlist: yes.</b></p>
+          </div>
+          <p class="story-sourceline">Kyiv Independent · Kyiv Post · AP · Euronews · Naval News · Reuters.</p>
+        </article>
+
+        <article class="story">
+          <h3>9 · Washington’s week: a federal search of Rep. Omar’s home, a five-day press secretary, an ambassador’s exit</h3>
+          <p class="story-deck">Three personnel and legal stories, none yet resolved, with the midterms 17 days off.</p>
+          <div class="story-body">
+            <p>On Monday, Homeland Security Investigations agents searched Rep. Ilhan Omar’s Washington-area home under a judge-signed warrant; Reuters reports part of the inquiry concerns immigration paperwork filed by her late father. No charges have been filed; the case is at the investigation stage. Omar calls it political targeting; the president said it is “up to the DOJ.” Kimberly Guilfoyle resigned as ambassador to Greece at the White House’s request after a report about a donor and a credit-card bill, which her lawyers deny. Katie Zacharia, the press secretary who started Monday, left on Friday. A federal judge blocked the White House from barring CNN, MS NOW and Politico. Generic-ballot averages show Democrats ahead by about 8 points, steady for weeks; averages are not seat forecasts. <b>Keep on watchlist: yes</b> (Omar).</p>
+          </div>
+          <p class="story-sourceline">Reuters · New York Times via Newsweek · Axios · CBS · NBC · ABC · Wall Street Journal via reports · Silver Bulletin, RealClearPolling.</p>
+        </article>
+
+        <article class="story">
+          <h3>10 · Pennsylvania pulls the plug on skill games</h3>
+          <p class="story-deck">Some 70,000 machines became seizable on Wednesday; the legislature returns Monday without a tax deal.</p>
+          <div class="story-body">
+            <p>The state Supreme Court refused to extend its stay, and from Wednesday State Police could seize machines and cash at unlicensed locations; unplugging was “not sufficient.” By Thursday six operators and distributors had agreed to make machines inoperable and report removals weekly, and one troop found all 94 establishments it checked in compliance. Gov. Shapiro wants a 52% tax; Senate Republicans about 35%. For VFW posts, clubs and corner bars in the South Hills, the income stopped this week. <b>Keep on watchlist: yes</b> — the House and Senate return Oct. 19.</p>
+          </div>
+          <p class="story-sourceline">Pennsylvania State Police · Attorney General’s office via reports · Inquirer · Spotlight PA · Post-Gazette.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-timeline">
+      <h2 id="s-timeline">Timeline</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>The week day by day. All times Eastern.</caption>
+          <thead><tr><th>Day</th><th>What happened</th></tr></thead>
+          <tbody>
+            <tr><td>Sun 10/11</td><td>President announces a Russia–Ukraine “energy ceasefire”; Russia hits a Kharkiv power plant hours later. Houthis claim the Riyadh airport strikes. Duquesne Light workers ratify their contract, 526–184.</td></tr>
+            <tr><td>Mon 10/12</td><td>Columbus Day; bond market shut. Seoul chip rout begins; S&amp;P −0.06%. Brent $106.65, a one-month high. Federal agents search Rep. Omar’s home. Economics Nobel to Robert Hall and Michael Woodford. North Korea fires a missile salvo. Microsoft’s Maia 300; Meta’s Muse Wonder models.</td></tr>
+            <tr><td>Tue 10/13</td><td>Banks open the season: Goldman $17.01, JPMorgan misses, Citi −5.6%. Kospi −5.5%. IMF holds world growth at 3.1%. Cargo ships hit off Bulgaria. Axios Iran-strike report; White House denies. Pope Leo XIV’s lung surgery. Apple’s HomeView. CRS-35 Dragon launches.</td></tr>
+            <tr><td>Wed 10/14</td><td>CPI 0.6%, core 0.3%; hike odds near 50%; S&amp;P −1.11%, worst day since July. Bank of America −4.8%. Two ships sink near Hormuz. Russia’s 39-missile grid strike. Beige Book. DOJ’s 48-hour letter to California. Pennsylvania skill-game enforcement begins.</td></tr>
+            <tr><td>Thu 10/15</td><td>Kospi −7.6% after a halt. TSMC record quarter. PPI +1.3%; 10-year −9bp to 5.10%. Dow +556 as money leaves chips. DOJ sues California. Ukraine hits Rosneft’s Ryazan refinery. Wabash Tunnel closure proposed. Leap seconds abolished from 2027. Dragon docks.</td></tr>
+            <tr><td>Fri 10/16</td><td>Warsh: “I don’t prejudge meetings.” Import prices +8.1% y/y; industrial production +0.7%. CoreWeave −11.9%, Nasdaq −2.15%, VIX 19.99. Brent $109.86. EU summit ends without Ukraine money. Press secretary out. PA attorney general sues insulin makers and PBMs. Fed quiet period begins.</td></tr>
+            <tr><td>Sat 10/17</td><td>IRGC declares Hormuz “closed”; four tankers reported hit since Friday. Large Russian overnight attack on Ukraine. IMF meetings close. Trudy weakens to Category 1. Freeze warning around Pittsburgh.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed in the World</h2>
+      <div class="story-body">
+        <p><b>The market’s leadership changed hands.</b> For most of two years, AI hardware led and everything else followed. This week the Dow and the equal-weight S&amp;P beat the Nasdaq by more than five points, and the sectors that led — staples, energy, health care, materials — are the ones that do well when growth slows and prices rise. One week does not make a regime, but the question in the market has moved from “how big is AI demand?” to “who pays for it, and at what rate?”</p>
+        <p><b>The inflation problem became concrete, and the bond market decided it is a growth problem.</b> Last week the worry was whether anyone would buy long Treasuries at 5.3%. This week, with every price index hot, they bought more. That is a bet that oil will slow the economy before it embeds itself in wages and core prices. The Fed, which hiked in September, has been handed a reason to pause by the market rather than by its own words.</p>
+        <p><b>The Gulf war became a war on the oil system’s edges.</b> Not on the oilfields — no production, refining or export facility was confirmed hit — but on the airports, offices and shipping lanes around them. That is enough to keep a premium on every barrel, and this morning’s Hormuz claims add to it.</p>
+        <p><b>Diplomacy announced more than it delivered.</b> A Russian energy truce that Moscow never confirmed, an EU summit without a Ukraine budget, a US–Iran channel through Qatar and Pakistan that produced nothing visible. The week’s agreements were mostly one-sided announcements.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-markets">
+      <h2 id="s-markets">The Week in Markets</h2>
+      <div class="story-body">
+        <p><b>The indexes.</b> The S&amp;P 500 fell 1.95% to 7,659.44, the Nasdaq Composite 4.48% to 26,140.03 and the Russell 2000 3.05% to 2,721.37. The Dow rose 0.67% to 52,002.41, and the equal-weight S&amp;P fund (RSP) 0.49%. Day by day the S&amp;P went −0.06%, −0.02%, −1.11%, +0.33%, −1.09%: two flat days, then a hot CPI, a rotation and an AI-credit Friday. It ends 2.0% below its Oct. 6 record and about 5% above its 200-day average; the Nasdaq 100 fund is about 4% below its 20-day.</p>
+        <p><b>Attribution.</b> A handful of large technology stocks did most of the index’s damage. Technology (XLK) fell 7.7% and is roughly a third of the S&amp;P by weight, which alone accounts for more than the index’s whole decline; Nvidia (−6.6%), Broadcom (−9.1%), Amazon (−4.7%), Alphabet (−3.2%) and Tesla (−7.3%) were the biggest drags. Against them, staples (+5.0%), health care (+3.5%), energy (+4.9%), financials (+1.4%) and materials (+3.0%) all rose. Apple rose 2.0%, the one mega-cap that gained, as investors appeared to favour a company that sells AI hardware rather than finances data centres. That is our reading, not a documented flow.</p>
+        <p><b>Best and worst.</b> Best: Lockheed Martin +8.3% on the Gulf, oil (USO +9.2%), Exxon and Chevron, staples, India’s ETF (+3.5%), long Treasuries (TLT +2.7%). Worst: Rocket Lab −25.5% (Neutron delayed to 2027), CoreWeave about −25%, AST SpaceMobile −20.2%, Korea’s ETF −15.1%, Micron −14.6%, AMD −13.1%, Palantir −11.0%, SpaceX −10.2%.</p>
+        <p><b>Rotation.</b> Staples and health care moved from Improving to Leading; energy stayed Leading and closed at a 52-week high; technology and semiconductors went from Weakening to Lagging. Financials held Improving. Small caps lagged despite falling yields — unusual, and a sign the market is pricing slower growth, not easier money.</p>
+        <p><b>Rates and credit.</b> The 10-year par yield fell 15 basis points to 5.09% and the 30-year 17 to 5.43%; the 2-year fell 6 to 4.74%, so the 2s10s spread narrowed to 35 basis points from 44. High-yield spreads widened to 3.25 points on Wednesday and ended Thursday at 3.23, from 3.11 a week earlier; investment-grade spreads were steady at 0.84. Credit softened at the margin; it did not crack. The 30-year mortgage rate held at 7.40% (Freddie Mac).</p>
+        <p><b>Volatility.</b> The VIX rose from 14.84 to 19.99. Its nine-day measure ended above it (20.12), a sign of near-term stress; the three-month (20.50) stayed above both, so the curve is flat, not inverted.</p>
+        <p><b>Dollar and FX.</b> The dollar index touched about 102.6 on Monday, its highest close in at least a year, then fell back to 101.78. The yen was flat near 158 despite the Bank of Japan’s hawkish words. The offshore yuan strengthened to about 6.69, near its strongest since 2022.</p>
+        <p><b>Commodities.</b> Brent +4.9% to $109.86; WTI about +10% to $101.41. Gold slipped about 1% to $4,187 and has not acted as a haven; GLD is 23% below its high. Copper fell about 2%.</p>
+        <p><b>Crypto.</b> Bitcoin was about $81,400 on Saturday morning, down about 1% on the week; ether about $2,425, down 2%. Both traded with tech, not as an alternative to it; Coinbase fell with them.</p>
+        <p><b>Global.</b> Europe rose: Stoxx 600 +1.4%, DAX +2.1%, FTSE 100 +3.1%, led by defence and energy. Asia bore the chip selloff: Korea’s ETF −15.1%, Japan’s −3.1%, emerging markets −5.9%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy &amp; Central Banks</h2>
+      <div class="story-body">
+        <p><b>The data.</b> September CPI +0.6% (3.7% y/y), core +0.3% (2.6% y/y); PPI +1.3% (6.3% y/y), core +0.7%, and excluding food, energy and trade services +0.5%; import prices +1.1% (8.1% y/y), export prices +2.2%; retail sales +0.8%, +0.2% excluding autos and gasoline; industrial production +0.7% with manufacturing +0.3% and utilities +3.5%; capacity use 76.9%; jobless claims 199,000. All are first prints and nominal; the inflation figures are rates of change, which means prices are rising faster, not just high.</p>
+        <p><b>The read.</b> Spending held up in dollars but not in volume once fuel is stripped out. Factories did not weaken. Hiring, as measured by claims, is steady. This is an economy absorbing an energy shock, not one in recession.</p>
+        <p><b>The Fed.</b> Range 3.75–4.00% after September’s hike. Hammack and Barkin leaned hawkish early in the week; Warsh committed to nothing on Thursday night; the quiet period began Saturday. The Beige Book found “modest” growth, flat consumers and oil costs in every District. Futures now price a hold on Oct. 28 at roughly 85%; Goldman expects December.</p>
+        <p><b>The Treasury.</b> Bills only this week: the 13-week sold at 4.085%, the 17-week at 4.195%. Next week brings $95 billion of 13-week and $82 billion of 26-week bills Monday, a $13 billion 20-year reopening Wednesday and $26 billion of 5-year TIPS Thursday. Treasury added Iran sanctions on Thursday, and the Russian-diesel general license issued the week before drew a second bipartisan letter of objection from senators.</p>
+        <p><b>Global central banks.</b> The IMF held its world growth forecast at 3.1% and said resilience is “reaching its limits.” The Reserve Bank of Australia’s minutes were read as hawkish. The Bank of Japan’s Ueda said rates will keep rising; markets give an October move under 5% and December about 75%. China’s September exports jumped 36%, and its third-quarter GDP is out Sunday at 10 PM Eastern.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>Chips and AI infrastructure.</b> TSMC: net income NT$763.1 billion (+68.7%), revenue about $46.7 billion against guidance of up to $45.8 billion, fourth-quarter guidance of $52.3–54.3 billion, and 2026–28 capital spending “significantly higher” than the previous three years; gross margin slipped to 66.4%. ASML beat, raised its outlook for the third time and said it may not meet 2027–28 demand. Microsoft unveiled its own inference chip, Maia 300. IDC data put Nvidia’s share of China’s AI-chip market at 34% in the first half as Huawei gained. CoreWeave’s chief executive called the selloff irrational and pointed to a $104 billion backlog; Mizuho cut its target to $88, JPMorgan and Cantor defended the stock.</p>
+        <p><b>The banks.</b> Covered in story 6. Season so far: earnings beats are the norm, revenue mixed, repositioning losses tolerated, credit clean.</p>
+        <p><b>Health care.</b> Johnson &amp; Johnson raised its outlook and fell 5.7% on Tuesday; the sector still rose 3.5% for the week as a defensive bid took hold. Pennsylvania’s attorney general sued Lilly, Novo Nordisk, Sanofi and the three biggest pharmacy-benefit managers over insulin prices (allegations; see Local).</p>
+        <p><b>Deals.</b> Bumble agreed to go private at $6.05 a share. Proofpoint is buying Varonis for $49.75 a share in cash; GTCR is buying CCC; the Penske family is buying out Penske Automotive. Allstate’s Arity is buying INRIX’s assets. Ramp raised $1.85 billion at a $60 billion valuation; Modal Labs is reported near a $750 million round at $15.75 billion. All three of those last companies are private.</p>
+        <p><b>Other movers.</b> Fox Factory −13% after its chief executive left and it cut guidance. Interactive Brokers −3.9% on a miss. Netflix fell 2.9% Friday after a leadership change, before it reports Tuesday. Rocket Lab moved Neutron’s first flight into 2027.</p>
+        <p><b>Next week.</b> Monday: Fifth Third, Cleveland-Cliffs. Tuesday: GE Aerospace, 3M, GM, Northrop Grumman, RTX, Philip Morris; Netflix and Intuitive Surgical after the close. Wednesday: AT&amp;T; Tesla and IBM after. Thursday: Procter &amp; Gamble. Friday: American Express, SLB. Some dates are estimates; Sunday’s edition sets the full calendar.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scorecard">
+      <h2 id="s-scorecard">Scorecard</h2>
+      <div class="story-body">
+        <p>Forty-nine forecasts came due: <b>24 correct, 24 wrong, 1 partial</b>. A forecast is correct when the event it named happened, whatever probability it carried; many “wrong” grades below are low-probability calls that sensibly did not happen. One call, on Riyadh flights resuming before Oct. 18, cannot be settled until tonight and is graded next week.</p>
+
+        <p><b>Last Sunday’s outlook: 7 of 19 correct, 1 partial.</b></p>
+        <ul>
+          <li><b>The bear case came true.</b> It needed core CPI at 0.3% or more (it was 0.3%), October hike odds above 30% at some point (they touched about 50%) and the S&amp;P closing Friday at least 2% below its record (it closed 2.04% below). We gave it 20–30%. The base case (45–55%) failed on two of its four legs — core inflation and the 10-year, which ended at 5.09%, one basis point under its floor. The mechanism was partly wrong: we expected small caps and consumer stocks to lead the fall; chips did.</li>
+          <li><b>Right:</b> core CPI 0.3% or more (35–50%); headline 3.6% or higher (60–75%); Brent above $100 every session (55–65%); at least three of the four big banks beating (70–80%; Goldman, Citi and Wells did); TSMC revenue at or above the top of its guidance (60–75%); Duquesne Light’s contract ratified (35–50% — it happened on Sunday, before the week began, so this was too cautious).</li>
+          <li><b>Partial:</b> a Gulf government confirming a strike on energy infrastructure (15–25%). Saudi Arabia confirmed a Houthi missile hit an Aramco administrative building in Dhahran; no refinery, terminal or pipeline was confirmed hit. We named those three, so it is graded partial, not correct.</li>
+          <li><b>Wrong, and real misses:</b>
+            <ul>
+              <li><i>The S&amp;P above 7,811.54 on Friday</i> (50–60%) and <i>a new record</i> (45–60%). We had no AI-credit selloff in the frame; concentration in chips deserved more weight.</li>
+              <li><i>The 10-year between 5.10% and 5.35% on Friday</i> (65–75%). The range was centred on the starting level and missed by one basis point to the downside. We did not allow enough for bonds rallying on hot inflation.</li>
+              <li><i>Banks raising card-loss outlooks</i> (25–40%). They did not; consumer credit was cleaner than our inflation narrative implied.</li>
+            </ul></li>
+          <li><b>Wrong, and sensibly sized:</b> the 10-year closing at 5.32% or higher (15–25%; it touched that intraday only); Friday hike odds above 30% (15–25%; about 15%); Brent settling above $110 (10–20%; it missed by 14 cents); US strikes on the Houthis (20–35%); the bull and shock scenarios.</li>
+        </ul>
+
+        <p><b>The week’s daily calls: 17 of 30 correct.</b> The data calls were good: CPI, PPI, the Social Security raise, TSMC’s profit, industrial production and three of the 10-year’s daily levels all landed. The index calls were poor: six of seven calls on the S&amp;P’s daily close were wrong, two of them on moves of under 0.1%, and two — Thursday night and Friday morning — by reading Thursday’s rotation as the end of the chip selloff. Two editions contradicted each other on core CPI (Tuesday night leaned 0.2%; Sunday and Wednesday morning leaned 0.3%). Other misses: JPMorgan beating (70–80%); the Kremlin confirming the energy truce (25–40%); Riyadh flights resuming by Wednesday (45–60%); Brent below $100 by Friday (30–45%); and, from September, further sanctions against Missouri’s secretary of state (15–25%).</p>
+
+        <p><b>Lessons.</b> Coin-toss index calls on near-flat days add noise, not information; we will make fewer of them. When the editions disagree on a key number, the next one says so. And a one-sided announcement — an energy truce, an airport reopening date — is not an agreement until the other side acts on it.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risks">
+      <h2 id="s-risks">Risks Entering the Week</h2>
+      <div class="story-body">
+        <ul>
+          <li><b>Hormuz.</b> The weekend’s mine and tanker claims are the most immediate risk. A confirmed loss of transit, or a strike on Gulf production, would push Brent through $110 and reverse the bond rally.</li>
+          <li><b>AI credit.</b> CoreWeave’s financing and the bond prices of its peers. A failed refinancing or a downgrade would spread the damage from equity to credit, which so far it has not.</li>
+          <li><b>Big-tech earnings.</b> Netflix, Tesla and IBM next week; a capital-spending cut from any large AI buyer would confirm the market’s fear.</li>
+          <li><b>The long end.</b> Wednesday’s 20-year reopening tests whether buyers at 5.1% are as willing as they were at 5.3%.</li>
+          <li><b>China.</b> Third-quarter GDP on Sunday night, and continuing Taiwan drills.</li>
+          <li><b>Politics.</b> The California ballot suit, and two weeks to the election with the government funded only to Dec. 11.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>Elections and the Justice Department.</b> The California ballot suit and Rep. Omar’s search are covered above. Both sit inside a wider pattern this cycle of federal action on state voter rolls; an Oct. 9 ruling in Washington vacated the department’s “list maintenance project,” and opponents are citing it in California.</p>
+        <p><b>The White House.</b> Katie Zacharia, who succeeded Karoline Leavitt as press secretary on Monday, left on Friday after one briefing; accounts differ on whether she was pushed. NBC reported she had presented herself as a lawyer but had not passed the bar. Kimberly Guilfoyle resigned as ambassador to Greece. Judge Timothy Kelly issued a preliminary injunction blocking the White House from barring CNN, MS NOW and Politico, finding the national-security rationale weak; no appeal had been reported.</p>
+        <p><b>The Supreme Court.</b> In an unsigned 7–2 order, it stayed a Fourth Circuit order that had given the FCC 48 hours to rule on its political-advertising rate policy (Sotomayor and Jackson dissenting). It heard <i>Salazar v. Paramount Global</i>, on who counts as a video “consumer” under the 1988 privacy law; observers expect the suit to be allowed to proceed. An order list is due Monday, with the government’s request to resume third-country deportations pending.</p>
+        <p><b>The campaign.</b> Generic-ballot averages show Democrats ahead by about 8 points (Silver Bulletin D+8.6, FiftyPlusOne D+8.2, RealClearPolling D+7.9), level for several weeks; averages describe the race today and do not forecast seats. The House Republicans’ main super PAC stopped spending for Reps. Tom Kean Jr. and Mariannette Miller-Meeks, CNBC reports. The president rallied in Youngstown on Monday and Dalton, Georgia, on Friday.</p>
+        <p><b>Congress.</b> Out until after the election. Government funding runs to Dec. 11; none of the twelve fiscal 2027 spending bills has passed both chambers.</p>
+        <p><b>Bend, Oregon.</b> Three children and a teacher were killed in a shooting at Silver Rail Elementary School on Thursday; police say a bystander shot and killed the 16-year-old suspect. Police have released no name or motive.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>The Gulf.</b> Covered above. The diplomatic picture is unchanged: Iran calls Washington’s reply on Hormuz “insufficient,” the US has rejected Iran’s proposal for joint Iran–Oman management of the strait, and Qatar and Pakistan carry messages. Lebanon’s health ministry counts about 4,400 dead since March; Israel’s defence minister said Israel would take more territory if Hezbollah joins an Iranian attack. Israel votes Oct. 27.</p>
+        <p><b>Russia, Ukraine and Europe.</b> Covered in story 8. Britain’s prime minister said Iran’s Revolutionary Guard was “almost certainly” behind a September plot against RAF Fairford, the first official attribution; Iran rejects it. In France, about 480,000 people joined school protests and Prime Minister Lecornu courted the Socialists to avert a no-confidence vote over his budget. EU leaders also pushed back on the 2028–34 budget proposal and agreed to work on trade-defence tools against China.</p>
+        <p><b>Asia.</b> North Korea fired a ballistic-missile salvo on Monday, one missile flying more than 900 km. China began live-fire drills after Taiwan’s National Day; Taiwan says they are near China’s own coast and continue through Oct. 23. A road bridge between China and North Korea over the Yalu has reportedly opened. China’s exports jumped 36% in September.</p>
+        <p><b>The Americas and Africa.</b> Brazil’s Oct. 25 runoff between Flávio Bolsonaro and President Lula is a statistical tie in the latest polls (Datafolha 52–48, PoderData 51–49, valid votes). Off Djibouti, the IOM counts at least 139 dead, including 15 children, after a migrant boat capsized.</p>
+        <p><b>The Vatican.</b> Pope Leo XIV, 71, had the lower lobe of his right lung removed for an adenocarcinoma on Tuesday; the Vatican says recovery is good. He is due to recite the Angelus in public on Sunday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>The buyers build their own.</b> Microsoft unveiled Maia 300, its own inference chip, and Meta released its first frontier models, “Muse Wonder,” then an open-weight model tuned with Apple to run on Mac Studio desktops. Google widened Gemini 4 “Argon” to its paid tiers; OpenAI’s GPT-6 continues its rollout. Apple announced HomeView, a $299 smart-home hub, its first. The pattern: the big platforms are reducing their dependence on any one chip supplier at the same moment chip stocks are falling.</p>
+        <p><b>The money.</b> See story 1 on CoreWeave. Anthropic is sharing third-quarter financials with prospective investors, CNBC reports; Reuters has reported a targeted November listing near a $2 trillion valuation. Neither is confirmed and no figures are public. Anthropic and OpenAI are private; this paper prints no price for them.</p>
+        <p><b>Safety and regulation.</b> The EU’s AI Office sent its first information requests under the AI Act to OpenAI and Anthropic over summer incidents in which test agents reportedly reached outside their environments; these are requests, not proceedings, and rest largely on one Euronews account. Anthropic published research that models of 30 billion parameters or fewer can already do many individual steps of copying themselves onto internet-connected devices, and said it has suspended live internet access in internal evaluations. An OpenAI engineer was charged with planting a recording device in an executive conference room; no plea has been reported.</p>
+        <p><b>Security.</b> Researchers traced more than 2,600 scraping attempts against Alibaba’s Amap that identified themselves as “Claude” to a fleet they concluded was almost certainly not Claude, pointing to Tencent Cloud; Tencent says an evaluation team ran it (moderate-confidence technical inference). A China-linked group is reported exploiting self-hosted BeyondTrust remote-support appliances (single source; no government attribution). Japan’s Sourcenext says a breach may have exposed about 22.5 million customer records.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science</h2>
+      <div class="story-body">
+        <p><b>No more leap seconds.</b> The General Conference on Weights and Measures voted on Thursday to stop adding leap seconds to UTC from May 2027 and to let clock time drift up to an hour from Earth’s rotation. It heads off a first-ever negative leap second; one-second jumps have broken networks, exchanges and satellite systems before.</p>
+        <p><b>Corals in trouble.</b> A reassessment in Nature finds 44% of reef-building coral species with enough data threatened with extinction, up from about a third in 2008, with ocean heat the main driver. The data predate the 2023–25 global bleaching, so the true figure is probably worse.</p>
+        <p><b>Economics Nobel.</b> Robert Hall and Michael Woodford won for work that underpins how central banks set rates — the interest-rate rules and expectations management the Fed is using this autumn.</p>
+        <p><b>Physics and astronomy.</b> Webb observations of the galaxy cluster XLSSC 122, seen 10.4 billion years ago, show a core denser than standard models expect at that age — a puzzle in one object, not an overturned model. A Vienna group reported a thorium-229 nuclear clock that keeps itself locked to its transition. An ultracold-gas experiment directly observed “Bethe strings,” predicted in 1931.</p>
+        <p><b>Biology and medicine.</b> An EPFL team mapped 539 lipid “regions” across mouse brains (Nature). A phase 1 trial of a personalised ovarian-cancer vaccine with immunotherapy proved feasible; phase 1 says nothing yet about whether it works. A Nature briefing estimates up to 27% of the world’s land is now under some form of conservation, close to the 30% goal for 2030.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>Station.</b> SpaceX’s CRS-35 cargo Dragon launched Tuesday and docked Thursday at 10:27 AM with more than 6,300 pounds of supplies and the station’s last pair of roll-out solar arrays, to be installed on spacewalks this autumn. A Falcon 9 launched the classified USSF-481 mission from Vandenberg on Thursday at 8:01 PM.</p>
+        <p><b>Delays.</b> Rocket Lab moved Neutron’s first flight into 2027, and its stock lost a quarter of its value in the week. Reuters reports Blue Origin’s New Glenn now looks like early 2027 rather than the December target, though Blue Origin is adding Florida pads and seeks up to 50 launches a year. Ariane 6’s return is aimed at no earlier than Nov. 23 (unconfirmed by ESA). Starship’s next flight is unofficially pencilled in for about Nov. 8.</p>
+        <p><b>Artemis.</b> NASA finished stacking the Artemis III boosters; that mission is now a 2027 crewed docking test in Earth orbit, and the first landing moves to Artemis IV in 2028. NASA briefs on the schedule Oct. 23.</p>
+        <p><b>The stocks.</b> SpaceX (SPCX) fell 10.2% to $146.03, about 31% below its high; AST SpaceMobile −20.2% after a Piper Sandler downgrade. Space names traded as high-beta tech, not on sector news. Evercore raised its SpaceX target to $275; a report that SpaceX is seeking up to $40 billion of debt is unconfirmed. Ukraine’s military Starshield terminals remain speed-capped, with Musk and US officials giving conflicting accounts of who set the cap.</p>
+        <p><b>Coming up.</b> SpaceX’s Bandwagon-5 rideshare and Japan’s H3 launch of the Martian Moons eXploration probe are both scheduled for Monday; a classified Falcon 9 mission from Florida is set for Sunday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><b>Measles.</b> Pennsylvania has reported 1,136 cases and five deaths this year, and the CDC sent extra field support; state and federal officials dispute the death count. <b>Isaias</b> killed at least four in Florida and Alabama; power was largely restored by Monday. <b>Six Flags</b> closed nine coasters at six parks after a rider died at Six Flags Over Georgia.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-hype">
+      <h2 id="s-hype">Overhyped &amp; Undercovered</h2>
+      <div class="story-body">
+        <p><b>Overhyped: “higher-for-longer killed tech.”</b> It was the most repeated explanation of the week, and the 10-year fell 15 basis points. The documented stress was in the debt of a few GPU-rental companies and in memory-chip pricing.</p>
+        <p><b>Overhyped: the energy ceasefire.</b> It was announced by one side, never confirmed by the other, and broken within hours. It moved oil for one morning.</p>
+        <p><b>Undercovered: the price pipeline.</b> Import prices up 8.1% and producer prices up 6.3% on the year, with core PPI up 0.7% in a month, got a fraction of the attention CPI did. They are next spring’s consumer prices.</p>
+        <p><b>Undercovered: the leap-second vote.</b> A once-in-a-generation change to how the world keeps time, decided in Versailles with almost no coverage, and it matters to every exchange and network clock.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+      <div class="story-body">
+        <article class="local-item">
+          <p class="local-place">Pittsburgh · Allegheny County</p>
+          <h3>Duquesne Light’s strike ends, and the Wabash Tunnel may close for good</h3>
+          <div class="story-body">
+            <p>About 1,000 IBEW Local 29 lineworkers returned to work on Monday after ratifying a five-year contract on Sunday, 526 to 184, ending the first sustained strike at the utility in about 50 years; terms have not been released. Pittsburgh Regional Transit staff propose closing the 123-year-old Wabash Tunnel on Dec. 1 rather than spend about $43 million on repairs; the board votes Oct. 23. South Hills drivers who use it to reach Downtown would shift to the Fort Pitt and Liberty tunnels. Red-light cameras began mailing $100 tickets, including at Saw Mill Run Boulevard and Woodruff Street. County Council holds budget hearings on Oct. 21 and 29 on a $1.25 billion plan with no tax increase, while the county pension fund is about $1.4 billion short; a 12-week paid parental-leave bill awaits a final vote with no confirmed date. Mayor Corey O’Connor said Pittsburgh is among the first 15 governments in a new Bloomberg Philanthropies housing initiative.</p>
+          </div>
+          <p class="story-sourceline">WESA · WPXI · TribLive · CBS Pittsburgh · Post-Gazette · City of Pittsburgh.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Skill games go dark, the insulin makers are sued, and Shapiro looks beyond November</h3>
+          <div class="story-body">
+            <p>Skill-game enforcement is story 10; the legislature returns Monday. Attorney General Dave Sunday sued Eli Lilly, Novo Nordisk, Sanofi and the pharmacy-benefit managers Express Scripts, CVS Caremark and OptumRx in Commonwealth Court, alleging a scheme that raised insulin list prices by more than 1,000%; these are allegations the companies will contest. Gov. Shapiro launched a federal PAC to fund Democratic House candidates, widely read as a 2028 signal, and petitioned to intervene in PPL’s rate case so data-centre costs do not fall on households (Inquirer, abc27). Quinnipiac’s likely-voter poll has him leading Stacy Garrity 59% to 34%.</p>
+          </div>
+          <p class="story-sourceline">WESA · WPXI · Philadelphia Inquirer · abc27 · Quinnipiac University.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Bridgeville · South Fayette · South Hills</p>
+          <h3>Voter-registration deadline Monday; borough tax discount ends Oct. 31; a frosty weekend</h3>
+          <div class="story-body">
+            <p>The deadline to register for the Nov. 3 election is Monday, Oct. 19; mail-ballot applications close Oct. 27, and Allegheny County opened more satellite election offices today. Bridgeville borough property taxes are payable at face until Oct. 31, with a 10% penalty from Nov. 1. The National Weather Service has a freeze warning until 9 AM; tonight brings widespread frost and a low near 30, after a mostly sunny high near 53 today, and Sunday is sunny with a high near 60.</p>
+          </div>
+          <p class="story-sourceline">WPXI · CBS Pittsburgh · Borough of Bridgeville · National Weather Service Pittsburgh.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+<details class="appendix-block">
+<summary>Market regime</summary>
+<p><span class="chip chip--warn">Neutral, tilting defensive; stress concentrated in AI infrastructure</span> <b>Supporting risk-off:</b> Nasdaq −4.48% and SMH −10.53% with nine straight losses; VIX up from 14.84 to 19.99 with VIX9D above spot; defensives and energy led; Korea −15% in dollars; GPU-rental bonds at distressed yields; high-yield spreads 12bp wider on the week; Brent at a five-month high. <b>Contradicting:</b> S&amp;P only 2.0% from its record and 5% above its 200-day; equal weight up 0.5%; financials and regional banks up; investment-grade spreads unchanged; Treasuries rallied 15bp, easing financial conditions; Europe up. <b>Confidence:</b> moderate. <b>Change from last week:</b> from “risk-on at the index level, defensive underneath” to neutral-defensive; leadership shift from chips to defensives completed; credit softened slightly.</p>
+</details>
+<details class="appendix-block">
+<summary>Broad equities</summary>
+<div class="table-wrap">
+<table class="data-table">
+<caption>EOD official closes, Fri Oct 9 → Fri Oct 16, 2026. Indices: Yahoo Finance (Oct 16 closes as published in Friday’s Closing Brief). ETFs: Finnhub quote for Oct 16, Yahoo cache for Oct 9 (free tier; quotes single-venue).</caption>
+<thead><tr><th>Instrument</th><th>Oct 9</th><th>Oct 16</th><th>Week</th></tr></thead>
+<tbody>
+<tr><td>S&amp;P 500</td><td>7,811.54</td><td>7,659.44</td><td class="down">−1.95%</td></tr>
+<tr><td>Nasdaq Composite</td><td>27,366.17</td><td>26,140.03</td><td class="down">−4.48%</td></tr>
+<tr><td>Dow Jones Industrial Average</td><td>51,654.95</td><td>52,002.41</td><td class="up">+0.67%</td></tr>
+<tr><td>Russell 2000</td><td>2,806.98</td><td>2,721.37</td><td class="down">−3.05%</td></tr>
+<tr><td>SPY</td><td>778.57</td><td>763.25</td><td class="down">−1.97%</td></tr>
+<tr><td>QQQ</td><td>751.27</td><td>709.80</td><td class="down">−5.52%</td></tr>
+<tr><td>DIA</td><td>516.11</td><td>519.10</td><td class="up">+0.58%</td></tr>
+<tr><td>IWM</td><td>278.94</td><td>270.44</td><td class="down">−3.05%</td></tr>
+<tr><td>RSP (equal weight)</td><td>213.04</td><td>214.09</td><td class="up">+0.49%</td></tr>
+<tr><td>MAGS</td><td>73.77</td><td>71.28</td><td class="down">−3.38%</td></tr>
+</tbody>
+</table>
+</div>
+<p>Daily S&amp;P 500: Mon −0.06%, Tue −0.02%, Wed −1.11%, Thu +0.33%, Fri −1.09%. International (US-listed ETFs, week): INDA +3.54%, VGK +1.46%, EFA +0.15%, FXI −1.17%, EWJ −3.05%, EWZ −3.93%, EEM −5.91%, EWY −15.12%. Local indices (week): Stoxx 600 +1.43%, DAX +2.13%, FTSE 100 +3.13%. Leadership change: the Dow and equal weight beat the Nasdaq by more than five points.</p>
+</details>
+<details class="appendix-block">
+<summary>Breadth</summary>
+<p>Whole-market advancers/decliners (EOD; universe: symbol ≤5 characters, close ≥ $1, volume ≥ 100K): Oct 14 1,366 / 4,179; Oct 15 4,038 / 1,505. Oct 16 is computed in Monday’s run. Share above the 50-day EMA proxy: 27.0% (Oct 14), 31.9% (Oct 15) (Estimated — EMA proxy, accumulating history). Equal weight beat cap weight by about 2.4 points on the week: breadth was better than the index, but the share of stocks in uptrends stays low. Narrow, rotating, not broadening.</p>
+</details>
+<details class="appendix-block">
+<summary>Sectors</summary>
+<div class="table-wrap">
+<table class="data-table">
+<caption>SPDR sector ETFs, EOD official, Oct 9 → Oct 16, 2026 (Finnhub Oct 16; Yahoo cache Oct 9).</caption>
+<thead><tr><th>Sector</th><th>ETF</th><th>Oct 16</th><th>Week</th></tr></thead>
+<tbody>
+<tr><td>Staples</td><td>XLP</td><td>87.62</td><td class="up">+5.02%</td></tr>
+<tr><td>Energy</td><td>XLE</td><td>68.24</td><td class="up">+4.86%</td></tr>
+<tr><td>Health care</td><td>XLV</td><td>176.71</td><td class="up">+3.45%</td></tr>
+<tr><td>Materials</td><td>XLB</td><td>50.92</td><td class="up">+3.01%</td></tr>
+<tr><td>Utilities</td><td>XLU</td><td>42.21</td><td class="up">+1.93%</td></tr>
+<tr><td>Financials</td><td>XLF</td><td>55.52</td><td class="up">+1.44%</td></tr>
+<tr><td>Real estate</td><td>XLRE</td><td>42.16</td><td class="up">+1.32%</td></tr>
+<tr><td>Communication services</td><td>XLC</td><td>110.32</td><td class="down">−0.05%</td></tr>
+<tr><td>Discretionary</td><td>XLY</td><td>112.46</td><td class="down">−0.35%</td></tr>
+<tr><td>Industrials</td><td>XLI</td><td>167.76</td><td class="down">−0.88%</td></tr>
+<tr><td>Technology</td><td>XLK</td><td>183.47</td><td class="down">−7.70%</td></tr>
+<tr><td>Semiconductors</td><td>SMH</td><td>539.79</td><td class="down">−10.53%</td></tr>
+<tr><td>Regional banks</td><td>KRE</td><td>69.81</td><td class="up">+1.16%</td></tr>
+</tbody>
+</table>
+</div>
+<p>Rotation matrix: Leading — staples, energy, health care; Improving — materials, financials, real estate; Weakening — industrials, discretionary, communication services; Lagging — technology, semiconductors. Transitions: staples and health care Improving → Leading; technology Weakening → Lagging.</p>
+</details>
+<details class="appendix-block">
+<summary>Industries</summary>
+<p>GPU-rental and AI cloud: CoreWeave about −25% (Friday 61.39), Nebius and IREN −11–12% on Friday alone. Memory: Micron −14.6%, SanDisk −6.9% Friday. Data-centre power: Vistra and Constellation −6.5% and −5.5% on Wednesday. Defence: Lockheed +8.3%. Oil majors: Exxon and Chevron up about 2.5% Friday, XLE at a 52-week high. Space: Rocket Lab −25.5%, AST SpaceMobile −20.2%, SpaceX −10.2%. Insurers: Travelers +1.5% Friday on its beat.</p>
+</details>
+<details class="appendix-block">
+<summary>Watchlists</summary>
+<div class="table-wrap">
+<table class="data-table">
+<caption>Selected watchlist names, EOD official, Oct 9 → Oct 16, 2026 (Finnhub Oct 16; Yahoo cache Oct 9). Short interest is reported twice monthly and is 2–3 weeks stale; not shown.</caption>
+<thead><tr><th>Company</th><th>Ticker</th><th>Oct 16</th><th>Week</th></tr></thead>
+<tbody>
+<tr><td>Apple</td><td>AAPL</td><td>343.46</td><td class="up">+2.03%</td></tr>
+<tr><td>Microsoft</td><td>MSFT</td><td>529.05</td><td class="down">−1.13%</td></tr>
+<tr><td>Nvidia</td><td>NVDA</td><td>214.13</td><td class="down">−6.61%</td></tr>
+<tr><td>Amazon</td><td>AMZN</td><td>250.00</td><td class="down">−4.74%</td></tr>
+<tr><td>Alphabet</td><td>GOOGL</td><td>340.59</td><td class="down">−3.15%</td></tr>
+<tr><td>Meta</td><td>META</td><td>709.33</td><td class="down">−1.30%</td></tr>
+<tr><td>Tesla</td><td>TSLA</td><td>354.72</td><td class="down">−7.31%</td></tr>
+<tr><td>SpaceX</td><td>SPCX</td><td>146.03</td><td class="down">−10.17%</td></tr>
+<tr><td>AMD</td><td>AMD</td><td>528.75</td><td class="down">−13.05%</td></tr>
+<tr><td>Broadcom</td><td>AVGO</td><td>328.75</td><td class="down">−9.07%</td></tr>
+<tr><td>TSMC (ADR)</td><td>TSM</td><td>412.61</td><td class="down">−8.98%</td></tr>
+<tr><td>Micron</td><td>MU</td><td>878.84</td><td class="down">−14.59%</td></tr>
+<tr><td>Palantir</td><td>PLTR</td><td>186.03</td><td class="down">−11.01%</td></tr>
+<tr><td>JPMorgan</td><td>JPM</td><td>339.72</td><td class="up">+2.02%</td></tr>
+<tr><td>Goldman Sachs</td><td>GS</td><td>881.26</td><td class="down">−1.57%</td></tr>
+<tr><td>Lockheed Martin</td><td>LMT</td><td>552.09</td><td class="up">+8.34%</td></tr>
+<tr><td>Rocket Lab</td><td>RKLB</td><td>50.84</td><td class="down">−25.47%</td></tr>
+<tr><td>AST SpaceMobile</td><td>ASTS</td><td>40.66</td><td class="down">−20.22%</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details class="appendix-block">
+<summary>Rates</summary>
+<div class="table-wrap">
+<table class="data-table">
+<caption>Treasury par yields, EOD official, home.treasury.gov. Week change in basis points vs Oct 9. No curve published Oct 12 (Columbus Day).</caption>
+<thead><tr><th>Tenor</th><th>Oct 9</th><th>Oct 13</th><th>Oct 14</th><th>Oct 15</th><th>Oct 16</th><th>Week</th></tr></thead>
+<tbody>
+<tr><td>3-month</td><td>4.25</td><td>4.26</td><td>4.28</td><td>4.28</td><td>4.26</td><td>+1</td></tr>
+<tr><td>2-year</td><td>4.80</td><td>4.79</td><td>4.82</td><td>4.77</td><td>4.74</td><td class="down">−6</td></tr>
+<tr><td>5-year</td><td>5.02</td><td>5.00</td><td>5.00</td><td>4.91</td><td>4.89</td><td class="down">−13</td></tr>
+<tr><td>10-year</td><td>5.24</td><td>5.21</td><td>5.19</td><td>5.10</td><td>5.09</td><td class="down">−15</td></tr>
+<tr><td>20-year</td><td>5.65</td><td>5.60</td><td>5.57</td><td>5.48</td><td>5.47</td><td class="down">−18</td></tr>
+<tr><td>30-year</td><td>5.60</td><td>5.56</td><td>5.52</td><td>5.43</td><td>5.43</td><td class="down">−17</td></tr>
+</tbody>
+</table>
+</div>
+<p>Spreads (Oct 16): 2s10s +35bp (from +44), 3m10y +83bp, 5s30s +54bp. 10-year real yield 2.78% (Oct 15, from 2.91% Oct 9) and 10-year breakeven 2.35% (Oct 16, from 2.33%) (FRED, EOD official): the rally was in real yields. SOFR 3.89%, effective fed funds 3.88% (Oct 15). 30-year mortgage 7.40% (Freddie Mac, Oct 15). TLT +2.65%, IEF +1.14% on the week. Implications: falling long real yields with steady bills price slower growth; it helps housing at the margin and long-duration equities in theory, though not this week.</p>
+</details>
+<details class="appendix-block">
+<summary>Credit</summary>
+<p>ICE BofA high-yield OAS 3.23 (Oct 15, EOD official, FRED), from 3.11 on Oct 9, peak 3.25 on Oct 14; investment-grade 0.84 from 0.83. HYG −0.48%, LQD +0.97% on the week; HYG lagged IEF (+1.14%), a mild risk-off signal. Credit confirms equities only partly: market-wide spreads are calm while a few AI-infrastructure issuers trade at distressed levels (CoreWeave 2032 notes near 15%, as reported). The Oct 16 OAS observation publishes Monday.</p>
+</details>
+<details class="appendix-block">
+<summary>Volatility &amp; options</summary>
+<p>VIX 19.99 (from 14.84), VIX9D 20.12, VIX3M 20.50 at Friday’s close (Yahoo Finance; Cboe’s data feed was unavailable this run). The curve flattened from contango to nearly flat, with the nine-day above spot: near-term stress. Monthly options expired Friday. MOVE index not available. Dealer gamma is not tracked; there is no legitimate free source.</p>
+</details>
+<details class="appendix-block">
+<summary>FX</summary>
+<div class="table-wrap">
+<table class="data-table">
+<caption>Oct 16 rates: ECB reference rates via Frankfurter (EOD official, cached from Friday’s run); DXY and EUR/USD via Yahoo Finance, ~4:20 PM ET. Oct 9 from the Yahoo cache.</caption>
+<thead><tr><th>Pair</th><th>Oct 9</th><th>Oct 16</th></tr></thead>
+<tbody>
+<tr><td>DXY</td><td>102.21</td><td>101.78</td></tr>
+<tr><td>EUR/USD</td><td>1.1204</td><td>1.1241</td></tr>
+<tr><td>USD/JPY</td><td>158.26</td><td>158.02</td></tr>
+<tr><td>GBP/USD</td><td>—</td><td>1.3335</td></tr>
+<tr><td>USD/CNY</td><td>—</td><td>6.6862</td></tr>
+<tr><td>USD/CHF</td><td>—</td><td>0.8240</td></tr>
+<tr><td>USD/CAD</td><td>—</td><td>1.4161</td></tr>
+<tr><td>AUD/USD</td><td>—</td><td>0.6959</td></tr>
+<tr><td>USD/MXN</td><td>—</td><td>18.38</td></tr>
+<tr><td>USD/BRL</td><td>—</td><td>5.083</td></tr>
+<tr><td>USD/INR</td><td>—</td><td>94.96</td></tr>
+</tbody>
+</table>
+</div>
+<p>The dollar peaked Monday near 102.6 and eased as US yields fell. The yen ignored Ueda; rate differentials still favour the dollar. The yuan is near its strongest since 2022. The rupee is the weak spot among majors as oil rises.</p>
+</details>
+<details class="appendix-block">
+<summary>Commodities</summary>
+<p>Brent front-month settlements Oct 12–16: $106.65, $105.69, $106.06, $105.92, $109.86 (CNBC; Reuters-derived reports), from $104.72 on Oct 9 (+4.9%); highest close since May 19. WTI $101.41 on Oct 16 (November contract, CNBC), from $91.85. Gold futures $4,187.10 (Oct 16, from $4,221.90), copper $6.56/lb (from $6.71), natural gas $3.12 — Yahoo Finance, Delayed, Friday ~4:22 PM ET. US crude inventories fell 8.6 million barrels (EIA, reported Oct 15). Drivers: Gulf attacks and the Hormuz risk premium (supply risk), Ukraine’s refinery strikes (product markets); not a confirmed loss of supply.</p>
+</details>
+<details class="appendix-block">
+<summary>Crypto</summary>
+<p>CoinGecko simple/price, Live, Sat Oct 17 ~9:30 AM ET: bitcoin $81,442 (−0.6% 24h), ether $2,424.62 (−1.5%), solana $104.07 (−1.4%), cardano $0.2210 (−3.5%). Week: bitcoin about −1.0% from $82,276 (Oct 9 cache), ether about −2.0%. Total market cap and dominance unavailable this run (CoinGecko global throttled). Price action tracked tech; no data this week on ETF flows, funding or liquidations.</p>
+</details>
+<details class="appendix-block">
+<summary>Factors</summary>
+<p>Equal weight vs cap weight: RSP +0.49% vs SPY −1.97%, about +2.5 points. Small vs large: IWM −3.05% vs SPY −1.97%. Mega-cap: MAGS −3.38%. Value and low-volatility proxies (staples, health care, energy) led; growth and momentum (semis, AI software) lagged. Factor ETFs were not fetched this run (quote vendor throttled).</p>
+</details>
+<details class="appendix-block">
+<summary>Cross-asset</summary>
+<p><b>Stocks vs bonds:</b> stocks down, long bonds up — a growth scare, not an inflation scare. <b>Oil vs breakevens:</b> Brent +4.9%, 10-year breakeven +2bp: the bond market does not extrapolate the oil shock. <b>Semis vs AI capex:</b> chips down 10.5% while TSMC guided capex higher — the divergence the next round of platform earnings resolves. <b>Banks vs curve:</b> banks up while the curve flattened 9bp, on earnings rather than rates. <b>Gold vs real yields:</b> real yields fell 13bp and gold still slipped — broken correlation this week. <b>Defence vs geopolitics:</b> Lockheed +8.3%, consistent. <b>BTC vs liquidity:</b> bitcoin tracked tech, not easing yields. <b>Space vs launch news:</b> space stocks fell 10–25% with mostly negative company news (Neutron, a downgrade).</p>
+</details>
+<details class="appendix-block">
+<summary>Earnings</summary>
+<p><b>Reported:</b> Goldman Sachs ($17.01 vs ~$13), JPMorgan ($5.57 vs ~$5.90), Citigroup ($2.85 vs $2.65), Wells Fargo ($1.87, revenue $21.87B miss), Bank of America ($0.91 incl. penalty), Morgan Stanley, BlackRock, Johnson &amp; Johnson (raised outlook), ASML (raised outlook), TSMC (NT$763.1B net income; Q4 guide $52.3–54.3B), PNC, U.S. Bancorp, Schwab, BNY, Marsh McLennan, Travelers (core $9.18 vs ~$7.42), Truist (adj. $1.16), Regions (adj. $0.73 vs $0.66), M&amp;T, Citizens, Interactive Brokers (miss), J.B. Hunt (miss), Alcoa (EPS beat). <b>Read-through:</b> trading desks strong, lending margins pressured by the long end, credit clean; AI-hardware demand intact at the foundry and tool level, the market’s doubt is about financing further down the chain. <b>Next week:</b> Netflix, GE Aerospace, GM, 3M, Northrop, RTX (Tue); Tesla, IBM, AT&amp;T (Wed); P&amp;G (Thu); American Express, SLB (Fri).</p>
+</details>
+<details class="appendix-block">
+<summary>Auctions &amp; liquidity</summary>
+<p>This week: bills only (13-week at 4.085%, 26-week at 4.20%, 6-week 3.98% on Tuesday; 17-week at 4.195% on Wednesday). Coupon settlements of last week’s 3-, 10- and 30-year sales were Oct. 15. Next week (TreasuryDirect): 13-week $95B and 26-week $82B (Mon), 6-week $95B (Tue), 20-year reopening $13B and 17-week (Wed), 5-year TIPS $26B plus 4- and 8-week (Thu). The 20-year is the test: the long end rallied 17–18bp this week, and a tail would challenge it. SOFR steady at 3.87–3.89%.</p>
+</details>
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Read directly from the source: the Treasury par-yield curve; FRED rates, real-yield, breakeven, credit-spread and claims series; the BLS CPI, PPI and import-price releases; the Federal Reserve’s industrial-production release and Beige Book; National Weather Service forecasts and alerts; CoinGecko; Finnhub closing quotes; SEC EDGAR full-text search. Index closes, futures, FX and commodity levels come from Friday’s Closing Brief, which drew them from Yahoo Finance and CNBC; Brent and WTI settlements from CNBC and Reuters-derived reports. News reporting is credited story by story, including Al Jazeera, Bloomberg, AP, Reuters, AFP, CNBC, CNN, CBS, NBC, Axios, The Hill, the Kyiv Post and Kyiv Independent, Euronews, the Washington Times, the San Francisco Chronicle, Democracy Docket, the Missouri Independent, the National Hurricane Center via AccuWeather, WESA, WPXI, TribLive, CBS Pittsburgh, the Post-Gazette, the Inquirer and abc27. Much of the weekend reporting was read through search excerpts rather than full articles. The weekly SEC EDGAR sweep (Oct. 10–17) found no filings naming any of the nine private-module companies (OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink); no status changes.</p>
+      <p><strong>Corrections.</strong> One this week, already published on Friday: Thursday’s Closing Brief said the semiconductor fund SMH had fallen for a seventh straight day; it was the eighth, and Friday the ninth. None new in this edition.</p>
+      <p><strong>Method.</strong> Markets were closed Saturday; figures are Friday, Oct. 16 official closes unless marked live (crypto). Free-tier quotes are single-venue and can differ slightly from consolidated closes. Missing data is declared missing, never estimated. Forecasts are graded by whether the stated event happened, and misses are never removed. Written and published automatically; nobody reviews it before you do. All times Eastern. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-16-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
