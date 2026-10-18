@@ -1,38 +1,14 @@
 {
- "fetched": "2026-10-16T06:40:00-04:00",
- "earnings_fetched": "2026-10-11",
- "earnings_fetched_note": "2026-10-11 sun: Alpha Vantage 3-month CSV and Finnhub Oct 12-16 both fetched; ASML/TSM dates from AV/Wall Street Horizon.",
+ "fetched": "2026-10-18T09:20:00-04:00",
+ "earnings_fetched": "2026-10-18",
+ "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted.",
  "events": [
   {
-   "ts_et": "2026-10-16T07:00",
-   "type": "earnings",
-   "name": "Travelers Q3 (Truist, M&T, Regions, Citizens already out)",
-   "importance": "Medium",
-   "reason": "Insurer/regional bank read",
-   "source": "finnhub+EDGAR"
-  },
-  {
-   "ts_et": "2026-10-16T08:30",
-   "type": "data",
-   "name": "Import prices (Sept)",
-   "importance": "Medium",
-   "reason": "Oil pass-through to border prices",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-10-16T09:15",
-   "type": "data",
-   "name": "Industrial production (Sept), cons ~+0.4%",
-   "importance": "Medium",
-   "reason": "Hurricane shut-ins; manufacturing",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-17T00:00",
-   "type": "fed",
-   "name": "Fed blackout begins (FOMC Oct 27-28)",
+   "ts_et": "2026-10-18T18:00",
+   "type": "market",
+   "name": "US futures and oil reopen",
    "importance": "High",
-   "reason": "No policy speeches until decision",
+   "reason": "Hormuz mine claims, St Petersburg strike",
    "source": "research"
   },
   {
@@ -46,10 +22,26 @@
   {
    "ts_et": "2026-10-19T06:30",
    "type": "launch",
-   "name": "Falcon 9 Bandwagon-5 rideshare",
+   "name": "Falcon 9 Bandwagon-5 rideshare (SLC-40)",
    "importance": "Low",
    "reason": "Rideshare",
    "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-19T07:00",
+   "type": "earnings",
+   "name": "Cleveland-Cliffs, Fifth Third (BMO); Steel Dynamics, Zions, W.R. Berkley (AMC)",
+   "importance": "Low",
+   "reason": "Regional bank/steel",
+   "source": "finnhub/alphavantage"
+  },
+  {
+   "ts_et": "2026-10-19T10:00",
+   "type": "data",
+   "name": "NAHB housing market index (Oct), forecast 31",
+   "importance": "Low",
+   "reason": "Housing",
+   "source": "research"
   },
   {
    "ts_et": "2026-10-19T11:30",
@@ -62,18 +54,42 @@
   {
    "ts_et": "2026-10-19T15:41",
    "type": "launch",
-   "name": "H3 / MMX (JAXA)",
-   "importance": "Low",
-   "reason": "Phobos sample return",
+   "name": "H3 / MMX (JAXA) Phobos sample return",
+   "importance": "Medium",
+   "reason": "Science mission",
    "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-19T12:00",
+   "type": "local",
+   "name": "PA voter-registration deadline; PA House/Senate return",
+   "importance": "Medium",
+   "reason": "Local/election",
+   "source": "pa.gov"
+  },
+  {
+   "ts_et": "2026-10-20T07:00",
+   "type": "earnings",
+   "name": "GE Aerospace, RTX, Northrop, 3M, GM, Halliburton, Synchrony, KeyCorp (BMO)",
+   "importance": "Medium",
+   "reason": "Defence/industrial/credit",
+   "source": "finnhub/alphavantage"
   },
   {
    "ts_et": "2026-10-20T08:30",
    "type": "data",
-   "name": "Housing starts/permits (Sept)",
+   "name": "Housing starts/permits (Sept), starts ~1.30M",
    "importance": "Medium",
-   "reason": "Housing at 5%+ yields",
-   "source": "research"
+   "reason": "Housing at 7.4% mortgages",
+   "source": "bls/research"
+  },
+  {
+   "ts_et": "2026-10-20T10:00",
+   "type": "data",
+   "name": "BLS State Employment and Unemployment (Sept)",
+   "importance": "Low",
+   "reason": "Regional labour",
+   "source": "bls.ics"
   },
   {
    "ts_et": "2026-10-20T11:30",
@@ -84,52 +100,148 @@
    "source": "treasurydirect"
   },
   {
+   "ts_et": "2026-10-20T14:00",
+   "type": "space",
+   "name": "NASA JSC iROSA spacewalk preview briefing",
+   "importance": "Low",
+   "reason": "ISS",
+   "source": "research"
+  },
+  {
    "ts_et": "2026-10-20T16:00",
    "type": "earnings",
-   "name": "Netflix (also GM, GE Aerospace, 3M, PM, ISRG during day)",
+   "name": "Netflix, Intuitive Surgical, Capital One, United, Chubb (AMC); SpaceX expected (unconfirmed)",
    "importance": "High",
-   "reason": "Mega-cap results",
+   "reason": "Mega-cap/card credit",
+   "source": "finnhub/research"
+  },
+  {
+   "ts_et": "2026-10-20T18:14",
+   "type": "launch",
+   "name": "Falcon 9 Starlink 15-15 (Vandenberg)",
+   "importance": "Low",
+   "reason": "Starlink",
+   "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-21T02:00",
+   "type": "data",
+   "name": "UK CPI (Sept)",
+   "importance": "Medium",
+   "reason": "Global inflation",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-10-21T07:00",
+   "type": "earnings",
+   "name": "AT&T, Philip Morris, Abbott, Thermo Fisher, Danaher, NextEra, Elevance (BMO)",
+   "importance": "Medium",
+   "reason": "Defensives",
+   "source": "finnhub/alphavantage"
+  },
+  {
+   "ts_et": "2026-10-21T10:00",
+   "type": "data",
+   "name": "BLS Usual Weekly Earnings (Q3)",
+   "importance": "Low",
+   "reason": "Wages",
+   "source": "bls.ics"
   },
   {
    "ts_et": "2026-10-21T13:00",
    "type": "auction",
    "name": "20-yr bond reopening $13B",
-   "importance": "Medium",
-   "reason": "Long-end demand",
+   "importance": "High",
+   "reason": "Long-end demand after 15bp rally",
    "source": "treasurydirect"
   },
   {
    "ts_et": "2026-10-21T16:00",
    "type": "earnings",
-   "name": "Tesla (time unconfirmed), IBM, Lam Research",
-   "importance": "High",
-   "reason": "Mega-cap results",
+   "name": "META, TSLA, IBM, LRCX, TXN, SAP, CSX, LVS, BKR, KMI (AMC)",
+   "importance": "Critical",
+   "reason": "AI capex test after chip selloff",
+   "source": "company IR/finnhub"
+  },
+  {
+   "ts_et": "2026-10-21T17:00",
+   "type": "local",
+   "name": "Allegheny County Council budget hearing (also Oct 29)",
+   "importance": "Low",
+   "reason": "Local",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-22T07:00",
+   "type": "earnings",
+   "name": "P&G, Lockheed, Union Pacific, Honeywell, Blackstone, Comcast, Dow, Valero, American Airlines (BMO); Western Digital (AMC)",
+   "importance": "Medium",
+   "reason": "Consumer pricing, defence, private credit, refining",
+   "source": "finnhub/company IR"
+  },
+  {
+   "ts_et": "2026-10-22T08:30",
+   "type": "data",
+   "name": "Initial jobless claims, consensus ~200K",
+   "importance": "Medium",
+   "reason": "Labour",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-22T10:00",
+   "type": "data",
+   "name": "Conference Board leading index (Sept)",
+   "importance": "Low",
+   "reason": "Cycle",
    "source": "research"
   },
   {
    "ts_et": "2026-10-22T13:00",
    "type": "auction",
-   "name": "5-yr TIPS $26B (new)",
+   "name": "5-yr TIPS $26B (new issue)",
    "importance": "Medium",
    "reason": "Real-yield demand",
    "source": "treasurydirect"
   },
   {
+   "ts_et": "2026-10-22T19:30",
+   "type": "data",
+   "name": "Japan national CPI (Sept)",
+   "importance": "Medium",
+   "reason": "BoJ Oct 29-30",
+   "source": "research"
+  },
+  {
    "ts_et": "2026-10-23T07:00",
    "type": "earnings",
-   "name": "American Express, SLB (estimated)",
+   "name": "SLB (7:00), American Express (BMO)",
    "importance": "Medium",
-   "reason": "Consumer/energy services",
+   "reason": "Energy services/consumer",
+   "source": "company IR"
+  },
+  {
+   "ts_et": "2026-10-23T09:45",
+   "type": "data",
+   "name": "S&P Global flash PMIs (Oct); Sept composite 58.4",
+   "importance": "Medium",
+   "reason": "Activity and prices",
    "source": "research"
   },
   {
    "ts_et": "2026-10-23T10:00",
    "type": "data",
-   "name": "UMich sentiment final (Oct), prelim 46.3",
-   "importance": "Medium",
-   "reason": "Consumer mood",
+   "name": "UMich sentiment final (Oct), prelim 46.3, 1y infl exp 4.7%, 5-10y 3.5%",
+   "importance": "High",
+   "reason": "Inflation expectations before FOMC",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-10-23T14:00",
+   "type": "space",
+   "name": "NASA Artemis schedule briefing",
+   "importance": "Low",
+   "reason": "Artemis III/IV",
+   "source": "nasa"
   },
   {
    "ts_et": "2026-10-23T00:00",
@@ -140,15 +252,39 @@
    "source": "research"
   },
   {
+   "ts_et": "2026-10-24T01:29",
+   "type": "launch",
+   "name": "Falcon 9 Starlink 15-16 (Vandenberg)",
+   "importance": "Low",
+   "reason": "Starlink",
+   "source": "thespacedevs"
+  },
+  {
+   "ts_et": "2026-10-25T00:00",
+   "type": "politics",
+   "name": "Brazil presidential runoff (Lula vs Flávio Bolsonaro)",
+   "importance": "Medium",
+   "reason": "EM/BRL",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-27T00:00",
+   "type": "politics",
+   "name": "Israel general election",
+   "importance": "Medium",
+   "reason": "Middle East",
+   "source": "research"
+  },
+  {
    "ts_et": "2026-10-28T14:00",
    "type": "fed",
-   "name": "FOMC decision",
+   "name": "FOMC decision (range 3.75-4.00%)",
    "importance": "Critical",
-   "reason": "Hike vs pause",
-   "source": "research"
+   "reason": "Policy",
+   "source": "federalreserve.gov"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
  "fomc_next": "2026-10-28",
- "holiday_note": "Week of Oct 12: no NYSE holiday/early close (data/nyse-holidays.json); Mon Oct 12 Columbus Day = SIFMA bond-market holiday, federal holiday."
+ "holiday_note": "Week of Oct 19: no NYSE holiday or early close (data/nyse-holidays.json)."
 }

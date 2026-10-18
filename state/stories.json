@@ -3,9 +3,9 @@
   {
    "id": "ai-debt-chip-selloff",
    "first_seen": null,
-   "last_updated": "2026-10-17-sat",
+   "last_updated": "2026-10-18-sun",
    "status": "Developing",
-   "headline": "AI-credit scare: SMH -10.5% wk, nine straight losses; CoreWeave ~-25% wk, 2032 notes ~15%; Nasdaq -4.48% worst week since June. Watch CRWV refinancing, platform capex in NFLX/TSLA/IBM earnings.",
+   "headline": "AI-credit scare: SMH -10.5% wk, nine straight losses; CoreWeave ~-25% wk, 2032 notes ~15%; Nasdaq -4.48% worst week since June. Watch CRWV refinancing, platform capex in NFLX/TSLA/IBM earnings. Week of Oct 19 test: Meta/Tesla/IBM/Lam/TXN all Wed Oct 21 after close; Netflix + SpaceX (unconfirmed) Tue.",
    "one_line": null,
    "verification": "Confirmed-multiple",
    "sources": null,
@@ -239,6 +239,78 @@
    "sources": null,
    "score_rationale": "Business",
    "keep_on_watchlist": false
+  },
+  {
+   "id": "hormuz-mine-claims-oct-17",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "Developing",
+   "headline": "IRGC/IRNA claim two ~2M-bbl tankers hit mines and caught fire (Oct 17); unconfirmed by UKMTO/CENTCOM. Araghchi restates 7-day reopening plan via Qatar. Brent $109.86 reopens Sun 6 PM.",
+   "one_line": null,
+   "verification": "Iranian claim only / Confirmed-multiple (diplomacy)",
+   "sources": null,
+   "score_rationale": "Lead; oil",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ukraine-st-petersburg-drone-strike",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "New",
+   "headline": "Russia MoD: ~1,015 Ukrainian drones overnight Oct 17-18; St Petersburg Oil Terminal and Ruchyi depot fires, 1 dead. Plus Oct 16 US waiver of parts of Russia sanctions law (Bloomberg/TIME/Al Jazeera).",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Energy/diesel",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "week-oct19-earnings-ai-capex",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "Watch",
+   "headline": "Wed Oct 21 AMC: META (capex guide), TSLA, IBM, LRCX, TXN. Tue: NFLX, SPCX (unconfirmed). Thu: LMT, PG, UNP, HON, BX, VLO. Fri: AXP, SLB.",
+   "one_line": null,
+   "verification": "Confirmed-primary (company dates where noted)",
+   "sources": null,
+   "score_rationale": "Week's hinge",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "treasury-20y-reopening-oct21",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "Watch",
+   "headline": "$13B 20-year reopening Wed Oct 21 1 PM; 20y par 5.47%. $26B 5y TIPS new issue Thu Oct 22.",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": null,
+   "score_rationale": "Rates",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "doj-v-california-ballots",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "Continuing",
+   "headline": "US v. California (C.D. Cal. 2:26-cv-12025): ~20k mail ballots; TRO motions; no hearing date found as of Oct 18.",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "US politics",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "wabash-tunnel-vote-oct23",
+   "first_seen": "2026-10-18-sun",
+   "last_updated": "2026-10-18-sun",
+   "status": "Watch",
+   "headline": "PRT board votes Fri Oct 23 on closing Wabash Tunnel Dec 1 ($43M repair need, FTA approval in hand).",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": null,
+   "score_rationale": "Local",
+   "keep_on_watchlist": true
   }
  ]
 }

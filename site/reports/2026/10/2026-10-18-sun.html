@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Week Ahead — Week of Oct 19, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-18",
+    "slot": "sun",
+    "title": "Week Ahead — Week of Oct 19, 2026",
+    "path": "reports/2026/10/2026-10-18-sun.html",
+    "summary": "After the Nasdaq’s worst week since June, the week turns on Wednesday night, when Meta, Tesla, IBM, Lam Research and Texas Instruments report as a 20-year bond auction tests the rally in Treasuries, while oil reopens after Iran said two tankers hit mines in Hormuz and Ukraine struck a St. Petersburg oil terminal.",
+    "headlines": [
+      "Meta, Tesla, IBM, Lam and TI all report Wednesday night after the AI-debt selloff",
+      "$13B 20-year auction Wednesday; Fed silent before Oct. 28; China GDP tonight",
+      "Iran says two tankers hit Hormuz mines; Brent $109.86 reopens at 6 PM"
+    ],
+    "reading_minutes": 39,
+    "generated_at": "2026-10-18T10:10:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sun">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Week Ahead</p>
+      <h1>Meta and Tesla Put the AI-Debt Scare to the Test as Iran Says Two Tankers Hit Mines</h1>
+      <p class="paper-dateline">
+        Sunday, October 18, 2026 <span class="sep">·</span> 39 min read
+      </p>
+      <p class="paper-standfirst">
+        After the Nasdaq’s worst week since June, this week turns on Wednesday night, when Meta, Tesla, IBM, Lam Research and Texas Instruments report within an hour of each other. Bond buyers face a 20-year auction the same afternoon, and oil reopens tonight after Iran said two loaded tankers hit mines in Hormuz and Ukraine sent about a thousand drones into Russia.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>Where markets stand.</b> The S&amp;P 500 ended Friday at 7,659.44, 2.0% below its Oct. 6 record. The Nasdaq is 5.3% off its record and the chip fund SMH 19% below its June high. The 10-year Treasury is 5.09%, the VIX 19.99 and Brent crude $109.86. Futures reopen at 6 PM tonight.</li>
+          <li><b>The week turns on Wednesday night.</b> Meta, Tesla, IBM, Lam Research and Texas Instruments all report after Wednesday’s close. Meta’s spending plans matter most. Last week’s selloff was about who pays for AI data centres, and Meta is one of the biggest payers. Netflix reports Tuesday, and SpaceX is expected to report the same evening.</li>
+          <li><b>Bonds and the Fed.</b> The Fed is in its quiet period before the Oct. 27–28 meeting, and futures give a hike there about a one-in-six chance. Wednesday’s $13 billion 20-year auction tests whether buyers still want long bonds at 5.5%. The data are light: housing starts Tuesday, jobless claims Thursday, business surveys and consumer sentiment Friday. China’s third-quarter growth figure comes out tonight at 10.</li>
+          <li><b>Since yesterday.</b> Iran’s Revolutionary Guard says two tankers, each carrying about 2 million barrels, caught fire after hitting mines in Hormuz. Nobody else has confirmed it, and the US says the shipping lanes are clear of mines. Iran’s foreign minister repeated an offer, sent through Qatar, to reopen the strait within seven days on Iran’s terms. Ukraine sent what Russia counts as more than 1,000 drones overnight, starting fires at a St. Petersburg oil terminal.</li>
+          <li><b>Elsewhere.</b> The pope led the Angelus this morning, a day after leaving hospital. Protesters in France burned Limoges’s town hall. A fire at a Canadian army base in Alberta has killed an unconfirmed number of people.</li>
+          <li><b>Home.</b> Monday is the last day to register to vote in Pennsylvania. The legislature returns the same day with skill games now being seized. Pittsburgh’s transit board votes Friday on closing the Wabash Tunnel. The week will be dry and sunny, with frost possible tonight.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-news">
+      <h2 id="s-news">Today’s News</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Iran says two loaded tankers hit mines in Hormuz and offers to reopen the strait within a week on its terms; Saudi Arabia shoots down more missiles overnight</h3>
+          <p class="story-deck">The claim is Iran’s alone and the US has called similar ones false. For the oil market, which reopens at 6 PM, uncertainty about whether ships can pass safely does damage on its own.</p>
+          <div class="story-body">
+            <p>Iran’s state news agency IRNA, quoting the Revolutionary Guard’s navy, said on Saturday that two oil tankers caught fire after hitting naval mines in the Strait of Hormuz. It said each carried about 2 million barrels of crude and that both had switched off their tracking transponders and radar to use an “unauthorised route.” Iran has not named either ship, given its flag or said what happened to the crews. Reuters and Al Jazeera carry the claim. We have found no independent confirmation from UKMTO, Britain’s maritime security agency, or from shipping trackers. US Central Command has not responded to this claim. It called earlier Iranian mine claims false: it said the container ship <i>GFS Pride</i>, which sank on Wednesday, was hit by a Revolutionary Guard projectile, and that the main lanes have been cleared of mines. <span class="flag">Iranian claim only</span></p>
+            <p>On the diplomatic track, Foreign Minister Abbas Araghchi told a meeting of Islamic states in Baghdad on Saturday that Iran would talk again if it received “credible guarantees” against new attacks. He also restated a seven-day plan passed to Washington through Qatar. Under it, the strait would reopen on day six and talks would begin on day seven, if the US lifts its naval blockade and oil sanctions and a ceasefire takes hold on every front, Lebanon included. “The choice is now with America,” he said (Tasnim, Middle East Monitor). The president rejected a version of these terms in September and has said he has “offered them NOTHING.” On Sunday Iran’s and Pakistan’s foreign ministers spoke about de-escalation. Campaigning in Kentucky on Saturday, the president said the war would end “very quickly.”</p>
+            <p>The fighting with the Houthis continued overnight. Shortly after 1:30 AM local time on Sunday, civil-defence alerts sounded in Riyadh and Khamis Mushait. The Saudi-led coalition said it destroyed two ballistic missiles aimed at Khamis Mushait and three drones, two of them near Riyadh, and reported no damage (Saudi Gazette, Reuters). Riyadh’s King Khalid airport has been shut since the Oct. 10 strike that killed 12. Its closure notice lapsed at 5 PM Eastern on Saturday, but we have not seen Saudi Arabia’s aviation authority confirm a reopening. Several airlines are staying away: Oman Air until Oct. 22, Air France until Oct. 24, British Airways until Nov. 3.</p>
+            <div class="story-note">
+              <b>What it means for the week</b>
+              Brent settled at $109.86 on Friday, its highest since May. Ships are still moving: the US military says about 400 crossed the strait last week, and the tanker tracker Kpler puts flows at about 70% of pre-war levels. The price is high because nobody can say how safe the passage is, not because barrels have been lost. A mine claim, even one that is never confirmed, raises insurance costs and makes shipowners slower to sail. The first read is when futures reopen at 6 PM; the second is whether Washington answers the seven-day plan.
+            </div>
+            <div class="story-note">
+              <b>What’s next</b>
+              A US Central Command or UKMTO account of the two ships; the US reply to Iran’s proposal; whether Riyadh’s airport actually reopens. The president has pledged no US strike on Iran before the Nov. 3 election.
+            </div>
+          </div>
+          <p class="story-sourceline">IRNA and IRGC statements via Reuters and Al Jazeera · US Central Command (earlier statements) · Tasnim, Middle East Monitor (Araghchi) · Arab News (Iran–Pakistan call) · Saudi Gazette, Reuters (interceptions) · Kpler via OilPrice · airline notices via travel trade press.</p>
+        </article>
+
+        <article class="story">
+          <h3>Ukraine sends about a thousand drones into Russia overnight, setting a St. Petersburg oil terminal on fire</h3>
+          <p class="story-deck">It is one of the largest attacks of the war, a week after the president announced an “energy ceasefire” that neither side ever confirmed, and a day after he relaxed parts of a new Russia sanctions law.</p>
+          <div class="story-body">
+            <p>Russia’s defence ministry said it brought down about 1,015 Ukrainian drones between 8 PM Saturday and 8 AM Sunday Moscow time, over Moscow and the western regions. St. Petersburg’s governor, Alexander Beglov, said one person was killed and five injured. Fires broke out at the St. Petersburg Oil Terminal and the Ruchyi oil depot, and a dozen apartment buildings were damaged. In the surrounding Leningrad region, a logistics centre and a data centre were reported hit and about 20,000 people lost power (CNN, ABC, Anadolu, Kyiv Independent). The drone count is Russia’s own figure. We have seen no reaction yet from the Kremlin or the White House.</p>
+            <p>Russia attacked Ukraine’s grid all last week and launched 332 drones and missiles overnight into Saturday. Separately, Bloomberg, TIME and Al Jazeera report that the president signed an order on Friday waiving parts of the new Russia sanctions law, including tariffs of up to 100% on countries that buy Russian oil and gas. Sen. Thom Tillis says the waiver may be illegal; Ukraine’s president called it a gift to Moscow. It comes on top of the US license, issued two weeks ago, for Russian diesel exports.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              St. Petersburg’s oil terminal is one of Russia’s Baltic outlets for fuel exports, and diesel was already tight before the Gulf war. Strikes on refineries and terminals keep diesel prices high, and diesel costs feed directly into the producer prices that rose 1.3% in September. Washington is easing on Russian oil as Ukraine hits it harder, and markets will watch which wins.
+            </div>
+          </div>
+          <p class="story-sourceline">Russian Defence Ministry and St. Petersburg governor via CNN, ABC, Anadolu, Kyiv Independent · Bloomberg, TIME, Al Jazeera (sanctions waiver).</p>
+        </article>
+
+        <article class="story">
+          <h3>Pope Leo leads the Angelus a day after leaving hospital following lung-cancer surgery</h3>
+          <p class="story-deck">He said he will “gradually resume” his work; his surgeon sees no medical reason to cancel next month’s trip to Latin America.</p>
+          <div class="story-body">
+            <p>Pope Leo XIV, 71, was discharged from Rome’s Gemelli hospital on Saturday, earlier than expected, five days after surgeons removed the lower lobe of his right lung for an early-stage adenocarcinoma. At noon Rome time on Sunday he led the Angelus from the Apostolic Palace window. He thanked people for their prayers, said he felt “particularly close to all those who are living with illness,” and said he would “gradually resume my activities.” His surgeon, Stefano Margaritora, said there was “no clinical reason” against the planned November trip (NPR, OSV News, ABC).</p>
+          </div>
+          <p class="story-sourceline">NPR · OSV News · ABC News · Fox News.</p>
+        </article>
+
+        <article class="story">
+          <h3>France’s cost-of-living protests turn violent as Limoges’s town hall burns</h3>
+          <p class="story-deck">The 1883 building is “largely lost,” the prefect says, as the government seeks votes to pass its budget.</p>
+          <div class="story-body">
+            <p>Protests over living costs across France on Saturday ended with looting in several cities and a fire that brought down the roof and spire of Limoges’s town hall. Prime Minister Sébastien Lecornu said 1,200 people were arrested and 150 police officers injured, and blamed the “ultra-left.” Turnout estimates differ: about 550,000 according to the interior ministry, 800,000 according to the CGT union (Euronews, i24). Other outlets give lower arrest figures. Lecornu needs Socialist votes to pass his 2027 budget and avoid a no-confidence vote. We have found no motion yet scheduled for this week.</p>
+          </div>
+          <p class="story-sourceline">Euronews · i24 · Fox News · IBTimes.</p>
+        </article>
+
+        <article class="story">
+          <h3>A fire at a Canadian army base in Alberta kills an unconfirmed number of people</h3>
+          <p class="story-deck">The defence minister confirmed deaths but gave no number; one outlet, citing military sources, reports at least seven.</p>
+          <div class="story-body">
+            <p>The fire started in a training area at Canadian Forces Base Wainwright around 4 PM local time on Saturday and spread beyond the base on high winds. Defence Minister David McGuinty confirmed deaths and injuries without giving figures, and Edmonton hospitals declared a “code orange.” <span class="flag">Single source</span> Global News, citing unnamed military sources, reports at least seven dead and dozens injured, and says a live-fire exercise may have hit a gas line or well. The military said on Sunday morning that the situation was “still evolving” (CBC, Globe and Mail, CNN).</p>
+          </div>
+          <p class="story-sourceline">Canadian Department of National Defence via CBC, the Globe and Mail, CNN, NBC · Global News (casualty count and cause, single source).</p>
+        </article>
+
+        <article class="story">
+          <h3>Two Pacific storms: Trudy restrengthens off Mexico, and a super typhoon passes just south of Guam</h3>
+          <p class="story-deck">Neither had caused reported deaths by Sunday morning.</p>
+          <div class="story-body">
+            <p>The AP reported Hurricane Trudy back at Category 2, with 100 mph winds, about 115 miles west-southwest of Manzanillo and moving north-west. A hurricane warning runs from Manzanillo to Cabo Corrientes. The centre is forecast to run along the coast rather than come ashore, with 4–8 inches of rain, and up to a foot in places, in Michoacán, Colima and Jalisco, then weaken from Monday. In the western Pacific, Champi became a super typhoon as its eye passed about 10 miles south of Guam. The National Weather Service there said a direct hit “would have been devastating.” First reports, according to the Guam Daily Post, show no widespread serious damage, but the island’s south had not yet been surveyed.</p>
+          </div>
+          <p class="story-sourceline">National Hurricane Center via AP · Guam Daily Post · NWS Guam.</p>
+        </article>
+
+        <article class="story">
+          <h3>Quiet weekend for markets: bitcoin edges up, and no word from CoreWeave</h3>
+          <p class="story-deck">The questions left open on Friday stay open into Monday.</p>
+          <div class="story-body">
+            <p>Bitcoin was about $81,900 this morning, up about 0.6% from Saturday, and ether about $2,410 (CoinGecko). CoreWeave, which fell 25% last week as its bonds traded near 15% yields, has announced nothing since Friday. Bloomberg reports it is looking at investment-grade and insurance-backed funding, and the Financial Times earlier reported talks with life insurers on loans secured against its chips. There were no material weekend filings on the SEC’s system. The Treasury Secretary, Scott Bessent, is listed for NBC’s <i>Meet the Press</i> this morning. The president campaigned in northern Kentucky on Saturday. He repeated a pledge of $5,000 a person if Republicans hold Congress, which would itself need Congress to pass.</p>
+          </div>
+          <p class="story-sourceline">CoinGecko · Bloomberg, Financial Times (CoreWeave, as reported) · SEC EDGAR · AP via CNBC (rally).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-themes">
+      <h2 id="s-themes">Top Themes</h2>
+      <div class="story-body">
+        <p><b>1. Who pays for AI.</b> Last week’s selloff was not about whether demand for AI is real: TSMC and ASML both said it is. It was about the companies that borrow to build data centres, and whether lenders will keep funding them. This week the biggest buyers and builders report. Meta’s spending guidance, Tesla’s AI and robot-taxi plans, Lam Research’s and Texas Instruments’ order books and IBM’s software growth will show whether the build-out is slowing. Nothing has yet answered whether CoreWeave can refinance.</p>
+        <p><b>2. Oil at $110 against a bond market betting on slowdown.</b> Brent is at a five-month high, and the weekend added risk on two fronts: the Hormuz claims and the strike on St. Petersburg. Yet the 10-year fell 15 basis points last week, which says bond investors think oil will hurt growth more than it stokes lasting inflation. Wednesday’s 20-year auction and Friday’s business surveys test that bet.</p>
+        <p><b>3. A Fed that has gone quiet.</b> No Fed speeches until the decision on Oct. 28. Futures price about an 85% chance of no change. With no Fed comment until then, the only things that can move those odds are oil, Friday’s inflation expectations from the University of Michigan survey, and the business surveys’ price gauges.</p>
+        <p><b>4. Rotation, or the start of something broader?</b> Last week the average stock rose while the index fell: equal-weight S&amp;P +0.5%, staples +5.0%, energy +4.9%, technology −7.7%. If big-tech results stop the chip slide, that is a healthy rotation. If they don’t and credit starts to widen, it becomes a correction. High-yield spreads, at 3.23 points, are the gauge.</p>
+        <p><b>5. Sixteen days to the election.</b> Pennsylvania’s registration deadline is Monday, Texas starts early voting the same day, and the Justice Department’s suit over California mail ballots awaits a first ruling.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-days">
+      <h2 id="s-days">The Week Day by Day</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times Eastern. Consensus figures from secondary aggregators, shown only where we found them. Earnings dates from company announcements where noted, otherwise from Finnhub and Alpha Vantage calendars. No NYSE holiday or early close this week.</caption>
+          <thead><tr><th>Day</th><th>What’s scheduled</th><th>What would move things</th></tr></thead>
+          <tbody>
+            <tr><td>Sun 10/18</td><td>6 PM futures and oil reopen. 10 PM China Q3 GDP (Reuters poll 4.4% y/y), Sept. retail sales, industrial output, investment.</td><td><b>High for oil.</b> First trade after the Hormuz mine claims and the St. Petersburg strike.</td></tr>
+            <tr><td>Mon 10/19</td><td>Before the open: Cleveland-Cliffs, Fifth Third. After: Steel Dynamics, Zions, W.R. Berkley. 10:00 NAHB housing index (forecast 31). 11:30 $95B 13-week and $82B 26-week bills. 6:30 AM Falcon 9 Bandwagon-5; 3:41 PM Japan’s H3 launches the MMX probe to Phobos. Pennsylvania voter-registration deadline; PA House and Senate return; Texas early voting opens; Supreme Court order list expected.</td><td>Low. Monday is about the oil open and China, not the calendar.</td></tr>
+            <tr><td>Tue 10/20</td><td>8:30 housing starts and permits (Sept., starts consensus about 1.30M). Before the open: GE Aerospace, RTX, Northrop Grumman, 3M, GM, Halliburton, Synchrony, KeyCorp. After: <b>Netflix</b>, Intuitive Surgical, Capital One, United Airlines, Chubb; <b>SpaceX</b> expected (date per Finnhub and previews, not seen confirmed by the company). 11:30 $95B 6-week bills. Regeneron’s VEXAS drug decision reportedly due.</td><td><b>Medium.</b> Defence results on a war footing; Capital One and Synchrony on card losses; Netflix and SpaceX after the bell.</td></tr>
+            <tr><td>Wed 10/21</td><td>2 AM UK CPI. Before the open: AT&amp;T, Philip Morris, Abbott, Thermo Fisher, Danaher, NextEra, Elevance. 1 PM <b>$13B 20-year bond reopening</b>. After the close: <b>Meta, Tesla, IBM, Lam Research, Texas Instruments</b>, SAP, CSX, Las Vegas Sands, Baker Hughes, Kinder Morgan. 10:30 EIA oil inventories. Allegheny County budget hearing, 5 PM. IDWeek and Kidney Week open.</td><td><b>Very high.</b> The week’s hinge: the long-bond auction in the afternoon, then five AI-exposed companies report within an hour.</td></tr>
+            <tr><td>Thu 10/22</td><td>8:30 jobless claims (consensus 200K). Before the open: Procter &amp; Gamble, Lockheed Martin, Union Pacific, Honeywell, Blackstone, Comcast, General Dynamics (date unconfirmed), Dow, Valero, American Airlines. 1 PM $26B 5-year TIPS (new issue). After: Western Digital. Turkey’s central bank (reported).</td><td><b>Medium-high.</b> The market’s reaction to Wednesday night; Valero and Dow on what $110 oil does to margins.</td></tr>
+            <tr><td>Fri 10/23</td><td>7 AM SLB; American Express before the open. 9:45 S&amp;P Global flash PMIs (Sept. composite 58.4). 10:00 University of Michigan final October (preliminary 46.3, one-year inflation expectations 4.7%). Euro-area and UK flash PMIs; Japan CPI (Thursday evening ET). 2 PM NASA Artemis briefing. PRT board votes on the Wabash Tunnel. ESMO cancer congress opens.</td><td><b>Medium.</b> PMI price gauges and inflation expectations are the last data before the Fed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy Ahead</h2>
+      <div class="story-body">
+        <p><b>The Fed is silent; the market decides.</b> The target range is 3.75–4.00% after September’s hike. The blackout runs until the day after the Oct. 27–28 meeting, so no official will steer expectations this week. On Friday, CME FedWatch put the chance of an October hike at about 13–18%, down from roughly 50% after Wednesday’s CPI. One secondary reading puts December at close to 90%. Goldman Sachs expects a pause in October and a hike in December. That shift came from the bond rally, not from anything the Fed said. Chair Warsh’s last word was “I don’t prejudge meetings.” With no speeches to watch, the October odds will follow oil and Friday’s inflation-expectations figure.</p>
+        <p><b>The data.</b> A light week. <i>Tuesday:</i> September housing starts, expected around 1.30 million at an annual rate after 1.275 million, with the 30-year mortgage at 7.40%. A miss would support the bond market’s slowdown view. <i>Thursday:</i> jobless claims, expected around 200,000. They have stayed between 198,000 and 207,000 for two months, so a jump above 220,000 would be the first sign of layoffs reaching the numbers. The Conference Board’s leading index comes out the same day. <i>Friday:</i> the S&amp;P Global flash PMIs, which were very strong in September (composite 58.4); a preview expects them to “ease slightly.” Their input-price gauges will show whether energy costs are moving through to what businesses charge. Then the University of Michigan’s final October survey. The preliminary reading was 46.3, close to May’s record low of 44.8, with one-year inflation expectations at 4.7% and five-to-ten-year at 3.5%. If long-run expectations move above 3.5%, it would be the clearest sign yet that the oil shock is changing how people expect prices to behave. That matters more to the Fed than another hot monthly number. All of these are first prints, and none of them can settle the October decision by itself.</p>
+        <p><b>The Treasury.</b> Supply this week is $95 billion of 13-week and $82 billion of 26-week bills on Monday, $95 billion of 6-week bills on Tuesday, a <b>$13 billion reopening of the 20-year bond</b> on Wednesday at 1 PM, and <b>$26 billion of new 5-year TIPS</b> on Thursday at 1 PM (TreasuryDirect). The 20-year par yield is 5.47%, the highest point on the curve, and since it was reintroduced in 2020 it has often drawn softer demand than its neighbours. A weak auction, with a high yield well above where it traded beforehand and a light take from end investors, would show whether last week’s rally rested on short-covering. The TIPS sale tests demand for inflation protection with 10-year breakevens at 2.35%. Next week brings two-, five- and seven-year notes, and the November refunding announcement follows the Fed meeting. Separately, Treasury’s waiver of parts of the Russia sanctions law (see Today’s News) adds to the questions senators of both parties have raised about the diesel license.</p>
+        <p><b>Abroad.</b> <i>China</i> reports third-quarter growth tonight at 10 PM ET; the Reuters poll expects 4.4% from a year earlier, below the 4.5–5% target. The People’s Bank is expected to hold its loan prime rate on Tuesday. A miss would weigh on copper and on Asian markets already hit by the chip selloff. <i>Britain’s</i> September CPI comes out Wednesday (August 3.1%). <i>Japan’s</i> national CPI comes out Thursday evening our time (August core 1.7%); the Bank of Japan meets Oct. 29–30, the day after the Fed, and Governor Ueda said last week that rates will keep rising. Flash PMIs for the euro area, Germany and Britain come out Friday; the euro area’s September composite was a 41-month high of 53.1. Turkey’s and Hungary’s central banks meet. The European Central Bank (Oct. 29) and the Bank of Canada (Oct. 28) follow next week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-earnings">
+      <h2 id="s-earnings">Earnings &amp; Business</h2>
+      <div class="story-body">
+        <p><b>Wednesday night is the week.</b> Meta (call 4:30 PM, date confirmed by the company), Tesla (5:30 PM call, confirmed by an 8-K), IBM (5 PM, confirmed), Texas Instruments (4:30 PM, confirmed) and Lam Research report in the same hour. Consensus earnings per share, from Finnhub and other aggregators: Meta about $6.31–6.67 on revenue near $64.6 billion; Tesla about $0.44–0.45 on about $27.8–28.4 billion (one calendar shows $0.21, which looks like an outlier); IBM about $2.87–2.90; Lam about $2.17–2.22; TI about $2.39–2.44.</p>
+        <ul>
+          <li><b>Meta</b> matters most. Last week’s selloff came down to whether the biggest buyers keep spending on AI data centres. If Meta holds or raises its spending outlook, it supports Nvidia, the memory makers and the power producers. A cut would confirm the market’s fear. Its stock fell 3.7% on Friday to $709.33.</li>
+          <li><b>Lam Research</b> lost 17.2% last week and is 40% below its high. Its results test whether chip-equipment orders actually weakened or whether the stock just fell with the group.</li>
+          <li><b>Tesla</b> fell 7.3% last week. Third-quarter deliveries of about 486,500 are known; what matters now is margins and its spending on AI computing.</li>
+          <li><b>Texas Instruments</b> is the clearest read on non-AI industrial and auto chips.</li>
+        </ul>
+        <p><b>Tuesday.</b> <i>Netflix</i> reports after the close (about $0.82–0.84 a share against its own guidance of $0.82 and $12.86 billion of revenue). Options imply a move of about 9%, and it changed leadership a week before reporting. <i>SpaceX</i> is expected the same evening, with consensus of about $0.14 a share on $12.9 billion of revenue. <span class="flag">Date not confirmed by the company</span> Finnhub and several previews list Tuesday, while another calendar shows Nov. 3. Evercore expects announcements about computing deals; the stock is $146.03, 35% below its 52-week high. Before the open: the defence contractors <i>RTX</i> (about $1.78) and <i>Northrop Grumman</i> (about $7.18–7.26), then <i>GE Aerospace</i> (about $2.01) and <i>GM</i> (about $3.52–3.72). <i>Capital One</i> and <i>Synchrony</i> give the next read on card losses, which the big banks showed holding steady.</p>
+        <p><b>Thursday and Friday.</b> <i>Lockheed Martin</i> (about $7.42–7.51 a share; up 8.3% last week on the Gulf), <i>Procter &amp; Gamble</i> (about $1.89–1.94; its first comments on pricing since the oil spike), <i>Union Pacific</i>, <i>Honeywell</i>, <i>Blackstone</i> (private credit and data-centre lending, directly relevant to the AI-debt question), <i>Valero</i> (refining margins with diesel tight) and <i>American Airlines</i> (jet fuel). On Friday, <i>American Express</i> (about $4.47–4.60) and <i>SLB</i> report. Not this week, despite some calendars: Verizon (Oct. 26), Coca-Cola (Oct. 27), Intel (Oct. 29). Microsoft, Alphabet and Amazon report the following week.</p>
+        <p><b>The season so far.</b> FactSet expects third-quarter S&amp;P 500 earnings growth near 30%, and Deutsche Bank thinks it could reach a record 34%. The banks mostly beat. Profits are not the market’s problem; it is asking what next year’s spending costs, and who is lending for it.</p>
+        <p><b>Credit.</b> CoreWeave’s five-year credit default swaps rose from about 368 to about 643 basis points in ten days (Bloomberg data via CNBC), and its bonds trade near 15%. It does not report until about Nov. 9. Watch for a financing announcement. A deal would ease the pressure; a rating downgrade would spread it. One reported item, unconfirmed: the Financial Times says Anthropic offered Blackstone a yield above 10% on part of a chip-backed debt package. Anthropic is private and this paper prints no price for it.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Market Setup</h2>
+      <div class="story-body">
+        <p><b>Indexes.</b> The S&amp;P 500, at 7,659.44, is 2.0% below its Oct. 6 record of 7,818.93, about 1% below its 20-day average and 5.3% above its 200-day. The Nasdaq 100 fund (QQQ) is 4.4% below its 20-day average. The Russell 2000 is 6.4% below its 50-day, the weakest of the major indexes. The Dow is 0.9% above its 20-day. On balance the index has pulled back without breaking down; the chip stocks have broken down.</p>
+        <p><b>The levels we will judge the week by.</b> For the S&amp;P, Friday’s 7,659 is the pivot. A close back above 7,744 (Thursday’s close) would say the chip selloff has been absorbed. A close below about 7,500, 4% off the record, would make this the deepest pullback since the spring. For SMH, Friday’s 539.79 is 10% below its 20-day average; a rebound week after nine straight losing days would not be unusual, but nothing yet signals one. The VIX is 19.99, with the nine-day measure (20.12) above it and the three-month (20.50) above both. A close above 25 would mean investors are paying up for protection beyond this week’s earnings.</p>
+        <p><b>Sectors.</b> Energy (XLE 68.24) closed at a 52-week high and staples are 5.8% above their 20-day average. Both are stretched after a defensive week, which leaves them open to a pullback if Wednesday reassures. Technology (XLK) is 6.3% below its 20-day. Regional banks (KRE) were flat-to-up all week; Capital One’s and Synchrony’s card books on Tuesday are their next test.</p>
+        <p><b>Rates and credit.</b> 10-year par 5.09%, 2-year 4.74%, 30-year 5.43%, 2s10s 35 basis points. Ten-year real yield 2.78%, breakeven 2.35%. High-yield spreads 3.23 points (Oct. 15), investment-grade 0.84. The high-yield fund HYG fell 0.5% last week while investment-grade LQD rose 1.0%, a mild split between riskier and safer credit.</p>
+        <p><b>Oil, the dollar, gold, crypto.</b> Brent $109.86, WTI $101.41 (Nov.); the dollar index 101.78; gold $4,181, still not behaving like a safe haven; bitcoin about $81,900 on Sunday morning.</p>
+        <p><b>Our calls for the week.</b> We put the chance of the S&amp;P 500 closing Friday above 7,659.44 at 45–55%: Wednesday could go either way, and last week’s selling was concentrated, not broad. We put a new record by Friday at 10–20%. We put the chance of SMH ending the week above 539.79 at 45–55%. We put Meta keeping or raising its spending outlook, rather than cutting it, at 80–90%. Its management has signalled more spending, not less, all year, but the market has punished spenders. We give Tesla beating $0.44 a share 45–60% and Netflix reaching its own $12.86 billion revenue guidance 70–80%. The 10-year closing Friday between 4.95% and 5.25%: 65–75%. The 20-year auction clearing below 5.55%: 60–75%. Jobless claims under 215,000: 75–85%. Brent settling above $100 on Friday: 75–85%. October hike odds above 30% on Friday: 15–25%. China’s growth at or above 4.4%: 50–60%. We will grade each of these on Saturday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risk Register</h2>
+      <div class="story-body">
+        <p><b>Big-tech spending disappoints.</b> Probability 10–20% that Meta lowers its spending outlook. A trim would ease worries about AI debt but hurt the companies that sell to it. Impact: very high for SMH, Nvidia, Micron, Broadcom and the power producers. Horizon: Wednesday after 4 PM. Early indicators: Netflix’s and TI’s tone; Lam’s order book. Affected: SMH, NVDA, MU, AVGO, VST, CEG, the Nasdaq-100. Mitigants: a spending cut also means less borrowing, which could steady credit.</p>
+        <p><b>AI credit spreads to the wider market.</b> Probability 20–30% that high-yield spreads reach 3.40 points or more in any reading through Thursday’s data. Basis: 3.11 to 3.23 last week, with CoreWeave’s CDS near 650 basis points, but investment-grade unchanged. Trigger: a rating downgrade or a failed CoreWeave financing. Early indicators: CoreWeave’s and Nebius’s bond prices, HYG. Affected: HYG, CRWV, NBIS, IREN, ORCL, private-credit managers. Mitigant: probability 25–40% that CoreWeave announces new financing this week.</p>
+        <p><b>Volatility jumps.</b> Probability 15–25% that the VIX closes above 25 on at least one day. Basis: 19.99 with a flat curve and the nine-day measure above spot. Trigger: a bad Wednesday night. Affected: everything priced for calm.</p>
+        <p><b>A confirmed hit to Gulf oil supply.</b> Probability 15–25% that a Gulf government confirms a strike that damages an oil production, refining or export facility by Friday. Basis: Aramco’s Dhahran office was hit last week and missiles fired at Yanbu were intercepted, but no oil facility has been confirmed hit; mine claims are rising. Impact: very high, through Brent, breakevens and October hike odds. Affected: Brent, XLE, airlines, 2-year notes, TIPS. Mitigants: about 70% of normal Hormuz flow continues; Iran’s seven-day plan is on the table.</p>
+        <p><b>A US strike on Iran.</b> Probability 3–8% this week. The president has pledged none before Nov. 3, though strike options are reported to be ready. Impact: extreme. We keep it on the register because the pledge is a statement, not a constraint.</p>
+        <p><b>A weak long-bond auction.</b> If Wednesday’s 20-year clears at 5.55% or higher (25–40% chance, the complement of our call above), the bond rally’s weak base is exposed and higher long yields land on the same afternoon as the tech results. Affected: TLT, mortgage rates, homebuilders, utilities.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scenarios">
+      <h2 id="s-scenarios">Scenarios</h2>
+      <div class="story-body">
+        <p><b>Base case, about 45–55%: earnings steady the market without settling the debt question.</b> Meta keeps spending, Tesla and IBM are mixed, and chips stop falling but don’t rally much. The S&amp;P 500 ends Friday between 7,506 and 7,812, within 2% of its current level. The 10-year stays between 4.95% and 5.25% and Brent between $100 and $115. October hike odds stay below 30%. <i>Confirmers:</i> SMH within 3% of 539.79 on Thursday; the VIX back below 20; the 20-year auction clears close to where it traded beforehand. <i>Invalidators:</i> a Meta spending cut, Brent above $115, the VIX above 25.</p>
+        <p><b>Bull case, about 15–20%: the selloff proves overdone.</b> Meta raises spending and beats, Lam reports strong orders, and CoreWeave finds financing. SMH rises 5% or more, the S&amp;P ends Friday above 7,812, and the VIX falls below 17. Iran and the US move toward talks and Brent eases toward $100. <i>Confirmers:</i> a CoreWeave financing announcement; high-yield spreads back near 3.10; a Washington reply to Iran’s seven-day plan.</p>
+        <p><b>Bear case, about 20–30%: AI-debt fears spread.</b> A big buyer trims spending or a lender pulls back, CoreWeave is downgraded or fails to raise money, and the chip slide resumes. The S&amp;P ends Friday below 7,506, more than 4% off its record. The VIX closes above 25 at some point and high-yield spreads reach 3.40. Bonds rally further unless oil spikes. <i>Confirmers:</i> SMH down another 5%; HYG at a new 52-week low (it is 0.6% above it); the Nasdaq-100 losing its 200-day average.</p>
+        <p><b>Shock case, about 5–10%: the Gulf hits supply.</b> A confirmed strike damages Gulf production or exports, or a ship is confirmed lost to a mine in the main lanes. Brent settles above $120 at least once this week, the October hike comes back into play and stocks and bonds fall together. This would override the other scenarios.</p>
+        <p><b>What would change the outlook.</b> A US answer to Iran’s seven-day plan; a ceasefire between the Houthis and Saudi Arabia; a CoreWeave refinancing; jobless claims above 230,000, which would turn the conversation from inflation to recession; or long-run inflation expectations in the Michigan survey above 3.6%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>The campaign, 16 days out.</b> Monday is Pennsylvania’s voter-registration deadline. Texas opens early voting the same day, running through Oct. 30. Georgia’s has been open since Oct. 13, Delaware’s runs Oct. 22–24, and New York’s registration deadline and early voting both fall on Saturday. Generic-ballot averages show Democrats ahead by about 8–9 points: Silver Bulletin D+8.9, FiftyPlusOne 51.3–43.1, RealClearPolling D+8.0. Individual polls range from D+2 to D+12, and the averages have levelled off since September. Republicans hold the Senate 53–47, so Democrats need a net gain of four seats. Prediction markets and one model put Democratic chances of control at about 60%. These are market prices and model outputs, not polls, and averages describe the race today, not the result. We found no Senate or governor debates confirmed for this week. In Texas, Ken Paxton has not agreed to debate James Talarico.</p>
+        <p><b>The courts.</b> <i>United States v. California</i> (C.D. Cal., No. 2:26-cv-12025) asks a federal judge to set aside mail ballots from about 20,000 voters on a federal list of people the government says are likely noncitizens. Los Angeles County’s registrar says he cannot withhold ballots “based solely on unverified allegations,” and says the county declined to open the list, which arrived on a thumb drive, for data-security reasons. Immigrant-rights groups want a temporary restraining order against the government. We have not found a hearing date. We put the chance of a ruling on any emergency motion by Friday at 45–60%. The case is at the pleading stage, and none of the claims has been tested in court. The Supreme Court hears no arguments until Nov. 2; an order list is expected Monday, and the government’s request to resume deportations to third countries is still pending.</p>
+        <p><b>Investigations and the White House.</b> Rep. Ilhan Omar has not been charged. The AP, citing one source, reports her phone was seized and more than a dozen grand-jury subpoenas were issued in Minnesota, some to relatives, in an inquiry into family immigration paperwork. She calls the search “political intimidation.” The press secretary’s job is vacant again after Katie Zacharia’s five-day tenure, and Fox reports the president is in “no rush” to fill it. Saturday’s “No Kings” rallies, focused on turnout, drew far smaller crowds than in March.</p>
+        <p><b>Congress.</b> Out until after the election. Government funding runs to Dec. 11, when highway, farm and several health programs also come due. A lame-duck spending fight is certain.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World Ahead</h2>
+      <div class="story-body">
+        <p><b>The Gulf.</b> See Today’s News. The week’s questions are whether Washington answers Iran’s seven-day proposal, whether the Houthi campaign against Saudi Arabia escalates (the coalition counts 20 attacks on Riyadh’s airport this month), and whether Egypt sends help to Riyadh, which Al Jazeera reports it is considering. Iran’s parliament confirmed a new defence minister, Mehrdad Akhlaghi Ketabchi, who has threatened “enormous damage” if the US attacks.</p>
+        <p><b>Israel votes on Oct. 27.</b> The polls point to a hung Knesset. A Maariv average gives Gadi Eisenkot’s Yashar 21.5 seats to Likud’s 19, with both blocs near 51 of the 61 needed; a Times of Israel poll has Yashar 26, Likud 20. Opposition leader Yair Lapid said on Saturday he does not trust the prime minister not to launch an Iran strike that could disrupt the vote. Israeli strikes in southern Lebanon continue despite the ceasefire nominally in force since April.</p>
+        <p><b>Russia, Ukraine and Europe.</b> After the weekend’s drone attack, expect Russian retaliation. The EU summit ended without a plan to fund Ukraine in 2027, and the Commission now has to draft one: Belgium still blocks using frozen Russian assets, so new EU borrowing looks the likeliest route. In France, watch for a no-confidence motion over the budget after Saturday’s violence.</p>
+        <p><b>Asia.</b> China’s growth figure tonight. China’s live-fire drills along its coast were announced to run to Oct. 20; Taiwan says they are coastal artillery firing, not exercises around the island. North Korea has fired missiles twice this month. The ASEAN summit is not until Nov. 16–18 in Manila.</p>
+        <p><b>Brazil votes on Sunday, Oct. 25.</b> The runoff between President Lula and Flávio Bolsonaro is within the margin of error: Datafolha (Oct. 15) and Quaest (Oct. 14) both have Bolsonaro about two points ahead in valid votes, and one outlier has Lula ahead. According to the Rio Times, the one source for the debate schedule, Bolsonaro skipped tonight’s Band debate and has not confirmed Globo’s on Friday. Brazil’s real and stocks are where the result shows up first.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-ai">
+      <h2 id="s-ai">AI &amp; Technology Ahead</h2>
+      <div class="story-body">
+        <p><b>The results.</b> Wednesday night, above, is the week for AI. The question for Meta, Tesla and IBM is the same: is spending on computing rising or falling, and how is it paid for?</p>
+        <p><b>Anthropic’s numbers, as reported.</b> Reuters, citing one investor at a pre-IPO meeting, and the Financial Times report that Anthropic’s third-quarter revenue was about $16.8 billion, up about 45% from the second quarter, with an adjusted operating margin of about 11%. Anthropic has not published these figures, and it is not clear how revenue is defined. Reports put its IPO target near $1.8–2 trillion, with timing described as fluid. Separately, CGTN reports that Anthropic is circulating a draft federal bill that would let the government block a model’s release, with a judge’s approval, if it posed an imminent risk of mass casualties or more than $1 billion of damage. We have not seen this in US outlets. <span class="flag">Single source</span></p>
+        <p><b>Chips and money.</b> Nvidia holds its GTC Berlin conference Tuesday to Thursday. The FT and Reuters report that SpaceX is negotiating about $40 billion of debt, led by Apollo, to buy Nvidia chips; nothing has been signed. A trade site reports that China published a draft catalogue of AI technologies subject to export controls on Oct. 16, with comments due Nov. 15; we have not seen Reuters or official confirmation.</p>
+        <p><b>Events.</b> The PyTorch Conference and Gartner’s IT Symposium run this week. No major model launch is publicly scheduled. OpenAI’s GPT-6 rollout continues; reports that a follow-up release was pulled after safety tests rest on one blog and we do not repeat them as fact.</p>
+        <p><b>Cyber.</b> The heart-monitor maker iRhythm disclosed a breach affecting 8.2 million people. A China-linked group has been exploiting a BeyondTrust remote-support flaw since late August (no government attribution). Attackers using a stolen Microsoft 365 credential reached 173 customer accounts at ConnectWise’s cloud-backup service.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-sci">
+      <h2 id="s-sci">Science Ahead</h2>
+      <div class="story-body">
+        <p><b>Medicine.</b> IDWeek, the main US infectious-disease meeting, opens Wednesday in Washington with measles at the centre: the CDC counts 4,410 US cases this year as of Oct. 15, nearly double all of 2025, and the Pan American Health Organization reviews America’s elimination status in November. Kidney Week opens in Denver the same day, and the European cancer congress ESMO opens in Madrid on Friday, where late-breaking trial results tend to move biotech stocks. The CDC’s vaccine advisory committee meeting set for Oct. 21–23 is listed as cancelled because of litigation, so there will be no federal vote on this fall’s shots; insurers say flu and COVID vaccines stay free to patients through 2026. The FDA is reported to be due to decide on Regeneron’s pozelimab for the rare inflammatory disease VEXAS by Tuesday; the company has not confirmed the date in what we have seen.</p>
+        <p><b>Physical sciences.</b> Planetary scientists meet in Spokane from Oct. 25. If Japan’s MMX launches Monday, it would be the first attempt to bring a sample back from a Martian moon (see Space).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space Ahead</h2>
+      <div class="story-body">
+        <p><b>The launch calendar</b> (Launch Library 2 and Spaceflight Now; all times Eastern, all subject to weather and slips).</p>
+        <ul>
+          <li><b>Mon 6:30 AM</b>, Falcon 9 Bandwagon-5 rideshare from Cape Canaveral, about 31 payloads.</li>
+          <li><b>Mon 3:41 PM</b>, Japan’s H3 launches JAXA’s Martian Moons eXploration from Tanegashima. It is meant to land on Phobos, carry a French–German rover and return a sample to Earth around 2031. It is the week’s most important launch.</li>
+          <li><b>Tue 6:14 PM</b>, Falcon 9 Starlink 15-15 from Vandenberg, on a booster making its 36th flight.</li>
+          <li><b>Tue–Thu</b>, a Galactic Energy Ceres-1S from the Chinese coast; Rocket Lab Electron with three HawkEye 360 satellites from New Zealand (date to be confirmed); three Long March missions.</li>
+          <li><b>Sat 1:29 AM</b>, Falcon 9 Starlink 15-16. ULA’s Vulcan, carrying Amazon’s Leo satellites, is pencilled in for about Oct. 29.</li>
+        </ul>
+        <p><b>NASA.</b> On Tuesday at 2 PM, a news conference previews the last two spacewalks to install roll-out solar arrays, reportedly set for Oct. 29 and Nov. 5. On Friday at 2 PM, Administrator Jared Isaacman and program leaders brief on Artemis: Artemis III becomes a crewed docking test in Earth orbit in 2027, and the first landing moves to Artemis IV in 2028.</p>
+        <p><b>Business.</b> SpaceX’s expected results on Tuesday are its first big test since the stock fell 35% below its 52-week high, with the $40 billion chip-financing talks in the background. Rocket Lab is 25% lower after delaying Neutron to 2027 over voids in a carbon-composite tank dome. Blue Origin’s New Glenn is grounded until about year-end after April’s failure and May’s pad explosion.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News Ahead</h2>
+      <div class="story-body">
+        <p>Trudy’s remnants should fade by mid-week; Mexico’s Pacific coast faces flooding and mudslides until then. Guam assesses damage from Champi, its third strong storm since April. In Alberta, the military is expected to give an official toll for the Wainwright fire.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local Week Ahead</h2>
+      <div class="local">
+        <div class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Register by Monday; Harrisburg returns with skill games already being seized</h3>
+          <p>The deadline to register for the Nov. 3 election is <b>Monday, Oct. 19</b>, online, in person or by mail. Mail-ballot applications are due by 5 PM on Oct. 27, and ballots must arrive by 8 PM on Election Day (Department of State). The House returns at noon Monday for three session days and the Senate at 1 PM. We found no floor agenda. Skill games are now an enforcement matter: the state Supreme Court refused to extend its stay, State Police began seizing machines on Oct. 14, and bills that would legalise them until April sit in committee. The governor wants a 52% tax, Senate Republicans about 35%. We put the chance of a skill-game bill reaching the governor this week at 3–10%. The state reports 1,260 measles cases as of Oct. 16, with five deaths confirmed and a sixth under review; it is the country’s largest outbreak in about 30 years. In the governor’s race, the only debate is over; Quinnipiac’s likely-voter poll has Gov. Shapiro at 59% to Stacy Garrity’s 34%.</p>
+          <p class="story-sourceline">Pennsylvania Department of State · palegis.us · Pennsylvania State Police · Pennsylvania Department of Health via AP and AHA News · Quinnipiac University.</p>
+        </div>
+        <div class="local-item">
+          <p class="local-place">Pittsburgh · Allegheny County</p>
+          <h3>The Wabash Tunnel vote is Friday; county budget hearings start Wednesday</h3>
+          <p>Pittsburgh Regional Transit’s board votes on <b>Friday, Oct. 23</b> on staff’s recommendation to close the 123-year-old Wabash Tunnel to traffic for good on Dec. 1. Staff say keeping it open would need about $43 million of work, with lighting, ventilation and electrical systems rated poor to critical, for about 1,500 cars a day and no buses. Federal regulators have already approved the closure. The tunnel would not be demolished and the Wabash park-and-ride stays open. South Hills drivers would shift to the Fort Pitt and Liberty tunnels. We put approval at 65–80%, since it is a staff recommendation with federal sign-off in hand (WESA, CBS Pittsburgh, TribLive). County Council’s budget committee holds hearings on <b>Wednesday, Oct. 21, and Oct. 29 at 5 PM</b> in the Gold Room on County Executive Sara Innamorato’s $1.25 billion plan, which has no tax increase and cuts 150 vacant positions; it must be adopted by Dec. 6. In the city, Mayor Corey O’Connor’s 2027 plan draws about $26–27 million from reserves, and the controller warns reserves are nearing critical levels.</p>
+          <p class="story-sourceline">WESA · CBS Pittsburgh · TribLive · WPXI · Allegheny County · PublicSource.</p>
+        </div>
+        <div class="local-item">
+          <p class="local-place">Bridgeville · South Fayette · South Hills</p>
+          <h3>A sunny, frosty-morning week; signal work continues on Route 50</h3>
+          <p>The National Weather Service expects a dry week, with highs of 61 today and 65–67 Monday to Friday, lows in the upper 30s early in the week and frost likely tonight and early Monday. PennDOT’s signal upgrades on Washington Pike/Route 50, including the I-79 interchange in Collier, have been scheduled to run through late November, with weekday lane restrictions between 9 AM and 3 PM. South Fayette students have a two-hour delayed start on Monday. Bridgeville’s borough taxes are payable at face value until Oct. 31.</p>
+          <p class="story-sourceline">National Weather Service Pittsburgh · PennDOT District 11 · South Fayette School District · Borough of Bridgeville.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Neutral, tilting defensive</span> Unchanged from Saturday, since only crypto has traded. <b>Supporting risk-off:</b> SMH −10.5% on the week and 10.2% below its 20-day average; the Nasdaq 5.3% off its record; VIX 19.99 with VIX9D above it; high-yield spreads 3.23 from 3.11; CoreWeave CDS near 650bp; Brent at a five-month high with new weekend Gulf and Baltic supply risk. <b>Contradicting:</b> S&amp;P 500 only 2.0% off its record and 5.3% above its 200-day; equal weight up on the week; investment-grade spreads unchanged at 0.84; Treasuries rallied 15bp; financials and regional banks up. Confidence: moderate. The week’s deciding inputs are Wednesday night’s results and the 20-year auction.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities, sectors &amp; trend</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official closes, Fri Oct 16, 2026, with the week’s change and distance from simple moving averages · Yahoo Finance v8, fetched Sun Oct 18 (free tier; ETF quotes single-venue).</caption>
+              <thead><tr><th>Index / fund</th><th>Oct 16</th><th>Week</th><th>vs 20d</th><th>vs 50d</th><th>vs 200d</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,659.44</td><td class="down">−1.95%</td><td>−1.0%</td><td>−0.6%</td><td>+5.3%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>26,140.03</td><td class="down">−4.48%</td><td>−3.4%</td><td>−1.8%</td><td>+4.9%</td></tr>
+                <tr><td>Dow Jones Industrial Average</td><td>52,002.41</td><td class="up">+0.67%</td><td>+0.9%</td><td>−0.9%</td><td>+3.1%</td></tr>
+                <tr><td>Russell 2000</td><td>2,721.37</td><td class="down">−3.05%</td><td>−3.2%</td><td>−6.4%</td><td>−2.6%</td></tr>
+                <tr><td>QQQ</td><td>709.80</td><td class="down">−5.52%</td><td>−4.4%</td><td>−2.3%</td><td>+5.2%</td></tr>
+                <tr><td>RSP (equal weight)</td><td>214.09</td><td class="up">+0.49%</td><td>+1.2%</td><td>−0.8%</td><td>+3.6%</td></tr>
+                <tr><td>SMH (semiconductors)</td><td>539.79</td><td class="down">−10.53%</td><td>−10.2%</td><td>−6.8%</td><td>+5.6%</td></tr>
+                <tr><td>XLE energy</td><td>68.24</td><td class="up">+4.86%</td><td>+6.8%</td><td>+7.4%</td><td>+18.4%</td></tr>
+                <tr><td>XLP staples</td><td>87.62</td><td class="up">+5.02%</td><td>+5.8%</td><td>+4.2%</td><td>+4.3%</td></tr>
+                <tr><td>XLV health care</td><td>176.71</td><td class="up">+3.45%</td><td>+3.9%</td><td>+3.9%</td><td>+12.2%</td></tr>
+                <tr><td>XLF financials</td><td>55.52</td><td class="up">+1.44%</td><td>+2.0%</td><td>−1.3%</td><td>+3.4%</td></tr>
+                <tr><td>KRE regional banks</td><td>69.81</td><td class="up">+1.16%</td><td>−0.4%</td><td>−4.3%</td><td>−1.3%</td></tr>
+                <tr><td>XLI industrials</td><td>167.76</td><td class="down">−0.88%</td><td>−0.8%</td><td>−3.7%</td><td>−3.0%</td></tr>
+                <tr><td>XLY discretionary</td><td>112.46</td><td class="down">−0.35%</td><td>+1.2%</td><td>−1.2%</td><td>−3.0%</td></tr>
+                <tr><td>XLK technology</td><td>183.47</td><td class="down">−7.70%</td><td>−6.3%</td><td>−3.4%</td><td>+9.5%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Leadership is defensive and stretched: energy closed at a 52-week high, staples are nearly 6% above their 20-day. Technology and semiconductors are the only groups well below short-term trend while still well above the 200-day: a correction inside an uptrend, so far.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>This week’s reporters</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Fri Oct 16, 2026 · Yahoo Finance v8. Report timing per company where confirmed, else Finnhub/Alpha Vantage. EPS consensus ranges from Finnhub, Alpha Vantage and secondary aggregators.</caption>
+              <thead><tr><th>Company</th><th>Reports</th><th>Close</th><th>Week</th><th>EPS est.</th></tr></thead>
+              <tbody>
+                <tr><td>Netflix (NFLX)</td><td>Tue, after</td><td>70.53</td><td class="up">+0.33%</td><td>0.82–0.84</td></tr>
+                <tr><td>SpaceX (SPCX)</td><td>Tue, after (unconfirmed)</td><td>146.03</td><td class="down">−10.17%</td><td>~0.14</td></tr>
+                <tr><td>GE Aerospace (GE)</td><td>Tue, before</td><td>313.83</td><td class="up">+1.83%</td><td>2.01–2.06</td></tr>
+                <tr><td>RTX</td><td>Tue, before</td><td>193.92</td><td class="up">+4.27%</td><td>1.78–1.79</td></tr>
+                <tr><td>Northrop Grumman (NOC)</td><td>Tue, before</td><td>519.86</td><td class="up">+8.14%</td><td>7.18–7.26</td></tr>
+                <tr><td>GM</td><td>Tue, before</td><td>83.96</td><td class="up">+1.49%</td><td>3.52–3.72</td></tr>
+                <tr><td>Meta (META)</td><td>Wed, after</td><td>709.33</td><td class="down">−1.30%</td><td>6.31–6.67</td></tr>
+                <tr><td>Tesla (TSLA)</td><td>Wed, after</td><td>354.72</td><td class="down">−7.31%</td><td>0.43–0.45</td></tr>
+                <tr><td>IBM</td><td>Wed, after</td><td>232.14</td><td class="up">+2.21%</td><td>2.87–2.90</td></tr>
+                <tr><td>Lam Research (LRCX)</td><td>Wed, after</td><td>263.94</td><td class="down">−17.22%</td><td>2.17–2.22</td></tr>
+                <tr><td>Texas Instruments (TXN)</td><td>Wed, after</td><td>276.48</td><td class="down">−2.56%</td><td>2.39–2.44</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Reference names without reports this week: Nvidia 214.13 (−6.61%), Micron 878.84 (−14.59%), AMD 528.75 (−13.05%), Broadcom 328.75 (−9.07%), CoreWeave 61.39 (−25.21%, reports about Nov. 9).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>No new session since Saturday’s review. Latest whole-market counts: Oct 15, 4,038 advancers / 1,505 decliners; Oct 14, 1,366 / 4,179 (Massive grouped daily, EOD). Oct 16 breadth is computed in Monday’s run. Equal weight beat cap weight by about 2.4 points last week: participation is better than the index suggests, but the share of stocks above their 50-day trend is still low (about 32% on the Oct 15 EMA proxy, Estimated — accumulating history).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; credit</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury daily par yield curve, EOD official, Oct 9 → Oct 16, 2026 (home.treasury.gov, fetched Oct 18). Credit and real yields: FRED, EOD official, latest observation dates shown.</caption>
+              <thead><tr><th>Measure</th><th>Oct 9</th><th>Oct 16</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td>3-month</td><td>4.25%</td><td>4.26%</td><td>+1bp</td></tr>
+                <tr><td>2-year</td><td>4.80%</td><td>4.74%</td><td>−6bp</td></tr>
+                <tr><td>5-year</td><td>5.02%</td><td>4.89%</td><td>−13bp</td></tr>
+                <tr><td>10-year</td><td>5.24%</td><td>5.09%</td><td>−15bp</td></tr>
+                <tr><td>20-year</td><td>5.65%</td><td>5.47%</td><td>−18bp</td></tr>
+                <tr><td>30-year</td><td>5.60%</td><td>5.43%</td><td>−17bp</td></tr>
+                <tr><td>2s10s (FRED T10Y2Y)</td><td>0.44</td><td>0.35</td><td>−9bp</td></tr>
+                <tr><td>10-year real (DFII10, Oct 15)</td><td>2.91%</td><td>2.78%</td><td>−13bp</td></tr>
+                <tr><td>10-year breakeven (T10YIE)</td><td>2.33%</td><td>2.35%</td><td>+2bp</td></tr>
+                <tr><td>High-yield OAS (Oct 15)</td><td>3.11</td><td>3.23</td><td>+12bp</td></tr>
+                <tr><td>SOFR (Oct 15)</td><td>3.87%</td><td>3.89%</td><td>+2bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The rally came almost entirely through real yields, with breakevens steady: a growth signal, not an inflation all-clear. The 20-year remains the curve’s high point, which is what Wednesday’s reopening prices. Funding is calm (SOFR 3.89% inside the 3.75–4.00% range). HYG 76.86 is 0.6% above its 52-week low; LQD rose 0.97% on the week.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 19.99, VIX9D 20.12, VIX3M 20.50 (EOD official Oct 16, Yahoo Finance v8): near-term above spot, three-month still above both, so a flat curve, not an inversion. A week with five mega-cap reports on one night should keep short-dated implied volatility firm until Thursday. Dealer gamma is not tracked (no legitimate free source). Netflix options imply a move of about 9% (secondary report).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX, commodities &amp; crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Commodities and DXY: EOD official Oct 16 (Yahoo Finance v8; front-month futures, WTI Yahoo series rolled to December, the November contract settled $101.41 per CNBC). FX: ECB reference rates Oct 16 (Frankfurter). Crypto: Live, CoinGecko aggregate, Sun Oct 18 ~09:20 ET.</caption>
+              <thead><tr><th>Asset</th><th>Level</th><th>Week</th></tr></thead>
+              <tbody>
+                <tr><td>Brent</td><td>$109.86</td><td class="up">+4.91%</td></tr>
+                <tr><td>WTI (Dec, Yahoo)</td><td>$99.02</td><td class="up">+7.81%</td></tr>
+                <tr><td>Gold</td><td>$4,181.10</td><td class="down">−0.83%</td></tr>
+                <tr><td>Copper</td><td>$6.574/lb</td><td class="down">−1.04%</td></tr>
+                <tr><td>Natural gas</td><td>$3.116</td><td class="down">−3.23%</td></tr>
+                <tr><td>Dollar index (DXY)</td><td>101.78</td><td class="down">−0.36%</td></tr>
+                <tr><td>EUR per USD (ECB)</td><td>0.8887</td><td>—</td></tr>
+                <tr><td>JPY per USD (ECB)</td><td>158.02</td><td>—</td></tr>
+                <tr><td>CNY per USD (ECB)</td><td>6.6862</td><td>—</td></tr>
+                <tr><td>Bitcoin</td><td>$81,855</td><td class="down">−1.6% (7d)</td></tr>
+                <tr><td>Ether</td><td>$2,412.60</td><td class="down">−3.4% (7d)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Brent is 22% above its 200-day average and its first trade tonight absorbs the Hormuz mine claims and the St. Petersburg terminal fires. Gold continues not to trade as a haven. Bitcoin has tracked tech, not hedged it.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>TreasuryDirect upcoming auctions: Mon Oct 19, 13-week $95B and 26-week $82B; Tue Oct 20, 6-week $95B; Wed Oct 21, 20-year (19-year 10-month reopening) $13B; Thu Oct 22, 5-year TIPS $26B (new issue, dated Oct 15, settles Oct 30). 17-week, 4-week and 8-week bill sizes are announced Tuesday. Next week: 2-, 5- and 7-year notes and the 52-week bill. Last week’s 13-week bill sold at 4.085%.</p>
+        </details>
+      </details>
+    </section>
+
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This edition draws on Iranian state media, US Central Command, the Saudi-led coalition and Russian and Ukrainian officials, each identified as the party’s own account and reported through wire services; the BLS release calendar, TreasuryDirect’s auction schedule, the Treasury par-yield curve, FRED and the Federal Reserve; company investor-relations announcements and SEC filings for earnings dates, with Finnhub and Alpha Vantage calendars where companies have not confirmed; Launch Library 2, JAXA and NASA; the National Weather Service; and the Pittsburgh and Pennsylvania outlets named in each section. Prices are from Yahoo Finance and CoinGecko. Our researchers could read search summaries but not full articles from most news sites this weekend, so claims were cross-checked across outlets and single-source items are marked.</p>
+      <p><strong>Corrections.</strong> One, from Saturday’s Weekly Review, which said China’s drills near Taiwan continue “through Oct. 23”: the zones China announced run to Oct. 20, according to Hong Kong Free Press and the Japan Times.</p>
+      <p><strong>Method.</strong> Markets are closed for the weekend. Every market figure above is Friday Oct. 16’s official close unless marked live (crypto). Free-tier quotes are single-venue. Consensus estimates are from secondary aggregators and are given as ranges where they disagree. Forecast probabilities are ranges with stated reasons, logged and graded next Saturday, misses included. Missing data is declared missing, never invented. This paper is written and published automatically. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-17-sat.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
