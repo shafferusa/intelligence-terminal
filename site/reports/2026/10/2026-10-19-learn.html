@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Drop a Mouse Down a Thousand-Yard Mine Shaft and It Walks Away. A Horse Splashes. Size Alone Explains Why. — Learning Brief, Mon, Oct 19, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-19",
+    "slot": "learn",
+    "title": "Drop a Mouse Down a Thousand-Yard Mine Shaft and It Walks Away. A Horse Splashes. Size Alone Explains Why.",
+    "path": "reports/2026/10/2026-10-19-learn.html",
+    "summary": "Day 3 of the Connected Path: why scaling anything up grows its surface area as the square of its size but its weight as the cube, and what that mismatch explains from falling animals to an elephant's ears to a biologist's most argued-over number.",
+    "headlines": [
+      "Day 3 of 293 · Mathematics: area grows with the square of size, weight with the cube, so scaling up is never free",
+      "Kleiber's 3/4-power rule for metabolism is a widely used number whose exact value is still disputed",
+      "Watch or Read: The surprising math of cities and corporations (about 18 min)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-19T04:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Drop a Mouse Down a Thousand-Yard Mine Shaft and It Walks Away. A Horse Splashes. Size Alone Explains Why.</h1>
+      <p class="paper-dateline">
+        Monday, October 19, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Scale anything up and its weight grows faster than its surface &mdash; the same geometric
+        fact that lets a mouse walk away from a fall that would kill a horse, forces an elephant to
+        cool itself through its ears, and turns a biologist&rsquo;s rough rule for metabolism into
+        one of biology&rsquo;s longest-running arguments over a single exponent.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 3 of 293 &middot; Mathematics 3 of 24 &middot; Scaling and power laws: the square-cube law</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A biologist drops animals down a mine shaft, on paper</h3>
+      <p>
+        In March 1926 the British biologist J. B. S. Haldane published an essay called &ldquo;On
+        Being the Right Size&rdquo; in <em>Harper&rsquo;s Magazine</em>; it was collected the
+        following year in his book <em>Possible Worlds and Other Essays</em>. It contains one of
+        the most quoted thought experiments in science writing. Haldane imagined dropping animals
+        down a thousand-yard mine shaft: a mouse, he wrote, &ldquo;gets a slight shock and walks
+        away, provided that the ground is fairly soft,&rdquo; while a horse hitting the bottom
+        simply splashes &mdash; a rat or a man fares somewhere in between, though the exact wording
+        of that middle part shifted slightly between the original magazine printing and the book
+        reprint. Haldane dropped nothing: he was reasoning from geometry alone, at a desk.
+      </p>
+      <p>
+        The same essay turns to a giant from the illustrated <em>Pilgrim&rsquo;s Progress</em>
+        Haldane remembered from his own childhood: a man sixty feet tall, roughly ten times human
+        height, with every dimension scaled up to match. Such a giant would weigh in the
+        neighborhood of a thousand times as much as an ordinary man &mdash; something like eighty
+        or ninety tons &mdash; but the cross-section of his thighbones, the part of him that has to
+        carry that weight, would only have grown a hundredfold. Every square inch of giant bone
+        would be bearing roughly ten times the load a square inch of human bone bears, and an
+        ordinary human thighbone already snaps at around ten times body weight. Haldane&rsquo;s
+        conclusion was dry: the giants would break their legs on their first step, &ldquo;which was
+        doubtless why they were sitting down in the picture.&rdquo;
+      </p>
+      <p>
+        Both animals in the mine shaft fall under the exact same gravity. So why should the fall be
+        harmless to one and fatal to the other &mdash; and why should a cartoon giant, built to the
+        same proportions as a man, be unable to stand at all?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Scale any object up by some factor, keeping its shape exactly the same, and its surface
+        area grows as the <em>square</em> of that factor while its volume &mdash; and, for a given
+        material, its weight &mdash; grows as the <em>cube</em> of it. Double every length and area
+        quadruples while volume grows eightfold; triple every length and area grows ninefold while
+        volume grows twenty-sevenfold. Area and volume simply do not keep pace with each other as
+        size changes.
+      </p>
+      <p>
+        That mismatch matters because almost nothing in the physical world depends on area or
+        volume alone &mdash; it depends on their <em>ratio</em>. Strength per unit of weight, heat
+        lost per unit of body, drag per unit of mass: anything built on that kind of ratio has to
+        change as an object gets bigger or smaller, even when its shape and its materials stay
+        completely unchanged. Written as one quantity varying as a fixed power of another, this is
+        a power law, and because of how exponents behave once you take a logarithm, a power law
+        always draws a straight line once both quantities are plotted on logarithmic axes &mdash; a
+        log-log plot &mdash; with the line&rsquo;s slope equal to the exponent itself.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the pure geometry, often called geometric similarity or isometric scaling: take
+        any shape and stretch every one of its lengths by the same factor, call it <em>L</em>,
+        without changing its proportions. A length scales as <em>L</em>. An area &mdash; built from
+        two lengths multiplied together, whether that is a flat patch or the whole surface of a
+        curved shape broken into many small flat patches &mdash; scales as <em>L</em>&sup2;. A
+        volume, built from three lengths multiplied together, scales as <em>L</em>&sup3;. Picture a
+        cube one centimeter on a side: six faces of one square centimeter each, six square
+        centimeters of surface for one cubic centimeter of volume, a ratio of 6-to-1. Double every
+        edge to two centimeters and the surface becomes 24 square centimeters while the volume
+        becomes eight cubic centimeters &mdash; a ratio of only 3-to-1. The ratio of surface to
+        volume was cut in half just by making the cube bigger, with nothing else about it changed.
+        That falling ratio, for any fixed shape, is the square-cube law.
+      </p>
+      <p>
+        It explains the mine shaft directly. As an animal falls, the drag slowing it down acts on
+        its surface &mdash; roughly, how much air it pushes out of the way &mdash; which scales as
+        <em>L</em>&sup2;. The weight pulling it down scales as <em>L</em>&sup3;. Drag relative to
+        weight therefore falls as 1/<em>L</em>: a mouse, small and with a large surface for its
+        tiny weight, reaches a low, survivable terminal speed almost immediately, the way a dropped
+        feather or a scrap of paper does. A horse, large and with comparatively little surface for
+        its bulk, keeps accelerating for much longer and hits the ground far harder. Gravity never
+        changed; only the geometry of how each animal&rsquo;s size relates to its own shape did.
+      </p>
+      <p>
+        The same arithmetic explains the giant&rsquo;s broken legs, and real animals&rsquo; real
+        bones. A bone&rsquo;s cross-section, the area that has to bear a compressive load, scales
+        as <em>L</em>&sup2;. The weight it has to bear scales as <em>L</em>&sup3;. So the stress on
+        that bone &mdash; load divided by the area carrying it &mdash; rises as <em>L</em>, in
+        direct proportion to size. A bigger animal, built to the exact same proportions as a
+        smaller one, would be under more stress at every joint and every limb, which is exactly why
+        real large animals are not simply scaled-up small ones: an elephant&rsquo;s legs are far
+        thicker relative to its body than a mouse&rsquo;s, precisely to buy back some of the
+        cross-section that straight scaling would otherwise cost it.
+      </p>
+      <p>
+        Heat works the same way, in the opposite direction. The surface through which an animal
+        loses heat to its surroundings scales as <em>L</em>&sup2;, while the tissue generating that
+        heat scales with its volume, <em>L</em>&sup3;. Heat loss per unit of body mass therefore
+        falls as 1/<em>L</em>: a large animal has comparatively little surface to shed the heat its
+        bulk produces, while a small one has comparatively so much that it struggles to hold heat
+        in at all. That single fact is why elephants, the largest living land animals, carry
+        enormous, thin, blood-vessel-rich ears that function largely as cooling radiators &mdash;
+        by some estimates close to a fifth of an elephant&rsquo;s entire body surface &mdash; and
+        why tiny shrews and hummingbirds must feed almost constantly just to replace the heat they
+        lose relative to their size.
+      </p>
+      <p>
+        Generalize the pattern and you get a power law proper: <em>y</em> = <em>a</em>&middot;
+        <em>x</em><sup><em>b</em></sup>, where <em>b</em> is some fixed exponent. Taking the
+        logarithm of both sides turns the multiplication into addition &mdash; log <em>y</em> = log
+        <em>a</em> + <em>b</em>&thinsp;log <em>x</em> &mdash; which is a straight line in log
+        <em>x</em>, with slope <em>b</em>. That is a different trick from Day 2&rsquo;s logarithmic
+        scale: there, only the vertical axis was logged, which straightens constant-percentage
+        <em>growth over time</em>. Here, both axes are logged, which straightens a power-law
+        <em>relationship between two quantities</em>, with the slope reading off the exponent
+        rather than a growth rate.
+      </p>
+      <p>
+        Biology&rsquo;s most argued-over use of this trick is Max Kleiber&rsquo;s 1932 finding that
+        resting metabolic rate &mdash; roughly, how fast an animal burns energy at rest &mdash;
+        rises across species as body mass raised to a power close to 3/4, not in simple proportion
+        to mass, and not at the 2/3 power that pure surface-area reasoning like the paragraphs above
+        would predict. Why 3/4 rather than 2/3 is itself <span class="chip
+        chip--warn">Debated</span>: a influential 1997 theoretical paper by Geoffrey West, James
+        Brown and Brian Enquist argued that the 3/4 exponent falls out of the geometry of branching,
+        space-filling supply networks &mdash; blood vessels, in an animal&rsquo;s case &mdash;
+        delivering resources efficiently through a volume, rather than out of surface area at all.
+        But a 2003 study by Craig White and Roger Seymour, re-examining 619 mammal species, found an
+        exponent closer to the simpler 2/3 after all, and the dispute over the true value and its
+        explanation has continued since. The honest version to carry forward is that metabolic rate
+        scales somewhere around the 2/3-to-3/4 power of mass, a real and useful regularity whose
+        exact number, and the mechanism behind it, are still contested among biologists.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        The mouse and the horse obey identical physics; what differs is the geometry each brings to
+        the fall. Drag-to-weight falls as 1/<em>L</em>, so the small animal is slowed, relative to
+        its own weight, far more than the large one &mdash; enough to reach a safe terminal speed
+        almost at once. And the stress a landing &mdash; or simply standing &mdash; puts on bone
+        rises as <em>L</em>, which is exactly why Haldane&rsquo;s sixty-foot <em>Pilgrim&rsquo;s
+        Progress</em> giant, scaled up from a man with nothing else changed, would snap its own
+        thighbones on its first step. Same gravity, same bone material, same shape &mdash; only the
+        size was different, and size alone was enough.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Square-cube law</dt>
+        <dd>As an object is scaled up with its shape held fixed, its surface area grows with the
+        square of its linear size while its volume (and, for a fixed material, its weight) grows
+        with the cube &mdash; so area-based and volume-based properties pull apart as size
+        changes.</dd>
+        <dt>Geometric similarity (isometric scaling)</dt>
+        <dd>Scaling an object by stretching every one of its lengths by the same factor, so its
+        shape &mdash; the ratios between its own dimensions &mdash; stays identical. Real organisms
+        and engineered structures often depart from it on purpose, for exactly this reason.</dd>
+        <dt>Power law</dt>
+        <dd>A relationship in which one quantity varies as a fixed power of another, <em>y</em> =
+        <em>a</em>&middot;<em>x</em><sup><em>b</em></sup> &mdash; distinct from growth by a fixed
+        percentage per step (exponential) or a fixed amount (linear).</dd>
+        <dt>Log-log plot</dt>
+        <dd>A chart with both axes marked off in constant ratios rather than constant steps. A
+        power law traces a straight line on it, with the line&rsquo;s slope equal to the exponent
+        <em>b</em>.</dd>
+        <dt>Allometry</dt>
+        <dd>The study of how an organism&rsquo;s shape, physiology or behavior changes
+        systematically with its size, rather than simply scaling up unchanged.</dd>
+        <dt>Surface-to-volume ratio</dt>
+        <dd>How much surface a given volume exposes. For any fixed shape it falls in direct
+        proportion to size, which is why it governs everything from cooling to how fast nutrients
+        can diffuse into a cell.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Kleiber&rsquo;s Law, From Shrew to Elephant</h3>
+      <p>
+        Kleiber&rsquo;s rule lets you compare the metabolisms of wildly different animals with one
+        number. Take a small mouse weighing about 3 grams and an elephant weighing about 3,000
+        kilograms &mdash; a clean million-fold difference in mass &mdash; and the 3/4-power rule
+        says how their total energy use at rest should compare, and how that comparison changes
+        once you divide by each animal&rsquo;s own weight.
+      </p>
+      <div class="worked">
+        <p><strong>1. Find the mass ratio.</strong> 3,000 kg &divide; 0.003 kg = 1,000,000, or
+        10<sup>6</sup>.</p>
+        <p><strong>2. Raise it to Kleiber&rsquo;s exponent.</strong> Metabolic-rate ratio
+        &asymp; (10<sup>6</sup>)<sup>0.75</sup> = 10<sup>4.5</sup> &asymp; 31,600. The elephant
+        burns, in total, on the order of 31,600 times what the mouse burns.</p>
+        <p><strong>3. Divide by the mass ratio to get the per-kilogram comparison.</strong> 31,600
+        &divide; 1,000,000 &asymp; 0.0316 &mdash; so, per kilogram of its own body, the elephant
+        burns only about 3% of what the mouse burns, which is the same as saying the mouse runs
+        roughly 32 times hotter, pound for pound, than the elephant.</p>
+      </div>
+      <p>
+        That per-kilogram gap is why a mouse, and smaller animals still &mdash; shrews, hummingbirds
+        &mdash; must feed almost continuously just to keep up with how fast their own small bodies
+        burn through energy, while an elephant can go comparatively long stretches between large
+        meals. It is also the other side of the heat-loss argument from How It Works: an elephant
+        generates a huge amount of metabolic heat relative to the surface it has available to shed
+        it through, which is the actual engineering problem its oversized, thin, richly
+        blood-vesseled ears exist to solve.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>A power law relates two quantities as one raised to a fixed exponent of the other:</p>
+      <div class="formula">
+        <p class="expr">Y = a&middot;X<sup>b</sup> &nbsp;&nbsp;&rArr;&nbsp;&nbsp; log Y = log a + b&thinsp;log X</p>
+        <p class="expr-spoken visually-hidden">Y equals a times X to the power of b; therefore the logarithm of Y equals the logarithm of a, plus b times the logarithm of X.</p>
+        <dl>
+          <dt>Y</dt>
+          <dd>the dependent quantity (for example, metabolic rate)</dd>
+          <dt>X</dt>
+          <dd>the independent quantity it scales with (for example, body mass)</dd>
+          <dt>a</dt>
+          <dd>a scaling constant &mdash; the value of <em>Y</em> when <em>X</em> equals 1</dd>
+          <dt>b</dt>
+          <dd>the exponent &mdash; also the slope of the line this relationship traces on a log-log plot</dd>
+        </dl>
+      </div>
+      <p>
+        The square-cube law is the special, purely geometric case of that same form, with area and
+        volume standing in for <em>Y</em>:
+      </p>
+      <div class="formula">
+        <p class="expr">Area &prop; L<sup>2</sup> &nbsp;&nbsp;&nbsp; Volume (and weight) &prop; L<sup>3</sup></p>
+        <p class="expr-spoken visually-hidden">Area is proportional to L squared; volume, and weight, are proportional to L cubed.</p>
+        <dl>
+          <dt>L</dt>
+          <dd>the linear scaling factor &mdash; how much every length of the object is stretched</dd>
+          <dt>Area</dt>
+          <dd>any area-like quantity: surface area, a bone&rsquo;s cross-section, a wing&rsquo;s
+          planform</dd>
+          <dt>Volume</dt>
+          <dd>any volume-like quantity: total volume, or weight for a fixed material density</dd>
+        </dl>
+      </div>
+      <p>
+        Kleiber&rsquo;s rule is an empirical power law rather than a pure geometric one &mdash; it
+        is measured across real animals, not derived from shape alone &mdash; which is exactly why
+        its exponent is open to the kind of dispute geometry itself is not: <em>B</em> &prop;
+        <em>M</em><sup>0.75</sup>, with <em>B</em> standing for basal metabolic rate and <em>M</em>
+        for body mass, and 0.75 itself only the most widely cited of several values researchers
+        have measured.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you have the square-cube law, &ldquo;just make it bigger&rdquo; stops being a free
+        move for anything whose performance depends on the ratio of an area to a volume &mdash; and
+        that covers an enormous range of real designs and real organisms, far beyond falling
+        animals. It is the first question worth asking of any claim that a structure, a machine or
+        a living thing will simply scale up, or down, without anything else about it needing to
+        change.
+      </p>
+      <p>
+        The log-log reading trick carries at least as far as the law itself. Once you can recognize
+        that a straight line on a plot with <em>both</em> axes logarithmic signals a power-law
+        relationship &mdash; and that its slope hands you the exponent directly &mdash; you have a
+        general-purpose way to spot and measure this kind of scaling wherever it shows up, distinct
+        from the single-log trick Day 2 used for ordinary exponential growth.
+      </p>
+      <p>
+        And Kleiber&rsquo;s own case is a useful lesson in itself: a measured regularity can be real,
+        useful and still not fully explained. Biologists do not doubt that metabolic rate rises
+        with a power of mass somewhere under 1; they still argue, nearly a century after Kleiber,
+        over exactly which power and why &mdash; a reminder that a number everyone uses is not
+        automatically a number everyone has agreed on.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 2&rsquo;s logarithmic scale logged only one axis to straighten
+        constant-percentage growth over time; today&rsquo;s log-log plot logs <em>both</em> axes to
+        straighten a power-law relationship between two different quantities, with the line&rsquo;s
+        slope now reading off an exponent rather than a growth rate. Day 1&rsquo;s Fermi estimates
+        already relied on the same bookkeeping in miniature: a tenfold increase in length is a
+        hundredfold increase in area and a thousandfold increase in weight, the square-cube law
+        stated as powers of ten.
+      </p>
+      <p>
+        <b>Across.</b> Galileo Galilei used this exact argument in his 1638 book <em>Two New
+        Sciences</em>, more than a century before the word &ldquo;allometry&rdquo; existed. He
+        reasoned about a scaled-up wooden beam: its strength, resisting a load, grows with the
+        square of its size, while the weight it has to carry under its own bulk grows with the
+        cube &mdash; so a beam built to the same proportions as a small one but much larger would
+        eventually collapse under nothing but itself. Structural engineering runs into this same
+        mismatch every time a design is simply enlarged without changing its proportions, which is
+        why a ship, a bridge or a skyscraper is never just a scaled photograph of a smaller one.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://www.ted.com/talks/geoffrey_west_the_surprising_math_of_cities_and_corporations">The surprising math of cities and corporations</a>
+        &mdash; Geoffrey West, TEDGlobal (July 2011) &middot; Video &middot; about 18 minutes
+        (running time not confirmed)</p>
+        <p>West, a physicist and former president of the Santa Fe Institute, argues that the same
+        kind of scaling law behind metabolic rate also governs how cities and companies grow, age
+        and die &mdash; putting today&rsquo;s log-log reasoning to work on systems well beyond
+        biology. It is one researcher&rsquo;s own theory: the exact exponents, and the extension
+        from organisms to cities, are themselves debated.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Scale an object up with its shape held fixed, and area grows as the square of its size
+        while volume &mdash; and weight &mdash; grows as the cube: the square-cube law.</li>
+        <li>That mismatch is why a mouse survives a fall that kills a horse, why bigger animals
+        need proportionally thicker bones, and why elephants need huge ears just to shed their own
+        body heat.</li>
+        <li>A power law, <em>y</em> = <em>a</em>&middot;<em>x</em><sup><em>b</em></sup>, traces a
+        straight line on a plot with both axes logarithmic; the slope of that line is the exponent
+        <em>b</em>.</li>
+        <li>Kleiber&rsquo;s rule puts metabolic rate at roughly body mass to the 2/3-to-3/4 power
+        &mdash; a useful number whose exact value and explanation biologists still argue over.</li>
+        <li>&ldquo;Scaling up&rdquo; is never free: whatever depends on the ratio of an area to a
+        volume changes as size changes, even when nothing else about the design does.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        If a wind-turbine maker lengthens its blades by half while keeping their shape the same,
+        why does the square-cube law push it toward stiffer, lighter blade materials rather than
+        simply building the same blade bigger?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> J. B. S. Haldane&rsquo;s 1926 essay &ldquo;On Being the Right
+      Size,&rdquo; checked via web search against several reproductions of the original text and
+      its 1927 book reprint (the exact wording of its rat-and-man line differs slightly between
+      the two, noted above); Max Kleiber&rsquo;s 1932 metabolic-scaling study; West, Brown and
+      Enquist&rsquo;s 1997 paper in <em>Science</em> and White and Seymour&rsquo;s 2003 paper in
+      <em>PNAS</em> on the 3/4-versus-2/3 debate; Galileo&rsquo;s <em>Two New Sciences</em> (1638).
+      All checked via web search this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before
+      you do. Resource from the Connected Path&rsquo;s curated list. <a
+      href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-18-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
