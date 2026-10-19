@@ -1,24 +1,8 @@
 {
- "fetched": "2026-10-18T09:20:00-04:00",
+ "fetched": "2026-10-19T06:50:00-04:00",
  "earnings_fetched": "2026-10-18",
- "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted.",
+ "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted. | 2026-10-19 am: Finnhub day-of refresh; TreasuryDirect upcoming refreshed.",
  "events": [
-  {
-   "ts_et": "2026-10-18T18:00",
-   "type": "market",
-   "name": "US futures and oil reopen",
-   "importance": "High",
-   "reason": "Hormuz mine claims, St Petersburg strike",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-18T22:00",
-   "type": "data",
-   "name": "China Q3 GDP + Sept activity (Reuters poll 4.4% y/y)",
-   "importance": "High",
-   "reason": "Global demand read",
-   "source": "research"
-  },
   {
    "ts_et": "2026-10-19T06:30",
    "type": "launch",
@@ -52,6 +36,14 @@
    "source": "treasurydirect"
   },
   {
+   "ts_et": "2026-10-19T12:00",
+   "type": "local",
+   "name": "PA voter-registration deadline; PA House/Senate return",
+   "importance": "Medium",
+   "reason": "Local/election",
+   "source": "pa.gov"
+  },
+  {
    "ts_et": "2026-10-19T15:41",
    "type": "launch",
    "name": "H3 / MMX (JAXA) Phobos sample return",
@@ -60,12 +52,12 @@
    "source": "thespacedevs"
   },
   {
-   "ts_et": "2026-10-19T12:00",
-   "type": "local",
-   "name": "PA voter-registration deadline; PA House/Senate return",
-   "importance": "Medium",
-   "reason": "Local/election",
-   "source": "pa.gov"
+   "ts_et": "2026-10-19T16:05",
+   "type": "earnings",
+   "name": "Western Alliance, Crown Holdings also AMC (Finnhub); GE date conflict persists (Finnhub Mon vs others Tue)",
+   "importance": "Low",
+   "reason": "Regional bank credit",
+   "source": "finnhub"
   },
   {
    "ts_et": "2026-10-20T07:00",
@@ -212,6 +204,14 @@
    "source": "research"
   },
   {
+   "ts_et": "2026-10-23T00:00",
+   "type": "local",
+   "name": "PRT board vote on Wabash Tunnel closure",
+   "importance": "Low",
+   "reason": "Local transit",
+   "source": "research"
+  },
+  {
    "ts_et": "2026-10-23T07:00",
    "type": "earnings",
    "name": "SLB (7:00), American Express (BMO)",
@@ -242,14 +242,6 @@
    "importance": "Low",
    "reason": "Artemis III/IV",
    "source": "nasa"
-  },
-  {
-   "ts_et": "2026-10-23T00:00",
-   "type": "local",
-   "name": "PRT board vote on Wabash Tunnel closure",
-   "importance": "Low",
-   "reason": "Local transit",
-   "source": "research"
   },
   {
    "ts_et": "2026-10-24T01:29",
