@@ -5850,6 +5850,26 @@
    "probability": "85-95%",
    "basis": "Reuters poll 22/22 hold; Q3 GDP beat",
    "status": "open"
+  },
+  {
+   "id": "2026-10-19-pm-1",
+   "date": "2026-10-19",
+   "slot": "pm",
+   "forecast": "September housing starts (released Oct 20) come in below the ~1.30M consensus",
+   "horizon": "2026-10-20",
+   "probability": "55-65%",
+   "basis": "NAHB fell to 29 (lowest since 2012), 43% of builders cutting prices; 10Y at 5.15%",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-19-pm-2",
+   "date": "2026-10-19",
+   "slot": "pm",
+   "forecast": "10-year Treasury par yield closes Oct 20 between 5.08% and 5.22%",
+   "horizon": "2026-10-20",
+   "probability": "70-80%",
+   "basis": "Past week's range 5.09-5.19%; no major data besides housing starts; Fed blackout",
+   "status": "open"
   }
  ]
 }

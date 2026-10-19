@@ -1,6 +1,125 @@
 {
  "stories": [
   {
+   "id": "chip-rebound-oct19",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "Materially changed",
+   "headline": "SMH +1.6% ends 9-day slide; Nasdaq +1.11%, S&P +0.41%, RSP -0.32%; AMZN +5% (MS top pick), INTC +2.4% (JPM upgrade); CRWV faded to -0.4%",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Yahoo",
+    "Twelve Data",
+    "CNBC",
+    "Reuters"
+   ],
+   "score_rationale": "Lead: market-moving, follow-up to AI-credit selloff",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "yields-515-oct19",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "10Y par 5.15% (+6bp), 30Y 5.48%, 2Y 4.77%; bear steepening, utilities -2.0%; bills 13w 4.095% btc 2.77, 26w 4.220% btc 2.84; 20Y reopening Wed",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": [
+    "Treasury",
+    "TreasuryDirect"
+   ],
+   "score_rationale": "Rates are the macro thread",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "nahb-oct-29",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "NAHB HMI Oct 29 (from 32, cons 31), lowest since Jun 2012; 43% cutting prices",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "NAHB via RISMedia/Inman"
+   ],
+   "score_rationale": "Housing transmission of rates",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "clf-q3-steel",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "CLF +16.3% (adj EPS 0.28, EBITDA $612M, Q4 guide ~$715M, WFC upgrade); STLD AMC EPS 5.26 vs ~5.48 miss",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": [
+    "CLF 8-K",
+    "STLD release"
+   ],
+   "score_rationale": "Earnings with big move",
+   "keep_on_watchlist": false
+  },
+  {
+   "id": "regional-banks-oct19",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "ZION 1.78 (NCO 0.02%), WAL 2.45, BOKF 2.64, WRB op 1.17; big banks -1.6 to -2.6% despite clean credit",
+   "one_line": null,
+   "verification": "Confirmed-primary",
+   "sources": [
+    "8-Ks"
+   ],
+   "score_rationale": "Bank earnings season",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "doj-ca-voter-sweep",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "DOJ charges 28 LPRs in California voter-registration/naturalization fraud sweep; 113 charged in 20 states",
+   "one_line": null,
+   "verification": "Confirmed-multiple",
+   "sources": [
+    "AP via PBS"
+   ],
+   "score_rationale": "US politics pre-midterm",
+   "keep_on_watchlist": false
+  },
+  {
+   "id": "putin-trilateral-summit",
+   "first_seen": "2026-10-19-pm",
+   "last_updated": "2026-10-19-pm",
+   "status": "New",
+   "headline": "WSJ: Putin proposes Trump-Putin-Xi Ukraine summit (APEC Shenzhen Nov 18-19) without Zelensky; Trump hasn't agreed",
+   "one_line": null,
+   "verification": "Single-reliable-source",
+   "sources": [
+    "WSJ via CNBC"
+   ],
+   "score_rationale": "Diplomacy",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "hormuz-mine-claims",
+   "first_seen": "2026-10-17-sat",
+   "last_updated": "2026-10-19-pm",
+   "status": "Developing",
+   "headline": "IRGC claims third tanker mined; JMIC: no substantiation; WTI -3% ~98.4, Brent ~109.3",
+   "one_line": null,
+   "verification": "Disputed",
+   "sources": [
+    "Tasnim",
+    "JMIC",
+    "UKMTO"
+   ],
+   "score_rationale": "Energy risk",
+   "keep_on_watchlist": true
+  },
+  {
    "id": "bessent-energy-shock",
    "first_seen": "2026-10-19-am",
    "last_updated": "2026-10-19-am",
