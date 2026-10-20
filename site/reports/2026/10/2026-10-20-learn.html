@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The CO2 Over Mauna Loa Falls Every Summer. Charles Keeling’s Curve Is Still Getting Steeper. — Learning Brief, Tue, Oct 20, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-20",
+    "slot": "learn",
+    "title": "The CO2 Over Mauna Loa Falls Every Summer. Charles Keeling’s Curve Is Still Getting Steeper.",
+    "path": "reports/2026/10/2026-10-20-learn.html",
+    "summary": "Day 4 of the Connected Path: the derivative is the instantaneous rate of change and the second derivative tells you whether that rate is itself speeding up, the distinction that lets the Keeling CO2 curve fall every summer and still show an accelerating trend.",
+    "headlines": [
+      "Day 4 of 293 · Mathematics: the derivative is the instantaneous rate of change, and the second derivative says whether that rate is speeding up",
+      "Comparing each month to the same month a year earlier cancels the Keeling curve's seasonal cycle and exposes a trend rate that has itself climbed since 1958",
+      "Watch or Read: The paradox of the derivative (about 17 min)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-20T04:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The CO2 Over Mauna Loa Falls Every Summer. Charles Keeling&rsquo;s Curve Is Still Getting Steeper.</h1>
+      <p class="paper-dateline">
+        Tuesday, October 20, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        The derivative is the instantaneous rate a quantity is changing right now, and the second
+        derivative is whether that rate is itself speeding up &mdash; the one distinction that lets
+        a curve that falls every single summer still be the clearest record we have of an
+        accelerating planet.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 4 of 293 &middot; Mathematics 4 of 24 &middot; The derivative: rates of change</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A young chemist&rsquo;s instrument on a Hawaiian volcano</h3>
+      <p>
+        In March 1958, Charles David Keeling, a 29-year-old geochemist at the Scripps Institution of
+        Oceanography, switched on a new infrared gas analyzer at a freshly built observatory nearly
+        11,000 feet up the slope of Mauna Loa &mdash; a still-active Hawaiian volcano, chosen because
+        it sat far from the cities and forests whose exhaust or photosynthesis could skew a reading.
+        On its first day of operation the instrument recorded 313 parts per million of carbon
+        dioxide, the figure Scripps&rsquo; own history of the program still cites today, though some
+        later retellings round it to 315, and others confuse it with 316 ppm &mdash; which was
+        actually the following year&rsquo;s annual average, not Keeling&rsquo;s opening reading.
+      </p>
+      <p>
+        Within a couple of years the record showed something odd. Every year CO2 climbed through the
+        northern winter, peaked around May, then fell for months as the Northern Hemisphere&rsquo;s
+        plants leafed out and inhaled it &mdash; a swing of several parts per million, repeating like
+        clockwork. Funding was never secure; a 1964 budget cut interrupted the measurements for
+        several months. But underneath that yearly sawtooth, the line kept climbing, and not at a
+        constant pace: by Scripps&rsquo; and NOAA&rsquo;s own published figures, the underlying trend
+        rose by roughly 0.9 ppm a year through the 1960s and by roughly 2.4 ppm a year through the
+        2010s, a rate that has more than doubled (these are Mauna Loa, not global, figures, and the
+        exact number shifts a little depending on which years are averaged). In May 2024, Scripps
+        reported that March&rsquo;s reading had jumped 4.7 ppm over the previous March &mdash; the
+        largest twelve-month gain ever recorded at the station, well above the previous record of
+        4.1 ppm set in 2015&ndash;16.
+      </p>
+      <p>
+        If the reading falls every single summer, in what sense is carbon dioxide &ldquo;rising&rdquo;?
+        And if the line never stops wiggling, how can anyone say, with a straight face, that the rise
+        itself is speeding up?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Today&rsquo;s concept is the derivative: the instantaneous rate at which a quantity is
+        changing at one particular moment, found by looking at how much it changes over an interval
+        and asking what that rate settles toward as the interval shrinks to nothing. Graphically, it
+        is the slope of the tangent line touching a curve at a single point, not the slope of a line
+        drawn between two points some distance apart.
+      </p>
+      <p>
+        A derivative answers only one question: is the quantity rising or falling right now, and how
+        fast? To ask whether that speed is itself changing &mdash; whether a rise is accelerating or
+        running out of steam &mdash; you need a second derivative: the derivative of the derivative,
+        the rate of change of the rate of change. A car&rsquo;s speed is a derivative of its
+        position; whether that speed is climbing or easing off is a second derivative, the quantity
+        ordinarily called acceleration. The units always carry the whole idea even before the
+        arithmetic does: a derivative&rsquo;s units are always the original quantity&rsquo;s units
+        divided by time&rsquo;s &mdash; parts per million per year, meters per second, dollars per
+        quarter &mdash; and a second derivative&rsquo;s units divide by time again, which is exactly
+        why acceleration is measured in meters per second <em>per second</em>.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with something easier to measure than an instantaneous rate: an average rate over an
+        interval. If a quantity f changes from f(t) to f(t+h) over a stretch of time h, its average
+        rate of change across that stretch is [f(t+h) &minus; f(t)] / h &mdash; the familiar
+        &ldquo;rise over run,&rdquo; the slope of the straight line (a secant line) connecting the two
+        points on f&rsquo;s graph. That number depends entirely on how wide h is: average a
+        car&rsquo;s speed over a whole hour and a dramatic braking-and-accelerating episode in the
+        middle gets smeared into a bland, uninformative number.
+      </p>
+      <p>
+        The derivative asks what that average rate settles toward as h is made smaller and smaller,
+        approaching &mdash; but never quite reaching &mdash; zero. Mathematicians call that
+        settling-down value a limit, and write the derivative as f&prime;(t) = lim<sub>h&rarr;0</sub>
+        [f(t+h) &minus; f(t)] / h. Graphically, as h shrinks, the secant line connecting two nearby
+        points on the curve swings around and approaches the tangent line, the single straight line
+        that just grazes the curve at t without crossing it nearby. The derivative is that tangent
+        line&rsquo;s slope: the rate of change at the instant t itself, not averaged over any
+        surrounding stretch. Nothing about this requires an exact algebraic formula for f: Keeling had
+        no equation for atmospheric CO2, only a sequence of measured readings, and the same
+        shrinking-interval logic applies whether the underlying quantity is a smooth mathematical
+        curve or a monthly average bolted together from real instrument readings.
+      </p>
+      <p>
+        Nothing in that definition says the rate has to stay positive, or stay the same from one
+        moment to the next. A quantity can rise, level off, then fall, and its derivative tracks
+        exactly that: positive, then zero, then negative. This is precisely the distinction the
+        Keeling curve forces on a careful reader. At almost any point in the Northern
+        Hemisphere&rsquo;s late spring and summer, carbon dioxide&rsquo;s instantaneous derivative
+        &mdash; the slope of the curve right then &mdash; is negative: a hemisphere&rsquo;s worth of
+        plants is photosynthesizing, pulling carbon out of the air faster than it is being added.
+        That is a true, measured fact about those months, and on its own it says nothing about
+        whether CO2 is &ldquo;rising&rdquo; in any longer-run sense.
+      </p>
+      <p>
+        To see the longer-run trend you have to change what interval you average over. Instead of
+        comparing this month with last month &mdash; which mixes the real trend together with
+        wherever in the seasonal cycle you happen to be standing &mdash; compare each month with the
+        same month a year earlier: [C(t + 1 yr) &minus; C(t)] / 1 yr. A full year spans exactly one
+        complete seasonal cycle, so that cycle cancels out of the subtraction, leaving a cleaner
+        estimate of how much the underlying level has actually moved. This is not a different kind of
+        mathematics from the plain derivative above &mdash; it is the same average-rate-of-change
+        idea, deliberately computed over a wider, carefully chosen interval instead of letting h
+        shrink to an instant, precisely because the instant is dominated by a cycle you want to see
+        past.
+      </p>
+      <p>
+        That year-over-year rate is itself a quantity you can track through time, and asking whether
+        it is rising, flat, or falling is asking for a second derivative of the original CO2 record.
+        Scripps&rsquo; and NOAA&rsquo;s own growth-rate figures show that rate climbing: roughly 0.9
+        ppm a year across the 1960s to roughly 2.4 ppm a year across the 2010s. A rate that is itself
+        increasing means the underlying curve is not just rising, it is bending upward &mdash; the
+        second derivative is positive. Read any single year&rsquo;s jump with care, though: the 4.7
+        ppm gain recorded between March 2023 and March 2024 was amplified by that year&rsquo;s El
+        Ni&ntilde;o, which temporarily weakens how much carbon land ecosystems absorb, so judging
+        acceleration honestly means looking at multi-year averages rather than any one striking year.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        The derivative separates exactly the two questions the puzzle poses. Each summer&rsquo;s
+        instantaneous rate really is negative &mdash; plants are winning, for a few months, against
+        emissions. But the year-over-year rate, Keeling&rsquo;s own trend measure, has been positive
+        in every year since 1958, straight through every seasonal dip. And that trend rate has itself
+        climbed, from under one part per million a year in the program&rsquo;s first decade to well
+        over two today &mdash; a positive second derivative, carried by a record now in its seventh
+        decade. &ldquo;Rising&rdquo; and &ldquo;accelerating&rdquo; are two different, separately
+        measurable claims, and one wiggling line can make both of them true at once.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Average rate of change</dt>
+        <dd>How much a quantity changes divided by how long that took, measured between two specific
+        points &mdash; the slope of the straight line (secant line) connecting them on a graph.</dd>
+        <dt>Derivative</dt>
+        <dd>The instantaneous rate of change: what the average rate of change settles toward as the
+        interval between the two points shrinks to zero. Graphically, the slope of the tangent line
+        touching the curve at a single point.</dd>
+        <dt>Limit</dt>
+        <dd>The value an expression approaches as one of its inputs gets arbitrarily close to some
+        point, without necessarily ever reaching it &mdash; the operation that turns an average rate
+        over a shrinking interval into an instantaneous one.</dd>
+        <dt>Second derivative</dt>
+        <dd>The derivative of the derivative: the rate of change of the rate of change. Positive
+        means the original rate is itself increasing, so the quantity&rsquo;s rise is accelerating;
+        negative means the rate is easing off.</dd>
+        <dt>Trend versus seasonal cycle</dt>
+        <dd>A trend is the longer-run direction a quantity is heading; a seasonal cycle is a
+        repeating swing layered on top of it. Comparing a reading only with the same point a year
+        earlier cancels a full seasonal cycle and isolates the trend&rsquo;s own rate.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: An Airbag That Reads a Derivative in Milliseconds</h3>
+      <p>
+        An airbag&rsquo;s trigger sits at the car chain&rsquo;s engineering link, translating a
+        physical threat &mdash; a sudden crash &mdash; into a controlled, split-second action. What it
+        actually measures is a derivative: not how fast the car is going, but how fast that speed is
+        changing, moment to moment. Analog Devices announced the ADXL50 in 1991, among the first
+        mass-produced micromachined accelerometers: a single silicon chip, built with semiconductor
+        manufacturing techniques, carrying a free-floating microscopic beam whose deflection under
+        acceleration an onboard circuit converts directly into a voltage. It replaced older mechanical
+        &ldquo;ball-in-tube&rdquo; crash sensors and became a workhorse of automotive airbag
+        deployment through the 1990s.
+      </p>
+      <div class="worked">
+        <p><strong>1. Convert the impact speed.</strong> 30 mph &asymp; 13.4 m/s.</p>
+        <p><strong>2. Find the decision window.</strong> Engineering accounts of airbag timing put
+        the bag&rsquo;s own inflation at roughly 30 milliseconds once triggered, so for it to be in
+        place before an unrestrained occupant would otherwise reach the wheel or dashboard, the
+        controller has to decide to fire within roughly the crash&rsquo;s first 20 milliseconds, not
+        the whole fraction-of-a-second collision &mdash; typical figures for this kind of system, not
+        a fixed standard.</p>
+        <p><strong>3. See what the chip is actually computing.</strong> In that 20-millisecond
+        window it is not reporting one number: it is sampling acceleration &mdash; essentially
+        dv/dt &mdash; many times, repeatedly asking whether velocity is falling fast and staying that
+        way.</p>
+        <p><strong>4. Compare two kinds of signal.</strong> A pothole or a hard expansion joint can
+        produce one sharp spike of deceleration lasting barely a millisecond before the reading snaps
+        back toward zero; a real crash pulse keeps dv/dt large and negative for the rest of the
+        window.</p>
+        <p><strong>5. See the connection to today&rsquo;s lesson.</strong> The controller is, in
+        effect, testing the derivative&rsquo;s behavior across the whole decision window rather than
+        reacting to any single instant &mdash; the same average-versus-instantaneous distinction How
+        It Works just walked through, applied by a chip instead of a mathematician.</p>
+      </div>
+      <p>
+        This is why a single-axis accelerometer alone is not a safety system: a chip that fired on
+        any one large reading would deploy on every speed bump and curb strike a car ever took. What
+        makes it useful is exactly the discipline this lesson has been building &mdash; distinguishing
+        a rate measured at one instant from a rate that holds up over a meaningful stretch of time,
+        then deciding, in milliseconds, which kind of signal it is actually looking at.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>The derivative, as the limit of an average rate of change:</p>
+      <div class="formula">
+        <p class="expr">f&prime;(t) = lim<sub>h&rarr;0</sub> [f(t+h) &minus; f(t)] / h</p>
+        <p class="expr-spoken visually-hidden">f prime of t equals the limit, as h approaches zero, of the quantity f of t plus h minus f of t, divided by h.</p>
+        <dl>
+          <dt>f(t)</dt>
+          <dd>the quantity being measured at time t &mdash; for example, CO2 concentration</dd>
+          <dt>h</dt>
+          <dd>the width of the time interval being shrunk toward zero</dd>
+          <dt>f&prime;(t)</dt>
+          <dd>the derivative: the instantaneous rate of change of f at the instant t</dd>
+        </dl>
+      </div>
+      <p>The second derivative, and the Keeling curve&rsquo;s own trend-rate estimate:</p>
+      <div class="formula">
+        <p class="expr">f&Prime;(t) = d/dt [f&prime;(t)] &nbsp;&nbsp;&nbsp; Trend rate &asymp; [C(t + 1 yr) &minus; C(t)] / 1 yr</p>
+        <p class="expr-spoken visually-hidden">f double-prime of t is the derivative of f prime of t. The Keeling curve's trend rate is approximately the concentration one year from now minus the concentration now, divided by one year.</p>
+        <dl>
+          <dt>f&Prime;(t)</dt>
+          <dd>the second derivative: the rate of change of the rate of change</dd>
+          <dt>C(t)</dt>
+          <dd>the Keeling curve&rsquo;s CO2 reading at time t</dd>
+          <dt>the one-year interval</dt>
+          <dd>chosen specifically because it spans exactly one full seasonal cycle, canceling it out of the comparison</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can tell an instantaneous rate from a second derivative, a chart that is falling
+        this month and setting a record this decade stops looking like a contradiction. The same
+        shape shows up anywhere a real trend rides on top of a repeating cycle: tax receipts dip every
+        April after refunds and still trend upward for a decade; a retailer&rsquo;s revenue falls
+        every January after the holidays and still grows year over year; a region&rsquo;s electricity
+        demand sags every spring and autumn between heating and cooling seasons while still climbing
+        on a multi-year basis as the economy grows. In every one of these the honest answer to
+        &ldquo;is it rising?&rdquo; depends entirely on which interval you choose to average over, and
+        a chart read at the wrong interval can make a steady decline look alarming, or a genuine
+        emergency look calm.
+      </p>
+      <p>
+        It also points you toward where danger actually hides in a system, which is rarely the
+        current level. A quantity that is high but steady is a known, manageable problem: you can plan
+        around a constant. A quantity whose own rate of change is climbing &mdash; a positive second
+        derivative &mdash; is a system whose demands on you are growing faster than you are used to
+        planning for, so whatever response matched last decade&rsquo;s pace will already be behind by
+        the time it is built. That is exactly the shape of warning the Keeling curve&rsquo;s trend has
+        carried for six decades: not a fixed problem to solve once, but a moving target whose own
+        speed keeps increasing.
+      </p>
+      <p>
+        <b>Settled.</b> Direct measurement shows carbon dioxide rising at Mauna Loa and globally every
+        year since 1958, and that annual rise itself growing larger; isotopic and carbon-budget
+        evidence places the dominant cause in fossil-fuel combustion (IPCC AR6).
+      </p>
+      <p>
+        <b>Debated.</b> Exactly how much of any single year&rsquo;s jump &mdash; 2023&ndash;24&rsquo;s
+        included &mdash; to attribute to a specific El Ni&ntilde;o episode versus the underlying trend
+        is still refined by ongoing research, which is why acceleration is judged on multi-year
+        averages rather than any one year&rsquo;s reading.
+      </p>
+      <p>
+        <b>Value judgment.</b> How much to spend now, guarding against a rate of change not yet
+        visible in this year&rsquo;s reading rather than against a level everyone can already see, is
+        a judgment about who bears the cost of waiting &mdash; the question Apply It puts to a coastal
+        planner below.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 2 defined growth as a constant percentage change per period &mdash; itself a
+        rate of change relative to the current amount, already a derivative in disguise, just not
+        named as one. Today names that idea properly and takes the one step Day 2&rsquo;s single log
+        scale could not: asking whether the rate itself is changing.
+      </p>
+      <p>
+        <b>Across.</b> Engineering builds control out of the same quantity. In 1922 the Russian-born
+        American engineer Nicolas Minorsky published &ldquo;Directional Stability of Automatically
+        Steered Bodies,&rdquo; drawn from his work on automatic steering for U.S. Navy ships, giving
+        the first rigorous mathematical treatment of what is now called a PID
+        (proportional-integral-derivative) controller. A purely proportional controller reacts only
+        to how large an error currently is, which tends to overshoot and oscillate around the target;
+        Minorsky&rsquo;s derivative term instead reacts to how fast that error &mdash; a ship&rsquo;s
+        heading, a thermostat&rsquo;s temperature, a drone&rsquo;s altitude &mdash; is changing right
+        now, damping the overshoot by anticipating where the error is headed rather than reacting only
+        to where it currently sits. The same three-term logic now runs inside almost every industrial
+        control loop, from cruise control to a chemical plant&rsquo;s temperature regulators.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://www.youtube.com/watch?v=9vKqVkMQHKk">The paradox of the derivative | Chapter 2, Essence of calculus</a>
+        &mdash; Grant Sanderson, 3Blue1Brown (2017) &middot; Video &middot; about 17 minutes</p>
+        <p>It takes on the phrase &ldquo;instantaneous rate of change&rdquo; directly, since change
+        seems to need two moments. It resolves the paradox with animated secant lines shrinking onto
+        a tangent &mdash; the picture today&rsquo;s lesson could only put into words.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>The derivative is the instantaneous rate of change: what an average rate over an interval
+        settles toward as that interval shrinks to zero &mdash; the tangent line&rsquo;s slope.</li>
+        <li>The second derivative is the rate of change of the rate: positive means a rise is
+        accelerating, negative means it is easing off.</li>
+        <li>A quantity can be falling right now and still be rising on trend &mdash; pick the right
+        interval before calling either one true.</li>
+        <li>The Keeling curve&rsquo;s year-over-year rate has itself climbed since 1958: not just
+        rising, but rising faster.</li>
+        <li>Engineers read the same derivative directly &mdash; an airbag&rsquo;s accelerometer and a
+        PID controller&rsquo;s derivative term both act on how fast something is changing, not just
+        how much.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        NASA reports that the yearly rise in global sea level measured by satellites has roughly
+        doubled since 1993: why would a planner of 50-year coastal infrastructure care more about the
+        second derivative of sea level than a homeowner reading this year&rsquo;s tide gauge?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Scripps Institution of Oceanography&rsquo;s Keeling Curve program
+      and its own history of the record; NOAA Global Monitoring Laboratory&rsquo;s Mauna Loa CO2
+      growth-rate figures; Keeling&rsquo;s 1960 paper in <em>Tellus</em>; Analog Devices&rsquo; own
+      ADXL50 documentation; Nicolas Minorsky&rsquo;s 1922 paper on automatically steered bodies; NASA
+      JPL&rsquo;s satellite sea-level record. All checked via web search this run; exact frontal-crash
+      pulse durations vary by vehicle and were not found standardized in any single source, so the
+      Example section states its timing figures as typical, not fixed.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you
+      do. Resource from the Connected Path&rsquo;s curated list. <a
+      href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-19-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
