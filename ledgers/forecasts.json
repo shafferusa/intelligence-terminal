@@ -5870,6 +5870,56 @@
    "probability": "70-80%",
    "basis": "Past week's range 5.09-5.19%; no major data besides housing starts; Fed blackout",
    "status": "open"
+  },
+  {
+   "id": "2026-10-20-am-1",
+   "date": "2026-10-20",
+   "slot": "am",
+   "forecast": "Brent crude front-month (Dec) settles above $110/bbl on Fri Oct 23",
+   "horizon": "2026-10-23",
+   "probability": "45-60%",
+   "basis": "Brent 111.61 at 06:33 ET Oct 20, five-month high; no confirmed progress on Iran 7-day plan; claims on both sides unverified; Saudi East-West pipeline operating",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-20-am-2",
+   "date": "2026-10-20",
+   "slot": "am",
+   "forecast": "Treasury 20-year reopening on Oct 21 stops (high yield) at or above 5.50%",
+   "horizon": "2026-10-21",
+   "probability": "50-65%",
+   "basis": "20Y par 5.53% Oct 19 (+6bp); Sept reopening 5.420% (single source)",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-20-am-3",
+   "date": "2026-10-20",
+   "slot": "am",
+   "forecast": "FOMC raises the policy rate at the Oct 27-28 meeting",
+   "horizon": "2026-10-28",
+   "probability": "15-25%",
+   "basis": "FedWatch-based ~17% (Mitrade Oct 20); pre-blackout Jefferson/Williams/Waller leaned hold; oil higher since",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-20-am-4",
+   "date": "2026-10-20",
+   "slot": "am",
+   "forecast": "SPCX closes Wed Oct 21 more than 7% away (either direction) from its Tue Oct 20 close after Q3 results",
+   "horizon": "2026-10-21",
+   "probability": "40-55%",
+   "basis": "Options-implied move ~7.5-7.8% (TipRanks); short-notice report; pending spectrum deal",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-20-am-5",
+   "date": "2026-10-20",
+   "slot": "am",
+   "forecast": "Share of US stocks above the 50-session EMA proxy (breadth.json) is below 30% after the Fri Oct 23 session",
+   "horizon": "2026-10-23",
+   "probability": "55-70%",
+   "basis": "28.4% Oct 19, 28.6% Oct 16; Monday's index rally did not lift it; proxy history 60 sessions",
+   "status": "open"
   }
  ]
 }

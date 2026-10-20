@@ -404,6 +404,15 @@
       "error_source": "End date carried from an earlier secondary report without checking the announced closure dates.",
       "conclusions_changed": false,
       "note": "Surfaced in the 2026-10-18 sun colophon."
+    },
+    {
+      "found": "2026-10-20",
+      "report": "reports/2026/10/2026-10-19-am.html",
+      "original": "SpaceX (SPCX) Tuesday report date flagged 'Date disputed'; 'the company has not confirmed a date that we can find.'",
+      "corrected": "SpaceX announced on Oct 16 that it would report Q3 results on Oct 20 after the close (webcast 4:30 PM ET).",
+      "error_source": "Search did not surface the company's Oct 16 announcement; relied on conflicting third-party calendars.",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-20 am colophon."
     }
   ]
 }

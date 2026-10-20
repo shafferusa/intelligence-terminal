@@ -1,6 +1,150 @@
 {
  "stories": [
   {
+   "id": "oil-111-oct20",
+   "headline": "Brent Dec 111.61 (+1.9%) 06:33 ET Oct 20, ~5-month high; WTI Dec 100.92; IRGC claims 2 more tankers mined Oct 19 (unconfirmed); CENTCOM: strait cleared of mines, projectiles; Houthi claims on Yanbu/Shaybah unverified, East-West pipeline normal (Bloomberg)",
+   "status": "Materially changed",
+   "verification": "Single-reliable-source (claims); prices Confirmed-primary",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "kospi-chip-slide-oct20",
+   "headline": "Kospi -3.73% to 5,552.74 (SK Hynix ~-4.2%, Samsung ~-3.0%); NQ -0.43%, ES -0.07% at 06:33 ET; CRWV/NBIS ~-3% premarket (Reuters). Mon breadth 2,218/3,038, 28.4% above 50-EMA proxy",
+   "status": "Materially changed",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ge-q3-2026",
+   "headline": "GE Aerospace Q3 (8-K): orders 19.0B +49%, adj EPS 2.25 vs ~2.00; FY adj EPS guide 8.00-8.10 from 7.65-7.85; op profit 10.9-11.0B; FCF 9.1-9.4B",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "industrials-q3-oct20",
+   "headline": "3M adj EPS 2.50, guide 9.10-9.15 (new basis, amortization excluded); Amazon warrant up to 3.2M sh tied to B data-center sales. NOC EPS 7.89, backlog 10B, guide 29.35-29.75. GM adj EPS 3.70, rev 50.0B, EBIT-adj 14.5-15.5B (narrowed), 0B buyback. STLD AH -5%",
+   "status": "New",
+   "verification": "Confirmed-primary (3M, NOC); GM release via PR Newswire",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "yields-20y-auction-oct21",
+   "headline": "10Y par 5.15% Oct 19 (+6), 20Y 5.53%, 2s10s 38bp; breakeven flat 2.35% (real-yield move). 20Y 3B reopening Wed 1 PM; Sept stop 5.420% (single). PBOC LPR hold 3.00/3.50. Fed hike odds Oct ~17% (Mitrade)",
+   "status": "Continuing",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "nflx-spcx-oct20",
+   "headline": "SPCX Q3 tonight (announced Oct 16; webcast 4:30): cons rev ~12.97B, EPS ~0.14; implied move ~7.5%. NFLX cons EPS ~0.82-0.84. COF, UAL, CB, ALK AMC",
+   "status": "Watch",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "france-unrest-oat",
+   "headline": "France riots: ~500k marchers, ~2,400 arrests (Interior Min via FP); curfews from Mon; OAT worst day in ~a month, 10Y OAT ~4.84% (single); Stoxx 600 -0.8% Mon, -0.6% Tue am",
+   "status": "New",
+   "verification": "Confirmed-multiple (unrest); single (OAT level)",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "doj-california-28-charged",
+   "headline": "DOJ charged 28 green-card holders in CA (Oct 19); TRO motion in US v. California to set aside ~20k mail ballots; CA refuses, no ruling yet",
+   "status": "Materially changed",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "anthropic-public-benefit-fund",
+   "headline": "Anthropic 5% of shares to Public Benefit Fund (LLC; needs stockholder approval; up to ~20%); IPO as soon as Nov; FTC CIDs (Axios, single)",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "yemen-shabwa-strike",
+   "headline": "Houthi missile strike on Shabwa training camp Oct 19: 53 killed, 200+ wounded (local authorities via Asharq Al-Awsat; unverified)",
+   "status": "New",
+   "verification": "Single-reliable-source",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "allegheny-paid-leave-vote",
+   "headline": "Allegheny County Council votes Tue Oct 20 on 12-week paid parental leave (15+ employees; 6-month eligibility); needs 8 votes",
+   "status": "Developing",
+   "verification": "Single-reliable-source (WESA)",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "pa-house-cellphone-alpr",
+   "headline": "PA House passed SB 1014 school cellphone ban 141-62 and HB 2771 ALPR limits 190-13 (Oct 19); 4 session days left, session ends Nov 30",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-20-am",
+   "last_updated": "2026-10-20-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Top Story / section item 2026-10-20 am",
+   "keep_on_watchlist": true
+  },
+  {
    "id": "chip-rebound-oct19",
    "first_seen": "2026-10-19-pm",
    "last_updated": "2026-10-19-pm",
@@ -76,20 +220,6 @@
    "keep_on_watchlist": true
   },
   {
-   "id": "doj-ca-voter-sweep",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "DOJ charges 28 LPRs in California voter-registration/naturalization fraud sweep; 113 charged in 20 states",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "AP via PBS"
-   ],
-   "score_rationale": "US politics pre-midterm",
-   "keep_on_watchlist": false
-  },
-  {
    "id": "putin-trilateral-summit",
    "first_seen": "2026-10-19-pm",
    "last_updated": "2026-10-19-pm",
@@ -101,22 +231,6 @@
     "WSJ via CNBC"
    ],
    "score_rationale": "Diplomacy",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "hormuz-mine-claims",
-   "first_seen": "2026-10-17-sat",
-   "last_updated": "2026-10-19-pm",
-   "status": "Developing",
-   "headline": "IRGC claims third tanker mined; JMIC: no substantiation; WTI -3% ~98.4, Brent ~109.3",
-   "one_line": null,
-   "verification": "Disputed",
-   "sources": [
-    "Tasnim",
-    "JMIC",
-    "UKMTO"
-   ],
-   "score_rationale": "Energy risk",
    "keep_on_watchlist": true
   },
   {
@@ -338,25 +452,13 @@
   {
    "id": "space-delays",
    "first_seen": null,
-   "last_updated": "2026-10-19-am",
+   "last_updated": "2026-10-20-am",
    "status": "Continuing",
-   "headline": "Starship Flight 15: no date announced (no source for Nov 8). Neutron 2027; New Glenn expansion plans (SFN); Artemis update Oct 23 2 PM.",
+   "headline": "Starship Flight 15 no official date (NET ~Nov 8 per Space Force slide); Neutron 2027; New Glenn Dec target; Artemis briefing Fri Oct 23 2 PM; Bandwagon-5 retargeted Oct 20",
    "one_line": null,
    "verification": "Confirmed-multiple",
    "sources": null,
    "score_rationale": "Space",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "china-taiwan-drills",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "PLA live-fire drills through Oct 23; China Q3 GDP Sun 10 PM ET.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "World",
    "keep_on_watchlist": true
   },
   {
@@ -374,9 +476,9 @@
   {
    "id": "brazil-runoff",
    "first_seen": null,
-   "last_updated": "2026-10-17-sat",
+   "last_updated": "2026-10-20-am",
    "status": "Continuing",
-   "headline": "Oct 25 runoff Bolsonaro vs Lula, statistical tie.",
+   "headline": "Oct 25 runoff Flavio Bolsonaro vs Lula, statistical tie (AtlasIntel 51.1/48.9; Nexus 50.3/49.7; Vox Lula 51)",
    "one_line": null,
    "verification": "Confirmed-multiple",
    "sources": null,
@@ -408,18 +510,6 @@
    "keep_on_watchlist": false
   },
   {
-   "id": "hormuz-mine-claims-oct-17",
-   "first_seen": "2026-10-18-sun",
-   "last_updated": "2026-10-19-am",
-   "status": "Developing",
-   "headline": "IRGC claims two supertankers hit mines Oct 16-17; no vessel named; no CENTCOM/UKMTO confirmation as of Oct 19 am.",
-   "one_line": null,
-   "verification": "Unverified",
-   "sources": null,
-   "score_rationale": "Claim only",
-   "keep_on_watchlist": true
-  },
-  {
    "id": "ukraine-st-petersburg-drone-strike",
    "first_seen": "2026-10-18-sun",
    "last_updated": "2026-10-19-am",
@@ -441,30 +531,6 @@
    "verification": "Confirmed-primary (company dates where noted)",
    "sources": null,
    "score_rationale": "Week's hinge",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "treasury-20y-reopening-oct21",
-   "first_seen": "2026-10-18-sun",
-   "last_updated": "2026-10-18-sun",
-   "status": "Watch",
-   "headline": "$13B 20-year reopening Wed Oct 21 1 PM; 20y par 5.47%. $26B 5y TIPS new issue Thu Oct 22.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "Rates",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "doj-v-california-ballots",
-   "first_seen": "2026-10-18-sun",
-   "last_updated": "2026-10-18-sun",
-   "status": "Continuing",
-   "headline": "US v. California (C.D. Cal. 2:26-cv-12025): ~20k mail ballots; TRO motions; no hearing date found as of Oct 18.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "US politics",
    "keep_on_watchlist": true
   },
   {

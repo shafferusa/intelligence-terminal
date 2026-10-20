@@ -1,64 +1,8 @@
 {
- "fetched": "2026-10-19T06:50:00-04:00",
+ "fetched": "2026-10-20T07:30:00-04:00",
  "earnings_fetched": "2026-10-18",
  "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted. | 2026-10-19 am: Finnhub day-of refresh; TreasuryDirect upcoming refreshed.",
  "events": [
-  {
-   "ts_et": "2026-10-19T06:30",
-   "type": "launch",
-   "name": "Falcon 9 Bandwagon-5 rideshare (SLC-40)",
-   "importance": "Low",
-   "reason": "Rideshare",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-10-19T07:00",
-   "type": "earnings",
-   "name": "Cleveland-Cliffs, Fifth Third (BMO); Steel Dynamics, Zions, W.R. Berkley (AMC)",
-   "importance": "Low",
-   "reason": "Regional bank/steel",
-   "source": "finnhub/alphavantage"
-  },
-  {
-   "ts_et": "2026-10-19T10:00",
-   "type": "data",
-   "name": "NAHB housing market index (Oct), forecast 31",
-   "importance": "Low",
-   "reason": "Housing",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-19T11:30",
-   "type": "auction",
-   "name": "13-wk $95B / 26-wk $82B bills",
-   "importance": "Low",
-   "reason": "Routine bills",
-   "source": "treasurydirect"
-  },
-  {
-   "ts_et": "2026-10-19T12:00",
-   "type": "local",
-   "name": "PA voter-registration deadline; PA House/Senate return",
-   "importance": "Medium",
-   "reason": "Local/election",
-   "source": "pa.gov"
-  },
-  {
-   "ts_et": "2026-10-19T15:41",
-   "type": "launch",
-   "name": "H3 / MMX (JAXA) Phobos sample return",
-   "importance": "Medium",
-   "reason": "Science mission",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-10-19T16:05",
-   "type": "earnings",
-   "name": "Western Alliance, Crown Holdings also AMC (Finnhub); GE date conflict persists (Finnhub Mon vs others Tue)",
-   "importance": "Low",
-   "reason": "Regional bank credit",
-   "source": "finnhub"
-  },
   {
    "ts_et": "2026-10-20T07:00",
    "type": "earnings",
@@ -66,6 +10,14 @@
    "importance": "Medium",
    "reason": "Defence/industrial/credit",
    "source": "finnhub/alphavantage"
+  },
+  {
+   "ts_et": "2026-10-20T08:30",
+   "type": "data",
+   "name": "Housing starts / permits (Sep)",
+   "importance": "Medium",
+   "reason": "Housing under 5% 10Y; NAHB 29",
+   "source": "census.gov schedule"
   },
   {
    "ts_et": "2026-10-20T08:30",
@@ -78,10 +30,26 @@
   {
    "ts_et": "2026-10-20T10:00",
    "type": "data",
+   "name": "BLS state employment (Sep)",
+   "importance": "Low",
+   "reason": "Regional detail only",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-10-20T10:00",
+   "type": "data",
    "name": "BLS State Employment and Unemployment (Sept)",
    "importance": "Low",
    "reason": "Regional labour",
    "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-10-20T11:30",
+   "type": "auction",
+   "name": "6-week bill $95B",
+   "importance": "Low",
+   "reason": "Routine bill",
+   "source": "treasurydirect"
   },
   {
    "ts_et": "2026-10-20T11:30",
@@ -106,6 +74,14 @@
    "importance": "High",
    "reason": "Mega-cap/card credit",
    "source": "finnhub/research"
+  },
+  {
+   "ts_et": "2026-10-20T16:05",
+   "type": "earnings",
+   "name": "NFLX, SPCX (webcast 16:30), COF, UAL, CB, ALK",
+   "importance": "High",
+   "reason": "First big-tech prints of the week; SPCX second public report",
+   "source": "finnhub"
   },
   {
    "ts_et": "2026-10-20T18:14",
@@ -142,6 +118,14 @@
   {
    "ts_et": "2026-10-21T13:00",
    "type": "auction",
+   "name": "20-year bond reopening $13B",
+   "importance": "High",
+   "reason": "Long-end supply test with 20Y par 5.53%",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-21T13:00",
+   "type": "auction",
    "name": "20-yr bond reopening $13B",
    "importance": "High",
    "reason": "Long-end demand after 15bp rally",
@@ -154,6 +138,14 @@
    "importance": "Critical",
    "reason": "AI capex test after chip selloff",
    "source": "company IR/finnhub"
+  },
+  {
+   "ts_et": "2026-10-21T16:05",
+   "type": "earnings",
+   "name": "META, TSLA, IBM, LRCX, TXN",
+   "importance": "Critical",
+   "reason": "META capex guide = AI spending test",
+   "source": "finnhub"
   },
   {
    "ts_et": "2026-10-21T17:00",
@@ -186,6 +178,14 @@
    "importance": "Low",
    "reason": "Cycle",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-10-22T13:00",
+   "type": "auction",
+   "name": "5-year TIPS $26B",
+   "importance": "Medium",
+   "reason": "Real-yield supply",
+   "source": "treasurydirect"
   },
   {
    "ts_et": "2026-10-22T13:00",
@@ -238,6 +238,14 @@
   {
    "ts_et": "2026-10-23T14:00",
    "type": "space",
+   "name": "NASA Artemis III/IV briefing",
+   "importance": "Medium",
+   "reason": "Program schedule",
+   "source": "nasa.gov"
+  },
+  {
+   "ts_et": "2026-10-23T14:00",
+   "type": "space",
    "name": "NASA Artemis schedule briefing",
    "importance": "Low",
    "reason": "Artemis III/IV",
@@ -266,6 +274,14 @@
    "importance": "Medium",
    "reason": "Middle East",
    "source": "research"
+  },
+  {
+   "ts_et": "2026-10-28T14:00",
+   "type": "fed",
+   "name": "FOMC decision",
+   "importance": "Critical",
+   "reason": "Hike odds ~17%",
+   "source": "federalreserve.gov"
   },
   {
    "ts_et": "2026-10-28T14:00",
