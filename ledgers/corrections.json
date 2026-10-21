@@ -413,6 +413,24 @@
       "error_source": "Search did not surface the company's Oct 16 announcement; relied on conflicting third-party calendars.",
       "conclusions_changed": false,
       "note": "Surfaced in the 2026-10-20 am colophon."
+    },
+    {
+      "found": "2026-10-21",
+      "report": "reports/2026/10/2026-10-20-pm.html",
+      "original": "Capital One ... Its shares rose about 6.4% after hours.",
+      "corrected": "Capital One's after-hours gain was reported at about 3.9-4.9% (CNBC, Investing.com); 6.4% was its year-over-year revenue growth.",
+      "error_source": "Revenue growth figure conflated with the after-hours share move in secondary summaries.",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-21 am colophon."
+    },
+    {
+      "found": "2026-10-21",
+      "report": "reports/2026/10/2026-10-20-pm.html",
+      "original": "Intuitive Surgical fell about 11% (Brief) / about 10.6% after hours (Top Stories).",
+      "corrected": "Most outlets reported an after-hours fall of about 7%; premarket Oct 21 about -7.5% at $405.",
+      "error_source": "Early thin after-hours quote (Yahoo ~4:40 PM) used without checking later prints.",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-21 am colophon."
     }
   ]
 }

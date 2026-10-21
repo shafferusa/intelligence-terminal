@@ -5950,6 +5950,46 @@
    "probability": "70-80%",
    "basis": "5.12% Oct 20; range of the past week 5.09-5.24; 20-year auction at 1 PM adds two-way risk",
    "status": "open"
+  },
+  {
+   "id": "2026-10-21-am-1",
+   "date": "2026-10-21",
+   "slot": "am",
+   "forecast": "Meta (META) closes Thu Oct 22 more than 5% away (either direction) from its Wed Oct 21 close after Q3 results",
+   "horizon": "2026-10-22",
+   "probability": "50-65%",
+   "basis": "Recent post-earnings moves and options-implied move as reported; capex outlook is the swing factor",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-21-am-2",
+   "date": "2026-10-21",
+   "slot": "am",
+   "forecast": "Brent front-month (Dec) settles above $110/bbl on Wed Oct 21",
+   "horizon": "2026-10-21",
+   "probability": "40-55%",
+   "basis": "Brent $110.93 at 06:30 ET after Araghchi's Hormuz comments and a 4.9M bbl API draw; Tuesday reversed from $111.99 to $108.79 on headlines",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-21-am-3",
+   "date": "2026-10-21",
+   "slot": "am",
+   "forecast": "Treasury 20-year reopening on Oct 21 stops (high yield) between 5.40% and 5.55%",
+   "horizon": "2026-10-21",
+   "probability": "70-80%",
+   "basis": "20Y par 5.47% at Oct 20 close; Sept new issue 5.420%",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-21-am-4",
+   "date": "2026-10-21",
+   "slot": "am",
+   "forecast": "EIA weekly petroleum report (Oct 21) shows US commercial crude stocks falling",
+   "horizon": "2026-10-21",
+   "probability": "65-80%",
+   "basis": "API showed a 4.93M bbl draw for the week to Oct 16 vs ~1.3M expected; series usually agree on direction",
+   "status": "open"
   }
  ]
 }
