@@ -13,17 +13,32 @@ Conventions stated here (the §1.3 sentences that bite in this module)
 - ACCRUAL (§11.3): ``Dr 5150:ccy / Cr 2755:ccy`` per calendar night (idem ``accr:loan:{loan_id}:{D}``, base at that
   command's FX rate, ACT/360, GBP ACT/365) through WP-08's cumulative-rounding helper ``lifecycle.accrue_segment(ctx,
   kind, ref, base_c, rate, basis, night) -> int`` (consumed as ``services.lifecycle.accrue_segment``; tests inject a
-  local copy).  The segment restarts on a new rate observation or a principal change because the helper compares the
-  stored base / rate, so the sum of the nightly postings equals ``to_c(base × rate × n / basis)`` per segment.  The memo
-  carries the index, its observation date and the night ("ECBDFR 2.25 % (2026-10-22) + 0.75 % = 3.00 %, ACT/360, night
-  of 2026-10-22").  Interest is Financing in P&L; it is paid at repayment, not monthly.
-- Repayment: ``credit.loan_repay {loan_id, amount}`` pays accrued interest first, then principal (``Dr 2755 / Dr 2750 /
-  Cr 1010:ccy``, idem ``loan:{loan_id}:repay:{request_id}``); refused 409 ``INSUFFICIENT_CASH_CCY`` with the hint
-  "buy <ccy> <shortfall> with Convert" when the account's SETTLED cash in that currency is short — no automatic FX;
-  400 ``AMOUNT_EXCEEDS`` above principal + accrued.  The loan CLOSES when its principal reaches zero (L14: Σ OPEN
-  principal = balance(2750) per account and currency).
-- Maturity (``term_days``): ``credit.loan_mature`` attempts the full repayment on the maturity date; when cash is short
-  the loan ROLLS to the next business day with one open Attention WARN ``LOAN_ROLLED`` — no invented default.
+  local copy).  The base of night D is the principal STANDING AT THE 17:00 ET CLOSE OF D (``principal_at_close_c``: the
+  loan's own 2750 lines, draw and repayments, whose entry ``business_date`` ≤ D — an entry after 17:00 belongs to the
+  next accounting day), never the row's current ``principal_c`` read when the job happens to run.  The segment restarts
+  on a new rate observation or a principal change because the helper compares the stored base / rate, so the sum of the
+  nightly postings equals ``to_c(base × rate × n / basis)`` per segment.  The memo carries the index, its observation
+  date, the night and the base ("ECBDFR 2.25 % (2026-10-22) + 0.75 % = 3.00 %, ACT/360, night of 2026-10-22 on
+  principal 1,000,000.00").  Interest is Financing in P&L; it is paid at repayment, not monthly.
+- NIGHTS OWED AT REPAYMENT (review MONEY-1): a repayment or a maturity FIRST posts every night the loan owes that the
+  00:30 ACCRUE_DAILY run has not posted yet (``catch_up_accruals``: the nights D with ``opened_date ≤ D < the command's
+  accounting day`` after ``accrued_through``, in date order, under the job's own idem keys, so the job later finds them
+  done).  A loan open at a 17:00 close therefore pays that night even when it is repaid between 17:00 and 00:30, after a
+  restart or after laptop sleep, and that night is charged on the principal of that close, not on the reduced one; a
+  draw and a repayment inside one accounting day cross no close and owe no night.  A night that cannot accrue (no rate
+  observation, no FX rate, no accrual helper) refuses the whole command 409 ``ACCRUAL_PENDING`` naming the night and the
+  cause — nothing is repaid around a missing night, nothing is defaulted.
+- Repayment: ``credit.loan_repay {loan_id, amount | full: true}`` pays accrued interest first (after the catch-up above),
+  then principal (``Dr 2755 / Dr 2750 / Cr 1010:ccy``, idem ``loan:{loan_id}:repay:{request_id}``); ``full: true``
+  repays principal + accrued as they stand after the catch-up (the payoff, which no client can know between 17:00 and
+  00:30); refused 409 ``INSUFFICIENT_CASH_CCY`` with the hint "buy <ccy> <shortfall> with Convert" (USD: "transfer USD
+  <shortfall> from Treasury") when the account's SETTLED cash in that currency is short — no automatic FX; 400
+  ``AMOUNT_EXCEEDS`` above principal + accrued (both refusals carry ``total_due_c`` after the catch-up).  The result
+  carries ``accrued_nights`` (the nights the catch-up posted) and ``paid_interest_c`` / ``paid_principal_c``.  The loan
+  CLOSES when its principal reaches zero (L14: Σ OPEN principal = balance(2750) per account and currency).
+- Maturity (``term_days``): ``credit.loan_mature`` attempts the full repayment (catch-up first) on the maturity date;
+  when cash is short the loan ROLLS to the next business day with one open Attention WARN ``LOAN_ROLLED`` — no invented
+  default; the nights posted by the catch-up stay posted (they are owed either way).
 - PB financing (§13.7): ``credit.pb_draw`` / ``credit.pb_repay`` move ``Dr 1010:USD / Cr 2700:USD`` and back (idem
   ``pb:{account}:draw:{request_id}`` / ``pb:{account}:repay:{request_id}``) in a PB account whose ``pb_financing``
   switch is on, within ``accounting.pb_headroom_c`` (50 % of long market value − 2700 − OTC margin, capped by
@@ -103,6 +118,15 @@ def accrued_c(conn, loan_id: str) -> int:
     """Accrued, unpaid interest of one loan (natural cents): the 2755 lines of the entries referenced to the loan."""
     row = conn.execute("SELECT COALESCE(SUM(l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
                        " WHERE e.ref_type='loan' AND e.ref_id=? AND l.gl='2755'", (loan_id,)).fetchone()
+    return -int(row[0] or 0)
+
+
+def principal_at_close_c(conn, loan_id: str, d) -> int:
+    """Principal of one cash loan standing at the 17:00 ET close of accounting day ``d`` (natural cents): the 2750 lines of
+    the entries referenced to the loan (its draw and its repayments) whose ``business_date`` ≤ ``d``.  A repayment posted
+    after 17:00 carries the next accounting day, so it does not reduce the base of the night it was still open at."""
+    row = conn.execute("SELECT COALESCE(SUM(l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
+                       " WHERE e.ref_type='loan' AND e.ref_id=? AND l.gl='2750' AND e.business_date<=?", (loan_id, _as_date(d).isoformat())).fetchone()
     return -int(row[0] or 0)
 
 
@@ -189,20 +213,22 @@ def _accrue_fn(services):
 # ---- accrual (§11.3) -----------------------------------------------------------------------------------------------------------
 def accrual_lines_loan(ctx: TxContext, loan, d, index, fx=None) -> List[Line]:
     """The night-``d`` lines of one cash loan: ``Dr 5150:ccy / Cr 2755:ccy`` for the amount the cumulative-rounding
-    segment yields (empty when it rounds to zero).  ``index`` is ``(obs_date, percent)`` from ``index_observation`` (or a
-    bare percent); ``fx`` is unused — base is the command's rate (§5.4).  Mutates ``accrual_state`` through
-    ``accrue_segment``; the caller posts the entry (idem ``accr:loan:{loan_id}:{d}``)."""
+    segment yields (empty when it rounds to zero).  The base is the principal standing at the 17:00 ET close of ``d``
+    (``principal_at_close_c``), not the row's current principal.  ``index`` is ``(obs_date, percent)`` from
+    ``index_observation`` (or a bare percent); ``fx`` is unused — base is the command's rate (§5.4).  Mutates
+    ``accrual_state`` through ``accrue_segment``; the caller posts the entry (idem ``accr:loan:{loan_id}:{d}``)."""
     services = _services(ctx)
     accrue = _accrue_fn(services)
     night = _as_date(d)
     obs_date, pct = (index if isinstance(index, (tuple, list)) else (None, index))
     rate = loan_rate(Decimal(str(pct)), loan["spread"])
     basis = int(loan["day_basis"])
-    amount = int(accrue(ctx, ACCRUAL_KIND, loan["loan_id"], int(loan["principal_c"]), rate, basis, night))
+    base_c = principal_at_close_c(ctx.conn, loan["loan_id"], night)
+    amount = int(accrue(ctx, ACCRUAL_KIND, loan["loan_id"], base_c, rate, basis, night))
     if amount == 0:
         return []
     label = f"{loan['index_name']} {_pct(Decimal(str(pct)))} %" + (f" ({obs_date.isoformat() if isinstance(obs_date, date) else obs_date})" if obs_date else "")
-    label += f" + {_pct(Decimal(str(loan['spread'])) * 100)} % = {_pct(rate * 100)} %, ACT/{basis}, night of {night.isoformat()}"
+    label += f" + {_pct(Decimal(str(loan['spread'])) * 100)} % = {_pct(rate * 100)} %, ACT/{basis}, night of {night.isoformat()} on principal {fmt_money(base_c)}"
     if loan["index_name"] in tables.POLICY_INDEX_MONTHLY:
         label += " (monthly proxy)"
     aid, ccy = loan["account_id"], loan["currency"]
@@ -240,6 +266,26 @@ def post_loan_accrual(ctx: TxContext, services, loan, night, force: bool = False
               currency=loan["currency"], rate=out["rate"], index=out["index"], entry_id=entry_id)
     out.update(amount_c=amount, entry_id=entry_id)
     return out
+
+
+def catch_up_accruals(ctx: TxContext, loan, services=None) -> List[dict]:
+    """Module docstring NIGHTS OWED AT REPAYMENT: post every night the OPEN cash loan owes and the 00:30 run has not
+    posted yet (``nights_due`` up to the command's accounting day, exclusive), in date order, under the job's idem keys.
+    Returns the per-night results (``post_loan_accrual``).  A night that cannot accrue -> 409 ``ACCRUAL_PENDING``."""
+    nights = nights_due(ctx.conn, loan, ctx.today)
+    if not nights:
+        return []
+    services = _services(ctx, services)
+    done: List[dict] = []
+    for night in nights:
+        try:
+            done.append(post_loan_accrual(ctx, services, loan, night))
+        except RejectError as e:
+            raise ConflictError("ACCRUAL_PENDING",
+                                f"loan {loan['loan_id']} owes the night of {night.isoformat()} but its interest cannot be computed ({e.code}: {e.message});"
+                                " nothing is repaid around a missing night — retry once it can post",
+                                dict(e.details, loan_id=loan["loan_id"], night=night.isoformat(), cause=e.code)) from e
+    return done
 
 
 # ---- cash loans ----------------------------------------------------------------------------------------------------------------
@@ -293,21 +339,29 @@ def h_loan_draw(ctx: TxContext, payload: dict) -> dict:
     return {"loan": view, "loan_id": loan_id, "entry_id": entry_id, "settled_c": balance(ctx.conn, aid, "1010", ccy), "memo": memo}
 
 
-def _repayment(ctx: TxContext, loan, amount_c: int, idem: str, memo_prefix: str) -> dict:
-    """Post ``Dr 2755 accrued / Dr 2750 principal / Cr 1010`` for ``amount_c`` (accrued first), update the loan row."""
+def _repayment(ctx: TxContext, loan, amount_c: Optional[int], idem: str, memo_prefix: str) -> dict:
+    """Post every night owed first (``catch_up_accruals``), then ``Dr 2755 accrued / Dr 2750 principal / Cr 1010`` for
+    ``amount_c`` (accrued first; None = the whole amount due after the catch-up) and update the loan row."""
     aid, ccy, loan_id = loan["account_id"], loan["currency"], loan["loan_id"]
+    caught = [x for x in catch_up_accruals(ctx, loan) if not x.get("skipped")]
+    caught_c = sum(int(x.get("amount_c") or 0) for x in caught)
+    loan = loan_row(ctx.conn, loan_id)
     accrued = accrued_c(ctx.conn, loan_id)
     principal = int(loan["principal_c"])
     total = accrued + principal
+    if amount_c is None:
+        amount_c = total
     if amount_c > total:
         raise RejectError("AMOUNT_EXCEEDS", f"loan {loan_id} is due {ccy} {fmt_money(total)} (principal {fmt_money(principal)} + accrued {fmt_money(accrued)}); "
-                          f"the repayment {fmt_money(amount_c)} exceeds it", {"principal_c": principal, "accrued_c": accrued, "total_due_c": total, "amount_c": amount_c})
+                          f"the repayment {fmt_money(amount_c)} exceeds it", {"principal_c": principal, "accrued_c": accrued, "total_due_c": total, "amount_c": amount_c,
+                                                                               "accrued_at_repayment_c": caught_c})
     settled = balance(ctx.conn, aid, "1010", ccy)
     if settled < amount_c:
         short = amount_c - settled
-        raise ConflictError("INSUFFICIENT_CASH_CCY", f"{aid} holds {ccy} {fmt_money(settled)} settled; the repayment needs {fmt_money(amount_c)}: buy {ccy} {fmt_money(short)} with Convert",
+        hint = _cash_hint(ccy, short)
+        raise ConflictError("INSUFFICIENT_CASH_CCY", f"{aid} holds {ccy} {fmt_money(settled)} settled; the repayment needs {fmt_money(amount_c)}: {hint}",
                             {"settled_c": settled, "amount_c": amount_c, "shortfall_c": short, "currency": ccy, "account_id": aid,
-                             "hint": f"buy {ccy} {fmt_money(short)} with Convert"})
+                             "hint": hint, "total_due_c": total, "accrued_at_repayment_c": caught_c})
     pay_accrued = min(amount_c, accrued)
     pay_principal = amount_c - pay_accrued
     _fx_rate(ctx, ccy)
@@ -320,15 +374,36 @@ def _repayment(ctx: TxContext, loan, amount_c: int, idem: str, memo_prefix: str)
     left = principal - pay_principal
     closed = left == 0
     memo = f"{memo_prefix} {loan_id}: {ccy} {fmt_money(amount_c)} (interest {fmt_money(pay_accrued)}, principal {fmt_money(pay_principal)}); principal left {fmt_money(left)}" + (
-        "; loan CLOSED" if closed else "")
+        "; loan CLOSED" if closed else "") + _caught_note(caught)
     entry_id = ctx.post(Entry("LOAN", memo, lines, idem, ref_type="loan", ref_id=loan_id))
     ctx.conn.execute("UPDATE loans SET principal_c=?, status=?, closed_ts=? WHERE loan_id=?", (left, "CLOSED" if closed else "OPEN", ctx.ts if closed else None, loan_id))
     if closed:
         ctx.conn.execute("UPDATE attention SET resolved_ts=? WHERE code='LOAN_ROLLED' AND ref_type='loan' AND ref_id=? AND resolved_ts IS NULL", (ctx.ts, loan_id))
+    nights = [{"night": x["night"], "amount_c": int(x.get("amount_c") or 0), "entry_id": x.get("entry_id")} for x in caught]
     ctx.event("LOAN_REPAID", account_id=aid, ref_type="loan", ref_id=loan_id, kind=loan["kind"], currency=ccy, amount_c=amount_c, interest_c=pay_accrued,
-              principal_c=pay_principal, principal_left_c=left, closed=closed, entry_id=entry_id)
+              principal_c=pay_principal, principal_left_c=left, closed=closed, entry_id=entry_id, accrued_nights=nights, accrued_at_repayment_c=caught_c)
+    # paid_interest_c / paid_principal_c: the names the Cash & financing page's repay toast and its API fixture read
     return {"loan_id": loan_id, "entry_id": entry_id, "amount_c": amount_c, "interest_c": pay_accrued, "principal_c": pay_principal, "principal_left_c": left,
-            "closed": closed, "settled_c": balance(ctx.conn, aid, "1010", ccy), "loan": loan_view(ctx.conn, loan_id), "memo": memo}
+            "paid_interest_c": pay_accrued, "paid_principal_c": pay_principal,
+            "closed": closed, "settled_c": balance(ctx.conn, aid, "1010", ccy), "loan": loan_view(ctx.conn, loan_id), "memo": memo,
+            "accrued_nights": nights, "accrued_at_repayment_c": caught_c}
+
+
+def _cash_hint(ccy: str, short_c: Optional[int] = None) -> str:
+    """What the owner does when the repayment currency is short: a foreign currency is bought with Convert (§13.6, no
+    automatic FX); USD comes from the book's Treasury by an internal transfer."""
+    amt = f" {fmt_money(short_c)}" if short_c is not None else ""
+    return f"transfer USD{amt} from Treasury" if ccy == "USD" else f"buy {ccy}{amt} with Convert"
+
+
+def _caught_note(caught: List[dict]) -> str:
+    """The repayment memo's disclosure of the nights the catch-up posted in the same command ('' when none)."""
+    if not caught:
+        return ""
+    amt = fmt_money(sum(int(x.get("amount_c") or 0) for x in caught))
+    if len(caught) == 1:
+        return f"; accrued first at repayment: night of {caught[0]['night']} {amt}"
+    return f"; accrued first at repayment: {len(caught)} nights {caught[0]['night']} .. {caught[-1]['night']} {amt}"
 
 
 def _open_cash_loan(ctx: TxContext, payload: dict):
@@ -345,9 +420,15 @@ def _open_cash_loan(ctx: TxContext, payload: dict):
 
 
 def h_loan_repay(ctx: TxContext, payload: dict) -> dict:
-    """``credit.loan_repay {loan_id, amount_c | amount}``: accrued first, then principal."""
+    """``credit.loan_repay {loan_id, amount_c | amount | full: true}``: every night owed is posted first, then accrued
+    first, then principal; ``full`` repays the whole amount due after that catch-up (never together with an amount)."""
     loan = _open_cash_loan(ctx, payload)
-    amount_c = require_amount_c(payload)
+    if payload.get("full"):
+        if payload.get("amount_c") is not None or payload.get("amount") is not None:
+            raise RejectError("AMOUNT", "give an amount or full: true, not both")
+        amount_c = None
+    else:
+        amount_c = require_amount_c(payload)
     return _repayment(ctx, loan, amount_c, f"loan:{loan['loan_id']}:repay:{ctx.request_id}", "loan repayment")
 
 
@@ -360,28 +441,31 @@ def h_loan_accrue(ctx: TxContext, payload: dict) -> dict:
 
 
 def h_loan_mature(ctx: TxContext, payload: dict) -> dict:
-    """``credit.loan_mature {loan_id}``: on or after the maturity date repay principal + accrued from settled cash; when
-    the cash is short the loan rolls to the next business day with one open WARN ``LOAN_ROLLED`` (no invented default)."""
+    """``credit.loan_mature {loan_id}``: on or after the maturity date post every night owed, then repay principal +
+    accrued from settled cash; when the cash is short the loan rolls to the next business day with one open WARN
+    ``LOAN_ROLLED`` (no invented default) and the nights just posted stay posted (they are owed either way)."""
     loan = _open_cash_loan(ctx, payload)
     loan_id = loan["loan_id"]
     if not loan["maturity_date"]:
         raise RejectError("OPEN_ENDED", f"loan {loan_id} has no maturity date")
     if loan["maturity_date"] > ctx.today and not payload.get("force"):
         raise RejectError("NOT_DUE", f"loan {loan_id} matures {loan['maturity_date']} (today {ctx.today})", {"maturity_date": loan["maturity_date"]})
-    total = int(loan["principal_c"]) + accrued_c(ctx.conn, loan_id)
     try:
-        out = _repayment(ctx, loan, total, f"loan:{loan_id}:repay:{ctx.request_id}", "loan maturity repayment")
+        out = _repayment(ctx, loan, None, f"loan:{loan_id}:repay:{ctx.request_id}", "loan maturity repayment")
         out["rolled"] = False
         return out
     except ConflictError as e:
         if e.code != "INSUFFICIENT_CASH_CCY":
             raise
+    # the catch-up inside _repayment ran before the cash refusal: the amount due below includes every night owed
+    loan = loan_row(ctx.conn, loan_id)
+    total = int(loan["principal_c"]) + accrued_c(ctx.conn, loan_id)
     new_date = ctx.cal.next_business_day(date.fromisoformat(ctx.today)).isoformat()
     ctx.conn.execute("UPDATE loans SET maturity_date=? WHERE loan_id=?", (new_date, loan_id))
     if ctx.conn.execute("SELECT id FROM attention WHERE code='LOAN_ROLLED' AND ref_type='loan' AND ref_id=? AND resolved_ts IS NULL", (loan_id,)).fetchone() is None:
         ctx.attention("WARN", "credit", "LOAN_ROLLED",
                       f"loan {loan_id} matured {loan['maturity_date']} but {loan['account_id']} holds {loan['currency']} {fmt_money(balance(ctx.conn, loan['account_id'], '1010', loan['currency']))}"
-                      f" settled against {fmt_money(total)} due: it rolls day by day until repaid (buy {loan['currency']} with Convert, then credit.loan_repay)",
+                      f" settled against {fmt_money(total)} due: it rolls day by day until repaid ({_cash_hint(loan['currency'])}, then credit.loan_repay)",
                       {"account_id": loan["account_id"], "ref_type": "loan", "ref_id": loan_id, "total_due_c": total, "currency": loan["currency"], "auto_resolve": 1})
     ctx.event("LOAN_ROLLED", account_id=loan["account_id"], ref_type="loan", ref_id=loan_id, matured=loan["maturity_date"], new_maturity=new_date, total_due_c=total)
     return {"loan_id": loan_id, "rolled": True, "maturity_date": new_date, "total_due_c": total, "loan": loan_view(ctx.conn, loan_id)}
@@ -510,6 +594,7 @@ def register(bus) -> None:
     bus.register("credit.pb_repay", h_pb_repay)
 
 
-__all__ = ["LENDER", "LOAN_KIND", "PB_KIND", "ACCRUAL_KIND", "loan_row", "loan_view", "loans_of", "accrued_c", "accrual_state", "nights_due", "policy_series",
-           "index_observation", "loan_rate", "accrual_lines_loan", "post_loan_accrual", "pb_loan_id", "pb_schedule", "headroom_c", "pb_draw", "pb_draw_for_funding",
+__all__ = ["LENDER", "LOAN_KIND", "PB_KIND", "ACCRUAL_KIND", "loan_row", "loan_view", "loans_of", "accrued_c", "principal_at_close_c", "accrual_state", "nights_due",
+           "policy_series", "index_observation", "loan_rate", "accrual_lines_loan", "post_loan_accrual", "catch_up_accruals", "pb_loan_id", "pb_schedule", "headroom_c",
+           "pb_draw", "pb_draw_for_funding",
            "h_loan_draw", "h_loan_repay", "h_loan_accrue", "h_loan_mature", "h_pb_draw", "h_pb_repay", "register"]

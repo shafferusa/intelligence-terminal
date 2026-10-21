@@ -5,7 +5,8 @@ Conventions
   when ``fetch_threads=0``, which is how tests drive ``tick()`` with a FakeClock) → ``cache.put`` → the matcher hook
   ``matcher.on_quotes(changed_ids)`` on the worker thread.  The writer lock is never held during network I/O: every
   database write goes through a light command on the bus after the fetch.
-- Pins: every 30 s the worker scans the database — HELD = instruments with a position in an OPEN lifetime, ORDER =
+- Pins: every 30 s the worker scans the database — HELD = instruments with a position in an OPEN lifetime (plus the
+  underlyings of OPEN TRS contracts and the USD pairs of OPEN cross-currency swaps, ``instruments.otc_reference_ids``), ORDER =
   instruments with a WORKING / PARTIAL / WAITING_PARENT order — and keeps the option underlyings of those on the
   chain cache's pin list (CHAIN 90 s).  Chains are fetched ONE at a time (single-flight) and shared by every
   requester; a materialised option gets its ``chain`` record from each snapshot.
@@ -14,8 +15,12 @@ Conventions
   ``unavailable`` with the error (never priced off the front).
 - ``RatesRefresher`` slots (registered callables, each with its own interval or "daily after HH:MM ET" rule and a run
   at startup): the Treasury par curve (daily after 18:00 ET), FRED (every 6 h), FINRA short volume (after 18:00 ET),
-  Frankfurter (daily), dividend / split events for held names (daily after 18:00 ET; ``dividends.upsert``), the
+  Frankfurter (daily), dividend / split events for held names and TRS underlyings (daily after 18:00 ET; ``dividends.upsert``), the
   Daily News fetchers when ``services.news`` exists, and the 60 s persist of the quote cache and provider health.
+  The persist slot (TX-6): ``keep_ids()`` (held / working / borrowed / watch-listed names, the inputs of open positions'
+  marks) -> ``cache.prune(keep)`` (records nobody pinned or kept for 1 h leave memory and ``quote_cache``) ->
+  ``cache.persist()`` (only the changed records, straight into ``quote_cache``, never into the command journal) ->
+  ``provider_health.update`` at once on any status change, else at most every 15 min (it is journaled like every command).
   A slot failure is logged, counted and visible in ``stats()``; provider errors land in ``ProviderHealth`` and, via
   ``provider_health.update``, in the ``provider_health`` table and ONE open WARN attention per provider (auto-resolved
   on the next success).  Nothing is retried in a tight loop and nothing is ever invented when a fetch fails.
@@ -37,15 +42,17 @@ from ..clock import ny_of, ny_str
 from ..commands import Command
 from ..config import NEWS_INTERVALS, QUOTE_INTERVALS
 from ..db import canonical_json
-from ..instruments import EQUITY_KINDS, Instrument, parse_futures_id
+from ..instruments import EQUITY_KINDS, Instrument, fx_pair_id, otc_reference_ids, parse_futures_id
 from . import cache as _cache_mod, rates as _rates_mod
 from .cache import ChainCache, QuoteCache, record_from_intraday, records_from_chain
 from .http import FetchError
 from .providers import ProviderSet
-from .rates import FRED_SERIES
+from .rates import FRED_SERIES, SHIFT_SYMBOLS
 
 PIN_SCAN_S = 30
 PERSIST_S = 60
+HEALTH_REFRESH_S = 900           # provider_health.update when only the success counters moved: at most every 15 min (TX-6)
+HEALTH_VOLATILE = ("last_ok_ts", "requests_today")     # the fields every successful request moves
 FETCH_WAIT_S = 15.0
 RESOLVE_MAX = 50
 SLOT_RETRY_S = 3600
@@ -144,8 +151,8 @@ def register(bus) -> None:
 
 
 def register_all(bus) -> None:
-    """Every WP-01 light command: quotes.persist_batch, rates.record, marks.record, provider_health.update, dividends.upsert,
-    instruments.upsert, finra.record."""
+    """Every WP-01 light command: rates.record, marks.record, provider_health.update, dividends.upsert, instruments.upsert,
+    finra.record (quotes.persist_batch is retired since TX-6: the quote cache writes ``quote_cache`` directly)."""
     _cache_mod.register(bus)
     _rates_mod.register(bus)
     register(bus)
@@ -190,6 +197,7 @@ class RatesRefresher:
         self.instruments, self.db, self.bus, self.clock, self.cal, self.services, self.log = instruments, db, bus, clock, cal, services, log
         self.slots: List[Slot] = []
         self._lock = threading.Lock()
+        self._health_sent: Optional[Tuple[str, int]] = None      # (status signature, ts) of the last provider_health.update
         self.add_slot("curve", self._slot_curve, after_et="18:00")
         self.add_slot("fred", self._slot_fred, interval_s=int(QUOTE_INTERVALS.get("FRED", 21600)))
         self.add_slot("finra", self._slot_finra, after_et="18:00")
@@ -311,15 +319,21 @@ class RatesRefresher:
         self.fxstore.put(fx)
 
     def held_names(self) -> Dict[str, List[str]]:
-        """``{instrument_id: [account_ids]}`` of positions in OPEN lifetimes."""
+        """``{instrument_id: [account_ids]}`` of positions in OPEN lifetimes, plus the underlyings of OPEN TRS contracts (a
+        TRS receiver is owed the dividends of a name it does not hold: ``instruments.otc_reference_ids``)."""
         if self.db is None:
             return {}
         out: Dict[str, List[str]] = {}
         with self.db.reader() as conn:
             rows = conn.execute("SELECT p.instrument_id AS iid, p.account_id AS aid FROM v_positions p JOIN accounts a ON a.account_id = p.account_id"
                                 " JOIN lifetimes l ON l.lifetime_id = a.lifetime_id WHERE l.status='OPEN' AND p.qty != 0 ORDER BY 1, 2").fetchall()
+            otc = otc_reference_ids(conn)
         for r in rows:
             out.setdefault(r["iid"], []).append(r["aid"])
+        for iid, accounts in otc.items():
+            for aid in accounts:
+                if aid not in out.setdefault(iid, []):
+                    out[iid].append(aid)
         return out
 
     def _slot_dividends(self):
@@ -345,13 +359,60 @@ class RatesRefresher:
         if errors and len(errors) == len(held):
             raise FetchError("dividend events: " + "; ".join(errors)[:160])
 
+    def keep_ids(self) -> Optional[set]:
+        """The records the quote cache must keep without a pin (TX-6): ``lifecycle_eod.recorded_set`` (held / working /
+        borrowed names of OPEN lifetimes, the underlyings of held options, the FX pairs of foreign cash, the TRS / XCCY
+        references, the benchmark — what the 00:15 prune keeps too), every watch-listed name, the USD pair of every
+        foreign-currency name among them (their marks convert through it) and the Treasury yield records bond marks
+        shift with.  None when the database cannot be read: the caller then prunes nothing."""
+        if self.db is None:
+            return None
+        try:
+            with self.db.reader() as conn:
+                try:
+                    from ..lifecycle_eod import recorded_set
+                    keep = dict(recorded_set(conn, self.instruments))
+                except Exception as e:   # noqa: BLE001 — no lifecycle package / a master without get(id, conn): the direct scan below
+                    if self.log:
+                        self.log.debug("keep_ids: recorded_set unavailable (%s); direct scan", e)
+                    keep = {}
+                    for sql in ("SELECT DISTINCT p.instrument_id FROM v_positions p JOIN accounts a ON a.account_id = p.account_id"
+                                " JOIN lifetimes l ON l.lifetime_id = a.lifetime_id WHERE l.status='OPEN' AND p.qty != 0",
+                                "SELECT DISTINCT instrument_id FROM orders WHERE status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')"):
+                        keep.update((r[0], None) for r in conn.execute(sql).fetchall())
+                    keep.update((i, None) for i in otc_reference_ids(conn))
+                ids = set(keep) | {r[0] for r in conn.execute("SELECT DISTINCT instrument_id FROM watchlists").fetchall()}
+        except Exception as e:   # noqa: BLE001 — a busy reader pool is not fatal: no prune this round
+            if self.log:
+                self.log.warning("keep_ids failed (no quote-cache prune this round): %s", e)
+            return None
+        for iid in list(ids):
+            inst = self.instruments.get(iid) if self.instruments is not None else None
+            ccy = getattr(inst, "currency", None)
+            if ccy and ccy != "USD":
+                ids.add(fx_pair_id(ccy))
+        ids.update(SHIFT_SYMBOLS)
+        return ids
+
     def _slot_persist(self):
+        keep = self.keep_ids()
+        if keep is not None:
+            self.cache.prune(keep, int(self.clock.epoch()))
         self.cache.persist()
         if self.bus is not None and self.providers.health is not None:
             snap = self.providers.health.snapshot()
-            res = self.bus.execute(Command("provider_health.update", {"providers": snap}, f"health:{int(self.clock.epoch())}:{_time.monotonic_ns() % 1000000}", "worker"))
+            now = int(self.clock.epoch())
+            # TX-6: every command keeps its payload in the journal, so a minute in which only the success counters moved
+            # (last_ok_ts, requests_today) is not journaled; any status change (an error, a recovery, down / refused, a new
+            # day) is sent at once as before, and the counters at least every HEALTH_REFRESH_S
+            sig = canonical_json({p: {k: v for k, v in (r or {}).items() if k not in HEALTH_VOLATILE} for p, r in snap.items()})
+            sent = self._health_sent
+            if sent is not None and sent[0] == sig and 0 <= now - sent[1] < HEALTH_REFRESH_S:
+                return
+            res = self.bus.execute(Command("provider_health.update", {"providers": snap}, f"health:{now}:{_time.monotonic_ns() % 1000000}", "worker"))
             if not res.ok:
                 raise RuntimeError(f"provider_health.update failed: {res.code}")
+            self._health_sent = (sig, now)
 
 
 # ---- the worker -------------------------------------------------------------------------------------------------------------------
@@ -493,6 +554,9 @@ class QuoteWorker(threading.Thread):
                 held = [r[0] for r in conn.execute("SELECT DISTINCT p.instrument_id FROM v_positions p JOIN accounts a ON a.account_id = p.account_id"
                                                    " JOIN lifetimes l ON l.lifetime_id = a.lifetime_id WHERE l.status='OPEN' AND p.qty != 0").fetchall()]
                 orders = [r[0] for r in conn.execute("SELECT DISTINCT instrument_id FROM orders WHERE status IN ('WORKING','PARTIAL','WAITING_PARENT')").fetchall()]
+                # the underlyings of OPEN TRS contracts and the FX pairs of OPEN XCCY contracts are observed like held names: their
+                # marks drive SWAP_VM, the NAV overlay and the resets (WP-15 integration)
+                held += [i for i in otc_reference_ids(conn) if self.instruments is None or self.instruments.get(i) is not None]
         except Exception as e:   # noqa: BLE001 — a busy reader pool is not fatal; the next scan retries
             if self.log:
                 self.log.warning("pin scan failed: %s", e)

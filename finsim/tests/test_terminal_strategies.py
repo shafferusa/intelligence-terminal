@@ -455,6 +455,11 @@ class _RuntimeCase(unittest.TestCase):
             seen.update({"account_id": account_id, "kind": kind, "terms": dict(terms)})
             return {"dealt_spread_bps": "60", "notional": "769320.00", "im": "76932.00", "margin_mode": "CTM"}
         rt.swaps = SimpleNamespace(preview=fake_preview)
+        # WP-17 alone is not enough: swaps.preview(.., "TRS", ..) delegates to WP-26 (products/swaps_trs.py) and answers 501 NOT_BUILT without it
+        rt.swaps_trs = None
+        reason = {s["key"]: s["reason"] for s in st.catalogue_view(rt, pb)["strategies"]}["SYNTHETIC_LONG_TRS"]
+        self.assertEqual("NOT AVAILABLE / TRS booking needs the TRS / cross-currency module (WP-26, products/swaps_trs.py): not bound", reason)
+        rt.swaps_trs = SimpleNamespace(preview=lambda *a, **k: None)
         self.assertTrue({s["key"]: s["available"] for s in st.catalogue_view(rt, pb)["strategies"]}["SYNTHETIC_LONG_TRS"])
         spec = st.package_legs(rt, pb, "SYNTHETIC_LONG_TRS", {"underlying": "SPY", "units": 1000})
         leg = spec.legs[0]

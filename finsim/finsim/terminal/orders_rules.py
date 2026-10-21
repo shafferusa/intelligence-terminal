@@ -2,6 +2,13 @@
 ``exec_price``, ``fill_cap``, ``evaluate`` and ``evaluate_package``.  No I/O anywhere in this module: a row, one observed
 ``QuoteRecord``, one ``SessionState`` and the clock in, a decision out.  The conventions are stated in ``orders.py``
 (the package's front door, which re-exports everything here) and in docs/TERMINAL_EXECUTION.md.
+
+Listed options (EXEC-1, 2026-10-21): every option decision — a limit crossed, a stop or stop-limit triggered, a trailing
+stop's reference and ratchet — reads the executable side of the fresh Cboe chain NBBO (``trigger_price``: ask for buys,
+bid for sells), the same price the order fills at.  The contract's own last trade is never used: Cboe's per-contract
+last can be months old, and a last of 0 means it never traded.  An option trailing stop takes its reference from that
+side on its first executable look (whatever reference the ticket entered).  Equities, futures and FX keep the observed
+last (STOP_RULE / LIMIT_RULE / TRAILING).
 """
 from __future__ import annotations
 
@@ -180,6 +187,30 @@ def exec_price(order: OrderRow, rec: QuoteRecord) -> Tuple[Optional[Decimal], st
     return qprice(rec.last), "last"
 
 
+def trigger_price(order, rec: Optional[QuoteRecord]) -> Tuple[Optional[Decimal], str]:
+    """The price a stop triggers on, a resting limit is crossed against and a trailing stop ratchets with: ``(price, basis)``.
+    Listed options: the executable side of the fresh Cboe chain NBBO (``exec_price``: ask for buys, bid for sells; ``(None,
+    "NO_NBBO")`` without ``bid > 0 and ask >= bid``), never the contract's own last trade (EXEC-1).  Everything else: the
+    observed last, or the executable price when the record carries no last.  ``order`` needs ``side``, ``kind`` and
+    ``instrument_id`` — the preview's probe object works — so the ticket's STOP_SIDE check and trailing reference can use
+    the same rule as the matcher."""
+    if rec is None:
+        return None, "NO_QUOTE"
+    if getattr(order, "kind", None) == "OPTION":
+        return exec_price(order, rec)
+    if rec.last is not None:
+        return qprice(rec.last), "last"
+    return exec_price(order, rec)
+
+
+def _not_executable_note(rec: Optional[QuoteRecord]) -> str:
+    """The visible reason when an execution pauses on a failing provider (EXEC-2): the error and the last good observation."""
+    if rec is None or not rec.error:
+        return ""
+    good = f"last good observation {ny_of(int(rec.fetched_at)).strftime('%H:%M:%S ET')}" if rec.fetched_at else "never observed"
+    return f"last fetch failed: {rec.error}; {good}; executions pause until a fresh observation"
+
+
 def trail_amount(order: OrderRow, ref: Decimal) -> Decimal:
     """The trail in price units: ``trail_amt`` as given, or ``ref x trail_pct / 100`` re-derived from the reference."""
     if order.trail_amt is not None:
@@ -266,7 +297,7 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
         return Decision("NONE", None, 0, "AWAITING_SESSION", None, note=getattr(session, "phase", "CLOSED"))
     ok, reason = is_executable(rec, session, now)
     if not ok:
-        return Decision("NONE", None, 0, reason, None)
+        return Decision("NONE", None, 0, reason, None, note=_not_executable_note(rec))
     vbar = volume_bar(order, rec)                                    # the bar a fill would consume (recorded as last_bar_ts)
     bar_ts = int(vbar.t) if vbar is not None else None
     qt = rec.quote_time
@@ -274,40 +305,50 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
     if px_exec is None:
         return Decision("NONE", None, 0, basis, bar_ts, qt)
     first_look = not order.first_eval_done
-    last = qprice(rec.last) if rec.last is not None else px_exec
+    option = order.kind == "OPTION"
+    # the price triggers / crossings / ratchets read (trigger_price): for an option its executable bid or ask (EXEC-1), else the last
+    trig, trig_basis = (px_exec, basis) if option else trigger_price(order, rec)
+    if trig is None:
+        trig, trig_basis = px_exec, basis
     buy = order.side in BUY_SIDES
     triggered_now = False
     otype = order.order_type
     stop = order.stop_px
     if otype == "TRAILING_STOP":
-        ref = order.trail_ref_px if order.trail_ref_px is not None else last
-        if order.trail_ref_px is None or order.stop_px is None:
-            return Decision("RATCHET", None, 0, "TRAIL_INIT", bar_ts, qt, stop_px=trail_stop(order, ref), trail_ref_px=ref, first_look=first_look,
-                            note=f"trailing reference set from the observed last {last}")
+        # an option takes its reference from the executable side on its first executable look: the ticket may have entered
+        # one from the contract's own (possibly months-old) last trade
+        rebase = option and first_look and order.trail_ref_px is not None and order.trail_ref_px != trig
+        if order.trail_ref_px is None or order.stop_px is None or rebase:
+            ref = trig if (order.trail_ref_px is None or rebase) else order.trail_ref_px
+            note = f"trailing reference set from the observed {trig_basis} {trig}" if ref == trig else f"trailing stop re-derived from the reference {ref}"
+            if rebase:
+                note += f" (the entered reference {order.trail_ref_px} is replaced: an option trails its executable {trig_basis}, never its own last trade)"
+            return Decision("RATCHET", None, 0, "TRAIL_INIT", bar_ts, qt, stop_px=trail_stop(order, ref), trail_ref_px=ref, first_look=first_look, note=note)
+        ref = order.trail_ref_px
         if not order.triggered:
-            better = (last > ref) if not buy else (last < ref)
+            better = (trig > ref) if not buy else (trig < ref)
             if better:
-                new_stop = trail_stop(order, last)
-                return Decision("RATCHET", None, 0, "RATCHET", bar_ts, qt, stop_px=new_stop, trail_ref_px=last, first_look=first_look,
-                                note=f"ratchet: reference {ref} -> {last}, stop {stop} -> {new_stop}")
-            hit = (last <= stop) if not buy else (last >= stop)
+                new_stop = trail_stop(order, trig)
+                return Decision("RATCHET", None, 0, "RATCHET", bar_ts, qt, stop_px=new_stop, trail_ref_px=trig, first_look=first_look,
+                                note=f"ratchet: reference {ref} -> {trig} (observed {trig_basis}), stop {stop} -> {new_stop}")
+            hit = (trig <= stop) if not buy else (trig >= stop)
             if not hit:
                 return Decision("NONE", None, 0, "STOP_NOT_REACHED", bar_ts, qt, first_look=first_look, stop_px=stop, trail_ref_px=ref)
             triggered_now = True
     elif otype in ("STOP", "STOP_LIMIT") and not order.triggered:
-        hit = (last >= stop) if buy else (last <= stop)
+        hit = (trig >= stop) if buy else (trig <= stop)
         if not hit:
             return Decision("NONE", None, 0, "STOP_NOT_REACHED", bar_ts, qt, first_look=first_look)
         triggered_now = True
     price, fill_basis, why = px_exec, basis, "MARKET"
     if otype == "STOP":
-        fill_basis, why = "stop_print", "STOP_TRIGGERED"
+        fill_basis, why = (basis if option else "stop_print"), "STOP_TRIGGERED"
     elif otype == "TRAILING_STOP":
-        fill_basis, why = "stop_print", "TRAIL_TRIGGERED"
+        fill_basis, why = (basis if option else "stop_print"), "TRAIL_TRIGGERED"
     elif otype in ("LIMIT", "STOP_LIMIT"):
         limit = order.limit_px
         marketable = (px_exec <= limit) if buy else (px_exec >= limit)
-        crossed = (last <= limit) if buy else (last >= limit)
+        crossed = (trig <= limit) if buy else (trig >= limit)
         if (first_look or triggered_now) and marketable:
             price, why = px_exec, "LIMIT_MARKETABLE"
         elif (not first_look) and crossed:
@@ -317,9 +358,12 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
     cap, cap_note = fill_cap(order, rec, inst, participation)
     qty = min(order.remaining, cap)
     note = ""
+    gap_word = basis if option else "print"
     if triggered_now and otype in ("STOP", "TRAILING_STOP") and stop is not None:
         if (buy and price > stop) or ((not buy) and price < stop):
-            note = f"gap through the stop {stop}: filled at the print {price} (STOP_RULE)"
+            note = f"gap through the stop {stop}: filled at the {gap_word} {price} (STOP_RULE)"
+    if triggered_now and option:
+        note = (note + "; " if note else "") + f"triggered on the observed {trig_basis} {trig} (Cboe chain NBBO; an option never triggers on its own last trade)"
     if qty <= 0:
         reason = next((r for r in ("NO_NEW_BAR", "NO_VOLUME_THIS_BAR", "SAME_OBSERVATION") if r in cap_note), "NO_SIZE")
         return Decision("TRIGGER" if triggered_now else "NONE", None, 0, reason, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note)

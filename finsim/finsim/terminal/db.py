@@ -451,11 +451,24 @@ class Database:
             finally:
                 self._writer = None
             raise
+        if existed:
+            self._compact_startup()
         for _ in range(4):
             c = self._connect(query_only=True)
             self._all_readers.append(c)
             self._pool.put(c)
         self._opened = True
+
+    def _compact_startup(self) -> None:
+        """TX-6 (2026-10-21), before any reader, worker or request exists: older builds journaled the whole quote cache as
+        ``quotes.persist_batch`` payloads every 60 s; ``quotes.cache.compact_persist_journal`` replaces the payloads older
+        than 24 h by a record count (the rows stay) and VACUUMs when that is quick and safe.  A failure is logged, never fatal."""
+        try:
+            from .quotes.cache import compact_persist_journal
+            compact_persist_journal(self._writer, int(self.clock.epoch()), self.path, self.log)
+        except Exception as e:   # noqa: BLE001 — the start goes on with the journal as it was
+            if self.log:
+                self.log.warning("startup compaction of old quotes.persist_batch payloads failed: %s", e)
 
     def _migrate(self, conn: sqlite3.Connection, books: list) -> None:
         conn.execute("BEGIN IMMEDIATE")

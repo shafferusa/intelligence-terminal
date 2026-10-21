@@ -1,3 +1,18 @@
+# FinSim Live Terminal — status after the WP-15 integration (2026-10-21 ~12:00 ET)
+
+Live for the owner: release 1.0.1 (deployed 10:39 ET from the release copy; the swap modules were excluded).  The repo copy
+now has every workplan package merged and wired (WP-25 glossary cancelled by the owner): PB OTC swaps end to end (IRS, TRS,
+cross-currency: booking, daily VM, fixings, payments, resets, exchanges, the swap ticket for all three kinds), bonds
+(Build 2; DEBT execution off until `build2_bonds`), private markets without listed companies (SpaceX), the WP-15 interface
+requests (BUILD_NOTES "WP-15 integration") and the deliverables: `docs/TERMINAL_CHECKLIST.md` (gates, D1-D13 map, the
+offline smoke result, the browser checklist, the UI clean-up list, notes for WP-16), `CHANGELOG.md`, `docs/MAP.md` (final),
+`tests/test_terminal_reconcile.py` (D1-D12 map + the one-database reconciliation through the real runtime and the API),
+`tests/test_terminal_integration.py` (the interface requests).  Test counts and the smoke result are in BUILD_LOG.md
+(the WP-15 line).  Nothing was deployed by WP-15: the next release, its browser pass and the Desk baseline diff are WP-16
+and need the owner's go.
+
+---
+
 # FinSim Live Terminal — status after the first-deploy integration (2026-10-21 ~02:00 ET)
 
 Scope of this pass: make the served process start, serve the UI, quote live, preview and execute paper trades in

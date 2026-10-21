@@ -38,6 +38,7 @@ from . import books as _books, config, tables
 from .accounting import AVAILABLE_TEXT, ScopeError
 from .api import (ApiError, NotBuilt, NotFound, PACKAGES, Request, encode, mark_dict, need, ok_or_raise, quote_dict, run_command, OPEN_ORDER_STATUSES)
 from .clock import accounting_day, ny_of
+from .instruments import EQUITY_KINDS
 from .ledger import CHART
 from .quotes.rates import UNIT_FRACTION, fraction_to_pct, treasury_cash_rate
 from .units import fmt_money, from_c, to_c
@@ -581,12 +582,16 @@ def register_routes(r) -> None:
                                                      (aid, iid)).fetchall()]
             borrows = [dict(b) for b in conn.execute("SELECT * FROM borrows WHERE account_id=? AND instrument_id=? ORDER BY opened_ts DESC", (aid, iid)).fetchall()]
             marks = [dict(m) for m in conn.execute("SELECT * FROM marks WHERE instrument_id=? ORDER BY mark_date DESC, kind LIMIT 60", (iid,)).fetchall()]
+            # WP-18: the dividend rows of the name with their state and the DIVIDEND convention (ex-date income / in lieu, pay date)
+            div = getattr(rt, "dividends", None)
+            notes = (div.position_notes(conn, rt.cal, aid, iid, rt.clock.today())
+                     if div is not None and hasattr(div, "position_notes") and inst is not None and inst.kind in EQUITY_KINDS else [])
         d = pos.to_dict() if pos is not None else None
         if d is not None:
             d["mark"] = mark_dict(pos.mark)
         return {"position": d, "instrument": inst.to_dict() if inst else None, "lots": rt.accounting.lots(aid, iid), "fills": fills, "entries": entries,
                 "borrow": borrows[0] if borrows and borrows[0].get("status") == "OPEN" else None, "borrows": borrows, "marks_history": marks,
-                "mark": mark_dict(snap.mark(iid)) if inst else None}
+                "mark": mark_dict(snap.mark(iid)) if inst else None, "dividend_notes": notes}
 
     def account_orders(req: Request):
         rt, aid = req.rt, req.params[0]
@@ -988,13 +993,15 @@ def dividends_view(req: Request) -> List[dict]:
     today = rt.clock.today()
     lo, hi = (today - timedelta(days=60)).isoformat(), (today + timedelta(days=120)).isoformat()
     aid = req.q("account_id")
+    # the account check and the lifetime lookup read on their own reader BEFORE this one (never a second pooled reader inside a held one)
+    if aid:
+        _account_or_404(rt, aid)
+    lid = None if aid else req.lifetime()
     with rt.db.reader() as conn:
         if aid:
-            _account_or_404(rt, aid)
             rows = conn.execute("SELECT d.*, v.account_id AS account_id, v.qty AS qty FROM dividends d JOIN v_positions v ON v.instrument_id=d.instrument_id"
                                 " WHERE v.account_id=? AND v.qty != 0 AND d.ex_date BETWEEN ? AND ? ORDER BY d.ex_date DESC, d.instrument_id", (aid, lo, hi)).fetchall()
         else:
-            lid = req.lifetime()
             rows = conn.execute("SELECT d.*, v.account_id AS account_id, v.qty AS qty FROM dividends d JOIN v_positions v ON v.instrument_id=d.instrument_id"
                                 " JOIN accounts a ON a.account_id=v.account_id WHERE a.lifetime_id=? AND v.qty != 0 AND d.ex_date BETWEEN ? AND ?"
                                 " ORDER BY d.ex_date DESC, d.instrument_id", (lid, lo, hi)).fetchall()

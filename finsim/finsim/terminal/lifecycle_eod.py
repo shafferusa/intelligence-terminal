@@ -1,9 +1,11 @@
 """Lifecycle jobs, part 2: MARKS_RECORD, SNAPSHOT, EXPIRE_ORDERS, COLLATERAL_MARK, BORROW_CLEANUP, HOUSEKEEPING,
-INTEGRITY_FULL, the product-handler jobs (options, futures, swaps, TRS / XCCY, dividends, private credit) and the
-REGISTRY in the amended tick order (TERMINAL_DESIGN.md §6.6, §6.8, §11.1, §11.2, §11.4, §13.15; WP-08).
+INTEGRITY_FULL, the product-handler jobs (options, futures, swaps, TRS / XCCY, dividends, private credit, bonds) and the
+REGISTRY in the amended tick order (TERMINAL_DESIGN.md §6.6, §6.8, §11.1, §11.2, §11.4, §13.15; WP-08; the bond jobs wired
+by the WP-15 integration).
 
 Conventions stated here
-- TICK ORDER (§11.1): SETTLE_DUE → ACCRUE_DAILY → PAY_MONTHLY → PB_MONTHLY_MIN → DIVIDEND → DIVPAY → PC_PAY → SWAP_FIX →
+- TICK ORDER (§11.1): SETTLE_DUE → ACCRUE_DAILY → BOND_ACCRUE → PAY_MONTHLY → PB_MONTHLY_MIN → DIVIDEND → DIVPAY → PC_PAY →
+  BOND_COUPON → BOND_MATURITY → BOND_LISTING → SWAP_FIX →
   SWAP_PAY → TRS_RESET → XCCY_EVENTS → OPTION_EXPIRY → FUTURES_VM → FUTURES_FINAL → SWAP_VM → OPTION_MARGIN_MARK →
   COLLATERAL_MARK → BORROW_CLEANUP → SWEEP_OUT → MARKS_RECORD → SNAPSHOT → EXPIRE_ORDERS → HOUSEKEEPING → INTEGRITY_FULL.
   The scheduler iterates the phase-1 jobs (up to SNAPSHOT) until a pass completes nothing new, so a catch-up tick
@@ -17,7 +19,8 @@ Conventions stated here
   ``lifecycle.marks_record``; a date with no daily bar (symbol delisted) stays unrecorded with one WARN attention
   MARK_MISSING; a provider failure defers the key an hour.  SPY is always recorded (the §6.9 benchmark).  When the
   next session's ``prev_close`` differs from a recorded CLOSE by more than one tick an INFO CLOSE_REVISED item
-  reports it; postings already made are never reversed.  Held and working instruments, the underlyings of held
+  reports it; postings already made are never reversed.  The underlyings of OPEN TRS contracts and the FX pairs of OPEN
+  cross-currency swaps are recorded too (their resets settle at those closes).  Held and working instruments, the underlyings of held
   options and the FX pairs of foreign cash balances are the recorded set.
 - SNAPSHOT (§6.6): at the ``snapshot_time_et`` setting (17:45) every calendar day, per OPEN account and per lifetime
   (``{lifetime}:ALL``), key ``{scope}:{date}``, from ``accounting.snapshot_row`` (NAV, cumulative components,
@@ -31,8 +34,9 @@ Conventions stated here
   retried); a past day waits until the nights before it are accrued (the interleave of ``lifecycle_jobs``), today's
   never waits.  BORROW_CLEANUP returns borrowed quantity backing nothing (``lending.cleanup_due``).
 - HOUSEKEEPING (00:15 daily, key ``{date}``): lists the next futures months and marks contracts past their last trade
-  date EXPIRED (``InstrumentMaster.ensure_futures_listings``), marks expired options EXPIRED, re-seeds the private
-  company master (new rows only), resolves FUNDING_SHORTFALL items whose cash is back at or above zero, prunes
+  date EXPIRED (``InstrumentMaster.ensure_futures_listings``), marks expired options EXPIRED, runs the private company
+  master sync (``services.private.reseed``: new rows, forward status moves such as a listing, the listed tickers and
+  the pins of held pre-listing lots; ``InstrumentMaster._seed_private`` new rows only without that module), resolves FUNDING_SHORTFALL items whose cash is back at or above zero, prunes
   ``quote_cache`` rows of instruments nobody holds, works or watches (older than a day) — and never touches
   ``order_events``; the master is reloaded after the commit when listings changed.
 - INTEGRITY_FULL (hourly at :05, key ``{YYYY-MM-DDTHH}``, and on the scheduler's first tick): ``accounting.integrity
@@ -40,12 +44,14 @@ Conventions stated here
   INTEGRITY_HOLD and its attention rows itself); the light command ``lifecycle.integrity_full`` then records the key.
 - PRODUCT JOBS: the product handlers write their own ``jobs_done`` row (DONE, or SKIPPED with a note and a WARN
   attention) — futures (``vm_keys`` / ``final_keys``) and options (``expiry_keys`` / ``margin_mark_keys``) exist;
-  swaps, TRS / XCCY, dividends and private credit are later packages: each is skipped with a note until its module is
-  bound as ``services.<name>`` and exposes the key helper named below, taking ``(conn, now_ts)`` and returning tuples
+  swaps, TRS / XCCY, dividends, private credit and bonds are separate packages: each is skipped with a note until its
+  module is bound as ``services.<name>`` and exposes the key helper named below, taking ``(conn, now_ts)`` and returning tuples
   in the key's field order — ``swaps.fix_keys / pay_keys / vm_keys`` → ``(contract_id, date)``; ``swaps_trs.reset_keys``
   → ``(contract_id, date)`` and ``event_keys`` → ``(contract_id, date, event)`` with event ``START | END | FX_RESET``
   (``xccy.exchange``, or ``xccy.fx_reset`` for FX_RESET); ``dividends.ex_keys / pay_keys`` → ``(account_id,
-  instrument_id, ex_date)``; ``private_credit.pay_keys`` → ``(loan_id, date)``.  A FUTURES_VM key SKIPPED for a missing
+  instrument_id, ex_date)``; ``private_credit.pay_keys`` → ``(loan_id, date)``; ``bonds.accrue_keys / coupon_keys`` →
+  ``(account_id, instrument_id, date)``, ``bonds.maturity_keys`` → ``(account_id, instrument_id)``, ``bonds.listing_keys``
+  → ``(yyyy-mm,)``.  A FUTURES_VM key SKIPPED for a missing
   print is retried at once with the daily-bar close (``futures.daily_fallback``), labelled "recorded late".
 """
 from __future__ import annotations
@@ -61,6 +67,7 @@ from .books import account_row, open_lifetimes
 from .clock import epoch_of, ny_of
 from .commands import Command, RejectError, TxContext
 from .db import canonical_json, dumps, get_setting
+from .instruments import otc_reference_ids
 from .lifecycle_jobs import (ACTOR, SOURCE, AccrueDaily, Job, PayMonthly, PbMonthlyMin, SettleDue, SweepOut, accrual_state_row, last_trading_day, module, open_accounts,
                              trading_days)
 from .units import fmt_money, qprice
@@ -80,7 +87,10 @@ BENCHMARK = "SPY"
 # ---- helpers ------------------------------------------------------------------------------------------------------------------
 def recorded_set(conn: sqlite3.Connection, master) -> Dict[str, Any]:
     """Instruments whose end-of-day marks are recorded: held / working / borrowed names of OPEN lifetimes, the
-    underlyings of held options, the FX pairs of foreign cash balances and the benchmark."""
+    underlyings of held options, the FX pairs of foreign cash balances, the underlyings of OPEN TRS contracts and the FX
+    pairs of OPEN cross-currency swaps (TRS_RESET settles at the underlying's CLOSE of the reset date and the XCCY FX_RESET
+    at the pair's 17:00 close: a name that is not otherwise held must still have that close recorded, and back-filled
+    from daily bars after downtime) and the benchmark."""
     lids = open_lifetimes(conn)
     if not lids:
         return {}
@@ -99,6 +109,7 @@ def recorded_set(conn: sqlite3.Connection, master) -> Dict[str, Any]:
         if master.get(pair, conn) is None:
             pair = "USD" + r["currency"]
         ids.add(pair)
+    ids.update(otc_reference_ids(conn))                         # TRS underlyings and XCCY FX pairs of OPEN contracts
     ids.add(BENCHMARK)
     out: Dict[str, Any] = {}
     for iid in sorted(ids):
@@ -549,7 +560,12 @@ class Housekeeping(Job):
             conn.execute("UPDATE instruments SET status='EXPIRED', updated_ts=? WHERE kind='OPTION' AND status='ACTIVE' AND expiry IS NOT NULL AND expiry < ?", (ctx.ts, today.isoformat()))
         for iid in expired_fut + expired_opt:
             master.refresh(iid, conn)
-        private_rows = int(master._seed_private(conn, ctx.ts)) if hasattr(master, "_seed_private") else 0
+        priv = getattr(services, "private", None)
+        if priv is not None and hasattr(priv, "reseed"):
+            # WP-19: the master sync (new rows, forward status moves such as a listing, the listed tickers) + the held listed pins
+            private_rows = int(priv.reseed(ctx.tx, services))
+        else:
+            private_rows = int(master._seed_private(conn, ctx.ts)) if hasattr(master, "_seed_private") else 0
         resolved = 0
         for r in conn.execute("SELECT DISTINCT account_id, details_json FROM attention WHERE code='FUNDING_SHORTFALL' AND resolved_ts IS NULL AND account_id IS NOT NULL").fetchall():
             try:
@@ -691,8 +707,19 @@ DIVIDEND = ProductJob("DIVIDEND", "div.ex", "dividends", "ex_keys", ("account_id
 DIVPAY = ProductJob("DIVPAY", "div.pay", "dividends", "pay_keys", ("account_id", "instrument_id", "ex_date"), "the pay date (Yahoo) else ex-date + 15 business days",
                     lambda conn, clock, cal, sessions, s: (conn, clock.epoch()))
 PC_PAY = ProductJob("PC_PAY", "pc.pay", "private_credit", "pay_keys", ("loan_id", "date"), "next_payment_date 00:40 ET", lambda conn, clock, cal, sessions, s: (conn, clock.epoch()))
+# WP-10 bonds (Build 2; DEBT execution behind settings.build2_bonds): nightly ACT/ACT accrual of held bonds, coupons, redemption at par and the
+# monthly model benchmarks from the par curve (products/bonds.py BENCHMARKS)
+BOND_ACCRUE = ProductJob("BOND_ACCRUE", "bonds.accrue", "bonds", "accrue_keys", ("account_id", "instrument_id", "date"), "from 00:30 ET per night held",
+                         lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), s.instruments))
+BOND_COUPON = ProductJob("BOND_COUPON", "bonds.coupon", "bonds", "coupon_keys", ("account_id", "instrument_id", "date"), "coupon date rolled following, 00:40 ET",
+                         lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal, s.instruments))
+BOND_MATURITY = ProductJob("BOND_MATURITY", "bonds.mature", "bonds", "maturity_keys", ("account_id", "instrument_id"), "maturity rolled following, 00:45 ET",
+                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal, s.instruments))
+BOND_LISTING = ProductJob("BOND_LISTING", "bonds.list", "bonds", "listing_keys", ("month",), "first business day of the month, 00:15 ET",
+                          lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal))
 
-REGISTRY: List[Job] = [SettleDue(), AccrueDaily(), PayMonthly(), PbMonthlyMin(), DIVIDEND, DIVPAY, PC_PAY, SWAP_FIX, SWAP_PAY, TRS_RESET, XCCY_EVENTS, OPTION_EXPIRY,
+REGISTRY: List[Job] = [SettleDue(), AccrueDaily(), BOND_ACCRUE, PayMonthly(), PbMonthlyMin(), DIVIDEND, DIVPAY, PC_PAY, BOND_COUPON, BOND_MATURITY, BOND_LISTING,
+                       SWAP_FIX, SWAP_PAY, TRS_RESET, XCCY_EVENTS, OPTION_EXPIRY,
                        FUTURES_VM, FUTURES_FINAL, SWAP_VM, OPTION_MARGIN_MARK, CollateralMark(), BorrowCleanup(), SweepOut(), MarksRecord(), Snapshot(), ExpireOrders(),
                        Housekeeping(), IntegrityFull()]
 LIGHT_HANDLERS = {"lifecycle.marks_record": h_marks_record, "lifecycle.integrity_full": h_integrity_full}

@@ -513,7 +513,7 @@ def _check_name(services, inst, kinds: set, akind: str) -> Optional[str]:
 
 def availability(services, strategy: dict, acct=None, under=None, other=None) -> Tuple[bool, Optional[str]]:
     """``(available, reason)`` for one template in one account (``acct`` an accounts row; None = no account context).  TRS legs
-    need a PB account of an eligible lifetime and the swaps module; futures legs need the front month listed; stock / option
+    need a PB account of an eligible lifetime, the swaps module (WP-17) and the TRS / XCCY module it delegates to (WP-26); futures legs need the front month listed; stock / option
     legs need an account that trades listed products and, when the underlying is known, a tradeable name with a chain."""
     kinds = {l["kind"] for l in strategy["legs"]}
     under_kinds = {l["kind"] for l in strategy["legs"] if not l.get("other")}
@@ -534,6 +534,9 @@ def availability(services, strategy: dict, acct=None, under=None, other=None) ->
         swaps = getattr(services, "swaps", None)
         if swaps is None or not hasattr(swaps, "preview"):
             return False, "NOT AVAILABLE / TRS preview needs the swaps module (WP-17 / WP-26): not in this build"
+        trs = getattr(services, "swaps_trs", None)                 # swaps.preview(.., "TRS", ..) delegates here; absent -> 501 NOT_BUILT
+        if trs is None or not hasattr(trs, "preview"):
+            return False, "NOT AVAILABLE / TRS booking needs the TRS / cross-currency module (WP-26, products/swaps_trs.py): not bound"
     if "FUTURE" in kinds:
         root = "NQ" if _nasdaq(under) else "ES"
         if front_month(services, root) is None:

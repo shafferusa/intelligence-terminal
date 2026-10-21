@@ -300,6 +300,7 @@ class HedgeCandidateTests(unittest.TestCase):
         with rt.db.writer() as tx:
             books._insert_account(tx.conn, rt.clock.epoch(), "T", T1, "PB_GS", "Goldman Sachs PB", "PB", 60, broker="GS")
         rt.swaps = types.SimpleNamespace(preview=lambda *a, **k: {})
+        rt.swaps_trs = types.SimpleNamespace(preview=lambda *a, **k: {})                 # WP-26: swaps.preview(.., "TRS", ..) delegates there
         # a PB account whose lifetime has no relationships and NAV 10,000,000 < the 25,000,000 threshold -> not eligible -> no row
         self.assertNotIn("TRS_OVERLAY", by_id(self.cands("BUY", 1000, account=pb("GS"))))
         with rt.db.writer() as tx:
@@ -309,8 +310,12 @@ class HedgeCandidateTests(unittest.TestCase):
         t = c["TRS_OVERLAY"]
         self.assertEqual(("otc", [("PAY", 1000, "TRS", SPOT)], True), (t.submit_via, [(l.side, l.qty, l.kind, l.est_price) for l in t.legs], t.available))
         self.assertEqual("RECEIVE", by_id(self.cands("SELL_SHORT", 1000, account=pb("GS")))["TRS_OVERLAY"].legs[0].side)
-        # never in the exchange account, never without the swaps module
+        # never in the exchange account, never without the swaps modules (WP-17's gate, WP-26's TRS)
         self.assertNotIn("TRS_OVERLAY", by_id(self.cands("BUY", 1000)))
+        saved_trs = rt.swaps_trs
+        rt.swaps_trs = None
+        self.assertNotIn("TRS_OVERLAY", by_id(self.cands("BUY", 1000, account=pb("GS"))))
+        rt.swaps_trs = saved_trs
         del rt.swaps
         self.assertNotIn("TRS_OVERLAY", by_id(self.cands("BUY", 1000, account=pb("GS"))))
         # choosing it on the ticket is refused: it is booked on the OTC desk

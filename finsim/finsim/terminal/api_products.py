@@ -17,6 +17,7 @@ Conventions
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 from typing import Dict, List, Optional
 
 from . import books as _books, config
@@ -26,9 +27,15 @@ from .api import (ApiError, MAX_QUOTE_IDS, NotBuilt, NotFound, PACKAGES, RETRY_M
 from .api_views import _account_or_404, account_row, order_full
 from .commands import Result
 from .instruments import EQUITY_KINDS, parse_futures_id
+from .quotes.cache import PRIORITY_RANK
 
 NOT_REJECTIONS = ("CONFIRM_REQUIRED", "PREVIEW_STALE", "REQUEST_ID_REUSED", "BAD_REQUEST_ID")
-MARKET_ROWS = 60
+MARKET_ROWS = 60                # the cap of the DEBT bonds list; the US Exchange / PB equity and option-underlying lists have none
+BROWSE = "BROWSE"               # the cache's slow list class (quotes/cache.py): at most config.BROWSE_PER_MIN refreshes a minute
+BROWSE_TTL_S = 1800             # a listed row's BROWSE subscription lives 30 min after the page's last load (the page reloads every 30 s)
+#: what a list row's quote carries (the grid's price, chg %, bid / ask, volume and freshness chip): no bars_tail / bar / inputs / sizes
+COMPACT_QUOTE_FIELDS = ("last", "bid", "ask", "mid", "prev_close", "day_volume", "quote_time", "fetched_at", "delay_s", "delay_label", "quality",
+                        "source", "provider", "method", "error")
 
 
 def _inst_or_404(rt, iid: str):
@@ -48,12 +55,88 @@ def _replay(res: Result) -> dict:
     return {"X-Replayed": "1"} if res.replayed else {}
 
 
-def _quotes_for(rt, ids: List[str], now: int, priority: str = "PAGE") -> Dict[str, dict]:
+def compact_quote(rec, now: int) -> Optional[dict]:
+    """A list row's quote: ``COMPACT_QUOTE_FIELDS`` + ``age_s`` (what ``quote_dict`` gives, without the bars, sizes and inputs)."""
+    if rec is None:
+        return None
+    d = {}
+    for k in COMPACT_QUOTE_FIELDS:
+        v = getattr(rec, k, None)
+        d[k] = str(v) if isinstance(v, Decimal) else v
+    qt = d.get("quote_time")
+    d["age_s"] = None if qt is None else max(0, int(now) - int(qt))
+    return d
+
+
+def _quotes_for(rt, ids: List[str], now: int, priority: Optional[str] = "PAGE", ttl_s: int = 90, compact: bool = False) -> Dict[str, dict]:
+    """The cached quotes of ``ids``, subscribing them first with ``priority`` for ``ttl_s`` seconds (None: read only, no
+    subscription); ``compact`` gives ``compact_quote`` rows instead of the full ``quote_dict``."""
     cache = getattr(rt, "cache", None)
     if cache is None or not ids:
         return {}
-    cache.subscribe(ids, 90, priority)
-    return {k: quote_dict(v, now) for k, v in cache.get_many(ids).items()}
+    if priority:
+        cache.subscribe(ids, ttl_s, priority)
+    shape = compact_quote if compact else quote_dict
+    return {k: shape(v, now) for k, v in cache.get_many(ids).items()}
+
+
+def browse_available() -> bool:
+    """True when the quote cache knows the BROWSE class (its interval and per-minute budget are in config)."""
+    return BROWSE in PRIORITY_RANK and BROWSE in config.QUOTE_INTERVALS
+
+
+def _list_quotes(rt, ids: List[str], fast: set, now: int):
+    """The quotes of a long list page (owner 2026-10-21: "why is there only 60 rows of equities on market place???? it needs all";
+    "it doesnt need to ask every minute ... it can pull 50 prices per minute and stagger it within 15/30 min"): the rows in ``fast``
+    (a position or a working order in this account) keep the PAGE subscription (the worker's HELD / ORDER pins refresh them every
+    15-30 s anyway), every other row is subscribed BROWSE for BROWSE_TTL_S, and every row gets the compact quote.  Without the
+    BROWSE class (an older cache) only the first MARKET_ROWS other rows are subscribed, as before, and the rest read the cache.
+    Returns ``(quotes by id, the ids subscribed)``."""
+    quick = [i for i in ids if i in fast]
+    slow = [i for i in ids if i not in fast]
+    recs = _quotes_for(rt, quick, now, compact=True)
+    if browse_available():
+        recs.update(_quotes_for(rt, slow, now, BROWSE, BROWSE_TTL_S, compact=True))
+        subscribed = set(ids)
+    else:
+        recs.update(_quotes_for(rt, slow[:MARKET_ROWS], now, compact=True))
+        recs.update(_quotes_for(rt, slow[MARKET_ROWS:], now, None, compact=True))
+        subscribed = set(quick) | set(slow[:MARKET_ROWS])
+    return recs, (subscribed if getattr(rt, "cache", None) is not None else set())
+
+
+def _list_note(rt, n_rows: int, what: str, waiting: int) -> dict:
+    """The page's refresh rule for a BROWSE list, built from the config and the backlog the cache reports (nothing promised that
+    the cache does not do).  ``waiting`` = listed rows subscribed but never fetched yet (``queued`` on the row)."""
+    iv = config.QUOTE_INTERVALS
+    fast = f"Held / working names refresh every {iv.get('ORDER', 15)}-{iv.get('HELD', 30)} s while their session is open."
+    grace = max(1, int(round(int(getattr(config, "FETCH_GRACE_S", 300)) / 60)))
+    if browse_available():
+        per_min = int(getattr(config, "BROWSE_PER_MIN", 0) or 0) or None
+        stats: dict = {}
+        cache = getattr(rt, "cache", None)
+        if cache is not None and hasattr(cache, "browse_stats"):
+            try:
+                stats = cache.browse_stats() or {}
+            except Exception:   # noqa: BLE001 - the note is informative; a failing counter must not fail the page
+                stats = {}
+        backlog, pinned = stats.get("due_backlog"), stats.get("browse_only_pinned")
+        mins = max(1, int(round(int(iv[BROWSE]) / 60)))
+        if per_min and pinned:
+            mins = max(mins, -(-int(pinned) // per_min))       # more BROWSE names than one interval's budget: the cycle is longer
+        eta = -(-int(backlog) // per_min) if (per_min and backlog) else None
+        parts = [f"{n_rows} {what}. Prices refresh in the background" + (f", {per_min} a minute (oldest first)" if per_min else "")
+                 + f", each row about every {mins} min, so in market hours a row shows STALE once its last fetch is over {grace} min old;"
+                 " the ticket fetches its own fresh quote before any order."]
+        if waiting:
+            parts.append(f"{waiting} still waiting for a first price" + (f" (about {eta} min at that rate)." if eta else "."))
+        parts += [fast, "Each price shows its own age."]
+        return {"rows": n_rows, "class": BROWSE, "interval_s": int(iv[BROWSE]), "per_min": per_min, "ttl_s": BROWSE_TTL_S, "waiting": waiting,
+                "backlog": backlog, "eta_min": eta, "cycle_min": mins, "note": " ".join(parts)}
+    return {"rows": n_rows, "class": "PAGE", "interval_s": None, "per_min": None, "ttl_s": 90, "waiting": waiting, "backlog": None, "eta_min": None,
+            "cycle_min": None,
+            "note": (f"{n_rows} {what}. The background refresh of the full list is not in this build: the first {MARKET_ROWS} rows are kept fresh "
+                     f"and the others show the last price fetched. {fast} Each price shows its own age.")}
 
 
 # ---- markets (the account page lists) ---------------------------------------------------------------------------------------
@@ -102,6 +185,9 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
     tabs: List[dict] = []
     rows: List[dict] = []
     extra: dict = {}
+    fast: Optional[set] = None      # set by the equities / options tabs: the rows quoted fast; every other row is a BROWSE row
+    work_rows: Optional[set] = None  # the options tab: underlyings with an open order on themselves OR on one of their options
+    what = ""
 
     def pick(ids: List[str]) -> List[str]:
         out, seen = [], set()
@@ -120,20 +206,34 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
             tabs.append({"key": "otc", "label": "OTC"})
         tab = tab or "equities"
         if tab == "equities":
-            ids = pick(list(held) + working + watched)
-            ids += [i for i in fill(EQUITY_KINDS, MARKET_ROWS, lambda x: x.support == "FULL") if i not in ids][:max(0, MARKET_ROWS - len(ids))]
+            # EVERY active equity / ETF / ADR / REIT / preferred this account trades (no cap): held / working / watched first, then
+            # the rest by symbol; their quotes come from the BROWSE class (_list_quotes)
+            ids = pick([i for i in list(held) + working + watched if getattr(master.get(i), "kind", None) in EQUITY_KINDS])
+            listed = set(ids)
+            ids += [i for i in fill(EQUITY_KINDS, None, lambda x: x.support == "FULL" and master.tradeable_in(x, kind)) if i not in listed]
+            fast = set(held) | set(working)
+            what = "listed equities and ETFs"
         elif tab == "options":
-            unders = []
+            # EVERY optionable underlying (a Cboe symbol: the account's equities / ETFs and the index option roots), no cap
+            unders, quick, work = [], set(), set()
             for i in list(held) + working + watched:
                 inst = master.get(i)
                 if inst is None:
                     continue
-                if inst.kind == "OPTION" and inst.underlying_id:
-                    unders.append(inst.underlying_id)
-                elif inst.cboe_symbol:
-                    unders.append(i)
+                u = inst.underlying_id if inst.kind == "OPTION" and inst.underlying_id else (i if inst.cboe_symbol else None)
+                if u is None:
+                    continue
+                unders.append(u)
+                if i in held or i in working:
+                    quick.add(u)
+                if i in working:
+                    work.add(u)          # an order on an option shows 'working' on its underlying's row (working holds OCC ids)
             ids = pick(unders)
-            ids += [i for i in fill(EQUITY_KINDS + ("INDEX",), 30, lambda x: bool(x.cboe_symbol)) if i not in ids][:max(0, 30 - len(ids))]
+            listed = set(ids)
+            ids += [i for i in fill(EQUITY_KINDS + ("INDEX",), None, lambda x: bool(x.cboe_symbol) and (x.kind == "INDEX" or master.tradeable_in(x, kind)))
+                    if i not in listed]
+            fast, work_rows = quick, work
+            what = "optionable underlyings"
         elif tab == "futures":
             front: Dict[str, object] = {}
             for inst in master.all():
@@ -180,21 +280,43 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
     elif kind == "PRIVATE":
         tabs = [{"key": "companies", "label": "Private companies"}]
         tab = tab or "companies"
-        ids = fill(("PRIVATE",), 200)
+        ids = fill(("PRIVATE",), 200, lambda x: not (x.spec or {}).get("loan_id"))          # private-credit loans live in CREDIT
+        priv = getattr(rt, "private", None)
+        if priv is not None and hasattr(priv, "listed_companies"):
+            # a company that LISTED or was ACQUIRED is no longer a private name (owner 2026-10-21: "spacex is in private markets for some
+            # reason"): it leaves this list unless the account still holds pre-listing shares (closing sales only)
+            gone = {c["instrument_id"]: c.get("listing") for c in priv.listed_companies(rt, account_id=aid)}
+            ids = [i for i in ids if i not in gone or i in held]
+            extra["listed"] = [dict(gone[i] or {}, instrument_id=i) for i in sorted(gone)]
         extra["note"] = "negotiated secondaries; last-round marks, valuation only without a sourced price"
     else:   # TREASURY
         tabs = [{"key": "cash", "label": "Cash"}]
         tab = tab or "cash"
         ids = []
         extra["cash"] = rt.accounting.cash(aid)
-    recs = _quotes_for(rt, ids, now)
-    snap = rt.marks.snapshot(ids) if ids else None
+    compact = fast is not None
+    queued: set = set()
+    if compact:
+        recs, subscribed = _list_quotes(rt, ids, fast, now)
+        queued = {i for i in subscribed if recs.get(i) is None}           # subscribed, never fetched yet: in the refresh queue
+        extra["refresh"] = _list_note(rt, len(ids), what, len(queued))
+        extra.setdefault("note", extra["refresh"]["note"])
+        working_set = set(working) if work_rows is None else work_rows
+        marked = [i for i in ids if recs.get(i) is None]      # a list row's mark only says why there is no quote (it IS the quote otherwise)
+    else:
+        recs = _quotes_for(rt, ids, now)
+        marked = ids
+    snap = rt.marks.snapshot(marked) if marked else None
     for i in ids:
         inst = master.get(i)
         row = _inst_row(rt, inst, None, now, held.get(i))
         row["quote"] = recs.get(i)
-        row["mark"] = mark_dict(snap.mark(i)) if snap is not None else None
+        row["mark"] = mark_dict(snap.mark(i)) if snap is not None and (not compact or row["quote"] is None) else None
         row["group"] = inst.session_group
+        if compact:
+            row["working"] = i in working_set
+            row["fast"] = i in fast                    # quoted fast (PAGE): a position / working order here, or on its options
+            row["queued"] = i in queued
         rows.append(row)
     out = {"account_id": aid, "kind": acct["kind"], "role": acct["role"], "tab": tab, "tabs": tabs, "rows": rows, "sessions": rt.sessions.states(), "server_time": now}
     out.update(extra)
@@ -607,6 +729,11 @@ def register_routes(r) -> None:
     def private_trade(req: Request):
         return run_command(req, "private.trade", {k: v for k, v in (req.body or {}).items() if k != "request_id"})
 
+    def bonds_trade(req: Request):
+        """WP-10 ``bonds.trade`` (Build 2): 400 UNSUPPORTED "model price, not executable in this build" while the build2_bonds setting is off."""
+        need(req.rt, "bonds")
+        return run_command(req, "bonds.trade", {k: v for k, v in (req.body or {}).items() if k != "request_id"})
+
     def private_credit_post(req: Request):
         return run_command(req, "pc.commit", {k: v for k, v in (req.body or {}).items() if k != "request_id"})
 
@@ -667,6 +794,7 @@ def register_routes(r) -> None:
     r.add("POST", r"/api/private/companies/([^/]+)/rounds", private_round_post)
     r.add("POST", r"/api/private/preview", private_preview, mutating=False)
     r.add("POST", r"/api/private/trades", private_trade)
+    r.add("POST", r"/api/bonds/trade", bonds_trade)
 
 
 __all__ = ["register_routes", "markets_view", "curve_view"]

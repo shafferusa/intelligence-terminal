@@ -1,7 +1,19 @@
 /* The ticket (TERMINAL_DESIGN.md s17.6, s10.1-10.3, s17.4; WP-13): one component, docked on every account page.
  *
- *   T.components.ticket.open(dockBody, {account_id, instrument_id, side, qty, order_type, hedge, close, price, leg})
+ *   T.components.ticket.open(dockBody, {account_id, instrument_id, side, qty, order_type, hedge, close, position_qty, kind, price, leg})
  *   (called by T.ticket.open in core.js; a second open on the same dock applies the fields to the live ticket)
+ *
+ * Safety rules (hotfix 2026-10-21, after the US Exchange UI sweep):
+ * - A NEW instrument never inherits the previous order: qty is EMPTY and must be entered (no default size: 100 AAPL ->
+ *   ESZ26 once became BUY 100 ESZ26, about 39M notional), type MKT, no limit / stop / trail, TIF DAY, no hedge pick, no
+ *   hedge candidates, no preview; an in-flight preview of the previous instrument is dropped (preview sequence bumped).
+ *   Fields passed in the same open() (Close: side + qty; a chain leg: side + limit) are applied after that reset.
+ * - Close (`close: true` + `position_qty` signed, from Positions) takes the CLOSING side of the instrument's kind: long ->
+ *   SELL (cash) / STC (option) / SELL (future, FX); short -> BUY TO COVER / BTC / BUY; qty = |position|; nothing else of
+ *   the previous ticket carries over (MKT, DAY, no prices, no hedge).  The side is recomputed when the instrument's kind
+ *   arrives from the server.
+ * - A side the instrument's kind does not accept (SELL for an option, ...) NEVER falls back to an opening side: the side
+ *   is left unset, the status says why, and nothing previews or submits until a side is chosen.
  *
  * Fields: account (fixed to the page's account), instrument (typeahead from GET /api/instruments?q=; Enter resolves
  * through GET /api/instruments/resolve, 202 polled), side (cash BUY / SELL / SELL SHORT / BUY TO COVER; options BTO /
@@ -43,6 +55,9 @@
   var SIDES = { CASH: ['BUY', 'SELL', 'SELL_SHORT', 'BUY_TO_COVER'], OPTION: ['BTO', 'STO', 'BTC', 'STC'], FUTURE: ['BUY', 'SELL'], FX: ['BUY', 'SELL'], BOND: ['BUY', 'SELL'] };
   var SIDE_LABEL = { BUY: 'BUY', SELL: 'SELL', SELL_SHORT: 'SELL SHORT', BUY_TO_COVER: 'BUY TO COVER', BTO: 'BTO buy to open', STO: 'STO sell to open', BTC: 'BTC buy to close', STC: 'STC sell to close' };
   var SIDE_KEYS = { CASH: { b: 'BUY', s: 'SELL', x: 'SELL_SHORT', c: 'BUY_TO_COVER' }, OPTION: { b: 'BTO', s: 'STO', x: 'STC', c: 'BTC' }, FUTURE: { b: 'BUY', s: 'SELL' } };
+  /* the side that CLOSES a position, by kind group (never an opening side) */
+  var CLOSE_SIDES = { CASH: { LONG: 'SELL', SHORT: 'BUY_TO_COVER' }, OPTION: { LONG: 'STC', SHORT: 'BTC' }, FUTURE: { LONG: 'SELL', SHORT: 'BUY' }, FX: { LONG: 'SELL', SHORT: 'BUY' }, BOND: { LONG: 'SELL', SHORT: 'BUY' } };
+  var SELL_LIKE = ['SELL', 'SELL_SHORT', 'STO', 'STC'];
   var TYPES = [['MARKET', 'MKT'], ['LIMIT', 'LMT'], ['STOP', 'STP'], ['STOP_LIMIT', 'STP LMT'], ['TRAILING_STOP', 'TRAIL']];
   var TYPE_KEYS = { m: 'MARKET', l: 'LIMIT', k: 'STOP', j: 'STOP_LIMIT', r: 'TRAILING_STOP' };
   var DEBOUNCE_MS = 300, REPREVIEW_MS = 5000, TA_MS = 200;
@@ -55,7 +70,8 @@
     '.ticket .kv{gap:1px 10px}.ticket table th,.ticket table td{padding:2px 4px}.hg-cand{border:1px solid var(--line);border-radius:4px;padding:6px 8px;margin:6px 0}.hg-cand.picked{border-color:var(--accent)}',
     '.hg-cand kbd{margin-right:4px}.hg-payoff{width:100%;height:110px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:4px}.hg-strat{margin:6px 0}',
     '.ticket .ta .dd{min-width:260px}.ticket .inst-meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin:2px 0 4px}.ticket .hedge-wrap{border-top:1px solid var(--line);margin-top:8px;padding-top:6px}',
-    '.ticket .fresh{font-family:var(--mono);font-size:10.5px;color:var(--fg3)}.ticket .fresh.stale{color:var(--warn)}.ticket .actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}'
+    '.ticket .fresh{font-family:var(--mono);font-size:10.5px;color:var(--fg3)}.ticket .fresh.stale{color:var(--warn)}.ticket .actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}',
+    '.ticket select.side-unset{border-color:var(--down);color:var(--down)}'
   ].join('');
   var st = null, ui = null, hedge = null, cssDone = false, docKeys = false;
   var instCache = {}, instKeys = [];
@@ -86,7 +102,8 @@
 
   /* ---------------------------------------------------------------- state ----------------------------------------- */
   function fresh(account_id) {
-    return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', qty: 1, order_type: 'MARKET', limit_px: '', stop_px: '',
+    return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
+             qty: 0, order_type: 'MARKET', limit_px: '', stop_px: '',
              trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', hedge: null, hedge_cand: null, hedgeOpen: false,
              preview: null, preview_body: null, previewing: false, pseq: 0, dirty: false, preview_err: null, submit_err: null, stale: null,
              submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false };
@@ -106,7 +123,8 @@
   function handle() { return { state: function () { return st; }, preview: function () { runPreview(true); }, submit: function () { submit(); }, clear: clear, el: ui && ui.root }; }
   function build(body, acct) {
     clearTimers();
-    st = fresh(acct);
+    var pseq = st ? st.pseq : 0;
+    st = fresh(acct); st.pseq = pseq + 1;           /* a response of the previous ticket can never match the new sequence */
     var root = T.h('div', { class: 'ticket', tabindex: '-1' });
     ui = { body: body, root: root };
     /* instrument typeahead */
@@ -115,7 +133,7 @@
     var ta = T.h('div', { class: 'ta' }, ui.inst, ui.dd);
     ui.instMeta = T.h('div', { class: 'inst-meta' });
     ui.side = T.h('select', { 'aria-label': 'side', id: 'ticket-side' });
-    ui.qty = T.h('input', { type: 'number', min: '0', step: '1', value: '1', 'aria-label': 'quantity', id: 'ticket-qty' });
+    ui.qty = T.h('input', { type: 'number', min: '0', step: '1', value: '', placeholder: 'qty (required)', 'aria-label': 'quantity', id: 'ticket-qty' });
     ui.minus = T.h('button', { class: 'btn small', title: 'minus one lot (Shift: ten)', tabindex: '-1' }, '-');
     ui.plus = T.h('button', { class: 'btn small', title: 'plus one lot (Shift: ten)', tabindex: '-1' }, '+');
     ui.type = T.h('select', { 'aria-label': 'order type', id: 'ticket-type' });
@@ -134,7 +152,7 @@
       row('account', 'account', T.h('span', { class: 'mono', id: 'ticket-account' }, st.account_id || '')),
       row('inst', 'instrument', ta, 'type a symbol; Enter resolves it (Yahoo); pick from the list'),
       row('side', 'side', ui.side),
-      row('qty', 'qty', T.h('div', { class: 'qty-row' }, ui.minus, ui.qty, ui.plus), 'whole lots; + / - step by a lot'),
+      row('qty', 'qty', T.h('div', { class: 'qty-row' }, ui.minus, ui.qty, ui.plus), 'whole lots; + / - step by a lot; empty for every new instrument (it must be entered)'),
       row('type', 'type', ui.type),
       row('limit', 'limit', ui.limit, 'on the tick grid; a marketable limit fills at the observed price on its first look'),
       row('stop', 'stop', ui.stop, 'triggers on the observed last trade'),
@@ -174,8 +192,8 @@
   }
   function reset(acct) {
     clearTimers();
-    var keepOpen = st && st.hedgeOpen;
-    st = fresh(acct); st.hedgeOpen = !!keepOpen;
+    var keepOpen = st && st.hedgeOpen; var pseq = st ? st.pseq : 0;
+    st = fresh(acct); st.hedgeOpen = !!keepOpen; st.pseq = pseq + 1;
     T.q('#ticket-account', ui.root).textContent = st.account_id || '';
     if (hedge) { hedge.update({ account_id: st.account_id, instrument_id: '', side: st.side, qty: st.qty, inst: null }); }
     ui.inst.value = ''; T.clear(ui.result); T.clear(ui.preview); T.clear(ui.instMeta);
@@ -186,43 +204,91 @@
   function apply(fields) {
     var f = fields || {};
     if (f.leg && f.leg.instrument_id) { f.instrument_id = f.leg.instrument_id; }
-    if (f.side) { st.side = f.side; }
-    if (f.qty != null && num(f.qty) != null) { st.qty = Math.max(0, Math.floor(num(f.qty))); }
+    var id = f.instrument_id ? String(f.instrument_id).trim() : '';
+    var newInst = !!(id && id !== st.instrument_id);
+    /* 1. a new instrument resets the whole order; a Close on the same instrument resets it too (nothing carries over) */
+    if (newInst) { setInstrument(id, f.leg ? { kind: 'OPTION', lot: 1 } : (f.kind && !instCache[id] ? { kind: String(f.kind) } : null), true); }
+    else if (f.close) { resetOrder(); st.result = null; T.clear(ui.result); paintPreview(); }
+    if (f.close) { st.hedgeOpen = false; }
+    /* 2. the caller's fields */
+    if (f.close) {
+      var pq = num(f.position_qty);
+      st.close_req = pq ? (pq > 0 ? 'LONG' : 'SHORT') : (f.side ? (SELL_LIKE.indexOf(String(f.side)) >= 0 ? 'LONG' : 'SHORT') : null);
+      st.side_req = null;
+      if (!st.close_req) { st.side = ''; }
+    } else if (f.side) {
+      /* a Close ticket re-sided by a later prefill (the instrument page opens every visit with BUY) is no longer that close:
+         its quantity must be entered again, so a Close -> chart visit never leaves BUY <position qty> ready to submit */
+      if (!newInst && st.close_req && String(f.side) !== st.side && f.qty == null) { st.qty = 0; }
+      st.side_req = String(f.side); st.close_req = null;
+    }
+    if (f.qty != null && num(f.qty) != null) { st.qty = Math.max(0, Math.floor(Math.abs(num(f.qty)))); }
     if (f.order_type) { st.order_type = f.order_type; }
     if (f.price != null && f.leg) { st.order_type = 'LIMIT'; st.limit_px = String(f.price); }
     if (f.limit_px != null) { st.limit_px = String(f.limit_px); }
     if (f.stop_px != null) { st.stop_px = String(f.stop_px); }
     if (f.tif) { st.tif = f.tif; }
     if (f.hedge) { st.hedgeOpen = true; }
-    if (f.instrument_id && f.instrument_id !== st.instrument_id) { setInstrument(f.instrument_id, f.leg ? { kind: 'OPTION', lot: 1 } : null); }
-    else { paintFields(); if (st.instrument_id) { fieldChanged(); } }
-    if (!f.instrument_id && !st.instrument_id) { try { ui.inst.focus(); } catch (e) { /* ignore */ } }
+    /* 3. the side for the instrument's kind (a Close takes the closing side; an unaccepted side is never replaced) */
+    settleSide();
+    if (f.close && !st.close_req) { st.side_err = 'Close: the position direction is unknown; choose the side'; }
+    paintFields(); stateTicket();
+    if (st.instrument_id) { fieldChanged(); }
+    if (!id && !st.instrument_id) { try { ui.inst.focus(); } catch (e) { /* ignore */ } }
+  }
+  /* the per-order fields a new instrument (or a Close) never inherits; drops the preview, the hedge pick and any in-flight
+     preview (the sequence is bumped, so a late answer for the previous order is ignored) */
+  function resetOrder() {
+    clearTimeout(st.timer); clearTimeout(st.reprev);
+    st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY';
+    st.side_req = null; st.close_req = null; st.side_err = null;
+    st.preview = null; st.preview_body = null; st.preview_err = null; st.submit_err = null; st.stale = null; st.previewing = false; st.pseq++;
+    st.hedge = null; st.hedge_cand = null; st.package_spec = null;
+    if (hedge && hedge.picked && hedge.picked()) { hedge.none(); }
+  }
+  /* the side for the instrument's kind.  A Close takes the kind's closing side; a requested side (or the current one) is
+     kept only when the kind accepts it.  Never a fallback to an opening side: an unaccepted side leaves the side UNSET
+     with the reason in side_err, and validity() then stops the preview and the submit until a side is chosen. */
+  function settleSide() {
+    var sides = sidesFor(), kind = instKind();
+    st.side_err = null;
+    if (st.close_req) {
+      var cs = (CLOSE_SIDES[kindGroup(kind)] || CLOSE_SIDES.CASH)[st.close_req];
+      if (cs && sides.indexOf(cs) >= 0) { st.side = cs; return; }
+      st.side = ''; st.side_err = 'Close: no closing side for a ' + st.close_req.toLowerCase() + ' ' + kind + ' position; choose the side';
+      return;
+    }
+    var want = st.side_req || st.side;
+    if (want && sides.indexOf(want) >= 0) { st.side = want; return; }
+    st.side = '';
+    if (st.side_req) { st.side_err = 'side ' + (SIDE_LABEL[st.side_req] || st.side_req) + ' does not apply to ' + kind + ' (sides: ' + sides.map(function (s) { return SIDE_LABEL[s] || s; }).join(' / ') + '): choose the side'; }
   }
   function clear() { reset(st.account_id); try { ui.inst.focus(); } catch (e) { /* ignore */ } }
 
   /* ---------------------------------------------------------------- instrument ------------------------------------ */
-  function setInstrument(id, meta) {
+  function setInstrument(id, meta, deferPreview) {
     id = String(id || '').trim(); if (!id) { return; }
-    st.instrument_id = id; st.inst = meta || instCache[id] || null; st.preview = null; st.result = null; st.submit_err = null; st.stale = null; st.hedge = null; st.hedge_cand = null;
+    var changed = id !== st.instrument_id;
+    st.instrument_id = id; st.inst = meta || instCache[id] || null; st.result = null;
+    if (changed) { resetOrder(); }                 /* nothing of the previous instrument's order carries over (qty empty, MKT, DAY, no hedge) */
+    else { st.preview = null; st.submit_err = null; st.stale = null; st.hedge = null; st.hedge_cand = null; st.previewing = false; st.pseq++; }
     ui.inst.value = id; ui.dd.hidden = true;
     T.clear(ui.result);
-    var sides = sidesFor(); if (sides.indexOf(st.side) < 0) { st.side = sides[0]; }
-    if (st.qty < lot()) { st.qty = lot(); }
-    paintFields(); paintInstMeta(); paintQuote(); stateTicket(); watchIds();
+    settleSide();
+    paintFields(); paintInstMeta(); paintQuote(); paintPreview(); stateTicket(); watchIds();
     if (hedge) { hedge.update({ account_id: st.account_id, instrument_id: id, side: st.side, qty: st.qty, inst: st.inst }); }
-    fieldChanged();
+    if (!deferPreview) { fieldChanged(); }
     if (!instCache[id]) {
       T.api.get('/api/instruments/' + encodeURIComponent(id), { account: st.account_id }).then(function (d) {
         if (!d || d.pending) { return; }
         var m = d.instrument || d; if (d.quote && !m.quote) { m.quote = d.quote; } if (d.support && !m.support) { m.support = d.support; } if (d.session && !m.session) { m.session = d.session; }
         cacheInst(id, m);
         if (st.instrument_id !== id) { return; }
-        var before = instKind(); st.inst = m;
-        var sides = sidesFor(); if (sides.indexOf(st.side) < 0) { st.side = sides[0]; }
-        if (st.qty < lot()) { st.qty = lot(); }
+        var before = instKind(), sideBefore = st.side; st.inst = m;
+        settleSide();                                  /* the real kind: a Close recomputes its closing side; an unaccepted side stays unset */
         paintFields(); paintInstMeta(); paintQuote(); stateTicket();
         if (hedge) { hedge.update({ inst: m, side: st.side, qty: st.qty }); }
-        if (before !== instKind()) { fieldChanged(); }
+        if (before !== instKind() || sideBefore !== st.side) { fieldChanged(); }
       }, function (e) { if (st.instrument_id === id) { paintStatus('instrument ' + id + ': ' + (e.code || '') + ' ' + (e.message || ''), 'err'); } });
     }
   }
@@ -262,8 +328,8 @@
   function wire() {
     ui.inst.addEventListener('input', function () { clearTimeout(st.taTimer); st.taTimer = setTimeout(typeahead, TA_MS); });
     ui.inst.addEventListener('blur', function () { setTimeout(function () { if (ui) { ui.dd.hidden = true; } }, 150); });
-    ui.side.addEventListener('change', function () { st.side = ui.side.value; paintFields(); fieldChanged(); });
-    ui.qty.addEventListener('input', function () { var n = num(ui.qty.value); st.qty = n == null ? 0 : Math.floor(n); fieldChanged(); });
+    ui.side.addEventListener('change', function () { st.side = ui.side.value; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); });
+    ui.qty.addEventListener('input', function () { var n = num(ui.qty.value); st.qty = n == null ? 0 : Math.max(0, Math.floor(n)); fieldChanged(); });
     ui.minus.addEventListener('click', function (e) { stepQty(-(e.shiftKey ? 10 : 1)); });
     ui.plus.addEventListener('click', function (e) { stepQty(e.shiftKey ? 10 : 1); });
     ui.type.addEventListener('change', function () { st.order_type = ui.type.value; paintFields(); fieldChanged(); });
@@ -281,9 +347,14 @@
   function stepQty(n) { var l = lot(); st.qty = Math.max(0, (st.qty || 0) + n * l); st.qty = Math.round(st.qty / l) * l; paintFields(); fieldChanged(); }
   function paintFields() {
     var sides = sidesFor();
-    T.clear(ui.side); sides.forEach(function (s) { ui.side.appendChild(T.h('option', { value: s, selected: s === st.side }, SIDE_LABEL[s] || s)); });
-    ui.side.value = st.side;
-    ui.qty.value = String(st.qty); ui.qty.step = String(lot()); ui.qty.min = '0';
+    T.clear(ui.side);
+    if (!st.side || sides.indexOf(st.side) < 0) { ui.side.appendChild(T.h('option', { value: '', selected: true, disabled: true }, 'choose a side')); }
+    sides.forEach(function (s) { ui.side.appendChild(T.h('option', { value: s, selected: s === st.side }, SIDE_LABEL[s] || s)); });
+    ui.side.value = sides.indexOf(st.side) >= 0 ? st.side : '';
+    ui.side.classList.toggle('side-unset', !(st.side && sides.indexOf(st.side) >= 0));
+    ui.side.title = st.side_err || '';
+    if (document.activeElement !== ui.qty || num(ui.qty.value) !== st.qty) { ui.qty.value = st.qty > 0 ? String(st.qty) : ''; }
+    ui.qty.step = String(lot()); ui.qty.min = '0';
     ui.type.value = st.order_type;
     var t = st.order_type;
     function show(key, on) { ui.rows[key].forEach(function (el) { el.hidden = !on; }); }
@@ -315,12 +386,14 @@
     if (q && q.executable === false) { ui.quoteLine.appendChild(T.h('span', { class: 'badge red' }, 'NOT EXECUTABLE' + (q.reason ? ' ' + q.reason : ''))); }
   }
   function paintStatus(msg, cls) { ui.status.textContent = msg || ''; ui.status.className = 'status ' + (cls || ''); }
-  function toggleHedge() { st.hedgeOpen = !st.hedgeOpen; paintFields(); if (st.hedgeOpen && hedge && st.instrument_id) { var hs = hedge.state(); if (!hs.cands && hs.status === 'idle') { if (st.preview && st.preview.hedges) { hedge.seed(st.preview.hedges); } else { hedge.load(); } } } }
+  function toggleHedge() { st.hedgeOpen = !st.hedgeOpen; paintFields(); if (st.hedgeOpen && hedge && st.instrument_id && !validity()) { var hs = hedge.state(); if (!hs.cands && hs.status === 'idle') { if (st.preview && st.preview.hedges) { hedge.seed(st.preview.hedges); } else { hedge.load(); } } } }
   function onHedgePick(h, cand) { st.hedge = h; st.hedge_cand = cand || null; paintFields(); watchIds(); fieldChanged(); }
 
   /* ---------------------------------------------------------------- preview --------------------------------------- */
   function validity() {
     if (!st.instrument_id) { return 'enter an instrument'; }
+    if (st.side_err) { return st.side_err; }
+    if (!st.side || sidesFor().indexOf(st.side) < 0) { return 'choose the side (' + sidesFor().map(function (s) { return SIDE_LABEL[s] || s; }).join(' / ') + ')'; }
     if (!(st.qty > 0)) { return 'enter a quantity'; }
     if (st.qty % lot() !== 0) { return 'quantity must be a multiple of the lot (' + T.fmt.qty(lot()) + ')'; }
     var t = st.order_type;
@@ -345,12 +418,16 @@
   }
   function fieldChanged() {
     st.dirty = true; st.submit_err = null; st.stale = null; st.preview_err = null;
+    st.pseq++; st.previewing = false;              /* an answer to a request sent before this change is for other fields: ignored */
     clearTimeout(st.timer); clearTimeout(st.reprev);
     if (hedge) { hedge.update({ side: st.side, qty: st.qty }); }
     stateTicket();
     paintSubmit();
     var why = validity();
-    if (why) { paintStatus(why); return; }
+    if (why) {                                     /* an incomplete order can never be re-previewed: the old preview no longer matches the fields */
+      if (st.preview) { st.preview = null; st.preview_body = null; paintPreview(); tick(); }
+      paintStatus(why, st.side_err || !st.side ? 'err' : ''); return;
+    }
     paintStatus('previewing in ' + DEBOUNCE_MS + ' ms ...');
     st.timer = setTimeout(function () { runPreview(false); }, DEBOUNCE_MS);
   }
@@ -362,6 +439,7 @@
     T.api.post('/api/orders/preview', body, { retries: 1 }).then(function (pv) {
       if (seq !== st.pseq) { return; }
       st.previewing = false;
+      if (body.instrument_id !== st.instrument_id) { return; }    /* defence in depth: never show (or seed hedges from) another instrument's preview */
       if (pv && pv.pending) { st.preview = null; paintStatus('preview pending (202): the server is still fetching the quote', 'err'); scheduleReprev(pv.retry_ms || 1500); return; }
       st.preview = pv; st.preview_body = json; st.dirty = false; st.preview_err = null;
       paintPreview(); paintSubmit(); paintQuote();
@@ -529,7 +607,7 @@
     if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (e.target === ui.inst) { resolveTyped(); } else { runPreview(true); } return; }
     if (typing || e.ctrlKey || e.metaKey || e.altKey) { return; }
     var k = e.key; var group = kindGroup(instKind()); var sk = SIDE_KEYS[group] || SIDE_KEYS.CASH;
-    if (sk[k] && sidesFor().indexOf(sk[k]) >= 0) { st.side = sk[k]; paintFields(); fieldChanged(); }
+    if (sk[k] && sidesFor().indexOf(sk[k]) >= 0) { st.side = sk[k]; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); }
     else if (TYPE_KEYS[k]) { st.order_type = TYPE_KEYS[k]; paintFields(); fieldChanged(); }
     else if (k === '=' || k === '+') { stepQty((k === '+' && e.location !== 3) || e.shiftKey ? 10 : 1); }       /* Shift+= is '+' on a US keyboard: x10; numpad + : x1 */
     else if (k === '-' || k === '_') { stepQty(-(k === '_' || e.shiftKey ? 10 : 1)); }

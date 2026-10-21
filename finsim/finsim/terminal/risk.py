@@ -666,13 +666,15 @@ def _financing(services, acc, snap, rows: List[PosRisk], accounts: Dict[str, dic
             financed = _gl_sum(services, [aid], "2700")
             long_mv = sum(r.mv_base_c for r in rows if r.account_id == aid and r.mv_base_c and r.mv_base_c > 0 and r.kind != "SWAP")
             on = bool(int(a.get("pb_financing") or 0))
-            pb_rows.append({"account_id": aid, "broker": a.get("broker"), "pb_financing": on, "pb_limit_c": int(a.get("pb_limit_c") or 0), "headroom_c": int(bp.pb_headroom_c),
+            head_gross = int(getattr(bp, "pb_headroom_gross_c", bp.pb_headroom_c))      # the §12.4 headroom the formula below describes
+            pb_rows.append({"account_id": aid, "broker": a.get("broker"), "pb_financing": on, "pb_limit_c": int(a.get("pb_limit_c") or 0), "headroom_c": head_gross,
+                            "headroom_after_committed_c": int(bp.pb_headroom_c),
                             "financed_c": financed, "long_mv_c": long_mv, "otc_im_c": int(m["otc_im_c"]), "otc_vm_posted_c": int(m["otc_vm_posted_c"]),
                             "otc_vm_received_c": int(m["otc_vm_received_c"]), "nav_c": a_nav, "contracts": len(ob.otc),
                             "formula": "50 % of the PB account's long market value - PB financing drawn - OTC IM - OTC VM posted (capped by pb_limit)" if on else "PB financing is off: headroom 0"})
             note = (f"PB financing on; limit {fmt_money(int(a.get('pb_limit_c') or 0)) if int(a.get('pb_limit_c') or 0) else 'none'}; drawn {fmt_money(financed)}" if on
                     else "PB financing off") + "; OTC IM / VM included"
-            margin_rows.append({"account_id": aid, "required_c": required, "posted_c": posted, "headroom_c": int(bp.pb_headroom_c), "note": note})
+            margin_rows.append({"account_id": aid, "required_c": required, "posted_c": posted, "headroom_c": head_gross, "note": note})
             otc_rows = [r for r in rows if r.account_id == aid and r.kind == "SWAP"]
             if otc_rows or ob.otc:
                 dv_known = [r.dv01_c for r in otc_rows if r.dv01_c is not None]

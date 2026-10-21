@@ -21,7 +21,7 @@ Conventions stated here
   nothing is priced from a model here.  Every candidate is SEQUENTIAL: the legs wait for the primary (WAITING_PARENT)
   and are resized on each partial fill; the row says so (``disclosure``).
 - ``TRS_OVERLAY`` (receive / pay the primary's notional through the account's prime broker) appears only in a PB
-  account of a PB/OTC-eligible lifetime when the swaps module exists; it is booked on the OTC desk, not as an order
+  account of a PB/OTC-eligible lifetime when the swaps modules exist (WP-17 and WP-26's TRS); it is booked on the OTC desk, not as an order
   leg (``package()`` refuses it).  FX forwards, options on futures and the bond DV01 hedge are NOT IN THIS BUILD:
   labelled rows (``not_in_this_build``), never fabricated.
 - ``package()`` turns a candidate (or the ticket's explicit ``legs``) into WAITING_PARENT child orders through
@@ -431,7 +431,7 @@ def _index_overlay(services, inst, qty: int, S: Decimal, quality: str, as_of: Op
 
 def _trs_overlay(services, account_id: str, inst, side: str, qty: int, S: Decimal, quality: str, as_of: Optional[int]) -> Optional[HedgeCandidate]:
     swaps = getattr(services, "swaps", None)
-    if swaps is None:
+    if swaps is None or getattr(services, "swaps_trs", None) is None:    # a TRS books through WP-17's gate AND WP-26's module (WP-15)
         return None
     with services.db.reader() as conn:
         acct = account_row(conn, account_id)

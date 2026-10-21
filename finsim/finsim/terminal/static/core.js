@@ -716,9 +716,24 @@
     return Object.keys(s).some(function (g) { return s[g] && s[g].open; });
   }
   function anyOrderWorking() { return (T.state.orders || []).some(function (o) { return o.status === 'WORKING' || o.status === 'PARTIAL'; }); }
+  /* The ids the fast quotes poller asks for (GET /api/quotes = the server's WATCH class; at most MAX_WATCH = the server's
+   * MAX_QUOTE_IDS): the ticket's instrument and hedge legs FIRST (T.ticket.ids), then the page's (T.watchQuotes), so a
+   * long page list can never push the ticket's own quote out.  Long list pages (Markets) hand over only the rows that
+   * need speed; the rest of their prices come with the page's own reload (the server's slow BROWSE class). */
+  var MAX_WATCH = 200;
   function quoteIds() {
-    var ids = {}; (T.state.quote_ids || []).forEach(function (i) { ids[i] = 1; }); (T.state.ticket_ids || []).forEach(function (i) { ids[i] = 1; });
-    return Object.keys(ids).slice(0, 200);
+    var seen = Object.create(null); var out = [];
+    function add(i) { if (i && !seen[i]) { seen[i] = 1; out.push(i); } }
+    (T.state.ticket_ids || []).forEach(add); (T.state.quote_ids || []).forEach(add);
+    return out.slice(0, MAX_WATCH);
+  }
+  /* /api/quotes carries the session states of the requested ids' groups only: they are merged into the full set (from
+   * /api/state = a {group: state} map, or /api/sessions = {sessions: map, rules, ...}) instead of replacing it, so the
+   * header keeps every session chip (UI sweep 2026-10-21: the chips collapsed to US EQ wherever quotes polled) */
+  function mergeSessions(cur, part) {
+    if (!part || typeof part !== 'object') { return cur; }
+    if (cur && typeof cur === 'object' && cur.sessions && typeof cur.sessions === 'object') { return Object.assign({}, cur, { sessions: Object.assign({}, cur.sessions, part) }); }
+    return Object.assign({}, (cur && typeof cur === 'object') ? cur : {}, part);
   }
   function definePollers() {
     T.poll.define('health', 10000, function () {
@@ -759,18 +774,26 @@
         var q = T.state.quotes || {}; var got = r.quotes || {};
         Object.keys(got).forEach(function (k) { q[k] = got[k]; });
         T.state.quotes = q; T.state.emit('quotes', q);
-        if (r.sessions) { T.state.set('sessions', r.sessions); }
+        if (r.sessions) { T.state.set('sessions', mergeSessions(T.state.sessions, r.sessions)); }
       });
     });
-    T.poll.define('chain', function () { return (T.state.ticket && T.state.ticket.option) ? 30000 : 60000; }, function () {
-      var t = T.state.chain_target; if (!t) { return Promise.resolve(); }
+    /* a 202 from the chain route (the shared Cboe fetch is still running) is asked again after its retry_ms - at most
+     * CHAIN_FAST_TRIES times in a row - instead of at the next 30 / 60 s poll (UI sweep 2026-10-21: the chain appeared
+     * ~60 s after a 202); a 200, an error or a new target (instrument / expiry) starts over */
+    var chainFast = { ms: 0, n: 0, key: null }; var CHAIN_FAST_TRIES = 40;
+    T.poll.define('chain', function () { return chainFast.ms || ((T.state.ticket && T.state.ticket.option) ? 30000 : 60000); }, function () {
+      var t = T.state.chain_target; if (!t) { chainFast.ms = 0; chainFast.n = 0; return Promise.resolve(); }
       return T.api.get('/api/instruments/' + encodeURIComponent(t.instrument_id) + '/chain', { expiry: t.expiry }).then(function (c) {
+        var pending = !!(c && c.pending); var key = t.instrument_id + '|' + (t.expiry || '');
+        if (chainFast.key !== key) { chainFast.key = key; chainFast.n = 0; }
+        chainFast.n = pending ? chainFast.n + 1 : 0;
+        chainFast.ms = (pending && chainFast.n <= CHAIN_FAST_TRIES) ? Math.max(500, Math.min(5000, Number(c.retry_ms) || 1500)) : 0;
         if (T.state.chain_target && T.state.chain_target.instrument_id === t.instrument_id) { T.state.set('chain', c); }
-      });
+      }, function (e) { chainFast.ms = 0; chainFast.n = 0; throw e; });
     });
   }
   /* pages declare the quote ids they show (visible rows); the quotes poller merges them with the ticket's */
-  T.watchQuotes = function (ids) { T.state.quote_ids = (ids || []).slice(0, 200); T.poll.kick('quotes'); };
+  T.watchQuotes = function (ids) { T.state.quote_ids = (ids || []).slice(0, MAX_WATCH); T.poll.kick('quotes'); };
   T.quote = function (id) { return (T.state.quotes || {})[id] || null; };
 
   /* ---------------------------------------------------------------- keys ------------------------------------------ */

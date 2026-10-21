@@ -36,6 +36,7 @@ from .commands import Touched
 from .db import dumps, get_meta, get_setting, set_meta
 from .instruments import EQUITY_KINDS, row_to_instrument
 from .ledger import CHART, FEE_GLS, FINANCING_GLS, INCOME_GLS, REALISED_GLS, natural
+from .marks import shared_reader
 from .quotes import MarkView, QUALITY_RANK, unavailable
 from .units import from_c, fx_c, mul_c, qprice, to_c
 
@@ -625,7 +626,12 @@ class Accounting:
         return [dict(r) for r in conn.execute(f"SELECT * FROM accounts WHERE lifetime_id IN ({q}) ORDER BY lifetime_id, sort_order, account_id", lids).fetchall()]
 
     def _conn(self):
-        return self.db.reader()
+        """The reader of every view here: the writer inside this thread's own transaction, else the connection this thread
+        already reads on, else ONE pooled reader declared as this thread's reading connection (``marks.shared_reader``).
+        So a view called inside another one's read (integrity's mark checks -> pnl / balance_sheet / treasury) and the
+        PRIVATE / private-credit / SWAP marks computed inside positions reuse it: never a second pooled reader (the pool
+        has four; the 2026-10-21 BUSY defect)."""
+        return shared_reader(self.db)
 
     # ---- cash -------------------------------------------------------------------------------------------------------
     def cash(self, account_id: str, snapshot=None) -> Dict[str, CashView]:
@@ -821,10 +827,16 @@ class Accounting:
             if archived_detail is not None:
                 pd = (archived_detail.get("positions") or {}).get(cid) or {}
                 mark_c = int(pd.get("mv_c", mark_c) or 0)
-            view = snap.mark(cid) if (snap is not None and archived_detail is None) else None
-            if view is None or view.mark is None:
-                view = MarkView(cid, from_c(mark_c), "computed", "swap model (stored mark)", "swap_model", r["mark_ts"], None, "model", None, False,
-                                "computed clean PV; VM and accruals in the ledger")
+            live = snap.mark(cid) if (snap is not None and archived_detail is None) else None
+            # the row's mark is the overlay NAV carries (the mark at the last variation margin; 0 after an STM settlement), so the
+            # row's mark and market value agree; the live model mark is beside it in extra.model_mark (WP-15: the two values labelled)
+            # the model cannot be re-run now (no curve / no underlying print: the swaps module answers a stale view) -> the overlay is
+            # labelled stale too, so NAV's quality says so; "unavailable" (no module, a fixed test mark set) carries no such information
+            overlay_q = "stale" if (live is not None and live.quality == "stale") else "computed"
+            view = MarkView(cid, from_c(mark_c), overlay_q, "swap overlay (the mark at the last variation margin)", "swap_overlay", r["mark_ts"], None, "model",
+                            {"overlay_c": mark_c, "margin_mode": r["margin_mode"], "model_mark": None if live is None or live.mark is None else str(live.mark),
+                             "model_quality": None if live is None else live.quality}, False,
+                            "NAV carries the mark at the last variation margin (0 after an STM settlement); the live model mark is in model_mark")
             try:
                 terms = json.loads(r["terms_json"] or "{}")
             except ValueError:
@@ -839,7 +851,8 @@ class Accounting:
                     dv01 = None
             extra = {"kind": r["kind"], "broker": r["broker"], "notional_c": int(r["notional_c"]), "vm_balance_c": int(r["vm_balance_c"] or 0), "im_c": int(r["im_c"] or 0),
                      "dv01_c": dv01, "accrued_c": gl.get("1225", (0, 0))[0] - gl.get("2340", (0, 0))[0], "margin_mode": r["margin_mode"], "maturity_date": r["maturity_date"],
-                     "start_date": r["start_date"], "last_reset_date": r["last_reset_date"]}
+                     "start_date": r["start_date"], "last_reset_date": r["last_reset_date"],
+                     "model_mark": None if live is None else live.to_dict()}
             finish(cid, inst, "SWAP", sign * int(r["notional_c"]), 0, view, mark_c, int(r["notional_c"]), mark_c, r["currency"], [], None, extra, "OTC derivatives")
 
         for r in conn.execute("SELECT * FROM private_loans WHERE account_id=? AND status='OPEN' ORDER BY loan_id", (aid,)).fetchall():

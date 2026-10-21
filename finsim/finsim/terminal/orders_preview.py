@@ -148,6 +148,52 @@ def _m(c: Optional[int]) -> Optional[str]:
     return None if c is None else str(from_c(int(c)))
 
 
+def _futures_effect(inst: Instrument, side: str, qty: int, pos_qty: int, expected: Optional[Decimal], fee_c: int, working_sells: int, working_buys: int,
+                    pv: dict, warnings: List[str]):
+    """FUT_MARGIN for one futures order, judged against the account's CURRENT position exactly as ``futures.apply_fill``
+    books the fill: the part opposite to the position closes first (its initial margin is RELEASED), the rest opens (its
+    initial margin is POSTED); the fill nets the fee with the margin move, so a closing order needs no funding for its fee
+    and never sweeps.  Only the opening contracts count toward the large-notional confirm (closing adds no exposure).
+    Writes ``pv["margin"]``: ``initial`` = the margin posted for the opening contracts, ``released``, ``im_change`` (signed),
+    ``initial_after`` / ``maintenance`` = after the trade, the position before / after, the closing / opening split and the
+    effect (OPEN / INCREASE / REDUCE / CLOSE / FLIP).  Returns ``(need_c, need_formula, confirm_notional_c)``."""
+    im = int((inst.spec or {}).get("im_c") or 0)
+    mm = int((inst.spec or {}).get("mm_c") or 0)
+    signed = qty if side in BUY_SIDES else -qty
+    pos_after = pos_qty + signed
+    closing = min(qty, abs(pos_qty)) if pos_qty and (pos_qty > 0) != (signed > 0) else 0
+    opening = qty - closing
+    im_delta = im * (abs(pos_after) - abs(pos_qty))
+    need_c = max(0, im_delta + fee_c)
+    held = "long" if pos_qty > 0 else "short"
+    new_dir = "long" if signed > 0 else "short"
+    move = f"{abs(pos_qty):,} -> {abs(pos_after):,} contracts x {fmt_money(im)}"
+    if opening == 0:
+        effect = "CLOSE" if pos_after == 0 else "REDUCE"
+        detail = (f"CLOSING {closing:,} of the {held} {abs(pos_qty):,} {inst.symbol} -> position after {pos_after:,}: initial margin {fmt_money(im * closing)} RELEASED"
+                  f" ({move}); nothing new to post")
+        formula = (f"closing: fee {fmt_money(fee_c)} - initial margin released {fmt_money(im * closing)} (the fill nets them; FUT_MARGIN)"
+                   + (": nothing to fund" if need_c == 0 else ""))
+    elif closing == 0:
+        effect = "OPEN" if pos_qty == 0 else "INCREASE"
+        detail = f"OPENING {opening:,} {new_dir} {inst.symbol} -> position after {pos_after:,}: initial margin {fmt_money(im * opening)} posted ({move})"
+        formula = "initial margin x contracts + fee (FUT_MARGIN)"
+    else:
+        effect = "FLIP"
+        detail = (f"closes the {held} {closing:,} {inst.symbol} (initial margin {fmt_money(im * closing)} RELEASED) and opens {opening:,} {new_dir}"
+                  f" (initial margin {fmt_money(im * opening)} posted) -> position after {pos_after:,}: net margin {'+' if im_delta >= 0 else ''}{fmt_money(im_delta)} ({move})")
+        formula = "initial margin posted for the opening contracts - margin released by the closing ones + fee (the fill nets them; FUT_MARGIN)"
+    same = working_sells if signed < 0 else working_buys
+    if closing and same:
+        warnings.append(f"a working {'SELL' if signed < 0 else 'BUY'} of {same:,} {inst.symbol} also reduces the {held} {abs(pos_qty):,}: whichever fills first closes it;"
+                        f" a later fill beyond the position opens a {new_dir} and posts its initial margin then (cancel the working order if this one replaces it)")
+    pv["margin"] = {"initial": _m(im * opening), "released": _m(im * closing), "im_change": _m(im_delta), "initial_after": _m(im * abs(pos_after)),
+                    "maintenance": _m(mm * abs(pos_after)), "per_contract": _m(im), "effect": effect, "position_before": pos_qty, "position_after": pos_after,
+                    "closing": closing, "opening": opening, "detail": detail, "note": tables.CONVENTIONS.get("FUT_MARGIN", "")}
+    confirm_notional_c = 0 if (opening == 0 or expected is None) else inst.contract_value_c(expected, opening)
+    return need_c, formula, confirm_notional_c
+
+
 @dataclass
 class ValidatedOrder:
     """Everything ``order.submit`` needs after validation, plus the §10.3 preview it was computed from."""
@@ -253,6 +299,9 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
                         "session_group": inst.session_group, "expiry": inst.expiry}
     if akind == "TREASURY":
         raise RejectError("NOT_TRADEABLE_HERE", "Treasury never trades: it only funds the accounts (and converts FX)")
+    if inst.kind == "BOND":                     # WP-10: bonds never go through the order ticket (sentence COMPUTED / BUILD2_BONDS)
+        raise RejectError("UNSUPPORTED", f"{inst.symbol}: model price, not executable in this build (Debt Instruments execution is the Build 2"
+                          " bonds.trade command behind the build2_bonds setting)", {"kind": "BOND", "setting": "build2_bonds", "route": "POST /api/bonds/trade"})
     if not services.instruments.tradeable_in(inst, akind):
         raise RejectError("NOT_TRADEABLE_HERE", f"{inst.symbol} ({inst.kind}) does not trade in a {akind} account", {"account_kinds": list(inst.account_kinds)})
     if inst.support in ("UNSUPPORTED", "COMPUTED"):
@@ -374,7 +423,7 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
                             {"reason": reason, "quality": quality, "quote_time": None if rec is None else rec.quote_time})
     # positions (OVERSELL / CLOSE_ONLY_MISMATCH)
     pos_qty, _cost = _position(conn, account_id, iid)
-    working_sells = working_covers = 0
+    working_sells = working_covers = working_buys = 0
     for r in conn.execute("SELECT side, qty, filled_qty FROM orders WHERE account_id=? AND instrument_id=? AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')",
                           (account_id, iid)).fetchall():
         rem = int(r["qty"]) - int(r["filled_qty"])
@@ -382,6 +431,8 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
             working_sells += rem
         elif r["side"] in ("BUY_TO_COVER", "BTC"):
             working_covers += rem
+        elif r["side"] == "BUY":
+            working_buys += rem         # futures: a working BUY also reduces a short (the futures effect below warns about it)
     if inst.kind == "FUTURE":
         pass        # no borrow in futures: SELL from flat opens a short, SELL beyond the long flips (futures.apply_fill books the signed quantity)
     elif side in ("SELL", "STC"):
@@ -431,13 +482,13 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
     settle_date = services.cal.settlement_date(tdate, inst.settle_days)
     buy = side in BUY_SIDES
     net_cash = None if gross_c is None else (-(gross_c + fee_c) if buy else gross_c - fee_c)
+    if inst.kind == "FUTURE":
+        net_cash = -fee_c       # no premium and no notional change hands on a future: the fee is the cash; the margin move is in margin / funding
     pv["economics"] = {"gross": _m(gross_c), "fee": _m(fee_c), "fee_basis": fee_basis, "net_cash": _m(net_cash), "currency": ccy,
                        "settle_date": settle_date.isoformat(), "accrued": None}
+    confirm_notional_c = gross_c or 0
     if inst.kind == "FUTURE":
-        im = int((inst.spec or {}).get("im_c") or 0)
-        mm = int((inst.spec or {}).get("mm_c") or 0)
-        need_c, need_formula = im * qty + fee_c, "initial margin x contracts + fee (FUT_MARGIN)"
-        pv["margin"] = {"initial": _m(im * qty), "maintenance": _m(mm * qty), "per_contract": _m(im), "note": tables.CONVENTIONS.get("FUT_MARGIN", "")}
+        need_c, need_formula, confirm_notional_c = _futures_effect(inst, side, qty, pos_qty, expected, fee_c, working_sells, working_buys, pv, warnings)
         conv.append("FUT_MARGIN")
     elif buy:
         need_c, need_formula = (gross_c or 0) + fee_c, "gross at the expected price + fee"
@@ -464,7 +515,7 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
     fundable = (shortfall - sweep_in - pb_fin) <= 0
     threshold = int(get_setting(conn, "sweep_confirm_threshold_c", config.SWEEP_CONFIRM_THRESHOLD_C) or 0)
     nav_c = int(acc.nav(f"{lid}:ALL", snapshot=snapshot).nav_c)
-    notional = gross_c or 0
+    notional = confirm_notional_c          # futures: only the opening contracts (a closing trade adds no exposure)
     big_sweep = sweep_in > threshold
     big_notional = nav_c > 0 and notional * 4 > nav_c
     confirm_required = big_sweep or big_notional

@@ -391,6 +391,83 @@ class ListedServerTests(unittest.TestCase):
         self.assertEqual(0, one(rt, "SELECT COUNT(*) n FROM attention WHERE source='private'")["n"])
 
 
+# ---- one reader per thread (2026-10-21 BUSY defect: private / private-credit marks took a SECOND pooled reader) ----------------------
+class OneReaderServedTests(unittest.TestCase):
+    """A served runtime (the real MarkProvider) with a private name and a private loan held in the Institutional book.  The
+    pool has four readers; the test holds three of them (three other requests in flight), so every view below has exactly
+    one.  Before the fix each private / private-credit mark took a second pooled reader inside its caller's, waited 2 s
+    and came back "mark failed: BusyError" (N/A, NAV moving), and a full integrity run nested pnl / balance sheet / treasury
+    readers the same way."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-prvl-one-")
+        os.environ[config.HOME_ENV] = self.tmp
+        os.environ[config.DB_ENV] = os.path.join(self.tmp, "terminal.db")
+        self.clock = FakeClock("2026-10-20T14:00:00-04:00")          # Tuesday 14:00 ET
+        self.fp = FakeProvider(self.clock)
+        self.rt = _server.build_runtime(self.tmp, os.path.join(self.tmp, "terminal.db"), clock=self.clock, offline=True, fake_provider=self.fp, log=_Log(),
+                                        books=list(config.BOOKS), fetch_threads=0, news_enabled=False)
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def handle(self, method, path, body=None):
+        return self.rt.router.handle(method, path, None, body, "127.0.0.1", None)
+
+    def test_private_marks_and_views_never_take_a_second_pooled_reader(self):
+        import contextlib
+        import time
+        rt = self.rt
+        self.assertEqual(("bound", "bound"), (rt.modules["private"], rt.modules["private_credit"]))
+        # ByteDance's latest round carries a price per share (200.41): 1,000 shares bought at 200.41
+        st, body, _ = self.handle("POST", "/api/private/trades", {"request_id": "ui:one-reader-0001", "account_id": I1_PRIVATE, "company_id": "PRV-BYTEDANCE",
+                                                                 "side": "BUY", "qty": 1000, "price": "200.41", "kind": "SECONDARY"})
+        self.assertEqual(200, st, body)
+        # 10,000,000.00 lent at 98: cash out 10,000,000.00 x 98 / 100 = 9,800,000.00 = the amortised cost; no OAS loaded -> mark = cost
+        st, body, _ = self.handle("POST", "/api/credit/private", {"request_id": "ui:one-reader-0002", "account_id": "I1:CREDIT", "borrower": "Stripe, Inc.",
+                                                                 "principal": "10000000.00", "issue_price": "98", "spread": "0.06", "term_months": 36})
+        self.assertEqual(200, st, body)
+        loan = body["loan_id"]
+        st, base, _ = self.handle("GET", "/api/portfolio?book=I")
+        self.assertEqual(200, st, base)
+        with contextlib.ExitStack() as held:
+            for _ in range(3):
+                held.enter_context(rt.db.reader())
+            paths = ["/api/portfolio?book=I", "/api/accounts/I1:PRIVATE/positions", "/api/accounts/I1:CREDIT/positions", "/api/accounts?book=I", "/api/books",
+                     "/api/health", f"/api/private/companies?account_id={I1_PRIVATE}", "/api/credit/private?scope=I1:ALL", "/api/accounts/I1:PRIVATE",
+                     "/api/accounting/integrity?mode=full"]
+            out = {}
+            for p in paths:
+                t0 = time.monotonic()
+                st, body, _ = self.handle("GET", p)
+                self.assertEqual(200, st, (p, body))
+                self.assertLess(time.monotonic() - t0, 1.9, p)                 # a second pooled reader would wait 2 s, then fail
+                self.assertNotIn("BusyError", json.dumps(body, default=str), p)
+                self.assertNotIn("mark failed", json.dumps(body, default=str), p)
+                out[p] = body
+            st, pv, _ = self.handle("POST", "/api/private/preview", {"account_id": I1_PRIVATE, "company_id": "PRV-BYTEDANCE", "side": "SELL", "qty": 10, "price": "210"})
+            self.assertEqual(200, st, pv)
+            self.assertEqual(("200.41", "private"), (pv["mark"]["value"], pv["mark"]["quality"]))
+            # a snapshot's marks taken with NO reader free at all: they read on the provider's own side connection, never the pool
+            held.enter_context(rt.db.reader())
+            snap = rt.marks.snapshot()
+            t0 = time.monotonic()
+            bd, pc_ = snap.mark("PRV-BYTEDANCE"), snap.mark(loan)
+            self.assertLess(time.monotonic() - t0, 1.9)
+        self.assertEqual((Decimal("200.41"), "private", "private_round"), (bd.mark, bd.quality, bd.method))
+        # the loan's mark as module docstring MARK labels it: computed / pc_model / private credit model, never executable
+        self.assertEqual((Decimal("9800000.00"), "computed", "pc_model", "private credit model", False), (pc_.mark, pc_.quality, pc_.method, pc_.source, pc_.executable))
+        pos = {p["instrument_id"]: p for p in out["/api/portfolio?book=I"]["positions"]}
+        self.assertEqual(("200.41", "private"), (pos["PRV-BYTEDANCE"]["mark"]["value"], pos["PRV-BYTEDANCE"]["mark"]["quality"]))
+        self.assertEqual(("9800000.00", "computed", "pc_model"), (pos[loan]["mark"]["value"], pos[loan]["mark"]["quality"], pos[loan]["mark"]["method"]))
+        self.assertEqual(base["nav"]["nav"], out["/api/portfolio?book=I"]["nav"]["nav"])                   # the NAV does not move
+        integ = out["/api/accounting/integrity?mode=full"]
+        self.assertTrue(integ["ok"], integ)
+        self.assertEqual([], [p for p in integ["problems"] if p["id"] == "M0"])                             # no mark check raised
+        assert_integrity(self, rt, "full")
+
+
 # ---- the UI files -----------------------------------------------------------------------------------------------------------------
 class ListedStaticTests(unittest.TestCase):
     def test_page_and_ticket_keep_listed_companies_out_of_private_trading(self):

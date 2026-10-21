@@ -294,6 +294,32 @@ def fx_pair_id(ccy: str) -> str:
     return f"USD{ccy}" if ccy in USD_FIRST else f"{ccy}USD"
 
 
+def otc_reference_ids(conn: sqlite3.Connection) -> Dict[str, List[str]]:
+    """``{instrument_id: [account_id, ...]}`` of the instruments that OPEN OTC contracts of OPEN lifetimes observe without
+    holding them: the underlying of a TRS (its mark, its reset CLOSE, its dividends) and the USD pair of a cross-currency
+    swap's foreign currency (its mark and the 17:00 FX close of an MTM reset).  The quote worker pins these at HELD priority
+    and MARKS_RECORD records their closes, so a TRS / XCCY never waits on a name nobody holds (WP-15 integration)."""
+    out: Dict[str, List[str]] = {}
+    rows = conn.execute("SELECT c.account_id, c.kind, c.terms_json FROM otc_contracts c JOIN accounts a ON a.account_id=c.account_id"
+                        " JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN' AND a.status='OPEN' AND l.status='OPEN'"
+                        " AND c.kind IN ('TRS','XCCY') ORDER BY c.contract_id").fetchall()
+    for r in rows:
+        try:
+            terms = json.loads(r["terms_json"] or "{}")
+        except ValueError:
+            terms = {}
+        iid = None
+        if r["kind"] == "TRS" and terms.get("underlying_id"):
+            iid = str(terms["underlying_id"]).upper()
+        elif r["kind"] == "XCCY" and terms.get("foreign_ccy"):
+            iid = fx_pair_id(str(terms["foreign_ccy"]))
+        if iid:
+            accts = out.setdefault(iid, [])
+            if r["account_id"] not in accts:
+                accts.append(r["account_id"])
+    return out
+
+
 # ---- foreign listings -------------------------------------------------------------------------------------------------
 def venue_suffix(yahoo_symbol: Optional[str]) -> Optional[str]:
     """``"0700.HK" -> "HK"``, ``"SHEL.L" -> "L"``; None when the Yahoo symbol has no venue suffix (US listings, FX, futures)."""

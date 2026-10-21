@@ -416,23 +416,17 @@ class BondTests(unittest.TestCase):
         self.assertEqual(1000418200, rt.accounting.nav("T1:ALL").nav_c)
         assert_integrity(self, rt, "full")
 
-    # ---- the ProductJob wiring the integrator adds to lifecycle_eod.REGISTRY, driven by a real scheduler ----------------------------------------
+    # ---- the ProductJob wiring the WP-15 integration added to lifecycle_eod.REGISTRY, driven by a real scheduler ----------------------------------------
     def test_product_jobs_on_the_scheduler(self):
         rt = self.start()
         rt.curve = None
         sched = lifecycle.LifecycleScheduler(rt.bus, rt.db, rt, rt.clock, rt.log)
         rt.lifecycle = sched
-        jobs = [ProductJob("BOND_ACCRUE", "bonds.accrue", "bonds", "accrue_keys", ("account_id", "instrument_id", "date"), "from 00:30 ET per night held",
-                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), s.instruments)),
-                ProductJob("BOND_COUPON", "bonds.coupon", "bonds", "coupon_keys", ("account_id", "instrument_id", "date"), "coupon date rolled following, 00:40 ET",
-                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal, s.instruments)),
-                ProductJob("BOND_MATURITY", "bonds.mature", "bonds", "maturity_keys", ("account_id", "instrument_id"), "maturity rolled following, 00:45 ET",
-                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal, s.instruments)),
-                ProductJob("BOND_LISTING", "bonds.list", "bonds", "listing_keys", ("month",), "first business day of the month, 00:15 ET",
-                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal))]
-        for j in jobs:
-            j.services, j.scheduler = rt, sched
-            sched.jobs.append(j)
+        # the four bond jobs are REGISTRY ProductJobs now (the scheduler copies them): bound to services.bonds and the bonds.* kinds
+        by_name = {j.name: j for j in sched.jobs}
+        for name, kind in (("BOND_ACCRUE", "bonds.accrue"), ("BOND_COUPON", "bonds.coupon"), ("BOND_MATURITY", "bonds.mature"), ("BOND_LISTING", "bonds.list")):
+            self.assertIsInstance(by_name[name], ProductJob, name)
+            self.assertEqual((kind, "bonds"), (by_name[name].kind, by_name[name].module), name)
         self.buy_19_13()
         rt.clock.set("2027-04-19T00:35:00-04:00")
         out = sched.tick(only="BOND_ACCRUE")

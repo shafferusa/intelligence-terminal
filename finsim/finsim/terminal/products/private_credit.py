@@ -44,7 +44,9 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   to maturity / 365, ``to_c`` HALF_EVEN, floored at zero; equals the amortised cost when the spread is unchanged or
   either observation is missing (note "amortised cost (no spread observation)").  The inputs carry both OAS prints with
   their dates, the days remaining and the formula.  ``pc_mark − amortised cost`` is unrealised; coupons and OID are
-  income (4300), fees income (4320).
+  income (4300), fees income (4320).  ``mark_view`` is that mark as the mark provider serves it for the loan's
+  instrument.  The mark and the views read on the caller's connection, else on the one this thread already reads on
+  (``marks.shared_reader``) - never a second pooled reader.
 - NEVER: no default, rating, review, covenant or recovery event is generated or simulated; the module registers exactly
   ``pc.commit``, ``pc.amend_fee``, ``pc.repay`` and ``pc.pay``.
 - Money is integer cents / Decimal (HALF_EVEN through ``units.to_c``); dates are ISO strings; no floats.
@@ -61,7 +63,8 @@ from ..books import account_kind_for, account_row, lifetime_row, split_account_i
 from ..clock import epoch_of, ny_of
 from ..commands import ConflictError, RejectError, TxContext, require_amount_c
 from ..ledger import Entry, Line, balance, cr, dr
-from ..marks import add_months
+from ..marks import add_months, shared_reader
+from ..quotes import MarkView
 from ..units import fmt_money, from_c, qprice, to_c
 
 getcontext().prec = 34
@@ -381,19 +384,18 @@ def coupon_due_c(conn: sqlite3.Connection, loan, through: date) -> int:
 # ---- the mark (§8.6 pc_model) ---------------------------------------------------------------------------------------------------------
 def pc_mark(services, loan, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None) -> Tuple[int, dict]:
     """``(mark_c, inputs)`` — module docstring MARK.  ``loan`` is a ``private_loans`` row (sqlite3.Row or dict).  Reads the
-    1130 balance on ``conn`` (a handler's transaction) or a fresh reader."""
+    1130 balance (and, on an instrument-cache miss, the instrument) on ``conn`` (a handler's transaction), else on the
+    connection this thread already reads on, else on one pooled reader (``marks.shared_reader``): a mark computed inside a
+    caller's read never takes a second pooled reader (the 2026-10-21 BUSY defect)."""
     now_ts = int(now if now is not None else services.clock.epoch())
-    if conn is not None:
-        cost = amortised_cost_c(conn, loan)
-    else:
-        with services.db.reader() as c:
-            cost = amortised_cost_c(c, loan)
+    master = getattr(services, "instruments", None)
+    with shared_reader(services.db, conn) as c:
+        cost = amortised_cost_c(c, loan)
+        inst = master.get(loan["instrument_id"], c) if master is not None else None
     today = ny_of(now_ts).date()
     maturity = _date(loan["maturity_date"])
     days = max(0, (maturity - today).days)
     t_years = Decimal(days) / DAYS_PER_YEAR
-    master = getattr(services, "instruments", None)
-    inst = master.get(loan["instrument_id"], conn) if master is not None else None
     spec = dict(getattr(inst, "spec", None) or {})
     rates = getattr(services, "rates", None)
     now_obs = rates.as_of_le(OAS_SERIES, today) if rates is not None and hasattr(rates, "as_of_le") else None
@@ -428,6 +430,16 @@ def _mark_dict(services, loan, conn=None, now=None) -> dict:
     mark_c, inputs = pc_mark(services, loan, conn, now)
     return {"instrument_id": loan["instrument_id"], "value": str(from_c(mark_c)), "mark_c": mark_c, "quality": "computed", "source": "private credit model",
             "method": "pc_model", "as_of": inputs.get("as_of"), "delay_label": "model", "inputs": inputs, "executable": False, "note": inputs.get("note") or ""}
+
+
+def mark_view(services, loan, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None) -> MarkView:
+    """The ``MarkView`` the mark provider serves for a loan's PRIVATE instrument (``marks.FrozenMarks`` passes the row and
+    its connection): ``pc_mark`` labelled as module docstring MARK says - quality computed, method pc_model, source
+    "private credit model", never executable - the same labels as ``loan_view``'s mark."""
+    now_ts = int(now if now is not None else services.clock.epoch())
+    mark_c, inputs = pc_mark(services, loan, conn, now_ts)
+    return MarkView(loan["instrument_id"], from_c(int(mark_c)), "computed", "private credit model", "pc_model", inputs.get("as_of"), now_ts, "model", inputs,
+                    False, inputs.get("note") or "")
 
 
 # ---- views ----------------------------------------------------------------------------------------------------------------------------
@@ -492,9 +504,7 @@ def loan_view(services, loan, conn: Optional[sqlite3.Connection] = None, now: Op
                 "mark_c": mark["mark_c"], "unrealised_c": (mark["mark_c"] - cost) if loan["status"] == "OPEN" else 0, "mark": mark,
                 "days_remaining": max(0, (maturity - today).days), "oas_issue": loan["oas_issue"], "oas_issue_as_of": spec.get("oas_issue_as_of"),
                 "schedule": projected_schedule(services, loan, c, today), "convention": "PRIVATE_CREDIT"}
-    if conn is not None:
-        return body(conn)
-    with services.db.reader() as c:
+    with shared_reader(services.db, conn) as c:
         return body(c)
 
 
@@ -524,8 +534,9 @@ def loans_of(conn: sqlite3.Connection, scope: Optional[str] = None, status: Opti
 
 
 def loans_view(services, scope: Optional[str] = "ALL") -> List[dict]:
-    """§15 ``GET /api/credit/private?scope=`` -> ``[PrivateLoanView]`` (OPEN first, then REPAID; account / lifetime / all)."""
-    with services.db.reader() as conn:
+    """§15 ``GET /api/credit/private?scope=`` -> ``[PrivateLoanView]`` (OPEN first, then REPAID; account / lifetime / all).
+    One reader for the whole list (``marks.shared_reader``): every loan's view and mark read on it."""
+    with shared_reader(services.db) as conn:
         rows = loans_of(conn, scope)
         views = [loan_view(services, r, conn) for r in rows]
     views.sort(key=lambda v: (0 if v["status"] == "OPEN" else 1, v["loan_id"]))
@@ -825,6 +836,6 @@ def register(bus, services=None) -> None:
     bus.register("pc.pay", h_pay)
 
 
-__all__ = ["register", "h_commit", "h_amend_fee", "h_repay", "h_pay", "accrue_night", "accrual_lines_pc", "pc_mark", "loan_view", "loans_view", "loans_of",
+__all__ = ["register", "h_commit", "h_amend_fee", "h_repay", "h_pay", "accrue_night", "accrual_lines_pc", "pc_mark", "mark_view", "loan_view", "loans_view", "loans_of",
            "pay_keys", "payment_schedule", "modified_following", "coupon_rate", "coupon_due_c", "index_for_night", "cash_out_c", "oid_total_c", "total_nights",
            "HANDLER_KINDS", "OAS_SERIES", "KIND_CPN", "KIND_OID", "JOB"]

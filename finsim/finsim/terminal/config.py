@@ -56,7 +56,12 @@ OCC_THRESHOLD = Decimal("0.01")
 SWEEP_CONFIRM_THRESHOLD_C = 2_000_000_00                    # a sweep-in above this needs confirm_large (fat-finger guard)
 PREVIEW_TTL_S = 120
 PRICE_MOVED_PCT = Decimal("0.005")                          # 409 PREVIEW_STALE rules
-QUOTE_INTERVALS = {"ORDER": 15, "HELD": 30, "WATCH": 60, "PAGE": 30, "CLOSED": 300, "CHAIN": 90, "CURVE": 86400, "FRED": 21600}
+QUOTE_INTERVALS = {"ORDER": 15, "HELD": 30, "WATCH": 60, "PAGE": 30, "BROWSE": 1200, "CLOSED": 300, "CHAIN": 90, "CURVE": 86400, "FRED": 21600}
+# BROWSE (owner 2026-10-21: "it can pull 50 prices per minute and stagger it within 15/30 min"): the lowest subscription class,
+# for list pages.  Each BROWSE-only instrument is refreshed every QUOTE_INTERVALS["BROWSE"] s (20 min) whatever the session
+# state, and QuoteCache.due() hands out at most BROWSE_PER_MIN of them per rolling minute, oldest observation first and spread
+# over the minute; ORDER / HELD / PAGE / WATCH never wait for this budget.
+BROWSE_PER_MIN = 50
 YAHOO_RPS = 2.0
 CBOE_RPS = 1.0
 FRED_RPS = 1.0

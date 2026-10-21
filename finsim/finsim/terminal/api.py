@@ -513,7 +513,7 @@ class _ResultError(ApiError):
 
 # ---- light commands owned by the API layer (§4.1 "api.py") ---------------------------------------------------------------
 SETTING_KEYS = {"participation_rate", "sweep_out_time_et", "snapshot_time_et", "treasury_reserve_c", "session_overrides", "sweep_confirm_threshold_c", "theme",
-                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "news_enabled"}
+                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "news_enabled", "build2_bonds"}
 CENT_SETTINGS = {"treasury_reserve_c", "sweep_confirm_threshold_c", "pb_otc_threshold_c"}
 
 
@@ -608,6 +608,15 @@ def _setting_value(key: str, value):
         return str(v)
     if key == "news_enabled":
         return bool(value)
+    if key == "build2_bonds":                                  # WP-10: DEBT execution behind this flag (default off)
+        if isinstance(value, bool):
+            return value
+        text = str(value).strip().lower()
+        if text in ("1", "true", "on", "yes"):
+            return True
+        if text in ("0", "false", "off", "no"):
+            return False
+        _bad(key, value)
     if key in ("session_overrides", "private_defaults"):
         if not isinstance(value, dict):
             _bad(key, value)
@@ -820,7 +829,14 @@ def _register_core(router: Router) -> None:
     def jobs_run(req: Request):
         lc = need(req.rt, "lifecycle")
         job = req.b("job")
-        res = lc.tick() if not job or not hasattr(lc, "run_job") else lc.run_job(str(job))
+        if job and hasattr(lc, "jobs") and str(job) not in [getattr(j, "name", None) for j in lc.jobs]:
+            raise ApiError(400, "BAD_REQUEST", f"unknown job {job!r}", {"jobs": [getattr(j, "name", str(j)) for j in lc.jobs]})
+        if job and hasattr(lc, "run_job"):
+            res = lc.run_job(str(job))
+        elif job:
+            res = lc.tick(only=str(job))                       # one job now ({"job": "SWAP_VM"}), as lifecycle.run_now does
+        else:
+            res = lc.tick()
         ran = res.get("ran", []) if isinstance(res, dict) else (res if isinstance(res, list) else [])
         return {"ran": ran, "result": res if isinstance(res, dict) else None}
 

@@ -372,7 +372,10 @@ class MarketsTests(unittest.TestCase):
         rt = self.rt
         eq = markets(rt, US_EXCHANGE, "equities")
         ids = [r["instrument_id"] for r in eq["rows"]]
-        self.assertEqual(60, len(ids))                                           # MARKET_ROWS
+        # every ACTIVE FULL US equity / ETF of the master (no 60-row cap since 2026-10-21: the owner wants all of them)
+        us_full = {i.instrument_id for i in rt.instruments.all() if i.kind in ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED")
+                   and i.status == "ACTIVE" and i.support == "FULL" and "US_EXCHANGE" in i.account_kinds}
+        self.assertEqual(us_full, set(ids))
         self.assertEqual(["A", "AA", "AAL", "AAPL"], ids[:4])                    # sorted by symbol; no foreign row ahead of the US names
         self.assertEqual(set(), FOREIGN_IDS & set(ids))
         self.assertEqual({("USD", "US_EQUITY")}, {(r["currency"], r["session_group"]) for r in eq["rows"]})

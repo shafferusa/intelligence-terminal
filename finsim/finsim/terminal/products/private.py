@@ -15,7 +15,9 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   valuation × owned-fraction mark would need a share count the sources rarely give, so it is left blank, never guessed.
   A company set PUBLIC with a ticker takes the LISTED instrument's mark (through ``services.marks.snapshot()``) from its
   listing date (``spec.listed_on``, else the IPO round's date), labelled "listed <date> (<ticker>)"; the PRIVATE lots
-  stay and are sold "secondary" at that mark until Build 2 (disclosed in the note).
+  stay and are sold "secondary" at that mark until Build 2 (disclosed in the note).  A mark snapshot reads every
+  company and latest round once (``mark_inputs``); the marks and views read on the caller's connection, else on the
+  one this thread already reads on (``marks.shared_reader``) - never a second pooled reader.
 - PRIVATE_TRADE: ``private.trade`` executes at the price the owner enters — there are no counterparties, fills or prices
   invented.  ``gross = qty × price``; ``fee = to_c(qty × price × fee_pct)`` (default ``settings.private_defaults.fee_pct``
   3 % for SECONDARY, 0 for ROUND, editable); BUY needs ``gross + fee`` funded at the fill (own available at the settle
@@ -81,7 +83,7 @@ from ..commands import Command, ConflictError, RejectError, TxContext
 from ..db import get_setting
 from ..instruments import US_EXCHANGES
 from ..ledger import open_lots, position
-from ..marks import add_months
+from ..marks import add_months, shared_reader
 from ..quotes import MarkView, unavailable
 from ..units import fmt_money, from_c, qprice, to_c
 
@@ -112,12 +114,11 @@ CODE_SHORT = {"NMS": "Nasdaq", "NGM": "Nasdaq", "NCM": "Nasdaq", "NYQ": "NYSE", 
 # ---- helpers ----------------------------------------------------------------------------------------------------------
 @contextmanager
 def _reader(services, conn: Optional[sqlite3.Connection] = None):
-    """The caller's connection (a handler's transaction) or a fresh reader."""
-    if conn is not None:
-        yield conn
-    else:
-        with services.db.reader() as c:
-            yield c
+    """The caller's connection (a handler's transaction), else the connection this thread already reads on, else one
+    pooled reader declared as this thread's reading connection (``marks.shared_reader``): a mark or view computed
+    inside a caller's read never takes a second pooled reader (the 2026-10-21 BUSY defect)."""
+    with shared_reader(services.db, conn) as c:
+        yield c
 
 
 def _services(ctx: TxContext):
@@ -382,17 +383,42 @@ def _listing_fields(payload: dict) -> dict:
 
 
 # ---- marks (§8.6, PRIVATE_MARK) ------------------------------------------------------------------------------------------
-def private_mark(services, inst, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None) -> MarkView:
-    """The mark of a PRIVATE instrument (``MarkProvider`` dispatches ``fn(services, inst)`` here; ``inst`` may also be an
-    instrument / company id).  See the module docstring for the rules; ``conn`` lets a handler see its own transaction."""
+def mark_inputs(conn: sqlite3.Connection) -> Dict[str, dict]:
+    """``{instrument_id: {"row": company row, "latest_round": round_view | None}}`` for every company, in two reads on
+    ``conn``: what a mark snapshot (``marks.FrozenMarks``) loads once so that its PRIVATE marks read nothing more."""
+    out: Dict[str, dict] = {}
+    by_company: Dict[str, dict] = {}
+    for r in conn.execute("SELECT * FROM private_companies").fetchall():
+        item = {"row": {k: r[k] for k in r.keys()}, "latest_round": None}
+        out[r["instrument_id"]] = item
+        by_company[r["company_id"]] = item
+    for r in conn.execute("SELECT * FROM private_rounds ORDER BY company_id, round_date DESC, id DESC").fetchall():
+        item = by_company.get(r["company_id"])
+        if item is not None and item["latest_round"] is None:      # latest by round_date, then by the order recorded
+            item["latest_round"] = round_view(r)
+    return out
+
+
+def private_mark(services, inst, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None, inputs: Optional[Dict[str, dict]] = None) -> MarkView:
+    """The mark of a PRIVATE instrument (``MarkProvider`` dispatches here; ``inst`` may also be an instrument / company id).
+    See the module docstring for the rules.  ``inputs`` (``mark_inputs``, the snapshot's one read) answers without reading;
+    otherwise the rows are read on ``conn`` (a handler's transaction), else on this thread's reading connection."""
     iid = getattr(inst, "instrument_id", inst)
-    with _reader(services, conn) as c:
-        row = company_row(c, iid)
-        if row is None:
-            return unavailable(iid, "no private company row")
-        lr = latest_round(c, row["company_id"])
     now_ts = int(now if now is not None else services.clock.epoch())
-    lst = listing_of(row, _spec_of(services, inst, conn), lr, ny_of(now_ts).date(), master_file()[0].get(row["company_id"]))
+    if inputs is not None:
+        got = inputs.get(iid)
+        if got is None:
+            return unavailable(iid, "no private company row")
+        row, lr = got["row"], got["latest_round"]
+        spec = _spec_of(services, inst, conn)
+    else:
+        with _reader(services, conn) as c:
+            row = company_row(c, iid)
+            if row is None:
+                return unavailable(iid, "no private company row")
+            lr = latest_round(c, row["company_id"])
+            spec = _spec_of(services, inst, c)
+    lst = listing_of(row, spec, lr, ny_of(now_ts).date(), master_file()[0].get(row["company_id"]))
     return _mark_for(services, iid, lr, lst, now_ts)
 
 
@@ -1106,7 +1132,7 @@ def register(bus) -> None:
 
 
 __all__ = ["SIDES", "KINDS", "STATUSES", "LOCKUP_TEXT", "LISTED_CODE", "ACQUIRED_CODE", "LISTED_PIN", "SYNC_KIND", "SYNC_VERSION", "Listing", "slug_id",
-           "defaults", "master_file", "venue", "listing_of", "company_row", "rounds", "latest_round", "round_view", "private_mark", "company_view",
+           "defaults", "master_file", "venue", "listing_of", "company_row", "rounds", "latest_round", "round_view", "mark_inputs", "private_mark", "company_view",
            "companies", "listed_companies", "companies_view", "company", "Validated", "fifo_preview", "validate", "preview", "h_trade", "h_record_round",
            "h_add_company", "h_set_status", "h_sync_master", "ensure_listed_instrument", "listed_held_tickers", "refresh_pins", "sync_master", "reseed",
            "bind", "register"]

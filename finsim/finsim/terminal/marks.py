@@ -15,6 +15,14 @@ Conventions
 - ``snapshot()`` is an immutable ``MarkSet`` (records, chains, curve, rates and FX frozen at one instant; marks are
   memoised; ``fx()`` answers for every currency: USD = 1, else the Yahoo pair, else the Frankfurter ECB reference rate
   as ``close``).  A missing rate or input yields ``unavailable`` with a note; nothing is defaulted to a number.
+- ONE READER PER THREAD (the 2026-10-21 BUSY defect): the database hands out four pooled readers, so a mark that took a
+  SECOND pooled reader inside the one its caller holds (accounting's positions / NAV, a view) starved the pool under
+  ordinary polling (503 BUSY, "mark failed: BusyError").  The rows the PRIVATE / private-credit / SWAP marks need are
+  read on ``MarkProvider.private_conn()``: the writer inside this thread's own transaction, else the connection this
+  thread already reads on (``reading`` / ``shared_reader`` declare it; ``Accounting`` and the product modules do), else a
+  short-lived read-only connection of its own - never a second pooled reader.  A snapshot reads the private companies
+  and their latest rounds once (``private.mark_inputs``), so its private marks are consistent with each other and cost
+  one read.  A loan's mark is ``private_credit.mark_view`` (quality computed, method pc_model, never executable).
 - Pure Build 2 functions tested now (§19.13): ``price_bond`` (street convention: PV of the remaining semi-annual
   coupons and principal at y/2 compounding with the fractional first period; accrued ACT/ACT on the actual coupon
   period; clean = dirty − accrued) and ``cip_forward`` (``F = S × (1 + r_quote × d/B_quote) / (1 + r_base × d/B_base)``,
@@ -22,10 +30,12 @@ Conventions
 """
 from __future__ import annotations
 
+import sqlite3
 import threading
+from contextlib import contextmanager
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN, getcontext
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, Iterator, List, Optional, Tuple
 
 from finsim.engines import options_pricing as _op
 
@@ -42,6 +52,78 @@ PX4 = Decimal("0.0001")
 PX6 = Decimal("0.000001")
 CORP_BASE_DATE = date(2026, 9, 18)        # §13.8: curated corporates mature on 2026-09-18 + years
 CHAIN_STALE_S = 900
+
+
+# ---- one reader per thread (module docstring ONE READER PER THREAD) ---------------------------------------------------------------
+_READING = threading.local()          # .by_db: {Database: the connection this thread reads that database on}
+
+
+def ambient_conn(db) -> Optional[sqlite3.Connection]:
+    """The connection this thread is reading ``db`` on (declared by ``reading`` / ``shared_reader``), else None."""
+    m = getattr(_READING, "by_db", None)
+    try:
+        return m.get(db) if m else None
+    except TypeError:                     # an unhashable stand-in database: nothing is ever declared for it
+        return None
+
+
+@contextmanager
+def reading(conn, db) -> Iterator:
+    """Declare ``conn`` as this thread's reading connection of ``db`` for the block: marks and views computed inside reuse
+    it instead of taking a second pooled reader.  The previous declaration comes back on exit (also on an exception)."""
+    m = getattr(_READING, "by_db", None)
+    if m is None:
+        m = _READING.by_db = {}
+    try:
+        had, prev = db in m, m.get(db)
+        m[db] = conn
+    except TypeError:                     # unhashable stand-in: no declaration
+        yield conn
+        return
+    try:
+        yield conn
+    finally:
+        if had:
+            m[db] = prev
+        else:
+            m.pop(db, None)
+
+
+def _in_own_tx(db) -> bool:
+    """True when this thread holds the writer inside a transaction (``Database.reader`` then hands out the writer itself)."""
+    try:
+        return bool(db.writer_owned_by_current_thread() and db.writer_conn().in_transaction)
+    except Exception:   # noqa: BLE001 — a database that is not open / a stand-in without a writer: not in a transaction
+        return False
+
+
+@contextmanager
+def shared_reader(db, conn=None) -> Iterator:
+    """``conn`` when given; else the writer inside this thread's own transaction (what ``Database.reader`` returns there, so
+    a handler sees its uncommitted rows); else the connection this thread already reads on; else ONE pooled reader,
+    declared as this thread's reading connection for the block so that anything nested reuses it."""
+    if conn is not None:
+        yield conn
+        return
+    amb = ambient_conn(db)
+    if amb is not None and not _in_own_tx(db):
+        yield amb
+        return
+    with db.reader() as c, reading(c, db):
+        yield c
+
+
+def _side_conn(path: str) -> sqlite3.Connection:
+    """A short-lived read-only connection of the mark provider's own (outside the pool; closed by the caller)."""
+    conn = sqlite3.connect(path, timeout=5.0, isolation_level=None, check_same_thread=False)
+    try:
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout=5000")
+        conn.execute("PRAGMA query_only=ON")
+    except BaseException:
+        conn.close()
+        raise
+    return conn
 
 
 # ---- pure Build 2 pricing -----------------------------------------------------------------------------------------------------
@@ -155,6 +237,8 @@ class FrozenMarks:
         self._sessions: dict = {}
         self._computed: Dict[str, QuoteRecord] = {}
         self._lock = threading.Lock()
+        self._private_inputs: Optional[dict] = None       # private.mark_inputs, read once per snapshot (ONE READER PER THREAD)
+        self._inputs_lock = threading.Lock()
 
     # ---- MarkSet -----------------------------------------------------------------------------------------------------
     def as_of(self) -> int:
@@ -213,7 +297,7 @@ class FrozenMarks:
 
     # ---- per kind -------------------------------------------------------------------------------------------------------
     def _compute(self, iid: str) -> MarkView:
-        inst = self._p.instruments.get(iid) if self._p.instruments is not None else None
+        inst = self._p.instrument(iid)
         if inst is None:
             return unavailable(iid, "unknown instrument")
         kind = inst.kind
@@ -287,17 +371,43 @@ class FrozenMarks:
         return MarkView(iid, px, rec.quality, "par curve model", "curve", inputs.get("as_of"), self._now, "model", inputs, False, "model price, not executable in this build")
 
     def _dispatch(self, inst, module: str, fn_name: str, loan: bool = False) -> MarkView:
+        """PRIVATE / private-credit / SWAP marks from their product module.  Every row they need is read on
+        ``MarkProvider.private_conn()`` (never a second pooled reader), declared as this thread's reading connection while
+        the module computes; the private names come from the snapshot's one ``mark_inputs`` read."""
         services = self._p.services
         mod = getattr(services, module, None) if services is not None else None
         fn = getattr(mod, fn_name, None) if mod is not None else None
         if fn is None:
             return unavailable(inst.instrument_id, "not yet built")
-        arg = inst
-        if loan:
-            arg = self._p.loan_row(inst)
-            if arg is None:
-                return unavailable(inst.instrument_id, "no private loan row")
-        return self._normalise(inst.instrument_id, fn(services, arg), inst.kind)
+        iid = inst.instrument_id
+        if module == "private" and callable(getattr(mod, "mark_inputs", None)):
+            inputs = self._private_names(mod)
+            if inputs is not None:
+                return self._normalise(iid, fn(services, inst, now=self._now, inputs=inputs), inst.kind)
+        with self._p.private_conn() as conn:
+            if loan:
+                row = self._p.loan_row(inst, conn) if conn is not None else None
+                if row is None:
+                    return unavailable(iid, "no private loan row")
+                view = getattr(mod, "mark_view", None)
+                if callable(view):
+                    return view(services, row, conn=conn, now=self._now)
+                return self._normalise(iid, fn(services, row), "PRIVATE_LOAN")
+            if module == "swaps" and conn is not None:
+                # the contract row itself: swaps.mark then reads nothing (an id or the instrument would make it open a reader)
+                row = conn.execute("SELECT * FROM otc_contracts WHERE contract_id=?", (iid,)).fetchone()
+                return self._normalise(iid, fn(services, dict(row)) if row is not None else None, inst.kind)
+            return self._normalise(iid, fn(services, inst), inst.kind)
+
+    def _private_names(self, mod) -> Optional[dict]:
+        """``mod.mark_inputs(conn)`` - every company row and latest round - read once per snapshot on ``private_conn``."""
+        with self._inputs_lock:
+            if self._private_inputs is None:
+                with self._p.private_conn() as conn:
+                    if conn is None:
+                        return None
+                    self._private_inputs = mod.mark_inputs(conn)
+            return self._private_inputs
 
     def _normalise(self, iid: str, result, kind: str) -> MarkView:
         if result is None:
@@ -313,7 +423,7 @@ class FrozenMarks:
                 q, method, src = "private", "private_round", "last reported round"
             elif kind == "SWAP":
                 q, method, src = "computed", "swap_model", "swap model"
-            else:
+            else:                                  # PRIVATE_LOAN: a loan's (cents, inputs) from pc_mark
                 q, method, src = "computed", "pc_model", "private credit model"
             inputs = dict(inputs or {})
             return MarkView(iid, mark, q, src, method, inputs.get("as_of"), self._now, "model", inputs, False, inputs.get("note") or "")
@@ -506,14 +616,88 @@ class MarkProvider:
                   "qualities": [rec.quality, "close", "close"], "as_of": now, "method": "cip"}
         return f, inputs
 
-    def loan_row(self, inst) -> Optional[dict]:
-        db = getattr(self.cache, "db", None)
+    # ---- the rows behind the PRIVATE / private-credit / SWAP marks (module docstring ONE READER PER THREAD) ---------------
+    def _db(self):
+        db = getattr(self.services, "db", None) if self.services is not None else None
+        return db if db is not None else getattr(self.cache, "db", None)
+
+    @contextmanager
+    def private_conn(self) -> Iterator[Optional[sqlite3.Connection]]:
+        """The connection those marks read on - never a second pooled reader: the writer inside this thread's own
+        transaction (a handler sees its uncommitted rows), else the connection this thread already reads on (``reading``),
+        else a short-lived read-only connection of the provider's own, closed on exit.  It is declared as the thread's
+        reading connection for the block.  None without a database."""
+        db = self._db()
         if db is None:
+            yield None
+            return
+        if _in_own_tx(db):
+            with db.reader() as c, reading(c, db):      # Database.reader hands out the writer itself here: no pool
+                yield c
+            return
+        amb = ambient_conn(db)
+        if amb is not None:
+            yield amb
+            return
+        path = getattr(db, "path", None)
+        if not path:
+            yield None
+            return
+        conn = _side_conn(path)
+        try:
+            with reading(conn, db):
+                yield conn
+        finally:
+            conn.close()
+
+    def instrument(self, iid: str):
+        """The instrument from the master (its cache answers without a read).  A cache miss - a row added after the last
+        load, e.g. a just-committed loan - is read on this thread's connection (the writer in its own transaction, else its
+        reading connection, else a side connection opened only for that miss): never a second pooled reader."""
+        master = self.instruments
+        if master is None:
             return None
-        with db.reader() as conn:
-            row = conn.execute("SELECT * FROM private_loans WHERE instrument_id=?", (inst.instrument_id,)).fetchone()
+        db = self._db()
+        if db is None or _in_own_tx(db):
+            return master.get(iid)
+        amb = ambient_conn(db)
+        if amb is not None:
+            return master.get(iid, amb)
+        path = getattr(db, "path", None)
+        if not path:
+            return master.get(iid)
+        lazy = _LazySideConn(path)
+        try:
+            return master.get(iid, lazy)
+        finally:
+            lazy.close()
+
+    def loan_row(self, inst, conn=None) -> Optional[dict]:
+        """The ``private_loans`` row of a loan's PRIVATE instrument, read on ``conn`` (else on ``private_conn``)."""
+        if conn is None:
+            with self.private_conn() as c:
+                return self.loan_row(inst, c) if c is not None else None
+        row = conn.execute("SELECT * FROM private_loans WHERE instrument_id=?", (inst.instrument_id,)).fetchone()
         return dict(row) if row is not None else None
 
 
+class _LazySideConn:
+    """Opens ``_side_conn`` on the first ``execute`` only (an instrument-cache miss); ``close()`` closes it if it opened."""
+
+    def __init__(self, path: str):
+        self.path = path
+        self.conn: Optional[sqlite3.Connection] = None
+
+    def execute(self, sql: str, params=()):
+        if self.conn is None:
+            self.conn = _side_conn(self.path)
+        return self.conn.execute(sql, params)
+
+    def close(self) -> None:
+        if self.conn is not None:
+            self.conn.close()
+            self.conn = None
+
+
 __all__ = ["MarkProvider", "FrozenMarks", "price_bond", "accrued_interest", "coupon_period", "cip_forward", "interpolate_iv", "price_option", "add_months",
-           "CORP_BASE_DATE"]
+           "CORP_BASE_DATE", "ambient_conn", "reading", "shared_reader"]

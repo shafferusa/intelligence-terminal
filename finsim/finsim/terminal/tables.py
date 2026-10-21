@@ -141,9 +141,9 @@ SESSIONS = {
 }
 
 # ---- 12.4 prime-broker schedules (seed; pb_schedules.schedule_json is the live copy, editable in Settings) ---------
-_PB_FIELDS_NOTE = ("Fields: equity_per_share, equity_min_c, option_per_contract, futures_per_side, financing_spread (SOFR + spread on "
+_PB_FIELDS_NOTE = ("Fields: equity_per_share, equity_min (USD), option_per_contract, futures_per_side, financing_spread (SOFR + spread on "
                    "debit balances), credit_interest_spread (interest on positive settled USD = max(0, SOFR - spread)), gc_rate, htb_add, "
-                   "otc_spread_mult, swap_margin_mode (CTM | STM), monthly_minimum_c, irs_half_width_bp, trs_spread.")
+                   "otc_spread_mult, swap_margin_mode (CTM | STM), monthly_minimum (USD), irs_half_width_bp, trs_spread.")
 
 
 def _pb(name, eq, opt, fut, fin, gc_add, irs_bp, trs):
@@ -228,7 +228,7 @@ CONVENTIONS: Dict[str, str] = {
     "QP": "Private markets need accredited-investor / qualified-purchaser status (Rule 506, Rule 144 transfer restrictions); here the Private Markets account unlocks at USD 5,000,000 of NAV for the Personal book, USD 25,000,000 for the Fund book and from the start for the Institutional book (editable).",
     "SWAP_MARK": "A swap's mark is the clean present value from the live par curve (IRS) or the underlying's observed price since the last reset (TRS), labelled computed; the current period's coupons accrue separately and are paid on the payment date.",
     "SWAP_VM": "Swaps carry daily variation margin with the prime broker: the day's change in the computed mark moves in cash — collateralised-to-market (collateral, not P&L) unless the PB schedule says settled-to-market (realised each day, like futures).",
-    "SWAP_RESET": "IRS floating legs fix at each reset from the latest published reference rate; TRS resets settle the return and financing legs in cash and reset the notional to the underlying's current value; cross-currency swaps exchange notional at start and maturity and, when booked mark-to-market, reset the USD notional at each reset with the difference settled in cash.",
+    "SWAP_RESET": "IRS floating legs fix at each reset from the latest published reference rate, or compound SOFR daily in arrears when booked so; TRS resets settle the return and financing legs in cash and reset the notional to the underlying's current value; cross-currency swaps exchange notional at start and maturity and, when booked mark-to-market, reset the USD notional at each reset with the difference settled in cash.",
     "TRAILING": "A trailing stop ratchets with each observed print in your favour (sell: highest last minus the trail; buy: lowest last plus the trail) and never moves back; it triggers on the observed last and fills at that print.",
     "AON": "An option-only package fills all-or-none: every leg must have a fresh Cboe quote with displayed size for the whole quantity in the same observation, or nothing fills; packages with a stock or futures leg fill sequentially (the hedge legs after the primary, resized on partial fills).",
     "PRIVATE_MARK": "A private company's mark is the last reported round's implied price per share with its date (never dimmed as stale; it changes only when a new round or a sourced secondary indication is recorded); the P&L is mark minus cost, realised on sale.",

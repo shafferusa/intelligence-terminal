@@ -4,7 +4,9 @@
  * Repo (NOT IN THIS BUILD); FOREIGN_FX: FX spot pairs (+ listings NOT IN THIS BUILD); DEBT: the par curve and bonds
  * LIMITED "model price, not executable in this build"; PB: as US_EXCHANGE + the OTC tab that mounts
  * components/swapticket.js in an eligible lifetime or shows the ELIGIBILITY sentence; PRIVATE: pages/private_markets.js
- * (WP-19) or NOT YET BUILT).  Dense grid: symbol, name, last (freshness), chg %, bid / ask when known, volume, position;
+ * (WP-19) or NOT YET BUILT).  Dense grid: symbol, b / s, last (freshness), chg %, bid / ask when known, volume, position
+ * (+ "working" when an order is open), ccy (not on US Exchange), name last (capped: the numbers and b / s stay on screen
+ * at 1280 px with the ticket dock open);
  * typeahead "add symbol" = GET /api/instruments/resolve (202 spinner); row Enter -> the instrument workspace; b / s ->
  * the ticket.  Every price is T.pxHtml(quote): nothing shows a bare number.  Unsupported rows (support NOT_IN_THIS_BUILD)
  * are grey and cannot be ticketed.
@@ -21,11 +23,40 @@
  *   the first load that fails shows the error and the poll keeps retrying;
  * - quotes never go backwards: a row keeps whichever quote is newer (provider time, then fetch time) between the page
  *   answer and the quotes poller.
+ *
+ * The lists are COMPLETE (owner 2026-10-21: "why is there only 60 rows of equities on market place???? it needs all"):
+ * Equities & ETFs lists every active listing the account trades (~760) and Options underlyings every optionable
+ * underlying.  Their prices come with the page's own 30 s reload: the server subscribes the listed rows to the slow
+ * BROWSE class (owner: "it can pull 50 prices per minute and stagger it within 15/30 min") and answers a compact quote
+ * per row; the page states that rule (data.note).  Only the rows with a position or a working order in this account are
+ * handed to the fast quotes poller (T.watchQuotes = the WATCH class); the ticket watches its own instrument and hedge
+ * legs (T.ticket.ids).  Pushing every row into WATCH would ask the provider for ~790 prices every minute.
  */
 (function () {
   'use strict';
   var T = window.T;
   function roleOf(id) { var i = String(id).indexOf(':'); return i >= 0 ? id.slice(i + 1) : id; }
+  /* the name column is capped (full name on hover) so the prices, the position and b / s stay on screen with the dock open */
+  var cssDone = false;
+  function ensureCss() {
+    if (cssDone || document.getElementById('markets-css')) { cssDone = true; return; }
+    cssDone = true;
+    var s = document.createElement('style'); s.id = 'markets-css';
+    s.textContent = '.mk-name { display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }';
+    document.head.appendChild(s);
+  }
+  /* the row's position in this account: the API's `position` (the signed quantity, null when flat), the fixtures'
+   * `position_qty`, or an object's `qty`; null when flat */
+  function posQty(r) {
+    var p = r.position_qty != null ? r.position_qty : r.position;
+    if (p != null && typeof p === 'object') { p = p.qty; }
+    if (p == null || p === '') { return null; }
+    p = Number(p);
+    return isFinite(p) && p !== 0 ? p : null;
+  }
+  /* a row the fast quotes poller keeps fresh: a position or a working order in this account (`fast`: the server also counts
+   * an underlying whose options are held or working) */
+  function isFast(r) { return !!(r && r.instrument_id && (r.fast || posQty(r) != null || r.working)); }
   function chg(row) {
     var q = row.quote || {};
     if (q.chg_pct != null) { return q.chg_pct; }
@@ -37,18 +68,26 @@
   function columns(acct) {
     return [
       { key: 'symbol', label: 'symbol', cls: 'l', html: function (r) { return '<b>' + T.esc(r.symbol || r.instrument_id) + '</b>' + (r.support && r.support !== 'FULL' ? ' <span class="state-tag ' + T.esc(r.support) + '">' + T.esc(String(r.support).replace(/_/g, ' ')) + '</span>' : ''); }, text: function (r) { return r.symbol || r.instrument_id || ''; } },
-      { key: 'name', label: 'name', cls: 'l', text: function (r) { return r.name || ''; } },
-      { key: 'last', label: 'last', html: function (r) { return r.support === 'NOT_IN_THIS_BUILD' ? '<span class="nib">NOT IN THIS BUILD</span>' : T.pxHtml(r.quote || r.mark, { basis: r.price_basis }); }, text: function (r) { var q = r.quote || r.mark || {}; return q.last != null ? q.last : (q.mark != null ? q.mark : (q.mid != null ? q.mid : '')); } },
+      { key: 'act', label: 'trade', cls: 'l', html: function (r) {
+        if (r.support === 'NOT_IN_THIS_BUILD' || r.support === 'LIMITED') { return ''; }
+        return '<button class="btn small act" data-act="b" title="BUY (b)">b</button><button class="btn small act" data-act="s" title="SELL (s)">s</button>';
+      }, text: function () { return ''; } },
+      { key: 'last', label: 'last', html: function (r) {
+        if (r.support === 'NOT_IN_THIS_BUILD') { return '<span class="nib">NOT IN THIS BUILD</span>'; }
+        if (!r.quote && r.queued) { return '<span class="muted queued" title="' + T.esc(acct.queuedTitle ? acct.queuedTitle() : 'no price fetched yet: queued for the background refresh') + '">queued</span>'; }
+        return T.pxHtml(r.quote || r.mark, { basis: r.price_basis });
+      }, text: function (r) { var q = r.quote || r.mark || {}; return q.last != null ? q.last : (q.mark != null ? q.mark : (q.mid != null ? q.mid : '')); } },
       { key: 'chg', label: 'chg %', html: function (r) { var c = chg(r); return c == null ? '' : '<span class="' + T.signCls(c) + '" title="vs previous close (display derivation from two observed prices)">' + T.esc(T.fmt.signed(T.fmt.num(c, 2))) + ' %</span>'; }, text: function (r) { var c = chg(r); return c == null ? '' : String(c); } },
       { key: 'bid', label: 'bid', html: function (r) { var q = r.quote || {}; return q.bid == null ? '' : T.pxHtml(q, { field: 'bid' }); }, text: function (r) { var q = r.quote || {}; return q.bid == null ? '' : String(q.bid); } },
       { key: 'ask', label: 'ask', html: function (r) { var q = r.quote || {}; return q.ask == null ? '' : T.pxHtml(q, { field: 'ask' }); }, text: function (r) { var q = r.quote || {}; return q.ask == null ? '' : String(q.ask); } },
       { key: 'volume', label: 'volume', text: function (r) { var q = r.quote || {}; return q.day_volume == null ? '' : T.fmt.qty(q.day_volume); }, sort: function (r) { var q = r.quote || {}; return q.day_volume == null ? '' : q.day_volume; } },
-      { key: 'position', label: 'position', html: function (r) { var p = r.position_qty != null ? r.position_qty : (r.position && r.position.qty); return p == null || p === 0 ? '' : '<span class="' + (p > 0 ? 'pos' : 'neg') + '">' + T.esc(T.fmt.qty(p)) + '</span>'; }, text: function (r) { var p = r.position_qty != null ? r.position_qty : (r.position && r.position.qty); return p == null ? '' : String(p); } },
+      { key: 'position', label: 'position', html: function (r) {
+        var p = posQty(r); var h = p == null ? '' : '<span class="' + (p > 0 ? 'pos' : 'neg') + '">' + T.esc(T.fmt.qty(p)) + '</span>';
+        if (r.working) { h += (h ? ' ' : '') + '<span class="muted" title="an open order in this account on this instrument (on Options underlyings: on it or on one of its options); see Orders (g o); its price is kept fresh">working</span>'; }
+        return h;
+      }, text: function (r) { var p = posQty(r); return p == null ? '' : String(p); } },
       { key: 'ccy', label: 'ccy', cls: 'l', text: function (r) { return r.currency || ''; } },
-      { key: 'act', label: '', cls: 'l', html: function (r) {
-        if (r.support === 'NOT_IN_THIS_BUILD' || r.support === 'LIMITED') { return ''; }
-        return '<button class="btn small act" data-act="b" title="BUY (b)">b</button><button class="btn small act" data-act="s" title="SELL (s)">s</button>';
-      }, text: function () { return ''; } }
+      { key: 'name', label: 'name', cls: 'l', html: function (r) { return r.name ? '<span class="mk-name" title="' + T.esc(r.name) + '">' + T.esc(r.name) + '</span>' : ''; }, text: function (r) { return r.name || ''; } }
     ].filter(function (c) { return !(acct.hideCcy && c.key === 'ccy'); });
   }
   /* provider time, then fetch time (epoch seconds; -1 when absent) */
@@ -62,6 +101,7 @@
     var data = null; var grid = null; var tab = route.tab; var dead = false;
     var ui = null;                                             /* the painted skeleton; null until the first answer */
     T.pageHead(el, 'Markets', acct);
+    ensureCss();
     var tabBox = T.h('div'); var body = T.h('div'); el.appendChild(tabBox); el.appendChild(body);
     if (role === 'PRIVATE') {
       if (T.pages.private_markets && T.pages.private_markets.render) { T.pages.private_markets.render(body, route); return; }
@@ -85,11 +125,14 @@
         ui.err.hidden = false;
       });
     }
+    /* the instruments grid: shown when the tab has rows, else as an empty table saying so - except on a tab with sections
+     * and on the PB OTC desk (the swap ticket below it is the tab; an empty instruments table above it said nothing) */
+    function hasGrid(d) { return !!((d.rows || []).length || (!(d.sections || []).length && tab !== 'otc')); }
     /* what decides the page layout; anything else in the answer is updated in place */
     function shape(d) {
       var cur = (d.tabs || []).filter(function (t) { return t.key === tab; })[0] || {};
       var e = tab === 'otc' ? (((T.book.current() || {}).eligibility) || {}) : {};
-      return JSON.stringify([tab, cur.state || null, d.kind || null, !!((d.rows || []).length || !(d.sections || []).length), !!d.groups, d.empty || null,
+      return JSON.stringify([tab, cur.state || null, d.kind || null, hasGrid(d), !!d.groups, d.empty || null,
         (d.sections || []).map(function (s) { return [s.key, s.label || null, s.state || null, !!(s.rows && s.rows.length), s.columns || null]; }),
         !!(role === 'DEBT' || d.curve), e.pb_otc === false]);
     }
@@ -113,8 +156,20 @@
       }
       var main = T.q('#main'); if (main && k.mainTop != null) { main.scrollTop = k.mainTop; }
     }
+    /* the tooltip of a queued row (subscribed, never fetched): the server's refresh rule (data.refresh) */
+    function queuedTitle() {
+      var f = (data && data.refresh) || {};
+      return 'no price fetched yet: this row is queued for the background refresh' + (f.per_min ? ' (' + f.per_min + ' prices a minute, oldest first' +
+        (f.eta_min ? '; the queue clears in about ' + f.eta_min + ' min' : '') + ')' : '') + '. The price appears with the next page reload (every 30 s) ' +
+        'and then carries its own freshness chip; open the row (Enter) for a quote now.';
+    }
+    /* A BROWSE list (the answer carries `refresh`: equities, option underlyings) hands the fast quotes poller only the rows
+     * with a position or a working order; every other row's price comes with the 30 s page reload.  A short list (futures,
+     * FX pairs, foreign listings, bonds) is watched whole, as before: the page load subscribes those rows PAGE (30 s) at
+     * the server anyway, so watching them costs the provider nothing more. */
     function watch() {
-      var ids = (data.rows || []).map(function (r) { return r.instrument_id; }).filter(Boolean);
+      var rows = data.rows || [];
+      var ids = (data.refresh ? rows.filter(isFast) : rows).map(function (r) { return r.instrument_id; }).filter(Boolean);
       var sig = ids.join(',');
       if (sig !== ui.ids) { ui.ids = sig; T.watchQuotes(ids); }
     }
@@ -154,10 +209,10 @@
       body.appendChild(tools);
       if (role === 'DEBT' || data.curve) { ui.curve = curvePanel(data.curve); ui.curveSig = JSON.stringify(data.curve || null); body.appendChild(ui.curve); }
       var rows = data.rows || [];
-      if (rows.length || !(data.sections || []).length) {
+      if (hasGrid(data)) {
         var gEl = T.h('div'); body.appendChild(gEl);
         grid = T.components.grid.mount(gEl, {
-          columns: columns({ hideCcy: role === 'US_EXCHANGE' }), rows: rows, focus: true, csv: 'markets-' + role + '-' + (tab || 'all') + '.csv', empty: data.empty || 'no instruments on this tab',
+          columns: columns({ hideCcy: role === 'US_EXCHANGE', queuedTitle: queuedTitle }), rows: rows, focus: true, csv: 'markets-' + role + '-' + (tab || 'all') + '.csv', empty: data.empty || 'no instruments on this tab',
           rowKey: function (r) { return r.instrument_id; },
           groupBy: data.groups ? function (r) { return r.group || ''; } : null,
           rowClass: function (r) { return r.support === 'NOT_IN_THIS_BUILD' ? 'nib' : ''; },
@@ -245,5 +300,5 @@
     });
     T.pages.markets.unmount = function () { dead = true; off(); T.pages.markets.unmount = null; };
   }
-  T.pages.markets = { render: render, unmount: null, columns: columns, newer: newer };
+  T.pages.markets = { render: render, unmount: null, columns: columns, newer: newer, posQty: posQty, isFast: isFast };
 })();

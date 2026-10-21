@@ -223,14 +223,16 @@ class LoanTests(unittest.TestCase):
         r = execute(rt, "credit.loan_mature", {"loan_id": loan_id}, actor="lifecycle")
         self.assertEqual((True, "2026-10-26"), (r.body["rolled"], r.body["maturity_date"]))                     # Fri -> Mon
         self.assertEqual(1, one(rt, "SELECT COUNT(*) n FROM attention WHERE code='LOAN_ROLLED'")["n"])
-        # the EUR comes back (1,000.00 from the FX account, 0.15 deposited and advanced): Mon the maturity repays and closes, the item resolves
+        # the EUR comes back (1,000.00 from the FX account, 0.46 deposited and advanced): Mon the maturity repays and closes, the item resolves.
+        # Since MONEY-1 the payoff first posts every night owed: nights 10-20..10-25 = 6 nights, cumulative
+        # to_c(6 x 1,000 x 0.0275 / 360) = to_c(0.458333) = 0.46 (8, 7, 8, 8, 7, 8 cents by night), so 1,000.46 is due.
         self.assertTrue(execute(rt, "treasury.transfer", {"from_account": FOREIGN_FX, "to_account": CREDIT, "currency": "EUR", "amount_c": 100000}).ok)
-        deposit(rt, 15, "EUR")
-        fund(rt, CREDIT, 15, "EUR")
+        deposit(rt, 46, "EUR")
+        fund(rt, CREDIT, 46, "EUR")
         rt.clock.set("2026-10-26T00:40:00-04:00")
         r = execute(rt, "credit.loan_mature", {"loan_id": loan_id}, actor="lifecycle")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual((False, 15, 100000, True, 0), (r.body["rolled"], r.body["interest_c"], r.body["principal_c"], r.body["closed"], r.body["settled_c"]))
+        self.assertEqual((False, 46, 100000, True, 0), (r.body["rolled"], r.body["interest_c"], r.body["principal_c"], r.body["closed"], r.body["settled_c"]))
         self.assertEqual(0, one(rt, "SELECT COUNT(*) n FROM attention WHERE code='LOAN_ROLLED' AND resolved_ts IS NULL")["n"])
         r = execute(rt, "credit.loan_mature", {"loan_id": self.draw("EUR", 100000).body["loan_id"]}, actor="lifecycle")
         self.assertEqual((400, "OPEN_ENDED"), (r.http, r.code))

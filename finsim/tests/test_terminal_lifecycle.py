@@ -118,7 +118,10 @@ class LifecycleTests(unittest.TestCase):
     # ---- registry and the API entry point ------------------------------------------------------------------------------------
     def test_registry_order_run_now_and_status(self):
         rt = self.start(at=TUE_14)
-        self.assertEqual(["SETTLE_DUE", "ACCRUE_DAILY", "PAY_MONTHLY", "PB_MONTHLY_MIN", "DIVIDEND", "DIVPAY", "PC_PAY", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS",
+        # the bond jobs (WP-10, Build 2) were wired into the REGISTRY by the WP-15 integration: accrual next to ACCRUE_DAILY, coupon / maturity /
+        # monthly benchmark listing after the private-credit payments
+        self.assertEqual(["SETTLE_DUE", "ACCRUE_DAILY", "BOND_ACCRUE", "PAY_MONTHLY", "PB_MONTHLY_MIN", "DIVIDEND", "DIVPAY", "PC_PAY", "BOND_COUPON", "BOND_MATURITY",
+                          "BOND_LISTING", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS",
                           "OPTION_EXPIRY", "FUTURES_VM", "FUTURES_FINAL", "SWAP_VM", "OPTION_MARGIN_MARK", "COLLATERAL_MARK", "BORROW_CLEANUP", "SWEEP_OUT", "MARKS_RECORD",
                           "SNAPSHOT", "EXPIRE_ORDERS", "HOUSEKEEPING", "INTEGRITY_FULL"], [j.name for j in lifecycle.REGISTRY])
         self.assertEqual([j.name for j in lifecycle.REGISTRY], [j.name for j in rt.lifecycle.jobs])
@@ -133,7 +136,7 @@ class LifecycleTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             lifecycle.run_now(rt, job="NOPE")
         st = rt.lifecycle.status()
-        self.assertEqual(24, len(st["jobs"]))
+        self.assertEqual(28, len(st["jobs"]))                                    # 24 + the four bond jobs wired by the WP-15 integration
         integ = next(j for j in st["jobs"] if j["name"] == "INTEGRITY_FULL")
         self.assertEqual(("2026-10-20T14", "DONE", True, 0), (integ["last_key"], integ["last_status"], integ["available"], integ["failing"]))
         div = next(j for j in st["jobs"] if j["name"] == "DIVIDEND")
@@ -156,7 +159,8 @@ class LifecycleTests(unittest.TestCase):
         rt.fp.set_daily("SPY", [("2026-10-16", "769.32"), ("2026-10-19", "770.00")])
         rt.fp.set_daily("EURUSD=X", [("2026-10-16", "1.1238"), ("2026-10-19", "1.1238")])
         out = tick(rt, "2026-10-20T09:00:00-04:00")
-        self.assertEqual({}, {k: v for k, v in out["skipped_modules"].items() if k not in ("DIVIDEND", "DIVPAY", "PC_PAY", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS", "SWAP_VM")})
+        self.assertEqual({}, {k: v for k, v in out["skipped_modules"].items() if k not in ("DIVIDEND", "DIVPAY", "PC_PAY", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS", "SWAP_VM",
+                                                                                         "BOND_ACCRUE", "BOND_COUPON", "BOND_MATURITY", "BOND_LISTING")})
         self.assertEqual([], [i for i in out["ran"] if i["status"] in ("FAILED", "RETRY")])
         # Monday's settlement: Dr 1010 / Cr 1200 49,995.00 (settle:S-000001), once
         self.assertEqual([("S-000001", "DONE")], [(r["key"], r["status"]) for r in jobs_done(rt, "SETTLE_DUE")])
