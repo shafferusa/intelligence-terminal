@@ -431,6 +431,15 @@
       "error_source": "Early thin after-hours quote (Yahoo ~4:40 PM) used without checking later prints.",
       "conclusions_changed": false,
       "note": "Surfaced in the 2026-10-21 am colophon."
+    },
+    {
+      "found": "2026-10-21",
+      "report": "reports/2026/10/2026-10-21-am.html",
+      "original": "Before the Open: 'Brent 10.93 and WTI 9.99'; report-meta/index summary and Telegram headline: 'Brent (is back) near 11'",
+      "corrected": "Brent $110.93 and WTI $99.99; Brent near $111",
+      "error_source": "Shell positional-parameter expansion ate '$1'/'$11' when the page text passed through a double-quoted shell string",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-21 pm colophon; index.json am entry summary/headline text repaired (page left as published)."
     }
   ]
 }
