@@ -1,0 +1,23 @@
+{
+ "account_id": "P2:PB_GS",
+ "broker": "GS",
+ "schedule": {
+  "name": "Goldman Sachs",
+  "equity_per_share": "0.0030",
+  "equity_min_c": 100,
+  "option_per_contract": "0.55",
+  "futures_per_side": "2.00",
+  "financing_spread": "0.0125",
+  "credit_interest_spread": "0.0075",
+  "gc_rate": "0.0040",
+  "htb_add": "0.0010",
+  "otc_spread_mult": "1.0",
+  "swap_margin_mode": "CTM",
+  "monthly_minimum_c": 0,
+  "irs_half_width_bp": "1.0",
+  "trs_spread": "0.0060",
+  "note": "modelled assumptions; real PB schedules vary"
+ },
+ "updated_ts": "$NOW-86400",
+ "fields_note": "Fields: equity_per_share, equity_min_c, option_per_contract, futures_per_side, financing_spread (SOFR + spread on debit balances), credit_interest_spread (interest on positive settled USD = max(0, SOFR - spread)), gc_rate, htb_add, otc_spread_mult, swap_margin_mode (CTM | STM), monthly_minimum_c, irs_half_width_bp, trs_spread."
+}

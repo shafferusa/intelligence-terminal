@@ -1,0 +1,157 @@
+{
+ "scope": "ALL",
+ "rows": [
+  {
+   "section": "assets",
+   "label": "Cash settled",
+   "gl": "1010",
+   "currency": "USD",
+   "native": "771650.11",
+   "usd": "771650.11"
+  },
+  {
+   "section": "assets",
+   "label": "Receivables (sales, FX)",
+   "gl": "1200/1250",
+   "currency": "USD",
+   "native": "76931.00",
+   "usd": "76931.00"
+  },
+  {
+   "section": "assets",
+   "label": "Receivables (FX)",
+   "gl": "1250",
+   "currency": "EUR",
+   "native": "10000.00",
+   "usd": "11238.00",
+   "quality": "delayed"
+  },
+  {
+   "section": "assets",
+   "label": "Accrued cash interest",
+   "gl": "1230",
+   "currency": "USD",
+   "native": "12.50",
+   "usd": "12.50"
+  },
+  {
+   "section": "assets",
+   "label": "Securities at market (long)",
+   "gl": "1100/1110",
+   "currency": "USD",
+   "native": "210747.50",
+   "usd": "210747.50",
+   "quality": "stale"
+  },
+  {
+   "section": "assets",
+   "label": "at cost",
+   "gl": "",
+   "currency": "USD",
+   "native": "204620.00",
+   "usd": "204620.00",
+   "sub": true
+  },
+  {
+   "section": "assets",
+   "label": "unrealised",
+   "gl": "",
+   "currency": "USD",
+   "native": "1935.00",
+   "usd": "1935.00",
+   "sub": true
+  },
+  {
+   "section": "assets",
+   "label": "unpriced (excluded)",
+   "gl": "",
+   "currency": "USD",
+   "native": "120.00",
+   "usd": "120.00",
+   "sub": true,
+   "quality": "unavailable"
+  },
+  {
+   "section": "assets",
+   "label": "Options purchased at market",
+   "gl": "1700",
+   "currency": "USD",
+   "native": "4875.00",
+   "usd": "4875.00",
+   "quality": "delayed"
+  },
+  {
+   "section": "assets",
+   "label": "Futures margin deposit",
+   "gl": "1300",
+   "currency": "USD",
+   "native": "15000.00",
+   "usd": "15000.00"
+  },
+  {
+   "section": "assets",
+   "label": "Futures open trade equity",
+   "gl": "",
+   "currency": "USD",
+   "native": "987.50",
+   "usd": "987.50",
+   "quality": "delayed"
+  },
+  {
+   "section": "assets",
+   "label": "Collateral posted (held at lender)",
+   "gl": "1400",
+   "currency": "USD",
+   "native": "78470.64",
+   "usd": "78470.64"
+  },
+  {
+   "section": "liabilities",
+   "label": "Payables (purchases)",
+   "gl": "2100",
+   "currency": "USD",
+   "native": "174505.75",
+   "usd": "174505.75"
+  },
+  {
+   "section": "liabilities",
+   "label": "Payables (FX)",
+   "gl": "2350",
+   "currency": "USD",
+   "native": "11240.00",
+   "usd": "11240.00"
+  },
+  {
+   "section": "liabilities",
+   "label": "Securities sold short at market",
+   "gl": "2600",
+   "currency": "USD",
+   "native": "76862.00",
+   "usd": "76862.00",
+   "quality": "close"
+  },
+  {
+   "section": "nav",
+   "label": "NAV",
+   "gl": "",
+   "currency": "USD",
+   "native": "1002429.50",
+   "usd": "1002429.50"
+  }
+ ],
+ "assets": "1265304.25",
+ "liabilities": "262607.75",
+ "nav": "1002429.50",
+ "rounding": "0.00",
+ "memo": {
+  "capital": "1000000.00",
+  "advances": "0.00",
+  "fx_clearing": "0.00",
+  "retained": "2429.50",
+  "ties": true,
+  "note": "advances net to zero across the lifetime"
+ },
+ "quality": "stale",
+ "partial": true,
+ "as_of": "$NOW"
+}

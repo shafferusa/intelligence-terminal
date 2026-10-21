@@ -1,0 +1,27 @@
+{
+ "rows": [
+  {
+   "ts": "$NOW-432000",
+   "ts_ny": null,
+   "type": "lifetime",
+   "severity": "INFO",
+   "account_id": null,
+   "instrument_id": null,
+   "summary": "lifetime P1 closed: final NAV 812,440.00, P&L -187,560.00 (owner reset)",
+   "ref_type": "lifetime",
+   "ref_id": "P1"
+  },
+  {
+   "ts": "$NOW-500000",
+   "ts_ny": null,
+   "type": "fill",
+   "severity": "INFO",
+   "account_id": "P1:US_EXCHANGE",
+   "instrument_id": "NVDA",
+   "summary": "SELL 2,000 NVDA @ 95.06 (realised -190,120.00)",
+   "ref_type": "fill",
+   "ref_id": "f:p1:9"
+  }
+ ],
+ "read_only": true
+}

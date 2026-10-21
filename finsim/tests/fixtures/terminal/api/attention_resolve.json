@@ -1,0 +1,13 @@
+{
+ "id": 2,
+ "ts": "$NOW-4000",
+ "severity": "INFO",
+ "source": "books",
+ "code": "ELIGIBILITY_BELOW_THRESHOLD",
+ "message": "Personal Book NAV 1,002,429.50 is below the PB/OTC threshold of 25,000,000.00; the GS relationship stays open",
+ "account_id": null,
+ "ref_type": "lifetime",
+ "ref_id": "P2",
+ "resolved_ts": "$NOW",
+ "auto_resolve": 0
+}

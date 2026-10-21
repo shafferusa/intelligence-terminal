@@ -1,0 +1,213 @@
+{
+ "position": {
+  "account_id": "P2:US_EXCHANGE",
+  "instrument_id": "AAPL",
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "kind": "EQUITY",
+  "klass": "securities",
+  "currency": "USD",
+  "qty": 500,
+  "cost": "169750.00",
+  "avg_px": "339.5000",
+  "mark": {
+   "instrument_id": "AAPL",
+   "mark": "341.10",
+   "quality": "delayed",
+   "source": "Yahoo Finance (up to 15 min delayed)",
+   "method": "direct",
+   "quote_time": "$NOW-245",
+   "fetched_at": "$NOW-30",
+   "delay_label": "up to 15 min delayed",
+   "inputs": null,
+   "executable": true,
+   "note": ""
+  },
+  "mv": "170550.00",
+  "mv_base": "170550.00",
+  "notional": null,
+  "unrealised": "800.00",
+  "unrealised_base": "800.00",
+  "realised_itd": "0.00",
+  "income_itd": "0.00",
+  "financing_itd": "0.00",
+  "fees_itd": "2.50",
+  "income_pending": "0.00",
+  "day_pnl": "797.50",
+  "weight": "0.4239",
+  "days_held": 0,
+  "settle_px": null,
+  "borrow": null,
+  "lots": [
+   {
+    "lot_id": 1,
+    "side": "LONG",
+    "open_date": "$TODAY",
+    "open_ts": "$NOW-7000",
+    "qty_open": 500,
+    "qty_remaining": 500,
+    "unit_cost": "339.5000",
+    "cost": "169750.00",
+    "open_fill_id": "f:1",
+    "lock_until": null,
+    "currency": "USD"
+   }
+  ],
+  "extra": {}
+ },
+ "lots": [
+  {
+   "lot_id": 1,
+   "side": "LONG",
+   "open_date": "$TODAY",
+   "open_ts": "$NOW-7000",
+   "qty_open": 500,
+   "qty_remaining": 500,
+   "unit_cost": "339.5000",
+   "cost": "169750.00",
+   "open_fill_id": "f:1",
+   "lock_until": null,
+   "currency": "USD"
+  }
+ ],
+ "fills": [
+  {
+   "fill_id": "f:1",
+   "order_id": "o:1",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "AAPL",
+   "side": "BUY",
+   "qty": 500,
+   "price": "339.50",
+   "gross": "169750.00",
+   "fee": "2.50",
+   "currency": "USD",
+   "fx_rate": "1",
+   "ts": "$NOW-7000",
+   "trade_date": "$TODAY",
+   "settle_date": "$TODAY+1",
+   "origin": "ORDER",
+   "price_basis": "last (Yahoo, up to 15 min delayed)",
+   "quote": {
+    "instrument_id": "AAPL",
+    "provider": "yahoo",
+    "source": "Yahoo Finance (up to 15 min delayed)",
+    "method": "direct",
+    "last": "339.50",
+    "bid": null,
+    "ask": null,
+    "bid_size": null,
+    "ask_size": null,
+    "mid": null,
+    "prev_close": null,
+    "day_high": null,
+    "day_low": null,
+    "day_volume": null,
+    "quote_time": "$NOW-7245",
+    "fetched_at": "$NOW-7030",
+    "delay_s": 900,
+    "delay_label": "up to 15 min delayed",
+    "currency": "USD",
+    "session_group": "US_EQUITY",
+    "exchange_tz": "America/New_York",
+    "provider_session": null,
+    "error": null,
+    "inputs": null,
+    "quality": "delayed",
+    "age_s": 7245
+   },
+   "bar_ts": "$NOW-7020",
+   "cap_qty": 6190,
+   "cap_note": "latest 1-minute bar volume 61,900; 10 % participation caps a pass at 6,190 shares"
+  }
+ ],
+ "entries": [
+  {
+   "entry_id": 5,
+   "ts": "$NOW-7000",
+   "ts_ny": "$NYTS-7000",
+   "business_date": "$TODAY",
+   "kind": "fill",
+   "memo": "BUY 500 AAPL @ 339.50 (fee 2.50)",
+   "ref_type": "fill",
+   "ref_id": "f:1",
+   "command_id": 5,
+   "request_id": "ui:cmd-5-aaaa",
+   "instrument_id": "AAPL",
+   "qty": 500,
+   "price": "339.50",
+   "gross": "169750.00",
+   "fee": "2.50",
+   "origin": "ORDER",
+   "net_cash": {
+    "USD": "-169752.50"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": [
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "1100",
+     "gl_name": "Equities at cost",
+     "currency": "USD",
+     "debit": "169750.00",
+     "credit": null,
+     "instrument_id": "AAPL",
+     "memo": "lot 1"
+    },
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "5000",
+     "gl_name": "Fees",
+     "currency": "USD",
+     "debit": "2.50",
+     "credit": null,
+     "instrument_id": "AAPL",
+     "memo": "USD 0.005/share min 1.00"
+    },
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "2100",
+     "gl_name": "Purchases payable",
+     "currency": "USD",
+     "debit": null,
+     "credit": "169752.50",
+     "instrument_id": "AAPL",
+     "memo": "T+1"
+    }
+   ]
+  }
+ ],
+ "borrow": null,
+ "hedge": null,
+ "marks_history": [
+  {
+   "instrument_id": "AAPL",
+   "mark_date": "$TODAY-1",
+   "kind": "CLOSE",
+   "price": "342.94",
+   "currency": "USD",
+   "quality": "close",
+   "source": "Yahoo Finance daily close",
+   "method": "daily_close",
+   "quote_time": "$NOW-90000",
+   "fetched_at": "$NOW-89000",
+   "note": null
+  },
+  {
+   "instrument_id": "AAPL",
+   "mark_date": "$TODAY-2",
+   "kind": "CLOSE",
+   "price": "340.10",
+   "currency": "USD",
+   "quality": "close",
+   "source": "Yahoo Finance daily close",
+   "method": "daily_close",
+   "quote_time": "$NOW-176400",
+   "fetched_at": "$NOW-175000",
+   "note": null
+  }
+ ]
+}

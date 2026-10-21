@@ -1,0 +1,120 @@
+{
+ "sessions": {
+  "US_EQUITY": {
+   "group": "US_EQUITY",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-7200",
+   "closes_at": "$NOW+3600",
+   "next_open": null,
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": ""
+  },
+  "US_EQUITY_OPTIONS": {
+   "group": "US_EQUITY_OPTIONS",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-7200",
+   "closes_at": "$NOW+3600",
+   "next_open": null,
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": ""
+  },
+  "US_INDEX_OPTIONS": {
+   "group": "US_INDEX_OPTIONS",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-7200",
+   "closes_at": "$NOW+4500",
+   "next_open": null,
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": ""
+  },
+  "US_BONDS": {
+   "group": "US_BONDS",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-12600",
+   "closes_at": "$NOW+7200",
+   "next_open": null,
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": "SIFMA approximated by the NYSE calendar"
+  },
+  "CME_EQUITY_INDEX": {
+   "group": "CME_EQUITY_INDEX",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-60000",
+   "closes_at": "$NOW+7200",
+   "next_open": "$NOW+10800",
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": "CME holidays are approximated from the NYSE calendar."
+  },
+  "FX_SPOT": {
+   "group": "FX_SPOT",
+   "open": true,
+   "phase": "OPEN",
+   "opened_at": "$NOW-60000",
+   "closes_at": "$NOW+7200",
+   "next_open": null,
+   "trade_date": "$TODAY",
+   "early_close": false,
+   "note": ""
+  }
+ },
+ "rules": {
+  "US_EQUITY": {
+   "kind": "US",
+   "open": "09:30",
+   "close": "16:00",
+   "early": "13:00",
+   "holidays": "NYSE file",
+   "note": ""
+  },
+  "US_EQUITY_OPTIONS": {
+   "kind": "US",
+   "open": "09:30",
+   "close": "16:00",
+   "early": "13:00",
+   "holidays": "NYSE file",
+   "note": ""
+  },
+  "US_INDEX_OPTIONS": {
+   "kind": "US",
+   "open": "09:30",
+   "close": "16:15",
+   "early": "13:15",
+   "holidays": "NYSE file",
+   "note": ""
+  },
+  "US_BONDS": {
+   "kind": "US",
+   "open": "08:00",
+   "close": "17:00",
+   "early": "14:00",
+   "holidays": "NYSE (SIFMA approximated)",
+   "note": "SIFMA holidays approximated by the NYSE calendar (Build 2 product)"
+  },
+  "CME_EQUITY_INDEX": {
+   "kind": "CME",
+   "open": "18:00",
+   "close": "17:00",
+   "early": "13:00",
+   "holidays": "NYSE approximation",
+   "note": "CME holidays are approximated from the NYSE calendar."
+  },
+  "FX_SPOT": {
+   "kind": "FX",
+   "open": "17:00",
+   "close": "17:00",
+   "holidays": "1 Jan and 25 Dec closed (assumption)",
+   "note": "FX spot trades Sun 17:00 - Fri 17:00 ET; value dates skip weekends and US holidays; other centres' holidays are not modelled."
+  }
+ },
+ "server_time": "$NOW"
+}

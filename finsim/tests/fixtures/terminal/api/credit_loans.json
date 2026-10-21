@@ -1,0 +1,22 @@
+{
+ "loan": {
+  "loan_id": "ln:1",
+  "account_id": "P2:CREDIT",
+  "kind": "CASH_LOAN",
+  "currency": "EUR",
+  "principal": "100000.00",
+  "index_name": "ECBDFR",
+  "spread": "0.0075",
+  "day_basis": 360,
+  "opened_date": "$TODAY",
+  "maturity_date": null,
+  "lender": "bank (modelled)",
+  "status": "OPEN"
+ },
+ "rate": {
+  "index": "ECBDFR",
+  "as_of": "2026-10-19",
+  "value": "0.0200",
+  "spread": "0.0075"
+ }
+}

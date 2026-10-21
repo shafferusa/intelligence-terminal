@@ -1,0 +1,15 @@
+{
+ "borrow": {
+  "borrow_id": "b:1",
+  "qty": 100,
+  "fee_rate": "0.0030",
+  "rebate_rate": "0.0337",
+  "tier": "GC",
+  "lender": "modelled lender",
+  "collateral": "78470.64"
+ },
+ "collateral_transfer": {
+  "transfer_id": "t:9",
+  "amount": "78470.64"
+ }
+}

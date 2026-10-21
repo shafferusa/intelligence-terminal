@@ -1,0 +1,59 @@
+{
+ "par": [
+  {
+   "tenor": "1M",
+   "yield": "4.05"
+  },
+  {
+   "tenor": "3M",
+   "yield": "4.02"
+  },
+  {
+   "tenor": "6M",
+   "yield": "3.98"
+  },
+  {
+   "tenor": "1Y",
+   "yield": "3.90"
+  },
+  {
+   "tenor": "2Y",
+   "yield": "3.95"
+  },
+  {
+   "tenor": "3Y",
+   "yield": "4.10"
+  },
+  {
+   "tenor": "5Y",
+   "yield": "4.40"
+  },
+  {
+   "tenor": "7Y",
+   "yield": "4.80"
+  },
+  {
+   "tenor": "10Y",
+   "yield": "5.09"
+  },
+  {
+   "tenor": "20Y",
+   "yield": "5.40"
+  },
+  {
+   "tenor": "30Y",
+   "yield": "5.45"
+  }
+ ],
+ "as_of": "2026-10-19",
+ "shifts": [
+  -50,
+  -25,
+  0,
+  25,
+  50
+ ],
+ "quality": "close",
+ "source": "Treasury.gov daily par yield curve XML",
+ "fetched_at": "$NOW-25000"
+}

@@ -1,0 +1,32 @@
+{
+ "participation_rate": "0.10",
+ "pb_otc_threshold": "25000000.00",
+ "qp_threshold": {
+  "INDIVIDUAL": "5000000.00",
+  "FUND": "25000000.00",
+  "INSTITUTION": "0.00"
+ },
+ "book_defaults": {
+  "P": {
+   "name": "Personal Book",
+   "starting_capital": "1000000.00"
+  },
+  "F": {
+   "name": "Fund Book",
+   "starting_capital": "25000000.00"
+  },
+  "I": {
+   "name": "Institutional Book",
+   "starting_capital": "1000000000.00"
+  }
+ },
+ "private_defaults": {
+  "fee_pct": "0.03",
+  "settle_days": 30,
+  "lockup_months": 6
+ },
+ "treasury_reserve": "0.00",
+ "session_overrides": {},
+ "sweep_confirm_threshold": "2000000.00",
+ "gtc_days": 90
+}

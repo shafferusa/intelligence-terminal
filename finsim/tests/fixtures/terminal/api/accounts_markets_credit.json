@@ -1,0 +1,100 @@
+{
+ "account_id": "P2:CREDIT",
+ "kind": "TRADING",
+ "role": "CREDIT",
+ "tab": "loans",
+ "tabs": [
+  {
+   "key": "loans",
+   "label": "Cash loans"
+  },
+  {
+   "key": "borrows",
+   "label": "Securities lending"
+  },
+  {
+   "key": "rates",
+   "label": "Rates"
+  }
+ ],
+ "rows": [],
+ "sections": [
+  {
+   "key": "loans",
+   "label": "Cash loans",
+   "rows": [],
+   "empty": "no cash loans in this account (draw one from Cash & financing)",
+   "columns": [
+    "loan_id",
+    "currency",
+    "principal",
+    "index",
+    "spread",
+    "opened_date"
+   ]
+  },
+  {
+   "key": "borrows",
+   "label": "Securities lending (borrows)",
+   "rows": [
+    {
+     "borrow_id": "b:1",
+     "account_id": "P2:US_EXCHANGE",
+     "instrument_id": "SPY",
+     "qty": 100,
+     "fee_rate": "0.0030",
+     "tier": "GC",
+     "collateral": "78470.64",
+     "lender": "modelled lender"
+    }
+   ],
+   "columns": [
+    "borrow_id",
+    "account_id",
+    "instrument_id",
+    "qty",
+    "fee_rate",
+    "tier",
+    "collateral",
+    "lender"
+   ]
+  },
+  {
+   "key": "rates",
+   "label": "Policy rates (FRED)",
+   "rows": [
+    {
+     "currency": "USD",
+     "index": "SOFR",
+     "value": "3.87",
+     "as_of": "2026-10-19"
+    },
+    {
+     "currency": "EUR",
+     "index": "ECBDFR",
+     "value": "2.00",
+     "as_of": "2026-10-19"
+    },
+    {
+     "currency": "GBP",
+     "index": "IUDSOIA",
+     "value": "3.95",
+     "as_of": "2026-10-19"
+    },
+    {
+     "currency": "JPY",
+     "index": "IRSTCI01JPM156N (monthly proxy)",
+     "value": "0.75",
+     "as_of": "2026-09"
+    }
+   ],
+   "columns": [
+    "currency",
+    "index",
+    "value",
+    "as_of"
+   ],
+   "note": "latest published observation on or before the accrual day (RATE_LAG)"
+  }
+ ]
+}

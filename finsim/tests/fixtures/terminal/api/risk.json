@@ -1,0 +1,145 @@
+{
+ "scope": "ALL",
+ "as_of": "$NOW",
+ "note": "warnings only - this page informs; funding, borrow and recall mechanics still apply",
+ "gross": "1072167.50",
+ "long": "995305.50",
+ "short": "76862.00",
+ "net": "918443.50",
+ "dv01": "8.90",
+ "excess_liquidity": "662835.36",
+ "encumbrance": "93470.64",
+ "greeks": {
+  "delta": "-1575.00",
+  "gamma": "12.40",
+  "vega": "310.00",
+  "theta": "-18.50"
+ },
+ "exposures": [
+  {
+   "bucket": "US equities",
+   "long": "196060.00",
+   "short": "76862.00",
+   "net": "119198.00",
+   "gross": "272922.00",
+   "pct_nav": "0.1189"
+  },
+  {
+   "bucket": "Index futures (notional)",
+   "long": "387712.50",
+   "short": "0.00",
+   "net": "387712.50",
+   "gross": "387712.50",
+   "pct_nav": "0.3867"
+  },
+  {
+   "bucket": "Listed options (delta USD)",
+   "long": "0.00",
+   "short": "1575.00",
+   "net": "-1575.00",
+   "gross": "1575.00",
+   "pct_nav": "0.0016"
+  },
+  {
+   "bucket": "US Treasuries",
+   "long": "9812.50",
+   "short": "0.00",
+   "net": "9812.50",
+   "gross": "9812.50",
+   "pct_nav": "0.0098"
+  },
+  {
+   "bucket": "FX (EUR)",
+   "long": "11238.00",
+   "short": "0.00",
+   "net": "11238.00",
+   "gross": "11238.00",
+   "pct_nav": "0.0112"
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "equities -10 %",
+   "shock": "-10 %",
+   "pnl": "-50629.25",
+   "note": "futures notional included; private marks not shocked"
+  },
+  {
+   "name": "equities +10 %",
+   "shock": "+10 %",
+   "pnl": "50629.25"
+  },
+  {
+   "name": "rates +100 bp",
+   "shock": "+100 bp",
+   "pnl": "-890.00",
+   "note": "DV01 x 100"
+  },
+  {
+   "name": "USD +5 % vs EUR",
+   "shock": "+5 %",
+   "pnl": "-561.90"
+  }
+ ],
+ "concentration": [
+  {
+   "instrument_id": "ESZ26.CME",
+   "symbol": "ESZ26",
+   "mv": "387712.50",
+   "pct_nav": "0.3867",
+   "note": "notional"
+  },
+  {
+   "instrument_id": "AAPL",
+   "symbol": "AAPL",
+   "mv": "170550.00",
+   "pct_nav": "0.1701"
+  },
+  {
+   "instrument_id": "SPY",
+   "symbol": "SPY",
+   "mv": "-76862.00",
+   "pct_nav": "0.0767"
+  }
+ ],
+ "margin": [
+  {
+   "account_id": "P2:US_EXCHANGE",
+   "required": "15000.00",
+   "posted": "15000.00",
+   "headroom": "183830.36",
+   "note": "futures IM (static table) vs available"
+  },
+  {
+   "account_id": "P2:PB_GS",
+   "required": "0.00",
+   "posted": "0.00",
+   "headroom": "100000.00",
+   "note": "PB financing switched on; limit 500,000.00"
+  }
+ ],
+ "private": {
+  "pct_nav": "0.0000",
+  "positions": []
+ },
+ "warnings": [
+  {
+   "code": "CONCENTRATION",
+   "severity": "WARN",
+   "message": "ESZ26 notional is 38.7 % of consolidated NAV",
+   "account_id": "P2:US_EXCHANGE"
+  },
+  {
+   "code": "STALE_MARK",
+   "severity": "WARN",
+   "message": "TSLA is marked on a stale quote (23 min); its P&L may be off",
+   "account_id": "P2:US_EXCHANGE"
+  },
+  {
+   "code": "UNPRICED",
+   "severity": "WARN",
+   "message": "XYZ has no valid mark; NAV excludes it",
+   "account_id": "P2:US_EXCHANGE"
+  }
+ ]
+}

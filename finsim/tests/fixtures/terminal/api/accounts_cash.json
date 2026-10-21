@@ -1,0 +1,115 @@
+{
+ "account_id": "P2:US_EXCHANGE",
+ "account": {
+  "account_id": "P2:US_EXCHANGE",
+  "name": "US Exchange",
+  "kind": "TRADING",
+  "role": "US_EXCHANGE",
+  "broker": null,
+  "status": "OPEN",
+  "sweep_out": 1,
+  "sweep_buffer": "10000.00",
+  "pb_financing": 0,
+  "pb_limit": "0.00",
+  "nav": "402361.50",
+  "available_usd": "183830.36",
+  "working_orders": 2,
+  "pending_settlements": 3,
+  "attention_count": 1,
+  "sort_order": 10
+ },
+ "cash": {
+  "USD": {
+   "account_id": "P2:US_EXCHANGE",
+   "currency": "USD",
+   "settled": "281405.11",
+   "receivable": "76931.00",
+   "payable": "174505.75",
+   "pending": "-97574.75",
+   "held_at_lender": "78470.64",
+   "margin": "15000.00",
+   "otc_margin": "0.00",
+   "reserved": "0.00",
+   "accrued": "0.00",
+   "available": "183830.36"
+  }
+ },
+ "buying_power": {
+  "USD": {
+   "account_id": "P2:US_EXCHANGE",
+   "currency": "USD",
+   "available": "183830.36",
+   "treasury_available": "435000.00",
+   "pb_headroom": "0.00",
+   "total": "618830.36",
+   "settle_date": "$TODAY+1",
+   "formula": "own available + Treasury available + PB headroom (each floored at 0)"
+  }
+ },
+ "transfers": [
+  {
+   "transfer_id": "t:1",
+   "ts": "$NOW-86000",
+   "from_account": "P2:TREASURY",
+   "to_account": "P2:US_EXCHANGE",
+   "currency": "USD",
+   "amount": "400000.00",
+   "memo": "advance",
+   "kind": "ADVANCE"
+  }
+ ],
+ "ladder": [
+  {
+   "settle_id": "st:f1:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "-169752.50",
+   "leg": "cash",
+   "fill_id": "f:1",
+   "status": "PENDING"
+  },
+  {
+   "settle_id": "st:f2:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "76931.00",
+   "leg": "cash",
+   "fill_id": "f:2",
+   "status": "PENDING"
+  },
+  {
+   "settle_id": "st:f4:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "-4753.25",
+   "leg": "cash",
+   "fill_id": "f:4",
+   "status": "PENDING"
+  }
+ ],
+ "loans": [],
+ "borrows": [
+  {
+   "borrow_id": "b:1",
+   "qty": 100,
+   "fee_rate": "0.0030",
+   "rebate_rate": "0.0337",
+   "tier": "GC",
+   "lender": "modelled lender",
+   "collateral": "78470.64"
+  }
+ ],
+ "margin": {
+  "futures_required": "15000.00",
+  "futures_posted": "15000.00",
+  "options_required": "0.00",
+  "options_posted": "0.00",
+  "otc_im": "0.00",
+  "otc_vm": "0.00"
+ },
+ "collateral": {
+  "held_at_lender": "78470.64"
+ },
+ "sweeps_today": [],
+ "as_of": "$NOW"
+}

@@ -1,0 +1,28 @@
+{
+ "scope": "P1:ALL",
+ "period": "ITD",
+ "nav": "812440.00",
+ "nav_0": "1000000.00",
+ "flows": "0.00",
+ "pnl": "-187560.00",
+ "explained": "-187560.00",
+ "residual": "0.00",
+ "components": {
+  "realised": "-190120.00",
+  "income": "2580.00",
+  "financing": "0.00",
+  "fees": "20.00",
+  "unrealised": "0.00",
+  "fx_result": "0.00"
+ },
+ "baseline": {
+  "snap_date": "$TODAY-1",
+  "ts": "$NOW-60000",
+  "note": "last snapshot before this accounting day"
+ },
+ "degraded": false,
+ "quality": "stale",
+ "partial": true,
+ "read_only": true,
+ "frozen_at": "2026-10-15"
+}

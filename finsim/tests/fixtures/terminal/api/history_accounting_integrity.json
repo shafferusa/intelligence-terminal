@@ -1,0 +1,19 @@
+{
+ "ok": true,
+ "hold": false,
+ "mode": "full",
+ "checked_at": "$NOW-432000",
+ "lifetime_id": "P1",
+ "checks": [
+  {
+   "code": "L1",
+   "name": "every entry balances per currency",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  }
+ ],
+ "problems": [],
+ "read_only": true
+}

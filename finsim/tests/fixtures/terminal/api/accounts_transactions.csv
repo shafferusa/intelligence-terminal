@@ -1,0 +1,8 @@
+entry_id,ts_ny,business_date,kind,memo,instrument_id,qty,price,gross,fee,net_USD
+3,2026-10-20 15:40,$TODAY,transfer,"advance from Treasury",,,,,,400000.00
+5,2026-10-20 15:40,$TODAY,fill,"BUY 500 AAPL @ 339.50 (fee 2.50)",AAPL,500,339.50,169750.00,2.50,-169752.50
+6,2026-10-20 15:40,$TODAY,fill,"SELL SHORT 100 SPY @ 769.32 (fee 1.00)",SPY,-100,769.32,76932.00,1.00,76931.00
+7,2026-10-20 15:40,$TODAY,collateral,"borrow b:1 collateral 102 % posted to the lender",SPY,,,,,-78470.64
+8,2026-10-20 15:40,$TODAY,fill,"BUY 1 ESZ26.CME @ 7734.50 (fee 2.25)",ESZ26.CME,1,7734.50,0.00,2.25,-2.25
+9,2026-10-20 15:40,$TODAY,margin,"futures initial margin 15,000.00 to the clearing deposit",ESZ26.CME,,,,,-15000.00
+10,2026-10-20 15:40,$TODAY,fill,"BTO 5 AAPL 270115P00315000 @ 9.50 (fee 3.25)",AAPL 270115P00315000,5,9.50,4750.00,3.25,-4753.25

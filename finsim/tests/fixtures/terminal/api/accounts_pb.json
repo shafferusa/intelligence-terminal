@@ -1,0 +1,37 @@
+{
+ "account": {
+  "account_id": "P2:PB_GS",
+  "name": "Goldman Sachs (PB)",
+  "kind": "PB",
+  "role": "PB_GS",
+  "broker": "GS",
+  "status": "OPEN",
+  "sweep_out": 1,
+  "sweep_buffer": "10000.00",
+  "pb_financing": 1,
+  "pb_limit": "500000.00",
+  "nav": "100000.00",
+  "available_usd": "100000.00",
+  "working_orders": 0,
+  "pending_settlements": 0,
+  "attention_count": 0,
+  "sort_order": 100
+ },
+ "schedule": {
+  "name": "Goldman Sachs",
+  "equity_per_share": "0.0030",
+  "equity_min_c": 100,
+  "option_per_contract": "0.55",
+  "futures_per_side": "2.00",
+  "financing_spread": "0.0125",
+  "credit_interest_spread": "0.0075",
+  "gc_rate": "0.0040",
+  "htb_add": "0.0010",
+  "otc_spread_mult": "1.0",
+  "swap_margin_mode": "CTM",
+  "monthly_minimum_c": 0,
+  "irs_half_width_bp": "1.0",
+  "trs_spread": "0.0060",
+  "note": "modelled assumptions; real PB schedules vary"
+ }
+}

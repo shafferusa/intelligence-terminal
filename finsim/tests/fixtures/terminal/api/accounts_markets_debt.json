@@ -1,0 +1,142 @@
+{
+ "account_id": "P2:DEBT",
+ "kind": "TRADING",
+ "role": "DEBT",
+ "tab": "treasuries",
+ "tabs": [
+  {
+   "key": "treasuries",
+   "label": "Treasury benchmarks"
+  },
+  {
+   "key": "corporates",
+   "label": "Curated corporates"
+  }
+ ],
+ "curve": {
+  "par": [
+   {
+    "tenor": "1M",
+    "yield": "4.05"
+   },
+   {
+    "tenor": "3M",
+    "yield": "4.02"
+   },
+   {
+    "tenor": "6M",
+    "yield": "3.98"
+   },
+   {
+    "tenor": "1Y",
+    "yield": "3.90"
+   },
+   {
+    "tenor": "2Y",
+    "yield": "3.95"
+   },
+   {
+    "tenor": "5Y",
+    "yield": "4.40"
+   },
+   {
+    "tenor": "10Y",
+    "yield": "5.09"
+   },
+   {
+    "tenor": "30Y",
+    "yield": "5.45"
+   }
+  ],
+  "as_of": "2026-10-19",
+  "quality": "close",
+  "source": "Treasury.gov daily par yield curve"
+ },
+ "rows": [
+  {
+   "instrument_id": "UST10Y",
+   "symbol": "T 4.25 08/36",
+   "name": "US Treasury 4.25 % Aug-2036",
+   "kind": "BOND",
+   "currency": "USD",
+   "support": "LIMITED",
+   "quote": {
+    "instrument_id": "UST10Y",
+    "provider": "treasury.gov",
+    "source": "Treasury.gov par curve (model)",
+    "method": "curve",
+    "last": "98.125",
+    "bid": null,
+    "ask": null,
+    "bid_size": null,
+    "ask_size": null,
+    "mid": null,
+    "prev_close": null,
+    "day_high": null,
+    "day_low": null,
+    "day_volume": null,
+    "quote_time": "$NOW-25000",
+    "fetched_at": "$NOW-30",
+    "delay_s": 0,
+    "delay_label": "daily par curve",
+    "currency": "USD",
+    "session_group": "US_BONDS",
+    "exchange_tz": "America/New_York",
+    "provider_session": null,
+    "error": null,
+    "inputs": {
+     "par_10y": {
+      "value": "5.09",
+      "as_of": "$NOW-25000",
+      "quality": "close"
+     },
+     "coupon": "4.25",
+     "maturity": "2036-08-15"
+    },
+    "quality": "computed",
+    "age_s": 25000
+   },
+   "position_qty": 100,
+   "held": true
+  },
+  {
+   "instrument_id": "UST2Y",
+   "symbol": "T 3.875 09/28",
+   "name": "US Treasury 3.875 % Sep-2028",
+   "kind": "BOND",
+   "currency": "USD",
+   "support": "LIMITED",
+   "quote": {
+    "instrument_id": "UST2Y",
+    "provider": "treasury.gov",
+    "source": "Treasury.gov par curve (model)",
+    "method": "curve",
+    "last": "99.78",
+    "bid": null,
+    "ask": null,
+    "bid_size": null,
+    "ask_size": null,
+    "mid": null,
+    "prev_close": null,
+    "day_high": null,
+    "day_low": null,
+    "day_volume": null,
+    "quote_time": "$NOW-25000",
+    "fetched_at": "$NOW-30",
+    "delay_s": 0,
+    "delay_label": "daily par curve",
+    "currency": "USD",
+    "session_group": "US_BONDS",
+    "exchange_tz": "America/New_York",
+    "provider_session": null,
+    "error": null,
+    "inputs": null,
+    "quality": "computed",
+    "age_s": 25000
+   },
+   "position_qty": null,
+   "held": false
+  }
+ ],
+ "note": "LIMITED: model price from the par curve, not executable in this build"
+}

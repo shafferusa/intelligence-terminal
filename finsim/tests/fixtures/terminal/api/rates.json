@@ -1,0 +1,40 @@
+{
+ "SOFR": {
+  "value": "3.87",
+  "as_of": "2026-10-19",
+  "source": "FRED SOFR"
+ },
+ "policy": {
+  "USD": {
+   "index": "SOFR",
+   "value": "3.87",
+   "as_of": "2026-10-19"
+  },
+  "EUR": {
+   "index": "ECBDFR",
+   "value": "2.00",
+   "as_of": "2026-10-19"
+  },
+  "GBP": {
+   "index": "IUDSOIA",
+   "value": "3.95",
+   "as_of": "2026-10-19"
+  },
+  "JPY": {
+   "index": "IRSTCI01JPM156N",
+   "value": "0.75",
+   "as_of": "2026-09",
+   "note": "monthly proxy"
+  }
+ },
+ "oas": {
+  "BAMLC0A0CM": {
+   "value": "0.92",
+   "as_of": "2026-10-19"
+  },
+  "BAMLH0A0HYM2": {
+   "value": "3.10",
+   "as_of": "2026-10-19"
+  }
+ }
+}

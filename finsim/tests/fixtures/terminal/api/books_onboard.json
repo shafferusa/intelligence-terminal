@@ -1,0 +1,28 @@
+{
+ "agreements": [
+  {
+   "kind": "ISDA_MASTER",
+   "broker": "JPM",
+   "signed_date": "$TODAY"
+  },
+  {
+   "kind": "CSA",
+   "broker": "JPM",
+   "signed_date": "$TODAY"
+  },
+  {
+   "kind": "PBA",
+   "broker": "JPM",
+   "signed_date": "$TODAY"
+  }
+ ],
+ "account": {
+  "account_id": "P2:PB_JPM",
+  "name": "JPMorgan (PB)",
+  "kind": "PB",
+  "broker": "JPM",
+  "status": "OPEN",
+  "nav": "0.00",
+  "available_usd": "0.00"
+ }
+}

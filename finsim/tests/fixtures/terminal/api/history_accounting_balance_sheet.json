@@ -1,0 +1,37 @@
+{
+ "scope": "P1:ALL",
+ "read_only": true,
+ "frozen_at": "2026-10-15",
+ "rows": [
+  {
+   "section": "assets",
+   "label": "Cash settled",
+   "gl": "1010",
+   "currency": "USD",
+   "native": "812440.00",
+   "usd": "812440.00"
+  },
+  {
+   "section": "nav",
+   "label": "NAV",
+   "gl": "",
+   "currency": "USD",
+   "native": "812440.00",
+   "usd": "812440.00"
+  }
+ ],
+ "assets": "812440.00",
+ "liabilities": "0.00",
+ "nav": "812440.00",
+ "rounding": "0.00",
+ "memo": {
+  "capital": "1000000.00",
+  "advances": "0.00",
+  "fx_clearing": "0.00",
+  "retained": "-187560.00",
+  "ties": true
+ },
+ "quality": "close",
+ "partial": false,
+ "as_of": "$NOW-432000"
+}

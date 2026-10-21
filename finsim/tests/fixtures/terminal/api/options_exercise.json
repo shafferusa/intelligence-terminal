@@ -1,0 +1,71 @@
+{
+ "fills": [
+  {
+   "fill_id": "f:ex1",
+   "instrument_id": "AAPL",
+   "side": "BUY",
+   "qty": 500,
+   "price": "315.00",
+   "origin": "EXERCISE"
+  }
+ ],
+ "position": {
+  "account_id": "P2:US_EXCHANGE",
+  "instrument_id": "AAPL 270115P00315000",
+  "symbol": "AAPL 15JAN27 315 P",
+  "name": "AAPL Jan-15-2027 315 put",
+  "kind": "OPTION",
+  "klass": "listed options",
+  "currency": "USD",
+  "qty": 0,
+  "cost": "4750.00",
+  "avg_px": "9.5000",
+  "mark": {
+   "instrument_id": "AAPL 270115P00315000",
+   "mark": "9.75",
+   "quality": "delayed",
+   "source": "Cboe delayed quotes",
+   "method": "chain",
+   "quote_time": "$NOW-400",
+   "fetched_at": "$NOW-30",
+   "delay_label": "~15 min delayed",
+   "inputs": null,
+   "executable": true,
+   "note": ""
+  },
+  "mv": "4875.00",
+  "mv_base": "4875.00",
+  "notional": null,
+  "unrealised": "125.00",
+  "unrealised_base": "125.00",
+  "realised_itd": "0.00",
+  "income_itd": "0.00",
+  "financing_itd": "0.00",
+  "fees_itd": "3.25",
+  "income_pending": "0.00",
+  "day_pnl": "121.75",
+  "weight": "0.0121",
+  "days_held": 0,
+  "settle_px": null,
+  "borrow": null,
+  "lots": [
+   {
+    "lot_id": 4,
+    "side": "LONG",
+    "open_date": "$TODAY",
+    "open_ts": "$NOW-7000",
+    "qty_open": 5,
+    "qty_remaining": 5,
+    "unit_cost": "9.5000",
+    "cost": "4750.00",
+    "open_fill_id": "f:4",
+    "lock_until": null,
+    "currency": "USD"
+   }
+  ],
+  "extra": {
+   "multiplier": 100,
+   "expiry": "2027-01-15"
+  }
+ }
+}

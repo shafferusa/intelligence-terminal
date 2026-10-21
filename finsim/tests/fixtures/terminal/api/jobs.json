@@ -1,0 +1,60 @@
+{
+ "jobs": [
+  {
+   "name": "SETTLE_DUE",
+   "last_run_ts": "$NOW-300",
+   "last_key": "$TODAY",
+   "next_due": "$NOW+600",
+   "failing": false
+  },
+  {
+   "name": "ACCRUE_DAILY",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+26400",
+   "failing": false
+  },
+  {
+   "name": "VM",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+23000",
+   "failing": false
+  },
+  {
+   "name": "COLLATERAL_MARK",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+26000",
+   "failing": false
+  },
+  {
+   "name": "SWEEP_OUT",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+27500",
+   "failing": false
+  },
+  {
+   "name": "SNAPSHOT",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+28400",
+   "failing": false
+  },
+  {
+   "name": "MARKS_RECORD",
+   "last_run_ts": "$NOW-60000",
+   "last_key": "$TODAY-1",
+   "next_due": "$NOW+28400",
+   "failing": false
+  },
+  {
+   "name": "HOUSEKEEPING",
+   "last_run_ts": "$NOW-3600",
+   "last_key": "$TODAY",
+   "next_due": "$NOW+82800",
+   "failing": false
+  }
+ ]
+}

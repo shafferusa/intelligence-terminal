@@ -1,0 +1,48 @@
+{
+ "mid": "1.1238",
+ "rate": "1.1240",
+ "buy": "10000.00",
+ "sell": "11240.00",
+ "spread_cost": "2.00",
+ "value_date": "$TODAY+2",
+ "quote": {
+  "instrument_id": "EURUSD",
+  "provider": "yahoo",
+  "source": "Yahoo Finance (EURUSD=X, up to 15 min delayed)",
+  "method": "direct",
+  "last": null,
+  "bid": "1.1237",
+  "ask": "1.1239",
+  "bid_size": 100,
+  "ask_size": 200,
+  "mid": "1.1238",
+  "prev_close": "1.1217",
+  "day_high": null,
+  "day_low": null,
+  "day_volume": 0,
+  "quote_time": "$NOW-120",
+  "fetched_at": "$NOW-30",
+  "delay_s": 900,
+  "delay_label": "up to 15 min delayed",
+  "currency": "USD",
+  "session_group": "FX_SPOT",
+  "exchange_tz": "America/New_York",
+  "provider_session": null,
+  "error": null,
+  "inputs": null,
+  "quality": "delayed",
+  "age_s": 120
+ },
+ "legs": [
+  {
+   "currency": "EUR",
+   "amount": "10000.00",
+   "side": "BUY"
+  },
+  {
+   "currency": "USD",
+   "amount": "-11240.00",
+   "side": "SELL"
+  }
+ ]
+}

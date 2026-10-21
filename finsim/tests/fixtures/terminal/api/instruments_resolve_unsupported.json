@@ -1,0 +1,13 @@
+{
+ "$status": 400,
+ "$body": {
+  "error": {
+   "code": "UNSUPPORTED",
+   "message": "foreign listings and crypto are not in this build",
+   "details": {
+    "symbol": "BTC-USD"
+   }
+  },
+  "request_id": null
+ }
+}

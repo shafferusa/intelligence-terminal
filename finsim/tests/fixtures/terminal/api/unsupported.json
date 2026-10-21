@@ -1,0 +1,88 @@
+{
+ "items": [
+  {
+   "item": "Private equity deal flow (buyouts), investment banking, clients / institutions / investors, careers / missions",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "NOT IN THIS BUILD",
+   "where": "nowhere in the terminal (TERMINAL_DECISIONS s5)"
+  },
+  {
+   "item": "MBS / structured, exotic OTC (variance, vol, dividend, inflation swaps, barriers), commodity physicals, crypto",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "grey rows wherever a list would show them; search says 'not in this build'",
+   "where": "Markets lists, search"
+  },
+  {
+   "item": "Bonds (Treasury benchmarks, curated corporates): execution",
+   "state": "LIMITED",
+   "wording": "model price, not executable in this build",
+   "where": "Debt Instruments page (curve + list)"
+  },
+  {
+   "item": "Foreign listings, foreign bonds",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "resolve refuses non-US exchanges",
+   "where": "Foreign Markets & FX page shows FX spot only"
+  },
+  {
+   "item": "FX forwards, FX options",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "fx.forward -> 400",
+   "where": "hedge panel label for FX primaries"
+  },
+  {
+   "item": "Repo / reverse repo, securities lending out of inventory",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "Credit page sections present with the label",
+   "where": "Credit Instruments page"
+  },
+  {
+   "item": "PB OTC options and forwards (FX / equity options, FRAs, caps)",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "/api/otc/preview -> 400 NOT_IN_THIS_BUILD; swaps are live",
+   "where": "PB page OTC tab"
+  },
+  {
+   "item": "Splits applied to lots",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "a Yahoo split event raises an Attention WARN 'manual review'",
+   "where": "positions row note"
+  },
+  {
+   "item": "Recall notices from lender data",
+   "state": "LIMITED",
+   "wording": "INFO notice from the FINRA ratio heuristic only; no buy-ins ever",
+   "where": "Attention INFO"
+  },
+  {
+   "item": "Early assignment of short options",
+   "state": "NOT_SIMULATED",
+   "wording": "not simulated (OCC sentence)",
+   "where": "ticket conventions"
+  },
+  {
+   "item": "Options on futures",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "hedge panel label for futures primaries",
+   "where": "hedge panel"
+  },
+  {
+   "item": "Live quotes",
+   "state": "NONE",
+   "wording": "everything is delayed, close or computed; 'live' is reserved",
+   "where": "freshness on every price"
+  },
+  {
+   "item": "VaR; shocks on private marks",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "private marks are not shocked; no VaR",
+   "where": "Risk table note"
+  },
+  {
+   "item": "Phone / LAN access, access keys",
+   "state": "NOT_IN_THIS_BUILD",
+   "wording": "loopback only",
+   "where": "-"
+  }
+ ]
+}

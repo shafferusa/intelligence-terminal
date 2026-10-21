@@ -1,0 +1,13 @@
+{
+ "$status": 400,
+ "$body": {
+  "error": {
+   "code": "NOT_AVAILABLE",
+   "message": "IRON_CONDOR on AAPL: no listed expiry on or after $TODAY + 12 months in the cached chain (last listed 2027-06-18)",
+   "details": {
+    "tenor_months": 12,
+    "last_listed": "2027-06-18"
+   }
+  }
+ }
+}

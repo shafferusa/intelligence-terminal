@@ -1,0 +1,586 @@
+{
+ "preview_id": "pv:pkg-ic-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": true,
+ "available": true,
+ "blockers": [],
+ "warnings": [],
+ "account_id": "P2:US_EXCHANGE",
+ "key": "IRON_CONDOR",
+ "strategy": {
+  "key": "IRON_CONDOR",
+  "group": "vol",
+  "title": "Iron condor",
+  "simple": "Sell a put and a call around the market, buy a put and a call farther out: premium with capped loss.",
+  "thesis": "Range-bound, defined risk.",
+  "best_when": "you want the short strangle's income with a known worst case.",
+  "risk": "Max loss is the wing width less the credit, on either side."
+ },
+ "params": {
+  "underlying": "AAPL",
+  "other": null,
+  "units": 1000,
+  "tenor_months": 2,
+  "strikes": {
+   "1": "-9",
+   "2": "-4",
+   "3": "+2",
+   "4": "+5"
+  }
+ },
+ "fill_mode": "AON",
+ "tif": "DAY",
+ "underlying": {
+  "instrument_id": "AAPL",
+  "provider": "yahoo",
+  "source": "Yahoo Finance (up to 15 min delayed)",
+  "method": "direct",
+  "last": "341.10",
+  "bid": null,
+  "ask": null,
+  "bid_size": null,
+  "ask_size": null,
+  "mid": null,
+  "prev_close": "342.94",
+  "day_high": "343.20",
+  "day_low": "338.10",
+  "day_volume": 30933066,
+  "quote_time": "$NOW-245",
+  "fetched_at": "$NOW-30",
+  "delay_s": 900,
+  "delay_label": "up to 15 min delayed",
+  "currency": "USD",
+  "session_group": "US_EQUITY",
+  "exchange_tz": "America/New_York",
+  "provider_session": null,
+  "error": null,
+  "inputs": null,
+  "quality": "delayed",
+  "age_s": 245
+ },
+ "spot": "341.10",
+ "expiry": "2027-01-15",
+ "expiry_rule": "nearest listed expiry on or after $TODAY + 2 months (2026-12-20): 2027-01-15",
+ "chain": {
+  "as_of": "$NOW-400",
+  "quality": "delayed",
+  "delay_label": "Cboe delayed (~15 min)",
+  "source": "Cboe delayed quotes"
+ },
+ "legs": [
+  {
+   "index": 1,
+   "kind": "OPTION",
+   "type": "P",
+   "side": "BUY",
+   "order_side": "BTO",
+   "instrument_id": "AAPL 270115P00315000",
+   "symbol": "AAPL 15JAN27 315 P",
+   "strike": "315.00",
+   "expiry": "2027-01-15",
+   "rule": "pct:-13",
+   "override": "-9",
+   "target": "310.40",
+   "qty": 10,
+   "est_price": "3.70",
+   "price_basis": "ask",
+   "quote": {
+    "instrument_id": "AAPL 270115P00315000",
+    "bid": "3.60",
+    "ask": "3.70",
+    "bid_size": 12,
+    "ask_size": 40,
+    "iv": "0.2710",
+    "delta": "-0.05",
+    "oi": 900,
+    "volume": 30,
+    "last": null,
+    "quality": "delayed",
+    "quote_time": "$NOW-400",
+    "fetched_at": "$NOW-30",
+    "source": "Cboe delayed quotes",
+    "method": "chain",
+    "delay_label": "~15 min delayed",
+    "kind": "put"
+   },
+   "cash": "-3700.00",
+   "fee": "6.50",
+   "delta": "-0.05",
+   "delta_shares": "-50.00",
+   "vega": null,
+   "theta": null,
+   "pct_from_spot": "-0.0765",
+   "size_rule": "max(1, round(1000 x 1.0 / 100)) = 10 contracts",
+   "available": true
+  },
+  {
+   "index": 2,
+   "kind": "OPTION",
+   "type": "P",
+   "side": "SELL",
+   "order_side": "STO",
+   "instrument_id": "AAPL 270115P00325000",
+   "symbol": "AAPL 15JAN27 325 P",
+   "strike": "325.00",
+   "expiry": "2027-01-15",
+   "rule": "pct:-7",
+   "override": "-4",
+   "target": "327.46",
+   "qty": 10,
+   "est_price": "4.40",
+   "price_basis": "bid",
+   "quote": {
+    "instrument_id": "AAPL 270115P00325000",
+    "bid": "4.40",
+    "ask": "4.50",
+    "bid_size": 12,
+    "ask_size": 40,
+    "iv": "0.2710",
+    "delta": "-0.19",
+    "oi": 1420,
+    "volume": 40,
+    "last": null,
+    "quality": "delayed",
+    "quote_time": "$NOW-400",
+    "fetched_at": "$NOW-30",
+    "source": "Cboe delayed quotes",
+    "method": "chain",
+    "delay_label": "~15 min delayed",
+    "kind": "put"
+   },
+   "cash": "4400.00",
+   "fee": "6.50",
+   "delta": "-0.19",
+   "delta_shares": "190.00",
+   "vega": null,
+   "theta": null,
+   "pct_from_spot": "-0.0472",
+   "size_rule": "max(1, round(1000 x 1.0 / 100)) = 10 contracts",
+   "available": true
+  },
+  {
+   "index": 3,
+   "kind": "OPTION",
+   "type": "C",
+   "side": "SELL",
+   "order_side": "STO",
+   "instrument_id": "AAPL 270115C00350000",
+   "symbol": "AAPL 15JAN27 350 C",
+   "strike": "350.00",
+   "expiry": "2027-01-15",
+   "rule": "pct:+7",
+   "override": "+2",
+   "target": "347.92",
+   "qty": 10,
+   "est_price": "1.75",
+   "price_basis": "bid",
+   "quote": {
+    "instrument_id": "AAPL 270115C00350000",
+    "bid": "1.75",
+    "ask": "1.90",
+    "bid_size": 12,
+    "ask_size": 40,
+    "iv": "0.2650",
+    "delta": "0.46",
+    "oi": 3370,
+    "volume": 89,
+    "last": null,
+    "quality": "delayed",
+    "quote_time": "$NOW-400",
+    "fetched_at": "$NOW-30",
+    "source": "Cboe delayed quotes",
+    "method": "chain",
+    "delay_label": "~15 min delayed",
+    "kind": "call"
+   },
+   "cash": "1750.00",
+   "fee": "6.50",
+   "delta": "0.46",
+   "delta_shares": "-460.00",
+   "vega": null,
+   "theta": null,
+   "pct_from_spot": "0.0261",
+   "size_rule": "max(1, round(1000 x 1.0 / 100)) = 10 contracts",
+   "available": true
+  },
+  {
+   "index": 4,
+   "kind": "OPTION",
+   "type": "C",
+   "side": "BUY",
+   "order_side": "BTO",
+   "instrument_id": "AAPL 270115C00360000",
+   "symbol": "AAPL 15JAN27 360 C",
+   "strike": "360.00",
+   "expiry": "2027-01-15",
+   "rule": "pct:+13",
+   "override": "+5",
+   "target": "358.16",
+   "qty": 10,
+   "est_price": "1.20",
+   "price_basis": "ask",
+   "quote": {
+    "instrument_id": "AAPL 270115C00360000",
+    "bid": "1.05",
+    "ask": "1.20",
+    "bid_size": 12,
+    "ask_size": 40,
+    "iv": "0.2650",
+    "delta": "0.32",
+    "oi": 3990,
+    "volume": 103,
+    "last": null,
+    "quality": "delayed",
+    "quote_time": "$NOW-400",
+    "fetched_at": "$NOW-30",
+    "source": "Cboe delayed quotes",
+    "method": "chain",
+    "delay_label": "~15 min delayed",
+    "kind": "call"
+   },
+   "cash": "-1200.00",
+   "fee": "6.50",
+   "delta": "0.32",
+   "delta_shares": "320.00",
+   "vega": null,
+   "theta": null,
+   "pct_from_spot": "0.0554",
+   "size_rule": "max(1, round(1000 x 1.0 / 100)) = 10 contracts",
+   "available": true
+  }
+ ],
+ "totals": {
+  "net_premium": "1250.00",
+  "fees": "26.00",
+  "net_cash": "1224.00",
+  "delta_shares": "0.00",
+  "dollar_delta": "0.00",
+  "vega": null,
+  "theta": null,
+  "greeks_note": "delta from the Cboe chain records; vega / theta are not in the chain record (unavailable)",
+  "incremental_option_margin": "9450.00",
+  "margin_detail": "once for the package: max(put spread 10 x 100 x 10 - 700.00 = 9,300.00, call spread 10,000.00 - 550.00 = 9,450.00) = 9,450.00 (OPT_MARGIN)",
+  "futures_margin": "0.00",
+  "spot": "341.10",
+  "expiry": "2027-01-15",
+  "underlying": "AAPL",
+  "units": 1000
+ },
+ "funding": {
+  "currency": "USD",
+  "need": "4913.00",
+  "need_formula": "bought legs at the ask + fees: 3,700.00 + 6.50 + 1,200.00 + 6.50 = 4,913.00 (the sold legs' 6,150.00 credit settles T+1)",
+  "available": "183830.36",
+  "shortfall": "0.00",
+  "sweep_in": "0.00",
+  "sweep_source": "NONE",
+  "treasury_available": "435000.00",
+  "margin_once": "9450.00",
+  "ok": true,
+  "confirm_required": false,
+  "formula": "own settled + receivables due by settlement - payables - reserved"
+ },
+ "payoff": {
+  "grid": [
+   [
+    "221.72",
+    "-8750.00"
+   ],
+   [
+    "225.13",
+    "-8750.00"
+   ],
+   [
+    "228.54",
+    "-8750.00"
+   ],
+   [
+    "231.95",
+    "-8750.00"
+   ],
+   [
+    "235.36",
+    "-8750.00"
+   ],
+   [
+    "238.77",
+    "-8750.00"
+   ],
+   [
+    "242.18",
+    "-8750.00"
+   ],
+   [
+    "245.59",
+    "-8750.00"
+   ],
+   [
+    "249.00",
+    "-8750.00"
+   ],
+   [
+    "252.41",
+    "-8750.00"
+   ],
+   [
+    "255.82",
+    "-8750.00"
+   ],
+   [
+    "259.24",
+    "-8750.00"
+   ],
+   [
+    "262.65",
+    "-8750.00"
+   ],
+   [
+    "266.06",
+    "-8750.00"
+   ],
+   [
+    "269.47",
+    "-8750.00"
+   ],
+   [
+    "272.88",
+    "-8750.00"
+   ],
+   [
+    "276.29",
+    "-8750.00"
+   ],
+   [
+    "279.70",
+    "-8750.00"
+   ],
+   [
+    "283.11",
+    "-8750.00"
+   ],
+   [
+    "286.52",
+    "-8750.00"
+   ],
+   [
+    "289.94",
+    "-8750.00"
+   ],
+   [
+    "293.35",
+    "-8750.00"
+   ],
+   [
+    "296.76",
+    "-8750.00"
+   ],
+   [
+    "300.17",
+    "-8750.00"
+   ],
+   [
+    "303.58",
+    "-8750.00"
+   ],
+   [
+    "306.99",
+    "-8750.00"
+   ],
+   [
+    "310.40",
+    "-8750.00"
+   ],
+   [
+    "313.81",
+    "-8750.00"
+   ],
+   [
+    "317.22",
+    "-6530.00"
+   ],
+   [
+    "320.63",
+    "-3120.00"
+   ],
+   [
+    "324.04",
+    "290.00"
+   ],
+   [
+    "327.46",
+    "1250.00"
+   ],
+   [
+    "330.87",
+    "1250.00"
+   ],
+   [
+    "334.28",
+    "1250.00"
+   ],
+   [
+    "337.69",
+    "1250.00"
+   ],
+   [
+    "341.10",
+    "1250.00"
+   ],
+   [
+    "344.51",
+    "1250.00"
+   ],
+   [
+    "347.92",
+    "1250.00"
+   ],
+   [
+    "351.33",
+    "-80.00"
+   ],
+   [
+    "354.74",
+    "-3490.00"
+   ],
+   [
+    "358.16",
+    "-6910.00"
+   ],
+   [
+    "361.57",
+    "-8750.00"
+   ],
+   [
+    "364.98",
+    "-8750.00"
+   ],
+   [
+    "368.39",
+    "-8750.00"
+   ],
+   [
+    "371.80",
+    "-8750.00"
+   ],
+   [
+    "375.21",
+    "-8750.00"
+   ],
+   [
+    "378.62",
+    "-8750.00"
+   ],
+   [
+    "382.03",
+    "-8750.00"
+   ],
+   [
+    "385.44",
+    "-8750.00"
+   ],
+   [
+    "388.85",
+    "-8750.00"
+   ],
+   [
+    "392.26",
+    "-8750.00"
+   ],
+   [
+    "395.68",
+    "-8750.00"
+   ],
+   [
+    "399.09",
+    "-8750.00"
+   ],
+   [
+    "402.50",
+    "-8750.00"
+   ],
+   [
+    "405.91",
+    "-8750.00"
+   ],
+   [
+    "409.32",
+    "-8750.00"
+   ],
+   [
+    "412.73",
+    "-8750.00"
+   ],
+   [
+    "416.14",
+    "-8750.00"
+   ],
+   [
+    "419.55",
+    "-8750.00"
+   ],
+   [
+    "422.96",
+    "-8750.00"
+   ],
+   [
+    "426.38",
+    "-8750.00"
+   ],
+   [
+    "429.79",
+    "-8750.00"
+   ],
+   [
+    "433.20",
+    "-8750.00"
+   ],
+   [
+    "436.61",
+    "-8750.00"
+   ],
+   [
+    "440.02",
+    "-8750.00"
+   ],
+   [
+    "443.43",
+    "-8750.00"
+   ],
+   [
+    "446.84",
+    "-8750.00"
+   ],
+   [
+    "450.25",
+    "-8750.00"
+   ],
+   [
+    "453.66",
+    "-8750.00"
+   ],
+   [
+    "457.07",
+    "-8750.00"
+   ],
+   [
+    "460.48",
+    "-8750.00"
+   ]
+  ],
+  "max_gain": "1250.00",
+  "max_loss": "-8750.00",
+  "breakevens": [
+   "323.75",
+   "351.25"
+  ],
+  "grid_note": "P&L at expiry versus AAPL (+/-35 %), every leg at intrinsic on 2027-01-15; premiums included, fees (26.00) excluded"
+ },
+ "conventions": [
+  "AON",
+  "FILL_PRICE",
+  "OPT_MARGIN",
+  "SESSION"
+ ],
+ "_note": "hand-worked: premiums -3,700 + 4,400 + 1,750 - 1,200 = +1,250.00 credit; fees 4 x 10 x 0.65 = 26.00; net cash +1,224.00; margin once max(9,300, 9,450) = 9,450.00; breakevens 325 - 1.25 = 323.75 and 350 + 1.25 = 351.25; max loss -(10,000 - 1,250) = -8,750.00"
+}

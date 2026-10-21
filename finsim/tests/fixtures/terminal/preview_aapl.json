@@ -1,0 +1,48 @@
+{
+  "preview_id": "pv:FIXTURE",
+  "as_of": 1792519200,
+  "expires_at": 1792519320,
+  "ok": true,
+  "blockers": [],
+  "warnings": [],
+  "conventions": ["FILL_PRICE", "PARTICIPATION", "SESSION", "COST_BASIS", "SWEEP"],
+  "account_id": "T1:US_EXCHANGE",
+  "instrument": {
+    "id": "AAPL", "symbol": "AAPL", "name": "Apple Inc.", "kind": "EQUITY", "currency": "USD", "multiplier": "1", "support": "FULL",
+    "lot": 1, "tick": "0.01", "settle_days": 1, "session_group": "US_EQUITY", "expiry": null
+  },
+  "side": "BUY",
+  "qty": 5000,
+  "order_type": "MARKET",
+  "tif": "DAY",
+  "limit_px": null,
+  "stop_px": null,
+  "trail": null,
+  "quote": {
+    "last": "339.50", "bid": null, "ask": null, "quality": "delayed", "source": "Yahoo Finance (up to 15 min delayed)",
+    "quote_time": 1792518955, "age_s": 245, "delay_label": "up to 15 min delayed", "method": "direct", "executable": true, "reason": "OK"
+  },
+  "borrow": null,
+  "economics": {
+    "gross": "1697500.00", "fee": "25.00", "fee_basis": "USD 0.005/share, min 1.00", "net_cash": "-1697525.00", "currency": "USD",
+    "settle_date": "2026-10-21", "accrued": null
+  },
+  "margin": null,
+  "funding": {
+    "currency": "USD", "settled": "1000000.00", "pending": "0.00", "reserved": "0.00", "available": "1000000.00",
+    "need": "1697525.00", "need_formula": "gross at the expected price + fee", "shortfall": "697525.00", "sweep_in": "697525.00",
+    "sweep_source": "TREASURY", "treasury_available": "9000000.00", "pb_financing": "0.00", "fx_leg": null, "ok": true,
+    "confirm_required": false, "confirm_reason": null, "threshold": "2000000.00", "nav": "10000000.00",
+    "formula": "own settled + receivables due by settlement - payables - reserved"
+  },
+  "execution": {
+    "price_basis": "last", "expected_price": "339.5", "fill_now": true, "fill_qty_now": 5000, "decision": "MARKET",
+    "cap_note": "latest 1-minute bar volume 61,900; 10 % participation caps a pass at 6,190 shares",
+    "session": {"group": "US_EQUITY", "open": true, "phase": "OPEN", "closes_at": 1792526400, "next_open": 1792589400, "note": ""},
+    "rests_until": null, "expires_at": 1792526400,
+    "assumption": "fills at the last observed trade price; no bid/ask is available from the free feed", "participation": "0.10"
+  },
+  "hedges": {"candidates": [], "status": "unavailable", "note": "hedge candidates: not yet built (WP-03)"},
+  "compliance": [],
+  "risk": []
+}

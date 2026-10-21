@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>FinSim Paper Terminal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0e14">
+<meta name="application-name" content="FinSim Paper Terminal">
+<meta name="description" content="Ledger-backed paper-trading terminal: real delayed market data, fictional capital, no simulation.">
+<link rel="stylesheet" href="/static/terminal.css">
+</head>
+<body>
+<!-- TERMINAL_DESIGN.md s17.1: header | banner | attention strip | sidebar . main . dock; modal, toast and help roots.
+     Every id below is a mount root that core.js or a component expects; keep them (test_terminal_static.py checks
+     #bookswitcher, #news, #history among others).  Optional components (ticket, preview, hedge, news, private markets,
+     swap ticket, private credit, performance, lifetimes, PB schedule) are loaded below and mounted when their file
+     answers; a 404 on one of them degrades to a NOT YET BUILT block on the page that needs it. -->
+<div id="app">
+  <header id="header">
+    <span class="logo">FINSIM PAPER TERMINAL<span class="tag-paper" title="PAPER TRADING - fictional capital; free delayed market data.">PAPER TRADING</span></span>
+    <span class="clock" id="clock" title="New York time">--:--:-- <small>ET</small></span>
+    <span class="chips" id="session-chips"></span>
+    <span class="idot unknown" id="integrity-dot" title="integrity: not checked yet"></span>
+    <span id="server-dot" class="chip" title="server">server ?</span>
+    <div class="acct-card" id="acct-card"></div>
+  </header>
+  <div id="banner" hidden></div>
+  <div id="attention"></div>
+  <aside id="sidebar">
+    <div id="bookswitcher"></div>
+    <nav id="nav"></nav>
+    <div class="legacy" style="padding:6px 12px 10px">
+      <a id="legacy-link" href="http://127.0.0.1:8766/" target="_blank" rel="noopener" title="the old simulation, served read-only by 'python -m finsim legacy'">legacy FinSim (8766)</a>
+    </div>
+  </aside>
+  <main id="main">
+    <div id="page"></div>
+    <div id="news" hidden></div>
+    <div id="history" hidden></div>
+  </main>
+  <aside id="dock">
+    <div class="dock-head"><span>Ticket</span><span class="spacer"></span><span id="dock-account" class="muted"></span><button class="btn small" id="dock-close" title="toggle the dock (t)">x</button></div>
+    <div id="dock-body"></div>
+  </aside>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<div id="help" hidden></div>
+<script src="/static/core.js"></script>
+<script src="/static/components/freshness.js"></script>
+<script src="/static/components/grid.js"></script>
+<script src="/static/components/chart.js"></script>
+<script src="/static/components/chain.js"></script>
+<script src="/static/components/bookswitcher.js"></script>
+<script src="/static/components/sidebar.js"></script>
+<script src="/static/components/header.js"></script>
+<script src="/static/components/attention.js"></script>
+<script src="/static/pages/markets.js"></script>
+<script src="/static/pages/instrument.js"></script>
+<script src="/static/pages/positions.js"></script>
+<script src="/static/pages/orders.js"></script>
+<script src="/static/pages/cash.js"></script>
+<script src="/static/pages/transactions.js"></script>
+<script src="/static/pages/treasury.js"></script>
+<script src="/static/pages/portfolio.js"></script>
+<script src="/static/pages/accounting.js"></script>
+<script src="/static/pages/risk.js"></script>
+<script src="/static/pages/activity.js"></script>
+<script src="/static/pages/watchlists.js"></script>
+<script src="/static/pages/settings.js"></script>
+<script src="/static/pages/history.js"></script>
+<!-- optional (other packages); a missing file is tolerated -->
+<script src="/static/components/ticket.js" data-optional="1"></script>
+<script src="/static/components/preview.js" data-optional="1"></script>
+<script src="/static/components/hedge.js" data-optional="1"></script>
+<script src="/static/components/performance.js" data-optional="1"></script>
+<script src="/static/components/lifetimes.js" data-optional="1"></script>
+<script src="/static/components/pbschedule.js" data-optional="1"></script>
+<script src="/static/components/swapticket.js" data-optional="1"></script>
+<script src="/static/components/privateticket.js" data-optional="1"></script>
+<script src="/static/components/privatecredit.js" data-optional="1"></script>
+<script src="/static/pages/news.js" data-optional="1"></script>
+<script src="/static/pages/private_markets.js" data-optional="1"></script>
+<script>window.T && window.T.boot && window.T.boot();</script>
+</body>
+</html>

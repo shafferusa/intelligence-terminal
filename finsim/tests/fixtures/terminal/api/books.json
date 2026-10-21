@@ -1,0 +1,119 @@
+[
+ {
+  "book_code": "P",
+  "name": "Personal Book",
+  "profile": "INDIVIDUAL",
+  "lifetime": {
+   "lifetime_id": "P2",
+   "seq": 2,
+   "started": "2026-10-15",
+   "starting_capital": "1000000.00"
+  },
+  "nav": {
+   "value": "1002429.50",
+   "quality": "delayed",
+   "partial": true
+  },
+  "eligibility": {
+   "lifetime_id": "P2",
+   "nav": "1002429.50",
+   "pb_otc": true,
+   "pb_otc_reason": "prime brokers & OTC: relationship with GS opened 2026-10-18 (relationships stay open; NAV 1,002,429.50 is below the USD 25,000,000 threshold)",
+   "private_markets": false,
+   "private_reason": "Private Markets: unlock at USD 5,000,000 NAV - now 1,002,429.50",
+   "ecp": false,
+   "threshold": "25000000.00",
+   "qp_threshold": "5000000.00",
+   "has_relationships": true,
+   "can_onboard": true,
+   "profile": "INDIVIDUAL"
+  },
+  "accounts": [
+   "P2:TREASURY",
+   "P2:US_EXCHANGE",
+   "P2:DEBT",
+   "P2:CREDIT",
+   "P2:FOREIGN_FX",
+   "P2:PB_GS"
+  ],
+  "past_lifetimes": 1
+ },
+ {
+  "book_code": "F",
+  "name": "Fund Book",
+  "profile": "FUND",
+  "lifetime": {
+   "lifetime_id": "F1",
+   "seq": 1,
+   "started": "2026-10-15",
+   "starting_capital": "25000000.00"
+  },
+  "nav": {
+   "value": "25000000.00",
+   "quality": "delayed",
+   "partial": false
+  },
+  "eligibility": {
+   "lifetime_id": "F1",
+   "nav": "25000000.00",
+   "pb_otc": true,
+   "pb_otc_reason": "eligible from day one (Fund profile)",
+   "private_markets": true,
+   "private_reason": "Private Markets open (NAV at the USD 25,000,000 QP threshold)",
+   "ecp": true,
+   "threshold": "25000000.00",
+   "qp_threshold": "25000000.00",
+   "has_relationships": false,
+   "can_onboard": true,
+   "profile": "FUND"
+  },
+  "accounts": [
+   "F1:TREASURY",
+   "F1:US_EXCHANGE",
+   "F1:DEBT",
+   "F1:CREDIT",
+   "F1:FOREIGN_FX",
+   "F1:PRIVATE"
+  ],
+  "past_lifetimes": 0
+ },
+ {
+  "book_code": "I",
+  "name": "Institutional Book",
+  "profile": "INSTITUTION",
+  "lifetime": {
+   "lifetime_id": "I1",
+   "seq": 1,
+   "started": "2026-10-15",
+   "starting_capital": "1000000000.00"
+  },
+  "nav": {
+   "value": "1000000000.00",
+   "quality": "delayed",
+   "partial": false
+  },
+  "eligibility": {
+   "lifetime_id": "I1",
+   "nav": "1000000000.00",
+   "pb_otc": true,
+   "pb_otc_reason": "eligible from day one (Institutional profile)",
+   "private_markets": true,
+   "private_reason": "Private Markets open from the start (Institutional)",
+   "ecp": true,
+   "threshold": "25000000.00",
+   "qp_threshold": "0.00",
+   "has_relationships": false,
+   "can_onboard": true,
+   "profile": "INSTITUTION"
+  },
+  "accounts": [
+   "I1:TREASURY",
+   "I1:US_EXCHANGE",
+   "I1:DEBT",
+   "I1:CREDIT",
+   "I1:FOREIGN_FX",
+   "I1:PRIVATE"
+  ],
+  "past_lifetimes": 0
+ }
+]

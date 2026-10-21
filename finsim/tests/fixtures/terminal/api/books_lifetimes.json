@@ -1,0 +1,39 @@
+{
+ "book_code": "P",
+ "lifetimes": [
+  {
+   "lifetime_id": "P2",
+   "seq": 2,
+   "name": "Personal Book",
+   "started": "2026-10-15",
+   "started_ts": "$NOW-432000",
+   "ended": null,
+   "ended_ts": null,
+   "starting_capital": "1000000.00",
+   "status": "OPEN",
+   "final_nav": null,
+   "final_realised": null,
+   "final_pnl": null,
+   "final_quality": null,
+   "reason": null,
+   "integrity_ok": true
+  },
+  {
+   "lifetime_id": "P1",
+   "seq": 1,
+   "name": "Personal Book",
+   "started": "2026-10-01",
+   "started_ts": "$NOW-1641600",
+   "ended": "2026-10-15",
+   "ended_ts": "$NOW-432000",
+   "starting_capital": "1000000.00",
+   "status": "CLOSED",
+   "final_nav": "812440.00",
+   "final_realised": "-190120.00",
+   "final_pnl": "-187560.00",
+   "final_quality": "close",
+   "reason": "owner reset (lifetime reset)",
+   "integrity_ok": true
+  }
+ ]
+}

@@ -1,0 +1,51 @@
+{
+ "scope": "P1:ALL",
+ "read_only": true,
+ "rows": [
+  {
+   "gl": "1010",
+   "name": "Cash settled",
+   "currency": "USD",
+   "debit": "812440.00",
+   "credit": "0.00",
+   "balance": "812440.00"
+  },
+  {
+   "gl": "3000",
+   "name": "Contributed capital",
+   "currency": "USD",
+   "debit": "0.00",
+   "credit": "1000000.00",
+   "balance": "-1000000.00"
+  },
+  {
+   "gl": "4000",
+   "name": "Realised P&L",
+   "currency": "USD",
+   "debit": "190120.00",
+   "credit": "0.00",
+   "balance": "190120.00"
+  },
+  {
+   "gl": "4200",
+   "name": "Interest income",
+   "currency": "USD",
+   "debit": "0.00",
+   "credit": "2580.00",
+   "balance": "-2580.00"
+  },
+  {
+   "gl": "5000",
+   "name": "Fees",
+   "currency": "USD",
+   "debit": "20.00",
+   "credit": "0.00",
+   "balance": "20.00"
+  }
+ ],
+ "balanced": true,
+ "totals": {
+  "debit": "1002580.00",
+  "credit": "1002580.00"
+ }
+}

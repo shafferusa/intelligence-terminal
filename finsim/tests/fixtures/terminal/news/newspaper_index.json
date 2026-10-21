@@ -1,0 +1,52 @@
+[
+ {
+  "date": "2026-10-20",
+  "slot": "pm",
+  "title": "Closing brief fixture: yields steady, stocks drift into the auction",
+  "path": "reports/2026/10/2026-10-20-pm.html",
+  "summary": "Fixture summary of the closing brief: three headlines follow (test data, not a real edition).",
+  "headlines": [
+   "Fixture headline pm one: the two-year auction tails by a basis point",
+   "Fixture headline pm two: a regional bank reports and the shares fall",
+   "Fixture headline pm three: the dollar is unchanged on the day"
+  ],
+  "reading_minutes": 20
+ },
+ {
+  "date": "2026-10-20",
+  "slot": "am",
+  "title": "Morning brief fixture: the week's auctions and the Beige Book",
+  "path": "reports/2026/10/2026-10-20-am.html",
+  "summary": "Fixture summary of the morning brief (test data).",
+  "headlines": [
+   "Fixture headline am one: futures flat before the open",
+   "Fixture headline am two: the Beige Book lands at 14:00",
+   "Fixture headline am three: a cabinet nominee faces the committee"
+  ],
+  "reading_minutes": 18
+ },
+ {
+  "date": "2026-10-20",
+  "slot": "learn",
+  "title": "Learning Brief fixture: duration, explained with one bond",
+  "path": "reports/2026/10/2026-10-20-learn.html",
+  "summary": "A lesson, not news: skipped by the terminal.",
+  "headlines": [
+   "Lesson fixture headline that must never appear in Daily News"
+  ],
+  "reading_minutes": 12
+ },
+ {
+  "date": "2026-10-19",
+  "slot": "pm",
+  "title": "Closing brief fixture for Monday: a quiet session",
+  "path": "reports/2026/10/2026-10-19-pm.html",
+  "summary": "Fixture summary of Monday's closing brief (test data).",
+  "headlines": [
+   "Fixture headline Monday one",
+   "Fixture headline Monday two",
+   "Fixture headline Monday three"
+  ],
+  "reading_minutes": 22
+ }
+]

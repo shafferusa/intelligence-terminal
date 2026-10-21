@@ -1,0 +1,17 @@
+{
+ "$status": 409,
+ "$body": {
+  "error": {
+   "code": "INSUFFICIENT_FUNDS",
+   "message": "P2:US_EXCHANGE needs USD 682,210.00: own available 183,830.36, Treasury available 435,000.00, PB financing 0.00",
+   "details": {
+    "need_c": 68221000,
+    "own_available_c": 18383036,
+    "treasury_available_c": 43500000,
+    "pb_headroom_c": 0,
+    "currency": "USD",
+    "fx_leg": null
+   }
+  }
+ }
+}

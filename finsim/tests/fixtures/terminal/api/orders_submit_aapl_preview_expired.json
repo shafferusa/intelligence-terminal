@@ -1,0 +1,378 @@
+{
+ "$status": 409,
+ "$body": {
+  "error": {
+   "code": "PREVIEW_STALE",
+   "message": "the preview is unknown or expired (120 s): review the fresh preview and resubmit",
+   "details": {
+    "preview": {
+     "preview_id": "pv:aapl600-0002",
+     "as_of": "$NOW",
+     "expires_at": "$NOW+120",
+     "ok": true,
+     "blockers": [],
+     "warnings": [],
+     "account_id": "P2:US_EXCHANGE",
+     "instrument": {
+      "id": "AAPL",
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "multiplier": "1",
+      "support": "FULL",
+      "lot": 1,
+      "tick": "0.01",
+      "settle_days": 1,
+      "session_group": "US_EQUITY",
+      "expiry": null
+     },
+     "side": "BUY",
+     "qty": 600,
+     "order_type": "MARKET",
+     "tif": "DAY",
+     "limit_px": null,
+     "stop_px": null,
+     "trail": null,
+     "quote": {
+      "last": "341.10",
+      "bid": null,
+      "ask": null,
+      "quality": "delayed",
+      "source": "Yahoo Finance (up to 15 min delayed)",
+      "quote_time": "$NOW-245",
+      "age_s": 245,
+      "delay_label": "up to 15 min delayed",
+      "method": "direct",
+      "executable": true,
+      "reason": null
+     },
+     "execution": {
+      "price_basis": "last",
+      "expected_price": "341.10",
+      "fill_now": true,
+      "fill_qty_now": 600,
+      "decision": "MARKET",
+      "cap_note": "latest 1-minute bar volume 61,900; 10 % participation caps a pass at 6,190 shares",
+      "session": {
+       "group": "US_EQUITY",
+       "open": true,
+       "phase": "OPEN",
+       "closes_at": "$NOW+3600",
+       "next_open": null,
+       "note": ""
+      },
+      "rests_until": null,
+      "expires_at": "$NOW+3600",
+      "assumption": "fills at the last observed trade price; no bid/ask is available from the free feed",
+      "participation": "0.10"
+     },
+     "economics": {
+      "gross": "204660.00",
+      "fee": "3.00",
+      "fee_basis": "USD 0.005/share, min 1.00",
+      "net_cash": "-204663.00",
+      "currency": "USD",
+      "settle_date": "$TODAY+1",
+      "accrued": null
+     },
+     "funding": {
+      "currency": "USD",
+      "settled": "281405.11",
+      "pending": "-97574.75",
+      "reserved": "0.00",
+      "available": "183830.36",
+      "need": "204663.00",
+      "need_formula": "gross at the expected price + fee",
+      "shortfall": "20832.64",
+      "sweep_in": "20832.64",
+      "sweep_source": "TREASURY",
+      "treasury_available": "435000.00",
+      "pb_financing": "0.00",
+      "fx_leg": null,
+      "ok": true,
+      "confirm_required": false,
+      "confirm_reason": null,
+      "threshold": "2000000.00",
+      "nav": "1002429.50",
+      "formula": "own settled + receivables due by settlement - payables - reserved"
+     },
+     "borrow": null,
+     "margin": null,
+     "hedges": {
+      "candidates": [
+       {
+        "id": "PUT_7PCT",
+        "label": "Protective put 315 Jan-15-2027",
+        "available": true,
+        "legs": [
+         {
+          "instrument_id": "AAPL 270115P00315000",
+          "symbol": "AAPL 15JAN27 315 P",
+          "side": "BTO",
+          "qty": 6,
+          "price_basis": "ask",
+          "est_price": "3.70",
+          "fee": "3.90",
+          "quote": {
+           "instrument_id": "AAPL 270115P00315000",
+           "bid": "3.60",
+           "ask": "3.70",
+           "bid_size": 12,
+           "ask_size": 40,
+           "iv": "0.2710",
+           "delta": "-0.05",
+           "oi": 900,
+           "volume": 30,
+           "last": null,
+           "quality": "delayed",
+           "quote_time": "$NOW-400",
+           "fetched_at": "$NOW-30",
+           "source": "Cboe delayed quotes",
+           "method": "chain",
+           "delay_label": "~15 min delayed",
+           "kind": "put"
+          },
+          "strike": "315.00",
+          "expiry": "2027-01-15"
+         }
+        ],
+        "cost": "2220.00",
+        "fees": "3.90",
+        "net_cash": "-2223.90",
+        "protection_level": "-0.0765",
+        "protection": "floor 315.00 (-7.65 %)",
+        "greeks": {
+         "delta_shares": "-30.00",
+         "note": "delta from the Cboe chain record; vega / theta are not in the chain record"
+        },
+        "ratio": "0.01",
+        "chain_quality": "delayed",
+        "as_of": "$NOW-400",
+        "editable": {
+         "strike": true,
+         "expiry": true,
+         "ratio": true
+        },
+        "fill_mode": "SEQUENTIAL",
+        "disclosure": "sequential; a leg can rest (the put is released after the primary fills, resized on partial fills)",
+        "rule": "K = 0.93 x 341.10 = 317.22 -> nearest listed 315; n = floor(600 / 100) = 6; expiry = nearest listed with a cached chain (2027-01-15, 87 days)"
+       },
+       {
+        "id": "COLLAR_7",
+        "label": "Collar: put 315 / call 360 Jan-15-2027",
+        "available": true,
+        "legs": [
+         {
+          "instrument_id": "AAPL 270115P00315000",
+          "symbol": "AAPL 15JAN27 315 P",
+          "side": "BTO",
+          "qty": 6,
+          "price_basis": "ask",
+          "est_price": "3.70",
+          "fee": "3.90",
+          "quote": {
+           "instrument_id": "AAPL 270115P00315000",
+           "bid": "3.60",
+           "ask": "3.70",
+           "bid_size": 12,
+           "ask_size": 40,
+           "iv": "0.2710",
+           "delta": "-0.05",
+           "oi": 900,
+           "volume": 30,
+           "last": null,
+           "quality": "delayed",
+           "quote_time": "$NOW-400",
+           "fetched_at": "$NOW-30",
+           "source": "Cboe delayed quotes",
+           "method": "chain",
+           "delay_label": "~15 min delayed",
+           "kind": "put"
+          },
+          "strike": "315.00",
+          "expiry": "2027-01-15"
+         },
+         {
+          "instrument_id": "AAPL 270115C00360000",
+          "symbol": "AAPL 15JAN27 360 C",
+          "side": "STO",
+          "qty": 6,
+          "price_basis": "bid",
+          "est_price": "1.05",
+          "fee": "3.90",
+          "quote": {
+           "instrument_id": "AAPL 270115C00360000",
+           "bid": "1.05",
+           "ask": "1.20",
+           "bid_size": 12,
+           "ask_size": 40,
+           "iv": "0.2650",
+           "delta": "0.32",
+           "oi": 3990,
+           "volume": 103,
+           "last": null,
+           "quality": "delayed",
+           "quote_time": "$NOW-400",
+           "fetched_at": "$NOW-30",
+           "source": "Cboe delayed quotes",
+           "method": "chain",
+           "delay_label": "~15 min delayed",
+           "kind": "call"
+          },
+          "strike": "360.00",
+          "expiry": "2027-01-15"
+         }
+        ],
+        "cost": "1590.00",
+        "fees": "7.80",
+        "net_cash": "-1597.80",
+        "protection_level": "-0.0765",
+        "protection": "floor 315.00 (-7.65 %), cap 360.00 (+5.54 %)",
+        "greeks": {
+         "delta_shares": "-222.00",
+         "note": "-30 (puts) - 192 (short calls)"
+        },
+        "ratio": "0.01",
+        "chain_quality": "delayed",
+        "as_of": "$NOW-400",
+        "editable": {
+         "strike": true,
+         "expiry": true,
+         "ratio": true
+        },
+        "fill_mode": "SEQUENTIAL",
+        "disclosure": "sequential; a leg can rest",
+        "rule": "call K = 1.07 x 341.10 = 364.98 -> snapped to the highest cached strike 360 (+5.54 %); sold at the Cboe bid 1.05"
+       },
+       {
+        "id": "PUT_SPREAD",
+        "label": "Put spread 0.93 / 0.85",
+        "available": false,
+        "reason": "the 0.85 x S strike (0.85 x 341.10 = 289.94) is below the lowest cached strike 315: not offered from this chain",
+        "legs": [],
+        "cost": null,
+        "fees": null,
+        "net_cash": null,
+        "protection_level": null,
+        "protection": null,
+        "greeks": null,
+        "ratio": null,
+        "chain_quality": "delayed",
+        "as_of": "$NOW-400",
+        "editable": {
+         "strike": true,
+         "expiry": true,
+         "ratio": true
+        },
+        "fill_mode": "SEQUENTIAL"
+       },
+       {
+        "id": "INDEX_OVERLAY",
+        "label": "Index overlay: short 1 ESZ26 (beta 1.20, static)",
+        "available": true,
+        "legs": [
+         {
+          "instrument_id": "ESZ26",
+          "symbol": "ESZ26",
+          "side": "SELL",
+          "qty": 1,
+          "price_basis": "last",
+          "est_price": "7754.25",
+          "fee": "2.25",
+          "quote": {
+           "instrument_id": "ESZ26.CME",
+           "provider": "yahoo",
+           "source": "Yahoo Finance (up to 15 min delayed)",
+           "method": "direct",
+           "last": "7754.25",
+           "bid": null,
+           "ask": null,
+           "bid_size": null,
+           "ask_size": null,
+           "mid": null,
+           "prev_close": "7734.50",
+           "day_high": "7760.00",
+           "day_low": "7701.75",
+           "day_volume": 1531200,
+           "quote_time": "$NOW-300",
+           "fetched_at": "$NOW-30",
+           "delay_s": 900,
+           "delay_label": "up to 15 min delayed",
+           "currency": "USD",
+           "session_group": "CME_EQUITY_INDEX",
+           "exchange_tz": "America/New_York",
+           "provider_session": null,
+           "error": null,
+           "inputs": null,
+           "quality": "delayed",
+           "age_s": 300
+          },
+          "margin": {
+           "initial": "15000.00",
+           "per_contract": "15000.00"
+          }
+         }
+        ],
+        "cost": "2.25",
+        "fees": "2.25",
+        "net_cash": "-2.25",
+        "protection_level": null,
+        "protection": "notional hedged 245,592.00 (204,660.00 x beta 1.20) with 1 ES = 387,712.50 (50 x 7,754.25); initial margin 15,000.00 (FUT_MARGIN)",
+        "greeks": {
+         "delta_shares": null,
+         "note": "linear index exposure; beta 1.20 is a static figure from the master, labelled static"
+        },
+        "ratio": null,
+        "chain_quality": "delayed",
+        "as_of": "$NOW-300",
+        "editable": {
+         "strike": false,
+         "expiry": false,
+         "ratio": true
+        },
+        "fill_mode": "SEQUENTIAL",
+        "disclosure": "sequential; a leg can rest",
+        "rule": "n = round(204,660.00 x 1.20 / (7,754.25 x 50)) = round(0.6334) = 1"
+       }
+      ],
+      "status": "ready",
+      "as_of": "$NOW-400",
+      "chain_quality": "delayed",
+      "delay_label": "Cboe delayed (~15 min)"
+     },
+     "compliance": [
+      {
+       "rule": "Reg SHO 203(b) locate",
+       "status": "n/a",
+       "message": "not a short sale"
+      },
+      {
+       "rule": "13D/G 5 % beneficial ownership",
+       "status": "ok",
+       "message": "after the fill: 1,100 shares, far below the 5 % threshold; verify the current rule text"
+      }
+     ],
+     "risk": [
+      {
+       "code": "CONCENTRATION",
+       "severity": "WARN",
+       "message": "AAPL would be 37.4 % of the lifetime's consolidated NAV (375,210.00 of 1,002,429.50)"
+      }
+     ],
+     "conventions": [
+      "FILL_PRICE",
+      "PARTICIPATION",
+      "SESSION",
+      "COST_BASIS",
+      "SWEEP"
+     ]
+    },
+    "diff": {
+     "reason": "unknown_or_expired",
+     "preview_id": "pv:aapl600-0001"
+    }
+   }
+  }
+ }
+}

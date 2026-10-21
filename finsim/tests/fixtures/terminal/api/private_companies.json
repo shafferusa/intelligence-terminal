@@ -1,0 +1,34 @@
+[
+ {
+  "company_id": "PRIV:ANTHROPIC",
+  "name": "Anthropic PBC",
+  "sector": "AI",
+  "country": "US",
+  "status": "private",
+  "ticker": null,
+  "last_round": {
+   "round_date": "2026-09-02",
+   "round_type": "Series F",
+   "post_money": "183000000000.00",
+   "price_per_share": "61.50",
+   "lead_investors": "ICONIQ, Fidelity, Lightspeed",
+   "source_url": "https://www.anthropic.com/news/series-f",
+   "as_of": "2026-09-02"
+  },
+  "mark": {
+   "instrument_id": "PRIV:ANTHROPIC",
+   "mark": "61.50",
+   "quality": "private",
+   "source": "reported Series F (source: company press release 2026-09-02)",
+   "method": "private_round",
+   "quote_time": null,
+   "fetched_at": null,
+   "delay_label": "last reported round",
+   "inputs": null,
+   "executable": false,
+   "note": "last round 2026-09-02 (Series F, post-money USD 183 bn)"
+  },
+  "source_url": "https://www.anthropic.com/news/series-f",
+  "as_of": "2026-09-02"
+ }
+]

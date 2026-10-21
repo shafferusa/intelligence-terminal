@@ -1,0 +1,90 @@
+{
+ "scope": "P1:ALL",
+ "read_only": true,
+ "frozen_at": "2026-10-15",
+ "lifetime": {
+  "lifetime_id": "P1",
+  "name": "Personal Book",
+  "started": "2026-10-01",
+  "ended": "2026-10-15",
+  "reason": "owner reset (lifetime reset)",
+  "starting_capital": "1000000.00",
+  "final_nav": "812440.00",
+  "final_pnl": "-187560.00"
+ },
+ "nav": {
+  "scope": "P1:ALL",
+  "nav": "812440.00",
+  "assets": "812440.00",
+  "liabilities": "0.00",
+  "quality": "close",
+  "partial": false,
+  "missing": [],
+  "as_of": "$NOW-432000",
+  "cash": "812440.00",
+  "pending": "0.00",
+  "mv_long": "0.00",
+  "mv_short": "0.00",
+  "unrealised": "0.00",
+  "fx_result": "0.00",
+  "capital": "1000000.00",
+  "transfers": "0.00",
+  "realised": "-190120.00",
+  "income": "2580.00",
+  "financing": "0.00",
+  "fees": "20.00",
+  "retained": "-187560.00",
+  "by_account": {
+   "P1:TREASURY": "812440.00"
+  },
+  "lifetime_ids": [
+   "P1"
+  ],
+  "archived": true,
+  "note": "frozen at the reset; marks from the stored final snapshot"
+ },
+ "pnl": {
+  "ITD": {
+   "scope": "P1:ALL",
+   "period": "ITD",
+   "nav": "812440.00",
+   "nav_0": "1000000.00",
+   "flows": "0.00",
+   "pnl": "-187560.00",
+   "explained": "-187560.00",
+   "residual": "0.00",
+   "components": {
+    "realised": "-190120.00",
+    "income": "2580.00",
+    "financing": "0.00",
+    "fees": "20.00",
+    "unrealised": "0.00",
+    "fx_result": "0.00"
+   },
+   "baseline": {
+    "snap_date": "$TODAY-1",
+    "ts": "$NOW-60000",
+    "note": "last snapshot before this accounting day"
+   },
+   "degraded": false,
+   "quality": "stale",
+   "partial": true
+  }
+ },
+ "by_account": [
+  {
+   "account_id": "P1:TREASURY",
+   "name": "Treasury",
+   "nav": "812440.00"
+  },
+  {
+   "account_id": "P1:US_EXCHANGE",
+   "name": "US Exchange",
+   "nav": "0.00"
+  }
+ ],
+ "by_class": [],
+ "positions": [],
+ "marks_partial": false,
+ "as_of": "$NOW-432000"
+}

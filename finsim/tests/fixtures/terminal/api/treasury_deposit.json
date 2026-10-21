@@ -1,0 +1,15 @@
+{
+ "transfer": {
+  "transfer_id": "t:cap:2",
+  "kind": "DEPOSIT",
+  "currency": "USD",
+  "amount": "100000.00",
+  "memo": "owner deposit",
+  "ts": "$NOW"
+ },
+ "treasury": {
+  "capital": "1100000.00",
+  "available": "535000.00",
+  "nav": "535012.50"
+ }
+}

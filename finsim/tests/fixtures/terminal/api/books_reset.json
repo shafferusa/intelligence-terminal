@@ -1,0 +1,19 @@
+{
+ "closed": {
+  "lifetime_id": "P2",
+  "final_nav": "1002429.50",
+  "final_pnl": "2429.50",
+  "ended": "$TODAY",
+  "integrity_ok": true
+ },
+ "opened": {
+  "lifetime_id": "P3",
+  "accounts": [
+   "P3:TREASURY",
+   "P3:US_EXCHANGE",
+   "P3:DEBT",
+   "P3:CREDIT",
+   "P3:FOREIGN_FX"
+  ]
+ }
+}

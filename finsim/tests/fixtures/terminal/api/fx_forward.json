@@ -1,0 +1,11 @@
+{
+ "$status": 400,
+ "$body": {
+  "error": {
+   "code": "NOT_IN_THIS_BUILD",
+   "message": "FX forwards are Build 2 (covered interest parity from FRED rates)",
+   "details": null
+  },
+  "request_id": "ui:x"
+ }
+}

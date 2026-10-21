@@ -1,0 +1,12 @@
+[
+ {
+  "instrument_id": "AAPL",
+  "ex_date": "2026-11-07",
+  "amount": "0.26",
+  "pay_date": "2026-11-14",
+  "source": "Yahoo chart events",
+  "convention": "cash on the pay date Yahoo gives",
+  "position_qty": 500,
+  "expected": "130.00"
+ }
+]

@@ -1,0 +1,71 @@
+{
+ "orders": [
+  {
+   "order_id": "o:5",
+   "request_id": "ui:o-5-aaaa",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "MSFT",
+   "symbol": "MSFT",
+   "side": "BUY",
+   "qty": 200,
+   "filled_qty": 0,
+   "avg_px": null,
+   "order_type": "LIMIT",
+   "limit_px": "505.00",
+   "stop_px": null,
+   "trail_amt": null,
+   "trail_pct": null,
+   "fill_mode": "SEQUENTIAL",
+   "tif": "DAY",
+   "status": "WORKING",
+   "created_ts": "$NOW-3000",
+   "updated_ts": "$NOW-2990",
+   "expires_ts": "$NOW+3600",
+   "reason": null,
+   "last_event": {
+    "ts": "$NOW-2990",
+    "to_status": "WORKING",
+    "note": "resting; crosses when last <= 505.00"
+   },
+   "fills": [],
+   "fees": "0.00",
+   "package_id": null,
+   "parent_order_id": null,
+   "participation": "0.10"
+  },
+  {
+   "order_id": "o:6",
+   "request_id": "ui:o-6-aaaa",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "AAPL",
+   "symbol": "AAPL",
+   "side": "SELL",
+   "qty": 200,
+   "filled_qty": 0,
+   "avg_px": null,
+   "order_type": "TRAILING_STOP",
+   "limit_px": null,
+   "stop_px": "336.10",
+   "trail_amt": "5.00",
+   "trail_pct": null,
+   "fill_mode": "SEQUENTIAL",
+   "tif": "GTC",
+   "status": "WORKING",
+   "created_ts": "$NOW-2500",
+   "updated_ts": "$NOW-2490",
+   "expires_ts": "$NOW+7776000",
+   "reason": null,
+   "last_event": {
+    "ts": "$NOW-2490",
+    "to_status": "WORKING",
+    "note": "trail 5.00 below the highest observed last 341.10"
+   },
+   "fills": [],
+   "fees": "0.00",
+   "package_id": null,
+   "parent_order_id": null,
+   "participation": "0.10"
+  }
+ ],
+ "rejections": []
+}

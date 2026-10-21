@@ -1,0 +1,25 @@
+{
+ "fill": {
+  "fill_id": "f:p2",
+  "qty": 20000,
+  "price": "61.50",
+  "origin": "NEGOTIATED"
+ },
+ "settlement": {
+  "due_date": "$TODAY+30",
+  "amount": "-1266900.00"
+ },
+ "lot": {
+  "lot_id": 9,
+  "side": "LONG",
+  "open_date": "$TODAY",
+  "open_ts": "$NOW-7000",
+  "qty_open": 20000,
+  "qty_remaining": 20000,
+  "unit_cost": "61.5000",
+  "cost": "1230000.00",
+  "open_fill_id": "f:p2",
+  "lock_until": "2027-04-20",
+  "currency": "USD"
+ }
+}

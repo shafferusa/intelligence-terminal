@@ -1,0 +1,26 @@
+{
+ "account_id": "P2:PB_GS",
+ "kind": "PB",
+ "role": "PB_GS",
+ "tab": "otc",
+ "tabs": [
+  {
+   "key": "equities",
+   "label": "Equities & ETFs"
+  },
+  {
+   "key": "options",
+   "label": "Options underlyings"
+  },
+  {
+   "key": "futures",
+   "label": "Futures"
+  },
+  {
+   "key": "otc",
+   "label": "OTC (swaps)"
+  }
+ ],
+ "rows": [],
+ "note": "IRS / TRS / XCCY dealt at the model par rate +/- the PB's half-width; daily VM and resets"
+}

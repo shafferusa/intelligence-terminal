@@ -1,0 +1,223 @@
+
+=== yahoo v8 chart SPY 1m: HTTP 200 in 0.27s, 47078 bytes
+{
+ "symbol": "SPY",
+ "currency": "USD",
+ "exchangeName": "PCX",
+ "fullExchangeName": "NYSEArca",
+ "instrumentType": "ETF",
+ "regularMarketPrice": 769.32,
+ "regularMarketTime": 1792526400,
+ "regularMarketDayHigh": 772.275,
+ "regularMarketDayLow": 764.26,
+ "regularMarketVolume": 30979608,
+ "previousClose": 766.48,
+ "chartPreviousClose": 766.48,
+ "exchangeTimezoneName": "America/New_York",
+ "gmtoffset": -14400,
+ "hasPrePostMarketData": true,
+ "priceHint": 2,
+ "currentTradingPeriod": {
+  "pre": {
+   "timezone": "EDT",
+   "start": 1792483200,
+   "end": 1792503000,
+   "gmtoffset": -14400
+  },
+  "regular": {
+   "timezone": "EDT",
+   "start": 1792503000,
+   "end": 1792526400,
+   "gmtoffset": -14400
+  },
+  "post": {
+   "timezone": "EDT",
+   "start": 1792526400,
+   "end": 1792540800,
+   "gmtoffset": -14400
+  }
+ },
+ "n_bars": 683,
+ "last_bar": {
+  "t": 1792526519,
+  "o": 769.24,
+  "h": 769.24,
+  "l": 769.24,
+  "c": 769.24,
+  "v": 0
+ },
+ "now": 1792526646
+}
+
+=== yahoo v8 chart EURUSD=X: HTTP 200 in 0.13s, 111972 bytes
+{"symbol": "EURUSD=X", "currency": "USD", "exchangeName": "CCY", "instrumentType": "CURRENCY", "regularMarketPrice": 1.1238, "regularMarketTime": 1792526489, "regularMarketVolume": 0, "previousClose": 1.1217, "exchangeTimezoneName": "Europe/London", "hasPrePostMarketData": false, "n_bars": 1263, "tp": {"timezone": "BST", "start": 1792450800, "end": 1792537140, "gmtoffset": 3600}}
+
+=== yahoo v8 chart ES=F: HTTP 200 in 0.14s, 44072 bytes
+{"symbol": "ES=F", "currency": "USD", "exchangeName": "CME", "instrumentType": "FUTURE", "regularMarketPrice": 7754.25, "regularMarketTime": 1792525919, "regularMarketVolume": 1531200, "previousClose": 7734.5, "exchangeTimezoneName": "America/New_York", "hasPrePostMarketData": false, "n_bars": 944, "tp": {"timezone": "EDT", "end": 1792555140, "start": 1792468800, "gmtoffset": -14400}}
+
+=== yahoo v8 chart ^TNX: HTTP 200 in 0.11s, 34734 bytes
+{"symbol": "^TNX", "currency": "USD", "exchangeName": "CGI", "instrumentType": "INDEX", "regularMarketPrice": 5.117, "regularMarketTime": 1792522794, "regularMarketVolume": 0, "previousClose": 5.136, "exchangeTimezoneName": "America/Chicago", "hasPrePostMarketData": false, "n_bars": 400, "tp": {"timezone": "CDT", "start": 1792498800, "end": 1792522800, "gmtoffset": -18000}}
+
+=== yahoo v8 chart CLX26.NYM: HTTP 200 in 0.09s, 44404 bytes
+{"symbol": "CLX26.NYM", "currency": "USD", "exchangeName": "NYM", "instrumentType": "FUTURE", "regularMarketPrice": 101.09, "regularMarketTime": 1792520982, "regularMarketVolume": 16735, "previousClose": 103.66, "exchangeTimezoneName": "America/New_York", "hasPrePostMarketData": false, "n_bars": 870, "tp": {"timezone": "EDT", "start": 1792468800, "end": 1792555140, "gmtoffset": -14400}}
+
+=== yahoo v8 chart BTC-USD: HTTP 200 in 0.17s, 81374 bytes
+{"symbol": "BTC-USD", "currency": "USD", "exchangeName": "CCC", "instrumentType": "CRYPTOCURRENCY", "regularMarketPrice": 82424.41, "regularMarketTime": 1792526521, "regularMarketVolume": 25982980096, "previousClose": 81844.43, "exchangeTimezoneName": "UTC", "hasPrePostMarketData": false, "n_bars": 1204, "tp": {"timezone": "UTC", "end": 1792540740, "start": 1792454400, "gmtoffset": 0}}
+
+=== yahoo v8 chart AAPL: HTTP 200 in 0.11s, 35498 bytes
+{"symbol": "AAPL", "currency": "USD", "exchangeName": "NMS", "instrumentType": "EQUITY", "regularMarketPrice": 339.5, "regularMarketTime": 1792526401, "regularMarketVolume": 30933066, "previousClose": 342.94, "exchangeTimezoneName": "America/New_York", "hasPrePostMarketData": true, "n_bars": 391, "tp": {"timezone": "EDT", "end": 1792526400, "start": 1792503000, "gmtoffset": -14400}}
+
+=== yahoo spark: HTTP 200 in 0.10s, 5434 bytes
+{"symbol": "AAPL", "regularMarketPrice": 339.5, "regularMarketTime": 1792526401, "previousClose": 342.94}
+
+=== yahoo v7 quote (no crumb): HTTP 401 in 0.11s, 157 bytes
+b'{"finance":{"result":null,"error":{"code":"Unauthorized","description":"User is unable to access this feature - https://bit.ly/yahoo-finance-api-feedback"}}}'
+
+=== yahoo v7 options (no crumb): HTTP 401 in 0.13s, 89 bytes
+b'{"finance":{"result":null,"error":{"code":"Unauthorized","description":"Invalid Crumb"}}}'
+
+=== cboe delayed quotes SPY: HTTP 200 in 0.75s, 5681466 bytes
+{
+ "symbol": "SPY",
+ "current_price": 768.62,
+ "bid": 768.61,
+ "ask": 768.63,
+ "bid_size": 120,
+ "ask_size": 240,
+ "last_trade_time": "2026-10-20T15:46:50",
+ "last_trade_price": null,
+ "prev_day_close": 766.48,
+ "iv30": 13.246,
+ "timestamp": null,
+ "n_options": 12726,
+ "sample": {
+  "option": "SPY261231P00835000",
+  "bid": 65.01,
+  "bid_size": 1.0,
+  "ask": 67.8,
+  "ask_size": 10.0,
+  "iv": 0.138,
+  "open_interest": 0.0,
+  "volume": 0.0,
+  "delta": -1.0,
+  "gamma": 0.0,
+  "vega": 0.0,
+  "theta": -0.0781,
+  "rho": 0.0,
+  "theo": 66.405,
+  "change": 0.0,
+  "open": 0.0,
+  "high": 0.0,
+  "low": 0.0,
+  "tick": "up",
+  "last_trade_price": 69.99,
+  "last_trade_time": "2026-08-20T13:22:34",
+  "percent_change": 0.0,
+  "prev_day_close": 66.810001373291
+ },
+ "top_keys": [
+  "data",
+  "symbol",
+  "timestamp"
+ ],
+ "data_keys": [
+  "ask",
+  "ask_size",
+  "bid",
+  "bid_size",
+  "close",
+  "current_price",
+  "exchange_id",
+  "high",
+  "iv30",
+  "iv30_change",
+  "iv30_change_percent",
+  "last_trade_time",
+  "low",
+  "open",
+  "options",
+  "prev_day_close",
+  "price_change",
+  "price_change_percent",
+  "security_type",
+  "seqno",
+  "symbol",
+  "tick",
+  "volume"
+ ]
+}
+
+=== cboe delayed quotes AAPL: HTTP 200 in 0.39s, 1483757 bytes
+{"symbol": "AAPL", "current_price": 339.485, "bid": 339.48, "ask": 339.5, "last_trade_time": "2026-10-20T15:46:47", "timestamp": null, "n": 3320}
+
+=== cboe delayed quotes _SPX: HTTP 200 in 1.26s, 13125459 bytes
+{"symbol": "^SPX", "current_price": 7712.1602, "bid": 7710.9102, "ask": 7713.4399, "last_trade_time": "2026-10-20T15:46:40", "timestamp": null, "n": 29492}
+
+=== treasury.gov par curve XML (Oct 2026): HTTP 200 in 16.18s, 19213 bytes
+
+
+=== FRED SOFR csv: HTTP 200 in 0.14s, 35318 bytes
+-10-08,3.87
+2026-10-09,3.87
+2026-10-12,
+2026-10-13,3.89
+2026-10-14,3.88
+2026-10-15,3.89
+2026-10-16,3.88
+2026-10-19,3.87
+
+
+=== FRED DGS10 csv: HTTP 200 in 0.15s, 269091 bytes
+.24
+2026-10-12,
+2026-10-13,5.21
+2026-10-14,5.19
+2026-10-15,5.10
+2026-10-16,5.09
+
+
+=== nasdaqtrader regsho threshold 2026-10-19: HTTP 200 in 0.09s, 212 bytes
+<html>
+
+<head>
+
+<META NAME="robots" CONTENT="noindex,nofollow">
+
+<script src="/_Incapsula_Resource?SWJIYLWA=5074a744e2e3d891814e9a2dace20bd4,719d34d31c8e3a6e6fffd425f7e032f3">
+
+</script>
+
+<body>
+
+</body></html>
+
+
+
+=== finra short volume 2026-10-19: HTTP 200 in 0.33s, 539675 bytes
+Date|Symbol|ShortVolume|ShortExemptVolume|TotalVolume|Market
+
+20261019|A|388242.313377|4|732703.386995|B,Q,N
+
+20261019|AA|736868.470504|4734|2342448.435950|B,Q,N
+
+20261019|AAA|2947|0|4769.618982|Q
+
+20261019|AAAA|1193|0|2144.695327|Q
+
+20261019|AAAB|3|0|6|Q
+
+20261019|AAAC|1004|0|1007|Q
+
+20261019|AAAP|
+
+=== frankfurter latest USD: HTTP 200 in 0.28s, 435 bytes
+{"amount": 1.0, "base": "USD", "date": "2026-10-20", "rates": {"AUD": 1.4317, "BRL": 5.0235, "CAD": 1.4051, "CHF": 0.82363, "CNY": 6.678, "CZK": 21.693, "DKK": 6.6648, "EUR": 0.89166, "GBP": 0.74925, "HKD": 7.8487, "HUF": 325.17, "IDR": 17986, "ILS": 3.1077, "INR": 94.93, "ISK": 121.44, "JPY": 158.1
+
+=== sec company_tickers.json: HTTP 200 in 0.16s, 799264 bytes
+10443 entries; sample {'cik_str': 1045810, 'ticker': 'NVDA', 'title': 'NVIDIA CORP'}
+
+
+=== 17:55 ET follow-up probes ===
+cboe delayed quotes AAPL with UA "LoganTerminal/1.0 (loganshaffer87@gmail.com)" -> HTTP 200, 1,483,118 bytes
+cboe delayed quotes AAPL with UA "FinSimTerminal/1.0 (paper trading; python-urllib)" -> HTTP 200, 1,483,118 bytes  (honest UA accepted)
+yahoo v8 chart per-contract futures: ESZ26.CME 200, ZNZ26.CBT 200, GCZ26.CMX 200, 6EZ26.CME 200, NQZ26.CME 200

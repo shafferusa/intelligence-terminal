@@ -1,0 +1,99 @@
+{
+ "ok": true,
+ "hold": false,
+ "mode": "ledger",
+ "checked_at": "$NOW",
+ "lifetime_id": "P2",
+ "duration_ms": 41,
+ "checks": [
+  {
+   "code": "L1",
+   "name": "every entry balances per currency",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L2",
+   "name": "every entry balances in base",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L3",
+   "name": "gl_balances equals the journal projection",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L4",
+   "name": "cash per account/currency equals settled + pending",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L5",
+   "name": "position quantity equals fills net of expiries/exercises",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L6",
+   "name": "command result stored",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L8",
+   "name": "Treasury = capital + retained - advances",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L12",
+   "name": "every short has a live borrow",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "L20",
+   "name": "no duplicate idem keys",
+   "ok": true,
+   "severity": "ERROR",
+   "count": 0,
+   "message": ""
+  },
+  {
+   "code": "M1",
+   "name": "P&L residual is zero",
+   "ok": true,
+   "severity": "WARN",
+   "count": 0,
+   "message": "marks partial (XYZ): residual checked on priced positions"
+  },
+  {
+   "code": "M2",
+   "name": "NAV identity to the cent",
+   "ok": true,
+   "severity": "WARN",
+   "count": 0,
+   "message": ""
+  }
+ ],
+ "problems": []
+}

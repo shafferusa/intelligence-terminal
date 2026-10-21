@@ -1,0 +1,27 @@
+{
+ "entry_id": 1,
+ "ts": "$NOW-1641600",
+ "ts_ny": "$NYTS-1641600",
+ "business_date": "$TODAY",
+ "kind": "capital",
+ "memo": "initial capital 1,000,000.00",
+ "ref_type": "capital",
+ "ref_id": "init:capital:P1",
+ "command_id": 1,
+ "request_id": "ui:cmd-1-aaaa",
+ "instrument_id": null,
+ "qty": null,
+ "price": null,
+ "gross": null,
+ "fee": null,
+ "origin": null,
+ "net_cash": {
+  "USD": "1000000.00"
+ },
+ "accounts": [
+  "P2:US_EXCHANGE"
+ ],
+ "counterparty": null,
+ "lines": [],
+ "read_only": true
+}

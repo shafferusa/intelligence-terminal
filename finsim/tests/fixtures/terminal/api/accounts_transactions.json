@@ -1,0 +1,243 @@
+{
+ "rows": [
+  {
+   "entry_id": 3,
+   "ts": "$NOW-86000",
+   "ts_ny": "$NYTS-86000",
+   "business_date": "$TODAY",
+   "kind": "transfer",
+   "memo": "advance from Treasury",
+   "ref_type": "transfer",
+   "ref_id": "t:1",
+   "command_id": 3,
+   "request_id": "ui:cmd-3-aaaa",
+   "instrument_id": null,
+   "qty": null,
+   "price": null,
+   "gross": null,
+   "fee": null,
+   "origin": null,
+   "net_cash": {
+    "USD": "400000.00"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE",
+    "P2:TREASURY"
+   ],
+   "counterparty": "P2:TREASURY",
+   "lines": [
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "1010",
+     "gl_name": "Cash settled",
+     "currency": "USD",
+     "debit": "400000.00",
+     "credit": null,
+     "instrument_id": null,
+     "memo": "advance"
+    },
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "3100",
+     "gl_name": "Treasury advances",
+     "currency": "USD",
+     "debit": null,
+     "credit": "400000.00",
+     "instrument_id": null,
+     "memo": "advance"
+    }
+   ]
+  },
+  {
+   "entry_id": 5,
+   "ts": "$NOW-7000",
+   "ts_ny": "$NYTS-7000",
+   "business_date": "$TODAY",
+   "kind": "fill",
+   "memo": "BUY 500 AAPL @ 339.50 (fee 2.50)",
+   "ref_type": "fill",
+   "ref_id": "f:1",
+   "command_id": 5,
+   "request_id": "ui:cmd-5-aaaa",
+   "instrument_id": "AAPL",
+   "qty": 500,
+   "price": "339.50",
+   "gross": "169750.00",
+   "fee": "2.50",
+   "origin": "ORDER",
+   "net_cash": {
+    "USD": "-169752.50"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": [
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "1100",
+     "gl_name": "Equities at cost",
+     "currency": "USD",
+     "debit": "169750.00",
+     "credit": null,
+     "instrument_id": "AAPL",
+     "memo": "lot 1"
+    },
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "5000",
+     "gl_name": "Fees",
+     "currency": "USD",
+     "debit": "2.50",
+     "credit": null,
+     "instrument_id": "AAPL",
+     "memo": "USD 0.005/share min 1.00"
+    },
+    {
+     "account_id": "P2:US_EXCHANGE",
+     "gl": "2100",
+     "gl_name": "Purchases payable",
+     "currency": "USD",
+     "debit": null,
+     "credit": "169752.50",
+     "instrument_id": "AAPL",
+     "memo": "T+1"
+    }
+   ]
+  },
+  {
+   "entry_id": 6,
+   "ts": "$NOW-6500",
+   "ts_ny": "$NYTS-6500",
+   "business_date": "$TODAY",
+   "kind": "fill",
+   "memo": "SELL SHORT 100 SPY @ 769.32 (fee 1.00)",
+   "ref_type": "fill",
+   "ref_id": "f:2",
+   "command_id": 6,
+   "request_id": "ui:cmd-6-aaaa",
+   "instrument_id": "SPY",
+   "qty": -100,
+   "price": "769.32",
+   "gross": "76932.00",
+   "fee": "1.00",
+   "origin": "ORDER",
+   "net_cash": {
+    "USD": "76931.00"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": []
+  },
+  {
+   "entry_id": 7,
+   "ts": "$NOW-6480",
+   "ts_ny": "$NYTS-6480",
+   "business_date": "$TODAY",
+   "kind": "collateral",
+   "memo": "borrow b:1 collateral 102 % posted to the lender",
+   "ref_type": "borrow",
+   "ref_id": "b:1",
+   "command_id": 7,
+   "request_id": "ui:cmd-7-aaaa",
+   "instrument_id": "SPY",
+   "qty": null,
+   "price": null,
+   "gross": null,
+   "fee": null,
+   "origin": null,
+   "net_cash": {
+    "USD": "-78470.64"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": []
+  },
+  {
+   "entry_id": 8,
+   "ts": "$NOW-6000",
+   "ts_ny": "$NYTS-6000",
+   "business_date": "$TODAY",
+   "kind": "fill",
+   "memo": "BUY 1 ESZ26.CME @ 7734.50 (fee 2.25)",
+   "ref_type": "fill",
+   "ref_id": "f:3",
+   "command_id": 8,
+   "request_id": "ui:cmd-8-aaaa",
+   "instrument_id": "ESZ26.CME",
+   "qty": 1,
+   "price": "7734.50",
+   "gross": "0.00",
+   "fee": "2.25",
+   "origin": "ORDER",
+   "net_cash": {
+    "USD": "-2.25"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": []
+  },
+  {
+   "entry_id": 9,
+   "ts": "$NOW-5990",
+   "ts_ny": "$NYTS-5990",
+   "business_date": "$TODAY",
+   "kind": "margin",
+   "memo": "futures initial margin 15,000.00 to the clearing deposit",
+   "ref_type": "margin",
+   "ref_id": "ESZ26.CME",
+   "command_id": 9,
+   "request_id": "ui:cmd-9-aaaa",
+   "instrument_id": "ESZ26.CME",
+   "qty": null,
+   "price": null,
+   "gross": null,
+   "fee": null,
+   "origin": null,
+   "net_cash": {
+    "USD": "-15000.00"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": []
+  },
+  {
+   "entry_id": 10,
+   "ts": "$NOW-5500",
+   "ts_ny": "$NYTS-5500",
+   "business_date": "$TODAY",
+   "kind": "fill",
+   "memo": "BTO 5 AAPL 270115P00315000 @ 9.50 (fee 3.25)",
+   "ref_type": "fill",
+   "ref_id": "f:4",
+   "command_id": 10,
+   "request_id": "ui:cmd-10-aaaa",
+   "instrument_id": "AAPL 270115P00315000",
+   "qty": 5,
+   "price": "9.50",
+   "gross": "4750.00",
+   "fee": "3.25",
+   "origin": "ORDER",
+   "net_cash": {
+    "USD": "-4753.25"
+   },
+   "accounts": [
+    "P2:US_EXCHANGE"
+   ],
+   "counterparty": null,
+   "lines": []
+  }
+ ],
+ "total": 7,
+ "net_cash": {
+  "USD": "208952.36"
+ }
+}

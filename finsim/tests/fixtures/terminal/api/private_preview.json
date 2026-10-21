@@ -1,0 +1,22 @@
+{
+ "gross": "1230000.00",
+ "fee": "36900.00",
+ "net": "1266900.00",
+ "settle_date": "$TODAY+30",
+ "lock_until": "2027-04-20",
+ "mark": {
+  "instrument_id": "PRIV:ANTHROPIC",
+  "mark": "61.50",
+  "quality": "private",
+  "source": "reported Series F (source: company press release 2026-09-02)",
+  "method": "private_round",
+  "quote_time": null,
+  "fetched_at": null,
+  "delay_label": "last reported round",
+  "inputs": null,
+  "executable": false,
+  "note": "last round 2026-09-02 (Series F, post-money USD 183 bn)"
+ },
+ "warnings": [],
+ "sentence": "Private secondaries are negotiated: the trade executes at the price you enter (default the last round's price \u00b1 your discount or premium), pays the placement fee you set (default 3 %), settles after the lag you set (default T+30 calendar days) and carries a lock-up (default 6 months) that the Sell ticket warns about."
+}

@@ -1,0 +1,69 @@
+{
+ "preview_id": "pv:aapl-stale-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": false,
+ "blockers": [
+  {
+   "code": "QUOTE_STALE",
+   "http": 409,
+   "message": "AAPL: the quote is not executable (STALE); a MARKET order needs a fresh print while the session is open",
+   "details": {
+    "reason": "STALE",
+    "quality": "stale",
+    "quote_time": "$NOW-1500"
+   }
+  }
+ ],
+ "warnings": [],
+ "account_id": "P2:US_EXCHANGE",
+ "instrument": {
+  "id": "AAPL",
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "kind": "EQUITY",
+  "currency": "USD",
+  "multiplier": "1",
+  "support": "FULL",
+  "lot": 1,
+  "tick": "0.01",
+  "settle_days": 1,
+  "session_group": "US_EQUITY",
+  "expiry": null
+ },
+ "side": "BUY",
+ "qty": 600,
+ "order_type": "MARKET",
+ "tif": "DAY",
+ "limit_px": null,
+ "stop_px": null,
+ "trail": null,
+ "quote": {
+  "last": "341.10",
+  "bid": null,
+  "ask": null,
+  "quality": "stale",
+  "source": "Yahoo Finance (up to 15 min delayed)",
+  "quote_time": "$NOW-1500",
+  "age_s": 1500,
+  "delay_label": "up to 15 min delayed",
+  "method": "direct",
+  "executable": false,
+  "reason": "STALE"
+ },
+ "execution": null,
+ "economics": null,
+ "funding": null,
+ "borrow": null,
+ "margin": null,
+ "hedges": null,
+ "compliance": [],
+ "risk": [],
+ "conventions": [
+  "FILL_PRICE",
+  "PARTICIPATION",
+  "SESSION",
+  "COST_BASIS",
+  "STALE"
+ ]
+}

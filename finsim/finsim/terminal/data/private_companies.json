@@ -1,0 +1,522 @@
+{
+  "schema": 1,
+  "researched_at": "2026-10-21",
+  "listing_status_verified_at": "2026-10-21",
+  "method": "Researched at build time (WP-19, TERMINAL_DESIGN.md s13.13) with web search; every post_money_usd / price_per_share carries the source_url and as_of of the report it was read from, or is null. Nothing is estimated: a per-share price is recorded only when a cited source states one; 'post_money_basis' says whether the source labelled the figure post-money. Rows are seeded once (INSERT OR IGNORE) and owner-recorded rounds are never overwritten. Listing status re-verified on 2026-10-21 with web search for every company: PUBLIC needs the ticker, the listing venue (exchange), the first trade date (listed_on) and a listing_source_url; FILED_IPO needs a cited filing (status_source_url, status_as_of) and stays until the shares trade; 'acquired' records a completed acquisition with its effective date and source, after which the company is no longer privately traded.",
+  "fields": {
+    "status": "PRIVATE | FILED_IPO | PUBLIC (+ ticker; the mark switches to the listed instrument from listed_on)",
+    "post_money_usd": "integer US dollars as the cited source reports the valuation (see post_money_basis), or null",
+    "price_per_share": "decimal string per share as the cited source reports it, or null (valuation-only rows have no mark)",
+    "as_of": "the date of the cited report",
+    "exchange": "PUBLIC only: the listing venue as the issuer or the exchange names it (e.g. Nasdaq Global Select Market)",
+    "listed_on": "PUBLIC only: the first trade date of the listed shares",
+    "listing_source_url": "PUBLIC only: the exchange notice or issuer release naming the venue, the ticker and the first trade date",
+    "first_trade_source_url": "PUBLIC only: a report of the first trading day",
+    "status_source_url": "the cited filing or report behind the status (FILED_IPO: the confidential or public registration statement)",
+    "status_as_of": "the date of that filing or report",
+    "acquired": "{by, acquirer_ticker, on, source_url}: a completed acquisition; from 'on' the company is no longer privately traded"
+  },
+  "companies": [
+    {
+      "company_id": "PRV-ANTHROPIC",
+      "name": "Anthropic PBC",
+      "sector": "AI",
+      "country": "US",
+      "status": "FILED_IPO",
+      "ticker": null,
+      "status_source_url": "https://www.anthropic.com/news/confidential-draft-s1-sec",
+      "status_as_of": "2026-06-01",
+      "notes": "USD 65 bn raised (about USD 15 bn previously committed hyperscaler capital, incl. USD 5 bn from Amazon). Prior round: Series G, Feb 2026, USD 30 bn at USD 380 bn post-money (GIC, Coatue). No price per share disclosed. Confidentially submitted a draft Form S-1 to the SEC (company announcement, 2026-06-01); no public listing as of 2026-10-21.",
+      "last_round": {
+        "round_date": "2026-05-28",
+        "round_type": "Series H",
+        "post_money_usd": 965000000000,
+        "post_money_basis": "post-money as stated by the source",
+        "price_per_share": null,
+        "lead_investors": "Altimeter Capital, Dragoneer, Greenoaks, Sequoia Capital",
+        "source_url": "https://news.bloomberglaw.com/private-equity/anthropic-raises-at-965-billion-valuation-eclipsing-openai-1",
+        "as_of": "2026-05-28"
+      }
+    },
+    {
+      "company_id": "PRV-OPENAI",
+      "name": "OpenAI",
+      "sector": "AI",
+      "country": "US",
+      "status": "FILED_IPO",
+      "ticker": null,
+      "status_source_url": "https://openai.com/index/openai-submits-confidential-s-1/",
+      "status_as_of": "2026-06-08",
+      "notes": "USD 122 bn committed (target was 110 bn). Amazon anchored with a USD 50 bn commitment of which 35 bn is contingent on an IPO or an AGI milestone; Nvidia and SoftBank USD 30 bn each; a16z, D. E. Shaw Ventures, MGX, TPG and T. Rowe Price accounts also participated. No price per share disclosed. Announced on 2026-06-08 that it had confidentially submitted a draft Form S-1 to the SEC; no public listing as of 2026-10-21.",
+      "last_round": {
+        "round_date": "2026-03-31",
+        "round_type": "financing round",
+        "post_money_usd": 852000000000,
+        "post_money_basis": "post-money as stated by the source",
+        "price_per_share": null,
+        "lead_investors": "Amazon (anchor), Nvidia, SoftBank",
+        "source_url": "https://finance.yahoo.com/markets/stocks/articles/openai-closes-122bn-funding-round-093126735.html",
+        "as_of": "2026-03-31"
+      }
+    },
+    {
+      "company_id": "PRV-SPACEX",
+      "name": "Space Exploration Technologies Corp. (SpaceX)",
+      "sector": "Aerospace and launch",
+      "country": "US",
+      "status": "PUBLIC",
+      "ticker": "SPCX",
+      "listed_on": "2026-06-12",
+      "exchange": "Nasdaq Global Select Market",
+      "listing_source_url": "https://www.nasdaqtrader.com/TraderNews.aspx?id=DTN2026-8",
+      "first_trade_source_url": "https://www.iposcoop.com/?p=38639",
+      "notes": "IPO priced 2026-06-11 at USD 135 per share (555,555,555 Class A shares, about USD 75 bn raised, about USD 1.77 tn at the offer price); trading on Nasdaq Global Select Market and Nasdaq Texas from 2026-06-12 as SPCX, so the mark comes from the listed instrument. Last private mark: insider share sale reported by Bloomberg on 2025-12-12 at USD 421 per share, about USD 800 bn. The pre- and post-IPO per-share figures are not comparable (share count changed) and are not reconciled here. Listing verified 2026-10-21: Nasdaq Data Technical News #2026-8 lists SPCX on the Nasdaq Global Select Market (dual listing on Nasdaq Texas) with first trade 2026-06-12; IPOScoop reports the debut that day (open 150.00, close 160.95).",
+      "last_round": {
+        "round_date": "2026-06-12",
+        "round_type": "IPO",
+        "post_money_usd": 1770000000000,
+        "post_money_basis": "market value at the offer price as reported (about USD 1.77 tn)",
+        "price_per_share": "135.00",
+        "lead_investors": null,
+        "source_url": "https://techcrunch.com/2026/06/11/spacex-officially-prices-shares-at-135-in-the-largest-ipo-ever/",
+        "as_of": "2026-06-11"
+      }
+    },
+    {
+      "company_id": "PRV-XAI",
+      "name": "xAI Corp.",
+      "sector": "AI",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "acquired": {
+        "by": "SpaceX",
+        "acquirer_ticker": "SPCX",
+        "on": "2026-02-02",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/0001181412/000162828026052535/spcx-20260630.htm"
+      },
+      "notes": "Acquired by SpaceX: the merger completed on 2026-02-02 and xAI became a wholly owned SpaceX subsidiary (SpaceX Form 10-Q for the quarter ended 2026-06-30, Note 1); reported at about USD 250 bn. Its shares are no longer separately traded. The Series E (USD 20 bn, upsized from 15 bn) is the last independent round; no single lead was named - participants included Valor Equity Partners, StepStone Group, Fidelity, Qatar Investment Authority, MGX, Baron Capital, Nvidia, Cisco Investments and Tesla. round_date is the report date (the closing date was not stated).",
+      "last_round": {
+        "round_date": "2026-01-07",
+        "round_type": "Series E",
+        "post_money_usd": 230000000000,
+        "post_money_basis": "described as post-money by secondary trackers; no primary filing seen",
+        "price_per_share": null,
+        "lead_investors": null,
+        "source_url": "https://www.theweek.in/news/biz-tech/2026/01/07/new-20-billion-series-e-funding-lifts-value-of-elon-musk-led-x-ai.amp.html",
+        "as_of": "2026-01-07"
+      }
+    },
+    {
+      "company_id": "PRV-STRIPE",
+      "name": "Stripe, Inc.",
+      "sector": "Payments and fintech",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Employee liquidity tender announced in Stripe's annual letter (reported 2026-02-24); Thrive Capital, Coatue and a16z provide most of the funds and Stripe repurchases some shares. The per-share price was not confirmed by Stripe: one secondary blog cites USD 63.00 and another site a different figure, so it is left null. Prior tenders: Feb 2025 (USD 91.5 bn), Sep 2025 (USD 106.7 bn).",
+      "last_round": {
+        "round_date": "2026-02-24",
+        "round_type": "tender offer",
+        "post_money_usd": 159000000000,
+        "post_money_basis": "tender valuation as stated by the source",
+        "price_per_share": null,
+        "lead_investors": "Thrive Capital, Coatue, Andreessen Horowitz",
+        "source_url": "https://www.theblock.co/post/391075/stripe-valuation-jumps-to-159-billion-on-back-of-tender-offer",
+        "as_of": "2026-02-24"
+      }
+    },
+    {
+      "company_id": "PRV-DATABRICKS",
+      "name": "Databricks, Inc.",
+      "sector": "Data and AI platform",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 5 bn strategic round closed 2026-08-13 (a July term sheet had said USD 188 bn). The sources do not say whether USD 190 bn is pre- or post-money. New investors Sixth Street Growth, BOND, Clearlake Capital, Point72, Premji Invest, TPG. Prior round: about USD 5 bn at USD 134 bn (Feb 2026). No price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-08-13",
+        "round_type": "strategic round",
+        "post_money_usd": 190000000000,
+        "post_money_basis": "valuation as reported; the source does not label it pre- or post-money",
+        "price_per_share": null,
+        "lead_investors": "Coatue (lead); Blackstone, MGX, T. Rowe Price Associates and T. Rowe Price Investment Management",
+        "source_url": "https://www.axios.com/pro/enterprise-software-deals/2026/08/13/databricks-190b-valuation-5b",
+        "as_of": "2026-08-13"
+      }
+    },
+    {
+      "company_id": "PRV-ANDURIL",
+      "name": "Anduril Industries, Inc.",
+      "sector": "Defense technology",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 5 bn Series H announced 2026-05-13, led by returning investors Thrive Capital and Andreessen Horowitz; prior Series G (June 2025) USD 2.5 bn at USD 30.5 bn led by Founders Fund. A later report of talks at a USD 100 bn valuation is unconfirmed. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-05-13",
+        "round_type": "Series H",
+        "post_money_usd": 61000000000,
+        "post_money_basis": "valuation as reported by TechCrunch; secondary summaries call it post-money",
+        "price_per_share": null,
+        "lead_investors": "Thrive Capital, Andreessen Horowitz",
+        "source_url": "https://techcrunch.com/2026/05/13/anduril-raises-5b-doubles-valuation-to-61b/",
+        "as_of": "2026-05-13"
+      }
+    },
+    {
+      "company_id": "PRV-SCALEAI",
+      "name": "Scale AI, Inc.",
+      "sector": "AI data and evaluation",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Meta invested USD 14.3 bn for a 49 % stake (Reuters, June 2025); Scale said the valuation was USD 29 bn; CEO Alexandr Wang joined Meta. The exact closing day comes from an aggregator (June 13). Claims of a 2026 Series G or an S-1 filing appear on one aggregator only and are unverified. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-06-13",
+        "round_type": "strategic investment (Meta, 49 % stake)",
+        "post_money_usd": 29000000000,
+        "post_money_basis": "valuation as stated by Scale AI per the source",
+        "price_per_share": null,
+        "lead_investors": "Meta Platforms",
+        "source_url": "https://www.brecorder.com/news/40367549/meta-finalizes-143-billion-investment-in-scale-ai-sources-say-poaching-ceo-wang",
+        "as_of": "2025-06-13"
+      }
+    },
+    {
+      "company_id": "PRV-PERPLEXITY",
+      "name": "Perplexity AI, Inc.",
+      "sector": "AI search",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Secondary-source data (DefiLlama tracker, read 2026-10-21): USD 525 m on 2026-01-09 at a USD 20.4 bn valuation; the round label is the tracker's own. Nvidia was reported in talks (Aug 2026, The Information via Reuters) at more than USD 30 bn - not closed at research time. No lead investor confirmed; no price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-01-09",
+        "round_type": "Series E-6 (tracker label)",
+        "post_money_usd": 20400000000,
+        "post_money_basis": "valuation as listed by a secondary tracker (DefiLlama)",
+        "price_per_share": null,
+        "lead_investors": null,
+        "source_url": "https://defillama.com/pre-ipo/perplexity-ai",
+        "as_of": "2026-10-21"
+      }
+    },
+    {
+      "company_id": "PRV-MISTRAL",
+      "name": "Mistral AI SAS",
+      "sector": "AI",
+      "country": "France",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "EUR 3 bn Series D announced 2026-09-08 at a post-money valuation above EUR 21 bn (Orrick, counsel to Mistral); the USD figure (US$ 24.42 bn for EUR 21 bn) is the cited source's conversion. Led by Samsung Electronics with Scaleup Europe Fund (EQT) and PSG Equity as co-leads; ASML (Series C lead) joined. Prior: Series C Sep 2025, EUR 1.7 bn at EUR 11.7 bn post-money. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-09-08",
+        "round_type": "Series D",
+        "post_money_usd": 24420000000,
+        "post_money_basis": "post-money (more than EUR 21 bn) converted to USD by the source",
+        "price_per_share": null,
+        "lead_investors": "Samsung Electronics (lead); Scaleup Europe Fund (EQT), PSG Equity (co-leads)",
+        "source_url": "https://w.media/mistral-ai-raises-e3-billion-in-record-european-tech-funding-round/",
+        "as_of": "2026-09-08"
+      }
+    },
+    {
+      "company_id": "PRV-SSI",
+      "name": "Safe Superintelligence Inc.",
+      "sector": "AI",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "About USD 2 bn at a USD 32 bn valuation, reported by the Financial Times (TechCrunch relay dated 2025-04-12); never confirmed by SSI. Greenoaks committed USD 500 m; a16z, Lightspeed, DST Global and strategic investors Alphabet and Nvidia also reported. A July 2026 Nvidia strategic investment (USD 5 bn, forecasting-site claim) has no disclosed terms. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-04-12",
+        "round_type": "funding round (FT report)",
+        "post_money_usd": 32000000000,
+        "post_money_basis": "valuation as reported (FT via TechCrunch); not confirmed by the company",
+        "price_per_share": null,
+        "lead_investors": "Greenoaks Capital",
+        "source_url": "https://techcrunch.com/2025/04/12/openai-co-founder-ilya-sutskevers-safe-superintelligence-reportedly-valued-at-32b",
+        "as_of": "2025-04-12"
+      }
+    },
+    {
+      "company_id": "PRV-ANYSPHERE",
+      "name": "Anysphere, Inc. (Cursor)",
+      "sector": "AI developer tools",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "acquired": {
+        "by": "SpaceX",
+        "acquirer_ticker": "SPCX",
+        "on": "2026-08-14",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/0001181412/000162828026056945/spcx-20260814.htm"
+      },
+      "notes": "Acquired by SpaceX: the all-stock merger became effective on 2026-08-14 (implied equity value USD 60.0 bn; 389,289,254 SpaceX Class A shares) per the SpaceX Form 8-K of 2026-08-14, so its shares are no longer separately traded. Last independent round: USD 2.3 bn Series D (announced 2025-11-13/14) co-led by Accel and Coatue with Thrive Capital, a16z, DST, Nvidia and Google. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-11-13",
+        "round_type": "Series D",
+        "post_money_usd": 29300000000,
+        "post_money_basis": "post-money as stated by the company per the source",
+        "price_per_share": null,
+        "lead_investors": "Accel, Coatue (co-leads)",
+        "source_url": "https://www.institutionalinvestor.com/article/coatue-joins-23-billion-bet-hot-ai-coding-platform",
+        "as_of": "2025-11-13"
+      }
+    },
+    {
+      "company_id": "PRV-GROQ",
+      "name": "Groq, Inc.",
+      "sector": "AI inference chips and cloud",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 350 m round (the company calls it a Series A) announced 2026-08-17, led by Disruptive with Nvidia's participation planned; Bloomberg: about half the USD 6.9 bn valuation of Sept 2025, after the Nvidia licensing/asset deal and the hiring of founder Jonathan Ross. The source does not say whether USD 3.5 bn is pre- or post-money. USD 650 m was also raised in June 2026 (no valuation disclosed). No price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-08-17",
+        "round_type": "Series A (company label)",
+        "post_money_usd": 3500000000,
+        "post_money_basis": "valuation as reported; pre- or post-money not stated",
+        "price_per_share": null,
+        "lead_investors": "Disruptive (lead); Nvidia (planned participation)",
+        "source_url": "https://groq.com/newsroom/groq-closes-usd350-million-series-a-building-the-world-s-leading-ai-inference-cloud",
+        "as_of": "2026-08-17"
+      }
+    },
+    {
+      "company_id": "PRV-REVOLUT",
+      "name": "Revolut Ltd",
+      "sector": "Fintech and digital banking",
+      "country": "UK",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Secondary share sale confirmed by Revolut on 2026-07-22; the price (USD 2,017 per share) and the implied valuation (about USD 115 bn) are press-reported (Bloomberg via tech.eu), not disclosed by the company; buyers reported: Coatue, Greenoaks, Dragoneer, Fidelity; size sought at least USD 750 m. Prior secondary Nov 2025 at USD 75 bn. A Forge indicative price of USD 2,125 (2026-10-15) is not a transaction.",
+      "last_round": {
+        "round_date": "2026-07-22",
+        "round_type": "secondary share sale",
+        "post_money_usd": 115000000000,
+        "post_money_basis": "implied valuation as reported (about USD 115 bn); not confirmed by the company",
+        "price_per_share": "2017.00",
+        "lead_investors": "Coatue, Greenoaks, Dragoneer, Fidelity (reported buyers)",
+        "source_url": "https://tech.eu/2026/07/22/revolut-confirms-fresh-secondary-share-sale-at-reported-115bn-valuation/",
+        "as_of": "2026-07-22"
+      }
+    },
+    {
+      "company_id": "PRV-BYTEDANCE",
+      "name": "ByteDance Ltd.",
+      "sector": "Internet and media (TikTok)",
+      "country": "China",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Employee share buyback reported by Reuters on 2025-08-27 (sources): USD 200.41 per share for current employees (former employees USD 180.37 per SCMP), valuing ByteDance at over USD 330 bn; up 5.5 % from USD 189.90 (about USD 315 bn) six months earlier. The repurchase email reached China-based staff on 2025-10-10 (SCMP). No official ByteDance statement.",
+      "last_round": {
+        "round_date": "2025-08-27",
+        "round_type": "employee share buyback",
+        "post_money_usd": 330000000000,
+        "post_money_basis": "valuation implied by the buyback price as reported (over USD 330 bn)",
+        "price_per_share": "200.41",
+        "lead_investors": "company buyback (current employees)",
+        "source_url": "https://gvwire.com/2025/08/27/tiktok-owner-bytedance-sets-valuation-at-over-330-billion-as-revenue-grows-sources-say/",
+        "as_of": "2025-08-27"
+      }
+    },
+    {
+      "company_id": "PRV-CANVA",
+      "name": "Canva Pty Ltd",
+      "sector": "Design software",
+      "country": "Australia",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Employee share sale launched 2025-08-20 at a USD 42 bn valuation (Bloomberg), up from USD 32 bn in 2024; buyers include Fidelity Management & Research and JPMorgan Asset Management. No 2026 transaction found at research time. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-08-20",
+        "round_type": "employee share sale (secondary)",
+        "post_money_usd": 42000000000,
+        "post_money_basis": "valuation as stated by the source",
+        "price_per_share": null,
+        "lead_investors": "Fidelity Management & Research, JPMorgan Asset Management (buyers)",
+        "source_url": "https://news.bloomberglaw.com/antitrust/canva-begins-share-sale-at-42-billion-valuation-in-road-to-ipo",
+        "as_of": "2025-08-20"
+      }
+    },
+    {
+      "company_id": "PRV-EPICGAMES",
+      "name": "Epic Games, Inc.",
+      "sector": "Games and software",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Secondary-source data (DefiLlama tracker, updated 2026-08-25): The Walt Disney Company's USD 1.5 bn investment (Feb 2024) at a USD 22.5 bn valuation; CB Insights dates the deal 2024-02-07. The often-quoted USD 28.7 bn dates from the April 2021 round. No later round found at research time. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2024-02-08",
+        "round_type": "strategic investment (Disney)",
+        "post_money_usd": 22500000000,
+        "post_money_basis": "valuation as listed by a secondary tracker (DefiLlama)",
+        "price_per_share": null,
+        "lead_investors": "The Walt Disney Company",
+        "source_url": "https://defillama.com/pre-ipo/epic-games",
+        "as_of": "2026-08-25"
+      }
+    },
+    {
+      "company_id": "PRV-DISCORD",
+      "name": "Discord Inc.",
+      "sector": "Communications software",
+      "country": "US",
+      "status": "FILED_IPO",
+      "ticker": null,
+      "notes": "Confidential US IPO filing reported in January 2026 (Reuters/Bloomberg relays; Goldman Sachs and JPMorgan said to lead). Last priced round: USD 500 m led by Dragoneer on 2021-09-15; the USD 15 bn valuation came from Bloomberg's source and was not confirmed by Discord. Forge secondary data implied about USD 8.5 bn in mid-2026 (indicative, not a transaction). No price per share disclosed. Listing status re-checked 2026-10-21: no public listing found (FILED_IPO stays until the shares trade).",
+      "last_round": {
+        "round_date": "2021-09-15",
+        "round_type": "funding round (Dragoneer-led)",
+        "post_money_usd": 15000000000,
+        "post_money_basis": "valuation as reported by Bloomberg's source; not confirmed by the company",
+        "price_per_share": null,
+        "lead_investors": "Dragoneer Investment Group",
+        "source_url": "https://www.bloomberg.com/news/articles/2021-09-15/chat-app-discord-is-worth-15-billion-after-new-funding",
+        "as_of": "2021-09-15"
+      }
+    },
+    {
+      "company_id": "PRV-FANATICS",
+      "name": "Fanatics, Inc.",
+      "sector": "Sports commerce and betting",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "About USD 700 m raised at a USD 31 bn valuation (announced 2022-12-06), led by Clearlake Capital Group with LionTree; no later primary round found at research time, and later secondary reports suggesting valuation compression are unverified. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2022-12-06",
+        "round_type": "funding round",
+        "post_money_usd": 31000000000,
+        "post_money_basis": "valuation as stated by the source",
+        "price_per_share": null,
+        "lead_investors": "Clearlake Capital Group (lead); LionTree",
+        "source_url": "https://www.cnbc.com/2022/12/06/fanatics-valuation-hits-31-billion-after-700-million-investment-round.html",
+        "as_of": "2022-12-06"
+      }
+    },
+    {
+      "company_id": "PRV-KRAKEN",
+      "name": "Payward, Inc. (Kraken)",
+      "sector": "Crypto exchange",
+      "country": "US",
+      "status": "FILED_IPO",
+      "ticker": null,
+      "status_source_url": "https://www.theblock.co/post/379498/kraken-confidentially-files-for-us-ipo-after-new-20-billion-valuation",
+      "status_as_of": "2025-11-19",
+      "notes": "USD 800 m in two tranches announced 2025-11-18: a primary tranche led by Jane Street, DRW Venture Capital, HSG, Oppenheimer Alternative Investment Management and Tribe Capital (plus the family office of co-CEO Arjun Sethi) and a USD 200 m strategic investment by Citadel Securities at the USD 20 bn valuation. A USD 100 m round at USD 21 bn (Sept 2026, Nasdaq Ventures) appears on one aggregator only - unverified. No price per share disclosed. Kraken announced on 2025-11-19 that it had confidentially submitted a draft Form S-1 to the SEC; CoinDesk reported on 2026-09-02 (one source) that the listing is not planned before Q2 2027. Not trading as of 2026-10-21.",
+      "last_round": {
+        "round_date": "2025-11-18",
+        "round_type": "funding round (two tranches)",
+        "post_money_usd": 20000000000,
+        "post_money_basis": "valuation as stated by the company per the source",
+        "price_per_share": null,
+        "lead_investors": "Jane Street, DRW Venture Capital, HSG, Oppenheimer Alternative Investment Management, Tribe Capital; Citadel Securities (strategic)",
+        "source_url": "https://finance.yahoo.com/news/crypto-exchange-kraken-valued-20-220606222.html",
+        "as_of": "2025-11-18"
+      }
+    },
+    {
+      "company_id": "PRV-RAMP",
+      "name": "Ramp Business Corporation",
+      "sector": "Fintech (spend management)",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "Series F announced 2026-06-04: USD 750 m led by ICONIQ, GIC and Ontario Teachers' Pension Plan at a USD 44 bn valuation (the source does not label it pre- or post-money). Bloomberg reported in October 2026 a further about USD 1.85 bn at roughly USD 60 bn PRE-money led by Dragoneer and Thrive Capital, which Ramp has not confirmed - not recorded as a round here. Prior: USD 300 m at USD 32 bn (Nov 2025, Lightspeed). No price per share disclosed.",
+      "last_round": {
+        "round_date": "2026-06-04",
+        "round_type": "Series F",
+        "post_money_usd": 44000000000,
+        "post_money_basis": "valuation as stated by the source (OTPP); pre- or post-money not stated",
+        "price_per_share": null,
+        "lead_investors": "ICONIQ, GIC, Ontario Teachers' Pension Plan",
+        "source_url": "https://otpp.com/en-ca/about-us/news-and-insights/2026/ramp-raises-series-f-at-44-billion-valuation/",
+        "as_of": "2026-06-04"
+      }
+    },
+    {
+      "company_id": "PRV-RIPPLING",
+      "name": "Rippling People Center Inc.",
+      "sector": "HR and finance software",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 450 m Series G announced 2025-05-09 (plus a tender offer of up to USD 200 m); the company said there was no lead investor - participants included Elad Gil, Sands Capital, GIC, Goldman Sachs Growth, Baillie Gifford and Y Combinator. Secondary sales around Dec 2025 implied about USD 20.8 bn (tracker data); 'Series H/I' labels on one tracker are unreliable. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-05-09",
+        "round_type": "Series G",
+        "post_money_usd": 16800000000,
+        "post_money_basis": "valuation as confirmed by the company per the source",
+        "price_per_share": null,
+        "lead_investors": null,
+        "source_url": "https://techcrunch.com/2025/05/09/rippling-raises-450m-at-a-16-8b-valuation-reveals-yc-is-a-customer",
+        "as_of": "2025-05-09"
+      }
+    },
+    {
+      "company_id": "PRV-DEEL",
+      "name": "Deel, Inc.",
+      "sector": "HR and payroll software",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 300 m Series E (2025-10-20) at a USD 17.3 bn valuation, co-led by Ribbit Capital with Andreessen Horowitz and Coatue; the source does not label it pre- or post-money. An S-1 filing in Feb 2026 at USD 23.8 bn appears on one unreliable tracker - unverified. Prior: a USD 300 m secondary at USD 12.6 bn (early 2025). No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-10-20",
+        "round_type": "Series E",
+        "post_money_usd": 17300000000,
+        "post_money_basis": "valuation as stated by the source; pre- or post-money not stated",
+        "price_per_share": null,
+        "lead_investors": "Ribbit Capital (co-lead); Andreessen Horowitz, Coatue",
+        "source_url": "https://finder.techleap.nl/news/feed/deel-secures-300m-valued-at-17-3b",
+        "as_of": "2025-10-20"
+      }
+    },
+    {
+      "company_id": "PRV-VERCEL",
+      "name": "Vercel Inc.",
+      "sector": "Developer cloud",
+      "country": "US",
+      "status": "PRIVATE",
+      "ticker": null,
+      "notes": "USD 300 m Series F announced 2025-09-30 at a USD 9.3 bn post-money valuation (company press release), co-led by Accel and GIC with BlackRock, StepStone, Khosla Ventures, Schroders, Adams Street and General Catalyst; an approximately USD 300 m secondary tender closed in November 2025. A 2026 S-1 / Series G claim appears on one unreliable tracker - unverified. No price per share disclosed.",
+      "last_round": {
+        "round_date": "2025-09-30",
+        "round_type": "Series F",
+        "post_money_usd": 9300000000,
+        "post_money_basis": "post-money as stated by the company press release",
+        "price_per_share": null,
+        "lead_investors": "Accel, GIC (co-leads)",
+        "source_url": "https://www.businesswire.com/news/home/20250930898216/en/Vercel-Closes-Series-F-at-$9.3B-Valuation-to-Scale-the-AI-Cloud",
+        "as_of": "2025-09-30"
+      }
+    },
+    {
+      "company_id": "PRV-CEREBRAS",
+      "name": "Cerebras Systems Inc.",
+      "sector": "AI chips",
+      "country": "US",
+      "status": "PUBLIC",
+      "ticker": "CBRS",
+      "listed_on": "2026-05-14",
+      "exchange": "Nasdaq Global Select Market",
+      "listing_source_url": "https://www.cerebras.ai/press-release/cerebras-systems-announces-pricing-of-initial-public-offering",
+      "first_trade_source_url": "https://www.iposcoop.com/?p=38426",
+      "notes": "IPO priced 2026-05-13 at USD 185 per Class A share (30,000,000 shares, about USD 5.55 bn gross; marketed range 150-160); trading on the Nasdaq Global Select Market from 2026-05-14 as CBRS, so the mark comes from the listed instrument. USD 56.4 bn is the fully diluted valuation at the IPO price per Yahoo Finance; the stock closed its first day at USD 311. Last private round: Series H, Feb 2026, USD 1 bn at about USD 23 bn post-money led by Tiger Global. Listing verified 2026-10-21: the company pricing release (2026-05-13) names the Nasdaq Global Select Market, ticker CBRS, trading from 2026-05-14; IPOScoop reports the first trade on 2026-05-14 (open 350.00, close 311.07).",
+      "last_round": {
+        "round_date": "2026-05-14",
+        "round_type": "IPO",
+        "post_money_usd": 56400000000,
+        "post_money_basis": "fully diluted valuation at the IPO price as reported",
+        "price_per_share": "185.00",
+        "lead_investors": null,
+        "source_url": "https://finance.yahoo.com/markets/stocks/articles/cerebras-stock-just-hit-markets-150518599.html",
+        "as_of": "2026-05-14"
+      }
+    }
+  ]
+}

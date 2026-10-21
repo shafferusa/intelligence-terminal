@@ -1,0 +1,35 @@
+{
+ "order": {
+  "order_id": "o:5",
+  "request_id": "ui:o-5-aaaa",
+  "account_id": "P2:US_EXCHANGE",
+  "instrument_id": "MSFT",
+  "symbol": "MSFT",
+  "side": "BUY",
+  "qty": 200,
+  "filled_qty": 0,
+  "avg_px": null,
+  "order_type": "LIMIT",
+  "limit_px": "505.00",
+  "stop_px": null,
+  "trail_amt": null,
+  "trail_pct": null,
+  "fill_mode": "SEQUENTIAL",
+  "tif": "DAY",
+  "status": "WORKING",
+  "created_ts": "$NOW-3000",
+  "updated_ts": "$NOW-2990",
+  "expires_ts": "$NOW+3600",
+  "reason": null,
+  "last_event": {
+   "ts": "$NOW-2990",
+   "to_status": "WORKING",
+   "note": "resting; crosses when last <= 505.00"
+  },
+  "fills": [],
+  "fees": "0.00",
+  "package_id": null,
+  "parent_order_id": null,
+  "participation": "0.10"
+ }
+}

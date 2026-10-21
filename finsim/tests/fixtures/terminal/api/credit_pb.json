@@ -1,0 +1,26 @@
+{
+ "account": {
+  "account_id": "P2:PB_GS",
+  "name": "Goldman Sachs (PB)",
+  "kind": "PB",
+  "role": "PB_GS",
+  "broker": "GS",
+  "status": "OPEN",
+  "sweep_out": 1,
+  "sweep_buffer": "10000.00",
+  "pb_financing": 1,
+  "pb_limit": "500000.00",
+  "nav": "100000.00",
+  "available_usd": "100000.00",
+  "working_orders": 0,
+  "pending_settlements": 0,
+  "attention_count": 0,
+  "sort_order": 100
+ },
+ "cash": {
+  "USD": {
+   "settled": "150000.00",
+   "available": "150000.00"
+  }
+ }
+}

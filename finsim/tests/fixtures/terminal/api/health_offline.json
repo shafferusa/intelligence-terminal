@@ -1,0 +1,144 @@
+{
+ "app": "finsim-terminal",
+ "version": "1.0.0",
+ "schema": 1,
+ "pid": 4242,
+ "uptime_s": 5400,
+ "started_ts": "$NOW-5400",
+ "db_path": "C:\\Users\\logan\\.finsim\\terminal.db",
+ "db_size": 3145728,
+ "state_version": 42,
+ "offline": true,
+ "clock": {
+  "utc": "$NOW",
+  "ny": "$NY",
+  "trading_day": "$TODAY",
+  "accounting_day": "$TODAY"
+ },
+ "integrity": {
+  "ok": true,
+  "hold": false,
+  "checked_at": "$NOW-600",
+  "problems": []
+ },
+ "providers": {
+  "yahoo": {
+   "ok": true,
+   "last_ok_ts": "$NOW-20",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 1412
+  },
+  "cboe": {
+   "ok": true,
+   "last_ok_ts": "$NOW-95",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 38
+  },
+  "treasury": {
+   "ok": true,
+   "last_ok_ts": "$NOW-25000",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 1
+  },
+  "fred": {
+   "ok": true,
+   "last_ok_ts": "$NOW-21000",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 4
+  },
+  "finra": {
+   "ok": true,
+   "last_ok_ts": "$NOW-30000",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 1
+  },
+  "frankfurter": {
+   "ok": true,
+   "last_ok_ts": "$NOW-3500",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 6
+  },
+  "fed": {
+   "ok": true,
+   "last_ok_ts": "$NOW-1800",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 3
+  },
+  "newspaper": {
+   "ok": true,
+   "last_ok_ts": "$NOW-240",
+   "last_error": null,
+   "consecutive_errors": 0,
+   "down_until_ts": null,
+   "requests_today": 12
+  }
+ },
+ "workers": {
+  "quotes": {
+   "alive": true,
+   "last_tick_ts": "$NOW-4",
+   "stalled": false,
+   "errors_1h": 0,
+   "last_error": null
+  },
+  "lifecycle": {
+   "alive": true,
+   "last_tick_ts": "$NOW-12",
+   "stalled": false,
+   "errors_1h": 0,
+   "last_error": null
+  },
+  "matcher": {
+   "alive": true,
+   "last_tick_ts": "$NOW-6",
+   "stalled": false,
+   "errors_1h": 0,
+   "last_error": null
+  },
+  "supervisor": {
+   "alive": true,
+   "last_tick_ts": "$NOW-9",
+   "stalled": false,
+   "errors_1h": 0,
+   "last_error": null
+  }
+ },
+ "lifecycle": {
+  "due": 0,
+  "failing": []
+ },
+ "attention_open": 2,
+ "calendar": {
+  "file": "data/nyse-holidays.json",
+  "fallback_years": [
+   2027,
+   2028
+  ]
+ },
+ "lock": {
+  "path": "C:\\Users\\logan\\.finsim\\terminal.lock",
+  "pid": 4242
+ },
+ "news": {
+  "injection_flags": 0,
+  "fetched": {
+   "yahoo": "$NOW-300",
+   "fed": "$NOW-1800",
+   "newspaper": "$NOW-240"
+  }
+ }
+}

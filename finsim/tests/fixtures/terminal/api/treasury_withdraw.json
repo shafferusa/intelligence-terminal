@@ -1,0 +1,14 @@
+{
+ "transfer": {
+  "transfer_id": "t:cap:3",
+  "kind": "WITHDRAWAL",
+  "currency": "USD",
+  "amount": "50000.00",
+  "ts": "$NOW"
+ },
+ "treasury": {
+  "capital": "950000.00",
+  "available": "385000.00",
+  "nav": "385012.50"
+ }
+}

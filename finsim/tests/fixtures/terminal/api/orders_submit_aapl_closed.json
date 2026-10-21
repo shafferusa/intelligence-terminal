@@ -1,0 +1,70 @@
+{
+ "order": {
+  "order_id": "o:8",
+  "account_id": "P2:US_EXCHANGE",
+  "instrument_id": "AAPL",
+  "symbol": "AAPL",
+  "side": "BUY",
+  "qty": 600,
+  "filled_qty": 0,
+  "avg_px": null,
+  "order_type": "MARKET",
+  "limit_px": null,
+  "stop_px": null,
+  "trail_amt": null,
+  "trail_pct": null,
+  "fill_mode": "SEQUENTIAL",
+  "tif": "DAY",
+  "status": "WORKING",
+  "created_ts": "$NOW",
+  "updated_ts": "$NOW",
+  "expires_ts": "$NOW+86400",
+  "reason": null,
+  "last_event": {
+   "ts": "$NOW",
+   "to_status": "WORKING",
+   "note": "accepted; the US_EQUITY session is closed: rests until it opens"
+  },
+  "fills": [],
+  "fees": "0.00",
+  "package_id": null,
+  "parent_order_id": null,
+  "participation": "0.10"
+ },
+ "fills": [],
+ "sweeps": [],
+ "borrow": null,
+ "hedge_package": null,
+ "warnings": [
+  "the US_EQUITY session is closed: the order rests until it opens"
+ ],
+ "decision": {
+  "action": "NONE",
+  "price": null,
+  "qty": 0,
+  "reason": "AWAITING_SESSION",
+  "bar_ts": null,
+  "quote_time": null,
+  "price_basis": "",
+  "triggered": false,
+  "stop_px": null,
+  "trail_ref_px": null,
+  "cap_note": "",
+  "first_look": false,
+  "note": "CLOSED"
+ },
+ "preview": {
+  "execution": {
+   "rests_until": "$NOW+61200",
+   "expires_at": "$NOW+86400",
+   "session": {
+    "group": "US_EQUITY",
+    "open": false,
+    "phase": "CLOSED",
+    "closes_at": null,
+    "next_open": "$NOW+61200",
+    "note": ""
+   }
+  }
+ }
+}

@@ -1,0 +1,260 @@
+{
+ "account": {
+  "account_id": "P2:US_EXCHANGE",
+  "name": "US Exchange",
+  "kind": "TRADING",
+  "role": "US_EXCHANGE",
+  "broker": null,
+  "status": "OPEN",
+  "sweep_out": 1,
+  "sweep_buffer": "10000.00",
+  "pb_financing": 0,
+  "pb_limit": "0.00",
+  "nav": "402361.50",
+  "available_usd": "183830.36",
+  "working_orders": 2,
+  "pending_settlements": 3,
+  "attention_count": 1,
+  "sort_order": 10
+ },
+ "cash": {
+  "USD": {
+   "account_id": "P2:US_EXCHANGE",
+   "currency": "USD",
+   "settled": "281405.11",
+   "receivable": "76931.00",
+   "payable": "174505.75",
+   "pending": "-97574.75",
+   "held_at_lender": "78470.64",
+   "margin": "15000.00",
+   "otc_margin": "0.00",
+   "reserved": "0.00",
+   "accrued": "0.00",
+   "available": "183830.36"
+  }
+ },
+ "buying_power": {
+  "USD": {
+   "account_id": "P2:US_EXCHANGE",
+   "currency": "USD",
+   "available": "183830.36",
+   "treasury_available": "435000.00",
+   "pb_headroom": "0.00",
+   "total": "618830.36",
+   "settle_date": "$TODAY+1",
+   "formula": "own available + Treasury available + PB headroom (each floored at 0)"
+  }
+ },
+ "nav": {
+  "scope": "P2:US_EXCHANGE",
+  "nav": "402361.50",
+  "assets": "576799.25",
+  "liabilities": "174437.75",
+  "quality": "stale",
+  "partial": true,
+  "missing": [
+   "XYZ"
+  ],
+  "as_of": "$NOW",
+  "cash": "281405.11",
+  "pending": "-97574.75",
+  "mv_long": "200935.00",
+  "mv_short": "-76862.00",
+  "unrealised": "2492.50",
+  "fx_result": "0.00",
+  "capital": "0.00",
+  "transfers": "400000.00",
+  "realised": "0.00",
+  "income": "0.00",
+  "financing": "0.00",
+  "fees": "11.00",
+  "retained": "2481.50",
+  "by_account": {
+   "P2:US_EXCHANGE": "402361.50"
+  },
+  "lifetime_ids": [
+   "P2"
+  ],
+  "archived": false,
+  "fx_missing": [],
+  "note": "NAV excludes 1 unpriced position (XYZ)"
+ },
+ "pnl": {
+  "TODAY": {
+   "scope": "P2:US_EXCHANGE",
+   "period": "TODAY",
+   "nav": "402361.50",
+   "nav_0": "400278.00",
+   "flows": "0.00",
+   "pnl": "2083.50",
+   "explained": "2083.50",
+   "residual": "0.00",
+   "components": {
+    "realised": "0.00",
+    "income": "0.00",
+    "financing": "0.00",
+    "fees": "9.00",
+    "unrealised": "2092.50",
+    "fx_result": "0.00"
+   },
+   "baseline": {
+    "snap_date": "$TODAY-1",
+    "ts": "$NOW-60000",
+    "note": "yesterday 17:45 ET snapshot"
+   },
+   "degraded": false,
+   "quality": "stale",
+   "partial": true
+  },
+  "MTD": {
+   "scope": "P2:US_EXCHANGE",
+   "period": "MTD",
+   "nav": "402361.50",
+   "nav_0": "400278.00",
+   "flows": "0.00",
+   "pnl": "2083.50",
+   "explained": "2083.50",
+   "residual": "0.00",
+   "components": {
+    "realised": "0.00",
+    "income": "0.00",
+    "financing": "0.00",
+    "fees": "9.00",
+    "unrealised": "2092.50",
+    "fx_result": "0.00"
+   },
+   "baseline": {
+    "snap_date": "$TODAY-1",
+    "ts": "$NOW-60000",
+    "note": "last snapshot before this accounting day"
+   },
+   "degraded": false,
+   "quality": "stale",
+   "partial": true
+  },
+  "YTD": {
+   "scope": "P2:US_EXCHANGE",
+   "period": "YTD",
+   "nav": "402361.50",
+   "nav_0": "0.00",
+   "flows": "0.00",
+   "pnl": "2361.50",
+   "explained": "2361.50",
+   "residual": "0.00",
+   "components": {
+    "realised": "-120.00",
+    "income": "0.00",
+    "financing": "0.00",
+    "fees": "11.00",
+    "unrealised": "2492.50",
+    "fx_result": "0.00"
+   },
+   "baseline": {
+    "snap_date": "$TODAY-1",
+    "ts": "$NOW-60000",
+    "note": "last snapshot before this accounting day"
+   },
+   "degraded": false,
+   "quality": "stale",
+   "partial": true
+  },
+  "ITD": {
+   "scope": "P2:US_EXCHANGE",
+   "period": "ITD",
+   "nav": "402361.50",
+   "nav_0": "0.00",
+   "flows": "0.00",
+   "pnl": "2361.50",
+   "explained": "2361.50",
+   "residual": "0.00",
+   "components": {
+    "realised": "-120.00",
+    "income": "0.00",
+    "financing": "0.00",
+    "fees": "11.00",
+    "unrealised": "2492.50",
+    "fx_result": "0.00"
+   },
+   "baseline": {
+    "snap_date": "$TODAY-1",
+    "ts": "$NOW-60000",
+    "note": "last snapshot before this accounting day"
+   },
+   "degraded": false,
+   "quality": "stale",
+   "partial": true
+  }
+ },
+ "positions_count": 6,
+ "working_orders": 2,
+ "pending_settlements": [
+  {
+   "settle_id": "st:f1:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "-169752.50",
+   "leg": "cash",
+   "fill_id": "f:1",
+   "status": "PENDING"
+  },
+  {
+   "settle_id": "st:f2:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "76931.00",
+   "leg": "cash",
+   "fill_id": "f:2",
+   "status": "PENDING"
+  },
+  {
+   "settle_id": "st:f4:USD",
+   "due_date": "$TODAY+1",
+   "currency": "USD",
+   "amount": "-4753.25",
+   "leg": "cash",
+   "fill_id": "f:4",
+   "status": "PENDING"
+  }
+ ],
+ "borrows": [
+  {
+   "borrow_id": "b:1",
+   "qty": 100,
+   "fee_rate": "0.0030",
+   "rebate_rate": "0.0337",
+   "tier": "GC",
+   "lender": "modelled lender",
+   "collateral": "78470.64"
+  }
+ ],
+ "loans": [],
+ "margin": {
+  "futures_required": "15000.00",
+  "futures_posted": "15000.00",
+  "options_required": "0.00",
+  "options_posted": "0.00",
+  "otc_im": "0.00",
+  "otc_vm": "0.00"
+ },
+ "collateral": {
+  "held_at_lender": "78470.64"
+ },
+ "sweeps_today": [],
+ "attention": [
+  {
+   "id": 3,
+   "ts": "$NOW-9000",
+   "severity": "WARN",
+   "source": "lifecycle",
+   "code": "SPLIT_MANUAL_REVIEW",
+   "message": "Yahoo reports a 4:1 split event on NVDA (ex 2026-10-19): splits are not applied to lots in this build - manual review",
+   "account_id": "P2:US_EXCHANGE",
+   "ref_type": "instrument",
+   "ref_id": "NVDA",
+   "resolved_ts": null,
+   "auto_resolve": 0
+  }
+ ],
+ "marks_partial": true,
+ "as_of": "$NOW"
+}

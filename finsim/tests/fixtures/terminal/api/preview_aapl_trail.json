@@ -1,0 +1,121 @@
+{
+ "preview_id": "pv:aapl-trail-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": true,
+ "blockers": [],
+ "warnings": [],
+ "account_id": "P2:US_EXCHANGE",
+ "instrument": {
+  "id": "AAPL",
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "kind": "EQUITY",
+  "currency": "USD",
+  "multiplier": "1",
+  "support": "FULL",
+  "lot": 1,
+  "tick": "0.01",
+  "settle_days": 1,
+  "session_group": "US_EQUITY",
+  "expiry": null
+ },
+ "side": "SELL",
+ "qty": 200,
+ "order_type": "TRAILING_STOP",
+ "tif": "GTC",
+ "limit_px": null,
+ "stop_px": null,
+ "trail": {
+  "trail_amt": "2.00",
+  "trail_pct": null,
+  "trail_ref_px": "341.10",
+  "stop_px": "339.10"
+ },
+ "quote": {
+  "last": "341.10",
+  "bid": null,
+  "ask": null,
+  "quality": "delayed",
+  "source": "Yahoo Finance (up to 15 min delayed)",
+  "quote_time": "$NOW-245",
+  "age_s": 245,
+  "delay_label": "up to 15 min delayed",
+  "method": "direct",
+  "executable": true,
+  "reason": null
+ },
+ "execution": {
+  "price_basis": "stop",
+  "expected_price": "339.10",
+  "fill_now": false,
+  "fill_qty_now": 0,
+  "decision": "NOT_TRIGGERED",
+  "cap_note": "not triggered: the stop 339.10 is 2.00 below the highest observed last 341.10; it ratchets up with each higher print and never moves back",
+  "session": {
+   "group": "US_EQUITY",
+   "open": true,
+   "phase": "OPEN",
+   "closes_at": "$NOW+3600",
+   "next_open": null,
+   "note": ""
+  },
+  "rests_until": null,
+  "expires_at": "$NOW+7776000",
+  "assumption": "fills at the last observed trade price; no bid/ask is available from the free feed",
+  "participation": "0.10"
+ },
+ "economics": {
+  "gross": "67820.00",
+  "fee": "1.00",
+  "fee_basis": "USD 0.005/share, min 1.00",
+  "net_cash": "67819.00",
+  "currency": "USD",
+  "settle_date": "$TODAY+1",
+  "accrued": null
+ },
+ "funding": {
+  "currency": "USD",
+  "settled": "281405.11",
+  "pending": "-97574.75",
+  "reserved": "0.00",
+  "available": "183830.36",
+  "need": "0.00",
+  "need_formula": "a sale: proceeds settle at T+1",
+  "shortfall": "0.00",
+  "sweep_in": "0.00",
+  "sweep_source": "NONE",
+  "treasury_available": "435000.00",
+  "pb_financing": "0.00",
+  "fx_leg": null,
+  "ok": true,
+  "confirm_required": false,
+  "confirm_reason": null,
+  "threshold": "2000000.00",
+  "nav": "1002429.50",
+  "formula": "own settled + receivables due by settlement - payables - reserved"
+ },
+ "borrow": null,
+ "margin": null,
+ "hedges": {
+  "candidates": [],
+  "status": "ready",
+  "note": "no hedge candidates: a sale of a long position reduces exposure"
+ },
+ "compliance": [
+  {
+   "rule": "Reg SHO 203(b) locate",
+   "status": "n/a",
+   "message": "a long sale (position 500, working sells 200, free 300)"
+  }
+ ],
+ "risk": [],
+ "conventions": [
+  "FILL_PRICE",
+  "PARTICIPATION",
+  "SESSION",
+  "COST_BASIS",
+  "TRAILING"
+ ],
+ "_note": "hand-worked: stop = 341.10 - 2.00 = 339.10; expected at the stop: 200 x 339.10 = 67,820.00; fee max(200 x 0.005, 1.00) = 1.00; net +67,819.00; GTC expires in 90 d"
+}

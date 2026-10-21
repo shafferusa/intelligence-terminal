@@ -1,0 +1,38 @@
+{
+ "preview_id": "pv:p1-closed-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": false,
+ "warnings": [],
+ "blockers": [
+  {
+   "code": "LIFETIME_CLOSED",
+   "http": 400,
+   "message": "lifetime P1 is closed (History is read-only)",
+   "details": {
+    "lifetime_id": "P1"
+   }
+  }
+ ],
+ "account_id": "P1:US_EXCHANGE",
+ "side": "BUY",
+ "qty": 100,
+ "order_type": "MARKET",
+ "tif": "DAY",
+ "instrument": null,
+ "quote": null,
+ "execution": null,
+ "economics": null,
+ "funding": null,
+ "borrow": null,
+ "margin": null,
+ "hedges": null,
+ "compliance": [],
+ "risk": [],
+ "conventions": [
+  "FILL_PRICE",
+  "PARTICIPATION",
+  "SESSION",
+  "COST_BASIS"
+ ]
+}

@@ -1,0 +1,236 @@
+[
+ {
+  "id": "PUT_7PCT",
+  "label": "Protective put 315 Jan-15-2027",
+  "available": true,
+  "legs": [
+   {
+    "instrument_id": "AAPL 270115P00315000",
+    "symbol": "AAPL 15JAN27 315 P",
+    "side": "BTO",
+    "qty": 6,
+    "price_basis": "ask",
+    "est_price": "3.70",
+    "fee": "3.90",
+    "quote": {
+     "instrument_id": "AAPL 270115P00315000",
+     "bid": "3.60",
+     "ask": "3.70",
+     "bid_size": 12,
+     "ask_size": 40,
+     "iv": "0.2710",
+     "delta": "-0.05",
+     "oi": 900,
+     "volume": 30,
+     "last": null,
+     "quality": "delayed",
+     "quote_time": "$NOW-400",
+     "fetched_at": "$NOW-30",
+     "source": "Cboe delayed quotes",
+     "method": "chain",
+     "delay_label": "~15 min delayed",
+     "kind": "put"
+    },
+    "strike": "315.00",
+    "expiry": "2027-01-15"
+   }
+  ],
+  "cost": "2220.00",
+  "fees": "3.90",
+  "net_cash": "-2223.90",
+  "protection_level": "-0.0765",
+  "protection": "floor 315.00 (-7.65 %)",
+  "greeks": {
+   "delta_shares": "-30.00",
+   "note": "delta from the Cboe chain record; vega / theta are not in the chain record"
+  },
+  "ratio": "0.01",
+  "chain_quality": "delayed",
+  "as_of": "$NOW-400",
+  "editable": {
+   "strike": true,
+   "expiry": true,
+   "ratio": true
+  },
+  "fill_mode": "SEQUENTIAL",
+  "disclosure": "sequential; a leg can rest (the put is released after the primary fills, resized on partial fills)",
+  "rule": "K = 0.93 x 341.10 = 317.22 -> nearest listed 315; n = floor(600 / 100) = 6; expiry = nearest listed with a cached chain (2027-01-15, 87 days)"
+ },
+ {
+  "id": "COLLAR_7",
+  "label": "Collar: put 315 / call 360 Jan-15-2027",
+  "available": true,
+  "legs": [
+   {
+    "instrument_id": "AAPL 270115P00315000",
+    "symbol": "AAPL 15JAN27 315 P",
+    "side": "BTO",
+    "qty": 6,
+    "price_basis": "ask",
+    "est_price": "3.70",
+    "fee": "3.90",
+    "quote": {
+     "instrument_id": "AAPL 270115P00315000",
+     "bid": "3.60",
+     "ask": "3.70",
+     "bid_size": 12,
+     "ask_size": 40,
+     "iv": "0.2710",
+     "delta": "-0.05",
+     "oi": 900,
+     "volume": 30,
+     "last": null,
+     "quality": "delayed",
+     "quote_time": "$NOW-400",
+     "fetched_at": "$NOW-30",
+     "source": "Cboe delayed quotes",
+     "method": "chain",
+     "delay_label": "~15 min delayed",
+     "kind": "put"
+    },
+    "strike": "315.00",
+    "expiry": "2027-01-15"
+   },
+   {
+    "instrument_id": "AAPL 270115C00360000",
+    "symbol": "AAPL 15JAN27 360 C",
+    "side": "STO",
+    "qty": 6,
+    "price_basis": "bid",
+    "est_price": "1.05",
+    "fee": "3.90",
+    "quote": {
+     "instrument_id": "AAPL 270115C00360000",
+     "bid": "1.05",
+     "ask": "1.20",
+     "bid_size": 12,
+     "ask_size": 40,
+     "iv": "0.2650",
+     "delta": "0.32",
+     "oi": 3990,
+     "volume": 103,
+     "last": null,
+     "quality": "delayed",
+     "quote_time": "$NOW-400",
+     "fetched_at": "$NOW-30",
+     "source": "Cboe delayed quotes",
+     "method": "chain",
+     "delay_label": "~15 min delayed",
+     "kind": "call"
+    },
+    "strike": "360.00",
+    "expiry": "2027-01-15"
+   }
+  ],
+  "cost": "1590.00",
+  "fees": "7.80",
+  "net_cash": "-1597.80",
+  "protection_level": "-0.0765",
+  "protection": "floor 315.00 (-7.65 %), cap 360.00 (+5.54 %)",
+  "greeks": {
+   "delta_shares": "-222.00",
+   "note": "-30 (puts) - 192 (short calls)"
+  },
+  "ratio": "0.01",
+  "chain_quality": "delayed",
+  "as_of": "$NOW-400",
+  "editable": {
+   "strike": true,
+   "expiry": true,
+   "ratio": true
+  },
+  "fill_mode": "SEQUENTIAL",
+  "disclosure": "sequential; a leg can rest",
+  "rule": "call K = 1.07 x 341.10 = 364.98 -> snapped to the highest cached strike 360 (+5.54 %); sold at the Cboe bid 1.05"
+ },
+ {
+  "id": "PUT_SPREAD",
+  "label": "Put spread 0.93 / 0.85",
+  "available": false,
+  "reason": "the 0.85 x S strike (0.85 x 341.10 = 289.94) is below the lowest cached strike 315: not offered from this chain",
+  "legs": [],
+  "cost": null,
+  "fees": null,
+  "net_cash": null,
+  "protection_level": null,
+  "protection": null,
+  "greeks": null,
+  "ratio": null,
+  "chain_quality": "delayed",
+  "as_of": "$NOW-400",
+  "editable": {
+   "strike": true,
+   "expiry": true,
+   "ratio": true
+  },
+  "fill_mode": "SEQUENTIAL"
+ },
+ {
+  "id": "INDEX_OVERLAY",
+  "label": "Index overlay: short 1 ESZ26 (beta 1.20, static)",
+  "available": true,
+  "legs": [
+   {
+    "instrument_id": "ESZ26",
+    "symbol": "ESZ26",
+    "side": "SELL",
+    "qty": 1,
+    "price_basis": "last",
+    "est_price": "7754.25",
+    "fee": "2.25",
+    "quote": {
+     "instrument_id": "ESZ26.CME",
+     "provider": "yahoo",
+     "source": "Yahoo Finance (up to 15 min delayed)",
+     "method": "direct",
+     "last": "7754.25",
+     "bid": null,
+     "ask": null,
+     "bid_size": null,
+     "ask_size": null,
+     "mid": null,
+     "prev_close": "7734.50",
+     "day_high": "7760.00",
+     "day_low": "7701.75",
+     "day_volume": 1531200,
+     "quote_time": "$NOW-300",
+     "fetched_at": "$NOW-30",
+     "delay_s": 900,
+     "delay_label": "up to 15 min delayed",
+     "currency": "USD",
+     "session_group": "CME_EQUITY_INDEX",
+     "exchange_tz": "America/New_York",
+     "provider_session": null,
+     "error": null,
+     "inputs": null,
+     "quality": "delayed",
+     "age_s": 300
+    },
+    "margin": {
+     "initial": "15000.00",
+     "per_contract": "15000.00"
+    }
+   }
+  ],
+  "cost": "2.25",
+  "fees": "2.25",
+  "net_cash": "-2.25",
+  "protection_level": null,
+  "protection": "notional hedged 245,592.00 (204,660.00 x beta 1.20) with 1 ES = 387,712.50 (50 x 7,754.25); initial margin 15,000.00 (FUT_MARGIN)",
+  "greeks": {
+   "delta_shares": null,
+   "note": "linear index exposure; beta 1.20 is a static figure from the master, labelled static"
+  },
+  "ratio": null,
+  "chain_quality": "delayed",
+  "as_of": "$NOW-300",
+  "editable": {
+   "strike": false,
+   "expiry": false,
+   "ratio": true
+  },
+  "fill_mode": "SEQUENTIAL",
+  "disclosure": "sequential; a leg can rest",
+  "rule": "n = round(204,660.00 x 1.20 / (7,754.25 x 50)) = round(0.6334) = 1"
+ }
+]

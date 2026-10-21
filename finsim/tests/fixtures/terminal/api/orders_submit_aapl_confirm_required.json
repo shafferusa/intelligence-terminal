@@ -1,0 +1,143 @@
+{
+ "$status": 409,
+ "$body": {
+  "error": {
+   "code": "CONFIRM_REQUIRED",
+   "message": "notional above 25 % of the lifetime's NAV: sweep-in 157274.64 (threshold 2000000.00), notional 341100.00 of NAV 1002429.50; resubmit the same request_id with confirm_large: true",
+   "details": {
+    "sweep_in": "157274.64",
+    "sweep_in_c": 15727464,
+    "threshold": "2000000.00",
+    "notional": "341100.00",
+    "nav": "1002429.50",
+    "reason": "notional above 25 % of the lifetime's NAV",
+    "preview": {
+     "preview_id": "pv:aapl1000-0002",
+     "as_of": "$NOW",
+     "expires_at": "$NOW+120",
+     "ok": true,
+     "blockers": [],
+     "warnings": [],
+     "account_id": "P2:US_EXCHANGE",
+     "instrument": {
+      "id": "AAPL",
+      "symbol": "AAPL",
+      "name": "Apple Inc.",
+      "kind": "EQUITY",
+      "currency": "USD",
+      "multiplier": "1",
+      "support": "FULL",
+      "lot": 1,
+      "tick": "0.01",
+      "settle_days": 1,
+      "session_group": "US_EQUITY",
+      "expiry": null
+     },
+     "side": "BUY",
+     "qty": 1000,
+     "order_type": "MARKET",
+     "tif": "DAY",
+     "limit_px": null,
+     "stop_px": null,
+     "trail": null,
+     "quote": {
+      "last": "341.10",
+      "bid": null,
+      "ask": null,
+      "quality": "delayed",
+      "source": "Yahoo Finance (up to 15 min delayed)",
+      "quote_time": "$NOW-245",
+      "age_s": 245,
+      "delay_label": "up to 15 min delayed",
+      "method": "direct",
+      "executable": true,
+      "reason": null
+     },
+     "execution": {
+      "price_basis": "last",
+      "expected_price": "341.10",
+      "fill_now": true,
+      "fill_qty_now": 1000,
+      "decision": "MARKET",
+      "cap_note": "latest 1-minute bar volume 61,900; 10 % participation caps a pass at 6,190 shares",
+      "session": {
+       "group": "US_EQUITY",
+       "open": true,
+       "phase": "OPEN",
+       "closes_at": "$NOW+3600",
+       "next_open": null,
+       "note": ""
+      },
+      "rests_until": null,
+      "expires_at": "$NOW+3600",
+      "assumption": "fills at the last observed trade price; no bid/ask is available from the free feed",
+      "participation": "0.10"
+     },
+     "economics": {
+      "gross": "341100.00",
+      "fee": "5.00",
+      "fee_basis": "USD 0.005/share, min 1.00",
+      "net_cash": "-341105.00",
+      "currency": "USD",
+      "settle_date": "$TODAY+1",
+      "accrued": null
+     },
+     "funding": {
+      "currency": "USD",
+      "settled": "281405.11",
+      "pending": "-97574.75",
+      "reserved": "0.00",
+      "available": "183830.36",
+      "need": "341105.00",
+      "need_formula": "gross at the expected price + fee",
+      "shortfall": "157274.64",
+      "sweep_in": "157274.64",
+      "sweep_source": "TREASURY",
+      "treasury_available": "435000.00",
+      "pb_financing": "0.00",
+      "fx_leg": null,
+      "ok": true,
+      "confirm_required": true,
+      "confirm_reason": "notional above 25 % of the lifetime's NAV",
+      "threshold": "2000000.00",
+      "nav": "1002429.50",
+      "formula": "own settled + receivables due by settlement - payables - reserved"
+     },
+     "borrow": null,
+     "margin": null,
+     "hedges": {
+      "candidates": [],
+      "status": "fetching",
+      "note": "chain refresh in progress"
+     },
+     "compliance": [
+      {
+       "rule": "Reg SHO 203(b) locate",
+       "status": "n/a",
+       "message": "not a short sale"
+      },
+      {
+       "rule": "13D/G 5 % beneficial ownership",
+       "status": "ok",
+       "message": "after the fill: 1,100 shares, far below the 5 % threshold; verify the current rule text"
+      }
+     ],
+     "risk": [
+      {
+       "code": "CONCENTRATION",
+       "severity": "WARN",
+       "message": "AAPL would be 51.0 % of the lifetime's consolidated NAV (511,650.00 of 1,002,429.50)"
+      }
+     ],
+     "conventions": [
+      "FILL_PRICE",
+      "PARTICIPATION",
+      "SESSION",
+      "COST_BASIS",
+      "SWEEP"
+     ]
+    }
+   }
+  }
+ }
+}

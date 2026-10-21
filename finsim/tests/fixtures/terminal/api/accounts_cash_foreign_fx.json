@@ -1,0 +1,86 @@
+{
+ "account_id": "P2:FOREIGN_FX",
+ "account": {
+  "account_id": "P2:FOREIGN_FX",
+  "name": "Foreign Markets & FX",
+  "kind": "TRADING",
+  "role": "FOREIGN_FX",
+  "broker": null,
+  "status": "OPEN",
+  "sweep_out": 1,
+  "sweep_buffer": "10000.00",
+  "pb_financing": 0,
+  "pb_limit": "0.00",
+  "nav": "49998.00",
+  "available_usd": "38760.00",
+  "working_orders": 0,
+  "pending_settlements": 2,
+  "attention_count": 0,
+  "sort_order": 40
+ },
+ "cash": {
+  "USD": {
+   "account_id": "P2:FOREIGN_FX",
+   "currency": "USD",
+   "settled": "50000.00",
+   "receivable": "0.00",
+   "payable": "11240.00",
+   "pending": "-11240.00",
+   "held_at_lender": "0.00",
+   "margin": "0.00",
+   "otc_margin": "0.00",
+   "reserved": "0.00",
+   "accrued": "0.00",
+   "available": "38760.00"
+  },
+  "EUR": {
+   "account_id": "P2:FOREIGN_FX",
+   "currency": "EUR",
+   "settled": "0.00",
+   "receivable": "10000.00",
+   "payable": "0.00",
+   "pending": "10000.00",
+   "held_at_lender": "0.00",
+   "margin": "0.00",
+   "otc_margin": "0.00",
+   "reserved": "0.00",
+   "accrued": "0.00",
+   "available": "10000.00"
+  }
+ },
+ "ladder": [
+  {
+   "settle_id": "st:fx:1:USD",
+   "due_date": "$TODAY+2",
+   "currency": "USD",
+   "amount": "-11240.00",
+   "leg": "sell",
+   "fx_deal_id": "fx:1",
+   "status": "PENDING"
+  },
+  {
+   "settle_id": "st:fx:1:EUR",
+   "due_date": "$TODAY+2",
+   "currency": "EUR",
+   "amount": "10000.00",
+   "leg": "buy",
+   "fx_deal_id": "fx:1",
+   "status": "PENDING"
+  }
+ ],
+ "loans": [],
+ "borrows": [],
+ "margin": {
+  "futures_required": "0.00",
+  "futures_posted": "0.00",
+  "options_required": "0.00",
+  "options_posted": "0.00",
+  "otc_im": "0.00",
+  "otc_vm": "0.00"
+ },
+ "collateral": {
+  "held_at_lender": "0.00"
+ },
+ "sweeps_today": [],
+ "as_of": "$NOW"
+}

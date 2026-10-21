@@ -1,0 +1,101 @@
+{
+ "preview_id": "pv:aapl-insuf-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": false,
+ "blockers": [
+  {
+   "code": "INSUFFICIENT_FUNDS",
+   "http": 409,
+   "message": "P2:US_EXCHANGE needs USD 682,210.00: own available 183,830.36, Treasury available 435,000.00, PB financing 0.00",
+   "details": {
+    "need_c": 68221000,
+    "own_available_c": 18383036,
+    "treasury_available_c": 43500000,
+    "pb_headroom_c": 0,
+    "currency": "USD",
+    "fx_leg": null
+   }
+  }
+ ],
+ "warnings": [],
+ "account_id": "P2:US_EXCHANGE",
+ "instrument": {
+  "id": "AAPL",
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "kind": "EQUITY",
+  "currency": "USD",
+  "multiplier": "1",
+  "support": "FULL",
+  "lot": 1,
+  "tick": "0.01",
+  "settle_days": 1,
+  "session_group": "US_EQUITY",
+  "expiry": null
+ },
+ "side": "BUY",
+ "qty": 2000,
+ "order_type": "MARKET",
+ "tif": "DAY",
+ "limit_px": null,
+ "stop_px": null,
+ "trail": null,
+ "quote": {
+  "last": "341.10",
+  "bid": null,
+  "ask": null,
+  "quality": "delayed",
+  "source": "Yahoo Finance (up to 15 min delayed)",
+  "quote_time": "$NOW-245",
+  "age_s": 245,
+  "delay_label": "up to 15 min delayed",
+  "method": "direct",
+  "executable": true,
+  "reason": null
+ },
+ "execution": null,
+ "economics": {
+  "gross": "682200.00",
+  "fee": "10.00",
+  "fee_basis": "USD 0.005/share, min 1.00",
+  "net_cash": "-682210.00",
+  "currency": "USD",
+  "settle_date": "$TODAY+1",
+  "accrued": null
+ },
+ "funding": {
+  "currency": "USD",
+  "settled": "281405.11",
+  "pending": "-97574.75",
+  "reserved": "0.00",
+  "available": "183830.36",
+  "need": "682210.00",
+  "need_formula": "gross at the expected price + fee",
+  "shortfall": "498379.64",
+  "sweep_in": "435000.00",
+  "sweep_source": "TREASURY",
+  "treasury_available": "435000.00",
+  "pb_financing": "0.00",
+  "fx_leg": null,
+  "ok": false,
+  "confirm_required": true,
+  "confirm_reason": "notional above 25 % of the lifetime's NAV",
+  "threshold": "2000000.00",
+  "nav": "1002429.50",
+  "formula": "own settled + receivables due by settlement - payables - reserved"
+ },
+ "borrow": null,
+ "margin": null,
+ "hedges": null,
+ "compliance": [],
+ "risk": [],
+ "conventions": [
+  "FILL_PRICE",
+  "PARTICIPATION",
+  "SESSION",
+  "COST_BASIS",
+  "SWEEP"
+ ],
+ "_note": "hand-worked: 2,000 x 341.10 = 682,200.00 + fee 10.00 = 682,210.00; own 183,830.36 + Treasury 435,000.00 + PB 0 = 618,830.36 -> unfunded 63,379.64 (shortfall 498,379.64, sweep capped at 435,000.00)"
+}

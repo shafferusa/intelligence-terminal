@@ -1,0 +1,14 @@
+{
+ "status": "insufficient history",
+ "needed": 2,
+ "have": 1,
+ "lifetime_id": "P2",
+ "first_snapshot": "$TODAY-1",
+ "last_snapshot": "$TODAY-1",
+ "n": 1,
+ "sofr": {
+  "value": "3.87",
+  "as_of": "2026-10-19"
+ },
+ "note": "two daily snapshots are needed; the first was written yesterday 17:45 ET"
+}

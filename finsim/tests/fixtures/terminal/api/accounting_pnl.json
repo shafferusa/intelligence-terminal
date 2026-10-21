@@ -1,0 +1,26 @@
+{
+ "scope": "ALL",
+ "period": "TODAY",
+ "nav": "1002429.50",
+ "nav_0": "1000348.00",
+ "flows": "0.00",
+ "pnl": "2081.50",
+ "explained": "2081.50",
+ "residual": "0.00",
+ "components": {
+  "realised": "0.00",
+  "income": "0.00",
+  "financing": "0.00",
+  "fees": "9.00",
+  "unrealised": "2092.50",
+  "fx_result": "-2.00"
+ },
+ "baseline": {
+  "snap_date": "$TODAY-1",
+  "ts": "$NOW-60000",
+  "note": "last snapshot before this accounting day"
+ },
+ "degraded": false,
+ "quality": "stale",
+ "partial": true
+}

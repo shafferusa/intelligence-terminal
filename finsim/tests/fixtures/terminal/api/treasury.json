@@ -1,0 +1,85 @@
+{
+ "treasury": {
+  "lifetime_id": "P2",
+  "account_id": "P2:TREASURY",
+  "cash_by_ccy": {
+   "USD": "435000.00"
+  },
+  "accrued": "12.50",
+  "capital": "1000000.00",
+  "capital_by_ccy": {
+   "USD": "1000000.00"
+  },
+  "advances": "565000.00",
+  "advances_by_account": {
+   "P2:US_EXCHANGE": "400000.00",
+   "P2:DEBT": "15000.00",
+   "P2:CREDIT": "0.00",
+   "P2:FOREIGN_FX": "50000.00",
+   "P2:PB_GS": "100000.00"
+  },
+  "retained": "12.50",
+  "available": "435000.00",
+  "reserve": "0.00",
+  "nav": "435012.50",
+  "encumbrance": "0.00",
+  "identity_ok": true,
+  "formulas": {
+   "nav": "settled + accrued (Treasury holds no positions)",
+   "retained": "Treasury NAV - capital + advances",
+   "available": "settled USD - reserve",
+   "identity": "NAV = capital + retained - advances"
+  }
+ },
+ "advances": [
+  {
+   "account_id": "P2:US_EXCHANGE",
+   "name": "US Exchange",
+   "amount": "400000.00"
+  },
+  {
+   "account_id": "P2:DEBT",
+   "name": "Debt Instruments",
+   "amount": "15000.00"
+  },
+  {
+   "account_id": "P2:FOREIGN_FX",
+   "name": "Foreign Markets & FX",
+   "amount": "50000.00"
+  },
+  {
+   "account_id": "P2:PB_GS",
+   "name": "Goldman Sachs (PB)",
+   "amount": "100000.00"
+  }
+ ],
+ "capital_history": [
+  {
+   "ts": "$NOW-432000",
+   "kind": "initial capital",
+   "currency": "USD",
+   "amount": "1000000.00",
+   "memo": "init:capital:P2",
+   "request_id": "init:capital:P2"
+  }
+ ],
+ "sweep_log": [
+  {
+   "ts": "$NOW-86400",
+   "account_id": "P2:DEBT",
+   "direction": "SWEEP_OUT",
+   "currency": "USD",
+   "amount": "5000.00",
+   "reason": "idle settled cash above needs + buffer"
+  }
+ ],
+ "interest": {
+  "index": "SOFR",
+  "rate": "0.0337",
+  "as_of": "2026-10-19",
+  "accrued": "12.50",
+  "paid_mtd": "0.00",
+  "formula": "SOFR - 0.50 % (floor 0) on idle USD, ACT/360"
+ },
+ "lifetime_id": "P2"
+}

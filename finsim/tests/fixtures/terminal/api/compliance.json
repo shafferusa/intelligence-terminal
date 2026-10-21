@@ -1,0 +1,26 @@
+[
+ {
+  "rule": "Reg T / FINRA 4210 margin",
+  "status": "info",
+  "threshold": "50 % initial",
+  "message": "Personal book: futures IM and option margin are reserved from available cash; verify the current rule text"
+ },
+ {
+  "rule": "Pattern day trader (FINRA 4210(f)(8)(B))",
+  "status": "n/a",
+  "threshold": "USD 25,000 equity",
+  "message": "0 day trades in the rolling 5 sessions"
+ },
+ {
+  "rule": "Reg SHO 203(b) locate",
+  "status": "ok",
+  "threshold": "locate before a short sale",
+  "message": "SPY short backed by borrow b:1"
+ },
+ {
+  "rule": "Section 13(d)/(g) 5 %",
+  "status": "n/a",
+  "threshold": "5 % of a class",
+  "message": "no single-name holding near 5 % (shares outstanding from SEC when available)"
+ }
+]

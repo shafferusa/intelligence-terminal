@@ -1,0 +1,60 @@
+{
+ "scope": "ALL",
+ "rows": [
+  {
+   "gl": "1010",
+   "name": "Cash settled",
+   "currency": "USD",
+   "debit": "771650.11",
+   "credit": "0.00",
+   "balance": "771650.11"
+  },
+  {
+   "gl": "1100",
+   "name": "Equities at cost",
+   "currency": "USD",
+   "debit": "194870.00",
+   "credit": "0.00",
+   "balance": "194870.00"
+  },
+  {
+   "gl": "2600",
+   "name": "Short securities at proceeds",
+   "currency": "USD",
+   "debit": "0.00",
+   "credit": "76932.00",
+   "balance": "-76932.00"
+  },
+  {
+   "gl": "3000",
+   "name": "Contributed capital",
+   "currency": "USD",
+   "debit": "0.00",
+   "credit": "1000000.00",
+   "balance": "-1000000.00"
+  },
+  {
+   "gl": "5000",
+   "name": "Fees",
+   "currency": "USD",
+   "debit": "16.00",
+   "credit": "0.00",
+   "balance": "16.00"
+  }
+ ],
+ "balanced": true,
+ "totals": {
+  "debit": "1316426.75",
+  "credit": "1316426.75"
+ },
+ "by_currency": {
+  "USD": {
+   "debit": "1305186.75",
+   "credit": "1305186.75"
+  },
+  "EUR": {
+   "debit": "10000.00",
+   "credit": "10000.00"
+  }
+ }
+}

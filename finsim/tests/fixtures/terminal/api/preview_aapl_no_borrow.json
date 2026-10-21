@@ -1,0 +1,78 @@
+{
+ "preview_id": "pv:aapl-noborrow-0001",
+ "as_of": "$NOW",
+ "expires_at": "$NOW+120",
+ "ok": false,
+ "blockers": [
+  {
+   "code": "NO_BORROW",
+   "http": 409,
+   "message": "no borrow available for AAPL: FINRA daily short-volume ratio 0.71 >= 0.60 -> tier NONE (BORROW_AVAIL)",
+   "details": {
+    "locate": {
+     "instrument_id": "AAPL",
+     "qty": 1000,
+     "qty_available": 0,
+     "available": false,
+     "fee_rate": null,
+     "rebate_rate": null,
+     "tier": "NONE",
+     "lender": "modelled lender",
+     "collateral": null,
+     "valid_until": "$NOW+120",
+     "basis": "FINRA daily short volume ratio 0.71 >= 0.60: not available; a real locate would come from a lender"
+    }
+   }
+  }
+ ],
+ "warnings": [],
+ "account_id": "P2:US_EXCHANGE",
+ "instrument": {
+  "id": "AAPL",
+  "symbol": "AAPL",
+  "name": "Apple Inc.",
+  "kind": "EQUITY",
+  "currency": "USD",
+  "multiplier": "1",
+  "support": "FULL",
+  "lot": 1,
+  "tick": "0.01",
+  "settle_days": 1,
+  "session_group": "US_EQUITY",
+  "expiry": null
+ },
+ "side": "SELL_SHORT",
+ "qty": 1000,
+ "order_type": "MARKET",
+ "tif": "DAY",
+ "limit_px": null,
+ "stop_px": null,
+ "trail": null,
+ "quote": {
+  "last": "341.10",
+  "bid": null,
+  "ask": null,
+  "quality": "delayed",
+  "source": "Yahoo Finance (up to 15 min delayed)",
+  "quote_time": "$NOW-245",
+  "age_s": 245,
+  "delay_label": "up to 15 min delayed",
+  "method": "direct",
+  "executable": true,
+  "reason": null
+ },
+ "execution": null,
+ "economics": null,
+ "funding": null,
+ "borrow": null,
+ "margin": null,
+ "hedges": null,
+ "compliance": [],
+ "risk": [],
+ "conventions": [
+  "FILL_PRICE",
+  "PARTICIPATION",
+  "SESSION",
+  "COST_BASIS"
+ ]
+}

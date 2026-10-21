@@ -1,0 +1,67 @@
+[
+ {
+  "account_id": "P2:DEBT",
+  "instrument_id": "UST10Y",
+  "symbol": "T 4.25 08/36",
+  "name": "US Treasury 4.25 % Aug-2036",
+  "kind": "BOND",
+  "klass": "securities",
+  "currency": "USD",
+  "qty": 100,
+  "cost": "9750.00",
+  "avg_px": "97.5000",
+  "mark": {
+   "instrument_id": "UST10Y",
+   "mark": "98.125",
+   "quality": "computed",
+   "source": "Treasury.gov par curve (model)",
+   "method": "curve",
+   "quote_time": "$NOW-25000",
+   "fetched_at": "$NOW-30",
+   "delay_label": "daily par curve",
+   "inputs": {
+    "par_10y": {
+     "value": "5.09",
+     "as_of": "$NOW-25000",
+     "quality": "close"
+    },
+    "coupon": "4.25"
+   },
+   "executable": false,
+   "note": "model price, not executable in this build"
+  },
+  "mv": "9812.50",
+  "mv_base": "9812.50",
+  "notional": null,
+  "unrealised": "62.50",
+  "unrealised_base": "62.50",
+  "realised_itd": "0.00",
+  "income_itd": "0.00",
+  "financing_itd": "0.00",
+  "fees_itd": "5.00",
+  "income_pending": "0.00",
+  "day_pnl": "0.00",
+  "weight": "0.6517",
+  "days_held": 4,
+  "settle_px": null,
+  "borrow": null,
+  "lots": [
+   {
+    "lot_id": 7,
+    "side": "LONG",
+    "open_date": "$TODAY-4",
+    "open_ts": "$NOW-7000",
+    "qty_open": 100,
+    "qty_remaining": 100,
+    "unit_cost": "97.5000",
+    "cost": "9750.00",
+    "open_fill_id": "f:0c",
+    "lock_until": null,
+    "currency": "USD"
+   }
+  ],
+  "extra": {
+   "support": "LIMITED"
+  }
+ }
+]

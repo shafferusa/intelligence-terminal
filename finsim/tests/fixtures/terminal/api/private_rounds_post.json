@@ -1,0 +1,22 @@
+{
+ "company_id": "PRIV:ANTHROPIC",
+ "round": {
+  "round_date": "2026-10-20",
+  "round_type": "secondary",
+  "price_per_share": "62.00",
+  "source_url": "https://example.com/source"
+ },
+ "mark": {
+  "instrument_id": "PRIV:ANTHROPIC",
+  "mark": "62.00",
+  "quality": "private",
+  "source": "reported Series F (source: company press release 2026-09-02)",
+  "method": "private_round",
+  "quote_time": null,
+  "fetched_at": null,
+  "delay_label": "last reported round",
+  "inputs": null,
+  "executable": false,
+  "note": "last round 2026-10-20 (secondary)"
+ }
+}

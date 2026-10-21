@@ -1,0 +1,26 @@
+{
+ "kind": "IRS",
+ "par_rate": "0.0391",
+ "dealt_rate": "0.0392",
+ "half_width": "0.0001",
+ "mark0": "-98.50",
+ "dv01": "890.00",
+ "im": "44500.00",
+ "margin_mode": "CTM",
+ "schedule": [
+  {
+   "date": "2027-01-20",
+   "fixed": "97500.00",
+   "float": "96750.00"
+  }
+ ],
+ "conventions": [
+  "SWAP_MARK",
+  "SWAP_VM",
+  "SWAP_RESET"
+ ],
+ "inputs": {
+  "curve_as_of": "2026-10-19",
+  "sofr": "3.87"
+ }
+}

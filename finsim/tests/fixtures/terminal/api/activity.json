@@ -1,0 +1,126 @@
+{
+ "rows": [
+  {
+   "ts": "$NOW-1500",
+   "ts_ny": null,
+   "type": "attention",
+   "severity": "WARN",
+   "account_id": "P2:FOREIGN_FX",
+   "instrument_id": null,
+   "summary": "FUNDING_SHORTFALL: EUR 10,000 settlement needs USD 11,240.00 - Treasury sweep at 17:30",
+   "ref_type": "attention",
+   "ref_id": "1"
+  },
+  {
+   "ts": "$NOW-2500",
+   "ts_ny": null,
+   "type": "order",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "AAPL",
+   "summary": "o:6 TRAILING_STOP SELL 200 AAPL accepted (trail 5.00)",
+   "ref_type": "order",
+   "ref_id": "o:6"
+  },
+  {
+   "ts": "$NOW-3000",
+   "ts_ny": null,
+   "type": "order",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "MSFT",
+   "summary": "o:5 LIMIT BUY 200 MSFT @ 505.00 resting",
+   "ref_type": "order",
+   "ref_id": "o:5"
+  },
+  {
+   "ts": "$NOW-3900",
+   "ts_ny": null,
+   "type": "rejection",
+   "severity": "WARN",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "TSLA",
+   "summary": "QUOTE_STALE: BUY 100 TSLA refused (quote 23 min old)",
+   "ref_type": "rejection",
+   "ref_id": "2"
+  },
+  {
+   "ts": "$NOW-5500",
+   "ts_ny": null,
+   "type": "fill",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "AAPL 270115P00315000",
+   "summary": "f:4 BTO 5 AAPL 15JAN27 315 P @ 9.50 (Cboe ask)",
+   "ref_type": "fill",
+   "ref_id": "f:4"
+  },
+  {
+   "ts": "$NOW-6000",
+   "ts_ny": null,
+   "type": "fill",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "ESZ26.CME",
+   "summary": "f:3 BUY 1 ESZ26 @ 7734.50; IM 15,000.00 posted",
+   "ref_type": "fill",
+   "ref_id": "f:3"
+  },
+  {
+   "ts": "$NOW-6480",
+   "ts_ny": null,
+   "type": "borrow",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "SPY",
+   "summary": "b:1 borrow 100 SPY (GC 0.30 %), collateral 78,470.64 posted",
+   "ref_type": "borrow",
+   "ref_id": "b:1"
+  },
+  {
+   "ts": "$NOW-6500",
+   "ts_ny": null,
+   "type": "fill",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "SPY",
+   "summary": "f:2 SELL SHORT 100 SPY @ 769.32 (Cboe bid)",
+   "ref_type": "fill",
+   "ref_id": "f:2"
+  },
+  {
+   "ts": "$NOW-7000",
+   "ts_ny": null,
+   "type": "fill",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": "AAPL",
+   "summary": "f:1 BUY 500 AAPL @ 339.50 (last, Yahoo)",
+   "ref_type": "fill",
+   "ref_id": "f:1"
+  },
+  {
+   "ts": "$NOW-60000",
+   "ts_ny": null,
+   "type": "job",
+   "severity": "INFO",
+   "account_id": null,
+   "instrument_id": null,
+   "summary": "SNAPSHOT 17:45 ET: 6 accounts + ALL written (quality close)",
+   "ref_type": "job",
+   "ref_id": "snap:$TODAY-1"
+  },
+  {
+   "ts": "$NOW-86000",
+   "ts_ny": null,
+   "type": "transfer",
+   "severity": "INFO",
+   "account_id": "P2:US_EXCHANGE",
+   "instrument_id": null,
+   "summary": "t:1 advance 400,000.00 from Treasury",
+   "ref_type": "transfer",
+   "ref_id": "t:1"
+  }
+ ],
+ "next_since": "$NOW-86000"
+}

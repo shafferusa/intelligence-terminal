@@ -1,0 +1,20 @@
+{
+ "transfer": {
+  "transfer_id": "t:2",
+  "from_account": "P2:TREASURY",
+  "to_account": "P2:CREDIT",
+  "currency": "USD",
+  "amount": "25000.00",
+  "ts": "$NOW"
+ },
+ "from_cash": {
+  "USD": {
+   "settled": "410000.00"
+  }
+ },
+ "to_cash": {
+  "USD": {
+   "settled": "25000.00"
+  }
+ }
+}

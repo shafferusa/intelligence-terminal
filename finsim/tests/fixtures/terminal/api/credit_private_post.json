@@ -1,0 +1,28 @@
+{
+ "loan": {
+  "loan_id": "pl:1",
+  "borrower": "NewCo",
+  "currency": "USD",
+  "principal": "5000000.00",
+  "issue_price": "98.00",
+  "index": "SOFR",
+  "spread": "0.0650",
+  "term_months": 36
+ },
+ "mark": {
+  "mark": "98.40",
+  "quality": "computed",
+  "source": "model: SOFR + FRED HY spread",
+  "method": "pc_model",
+  "inputs": {
+   "sofr": "3.87",
+   "hy_oas": "3.10"
+  }
+ },
+ "schedule": [
+  {
+   "date": "2027-01-20",
+   "coupon": "131250.00"
+  }
+ ]
+}
