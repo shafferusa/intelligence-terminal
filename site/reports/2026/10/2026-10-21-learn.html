@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Nobody Could Measure How Fast BP&rsquo;s Well Was Gushing. A Federal Court Still Had to Add Up 87 Days of It. — Learning Brief, Wed, Oct 21, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-21",
+    "slot": "learn",
+    "title": "Nobody Could Measure How Fast BP’s Well Was Gushing. A Federal Court Still Had to Add Up 87 Days of It.",
+    "path": "reports/2026/10/2026-10-21-learn.html",
+    "summary": "Day 5 of the Connected Path: an integral adds a rate times a thin slice of time, across every slice, into an exact total — the move that let a federal court turn 87 disputed days of the Deepwater Horizon's oil flow into one number it could fine.",
+    "headlines": [
+      "Day 5 of 293 · Mathematics: an integral adds a changing rate up, slice by slice, into an exact total, and the fundamental theorem ties it back to Day 4's derivative",
+      "Every contested number in the Deepwater Horizon spill total lived in the flow rate, never in the arithmetic of adding it up",
+      "Watch or Read: Integration and the fundamental theorem of calculus (about 20 min)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-21T04:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Nobody Could Measure How Fast BP&rsquo;s Well Was Gushing. A Federal Court Still Had to Add Up 87 Days of It.</h1>
+      <p class="paper-dateline">
+        Wednesday, October 21, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        An integral is nothing more than a rate multiplied by a thin slice of time, added up across
+        every slice until the slices vanish &mdash; the one move that turned 87 days of a Gulf oil
+        well&rsquo;s disputed, ever-changing flow into a single number a federal court could fine.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 5 of 293 &middot; Mathematics 5 of 24 &middot; The integral: accumulation from rates</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A leak a mile down, and a number nobody could see</h3>
+      <p>
+        On 20 April 2010 the Deepwater Horizon drilling rig exploded in the Gulf of Mexico, killing 11
+        of the 126 workers aboard. The rig had been drilling BP&rsquo;s Macondo well, nearly a mile
+        below the surface, and when the blowout preventer failed, oil began pouring from the wellhead
+        into the Gulf. It kept gushing for 87 days, until a capping stack finally sealed it on 15 July.
+      </p>
+      <p>
+        No instrument sat inside the well measuring the flow directly &mdash; the leak was a mile down,
+        through a tangle of broken pipe, and nobody could put a meter on it. The first official
+        estimate, given with BP, was 1,000 barrels a day; on 28 April the Coast Guard and NOAA raised it
+        to 5,000. Independent scientists working from video of the plume gushing out of the broken
+        riser argued the true number was many times higher, triggering a public fight over whose
+        estimate to trust. The government&rsquo;s own Flow Rate Technical Group, led by USGS Director
+        Marcia McNutt with Energy Secretary Steven Chu&rsquo;s scientists, spent months refining the
+        number. On 2 August it published a final figure: the well had leaked at roughly 62,000 barrels
+        a day when it first blew out, declining to about 53,000 barrels a day by the time it was
+        capped as the reservoir&rsquo;s own pressure fell &mdash; some 4.9 million barrels in total,
+        give or take 10%. BP&rsquo;s own experts, defending the company against Clean Water Act
+        penalties that ran as high as $4,300 for every barrel spilled, argued for a far smaller total:
+        about 2.45 million barrels. <span class="chip chip--warn">Debated</span>
+      </p>
+      <p>
+        Somebody had to turn 87 days of a disputed, ever-changing daily rate into one number a federal
+        court could put a fine on. How do you add up a flow nobody could watch directly, that changed
+        every day, when the two sides&rsquo; own estimates differ by more than a factor of two?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        An integral adds up a rate, multiplied by a tiny slice of time, over and over, to find a total.
+        If you know how fast something is happening at every moment &mdash; barrels a day, meters per
+        second, dollars per year &mdash; and you want to know how much happened in total over some
+        stretch, you multiply the rate by a thin slice of time and add the slices together.
+      </p>
+      <p>
+        If the rate never changed, this would be plain multiplication: 50 miles an hour for two hours
+        is 100 miles, rate times time. The whole difficulty, and the whole reason calculus needs a name
+        for this, is that real rates change constantly &mdash; Macondo&rsquo;s daily flow fell from
+        62,000 to 53,000 barrels across 87 days, never holding still. The integral is what
+        multiplication becomes once the rate is allowed to wiggle: chop the stretch of time into
+        pieces so short the rate is nearly constant across each one, multiply rate by width on every
+        piece, and add. As the pieces shrink toward nothing, that sum settles on an exact total &mdash;
+        the area under the graph of the rate, plotted against time.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the crudest possible way to total a changing rate: pretend it holds steady over
+        short stretches, and add. Imagine a reading of the well&rsquo;s flow once a day for all 87
+        days. For day one, multiply that day&rsquo;s rate by one day&rsquo;s width; for day two,
+        multiply that day&rsquo;s rate by another day&rsquo;s width; and so on, adding every day&rsquo;s
+        contribution. Each piece is a rectangle on a graph of rate against time: its height is the rate
+        during that stretch, its width is how long the stretch lasted, and its area &mdash; height
+        times width &mdash; is how much flowed during that one piece. Mathematicians call this a
+        Riemann sum, after Bernhard Riemann, who gave the idea of approximating area under a curve by
+        rectangles its rigorous footing in the 1850s. Add up every rectangle&rsquo;s area, and you have
+        an estimate of the total.
+      </p>
+      <p>
+        A Riemann sum built from daily readings is a blunt tool, because it assumes the rate sits
+        exactly constant across an entire day and then jumps instantly to a new value the next &mdash;
+        real flows do not behave that way. One easy improvement is the trapezoid rule: instead of a
+        flat-topped rectangle on each interval, draw a straight line connecting that interval&rsquo;s
+        two endpoint readings, making each piece a trapezoid rather than a rectangle. A trapezoid&rsquo;s
+        area is the average of its two parallel sides&rsquo; heights, times its width &mdash; so the
+        trapezoid rule is really just &ldquo;average the two endpoints, then multiply by the
+        width,&rdquo; repeated on each interval and summed. It tracks a smoothly changing rate more
+        closely than flat rectangles, because the estimate is allowed to rise or fall continuously
+        across each interval instead of jumping.
+      </p>
+      <p>
+        Both methods are approximations built from a finite number of pieces, and both grow more
+        accurate as the pieces get thinner &mdash; more rectangles, or more trapezoids, each one
+        narrower. The definite integral is what either approximation approaches as the number of
+        pieces grows without bound and each piece&rsquo;s width shrinks toward zero: an exact total,
+        not an approximation of one. Mathematicians write it &int; from a to b of r(t) dt &mdash; read
+        &ldquo;the integral, from time a to time b, of the rate r of t, with respect to t&rdquo;
+        &mdash; naming exactly the limiting value every one of those sums is approaching. The symbol
+        &int; itself is an elongated S, chosen by Gottfried Wilhelm Leibniz in the 1670s as shorthand
+        for &ldquo;sum,&rdquo; because that is literally what an integral is: a sum of infinitely many,
+        infinitely thin pieces.
+      </p>
+      <p>
+        None of this is a new kind of mathematics, unconnected to Day 4. Day 4&rsquo;s derivative took
+        a quantity &mdash; the Keeling curve&rsquo;s carbon dioxide record &mdash; and extracted its
+        instantaneous rate of change, the slope of the curve at a single point. The integral runs that
+        process backwards: given a rate, it rebuilds the quantity that was changing. The fundamental
+        theorem of calculus, discovered independently by Leibniz and Isaac Newton in the late
+        seventeenth century and still the hinge the whole subject turns on, states this precisely: if
+        A(t) is the running total accumulated from some starting point up to time t &mdash; A(t) = the
+        integral from a to t of r(s) ds &mdash; then A&rsquo;s own derivative, A&prime;(t), equals r(t)
+        right back again. Accumulate a rate, then differentiate the result, and you return to the
+        original rate; differentiate a quantity, then integrate the result, and you return to the
+        original quantity, up to a starting value. Rates and totals are two faces of the same
+        relationship, and the fundamental theorem is the statement that going one direction and then
+        the other undoes itself exactly.
+      </p>
+      <p>
+        The units carry this logic before any arithmetic does. A rate&rsquo;s units are always some
+        quantity&rsquo;s units divided by time &mdash; barrels per day, meters per second, dollars per
+        year &mdash; and a tiny slice of the integral, rate times a sliver of time, cancels that
+        &ldquo;per day&rdquo; back out, leaving plain barrels, meters, or dollars. An integral&rsquo;s
+        units are always the rate&rsquo;s units times time, the exact inverse of what a derivative does
+        to units by dividing by time. That is not a coincidence worth memorizing separately; it is the
+        fundamental theorem showing up in the units before you have computed a single number.
+      </p>
+      <p>
+        Apply this to Macondo. Treat the flow as falling in a roughly straight line from about 62,000
+        barrels a day at the start to about 53,000 barrels a day near the end &mdash; a simplification,
+        since the real decline was not perfectly linear, but close enough to show the method. A
+        straight-line decline&rsquo;s trapezoid-rule total collapses to one line of arithmetic: average
+        the two endpoints, (62,000 + 53,000) / 2 = 57,500 barrels a day, and multiply by the 87-day
+        width: 57,500 &times; 87 &asymp; 5.0 million barrels. That simple hand calculation lands within
+        about 2% of the Flow Rate Technical Group&rsquo;s own, far more careful 4.9 million-barrel
+        estimate, built from pressure readings, video analysis and acoustic sensors rather than one
+        straight line. The method, done crudely with two numbers, already gets most of the way to the
+        method done rigorously with months of data.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Every contested number in the Macondo dispute lived in the rate, never in the arithmetic of
+        adding it up. BP&rsquo;s lawyers and the government&rsquo;s scientists agreed, in effect, on
+        how integration works; they disagreed about what the rate actually was on any given day,
+        because nobody had a meter a mile under the Gulf of Mexico. Once the Flow Rate Technical Group
+        settled on a rate curve &mdash; falling from roughly 62,000 to roughly 53,000 barrels a day as
+        reservoir pressure dropped &mdash; turning that curve into a total was the easy part: the same
+        trapezoid arithmetic above. Judge Carl Barbier&rsquo;s January 2015 finding of about 4 million
+        barrels discharged, less roughly 0.8 million captured at the wellhead before it reached the
+        water, for a net 3.19 million barrels, was a legal judgment about which rate estimate to
+        credit, landing between the government&rsquo;s and BP&rsquo;s competing curves &mdash; not a
+        disagreement about what an integral is or how to compute one.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Accumulation</dt>
+        <dd>A total built up from a quantity&rsquo;s rate over time &mdash; the area under the graph of
+        the rate, plotted against time.</dd>
+        <dt>Riemann sum</dt>
+        <dd>An approximation of that area using narrow rectangles: rate times a thin slice of time,
+        added across every slice.</dd>
+        <dt>Trapezoid rule</dt>
+        <dd>A more accurate approximation that averages each slice&rsquo;s two endpoint rates before
+        multiplying by its width, tracking a smoothly changing rate more closely than flat rectangles.</dd>
+        <dt>Definite integral</dt>
+        <dd>The exact value a Riemann sum or trapezoid-rule estimate approaches as the slices become
+        infinitely many and infinitely thin; written &int; from a to b of r(t) dt.</dd>
+        <dt>Fundamental theorem of calculus</dt>
+        <dd>The rule connecting the two halves of calculus: accumulating a rate, then taking that
+        accumulation&rsquo;s own rate of change, returns you to where you started.</dd>
+        <dt>Units of an integral</dt>
+        <dd>A rate&rsquo;s units (quantity per time) times time, which cancels the &ldquo;per
+        time&rdquo; back out &mdash; the opposite of what a derivative does to units.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: An Electric Car&rsquo;s Dashboard Runs on an Integral</h3>
+      <p>
+        An electric car&rsquo;s trip energy sits at the car chain&rsquo;s physical-constraint link:
+        however clever the engineering, the battery can only deliver the energy the trip&rsquo;s
+        physics actually demands. The dashboard&rsquo;s instantaneous power reading, in kilowatts, is a
+        rate &mdash; exactly like the well&rsquo;s barrels per day &mdash; and it swings constantly:
+        tens of kilowatts climbing a grade, briefly negative when regenerative braking turns the motor
+        into a generator and pushes energy back into the battery instead of pulling it out. The battery
+        gauge&rsquo;s kWh-used figure is that power curve&rsquo;s integral: the signed area under the
+        power-versus-time graph, with braking&rsquo;s negative power literally subtracting area rather
+        than adding it. A car&rsquo;s two dashboard numbers, kW and kWh, are a derivative-and-integral
+        pair exactly like the ones Day 4 and today have been discussing, and the EPA&rsquo;s own
+        kWh-per-100-miles efficiency label is that accumulated energy divided by distance traveled.
+      </p>
+      <div class="worked">
+        <p><strong>1. Break the trip into stretches of roughly steady power.</strong> 20 minutes of
+        level driving at 15 kW; 10 minutes climbing a pass at 40 kW; 10 minutes descending the other
+        side at &minus;10 kW (regenerative braking returning energy).</p>
+        <p><strong>2. Convert minutes to hours, since power is in kilowatts.</strong> 20 min = 1/3
+        hour; 10 min = 1/6 hour, twice.</p>
+        <p><strong>3. Multiply each stretch&rsquo;s power by its own width in hours.</strong> (1/3)
+        &times; 15 = 5 kWh; (1/6) &times; 40 &asymp; 6.67 kWh; (1/6) &times; (&minus;10) &asymp;
+        &minus;1.67 kWh.</p>
+        <p><strong>4. Add the three pieces &mdash; a Riemann sum with only three rectangles.</strong>
+        5 + 6.67 &minus; 1.67 = 10 kWh used for the whole trip.</p>
+        <p><strong>5. See what the negative piece did.</strong> Without regenerative braking&rsquo;s
+        &minus;1.67 kWh, the trip would have cost 11.67 kWh; the descent gave back almost 15% of
+        that.</p>
+      </div>
+      <p>
+        Real dashboards do this with power sampled many times a second rather than three blocks, which
+        is exactly the move from a coarse Riemann sum to something much closer to the true integral
+        &mdash; more, thinner rectangles, converging on the number the battery gauge actually displays.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>The integral, as the limit of a sum of rate times a thin slice of time:</p>
+      <div class="formula">
+        <p class="expr">Total = &int; from a to b of r(t) dt &asymp; &Sigma; r(t<sub>i</sub>) &Delta;t</p>
+        <p class="expr-spoken visually-hidden">The total equals the integral, from a to b, of the rate r of t, with respect to t — approximately equal to the sum, over every slice i, of the rate at that slice times the slice's width, delta t.</p>
+        <dl>
+          <dt>r(t)</dt>
+          <dd>the rate being measured at time t &mdash; for example, barrels of oil leaking per day</dd>
+          <dt>&Delta;t</dt>
+          <dd>the width of one thin time slice, shrinking toward zero as the sum becomes exact</dd>
+          <dt>a, b</dt>
+          <dd>the start and end of the interval being totalled &mdash; day 0 and day 87, for Macondo</dd>
+        </dl>
+      </div>
+      <p>The fundamental theorem of calculus, linking today&rsquo;s integral to Day 4&rsquo;s derivative:</p>
+      <div class="formula">
+        <p class="expr">If A(t) = &int; from a to t of r(s) ds, then A&prime;(t) = r(t)</p>
+        <p class="expr-spoken visually-hidden">If A of t is the integral from a to t of the rate r of s, then A prime of t — the derivative of A — equals r of t again.</p>
+        <dl>
+          <dt>A(t)</dt>
+          <dd>the running total accumulated by time t</dd>
+          <dt>A&prime;(t)</dt>
+          <dd>A&rsquo;s own derivative &mdash; its instantaneous rate of change</dd>
+        </dl>
+      </div>
+      <p>
+        Applied to the spill: treating the flow as declining in a straight line from 62,000 to 53,000
+        barrels a day across 87 days, the trapezoid rule&rsquo;s single-interval case gives Total
+        &asymp; [(62,000 + 53,000) / 2] &times; 87 &asymp; 5.0 million barrels &mdash; close to, but not
+        identical to, the Flow Rate Technical Group&rsquo;s own 4.9 million-barrel figure, which
+        modeled the real, not-quite-linear decline.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        The reason to separate a rate from its total is that mistaking one for the other is one of the
+        most common ways a true number gets used to make a false argument. A well&rsquo;s flow rate
+        falling &mdash; 62,000 down to 53,000 barrels a day &mdash; sounds like good news on its own,
+        and in one narrow sense it is: less oil leaking each day, later on, than at the start. But the
+        total kept climbing every single day the well flowed, right up to the moment it was capped,
+        because a falling rate is still a positive rate, and a positive rate integrated over time never
+        subtracts from the running total. Whenever you hear that something is &ldquo;slowing
+        down&rdquo; &mdash; emissions growth, a budget deficit, a disease&rsquo;s case count &mdash;
+        the next question has to be whether the thing itself has started shrinking, or whether it is
+        still only growing more slowly, which is a very different, often far less reassuring, fact.
+      </p>
+      <p>
+        It is also why a disputed total, like Macondo&rsquo;s, is never really a dispute about adding.
+        Once you can name exactly which part of a calculation is contested &mdash; the rate curve, not
+        the integration &mdash; you know where to put your scrutiny: not on the arithmetic, which
+        anyone can check, but on the measurement or model that fed it.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 4 took a quantity &mdash; the Keeling curve&rsquo;s carbon dioxide record
+        &mdash; and pulled out its instantaneous rate of change, the derivative. Today runs that process
+        in reverse: given a rate, rebuild the quantity it describes. The fundamental theorem of
+        calculus is the formal statement that these two operations, run one after the other, undo each
+        other exactly.
+      </p>
+      <p>
+        <b>Across.</b> Biology, Medicine &amp; Health judges a generic medicine by an integral. The
+        FDA&rsquo;s bioequivalence standard compares each drug&rsquo;s area under its
+        blood-concentration-versus-time curve &mdash; the AUC, an integral of blood concentration over
+        time &mdash; between the generic and the brand-name original, and requires the 90% confidence
+        interval for their ratio to fall within 80% to 125% before the generic can be sold as
+        equivalent. The regulator is doing exactly the arithmetic this lesson just taught, on a curve
+        of drug concentration instead of oil flow.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://www.youtube.com/watch?v=rfG8ce4nNh0">Integration and the fundamental theorem of calculus | Chapter 8, Essence of calculus</a>
+        &mdash; Grant Sanderson, 3Blue1Brown (2017) &middot; Video &middot; about 20 minutes</p>
+        <p>It builds the integral from a car&rsquo;s velocity, with distance as the area under the
+        velocity curve, then animates why that area&rsquo;s own rate of change gives back the original
+        curve &mdash; the fundamental theorem this lesson could only state in words.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>An integral adds up a rate times a thin slice of time, across every slice, to build a
+        total &mdash; the area under the rate&rsquo;s own graph.</li>
+        <li>The fundamental theorem of calculus says accumulating a rate and then differentiating the
+        result return you to where you started.</li>
+        <li>A falling rate still adds to the total every moment it stays positive &mdash; &ldquo;slowing
+        down&rdquo; is not the same claim as &ldquo;shrinking.&rdquo;</li>
+        <li>Uncertainty in a total almost always comes from uncertainty in the rate, not from the
+        arithmetic of adding it up.</li>
+        <li>A dashboard&rsquo;s power reading (kW) and its energy gauge (kWh) are a
+        derivative-and-integral pair.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        During a flood, a US Geological Survey streamgage records a river&rsquo;s flow in cubic feet
+        per second every 15 minutes: if two experts give different totals for the volume of water that
+        passed the gage, which part of the calculation is their disagreement almost certainly about?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The U.S. Department of the Interior&rsquo;s 2 August 2010 release on
+      the Flow Rate Technical Group&rsquo;s final flow-rate estimates; Associated Press, Jurist and
+      Marine Technology News reporting on Judge Carl Barbier&rsquo;s January 2015 discharge ruling; the
+      FDA&rsquo;s 80&ndash;125% AUC bioequivalence standard, checked via web search against pharmacy and
+      clinical-psychiatry summaries rather than the FDA&rsquo;s own guidance document directly. All
+      checked via web search this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a
+      href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-20-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
