@@ -23,14 +23,22 @@ import unittest
 from datetime import date
 from decimal import Decimal
 
-from tests import test_terminal_swaps as sw
-from tests import test_terminal_swaps_trs as st
+import importlib.util
+
+# A release leaves the swap modules (and their tests) out until swaps are cleared for deployment: there these tests skip.
+HAVE_SWAPS = all(importlib.util.find_spec(m) is not None for m in (
+    "finsim.terminal.products.swaps", "finsim.terminal.products.swaps_trs", "tests.test_terminal_swaps", "tests.test_terminal_swaps_trs"))
+NO_SWAPS = "the swap modules are not in this build (left out of the release)"
+if HAVE_SWAPS:
+    from tests import test_terminal_swaps as sw
+    from tests import test_terminal_swaps_trs as st
 from tests.terminal_helpers import T1, assert_integrity, bal, deposit, execute, fund
 from finsim.terminal.clock import epoch_of
 from finsim.terminal.commands import RejectError
 from finsim.terminal.instruments import otc_reference_ids
 from finsim.terminal.lifecycle_eod import recorded_set
-from finsim.terminal.products import swaps, swaps_trs
+if HAVE_SWAPS:
+    from finsim.terminal.products import swaps, swaps_trs
 from finsim.terminal.quotes.worker import QuoteWorker, RatesRefresher
 
 D = Decimal
@@ -44,6 +52,7 @@ def record_close(rt, iid: str, ds: str, price: str, hhmm: str) -> None:
     assert r.ok, r.body
 
 
+@unittest.skipUnless(HAVE_SWAPS, NO_SWAPS)
 class IrsOffMarketTests(unittest.TestCase):
     """§19.15 deal in T1:PB_GS (a 15,100,000.00 deposit takes T1 to 25,100,000.00, past the 25,000,000.00 PB/OTC threshold)."""
 
@@ -82,6 +91,7 @@ class IrsOffMarketTests(unittest.TestCase):
         assert_integrity(self, rt, "full")
 
 
+@unittest.skipUnless(HAVE_SWAPS, NO_SWAPS)
 class TrsXccyIntegrationTests(unittest.TestCase):
     """§19.16 deals in F1:PB_GS (books="real": the Fund Book starts at the 25,000,000.00 PB/OTC threshold)."""
 
@@ -243,6 +253,7 @@ class TrsXccyIntegrationTests(unittest.TestCase):
             self.assertEqual({}, otc_reference_ids(conn))
 
 
+@unittest.skipUnless(HAVE_SWAPS, NO_SWAPS)
 class HousekeepingPrivateSyncTests(unittest.TestCase):
     """HOUSEKEEPING runs services.private.reseed (the master sync: listings, forward status moves) when the private module is bound."""
 

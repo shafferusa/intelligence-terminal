@@ -27,6 +27,7 @@ df(k) = 1 / 1.02^k to 8 dp = 0.98039216, 0.96116878, 0.94232233, 0.92384543, 0.9
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import inspect
 import os
 import shutil
@@ -36,6 +37,9 @@ from datetime import date
 from decimal import Decimal
 
 from tests.terminal_helpers import _Log
+
+# A release leaves the swap modules out until swaps are cleared for deployment: the D10 swap leg skips there.
+HAVE_SWAPS = importlib.util.find_spec("finsim.terminal.products.swaps") is not None
 from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock
 from finsim.terminal.instruments import otc_reference_ids
@@ -275,6 +279,7 @@ class ReconcileTests(unittest.TestCase):
                     "entries": rows("SELECT COUNT(*) FROM journal_entries"), "settlements": rows("SELECT settle_id, status, due_date FROM settlements ORDER BY settle_id")}
 
     # ==== D10 + PB swaps with daily variation margin, through the API =================================================================
+    @unittest.skipUnless(HAVE_SWAPS, "the swap modules are not in this build (left out of the release)")
     def test_d10_goldman_and_pb_swaps_with_daily_vm_through_the_api(self):
         rt = self.rt
         # onboarding the Fund Book with Goldman Sachs records the ISDA Master, the CSA and the PBA and opens F1:PB_GS
