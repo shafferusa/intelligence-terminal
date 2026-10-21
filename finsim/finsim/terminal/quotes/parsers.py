@@ -340,7 +340,11 @@ def clean_meta(meta: dict) -> dict:
 def parse_intraday(result: dict, symbol: str, fetched_at: int) -> YahooIntraday:
     """``YahooIntraday`` from ``chart.result[0]`` of a ``range=1d&interval=1m`` chart."""
     meta = clean_meta(result.get("meta") if isinstance(result, dict) else {})
-    bars = chart_bars(result)
+    # Yahoo appends one trailing point that is NOT a 1-minute bar: it carries the last trade time (not on a minute boundary),
+    # O = H = L = C = the last price and volume 0.  Only minute-aligned points are 1-minute bars.  Keeping the placeholder made
+    # it the "latest completed bar", so the participation cap (orders_rules.fill_cap) read volume 0 and a market order never
+    # filled during the session (found in the 2026-10-21 market-hours check).  The last price still comes from the meta.
+    bars = [b for b in chart_bars(result) if int(b.t) % 60 == 0]
     completed = [b for b in bars if b.t <= fetched_at - 60]
     bar = completed[-1] if completed else None
     tp = meta.get("currentTradingPeriod") or {}

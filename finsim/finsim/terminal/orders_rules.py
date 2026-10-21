@@ -193,6 +193,31 @@ def trail_stop(order: OrderRow, ref: Decimal) -> Decimal:
     return _q_tick(ref - t if order.side in SELL_SIDES else ref + t, order.tick)
 
 
+def volume_bar(order: OrderRow, rec: Optional[QuoteRecord]):
+    """The 1-minute bar the participation cap reads: the most recent COMPLETED bar (at or before ``rec.bar``) with reported
+    volume (v > 0) that this order has not used yet (t > ``last_bar_ts``).  Yahoo reports the newest minute with volume 0 until
+    it finalises the count (futures especially) and appends a zero-volume price point; reading either as "no trading" kept
+    orders from ever filling in the 2026-10-21 market-hours check.  When every unused bar shows 0 the newest of them is returned
+    (NO_VOLUME_THIS_BAR); when nothing is newer than ``last_bar_ts`` the latest bar is returned (NO_NEW_BAR); no bars -> None."""
+    if rec is None:
+        return None
+    head = getattr(rec, "bar", None)
+    bars = [b for b in (getattr(rec, "bars_tail", None) or []) if b is not None and b.t is not None]
+    if head is not None and all(int(b.t) != int(head.t) for b in bars):
+        bars.append(head)
+    if head is not None:
+        bars = [b for b in bars if int(b.t) <= int(head.t)]          # completed bars only
+    if not bars:
+        return None
+    bars.sort(key=lambda b: int(b.t))
+    used = order.last_bar_ts
+    newer = [b for b in bars if used is None or int(b.t) > int(used)]
+    if not newer:
+        return bars[-1]
+    with_volume = [b for b in newer if b.v is not None and int(b.v) > 0]
+    return with_volume[-1] if with_volume else newer[-1]
+
+
 def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal) -> Tuple[int, str]:
     """§10.6: ``(qty cap this pass, disclosure)``.  Equities / futures: at most ``participation`` x the latest completed
     1-minute bar's volume, in lots, and never the same bar twice (NO_NEW_BAR); no bar or no volume -> the remaining
@@ -215,7 +240,7 @@ def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrum
         return min(remaining, size), f"displayed {side_word} size {size:,} contracts caps this pass"
     if kind == "FX":
         return remaining, "FX has no volume concept: fills in full (disclosed)"
-    bar = rec.bar if rec is not None else None
+    bar = volume_bar(order, rec)
     if order.last_bar_ts is not None and bar is not None and int(bar.t) <= int(order.last_bar_ts):
         return 0, f"no new 1-minute bar since the last fill (bar {ny_of(int(bar.t)).strftime('%H:%M')} already used): NO_NEW_BAR"
     if bar is None or bar.v is None:
@@ -242,7 +267,8 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
     ok, reason = is_executable(rec, session, now)
     if not ok:
         return Decision("NONE", None, 0, reason, None)
-    bar_ts = int(rec.bar.t) if rec.bar is not None else None
+    vbar = volume_bar(order, rec)                                    # the bar a fill would consume (recorded as last_bar_ts)
+    bar_ts = int(vbar.t) if vbar is not None else None
     qt = rec.quote_time
     px_exec, basis = exec_price(order, rec)
     if px_exec is None:

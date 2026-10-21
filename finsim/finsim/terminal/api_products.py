@@ -57,6 +57,35 @@ def _quotes_for(rt, ids: List[str], now: int, priority: str = "PAGE") -> Dict[st
 
 
 # ---- markets (the account page lists) ---------------------------------------------------------------------------------------
+def _materialise_option(rt, iid) -> None:
+    """An OCC contract picked on a chain (or typed) is listed in the master on first use through ``options.ensure_option``:
+    the underlying's cached Cboe chain must list it (nothing is listed from thin air; otherwise NOT_LISTED says to load the
+    chain).  Called by resolve / preview / submit BEFORE any command, so the short writer it opens never nests inside a command
+    transaction.  2026-10-21 market-hours check: a chain-picked contract failed INSTRUMENT_UNKNOWN "resolve it first", and
+    resolving it through Yahoo registered it as a stock."""
+    iid = str(iid or "").strip().upper()
+    if not iid:
+        return
+    inst = rt.instruments.get(iid)
+    if inst is None:
+        opts = getattr(rt, "options", None)
+        parse = getattr(opts, "parse_occ", None)
+        if opts is None or parse is None or not hasattr(opts, "ensure_option") or parse(iid) is None:
+            return
+        inst = opts.ensure_option(rt, iid)
+    if inst is None or inst.kind != "OPTION":
+        return
+    # its quote comes from the chain it is listed on: record it now (records_from_chain only runs at the next chain refresh)
+    cache, chains = getattr(rt, "cache", None), getattr(rt, "chains", None)
+    if cache is None or chains is None or not hasattr(chains, "peek") or cache.get(iid) is not None or not inst.underlying_id:
+        return
+    snap = chains.peek(inst.underlying_id)
+    row = (snap.by_occ(inst.cboe_symbol or iid) or snap.by_occ(iid)) if snap is not None else None
+    if row is not None:
+        from .quotes.cache import record_from_chain_row
+        cache.put(record_from_chain_row(inst, snap, row))
+
+
 def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
     rt = req.rt
     acct = _account_or_404(rt, aid)
@@ -209,6 +238,7 @@ def register_routes(r) -> None:
         sym = (req.q("symbol") or "").strip().upper()
         if not sym:
             raise ApiError(400, "BAD_REQUEST", "symbol is required")
+        _materialise_option(rt, sym)
         inst = rt.instruments.get(sym)
         if inst is None:
             exact = [i for i in rt.instruments.search(sym, (), 5) if i.symbol.upper() == sym]
@@ -310,6 +340,7 @@ def register_routes(r) -> None:
     def order_preview(req: Request):
         orders = need(req.rt, "orders")
         body = dict(req.body or {})
+        _materialise_option(req.rt, body.get("instrument_id"))
         body.pop("request_id", None)
         return orders.preview(req.rt, body)
 
@@ -318,6 +349,7 @@ def register_routes(r) -> None:
         orders = need(rt, "orders")
         payload = dict(req.body or {})
         payload.pop("request_id", None)
+        _materialise_option(rt, payload.get("instrument_id"))
         res = run_command(req, "order.submit", payload)
         if res.ok:
             body = res.body if isinstance(res.body, dict) else {}

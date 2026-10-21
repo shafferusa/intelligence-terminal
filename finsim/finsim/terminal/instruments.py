@@ -716,6 +716,9 @@ class InstrumentMaster:
             raise RejectError("ALREADY_IN_MASTER", f"{symbol} is already in the instrument master as {holder}: use {holder}",
                               {"symbol": symbol, "instrument_id": holder})
         itype = str(meta.get("instrumentType") or "").upper()
+        if itype == "OPTION":
+            raise RejectError("OPTION_SYMBOL", f"{symbol} is an option contract: open it from its underlying's option chain "
+                              "(the chain lists it in the master)", {"symbol": symbol})
         exch = str(meta.get("exchangeName") or "")
         raw_ccy = str(meta.get("currency") or "USD").strip()
         ccy = raw_ccy.upper()
