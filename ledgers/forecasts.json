@@ -6020,6 +6020,26 @@
    "probability": "75-85%",
    "basis": "CME FedWatch ~84% hold as reported Oct 20-21; Beige Book slight-to-modest growth; housing weak",
    "status": "open"
+  },
+  {
+   "id": "2026-10-27-pm-1",
+   "date": "2026-10-27",
+   "slot": "pm",
+   "forecast": "FOMC holds the target range at 3.75-4.00% on Oct 28",
+   "horizon": "2026-10-28",
+   "probability": "85-95%",
+   "basis": "CME FedWatch ~90% hold as reported Oct 27; all previews found expect a hold",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-27-pm-2",
+   "date": "2026-10-27",
+   "slot": "pm",
+   "forecast": "Bank of Canada raises its policy rate 25bp to 2.50% on Oct 28",
+   "horizon": "2026-10-28",
+   "probability": "70-85%",
+   "basis": "Reuters poll 19 of 34 economists; swaps ~85% per BBH",
+   "status": "open"
   }
  ]
 }

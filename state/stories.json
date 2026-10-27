@@ -1,6 +1,150 @@
 {
  "stories": [
   {
+   "id": "anthropic-s1-broadcom-lease",
+   "headline": "Anthropic public S-1 (Oct 26, Nasdaq 'ANT'; H1 rev $16.29B, op loss $693M, net loss $80.7B incl $72.4B FV charge); reported ~$63B BofA/Citi/MS/Blackstone SPV to lease Broadcom chips to Anthropic; AVGO +4%, SMH +3%",
+   "status": "New",
+   "verification": "Confirmed-primary (S-1); financing Single-reliable-source (Reuters)",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Lead: most market-moving AI development; chips led the tape",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "fomc-oct-28",
+   "headline": "FOMC Oct 27-28: hold at 3.75-4.00% ~90% priced; Dec hike ~75%; no SEP; Warsh presser 2:30 PM Wed",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Fed decision tomorrow",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "boeing-q3-2026",
+   "headline": "Boeing Q3 (8-K): rev $24.19B +4%, core loss/sh $0.34 vs ~0.21 est, FCF $464M, backlog $745B; stock ~-9.5 to -10% to ~$170",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Biggest Dow drag",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "conf-board-oct-2026",
+   "headline": "Conference Board Oct 91.7 (from 84.2; cons ~81); durables Sept +1.8% vs 0.6%; new home sales 676K; Case-Shiller 20c +2.7% y/y",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Data surprise eve of Fed",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "oil-gulf-diplomacy-oct27",
+   "headline": "WTI settle $99.90 (-1.86), Brent Dec $113.88 (-1.93) per Reuters (single); Tehran meeting with Saudi/Pakistan/Turkey officials Oct 26; Houthi Ras Tanura claim; Iranian mine claim unverified",
+   "status": "Continuing",
+   "verification": "Single-reliable-source (settles)",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Oil/inflation channel",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "visa-enphase-oct27",
+   "headline": "Visa FQ4 (8-K): rev $12.1B +13%, adj EPS $3.48 vs ~3.44, div +16%; ~-1.2% AH. Enphase Q4 guide $225-255M vs ~$300M, ~-10% AH",
+   "status": "New",
+   "verification": "Confirmed-primary (Visa)",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "After-hours earnings",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "israel-election-oct27",
+   "headline": "Israel election Oct 27: exit polls no majority (Ch13 anti-Netanyahu 53 vs 50; Ch12 52-50; Ch14 60-60); Likud ~25, Yashar 23",
+   "status": "New",
+   "verification": "Confirmed-multiple (exit polls)",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "World: Iran decision overlap",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "brazil-lula-wins",
+   "headline": "Lula wins runoff 51.8-48.2 (TSE); Ibovespa -13.9% Oct 26, USD/BRL +8.8% to 5.42; Flavio Bolsonaro seeks annulment",
+   "status": "Resolved",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Replaces brazil-runoff",
+   "keep_on_watchlist": false
+  },
+  {
+   "id": "us-v-california-carter",
+   "headline": "US v. California: 9th Cir dismissed DOJ appeal 2-1 Oct 26 (Bennett, Sanchez; Bumatay dissent); Judge Carter TRO hearing Oct 27 4 PM ET, outcome unknown at press",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Election one week out",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "cintas-unifirst-ftc",
+   "headline": "Semafor: FTC told Cintas it will sue to block ~$5.5B UniFirst deal; FTC says no final vote; UNF ~-9%, CTAS ~-4.6%",
+   "status": "New",
+   "verification": "Single-reliable-source",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Antitrust",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "prt-wabash-closure",
+   "headline": "PRT board voted Oct 23 to close Wabash Tunnel Dec 1; ATU Local 85 4-year contract approved",
+   "status": "Resolved",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Local",
+   "keep_on_watchlist": false
+  },
+  {
+   "id": "pa-sb1014-signed",
+   "headline": "Shapiro signed SB 1014 school phone ban Oct 26; policies by 2027-28",
+   "status": "Resolved",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-27-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Local/PA",
+   "keep_on_watchlist": false
+  },
+  {
    "id": "php-ai-vulns-nsa",
    "headline": "NSA urges patching two critical PHP flaws found with AI tools (Calif, Wiz); take systems offline if can't patch",
    "status": "New",
@@ -193,42 +337,6 @@
    "keep_on_watchlist": true
   },
   {
-   "id": "allegheny-paid-leave-passed",
-   "headline": "Allegheny County Council passes 12-week paid parental leave 11-4 Oct 20; Innamorato to sign Oct 22",
-   "status": "Resolved",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "pa-sb1014-phone-ban",
-   "headline": "PA House passes SB 1014 bell-to-bell school phone ban 141-62; back to Senate",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "prt-atu-contract",
-   "headline": "PRT ATU Local 85 ratifies 4-year contract; board vote Oct 23 with Wabash Tunnel closure",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 am",
-   "keep_on_watchlist": true
-  },
-  {
    "id": "rotation-oct20",
    "headline": "Dow +1.02% 52,495.88, R2K +1.65%, S&P +0.28%, Nasdaq -0.02%; RSP +1.15%; 10/11 sectors up, XLV +2.4% leads, XLK only decliner; VIX 17.31",
    "status": "New",
@@ -257,18 +365,6 @@
    "headline": "Closes: MMM +5.8% (raised guide, Amazon deal), NOC +4.6%, GM -6.8% (FY EPS range midpoint below consensus), GE -3.7% (FCF light), GPC -5.1% (outlook narrowed), RTX +0.6% (adj EPS $2.26 incl $0.25 IEEPA), HAL +1.9%",
    "status": "Materially changed",
    "verification": "Confirmed-primary (8-Ks, closes)",
-   "first_seen": "2026-10-20-am",
-   "last_updated": "2026-10-20-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-20 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "doj-california-28-charged",
-   "headline": "US v. California: CA filed TRO opposition Oct 20 (Bonta: reckless political stunt; borders on absurd per Bloomberg); no hearing/ruling; 28 charged LPRs, 11 in custody",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
    "first_seen": "2026-10-20-am",
    "last_updated": "2026-10-20-pm",
    "one_line": null,
@@ -570,18 +666,6 @@
    "keep_on_watchlist": true
   },
   {
-   "id": "fed-oct-28-odds",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "FedWatch Oct hike ~20%->~50% (Oct 14)->~15% (Oct 16). Warsh 'I don't prejudge'. Quiet period to Oct 29.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Fed",
-   "keep_on_watchlist": true
-  },
-  {
    "id": "gulf-war-oil-hormuz",
    "first_seen": null,
    "last_updated": "2026-10-19-am",
@@ -603,18 +687,6 @@
    "verification": "Confirmed-multiple",
    "sources": null,
    "score_rationale": "Geopolitics",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "doj-california-ballots",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Developing",
-   "headline": "US v. California (C.D. Cal. 2:26-cv-12025) filed Oct 15 to stop counting ~20,000 mail ballots; TRO motion pending.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "US politics/elections",
    "keep_on_watchlist": true
   },
   {
@@ -654,18 +726,6 @@
    "keep_on_watchlist": true
   },
   {
-   "id": "wabash-tunnel",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Developing",
-   "headline": "PRT staff propose permanent closure Dec 1; board vote Oct 23.",
-   "one_line": null,
-   "verification": "Single-reliable-source",
-   "sources": null,
-   "score_rationale": "Local",
-   "keep_on_watchlist": true
-  },
-  {
    "id": "allegheny-budget-paid-leave",
    "first_seen": null,
    "last_updated": "2026-10-17-sat",
@@ -675,66 +735,6 @@
    "verification": "Confirmed-multiple",
    "sources": null,
    "score_rationale": "Local",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "pa-ag-insulin-suit",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "New",
-   "headline": "PA AG sued Lilly, Novo, Sanofi and three PBMs (Oct 16); allegations.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Local/PA",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "q3-earnings-season",
-   "first_seen": null,
-   "last_updated": "2026-10-19-am",
-   "status": "Continuing",
-   "headline": "Banks done (GS beat big, JPM miss, credit clean); next: NFLX Tue, TSLA/IBM Wed, P&G Thu.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "Business",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "space-delays",
-   "first_seen": null,
-   "last_updated": "2026-10-20-am",
-   "status": "Continuing",
-   "headline": "Starship Flight 15 no official date (NET ~Nov 8 per Space Force slide); Neutron 2027; New Glenn Dec target; Artemis briefing Fri Oct 23 2 PM; Bandwagon-5 retargeted Oct 20",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Space",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "pope-leo-health",
-   "first_seen": null,
-   "last_updated": "2026-10-19-am",
-   "status": "Continuing",
-   "headline": "Discharged Oct 17, walked unaided; audiences cancelled through Oct 20.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "World",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "brazil-runoff",
-   "first_seen": null,
-   "last_updated": "2026-10-20-am",
-   "status": "Continuing",
-   "headline": "Oct 25 runoff Flavio Bolsonaro vs Lula, statistical tie (AtlasIntel 51.1/48.9; Nexus 50.3/49.7; Vox Lula 51)",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "World",
    "keep_on_watchlist": true
   }
  ]
