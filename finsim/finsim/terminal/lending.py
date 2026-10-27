@@ -3,15 +3,34 @@
 TERMINAL_WORKPLAN.md WP-06).
 
 Conventions stated here (the §1.3 sentences that bite in this module)
-- SHORT_COLLATERAL: a borrow posts 102 % cash collateral from the account (``Dr 1400 / Cr 1010``, idem
-  ``collat:{borrow}:open``, funded first by ``execution.fund`` so a shortfall arrives as ONE Treasury sweep linked to
-  the borrow), marked daily both ways (``cmark:{borrow}:{date}``: a call is funded the same way, an excess returns to
-  1010); sale proceeds settle T+1 as ordinary cash (no restricted-cash account); the collateral stays at the lender
-  until the borrow is returned.  ``borrows.collateral_c`` always equals the 1400 balance of the borrow (L13).
+- SHORT_COLLATERAL (hotfix 1.0.3.1, 2026-10-21, ported to 1.0.4): the lender holds 102 % cash collateral for the shares SOLD
+  short.  A short ORDER's borrow is located and recorded at submit with no collateral; each short fill posts 102 % of its
+  quantity at its price (``consume_for_short``, idem ``collat:{borrow}:fill:{fill_id}``): ``Dr 1400`` the collateral,
+  ``Cr 1200`` the sale's own proceeds first (gross - fee, the fill's receivable, so that fill's settlement row is left with
+  nothing to move at T+1) and ``Cr 1010`` only the rest, the 2 % excess + fee, funded through ``execution.fund`` (own cash,
+  then ONE Treasury sweep linked to the borrow, then PB financing, else 409 INSUFFICIENT_FUNDS) - a broker funds the
+  lender's collateral with the short sale's proceeds.  A borrow with no order (``credit.borrow_stock``, an option delivery)
+  posts the whole 102 % from cash at the borrow (``Dr 1400 / Cr 1010``, ``collat:{borrow}:open``), as order borrows opened
+  before this rule did; those stay collateralised on their whole outstanding quantity (``collateral_at_borrow``: an order
+  borrow with a ``collat:{borrow}:open`` entry keeps the old rule).  The collateralised quantity of an order borrow
+  (``collateral_qty_map``) is the short it backs: the short position less what the other borrows back, allocated oldest
+  first, each capped at its outstanding quantity less what its live order still has to sell.  Marks run daily both ways on
+  that quantity (``cmark:{borrow}:{date}``: a call is funded the same way, an excess returns to 1010); a return gives back
+  the collateral of the sold shares it returns (unsold shares carry none, so cancelling an unfilled short returns only the
+  borrow); the collateral stays at the lender until the borrow is returned.  ``borrows.collateral_c`` always equals the
+  1400 balance of the borrow (L13).
 - BORROW_AVAIL: availability and the fee tier are a heuristic from the last FINRA daily short-volume ratio and the
-  master's ADV (``tables.borrow_tier``, §12.2); a real locate would come from a lender.  ``lender`` is a modelled
-  label ("street lender (modelled)", or the PB's code for a prime-broker account), never a counterparty invented
-  as fact.  A name that is not in the master, has no ADV or is flagged ``shortable: false`` gives NO_BORROW.
+  master's ADV (``tables.borrow_tier``, §12.2); a real locate would come from a lender.  ``lender`` (Build 2 P08,
+  OA-17): in a prime-broker account the PB; elsewhere an agent lender of the counterparty directory (the
+  ``counterparty_id`` asked for, else the directory's default ``borrow_lender``), labelled "(assumed terms)": the
+  supply is sourced from that program at the tier fee, which stays a disclosed heuristic, never a quote from the
+  institution.  A name that is not in the master, has no ADV or is flagged ``shortable: false`` gives NO_BORROW.  A name
+  resolved on demand has no master ADV (hotfix 1.0.3.1): ``locate`` asks the quote worker for one (``request_adv``: 3 months
+  of Yahoo daily bars, ``instruments.adv_from_daily``, stored with its basis), says so in the basis, and the next locate uses
+  it; the basis labels where the ADV came from.  No volume data -> no ADV -> no borrow (nothing invented).
+- LENDING OUT (P08): ``lending_accruals`` holds lending long shares OUT through an agent lender (``credit.lend_securities``,
+  ``credit.recall_securities``, C27 ``lent_qty``, jobs SECLEND_ACCRUE / SECLEND_COLLATERAL_MARK through C13); its
+  conventions are stated there.
 - ACCRUAL / RATE_LAG: for every calendar night the borrow is open at 17:00 ET the fee accrues on
   ``qty_outstanding × mark_D`` (the CLOSE of D, else the last CLOSE before D — weekends use Friday's) at the tier
   rate, and the rebate on the cash collateral at ``max(0, SOFR_D − 0.50 %)`` (0 for tier T3), ACT/360, with
@@ -36,7 +55,7 @@ Conventions stated here (the §1.3 sentences that bite in this module)
 - Recalls are never generated and 5700 (buy-in penalties) is never posted by this module: three consecutive FINRA
   sessions with a short-volume ratio ≥ 0.80 on a shorted name only open an INFO attention item ``HTB_TIGHTENING``
   ("hard-to-borrow tightening: a lender could recall; consider covering"), resolved when the ratio falls back.
-- Idempotency keys (§5.4): ``collat:{borrow}:open``, ``cmark:{borrow}:{date}``, ``accr:bfee:{borrow}:{night}``,
+- Idempotency keys (§5.4): ``collat:{borrow}:open``, ``collat:{borrow}:fill:{fill_id}``, ``cmark:{borrow}:{date}``, ``accr:bfee:{borrow}:{night}``,
   ``accr:rebate:{borrow}:{night}``, ``collat:{borrow}:return:{fill_id | cancel:{order} | cleanup:{date} |
   manual:{request_id}}`` and ``pay:bfee:{borrow}:return:{same suffix}`` / ``pay:bfee:{borrow}:late:{night}``.
 """
@@ -56,6 +75,9 @@ from .ledger import Entry, Line, balance, cr, dr, position
 from .lending_accruals import (BASIS_360, RATE_LAG_MAX_DAYS, _borrow, _dec, _inst_of, _outstanding, _pct, accrual_amounts, accrual_lines,   # noqa: F401
                                accrue_night, accrue_segment, base_state, close_mark_for, nights_due, rebate_rate, segment_amount, settle_accrued,
                                sofr_for)
+from .lending_accruals import (LEND_GLS, SECLEND_MARK_ET, SL_FEE, SL_REB, _sl_row, ensure_chart_rows, ensure_seclend_schema, free_to_lend,   # noqa: F401
+                               h_lend, h_recall, lend_preview, ledger_ready, lent_qty, market_value_c, sec_loan_view, seclend_tables_ready, sl_accrue_night,
+                               sl_collateral_mark, sl_nights_due, sl_outstanding)
 from .units import fmt_money, from_c, qprice, to_c
 
 EQUITY_KINDS = tables.EQUITY_KINDS
@@ -91,6 +113,7 @@ class LocateQuote:
     sofr: Optional[Decimal] = None
     sofr_obs: Optional[str] = None
     mark_source: str = ""
+    counterparty_id: Optional[str] = None
 
     def to_dict(self) -> dict:
         return {k: (str(v) if isinstance(v, Decimal) else v) for k, v in self.__dict__.items()}
@@ -110,6 +133,25 @@ def _adv(inst) -> Optional[int]:
         return int(_dec(v))
     except Exception:   # noqa: BLE001 — a malformed master value is "no ADV", disclosed by the basis text
         return None
+
+
+def _adv_request_note(services, inst) -> str:
+    """A name with no ADV (resolved on demand): ask the quote worker for one from Yahoo daily bars (never fetched here -
+    ``locate`` runs inside commands) and say so in the basis.  '' when no worker is running or the name is not one."""
+    from .instruments import needs_adv
+    worker = getattr(services, "worker", None)
+    if worker is None or not hasattr(worker, "request_adv") or not needs_adv(inst):
+        return ""
+    try:
+        state = worker.request_adv(inst.instrument_id)
+    except Exception:   # noqa: BLE001 - the request is a convenience; the locate answer stands without it
+        return ""
+    if state == "queued":
+        return "; fetching it from Yahoo daily bars (3 months): preview again in a few seconds"
+    if state == "tried":
+        err = worker.adv_status(inst.instrument_id) if hasattr(worker, "adv_status") else None
+        return f"; Yahoo daily bars gave none ({err})" if err else ""
+    return ""
 
 
 def _mark_view(services, inst):
@@ -142,6 +184,55 @@ def _group(conn, account_id: str, instrument_id: str) -> dict:
     pending = sum(max(0, int(r["order_qty"] or 0) - int(r["order_filled"] or 0)) for r in auto if r["order_status"] in LIVE_ORDER_STATUSES)
     return {"rows": rows, "auto": auto, "short": short, "total": total_all, "total_auto": total_auto, "pending_live": pending,
             "excess": total_auto - short - pending}
+
+
+def collateral_at_borrow(conn, b) -> bool:
+    """The borrow posted its whole 102 % at the borrow (``collat:{borrow}:open``): a borrow with no order (manual,
+    option delivery) and an order borrow opened before the collateral moved to the fill (1.0.3 and earlier: the owner's
+    live borrows of that time keep this rule).  False for an order borrow whose collateral is posted at each short fill
+    (SHORT_COLLATERAL)."""
+    if not b["order_id"]:
+        return True
+    return conn.execute("SELECT 1 FROM journal_entries WHERE idem_key=?", (f"collat:{b['borrow_id']}:open",)).fetchone() is not None
+
+
+def collateral_qty_map(conn, account_id: str, instrument_id: str, short: Optional[int] = None, out_adj: Optional[Dict[str, int]] = None) -> Dict[str, int]:
+    """The quantity of each OPEN borrow of (account, instrument) that carries cash collateral (SHORT_COLLATERAL): a
+    borrow collateralised at open, its whole outstanding quantity; an order borrow, the short it backs - the short
+    position (``short``, default the current one) less what the borrows collateralised at open back (manual borrows
+    back nothing), allocated oldest first, each capped at its outstanding quantity less what its live order still has
+    to sell; a short beyond those caps (a borrow returned below short + pending while its order works) takes the rest
+    of the outstanding quantity, so no sold share is left without collateral.  ``out_adj`` = {borrow_id: qty} reads the
+    outstanding quantities as if that much had been returned."""
+    rows = _open_borrows(conn, account_id, instrument_id)
+    if short is None:
+        pos_qty, _ = position(conn, account_id, instrument_id)
+        short = max(0, -int(pos_qty))
+    adj = out_adj or {}
+    left = max(0, int(short))
+    res: Dict[str, int] = {}
+    later: List[Tuple[str, int, int]] = []
+    for r in rows:
+        out = max(0, _outstanding(r) - int(adj.get(r["borrow_id"], 0)))
+        pending = max(0, int(r["order_qty"] or 0) - int(r["order_filled"] or 0)) if r["order_status"] in LIVE_ORDER_STATUSES else 0
+        cap = out - min(out, pending)
+        if collateral_at_borrow(conn, r):
+            res[r["borrow_id"]] = out
+            if r["reason"] != REASON_MANUAL:
+                left -= min(left, cap)
+        else:
+            later.append((r["borrow_id"], cap, out))
+    for bid, cap, _out in later:
+        take = min(cap, left)
+        res[bid] = take
+        left -= take
+    for bid, _cap, out in later:
+        if left <= 0:
+            break
+        extra = min(out - res[bid], left)
+        res[bid] += extra
+        left -= extra
+    return res
 
 
 def pro_rata_c(total_c: int, qty: int, outstanding: int) -> int:
@@ -193,10 +284,32 @@ def finra_view(conn, symbol: str, today: date, cal) -> dict:
     return {"ratio": ratio, "ratio_day": ratio_day, "rows_last3": len(rows), "window": window}
 
 
-def locate(services, account_id: str, inst, qty: int, conn=None) -> LocateQuote:
+def borrow_lender(services, acct, counterparty_id: Optional[str] = None, conn=None) -> Tuple[str, Optional[str]]:
+    """``(label, counterparty_id)`` of a borrow's lender (module docstring BORROW_AVAIL): the PB of a prime-broker account,
+    else the agent lender asked for or the directory's default one; the modelled label only when the directory is absent."""
+    if acct is not None and acct["kind"] == "PB" and acct["broker"]:
+        return f"{acct['broker']} (prime broker, modelled)", f"PB_{acct['broker']}"
+    cps = getattr(services, "counterparties", None)
+    if cps is None or not hasattr(cps, "lending_terms"):
+        try:
+            from . import counterparties as cps
+        except Exception:   # noqa: BLE001 - no directory: the modelled label
+            return MODELLED_LENDER, None
+    try:
+        t = cps.lending_terms(services, counterparty_id, conn) if counterparty_id else cps.default_borrow_lender(services, conn)
+    except RejectError:
+        raise
+    except Exception:   # noqa: BLE001
+        t = None
+    if not t:
+        return MODELLED_LENDER, None
+    return f"{t['name']} (agent lender, assumed terms)", t["counterparty_id"]
+
+
+def locate(services, account_id: str, inst, qty: int, conn=None, counterparty_id: Optional[str] = None) -> LocateQuote:
     """§13.1.1: tier and fee from the master + the last FINRA file (``tables.borrow_tier``), availability per tier,
     ``collateral_c = to_c(1.02 × qty_available × mark)``, ``valid_until = now + 120 s``, ``basis`` for the ticket.
-    Read-only; ``conn`` (optional) lets a command reuse its own connection."""
+    Read-only; ``conn`` (optional) lets a command reuse its own connection; ``counterparty_id`` picks the agent lender."""
     now = int(services.clock.epoch())
     valid_until = now + LOCATE_TTL_S
     qty = int(qty)
@@ -225,6 +338,8 @@ def locate(services, account_id: str, inst, qty: int, conn=None) -> LocateQuote:
     tier, cap = tables.borrow_tier(True, adv, fv["ratio"], fv["rows_last3"], inst.kind, shortable)
     if tier == "NONE":
         why = "flagged not shortable" if not shortable else "no average daily volume in the master"
+        if shortable and adv is None:
+            why += _adv_request_note(services, inst)
         return no(f"{inst.symbol}: {why}; no borrow (BORROW_AVAIL)", **extras)
     qty_av = qty if cap is None else min(qty, int(cap))
     mv = _mark_view(services, inst)
@@ -232,10 +347,11 @@ def locate(services, account_id: str, inst, qty: int, conn=None) -> LocateQuote:
     quality = "unavailable" if mv is None else mv.quality
     if mark is None or quality == "unavailable":
         return no(f"{inst.symbol}: no mark to size the 102 % collateral; no borrow", **extras)
+    adv_txt = f"ADV {adv:,}" + (f" ({(inst.spec or {}).get('adv_basis')})" if (inst.spec or {}).get("adv_basis") else "")
     if qty_av <= 0:
-        return no(f"{inst.symbol}: tier {tier} availability {tables.HTB[tier]['availability']} with ADV {adv:,} leaves nothing to borrow", **extras)
+        return no(f"{inst.symbol}: tier {tier} availability {tables.HTB[tier]['availability']} with {adv_txt} leaves nothing to borrow", **extras)
     schedule = execution._schedule_for(services, acct) if acct is not None else None
-    lender = f"{acct['broker']} (prime broker, modelled)" if acct is not None and acct["kind"] == "PB" and acct["broker"] else MODELLED_LENDER
+    lender, lender_id = borrow_lender(services, acct, counterparty_id, conn)
     fee = fee_rate(tier, schedule)
     sofr = sofr_for(services)
     sofr_pct = None if sofr is None else sofr[1]
@@ -250,17 +366,21 @@ def locate(services, account_id: str, inst, qty: int, conn=None) -> LocateQuote:
     else:
         reb_txt = f"rebate max(0, SOFR {sofr_pct} % ({sofr_obs}) - 0.50 %) = {_pct(reb)}"
     avail_txt = "full" if cap is None else f"{tables.HTB[tier]['availability']} = {int(cap):,}"
-    basis = (f"tier {tier} ({tables.HTB[tier]['rule']}): {ratio_txt}, ADV {adv:,}; availability {avail_txt}; fee {_pct(fee)} ACT/360 on qty x mark; "
+    basis = (f"tier {tier} ({tables.HTB[tier]['rule']}): {ratio_txt}, {adv_txt}; availability {avail_txt}; fee {_pct(fee)} ACT/360 on qty x mark; "
              f"{reb_txt}; collateral 102 % of {qty_av:,} x {mark} = {fmt_money(coll)} from {lender} (BORROW_AVAIL, SHORT_COLLATERAL)")
-    return LocateQuote(iid, qty, True, qty_av, fee, reb, tier, lender, coll, qprice(mark), quality, valid_until, basis, sofr=sofr_pct, sofr_obs=sofr_obs,
-                       mark_source=getattr(mv, "source", "") or "", **extras)
+    q = LocateQuote(iid, qty, True, qty_av, fee, reb, tier, lender, coll, qprice(mark), quality, valid_until, basis, sofr=sofr_pct, sofr_obs=sofr_obs,
+                    mark_source=getattr(mv, "source", "") or "", **extras)
+    q.counterparty_id = lender_id
+    return q
 
 
 # ---- borrow open / consume (§13.1.2-3) ---------------------------------------------------------------------------------------
 def open_borrow(ctx: TxContext, services, account_id: str, inst, qty: int, locate_q: Optional[LocateQuote], order_id: Optional[str]) -> str:
-    """Open a borrow in the caller's transaction: ``fund()`` the 102 % collateral (a shortfall is one Treasury sweep
-    linked to the borrow), post ``Dr 1400 / Cr 1010`` (``collat:{borrow}:open``), insert the row (reason
-    'pending short sale' for an order, 'manual borrow (no order)' otherwise).  Returns the borrow id."""
+    """Open a borrow in the caller's transaction and insert the row (reason 'pending short sale' for an order, 'manual
+    borrow (no order)' otherwise).  A borrow for a short ORDER is located and recorded here with no collateral: its
+    102 % is posted at each short fill (``consume_for_short``), funded first by that sale's own proceeds.  A borrow with
+    no order ``fund()``s the 102 % collateral now (a shortfall is one Treasury sweep linked to the borrow) and posts
+    ``Dr 1400 / Cr 1010`` (``collat:{borrow}:open``).  Returns the borrow id."""
     services = _services(ctx, services)
     conn = ctx.conn
     acct = account_row(conn, account_id)
@@ -285,36 +405,48 @@ def open_borrow(ctx: TxContext, services, account_id: str, inst, qty: int, locat
     iid = inst.instrument_id
     coll = collateral_required_c(qty, mark, inst)
     borrow_id = next_id(conn, "borrow")
-    funding = execution.fund(ctx, account_id, ccy, coll, "borrow", borrow_id, None, immediate=True, services=services)
     fee = locate_q.fee_rate
-    memo = (f"borrow {qty:,} {inst.symbol} from {locate_q.lender}, tier {locate_q.tier} fee {_pct(fee)}; collateral 102 % of {qty:,} x {mark} = {fmt_money(coll)}"
-            f" (SHORT_COLLATERAL)")
-    entry_id = ctx.post(Entry("COLLATERAL", memo,
-                              [dr(account_id, "1400", ccy, coll, instrument_id=iid, memo=borrow_id),
-                               cr(account_id, "1010", ccy, coll, memo=f"cash collateral to the lender for {borrow_id}")],
-                              f"collat:{borrow_id}:open", ref_type="borrow", ref_id=borrow_id))
+    posted = 0
+    entry_id = sweep_id = None
+    if not order_id:
+        funding = execution.fund(ctx, account_id, ccy, coll, "borrow", borrow_id, None, immediate=True, services=services)
+        memo = (f"borrow {qty:,} {inst.symbol} from {locate_q.lender}, tier {locate_q.tier} fee {_pct(fee)}; collateral 102 % of {qty:,} x {mark} = {fmt_money(coll)}"
+                f" (SHORT_COLLATERAL)")
+        entry_id = ctx.post(Entry("COLLATERAL", memo,
+                                  [dr(account_id, "1400", ccy, coll, instrument_id=iid, memo=borrow_id),
+                                   cr(account_id, "1010", ccy, coll, memo=f"cash collateral to the lender for {borrow_id}")],
+                                  f"collat:{borrow_id}:open", ref_type="borrow", ref_id=borrow_id))
+        posted, sweep_id = coll, funding.sweep_id
     reason = REASON_PENDING if order_id else REASON_MANUAL
     reb_txt = "unavailable" if locate_q.rebate_rate is None else str(qprice(locate_q.rebate_rate))
     conn.execute(
         "INSERT INTO borrows(borrow_id, command_id, account_id, instrument_id, qty, qty_returned, fee_rate, rebate_rate, tier, lender, collateral_c, currency,"
         " opened_ts, opened_date, status, closed_ts, order_id, reason, last_mark_date, recall_notice) VALUES (?,?,?,?,?,0,?,?,?,?,?,?,?,?,'OPEN',NULL,?,?,NULL,NULL)",
-        (borrow_id, ctx.command_id, account_id, iid, qty, str(qprice(fee)) if fee is not None else "0", reb_txt, locate_q.tier, locate_q.lender, coll, ccy,
+        (borrow_id, ctx.command_id, account_id, iid, qty, str(qprice(fee)) if fee is not None else "0", reb_txt, locate_q.tier, locate_q.lender, posted, ccy,
          ctx.ts, ctx.today, order_id, reason))
+    if getattr(locate_q, "counterparty_id", None) and any(r[1] == "counterparty" for r in conn.execute("PRAGMA table_info(borrows)").fetchall()):
+        conn.execute("UPDATE borrows SET counterparty=? WHERE borrow_id=?", (locate_q.counterparty_id, borrow_id))
     ctx.touched_accounts.add(account_id)
     ctx.touched_instruments.add((account_id, iid))
     ctx.event("BORROW_OPENED", account_id=account_id, instrument_id=iid, ref_type="borrow", ref_id=borrow_id, qty=qty, tier=locate_q.tier,
-              fee_rate=str(fee) if fee is not None else None, rebate_rate=reb_txt, collateral_c=coll, mark=str(mark), order_id=order_id, lender=locate_q.lender,
-              entry_id=entry_id, sweep_id=funding.sweep_id, reason=reason)
+              fee_rate=str(fee) if fee is not None else None, rebate_rate=reb_txt, collateral_c=posted, mark=str(mark), order_id=order_id, lender=locate_q.lender,
+              entry_id=entry_id, sweep_id=sweep_id, reason=reason, collateral_at="fill" if order_id else "borrow", collateral_at_locate_c=coll)
     return borrow_id
 
 
-def consume_for_short(ctx: TxContext, borrow_id: Optional[str], qty: int, fill_id: str) -> None:
+def consume_for_short(ctx: TxContext, borrow_id: Optional[str], qty: int, fill_id: str, *, price=None, proceeds_c: int = 0, services=None) -> int:
     """A short fill backed by ``borrow_id`` (§13.1.3): the borrow must be OPEN with enough outstanding quantity for the
     fill and belong to the fill's (account, instrument).  The ``reason`` ('pending short sale') is cleared once the
     order is fully filled — the short position now backs the whole borrow; after a PARTIAL fill the unfilled remainder
     still pends, so the reason stays (L12 accepts a short position or a reason; without it a cover of the filled part
     while the rest is working would leave an open borrow that backs nothing and roll the cover back).  The order's
-    ``filled_qty`` already includes this fill (``orders`` advances it before ``execution.apply_fill``)."""
+    ``filled_qty`` already includes this fill (``orders`` advances it before ``execution.apply_fill``).
+
+    With the fill ``price`` (``execution.apply_fill``) an order borrow posts its collateral for THIS fill now
+    (SHORT_COLLATERAL, ``collat:{borrow}:fill:{fill_id}``): 102 % of the filled quantity at the fill price, ``Cr 1200``
+    the sale's own proceeds ``proceeds_c`` (gross - fee) first, ``Cr 1010`` the rest through ``execution.fund``.
+    Returns the receivable applied, which the caller takes off the fill's settlement row; 0 when nothing was posted
+    here (no price given - an option delivery - or a borrow collateralised at open)."""
     if not borrow_id:
         raise RejectError("NOT_IN_THIS_BUILD", "a short fill needs the borrow opened at submit: no borrow backs this fill")
     conn = ctx.conn
@@ -332,17 +464,65 @@ def consume_for_short(ctx: TxContext, borrow_id: Optional[str], qty: int, fill_i
     if b["order_id"]:
         o = conn.execute("SELECT qty, filled_qty FROM orders WHERE order_id=?", (b["order_id"],)).fetchone()
         fully_filled = o is None or int(o["filled_qty"]) >= int(o["qty"])
+    applied = 0
+    if price is not None and not collateral_at_borrow(conn, b):
+        applied = _post_fill_collateral(ctx, services, b, qty, fill_id, price, proceeds_c)
     if fully_filled:
         conn.execute("UPDATE borrows SET reason=NULL WHERE borrow_id=?", (borrow_id,))
     ctx.touched_accounts.add(b["account_id"])
     ctx.touched_instruments.add((b["account_id"], b["instrument_id"]))
+    return applied
+
+
+def _post_fill_collateral(ctx: TxContext, services, b, qty: int, fill_id: str, price, proceeds_c: int) -> int:
+    """``collat:{borrow}:fill:{fill_id}``: ``Dr 1400 to_c(1.02 x qty x price)``; ``Cr 1200`` the sale proceeds (at most
+    the collateral); ``Cr 1010`` the rest (the 2 % excess + fee), funded first (``fund(immediate=True)``: own settled
+    cash, one Treasury sweep linked to the borrow, PB financing, or 409 INSUFFICIENT_FUNDS).  Returns the proceeds used."""
+    services = _services(ctx, services)
+    conn = ctx.conn
+    aid, iid, ccy, bid = b["account_id"], b["instrument_id"], b["currency"], b["borrow_id"]
+    inst = _inst_of(services, conn, iid)
+    px = qprice(price)
+    qty = int(qty)
+    coll = collateral_required_c(qty, px, inst)
+    if coll <= 0:
+        return 0
+    applied = max(0, min(int(proceeds_c or 0), coll))
+    cash = coll - applied
+    funding = execution.fund(ctx, aid, ccy, cash, "borrow", bid, None, immediate=True, services=services)
+    sym = inst.symbol if inst is not None else iid
+    memo = (f"short sale {fill_id}: collateral 102 % of {qty:,} {sym} x {px} = {fmt_money(coll)} to {b['lender']} for {bid}, from the sale proceeds"
+            f" {fmt_money(applied)} and cash {fmt_money(cash)} (2 % excess + fee) (SHORT_COLLATERAL)")
+    lines = [dr(aid, "1400", ccy, coll, instrument_id=iid, memo=bid)]
+    if applied:
+        lines.append(cr(aid, "1200", ccy, applied, memo=f"proceeds of {fill_id} delivered to the lender as collateral"))
+    if cash:
+        lines.append(cr(aid, "1010", ccy, cash, memo=f"cash collateral beyond the sale proceeds for {bid}"))
+    entry_id = ctx.post(Entry("COLLATERAL", memo, lines, f"collat:{bid}:fill:{fill_id}", ref_type="borrow", ref_id=bid))
+    conn.execute("UPDATE borrows SET collateral_c=collateral_c+? WHERE borrow_id=?", (coll, bid))
+    ctx.event("COLLATERAL_POSTED", account_id=aid, instrument_id=iid, ref_type="borrow", ref_id=bid, fill_id=fill_id, qty=qty, price=str(px), collateral_c=coll,
+              from_proceeds_c=applied, from_cash_c=cash, entry_id=entry_id, sweep_id=funding.sweep_id, funding_source=funding.source)
+    return applied
+
+
+def _sold_back_c(coll_c: int, before: int, after: int) -> int:
+    """The collateral of the sold shares a return gives back: ``coll_c`` pro rata over the collateralised quantity
+    before the return (``before``), for what it loses (``before - after``); 0 when no sold share goes back."""
+    before, after = int(before), max(0, int(after))
+    if before <= 0 or after >= before:
+        return 0
+    return pro_rata_c(int(coll_c), before - after, before)
 
 
 # ---- returns (§13.1.5-6) ----------------------------------------------------------------------------------------------------
-def return_borrow(ctx: TxContext, services, borrow_id: str, qty: int, fill_id: Optional[str], reason: str, idem_suffix: Optional[str] = None) -> dict:
-    """Return ``qty`` of a borrow: collateral back pro rata (``Dr 1010 / Cr 1400``), the returned share of the
-    instrument's accrued fees and rebate settled, the row updated (CLOSED when nothing is outstanding).  Refused with
-    409 BACKS_SHORT when the (account, instrument) would be left with less borrowed than sold short (L12)."""
+def return_borrow(ctx: TxContext, services, borrow_id: str, qty: int, fill_id: Optional[str], reason: str, idem_suffix: Optional[str] = None,
+                  back_c: Optional[int] = None) -> dict:
+    """Return ``qty`` of a borrow: collateral back (``Dr 1010 / Cr 1400``; a borrow collateralised at open pro rata of
+    its outstanding quantity; an order borrow the collateral of the sold shares the return takes, from
+    ``collateral_qty_map`` before and after - ``back_c`` when the caller worked it out, as a cover does; everything
+    left when the borrow closes), the returned share of the instrument's accrued fees and rebate settled, the row
+    updated (CLOSED when nothing is outstanding).  Refused with 409 BACKS_SHORT when the (account, instrument) would be
+    left with less borrowed than sold short (L12)."""
     services = _services(ctx, services)
     conn = ctx.conn
     b = _borrow(conn, borrow_id)
@@ -359,7 +539,15 @@ def return_borrow(ctx: TxContext, services, borrow_id: str, qty: int, fill_id: O
                             f" {g['total'] - qty:,}; cover first", {"short": g["short"], "borrowed": g["total"], "qty": qty, "borrow_id": borrow_id})
     full = qty == out
     coll_c = int(b["collateral_c"])
-    back = pro_rata_c(coll_c, qty, out)
+    if full:
+        back = coll_c
+    elif back_c is not None:
+        back = max(0, min(int(back_c), coll_c))
+    elif collateral_at_borrow(conn, b):
+        back = pro_rata_c(coll_c, qty, out)
+    else:
+        back = _sold_back_c(coll_c, collateral_qty_map(conn, aid, iid).get(borrow_id, 0),
+                            collateral_qty_map(conn, aid, iid, out_adj={borrow_id: qty}).get(borrow_id, 0))
     suffix = idem_suffix or (fill_id if fill_id else f"{reason}:{ctx.request_id}")
     inst = _inst_of(services, conn, iid)
     sym = inst.symbol if inst is not None else iid
@@ -397,26 +585,37 @@ def return_for_cover(ctx: TxContext, services, account_id: str, instrument_id: s
     borrowed quantity that now backs nothing (borrowed − short − what live short orders still need), from borrows
     whose order has ended first, oldest first.  Returns the ``return_borrow`` results (empty when nothing is free)."""
     services = _services(ctx, services)
-    g = _group(ctx.conn, account_id, instrument_id)
+    conn = ctx.conn
+    g = _group(conn, account_id, instrument_id)
     left = g["excess"]
     out: List[dict] = []
     if left <= 0:
         return out
     ordered = sorted(g["auto"], key=lambda r: (1 if r["order_status"] in LIVE_ORDER_STATUSES else 0, int(r["opened_ts"]), r["borrow_id"]))
+    plan: List[Tuple[dict, int]] = []
     for r in ordered:
         if left <= 0:
             break
         take = min(left, _outstanding(r))
         if take <= 0:
             continue
-        out.append(return_borrow(ctx, services, r["borrow_id"], take, fill_id, "cover"))
+        plan.append((r, take))
         left -= take
+    # an order borrow gives back the collateral of the sold shares it returns: collateralised before the cover (the short
+    # was ``qty`` larger) less after these returns (SHORT_COLLATERAL)
+    before = collateral_qty_map(conn, account_id, instrument_id, short=g["short"] + int(qty))
+    after = collateral_qty_map(conn, account_id, instrument_id, out_adj={r["borrow_id"]: take for r, take in plan})
+    for r, take in plan:
+        bid = r["borrow_id"]
+        back = None if collateral_at_borrow(conn, r) else _sold_back_c(int(r["collateral_c"]), before.get(bid, 0), after.get(bid, 0))
+        out.append(return_borrow(ctx, services, bid, take, fill_id, "cover", back_c=back))
     return out
 
 
 def release_for_cancel(ctx: TxContext, services, borrow_id: str, order_id: str, reason: str) -> Optional[dict]:
     """``order.cancel`` / ``order.expire`` of a short order that filled nothing: the whole borrow goes back at once
-    (``collat:{borrow}:return:cancel:{order}``)."""
+    (an order borrow holds no collateral before its first fill, so only the quantity goes back; a borrow collateralised
+    at open returns it, ``collat:{borrow}:return:cancel:{order}``)."""
     b = _borrow(ctx.conn, borrow_id)
     if b["status"] != "OPEN" or _outstanding(b) <= 0:
         return None
@@ -471,12 +670,13 @@ def release_unused(ctx: TxContext, services, lifetime_id: str, d: str) -> List[d
 
 
 # ---- collateral marks (§11.2 COLLATERAL_MARK, §13.1.4) -------------------------------------------------------------------------
-def collateral_mark_lines(ctx, borrow, mark, mark_date: str) -> Tuple[List[Line], int]:
-    """One movement to 102 % of ``qty_outstanding × mark``: ``(lines, delta_c)``; a call is ``Dr 1400 / Cr 1010``, an
-    excess ``Dr 1010 / Cr 1400``; ``([], 0)`` when the collateral already matches.  Reads nothing but the row."""
+def collateral_mark_lines(ctx, borrow, mark, mark_date: str, qty: Optional[int] = None) -> Tuple[List[Line], int]:
+    """One movement to 102 % of ``qty × mark`` (``qty`` = the collateralised quantity, default ``qty_outstanding``):
+    ``(lines, delta_c)``; a call is ``Dr 1400 / Cr 1010``, an excess ``Dr 1010 / Cr 1400``; ``([], 0)`` when the
+    collateral already matches.  Reads nothing but the row."""
     services = getattr(ctx, "services", None)
     inst = _inst_of(services, getattr(ctx, "conn", None), borrow["instrument_id"]) if services is not None else None
-    required = collateral_required_c(_outstanding(borrow), mark, inst)
+    required = collateral_required_c(_outstanding(borrow) if qty is None else int(qty), mark, inst)
     delta = required - int(borrow["collateral_c"])
     aid, iid, ccy, bid = borrow["account_id"], borrow["instrument_id"], borrow["currency"], borrow["borrow_id"]
     if delta > 0:
@@ -487,7 +687,8 @@ def collateral_mark_lines(ctx, borrow, mark, mark_date: str) -> Tuple[List[Line]
 
 
 def collateral_mark(ctx: TxContext, services, borrow_id: str, mark_date: str, mark=None, mark_note: Optional[str] = None) -> dict:
-    """``required = to_c(1.02 × qty_outstanding × close)``, ``delta = required − collateral_c``; a call is funded
+    """``required = to_c(1.02 × collateralised qty × close)`` (``collateral_qty_map``: the whole outstanding of a borrow
+    collateralised at open, the short an order borrow backs), ``delta = required − collateral_c``; a call is funded
     (``fund(immediate=True, overdraft=True)``: a Treasury sweep linked to the borrow, else posted anyway with the
     FUNDING_SHORTFALL item of §11.6); one entry ``cmark:{borrow}:{date}``; ``collateral_c`` / ``last_mark_date`` updated.
     Without ``mark`` the CLOSE of ``mark_date`` must exist in ``marks`` (MARK_UNAVAILABLE otherwise; the job retries)."""
@@ -506,7 +707,8 @@ def collateral_mark(ctx: TxContext, services, borrow_id: str, mark_date: str, ma
             raise RejectError("MARK_UNAVAILABLE", f"no CLOSE mark recorded for {b['instrument_id']} on {mark_date}: the collateral mark waits for MARKS_RECORD (never defaulted)")
         mark, mark_note = got
     mark = qprice(mark)
-    lines, delta = collateral_mark_lines(ctx, b, mark, mark_date)
+    cqty = _outstanding(b) if collateral_at_borrow(conn, b) else collateral_qty_map(conn, b["account_id"], b["instrument_id"]).get(borrow_id, 0)
+    lines, delta = collateral_mark_lines(ctx, b, mark, mark_date, qty=cqty)
     required = int(b["collateral_c"]) + delta
     aid, iid, ccy = b["account_id"], b["instrument_id"], b["currency"]
     funding = None
@@ -515,7 +717,7 @@ def collateral_mark(ctx: TxContext, services, borrow_id: str, mark_date: str, ma
         funding = execution.fund(ctx, aid, ccy, delta, "borrow", borrow_id, None, immediate=True, overdraft=True, services=services)
     if delta != 0:
         what = "call" if delta > 0 else "excess returned"
-        memo = (f"collateral mark {mark_date} on {borrow_id}: 102 % of {_outstanding(b):,} x {mark} = {fmt_money(required)} ({mark_note or 'mark given'}); "
+        memo = (f"collateral mark {mark_date} on {borrow_id}: 102 % of {cqty:,} x {mark} = {fmt_money(required)} ({mark_note or 'mark given'}); "
                 f"{what} {fmt_money(abs(delta))} (SHORT_COLLATERAL)")
         entry_id = ctx.post(Entry("COLLATERAL", memo, lines, f"cmark:{borrow_id}:{mark_date}", ref_type="borrow", ref_id=borrow_id))
     conn.execute("UPDATE borrows SET collateral_c=?, last_mark_date=? WHERE borrow_id=?", (required, mark_date, borrow_id))
@@ -615,7 +817,8 @@ def h_borrow_stock(ctx: TxContext, payload: dict) -> dict:
     if not services.instruments.tradeable_in(inst, account_kind_for(acct)):
         raise RejectError("NOT_TRADEABLE_HERE", f"{inst.symbol} does not trade in {aid}")
     qty = _qty(payload)
-    loc = locate(services, aid, inst, qty, conn=ctx.conn)
+    ensure_seclend_schema(getattr(services, "db", None), ctx.conn)
+    loc = locate(services, aid, inst, qty, conn=ctx.conn, counterparty_id=str(payload.get("counterparty_id") or "") or None)
     if not loc.available or int(loc.qty_available) <= 0:
         raise ConflictError("NO_BORROW", f"no borrow available for {inst.symbol}: {loc.basis}", {"locate": loc.to_dict()})
     q = min(qty, int(loc.qty_available))
@@ -690,6 +893,196 @@ def h_recall_check(ctx: TxContext, payload: dict) -> dict:
     return {"notices": recall_notices(ctx, services, today)}
 
 
+# ---- securities lending out: jobs (C13), views, exposure (C20) -------------------------------------------------------------------
+def _open_sec_loans(conn) -> list:
+    if not seclend_tables_ready(conn):
+        return []
+    return conn.execute("SELECT s.* FROM sec_loans s JOIN accounts a ON a.account_id=s.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id"
+                        " WHERE s.status='OPEN' AND a.status='OPEN' AND l.status='OPEN' ORDER BY s.loan_id").fetchall()
+
+
+from .lifecycle_jobs import Job as _Job, last_trading_day as _last_trading_day, trading_days as _trading_days   # noqa: E402
+from .clock import epoch_of as _epoch_of   # noqa: E402
+
+
+class _SecLendJob(_Job):
+    """The lending-out jobs live in the process-wide REGISTRY once any runtime bound this module (C13); without
+    ``services.lending`` (or before the first securities loan exists) they are quietly idle."""
+    module = "lending"
+
+    def available(self, services):
+        return True, ""
+
+    def _bound(self) -> bool:
+        return getattr(self.services, "lending", None) is not None
+
+
+class SecLendAccrue(_SecLendJob):
+    name = "SECLEND_ACCRUE"
+    kind = "lifecycle.seclend_accrue"
+    when = "from 00:30 ET for every calendar night shares were on loan at 17:00 ET (your share of the fee, the rebate on the cash collateral)"
+    module = "lending"
+
+    def due(self, conn, clock, cal, sessions) -> List[str]:
+        if not self._bound():
+            return []
+        today = clock.today()
+        through = today - timedelta(days=1) if clock.epoch() >= _epoch_of(today, "00:30") else today - timedelta(days=2)
+        keys = []
+        for r in _open_sec_loans(conn):
+            for d in sl_nights_due(conn, r, through):
+                keys.append(f"{r['loan_id']}:{d}")
+        return self.filter_done(conn, keys)
+
+    def series_of(self, key: str) -> Optional[str]:
+        return key.rsplit(":", 1)[0]
+
+    def run(self, ctx: TxContext, key: str, services) -> dict:
+        lid, d = key.rsplit(":", 1)
+        r = _sl_row(ctx.conn, lid)
+        if r["status"] != "OPEN":
+            return {"status": "DONE", "note": f"{lid} is closed: its nights were posted at the recall", "posted": False}
+        out = sl_accrue_night(ctx, services, r, d)
+        return dict(out, status="DONE", posted_c=int(out["fee_c"]) + int(out["rebate_c"]), note=f"fee {fmt_money(int(out['fee_c']))}, rebate {fmt_money(int(out['rebate_c']))} night of {d}")
+
+
+class SecLendCollateralMark(_SecLendJob):
+    name = "SECLEND_COLLATERAL_MARK"
+    kind = "lifecycle.seclend_mark"
+    when = "17:10 ET on trading days per securities loan (102 % of the recorded CLOSE, both ways)"
+    module = "lending"
+
+    def due(self, conn, clock, cal, sessions) -> List[str]:
+        if not self._bound():
+            return []
+        now = clock.epoch()
+        today = clock.today()
+        master = getattr(self.services, "instruments", None)
+        keys = []
+        for r in _open_sec_loans(conn):
+            inst = master.get(r["instrument_id"], conn) if master is not None else None
+            group = inst.session_group if inst is not None else "US_EQUITY"
+            opened = date.fromisoformat(r["opened_date"])
+            start = opened if not r["last_mark_date"] else max(opened, date.fromisoformat(r["last_mark_date"]) + timedelta(days=1))
+            for d in _trading_days(sessions, group, start, today):
+                if now < _epoch_of(d, SECLEND_MARK_ET):
+                    break
+                keys.append(f"{r['loan_id']}:{d.isoformat()}")
+        return self.filter_done(conn, keys)
+
+    def series_of(self, key: str) -> Optional[str]:
+        return key.rsplit(":", 1)[0]
+
+    def run(self, ctx: TxContext, key: str, services) -> dict:
+        lid, d = key.rsplit(":", 1)
+        out = sl_collateral_mark(ctx, services, _sl_row(ctx.conn, lid), d)
+        if out.get("skipped"):
+            return dict(out, status="DONE", note=str(out["skipped"]), posted=False)
+        return dict(out, status="DONE", posted=bool(out.get("delta_c")), note=f"required {fmt_money(int(out['required_c']))} at {out['mark']}, movement {fmt_money(int(out['delta_c']))}")
+
+
+SECLEND_JOBS = (SecLendAccrue(), SecLendCollateralMark())
+
+
+def _returnable(conn, b) -> Tuple[int, str]:
+    """How much of an OPEN borrow can go back now and, when nothing can, why (it backs a short or a working short order)."""
+    g = _group(conn, b["account_id"], b["instrument_id"])
+    free = g["total"] - g["short"] - g["pending_live"]
+    qty = max(0, min(_outstanding(b), free))
+    if qty > 0:
+        return qty, ""
+    if g["short"] > 0:
+        return 0, f"backs a short of {g['short']:,}: buy to cover first, the borrow then returns by itself"
+    return 0, f"backs a working short sale of {g['pending_live']:,}: cancel the order first"
+
+
+def borrows_view(services, lifetime_id: str, status: str = "OPEN") -> dict:
+    """Every stock borrow of the book (any account) with lender, fee, rebate, collateral, accrued, recall notice and what can
+    be returned now."""
+    from .marks import shared_reader
+    out = []
+    with shared_reader(services.db) as conn:
+        sql = ("SELECT b.*, a.name AS account_name FROM borrows b JOIN accounts a ON a.account_id=b.account_id WHERE a.lifetime_id=?"
+               + (" AND b.status=?" if status and status.upper() != "ALL" else "") + " ORDER BY b.status DESC, b.opened_ts DESC LIMIT 300")
+        params = [lifetime_id] + ([status.upper()] if status and status.upper() != "ALL" else [])
+        rows = conn.execute(sql, params).fetchall()
+        try:
+            snap = services.marks.snapshot(sorted({b["instrument_id"] for b in rows})) if rows else None
+        except Exception:   # noqa: BLE001 - no marks: the market values show n/a
+            snap = None
+        for b in rows:
+            v = borrow_view(conn, b["borrow_id"])
+            inst = _inst_of(services, conn, b["instrument_id"])
+            q, why = _returnable(conn, b) if b["status"] == "OPEN" else (0, "closed")
+            mv, mview = market_value_c(services, b["instrument_id"], _outstanding(b), snap) if snap is not None else (None, None)
+            v.update(account_name=b["account_name"], symbol=inst.symbol if inst is not None else b["instrument_id"], returnable_qty=q, return_note=why, market_value_c=mv,
+                     mark=None if mview is None else str(mview.mark), mark_quality=None if mview is None else mview.quality,
+                     counterparty_id=b["counterparty"] if "counterparty" in b.keys() else None)
+            out.append(v)
+    return {"rows": out, "lifetime_id": lifetime_id, "as_of": int(services.clock.epoch()),
+            "note": "borrow fees by FINRA short-volume / volume tier (a heuristic, not a quote); the 102 % cash collateral is marked daily both ways; recalls are information notices only"}
+
+
+def lending_view(services, lifetime_id: str) -> dict:
+    """The Securities lending tab: open loans, the long US equity positions that can be lent (free quantity), the agent lenders."""
+    from .books import account_kind_for
+    from .marks import shared_reader
+    ready, why = ledger_ready()
+    with shared_reader(services.db) as conn:
+        loans = []
+        if seclend_tables_ready(conn):
+            for r in conn.execute("SELECT s.* FROM sec_loans s JOIN accounts a ON a.account_id=s.account_id WHERE a.lifetime_id=? ORDER BY s.status DESC, s.loan_id DESC LIMIT 300",
+                                  (lifetime_id,)).fetchall():
+                loans.append(sec_loan_view(services, conn, r))
+        lendable = []
+        for a in conn.execute("SELECT * FROM accounts WHERE lifetime_id=? AND status='OPEN' ORDER BY sort_order", (lifetime_id,)).fetchall():
+            if account_kind_for(a) not in ("US_EXCHANGE", "PB"):
+                continue
+            for p in conn.execute("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty > 0 ORDER BY instrument_id", (a["account_id"],)).fetchall():
+                inst = _inst_of(services, conn, p["instrument_id"])
+                if inst is None or inst.kind not in EQUITY_KINDS or inst.currency != "USD":
+                    continue
+                f = free_to_lend(services, conn, a["account_id"], p["instrument_id"])
+                lendable.append(dict(f, account_id=a["account_id"], account_name=a["name"], instrument_id=p["instrument_id"], symbol=inst.symbol, name=inst.name))
+    cps = getattr(services, "counterparties", None)
+    agents = cps.directory(services, types=["AGENT_LENDER"]) if cps is not None and hasattr(cps, "directory") else []
+    return {"loans": loans, "lendable": lendable, "agents": agents, "ledger_ready": ready, "ledger_note": why, "lifetime_id": lifetime_id,
+            "note": "your shares stay your position (P&L, dividends) while on loan; the borrower's 102 % cash collateral is received and owed back; the agent keeps its share of the fee"}
+
+
+def exposure_items(services, conn, account_ids: List[str], snap) -> List[dict]:
+    """C20 rows: shares lent (the agent's borrowers hold them: market value vs the cash collateral received) and stock borrows
+    (the lender holds the book's cash collateral vs the shares the book owes back)."""
+    if not account_ids:
+        return []
+    q = ",".join("?" for _ in account_ids)
+    out = []
+
+    def mv_of(iid, qty):
+        try:
+            m = snap.mark(iid)
+        except Exception:   # noqa: BLE001
+            m = None
+        return None if m is None or m.mark is None else to_c(Decimal(int(qty)) * _dec(m.mark))
+
+    if seclend_tables_ready(conn):
+        for r in conn.execute(f"SELECT * FROM sec_loans WHERE status='OPEN' AND account_id IN ({q}) ORDER BY loan_id", account_ids).fetchall():
+            out.append({"counterparty_id": r["counterparty"], "name": r["agent"], "type": "AGENT_LENDER", "product": "securities lent",
+                        "exposure_c": mv_of(r["instrument_id"], sl_outstanding(r)), "collateral_c": int(r["collateral_c"]),
+                        "what": f"{r['loan_id']} {sl_outstanding(r):,} {r['instrument_id']}"})
+    has_cp = any(x[1] == "counterparty" for x in conn.execute("PRAGMA table_info(borrows)").fetchall())
+    for b in conn.execute(f"SELECT * FROM borrows WHERE status='OPEN' AND account_id IN ({q}) ORDER BY borrow_id", account_ids).fetchall():
+        cid = b["counterparty"] if has_cp else None
+        name = b["lender"]
+        for suffix in (" (agent lender, assumed terms)", " (prime broker, modelled)"):
+            if name.endswith(suffix):
+                name = name[: -len(suffix)]
+        out.append({"counterparty_id": cid, "name": name, "type": "PRIME_BROKER" if (cid or "").startswith("PB_") else "AGENT_LENDER", "product": "stock borrow",
+                    "exposure_c": int(b["collateral_c"]), "collateral_c": mv_of(b["instrument_id"], _outstanding(b)),
+                    "what": f"{b['borrow_id']} {_outstanding(b):,} {b['instrument_id']}"})
+    return out
+
+
 def register(bus) -> None:
     bus.register("credit.borrow_stock", h_borrow_stock)
     bus.register("credit.return_stock", h_return_stock)
@@ -697,9 +1090,65 @@ def register(bus) -> None:
     bus.register("credit.accrue_borrow", h_accrue_borrow)
     bus.register("credit.borrow_cleanup", h_borrow_cleanup)
     bus.register("credit.recall_check", h_recall_check, light=True)
+    bus.register("credit.lend_securities", h_lend)
+    bus.register("credit.recall_securities", h_recall)
 
 
 def bind(services) -> None:
-    """Expose this module as ``services.lending`` (what ``orders`` / ``execution`` look up at run time)."""
+    """Expose this module as ``services.lending`` (what ``orders`` / ``execution`` look up at run time); the securities-lending
+    table and column (C4), the chart rows of the lending codes the ledger defines, and the two lending-out jobs (C13)."""
     import sys
     services.lending = sys.modules[__name__]
+    db = getattr(services, "db", None)
+    if db is not None and callable(getattr(db, "ensure_schema_ext", None)):
+        ensure_seclend_schema(db)
+        try:
+            with db.writer() as tx:
+                ensure_chart_rows(tx.conn)
+        except Exception as e:   # noqa: BLE001 - logged; lending out stays refused with its reason until the rows exist
+            log = getattr(services, "log", None)
+            if log is not None:
+                log.warning("lending: chart rows for the securities-lending codes not written: %s", e)
+    try:
+        from .lifecycle_eod import add_product_job
+    except ImportError:   # pragma: no cover - a build without the C13 hook
+        return
+    for job in SECLEND_JOBS:
+        add_product_job(job, before="SNAPSHOT")
+
+
+def register_routes(r) -> None:
+    """C1: the Credit page's stock-borrow and securities-lending routes (GET /api/credit/borrows, /api/credit/lending; POST lend / recall /
+    preview); POST /api/credit/borrows takes over the older route to pass the lender (``counterparty_id``)."""
+    from .api import ApiError, NotFound, ok_or_raise, run_command
+
+    def borrows_get(req):
+        return borrows_view(req.rt, req.lifetime(), req.q("status") or "OPEN")
+
+    def borrow_post(req):
+        return run_command(req, "credit.borrow_stock", req.payload("account_id", "instrument_id", "qty", "counterparty_id"))
+
+    def lending_get(req):
+        return lending_view(req.rt, req.lifetime())
+
+    def lending_preview(req):
+        try:
+            return lend_preview(req.rt, {k: v for k, v in (req.body or {}).items() if k != "request_id"})
+        except RejectError as e:
+            raise ApiError(int(getattr(e, "http", 400) or 400), e.code, e.message, e.details)
+
+    def lending_post(req):
+        return run_command(req, "credit.lend_securities", req.payload("account_id", "instrument_id", "qty", "counterparty_id"))
+
+    def lending_recall(req):
+        payload = {"loan_id": req.params[0]}
+        if req.b("qty") not in (None, ""):
+            payload["qty"] = req.b("qty")
+        return run_command(req, "credit.recall_securities", payload)
+
+    r.add("GET", r"/api/credit/borrows", borrows_get)
+    r.add("POST", r"/api/credit/borrows", borrow_post)
+    r.add("GET", r"/api/credit/lending", lending_get)
+    r.add("POST", r"/api/credit/lending/preview", lending_preview, mutating=False)
+    r.add("POST", r"/api/credit/lending", lending_post)
+    r.add("POST", r"/api/credit/lending/([^/]+)/recall", lending_recall)

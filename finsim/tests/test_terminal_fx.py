@@ -1,5 +1,7 @@
-"""WP-05 FX spot tests (TERMINAL_DESIGN.md §13.5, §13.6, §19.6; D9).  Every expected number is worked by hand in a comment;
-nothing here is pasted from the code's output.  No network: FixedMarks, FakeClock, a temp database.
+"""WP-05 FX spot tests (TERMINAL_DESIGN.md §13.5, §13.6, §19.6; D9) and the Build 2 FX desk (P06: crosses dealt directly,
+CIP forwards booked and posted at their value date, the SETTLEMENT_UNFUNDABLE refusal of a sale the account cannot deliver,
+the USD -> currency conversion of C17 and the foreign venue taxes of C25).  Every expected number is worked by hand in a
+comment; nothing here is pasted from the code's output.  No network: FixedMarks, FakeClock, a temp database.
 
 The loan accruals use a LOCAL COPY of WP-08's ``lifecycle.accrue_segment`` (§11.3, same signature) injected as
 ``rt.lifecycle`` so the package runs before WP-08 is merged (TERMINAL_WORKPLAN.md WP-05 "Consumes")."""
@@ -317,7 +319,7 @@ class FxSpotTests(unittest.TestCase):
         assert_integrity(self, rt, "full")
 
     # ---- refusals -----------------------------------------------------------------------------------------------------------------------
-    def test_stale_quote_closed_session_cross_and_forward(self):
+    def test_stale_quote_closed_session_and_refusals(self):
         rt = self.rt
         fund(rt, FOREIGN_FX, 10000000)                                                # USD 100,000.00 in Foreign Markets & FX
         # a stale EURUSD record -> preview blocker + 409 QUOTE_STALE, nothing stored
@@ -337,11 +339,18 @@ class FxSpotTests(unittest.TestCase):
         # no USD rate for the currency at all -> QUOTE_UNAVAILABLE (never a defaulted rate)
         r = spot(rt, FOREIGN_FX, "CHF", "USD", 100000, "CHF")
         self.assertEqual((409, "QUOTE_UNAVAILABLE"), (r.http, r.code))
-        # a cross is two deals through USD (400 NOT_IN_THIS_BUILD); forwards are Build 2; US_EXCHANGE may not convert
+        # Build 2: a cross is dealt directly - here it sells GBP that neither the account nor Treasury holds: 409 SETTLEMENT_UNFUNDABLE
+        # (EUR 1,000 at EURGBP derived 1.1238 / 1.3394 = 0.83903240 + 0.2 pip -> GBP 839.05 to deliver on 10-22)
         r = spot(rt, FOREIGN_FX, "EUR", "GBP", 100000, "EUR")
-        self.assertEqual((400, "NOT_IN_THIS_BUILD"), (r.http, r.code))
-        r = execute(rt, "fx.forward", {"account_id": FOREIGN_FX, "buy_ccy": "EUR", "sell_ccy": "USD", "amount_c": 100000, "amount_ccy": "EUR", "value_date": "2026-12-21"})
-        self.assertEqual((400, "NOT_IN_THIS_BUILD"), (r.http, r.code))
+        self.assertEqual((409, "SETTLEMENT_UNFUNDABLE"), (r.http, r.code))
+        # a forward's value date must lie after spot (Tue 10-20 -> spot Thu 10-22): 400 VALUE_DATE
+        r = execute(rt, "fx.forward", {"account_id": FOREIGN_FX, "buy_ccy": "EUR", "sell_ccy": "USD", "amount_c": 100000, "amount_ccy": "EUR", "value_date": "2026-10-21"})
+        self.assertEqual((400, "VALUE_DATE"), (r.http, r.code))
+        # HKD has no free policy-rate series: no forward price, never a defaulted rate (409 FORWARD_UNAVAILABLE)
+        rt.marks.set("USDHKD", "7.80")
+        r = execute(rt, "fx.forward", {"account_id": FOREIGN_FX, "buy_ccy": "HKD", "sell_ccy": "USD", "amount_c": 100000, "amount_ccy": "HKD", "tenor": "1M"})
+        self.assertEqual((409, "FORWARD_UNAVAILABLE"), (r.http, r.code))
+        self.assertIn("no free policy-rate series for HKD", r.message)
         r = spot(rt, US_EXCHANGE, "EUR", "USD", 100000, "EUR")
         self.assertEqual((400, "NOT_TRADEABLE_HERE"), (r.http, r.code))
         r = spot(rt, FOREIGN_FX, "EUR", "EUR", 100000, "EUR")
@@ -353,6 +362,169 @@ class FxSpotTests(unittest.TestCase):
         # settling before the value date is refused unless forced
         r2 = execute(rt, "fx.settle", {"deal_id": r.body["deal"]["deal_id"]})
         self.assertEqual((400, "NOT_DUE"), (r2.http, r2.code))
+        assert_integrity(self, rt, "full")
+
+    # ---- Build 2 (P06): a cross dealt directly ---------------------------------------------------------------------------------------------
+    def test_cross_dealt_directly_3900_nets_to_zero(self):
+        rt = self.rt
+        # EURJPY mid = the USD pairs' cross 1.1238 x 158.10 = 177.67278; Treasury holds JPY 20,000,000.00 (deposit)
+        rt.marks.set("EURJPY", "177.67278")
+        deposit(rt, 2000000000, "JPY")
+        # BUY EUR 100,000.00 / SELL JPY: buying the base pays mid + 0.2 pip = 177.67278 + 0.002 = 177.67478 JPY per EUR
+        # JPY = to_c(100,000 x 177.67478) = 17,767,478.00; at the mid 17,767,278.00 -> the spread is JPY 200.00 = USD to_c(200 x 0.00632511) = 1.27
+        pv = fx.spot_preview(rt, FOREIGN_FX, "EUR", "JPY", 10000000, "EUR")
+        self.assertEqual((True, "EURJPY", True, "177.67278", "177.67478", 10000000, 1776747800, 127, "2026-10-22"),
+                         (pv["ok"], pv["pair"], pv["cross"], pv["mid"], pv["rate_quoted"], pv["buy_c"], pv["sell_c"], pv["spread_cost_c"], pv["value_date"]))
+        # ledger: the leg with more minor units (JPY) is the anchor at its USD mid 1/158.10 = 0.0063251106 -> 0.00632511:
+        # U = to_c(17,767,478 x 0.00632511) = to_c(112,381.252772) = 112,381.25; EUR is booked at U / 100,000 = 1.1238125 (one 8-dp rate hits it)
+        self.assertEqual({"anchor": {"ccy": "JPY", "amount_c": 1776747800, "rate": "0.00632511"}, "fitted": {"ccy": "EUR", "pieces": [{"amount_c": 10000000, "rate": "1.12381250"}]},
+                          "usd_c": 11238125}, pv["ledger_pieces"])
+        # the JPY leg cannot be delivered from the account (JPY 0) but Treasury's JPY covers it at settlement
+        self.assertEqual((True, 0, 1776747800, 0), (pv["legs"]["JPY"]["funding"]["fundable"], pv["legs"]["JPY"]["funding"]["own_available_c"],
+                                                    pv["legs"]["JPY"]["funding"]["from_treasury_c"], pv["legs"]["JPY"]["funding"]["shortfall_c"]))
+        r = spot(rt, FOREIGN_FX, "EUR", "JPY", 10000000, "EUR")
+        self.assertTrue(r.ok, r.body)
+        d = r.body["deal"]
+        self.assertEqual(("SPOT", "EUR", "JPY", 10000000, 1776747800, "177.67478", "177.67278", 127, True), (d["kind"], d["buy_ccy"], d["sell_ccy"], d["buy_c"], d["sell_c"],
+                                                                                                              d["rate_quoted"], d["mid"], d["spread_cost_c"], d["cross"]))
+        # Dr 1250 EUR / Cr 3900 EUR at 1.1238125 (base +/- 112,381.25); Dr 3900 JPY / Cr 2350 JPY at 0.00632511 (base +/- 112,381.25): 3900 nets to 0
+        self.assertEqual([("1250", "EUR", 10000000, 11238125, "1.1238125"), ("3900", "EUR", -10000000, -11238125, "1.1238125"),
+                          ("3900", "JPY", 1776747800, 11238125, "0.00632511"), ("2350", "JPY", -1776747800, -11238125, "0.00632511")], lines_of(rt, d["entry_id"]))
+        self.assertEqual(0, one(rt, "SELECT COALESCE(SUM(base_c),0) s FROM gl_balances WHERE gl='3900'")["s"])
+        # NAV of the account: EUR receivable at 1.1238 = 112,380.00, JPY payable at 0.00632511 = 112,381.25 -> -1.25 (the spread, less 0.02 of 8-dp rounding)
+        nav = rt.accounting.nav(FOREIGN_FX)
+        self.assertEqual((-125, -125), (nav.nav_c, nav.fx_result_c))
+        # value date Thu 10-22: EUR received; the JPY payable sweeps exactly JPY 17,767,478.00 from Treasury (own JPY 0)
+        rt.clock.set("2026-10-22T00:35:00-04:00")
+        s_ = execute(rt, "fx.settle", {"deal_id": d["deal_id"]}, actor="lifecycle")
+        self.assertTrue(s_.ok, s_.body)
+        self.assertEqual(("SETTLED", "sweep", 1776747800), (s_.body["status"], s_.body["settled"][1]["funding"]["source"], s_.body["settled"][1]["funding"]["sweep_c"]))
+        self.assertEqual((10000000, 0, 2000000000 - 1776747800), (bal(rt, FOREIGN_FX, "1010", "EUR"), bal(rt, FOREIGN_FX, "1010", "JPY"), bal(rt, TREASURY, "1010", "JPY")))
+        assert_fx_entries_balance(self, rt)
+        assert_integrity(self, rt, "full")
+
+    # ---- Build 2 (P06): an outright forward, CIP, no cash until the value date ------------------------------------------------------------
+    def test_forward_cip_booking_posting_and_settlement(self):
+        rt = self.rt
+        fund(rt, FOREIGN_FX, 200000000)                                      # USD 2,000,000.00 in the account
+        # Tue 10-20 11:00: spot Thu 10-22; 3M = Fri 2027-01-22 (a business day); d = 9 + 30 + 31 + 22 = 92 days from spot
+        # F = 1.1238 x (1 + 0.0387 x 92/360) / (1 + 0.0200 x 92/360) = 1.1238 x 1.00989 / 1.00511111 = 1.134914382 / 1.00511111 = 1.129143 (6 dp)
+        # points = (1.129143 - 1.1238) / 0.0001 = 53.43; forward spread 0.2 + 0.1 x 3 = 0.5 pip -> buying EUR deals at 1.129143 + 0.00005 = 1.129193
+        pv = fx.forward_preview(rt, FOREIGN_FX, "EUR", "USD", 100000000, "EUR", "3M")
+        self.assertEqual((True, "2027-01-22", 92, "1.129143", "53.43", "0.50", "1.129193", 100000000, 112919300, 5000),
+                         (pv["ok"], pv["value_date"], pv["forward"]["days"], pv["outright_mid"], pv["points"], pv["spread_pips"], pv["rate_quoted"], pv["buy_c"], pv["sell_c"],
+                          pv["spread_cost_c"]))
+        # the inputs are printed: both rates with their series and observation date
+        self.assertEqual(("ECBDFR", "2", "2026-10-19", "SOFR", "3.87", "2026-10-19"), (pv["forward"]["r_base"]["series"], pv["forward"]["r_base"]["value_pct"],
+                                                                                      pv["forward"]["r_base"]["as_of"], pv["forward"]["r_quote"]["series"],
+                                                                                      pv["forward"]["r_quote"]["value_pct"], pv["forward"]["r_quote"]["as_of"]))
+        self.assertEqual("F = 1.1238 x (1 + 3.87 % x 92/360) / (1 + 2 % x 92/360) = 1.1238 x 1.00989000 / 1.00511111 = 1.129143", pv["forward"]["arithmetic"])
+        r = execute(rt, "fx.forward", {"account_id": FOREIGN_FX, "buy_ccy": "EUR", "sell_ccy": "USD", "amount_c": 100000000, "amount_ccy": "EUR", "tenor": "3M"})
+        self.assertTrue(r.ok, r.body)
+        d = r.body["deal"]
+        self.assertEqual(("FORWARD", "3M", "2027-01-22", 100000000, 112919300, "1.129193", 0), (d["kind"], d["tenor"], d["value_date"], d["buy_c"], d["sell_c"], d["rate"], d["entry_id"]))
+        # no cash until the value date: no journal entry, no settlement row (L10 stays tied)
+        self.assertEqual((0, 0), (one(rt, "SELECT COUNT(*) n FROM journal_entries WHERE ref_id=?", (d["deal_id"],))["n"],
+                                  one(rt, "SELECT COUNT(*) n FROM settlements WHERE fx_deal_id=?", (d["deal_id"],))["n"]))
+        # mark-to-market now: (F_now - K) x A x DF = (1.129143 - 1.129193) x 1,000,000 = -50.00 USD at the value date,
+        # DF over the 94 days from today at SOFR = 1 / (1 + 0.0387 x 94/360) = 1 / 1.010105 = 0.98999609 -> -49.4998 -> -49.50
+        with rt.db.reader() as conn:
+            ov = fx.forward_overlays(rt, conn, FOREIGN_FX)
+        self.assertEqual([(d["deal_id"], -4950, "computed")], [(o["deal_id"], o["mtm_c"], o["quality"]) for o in ov])
+        pos = {c["currency"]: c for c in fx.positions_view(rt, FOREIGN_FX)["currencies"]}
+        self.assertEqual((100000000, -112919300), (pos["EUR"]["forwards_net_c"], pos["USD"]["forwards_net_c"]))
+        assert_integrity(self, rt, "full")
+        # V104R1-02 / -03 (1.0.4 fixer): the forward's position row is named by its pair and legs (it has no instrument row); its quantity is
+        # the EUR bought (1,000,000, the pair's base, + = bought), its notional the USD leg 1,129,193.00 (never the -49.50 MTM, which stays its
+        # market value and unrealised), its price the dealt rate 1.129193
+        fwd = [p for p in rt.accounting.positions(FOREIGN_FX) if p.kind == "FX_FORWARD"]
+        self.assertEqual([("EURUSD fwd", f"FX forward {d['deal_id']}: buy EUR 1,000,000.00 / sell USD 1,129,193.00, value 2027-01-22", 1000000, 112919300, -4950, -4950,
+                           "1.129193", "EUR")],
+                         [(p.symbol, p.name, p.qty, p.notional_c, p.mv_c, p.unrealised_c, str(p.avg_px), p.extra["qty_unit"]) for p in fwd])
+        # Risk: gross notional 1,129,193.00 (the only position), the bucket 'FX forwards (notional)' long 1,129,193.00, nothing in the headline
+        # long / short (an FX forward's risk is its currency exposure); the exposure by currency carries the bought EUR leg: EUR 1,000,000.00
+        # at 1.1238 = USD 1,123,800.00, so 'USD +5 %' (foreign -5 %) = -56,190.00 and 'USD -5 %' = +56,190.00
+        from finsim.terminal import risk
+        v = risk.report(rt, FOREIGN_FX)
+        self.assertEqual((0, 0, 112919300), (v.long_c, v.short_c, v.gross_notional_c))
+        b = {e["bucket"]: e for e in v.exposures}
+        self.assertEqual((112919300, 0, False), (b["FX forwards (notional)"]["long_c"], b["FX forwards (notional)"]["short_c"], b["FX forwards (notional)"]["headline"]))
+        self.assertEqual((100000000, 112380000), (v.exposure_by_currency["EUR"]["native_c"], v.exposure_by_currency["EUR"]["usd_c"]))
+        self.assertEqual({"USD +5 % vs foreign currencies": -5619000, "USD -5 % vs foreign currencies": 5619000},
+                         {s["name"]: s["pnl_c"] for s in v.scenarios if s["group"] == "fx"})
+        # value date Fri 2027-01-22 00:35 ET: the forward is posted at K (the spot pattern: EUR at the 8-dp rate 1.129193, USD = to_c(1,000,000 x 1.129193)),
+        # then both legs settle: EUR 1,000,000.00 received, USD 1,129,193.00 delivered from the account's USD 2,000,000.00
+        rt.clock.set("2027-01-22T00:35:00-05:00")
+        with rt.db.reader() as conn:
+            self.assertEqual([d["deal_id"]], fx.forward_due_keys(conn, rt.clock.epoch()))
+        p_ = execute(rt, "fx.forward_due", {"deal_id": d["deal_id"]}, actor="lifecycle")
+        self.assertTrue(p_.ok, p_.body)
+        self.assertEqual([("1250", "EUR", 100000000, 112919300, "1.129193"), ("3900", "EUR", -100000000, -112919300, "1.129193"),
+                          ("3900", "USD", 112919300, 112919300, "1"), ("2350", "USD", -112919300, -112919300, "1")], lines_of(rt, p_.body["entry_id"]))
+        s_ = execute(rt, "fx.settle", {"deal_id": d["deal_id"]}, actor="lifecycle")
+        self.assertEqual(("SETTLED", "own"), (s_.body["status"], s_.body["settled"][1]["funding"]["source"]))
+        self.assertEqual((100000000, 200000000 - 112919300), (bal(rt, FOREIGN_FX, "1010", "EUR"), bal(rt, FOREIGN_FX, "1010", "USD")))
+        # realised at the value date: EUR 1,000,000 worth 1,123,800.00 at 1.1238 against 1,129,193.00 paid -> fx_result -5,393.00
+        self.assertEqual(-539300, rt.accounting.nav(FOREIGN_FX).fx_result_c)
+        assert_fx_entries_balance(self, rt)
+        assert_integrity(self, rt, "full")
+
+    # ---- Build 2 (P06, OA-11): a sale the account cannot deliver is refused with the shortfall and the fix -------------------------------------
+    def test_unfundable_sale_refused_with_the_fix(self):
+        rt = self.rt
+        # SELL GBP 500,000.00 for USD, nobody holds GBP: short 500,000.00 on the value date 10-22, nothing written
+        r = spot(rt, FOREIGN_FX, "USD", "GBP", 50000000, "GBP")
+        self.assertEqual((409, "SETTLEMENT_UNFUNDABLE"), (r.http, r.code))
+        det = r.body["error"]["details"]
+        self.assertEqual((50000000, 0, 0, 50000000, "2026-10-22"), (det["need_c"], det["own_available_c"], det["treasury_available_c"], det["shortfall_c"], det["value_date"]))
+        self.assertIn("short GBP 500,000.00", r.message)
+        self.assertIn("buy GBP first on this desk (value on or before 2026-10-22)", r.message)
+        self.assertIn("transfer GBP from Treasury", r.message)
+        self.assertEqual(0, one(rt, "SELECT COUNT(*) n FROM fx_deals")["n"])
+        # the desk preview says the same before Confirm (a blocker with the legs and the funding)
+        pv = fx.spot_preview(rt, FOREIGN_FX, "USD", "GBP", 50000000, "GBP")
+        self.assertEqual((False, "SETTLEMENT_UNFUNDABLE", 50000000), (pv["ok"], pv["blockers"][-1]["code"], pv["legs"]["GBP"]["funding"]["shortfall_c"]))
+        # Treasury holds GBP 300,000.00: still short 200,000.00 for 500,000.00 ...
+        deposit(rt, 30000000, "GBP")
+        r = spot(rt, FOREIGN_FX, "USD", "GBP", 50000000, "GBP")
+        self.assertEqual((409, 30000000, 20000000), (r.http, r.body["error"]["details"]["treasury_available_c"], r.body["error"]["details"]["shortfall_c"]))
+        # ... and 250,000.00 is fundable (Treasury's GBP sweeps it at settlement): GBPUSD 1.3394 - 0.2 pip = 1.33938 -> USD to_c(250,000 x 1.33938) = 334,845.00
+        r = spot(rt, FOREIGN_FX, "USD", "GBP", 25000000, "GBP")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual((33484500, 25000000, "1.33938"), (r.body["deal"]["buy_c"], r.body["deal"]["sell_c"], r.body["deal"]["rate"]))
+        assert_integrity(self, rt, "full")
+
+    # ---- Build 2 (P06, C17 / C25): the USD -> currency conversion of a foreign need, the venue taxes -------------------------------------------
+    def test_conversion_plan_convert_for_and_venue_taxes(self):
+        rt = self.rt
+        # a GBP need of 2,714.50 settling Thu 10-22: buy GBP at 1.3394 + 0.2 pip = 1.33942 -> USD to_c(2,714.50 x 1.33942) = to_c(3,635.85559) = 3,635.86;
+        # at the mid to_c(2,714.50 x 1.3394) = to_c(3,635.8013) = 3,635.80 -> spread 0.06; spot value 10-22 = the settle date: executable
+        plan = fx.conversion_plan(rt, None, FOREIGN_FX, "GBP", 271450, date(2026, 10, 22))
+        self.assertEqual(("GBPUSD", 271450, 363586, "1.33942", 6, "2026-10-22", True), (plan["pair"], plan["buy_c"], plan["usd_c"], plan["rate_quoted"], plan["spread_cost_c"],
+                                                                                       plan["value_date"], plan["executable"]))
+        # a trade settling Wed 10-21 cannot be funded by a spot that arrives Thu: not executable, said why
+        late = fx.conversion_plan(rt, None, FOREIGN_FX, "GBP", 271450, date(2026, 10, 21))
+        self.assertEqual(False, late["executable"])
+        self.assertIn("FX_VALUE_DATE", late["reason"])
+        self.assertIsNone(fx.conversion_plan(rt, None, FOREIGN_FX, "USD", 271450, date(2026, 10, 22)))
+        rt.bus.register("test.convert", lambda ctx, p: fx.convert_for(ctx, p["account_id"], p["ccy"], int(p["need_c"]), "entry", p["link"], date.fromisoformat(p["settle"])))
+        dep = one(rt, "SELECT idem_key FROM journal_entries ORDER BY entry_id LIMIT 1")["idem_key"]
+        r = execute(rt, "test.convert", {"account_id": FOREIGN_FX, "ccy": "GBP", "need_c": 271450, "settle": "2026-10-22", "link": dep})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual((271450, 363586, "1.33942", "2026-10-22"), (r.body["buy_c"], r.body["usd_c"], r.body["rate"], r.body["value_date"]))
+        link = json.loads(one(rt, "SELECT inputs_json FROM fx_deals WHERE deal_id=?", (r.body["deal_id"],))["inputs_json"])["link"]
+        self.assertEqual(("entry", dep), (link["type"], link["id"]))
+        r = execute(rt, "test.convert", {"account_id": FOREIGN_FX, "ccy": "GBP", "need_c": 271450, "settle": "2026-10-21", "link": dep})
+        self.assertEqual((409, "FX_VALUE_DATE"), (r.http, r.code))
+        # C25 venue taxes (assumed - verify current rates), in the listing's currency:
+        # London BUY 100 SHEL-L @ 2,700p: gross GBP 2,700.00 -> SDRT 0.50 % = 13.50; a sale pays none
+        shel, hk = rt.instruments.get("SHEL-L"), rt.instruments.get("0700-HK")
+        self.assertEqual((1350, 0), (fx.venue_fee_c(shel, "BUY", 100, 270000)[0], fx.venue_fee_c(shel, "SELL", 100, 270000)[0]))
+        # Hong Kong both sides 0.10 % rounded UP to the whole HKD: 52,000.00 -> 52.00; 52,000.50 -> 52.0005 -> 53.00
+        self.assertEqual((5200, 5300), (fx.venue_fee_c(hk, "BUY", 100, 5200000)[0], fx.venue_fee_c(hk, "SELL", 100, 5200050)[0]))
+        # Paris: LVMH 0.40 % of 60,000.00 = 240.00 on a purchase; Airbus SE (incorporated in the Netherlands) is not on the French FTT list
+        self.assertEqual((24000, 0), (fx.venue_fee_c(rt.instruments.get("MC-PA"), "BUY", 10, 6000000)[0], fx.venue_fee_c(rt.instruments.get("AIR-PA"), "BUY", 100, 2100000)[0]))
+        self.assertIn("assumed - verify current rates", fx.venue_fee_c(shel, "BUY", 100, 270000)[1])
         assert_integrity(self, rt, "full")
 
     # ---- fund_ccy (WP-26's hook) ----------------------------------------------------------------------------------------------------------

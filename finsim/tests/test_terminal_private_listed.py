@@ -212,8 +212,9 @@ class ListedScenarioTests(unittest.TestCase):
         r = execute(rt, "private.set_status", {"company_id": "PRV-TESTCO", "status": "PUBLIC", "ticker": "TSTQ", "listed_on": "2026-11-02",
                                                "exchange": "Nasdaq Global Select Market", "source_url": "https://example.com/tstq-listing"}, "ui:list-testco-0001")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual({"ticker": "TSTQ", "instrument_id": "TSTQ", "in_master": True, "created": True, "kind": "EQUITY", "support": "FULL", "us_exchange": True},
-                         r.body["listed_instrument"])
+        # SR-14: the company's common name ("Testco, Inc." -> "Testco") goes on the listed row's search aliases
+        self.assertEqual({"ticker": "TSTQ", "instrument_id": "TSTQ", "in_master": True, "created": True, "kind": "EQUITY", "support": "FULL", "us_exchange": True,
+                          "aliases_added": ["Testco"]}, r.body["listed_instrument"])
         inst = rt.instruments.get("TSTQ")
         self.assertEqual(("EQUITY", "FULL", ("US_EXCHANGE", "PB"), "US_EQUITY", "TSTQ", "NMS"),
                          (inst.kind, inst.support, inst.account_kinds, inst.session_group, inst.yahoo_symbol, inst.spec["exchange"]))
@@ -351,7 +352,7 @@ class ListedServerTests(unittest.TestCase):
         self.assertEqual("bound", rt.modules["private"])
         cmds = q(rt, "SELECT request_id, http_status, actor FROM commands WHERE kind='private.sync_master'")
         self.assertEqual(1, len(cmds))
-        self.assertTrue(cmds[0]["request_id"].startswith("private:sync:v1:"))
+        self.assertTrue(cmds[0]["request_id"].startswith(f"private:sync:{private.SYNC_VERSION}:"))
         self.assertEqual((200, "init"), (cmds[0]["http_status"], cmds[0]["actor"]))
         for sym in ("SPCX", "CBRS"):
             status, inst, _ = self.handle("GET", f"/api/instruments/resolve?symbol={sym}")
@@ -425,8 +426,12 @@ class OneReaderServedTests(unittest.TestCase):
                                                                  "side": "BUY", "qty": 1000, "price": "200.41", "kind": "SECONDARY"})
         self.assertEqual(200, st, body)
         # 10,000,000.00 lent at 98: cash out 10,000,000.00 x 98 / 100 = 9,800,000.00 = the amortised cost; no OAS loaded -> mark = cost
+        # (P08, OA-22: the coupon needs a SOFR print, and a loan without a spread series is acknowledged explicitly)
+        from datetime import date
+        rt.rates.put("SOFR", [(date(2026, 10, 19), Decimal("3.87"))], persist=False)
         st, body, _ = self.handle("POST", "/api/credit/private", {"request_id": "ui:one-reader-0002", "account_id": "I1:CREDIT", "borrower": "Stripe, Inc.",
-                                                                 "principal": "10000000.00", "issue_price": "98", "spread": "0.06", "term_months": 36})
+                                                                 "principal": "10000000.00", "issue_price": "98", "spread": "0.06", "term_months": 36,
+                                                                 "acknowledge_no_spread": True})
         self.assertEqual(200, st, body)
         loan = body["loan_id"]
         st, base, _ = self.handle("GET", "/api/portfolio?book=I")
@@ -483,6 +488,11 @@ class ListedStaticTests(unittest.TestCase):
             self.assertIn(need, page, need)
         for need in ("COMPANY_LISTED", "COMPANY_ACQUIRED", "refusal(current(), side.value)", "/api/instruments/resolve", "sell only", "in US Exchange"):
             self.assertIn(need, ticket, need)
+        # Build 2 P11: the ticket lives in the dock (C11 / C23) and the page registers the PRIVATE market plug-in with "Mark as listed" (SR-06)
+        for need in ("T.ticketKinds.PRIVATE = { open: open }", "T.keys.uses('components/privateticket.js')", "enter the negotiated price per share", "swept from Treasury"):
+            self.assertIn(need, ticket, need)
+        for need in ("T.marketPlugins.PRIVATE", "ticketKind: 'PRIVATE'", "'/status'", "Mark as listed", "T.ticket.open("):
+            self.assertIn(need, page, need)
 
 
 if __name__ == "__main__":

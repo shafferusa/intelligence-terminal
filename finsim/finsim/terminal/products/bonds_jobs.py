@@ -5,23 +5,36 @@ ACCRUAL, COUPON, MATURITY, BENCHMARKS, JOBS) are stated in ``products/bonds.py``
 
 Handlers write their own ``jobs_done`` row (DONE, or SKIPPED with a note and one WARN attention per (code, key)); every
 posting is idempotent through its idem key; nothing is ever posted in place of a missing coupon date, night or curve.
+Build 2 P07 (2026-10-21): every posting is in the BOND'S currency (a EUR / JPY generic benchmark accrues, pays coupons and
+redeems in that currency); coupon dates follow the month-end aware schedule of products/bonds.py; ``bonds.list`` (the
+monthly BOND_LISTING key) no longer lists model benchmarks - the master is the real Treasury list of
+products/treasuries.py - it expires matured bonds nobody holds (ACTIVE or DELISTED rows) and reports what it did.
 """
 from __future__ import annotations
 
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from .. import execution
 from ..clock import epoch_of, ny_of
 from ..commands import RejectError, TxContext
 from ..db import dumps, next_id
 from ..ledger import Entry, balance, cr, dr, position, relieve_fifo
-from ..marks import add_months
 from ..units import fmt_money
 from .bonds import (COUPON_ET, JOB_ACCRUE, JOB_COUPON, JOB_LISTING, JOB_MATURITY, KIND, LISTING_ET, MATURITY_ET, BondTrade, _bond, _delete_state, _done_noop,
                     _insert_fill, _job_done, _job_row, _key3, _open_account, _resolve_attention, _services, _skip, _write_state, accrued_cents, accrued_per_100,
-                    bond_terms, coupon_cents, coupon_dates, ensure_benchmarks, expire_matured, face_at, period_of, state_row, through_night)
+                    bond_terms, coupon_cents, coupon_dates, expire_matured, face_at, period_of, prev_coupon_date, state_row, through_night)
+
+
+def _rate(ctx: TxContext, ccy: str) -> Decimal:
+    """USD per 1 unit of ``ccy`` from the command's snapshot (1 for USD); the fill row records it."""
+    if ccy == "USD":
+        return Decimal(1)
+    try:
+        return ctx.fx.rate(ccy)
+    except Exception as e:   # noqa: BLE001 - a foreign bond cannot be valued in base without its rate: refuse, never guess
+        raise RejectError("FX_RATE_UNAVAILABLE", f"no USD rate for {ccy} in the mark snapshot") from e
 
 
 # ---- bonds.accrue (nightly) ------------------------------------------------------------------------------------------------------------------
@@ -44,7 +57,7 @@ def h_accrue(ctx: TxContext, payload: dict) -> dict:
             return _done_noop(ctx, JOB_ACCRUE, key, "NO_POSITION", f"no {inst.symbol} held at the close of {ds}")
         first = conn.execute("SELECT MIN(trade_date) d FROM fills WHERE account_id=? AND instrument_id=?", (account, iid)).fetchone()
         through = date.fromisoformat(first["d"]) - timedelta(days=1) if first is not None and first["d"] else d - timedelta(days=1)
-        cum = balance(conn, account, "1220", "USD", iid)
+        cum = balance(conn, account, "1220", inst.currency, iid)
         st_through, cum_prev = through, cum
         note_state = "no accrual state (position not opened through bonds.trade): brought to the ACT/ACT figure from the 1220 balance"
     else:
@@ -70,13 +83,14 @@ def h_accrue(ctx: TxContext, payload: dict) -> dict:
     memo = (f"{inst.symbol} accrued interest night of {ds}: {terms.coupon_pct} % ACT/ACT, period {per_txt}, accrued {accrued4} per 100 on {face:,} face = {fmt_money(target)}"
             f" cumulative, carried {fmt_money(cum_prev)} -> posted {fmt_money(delta)} (ACCRUAL, ACCRUED)" + (f"; {note_state}" if note_state else ""))
     entry_id = None
+    ccy = inst.currency
     if delta > 0:
-        entry_id = ctx.post(Entry("ACCRUAL", memo, [dr(account, "1220", "USD", delta, instrument_id=iid, memo="accrued interest receivable"),
-                                                   cr(account, "4300", "USD", delta, instrument_id=iid, memo=f"coupon interest night of {ds}")],
+        entry_id = ctx.post(Entry("ACCRUAL", memo, [dr(account, "1220", ccy, delta, instrument_id=iid, memo="accrued interest receivable"),
+                                                   cr(account, "4300", ccy, delta, instrument_id=iid, memo=f"coupon interest night of {ds}")],
                                   f"accr:bond:{key}", ref_type=KIND, ref_id=key, business_date=ds))
     elif delta < 0:
-        entry_id = ctx.post(Entry("ACCRUAL", memo, [dr(account, "4300", "USD", -delta, instrument_id=iid, memo="rounding reversal of accrued interest"),
-                                                   cr(account, "1220", "USD", -delta, instrument_id=iid, memo="accrued interest receivable")],
+        entry_id = ctx.post(Entry("ACCRUAL", memo, [dr(account, "4300", ccy, -delta, instrument_id=iid, memo="rounding reversal of accrued interest"),
+                                                   cr(account, "1220", ccy, -delta, instrument_id=iid, memo="accrued interest receivable")],
                                   f"accr:bond:{key}", ref_type=KIND, ref_id=key, business_date=ds))
     if face > 0:
         _write_state(conn, account, iid, terms, face, d, target)
@@ -128,13 +142,14 @@ def h_coupon(ctx: TxContext, payload: dict) -> dict:
     cum = int(st["cum_c"]) if st is not None else 0
     coupon_c = coupon_cents(face, terms)
     income = coupon_c - cum
-    prev = add_months(c, -(12 // terms.freq))
-    lines = [dr(account, "1010", "USD", coupon_c, memo=f"coupon received {cs}")]
+    prev = prev_coupon_date(terms, c)
+    ccy = inst.currency
+    lines = [dr(account, "1010", ccy, coupon_c, memo=f"coupon received {cs}")]
     if cum:
-        lines.append(cr(account, "1220", "USD", cum, instrument_id=iid, memo="accrued interest receivable settled by the coupon"))
+        lines.append(cr(account, "1220", ccy, cum, instrument_id=iid, memo="accrued interest receivable settled by the coupon"))
     if income:
-        lines.append(cr(account, "4300", "USD", income, instrument_id=iid, memo="interest since the last night, earned at payment"))
-    memo = (f"{inst.symbol} coupon {terms.coupon_pct} % on {face:,} face for {prev.isoformat()}..{cs} ({(c - prev).days} days ACT/ACT): {fmt_money(coupon_c)} = carried accrued"
+        lines.append(cr(account, "4300", ccy, income, instrument_id=iid, memo="interest since the last night, earned at payment"))
+    memo = (f"{inst.symbol} coupon {terms.coupon_pct} % on {face:,} face for {prev.isoformat()}..{cs} ({(c - prev).days} days ACT/ACT): {ccy} {fmt_money(coupon_c)} = carried accrued"
             f" {fmt_money(cum)} + {fmt_money(income)} earned since the last night; paid {pay_date.isoformat()}" + (" (rolled following)" if pay_date != c else "") + " (ACCRUAL)")
     entry_id = ctx.post(Entry("COUPON", memo, lines, idem, ref_type=KIND, ref_id=key))
     pos, _ = position(conn, account, iid)
@@ -210,20 +225,22 @@ def h_mature(ctx: TxContext, payload: dict) -> dict:
     rl = relieve_fifo(ctx.tx, account, iid, "LONG", pos, fill_id, face_c)
     cost_relieved = sum(r.cost_relieved_c for r in rl)
     realised = sum(r.realised_c for r in rl)
-    lines = [dr(account, "1010", "USD", face_c, memo="redemption at par")]
+    ccy = inst.currency
+    lines = [dr(account, "1010", ccy, face_c, memo="redemption at par")]
     if cost_relieved:
-        lines.append(cr(account, "1110", "USD", cost_relieved, instrument_id=iid, memo="cost relieved FIFO"))
+        lines.append(cr(account, "1110", ccy, cost_relieved, instrument_id=iid, memo="cost relieved FIFO"))
     if realised:
-        lines.append(cr(account, "4000", "USD", realised, instrument_id=iid, memo="realised at maturity (100 − cost per 100)"))
+        lines.append(cr(account, "4000", ccy, realised, instrument_id=iid, memo="realised at maturity (100 − cost per 100)"))
     memo = f"MATURITY {pos:,} {inst.symbol} at 100 on {pay_date.isoformat()}: cost {fmt_money(cost_relieved)}, realised {fmt_money(realised)}, no fee (FIFO)"
     entry_id = ctx.post(Entry("MATURITY", memo, lines, f"fill:{fill_id}", ref_type="fill", ref_id=fill_id))
-    v = BondTrade(account, {}, "", inst, terms, "SELL", pos, pay_date, pay_date, par, Decimal("0.0000"), face_c, 0, 0, "no fee at maturity", None, pos, None)
+    v = BondTrade(account, {}, "", inst, terms, "SELL", pos, pay_date, pay_date, par, Decimal("0.0000"), face_c, 0, 0, "no fee at maturity", None, pos, None,
+                  currency=ccy, mark_price=par, fx_rate=_rate(ctx, ccy))
     _insert_fill(ctx, v, fill_id, "SELL", entry_id, idem_fill, origin="MATURITY", basis="par", settle=None, price=par, gross_c=face_c, fee_c=0,
                  quote_json=dumps({"basis": "par", "price": "100", "maturity": terms.maturity.isoformat(), "pay_date": pay_date.isoformat(), "terms": terms.to_dict()}),
                  trade_date=pay_date)
     _delete_state(conn, account, iid)
     expired = _expire_if_unheld(ctx, services, inst)
-    execution.auto_resolve_shortfall(ctx, account, "USD")
+    execution.auto_resolve_shortfall(ctx, account, ccy)
     _job_done(ctx, JOB_MATURITY, key, "DONE", f"MATURITY {pos:,} @ 100: {fmt_money(face_c)} received, realised {fmt_money(realised)}")
     _resolve_attention(ctx, ("MATURITY_NOT_YET", "MATURITY_PENDING_COUPON"), key)
     ctx.touched_instruments.add((account, iid))
@@ -236,7 +253,9 @@ def h_mature(ctx: TxContext, payload: dict) -> dict:
 
 # ---- bonds.list (light: instruments + jobs_done only) -------------------------------------------------------------------------------------------
 def h_list(ctx: TxContext, payload: dict) -> dict:
-    """BOND_LISTING for one month (key ``yyyy-mm``) — module docstring BENCHMARKS; also expires matured bonds nobody holds."""
+    """BOND_LISTING for one month (key ``yyyy-mm``): expires the matured bonds nobody holds (ACTIVE or DELISTED rows).  The
+    monthly model benchmarks of Build 1 are retired: the master is the real Treasury list (products/treasuries.py), and the
+    generic corporate / foreign rows of the month are listed by the debt refresher, never here."""
     services = _services(ctx)
     conn = ctx.conn
     key = str(payload.get("month") or payload.get("key") or "")
@@ -247,18 +266,15 @@ def h_list(ctx: TxContext, payload: dict) -> dict:
         raise RejectError("KEY_INVALID", f"bonds.list needs a month yyyy-mm (got {key!r})") from e
     listing = services.cal.roll_following(first)
     today = ny_of(ctx.ts).date()
-    expired = expire_matured(conn, services.instruments, today, ctx.ts)
     if today < listing:
-        return _skip(ctx, JOB_LISTING, key, "LISTING_NOT_YET", f"the benchmarks of {key} are listed on {listing.isoformat()} (first business day)", None, None)
-    curve = getattr(services, "curve", None)
-    out = ensure_benchmarks(ctx.tx, services.instruments, curve, listing, services.cal)
-    if out["skipped"]:
-        return _skip(ctx, JOB_LISTING, key, "CURVE_MISSING", f"{out['skipped']} (the Treasury par curve has not been fetched yet; retried)", None, None)
-    _job_done(ctx, JOB_LISTING, key, "DONE", f"listed {out['listed']} benchmark(s) on {listing.isoformat()} from the curve of {out['curve_as_of']}; expired {len(expired)}")
+        return _skip(ctx, JOB_LISTING, key, "LISTING_NOT_YET", f"the housekeeping of {key} runs on {listing.isoformat()} (first business day)", None, None)
+    expired = expire_matured(conn, services.instruments, today, ctx.ts)
+    _job_done(ctx, JOB_LISTING, key, "DONE", f"expired {len(expired)} matured bond(s) nobody holds; the master itself comes from fiscaldata (debt refresher)")
     _resolve_attention(ctx, ("CURVE_MISSING", "LISTING_NOT_YET"), key)
-    ctx.event("BOND_LISTINGS", ref_type="housekeeping", ref_id=key, listed=out["listed"], ids=out["ids"], expired=expired, listing_date=listing.isoformat())
-    return {"status": "DONE", "key": key, "listing_date": listing.isoformat(), "listed": out["listed"], "ids": out["ids"], "expired": expired, "curve_as_of": out["curve_as_of"],
-            "reload_master": bool(out["listed"] or expired), "posted": False}
+    if expired:
+        ctx.event("BOND_LISTINGS", ref_type="housekeeping", ref_id=key, listed=0, ids=[], expired=expired, listing_date=listing.isoformat())
+    return {"status": "DONE", "key": key, "listing_date": listing.isoformat(), "listed": 0, "ids": [], "expired": expired, "reload_master": bool(expired), "posted": False,
+            "note": "monthly model benchmarks are retired (the master is the real Treasury list)"}
 
 
 # ---- lifecycle key helpers (ProductJob contracts: tuples in the key's field order) -------------------------------------------------------------------

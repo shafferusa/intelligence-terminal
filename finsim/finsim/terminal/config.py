@@ -44,6 +44,7 @@ SWAP_IM_BP = 50                                             # OTC initial margin
 NEWS_YAHOO = "https://query2.finance.yahoo.com/v1/finance/search?q={q}&quotesCount=0&newsCount={n}"   # BROWSER_UA (Yahoo only)
 NEWS_FED_RSS = "https://www.federalreserve.gov/feeds/press_all.xml"                                  # GOV_UA
 NEWS_PAPER_URL = "https://shafferusa.github.io/intelligence-terminal/"
+NEWS_PAPER_INDEX_URL = NEWS_PAPER_URL + "reports/index.json"          # the PUBLISHED index (SHELL-09); read hourly, local file as fallback
 NEWS_INTERVALS = {"YAHOO": 900, "FED": 3600, "PAPER": 300}
 PARTICIPATION_RATE = Decimal("0.10")
 GTC_DAYS = 90
@@ -53,7 +54,7 @@ ERROR_AGE_S = 60
 SWEEP_BUFFER_C = 10_000_00
 COLLATERAL_PCT = Decimal("1.02")
 OCC_THRESHOLD = Decimal("0.01")
-SWEEP_CONFIRM_THRESHOLD_C = 2_000_000_00                    # a sweep-in above this needs confirm_large (fat-finger guard)
+SWEEP_CONFIRM_THRESHOLD_C = 0                               # SR-12: off by default; a sweep-in above an owner-set threshold needs confirm_large
 PREVIEW_TTL_S = 120
 PRICE_MOVED_PCT = Decimal("0.005")                          # 409 PREVIEW_STALE rules
 QUOTE_INTERVALS = {"ORDER": 15, "HELD": 30, "WATCH": 60, "PAGE": 30, "BROWSE": 1200, "CLOSED": 300, "CHAIN": 90, "CURVE": 86400, "FRED": 21600}

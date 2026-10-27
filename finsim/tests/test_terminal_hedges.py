@@ -266,11 +266,50 @@ class HedgeCandidateTests(unittest.TestCase):
         # the futures leg carries its static IM: 2 x 17,500.00 = 35,000.00 (FUT_MARGIN); options on futures are flagged not_in_this_build
         self.assertEqual(({"initial": "35000.00", "per_contract": "17500.00"}, D(1)), ({k: c["CALENDAR"].legs[0].margin[k] for k in ("initial", "per_contract")}, c["CALENDAR"].ratio))
         self.assertEqual((False, "NOT IN THIS BUILD", True), (c["OPTIONS_ON_FUTURES"].available, c["OPTIONS_ON_FUTURES"].reason, c["OPTIONS_ON_FUTURES"].not_in_this_build))
-        fx = by_id(self.cands("BUY", 100000, inst=self.rt.instruments.get("EURUSD")))
-        self.assertEqual((False, True), (fx["FX_FORWARD"].available, fx["FX_FORWARD"].reason.startswith("NOT IN THIS BUILD")))
+        # FX forward (Build 2, OA-09): without the FX desk bound the candidate says so - never a guessed forward
+        eurusd = self.rt.instruments.get("EURUSD")
+        fx = by_id(self.cands("BUY", 100000, inst=eurusd))
+        self.assertEqual((False, "the FX desk is not loaded in this runtime: no forward price"), (fx["FX_FORWARD"].available, fx["FX_FORWARD"].reason))
+        # with the desk (a stand-in for services.fx whose CIP outright is F = 1.1290 for the 3M value date 2027-01-22): a long EUR 100,000.00
+        # is hedged by SELLING EUR 100,000.00 for USD 100,000 x 1.1290 = 112,900.00; a forward has no premium (cost 0, nothing moves today)
+        vd = date(2027, 1, 22)
+
+        def desk(F):
+            return types.SimpleNamespace(fx_trade_date=lambda s, now: date(2026, 10, 20), tenor_date=lambda s, pair, tenor, td: vd,
+                                         forward_rate=lambda s, pair, v: (D(F), {"spot": {"mid": "1.1238", "quote_time": self.now - 60}, "days": 90}))
+        self.rt.fx = desk("1.1290")
+        f = by_id(self.cands("BUY", 100000, inst=eurusd))["FX_FORWARD"]
+        self.assertEqual((True, "fx", "SELL", 100000, D("1.129"), "2027-01-22", D(0), D(0)),
+                         (f.available, f.submit_via, f.legs[0].side, f.legs[0].qty, f.legs[0].est_price, f.expiry, f.cost, f.net_cash))
+        self.assertIn("sell EUR 100,000.00 / buy USD 112,900.00 at 1.129, value 2027-01-22", f.legs[0].label)
+        self.assertEqual({"kind": "FX", "mode": "FORWARD", "tenor": "3M", "buy_ccy": "USD", "sell_ccy": "EUR", "amount": "100000.00", "amount_ccy": "EUR", "instrument_id": "EURUSD"},
+                         f.to_dict()["prefill"])
+        # a London listing's currency exposure: 100 SHEL-L at 2,700 GBp x 0.01 = GBP 2,700.00; at GBPUSD 1.2650 the forward sells it for
+        # USD 2,700 x 1.2650 = 3,415.50; it is dealt on the desk of the lifetime's Foreign Markets & FX account
+        self.rt.marks.set("SHEL-L", "2700")
+        self.rt.fx = desk("1.2650")
+        g = by_id(self.cands("BUY", 100, inst=self.rt.instruments.get("SHEL-L")))
+        self.assertEqual(["FX_FORWARD"], sorted(g))
+        g = g["FX_FORWARD"]
+        self.assertEqual((2700, "2700.00", "GBP", "USD", f"{T1}:FOREIGN_FX"), (g.legs[0].qty, g.to_dict()["prefill"]["amount"], g.to_dict()["prefill"]["sell_ccy"],
+                                                                                g.to_dict()["prefill"]["buy_ccy"], g.to_dict()["trade_account"]))
+        self.assertIn("buy USD 3,415.50 at 1.265", g.legs[0].label)
+        del self.rt.fx
+        # DV01 futures (Build 2, OA-05): without the bond engine the candidate says so
         bond = next(i for i in self.rt.instruments.all() if i.kind == "BOND")
         b = by_id(self.cands("BUY", 1000, inst=bond))
-        self.assertEqual((False, True), (b["DV01_FUTURES"].available, b["DV01_FUTURES"].reason.startswith("NOT IN THIS BUILD")))
+        self.assertEqual((False, "the bond engine is not loaded in this runtime: no DV01"), (b["DV01_FUTURES"].available, b["DV01_FUTURES"].reason))
+        # with a stand-in engine: DV01 of the face held -850.00 USD per bp (a long loses when yields rise); maturity 2036-04-20 = 3,470 days
+        # / 365.25 = 9.50 years -> ZN (<= 15 y); contract DV01 = 6.5 x 112.50 x 1,000 / 10,000 = 73.125 -> 73.12 (cents, half even);
+        # n = round(850.00 / 73.12) = round(11.6247) = 12 -> SELL 12 ZNZ26 (the front ZN), fees 12 x 2.25 = 27.00, no premium; in US Exchange
+        self.rt.bonds = types.SimpleNamespace(dv01_c=lambda s, inst, face: (-85000 if face > 0 else 85000, {"basis": "full reprice"}),
+                                              bond_terms=lambda inst: types.SimpleNamespace(maturity=date(2036, 4, 20)))
+        self.rt.marks.set("ZNZ26", "112.50")
+        d = by_id(self.cands("BUY", 1000000, inst=bond))["DV01_FUTURES"]
+        self.assertEqual((True, [("ZNZ26", "SELL", 12)], D("27.00"), D("-27.00"), "73.12", f"{T1}:US_EXCHANGE"),
+                         (d.available, [(l.instrument_id, l.side, l.qty) for l in d.legs], d.fees, d.net_cash, d.greeks["dv01_contract"], d.to_dict()["trade_account"]))
+        self.assertIn("round(11.6247) = 12", d.rule)
+        del self.rt.bonds
 
     def test_chain_quality_fetching_and_stale(self):
         # a chain fetched 1,000 s ago is stale (> 900 s) and still priced, labelled
@@ -327,6 +366,55 @@ class HedgeCandidateTests(unittest.TestCase):
         r = sc.submit(rt, account_id=pb("GS"), instrument_id="SPY", side="BUY", qty=1000, order_type="LIMIT", limit_px="700.00", hedge={"candidate_id": "TRS_OVERLAY"})
         self.assertEqual((400, "NOT_AVAILABLE"), (r.http, r.code))
         self.assertEqual(0, sc.one(rt, "SELECT COUNT(*) n FROM orders")["n"])
+
+
+class PositionHedgeTests(unittest.TestCase):
+    """USX-12 / ORC-4: the hedges of a position ALREADY HELD (no primary order): sized to the quantity held."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-hpos-")
+        self.rt = sc.runtime(self.tmp)
+        options.register(self.rt.bus)
+        self.rt.options = options
+        self.rt.hedges = hedges
+        self.now = self.rt.clock.epoch()
+        self.spy = self.rt.instruments.get("SPY")
+        set_beta(self.rt, "SPY", 1.0)
+        self.rt.marks.set("ESZ26", "6250.00")
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_position_mode_sizes_to_the_holding(self):
+        rt = self.rt
+        # flat: nothing to hedge, said
+        held, res = hedges.position_candidates(rt, US_EXCHANGE, self.spy, chain=chain(self.now))
+        self.assertEqual((0, "flat"), (held, res["status"]))
+        # 1,250 SPY held -> n = floor(1,250 / 100) = 12 contracts: the protective put is its own order (one leg), the collar one AON package;
+        # the put leg P715 Feb at the ask 6.10: 12 x 6.10 x 100 = 7,320.00 + fees 12 x 0.65 = 7.80 -> net cash -7,327.80
+        buy(rt, US_EXCHANGE, "SPY", 1250, "769.32")
+        held, res = hedges.position_candidates(rt, US_EXCHANGE, self.spy, chain=chain(self.now))
+        c = by_id(res)
+        self.assertEqual(1250, held)
+        p = c["PUT_7PCT"]
+        self.assertEqual(("position", "order", None, [(P715_FEB, "BTO", 12)], D("7320.00"), D("7.80"), D("-7327.80")),
+                         (p.mode, p.submit_via, p.fill_mode, [(l.instrument_id, l.side, l.qty) for l in p.legs], p.cost, p.fees, p.net_cash))
+        self.assertEqual(("package", "AON"), (c["COLLAR_7"].submit_via, c["COLLAR_7"].fill_mode))
+        # an option hedge of shares is always sized 1 contract per 100 shares (floor): 12 for 1,250 held
+        self.assertEqual("1 contract per 100 shares held", p.ratio_text)
+        self.assertEqual("1 contract per 100 shares", hedges.ratio_text(D("0.01"), "OPTION", self.spy))
+        # futures per share: 2 / 1,000 = 0.002 -> 1 per 500; 3 / 1,250 = 0.0024 -> 1 per 416.67 -> 'about 417'
+        self.assertEqual("1 contract per 500 shares", hedges.ratio_text(D("0.002"), "FUTURE", self.spy))
+        self.assertEqual("1 contract per about 417 shares held", hedges.ratio_text(D("0.0024"), "FUTURE", self.spy, held=True))
+        self.assertEqual("60 shares per contract", hedges.ratio_text(D(60), "EQUITY", rt.instruments.get("ESZ26")))
+        # INDEX_OVERLAY: round(1,250 x 769.32 / 312,500) = round(3.0773) = 3 ES sold: its own order
+        self.assertEqual(("order", [("ESZ26", "SELL", 3)]), (c["INDEX_OVERLAY"].submit_via, [(l.instrument_id, l.side, l.qty) for l in c["INDEX_OVERLAY"].legs]))
+        # 99 shares: the option candidates and the overlay size to nothing (zero_size: the panel hides them and says why)
+        rt2 = self.rt
+        payload = [x.to_dict() for x in hedges.candidates(rt2, US_EXCHANGE, self.spy, "BUY", 99, chain=chain(self.now))]
+        self.assertEqual({"PUT_7PCT": True, "COLLAR_7": True, "PUT_SPREAD": True, "INDEX_OVERLAY": True}, {x["id"]: x["zero_size"] for x in payload})
+        json.dumps(payload)
 
 
 class HedgePackageTests(unittest.TestCase):

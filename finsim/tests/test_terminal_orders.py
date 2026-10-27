@@ -355,6 +355,15 @@ class OrdersScenarioTests(unittest.TestCase):
         got = json.loads(json.dumps(pv, default=str))
         self.assertTrue(got.pop("preview_id").startswith("pv:"))
         frozen.pop("preview_id")
+        # Build 2 (2026-10-21) on top of the frozen Build-1 shape, every change on purpose: the fee lines (C25) and the trade date of the
+        # first session the order can trade in (EXEC-8: Tue 14:00 is in session -> 2026-10-20); the cap note says the cap is per bar across
+        # all orders and books (EXEC-6; bar 13:55 = now - 300); the hedge-leg cash, the FX conversion plan and the confirm rules (USX-17,
+        # C15, USX-18) - none here; the sweep confirm threshold is shown only when that rule fires (SR-12: off by default -> None)
+        frozen["economics"].update(fee_lines=[{"label": "commission", "amount": "25.00", "basis": "USD 0.005/share, min 1.00"}], trade_date="2026-10-20")
+        frozen["execution"].update(cap_note="latest 1-minute bar (13:55) volume 61,900; 10 % participation caps it at 6,190 shares across all orders and books",
+                                   decision_note="")
+        frozen["funding"].update(confirm_rules=[], fx_conversion=None, fx_convert=False, hedge_legs=None, order_need="1697525.00", threshold=None)
+        frozen["quote"]["note"] = ""
         self.assertEqual(frozen, got)
         # gross 5,000 x 339.50 = 1,697,500.00; fee 5,000 x 0.005 = 25.00; need 1,697,525.00; available 1,000,000.00 -> shortfall / sweep 697,525.00
         self.assertEqual(("1697500.00", "25.00", "697525.00", "697525.00"), (pv["economics"]["gross"], pv["economics"]["fee"], pv["funding"]["shortfall"], pv["funding"]["sweep_in"]))
@@ -441,10 +450,13 @@ class OrdersScenarioTests(unittest.TestCase):
         r = submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="BUY", qty=10, order_type="LIMIT", limit_px="300.00")
         self.assertEqual(("HOLIDAY", epoch_of(date(2026, 11, 27), "09:30"), epoch_of(date(2026, 11, 27), "13:00")),
                          (r.body["preview"]["execution"]["session"]["phase"], r.body["preview"]["execution"]["rests_until"], r.body["order"]["expires_ts"]))
-        # GTC: created + 90 days
+        # GTC (USX-31): the close of the session of the 90th calendar day, in New York wall time: 2026-10-20 + 90 days = Mon 2027-01-18,
+        # Martin Luther King Jr. Day (NYSE closed) -> the last session on or before it, Fri 2027-01-15 16:00 EST (= 21:00 UTC, 1800046800;
+        # the old rule, created + 90 x 24 h, gave Mon 2027-01-18 13:00 EST across the DST change)
         rt.clock.set("2026-10-20T14:00:00-04:00")
         r = submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="BUY", qty=10, order_type="LIMIT", limit_px="300.00", tif="GTC")
-        self.assertEqual(TUE_1400 + 90 * 86400, r.body["order"]["expires_ts"])
+        self.assertEqual(epoch_of(date(2027, 1, 15), "16:00"), r.body["order"]["expires_ts"])
+        self.assertEqual(1800046800, r.body["order"]["expires_ts"])
 
     def test_d6_session_limit_day_expiry(self):
         # D6: outside hours queues; a buy limit fills only when the price is at or below the limit; DAY expires; cancelled / expired stay
@@ -861,10 +873,11 @@ class OrdersScenarioTests(unittest.TestCase):
         self.assertEqual(748700, bal(rt, US_EXCHANGE, "1200"))                   # receivables 3,993.50 + 3,493.50 = 7,487.00
         self.assertEqual(748700 - 331300, 420000 - 2600)                         # net cash = credit 4,200.00 - fees 26.00 = 4,174.00
         # margin once for the package: put spread 30 x 100 x 10 - (4,000 - 2,100) = 28,100.00; call spread 30,000 - (3,500 - 1,200) = 27,700.00 -> 28,100.00
-        self.assertEqual(2810000, bal(rt, US_EXCHANGE, "1310"))
+        # SR-13 (decision s7.6): the 28,100.00 is RESERVED (margin_state), nothing is posted: 1310 0, no OPT_MARGIN entry, settled 100,000.00 untouched
+        self.assertEqual(0, bal(rt, US_EXCHANGE, "1310"))
         self.assertEqual(2810000, one(rt, "SELECT options_required_c r FROM margin_state WHERE account_id=?", (US_EXCHANGE,))["r"])
-        self.assertEqual(1, one(rt, "SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'")["n"])
-        self.assertEqual(10000000 - 2810000, bal(rt, US_EXCHANGE, "1010"))      # 100,000.00 - 28,100.00 = 71,900.00 settled
+        self.assertEqual(0, one(rt, "SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'")["n"])
+        self.assertEqual(10000000, bal(rt, US_EXCHANGE, "1010"))
         # the same observation again -> no second fill
         self.assertEqual(0, m.on_quotes([p700, c800]))
         self.assertEqual(4, one(rt, "SELECT COUNT(*) n FROM fills")["n"])

@@ -13,6 +13,12 @@ Conventions
   further failure up to 10 min; a success resets.  400/404 answers are per-symbol facts, not provider failures.
 - ``ProviderHealth`` keeps the per-provider counters the health endpoint shows and the ``provider_health`` table
   persists (through the light command ``provider_health.update``); a Cboe 403 to the honest UA sets ``refused_ua``.
+  ``ProviderHealth.mark_unavailable(provider, reason)`` records a provider that ANSWERED but served no data (FRED's HTML
+  "Site Maintenance" page arrives with HTTP 200): the row reads ok=false with the plain reason ("FRED unavailable
+  (maintenance)") instead of the success the 200 had counted.
+- The Build 2 debt sources (2026-10-21) have their own rows: ``fiscaldata`` (api.fiscaldata.treasury.gov: MSPD and
+  auctions), ``treasurydirect`` (FedInvest prices), ``nyfed`` (SOFR fallback), ``ecb`` (deposit rate fallback, euro-area
+  AAA par curve), ``mof`` (JGB yields).  ``FetchError.kind`` names a failure class the caller acts on (``maintenance``).
 - Nothing here sleeps while holding any lock; nothing here touches the database.
 """
 from __future__ import annotations
@@ -27,7 +33,7 @@ from typing import Callable, Dict, Optional
 
 from ..config import BROWSER_UA, GOV_UA, MAX_BYTES, TERMINAL_UA
 
-PROVIDERS = ("yahoo", "cboe", "treasury", "fred", "finra", "frankfurter")
+PROVIDERS = ("yahoo", "cboe", "treasury", "fred", "finra", "frankfurter", "fiscaldata", "treasurydirect", "nyfed", "ecb", "mof")
 RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
 DOWN_429_S = 60
 DOWN_FAIL_S = 120
@@ -41,13 +47,14 @@ class FetchError(Exception):
     an error body (untrusted bytes); ``retryable`` says whether a retry with backoff makes sense (429 / 5xx /
     network errors) — 4xx other than 429 are final for that request."""
 
-    def __init__(self, message: str, status: Optional[int] = None, body: bytes = b"", retryable: Optional[bool] = None):
+    def __init__(self, message: str, status: Optional[int] = None, body: bytes = b"", retryable: Optional[bool] = None, kind: Optional[str] = None):
         super().__init__(message)
         self.status = status
         self.body = body or b""
         if retryable is None:
             retryable = status is None or status in RETRY_STATUS
         self.retryable = bool(retryable)
+        self.kind = kind                  # "maintenance": the host answered with its maintenance page (no data, not a network error)
 
 
 def http_get(url: str, ua: str, timeout: float = 20.0, max_bytes: int = MAX_BYTES, accept: str = "application/json") -> bytes:
@@ -223,7 +230,7 @@ class ProviderHealth:
     def allow(self, provider: str) -> bool:
         return self.breaker.allow(provider)
 
-    def record(self, provider: str, ok: bool, status: Optional[int] = None, error: Optional[str] = None) -> None:
+    def record(self, provider: str, ok: bool, status: Optional[int] = None, error: Optional[str] = None, count: bool = True) -> None:
         now = int(self._now())
         self.breaker.record(provider, ok, status)
         with self._lock:
@@ -231,7 +238,8 @@ class ProviderHealth:
             day = self._today()
             if day is not None and row["day"] != day:
                 row["day"], row["requests_today"] = day, 0
-            row["requests_today"] += 1
+            if count:
+                row["requests_today"] += 1
             if ok:
                 row.update(ok=True, last_ok_ts=now, consecutive_errors=0, down_until_ts=None, last_error=None)
                 if status != 403:
@@ -245,6 +253,11 @@ class ProviderHealth:
                 row["down_until_ts"] = self.breaker.down_until(provider)
                 if status == 403:
                     row["refused_ua"] = True
+
+    def mark_unavailable(self, provider: str, reason: str, status: Optional[int] = None) -> None:
+        """The provider answered (often HTTP 200) but served no data - FRED's "Site Maintenance" page: count it as a failure
+        with the plain ``reason`` so Data Status / the attention strip say so (the breaker counts it like any failure)."""
+        self.record(provider, False, status, reason, count=False)      # the request itself was already counted
 
     def set_refused_ua(self, provider: str, refused: bool) -> None:
         with self._lock:

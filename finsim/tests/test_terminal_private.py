@@ -288,7 +288,11 @@ class PrivateScenarioTests(unittest.TestCase):
         self.assertIn("5,000,000.00", r.message)
         self.assertEqual(2, one(rt, "SELECT COUNT(*) n FROM fills")["n"])
         # the company lists: PUBLIC with ticker TESTCO from 2026-12-01 -> before that date the private mark stays (with the notice)
-        r = execute(rt, "private.set_status", {"company_id": TESTCO, "status": "PUBLIC", "ticker": "TESTCO", "listed_on": "2026-12-01"}, "ui:list-testco-0001")
+        # a listing set by the owner needs its source (SR-06: nothing is recorded without one)
+        r = execute(rt, "private.set_status", {"company_id": TESTCO, "status": "PUBLIC", "ticker": "TESTCO", "listed_on": "2026-12-01"}, "ui:list-testco-0000")
+        self.assertEqual((400, "SOURCE_REQUIRED"), (r.http, r.code))
+        r = execute(rt, "private.set_status", {"company_id": TESTCO, "status": "PUBLIC", "ticker": "TESTCO", "listed_on": "2026-12-01",
+                                               "source_url": "https://example.com/testco-listing"}, "ui:list-testco-0001")
         self.assertTrue(r.ok, r.body)
         self.assertEqual(("PUBLIC", "TESTCO", "2026-12-01"), (r.body["status"], r.body["ticker"], r.body["listed_on"]))
         p = self.position()

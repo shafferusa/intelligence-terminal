@@ -6,12 +6,20 @@ onto a real ``LifecycleScheduler`` and ticks it.
 
 The fixture bond ``UST-TEST-2027`` is a 4.500 % semi-annual bond issued 2027-03-01 maturing 2027-09-01 (one 184-day coupon
 period: 1 Mar -> 1 Sep 2027), so the §19.13 accrued pin (45 days, 0.5503) and the maturity at 100 sit in one short life.
+It is dealt AT its mark (``spec.half_spread`` 0) so the §19.13 numbers stay as written; the Build 2 P07 dealing rule (the
+mark +/- the assumed half-spread) is hand-worked on the real 10-year note of the 2026-10-21 snapshot
+(``test_treasury_purchase_half_spread_and_one_night``).  Build 2 P07 (2026-10-21): ``build2_bonds`` is ON unless set false,
+the monthly model benchmarks are retired (the master is the real Treasury list of products/treasuries.py, tested on the
+fiscaldata / FedInvest snapshot in tests/fixtures/terminal/debt).
 """
 from __future__ import annotations
 
+import os
 import shutil
 import tempfile
+import types
 import unittest
+from collections import Counter
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -22,7 +30,8 @@ from finsim.terminal.db import set_setting
 from finsim.terminal.instruments import Instrument
 from finsim.terminal.lifecycle_eod import ProductJob
 from finsim.terminal.marks import MarkProvider
-from finsim.terminal.products import bonds
+from finsim.terminal.products import bonds, treasuries
+from finsim.terminal.quotes.parsers import parse_auctions, parse_fedinvest, parse_mspd
 from finsim.terminal.quotes.providers import ParCurve
 from finsim.terminal.quotes.rates import CurveStore, RateStore
 
@@ -30,6 +39,16 @@ D = Decimal
 BOND = "UST-TEST-2027"
 ISSUE, MATURITY = date(2027, 3, 1), date(2027, 9, 1)          # Mon 1 Mar 2027 -> Wed 1 Sep 2027: 184 days
 THU_0415 = "2027-04-15T10:00:00-04:00"                          # Thursday; US_BONDS open 08:00-17:00 ET
+FIX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "terminal", "debt")
+NOTE10 = "UST-91282CRF0"                                         # US Treasury 4.625 % 15-Aug-2036, the 10-year note of the snapshot
+
+
+def snapshot_rows(today=date(2026, 10, 21)):
+    """The real master of 2026-10-21 (fiscaldata MSPD 2026-09-30 + auctions + FedInvest of the day) and the FedInvest prices."""
+    rd, secs = parse_mspd(open(os.path.join(FIX, "mspd_market_20260930.json"), "rb").read())
+    auctions = parse_auctions(open(os.path.join(FIX, "auctions_20261021.json"), "rb").read())
+    fdate, fi = parse_fedinvest(open(os.path.join(FIX, "fedinvest_20261021.html"), "rb").read())
+    return treasuries.treasury_rows(rd, secs, auctions, fi, fdate, today), fdate, fi
 
 
 def q(rt, sql, params=()):
@@ -71,7 +90,7 @@ class BondTests(unittest.TestCase):
             if flag:
                 set_setting(tx.conn, bonds.SETTING_FLAG, True)
             if fixture:
-                bonds.ensure_bond(tx, rt.instruments, BOND, "US Treasury 4.500 % 01-Sep-2027 (test)", "4.5", MATURITY, ISSUE)
+                bonds.ensure_bond(tx, rt.instruments, BOND, "US Treasury 4.500 % 01-Sep-2027 (test)", "4.5", MATURITY, ISSUE, spec={"half_spread": "0"})
         if fixture and mark is not None:
             rt.marks.set(BOND, mark, "computed")
         self.rt = rt
@@ -150,65 +169,66 @@ class BondTests(unittest.TestCase):
         # nights: from 00:30 ET yesterday is the last night due; before 00:30 the day before
         self.assertEqual(date(2027, 4, 18), bonds.through_night(epoch_of(date(2027, 4, 19), "00:35")))
         self.assertEqual(date(2027, 4, 17), bonds.through_night(epoch_of(date(2027, 4, 19), "00:10")))
+        # month-end notes pay on month ends (Treasury convention): 3.500 % maturing Tue 29-Feb-2028 pays 31-Aug and 28/29-Feb; on 21-Oct-2026 the
+        # period is 31-Aug-2026 -> 28-Feb-2027 (181 days), 51 days elapsed: 1.75 x 51 / 181 = 0.49309... -> 0.4931 per 100
+        eom = bonds.bond_terms(synthetic({"coupon_pct": "3.5", "maturity": "2028-02-29", "eom": True}))
+        self.assertEqual((date(2026, 8, 31), date(2027, 2, 28)), bonds.period_of(eom, date(2026, 10, 21)))
+        self.assertEqual(D("0.4931"), bonds.accrued_per_100(eom, date(2026, 10, 21)))
+        self.assertEqual([date(2027, 2, 28), date(2027, 8, 31), date(2028, 2, 29)], bonds.coupon_dates(eom, date(2026, 10, 21), date(2028, 2, 29)))
+        # price / yield: a 4.500 % bond on a coupon date at a 4.500 % yield is exactly par; a 92-day bill at a 3.80 % bond-equivalent yield:
+        # 100 / (1 + 0.038 x 92 / 365) = 100 / 1.00957808... = 99.051279 (6 dp), and back to 3.80 % (6 dp: the bisection-free closed form)
+        self.assertEqual((D("100.000000"), D("0.0000"), D("100.000000")), bonds.price_at(ten, date(2027, 3, 1), D("4.5")))
+        b92 = bonds.bond_terms(synthetic({"coupon_pct": "0", "maturity": "2027-01-21", "zero_coupon": True}))
+        self.assertEqual(D("99.051279"), bonds.price_at(b92, date(2026, 10, 21), D("3.80"))[0])
+        self.assertEqual(D("3.800000"), bonds.yield_from_clean(b92, date(2026, 10, 21), D("99.051279")).quantize(D("0.0001")).quantize(D("0.000001")))
 
-    # ---- listings and the computed mark (Build 1 behaviour: computed marks, no ticket) ------------------------------------------
-    def test_monthly_benchmarks_from_the_curve_and_the_computed_mark(self):
-        rt = self.start(at="2027-03-01T00:20:00-05:00", flag=False, fixture=False)       # Mon 1 Mar 2027 = the first business day
-        rt.curve = None
-        self.assertEqual([("2027-03",)], self.keys(bonds.listing_keys, rt.clock.epoch(), rt.cal))
-        r = execute(rt, "bonds.list", {"month": "2027-03"}, "job:BOND_LISTING:2027-03", actor="lifecycle")
+    # ---- the real Treasury master (fiscaldata + FedInvest snapshot of 2026-10-21) and the BOND mark ------------------------------------
+    def test_real_treasury_master_and_the_bond_mark(self):
+        rows, fdate, fi = snapshot_rows()
+        # every outstanding marketable Treasury on 2026-10-21: 462 = 49 bills + 241 notes + 112 bonds + 52 TIPS + 8 FRNs (the FedInvest list of the day)
+        n = Counter(r["spec"]["type"] for r in rows)
+        self.assertEqual((462, 49, 241, 112, 52, 8), (len(rows), n["BILL"], n["NOTE"], n["BOND"], n["TIPS"], n["FRN"]))
+        note = next(r for r in rows if r["instrument_id"] == NOTE10)
+        self.assertEqual(("US Treasury 4.625 % 15-Aug-2036 (91282CRF0)", "91282CRF0", "2036-08-15", "2026-08-17", ["DEBT", "PB"], "FULL", "US_BONDS", 1, 1000),
+                         (note["name"], note["symbol"], note["expiry"], note["spec"]["issue"], note["account_kinds"], note["support"], note["session_group"],
+                          note["settle_days"], note["lot"]))
+        tips = next(r for r in rows if r["spec"]["type"] == "TIPS")
+        self.assertEqual("LIMITED", tips["support"])
+        self.assertIn("CPI index ratio", tips["spec"]["limited_reason"])
+        # listed through the light command the refresher uses; every Build 1 bond row (model benchmarks, universe corporates) nobody holds is DELISTED
+        rt = self.start(at="2026-10-21T10:15:00-04:00", fixture=False)
+        legacy = [i.instrument_id for i in rt.instruments.all() if i.kind == "BOND" and i.status == "ACTIVE" and treasuries.is_legacy(i)]
+        self.assertTrue(legacy)
+        r = execute(rt, "debt.sync", {"rows": rows, "delist": legacy, "label": "test"}, "debt:sync:test", actor="worker")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual(("SKIPPED", "CURVE_MISSING"), (r.body["status"], r.body["code"]))     # no coupon is ever invented
-        self.assertEqual(1, len(q(rt, "SELECT id FROM attention WHERE code='CURVE_MISSING' AND resolved_ts IS NULL")))
+        self.assertEqual((462, 0, len(legacy)), (r.body["new"], r.body["updated"], len(r.body["delisted"])))
+        rt.instruments.load()
+        self.assertEqual("DELISTED", rt.instruments.get(legacy[0]).status)
+        inst = rt.instruments.get(NOTE10)
+        self.assertTrue(rt.instruments.tradeable_in(inst, "DEBT"))
+        # the mark: the FedInvest price of the same day, the mid of BUY 96.359375 and SELL 96.343750 = 96.3515625 -> 96.351562 (6 dp, ties to even)
+        store = treasuries.DebtStore()
+        store.put_fedinvest(fdate, fi, 0, persist=False)
+        rt.debt_store = store
+        v = bonds.bond_mark(rt, inst)
+        self.assertEqual((D("96.351562"), "close", "fedinvest", "TreasuryDirect FedInvest 2026-10-21"), (v.mark, v.quality, v.method, v.source))
+        # no FedInvest price: the par-curve model; a 4.500 % note priced on a coupon date at a flat 4.50 % par curve is par (computed)
         rt.curve = CurveStore()
-        rt.curve.put(curve_2_10(), persist=False)
-        r = execute(rt, "bonds.list", {"month": "2027-03"}, "job:BOND_LISTING:2027-03:r1", actor="lifecycle")
-        self.assertTrue(r.ok, r.body)
-        self.assertEqual(("DONE", 11, "2027-03-01", "2027-02-26"), (r.body["status"], r.body["listed"], r.body["listing_date"], r.body["curve_as_of"]))
-        self.assertEqual([], q(rt, "SELECT id FROM attention WHERE code='CURVE_MISSING' AND resolved_ts IS NULL"))
-        self.assertEqual([], self.keys(bonds.listing_keys, rt.clock.epoch(), rt.cal))         # DONE for the month
-        ten = rt.instruments.get("UST-10Y-202703")
-        # 10Y: par 4.50 at 10 years (the curve point) -> coupon 4.500 %; maturity = listing + 120 months = 2037-03-01; LIMITED, no account kinds -> no ticket
-        self.assertEqual(("US Treasury 4.500 % 01-Mar-2037 (model benchmark)", "2037-03-01", "4.500", 1000, "0.01", "LIMITED", (), "US_BONDS", 1),
-                         (ten.name, ten.expiry, ten.spec["coupon_pct"], ten.lot, str(ten.multiplier), ten.support, ten.account_kinds, ten.session_group, ten.settle_days))
-        self.assertFalse(rt.instruments.tradeable_in(ten, "DEBT"))
-        # the curve's par yield is carried at the store's 6-dp precision (CurveStore.par_yield quantises to 0.000001)
-        self.assertEqual(("4.500000", "2027-02-26", True, "0.045"), (ten.spec["par_yield_pct"], ten.spec["curve_as_of"], ten.spec["benchmark"], ten.spec["coupon"]))
-        # interpolated tenors, rounded to 1/8 %: 3Y 4.0625 -> 4.000; 5Y 4.1875 -> 4.250; 7Y 4.3125 -> 4.250; 2Y 4.000; 20Y / 30Y flat beyond 10Y -> 4.500
-        self.assertEqual(["4.000", "4.000", "4.250", "4.250", "4.500", "4.500"],
-                         [rt.instruments.get(f"UST-{t}-202703").spec["coupon_pct"] for t in ("2Y", "3Y", "5Y", "7Y", "20Y", "30Y")])
-        bill = rt.instruments.get("UST-1Y-202703")
-        self.assertEqual(("US Treasury bill 01-Mar-2028 (model benchmark)", "2028-03-01", "0.000", True), (bill.name, bill.expiry, bill.spec["coupon_pct"], bill.spec["zero_coupon"]))
-        self.assertEqual(("2027-04-01", "2027-06-01", "2027-09-01", "2029-03-01", "2057-03-01"),
-                         tuple(rt.instruments.get(f"UST-{t}-202703").expiry for t in ("1M", "3M", "6M", "2Y", "30Y")))
-        # the mark through the real provider: a 4.500 % bond priced at its own par yield on a coupon date is par, computed, never executable
-        mp = MarkProvider(None, None, rt.instruments, rt.curve, RateStore(), rt.sessions, rt.clock)
-        v = mp.mark_for(ten)
-        self.assertEqual((D("100"), "computed", "curve", False, "model price, not executable in this build"), (v.mark, v.quality, v.method, v.executable, v.note))
-        view = bonds.quote_view(rt, ten, snapshot=mp.snapshot())
-        self.assertEqual(("100", "0.0000", "100.0000", False, "model price, not executable in this build", "model benchmark"),
-                         (view["clean"], view["accrued"], view["dirty"], view["executable_here"], view["note"], view["label"]))
-        corp = rt.instruments.get("JPM-29")
-        self.assertEqual("corporate, computed price", bonds.quote_view(rt, corp, snapshot=mp.snapshot())["label"])
-        # idempotent: the same month again lists nothing new
-        r = execute(rt, "bonds.list", {"month": "2027-03"}, "job:BOND_LISTING:2027-03:r2", actor="lifecycle")
-        self.assertEqual(("DONE", 0), (r.body["status"], r.body["listed"]))
-        # April: the 1M bill of March matured on 2027-04-01 and nobody holds it -> EXPIRED by the April listing; 11 new rows
-        r = execute(rt, "bonds.list", {"month": "2027-04"}, "job:BOND_LISTING:2027-04", actor="lifecycle")
-        self.assertEqual(("SKIPPED", "LISTING_NOT_YET"), (r.body["status"], r.body["code"]))      # 1 Mar < 1 Apr
-        rt.clock.set("2027-04-02T00:20:00-04:00")
-        r = execute(rt, "bonds.list", {"month": "2027-04"}, "job:BOND_LISTING:2027-04:r1", actor="lifecycle")
-        self.assertEqual(("DONE", 11, ["UST-1M-202703"]), (r.body["status"], r.body["listed"], r.body["expired"]))
-        self.assertEqual("EXPIRED", rt.instruments.get("UST-1M-202703").status)
-        # maturity = issue + tenor as a calendar date (1 Apr + 1 month = Sat 1 May); the redemption itself rolls following (Mon 3 May) in bonds.mature
-        self.assertEqual("2027-05-01", rt.instruments.get("UST-1M-202704").expiry)
+        rt.curve.put(ParCurve(date(2027, 2, 26), {D(2): D("4.50"), D(10): D("4.50")}, source="test curve"), persist=False)
+        rt.clock.set("2027-03-01T10:00:00-05:00")
+        model = bonds.bond_terms(synthetic({"coupon_pct": "4.5", "maturity": "2037-03-01", "type": "NOTE", "cusip": "000000000"}))
+        v = bonds.bond_mark(rt, synthetic({"coupon_pct": "4.5", "maturity": "2037-03-01", "type": "NOTE", "cusip": "000000000"}))
+        self.assertEqual((D("100"), "computed", "curve"), (v.mark, v.quality, v.method))
+        self.assertEqual(D("100.000000"), bonds.price_at(model, date(2027, 3, 1), D("4.5"))[0])
 
     # ---- refusals (the flag, the account, the lot, the session, the mark) ------------------------------------------------------------
     def test_flag_off_is_unsupported_and_the_other_refusals(self):
         rt = self.start(flag=False)
+        with rt.db.writer() as tx:
+            set_setting(tx.conn, bonds.SETTING_FLAG, False)                                         # ON by default (P07): only an explicit false stops it
         n0 = self.n_entries()
         r = self.trade("BUY", 1000000)
-        self.assertEqual((False, 400, "UNSUPPORTED", "model price, not executable in this build"), (r.ok, r.http, r.code, r.message))
+        self.assertEqual((False, 400, "UNSUPPORTED", bonds.UNSUPPORTED_TEXT), (r.ok, r.http, r.code, r.message))
         with rt.db.writer() as tx:
             set_setting(tx.conn, bonds.SETTING_FLAG, True)
         r = self.trade("BUY", 1000000, account=US_EXCHANGE)
@@ -234,11 +254,54 @@ class BondTests(unittest.TestCase):
         rt.clock.set("2027-04-15T07:30:00-04:00")                                                  # before the 08:00 open
         r = self.trade("BUY", 1000)
         self.assertEqual(("SESSION_CLOSED", 400), (r.code, r.http))
+        self.assertTrue(r.message.startswith("bond market closed - reopens 08:00 ET"), r.message)
         rt.clock.set("2027-09-01T10:00:00-04:00")                                                  # the maturity date: no trades
         r = self.trade("BUY", 1000)
         self.assertEqual(("INSTRUMENT_EXPIRED", 400), (r.code, r.http))
+        rt.clock.set(THU_0415)
+        with rt.db.writer() as tx:                                                                 # a TIPS row: LIMITED, the reason in the refusal
+            bonds.ensure_bond(tx, rt.instruments, "UST-TIPSTEST0", "US Treasury TIPS 1.875 % 15-Jul-2035 (test)", "1.875", date(2035, 7, 15), spec={"type": "TIPS",
+                              "limited_reason": treasuries.LIMITED_REASON["TIPS"]}, support="LIMITED")
+        rt.marks.set("UST-TIPSTEST0", "99.5", "close")
+        r = self.trade("BUY", 1000, iid="UST-TIPSTEST0")
+        self.assertEqual(("LIMITED", 400), (r.code, r.http))
+        self.assertIn("CPI index ratio", r.message)
         self.assertEqual(n0, self.n_entries())                                                     # every refusal left nothing behind
         self.assertEqual([], q(rt, "SELECT fill_id FROM fills"))
+
+    # ---- OTC-R1-01 (1.0.4 fixer, 2026-10-27): the preview refuses what the booking's funding cascade would refuse ----------------------
+    def test_preview_refuses_an_unfundable_buy_with_the_largest_face_cash_covers(self):
+        rt = self.start()                                   # Treasury 10,000,000.00, F1:DEBT (test book: DEBT) 0; DEBT has no PB financing
+        self.assertEqual((1000000000, 0), (bal(rt, TREASURY, "1010"), bal(rt, DEBT, "1010")))
+        n0 = self.n_entries()
+
+        def pv(face):
+            return bonds.preview(rt, {"account_id": DEBT, "instrument_id": BOND, "side": "BUY", "qty": face})
+        # 11,000,000 face @ 96.1027 + accrued 0.5503: clean 10,571,297.00 + accrued 60,533.00 + fee 0.02 x 110,000 = 2,200.00 = 10,634,030.00
+        # > own 0.00 + Treasury 10,000,000.00 (+ PB 0) -> refused at the preview, as the booking would refuse it
+        p = pv(11000000)
+        self.assertEqual((False, ["INSUFFICIENT_FUNDS"]), (p["ok"], [b["code"] for b in p["blockers"]]))
+        f = p["funding"]
+        self.assertEqual((1063403000, 0, 1000000000, 0, 1000000000, True), (f["need_c"], f["own_available_c"], f["treasury_available_c"], f["pb_headroom_c"], f["covered_c"], f["refused"]))
+        # the largest lot that fits 10,000,000.00: 10,346,000 face (10,000,000 / 0.966530 = 10,346,290 -> the lot below) costs
+        # 9,942,785.34 + 56,934.04 + 2,069.20 = 10,001,788.58 (no); 10,345,000: 9,941,824.32 (9,941,824.315 half-even) + 56,928.54
+        # (56,928.535) + 2,069.00 = 10,000,821.86 (no); 10,344,000: 9,940,863.29 (.288) + 56,923.03 (.032) + 2,068.80 = 9,999,855.12 (yes)
+        self.assertEqual(10344000, f["max_face"])
+        self.assertIn("buy at most 10,344,000 face now", p["blockers"][0]["message"])
+        self.assertIn("own available 0.00 + Treasury available 10,000,000.00 = 10,000,000.00 of the 10,634,030.00 needed", p["blockers"][0]["message"])
+        self.assertEqual((False, ["INSUFFICIENT_FUNDS"]), (pv(10345000)["ok"], [b["code"] for b in pv(10345000)["blockers"]]))
+        p = pv(10344000)
+        self.assertEqual((True, [], 999985512, 999985512), (p["ok"], p["blockers"], p["funding"]["need_c"], p["funding"]["sweep_c"]))
+        self.assertEqual(n0, self.n_entries())                                                     # previews write nothing
+        # the booking agrees: 11,000,000 is refused (409 INSUFFICIENT_FUNDS, nothing moved); 10,344,000 books with one sweep of 9,999,855.12
+        r = self.trade("BUY", 11000000)
+        self.assertEqual((False, 409, "INSUFFICIENT_FUNDS"), (r.ok, r.http, r.code))
+        self.assertEqual(n0, self.n_entries())
+        r = self.trade("BUY", 10344000)
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("sweep", 999985512, -999985512), (r.body["funding"]["source"], r.body["funding"]["sweep_c"], r.body["economics"]["net_cash_c"]))
+        self.assertEqual(1000000000 - 999985512, bal(rt, TREASURY, "1010"))                        # 10,000,000.00 - 9,999,855.12 = 144.88 left
+        assert_integrity(self, rt, "full")
 
     # ---- §19.13: the buy, nightly accruals, the coupon, maturity at 100 -----------------------------------------------------------------
     def test_19_13_buy_accrue_coupon_maturity(self):
@@ -250,7 +313,7 @@ class BondTests(unittest.TestCase):
         # clean 1,000,000 x 96.1027 / 100 = 961,027.00; accrued 1,000,000 x 0.5503 / 100 = 5,503.00; fee 0.02 x 10,000 = 200.00 (>= 5.00); total 966,730.00
         self.assertEqual((96102700, 550300, 20000, "96.1027", "model", "2027-04-15", "2027-04-16", 1000000),
                          (fill["gross_c"], fill["accrued_c"], fill["fee_c"], fill["price"], fill["price_basis"], fill["trade_date"], fill["settle_date"], fill["qty"]))
-        self.assertEqual(("0.5503", "96.6530", -96673000), (b["economics"]["accrued"], b["economics"]["dirty"], b["economics"]["net_cash_c"]))
+        self.assertEqual(("0.5503", "96.653", -96673000), (b["economics"]["accrued"], b["economics"]["dirty"], b["economics"]["net_cash_c"]))   # 96.1027 + 0.5503
         # Dr 1110 961,027.00 / Dr 1220 5,503.00 / Dr 5000 200.00 / Cr 2100 966,730.00
         self.assertEqual([("1110", 96102700, BOND), ("1220", 550300, BOND), ("5000", 20000, BOND), ("2100", -96673000, None)], self.lines(fill["entry_id"]))
         e = self.entry_by_idem(f"fill:{fill['fill_id']}")
@@ -384,6 +447,11 @@ class BondTests(unittest.TestCase):
         r = self.trade("SELL", 1100000)                                                            # 1,100,000 > the 1,000,000 held
         self.assertEqual(("OVERSELL", 400), (r.code, r.http))
         rt.marks.set(BOND, "96.50", "computed")
+        rt.repo = types.SimpleNamespace(pledged_face=lambda conn, account, iid: 700000)            # C27: 700,000 of the 1,000,000 pledged in an open repo
+        r = self.trade("SELL", 400000)
+        self.assertEqual(("PLEDGED_IN_REPO", 409), (r.code, r.http))                              # only 300,000 is free: release the repo first
+        self.assertIn("release the repo first", r.message)
+        rt.repo = None
         n0 = self.n_entries()
         r = self.trade("SELL", 400000)
         self.assertTrue(r.ok, r.body)
@@ -416,6 +484,39 @@ class BondTests(unittest.TestCase):
         self.assertEqual(1000418200, rt.accounting.nav("T1:ALL").nav_c)
         assert_integrity(self, rt, "full")
 
+    # ---- P07: a real Treasury bought at the mark + the disclosed half-spread, then one night of accrual ----------------------------------------------------
+    def test_treasury_purchase_half_spread_and_one_night(self):
+        rt = self.start(at="2026-10-21T10:15:00-04:00", fixture=False)                       # Wednesday 10:15 ET: US_BONDS open 08:00-17:00
+        rows, _fdate, _fi = snapshot_rows()
+        r = execute(rt, "debt.sync", {"rows": [x for x in rows if x["instrument_id"] == NOTE10], "label": "test"}, "debt:sync:one", actor="worker")
+        self.assertEqual(1, r.body["new"])
+        rt.instruments.load()
+        rt.marks.set(NOTE10, "96.351562", "close")                                            # the FedInvest mid of the day (see the master test)
+        r = self.trade("BUY", 100000, iid=NOTE10)
+        self.assertTrue(r.ok, r.body)
+        b = r.body
+        # 4.625 % 15-Aug-2036 has 9.8 years left: the assumed half-spread of a note over 7 years is 1/32 = 0.03125 -> dealt at 96.351562 + 0.03125 = 96.382812
+        # clean 100,000 x 96.382812 / 100 = 96,382.812 -> 96,382.81
+        # accrued: period 15-Aug-2026 -> 15-Feb-2027 = 184 days, 67 days elapsed on 21-Oct: 2.3125 x 67 / 184 = 0.842051... -> 0.8421 per 100 -> 842.10
+        # fee 0.02 x 100,000 / 100 = 20.00 (above the 5.00 minimum); total 96,382.81 + 842.10 + 20.00 = 97,244.91, settling T+1 = Thu 22-Oct-2026
+        self.assertEqual(("96.382812", "96.351562", "0.03125", 9638281, "0.8421", 84210, 2000, -9724491, "2026-10-21", "2026-10-22"),
+                         (b["fill"]["price"], b["fill"]["mark"], b["fill"]["half_spread"], b["economics"]["clean_c"], b["economics"]["accrued"],
+                          b["economics"]["accrued_c"], b["economics"]["fee_c"], b["economics"]["net_cash_c"], b["fill"]["trade_date"], b["fill"]["settle_date"]))
+        # Dr 1110 96,382.81 / Dr 1220 842.10 / Dr 5000 20.00 / Cr 2100 97,244.91; the shortfall 97,244.91 sweeps from Treasury
+        self.assertEqual([("1110", 9638281, NOTE10), ("1220", 84210, NOTE10), ("5000", 2000, NOTE10), ("2100", -9724491, None)], self.lines(b["fill"]["entry_id"]))
+        self.assertEqual(("sweep", 9724491), (b["funding"]["source"], b["funding"]["sweep_c"]))
+        # the purchase carries the accrued of its trade date (night of 21-Oct included); the next night is 22-Oct, due from 00:30 ET on the 23rd:
+        # 68 days -> 2.3125 x 68 / 184 = 0.854619... -> 0.8546 -> 854.60 cumulative; posted 854.60 - 842.10 = 12.50
+        rt.clock.set("2026-10-22T00:35:00-04:00")
+        self.assertEqual([], self.keys(bonds.accrue_keys, rt.clock.epoch(), rt.instruments))
+        rt.clock.set("2026-10-23T00:35:00-04:00")
+        self.assertEqual([(DEBT, NOTE10, "2026-10-22")], self.keys(bonds.accrue_keys, rt.clock.epoch(), rt.instruments))
+        a = self.accrue("2026-10-22", iid=NOTE10)
+        self.assertTrue(a.ok, a.body)
+        self.assertEqual(("DONE", 1250, "0.8546", 85460, 84210), (a.body["status"], a.body["amount_c"], a.body["accrued_per_100"], a.body["cum_c"], a.body["cum_before_c"]))
+        self.assertEqual(85460, bal(rt, DEBT, "1220", inst=NOTE10))
+        assert_integrity(self, rt, "full")
+
     # ---- the ProductJob wiring the WP-15 integration added to lifecycle_eod.REGISTRY, driven by a real scheduler ----------------------------------------
     def test_product_jobs_on_the_scheduler(self):
         rt = self.start()
@@ -438,15 +539,10 @@ class BondTests(unittest.TestCase):
         self.assertEqual([], sched.tick(only="BOND_ACCRUE")["ran"])                              # nothing twice
         self.assertEqual([], sched.tick(only="BOND_COUPON")["ran"])                              # no coupon before 1 Sep
         self.assertEqual([], sched.tick(only="BOND_MATURITY")["ran"])
-        # the listing job: April's key, SKIPPED without a curve (one WARN), DONE with 11 rows once the curve exists (the retry carries :r1)
+        # the listing job (P07): the monthly model benchmarks are retired - April's key is DONE without a curve and lists nothing
         out = sched.tick(only="BOND_LISTING")
-        self.assertEqual([("2027-04", "SKIPPED", "CURVE_MISSING")], [(i["key"], i["status"], i["code"]) for i in out["ran"]])
-        rt.curve = CurveStore()
-        rt.curve.put(curve_2_10(), persist=False)
-        sched._deferred.clear()                                                                   # the scheduler parks a SKIPPED key 5 min; the test moves on at once
-        out = sched.tick(only="BOND_LISTING")
-        self.assertEqual([("2027-04", "DONE", "job:BOND_LISTING:2027-04:r1")], [(i["key"], i["status"], i["request_id"]) for i in out["ran"]])
-        self.assertEqual("2037-04-01", rt.instruments.get("UST-10Y-202704").expiry)               # listed 1 Apr 2027 (Thursday) + 120 months
+        self.assertEqual([("2027-04", "DONE", "job:BOND_LISTING:2027-04")], [(i["key"], i["status"], i["request_id"]) for i in out["ran"]])
+        self.assertIsNone(rt.instruments.get("UST-10Y-202704"))
         self.assertEqual("DONE", one(rt, "SELECT status FROM jobs_done WHERE job='BOND_LISTING' AND key='2027-04'")["status"])
         assert_integrity(self, rt, "full")
 

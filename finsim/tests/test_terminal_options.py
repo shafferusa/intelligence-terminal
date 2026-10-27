@@ -220,15 +220,20 @@ class OptionScenarioTests(unittest.TestCase):
         f = r.body["fills"][0]
         self.assertEqual((490000, 325, "bid"), (f["gross_c"], f["fee_c"], f["price_basis"]))
         self.assertEqual((489675, 975, 490000), (bal(rt, US_EXCHANGE, "1200"), bal(rt, US_EXCHANGE, "5000"), bal(rt, US_EXCHANGE, "2900", inst=P740)))
-        # OPTION_MARGIN_MARK after the STO: 134.344 x 100 x 5 = 67,172.00 -> Dr 1310 / Cr 1010; margin_state 67,172.00; L16
-        self.assertEqual((6717200, 6717200), (f["margin"]["required_c"], bal(rt, US_EXCHANGE, "1310")))
+        # the margin after the STO: 134.344 x 100 x 5 = 67,172.00, RESERVED (decision s7.6, SR-13): margin_state 67,172.00, nothing posted
+        # (1310 = 0, settled 1010 still 1,000,000.00); available at the T+1 view = 1,000,000.00 + 4,896.75 - 15,206.50 - 67,172.00 = 922,518.25
+        self.assertEqual((6717200, 0), (f["margin"]["required_c"], bal(rt, US_EXCHANGE, "1310")))
         self.assertEqual(6717200, sc.one(rt, "SELECT options_required_c r FROM margin_state WHERE account_id=?", (US_EXCHANGE,))["r"])
-        self.assertEqual(100000000 - 6717200, bal(rt, US_EXCHANGE, "1010"))
+        self.assertEqual(100000000, bal(rt, US_EXCHANGE, "1010"))
+        self.assertEqual(0, self.count("SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'"))
+        cv = rt.accounting.cash(US_EXCHANGE)["USD"]
+        self.assertEqual((6717200, 6717200, 92251825), (cv.options_required_c, cv.reserved_c, cv.available_c))
         assert_integrity(self, rt, "full")
-        # after the T+1 settlements: settled = 1,000,000 - 15,206.50 + 4,896.75 - 67,172 = 922,518.25
+        # after the T+1 settlements: settled = 1,000,000 - 15,206.50 + 4,896.75 = 989,690.25; available = 989,690.25 - 67,172.00 reserved = 922,518.25
         rt.clock.set("2026-10-21T00:35:00-04:00")
         self.assertEqual(2, len(self.settle("2026-10-21")))
-        self.assertEqual(92251825, bal(rt, US_EXCHANGE, "1010"))
+        self.assertEqual(98969025, bal(rt, US_EXCHANGE, "1010"))
+        self.assertEqual(92251825, rt.accounting.cash(US_EXCHANGE)["USD"].available_c)
         return rt
 
     def at_expiry(self, close):
@@ -249,15 +254,15 @@ class OptionScenarioTests(unittest.TestCase):
         with rt.db.reader() as conn:   # written contracts first (qty -5 before +10): a spread's long leg keeps covering its short until the short settles
             self.assertEqual([(US_EXCHANGE, P740), (US_EXCHANGE, C760)], options.expiry_keys(conn, rt.clock.epoch()))
         entries_before = self.count("SELECT COUNT(*) n FROM journal_entries")
-        # P740: intrinsic max(0, 740 - 772) = 0 -> EXPIRY fill at 0: Dr 2900 4,900.00 / Cr 4000 4,900.00; then the margin mark Dr 1010 / Cr 1310 67,172.00
+        # P740: intrinsic max(0, 740 - 772) = 0 -> EXPIRY fill at 0: Dr 2900 4,900.00 / Cr 4000 4,900.00; the reservation drops 67,172.00 -> 0
         r = self.expire(P740, "job:OPTION_EXPIRY:T1:US_EXCHANGE:P740:1")
         self.assertTrue(r.ok, r.body)
         self.assertEqual(("DONE", "EXPIRY", True, "0"), (r.body["status"], r.body["kind"], r.body["posted"], r.body["intrinsic"]))
         self.assertEqual((0, 490000, 0, 0), (bal(rt, US_EXCHANGE, "2900", inst=P740), bal(rt, US_EXCHANGE, "4000", inst=P740), bal(rt, US_EXCHANGE, "1310"),
                                             sc.one(rt, "SELECT options_required_c r FROM margin_state WHERE account_id=?", (US_EXCHANGE,))["r"]))
-        # the EXPIRY fill defers the fill path's recompute; the handler's single recompute (overdraft rule) releases 0 - 67,172.00 = -67,172.00:
-        # two OPT_MARGIN entries in all (the STO's increase and this release)
-        self.assertEqual((0, -6717200, 2), (r.body["margin"]["required_c"], r.body["margin"]["delta_c"], self.count("SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'")))
+        # the EXPIRY fill defers the fill path's recompute; the handler's single recompute (overdraft rule) lowers the reservation by 0 - 67,172.00 =
+        # -67,172.00; no OPT_MARGIN entry exists at all (a reservation moves no cash)
+        self.assertEqual((0, -6717200, 0), (r.body["margin"]["required_c"], r.body["margin"]["delta_c"], self.count("SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'")))
         f = sc.one(rt, "SELECT * FROM fills WHERE idem_key=?", (f"expiry:{US_EXCHANGE}:{P740}",))
         self.assertEqual(("BUY", 5, "0", "EXPIRY", None), (f["side"], f["qty"], f["price"], f["origin"], f["settle_date"]))
         # C760: intrinsic 772 - 760 = 12.00 >= 0.01 -> EXERCISE: BUY 1,000 SPY @ 760, fee 0: Dr 1100 775,200 (760,000 + 15,200) / Cr 1700 15,200 / Cr 2100 760,000
@@ -265,9 +270,9 @@ class OptionScenarioTests(unittest.TestCase):
         self.assertTrue(r.ok, r.body)
         self.assertEqual(("DONE", "EXERCISE", "12", "BUY", 77520000), (r.body["status"], r.body["kind"], r.body["intrinsic"], r.body["result"]["stock_side"], r.body["result"]["cost_c"]))
         self.assertEqual((77520000, 0, 76000000), (bal(rt, US_EXCHANGE, "1100", inst="SPY"), bal(rt, US_EXCHANGE, "1700", inst=C760), bal(rt, US_EXCHANGE, "2100")))
-        self.assertEqual(0, r.body["margin"]["delta_c"])                                           # nothing written remains: 0 -> 0, no entry
-        self.assertEqual(2, self.count("SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'"))   # the STO's increase and the one release
-        self.assertEqual(0, self.count("SELECT COUNT(*) n FROM transfers WHERE kind='SWEEP_IN'"))          # settled 922,518.25 + 67,172 released >= 760,000: no sweep
+        self.assertEqual(0, r.body["margin"]["delta_c"])                                           # nothing written remains: 0 -> 0
+        self.assertEqual(0, self.count("SELECT COUNT(*) n FROM journal_entries WHERE kind='OPT_MARGIN'"))   # a reservation never posts
+        self.assertEqual(0, self.count("SELECT COUNT(*) n FROM transfers WHERE kind='SWEEP_IN'"))          # settled 989,690.25 >= 760,000.00: no sweep
         st = sc.one(rt, "SELECT * FROM settlements WHERE fill_id=?", (r.body["result"]["stock_fill_id"],))
         self.assertEqual((-76000000, "2100", "2026-11-23", "PENDING"), (st["amount_c"], st["gl"], st["due_date"], st["status"]))   # due Mon 11-23
         lot = sc.one(rt, "SELECT * FROM lots WHERE instrument_id='SPY' AND qty_remaining > 0")
@@ -291,9 +296,9 @@ class OptionScenarioTests(unittest.TestCase):
             r2 = self.expire(iid)
             self.assertEqual((True, "DONE", False), (r2.ok, r2.body["status"], r2.body["posted"]))
         self.assertEqual(n, self.count("SELECT COUNT(*) n FROM journal_entries"))
-        self.assertEqual(entries_before + 3, n)         # P740 expiry, the margin release, the C760 exercise, and nothing else
+        self.assertEqual(entries_before + 2, n)         # P740 expiry and the C760 exercise, nothing else (no margin entry: a reservation)
         assert_integrity(self, rt, "full")
-        # Mon 11-23: the 760,000.00 payable settles: 922,518.25 + 67,172.00 - 760,000.00 = 229,690.25
+        # Mon 11-23: the 760,000.00 payable settles: 989,690.25 - 760,000.00 = 229,690.25
         rt.clock.set("2026-11-23T00:35:00-05:00")
         self.settle("2026-11-23")
         self.assertEqual(22969025, bal(rt, US_EXCHANGE, "1010"))
@@ -309,7 +314,8 @@ class OptionScenarioTests(unittest.TestCase):
         self.assertEqual((36510000, 0, 37000000), (bal(rt, US_EXCHANGE, "1100", inst="SPY"), bal(rt, US_EXCHANGE, "2900", inst=P740), bal(rt, US_EXCHANGE, "2100")))
         lot = sc.one(rt, "SELECT * FROM lots WHERE instrument_id='SPY' AND qty_remaining > 0")
         self.assertEqual((500, "730.2", 36510000), (lot["qty_remaining"], lot["unit_cost"], lot["cost_c"]))
-        self.assertEqual(0, bal(rt, US_EXCHANGE, "1310"))                                                  # 67,172.00 released: no written option remains
+        self.assertEqual((0, 0), (bal(rt, US_EXCHANGE, "1310"), sc.one(rt, "SELECT options_required_c r FROM margin_state WHERE account_id=?", (US_EXCHANGE,))["r"]))
+        # the 67,172.00 reservation is gone (no written option remains) and nothing was ever posted to 1310
         # C760 OTM -> Dr 4000 15,200.00 / Cr 1700 15,200.00
         r = self.expire(C760)
         self.assertEqual(("EXPIRY", 0, -1520000), (r.body["kind"], bal(rt, US_EXCHANGE, "1700", inst=C760), bal(rt, US_EXCHANGE, "4000", inst=C760)))
@@ -330,7 +336,7 @@ class OptionScenarioTests(unittest.TestCase):
         self.assertEqual("SKIPPED", sc.one(rt, "SELECT status FROM jobs_done WHERE job='OPTION_EXPIRY' AND key=?", (key,))["status"])
         self.assertEqual(1, self.count("SELECT COUNT(*) n FROM attention WHERE code='EXPIRY_PENDING_CLOSE' AND ref_id=? AND resolved_ts IS NULL", (key,)))
         self.assertEqual(-5, rt.accounting.position(US_EXCHANGE, P740).qty)                              # the position stays open
-        self.assertEqual(("ACTIVE", 6717200), (rt.instruments.get(P740).status, bal(rt, US_EXCHANGE, "1310")))
+        self.assertEqual(("ACTIVE", 6717200), (rt.instruments.get(P740).status, sc.one(rt, "SELECT options_required_c r FROM margin_state WHERE account_id=?", (US_EXCHANGE,))["r"]))
         r = self.expire(P740)                                                                              # another tick, still no close: one open item
         self.assertEqual("SKIPPED", r.body["status"])
         self.assertEqual(1, self.count("SELECT COUNT(*) n FROM attention WHERE code='EXPIRY_PENDING_CLOSE' AND ref_id=?", (key,)))
@@ -447,7 +453,8 @@ class OptionScenarioTests(unittest.TestCase):
         # max(40.50 + 0.15 x 5,200 - max(0, 5,200 - 5,100), 40.50 + 0.10 x 5,100) = max(720.50, 550.50) = 720.50 x 100 x 2 = 144,100.00
         r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id=iid, side="STO", qty=2, order_type="MARKET")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual((800000, 130, 14410000), (r.body["fills"][0]["gross_c"], r.body["fills"][0]["fee_c"], bal(rt, US_EXCHANGE, "1310")))
+        # reserved, not posted (SR-13): margin_state 144,100.00, 1310 0
+        self.assertEqual((800000, 130, 14410000, 0), (r.body["fills"][0]["gross_c"], r.body["fills"][0]["fee_c"], r.body["fills"][0]["margin"]["required_c"], bal(rt, US_EXCHANGE, "1310")))
         rt.clock.set("2026-10-21T00:35:00-04:00")
         self.settle("2026-10-21")
         # expiry Fri 2026-12-18 16:40 ET: SPX close 5,050 -> intrinsic 50.00 -> ASSIGNMENT in cash: Dr 2900 8,000 / Cr 2100 10,000 / Dr 4000 2,000
@@ -488,29 +495,38 @@ class OptionScenarioTests(unittest.TestCase):
         self.assertEqual("already done", execute(rt, "options.margin_mark", {"account_id": US_EXCHANGE, "date": "2026-10-20"}, actor="lifecycle").body["note"])
         with rt.db.reader() as conn:
             self.assertEqual([], options.margin_mark_keys(conn, "2026-10-20"))
-        # STO 5 P740: + 67,172.00 (the covered call stays 0; the sides add); 1010 = 1,000,000 - 67,172 = 932,828.00
+        # STO 5 P740: + 67,172.00 reserved (the covered call stays 0; the sides add); nothing posted: 1310 0, 1010 still 1,000,000.00
         r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id=P740, side="STO", qty=5, order_type="MARKET")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual((6717200, 93282800), (bal(rt, US_EXCHANGE, "1310"), bal(rt, US_EXCHANGE, "1010")))
-        # drain the cash: 850,000.00 back to Treasury (available 932,828 - payable 76,933 = 855,895 >= 850,000), then withdraw Treasury's
-        # 10,000,000 - 1,000,000 + 850,000 = 9,850,000.00 entirely -> the account keeps 82,828.00 settled and Treasury has nothing to sweep
+        self.assertEqual((0, 100000000, 6717200), (bal(rt, US_EXCHANGE, "1310"), bal(rt, US_EXCHANGE, "1010"), r.body["fills"][0]["margin"]["required_c"]))
+        # drain the cash: 850,000.00 back to Treasury - a transfer moves settled cash net of payables and reservations (MONEY-6):
+        # min(1,000,000.00, 1,000,000.00 - payable 76,933.00 - reserved 67,172.00) = 855,895.00 >= 850,000.00 - then withdraw Treasury's
+        # 10,000,000 - 1,000,000 + 850,000 = 9,850,000.00 entirely -> the account keeps 150,000.00 settled and Treasury has nothing
         self.assertTrue(execute(rt, "treasury.transfer", {"from_account": US_EXCHANGE, "to_account": TREASURY, "currency": "USD", "amount_c": 85000000}).ok)
         self.assertTrue(execute(rt, "treasury.withdraw", {"lifetime_id": T1, "amount_c": 985000000, "currency": "USD"}).ok)
-        self.assertEqual((8282800, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, TREASURY, "1010")))
-        # the put's mark jumps to 180.00 at S 740: per share max(180 + 148 - 0, 180 + 74) = 328.00 x 100 x 5 = 164,000.00 -> +96,828.00 which
-        # own cash (82,828.00) and the empty Treasury cannot fund: the overdraft rule posts it, 1010 = -14,000.00, FUNDING_SHORTFALL opened
+        self.assertEqual((15000000, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, TREASURY, "1010")))
+        # the put's mark jumps to 180.00 at S 740: per share max(180 + 148 - 0, 180 + 74) = 328.00 x 100 x 5 = 164,000.00 -> +96,828.00 reserved.
+        # Cover at the T+1 view (Wed): settled 150,000.00 + receivables 1,509.35 (STO C760 1 x 15.10 x 100 - 0.65) + 4,896.75 (STO P740) - payable
+        # 76,933.00 - reserved 164,000.00 = -84,526.90; Treasury 0, no PB -> 84,526.90 uncovered: ONE ERROR FUNDING_SHORTFALL (no cash moves,
+        # no forced liquidation); 1010 stays 150,000.00
         rt.marks.set("SPY", "740.00")
         rt.marks.set(P740, "180.00")
         r = execute(rt, "options.margin_mark", {"account_id": US_EXCHANGE, "date": "2026-10-21"}, actor="lifecycle")
         self.assertTrue(r.ok, r.body)
         m = r.body["margin"]
-        self.assertEqual((16400000, 9682800, "overdraft", False), (m["required_c"], m["delta_c"], m["funding"]["source"], m["funding"]["funded"]))
-        self.assertEqual((16400000, -1400000), (bal(rt, US_EXCHANGE, "1310"), bal(rt, US_EXCHANGE, "1010")))
-        self.assertEqual(1, self.count("SELECT COUNT(*) n FROM attention WHERE code='FUNDING_SHORTFALL' AND account_id=? AND resolved_ts IS NULL", (US_EXCHANGE,)))
-        assert_integrity(self, rt, "full")                                                         # L16 and L18 (with the open item) hold
+        self.assertEqual((16400000, 9682800, 8452690, None), (m["required_c"], m["delta_c"], m["shortfall_c"], m["entry_id"]))
+        self.assertEqual((0, 15000000), (bal(rt, US_EXCHANGE, "1310"), bal(rt, US_EXCHANGE, "1010")))
+        att = sc.one(rt, "SELECT details_json FROM attention WHERE code='FUNDING_SHORTFALL' AND account_id=? AND resolved_ts IS NULL", (US_EXCHANGE,))
+        self.assertIn('"kind":"option_margin"', att["details_json"].replace(" ", ""))
+        assert_integrity(self, rt, "full")                                                         # L16 holds; L18 untouched (1010 never goes negative)
         # new orders in the account are refused while the shortfall is open (WP-02's validate)
         r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id=C760, side="BTO", qty=1, order_type="MARKET")
         self.assertEqual((409, "FUNDING_SHORTFALL"), (r.http, r.code))
+        # a deposit + transfer of 84,526.90 covers the reservation exactly: the item resolves at the transfer
+        self.assertTrue(execute(rt, "treasury.deposit", {"lifetime_id": T1, "amount_c": 8452690, "currency": "USD"}).ok)
+        self.assertTrue(execute(rt, "treasury.transfer", {"from_account": TREASURY, "to_account": US_EXCHANGE, "currency": "USD", "amount_c": 8452690}).ok)
+        self.assertEqual(0, self.count("SELECT COUNT(*) n FROM attention WHERE code='FUNDING_SHORTFALL' AND account_id=? AND resolved_ts IS NULL", (US_EXCHANGE,)))
+        assert_integrity(self, rt, "full")
 
     def test_chain_outage_never_fills(self):
         rt = self.start()

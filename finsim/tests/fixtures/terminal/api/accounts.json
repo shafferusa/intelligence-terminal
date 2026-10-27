@@ -15,7 +15,11 @@
   "working_orders": 0,
   "pending_settlements": 0,
   "attention_count": 0,
-  "sort_order": 0
+  "sort_order": 0,
+  "available_by_ccy": {
+   "USD": "435000.00"
+  },
+  "available_base": "435000.00"
  },
  {
   "account_id": "P2:US_EXCHANGE",
@@ -33,7 +37,11 @@
   "working_orders": 2,
   "pending_settlements": 3,
   "attention_count": 1,
-  "sort_order": 10
+  "sort_order": 10,
+  "available_by_ccy": {
+   "USD": "183830.36"
+  },
+  "available_base": "183830.36"
  },
  {
   "account_id": "P2:DEBT",
@@ -51,7 +59,11 @@
   "working_orders": 0,
   "pending_settlements": 0,
   "attention_count": 0,
-  "sort_order": 20
+  "sort_order": 20,
+  "available_by_ccy": {
+   "USD": "5245.00"
+  },
+  "available_base": "5245.00"
  },
  {
   "account_id": "P2:CREDIT",
@@ -69,7 +81,11 @@
   "working_orders": 0,
   "pending_settlements": 0,
   "attention_count": 0,
-  "sort_order": 30
+  "sort_order": 30,
+  "available_by_ccy": {
+   "USD": "0.00"
+  },
+  "available_base": "0.00"
  },
  {
   "account_id": "P2:FOREIGN_FX",
@@ -87,7 +103,12 @@
   "working_orders": 0,
   "pending_settlements": 2,
   "attention_count": 0,
-  "sort_order": 40
+  "sort_order": 40,
+  "available_by_ccy": {
+   "USD": "38760.00",
+   "EUR": "10000.00"
+  },
+  "available_base": "49998.00"
  },
  {
   "account_id": "P2:PB_GS",
@@ -105,6 +126,10 @@
   "working_orders": 0,
   "pending_settlements": 0,
   "attention_count": 0,
-  "sort_order": 100
+  "sort_order": 100,
+  "available_by_ccy": {
+   "USD": "100000.00"
+  },
+  "available_base": "100000.00"
  }
 ]

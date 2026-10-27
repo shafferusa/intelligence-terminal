@@ -11,7 +11,19 @@ Conventions (sentences TREASURY, SWEEP)
 - Withdrawal: T: Dr 3000 / Cr 1010 (idem ``withdraw:{request_id}``).
 - Transfer T -> A (manual or SWEEP_IN): T: Dr 3100 / Cr 1010 ; A: Dr 1010 / Cr 3100 (idem ``xfer:{transfer_id}``);
   A -> T mirrored.  3100 nets to zero across the lifetime (L5).
-- A sweep-in moves exactly the shortfall, linked to what it paid for (L19).
+- A sweep-in moves exactly the shortfall, linked to what it paid for (L19); ``execution.fund`` sweeps
+  ``min(shortfall, Treasury available)`` and draws the rest on PB financing (C12 a), so the Treasury figure it reads,
+  ``accounting.treasury_available_c`` (Treasury immediate available - the reserve of the lifetime's book, BM-01), is
+  the one ``sweep_in`` checks and the preview shows.
+- An internal transfer moves SETTLED cash at once: it is checked against ``accounting.immediate_available_c`` (settled
+  cash net of payables and working-order reservations, receivables due today counted; never above settled) and refused
+  409 INSUFFICIENT_FUNDS naming the settled amount and what settles later (MONEY-6) - the L18 integrity check is never the
+  refusal path.
+- A foreign-currency deposit / withdrawal / transfer needs that currency's USD rate in the mark snapshot (every line
+  carries its base): without it the command is refused 409 FX_RATE_UNAVAILABLE "no EUR/USD rate yet; try again when FX
+  rates load" before anything is posted (BM-20), never a 500.
+- Typed amounts: a decimal string in ``amount`` is read STRICTLY (``units.parse_money``: at most 2 decimals, no
+  exponent, sign or separators, a typo guard above 1,000,000,000,000.00; BM-21); ``amount_c`` (integer cents) as before.
 """
 from __future__ import annotations
 
@@ -20,8 +32,8 @@ from typing import Optional
 from .books import account_row, lifetime_row, split_account_id
 from .commands import ConflictError, RejectError, TxContext, require_amount_c
 from .db import dumps, next_id
-from .ledger import Entry, cr, dr
-from .units import fmt_money
+from .ledger import Entry, LedgerError, cr, dr
+from .units import fmt_money, parse_money
 
 _CCY_OK = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -66,6 +78,39 @@ def _available(ctx: TxContext, account_id: str, ccy: str) -> int:
     return available_c(ctx.conn, account_id, ccy, None, ctx.marks, getattr(ctx.services, "instruments", None) if ctx.services else None, ctx.now)
 
 
+def _master(ctx: TxContext):
+    return getattr(ctx.services, "instruments", None) if ctx.services else None
+
+
+def sweepable_c(ctx: TxContext, lifetime_id: str, ccy: str) -> int:
+    """What the lifetime's Treasury can sweep now in ``ccy`` (signed; C12 a, BM-01): ``accounting.treasury_available_c``."""
+    from .accounting import treasury_available_c
+    return treasury_available_c(ctx.conn, lifetime_id, ccy, ctx.marks, _master(ctx), ctx.now)
+
+
+def require_rate(ctx: TxContext, ccy: str) -> None:
+    """BM-20: a non-USD posting needs the currency's USD rate in the command's mark snapshot; refuse plainly (409, no
+    ERROR attention, the message not prefixed with its own code) before anything is posted."""
+    if ccy == "USD":
+        return
+    try:
+        ctx.fx.rate(ccy)
+    except LedgerError as e:
+        raise ConflictError("FX_RATE_UNAVAILABLE", f"no {ccy}/USD rate yet; try again when FX rates load", {"currency": ccy}) from e
+
+
+def amount_c(payload: dict) -> int:
+    """The command's amount in cents: a typed decimal string in ``amount`` read strictly (``units.parse_money``, BM-21),
+    else ``amount_c`` (integer cents) as ``require_amount_c`` reads it."""
+    raw = payload.get("amount")
+    if raw is not None and payload.get("amount_c") is None:
+        try:
+            return parse_money(raw, "amount")
+        except ValueError as e:
+            raise RejectError("AMOUNT", str(e), {"amount": str(raw)}) from e
+    return require_amount_c(payload)
+
+
 def _transfer_row(ctx: TxContext, kind: str, from_account: Optional[str], to_account: Optional[str], ccy: str, amount_c: int, entry_id: int,
                   idem_key: str, linked_type: Optional[str] = None, linked_id: Optional[str] = None, shortfall_c: Optional[int] = None) -> str:
     tid = next_id(ctx.conn, "transfer")
@@ -105,30 +150,43 @@ def h_init_capital(ctx: TxContext, payload: dict) -> dict:
 def h_deposit(ctx: TxContext, payload: dict) -> dict:
     row = _treasury_account(ctx, payload)
     aid = row["account_id"]
-    amount_c = require_amount_c(payload)
+    amount = amount_c(payload)
     ccy = _ccy(payload)
-    memo = str(payload.get("memo") or "capital deposit")
+    require_rate(ctx, ccy)
+    return _deposit(ctx, row, aid, amount, ccy, payload)
+
+
+def _deposit(ctx: TxContext, row, aid: str, amount_c: int, ccy: str, payload: dict) -> dict:
+    typed = str(payload.get("memo") or "").strip()
+    memo = typed or "capital deposit"
     idem = f"deposit:{ctx.request_id}"
-    entry_id = ctx.post(Entry("CAPITAL", f"capital deposit {ccy} {fmt_money(amount_c)} to {aid}: {memo}",
+    entry_id = ctx.post(Entry("CAPITAL", f"capital deposit {ccy} {fmt_money(amount_c)} to {aid}" + (f": {typed}" if typed else ""),
                               [dr(aid, "1010", ccy, amount_c, memo=memo), cr(aid, "3000", ccy, amount_c, memo=memo)], idem,
                               ref_type="lifetime", ref_id=row["lifetime_id"]))
     tid = _transfer_row(ctx, "DEPOSIT", None, aid, ccy, amount_c, entry_id, f"xfer:{idem}")
     ctx.event("CAPITAL_DEPOSITED", account_id=aid, ref_type="transfer", ref_id=tid, amount_c=amount_c, currency=ccy, memo=memo)
-    return {"transfer_id": tid, "account_id": aid, "amount_c": amount_c, "currency": ccy, "entry_id": entry_id, "settled_c": _settled(ctx, aid, ccy)}
+    return {"transfer_id": tid, "account_id": aid, "amount_c": amount_c, "currency": ccy, "entry_id": entry_id, "settled_c": _settled(ctx, aid, ccy),
+            "shortfalls_resolved": _resolve_shortfalls(ctx, row["lifetime_id"], ccy)}
 
 
 def h_withdraw(ctx: TxContext, payload: dict) -> dict:
     row = _treasury_account(ctx, payload)
     aid = row["account_id"]
-    amount_c = require_amount_c(payload)
+    amount = amount_c(payload)
     ccy = _ccy(payload)
+    require_rate(ctx, ccy)
+    return _withdraw(ctx, row, aid, amount, ccy, payload)
+
+
+def _withdraw(ctx: TxContext, row, aid: str, amount_c: int, ccy: str, payload: dict) -> dict:
     settled = _settled(ctx, aid, ccy)
     if settled < amount_c:
         raise ConflictError("INSUFFICIENT_FUNDS", f"Treasury settled {ccy} {fmt_money(settled)} is less than the withdrawal {fmt_money(amount_c)}",
                             {"settled_c": settled, "amount_c": amount_c, "currency": ccy})
-    memo = str(payload.get("memo") or "capital withdrawal")
+    typed = str(payload.get("memo") or "").strip()
+    memo = typed or "capital withdrawal"
     idem = f"withdraw:{ctx.request_id}"
-    entry_id = ctx.post(Entry("CAPITAL", f"capital withdrawal {ccy} {fmt_money(amount_c)} from {aid}: {memo}",
+    entry_id = ctx.post(Entry("CAPITAL", f"capital withdrawal {ccy} {fmt_money(amount_c)} from {aid}" + (f": {typed}" if typed else ""),
                               [dr(aid, "3000", ccy, amount_c, memo=memo), cr(aid, "1010", ccy, amount_c, memo=memo)], idem,
                               ref_type="lifetime", ref_id=row["lifetime_id"]))
     tid = _transfer_row(ctx, "WITHDRAWAL", aid, None, ccy, amount_c, entry_id, f"xfer:{idem}")
@@ -171,23 +229,64 @@ def h_transfer(ctx: TxContext, payload: dict) -> dict:
                           {"from_lifetime": srow["lifetime_id"], "to_lifetime": drow["lifetime_id"]})
     _open_account(ctx, srow)
     _open_account(ctx, drow)
-    amount_c = require_amount_c(payload)
+    amount = amount_c(payload)
     ccy = _ccy(payload)
-    avail = _available(ctx, src, ccy)
-    if avail < amount_c:
-        raise ConflictError("INSUFFICIENT_FUNDS", f"{src} has {ccy} {fmt_money(avail)} available, transfer needs {fmt_money(amount_c)}",
-                            {"available_c": avail, "amount_c": amount_c, "currency": ccy, "account_id": src})
+    require_rate(ctx, ccy)
+    check_transfer(ctx, src, ccy, amount)
+    return _transfer(ctx, src, dst, ccy, amount, payload)
+
+
+def check_transfer(ctx: TxContext, src: str, ccy: str, amount_c: int) -> int:
+    """MONEY-6: a transfer leaves the source's SETTLED cash at once, so it is measured against the immediate available
+    (``accounting.immediate_available_c``: settled cash net of payables and working-order reservations, receivables due
+    today counted, never above settled) and refused 409 INSUFFICIENT_FUNDS naming the settled amount and what settles
+    later.  Worked (s7, Wed 18:00): settled 0.00, a sale's 344,995.00 settling Thu -> 'can move USD 0.00 now (settled cash
+    0.00; 344,995.00 settles 2026-10-22)' instead of a 500 from the L18 integrity check.  Returns the immediate figure."""
+    from .accounting import _available_parts, immediate_available_c
+    master = _master(ctx)
+    imm = immediate_available_c(ctx.conn, src, ccy, None, ctx.marks, master, ctx.now)
+    if imm >= amount_c:
+        return imm
+    d0, settled, recv, pay, reserved = _available_parts(ctx.conn, src, ccy, None, ctx.marks, master, ctx.now)
+    # every pending receivable is cash that has not settled yet (a sale due tomorrow counts in 'available' after 17:00, never in settled cash)
+    later = ctx.conn.execute("SELECT COALESCE(SUM(amount_c),0) AS n, MIN(due_date) AS d FROM settlements WHERE account_id=? AND currency=? AND status='PENDING'"
+                             " AND amount_c > 0", (src, ccy)).fetchone()
+    parts = [f"settled cash {fmt_money(settled)}"]
+    if pay:
+        parts.append(f"less payables {fmt_money(pay)}")
+    if reserved:
+        parts.append(f"less working orders {fmt_money(reserved)}")
+    incoming = int(later["n"] or 0) if later is not None else 0
+    tail = f"; {fmt_money(incoming)} of sale / FX proceeds settles {later['d']} and can move after it" if incoming > 0 and later["d"] else ""
+    raise ConflictError("INSUFFICIENT_FUNDS", f"{src} can move {ccy} {fmt_money(imm)} now ({', '.join(parts)}{tail}); the transfer needs {fmt_money(amount_c)}",
+                        {"available_c": imm, "settled_c": settled, "payables_c": pay, "reserved_c": reserved, "receivable_later_c": max(0, incoming),
+                         "amount_c": amount_c, "currency": ccy, "account_id": src})
+
+
+def _transfer(ctx: TxContext, src: str, dst: str, ccy: str, amount_c: int, payload: dict) -> dict:
     memo = str(payload.get("memo") or "internal transfer")
     out = _post_transfer(ctx, "TRANSFER", src, dst, ccy, amount_c, memo)
     out["from_settled_c"] = _settled(ctx, src, ccy)
     out["to_settled_c"] = _settled(ctx, dst, ccy)
+    out["shortfalls_resolved"] = _resolve_shortfalls(ctx, account_row(ctx.conn, dst)["lifetime_id"], ccy)
     return out
+
+
+def _resolve_shortfalls(ctx: TxContext, lifetime_id: str, ccy: str) -> int:
+    """After cash arrives in a lifetime (a transfer, a deposit): resolve its open FUNDING_SHORTFALL items now covered
+    (``execution.auto_resolve_shortfall``: settled cash back at zero, or an option-margin reservation covered, SR-13)."""
+    from .execution import auto_resolve_shortfall
+    n = 0
+    for r in ctx.conn.execute("SELECT DISTINCT t.account_id FROM attention t JOIN accounts a ON a.account_id=t.account_id WHERE t.code='FUNDING_SHORTFALL'"
+                              " AND t.resolved_ts IS NULL AND a.lifetime_id=?", (lifetime_id,)).fetchall():
+        n += auto_resolve_shortfall(ctx, r["account_id"], ccy)
+    return n
 
 
 def sweep_in(ctx: TxContext, account: str, ccy: str, amount_c: int, linked_type: str, linked_id: str, shortfall_c: int) -> str:
     """Move exactly ``amount_c`` from the lifetime's Treasury to ``account`` as one linked SWEEP_IN transfer.  Raises
     ``ConflictError INSUFFICIENT_FUNDS`` (with the three amounts) when Treasury's available cash in that currency,
-    net of ``settings.treasury_reserve_c``, cannot cover it.  Returns the transfer id."""
+    net of the book's reserve (``sweepable_c``), cannot cover it.  Returns the transfer id."""
     amount_c = int(amount_c)
     if amount_c <= 0:
         raise RejectError("AMOUNT", "sweep amount must be positive")
@@ -197,9 +296,9 @@ def sweep_in(ctx: TxContext, account: str, ccy: str, amount_c: int, linked_type:
     _open_account(ctx, arow)
     lid, _ = split_account_id(account)
     tre = f"{lid}:TREASURY"
-    from .db import get_setting
-    reserve = int(get_setting(ctx.conn, "treasury_reserve_c", 0) or 0) if ccy == "USD" else 0
-    t_avail = _available(ctx, tre, ccy) - reserve
+    if account == tre:
+        raise RejectError("SAME_ACCOUNT", "Treasury cannot sweep into itself")
+    t_avail = sweepable_c(ctx, lid, ccy)
     if t_avail < amount_c:
         raise ConflictError("INSUFFICIENT_FUNDS", f"Treasury {tre} has {ccy} {fmt_money(max(t_avail, 0))} available for {account}; the sweep needs {fmt_money(amount_c)}",
                             {"need_c": amount_c, "treasury_available_c": t_avail, "currency": ccy, "account_id": account, "linked_type": linked_type,

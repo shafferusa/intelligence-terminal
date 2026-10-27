@@ -40,6 +40,10 @@ PAGES = ["markets", "instrument", "positions", "orders", "cash", "transactions",
          "activity", "watchlists", "settings", "history"]
 COMPONENTS = ["sidebar", "header", "attention", "freshness", "grid", "chart", "chain", "bookswitcher"]
 QUALITIES = ["live", "delayed", "close", "computed", "private", "stale", "unavailable"]
+# BUILD2_PLAN C3 / C11: the product plug-ins of Build 2 - loaded by index.html as optional scripts and stubbed by the fixture
+# server (and by api.py on the real server) until their packages build them, so no 404 reaches the console
+PLANNED_OPTIONAL = ["pages/markets_debt.js", "components/bondticket.js", "pages/markets_fx.js", "components/fxdesk.js",
+                    "pages/markets_credit.js", "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js"]
 
 
 def read(path: str) -> str:
@@ -174,6 +178,10 @@ class StaticFilesTest(unittest.TestCase):
             else:
                 self.assertTrue(exists, "referenced script missing: " + rel)
             self.assertFalse(src.startswith("http"), "CDN script: " + src)
+        for rel in PLANNED_OPTIONAL:
+            self.assertIn("/static/" + rel, p.optional, "index.html does not load the planned plug-in " + rel + " (data-optional)")
+            self.assertIn(rel, fx.OPTIONAL_STATIC, "the fixture server does not stub the planned plug-in " + rel)
+        self.assertNotIn("8766", read(INDEX), "the sidebar links the legacy simulation (SHELL-20)")
         for rel_kind, href in p.links:
             if rel_kind == "stylesheet":
                 self.assertEqual(href, "/static/terminal.css")
@@ -237,11 +245,48 @@ class StaticFilesTest(unittest.TestCase):
             self.assertEqual(js_balance(src), (0, 0, 0), "unbalanced brackets in components/%s.js" % name)
         core = read(os.path.join(STATIC, "core.js"))
         self.assertEqual(js_balance(core), (0, 0, 0))
-        for need in ["T.api", "T.state", "T.router", "T.poll", "T.fmt", "T.keys", "T.ui", "T.conv", "T.book", "T.ticket", "visibilitychange", "X-Request-Id", "x-replayed", "status=all", "orders", "book="]:
+        for need in ["T.api", "T.state", "T.router", "T.poll", "T.fmt", "T.keys", "T.ui", "T.conv", "T.book", "T.ticket", "visibilitychange", "X-Request-Id", "x-replayed", "status=all", "orders", "book=",
+                     # the C11 hooks other packages register into / call
+                     "T.marketPlugins", "T.ticketKinds", "T.providerLabel", "renderKeys:", "T.attention", "incident_id", "accountBar", "T.pageStatus"]:
             self.assertIn(need.replace("status=all", "status: 'all'") if need == "status=all" else need, core, "core.js lacks " + need)
         fresh = read(os.path.join(STATIC, "components", "freshness.js"))
         for q in QUALITIES:
             self.assertIn("'%s'" % q, fresh)
+
+    def test_keybind_registry_defaults(self):
+        """static/keys.js (the owner's ask 2026-10-21 17:10, docs/KEYBINDS.md): the F-key map is the default, no Alt / g default is
+        left, every default is in api.py's one canonical form and not browser-reserved, no key is on two actions that can act together
+        (api.keybind_clash), both refused lists agree, every global action has its handler in core.js, keys.js loads right after core.js."""
+        from finsim.terminal import api
+        src = read(os.path.join(STATIC, "keys.js"))
+        self.assertEqual(js_balance(src), (0, 0, 0))
+        acts = {m.group(1): (None if m.group(3) == "null" else m.group(3)[1:-1]) for m in re.finditer(r"act\('([a-z0-9_.]+)', '([A-Za-z ]+)', (null|'[^']*')", src)}
+        acts.update({"nav.account_%d" % n: None for n in range(1, 10)})              # the two loops of keys.js
+        acts.update({"ticket.hedge_%d" % n: str(n) for n in range(1, 6)})
+        self.assertEqual(68, len(acts))
+        owner = {"F1": "nav.us_exchange", "F2": "nav.debt", "F3": "nav.credit", "F4": "nav.foreign_fx", "F5": "nav.private", "F6": "nav.prime_broker",
+                 "F7": "page.portfolio", "F8": "nav.orders", "F9": "dock.toggle", "F10": "page.treasury", "F11": "page.risk", "F12": "page.news",
+                 "Shift+F1": "book.personal", "Shift+F2": "book.fund", "Shift+F3": "book.institutional", "Shift+F4": "nav.positions", "Shift+F5": "nav.cash",
+                 "Shift+F6": "nav.transactions", "Shift+F7": "page.accounting", "Shift+F8": "page.activity", "Shift+F9": "page.watchlists",
+                 "Shift+F10": "page.history", "Shift+F11": "page.settings", "Shift+F12": "app.help_2", "/": "app.search", "?": "app.help", "Escape": "dialog.close"}
+        for key, aid in owner.items():
+            self.assertEqual(key, acts.get(aid), aid)
+        for aid, key in acts.items():
+            self.assertRegex(aid, api.KEYBIND_ID_RE)
+            if key is not None:
+                self.assertEqual(key, api.keybind_canonical(key), aid)
+                self.assertNotIn(key, api.KEYBIND_REFUSED, aid)
+                self.assertFalse(key.startswith("Alt+"), aid)
+        self.assertIsNone(api.keybind_clash(acts))
+        refused = set(re.findall(r"^\s+'([^']+)': '[^']*',?$", src[src.index("var REFUSED"):src.index("var MAY_KEEP")], re.M))
+        self.assertEqual(set(api.KEYBIND_REFUSED), refused)
+        core = read(os.path.join(STATIC, "core.js"))
+        for aid in acts:
+            if api.keybind_scope(aid) in ("global", "dialog"):
+                self.assertIn("'%s':" % aid, core, "core.js has no handler for " + aid)
+        p = _Refs()
+        p.feed(read(INDEX))
+        self.assertEqual(p.scripts.index("/static/core.js") + 1, p.scripts.index("/static/keys.js"))
 
 
 class FixtureServerTest(unittest.TestCase):

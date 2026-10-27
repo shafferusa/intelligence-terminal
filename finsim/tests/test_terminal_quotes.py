@@ -425,7 +425,12 @@ class CacheWorkerTests(unittest.TestCase):
         self.assertIn("persist", rep["slots"])
         with rt.db.reader() as conn:
             self.assertGreaterEqual(conn.execute("SELECT COUNT(*) FROM quote_cache").fetchone()[0], 1)
-            self.assertEqual(6, conn.execute("SELECT COUNT(*) FROM provider_health").fetchone()[0])
+            # one row per known provider: the six of Build 1, plus the Build 2 sources (quotes.http.PROVIDERS) and any product
+            # refresher this worker runs (C14 register_refresher records its outcome under its own name)
+            from finsim.terminal.quotes.http import PROVIDERS as _PROVIDERS
+            names = {r[0] for r in conn.execute("SELECT provider FROM provider_health").fetchall()}
+            self.assertTrue({"yahoo", "cboe", "treasury", "fred", "finra", "frankfurter"} <= names, names)
+            self.assertTrue(names <= set(_PROVIDERS) | set(self.worker.refreshers()), names)
 
     def test_persist_and_load_round_trip_returns_close_or_stale_never_delayed(self):
         rt = self.rt
@@ -497,7 +502,7 @@ class CacheWorkerTests(unittest.TestCase):
         self.worker.tick()
         inst = rt.instruments.get("ZZTEST")
         self.assertEqual(("EQUITY", "FULL", "US_EQUITY", "ZZ Test Corp"), (inst.kind, inst.support, inst.session_group, inst.name))
-        self.assertEqual("UNSUPPORTED", rt.instruments.get("VOD.L").support)
+        self.assertEqual("FULL", rt.instruments.get("VOD.L").support)   # Build 2 P06 (OA-12): a London listing on a known venue in GBP trades
         self.assertEqual("error", self.worker.resolve_status("NOPE")["status"])
         self.assertEqual(404, self.worker.resolve_status("NOPE")["http_status"])
 

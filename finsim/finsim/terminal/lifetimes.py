@@ -365,6 +365,8 @@ def agreements_of(conn: sqlite3.Connection, lid: str, broker: Optional[str] = No
     rows = [dict(r) for r in conn.execute(sql + " ORDER BY broker, id", params).fetchall()]
     for r in rows:
         r["meaning"] = AGREEMENT_MEANING.get(r["kind"], "")
+        r["broker_name"] = config.PRIME_BROKERS.get(r["broker"], r["broker"])
+        r["label"] = "ISDA Master" if r["kind"] == "ISDA_MASTER" else r["kind"]
     return rows
 
 

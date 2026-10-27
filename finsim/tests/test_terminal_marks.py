@@ -161,9 +161,8 @@ class Build2PinTests(unittest.TestCase):
         # GBP base: ACT/365 on the base leg — F = 1.3394 × (1 + 0.0387 × 90/360) / (1 + 0.0400 × 90/365) = 1.352359 / 1.009863 = 1.339151
         self.assertEqual(D("1.339151"), cip_forward("1.3394", "0.0400", "0.0387", 90, basis_base=365))
 
-    @unittest.skipUnless(BUILD2, "Build 2: bond and forward EXECUTION are not in this build (the pricing functions are asserted above)")
-    def test_build2_execution(self):
-        self.fail("not built")
+    # Build 2 (2026-10-21): bond and FX-forward EXECUTION are built - their money tests live in test_terminal_bonds (UST purchase,
+    # nightly accrual) and test_terminal_fx (EURUSD 3M CIP forward booked / posted / settled); the placeholder that skipped here is gone.
 
 
 # ===== the option model and mark selection (pure, with a tiny master) ============================================================================

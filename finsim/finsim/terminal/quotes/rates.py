@@ -9,10 +9,18 @@ Conventions
   for t = 0.5, 1.0, …: ``df(t) = (1 − c(t)/2 × Σ_{s<t} df(s)) / (1 + c(t)/2)`` with ``c(t)`` the decimal par yield
   at t — a flat 4.00 % curve gives 1/1.02, 1/1.02², … exactly (§19.15).  ``set_fixed_dfs`` (the §19.15 FixedCurve
   fixture) bypasses the bootstrap with discount factors given directly.
-- ``RateStore`` holds FRED observations per series (``SOFR``, the policy indices of ``tables.POLICY_INDEX``, the OAS
-  series ``BAMLH0A0HYM2``, ``VIXCLS``): ``latest(series)`` → ``(date, Decimal percent) | None``; ``as_of_le(series, d)``
-  is the RATE_LAG lookup (latest published observation on or before d).  A missing rate is ``None`` — nothing is
-  defaulted to a number.
+- ``RateStore`` holds FRED observations per series (``SOFR``, the policy indices of ``tables.POLICY_INDEX``, the ICE BofA
+  OAS series - the HY index ``BAMLH0A0HYM2`` and, since Build 2 P07 (OA-06), every rating bucket of ``OAS_SERIES`` AAA ..
+  CCC - ``VIXCLS``, and the OECD monthly long-term government yields of ``OECD_10Y`` for the gilt / OAT / BTP benchmarks):
+  ``latest(series)`` → ``(date, Decimal percent) | None``; ``as_of_le(series, d)`` is the RATE_LAG lookup (latest
+  published observation on or before d).  A missing rate is ``None`` — nothing is defaulted to a number.
+- SOURCES (ORC-8): ``put(series, observations, source)`` labels the series with ``observations.source`` when the
+  provider's ``Observations`` carry one (SOFR from the NY Fed and the ECB deposit rate from the ECB data API while FRED is
+  in maintenance), else with ``source``; ``source(series)`` and ``view()`` show it next to the value.  A failed fetch never
+  erases anything: the store keeps the last good observations with their TRUE observation dates (and ``load_persisted``
+  brings them back after a restart), so during a FRED outage every rate shows its real as-of date, never today's.
+  ``route`` (set at bind time) is the provider's ``FredRoute``: ``view()["fred"]`` says "FRED unavailable (maintenance)"
+  while it lasts.
 - ``FxStore`` holds the Frankfurter ECB reference rates (units of currency per USD) used only as the FX fallback.
 - UNITS — the one place the rate units of the terminal are defined (display-units fix, 2026-10-21):
   * Every observation this module stores or returns — FRED series (SOFR, the ``tables.POLICY_INDEX`` indices, the OAS
@@ -60,14 +68,18 @@ OBS_TENOR = "OBS"
 HALF = Decimal("0.5")
 DF_Q = Decimal("0.0000000001")
 SHIFT_SYMBOLS: Dict[str, Decimal] = {"^IRX": Decimal("0.25"), "^FVX": Decimal(5), "^TNX": Decimal(10), "^TYX": Decimal(30)}
-FRED_SERIES = ("SOFR",) + tuple(dict.fromkeys(tables.POLICY_INDEX.values())) + ("BAMLH0A0HYM2", "VIXCLS")
+OAS_SERIES = {"AAA": "BAMLC0A1CAAA", "AA": "BAMLC0A2CAA", "A": "BAMLC0A3CA", "BBB": "BAMLC0A4CBBB", "BB": "BAMLH0A1HYBB", "B": "BAMLH0A2HYB",
+              "CCC": "BAMLH0A3HYC", "HY": "BAMLH0A0HYM2"}
+#: OECD main economic indicators, long-term government bond yields (10-year), MONTHLY averages on FRED: the gilt / OAT / BTP
+#: benchmarks of the Debt / Foreign Markets pages are LIMITED to these (the Bank of England database refuses scripts)
+OECD_10Y = {"GB": "IRLTLT01GBM156N", "FR": "IRLTLT01FRM156N", "IT": "IRLTLT01ITM156N"}
+FRED_SERIES = tuple(dict.fromkeys(("SOFR",) + tuple(tables.POLICY_INDEX.values()) + ("BAMLH0A0HYM2", "BAMLC0A0CM", "VIXCLS")
+                                   + tuple(v for k, v in OAS_SERIES.items() if k != "HY") + tuple(OECD_10Y.values())))   # each series once
 PERCENT = Decimal(100)
 UNIT_PERCENT = "percent"
 UNIT_FRACTION = "fraction"
 UNITS_NOTE = ("FRED and par-curve values are percents as published (3.87 = 3.87 %); spreads, fees and accrual rates are fractions "
               "(0.0337 = 3.37 %); a percent outside /api/rates and /api/curve is named *_pct")
-OAS_SERIES = {"AAA": "BAMLC0A1CAAA", "AA": "BAMLC0A2CAA", "A": "BAMLC0A3CA", "BBB": "BAMLC0A4CBBB", "BB": "BAMLH0A1HYBB", "B": "BAMLH0A2HYB",
-              "CCC": "BAMLH0A3HYC", "HY": "BAMLH0A0HYM2"}
 
 
 def _rid(prefix: str, payload: dict) -> str:
@@ -271,8 +283,14 @@ class RateStore:
         self._lock = threading.RLock()
         self._obs: Dict[str, List[Tuple[date, Decimal]]] = {}
         self._source: Dict[str, str] = {}
+        self.route = None                    # the provider's FredRoute (module docstring SOURCES), set at bind time
 
     def put(self, series_id: str, observations: Iterable[Tuple[date, Decimal]], source: str = "FRED", persist: bool = True) -> int:
+        """Merge ``observations`` (new dates added, a date's value replaced; nothing ever removed).  The label is the
+        observations' own ``source`` when they carry one (a fallback provider), else ``source``."""
+        own = getattr(observations, "source", None)
+        if isinstance(own, str) and own:
+            source = own
         rows = [(d if isinstance(d, date) else date.fromisoformat(str(d)), qprice(v)) for d, v in observations]
         if not rows:
             return 0
@@ -334,15 +352,30 @@ class RateStore:
     def vix(self) -> Optional[Tuple[date, Decimal]]:
         return self.latest("VIXCLS")
 
+    def fred_status(self) -> dict:
+        """The FRED route's state for the views: ``{maintenance, since_ts, note}`` (module docstring SOURCES)."""
+        route = self.route
+        st = route.status() if route is not None and hasattr(route, "status") else {}
+        out = {"maintenance": bool(st.get("maintenance")), "since_ts": st.get("since_ts"), "paused_until_ts": st.get("paused_until_ts"),
+               "key_route": st.get("key_route"), "fallbacks": st.get("fallbacks") or {}}
+        out["note"] = ("FRED unavailable (maintenance): every FRED series keeps its last observation with its true date; SOFR and the ECB deposit "
+                       "rate come from their free fallbacks (labelled)") if out["maintenance"] else ""
+        return out
+
     def view(self) -> dict:
-        """``/api/rates`` shape: ``{SOFR: {value, as_of, unit}, policy: {ccy: {...}}, oas: {...}, units}``; every ``value`` is
-        a PERCENT as published (``unit: "percent"``, module docstring UNITS)."""
+        """``/api/rates`` shape: ``{SOFR: {value, as_of, unit, source}, policy: {ccy: {...}}, oas: {...}, long_term: {...},
+        fred: {maintenance, note}, units}``; every ``value`` is a PERCENT as published (``unit: "percent"``, module docstring
+        UNITS); ``source`` says where it came from (FRED, or a labelled fallback)."""
         def one(sid):
             got = self.latest(sid) if sid else None
             return {"series": sid, "value": None if got is None else str(got[1]), "as_of": None if got is None else got[0].isoformat(),
-                    "unit": UNIT_PERCENT, "monthly_proxy": sid in tables.POLICY_INDEX_MONTHLY}
+                    "unit": UNIT_PERCENT, "monthly_proxy": sid in tables.POLICY_INDEX_MONTHLY or sid in OECD_10Y.values(),
+                    "source": None if got is None else (self.source(sid) or "FRED")}
         return {"SOFR": one("SOFR"), "policy": {ccy: one(sid) for ccy, sid in tables.POLICY_INDEX.items()},
-                "oas": {b: one(sid) for b, sid in OAS_SERIES.items()}, "VIXCLS": one("VIXCLS"), "units": UNITS_NOTE}
+                "oas": {b: one(sid) for b, sid in OAS_SERIES.items()}, "long_term": {c: one(sid) for c, sid in OECD_10Y.items()}, "VIXCLS": one("VIXCLS"),
+                # OTC-R1-05: the two index OAS series the CDX desk uses as its labelled proxy spreads (IG = US Corporate, HY = US High Yield)
+                "cdx_proxy": {"IG": one("BAMLC0A0CM"), "HY": one("BAMLH0A0HYM2")},
+                "fred": self.fred_status(), "units": UNITS_NOTE}
 
     def load_persisted(self) -> int:
         if self.db is None:
@@ -484,6 +517,6 @@ def register(bus) -> None:
     bus.register("marks.record", h_marks_record, light=True)
 
 
-__all__ = ["CurveStore", "RateStore", "FxStore", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "SHIFT_SYMBOLS",
+__all__ = ["CurveStore", "RateStore", "FxStore", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "OECD_10Y", "SHIFT_SYMBOLS",
            "CURVE_SERIES", "FX_SERIES", "OBS_TENOR", "h_rates_record", "h_marks_record", "pct_to_fraction", "fraction_to_pct", "treasury_cash_rate",
            "PERCENT", "UNIT_PERCENT", "UNIT_FRACTION", "UNITS_NOTE"]

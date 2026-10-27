@@ -123,7 +123,8 @@ def setup_abc(rt, fund_c=20000000):
 
 
 def short_abc(tc, rt):
-    """SELL_SHORT 1,000 ABC MARKET at Fri 10:00: borrow first (collateral 51,000.00), then the fill at 50.00."""
+    """SELL_SHORT 1,000 ABC MARKET at Fri 10:00: the borrow is located and recorded first (no collateral yet), then the fill at
+    50.00 posts the collateral 51,000.00 (SHORT_COLLATERAL: 49,995.00 of the sale's own proceeds + 1,005.00 cash)."""
     r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="SELL_SHORT", qty=1000, order_type="MARKET")
     tc.assertTrue(r.ok, r.body)
     tc.assertEqual("FILLED", r.body["order"]["status"])
@@ -160,34 +161,40 @@ class ShortSaleTests(unittest.TestCase):
         pb = r.body["preview"]["borrow"]
         self.assertEqual((True, 1000, 1000, "GC", "0.003", "0.0337", 5100000), (pb["needed"], pb["qty"], pb["qty_available"], pb["tier"], pb["fee_rate"], pb["rebate_rate"], pb["collateral_c"]))
         self.assertEqual([], r.body["warnings"])
-        self.assertEqual([], r.body["sweeps"])                                                  # settled 200,000 covers the collateral: no sweep
-        # borrow first: Dr 1400 ABC 51,000.00 / Cr 1010 51,000.00
-        self.assertEqual([("1400", 5100000, "ABC"), ("1010", -5100000, None)], lines_of(rt, "collat:B-000001:open"))
+        self.assertEqual([], r.body["sweeps"])                                                  # settled 200,000 covers the 1,005.00 cash part: no sweep
+        # the borrow is located and recorded at submit with NO collateral (SHORT_COLLATERAL: the collateral goes with the fill)
+        self.assertEqual([], lines_of(rt, "collat:B-000001:open"))
         # the fill at 50.00: gross 50,000.00; fee 1,000 x 0.005 = 5.00; Dr 1200 49,995.00 / Dr 5000 5.00 / Cr 2600 ABC 50,000.00
         fill = r.body["fills"][0]
         self.assertEqual(("F-000001", 5000000, 500, "SELL", "2026-10-16", "2026-10-19"), (fill["fill_id"], fill["gross_c"], fill["fee_c"], fill["effect"], fill["trade_date"], fill["settle_date"]))
         self.assertEqual([("1200", 4999500, None), ("5000", 500, "ABC"), ("2600", -5000000, "ABC")], lines_of(rt, "fill:F-000001"))
+        # ... and its collateral in the same command: to_c(1.02 x 1,000 x 50.00) = 51,000.00 to the lender, funded by the sale's own proceeds
+        # 49,995.00 (Cr 1200: the receivable goes to the lender) and 51,000 - 49,995 = 1,005.00 cash = 2 % excess 1,000.00 + fee 5.00
+        self.assertEqual([("1400", 5100000, "ABC"), ("1200", -4999500, None), ("1010", -100500, None)], lines_of(rt, "collat:B-000001:fill:F-000001"))
         lot = sc.one(rt, "SELECT * FROM lots WHERE account_id=? AND instrument_id='ABC'", (US_EXCHANGE,))
         self.assertEqual(("SHORT", 1000, 1000, "50", 5000000), (lot["side"], lot["qty_open"], lot["qty_remaining"], lot["unit_cost"], lot["cost_c"]))
+        # the settlement row carries what the proceeds leave (49,995.00 - 49,995.00 = 0): SETTLED at once by the collateral entry, so T+1
+        # never moves the proceeds a second time
         st = sc.one(rt, "SELECT * FROM settlements WHERE fill_id='F-000001'")
-        self.assertEqual(("2026-10-19", 4999500, "1200", "PENDING"), (st["due_date"], st["amount_c"], st["gl"], st["status"]))
+        coll_entry = sc.one(rt, "SELECT entry_id FROM journal_entries WHERE idem_key='collat:B-000001:fill:F-000001'")["entry_id"]
+        self.assertEqual(("2026-10-19", 0, "1200", "SETTLED", coll_entry), (st["due_date"], st["amount_c"], st["gl"], st["status"], st["entry_id"]))
         b = borrow_row(rt, "B-000001")
         self.assertEqual((1000, 0, "0.003", "0.0337", "GC", 5100000, "OPEN", "O-000001", None, "2026-10-16"),
                          (b["qty"], b["qty_returned"], b["fee_rate"], b["rebate_rate"], b["tier"], b["collateral_c"], b["status"], b["order_id"], b["reason"], b["opened_date"]))
-        # --- reads Fri: settled 149,000.00; receivable 49,995.00; held at lender 51,000.00; available (settle Mon) 198,995.00;
-        # position -1,000; MV -50,000.00; unrealised 0; NAV = 149,000 + 49,995 + 51,000 - 50,000 = 199,995.00 = 200,000 - 5
+        # --- reads Fri: settled 200,000 - 1,005 = 198,995.00; receivable 0 (the proceeds went to the lender); held at lender 51,000.00;
+        # available (settle Mon) 198,995.00; position -1,000; MV -50,000.00; unrealised 0; NAV = 198,995 + 0 + 51,000 - 50,000 = 199,995.00 = 200,000 - 5
         rt.clock.set("2026-10-16T10:01:00-04:00")
         cash = rt.accounting.cash(US_EXCHANGE)["USD"]
-        self.assertEqual((14900000, 4999500, 5100000, 0), (cash.settled_c, cash.receivable_c, cash.held_at_lender_c, cash.reserved_c))
+        self.assertEqual((19899500, 0, 5100000, 0), (cash.settled_c, cash.receivable_c, cash.held_at_lender_c, cash.reserved_c))
         self.assertEqual(19899500, rt.accounting.available(US_EXCHANGE, "USD", date(2026, 10, 19)))
         pos = rt.accounting.position(US_EXCHANGE, "ABC")
         self.assertEqual((-1000, -5000000, 0), (pos.qty, pos.mv_c, pos.unrealised_c))
         self.assertEqual((["B-000001"], 1000, 5100000, "GC"), (pos.borrow["borrow_ids"], pos.borrow["qty"], pos.borrow["collateral_c"], pos.borrow["tier"]))
         self.assertEqual(19999500, rt.accounting.nav(US_EXCHANGE).nav_c)
         assert_integrity(self, rt, "full")                                                      # L12 (1,000 >= 1,000) and L13 hold
-        # --- Mon 10-19 00:35: settlement Dr 1010 / Cr 1200 49,995.00 -> settled 198,995.00
+        # --- Mon 10-19 00:35: nothing is due (S-000001 was settled at 0 by the collateral entry): no double count, settled stays 198,995.00
         rt.clock.set("2026-10-19T00:35:00-04:00")
-        self.assertEqual(["S-000001"], self.settle("2026-10-19"))
+        self.assertEqual([], self.settle("2026-10-19"))
         self.assertEqual((19899500, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "1200")))
         # accruals for the nights of Fri 16, Sat 17, Sun 18 (mark = Friday's CLOSE 50.00 for all three):
         # fee base 1,000 x 50.00 = 50,000.00 at 0.30 % ACT/360 cumulative: n=1 to_c(0.416667) = 0.42 -> 0.42; n=2 to_c(0.833333) = 0.83 -> 0.41;
@@ -284,27 +291,133 @@ class ShortSaleTests(unittest.TestCase):
         self.assertEqual(0, len(sc.q(rt, "SELECT 1 FROM attention WHERE resolved_ts IS NULL AND severity IN ('WARN','ERROR')")))
         assert_integrity(self, rt, "full")                                                      # L12 holds with no short and no borrow
 
+    # ---- SUITES-R1-02 (1.0.4 fixer): a 1.0.3-shape ORDER borrow (its whole 102 % posted at the borrow, collat:{b}:open - the owner's
+    # live STT B-000001 / C B-000002) beside a 1.0.4 short on the same name: partial cover, COLLATERAL_MARK, full cover; L13 at each step
+    def test_legacy_order_borrow_collateral_at_borrow_beside_a_new_rule_short(self):
+        rt = self.start()
+        setup_abc(rt)                                                                           # settled 200,000.00; ABC last 50.00
+
+        def legacy_open(ctx, payload):
+            """What 1.0.3's open_borrow posted for a short ORDER at submit: the whole 102 % at the locate mark, Dr 1400 / Cr 1010,
+            idem collat:{borrow}:open, and borrows.collateral_c = it (the 1.0.4 code keeps such a borrow on that rule)."""
+            bid, coll = payload["borrow_id"], int(payload["collateral_c"])
+            eid = ctx.post(Entry("COLLATERAL", f"borrow 1,000 ABC (1.0.3 rule): collateral 102 % at the borrow = {coll}",
+                                 [dr(US_EXCHANGE, "1400", "USD", coll, instrument_id="ABC", memo=bid), cr(US_EXCHANGE, "1010", "USD", coll, memo=f"cash collateral for {bid}")],
+                                 f"collat:{bid}:open", ref_type="borrow", ref_id=bid))
+            ctx.conn.execute("UPDATE borrows SET collateral_c=? WHERE borrow_id=?", (coll, bid))
+            return {"entry_id": eid}
+        rt.bus.register("test.legacy_open_collateral", legacy_open)
+
+        def l13():
+            with rt.db.reader() as conn:
+                held = conn.execute("SELECT COALESCE(SUM(collateral_c), 0) s FROM borrows WHERE status='OPEN'").fetchone()["s"]
+            return bal(rt, US_EXCHANGE, "1400", "USD", "ABC"), held
+
+        # Fri 10:00: SELL_SHORT 1,000 ABC LIMIT 55.00 rests (last 50.00); B-000001 is located for O-000001; the 1.0.3 rule then posted
+        # to_c(1.02 x 1,000 x 50.00) = 51,000.00 at the borrow from settled cash: 200,000.00 - 51,000.00 = 149,000.00
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="SELL_SHORT", qty=1000, order_type="LIMIT", limit_px="55.00", tif="DAY")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("WORKING", "B-000001"), (r.body["order"]["status"], r.body["borrow"]["borrow_id"]))
+        r = execute(rt, "test.legacy_open_collateral", {"borrow_id": "B-000001", "collateral_c": 5100000})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(((5100000, 5100000), 14900000), (l13(), bal(rt, US_EXCHANGE, "1010")))
+        with rt.db.reader() as conn:
+            self.assertTrue(lending.collateral_at_borrow(conn, sc.one(rt, "SELECT * FROM borrows WHERE borrow_id='B-000001'")))
+        # Fri 10:02: the print 55.00 fills the limit: 1,000 @ 55.00, gross 55,000.00, fee 5.00; the borrow already holds its collateral, so the
+        # fill posts none (no collat:B-000001:fill:*) and the proceeds 54,995.00 stay receivable T+1 (Mon 10-19)
+        rt.clock.set("2026-10-16T10:02:00-04:00")
+        now = rt.clock.epoch()
+        rt.marks.set("ABC", "55.00")
+        self.assertEqual(1, sc.matcher_for(rt, sc.FakeCache({"ABC": sc.rec("ABC", "55.00", now - 30, now, bar=(now - 60, 100000))})).on_quotes(["ABC"]))
+        self.assertEqual([("1200", 5499500, None), ("5000", 500, "ABC"), ("2600", -5500000, "ABC")], lines_of(rt, "fill:F-000001"))
+        self.assertEqual([], lines_of(rt, "collat:B-000001:fill:F-000001"))
+        self.assertEqual((5499500, "PENDING", "2026-10-19"), tuple(sc.one(rt, "SELECT amount_c, status, due_date FROM settlements WHERE fill_id='F-000001'").values()))
+        self.assertEqual((5100000, 5100000), l13())
+        assert_integrity(self, rt, "full")
+        # Fri 10:03: a 1.0.4 short on the same name, SELL_SHORT 500 MARKET @ 55.00 (B-000002): gross 27,500.00, fee 2.50, proceeds 27,497.50;
+        # collateral at the fill to_c(1.02 x 500 x 55.00) = 28,050.00 = proceeds 27,497.50 + cash 552.50 -> settled 149,000.00 - 552.50 = 148,447.50
+        rt.clock.set("2026-10-16T10:03:00-04:00")
+        quote(rt, "ABC", "55.00", 100000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="SELL_SHORT", qty=500, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("FILLED", "B-000002", "F-000002"), (r.body["order"]["status"], r.body["borrow"]["borrow_id"], r.body["fills"][0]["fill_id"]))
+        self.assertEqual([("1400", 2805000, "ABC"), ("1200", -2749750, None), ("1010", -55250, None)], lines_of(rt, "collat:B-000002:fill:F-000002"))
+        self.assertEqual((7905000, 7905000), l13())                                             # 51,000.00 + 28,050.00
+        self.assertEqual(14844750, bal(rt, US_EXCHANGE, "1010"))
+        with rt.db.reader() as conn:
+            # the 1.0.3 borrow carries its whole outstanding 1,000; the new one the rest of the 1,500 short
+            self.assertEqual({"B-000001": 1000, "B-000002": 500}, lending.collateral_qty_map(conn, US_EXCHANGE, "ABC"))
+        assert_integrity(self, rt, "full")
+        # Fri 10:05: BUY_TO_COVER 600 @ 54.00: FIFO 600 of the F-000001 lot at 55.00 -> realised 33,000 - 32,400 = +600.00, fee 3.00, payable 32,403.00.
+        # return_for_cover: borrowed 1,500 - short 900 = 600 back from the oldest borrow B-000001 (its order ended); a borrow collateralised at the
+        # borrow returns pro rata of its outstanding: to_c(51,000.00 x 600 / 1,000) = 30,600.00 (Dr 1010 / Cr 1400); 20,400.00 stays for its 400
+        rt.clock.set("2026-10-16T10:05:00-04:00")
+        quote(rt, "ABC", "54.00", 100000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="BUY_TO_COVER", qty=600, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        fill = r.body["fills"][0]
+        self.assertEqual(("F-000003", 3240000, 300, 60000, 3300000), (fill["fill_id"], fill["gross_c"], fill["fee_c"], fill["realised_c"], fill["cost_relieved_c"]))
+        self.assertEqual([("1010", 3060000, None), ("1400", -3060000, "ABC")], lines_of(rt, "collat:B-000001:return:F-000003"))
+        self.assertEqual([], lines_of(rt, "collat:B-000002:return:F-000003"))                   # the new-rule borrow still backs its 500 sold
+        self.assertEqual((("OPEN", 600, 2040000), ("OPEN", 0, 2805000)),
+                         tuple((b["status"], b["qty_returned"], b["collateral_c"]) for b in sc.q(rt, "SELECT * FROM borrows ORDER BY borrow_id")))
+        self.assertEqual((4845000, 4845000), l13())                                             # 20,400.00 + 28,050.00
+        self.assertEqual(17904750, bal(rt, US_EXCHANGE, "1010"))                                 # 148,447.50 + 30,600.00
+        with rt.db.reader() as conn:
+            self.assertEqual({"B-000001": 400, "B-000002": 500}, lending.collateral_qty_map(conn, US_EXCHANGE, "ABC"))
+        assert_integrity(self, rt, "full")
+        # Fri 17:10 COLLATERAL_MARK at the CLOSE 56.00: B-000001 (1.0.3 rule) on its whole outstanding 400: to_c(1.02 x 400 x 56.00) = 22,848.00,
+        # call +2,448.00; B-000002 on the 500 it backs: to_c(1.02 x 500 x 56.00) = 28,560.00, call +510.00; both paid from settled cash
+        rt.clock.set("2026-10-16T17:10:00-04:00")
+        for bid, delta, req in (("B-000001", 244800, 2284800), ("B-000002", 51000, 2856000)):
+            m = execute(rt, "credit.collateral_mark", {"borrow_id": bid, "mark_date": "2026-10-16", "mark": "56.00"}, request_id=f"job:cmark:{bid}:2026-10-16", actor="lifecycle")
+            self.assertTrue(m.ok, m.body)
+            self.assertEqual((delta, req, "own"), (m.body["delta_c"], m.body["required_c"], m.body["funding"]["source"]))
+            self.assertEqual([("1400", delta, "ABC"), ("1010", -delta, None)], lines_of(rt, f"cmark:{bid}:2026-10-16"))
+        self.assertEqual((5140800, 5140800), l13())                                             # 22,848.00 + 28,560.00
+        self.assertEqual(17608950, bal(rt, US_EXCHANGE, "1010"))                                 # 179,047.50 - 2,448.00 - 510.00
+        assert_integrity(self, rt, "full")
+        # Mon 10-19 00:35: F-000001's proceeds 54,995.00 arrive and F-000003's payable 32,403.00 leaves: 176,089.50 + 54,995.00 - 32,403.00 = 198,681.50
+        rt.clock.set("2026-10-19T00:35:00-04:00")
+        self.assertEqual(2, len(self.settle("2026-10-19")))
+        self.assertEqual(19868150, bal(rt, US_EXCHANGE, "1010"))
+        # Mon 10:00: BUY_TO_COVER 900 @ 56.00: FIFO 400 + 500 at 55.00 -> realised 49,500 - 50,400 = -900.00, fee 4.50, payable 50,404.50;
+        # both borrows close and give back everything they hold: 22,848.00 + 28,560.00 = 51,408.00 -> settled 250,089.50
+        rt.clock.set("2026-10-19T10:00:00-04:00")
+        quote(rt, "ABC", "56.00", 100000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="BUY_TO_COVER", qty=900, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        fill = r.body["fills"][0]
+        self.assertEqual((5040000, 450, -90000), (fill["gross_c"], fill["fee_c"], fill["realised_c"]))
+        self.assertEqual([("1010", 2284800, None), ("1400", -2284800, "ABC")], lines_of(rt, f"collat:B-000001:return:{fill['fill_id']}"))
+        self.assertEqual([("1010", 2856000, None), ("1400", -2856000, "ABC")], lines_of(rt, f"collat:B-000002:return:{fill['fill_id']}"))
+        self.assertEqual([("CLOSED", 1000, 0), ("CLOSED", 500, 0)], [(b["status"], b["qty_returned"], b["collateral_c"]) for b in sc.q(rt, "SELECT * FROM borrows ORDER BY borrow_id")])
+        self.assertEqual(((0, 0), 25008950, 5040450), (l13(), bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "2100")))
+        # NAV flat = 250,089.50 - 50,404.50 = 199,685.00 = 200,000 + realised (600.00 - 900.00) - fees (5.00 + 2.50 + 3.00 + 4.50)
+        self.assertEqual(19968500, rt.accounting.nav(US_EXCHANGE).nav_c)
+        self.assertIsNone(rt.accounting.position(US_EXCHANGE, "ABC"))
+        assert_integrity(self, rt, "full")
+
     # ---- D4: collateral marks both ways, the call paid by a Treasury sweep ---------------------------------------------------------
     def test_d4_collateral_marks_both_ways(self):
         rt = self.start()
         setup_abc(rt)
         short_abc(self, rt)
-        # the account's cash is swept out first (what SWEEP_OUT would do): Fri settled 149,000.00 -> Treasury; available at the Fri
-        # accounting day = settled 149,000 (the receivable is due Mon) so the transfer is allowed
-        r = execute(rt, "treasury.transfer", {"from_account": US_EXCHANGE, "to_account": TREASURY, "currency": "USD", "amount_c": 14900000})
+        # the account's cash is swept out first (what SWEEP_OUT would do): Fri settled 200,000 - 1,005 (the cash part of the collateral)
+        # = 198,995.00 -> Treasury; nothing is receivable (the sale proceeds went to the lender at the fill)
+        r = execute(rt, "treasury.transfer", {"from_account": US_EXCHANGE, "to_account": TREASURY, "currency": "USD", "amount_c": 19899500})
         self.assertTrue(r.ok, r.body)
         self.assertEqual(0, bal(rt, US_EXCHANGE, "1010"))
-        # Mon 00:35: settlement +49,995.00; the three weekend nights accrue per §19.5 (0.42 / 0.41 / 0.42 and 4.77 / 4.78 / 4.77)
+        # Mon 00:35: nothing settles (S-000001 was settled at 0 by the collateral entry); the three weekend nights accrue per §19.5
+        # (0.42 / 0.41 / 0.42 and 4.77 / 4.78 / 4.77)
         rt.clock.set("2026-10-19T00:35:00-04:00")
-        self.settle("2026-10-19")
+        self.assertEqual([], self.settle("2026-10-19"))
         close_mark(rt, "ABC", "2026-10-16", "50.00")
         done = accrue_due(rt, "2026-10-18")
         self.assertEqual([(42, 477), (41, 478), (42, 477)], [(body["fee_c"], body["rebate_c"]) for _, _, body in done])
         self.assertEqual((125, 1432), (bal(rt, US_EXCHANGE, "2310", "USD", "ABC"), bal(rt, US_EXCHANGE, "1410", "USD", "ABC")))
-        # sweep the settled proceeds out as well -> the account holds no cash before the call
-        r = execute(rt, "treasury.transfer", {"from_account": US_EXCHANGE, "to_account": TREASURY, "currency": "USD", "amount_c": 4999500})
-        self.assertTrue(r.ok, r.body)
-        self.assertEqual(0, bal(rt, US_EXCHANGE, "1010"))
+        # no proceeds ever reach the account (they are the lender's collateral), so it holds no cash before the call
+        self.assertEqual((0, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "1200")))
         # +10 %: 50.00 -> 55.00: required to_c(1.02 x 1,000 x 55) = 56,100.00; call +5,100.00 = 1.02 x 1,000 x 5.00, paid by ONE sweep of
         # exactly 5,100.00 linked to the borrow; settled stays 0; 1400 = collateral_c = 56,100.00
         rt.clock.set("2026-10-19T17:10:00-04:00")
@@ -364,8 +477,10 @@ class ShortSaleTests(unittest.TestCase):
         self.assertTrue(any("scaled down to 800" in w for w in r.body["warnings"]), r.body["warnings"])
         pb = r.body["preview"]["borrow"]
         self.assertEqual((1000, 800, "T3", "0.25", "0"), (pb["qty"], pb["qty_available"], pb["tier"], pb["fee_rate"], pb["rebate_rate"]))
-        # collateral to_c(1.02 x 800 x 10.00) = 8,160.00; fill 800 @ 10.00: gross 8,000.00, fee max(800 x 0.005 = 4.00, 1.00) = 4.00
-        self.assertEqual([("1400", 816000, "T3X"), ("1010", -816000, None)], lines_of(rt, "collat:B-000001:open"))
+        # fill 800 @ 10.00: gross 8,000.00, fee max(800 x 0.005 = 4.00, 1.00) = 4.00; nothing at the borrow; the fill posts the collateral
+        # to_c(1.02 x 800 x 10.00) = 8,160.00 = the proceeds 8,000 - 4 = 7,996.00 + cash 164.00 (2 % excess 160.00 + fee 4.00)
+        self.assertEqual([], lines_of(rt, "collat:B-000001:open"))
+        self.assertEqual([("1400", 816000, "T3X"), ("1200", -799600, None), ("1010", -16400, None)], lines_of(rt, "collat:B-000001:fill:F-000001"))
         self.assertEqual((800000, 400), (r.body["fills"][0]["gross_c"], r.body["fills"][0]["fee_c"]))
         b = borrow_row(rt, "B-000001")
         self.assertEqual((800, "T3", "0.25", "0", 816000, None), (b["qty"], b["tier"], b["fee_rate"], b["rebate_rate"], b["collateral_c"], b["reason"]))
@@ -382,6 +497,83 @@ class ShortSaleTests(unittest.TestCase):
         done = accrue_due(rt, "2026-10-16")
         self.assertEqual([("B-000001", "2026-10-16", 556, 0)], [(b, d, body["fee_c"], body["rebate_c"]) for b, d, body in done])
         self.assertEqual([], lines_of(rt, "accr:rebate:B-000001:2026-10-16"))
+        assert_integrity(self, rt, "full")
+
+    # ---- SHORT_COLLATERAL per fill: partial fills, a cover while the order still works, a mark, cleanup of the unsold rest ------------
+    def test_partial_fills_cover_while_working_mark_cleanup(self):
+        rt = self.start()
+        setup_abc(rt)
+        # Fri 10:00: SELL_SHORT 1,000 ABC MARKET on a 3,000-share bar -> cap 10 % = 300: PARTIAL 300 @ 50.00, fee max(300 x 0.005 = 1.50, 1.00) = 1.50;
+        # the collateral of the 300 sold: to_c(1.02 x 300 x 50.00) = 15,300.00 = proceeds 15,000 - 1.50 = 14,998.50 + cash 301.50 (2 % 300.00 + fee 1.50)
+        quote(rt, "ABC", "50.00", 3000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="SELL_SHORT", qty=1000, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("PARTIAL", 300, "B-000001"), (r.body["order"]["status"], r.body["order"]["filled_qty"], r.body["borrow"]["borrow_id"]))
+        self.assertEqual([], lines_of(rt, "collat:B-000001:open"))
+        self.assertEqual([("1400", 1530000, "ABC"), ("1200", -1499850, None), ("1010", -30150, None)], lines_of(rt, "collat:B-000001:fill:F-000001"))
+        # Fri 10:02: the next print 52.00 on a 3,000-share bar fills 300 more: to_c(1.02 x 300 x 52.00) = 15,912.00 = proceeds 15,600 - 1.50 = 15,598.50 + cash 313.50
+        rt.clock.set("2026-10-16T10:02:00-04:00")
+        now = rt.clock.epoch()
+        rt.marks.set("ABC", "52.00")
+        self.assertEqual(1, sc.matcher_for(rt, sc.FakeCache({"ABC": sc.rec("ABC", "52.00", now - 30, now, bar=(now - 60, 3000))})).on_quotes(["ABC"]))
+        self.assertEqual([("1400", 1591200, "ABC"), ("1200", -1559850, None), ("1010", -31350, None)], lines_of(rt, "collat:B-000001:fill:F-000002"))
+        # the borrow holds 15,300 + 15,912 = 31,212.00 for the 600 sold while 400 still pend (reason stays); settled 200,000 - 301.50 - 313.50 = 199,385.00;
+        # both fills' settlement rows are SETTLED at 0, nothing is receivable
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual((1000, 0, 3121200, lending.REASON_PENDING), (b["qty"], b["qty_returned"], b["collateral_c"], b["reason"]))
+        self.assertEqual((19938500, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "1200")))
+        self.assertEqual([(0, "SETTLED"), (0, "SETTLED")], [(s["amount_c"], s["status"]) for s in sc.q(rt, "SELECT amount_c, status FROM settlements ORDER BY settle_id")])
+        with rt.db.reader() as conn:
+            self.assertEqual({"B-000001": 600}, lending.collateral_qty_map(conn, US_EXCHANGE, "ABC"))     # min(1,000 - 400 pending, short 600)
+        assert_integrity(self, rt, "full")
+        # Fri 10:05: BUY_TO_COVER 200 @ 51.00 while 400 still pend: FIFO 200 of the 50.00 lot -> proceeds 10,000 - cost 10,200 = -200.00, fee 1.00.
+        # return_for_cover: 1,000 borrowed - 400 short - 400 pending = 200 back, all sold shares: collateralised min(1,000 - 400, 600) = 600 before and
+        # min(800 - 400, 400) = 400 after -> to_c(31,212 x 200 / 600) = 10,404.00 back (Dr 1010 / Cr 1400); 20,808.00 stays for the 400 still short
+        rt.clock.set("2026-10-16T10:05:00-04:00")
+        quote(rt, "ABC", "51.00", 100000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="BUY_TO_COVER", qty=200, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        fill = r.body["fills"][0]
+        self.assertEqual(("F-000003", 1020000, 100, -20000), (fill["fill_id"], fill["gross_c"], fill["fee_c"], fill["realised_c"]))
+        self.assertEqual([("1010", 1040400, None), ("1400", -1040400, "ABC")], lines_of(rt, "collat:B-000001:return:F-000003"))
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual(("OPEN", 200, 2080800, lending.REASON_PENDING), (b["status"], b["qty_returned"], b["collateral_c"], b["reason"]))
+        assert_integrity(self, rt, "full")
+        # Fri 17:10 mark at 50.00: collateralised min(800 - 400 pending, 400 short) = 400 -> to_c(1.02 x 400 x 50.00) = 20,400.00; 20,808.00 held -> 408.00 back
+        rt.clock.set("2026-10-16T17:10:00-04:00")
+        r = execute(rt, "credit.collateral_mark", {"borrow_id": "B-000001", "mark_date": "2026-10-16", "mark": "50.00"}, actor="lifecycle")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual((-40800, 2040000), (r.body["delta_c"], r.body["required_c"]))
+        self.assertEqual([("1010", 40800, None), ("1400", -40800, "ABC")], lines_of(rt, "cmark:B-000001:2026-10-16"))
+        # cancel the 400 still working (600 filled: the cancel returns nothing); BORROW_CLEANUP finds 800 - 400 short = 400 free, never sold: no collateral
+        # moves (collateralised min(800, 400) = 400 before, min(400, 400) = 400 after) and no entry is posted; the order ended, so the reason clears
+        r = execute(rt, "order.cancel", {"order_id": "O-000001"})
+        self.assertTrue(r.ok, r.body)
+        n0 = n_entries(rt)
+        r = execute(rt, "credit.borrow_cleanup", {"date": "2026-10-16", "borrow_id": "B-000001"}, request_id="job:cleanup:B-000001:2026-10-16", actor="lifecycle")
+        self.assertTrue(r.ok, r.body)
+        ret = r.body["returns"][0]
+        self.assertEqual((400, 0, False, 400), (ret["qty"], ret["collateral_returned_c"], ret["closed"], ret["outstanding"]))
+        self.assertEqual(n0, n_entries(rt))
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual((600, 2040000, None), (b["qty_returned"], b["collateral_c"], b["reason"]))
+        assert_integrity(self, rt, "full")
+        # Mon 10-19 10:00: BUY_TO_COVER the last 400 @ 50.00: FIFO 100 of the 50.00 lot + 300 of the 52.00 lot = proceeds 5,000 + 15,600 = 20,600.00 - cost
+        # 20,000.00 = +600.00, fee 2.00; the borrow closes and its 20,400.00 comes back
+        rt.clock.set("2026-10-19T10:00:00-04:00")
+        quote(rt, "ABC", "50.00", 100000)
+        r = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="BUY_TO_COVER", qty=400, order_type="MARKET")
+        self.assertTrue(r.ok, r.body)
+        fill = r.body["fills"][0]
+        self.assertEqual((2000000, 200, 60000), (fill["gross_c"], fill["fee_c"], fill["realised_c"]))
+        self.assertEqual([("1010", 2040000, None), ("1400", -2040000, "ABC")], lines_of(rt, f"collat:B-000001:return:{fill['fill_id']}"))
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual(("CLOSED", 1000, 0), (b["status"], b["qty_returned"], b["collateral_c"]))
+        # settled 199,385.00 + 10,404.00 + 408.00 + 20,400.00 = 230,597.00; payables 10,201.00 + 20,002.00 = 30,203.00; NAV 200,394.00 = 200,000
+        # + realised (-200.00 + 600.00) - fees (1.50 + 1.50 + 1.00 + 2.00); every collateral cent posted (31,212.00) came back
+        self.assertEqual((23059700, 3020300, 0, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "2100"), bal(rt, US_EXCHANGE, "1200"),
+                                                    bal(rt, US_EXCHANGE, "1400", "USD", "ABC")))
+        self.assertEqual(20039400, rt.accounting.nav(US_EXCHANGE).nav_c)
         assert_integrity(self, rt, "full")
 
 

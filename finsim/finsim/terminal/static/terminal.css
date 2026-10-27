@@ -66,12 +66,21 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 #banner.warn { background: #3a2e12; color: #f6e2b0; border-bottom: 1px solid #7a5a1a; }
 #banner.info { background: #12243a; color: #d3e4f7; border-bottom: 1px solid #2a4a7a; }
 #attention { grid-column: 1 / -1; grid-row: 3; max-height: 112px; overflow-y: auto; background: var(--panel); border-bottom: 1px solid var(--line); }
+#attention.expanded { max-height: 45vh; }
 #attention:empty { display: none; }
+#banner div + div { margin-top: 2px; }
 #sidebar { grid-row: 4; grid-column: 1; background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; }
 #main { grid-row: 4; grid-column: 2; overflow: auto; padding: 12px 14px; min-width: 0; }
 #dock { grid-row: 4; grid-column: 3; background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
 .dock-head { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+#dock-account { text-transform: none; letter-spacing: 0; color: var(--text); }
 #dock-body { padding: 10px; }
+.dock-hint { margin: 10px 10px 0; padding: 6px 8px; border: 1px dashed var(--line); border-radius: 4px; color: var(--fg3); font-family: var(--mono); font-size: 11px; }
+/* the page-status line (APIUI-10): a poller's HTTP error said on the page, with Retry */
+#page-status { margin: 0 0 8px; padding: 5px 10px; border-left: 3px solid var(--down); background: rgba(255,92,92,.07); font-family: var(--mono); font-size: 11.5px; color: var(--text); }
+#page-status .pstat b { color: var(--down); font-weight: 600; }
+#page-status .pstat + .pstat { margin-top: 3px; }
+#page-status .btn { margin-left: 6px; }
 @media (max-width: 1200px) { #app { grid-template-columns: 200px minmax(0, 1fr) 340px; } #app.nodock { grid-template-columns: 200px minmax(0, 1fr); } }
 
 /* ---- header --------------------------------------------------------------------------------------------------- */
@@ -93,6 +102,7 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 .acct-card .ac b { font-weight: 500; color: var(--text); }
 .acct-card .ac i { font-style: normal; color: var(--fg3); font-size: 9.5px; letter-spacing: .5px; text-transform: uppercase; }
 .acct-card .ac small { color: var(--fg3); font-size: 9.5px; }
+.acct-card .ac-err { color: var(--down); }
 .idot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--up); border: 1px solid transparent; vertical-align: middle; }
 .idot.bad { background: var(--down); }
 .idot.unknown { background: transparent; border-color: var(--fg3); }
@@ -130,8 +140,11 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 .nav-item.dim { color: var(--fg3); cursor: default; }
 .nav-item.dim:hover { color: var(--fg3); background: transparent; }
 .nav-sub { display: block; padding: 0 12px 4px 14px; color: var(--fg3); font-size: 10px; font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-sub.wrap { white-space: normal; overflow: visible; line-height: 1.35; }
+.nav-sub .nsp { white-space: nowrap; }
 .nav-section { padding: 10px 12px 3px; color: var(--fg3); font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; font-family: var(--mono); }
-.nav-why { padding: 0 12px 6px 14px; color: var(--fg3); font-size: 10px; line-height: 1.3; white-space: normal; }
+/* one short reason under a dimmed row, indented like .nav-sub (SHELL-17 / PO-22 / BM-32: it was inline and wrapped to x=0) */
+.nav-why { display: block; padding: 0 12px 6px 14px; color: var(--fg3); font-size: 10px; font-family: var(--mono); line-height: 1.3; white-space: normal; }
 .nav-badge { display: inline-block; min-width: 14px; padding: 0 4px; border-radius: 8px; background: var(--down); color: #fff; font-size: 9.5px; text-align: center; margin-left: 4px; }
 
 /* ---- freshness (s17.3): nothing shows a bare number ------------------------------------------------------------- */
@@ -168,6 +181,10 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 .page-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .page-head .sub { color: var(--fg3); font-family: var(--mono); font-size: 11px; }
 .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 10px; flex-wrap: wrap; }
+/* the account tab bar on every account page (OA-10): Markets / Positions / Orders / Cash & financing / Transactions */
+.acct-tabs { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin: -4px 0 10px; }
+.acct-tabs .acct-tabs-name { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); margin-right: 10px; white-space: nowrap; }
+.acct-tabs a.tab { display: inline-block; text-decoration: none; }
 .tab { padding: 5px 10px; color: var(--muted); font-family: var(--mono); font-size: 11.5px; border-bottom: 2px solid transparent; cursor: pointer; background: none; border-top: 0; border-left: 0; border-right: 0; }
 .tab:hover { color: var(--accent); text-decoration: none; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -181,9 +198,11 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 .tile .s { color: var(--muted); font-size: 10.5px; margin-top: 1px; font-family: var(--mono); }
 .tile.click { cursor: pointer; } .tile.click:hover { border-color: var(--accent); }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.grid3 { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 1100px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
-.kv { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font-family: var(--mono); font-size: 11.5px; }
+/* label | value pairs: the value column is only as wide as its widest value (it used to stretch to the panel width, so a
+   value stood ~1,000 px from its label - SHELL-21); long values still wrap */
+.kv { display: grid; grid-template-columns: max-content minmax(0, max-content); justify-content: start; gap: 2px 14px; font-family: var(--mono); font-size: 11.5px; }
 .kv div:nth-child(odd) { color: var(--fg3); }
 .kv div:nth-child(even) { text-align: right; }
 .form { display: grid; grid-template-columns: 130px 1fr; gap: 6px 10px; align-items: center; }
@@ -232,7 +251,7 @@ td .act { margin-left: 4px; }
 /* ---- chart / chain ---------------------------------------------------------------------------------------------- */
 canvas.chart { width: 100%; height: 220px; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; }
 .chart-wrap { position: relative; margin-bottom: 10px; }
-.chart-note { position: absolute; left: 8px; top: 6px; font-family: var(--mono); font-size: 10px; color: var(--fg3); }
+.chart-note { position: static; margin: 0 0 3px 2px; font-family: var(--mono); font-size: 10px; color: var(--fg3); }
 table.chain th { text-align: center; }
 table.chain td.strike { text-align: center; color: var(--accent); font-weight: 600; background: rgba(255,255,255,.015); }
 table.chain tr.atm td { background: rgba(255, 200, 80, 0.08); }
@@ -247,7 +266,9 @@ table.chain td.optq.bid { color: var(--up); } table.chain td.optq.ask { color: v
 .modal.wide { width: min(900px, 94vw); }
 .modal h1 { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 10px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
-.toast { position: fixed; bottom: 16px; right: 16px; background: var(--panel-2); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; z-index: 20; max-width: 480px; box-shadow: var(--shadow); }
+/* toasts stack bottom-right (at most four; core.js cuts long text - the whole message is the hover text) */
+#toast-root { position: fixed; bottom: 16px; right: 16px; z-index: 20; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
+.toast { background: var(--panel-2); border: 1px solid var(--accent); padding: 8px 12px; border-radius: 4px; font-family: var(--mono); font-size: 11.5px; max-width: 480px; box-shadow: var(--shadow); pointer-events: auto; line-height: 1.35; }
 .toast.err { border-color: var(--down); color: var(--down); }
 .toast.ok { border-color: var(--up); }
 #help { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 30; display: flex; align-items: center; justify-content: center; }
@@ -255,12 +276,47 @@ table.chain td.optq.bid { color: var(--up); } table.chain td.optq.ask { color: v
 #help .keys .kv { grid-template-columns: max-content 1fr; }
 #help .keys .kv div:nth-child(even) { text-align: left; }
 kbd { font-family: var(--mono); font-size: 10.5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 5px; color: var(--text); background: var(--panel-2); }
+/* the keyboard map (T.help.renderKeys: the ? overlay and Settings > General): compact key | words tables, two side by side when wide */
+.keymap { columns: 2 340px; column-gap: 24px; }
+.keymap .keys-table { width: 100%; break-inside: avoid; margin-bottom: 10px; font-family: var(--sans); font-size: 11.5px; }
+.keymap .keys-table caption { text-align: left; color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 0 4px; }
+.keymap .keys-table td { height: auto; padding: 2px 6px 2px 0; text-align: left; white-space: normal; vertical-align: top; font-variant-numeric: normal; }
+.keymap .keys-table td.k { white-space: nowrap; width: 1%; }
+.keymap .ksep { color: var(--fg3); font-family: var(--mono); font-size: 10.5px; }
+.keymap .hint { column-span: all; }
+/* the onboarding modal's side-by-side fee schedules (SHELL-16 / PO-15) */
+.pb-sched-wrap { overflow-x: auto; }
+table.pb-sched td, table.pb-sched th { height: 24px; padding: 0 6px; }
+table.pb-sched tr.is-open td { color: var(--fg3); }
+table.pb-sched tr.sel td { box-shadow: none; }
+table.pb-sched tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+#help .keys h1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+#help .keys h1 .btn { margin-left: 6px; }
 
 /* ---- settings --------------------------------------------------------------------------------------------------- */
 .settings-nav { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 10px; }
 .ds-row { display: grid; grid-template-columns: 110px 60px 1fr auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px; }
 .ds-row .st { font-weight: 600; } .ds-row .st.ok { color: var(--up); } .ds-row .st.bad { color: var(--down); } .ds-row .st.na { color: var(--fg3); }
 .legacy { color: var(--fg3); font-size: 11px; font-family: var(--mono); }
+/* Settings > Keyboard (the owner's keys, 2026-10-21) and the key map captions: an action with no key reads 'no key' */
+.kb-none { color: var(--fg3); font-family: var(--mono); font-size: 10.5px; }
+.keymap .keys-table caption .kw { text-transform: none; letter-spacing: 0; color: var(--fg3); }
+.kb-bar { margin: 6px 0 4px; }
+table.kb-table { table-layout: fixed; font-family: var(--sans); font-size: 11.5px; }
+table.kb-table th { font-family: var(--mono); }
+table.kb-table td { height: auto; min-height: 26px; padding: 3px 8px; white-space: normal; text-align: left; font-variant-numeric: normal; overflow-wrap: anywhere; }
+table.kb-table td.note { color: var(--fg2); font-size: 11px; }
+table.kb-table td.acts { white-space: nowrap; overflow-wrap: normal; }
+table.kb-table td.acts .btn + .btn { margin-left: 4px; }
+table.kb-table tr.kb-changed td.key kbd { border-color: var(--accent); color: var(--accent); }
+.kb-capture { margin: 12px 0 6px; padding: 18px 12px; border: 1px dashed var(--accent); border-radius: 4px; text-align: center; font-family: var(--mono); font-size: 15px; color: var(--text); }
+.kb-capture kbd { font-size: 15px; padding: 2px 10px; }
+.kb-msg { min-height: 16px; margin: 6px 0; font-family: var(--mono); font-size: 11.5px; color: var(--accent); white-space: normal; }
+.kb-ask .row { margin-top: 6px; }
+.kb-ask .btn { white-space: normal; text-align: left; }
+.kb-test { margin: 8px 0; padding: 14px 12px; border: 1px dashed var(--line); border-radius: 4px; text-align: center; font-family: var(--mono); color: var(--fg2); cursor: pointer; }
+.kb-test.on { border-color: var(--accent); color: var(--text); }
+.kb-test-out { font-family: var(--mono); font-size: 11.5px; line-height: 1.7; min-height: 40px; white-space: normal; }
 
 /* ---- typeahead -------------------------------------------------------------------------------------------------- */
 .ta { position: relative; }

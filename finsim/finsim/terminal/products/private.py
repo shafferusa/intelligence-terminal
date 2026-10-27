@@ -60,6 +60,21 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   any other venue resolves through Yahoo as usual.  The tickers of LISTED companies whose pre-listing lots are held are
   pinned on the quote cache (priority ``PRIVATE_LISTED``, which the worker's HELD / ORDER scan never touches) so those
   marks stay live.
+- SEARCH ALIASES (SR-14 / APIUI-01): the sync (and an owner's ``private.set_status`` to PUBLIC) writes the company's common
+  names - the master row's ``aliases``, the name in brackets ("SpaceX", "Cursor"), the name without its legal suffix ("xAI",
+  "Cerebras Systems") - into ``spec.aliases`` of the LISTED instrument (SPCX; an acquired company's names go on its acquirer's
+  ticker), so the US Exchange search finds SPCX by "SpaceX", "xAI" or "Cursor" (``InstrumentMaster.search``).  Only that
+  one spec key is added to an existing row (``InstrumentMaster.upsert``, nothing else changes).
+- NO LONGER PRIVATE elsewhere (C23): ``tradeable_private(rt, iid) -> (ok, reason, trade_in)`` is the Private Markets account's
+  search filter (C6: a listed / acquired company is not offered); ``private.record_round`` refuses a round on a company that is
+  no longer private (409 COMPANY_LISTED / COMPANY_ACQUIRED with the line).
+- QP gate (SR-01): ``books.require_private`` applies to a BUY (and every ROUND); a SELL only needs the lifetime open, so
+  shares bought at the threshold can always be sold.
+- ROUTES (C1, ``register_routes``): POST /api/private/companies/{id}/status {status, ticker, listed_on, exchange,
+  source_url} -> ``private.set_status`` (the page's "Mark as listed"; PUBLIC and FILED_IPO need the source URL of the
+  listing notice / the filing - nothing is recorded without one).  ``instrument_extra`` (C5) gives the instrument page
+  the last-round mark with its date and source, the labelled terms and the actions.  ``preview`` carries the risk lines
+  (``services.risk.pretrade``: concentration and private / illiquid after the trade, unpriced names at cost).
 """
 from __future__ import annotations
 
@@ -102,13 +117,20 @@ LISTED_CODE = "COMPANY_LISTED"
 ACQUIRED_CODE = "COMPANY_ACQUIRED"
 LISTED_PIN = "PRIVATE_LISTED"
 SYNC_KIND = "private.sync_master"
-SYNC_VERSION = "v1"
+SYNC_VERSION = "v2"                       # v2: the master sync also writes the listed rows' search aliases (SR-14)
 STATUS_RANK = {"PRIVATE": 0, "FILED_IPO": 1, "PUBLIC": 2}
 # a listing venue as the issuer / the exchange names it (upper case) -> (Yahoo chart ``exchangeName``, short name for the one line)
 VENUES = {"NASDAQ GLOBAL SELECT MARKET": ("NMS", "Nasdaq"), "NASDAQ GLOBAL MARKET": ("NGM", "Nasdaq"), "NASDAQ CAPITAL MARKET": ("NCM", "Nasdaq"),
           "NEW YORK STOCK EXCHANGE": ("NYQ", "NYSE"), "NYSE": ("NYQ", "NYSE"), "NYSE ARCA": ("PCX", "NYSE Arca"), "NYSE AMERICAN": ("ASE", "NYSE American"),
           "CBOE BZX": ("BTS", "Cboe BZX"), "CBOE BZX EXCHANGE": ("BTS", "Cboe BZX")}
 CODE_SHORT = {"NMS": "Nasdaq", "NGM": "Nasdaq", "NCM": "Nasdaq", "NYQ": "NYSE", "PCX": "NYSE Arca", "ASE": "NYSE American", "BTS": "Cboe BZX"}
+#: the US venues the "Mark as listed" form offers (any other venue is typed; it is kept by name and not classified as US)
+VENUE_CHOICES = ("Nasdaq Global Select Market", "Nasdaq Global Market", "Nasdaq Capital Market", "New York Stock Exchange", "NYSE Arca", "NYSE American",
+                 "Cboe BZX Exchange")
+#: legal suffixes dropped to make a company's common name ("Cerebras Systems Inc." -> "Cerebras Systems") for the search aliases
+LEGAL_SUFFIX_RE = re.compile(r"[,\s]+(inc\.?|corp\.?|corporation|ltd\.?|limited|llc|plc|pbc|sas|s\.a\.|ag|gmbh|pty ltd|pty|co\.?)$", re.I)
+#: an owner-set status that needs the source of the listing notice / the filing (nothing is recorded without one)
+SOURCED_STATUSES = ("PUBLIC", "FILED_IPO")
 
 
 # ---- helpers ----------------------------------------------------------------------------------------------------------
@@ -524,7 +546,8 @@ def companies_view(services, q: Optional[str] = None, account_id: Optional[str] 
     """``GET /api/private/companies`` (``api_products.private_companies``): ``{companies: [the private names], listed: [the
     companies no longer private, each with listing.message and listing.trade_in], account_id}``."""
     names, gone = _views(services, q, account_id, None)
-    return {"companies": names, "listed": gone, "account_id": account_id}
+    return {"companies": names, "listed": gone, "account_id": account_id,
+            "venues": [{"name": n, "code": venue(n)[0], "short": venue(n)[1]} for n in VENUE_CHOICES]}
 
 
 def company(services, company_id: str, conn: Optional[sqlite3.Connection] = None, account_id: Optional[str] = None) -> dict:
@@ -598,7 +621,10 @@ def validate(services, req: dict, conn: Optional[sqlite3.Connection] = None, now
         lid, role = _books.split_account_id(account_id)
     except ValueError as e:
         raise RejectError("ACCOUNT_INVALID", str(e)) from e
-    _books.require_private(services, lid)                       # NOT_ELIGIBLE_QP / LIFETIME_CLOSED / LIFETIME_UNKNOWN
+    # SR-01: the qualified-purchaser gate is for purchases (a BUY, every ROUND); a SELL only needs the lifetime open, so shares bought
+    # at the threshold (the fee takes NAV just below it) are never trapped
+    gate_side = "SELL" if (str(req.get("side") or "").strip().upper() == "SELL" and str(req.get("kind") or "SECONDARY").strip().upper() != "ROUND") else "BUY"
+    _books.require_private(services, lid, gate_side)            # NOT_ELIGIBLE_QP / LIFETIME_CLOSED / LIFETIME_UNKNOWN
     with _reader(services, conn) as c:
         acct = _books.account_row(c, account_id)
         if acct is None:
@@ -644,7 +670,7 @@ def validate(services, req: dict, conn: Optional[sqlite3.Connection] = None, now
         if qty <= 0:
             raise RejectError("QTY_INVALID", "quantity must be a positive whole number of shares")
         if req.get("price") in (None, ""):
-            raise RejectError("PRICE_REQUIRED", "a private secondary needs the negotiated price per share (sentence PRIVATE_TRADE): enter the price you agreed")
+            raise RejectError("PRICE_REQUIRED", "enter the negotiated price per share: a private secondary executes at the price you agreed")
         price = qprice(_dec(req.get("price"), "PRICE_INVALID", "price"))
         if price <= 0:
             raise RejectError("PRICE_INVALID", "the negotiated price must be positive")
@@ -711,7 +737,22 @@ def preview(services, req: dict, now: Optional[int] = None, conn: Optional[sqlit
            "lots": v.lots_used, "funding": funding, "warnings": list(v.warnings), "blockers": blockers, "note": note,
            "sentence": tables.CONVENTIONS.get("PRIVATE_TRADE", ""), "conventions": ["PRIVATE_TRADE", "PRIVATE_MARK", "QP", "FIFO"],
            "executable": not blockers, "as_of": int(now if now is not None else services.clock.epoch())}
+    out["risk"] = _risk_lines(services, v)
     return out
+
+
+def _risk_lines(services, v: Validated) -> Optional[List[dict]]:
+    """SR-03: the ticket's risk lines (``services.risk.pretrade``): concentration and private / illiquid after the trade, the
+    unpriced private names counted at cost.  Informational; a failure is one line that says so, never a blocker."""
+    risk = getattr(services, "risk", None)
+    fn = getattr(risk, "pretrade", None) if risk is not None else None
+    if not callable(fn):
+        return None
+    try:
+        return list(fn(services, v.account_id, v.inst, v.side, v.qty, {"economics": {"gross": str(from_c(v.gross_c))}}) or [])
+    except Exception as e:   # noqa: BLE001 - said on the ticket, never hidden and never a blocker
+        return [{"code": "RISK_UNAVAILABLE", "severity": "INFO", "message": f"risk lines unavailable: {type(e).__name__}: {e}"[:200], "account_id": v.account_id,
+                 "instrument_id": v.inst.instrument_id, "value": None, "threshold": None}]
 
 
 def _funding_plan(services, v: Validated, conn: Optional[sqlite3.Connection] = None) -> dict:
@@ -728,7 +769,7 @@ def _funding_plan(services, v: Validated, conn: Optional[sqlite3.Connection] = N
             "treasury_available": str(from_c(treas)), "shortfall_c": shortfall, "sweep_in_c": sweep, "sweep_in": str(from_c(sweep)), "unfunded_c": unfunded,
             "source": source, "settle_date": v.settle_date.isoformat(),
             "note": ("paid from the account's own available cash" if source == "own" else
-                     (f"sweep-in of {fmt_money(sweep)} from {v.lifetime_id}:TREASURY at the fill (sentence SWEEP)" if source == "sweep" else
+                     (f"sweep-in of {fmt_money(sweep)} from the Treasury ({v.lifetime_id}:TREASURY) at the fill" if source == "sweep" else
                       f"short by {fmt_money(unfunded)}: the trade will be refused (INSUFFICIENT_FUNDS)"))}
 
 
@@ -837,6 +878,11 @@ def h_record_round(ctx: TxContext, payload: dict) -> dict:
     row = company_row(conn, cid) if cid else None
     if row is None:
         raise RejectError("COMPANY_UNKNOWN", f"no private company {cid!r}", {"company_id": cid})
+    # SR-14: a company that is no longer private (listed / acquired from its date) takes no private round: its mark is the listed one
+    lst = listing_of(row, _spec_json(conn, row["instrument_id"]), latest_round(conn, row["company_id"]), ny_of(ctx.ts).date(), master_file()[0].get(row["company_id"]))
+    if lst is not None and lst.effective:
+        raise ConflictError(lst.code, f"{lst.message()}: a private round cannot be recorded for a company that is no longer private",
+                            {"company_id": row["company_id"], "listing": lst.to_dict(), "trade_in": lst.trade_in()})
     r = _round_payload(payload)
     rid = _insert_round(conn, row["company_id"], r, ctx.command_id)
     conn.execute("UPDATE private_companies SET updated_ts=? WHERE company_id=?", (ctx.ts, row["company_id"]))
@@ -916,18 +962,26 @@ def h_set_status(ctx: TxContext, payload: dict) -> dict:
         raise RejectError("TICKER_INVALID", f"ticker {ticker!r} is not a valid symbol")
     if status == "PUBLIC" and not ticker:
         raise RejectError("TICKER_REQUIRED", "a PUBLIC company needs its listed ticker (the mark switches to that instrument)")
+    src = str(payload.get("source_url") or payload.get("listing_source_url") or "").strip()
+    if status in SOURCED_STATUSES and not src:
+        what = "the exchange notice or the issuer's release naming the ticker, the venue and the first trade date" if status == "PUBLIC" else "the filing"
+        raise RejectError("SOURCE_REQUIRED", f"a source URL is mandatory to mark a company {status.replace('_', ' ').lower()}: {what} (nothing is recorded without one)")
     listed_on = None
     spec = _spec_json(conn, row["instrument_id"])
     if status == "PUBLIC":
         listed_on = _iso_date(payload.get("listed_on"), "DATE_INVALID", "listed_on") if payload.get("listed_on") not in (None, "") else ny_of(ctx.ts).date().isoformat()
         spec.update(_listing_fields(payload))
+    elif status == "FILED_IPO":
+        spec.update(status_source_url=src, status_as_of=ny_of(ctx.ts).date().isoformat())
     conn.execute("UPDATE private_companies SET status=?, ticker=?, updated_ts=? WHERE company_id=?", (status, ticker, ctx.ts, row["company_id"]))
     spec.update(status=status, ticker=ticker, listed_on=listed_on)
     conn.execute("UPDATE instruments SET spec_json=?, updated_ts=? WHERE instrument_id=?", (json.dumps(spec), ctx.ts, row["instrument_id"]))
     services.instruments.refresh(row["instrument_id"], conn)
     listed = ensure_listed_instrument(ctx.tx, services, ticker, row["name"], spec.get("exchange_code"), spec.get("exchange_full")) if status == "PUBLIC" else None
+    if listed is not None and listed.get("in_master"):
+        listed["aliases_added"] = add_aliases(ctx.tx, services, listed["instrument_id"], aliases_of(row["name"], master_file()[0].get(row["company_id"])))
     ctx.event("PRIVATE_STATUS_CHANGED", instrument_id=row["instrument_id"], ref_type="company", ref_id=row["company_id"], status=status, ticker=ticker,
-              listed_on=listed_on, exchange=spec.get("exchange") if status == "PUBLIC" else None, listed_instrument=listed)
+              listed_on=listed_on, exchange=spec.get("exchange") if status == "PUBLIC" else None, listed_instrument=listed, source_url=src or None)
     refresh_pins(services, conn)
     row = company_row(conn, row["company_id"])
     view = company_view(services, row, conn=conn, now=ctx.ts)
@@ -967,6 +1021,123 @@ def ensure_listed_instrument(tx, services, ticker: Optional[str], name: str, exc
     if not out["us_exchange"] and exchange_code in US_EXCHANGES:
         out["problem"] = f"{ticker} is in the instrument master as {inst.kind} / {inst.support} / {list(inst.account_kinds)}: it does not trade in US Exchange"
     return out
+
+
+def aliases_of(name: Optional[str], master_row: Optional[dict] = None) -> List[str]:
+    """SEARCH ALIASES: a company's common names - the master row's ``aliases``, the name in brackets ("Space Exploration
+    Technologies Corp. (SpaceX)" -> "SpaceX") and the name without the brackets and its legal suffix ("xAI Corp." -> "xAI")."""
+    out: List[str] = []
+
+    def add(x: Any) -> None:
+        x = " ".join(str(x or "").split()).strip(" ,.")
+        if len(x) >= 2 and x.upper() not in {o.upper() for o in out}:
+            out.append(x)
+    for a in (master_row or {}).get("aliases") or []:
+        add(a)
+    m = re.search(r"\(([^()]+)\)\s*$", name or "")
+    if m:
+        add(m.group(1))
+    base = re.sub(r"\s*\([^()]*\)\s*$", "", name or "").strip()
+    for _ in range(3):
+        nb = LEGAL_SUFFIX_RE.sub("", base).strip(" ,")
+        if nb == base:
+            break
+        base = nb
+    add(base)
+    return out
+
+
+def add_aliases(tx, services, instrument_id: Optional[str], names: List[str]) -> List[str]:
+    """Add ``names`` to ``spec.aliases`` of a listed instrument (never a PRIVATE row) through ``InstrumentMaster.upsert`` on ``tx``:
+    only that key changes; names it already carries (or its own symbol) are skipped.  Returns the names added."""
+    master = services.instruments
+    if not instrument_id or not names:
+        return []
+    inst = master.get(instrument_id, tx.conn)
+    if inst is None or inst.kind == "PRIVATE":
+        return []
+    spec = _spec_json(tx.conn, inst.instrument_id)
+    raw = spec.get("aliases")
+    have = [str(a) for a in (raw if isinstance(raw, (list, tuple)) else ([raw] if raw else []))]
+    seen = {h.upper() for h in have} | {str(inst.symbol).upper(), str(inst.instrument_id).upper()}
+    new = [n for n in names if n.upper() not in seen]
+    if not new:
+        return []
+    spec["aliases"] = have + new
+    upsert = getattr(master, "upsert", None)
+    if callable(upsert):
+        upsert(tx, instrument_id=inst.instrument_id, spec=spec)
+    else:                                                     # a stand-in master without upsert: the same one-column update
+        tx.conn.execute("UPDATE instruments SET spec_json=?, updated_ts=? WHERE instrument_id=?", (json.dumps(spec), int(tx.now.timestamp()), inst.instrument_id))
+        master.refresh(inst.instrument_id, tx.conn)
+    return new
+
+
+def tradeable_private(rt, instrument_id: str, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None) -> Tuple[bool, str, Optional[dict]]:
+    """C23: ``(True, "", None)`` when ``instrument_id`` is a private company that trades in the Private Markets account today;
+    ``(False, the one line, trade_in)`` for a company LISTED / ACQUIRED from its date ("Listed 2026-06-12: SPCX on Nasdaq - trade it
+    in US Exchange"), a private-credit loan (booked in Credit Instruments) or an id that is not a company of the master.  The
+    Private Markets search (C6) and the watchlist use it so a company that is no longer private is never offered there."""
+    now_ts = int(now if now is not None else rt.clock.epoch())
+    with _reader(rt, conn) as c:
+        row = company_row(c, instrument_id)
+        if row is None:
+            inst = rt.instruments.get(instrument_id, c)
+            if inst is not None and inst.kind == "PRIVATE" and (inst.spec or {}).get("loan_id"):
+                return False, f"{instrument_id} is a private-credit loan: it is booked and repaid in Credit Instruments", None
+            return False, f"{instrument_id} is not a company of the private master", None
+        lr = latest_round(c, row["company_id"])
+        spec = _spec_json(c, row["instrument_id"])
+    lst = listing_of(row, spec, lr, ny_of(now_ts).date(), master_file()[0].get(row["company_id"]))
+    if lst is not None and lst.effective:
+        return False, lst.message(), lst.trade_in()
+    return True, "", None
+
+
+def instrument_extra(rt, inst, now: int) -> dict:
+    """C5: the instrument page of a private company - the headline mark (the last reported round with its date and source, the
+    listed price from a listing date, or 'no price per share' for a valuation-only round), the labelled terms and the actions
+    (the negotiated ticket; for a company no longer private, where its shares trade)."""
+    with _reader(rt) as c:
+        row = company_row(c, inst.instrument_id)
+        if row is None:
+            return {"headline": None, "spec_view": [{"label": "note", "value": "not a company of the private master (a private-credit loan lives in Credit Instruments)"}],
+                    "actions": []}
+        view = company_view(rt, row, conn=c, now=now)
+    d = defaults(rt)
+    mark = view.get("mark") or {}
+    lr = view.get("last_round") or {}
+    lst = view.get("listing") or None
+    effective = bool(lst and lst.get("effective"))
+    listed_price = bool(lst and lst.get("kind") == "LISTED" and effective)
+    label = "listed price" if listed_price else ("last reported round" if mark.get("value") is not None else "no price per share")
+    headline = {"value": mark.get("value"), "mark": mark.get("value"), "quality": mark.get("quality"), "as_of": mark.get("as_of"), "source": mark.get("source"),
+                "method": mark.get("method"), "note": mark.get("note"), "inputs": mark.get("inputs"), "label": label}
+    spec_view = [{"label": "company", "value": row["name"]}, {"label": "sector", "value": row["sector"]}, {"label": "country", "value": row["country"]},
+                 {"label": "status", "value": str(row["status"] or "PRIVATE").replace("_", " ") + (f" ({row['ticker']})" if row["ticker"] else "")}]
+    if lst:
+        spec_view.append({"label": "listing", "value": lst.get("message")})
+    if lr:
+        spec_view += [{"label": "last round", "value": f"{lr.get('round_date')} . {lr.get('round_type')}"},
+                      {"label": "post-money (USD)", "value": None if lr.get("post_money") is None else fmt_money(int(lr["post_money_c"]))},
+                      {"label": "price per share", "value": lr.get("price_per_share") or "not disclosed (valuation only: no mark)"},
+                      {"label": "lead investors", "value": lr.get("lead_investors")},
+                      {"label": "source", "value": lr.get("source_url")}, {"label": "as of", "value": lr.get("as_of")},
+                      {"label": "recorded by", "value": "researched master" if lr.get("recorded_by") == "seed" else "you"}]
+    else:
+        spec_view.append({"label": "last round", "value": "no reported round (no mark)"})
+    spec_view += [{"label": "placement fee (default)", "value": f"{(d['fee_pct'] * 100).quantize(PCT2)} % of the gross (secondaries; rounds 0)"},
+                  {"label": "settlement (default)", "value": f"T+{d['settle_days']} calendar days (pending until then)"},
+                  {"label": "lock-up (default)", "value": f"{d['lockup_months']} months; the Sell ticket warns while it runs (Rule 144)"},
+                  {"label": "notes", "value": row["notes"]}]
+    if effective:
+        t = (lst or {}).get("trade_in") or None
+        actions = [{"key": "trade_in", "label": f"Trade {t['instrument_id']} in US Exchange", "trade_in": t}] if t else []
+        actions.append({"key": "sell", "label": "Sell pre-listing shares", "side": "SELL", "ticket": "PRIVATE", "note": "closing only: no new private purchase"})
+    else:
+        actions = [{"key": "buy", "label": "Buy secondary", "side": "BUY", "ticket": "PRIVATE"}, {"key": "sell", "label": "Sell secondary", "side": "SELL", "ticket": "PRIVATE"}]
+    return {"headline": headline, "spec_view": spec_view, "actions": actions, "listing": lst, "privately_tradable": not effective,
+            "sentence": tables.CONVENTIONS.get("PRIVATE_MARK", "")}
 
 
 def listed_held_tickers(services, conn: Optional[sqlite3.Connection] = None) -> List[str]:
@@ -1075,6 +1246,17 @@ def sync_master(tx, services, ctx: Optional[TxContext] = None) -> dict:
         out["listed_instruments"].append(res)
         if res.get("problem"):
             out["problems"].append({"company_id": row["company_id"], "problem": res["problem"]})
+    # SEARCH ALIASES (SR-14): the common names of every listed / acquired company on the ticker that now carries it (SpaceX, xAI and
+    # Cursor on SPCX; Cerebras on CBRS) - only spec.aliases of that row changes
+    out["aliases"] = []
+    for row in conn.execute("SELECT * FROM private_companies ORDER BY company_id").fetchall():
+        fr = rows.get(row["company_id"])
+        lst = listing_of(row, _spec_json(conn, row["instrument_id"]), latest_round(conn, row["company_id"]), today, fr)
+        if lst is None or not lst.ticker or lst.us is False:
+            continue
+        added = add_aliases(tx, services, lst.ticker, aliases_of(row["name"], fr))
+        if added:
+            out["aliases"].append({"company_id": row["company_id"], "instrument_id": lst.ticker, "added": added})
     if ctx is not None:
         for p in out["problems"]:
             ctx.attention("WARN", "private", "PRIVATE_MASTER_SYNC", f"{p['company_id']}: {p['problem']}", {"ref_type": "company", "ref_id": p["company_id"]})
@@ -1131,8 +1313,24 @@ def register(bus) -> None:
     bus.register("private.trade", h_trade)
 
 
+def register_routes(r) -> None:
+    """C1: POST /api/private/companies/{id}/status (SR-06: "Mark as listed" / "Filed for IPO" from the Private Markets page) ->
+    ``private.set_status`` {status, ticker, listed_on, exchange, source_url}; the other private routes stay in api_products."""
+    from ..api import run_command
+
+    def status_post(req):
+        b = req.body or {}
+        payload = {"company_id": req.params[0]}
+        for k in ("status", "ticker", "listed_on", "exchange", "source_url"):
+            if b.get(k) not in (None, ""):
+                payload[k] = b[k]
+        return run_command(req, "private.set_status", payload)
+
+    r.add("POST", r"/api/private/companies/([^/]+)/status", status_post)
+
+
 __all__ = ["SIDES", "KINDS", "STATUSES", "LOCKUP_TEXT", "LISTED_CODE", "ACQUIRED_CODE", "LISTED_PIN", "SYNC_KIND", "SYNC_VERSION", "Listing", "slug_id",
            "defaults", "master_file", "venue", "listing_of", "company_row", "rounds", "latest_round", "round_view", "mark_inputs", "private_mark", "company_view",
            "companies", "listed_companies", "companies_view", "company", "Validated", "fifo_preview", "validate", "preview", "h_trade", "h_record_round",
            "h_add_company", "h_set_status", "h_sync_master", "ensure_listed_instrument", "listed_held_tickers", "refresh_pins", "sync_master", "reseed",
-           "bind", "register"]
+           "bind", "register", "register_routes", "tradeable_private", "instrument_extra", "aliases_of", "add_aliases", "SOURCED_STATUSES"]

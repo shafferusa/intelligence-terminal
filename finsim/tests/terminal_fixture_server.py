@@ -56,7 +56,13 @@ NY = get_zone("America/New_York")
 WP13_FIXTURES = {"preview_aapl", "hedges_aapl", "orders_submit_aapl", "strategies_list", "strategies_iron_condor"}
 OPTIONAL_STATIC = {"components/ticket.js", "components/preview.js", "components/hedge.js", "components/performance.js",
                    "components/lifetimes.js", "components/pbschedule.js", "components/swapticket.js",
-                   "components/privateticket.js", "components/privatecredit.js", "pages/news.js", "pages/private_markets.js"}
+                   "components/privateticket.js", "components/privatecredit.js", "pages/news.js", "pages/private_markets.js",
+                   # the product plug-ins of Build 2 (BUILD2_PLAN C3 / C11): stubs until their packages build them
+                   "pages/markets_debt.js", "components/bondticket.js",          # P07 Debt Instruments
+                   "pages/markets_fx.js", "components/fxdesk.js",                # P06 Foreign Markets & FX
+                   "pages/markets_credit.js", "components/creditdesk.js",        # P08 Credit Instruments
+                   "pages/markets_otc.js", "components/otcticket.js",            # P12 PB OTC options / forwards
+                   "components/cdsticket.js"}                                    # CDX (CDS index) ticket
 MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8",
         ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json",
         ".txt": "text/plain; charset=utf-8", ".csv": "text/csv; charset=utf-8"}

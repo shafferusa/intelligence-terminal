@@ -48,12 +48,28 @@ Conventions stated here (the §1.3 sentences and the §12.4 / §13.7 rules that 
   / Cr 1010`` (instrument id ``PB:{broker}``, idem ``pay:pbmin:{account}:{yyyy-mm}``) after ``execution.fund``
   (immediate; the §11.6 overdraft rule: an unfundable charge is still posted with an ERROR ``FUNDING_SHORTFALL``).
   Nothing to charge -> SKIPPED with the figures.  Default 0 = no minimum.
-- OTC via PB: IRS / TRS / cross-currency swaps are live (WP-17 / WP-26, eligible lifetimes only); OTC options, FRAs,
-  caps / floors, swaptions and forwards answer 400 ``NOT_IN_THIS_BUILD`` (``require_otc_kind``) and are listed for
-  ``/api/unsupported`` (``otc_unsupported``).
+- OTC via PB: IRS / TRS / cross-currency swaps (WP-17 / WP-26) and the OTC equity / FX options and equity / FX forwards
+  (Build 2 P12, ``products/otc_options.py``) are live for eligible lifetimes (``require_otc_kind`` returns the kind);
+  FRAs, caps / floors, swaptions and the generic names OPTION / FORWARD (book EQ_OPTION / FX_OPTION / EQ_FORWARD /
+  FX_FORWARD) answer 400 ``NOT_IN_THIS_BUILD``; anything else 400 ``OTC_KIND``.  ``otc_unsupported`` lists the products
+  that are not offered.
+- INITIAL MARGIN AND DEALING TERMS (SR-10 / C22): every PB schedule carries its own initial-margin terms - ``irs_im_bp``
+  (IRS IM = |DV01| x that many bp), ``trs_im_pct`` / ``xccy_im_pct`` (fractions of the notional), ``option_im_pct`` (a
+  SOLD OTC option: that fraction of the underlying notional; a bought option has paid its premium and posts none) and
+  ``forward_im_pct`` (either side of an OTC forward) - and its OTC dealing half-widths: ``eq_option_hw_vol`` /
+  ``fx_option_hw_vol`` (implied-vol points as fractions: 0.0100 = 1.00 vol point, against the client) and
+  ``forward_hw_bp`` (bp of the forward).  The seeds (``OTC_SEEDS``, assumed, editable per account) differ by broker;
+  GS, JPMorgan, Citi and BofA keep the earlier static swap rule (50 bp / 10 % / 2 %).  ``im_params(services,
+  account_id)`` serves the IM terms (bp as bp, the ``*_pct`` as fractions) on the caller's reading connection.
+- FIELD_SPECS (C9 / C22): ``{field: {kind, label, unit, min, max, hint[, choices]}}`` in trader words; the unit says how
+  the editor shows and reads a value (``pct``: a fraction typed in percent, ``bp``, ``vol``: a fraction typed in vol
+  points, ``usd``, ``usd_per_unit``, ``mult``, ``enum``); ``seed_schedule(broker)`` is the broker's seed incl. the OTC terms.
 - ``account.close`` (§4.1) closes a FLAT prime-broker account only (no balance, order, pending settlement, loan,
   borrow or contract; 409 ``NOT_FLAT`` otherwise); the role id stays taken (a reopen is 409 ``EXISTS``), the history
-  stays readable.  Catalogue accounts are never closed here.
+  stays readable.  Catalogue accounts are never closed here.  ``close_check(conn, account_id)`` is the same test as a
+  pure read; ``relationship(conn, account_id)`` = the agreements signed with the dealer (ISDA Master / CSA / PBA,
+  signed date), the opening date, the schedule edits and the flatness: ``GET /api/accounts/{id}/close`` serves it and
+  ``POST /api/accounts/{id}/close`` runs ``account.close`` (``register_routes``, C1; PO-16).
 Every number here is a disclosed, modelled assumption; nothing is simulated or invented.
 """
 from __future__ import annotations
@@ -69,7 +85,7 @@ from . import config, credit, execution, tables
 from .books import _insert_account, account_row, lifetime_row, open_lifetime, require_onboard, split_account_id
 from .clock import epoch_of, ny_of
 from .commands import ConflictError, RejectError, TxContext
-from .ledger import Entry, Line, balance, cr, dr, natural
+from .ledger import CHART, Entry, Line, balance, cr, dr, natural
 from .units import fmt_money, from_c, qprice, to_c
 
 D = Decimal
@@ -83,36 +99,82 @@ PB_SORT_BASE = 60
 MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 PRICE_8 = Decimal("0.00000001")
 
-# §12.4 fields: name -> (kind, minimum, maximum, label).  Decimals are fractions (0.0125 = 1.25 %) or USD per unit;
-# the ``*_c`` fields are integer cents; ``swap_margin_mode`` is an enum.
-FIELD_SPECS: Dict[str, tuple] = {
-    "equity_per_share": ("decimal", D("0"), D("100"), "USD per share (min equity_min_c per fill)"),
-    "equity_min_c": ("cents", 0, None, "minimum equity fee per fill, cents"),
-    "option_per_contract": ("decimal", D("0"), D("100"), "USD per option contract"),
-    "futures_per_side": ("decimal", D("0"), D("100"), "USD per futures contract per side"),
-    "financing_spread": ("decimal", D("0"), D("1"), "SOFR + spread on debit balances (fraction)"),
-    "credit_interest_spread": ("decimal", D("0"), D("1"), "interest on positive settled USD = max(0, SOFR - spread) (fraction)"),
-    "gc_rate": ("decimal", D("0"), D("1"), "general-collateral borrow fee (fraction)"),
-    "htb_add": ("decimal", D("0"), D("1"), "borrow add-on over GC (fraction)"),
-    "otc_spread_mult": ("decimal", D("0.01"), D("100"), "multiplies the IRS half-width and the TRS spread"),
-    "swap_margin_mode": ("enum", ("CTM", "STM"), None, "swap variation margin: collateralised-to-market or settled-to-market"),
-    "monthly_minimum_c": ("cents", 0, None, "monthly minimum commission, cents (0 = none)"),
-    "irs_half_width_bp": ("decimal", D("0"), D("1000"), "IRS dealing half-width, basis points"),
-    "trs_spread": ("decimal", D("0"), D("1"), "TRS financing spread over SOFR (fraction)"),
+
+def _spec(kind: str, lo, hi, label: str, unit: str, hint: str = "", choices: Optional[Tuple[str, ...]] = None) -> dict:
+    return {"kind": kind, "min": lo, "max": hi, "label": label, "unit": unit, "hint": hint, **({"choices": choices} if choices else {})}
+
+
+# §12.4 + SR-10 fields (C9 / C22): name -> {kind, min, max, label, unit, hint[, choices]}.  ``kind`` is how the value is STORED
+# (decimal string / integer cents / enum); ``unit`` is how a trader reads and types it (module docstring FIELD_SPECS).  Rates and
+# initial-margin percentages are stored as fractions (0.0125 = 1.25 %), vol half-widths as fractions (0.0100 = 1.00 vol point).
+FIELD_SPECS: Dict[str, dict] = {
+    "equity_per_share": _spec("decimal", D("0"), D("100"), "Equities: commission per share", "usd_per_unit", "charged per share per fill, floored by the minimum per fill"),
+    "equity_min_c": _spec("cents", 0, None, "Equities: minimum per fill", "usd", "the floor of an equity fill's commission"),
+    "option_per_contract": _spec("decimal", D("0"), D("100"), "Listed options: per contract", "usd_per_unit", "exercise / assignment / expiry are free"),
+    "futures_per_side": _spec("decimal", D("0"), D("100"), "Futures: per contract per side", "usd_per_unit", "charged in cash the same day"),
+    "financing_spread": _spec("decimal", D("0"), D("1"), "Financing: spread over SOFR", "pct", "on debit balances (PB financing drawn), ACT/360, accrued nightly, paid monthly"),
+    "credit_interest_spread": _spec("decimal", D("0"), D("1"), "Credit interest: SOFR minus", "pct", "interest on positive settled USD = max(0, SOFR - this spread), ACT/360"),
+    "gc_rate": _spec("decimal", D("0"), D("1"), "Stock borrow: general-collateral fee", "pct", "the fee of an easy-to-borrow name; hard-to-borrow tiers add to it"),
+    "htb_add": _spec("decimal", D("0"), D("1"), "Stock borrow: hard-to-borrow add-on", "pct", "added to the GC fee for a hard-to-borrow name"),
+    "otc_spread_mult": _spec("decimal", D("0.01"), D("100"), "OTC spread multiplier", "mult",
+                             "multiplies every OTC dealing half-width and the TRS spread (1.0 = the terms below as they stand)"),
+    "swap_margin_mode": _spec("enum", None, None, "Variation margin", "enum",
+                              "CTM = collateralised-to-market (VM is collateral); STM = settled-to-market (VM settles as P&L each day)", ("CTM", "STM")),
+    "monthly_minimum_c": _spec("cents", 0, None, "Monthly minimum commission", "usd", "0 = none; the shortfall against the month's commissions is charged on the 1st"),
+    "irs_half_width_bp": _spec("decimal", D("0"), D("1000"), "IRS dealing half-width", "bp", "the dealt rate = par +/- this, against you"),
+    "trs_spread": _spec("decimal", D("0"), D("1"), "TRS financing spread over SOFR", "pct", "paid on a receiver's financing leg, deducted from a payer's"),
+    # SR-10 / C22: initial margin and the OTC options / forwards dealing terms (assumed seeds: OTC_SEEDS)
+    "irs_im_bp": _spec("decimal", D("0"), D("1000"), "IRS initial margin", "bp", "IM = |DV01| x this many bp of rate move"),
+    "trs_im_pct": _spec("decimal", D("0"), D("0.99"), "TRS initial margin", "pct", "a fraction of the TRS notional"),
+    "xccy_im_pct": _spec("decimal", D("0"), D("0.99"), "Cross-currency swap initial margin", "pct", "a fraction of the USD notional"),
+    "option_im_pct": _spec("decimal", D("0"), D("0.99"), "Sold OTC options: initial margin", "pct",
+                           "a fraction of the underlying notional of an option you sell; a bought option has paid its premium and posts none"),
+    "forward_im_pct": _spec("decimal", D("0"), D("0.99"), "OTC forwards: initial margin", "pct", "a fraction of the forward's USD notional, either side"),
+    "eq_option_hw_vol": _spec("decimal", D("0"), D("0.20"), "Equity options: dealing half-width", "vol",
+                              "the premium is priced at the implied vol +/- this many vol points, against you"),
+    "fx_option_hw_vol": _spec("decimal", D("0"), D("0.20"), "FX options: dealing half-width", "vol",
+                              "the premium is priced at the implied vol +/- this many vol points, against you"),
+    "forward_hw_bp": _spec("decimal", D("0"), D("1000"), "Forwards: dealing half-width", "bp", "the dealt forward = the model forward +/- this many bp of it, against you"),
 }
 EDITABLE_FIELDS: Tuple[str, ...] = tuple(FIELD_SPECS)
+IM_FIELDS: Tuple[str, ...] = ("irs_im_bp", "trs_im_pct", "xccy_im_pct", "option_im_pct", "forward_im_pct")
+OTC_TERM_FIELDS: Tuple[str, ...] = IM_FIELDS + ("eq_option_hw_vol", "fx_option_hw_vol", "forward_hw_bp")
+
+
+def _otc(irs, trs, xccy, opt, fwd, eqv, fxv, fbp) -> Dict[str, Decimal]:
+    return dict(zip(OTC_TERM_FIELDS, (D(irs), D(trs), D(xccy), D(opt), D(fwd), D(eqv), D(fxv), D(fbp))))
+
+
+# SR-10: the OTC seeds per broker (ASSUMED - modelled terms, editable per account; real CSA / PB terms are negotiated).  GS, JPMorgan,
+# Citi and BofA keep this build's earlier static swap IM (50 bp of |DV01|, TRS 10 %, XCCY 2 %); the others ask more.
+OTC_SEEDS: Dict[str, Dict[str, Decimal]] = {
+    "GS": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0100", "0.0030", "2.0"),
+    "JPM": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0090", "0.0025", "1.8"),
+    "MS": _otc("55", "0.12", "0.025", "0.18", "0.08", "0.0125", "0.0035", "2.5"),
+    "DB": _otc("60", "0.15", "0.03", "0.20", "0.10", "0.0150", "0.0040", "3.0"),
+    "BARC": _otc("55", "0.12", "0.025", "0.18", "0.08", "0.0125", "0.0035", "2.5"),
+    "CITI": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0100", "0.0030", "2.0"),
+    "UBS": _otc("55", "0.12", "0.025", "0.18", "0.08", "0.0125", "0.0035", "2.5"),
+    "BNP": _otc("60", "0.15", "0.03", "0.20", "0.10", "0.0150", "0.0040", "3.0"),
+    "BOFA": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0100", "0.0030", "2.0"),
+}
 # The money fields under the names the API serves them (the codec strips ``_c`` and sends decimal USD: ``equity_min``
 # "1.00") -> the stored integer-cents field.  ``account.update_schedule`` accepts either name (never both at once).
-MONEY_ALIASES: Dict[str, str] = {k[:-2]: k for k, spec in FIELD_SPECS.items() if spec[0] == "cents" and k.endswith("_c")}
+MONEY_ALIASES: Dict[str, str] = {k[:-2]: k for k, spec in FIELD_SPECS.items() if spec["kind"] == "cents" and k.endswith("_c")}
 _CENTS_RE = re.compile(r"^[0-9]+$")                          # integer cents, ASCII digits only
 _MONEY_RE = re.compile(r"^[0-9]+(\.[0-9]{1,2})?$")           # decimal USD, at most 2 decimals, no sign, no separators
-FIELDS_NOTE = tables._PB_FIELDS_NOTE
+FIELDS_NOTE = ("Commissions, financing, stock-borrow fees, the OTC dealing half-widths and the initial-margin terms of this prime broker;"
+               " modelled assumptions - real PB schedules are negotiated.")
 
-OTC_LIVE = ("IRS", "TRS", "XCCY")
-OTC_NOT_BUILT = {
-    "OPTION": "OTC equity options", "FX_OPTION": "OTC FX options", "SWAPTION": "swaptions", "FRA": "forward rate agreements",
-    "CAP": "interest-rate caps", "FLOOR": "interest-rate floors", "FORWARD": "OTC forwards (equity / FX)",
-}
+OTC_LIVE = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX")
+OTC_LABELS = {"IRS": "interest-rate swap", "TRS": "total return swap", "XCCY": "cross-currency swap", "EQ_OPTION": "OTC equity option",
+              "FX_OPTION": "OTC FX option", "EQ_FORWARD": "equity forward", "FX_FORWARD": "FX forward",
+              "CDX": "CDS index (CDX.NA.IG / CDX.NA.HY 5Y)"}
+#: OTC products that are not offered (400 NOT_IN_THIS_BUILD) - and the two generic names, which are not products: an OTC option is
+#: booked as EQ_OPTION or FX_OPTION, a forward as EQ_FORWARD or FX_FORWARD
+OTC_NOT_BUILT = {"SWAPTION": "swaptions", "FRA": "forward rate agreements", "CAP": "interest-rate caps", "FLOOR": "interest-rate floors"}
+OTC_GENERIC = {"OPTION": "an OTC option is booked as EQ_OPTION (equity) or FX_OPTION (FX)",
+               "FORWARD": "an OTC forward is booked as EQ_FORWARD (equity) or FX_FORWARD (FX)"}
 
 
 class NotFound(RejectError):
@@ -141,6 +203,14 @@ class PbSchedule:
     monthly_minimum_c: int
     irs_half_width_bp: Decimal
     trs_spread: Decimal
+    irs_im_bp: Decimal
+    trs_im_pct: Decimal
+    xccy_im_pct: Decimal
+    option_im_pct: Decimal
+    forward_im_pct: Decimal
+    eq_option_hw_vol: Decimal
+    fx_option_hw_vol: Decimal
+    forward_hw_bp: Decimal
     note: str = ""
     updated_ts: int = 0
     source: str = "pb_schedules"
@@ -171,19 +241,25 @@ def brokers() -> List[dict]:
 
 
 def seed_schedule(broker: str) -> dict:
-    """A JSON-safe copy of ``tables.PB_SCHEDULES[broker]`` (decimals as their seed strings, e.g. "0.0030")."""
-    seed = tables.PB_SCHEDULES.get(str(broker or "").upper())
+    """A JSON-safe copy of ``tables.PB_SCHEDULES[broker]`` plus the broker's OTC terms (``OTC_SEEDS``; decimals as their seed
+    strings, e.g. "0.0030")."""
+    key = str(broker or "").upper()
+    seed = tables.PB_SCHEDULES.get(key)
     if seed is None:
         raise RejectError("UNKNOWN_BROKER", f"unknown prime broker {broker!r}; one of {', '.join(BROKERS)}", {"brokers": list(BROKERS)})
     out = {}
     for k, v in seed.items():
         out[k] = str(v) if isinstance(v, Decimal) else v
+    for k, v in (OTC_SEEDS.get(key) or OTC_SEEDS["GS"]).items():
+        out.setdefault(k, str(v))
     return out
 
 
 def _bad_value(name: str, message: str) -> RejectError:
-    """400 ``SCHEDULE_VALUE`` naming the field in the message and in ``details.field``."""
-    return RejectError("SCHEDULE_VALUE", f"{name}: {message}", {"field": name})
+    """400 ``SCHEDULE_VALUE`` naming the field by its label in the message and by its key in ``details.field``."""
+    spec = FIELD_SPECS.get(MONEY_ALIASES.get(name, name)) or {}
+    label = spec.get("label")
+    return RejectError("SCHEDULE_VALUE", f"{label} ({name}): {message}" if label else f"{name}: {message}", {"field": name})
 
 
 def _require_value(name: str, value, label: str) -> None:
@@ -208,12 +284,12 @@ def parse_field(name: str, value) -> object:
     if spec is None:
         raise RejectError("SCHEDULE_FIELD", f"{name!r} is not a schedule field; editable: {', '.join(EDITABLE_FIELDS)} "
                           f"(or {', '.join(MONEY_ALIASES)} in USD)", {"field": name, "fields": list(EDITABLE_FIELDS), "money_fields": dict(MONEY_ALIASES)})
-    kind, lo, hi, label = spec
+    kind, lo, hi, label = spec["kind"], spec.get("min"), spec.get("max"), spec["label"]
     _require_value(name, value, label)
     if kind == "enum":
         v = str(value).strip().upper()
-        if v not in lo:
-            raise _bad_value(name, f"{value!r} is not one of {', '.join(lo)}")
+        if v not in spec["choices"]:
+            raise _bad_value(name, f"{value!r} is not one of {', '.join(spec['choices'])}")
         return v
     if kind == "cents":
         s = str(value).strip()
@@ -235,8 +311,26 @@ def parse_field(name: str, value) -> object:
     if d != d.quantize(PRICE_8):
         raise _bad_value(name, f"at most 8 decimal places ({value!r})")
     if d < lo or d > hi:
-        raise _bad_value(name, f"{d} is outside [{lo}, {hi}] ({label})")
+        raise _bad_value(name, f"{d} is outside {_range_text(spec)} (stored as {_unit_text(spec)})")
     return str(d)
+
+
+def _unit_text(spec: dict) -> str:
+    return {"pct": "a fraction: 0.0125 = 1.25 %", "vol": "a fraction: 0.0100 = 1.00 vol point", "bp": "basis points", "mult": "a multiplier",
+            "usd": "USD", "usd_per_unit": "USD per unit"}.get(spec.get("unit") or "", spec.get("unit") or "")
+
+
+def _range_text(spec: dict) -> str:
+    """The allowed range in the unit a trader types: "0 % to 100 %", "0 to 1000 bp", "0.01 to 100"."""
+    lo, hi, unit = spec.get("min"), spec.get("max"), spec.get("unit")
+    if lo is None and hi is None:
+        return "the allowed values"
+    if unit in ("pct", "vol"):
+        sfx = " %" if unit == "pct" else " vol points"
+        return f"{(Decimal(lo) * 100).normalize():f}{sfx} to {(Decimal(hi) * 100).normalize():f}{sfx}"
+    if unit == "bp":
+        return f"{lo} to {hi} bp"
+    return f"{lo} to {hi if hi is not None else 'no maximum'}"
 
 
 def parse_money(name: str, value) -> int:
@@ -249,8 +343,8 @@ def parse_money(name: str, value) -> int:
     if field is None:
         raise RejectError("SCHEDULE_FIELD", f"{name!r} is not a money field of the schedule; one of {', '.join(MONEY_ALIASES)}",
                           {"field": name, "money_fields": dict(MONEY_ALIASES)})
-    _kind, lo, hi, label = FIELD_SPECS[field]
-    label = label.replace("cents", "USD")
+    spec = FIELD_SPECS[field]
+    lo, hi, label = spec.get("min"), spec.get("max"), spec["label"] + " (USD)"
     _require_value(name, value, label)
     s = str(int(value)) if isinstance(value, int) else str(value).strip()
     if not _MONEY_RE.fullmatch(s):
@@ -273,7 +367,7 @@ def schedule_from_json(text: str, account_id: str, broker: str, updated_ts: int 
     vals = {}
     for k in EDITABLE_FIELDS:
         raw = data.get(k, seed[k])
-        kind = FIELD_SPECS[k][0]
+        kind = FIELD_SPECS[k]["kind"]
         if kind == "decimal":
             vals[k] = Decimal(str(raw))
         elif kind == "cents":
@@ -322,7 +416,24 @@ def schedule_view(conn, account) -> dict:
     s = read_schedule(conn, account)
     return {"account_id": s.account_id, "broker": s.broker, "name": s.name, "schedule": s.to_dict(), "updated_ts": s.updated_ts, "source": s.source,
             "seed": seed_schedule(s.broker), "fields_note": FIELDS_NOTE, "editable": list(EDITABLE_FIELDS),
-            "labels": {k: FIELD_SPECS[k][3] for k in EDITABLE_FIELDS}}
+            "labels": {k: FIELD_SPECS[k]["label"] for k in EDITABLE_FIELDS}, "fields": field_specs()}
+
+
+def field_specs() -> List[dict]:
+    """``FIELD_SPECS`` as JSON-safe rows in display order: {field, kind, label, unit, min, max, hint, choices?} (decimals as strings;
+    a cents field also names its USD alias and range, as the API serves it)."""
+    out = []
+    for name, spec in FIELD_SPECS.items():
+        row = {"field": name}
+        for k, v in spec.items():
+            row[k] = str(v) if isinstance(v, Decimal) else (list(v) if isinstance(v, tuple) else v)
+        if spec["kind"] == "cents":
+            row["field_usd"] = name[:-2]
+            for k in ("min", "max"):
+                if isinstance(spec.get(k), int):
+                    row[k + "_usd"] = str(from_c(spec[k]))
+        out.append(row)
+    return out
 
 
 # ---- the services-bound facade -----------------------------------------------------------------------------------------------
@@ -354,6 +465,22 @@ class Prime:
 
     def brokers(self) -> List[dict]:
         return brokers()
+
+    def im_params(self, account_id: str) -> dict:
+        return im_params(self.services, account_id)
+
+    def unsupported(self) -> List[dict]:
+        """``rt.prime`` is this object: /api/unsupported reads the module rows through it."""
+        return unsupported()
+
+    def relationship(self, account_id: str, conn=None) -> dict:
+        from . import marks as _marks
+        with _marks.shared_reader(self.services.db, conn) as c:
+            return relationship(c, account_id)
+
+    def register_routes(self, router) -> None:
+        """C1: ``rt.prime`` is this object, so the router finds the routes here (module function ``register_routes``)."""
+        register_routes(router)
 
 
 def bind(services) -> Prime:
@@ -660,22 +787,48 @@ def post_monthly_minimum(ctx: TxContext, services, acct, month, force: bool = Fa
 
 # ---- OTC gate (§13.7, §20) ----------------------------------------------------------------------------------------------------
 def require_otc_kind(kind) -> str:
-    """IRS / TRS / XCCY pass (upper-cased); the Build-2 OTC products raise 400 ``NOT_IN_THIS_BUILD``; anything else
-    400 ``OTC_KIND``."""
+    """Every live OTC kind passes upper-cased (IRS, TRS, XCCY and the OTC options / forwards EQ_OPTION, FX_OPTION, EQ_FORWARD,
+    FX_FORWARD); a product that is not offered (FRAs, caps, floors, swaptions) and the generic names OPTION / FORWARD raise
+    400 ``NOT_IN_THIS_BUILD`` saying what to book instead; anything else 400 ``OTC_KIND``."""
     k = str(kind or "").strip().upper()
     if k in OTC_LIVE:
         return k
-    if k in OTC_NOT_BUILT:
-        raise RejectError("NOT_IN_THIS_BUILD", f"{OTC_NOT_BUILT[k]} via a prime broker are not in this build (Build 2); swaps (IRS / TRS / XCCY) are live",
+    live = ", ".join(OTC_LIVE)
+    if k in OTC_GENERIC:
+        raise RejectError("NOT_IN_THIS_BUILD", f"{k} is not an OTC product of its own: {OTC_GENERIC[k]}",
                           {"kind": k, "live": list(OTC_LIVE), "not_built": sorted(OTC_NOT_BUILT)})
-    raise RejectError("OTC_KIND", f"unknown OTC kind {kind!r}; live: {', '.join(OTC_LIVE)}; not in this build: {', '.join(sorted(OTC_NOT_BUILT))}",
+    if k in OTC_NOT_BUILT:
+        raise RejectError("NOT_IN_THIS_BUILD", f"{OTC_NOT_BUILT[k]} are not offered by the prime brokers in this terminal (no free inputs to price them"
+                          f" honestly); live OTC products: {live}", {"kind": k, "live": list(OTC_LIVE), "not_built": sorted(OTC_NOT_BUILT)})
+    raise RejectError("OTC_KIND", f"unknown OTC kind {kind!r}; live: {live}; not offered: {', '.join(sorted(OTC_NOT_BUILT))}",
                       {"live": list(OTC_LIVE), "not_built": sorted(OTC_NOT_BUILT)})
 
 
 def otc_unsupported() -> List[dict]:
-    """Rows for ``/api/unsupported`` (§20): every OTC product that answers NOT_IN_THIS_BUILD."""
-    return [{"item": f"PB OTC: {label}", "kind": k, "state": "NOT_IN_THIS_BUILD", "wording": "NOT IN THIS BUILD (Build 2); never priced with invented data",
-             "where": "PB page OTC tab, /api/otc/preview"} for k, label in sorted(OTC_NOT_BUILT.items())]
+    """Rows for ``/api/unsupported`` (§20): every OTC product that is not offered (NOT_IN_THIS_BUILD)."""
+    return [{"item": f"PB OTC: {label}", "kind": k, "state": "NOT_IN_THIS_BUILD",
+             "wording": "not offered: no free source for the inputs they need; never priced with invented data", "where": "prime-broker OTC tab"}
+            for k, label in sorted(OTC_NOT_BUILT.items())]
+
+
+def unsupported() -> List[dict]:
+    """Rows for ``/api/unsupported`` (Settings > Unsupported, trader wording): the prime-broker OTC products that are not offered."""
+    return [{"item": "Swaptions, caps and floors with a prime broker", "state": "NOT_OFFERED",
+             "wording": "no free volatility / rate-option inputs; never priced with invented data", "where": "prime-broker OTC tab"}]
+
+
+# ---- initial margin (SR-10 / C22) -----------------------------------------------------------------------------------------------
+def im_params(services, account_id: str) -> dict:
+    """C22: the PB's initial-margin terms for ``account_id`` from its live schedule - ``irs_im_bp`` in basis points, ``trs_im_pct``
+    / ``xccy_im_pct`` / ``option_im_pct`` / ``forward_im_pct`` as fractions (0.10 = 10 %) - plus ``broker`` and ``source``.  Read
+    on the caller's connection when it holds one (ORC-6: ``marks.shared_reader``, never a nested pooled reader); a non-PB or
+    unknown account raises its 404 like ``read_schedule``."""
+    from . import marks as _marks
+    with _marks.shared_reader(services.db) as c:
+        s = read_schedule(c, account_id)
+    out = {k: getattr(s, k) for k in IM_FIELDS}
+    out.update(broker=s.broker, source=f"{s.name} schedule ({'seed' if s.source == 'seed' else 'as edited'}, assumed)")
+    return out
 
 
 # ---- opening and closing accounts ----------------------------------------------------------------------------------------------
@@ -750,14 +903,28 @@ def h_open_pb(ctx: TxContext, payload: dict) -> dict:
     return open_pb(ctx, lid, payload.get("broker"), payload.get("pb_financing", 0), payload.get("pb_limit_c", 0), True)
 
 
-def h_close(ctx: TxContext, payload: dict) -> dict:
-    """``account.close {account_id}``: a FLAT prime-broker account only (409 ``NOT_FLAT`` with the reasons)."""
-    aid = str(payload.get("account_id") or "")
-    acct = _open_pb_account(ctx.conn, aid)
-    conn = ctx.conn
+def _holding_label(gl: str) -> str:
+    spec = CHART.get(gl)
+    return (spec.name if spec is not None else f"account {gl}").replace("\u2014", "-").replace("  ", " ")
+
+
+def close_check(conn, account_id: str) -> List[str]:
+    """Why a PB account is not flat (empty list = it may be closed), in trader words: what it still HOLDS or OWES - non-zero asset /
+    liability balances (cash, positions, receivables, payables, margin, financing; the equity, income and expense balances are the
+    history of its results, never a holding), open orders, pending settlements, open loans / borrows / OTC contracts (whose own margin
+    balances are then not repeated).  Pure read; ``account.close`` runs the same test in its transaction."""
+    aid = str(account_id or "")
     reasons = []
-    for r in conn.execute("SELECT gl, currency, instrument_id, balance_c FROM gl_balances WHERE account_id=? AND balance_c <> 0", (aid,)).fetchall():
-        reasons.append(f"balance {r['gl']} {r['currency']}{(' ' + r['instrument_id']) if r['instrument_id'] else ''} {fmt_money(natural(r['gl'], int(r['balance_c'])))}")
+    open_otc = {r[0] for r in conn.execute("SELECT contract_id FROM otc_contracts WHERE account_id=? AND status='OPEN'", (aid,)).fetchall()}
+    for r in conn.execute("SELECT gl, currency, instrument_id, balance_c FROM gl_balances WHERE account_id=? AND balance_c <> 0 ORDER BY gl, currency, instrument_id",
+                          (aid,)).fetchall():
+        spec = CHART.get(r["gl"])
+        if spec is not None and spec.kind not in ("ASSET", "LIABILITY"):
+            continue
+        if r["instrument_id"] and r["instrument_id"] in open_otc:
+            continue
+        inst = f" ({r['instrument_id']})" if r["instrument_id"] else ""
+        reasons.append(f"{_holding_label(r['gl'])}{inst} {r['currency']} {fmt_money(natural(r['gl'], int(r['balance_c'])))}")
     n = conn.execute("SELECT COUNT(*) FROM orders WHERE account_id=? AND status IN ('WORKING','PARTIAL','SUSPENDED','WAITING_PARENT')", (aid,)).fetchone()[0]
     if n:
         reasons.append(f"{n} open order(s)")
@@ -768,6 +935,59 @@ def h_close(ctx: TxContext, payload: dict) -> dict:
         n = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE account_id=? AND status='OPEN'", (aid,)).fetchone()[0]
         if n:
             reasons.append(f"{n} {what}")
+    return reasons
+
+
+AGREEMENT_LABEL = {"ISDA_MASTER": "ISDA Master", "CSA": "CSA", "PBA": "PBA"}
+AGREEMENT_MEANING = {"ISDA_MASTER": "the OTC contract framework", "CSA": "collateral and variation-margin terms",
+                     "PBA": "financing, custody and fees"}
+
+
+def relationship(conn, account_id: str) -> dict:
+    """The prime-broker relationship behind a PB account (PO-16): the agreements recorded with the dealer at onboarding
+    (``agreements`` rows of the lifetime and broker: kind, signed date), the one-line "ISDA Master / CSA / PBA with <dealer>,
+    signed <date>", the account's opening, the schedule edits (``SETTINGS_CHANGED`` events: count and the last one with its
+    before / after) and whether it is flat (``close_check``).  404 for a non-PB / unknown account."""
+    acct = _acct(conn, account_id)
+    if acct["kind"] != "PB":
+        raise NotFound("NOT_PB", f"{acct['account_id']} is not a prime-broker account", {"account_id": acct["account_id"], "kind": acct["kind"]})
+    aid = acct["account_id"]
+    broker = broker_of(acct)
+    name = (tables.PB_SCHEDULES.get(broker) or {}).get("name") or broker
+    rows = [dict(r) for r in conn.execute("SELECT kind, signed_date, note FROM agreements WHERE lifetime_id=? AND broker=? ORDER BY id",
+                                          (acct["lifetime_id"], broker)).fetchall()]
+    agreements = [{"kind": r["kind"], "label": AGREEMENT_LABEL.get(r["kind"], r["kind"]), "meaning": AGREEMENT_MEANING.get(r["kind"], ""),
+                   "signed_date": r["signed_date"], "note": r["note"]} for r in rows]
+    if agreements:
+        dates = sorted({a["signed_date"] for a in agreements if a["signed_date"]})
+        line = f"{' / '.join(a['label'] for a in agreements)} with {name}, signed {', '.join(dates) if dates else 'n/a'}"
+    else:
+        line = f"no agreements recorded with {name} (the account was opened without the onboarding dialog)"
+    edits = conn.execute("SELECT COUNT(*) FROM events WHERE type='SETTINGS_CHANGED' AND ref_type='schedule' AND ref_id=?", (aid,)).fetchone()[0]
+    last = conn.execute("SELECT ts, payload_json FROM events WHERE type='SETTINGS_CHANGED' AND ref_type='schedule' AND ref_id=? ORDER BY id DESC LIMIT 1",
+                        (aid,)).fetchone()
+    last_edit = None
+    if last is not None:
+        try:
+            pl = json.loads(last["payload_json"] or "{}")
+        except ValueError:
+            pl = {}
+        last_edit = {"ts": int(last["ts"]), "before": pl.get("before") or {}, "after": pl.get("after") or {},
+                     "labels": {k: (FIELD_SPECS.get(k) or {}).get("label") or k for k in (pl.get("after") or {})}}
+    reasons = close_check(conn, aid) if acct["status"] == "OPEN" else []
+    return {"account_id": aid, "broker": broker, "name": name, "status": acct["status"], "opened_ts": int(acct.get("opened_ts") or 0),
+            "closed_ts": acct.get("closed_ts"), "agreements": agreements, "agreements_line": line, "schedule_edits": int(edits), "last_edit": last_edit,
+            "flat": acct["status"] == "OPEN" and not reasons, "reasons": reasons,
+            "close_rule": "a prime-broker relationship closes only when the account is flat: no positions, cash, open orders, pending settlements,"
+                          " loans, borrows or OTC contracts; its history stays readable and the dealer cannot be reopened in this lifetime"}
+
+
+def h_close(ctx: TxContext, payload: dict) -> dict:
+    """``account.close {account_id}``: a FLAT prime-broker account only (409 ``NOT_FLAT`` with the reasons)."""
+    aid = str(payload.get("account_id") or "")
+    acct = _open_pb_account(ctx.conn, aid)
+    conn = ctx.conn
+    reasons = close_check(conn, aid)
     if reasons:
         raise ConflictError("NOT_FLAT", f"{aid} is not flat: " + "; ".join(reasons) + " (close positions, settle, repay and transfer the cash to Treasury first)",
                             {"account_id": aid, "reasons": reasons})
@@ -814,7 +1034,7 @@ def h_update_schedule(ctx: TxContext, payload: dict) -> dict:
     new = dict(stored)
     for k, val in parsed.items():
         old = stored[k]
-        changed = (Decimal(str(old)) != Decimal(str(val))) if FIELD_SPECS[k][0] == "decimal" else (old != val)
+        changed = (Decimal(str(old)) != Decimal(str(val))) if FIELD_SPECS[k]["kind"] == "decimal" else (old != val)
         if changed:
             before[k] = old
             after[k] = val
@@ -866,6 +1086,27 @@ def pb_accounts(conn, lifetime_id: Optional[str] = None, status: Optional[str] =
     return [dict(r) for r in conn.execute(sql, params).fetchall()]
 
 
+def register_routes(router) -> None:
+    """C1 (PO-16): ``GET /api/accounts/{id}/close`` - the relationship (agreements, flatness and the reasons, schedule edits);
+    ``POST /api/accounts/{id}/close`` - ``account.close`` (a flat PB account only; 409 NOT_FLAT with the reasons)."""
+    from .api import NotFound as _ApiNotFound, run_command
+    from . import marks as _marks
+
+    def close_get(req):
+        rt, aid = req.rt, req.params[0]
+        with _marks.shared_reader(rt.db) as conn:
+            try:
+                return relationship(conn, aid)
+            except NotFound as e:
+                raise _ApiNotFound(e.message, e.details)
+
+    def close_post(req):
+        return run_command(req, "account.close", {"account_id": req.params[0]})
+
+    router.add("GET", r"/api/accounts/([^/]+)/close", close_get)
+    router.add("POST", r"/api/accounts/([^/]+)/close", close_post)
+
+
 def register(bus) -> None:
     bus.register("account.open_pb", h_open_pb)
     bus.register("account.close", h_close)
@@ -875,6 +1116,7 @@ def register(bus) -> None:
 
 
 __all__ = ["ACCRUAL_KIND_PB", "ACCRUAL_KIND_CREDIT", "CASH_INSTRUMENT", "BROKERS", "EDITABLE_FIELDS", "FIELD_SPECS", "FIELDS_NOTE", "OTC_LIVE", "OTC_NOT_BUILT",
+           "OTC_GENERIC", "OTC_LABELS", "OTC_SEEDS", "IM_FIELDS", "OTC_TERM_FIELDS", "im_params", "close_check", "relationship", "register_routes", "field_specs",
            "NotFound", "PbSchedule", "Prime", "bind", "brokers", "seed_schedule", "parse_field", "parse_money", "MONEY_ALIASES", "schedule_from_json", "read_schedule", "schedule_view",
            "pb_headroom_detail", "pb_headroom_c", "HEADROOM_FORMULA", "night_cutoff_ts", "balance_at", "financing_rate", "credit_rate", "accrual_lines_pb",
            "accrual_lines_pb_credit", "accrual_state", "nights_due", "post_pb_accrual", "fees_charged_c", "monthly_minimum_line", "post_monthly_minimum",

@@ -377,13 +377,18 @@ class ReconcileTests(unittest.TestCase):
         self.assertEqual(set(), {i["job"] for i in out["ran"]} - {"SWAP_VM"})
         status, body, _ = self.call("POST", "/api/jobs/run", {"request_id": "ui:recon-jobs-0002", "job": "NOPE"})
         self.assertEqual((400, "BAD_REQUEST"), (status, body["error"]["code"]))
-        # bonds (WP-10, Build 2): the order ticket refuses a bond with the model-price sentence; POST /api/bonds/trade answers 400 UNSUPPORTED while the
-        # build2_bonds setting is off and validates normally once it is on
+        # bonds (WP-10, Build 2): the order ticket refuses a bond AT PREVIEW with the pointer to the bond ticket (C15, Build 2 P05: USE_OWN_TICKET);
+        # bond execution is ON by default (Build 2 P07): POST /api/bonds/trade validates (the unknown account is the reason), answers 400 UNSUPPORTED
+        # while the build2_bonds setting is explicitly off and validates again once it is back on
         bond = sorted(i.instrument_id for i in self.rt.instruments.all() if i.kind == "BOND")[0]
         status, body, _ = self.call("POST", "/api/orders/preview", {"account_id": "T1:DEBT", "instrument_id": bond, "side": "BUY", "qty": 1000, "order_type": "MARKET", "tif": "DAY"})
         blockers = body.get("blockers") if status == 200 else [body.get("error")]
-        self.assertTrue(any((b or {}).get("code") == "UNSUPPORTED" and "model price, not executable in this build" in (b or {}).get("message", "") for b in blockers), (status, body))
+        self.assertTrue(any((b or {}).get("code") == "USE_OWN_TICKET" and "bond ticket" in (b or {}).get("message", "") for b in blockers), (status, body))
         trade = {"account_id": "T1:NOPE", "instrument_id": bond, "side": "BUY", "qty": 1000}
+        status, body, _ = self.call("POST", "/api/bonds/trade", dict(trade, request_id="ui:recon-bond-0000"))
+        self.assertEqual(400, status)
+        self.assertNotEqual("UNSUPPORTED", body["error"]["code"])
+        self.ok("PATCH", "/api/settings", {"request_id": "ui:recon-settings-0000", "build2_bonds": False})
         status, body, _ = self.call("POST", "/api/bonds/trade", dict(trade, request_id="ui:recon-bond-0001"))
         self.assertEqual((400, "UNSUPPORTED"), (status, body["error"]["code"]))
         self.ok("PATCH", "/api/settings", {"request_id": "ui:recon-settings-0001", "build2_bonds": True})

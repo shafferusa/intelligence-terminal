@@ -30,9 +30,10 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from . import books as _books, config, tables
 from .accounting import AVAILABLE_TEXT, ScopeError
@@ -40,11 +41,66 @@ from .api import (ApiError, NotBuilt, NotFound, PACKAGES, Request, encode, mark_
 from .clock import accounting_day, ny_of
 from .instruments import EQUITY_KINDS
 from .ledger import CHART
+from .news import attention_lifetime
 from .quotes.rates import UNIT_FRACTION, fraction_to_pct, treasury_cash_rate
-from .units import fmt_money, from_c, to_c
+from .units import fmt_money, from_c, fx_c, to_c
 
 HISTORY_PATHS = ("positions", "portfolio", "accounting/balance-sheet", "accounting/pnl", "accounting/trial-balance", "accounting/journal", "accounting/integrity",
-                 "activity", "export/transactions.csv", "export/positions.csv")
+                 "accounting/transactions", "accounting/cash", "activity", "export/transactions.csv", "export/positions.csv")
+_ACCOUNT_RE = re.compile(config.ACCOUNT_ID_RE)
+_LIFETIME_RE = re.compile(r"^[A-Z]+[0-9]+$")
+
+
+# ---- names, books and shares (P03: every row says whose it is in words) ---------------------------------------------------------
+def name_maps(rt) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """``({account_id: account name}, {book_code: book name})`` - every account of every lifetime, every book."""
+    with rt.db.reader() as conn:
+        accts = {r[0]: r[1] for r in conn.execute("SELECT account_id, name FROM accounts").fetchall()}
+        bks = {b.code: b.name for b in _books.books(conn)}
+    return accts, bks
+
+
+def lifetime_of(account_id: Optional[str]) -> Optional[str]:
+    """``"P1:US_EXCHANGE" -> "P1"``; None for anything that is not an account id."""
+    if not account_id or not _ACCOUNT_RE.match(str(account_id)):
+        return None
+    return str(account_id).split(":", 1)[0]
+
+
+def book_fields(account_id: Optional[str], books: Dict[str, str]) -> dict:
+    """``{lifetime_id, book_code, book_name}`` of an account id (all None for a non-account)."""
+    lid = lifetime_of(account_id)
+    code = _books.book_code_of(lid) if lid else None
+    return {"lifetime_id": lid, "book_code": code, "book_name": books.get(code, code) if code else None}
+
+
+def share(part_c, whole_c) -> Optional[Decimal]:
+    """``part / whole`` as a 4-dp fraction (0.1294 = 12.94 %); None when either is missing or the whole is not positive (a share
+    of a zero or negative NAV is not a weight)."""
+    if part_c is None or whole_c is None or int(whole_c) <= 0:
+        return None
+    return (Decimal(int(part_c)) / Decimal(int(whole_c))).quantize(Decimal("0.0001"))
+
+
+def scope_kind(scope: str) -> str:
+    """ALL_BOOKS | LIFETIME (``ALL`` / ``{lifetime}:ALL``) | TREASURY (a Treasury account) | ACCOUNT."""
+    s = str(scope or "")
+    if s == "ALL_BOOKS":
+        return "ALL_BOOKS"
+    if s == "ALL" or s.endswith(":ALL"):
+        return "LIFETIME"
+    return "TREASURY" if s.endswith(":TREASURY") else "ACCOUNT"
+
+
+WEIGHT_BASIS = {"ALL_BOOKS": "share of the NAV of all books", "LIFETIME": "share of the book's NAV", "ACCOUNT": "share of the account's NAV",
+                "TREASURY": "share of the account's NAV"}
+
+
+def fx_rate(rt, snap, ccy: str) -> Optional[Decimal]:
+    """USD per unit of ``ccy`` from the mark snapshot (``Accounting._fx_rate``: 1 for USD, None when no usable rate)."""
+    if ccy == "USD":
+        return Decimal(1)
+    return rt.accounting._fx_rate(snap, ccy)
 
 
 # ---- money on the wire (module docstring) ---------------------------------------------------------------------------------
@@ -80,7 +136,7 @@ def treasury_out(tv) -> dict:
     return d
 
 
-def balance_sheet_out(bs) -> dict:
+def balance_sheet_out(bs, kind: Optional[str] = None) -> dict:
     """``BalanceSheet`` for JSON in the §15 / WP-12 row shape: one row per (line, currency) with ``gl`` ("1200/1250"),
     ``currency``, ``native`` and ``usd`` as decimal strings.  A computed line (unrealised, open trade equity, swaps at
     market) has no native amounts: it is a USD row.  A line held in several currencies: the USD part converts at 1 and a
@@ -112,8 +168,27 @@ def balance_sheet_out(bs) -> dict:
     memo = dict(d.get("memo") or {})
     memo["fx_clearing_c"] = int(memo.get("fx_clearing_base_c") or 0)
     memo["ties"] = int(bs.nav_c) == int(memo.get("capital_c") or 0) + int(memo.get("advances_c") or 0) + int(memo.get("retained_c") or 0)
+    memo.update(advances_convention(kind or scope_kind(bs.scope), int(memo.get("advances_c") or 0)))
     d["memo"] = memo
     return d
+
+
+def advances_convention(kind: str, advances_c: int) -> dict:
+    """BM-29: ONE way of saying the Treasury's internal advances, on the Treasury page and the balance sheet.  The ledger
+    keeps them in 3100 (``advances_c`` = the scope's natural 3100 balance in base: negative for the Treasury that advanced
+    cash, positive for the account it funded, zero over a whole lifetime - L5).  Shown as a POSITIVE amount with the word
+    that says its direction, and the identity written with the sign that makes it add up:
+    Treasury scope  'advanced to accounts 100,000.00'   NAV = capital + retained - advanced to accounts
+    account scope   'funded by Treasury 100,000.00'     NAV = capital + funded by Treasury + retained
+    a lifetime / all books  'internal advances (net) 0.00'  NAV = capital + internal advances (net, zero across a lifetime) + retained."""
+    if kind == "TREASURY":
+        return {"advances_label": "advanced to accounts", "advances_shown_c": -advances_c,
+                "identity_text": "NAV = capital + retained - advanced to accounts"}
+    if kind == "ACCOUNT":
+        return {"advances_label": "funded by Treasury", "advances_shown_c": advances_c,
+                "identity_text": "NAV = capital + funded by Treasury + retained"}
+    return {"advances_label": "internal advances (net)", "advances_shown_c": advances_c,
+            "identity_text": "NAV = capital + internal advances (net, zero across a lifetime) + retained"}
 
 
 def treasury_interest(rt, tv) -> dict:
@@ -154,6 +229,10 @@ def account_rows(rt, lid: str, snap=None) -> List[dict]:
         wo = {r[0]: int(r[1]) for r in conn.execute(f"SELECT account_id, COUNT(*) FROM orders WHERE status IN ({q}) GROUP BY account_id", OPEN_ORDER_STATUSES).fetchall()}
         ps = {r[0]: int(r[1]) for r in conn.execute("SELECT account_id, COUNT(*) FROM settlements WHERE status='PENDING' GROUP BY account_id").fetchall()}
         at = {r[0]: int(r[1]) for r in conn.execute("SELECT account_id, COUNT(*) FROM attention WHERE resolved_ts IS NULL AND account_id IS NOT NULL GROUP BY account_id").fetchall()}
+        ccys: Dict[str, set] = {}
+        for r in conn.execute("SELECT DISTINCT g.account_id, g.currency FROM gl_balances g JOIN accounts a ON a.account_id=g.account_id WHERE a.lifetime_id=?", (lid,)).fetchall():
+            ccys.setdefault(r[0], set()).add(r[1])
+        bname = (lambda b: b.name if b else None)(_books.book_of(conn, _books.book_code_of(lid)))
     nav = rt.accounting.nav(f"{lid}:ALL", snapshot=snap)
     out = []
     for r in rows:
@@ -170,12 +249,32 @@ def account_rows(rt, lid: str, snap=None) -> List[dict]:
         r["sweep_covers_usd_c"] = int(av.sweep_covers_c)
         r["unfunded_usd_c"] = int(av.unfunded_c)
         r["overdrawn_usd_c"] = int(av.overdrawn_c)
+        r.update(available_by_currency(rt, aid, ccys.get(aid, set()), int(av.available_c), snap))
         r["working_orders"] = wo.get(aid, 0)
         r["pending_settlements"] = ps.get(aid, 0)
         r["attention_count"] = at.get(aid, 0)
         r["nav_quality"] = nav.quality
+        r["book_name"] = bname
         out.append(r)
     return out
+
+
+def available_by_currency(rt, account_id: str, currencies, usd_available_c: int, snap) -> dict:
+    """C24 / BM-30: the account's own available cash in every currency it holds (``available_c`` floored at zero, the
+    sidebar's 'avail USD x . EUR y') and the sum in USD at the snapshot's FX (``available_base``).  A currency whose USD
+    rate is not loaded leaves the base figure null and names it (``available_base_missing``) - never a guessed rate."""
+    by: Dict[str, int] = {"USD": int(usd_available_c)}
+    for ccy in sorted(set(currencies or ()) - {"USD"}):
+        by[ccy] = int(rt.accounting.available(account_id, ccy, snapshot=snap))
+    base, missing = 0, []
+    for ccy, v in by.items():
+        rate = fx_rate(rt, snap, ccy)
+        if rate is None:
+            if v:
+                missing.append(ccy)
+            continue
+        base += fx_c(v, rate)
+    return {"available_by_ccy": money_map(by), "available_base_c": None if missing else base, "available_base_missing": missing}
 
 
 def account_row(rt, account_id: str, snap=None) -> dict:
@@ -237,9 +336,183 @@ def fill_rows(rt, conn, where: str, params: list, now: int, limit: int = 500) ->
     return out
 
 
+_FUT_IM_RE = re.compile(r"initial margin [+-]?[0-9][0-9,]*\.[0-9]{2} \(([^)]*)\)")
+
+# ---- V104R1-04 (1.0.4 fixer): trader wording for the link ids, account ids, codes and convention keys inside the texts a page shows ----
+LINK_WORDS = {"fill": "fill", "otc": "OTC contract", "swapvm": "swap variation margin", "vm": "variation margin", "swappay": "swap payment",
+              "cdxcpn": "CDX coupon", "trsreset": "TRS reset", "trsdiv": "TRS dividend", "xccy": "cross-currency swap", "xccypay": "cross-currency swap payment",
+              "xccyfx": "cross-currency swap FX reset", "pay": "monthly charge", "pbmin": "prime-broker monthly minimum", "pb": "PB interest",
+              "borrow": "stock borrow", "sec_loan": "securities loan", "repo": "repo", "settlement": "settlement", "loan": "loan", "private_loan": "private loan",
+              "fx_deal": "FX deal", "coupon": "coupon", "div": "dividend", "divpay": "dividend payment", "expiry": "expiry", "final": "final settlement"}
+LINK_STEPS = {"open": "at booking", "terminate": "termination", "start": "start", "end": "maturity", "close": "close"}
+REF_WORDS = {"otc": "contract", "fx_deal": "deal", "sec_loan": "securities loan", "private_loan": "private loan", "borrow": "borrow"}
+CODE_ACRONYMS = {"FX", "OTC", "CDX", "PB", "IM", "VM", "TRS", "IRS", "XCCY", "FIFO", "SOFR", "NAV", "US", "USD", "ECP", "QP", "ADV", "DV01", "CS01", "ETF",
+                 "GC", "HTB", "CSA", "ISDA", "PBA", "SHO", "GTC", "AON", "MKT", "LMT", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "OCC", "CME", "PDT", "API"}
+CODE_WORDS = {"ACCT_DAY": "accounting day", "FUT_MARGIN": "futures margin", "OPT_MARGIN": "option margin", "EXCESS_LIQ": "excess liquidity",
+              "BUY_CCY": "currency bought", "SELL_CCY": "currency sold", "PB_ONBOARDED": "prime broker onboarded", "OTC_BOOKED": "OTC contract booked",
+              "FX_DEALT": "FX deal", "FX_FORWARD_DEALT": "FX forward dealt", "SWEEP_IN": "sweep-in", "SWEEP_OUT": "sweep-out", "OTC_IM": "OTC initial margin",
+              "OTC_VM": "OTC variation margin", "OTC_TERMINATE": "OTC termination"}
+_CODE_RE = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$")
+_ACCT_IN_TEXT = re.compile(r"\b[A-Z]{1,3}[0-9]+:[A-Z][A-Z0-9_]*[A-Z0-9]\b")
+_LINK_TOKEN = re.compile(r"[A-Z]{1,3}[0-9]+:[A-Z][A-Z0-9_]*[A-Z0-9]|[^:]+")
+_LINK_PHRASE = re.compile(r"\bfor ([a-z][a-z_]*) ([A-Za-z0-9][A-Za-z0-9_.:\-]*[A-Za-z0-9])")
+_CONV_GROUP = re.compile(r"( ?)\(([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*(?:, ?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)*)\)")
+#: section names of a module's docstring some memos cite beside the conventions ('(EXECUTION, ACCRUED, COST_BASIS)' of a bond fill): not
+#: shown on any page, so a page drops them and keeps the conventions it can show
+DOC_KEYS = frozenset({"EXECUTION", "ACCRUED", "FILL"})
+
+
+def code_words(code) -> str:
+    """An internal code in words ('OTC_IM' -> 'OTC initial margin', 'PAY_FIXED' -> 'pay fixed'); any other text as given."""
+    c = str(code if code is not None else "")
+    if not _CODE_RE.match(c):
+        return c
+    if c in CODE_WORDS:
+        return CODE_WORDS[c]
+    return " ".join(w if w in CODE_ACRONYMS else w.lower() for w in c.split("_"))
+
+
+def conv_title(key: str) -> str:
+    """A convention key as a title ('SWAP_MARK' -> 'Swap mark', 'FX_SPOT' -> 'FX spot'): the same rule as T.convTitle."""
+    w = code_words(key)
+    return w[:1].upper() + w[1:]
+
+
+def link_words(linked_type, linked_id, names: Optional[Dict[str, str]] = None) -> str:
+    """What a link points at, in words: ('otc', 'im:SWP-000002:open') -> 'OTC initial margin SWP-000002 (at booking)',
+    ('otc', 'otc:SWP-000002:terminate') -> 'OTC contract SWP-000002 (termination)', ('borrow', 'B-000001') -> 'stock borrow B-000001';
+    an account id inside it by its name."""
+    t = str(linked_type or "")
+    word = LINK_WORDS.get(t, t.replace("_", " "))
+    toks = _LINK_TOKEN.findall(str(linked_id or ""))
+    if toks and toks[0].lower() == t.lower():
+        toks = toks[1:]                                           # an idempotency key leads with its own kind
+    if toks and toks[0].lower() in ("im", "vm") and t == "otc":
+        word = "OTC initial margin" if toks[0].lower() == "im" else "OTC variation margin"
+        toks = toks[1:]
+    elif toks and toks[0] in LINK_WORDS and toks[0] != t:
+        word = LINK_WORDS[toks[0]]                                # 'pay:pbmin:...' -> the prime-broker monthly minimum
+        toks = toks[1:]
+    ids, steps = [], []
+    for x in toks:
+        if _ACCT_IN_TEXT.fullmatch(x):
+            ids.append((names or {}).get(x, x))
+        elif x in LINK_STEPS:
+            steps.append(LINK_STEPS[x])
+        else:
+            ids.append(x)
+    return (word + (" " + " ".join(ids) if ids else "") + (f" ({', '.join(steps)})" if steps else "")).strip()
+
+
+def readable(text, names: Optional[Dict[str, str]] = None) -> str:
+    """A ledger / event text a page shows, in trader wording: 'for otc im:SWP-000002:open' -> 'for OTC initial margin SWP-000002
+    (at booking)', account ids -> their names ('F1:TREASURY -> F1:DEBT' -> 'Treasury -> Debt Instruments'), a group of convention
+    keys '(SWAP_MARK, SWAP_RESET)' -> '(see Swap mark, Swap reset)' (only keys the conventions know).  The stored text is unchanged."""
+    s = str(text or "")
+    if not s:
+        return s
+    names = names or {}
+
+    def _link(m):
+        if m.group(1) in LINK_WORDS or ":" in m.group(2):
+            return "for " + link_words(m.group(1), m.group(2), names)
+        return m.group(0)
+
+    def _conv(m):
+        keys = [k.strip() for k in m.group(2).split(",")]
+        if not all(k in tables.CONVENTIONS or k in DOC_KEYS for k in keys):
+            return m.group(0)
+        shown = [conv_title(k) for k in keys if k in tables.CONVENTIONS]
+        return m.group(1) + "(see " + ", ".join(shown) + ")" if shown else ""
+    s = _LINK_PHRASE.sub(_link, s)
+    s = _ACCT_IN_TEXT.sub(lambda m: names.get(m.group(0), m.group(0)), s)
+    return _CONV_GROUP.sub(_conv, s)
+
+
+TRANSFER_WORDS = {"INITIAL_CAPITAL": "initial capital", "DEPOSIT": "capital deposit", "WITHDRAWAL": "capital withdrawal", "TRANSFER": "internal transfer",
+                  "SWEEP_IN": "sweep-in", "SWEEP_OUT": "sweep-out"}
+
+
+def clean_memo(memo: Optional[str]) -> str:
+    """BM-24: a default memo the handler appended after its own generated text ('capital deposit USD 1,000.00 to P1:TREASURY:
+    capital deposit') is shown once; any other memo stays as stored."""
+    m = re.match(r"^(.*): ([^:]+)$", memo or "")
+    if m and m.group(1).strip().lower().startswith(m.group(2).strip().lower()):
+        return m.group(1)
+    return memo or ""
+
+
+def _counterparty_name(rt, conn, cid: Optional[str]) -> Optional[str]:
+    """A counterparty id of the directory (``BANK_JPM``, ``PD_GS``, ``PB_GS``) -> its name; the id itself when the directory
+    does not know it (or is not built)."""
+    if not cid:
+        return None
+    try:
+        from . import counterparties as _cp
+        e = _cp.get(rt, str(cid), conn)
+        if e and e.get("name"):
+            return str(e["name"])
+    except Exception:   # noqa: BLE001 - the directory is optional (P08); the id is shown instead
+        pass
+    return str(cid)
+
+
+def _ref_party(rt, conn, ref_type: Optional[str], ref_id: Optional[str]) -> Optional[dict]:
+    """The other party of a ledger entry's reference (BM-24): a transfer's two accounts, a loan's lender, a borrow's lender,
+    a repo's / securities loan's counterparty, an OTC contract's dealer, a private loan's borrower.  None when unknown."""
+    if not ref_type or not ref_id:
+        return None
+    try:
+        if ref_type == "transfer":
+            r = conn.execute("SELECT kind, from_account, to_account FROM transfers WHERE transfer_id=?", (ref_id,)).fetchone()
+            return {"transfer": dict(r)} if r else None
+        if ref_type == "loan":
+            r = conn.execute("SELECT * FROM loans WHERE loan_id=?", (ref_id,)).fetchone()
+            return {"party": r["lender"], "role": "lender"} if r else None
+        if ref_type == "borrow":
+            r = conn.execute("SELECT lender FROM borrows WHERE borrow_id=?", (ref_id,)).fetchone()
+            return {"party": r["lender"], "role": "lender"} if r else None
+        if ref_type == "repo":
+            r = conn.execute("SELECT * FROM repos WHERE repo_id=?", (ref_id,)).fetchone()
+            cid = dict(r).get("counterparty") if r else None
+            return {"party": _counterparty_name(rt, conn, cid), "role": "repo counterparty"} if cid else None
+        if ref_type == "sec_loan":
+            r = conn.execute("SELECT counterparty FROM sec_loans WHERE loan_id=?", (ref_id,)).fetchone()
+            return {"party": _counterparty_name(rt, conn, r["counterparty"]), "role": "borrower of the shares"} if r else None
+        if ref_type == "otc":
+            r = conn.execute("SELECT broker FROM otc_contracts WHERE contract_id=?", (ref_id,)).fetchone()
+            return {"party": r["broker"], "role": "dealer"} if r else None
+        if ref_type == "private_loan":
+            r = conn.execute("SELECT borrower FROM private_loans WHERE loan_id=?", (ref_id,)).fetchone()
+            return {"party": r["borrower"], "role": "borrower"} if r else None
+    except Exception:   # noqa: BLE001 - a table of a module that is not built (sec_loans, a column) leaves the party unknown, never a 500
+        return None
+    return None
+
+
 def txn_rows(rt, scope: str, *, from_date=None, to_date=None, kinds=None, instrument_id=None, limit=500, offset=0) -> List[dict]:
-    """``Accounting.transactions`` rows with every line expanded (debit / credit, GL name)."""
+    """``Accounting.transactions`` rows with every line expanded (debit / credit, GL name), plus (P03):
+    - ``account_names`` of the entry's accounts, ``other_side`` = the other party in words (BM-24): for an account scope the
+      entry's other accounts ('from Treasury' / 'to US Exchange'), else the reference's lender / counterparty / dealer;
+    - ``memo`` without a repeated default memo (``clean_memo``; ``memo_stored`` keeps the ledger's text when it differs);
+    - USX-20: the fill's quantity / price / gross / fee only on the fill's OWN entry (idem ``fill:{fill_id}``); another entry
+      of the same fill (the futures initial-margin move ``im:{fill_id}``) carries none and says what it is ('initial margin
+      +17,500.00 (0 -> 1 contracts x 17,500.00)')."""
     rows = rt.accounting.transactions(scope, from_date=from_date, to_date=to_date, kinds=kinds, instrument_id=instrument_id, limit=limit, offset=offset)
+    names, _bk = name_maps(rt)
+    own = scope if _ACCOUNT_RE.match(str(scope or "")) else None
+    idem: Dict[int, str] = {}
+    parties: Dict[tuple, Optional[dict]] = {}
+    with rt.db.reader() as conn:
+        ids = [int(t.entry_id) for t in rows]
+        for i in range(0, len(ids), 500):
+            chunk = ids[i:i + 500]
+            for r in conn.execute(f"SELECT entry_id, idem_key FROM journal_entries WHERE entry_id IN ({','.join('?' for _ in chunk)})", chunk).fetchall():
+                idem[int(r[0])] = r[1]
+        for t in rows:
+            key = (t.ref_type, t.ref_id)
+            if key not in parties:
+                parties[key] = _ref_party(rt, conn, t.ref_type, t.ref_id)
     out = []
     for t in rows:
         d = t.to_dict()
@@ -251,8 +524,42 @@ def txn_rows(rt, scope: str, *, from_date=None, to_date=None, kinds=None, instru
             l["debit_c"] = amt if amt > 0 else None
             l["credit_c"] = -amt if amt < 0 else None
             l.setdefault("gl_name", CHART[l["gl"]].name if l.get("gl") in CHART else l.get("gl"))
+            l["account_name"] = names.get(l.get("account_id"), l.get("account_id"))
             lines.append(l)
         d["lines"] = lines
+        entry_accounts = sorted({l.get("account_id") for l in lines if l.get("account_id")})
+        d["entry_accounts"] = entry_accounts
+        d["account_names"] = {a: names.get(a, a) for a in entry_accounts}
+        memo = readable(clean_memo(t.memo), names)                                   # V104R1-04: names and words, never ids / keys
+        if memo != (t.memo or ""):
+            d["memo_stored"] = t.memo
+        d["memo"] = memo
+        d["kind_label"] = code_words(t.kind)
+        if t.ref_type == "fill" and t.ref_id and idem.get(int(t.entry_id)) != f"fill:{t.ref_id}":
+            # USX-20: not the fill's own entry (the futures initial margin of that fill): no second quantity / price / gross
+            d["qty"] = d["price"] = None
+            d["gross_c"] = d["fee_c"] = None
+            im = sum(int(l.get("amount_c") or 0) for l in lines if l.get("gl") == "1300")
+            if im or str(t.kind) == "FUT_MARGIN":
+                m = _FUT_IM_RE.search(t.memo or "")
+                d["memo"] = f"initial margin {'+' if im >= 0 else '-'}{fmt_money(abs(im))}" + (f" ({m.group(1)})" if m else "") + f" for fill {t.ref_id}"
+        party = parties.get((t.ref_type, t.ref_id))
+        other = [a for a in entry_accounts if a != own] if own else []
+        if party and party.get("transfer"):
+            tr = party["transfer"]
+            src, dst = tr.get("from_account"), tr.get("to_account")
+            if own and own == dst:
+                d["other_side"] = f"from {names.get(src, src) if src else 'outside the book (capital)'}"
+            elif own and own == src:
+                d["other_side"] = f"to {names.get(dst, dst) if dst else 'outside the book (capital)'}"
+            else:
+                d["other_side"] = f"{names.get(src, src) if src else 'outside the book'} -> {names.get(dst, dst) if dst else 'outside the book'}"
+        elif party and party.get("party"):
+            d["other_side"] = f"{party['party']} ({party.get('role')})"
+        elif other:
+            d["other_side"] = ", ".join(names.get(a, a) for a in other)
+        else:
+            d["other_side"] = t.counterparty or None
         out.append(d)
     return out
 
@@ -287,11 +594,42 @@ def positions_csv(positions) -> str:
     return _csv(body, ["account_id", "instrument_id", "qty", "cost", "mark", "quality", "mv", "unrealised"])
 
 
+#: BM-14: the explain rows in the order of the identity explained = realised + income - financing - fees + unrealised + FX,
+#: each with the sign of its EFFECT on P&L (financing and fees are booked as costs: a cost of 3.00 moves P&L by -3.00)
+EXPLAIN_ROWS = (("realised", "realised", 1, ""), ("income", "income", 1, ""), ("financing", "financing", -1, "a financing cost reduces P&L"),
+                ("fees", "fees", -1, "fees reduce P&L"), ("unrealised", "unrealised", 1, ""), ("fx_result", "FX result", 1, ""))
+
+
+def pnl_out(view) -> dict:
+    """``PnlView`` for JSON plus ``explain`` (BM-14): one row per component ``{key, label, booked, effect, note}`` where
+    ``effect`` is the component's signed effect on P&L, so the rows add up to ``explained`` to the cent; and a
+    ``baseline.label`` / ``note`` (BM-33): ITD measures from the lifetime's start ('inception (capital flows)': NAV0 = 0,
+    capital is a flow), a period without a snapshot yet says so ('inception (no snapshot yet)'), else 'snapshot <date>'."""
+    d = view.to_dict()
+    comps = dict(view.components or {})
+    rows = []
+    for key, label, sign, note in EXPLAIN_ROWS:
+        v = int(comps.get(key + "_c") or 0)
+        rows.append({"key": key, "label": label, "booked_c": v, "effect_c": sign * v, "note": note})
+    d["explain"] = rows
+    d["explain_ties"] = sum(r["effect_c"] for r in rows) == int(view.explained_c)
+    b = dict(d.get("baseline") or {})
+    if b.get("inception"):
+        if view.period == "ITD":
+            b["label"], b["note"] = "inception (capital flows)", "ITD measures from the lifetime's start: NAV0 = 0 and every capital deposit or withdrawal is a flow"
+        else:
+            b["label"], b["note"] = "inception (no snapshot yet)", f"no daily snapshot before this {view.period} period yet: measured from the lifetime's start (never invented)"
+    else:
+        b["label"], b["note"] = f"snapshot {b.get('snap_date')}", "the last daily snapshot before the period"
+    d["baseline"] = b
+    return d
+
+
 def pnl_block(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD")) -> dict:
     out = {}
     for p in periods:
         try:
-            out[p] = rt.accounting.pnl(scope, p, snapshot=snap)
+            out[p] = pnl_out(rt.accounting.pnl(scope, p, snapshot=snap))
         except ScopeError:
             raise
         except Exception as e:   # noqa: BLE001 — one period's failure must not hide the others; it is reported in place
@@ -301,29 +639,131 @@ def pnl_block(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD")) -> d
     return out
 
 
+def position_row(p, names: Dict[str, str], books: Dict[str, str], nav_c: Optional[int] = None, basis: Optional[str] = None) -> dict:
+    """A ``PositionView`` for JSON (USX-30 / C24): the mark with both spellings, the account's name, its lifetime / book, and
+    ``weight`` = share of ``nav_c`` (the requested scope's NAV, BM-06) with ``weight_basis`` saying which NAV; without
+    ``nav_c`` the weight stays the account's NAV share ``Accounting.positions`` gives (the account page labels it
+    '% acct NAV').  ``notional`` (futures: contracts x multiplier x mark, in the instrument's currency) comes as computed."""
+    d = p.to_dict()
+    d["mark"] = mark_dict(p.mark)
+    d["account_name"] = names.get(p.account_id, p.account_id)
+    d.update(book_fields(p.account_id, books))
+    if nav_c is not None:
+        d["weight_account"] = d.get("weight")
+        d["weight"] = share(p.mv_base_c, nav_c)
+        d["weight_basis"] = basis or WEIGHT_BASIS["LIFETIME"]
+    else:
+        d["weight_basis"] = WEIGHT_BASIS["ACCOUNT"]
+    return d
+
+
 def positions_view(rt, scope: str, snap, kind: Optional[str] = None) -> List[dict]:
+    names, books = name_maps(rt)
     out = []
     for p in rt.accounting.positions(scope, snapshot=snap):
         if kind and p.kind != kind:
             continue
-        d = p.to_dict()
-        d["mark"] = mark_dict(p.mark)
-        out.append(d)
+        out.append(position_row(p, names, books))
     return out
 
 
-def by_class(positions) -> Dict[str, dict]:
-    out: Dict[str, dict] = {}
+def by_class(positions, nav_c: Optional[int] = None) -> List[dict]:
+    """BM-04: the class subtotals as a LIST in the order the classes first appear (the Portfolio groups its rows the same
+    way): ``{klass, label, count, mv, unrealised, day_pnl, cost, weight, missing, day_pnl_missing}``.  ``mv`` / ``unrealised``
+    / ``day_pnl`` sum the rows that have the figure (``missing`` / ``day_pnl_missing`` count the ones that do not - an
+    unpriced position is never valued at a guess); ``weight`` = ``mv`` as a share of ``nav_c`` (the scope's NAV)."""
+    acc: Dict[str, dict] = {}
+    order: List[str] = []
     for p in positions:
-        b = out.setdefault(p.klass, {"n": 0, "mv_base_c": 0, "unrealised_base_c": 0, "cost_c": 0, "missing": 0})
-        b["n"] += 1
-        b["cost_c"] += int(p.cost_c)
+        k = p.klass or p.kind or ""
+        b = acc.get(k)
+        if b is None:
+            b = acc[k] = {"klass": k, "label": k, "count": 0, "mv_c": 0, "unrealised_c": 0, "day_pnl_c": 0, "cost_c": 0, "missing": 0, "day_pnl_missing": 0}
+            order.append(k)
+        b["count"] += 1
+        b["cost_c"] += int(p.cost_c or 0)
         if p.mv_base_c is None:
             b["missing"] += 1
         else:
-            b["mv_base_c"] += int(p.mv_base_c)
-            b["unrealised_base_c"] += int(p.unrealised_base_c or 0)
-    return out
+            b["mv_c"] += int(p.mv_base_c)
+        if p.unrealised_base_c is not None:
+            b["unrealised_c"] += int(p.unrealised_base_c)
+        if p.day_pnl_c is None:
+            b["day_pnl_missing"] += 1
+        else:
+            b["day_pnl_c"] += int(p.day_pnl_c)
+    for b in acc.values():
+        b["weight"] = share(b["mv_c"], nav_c)
+    return [acc[k] for k in order]
+
+
+def portfolio_footer(rt, positions, snap) -> dict:
+    """BM-05 footer: gross long / gross short = the market value of the long / short rows (base USD; a short as a positive
+    amount), net = long - short; futures carry no market value (their P&L is open trade equity), so their exposure is
+    beside it as notional (contracts x multiplier x mark, converted at the snapshot's FX).  Unpriced rows are counted, not
+    valued."""
+    long_c = short_c = fl_c = fs_c = 0
+    unpriced = 0
+    fx_missing: List[str] = []
+    for p in positions:
+        if p.kind == "FUTURE":
+            if p.notional_c is None:
+                unpriced += 1
+                continue
+            rate = fx_rate(rt, snap, p.currency)
+            if rate is None:
+                fx_missing.append(p.currency)
+                continue
+            n = fx_c(int(p.notional_c), rate)
+            if n >= 0:
+                fl_c += n
+            else:
+                fs_c += -n
+            continue
+        if p.mv_base_c is None:
+            unpriced += 1
+            continue
+        if p.mv_base_c >= 0:
+            long_c += int(p.mv_base_c)
+        else:
+            short_c += -int(p.mv_base_c)
+    return {"gross_long_c": long_c, "gross_short_c": short_c, "net_c": long_c - short_c, "futures_notional_long_c": fl_c, "futures_notional_short_c": fs_c,
+            "unpriced": unpriced, "fx_missing": sorted(set(fx_missing)), "count": len(positions),
+            "note": "gross long / short = market value of the long / short rows in USD; futures at notional (contracts x multiplier x mark), they carry no market value"}
+
+
+def portfolio_view(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"), with_day: bool = True) -> dict:
+    """The consolidated Portfolio (B16) of ``scope`` (``{lifetime}:ALL`` / ``ALL_BOOKS`` / an account; the History pages pass
+    an archived ``{lifetime}:ALL``): NAV, P&L tiles, positions with the account / book names and weights of THIS scope's NAV
+    (BM-06), ``by_class`` subtotals (a list, BM-04), the footer (BM-05) and ``by_account`` rows ``{account_id, name,
+    account_name, book_code, book_name, nav, weight, pnl_today}`` (``weight`` = share of the scope's NAV; ``pnl_today`` =
+    ``Accounting.pnl(account, 'TODAY')``, omitted for an archived lifetime whose day is over)."""
+    nav = rt.accounting.nav(scope, snapshot=snap)
+    positions = rt.accounting.positions(scope, snapshot=snap)
+    names, books = name_maps(rt)
+    kind = "ALL_BOOKS" if scope == "ALL_BOOKS" else scope_kind(scope)
+    basis = "share of the lifetime's final NAV" if nav.archived else WEIGHT_BASIS[kind]
+    pv = [position_row(p, names, books, nav.nav_c, basis) for p in positions]
+    counts: Dict[str, int] = {}
+    for p in positions:
+        counts[p.account_id] = counts.get(p.account_id, 0) + 1
+    accounts = []
+    for aid, v in nav.by_account.items():
+        row = {"account_id": aid, "name": names.get(aid, aid), "account_name": names.get(aid, aid), "nav_c": int(v), "weight": share(v, nav.nav_c),
+               "positions": counts.get(aid, 0)}
+        row.update(book_fields(aid, books))
+        if with_day and not nav.archived:
+            try:
+                pv_day = rt.accounting.pnl(aid, "TODAY", snapshot=snap)
+                row["pnl_today_c"] = int(pv_day.pnl_c)
+                row["pnl_today_since"] = "inception (no snapshot yet)" if pv_day.degraded else (pv_day.baseline or {}).get("snap_date")
+            except Exception as e:   # noqa: BLE001 - one account's failure is said in its row, never a blank table
+                row["pnl_today_c"] = None
+                row["pnl_today_error"] = f"{type(e).__name__}: {e}"
+        accounts.append(row)
+    return {"scope": scope, "nav": nav_out(nav), "pnl": pnl_block(rt, scope, snap, periods), "by_account": accounts, "by_class": by_class(positions, nav.nav_c),
+            "footer": portfolio_footer(rt, positions, snap), "positions": pv, "weight_basis": basis, "marks_partial": nav.partial, "missing_marks": nav.missing,
+            "as_of": nav.as_of, "lifetime_ids": nav.lifetime_ids, "read_only": nav.archived}
 
 
 def trial_balance(rt, scope: str) -> dict:
@@ -355,94 +795,344 @@ def trial_balance(rt, scope: str) -> dict:
             "base": {"debit_c": base_dr, "credit_c": base_cr, "net_c": sum(c["base_c"] for c in by_ccy.values())}}
 
 
-def integrity_view(report) -> dict:
-    d = report.to_dict()
-    checks: Dict[str, dict] = {}
-    for p in d.get("problems", []):
-        c = checks.setdefault(p["id"], {"code": p["id"], "ok": False, "severity": p["severity"], "count": 0, "message": p.get("detail", ""), "scopes": []})
-        c["count"] += 1
-        if p.get("scope") and len(c["scopes"]) < 10:
-            c["scopes"].append(p["scope"])
-    d["checks"] = [checks[k] for k in sorted(checks)]
+def _problem_message(got: List[dict]) -> str:
+    if not got:
+        return "ok"
+    return "; ".join(f"{p.get('scope')}: {p.get('detail')}" for p in got[:3]) + (f" (+{len(got) - 3} more)" if len(got) > 3 else "")
+
+
+def integrity_view(report, lifetime_id: Optional[str] = None) -> dict:
+    """BM-26: the report with ONE ROW PER CHECK RUN ``{code, name, ok, severity, count, errors, warnings, message, scopes}``
+    (``IntegrityReport.checks``, P04), so a clean run lists what it checked instead of 'no rows'.  With ``lifetime_id`` the
+    rows, ``problems``, ``ok`` and ``hold`` are that lifetime's (its problems plus the database-wide ones, the rule the hold
+    uses); the run itself covered the whole database (so it records every lifetime's hold correctly) and ``ok_all`` says
+    how that went.  A report without per-check rows (an older stored one) falls back to one row per failing check."""
+    d = report.to_dict() if hasattr(report, "to_dict") else dict(report or {})
+    problems = list(d.get("problems") or [])
+    if lifetime_id:
+        problems = [p for p in problems if p.get("lifetime_id") in (lifetime_id, None)]
+    runs = [dict(c) for c in (d.get("checks") or []) if isinstance(c, dict) and c.get("code")]
+    rows: List[dict] = []
+    if runs:
+        for c in runs:
+            got = [p for p in problems if p.get("id") == c["code"]]
+            errs = sum(1 for p in got if p.get("severity") == "ERROR")
+            warns = sum(1 for p in got if p.get("severity") == "WARN")
+            rows.append({"code": c["code"], "name": c.get("name") or c["code"], "ok": errs == 0, "severity": "ERROR" if errs else ("WARN" if warns else ""),
+                         "count": len(got), "errors": errs, "warnings": warns, "message": _problem_message(got),
+                         "scopes": [p.get("scope") for p in got if p.get("scope")][:10]})
+        known = {r["code"] for r in rows}
+        extra = sorted({p.get("id") for p in problems if p.get("id") not in known})
+    else:
+        extra = sorted({p.get("id") for p in problems})
+    for code in extra:                                    # a problem of a check the run list does not name (M0 'could not record', an older report)
+        got = [p for p in problems if p.get("id") == code]
+        errs = sum(1 for p in got if p.get("severity") == "ERROR")
+        rows.append({"code": code, "name": code, "ok": errs == 0, "severity": "ERROR" if errs else "WARN", "count": len(got), "errors": errs,
+                     "warnings": len(got) - errs, "message": _problem_message(got), "scopes": [p.get("scope") for p in got if p.get("scope")][:10]})
+    d["ok_all"] = bool(d.get("ok"))
+    if lifetime_id:
+        d["ok"] = not any(p.get("severity") == "ERROR" for p in problems)
+        d["hold"] = bool((d.get("holds") or {}).get(lifetime_id, False))
+        d["problems"] = problems
+        d["lifetime_id"] = lifetime_id
+    d["checks"] = rows
+    d["checks_run"] = len(rows)
+    d["warnings"] = sum(r["warnings"] for r in rows)
     d["duration_ms"] = d.get("ms")
+    d["scope_note"] = (f"one run over the whole database; rows show lifetime {lifetime_id} and the database-wide checks" if lifetime_id
+                       else "one run over the whole database: every lifetime")
     return d
 
 
+#: BM-07 / BM-25: what the Activity filter offers (``?type=``); a row's ``category`` is one of these; ``system`` rows (job runs,
+#: housekeeping, data-feed and whole-database items no book owns) are shown only when asked for.  The raw row types of the first
+#: API (event / fill / transfer / job / attention) still filter by ``type``.
+ACTIVITY_CATEGORIES = ("orders", "settlements", "transfers", "financing", "otc", "attention", "other", "system")
+ACTIVITY_ALIASES = {"order": "orders", "fills": "orders", "trades": "orders", "settlement": "settlements", "transfer": "transfers", "capital": "transfers",
+                    "sweeps": "transfers", "loans": "financing", "swaps": "otc", "jobs": "system", "job": "system"}
+ACTIVITY_RAW_TYPES = ("event", "fill", "transfer", "job", "attention")
+
+
+def activity_tokens(raw: Optional[str]) -> set:
+    return {t.strip().lower() for t in str(raw or "").split(",") if t.strip()}
+
+
+def _activity_wants(tokens: set):
+    """-> (categories, raw types, system wanted).  No token = every category but ``system``."""
+    if not tokens:
+        return set(ACTIVITY_CATEGORIES) - {"system"}, set(), False
+    cats = {ACTIVITY_ALIASES.get(t, t) for t in tokens if ACTIVITY_ALIASES.get(t, t) in ACTIVITY_CATEGORIES}
+    raw = {t for t in tokens if t in ACTIVITY_RAW_TYPES}
+    return cats, raw, "system" in cats
+
+
+def _event_category(etype: str, ref_type: Optional[str]) -> str:
+    if etype in ("FX_DEALT", "FX_FORWARD_DEALT", "PRIVATE_TRADE") or ref_type in ("order", "fill", "package", "option"):
+        return "orders"
+    if ref_type in ("settlement", "pay", "dividend", "fx_deal") or etype in ("SETTLED", "COUPON_PAID", "PAID", "DIVIDEND_PAID", "DIVIDEND_ACCRUED"):
+        return "settlements"
+    if ref_type == "transfer":
+        return "transfers"
+    if ref_type in ("loan", "borrow", "repo", "sec_loan", "margin", "vm", "private_loan", "account"):
+        return "financing"
+    if ref_type == "otc":
+        return "otc"
+    return "other"
+
+
+def _event_lifetime(account_id, ref_type, ref_id, pl: dict) -> Optional[str]:
+    """The lifetime an event belongs to: its account's, a lifetime reference, or the payload's lifetime; None = system."""
+    lid = lifetime_of(account_id)
+    if lid:
+        return lid
+    if ref_type == "lifetime" and ref_id and _LIFETIME_RE.match(str(ref_id)):
+        return str(ref_id)
+    for k in ("lifetime_id", "closed", "opened"):
+        v = pl.get(k) if isinstance(pl, dict) else None
+        if isinstance(v, str) and _LIFETIME_RE.match(v):
+            return v
+    return None
+
+
+def _detail_of(pl: dict) -> dict:
+    """An event payload for the detail table: cents as money text ('amount' 1,000,000.00), never a minor-unit integer."""
+    out = {}
+    for k, v in (pl or {}).items():
+        if k.endswith("_c") and isinstance(v, int) and not isinstance(v, bool):
+            out[k[:-2]] = fmt_money(v)
+        elif isinstance(v, (dict, list)):
+            out[k] = json.dumps(v, default=str)[:300]
+        else:
+            out[k] = v
+    return out
+
+
+def link_reason(rt, conn, linked_type: Optional[str], linked_id: Optional[str]) -> Tuple[str, Optional[dict]]:
+    """BM-23: what a sweep paid for, in words, and where it leads: 'for fill F-000003 (BUY 20 MSFT)' + ``{kind: 'fill',
+    fill_id, order_id, account_id, instrument_id}`` (the account's Orders page lists the fill); an FX conversion, a settlement
+    or another link says its own id."""
+    if not linked_type or not linked_id:
+        return "", None
+    try:
+        if linked_type == "fill":
+            f = conn.execute("SELECT fill_id, order_id, account_id, instrument_id, side, qty, price FROM fills WHERE fill_id=?", (linked_id,)).fetchone()
+            if f is not None:
+                return (f"for fill {linked_id} ({f['side']} {int(f['qty']):,} {_symbol(rt, f['instrument_id'])})",
+                        {"kind": "fill", "fill_id": linked_id, "order_id": f["order_id"], "account_id": f["account_id"], "instrument_id": f["instrument_id"]})
+        if linked_type == "fx_deal":
+            x = conn.execute("SELECT deal_id, account_id, kind, buy_ccy, sell_ccy, buy_c, sell_c FROM fx_deals WHERE deal_id=?", (linked_id,)).fetchone()
+            if x is not None:
+                return (f"for FX {str(x['kind']).lower()} {linked_id} (buy {x['buy_ccy']} {fmt_money(int(x['buy_c']))} / sell {x['sell_ccy']} {fmt_money(int(x['sell_c']))})",
+                        {"kind": "fx_deal", "deal_id": linked_id, "account_id": x["account_id"]})
+        if linked_type == "settlement":
+            s = conn.execute("SELECT settle_id, account_id, leg, currency, amount_c, due_date FROM settlements WHERE settle_id=?", (linked_id,)).fetchone()
+            if s is not None:
+                return (f"for settlement {linked_id} ({s['leg']} {s['currency']} {fmt_money(abs(int(s['amount_c'])))} due {s['due_date']})",
+                        {"kind": "settlement", "settle_id": linked_id, "account_id": s["account_id"]})
+    except Exception:   # noqa: BLE001 - a table of a module that is not built: the plain link below
+        pass
+    names = {r[0]: r[1] for r in conn.execute("SELECT account_id, name FROM accounts").fetchall()} if ":" in str(linked_id) else None
+    return f"for {link_words(linked_type, linked_id, names)}", {"kind": linked_type, "id": linked_id}
+
+
+def _in(col: str, values) -> Tuple[str, list]:
+    vals = list(values)
+    return f"{col} IN ({','.join('?' for _ in vals)})", vals
+
+
 def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types: Optional[set] = None, since: Optional[int] = None,
-                  lifetime_id: Optional[str] = None) -> List[dict]:
-    """§15 ``GET /api/activity``: events, fills, transfers, job results and attention merged newest first."""
-    rows: List[dict] = []
+                  lifetime_id: Optional[str] = None, lifetime_ids: Optional[List[str]] = None) -> List[dict]:
+    """§15 ``GET /api/activity``: events, fills, transfers, job results and attention merged newest first (P03):
+    - BOOK SEPARATION (BM-07): only the rows of ``lifetime_ids`` (the selected book's open lifetime; every open lifetime for
+      ALL_BOOKS; the archived one on a History page) or of ``account``; the filtering runs in the SQL so other books never
+      crowd this book's rows out of the limit;
+    - ``category`` per row (orders / settlements / transfers / financing / otc / attention / other / system) and the
+      ``types`` filter on it (aliases and the raw types event / fill / transfer / job / attention too); rows no book owns
+      (job runs, housekeeping, feeds) are ``system`` and appear only when 'system' is asked for (BM-25);
+    - an event and the transfer it describes are ONE row (the transfer, with ``events`` naming the event: BM-25);
+    - names: ``account_name`` / ``book_name`` on every row and in the transfer text; ``detail`` (key / value, money as text)
+      and ``entry_id`` (the journal entry of a fill / transfer) for the detail table."""
     lim = int(limit)
+    tokens = set(types or ())
+    cats, raw, want_system = _activity_wants(tokens)
+    lids = [x for x in (lifetime_ids or ([lifetime_id] if lifetime_id else [])) if x]
+    names, books = name_maps(rt)
+
+    def wanted(row: dict) -> bool:
+        return row["category"] in cats or row["type"] in raw
+
+    rows: List[dict] = []
+    transfers_by_id: Dict[str, dict] = {}
     with rt.db.reader() as conn:
-        acct_ids = None
-        if lifetime_id:
-            acct_ids = {r[0] for r in conn.execute("SELECT account_id FROM accounts WHERE lifetime_id=?", (lifetime_id,)).fetchall()}
+        if account:
+            accts: Optional[List[str]] = [account]
+        elif lids:
+            w, p = _in("lifetime_id", lids)
+            accts = [r[0] for r in conn.execute(f"SELECT account_id FROM accounts WHERE {w}", p).fetchall()]
+        else:
+            accts = None                                    # every account (the consolidated, unfiltered feed)
+        lid_set = set(lids)
 
-        def keep(aid: Optional[str]) -> bool:
-            if account and aid != account:
-                return False
-            if acct_ids is not None and aid not in acct_ids:
-                return False
-            return True
+        def acct_clause(col: str) -> Tuple[str, list]:
+            if accts is None:
+                return "1=1", []
+            if not accts:
+                return "1=0", []
+            return _in(col, accts)
 
-        def want(t: str) -> bool:
-            return not types or t in types
+        def owned(lid: Optional[str]) -> bool:
+            return (not lid_set and not account) or (lid in lid_set and not account)
 
-        if want("event"):
-            for r in conn.execute("SELECT id, ts, type, account_id, instrument_id, ref_type, ref_id, payload_json FROM events WHERE (? IS NULL OR ts >= ?) ORDER BY ts DESC, id DESC LIMIT ?",
-                                  (since, since, lim)).fetchall():
-                if not keep(r["account_id"]):
+        # ---- transfers first: the events that describe them merge into them
+        w1, p1 = acct_clause("from_account")
+        w2, p2 = acct_clause("to_account")
+        for r in conn.execute(f"SELECT * FROM transfers WHERE ({w1} OR {w2}) AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, transfer_id DESC LIMIT ?",
+                              p1 + p2 + [since, since, lim]).fetchall():
+            src, dst = r["from_account"], r["to_account"]
+            reason, link = link_reason(rt, conn, r["linked_type"], r["linked_id"])
+            words = TRANSFER_WORDS.get(r["kind"], str(r["kind"]).lower())
+            aid = dst if (dst and (accts is None or dst in accts)) else src
+            row = {"ts": int(r["ts"]), "type": "transfer", "category": "transfers", "severity": "INFO", "account_id": aid, "instrument_id": None,
+                   "summary": f"{words} {r['currency']} {fmt_money(int(r['amount_c']))} {names.get(src, src) if src else 'from outside the book'} -> "
+                              f"{names.get(dst, dst) if dst else 'outside the book'}" + (f" {reason}" if reason else ""),
+                   "ref_type": "transfer", "ref_id": r["transfer_id"], "entry_id": r["entry_id"], "events": [], "link": link,
+                   "detail": {"kind": words, "from": f"{names.get(src, src)} ({src})" if src else "outside the book",
+                              "to": f"{names.get(dst, dst)} ({dst})" if dst else "outside the book", "currency": r["currency"], "amount": fmt_money(int(r["amount_c"])),
+                              "paid for": reason or None, "shortfall": None if r["shortfall_c"] is None else fmt_money(int(r["shortfall_c"])),
+                              "business date": r["business_date"]}}
+            transfers_by_id[r["transfer_id"]] = row
+            rows.append(row)
+        # ---- events: the accounts' rows, then the account-less ones (a lifetime's own events, else system)
+        we, pe = acct_clause("account_id")
+        ev = conn.execute(f"SELECT id, ts, type, account_id, instrument_id, ref_type, ref_id, payload_json FROM events WHERE account_id IS NOT NULL AND {we}"
+                          " AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, id DESC LIMIT ?", pe + [since, since, lim]).fetchall()
+        if not account:
+            ev = list(ev) + list(conn.execute("SELECT id, ts, type, account_id, instrument_id, ref_type, ref_id, payload_json FROM events WHERE account_id IS NULL"
+                                              " AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, id DESC LIMIT ?", (since, since, lim)).fetchall())
+        for r in ev:
+            try:
+                pl = json.loads(r["payload_json"] or "{}")
+            except ValueError:
+                pl = {}
+            pl = pl if isinstance(pl, dict) else {}
+            if r["ref_type"] == "transfer" and r["ref_id"] in transfers_by_id:
+                transfers_by_id[r["ref_id"]]["events"].append(r["type"])          # BM-25: one row per transfer
+                continue
+            lid = _event_lifetime(r["account_id"], r["ref_type"], r["ref_id"], pl)
+            if r["account_id"] is None and not owned(lid):
+                if lid is not None or not want_system:
                     continue
-                try:
-                    pl = json.loads(r["payload_json"] or "{}")
-                except ValueError:
-                    pl = {}
-                bits = [f"{k} {pl[k]}" for k in ("side", "qty", "price") if pl.get(k) is not None]
-                amt = pl.get("amount_c")
-                if isinstance(amt, int) and not isinstance(amt, bool):
-                    bits.append(f"amount {pl['currency'] + ' ' if pl.get('currency') else ''}{fmt_money(amt)}")     # cents -> money text, never "amount_c 100000000"
-                elif pl.get("currency") is not None:
-                    bits.append(f"currency {pl['currency']}")
-                if pl.get("reason") is not None:
-                    bits.append(f"reason {pl['reason']}")
-                rows.append({"ts": int(r["ts"]), "type": "event", "event": r["type"], "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"],
-                             "summary": f"{r['type']} {r['ref_type'] or ''} {r['ref_id'] or ''}".strip() + (": " + ", ".join(bits) if bits else ""),
-                             "ref_type": r["ref_type"], "ref_id": r["ref_id"], "id": int(r["id"])})
-        if want("fill"):
-            for r in conn.execute("SELECT fill_id, ts, account_id, instrument_id, side, qty, price, price_basis, origin FROM fills WHERE (? IS NULL OR ts >= ?) ORDER BY ts DESC LIMIT ?",
-                                  (since, since, lim)).fetchall():
-                if not keep(r["account_id"]):
-                    continue
-                rows.append({"ts": int(r["ts"]), "type": "fill", "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"],
-                             "summary": f"{r['fill_id']} {r['side']} {int(r['qty']):,} {_symbol(rt, r['instrument_id'])} @ {r['price']} ({r['price_basis']}, {r['origin']})",
-                             "ref_type": "fill", "ref_id": r["fill_id"]})
-        if want("transfer"):
-            for r in conn.execute("SELECT transfer_id, ts, kind, from_account, to_account, currency, amount_c, linked_type, linked_id FROM transfers WHERE (? IS NULL OR ts >= ?)"
-                                  " ORDER BY ts DESC LIMIT ?", (since, since, lim)).fetchall():
-                aid = r["to_account"] or r["from_account"]
-                if not (keep(r["to_account"]) or keep(r["from_account"])):
-                    continue
-                link = f" for {r['linked_type']} {r['linked_id']}" if r["linked_type"] else ""
-                rows.append({"ts": int(r["ts"]), "type": "transfer", "severity": "INFO", "account_id": aid, "instrument_id": None,
-                             "summary": f"{r['transfer_id']} {r['kind']} {r['currency']} {fmt_money(int(r['amount_c']))} {r['from_account'] or 'external'} -> {r['to_account'] or 'external'}{link}",
-                             "ref_type": "transfer", "ref_id": r["transfer_id"]})
-        if want("job") and acct_ids is None and not account:
+            system = r["account_id"] is None and lid is None
+            bits = [f"{k} {code_words(pl[k]) if k == 'side' else pl[k]}" for k in ("side", "qty", "price") if pl.get(k) is not None]
+            amt = pl.get("amount_c")
+            if isinstance(amt, int) and not isinstance(amt, bool):
+                bits.append(f"amount {pl['currency'] + ' ' if pl.get('currency') else ''}{fmt_money(amt)}")     # cents -> money text, never "amount_c 100000000"
+            elif pl.get("currency") is not None:
+                bits.append(f"currency {pl['currency']}")
+            if pl.get("reason") is not None:
+                bits.append(f"reason {readable(pl['reason'], names)}")
+            ref_txt = f"{REF_WORDS.get(r['ref_type'], str(r['ref_type'] or '').replace('_', ' '))} {r['ref_id'] or ''}".strip() if r["ref_id"] else ""
+            rows.append({"ts": int(r["ts"]), "type": "event", "event": r["type"], "category": "system" if system else _event_category(r["type"], r["ref_type"]),
+                         "system": system, "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"], "lifetime_id": lid,
+                         "summary": code_words(r["type"]) + (f" - {ref_txt}" if ref_txt else "") + (": " + ", ".join(bits) if bits else ""),
+                         "ref_type": r["ref_type"], "ref_id": r["ref_id"], "id": int(r["id"]), "detail": _detail_of(pl)})
+        # ---- fills
+        wf, pf = acct_clause("account_id")
+        for r in conn.execute(f"SELECT * FROM fills WHERE {wf} AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, fill_id DESC LIMIT ?", pf + [since, since, lim]).fetchall():
+            sym = _symbol(rt, r["instrument_id"])
+            rows.append({"ts": int(r["ts"]), "type": "fill", "category": "orders", "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"],
+                         "summary": f"{r['fill_id']} {r['side']} {int(r['qty']):,} {sym} @ {r['price']} ({r['price_basis']}, {r['origin']})",
+                         "ref_type": "fill", "ref_id": r["fill_id"], "entry_id": r["entry_id"], "order_id": r["order_id"],
+                         "detail": {"fill": r["fill_id"], "order": r["order_id"], "side": r["side"], "quantity": f"{int(r['qty']):,}", "instrument": sym,
+                                    "price": r["price"], "price basis": r["price_basis"], "origin": r["origin"], "gross": f"{r['currency']} {fmt_money(int(r['gross_c']))}",
+                                    "fee": f"{r['currency']} {fmt_money(int(r['fee_c'] or 0))}", "trade date": r["trade_date"], "settles": r["settle_date"]}})
+        # ---- job results: system rows (no book owns them)
+        if want_system and not account:
             for r in conn.execute("SELECT job, key, run_ts, status, note FROM jobs_done WHERE (? IS NULL OR run_ts >= ?) ORDER BY run_ts DESC LIMIT ?", (since, since, lim)).fetchall():
-                rows.append({"ts": int(r["run_ts"]), "type": "job", "severity": "INFO" if r["status"] == "DONE" else "WARN", "account_id": None, "instrument_id": None,
-                             "summary": f"{r['job']} {r['key']}: {r['status']}" + (f" - {r['note']}" if r["note"] else ""), "ref_type": "job", "ref_id": f"{r['job']}:{r['key']}"})
-        if want("attention"):
-            for r in conn.execute("SELECT id, ts, severity, source, code, message, account_id, ref_type, ref_id, resolved_ts FROM attention WHERE (? IS NULL OR ts >= ?)"
-                                  " ORDER BY ts DESC, id DESC LIMIT ?", (since, since, lim)).fetchall():
-                if not keep(r["account_id"]) and r["account_id"] is not None:
+                rows.append({"ts": int(r["run_ts"]), "type": "job", "category": "system", "system": True, "severity": "INFO" if r["status"] == "DONE" else "WARN",
+                             "account_id": None, "instrument_id": None, "summary": f"{r['job']} {r['key']}: {r['status']}" + (f" - {r['note']}" if r["note"] else ""),
+                             "ref_type": "job", "ref_id": f"{r['job']}:{r['key']}", "detail": {"job": r["job"], "key": r["key"], "status": r["status"], "note": r["note"]}})
+        # ---- attention: the accounts' items and the lifetimes' own; the rows no book owns are system
+        wa, pa = acct_clause("account_id")
+        for r in conn.execute(f"SELECT id, ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts FROM attention"
+                              f" WHERE (account_id IS NULL OR {wa}) AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, id DESC LIMIT ?", pa + [since, since, lim]).fetchall():
+            if r["account_id"] is None and account:
+                continue
+            lid = attention_lifetime(dict(r))
+            if r["account_id"] is None and not owned(lid):
+                if lid is not None or not want_system:
                     continue
-                if (account or acct_ids is not None) and r["account_id"] is None:
-                    continue
-                rows.append({"ts": int(r["ts"]), "type": "attention", "severity": r["severity"], "account_id": r["account_id"], "instrument_id": None,
-                             "summary": f"{r['code']}: {r['message']}", "ref_type": "attention", "ref_id": str(r["id"]), "resolved_ts": r["resolved_ts"], "source": r["source"]})
-    rows.sort(key=lambda x: (-int(x["ts"]), str(x.get("ref_id") or "")))
+            system = r["account_id"] is None and lid is None
+            rows.append({"ts": int(r["ts"]), "type": "attention", "category": "system" if system else "attention", "system": system, "severity": r["severity"],
+                         "account_id": r["account_id"], "instrument_id": None, "lifetime_id": lid, "summary": f"{code_words(r['code'])}: {readable(r['message'], names)}", "ref_type": "attention",
+                         "ref_id": str(r["id"]), "resolved_ts": r["resolved_ts"], "source": r["source"],
+                         "detail": {"code": r["code"], "source": r["source"], "severity": r["severity"], "message": r["message"],
+                                    "resolved": ny_of(int(r["resolved_ts"])).strftime("%Y-%m-%d %H:%M:%S") if r["resolved_ts"] else "open"}})
+    out = []
     for x in rows:
+        x.setdefault("system", False)
+        if not wanted(x):
+            continue
+        x["account_name"] = names.get(x["account_id"], x["account_id"]) if x.get("account_id") else None
+        bf = book_fields(x.get("account_id"), books)
+        if not bf["lifetime_id"] and x.get("lifetime_id"):
+            code = _books.book_code_of(x["lifetime_id"])
+            bf = {"lifetime_id": x["lifetime_id"], "book_code": code, "book_name": books.get(code, code)}
+        x.update(bf)
+        if x.get("instrument_id"):
+            x["symbol"] = _symbol(rt, x["instrument_id"])
+        out.append(x)
+    out.sort(key=lambda x: (-int(x["ts"]), str(x.get("ref_id") or "")))
+    for x in out:
         x["ts_ny"] = ny_of(int(x["ts"])).strftime("%Y-%m-%d %H:%M:%S")
-    return rows[:lim]
+    return out[:lim]
+
+
+def activity_extras(rt, tokens: set, *, account: Optional[str] = None, lifetime_ids: Optional[List[str]] = None) -> dict:
+    """SHELL-27: the news tiles 'working orders' / 'pending settlements' open #/activity?type=orders|settlements; those views
+    also list what is open NOW in the book (or the account): ``working_orders`` (WORKING / PARTIAL / WAITING_PARENT orders)
+    and ``pending_settlements`` (the ladder), so the tile's count can be read row by row."""
+    cats, _raw, _sys = _activity_wants(tokens)
+    out: dict = {}
+    if not ({"orders", "settlements"} & cats) or not tokens:
+        return out
+    names, _bk = name_maps(rt)
+    with rt.db.reader() as conn:
+        if account:
+            accts = [account]
+        elif lifetime_ids:
+            w, p = _in("lifetime_id", lifetime_ids)
+            accts = [r[0] for r in conn.execute(f"SELECT account_id FROM accounts WHERE {w}", p).fetchall()]
+        else:
+            accts = [r[0] for r in conn.execute("SELECT account_id FROM accounts").fetchall()]
+        if not accts:
+            return {"working_orders": [], "pending_settlements": []} if tokens else out
+        wa, pa = _in("account_id", accts)
+        if "orders" in cats:
+            q = ",".join("?" for _ in OPEN_ORDER_STATUSES)
+            orders = []
+            for r in conn.execute(f"SELECT order_id, account_id, instrument_id, side, qty, filled_qty, order_type, limit_px, stop_px, tif, status, created_ts FROM orders"
+                                  f" WHERE status IN ({q}) AND {wa} ORDER BY created_ts DESC, order_id DESC LIMIT 300", list(OPEN_ORDER_STATUSES) + pa).fetchall():
+                d = dict(r)
+                d["symbol"] = _symbol(rt, r["instrument_id"])
+                d["account_name"] = names.get(r["account_id"], r["account_id"])
+                d["remaining"] = int(r["qty"]) - int(r["filled_qty"] or 0)
+                orders.append(d)
+            out["working_orders"] = orders
+        if "settlements" in cats:
+            ladder = []
+            for r in conn.execute(f"SELECT s.settle_id, s.account_id, s.fill_id, s.fx_deal_id, s.leg, s.currency, s.amount_c, s.due_date, f.instrument_id, f.side, f.qty"
+                                  f" FROM settlements s LEFT JOIN fills f ON f.fill_id=s.fill_id WHERE s.status='PENDING' AND s.{wa}"
+                                  " ORDER BY s.due_date, s.settle_id LIMIT 500", pa).fetchall():
+                d = {k: r[k] for k in ("settle_id", "account_id", "fill_id", "fx_deal_id", "leg", "currency", "amount_c", "due_date")}
+                d["account_name"] = names.get(r["account_id"], r["account_id"])
+                d["direction"] = "receive" if int(r["amount_c"]) > 0 else "pay"
+                d["what"] = (f"{r['side']} {int(r['qty']):,} {_symbol(rt, r['instrument_id'])} ({r['fill_id']})" if r["fill_id"] and r["instrument_id"]
+                             else (f"FX deal {r['fx_deal_id']}" if r["fx_deal_id"] else r["leg"]))
+                ladder.append(d)
+            out["pending_settlements"] = ladder
+    return out
 
 
 def books_view(rt, snap=None, unlock: bool = True) -> List[dict]:
@@ -589,6 +1279,10 @@ def register_routes(r) -> None:
         d = pos.to_dict() if pos is not None else None
         if d is not None:
             d["mark"] = mark_dict(pos.mark)
+        names, _bk = name_maps(rt)
+        for e in entries:                                                  # V104R1-04: the drawer's cash flows in words (the stored memo kept)
+            e["memo_stored"], e["memo"] = e.get("memo"), readable(clean_memo(e.get("memo")), names)
+            e["kind_label"] = code_words(e.get("kind"))
         return {"position": d, "instrument": inst.to_dict() if inst else None, "lots": rt.accounting.lots(aid, iid), "fills": fills, "entries": entries,
                 "borrow": borrows[0] if borrows and borrows[0].get("status") == "OPEN" else None, "borrows": borrows, "marks_history": marks,
                 "mark": mark_dict(snap.mark(iid)) if inst else None, "dividend_notes": notes}
@@ -651,13 +1345,27 @@ def register_routes(r) -> None:
         ob = rt.accounting.obligations(aid)
         today = rt.clock.today()
         horizon = rt.cal.add_business_days(today, 5).isoformat()
+        otc_refs: Dict[str, str] = {}
         with rt.db.reader() as conn:
             transfers = [dict(x) for x in conn.execute("SELECT * FROM transfers WHERE from_account=? OR to_account=? ORDER BY ts DESC, transfer_id DESC LIMIT 100", (aid, aid)).fetchall()]
-        ladder = [dict(s, within_5bd=str(s["due_date"]) <= horizon) for s in ob.settlements]
+            # OTC-R1-04: an OTC contract's own settlement (a CDX initial payment, an OTC option premium) names its contract in 'ref'
+            try:
+                for c in conn.execute("SELECT contract_id, terms_json FROM otc_contracts WHERE account_id=?", (aid,)).fetchall():
+                    try:
+                        terms = json.loads(c["terms_json"] or "{}")
+                    except ValueError:
+                        terms = {}
+                    for k in ("settle_id", "premium_settle_id"):
+                        if isinstance(terms, dict) and terms.get(k):
+                            otc_refs[str(terms[k])] = c["contract_id"]
+            except Exception:   # noqa: BLE001 - a database without the OTC table: no contract refs
+                otc_refs = {}
+        ladder = [dict(s, within_5bd=str(s["due_date"]) <= horizon, ref=s.get("fill_id") or s.get("fx_deal_id") or otc_refs.get(str(s.get("settle_id"))))
+                  for s in ob.settlements]
         return {"account_id": aid, "account": row, "cash": cash, "buying_power": {ccy: rt.accounting.buying_power(aid, ccy, snapshot=snap) for ccy in cash},
                 "transfers": transfers, "ladder": ladder, "ladder_horizon": horizon, "loans": ob.loans, "borrows": ob.borrows, "margin": ob.margin,
                 "collateral": {"held_at_lender_c": ob.collateral_c}, "otc": ob.otc, "liquidity": liquidity_out(rt.accounting.liquidity(aid, snapshot=snap)),
-                "available_definition": AVAILABLE_TEXT}
+                "available_definition": AVAILABLE_TEXT, "accounting_day": accounting_day(rt.clock.now()).isoformat()}
 
     def account_markets(req: Request):
         from .api_products import markets_view
@@ -667,28 +1375,28 @@ def register_routes(r) -> None:
         rt = req.rt
         scope = req.scope("ALL")
         snap = rt.marks.snapshot()
-        nav = rt.accounting.nav(scope, snapshot=snap)
-        positions = rt.accounting.positions(scope, snapshot=snap)
-        pv = []
-        for p in positions:
-            d = p.to_dict()
-            d["mark"] = mark_dict(p.mark)
-            pv.append(d)
-        with rt.db.reader() as conn:
-            names = {r[0]: r[1] for r in conn.execute("SELECT account_id, name FROM accounts").fetchall()}
-        return {"scope": scope, "nav": nav_out(nav), "pnl": pnl_block(rt, scope, snap), "by_account": [{"account_id": a, "name": names.get(a, a), "nav_c": v} for a, v in nav.by_account.items()],
-                "by_class": by_class(positions), "positions": pv, "marks_partial": nav.partial, "missing_marks": nav.missing, "as_of": nav.as_of,
-                "liquidity": liquidity_out(rt.accounting.liquidity(scope, snapshot=snap)), "lifetime_ids": nav.lifetime_ids, "read_only": nav.archived}
+        out = portfolio_view(rt, scope, snap)
+        out["liquidity"] = liquidity_out(rt.accounting.liquidity(scope, snapshot=snap))
+        return out
 
     def treasury(req: Request):
         rt = req.rt
         lid = req.lifetime()
         return treasury_view(rt, lid)
 
+    def amount_fields(req: Request) -> dict:
+        """BM-21: a typed amount reaches the command AS TYPED (``amount``), where ``treasury.amount_c`` reads it strictly
+        (``units.parse_money``: digits with at most 2 decimals; '1e6', '100.005', '1,000', a sign and the typo guard are
+        refused 400 AMOUNT, never rounded or expanded); integer cents in ``amount_c`` pass as before."""
+        b = req.body or {}
+        if b.get("amount_c") is None and b.get("amount") is not None:
+            return {"amount": b.get("amount")}
+        return {"amount_c": req.amount_c()}
+
     def treasury_move(req: Request, kind: str):
         rt = req.rt
         lid = req.b("lifetime_id") or req.lifetime()
-        payload = {"lifetime_id": lid, "amount_c": req.amount_c(), "currency": str(req.b("currency") or "USD").upper(), "memo": req.b("memo")}
+        payload = dict({"lifetime_id": lid, "currency": str(req.b("currency") or "USD").upper(), "memo": req.b("memo")}, **amount_fields(req))
         payload = {k: v for k, v in payload.items() if v is not None}
         res = run_command(req, kind, payload)
         body = ok_or_raise(res)
@@ -698,8 +1406,8 @@ def register_routes(r) -> None:
 
     def transfers(req: Request):
         rt = req.rt
-        payload = {"from_account": req.b("from_account"), "to_account": req.b("to_account"), "currency": str(req.b("currency") or "USD").upper(),
-                   "amount_c": req.amount_c(), "memo": req.b("memo")}
+        payload = dict({"from_account": req.b("from_account"), "to_account": req.b("to_account"), "currency": str(req.b("currency") or "USD").upper(),
+                        "memo": req.b("memo")}, **amount_fields(req))
         payload = {k: v for k, v in payload.items() if v is not None}
         res = run_command(req, "treasury.transfer", payload)
         body = ok_or_raise(res)
@@ -710,13 +1418,14 @@ def register_routes(r) -> None:
                      "to_cash": rt.accounting.cash(payload["to_account"], snapshot=snap), "result": body}, ({"X-Replayed": "1"} if res.replayed else {})
 
     def balance_sheet(req: Request):
-        return balance_sheet_out(req.rt.accounting.balance_sheet(req.scope("ALL"), snapshot=req.rt.marks.snapshot()))
+        scope = req.scope("ALL")
+        return balance_sheet_out(req.rt.accounting.balance_sheet(scope, snapshot=req.rt.marks.snapshot()), scope_kind(scope))
 
     def pnl(req: Request):
         period = (req.q("period") or "TODAY").upper()
         if period not in ("TODAY", "MTD", "YTD", "ITD"):
             raise ApiError(400, "BAD_REQUEST", "period must be TODAY, MTD, YTD or ITD")
-        return req.rt.accounting.pnl(req.scope("ALL"), period, snapshot=req.rt.marks.snapshot())
+        return pnl_out(req.rt.accounting.pnl(req.scope("ALL"), period, snapshot=req.rt.marks.snapshot()))
 
     def trial(req: Request):
         return trial_balance(req.rt, req.scope("ALL"))
@@ -728,20 +1437,71 @@ def register_routes(r) -> None:
             rows = [x for x in rows if any(l.get("gl") == gl for l in x["lines"])]
         return {"entries": rows, "count": len(rows)}
 
+    def accounting_transactions(req: Request):
+        """BM-13: Accounting > Transactions - the transaction rows of a scope (the book's lifetime, ALL_BOOKS or an account),
+        ``format=csv`` for the file (the export columns)."""
+        scope = req.scope("ALL")
+        rows = txn_rows(req.rt, scope, **_txn_args(req))
+        if (req.q("format") or "json").lower() == "csv":
+            name = scope.replace(":", "-")
+            return 200, transactions_csv(rows), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": f'attachment; filename="{name}-transactions.csv"'}
+        return {"rows": rows, "count": len(rows), "scope": scope}
+
+    def accounting_cash(req: Request):
+        return cash_financing_view(req.rt, req.scope("ALL"), req.rt.marks.snapshot())
+
     def journal_entry(req: Request):
         return journal_entry_view(req.rt, req.params[0])
 
     def integrity(req: Request):
+        """BM-26: one run over the whole database (so every lifetime's hold is recorded right) shown for the scope's lifetime:
+        ``scope`` ALL / ``{lifetime}:ALL`` / an account -> that lifetime's rows; ``ALL_BOOKS`` -> every row; ``lifetime`` names
+        one directly."""
+        rt = req.rt
         mode = (req.q("mode") or "ledger").lower()
         if mode not in ("ledger", "full"):
             raise ApiError(400, "BAD_REQUEST", "mode must be ledger or full")
+        scope = req.q("scope") or "ALL"
         lid = req.q("lifetime")
-        return integrity_view(req.rt.accounting.integrity(mode, lifetime_id=lid, snapshot=req.rt.marks.snapshot() if mode == "full" else None))
+        if not lid and scope != "ALL_BOOKS":
+            if _ACCOUNT_RE.match(scope):
+                lid = lifetime_of(scope)
+            elif scope.endswith(":ALL"):
+                lid = scope[:-4]
+            else:
+                lid = req.lifetime()
+        if lid:
+            with rt.db.reader() as conn:
+                if _books.lifetime_row(conn, lid) is None:
+                    raise NotFound(f"lifetime {lid} does not exist")
+        return integrity_view(rt.accounting.integrity(mode, snapshot=rt.marks.snapshot() if mode == "full" else None), lid)
 
     def activity(req: Request):
-        types = {t.strip().lower() for t in (req.q("type") or "").split(",") if t.strip()} or None
+        """BM-07: the selected book's activity (its open lifetime) unless ``account`` names one account; ``scope=ALL_BOOKS``
+        (or ``all=1``) = every open lifetime; ``scope={lifetime}:ALL`` one lifetime.  ``type`` = categories (orders,
+        settlements, transfers, financing, otc, attention, other, system) or the raw types; 'orders' / 'settlements' add what is
+        open now (SHELL-27)."""
+        rt = req.rt
+        tokens = activity_tokens(req.q("type"))
         since = req.q_int("since", 0, 0, 10**12) or None
-        return {"rows": activity_rows(req.rt, limit=req.q_int("limit", 100, 1, 500), account=req.q("account"), types=types, since=since)}
+        account = req.q("account")
+        scope = req.q("scope") or ""
+        lids: Optional[List[str]] = None
+        if account:
+            _account_or_404(rt, account)
+        elif scope == "ALL_BOOKS" or req.q("all") in ("1", "true", "yes"):
+            with rt.db.reader() as conn:
+                lids = _books.open_lifetimes(conn)
+            scope = "ALL_BOOKS"
+        elif scope.endswith(":ALL") and _LIFETIME_RE.match(scope[:-4]):
+            lids = [scope[:-4]]
+        else:
+            lids = [req.lifetime()]
+            scope = f"{lids[0]}:ALL"
+        out = {"rows": activity_rows(rt, limit=req.q_int("limit", 100, 1, 500), account=account, types=tokens, since=since, lifetime_ids=lids),
+               "scope": account or scope, "lifetime_ids": lids or [], "types": sorted(tokens), "categories": list(ACTIVITY_CATEGORIES)}
+        out.update(activity_extras(rt, tokens, account=account, lifetime_ids=lids))
+        return out
 
     def books(req: Request):
         return books_view(req.rt)
@@ -821,6 +1581,8 @@ def register_routes(r) -> None:
     r.add("GET", r"/api/accounting/trial-balance", trial)
     r.add("GET", r"/api/accounting/journal", journal)
     r.add("GET", r"/api/accounting/journal/([^/]+)", journal_entry)
+    r.add("GET", r"/api/accounting/transactions", accounting_transactions)
+    r.add("GET", r"/api/accounting/cash", accounting_cash)
     r.add("GET", r"/api/accounting/integrity", integrity)
     r.add("GET", r"/api/activity", activity)
     r.add("GET", r"/api/books", books)
@@ -848,19 +1610,154 @@ def lifetime_for_code(rt, code: str) -> str:
 
 
 def treasury_view(rt, lid: str) -> dict:
+    """GET /api/treasury for one lifetime: the TreasuryView, advances by account, the capital history and the sweep log, the
+    cash interest, the liquidity line; plus (P03) the shown figures the page needs without computing:
+    - ``advances_view`` (BM-29): 'advanced to accounts' with 'NAV = capital + retained - advanced to accounts', the same words
+      the balance sheet uses on the Treasury scope (``advances_convention``);
+    - ``available_shown`` (BM-01 cross-item): Treasury available floored at zero with the signed figure beside it
+      (``available_signed``; negative when the book's reserve is above the cash a sweep may move) and a sentence;
+    - the capital history's ``memo`` (the text typed with the deposit / withdrawal, BM-24) and ``signed_amount`` (a withdrawal
+      negative);
+    - the sweep log's ``reason`` ('for fill F-000003 (BUY 20 MSFT)') and ``link`` (BM-23), ``account_name``."""
     tv = rt.accounting.treasury(lid)
+    names, _bk = name_maps(rt)
     with rt.db.reader() as conn:
-        names = {r[0]: r[1] for r in conn.execute("SELECT account_id, name FROM accounts WHERE lifetime_id=?", (lid,)).fetchall()}
-        hist = [dict(x) for x in conn.execute("SELECT t.*, c.request_id FROM transfers t LEFT JOIN commands c ON c.id=t.command_id WHERE t.kind IN ('INITIAL_CAPITAL','DEPOSIT','WITHDRAWAL')"
-                                              " AND (t.to_account=? OR t.from_account=?) ORDER BY t.ts DESC, t.transfer_id DESC LIMIT 200", (tv.account_id, tv.account_id)).fetchall()]
-        sweeps = [dict(x) for x in conn.execute("SELECT * FROM transfers WHERE kind IN ('SWEEP_IN','SWEEP_OUT') AND (to_account=? OR from_account=?) ORDER BY ts DESC, transfer_id DESC LIMIT 200",
-                                                (tv.account_id, tv.account_id)).fetchall()]
+        hist = [dict(x) for x in conn.execute(
+            "SELECT t.*, c.request_id, (SELECT l.memo FROM journal_lines l WHERE l.entry_id=t.entry_id AND l.gl='3000' ORDER BY l.line_no LIMIT 1) AS line_memo"
+            " FROM transfers t LEFT JOIN commands c ON c.id=t.command_id WHERE t.kind IN ('INITIAL_CAPITAL','DEPOSIT','WITHDRAWAL')"
+            " AND (t.to_account=? OR t.from_account=?) ORDER BY t.ts DESC, t.transfer_id DESC LIMIT 200", (tv.account_id, tv.account_id)).fetchall()]
+        sweeps = [dict(x) for x in conn.execute(
+            "SELECT t.*, (SELECT l.memo FROM journal_lines l WHERE l.entry_id=t.entry_id AND l.gl='1010' ORDER BY l.line_no LIMIT 1) AS line_memo FROM transfers t"
+            " WHERE t.kind IN ('SWEEP_IN','SWEEP_OUT') AND (t.to_account=? OR t.from_account=?) ORDER BY t.ts DESC, t.transfer_id DESC LIMIT 200",
+            (tv.account_id, tv.account_id)).fetchall()]
+        for s in sweeps:
+            s["direction"] = s["kind"]
+            s["account_id"] = s["to_account"] if s["kind"] == "SWEEP_IN" else s["from_account"]
+            s["account_name"] = names.get(s["account_id"], s["account_id"])
+            if s["kind"] == "SWEEP_IN":
+                s["reason"], s["link"] = link_reason(rt, conn, s.get("linked_type"), s.get("linked_id"))
+                s["reason"] = s["reason"] or "funding shortfall"
+            else:
+                memo = str(s.get("line_memo") or "")
+                s["reason"], s["link"] = (memo[len("sweep-out: "):] if memo.startswith("sweep-out: ") else memo) or "idle cash returned to Treasury", None
+            s.pop("line_memo", None)
+    for h in hist:
+        h["kind_label"] = TRANSFER_WORDS.get(h["kind"], str(h["kind"]).lower())
+        h["memo"] = h.pop("line_memo", None) or h["kind_label"]
+        h["signed_amount_c"] = -int(h["amount_c"]) if h["kind"] == "WITHDRAWAL" else int(h["amount_c"])
     advances = [{"account_id": a, "name": names.get(a, a), "amount_c": v} for a, v in tv.advances_by_account.items()]
-    for s in sweeps:
-        s["direction"] = s["kind"]
-        s["account_id"] = s["to_account"] if s["kind"] == "SWEEP_IN" else s["from_account"]
+    avail = int(tv.available_c)
+    av_note = ("Treasury cash a sweep may move now, after the book's reserve" if avail >= 0 else
+               f"the reserve {fmt_money(int(tv.reserve_c))} is above the cash a sweep may move: nothing can be swept until cash arrives or the reserve is lowered")
     return {"treasury": treasury_out(tv), "advances": advances, "capital_history": hist, "sweep_log": sweeps, "interest": treasury_interest(rt, tv),
-            "lifetime_id": lid, "liquidity": liquidity_out(rt.accounting.liquidity(f"{lid}:ALL"))}
+            "lifetime_id": lid, "liquidity": liquidity_out(rt.accounting.liquidity(f"{lid}:ALL")),
+            "advances_view": advances_convention("TREASURY", -int(tv.advances_c)),
+            "available_view": {"shown_c": max(0, avail), "signed_c": avail, "note": av_note}}
+
+
+def _rows_or_none(conn, sql: str, params) -> List[dict]:
+    """Rows of a product table that may not exist in this build (sec_loans before the lending module made it): [] then."""
+    try:
+        return [dict(r) for r in conn.execute(sql, params).fetchall()]
+    except Exception:   # noqa: BLE001 - sqlite3.OperationalError 'no such table / column': nothing of that kind exists
+        return []
+
+
+def cash_financing_view(rt, scope: str, snap) -> dict:
+    """BM-13: Accounting > Cash & financing for a scope (the selected book's lifetime, ALL_BOOKS, one account, or an archived
+    lifetime on History): every figure is a field the per-account views already serve, gathered across the scope's accounts -
+    - ``cash``: one row per account and currency (``Accounting.cash``: settled, receivable, payable, reserved, available
+      floored at zero, held at lender, margin, accrued) with the account / book names; ``totals`` per currency;
+    - ``treasury``: per lifetime the Treasury's settled cash, the reserve and what a sweep may move (signed and floored);
+    - ``ladder``: the pending settlements by due date; ``sweeps``: the last 100 sweep-ins / sweep-outs with what each paid for;
+    - financing: open ``loans`` (lender, index, spread), stock ``borrows`` (lender, fee, collateral), ``repos``, securities
+      ``lent`` and per-account ``margin`` (futures initial margin required / posted, option margin reserved, OTC IM / VM)."""
+    names, books = name_maps(rt)
+    with rt.db.reader() as conn:
+        sc = rt.accounting._scope(conn, scope)
+        accounts = [dict(a) for a in sc.accounts]
+        aids = [a["account_id"] for a in accounts]
+        wa, pa = _in("account_id", aids) if aids else ("1=0", [])
+        loans = _rows_or_none(conn, f"SELECT * FROM loans WHERE status='OPEN' AND {wa} ORDER BY opened_date, loan_id", pa)
+        borrows = _rows_or_none(conn, f"SELECT * FROM borrows WHERE status='OPEN' AND {wa} ORDER BY opened_ts, borrow_id", pa)
+        repos = _rows_or_none(conn, f"SELECT * FROM repos WHERE status='OPEN' AND {wa} ORDER BY opened_date, repo_id", pa)
+        lent = _rows_or_none(conn, f"SELECT * FROM sec_loans WHERE status='OPEN' AND {wa} ORDER BY opened_ts, loan_id", pa)
+        w1, p1 = _in("t.from_account", aids) if aids else ("1=0", [])
+        w2, p2 = _in("t.to_account", aids) if aids else ("1=0", [])
+        sweeps = [dict(r) for r in conn.execute(
+            "SELECT t.*, (SELECT l.memo FROM journal_lines l WHERE l.entry_id=t.entry_id AND l.gl='1010' ORDER BY l.line_no LIMIT 1) AS line_memo FROM transfers t"
+            f" WHERE t.kind IN ('SWEEP_IN','SWEEP_OUT') AND ({w1} OR {w2}) ORDER BY t.ts DESC, t.transfer_id DESC LIMIT 100", p1 + p2).fetchall()]
+        ladder = []
+        for r in conn.execute(f"SELECT s.settle_id, s.account_id, s.fill_id, s.fx_deal_id, s.leg, s.currency, s.amount_c, s.due_date, f.instrument_id, f.side, f.qty"
+                              f" FROM settlements s LEFT JOIN fills f ON f.fill_id=s.fill_id WHERE s.status='PENDING' AND s.{wa} ORDER BY s.due_date, s.settle_id LIMIT 500",
+                              pa).fetchall():
+            d = {k: r[k] for k in ("settle_id", "account_id", "fill_id", "fx_deal_id", "leg", "currency", "amount_c", "due_date")}
+            d["direction"] = "receive" if int(r["amount_c"]) > 0 else "pay"
+            d["what"] = (f"{r['side']} {int(r['qty']):,} {_symbol(rt, r['instrument_id'])} ({r['fill_id']})" if r["fill_id"] and r["instrument_id"]
+                         else (f"FX deal {r['fx_deal_id']}" if r["fx_deal_id"] else r["leg"]))
+            ladder.append(d)
+        for s in sweeps:
+            s["direction"] = s["kind"]
+            s["account_id"] = s["to_account"] if s["kind"] == "SWEEP_IN" else s["from_account"]
+            if s["kind"] == "SWEEP_IN":
+                s["reason"], s["link"] = link_reason(rt, conn, s.get("linked_type"), s.get("linked_id"))
+            else:
+                memo = str(s.get("line_memo") or "")
+                s["reason"], s["link"] = (memo[len("sweep-out: "):] if memo.startswith("sweep-out: ") else memo) or "idle cash returned to Treasury", None
+            s.pop("line_memo", None)
+        for row in loans:
+            row["counterparty_name"] = _counterparty_name(rt, conn, row.get("counterparty")) if row.get("counterparty") else row.get("lender")
+        for row in repos:
+            row["counterparty_name"] = _counterparty_name(rt, conn, row.get("counterparty")) if row.get("counterparty") else None
+        for row in lent:
+            row["counterparty_name"] = _counterparty_name(rt, conn, row.get("counterparty")) if row.get("counterparty") else None
+    cash_rows: List[dict] = []
+    totals: Dict[str, Dict[str, int]] = {}
+    margin_rows: List[dict] = []
+    for a in accounts:
+        aid = a["account_id"]
+        for ccy, cv in rt.accounting.cash(aid, snapshot=snap).items():
+            figures = (cv.settled_c, cv.receivable_c, cv.payable_c, cv.reserved_c, cv.available_c, cv.held_at_lender_c, cv.margin_c, cv.otc_margin_c, cv.accrued_c)
+            if ccy != "USD" and not any(figures):
+                continue
+            row = cv.to_dict()
+            row.pop("definition", None)
+            row["account_name"] = names.get(aid, aid)
+            row["account_kind"] = a.get("kind")
+            row.update(book_fields(aid, books))
+            cash_rows.append(row)
+            t = totals.setdefault(ccy, {"settled_c": 0, "receivable_c": 0, "payable_c": 0, "reserved_c": 0, "available_c": 0, "held_at_lender_c": 0, "margin_c": 0})
+            for k in t:
+                t[k] += int(getattr(cv, k) or 0)
+        ob = rt.accounting.obligations(aid)
+        m = dict(ob.margin or {})
+        if any(int(v or 0) for k, v in m.items() if k.endswith("_c")) or int(ob.collateral_c or 0):
+            mr = {k: v for k, v in m.items() if k.endswith("_c")}
+            mr.update({"account_id": aid, "account_name": names.get(aid, aid), "collateral_held_at_lender_c": int(ob.collateral_c or 0),
+                       "options_margin_mode": m.get("options_margin_mode")})
+            mr.update(book_fields(aid, books))
+            margin_rows.append(mr)
+    tre_rows = []
+    for lid in sc.lifetime_ids:
+        try:
+            tv = rt.accounting.treasury(lid, snapshot=snap)
+        except Exception:   # noqa: BLE001 - a lifetime without a Treasury account (never in this build) is skipped, not invented
+            continue
+        code = _books.book_code_of(lid)
+        tre_rows.append({"lifetime_id": lid, "book_code": code, "book_name": books.get(code, code), "account_id": tv.account_id,
+                         "settled_by_ccy": money_map(tv.cash_by_ccy), "reserve_c": int(tv.reserve_c), "available_signed_c": int(tv.available_c),
+                         "available_c": max(0, int(tv.available_c)), "advanced_c": int(tv.advances_c)})
+    for rows in (loans, borrows, repos, lent, ladder, sweeps):
+        for r in rows:
+            if r.get("account_id"):
+                r["account_name"] = names.get(r["account_id"], r["account_id"])
+                r.update(book_fields(r["account_id"], books))
+            if r.get("instrument_id"):
+                r["symbol"] = _symbol(rt, r["instrument_id"])
+    return {"scope": scope, "read_only": bool(sc.archived), "cash": cash_rows,
+            "totals": [dict(v, currency=k) for k, v in sorted(totals.items(), key=lambda kv: (kv[0] != "USD", kv[0]))],
+            "treasury": tre_rows, "ladder": ladder, "sweeps": sweeps, "loans": loans, "borrows": borrows, "repos": repos, "lent": lent, "margin": margin_rows,
+            "available_definition": AVAILABLE_TEXT, "as_of": snap.as_of() if hasattr(snap, "as_of") else None}
 
 
 def journal_entry_view(rt, entry_id: str) -> dict:
@@ -911,38 +1808,54 @@ def history_view(req: Request, lid: str, rest: str):
                          "final_realised_c": lrow.get("final_realised_c"), "final_quality": lrow.get("final_quality")}}
     rest = rest.strip("/")
     snap = rt.marks.snapshot()
+    hscope = req.q("scope") or ""
+    # an account of THIS lifetime may be the scope of the archived accounting tabs (the scope selector); anything else is the lifetime
+    sub = hscope if (_ACCOUNT_RE.match(hscope) and lifetime_of(hscope) == lid) else scope
     if rest == "positions":
         return dict(meta, positions=positions_view(rt, scope, snap))
     if rest == "portfolio":
-        nav = rt.accounting.nav(scope, snapshot=snap)
-        positions = rt.accounting.positions(scope, snapshot=snap)
-        pv = []
-        for p in positions:
-            d = p.to_dict()
-            d["mark"] = mark_dict(p.mark)
-            pv.append(d)
-        return dict(meta, nav=nav_out(nav), pnl=pnl_block(rt, scope, snap, ("ITD",)), by_account=[{"account_id": a, "nav_c": v} for a, v in nav.by_account.items()],
-                    by_class=by_class(positions), positions=pv, marks_partial=nav.partial)
+        # the same shape as the live Portfolio (BM-31: by_account rows with names; by_class a list; weights of the final NAV)
+        return dict(meta, **{k: v for k, v in portfolio_view(rt, scope, snap, ("ITD",), with_day=False).items() if k not in ("scope", "read_only")})
     if rest == "accounting/balance-sheet":
-        return dict(meta, balance_sheet=balance_sheet_out(rt.accounting.balance_sheet(scope, snapshot=snap)))
+        # BM-08 / SHELL-06: flat, like the live route and the trial balance (the page reads the same fields everywhere)
+        return dict(meta, **{k: v for k, v in balance_sheet_out(rt.accounting.balance_sheet(sub, snapshot=snap), scope_kind(sub)).items() if k != "scope"})
     if rest == "accounting/pnl":
         period = (req.q("period") or "ITD").upper()
         if period not in ("TODAY", "MTD", "YTD", "ITD"):
             raise ApiError(400, "BAD_REQUEST", "period must be TODAY, MTD, YTD or ITD")
-        return dict(meta, pnl=rt.accounting.pnl(scope, period, snapshot=snap))
+        return dict(meta, **{k: v for k, v in pnl_out(rt.accounting.pnl(sub, period, snapshot=snap)).items() if k != "scope"})
     if rest == "accounting/trial-balance":
-        return dict(meta, **trial_balance(rt, scope))
-    if rest == "accounting/journal":
+        return dict(meta, **{k: v for k, v in trial_balance(rt, sub).items() if k != "scope"})
+    if rest in ("accounting/journal", "accounting/transactions"):
         kinds = [k.strip().upper() for k in (req.q("kinds") or "").split(",") if k.strip()] or None
-        rows = txn_rows(rt, scope, from_date=req.q("from"), to_date=req.q("to"), kinds=kinds, instrument_id=req.q("instrument"),
+        rows = txn_rows(rt, sub, from_date=req.q("from"), to_date=req.q("to"), kinds=kinds, instrument_id=req.q("instrument"),
                         limit=req.q_int("limit", 500, 1, 5000), offset=req.q_int("offset", 0, 0, 1_000_000))
-        return dict(meta, entries=rows, count=len(rows))
+        gl = req.q("gl")
+        if gl:
+            rows = [x for x in rows if any(l.get("gl") == gl for l in x["lines"])]
+        if rest == "accounting/transactions" and (req.q("format") or "json").lower() == "csv":
+            return 200, transactions_csv(rows), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": f'attachment; filename="{lid}-transactions.csv"'}
+        return dict(meta, entries=rows, rows=rows, count=len(rows))
     if rest.startswith("accounting/journal/"):
         return dict(meta, **journal_entry_view(rt, rest.split("/", 2)[2]))
+    if rest == "accounting/cash":
+        return dict(meta, **{k: v for k, v in cash_financing_view(rt, sub, snap).items() if k not in ("scope", "read_only")})
     if rest == "accounting/integrity":
-        return dict(meta, **integrity_view(rt.accounting.integrity("ledger", lifetime_id=lid)))
+        # a check of the whole database shown for this lifetime (a run limited to one lifetime would re-record the holds of that
+        # lifetime only); ``frozen`` = the verdict stored when the lifetime was closed
+        view = integrity_view(rt.accounting.integrity("ledger"), lid)
+        try:
+            frozen = json.loads(lrow.get("integrity_json") or "null")
+        except ValueError:
+            frozen = None
+        view["frozen"] = {"ok": frozen.get("ok"), "checked_at": frozen.get("checked_at"), "mode": frozen.get("mode")} if isinstance(frozen, dict) else None
+        return dict(meta, **view)
     if rest == "activity":
-        return dict(meta, rows=activity_rows(rt, limit=req.q_int("limit", 200, 1, 500), lifetime_id=lid))
+        tokens = activity_tokens(req.q("type"))
+        out = dict(meta, rows=activity_rows(rt, limit=req.q_int("limit", 200, 1, 500), lifetime_ids=[lid], types=tokens), types=sorted(tokens),
+                   categories=list(ACTIVITY_CATEGORIES))
+        out.update(activity_extras(rt, tokens, lifetime_ids=[lid]))
+        return out
     if rest == "export/transactions.csv":
         rows = txn_rows(rt, scope, limit=50000)
         return 200, transactions_csv(rows), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": f'attachment; filename="{lid}-transactions.csv"'}
@@ -974,7 +1887,7 @@ def watchlists_view(req: Request) -> dict:
         inst = rt.instruments.get(r["instrument_id"])
         lst["items"].append({"instrument_id": r["instrument_id"], "symbol": inst.symbol if inst else r["instrument_id"], "name": inst.name if inst else None,
                              "kind": inst.kind if inst else None, "support": inst.support if inst else None, "position": held.get((r["account_id"], r["instrument_id"]), 0),
-                             "rank": int(r["position"]), "quote": None})
+                             "rank": int(r["position"]), "quote": None, "account_kinds": list(inst.account_kinds) if inst else []})
         ids.append(r["instrument_id"])
     cache = getattr(rt, "cache", None)
     if cache is not None and ids:
@@ -1021,4 +1934,5 @@ def dividends_view(req: Request) -> List[dict]:
 __all__ = ["register_routes", "account_rows", "account_row", "order_full", "fill_rows", "txn_rows", "transactions_csv", "positions_csv", "trial_balance",
            "integrity_view", "activity_rows", "books_view", "lifetime_rows", "treasury_view", "journal_entry_view", "history_view", "watchlists_view", "dividends_view",
            "positions_view", "pnl_block", "by_class", "lifetime_for_code", "money", "money_map", "nav_out", "liquidity_out", "treasury_out", "balance_sheet_out",
-           "treasury_interest"]
+           "treasury_interest", "name_maps", "position_row", "portfolio_view", "portfolio_footer", "pnl_out", "advances_convention", "available_by_currency",
+           "activity_extras", "activity_tokens", "link_reason", "cash_financing_view", "clean_memo", "ACTIVITY_CATEGORIES"]

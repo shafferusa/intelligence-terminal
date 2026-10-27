@@ -14,6 +14,22 @@ Conventions
 - FRED (``GOV_UA``): ``fredgraph.csv`` for one series with a 60-day look-back.  Frankfurter (``TERMINAL_UA``): ECB
   reference rates, fallback FX only.  FINRA (``GOV_UA``): the daily consolidated short volume pipe file (None when the
   file is not published).
+- FRED MAINTENANCE (ORC-8, 2026-10-21): ``FredRoute`` wraps the FRED fetch.  An HTML answer (FRED's "Site Maintenance"
+  page, HTTP 200) is recognised by the parser (``FetchError.kind == "maintenance"``): the ``fred`` health row then reads
+  "FRED unavailable (maintenance)" (``ProviderHealth.mark_unavailable``), FRED is not asked again for ``FRED_PAUSE_S``
+  (one request per pause, never one per series), the ``FRED_API_KEY`` route (api.stlouisfed.org; the key comes from the
+  environment only and is never logged, echoed or put in an error text - ``http_get`` errors never carry the URL) is
+  tried as a secondary route, and two series have FREE fallbacks with their own source label: ``SOFR`` from the NY Fed
+  (markets.newyorkfed.org, the publisher of SOFR) and ``ECBDFR`` from the ECB data API (FM deposit facility rate).
+  Every other series raises "FRED unavailable (maintenance)" and the rate store keeps its last good observations with
+  their true dates.  Results are ``Observations`` (a list of ``(date, percent)`` carrying ``.source``), so the store
+  labels a fallback value with where it came from.
+- DEBT SOURCES (Build 2 P07, every one verified from this machine on 2026-10-21; ``ProviderSet.debt``): ``FiscalData``
+  (api.fiscaldata.treasury.gov MSPD table 3 market + auctions, ``GOV_UA``), ``TreasuryDirect`` (FedInvest today's
+  prices, ``GOV_UA``), ``TreasuryCurve.real_latest`` (the daily real yield curve, ``GOV_UA``), ``EcbData`` (euro-area AAA
+  par yields and the deposit rate, ``TERMINAL_UA``), ``MofJgb`` (JGB yields, ``TERMINAL_UA``), ``NyFed`` (SOFR,
+  ``TERMINAL_UA``).  The Bank of England database answers 403 to scripts: it is never fetched (gilts stay LIMITED, monthly
+  from FRED's OECD series).
 - Every live provider takes an injectable ``getter(url, ua, timeout, accept) -> bytes`` and ``sleep`` so tests run
   without a network; with an injected sleep the rate limiter's clock advances with it, never with wall time.
 - ``FakeProvider`` serves tests and ``serve --offline``: quotes, daily bars, meta, chains (raw payloads reduced exactly
@@ -24,6 +40,7 @@ Conventions
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time as _time
@@ -36,16 +53,36 @@ from ..config import BROWSER_UA, CBOE_RPS, FRED_RPS, GOV_UA, TERMINAL_UA, YAHOO_
 from ..units import qprice
 from . import Bar1m
 from .http import FetchError, ProviderHealth, RateLimiter, http_get, retrying
-from .parsers import (DAILY_DELAY_LABEL, OCC_TAIL, TENOR_Q, TENOR_YEARS, TENORS, YAHOO_DELAY_LABEL, YAHOO_DELAY_S, ChainRow, ChainSnapshot, ChainUnderlying,  # noqa: F401
-                      DailyBar, DivEvent, Events, FxRates, ParCurve, SplitEvent, YahooIntraday, _chart_error, chart_bars, chart_result, clean_meta, dec,
-                      et_naive_to_epoch, intv, num, parse_chain, parse_daily, parse_events, parse_finra, parse_frankfurter, parse_fred_csv, parse_intraday,
-                      parse_treasury_xml)
+from .parsers import (DAILY_DELAY_LABEL, FRED_MAINTENANCE, OCC_TAIL, TENOR_Q, TENOR_YEARS, TENORS, YAHOO_DELAY_LABEL, YAHOO_DELAY_S, ChainRow,  # noqa: F401
+                      ChainSnapshot, ChainUnderlying, DailyBar, DivEvent, Events, FxRates, ParCurve, SplitEvent, YahooIntraday, _chart_error, chart_bars,
+                      chart_result, clean_meta, dec, et_naive_to_epoch, intv, num, parse_auctions, parse_chain, parse_daily, parse_ecb_csv, parse_events,
+                      parse_fedinvest, parse_finra, parse_frankfurter, parse_fred_csv, parse_fred_json, parse_intraday, parse_mof_jgb, parse_mspd,
+                      parse_nyfed_rates, parse_treasury_real_xml, parse_treasury_xml)
 
 YAHOO_HOSTS = ("https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com")
 CBOE_URL = "https://cdn.cboe.com/api/global/delayed_quotes/options/{sym}.json"
 TREASURY_URL = ("https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml"
                 "?data=daily_treasury_yield_curve&field_tdr_date_value_month={yyyymm}")
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={start}"
+FRED_KEY_URL = "https://api.stlouisfed.org/fred/series/observations?series_id={sid}&api_key={key}&file_type=json&observation_start={start}"
+FRED_PAUSE_S = 1800                 # after a maintenance page FRED is not asked again for 30 min (one request per pause)
+TREASURY_REAL_URL = ("https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml"
+                     "?data=daily_treasury_real_yield_curve&field_tdr_date_value_month={yyyymm}")
+FISCALDATA = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service"
+MSPD_LATEST_URL = FISCALDATA + "/v1/debt/mspd/mspd_table_3_market?sort=-record_date&page[size]=1&fields=record_date"
+MSPD_URL = FISCALDATA + "/v1/debt/mspd/mspd_table_3_market?filter=record_date:eq:{d}&page[size]=10000"
+AUCTIONS_URL = (FISCALDATA + "/v1/accounting/od/auctions_query?filter=issue_date:gte:{d}&sort=-issue_date&page[size]=1000"
+                "&fields=cusip,security_type,security_term,auction_date,issue_date,maturity_date,int_rate,high_yield,high_investment_rate,"
+                "high_discnt_rate,inflation_index_security,floating_rate,reopening,first_int_payment_date,spread,cash_management_bill_cmb")
+FEDINVEST_URL = "https://www.treasurydirect.gov/GA-FI/FedInvest/todaySecurityPriceDetail"
+NYFED_SOFR_URL = "https://markets.newyorkfed.org/api/rates/secured/sofr/last/{n}.json"
+ECB_URL = "https://data-api.ecb.europa.eu/service/data/{flow}/{key}?lastNObservations={n}&format=csvdata"
+ECB_DFR = ("FM", "D.U2.EUR.4F.KR.DFR.LEV")
+ECB_AAA_PAR = ("YC", "B.U2.EUR.4F.G_N_A.SV_C_YM.{tenors}")
+ECB_AAA_TENORS = ("1Y", "2Y", "3Y", "5Y", "7Y", "10Y", "15Y", "20Y", "30Y")
+MOF_JGB_URL = "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv"
+SOFR_FALLBACK_SOURCE = "NY Fed (markets.newyorkfed.org): SOFR as published by its administrator"
+ECBDFR_FALLBACK_SOURCE = "ECB data API (FM deposit facility rate)"
 FRANKFURTER_URL = "https://api.frankfurter.app/latest?from=USD"
 FINRA_URL = "https://cdn.finra.org/equity/regsho/daily/CNMSshvol{yyyymmdd}.txt"
 Getter = Callable[[str, str, float, str], bytes]
@@ -195,20 +232,266 @@ class TreasuryCurve(_Base):
                 return curve
         return None
 
+    def real_latest(self) -> Optional[ParCurve]:
+        """The daily REAL (TIPS) yield curve of this month, else last month's."""
+        today = self.clock.today()
+        months = [today.strftime("%Y%m"), (today.replace(day=1) - timedelta(days=1)).strftime("%Y%m")]
+        for yyyymm in months:
+            raw = self._get(TREASURY_REAL_URL.format(yyyymm=yyyymm), GOV_UA, 45.0, accept="application/xml, text/xml", attempts=2)
+            curve = parse_treasury_real_xml(raw, self._now())
+            if curve is not None:
+                return curve
+        return None
+
+
+class Observations(list):
+    """``[(date, value)]`` that knows where it came from (``source``): the rate store labels the series with it."""
+
+    def __init__(self, rows=(), source: str = "FRED"):
+        super().__init__(rows)
+        self.source = source
+
 
 class FredSeries(_Base):
     name = "fred"
     _ID = re.compile(r"^[A-Z0-9]{1,30}$")
 
-    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None, api_key: Optional[str] = None):
         super().__init__(clock, health, getter, sleep, rps=FRED_RPS, log=log)
+        self._key = api_key                    # the FRED_API_KEY route: never logged, never echoed
 
-    def latest(self, series_id: str, lookback_days: int = 60) -> List[Tuple[date, Decimal]]:
+    def _valid(self, series_id: str) -> str:
         if not self._ID.match(str(series_id)):
             raise FetchError("invalid FRED series id", status=400, retryable=False)
+        return str(series_id)
+
+    def csv(self, series_id: str, lookback_days: int = 60) -> List[Tuple[date, Decimal]]:
+        """fredgraph.csv (the free route); an HTML maintenance page raises ``FetchError(kind="maintenance")``."""
+        sid = self._valid(series_id)
         start = (self.clock.today() - timedelta(days=int(lookback_days))).isoformat()
-        raw = self._get(FRED_URL.format(sid=series_id, start=start), GOV_UA, 20.0, accept="text/csv")
+        raw = self._get(FRED_URL.format(sid=sid, start=start), GOV_UA, 20.0, accept="text/csv")
         return parse_fred_csv(raw)
+
+    @property
+    def has_key(self) -> bool:
+        return bool(self._key)
+
+    def keyed(self, series_id: str, lookback_days: int = 60) -> List[Tuple[date, Decimal]]:
+        """api.stlouisfed.org with the FRED_API_KEY (the secondary route).  The URL holds the key: it is never formatted into
+        a message (``http_get`` errors name the status only)."""
+        if not self._key:
+            raise FetchError("no FRED_API_KEY in the environment", retryable=False)
+        sid = self._valid(series_id)
+        start = (self.clock.today() - timedelta(days=int(lookback_days))).isoformat()
+        raw = self._get(FRED_KEY_URL.format(sid=sid, key=urllib.parse.quote(self._key, safe=""), start=start), GOV_UA, 20.0, accept="application/json",
+                        attempts=1)
+        return parse_fred_json(raw)
+
+    def latest(self, series_id: str, lookback_days: int = 60) -> List[Tuple[date, Decimal]]:
+        return self.csv(series_id, lookback_days)
+
+
+class FredRoute:
+    """FRED as the refresher sees it (module docstring FRED MAINTENANCE): ``latest(series_id, lookback_days)`` ->
+    ``Observations`` with its source; maintenance pauses FRED, tries the key route, then the free fallbacks."""
+
+    name = "fred"
+
+    def __init__(self, clock, health: Optional[ProviderHealth], primary: Callable[[str, int], List[Tuple[date, Decimal]]],
+                 keyed: Optional[Callable[[str, int], List[Tuple[date, Decimal]]]] = None,
+                 fallbacks: Optional[Dict[str, Tuple[Callable[[int], List[Tuple[date, Decimal]]], str]]] = None, log=None):
+        self.clock, self.health, self.log = clock, health, log
+        self._primary, self._keyed = primary, keyed
+        self.fallbacks = dict(fallbacks or {})
+        self._lock = threading.Lock()
+        self._pause_until = 0
+        self.maintenance_since: Optional[int] = None
+        self.key_route_state: Optional[str] = None
+
+    def _now(self) -> int:
+        return int(self.clock.epoch()) if self.clock is not None else int(_time.time())
+
+    @property
+    def in_maintenance(self) -> bool:
+        with self._lock:
+            return self.maintenance_since is not None
+
+    def status(self) -> dict:
+        with self._lock:
+            return {"maintenance": self.maintenance_since is not None, "since_ts": self.maintenance_since, "paused_until_ts": self._pause_until or None,
+                    "key_route": self.key_route_state, "fallbacks": {k: v[1] for k, v in self.fallbacks.items()}}
+
+    def _enter_maintenance(self, now: int) -> None:
+        with self._lock:
+            first = self.maintenance_since is None
+            if first:
+                self.maintenance_since = now
+            self._pause_until = now + FRED_PAUSE_S
+        if self.health is not None:
+            self.health.mark_unavailable("fred", FRED_MAINTENANCE)
+        if first and self.log:
+            self.log.info("FRED unavailable (maintenance): the site serves its maintenance page; FRED is asked again every %d min, "
+                          "SOFR / ECBDFR come from their free fallbacks meanwhile", FRED_PAUSE_S // 60)
+
+    def _left_maintenance(self) -> None:
+        with self._lock:
+            was = self.maintenance_since is not None
+            self.maintenance_since = None
+            self._pause_until = 0
+        if was and self.log:
+            self.log.info("FRED is back (no maintenance page)")
+
+    def latest(self, series_id: str, lookback_days: int = 60) -> Observations:
+        now = self._now()
+        with self._lock:
+            paused = self._pause_until and now < self._pause_until
+        err: Optional[FetchError] = None
+        if not paused:
+            maint = False
+            try:
+                rows = self._primary(series_id, lookback_days)
+                self._left_maintenance()
+                return Observations(rows, "FRED")
+            except FetchError as e:
+                if e.status == 400:
+                    raise
+                err = e
+                maint = e.kind == "maintenance"
+            if self._keyed is not None:
+                try:
+                    rows = self._keyed(series_id, lookback_days)
+                    self.key_route_state = "ok"
+                    return Observations(rows, "FRED (api.stlouisfed.org key route)")
+                except FetchError as e2:
+                    self.key_route_state = FRED_MAINTENANCE if e2.kind == "maintenance" else f"failed: {e2}"[:120]
+            if maint:
+                self._enter_maintenance(now)          # after the key route: the health row ends on the maintenance verdict
+        if err is None:
+            err = FetchError(FRED_MAINTENANCE, retryable=False, kind="maintenance")
+        fb = self.fallbacks.get(str(series_id))
+        if fb is not None:
+            fn, source = fb
+            rows = fn(lookback_days)
+            if rows:
+                return Observations(rows, source)
+        raise err
+
+
+# ---- the debt sources (module docstring DEBT SOURCES) ---------------------------------------------------------------
+class FiscalData(_Base):
+    name = "fiscaldata"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=1.0, log=log)
+
+    def mspd(self) -> Tuple[Optional[date], List[dict]]:
+        """The latest month of MSPD table 3 (market): one small request for the record date, one for its rows."""
+        head = json.loads(self._get(MSPD_LATEST_URL, GOV_UA, 30.0).decode("utf-8", "replace"))
+        rows = head.get("data") if isinstance(head, dict) else None
+        d = None
+        if isinstance(rows, list) and rows and isinstance(rows[0], dict):
+            try:
+                d = date.fromisoformat(str(rows[0].get("record_date"))[:10])
+            except ValueError:
+                d = None
+        if d is None:
+            raise FetchError("fiscaldata: no MSPD record date", retryable=False)
+        return parse_mspd(self._get(MSPD_URL.format(d=d.isoformat()), GOV_UA, 60.0))
+
+    def auctions(self, since: date) -> List[dict]:
+        return parse_auctions(self._get(AUCTIONS_URL.format(d=since.isoformat()), GOV_UA, 60.0))
+
+
+class TreasuryDirect(_Base):
+    name = "treasurydirect"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=0.5, log=log)
+
+    def fedinvest(self) -> Tuple[Optional[date], Dict[str, dict]]:
+        return parse_fedinvest(self._get(FEDINVEST_URL, GOV_UA, 45.0, accept="text/html", attempts=2))
+
+
+class NyFed(_Base):
+    name = "nyfed"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=1.0, log=log)
+
+    def sofr(self, n: int = 10) -> List[Tuple[date, Decimal]]:
+        return parse_nyfed_rates(self._get(NYFED_SOFR_URL.format(n=max(1, min(60, int(n)))), TERMINAL_UA, 20.0))
+
+
+class EcbData(_Base):
+    name = "ecb"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=1.0, log=log)
+
+    def series(self, flow: str, key: str, n: int = 5) -> Dict[str, List[Tuple[date, Decimal]]]:
+        url = ECB_URL.format(flow=flow, key=key, n=max(1, min(60, int(n))))
+        return parse_ecb_csv(self._get(url, TERMINAL_UA, 30.0, accept="text/csv"))
+
+    def deposit_rate(self, n: int = 10) -> List[Tuple[date, Decimal]]:
+        got = self.series(ECB_DFR[0], ECB_DFR[1], n)
+        return next(iter(got.values()), [])
+
+    def aaa_par_curve(self) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
+        """The euro-area AAA government PAR yield curve (Svensson; ECB YC dataflow) at its latest common date."""
+        key = ECB_AAA_PAR[1].format(tenors="+".join("PY_" + t for t in ECB_AAA_TENORS))
+        return ecb_curve_from(self.series(ECB_AAA_PAR[0], key, 3))
+
+
+def ecb_curve_from(got: Dict[str, List[Tuple[date, Decimal]]]) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
+    """``{key: [(date, value)]}`` of PY_<n>Y series -> ``(latest date every tenor has, {years: percent})``."""
+    by_t: Dict[Decimal, Dict[date, Decimal]] = {}
+    for key, obs in got.items():
+        m = re.search(r"PY_(\d{1,2})Y$", key)
+        if not m:
+            continue
+        by_t[Decimal(int(m.group(1))).quantize(TENOR_Q)] = dict(obs)
+    if not by_t:
+        return None
+    common = set.intersection(*(set(v) for v in by_t.values())) if by_t else set()
+    if not common:
+        return None
+    d = max(common)
+    return d, {t: by_t[t][d].quantize(Decimal("0.0001")) for t in sorted(by_t)}
+
+
+class MofJgb(_Base):
+    name = "mof"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=0.5, log=log)
+
+    def jgb_curve(self) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
+        return parse_mof_jgb(self._get(MOF_JGB_URL, TERMINAL_UA, 30.0, accept="text/csv"))
+
+
+class DebtSources:
+    """``ProviderSet.debt`` (live): the calls the debt refresher makes, one provider each (their own health rows)."""
+
+    def __init__(self, fiscal: FiscalData, tdirect: TreasuryDirect, treasury: "TreasuryCurve", ecb: EcbData, mof: MofJgb):
+        self.fiscal, self.tdirect, self.treasury, self.ecb, self.mof = fiscal, tdirect, treasury, ecb, mof
+
+    def mspd(self):
+        return self.fiscal.mspd()
+
+    def auctions(self, since: date):
+        return self.fiscal.auctions(since)
+
+    def fedinvest(self):
+        return self.tdirect.fedinvest()
+
+    def real_curve(self):
+        return self.treasury.real_latest()
+
+    def ecb_aaa_curve(self):
+        return self.ecb.aaa_par_curve()
+
+    def jgb_curve(self):
+        return self.mof.jgb_curve()
 
 
 class Frankfurter(_Base):
@@ -262,6 +545,18 @@ class FakeProvider:
         self._errors: Dict[str, Exception] = {}
         self.calls: Dict[str, int] = {}
         self.refused_ua = False
+        # debt sources (set by a test or the offline walk; raw payloads go through the live parsers)
+        self._mspd: Optional[Tuple[Optional[date], List[dict]]] = None
+        self._auctions: List[dict] = []
+        self._fedinvest: Optional[Tuple[Optional[date], Dict[str, dict]]] = None
+        self._real_curve: Optional[ParCurve] = None
+        self._ecb_curve: Optional[Tuple[date, Dict[Decimal, Decimal]]] = None
+        self._jgb_curve: Optional[Tuple[date, Dict[Decimal, Decimal]]] = None
+        self._nyfed: List[Tuple[date, Decimal]] = []
+        self._ecb_dfr: List[Tuple[date, Decimal]] = []
+        self._fred_maintenance = False
+        self.fred_route = FredRoute(None, None, self._fred_primary, None, {"SOFR": (self._fb_sofr, SOFR_FALLBACK_SOURCE),
+                                                                           "ECBDFR": (self._fb_ecbdfr, ECBDFR_FALLBACK_SOURCE)})
 
     # ---- setters ----------------------------------------------------------------------------------------------------
     def _now(self) -> int:
@@ -363,6 +658,120 @@ class FakeProvider:
         with self._lock:
             self._finra[d if isinstance(d, date) else date.fromisoformat(str(d))] = {k.upper(): (int(a), int(b)) for k, (a, b) in rows.items()}
 
+    # ---- debt sources -----------------------------------------------------------------------------------------------------
+    def set_mspd(self, raw=None, record_date=None, securities: Optional[List[dict]] = None) -> None:
+        """Raw MSPD JSON (parsed like the live provider) or parsed ``securities`` with their ``record_date``."""
+        with self._lock:
+            self._mspd = parse_mspd(raw) if raw is not None else (None if record_date is None else date.fromisoformat(str(record_date)), list(securities or []))
+
+    def set_auctions(self, raw=None, rows: Optional[List[dict]] = None) -> None:
+        with self._lock:
+            self._auctions = parse_auctions(raw) if raw is not None else list(rows or [])
+
+    def set_fedinvest(self, raw=None, price_date=None, rows: Optional[Dict[str, dict]] = None) -> None:
+        with self._lock:
+            if raw is not None:
+                self._fedinvest = parse_fedinvest(raw)
+            else:
+                self._fedinvest = (None if price_date is None else date.fromisoformat(str(price_date)), dict(rows or {}))
+
+    def set_real_curve(self, raw=None, points: Optional[Dict] = None, as_of=None) -> None:
+        with self._lock:
+            if raw is not None:
+                self._real_curve = parse_treasury_real_xml(raw, self._now())
+            else:
+                pts = {Decimal(str(k)).quantize(TENOR_Q): Decimal(str(v)) for k, v in (points or {}).items()}
+                self._real_curve = ParCurve(as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)), pts,
+                                            source="treasury.gov daily real yield curve (test)", fetched_at=self._now())
+
+    def set_ecb_curve(self, raw=None, points: Optional[Dict] = None, as_of=None) -> None:
+        with self._lock:
+            if raw is not None:
+                self._ecb_curve = ecb_curve_from(parse_ecb_csv(raw))
+            else:
+                self._ecb_curve = (as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)),
+                                   {Decimal(str(k)).quantize(TENOR_Q): Decimal(str(v)) for k, v in (points or {}).items()})
+
+    def set_jgb_curve(self, raw=None, points: Optional[Dict] = None, as_of=None) -> None:
+        with self._lock:
+            if raw is not None:
+                self._jgb_curve = parse_mof_jgb(raw)
+            else:
+                self._jgb_curve = (as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)),
+                                   {Decimal(str(k)).quantize(TENOR_Q): Decimal(str(v)) for k, v in (points or {}).items()})
+
+    def set_nyfed_sofr(self, raw=None, observations=None) -> None:
+        with self._lock:
+            self._nyfed = parse_nyfed_rates(raw) if raw is not None else [(d if isinstance(d, date) else date.fromisoformat(str(d)), qprice(v))
+                                                                          for d, v in (observations or [])]
+
+    def set_ecb_dfr(self, raw=None, observations=None) -> None:
+        with self._lock:
+            if raw is not None:
+                self._ecb_dfr = next(iter(parse_ecb_csv(raw).values()), [])
+            else:
+                self._ecb_dfr = [(d if isinstance(d, date) else date.fromisoformat(str(d)), qprice(v)) for d, v in (observations or [])]
+
+    def set_fred_maintenance(self, on: bool = True) -> None:
+        """FRED answers its HTML maintenance page (ORC-8) until switched off."""
+        with self._lock:
+            self._fred_maintenance = bool(on)
+        if not on:
+            self.fred_route._left_maintenance()
+
+    def mspd(self):
+        self._count("mspd", "fiscaldata", "mspd")
+        with self._lock:
+            if self._mspd is None:
+                raise FetchError("no MSPD set", status=404, retryable=False)
+            return self._mspd[0], list(self._mspd[1])
+
+    def auctions(self, since: date):
+        self._count("auctions", "fiscaldata", "auctions")
+        with self._lock:
+            return [a for a in self._auctions if a.get("issue") is None or a["issue"] >= since]
+
+    def fedinvest(self):
+        self._count("fedinvest", "treasurydirect", "fedinvest")
+        with self._lock:
+            if self._fedinvest is None:
+                raise FetchError("no FedInvest prices set", status=404, retryable=False)
+            return self._fedinvest[0], dict(self._fedinvest[1])
+
+    def real_curve(self):
+        self._count("real_curve", "treasury", "real_curve")
+        with self._lock:
+            return self._real_curve
+
+    def ecb_aaa_curve(self):
+        self._count("ecb_curve", "ecb", "ecb_curve")
+        with self._lock:
+            return self._ecb_curve
+
+    def jgb_curve(self):
+        self._count("jgb_curve", "mof", "jgb_curve")
+        with self._lock:
+            return self._jgb_curve
+
+    def _fred_primary(self, series_id: str, lookback_days: int):
+        self._count("fred", "fred", series_id)
+        with self._lock:
+            maint = self._fred_maintenance
+            rows = list(self._rates.get(series_id) or [])
+        if maint:
+            raise FetchError(FRED_MAINTENANCE, retryable=False, kind="maintenance")
+        return rows
+
+    def _fb_sofr(self, lookback_days: int):
+        self._count("nyfed", "nyfed", "nyfed")
+        with self._lock:
+            return list(self._nyfed)
+
+    def _fb_ecbdfr(self, lookback_days: int):
+        self._count("ecb_dfr", "ecb", "ecb_dfr")
+        with self._lock:
+            return list(self._ecb_dfr)
+
     def fail(self, key: str, exc: Optional[Exception] = None) -> None:
         """Make ``key`` (a symbol, a Cboe symbol, a series id, or a provider name) raise ``exc`` (default a 503)."""
         with self._lock:
@@ -425,9 +834,13 @@ class FakeProvider:
         return snap
 
     def latest(self, series_id: str, lookback_days: int = 60) -> List[Tuple[date, Decimal]]:
-        self._count("fred", "fred", series_id)
-        with self._lock:
-            return list(self._rates.get(series_id) or [])
+        """FRED through the same ``FredRoute`` as live (maintenance -> NY Fed / ECB fallbacks with their source)."""
+        route = self.fred_route
+        if route.clock is None and self.clock is not None:
+            route.clock = self.clock
+        if route.health is None and self.health is not None:
+            route.health = self.health
+        return route.latest(series_id, lookback_days)
 
     def curve(self) -> Optional[ParCurve]:
         self._count("curve", "treasury")
@@ -459,23 +872,33 @@ class FakeProvider:
 
 class ProviderSet:
     """The bundle the worker and the refresher use: ``yahoo`` (intraday/daily/meta/events), ``cboe`` (chain),
-    ``treasury`` (curve / curve_dfs), ``fred`` (latest), ``frankfurter`` (fx_latest), ``finra`` (finra_daily), ``health``."""
+    ``treasury`` (curve / curve_dfs), ``fred`` (latest; a ``FredRoute`` live), ``frankfurter`` (fx_latest), ``finra``
+    (finra_daily), ``debt`` (mspd / auctions / fedinvest / real_curve / ecb_aaa_curve / jgb_curve), ``health``."""
 
-    def __init__(self, yahoo, cboe, treasury, fred, frankfurter, finra, health: ProviderHealth, fake: Optional[FakeProvider] = None):
+    def __init__(self, yahoo, cboe, treasury, fred, frankfurter, finra, health: ProviderHealth, fake: Optional[FakeProvider] = None, debt=None):
         self.yahoo, self.cboe, self.treasury, self.fred, self.frankfurter, self.finra = yahoo, cboe, treasury, fred, frankfurter, finra
         self.health = health
         self.fake = fake
+        self.debt = debt if debt is not None else fake
 
     @property
     def offline(self) -> bool:
         return self.fake is not None
 
     @classmethod
-    def live(cls, clock, log=None, getter: Optional[Getter] = None, sleep: Callable[[float], None] = _time.sleep) -> "ProviderSet":
+    def live(cls, clock, log=None, getter: Optional[Getter] = None, sleep: Callable[[float], None] = _time.sleep, fred_api_key: Optional[str] = None) -> "ProviderSet":
         health = ProviderHealth(lambda: int(clock.epoch()), day=lambda: clock.today().isoformat())
         kw = dict(health=health, getter=getter, sleep=sleep, log=log)
-        return cls(YahooChart(clock, **kw), CboeChain(clock, **kw), _TreasuryAdapter(TreasuryCurve(clock, **kw)), FredSeries(clock, **kw),
-                   _FrankfurterAdapter(Frankfurter(clock, **kw)), _FinraAdapter(FinraShortVolume(clock, **kw)), health)
+        treasury = TreasuryCurve(clock, **kw)
+        key = fred_api_key if fred_api_key is not None else (os.environ.get("FRED_API_KEY") or None)
+        fred = FredSeries(clock, api_key=key, **kw)
+        nyfed, ecb = NyFed(clock, **kw), EcbData(clock, **kw)
+        route = FredRoute(clock, health, fred.csv, fred.keyed if fred.has_key else None,
+                          {"SOFR": (lambda n: nyfed.sofr(min(30, max(5, int(n) // 2))), SOFR_FALLBACK_SOURCE),
+                           "ECBDFR": (lambda n: ecb.deposit_rate(min(30, max(5, int(n) // 2))), ECBDFR_FALLBACK_SOURCE)}, log=log)
+        debt = DebtSources(FiscalData(clock, **kw), TreasuryDirect(clock, **kw), treasury, ecb, MofJgb(clock, **kw))
+        return cls(YahooChart(clock, **kw), CboeChain(clock, **kw), _TreasuryAdapter(treasury), route, _FrankfurterAdapter(Frankfurter(clock, **kw)),
+                   _FinraAdapter(FinraShortVolume(clock, **kw)), health, debt=debt)
 
     @classmethod
     def offline_set(cls, fp: FakeProvider, clock=None) -> "ProviderSet":
@@ -514,8 +937,11 @@ class _FinraAdapter:
         return self._p.daily(d, wanted)
 
 
-__all__ = ["YahooChart", "CboeChain", "TreasuryCurve", "FredSeries", "Frankfurter", "FinraShortVolume", "FakeProvider", "ProviderSet", "Getter",
-           "YAHOO_HOSTS", "CBOE_URL", "TREASURY_URL", "FRED_URL", "FRANKFURTER_URL", "FINRA_URL",
+__all__ = ["YahooChart", "CboeChain", "TreasuryCurve", "FredSeries", "FredRoute", "Observations", "Frankfurter", "FinraShortVolume", "FakeProvider",
+           "ProviderSet", "Getter", "FiscalData", "TreasuryDirect", "NyFed", "EcbData", "MofJgb", "DebtSources", "ecb_curve_from",
+           "YAHOO_HOSTS", "CBOE_URL", "TREASURY_URL", "FRED_URL", "FRED_KEY_URL", "FRED_PAUSE_S", "FRANKFURTER_URL", "FINRA_URL", "TREASURY_REAL_URL",
+           "MSPD_URL", "MSPD_LATEST_URL", "AUCTIONS_URL", "FEDINVEST_URL", "NYFED_SOFR_URL", "ECB_URL", "MOF_JGB_URL", "SOFR_FALLBACK_SOURCE",
+           "ECBDFR_FALLBACK_SOURCE",
            # re-exported from parsers
            "num", "dec", "intv", "et_naive_to_epoch", "YahooIntraday", "DailyBar", "DivEvent", "SplitEvent", "Events", "ChainUnderlying", "ChainRow",
            "ChainSnapshot", "ParCurve", "FxRates", "chart_result", "chart_bars", "clean_meta", "parse_intraday", "parse_daily", "parse_events", "parse_chain",

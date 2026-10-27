@@ -7,14 +7,17 @@ top of the US Exchange account (digits sort first) with quotes unavailable forev
 ``0700-HK``).
 
 Pinned here:
-- the fresh seed: 0700-HK = HKD / FOREIGN / FOREIGN_FX+PB / Yahoo 0700.HK / T+2 / no Cboe symbol / UNSUPPORTED (quotes and
-  marks only in this build), AAPL unchanged, the 12 London rows in GBP with price_scale 0.01 (Yahoo quotes pence), all 38
+- the fresh seed: 0700-HK = HKD / FOREIGN / FOREIGN_FX+PB / Yahoo 0700.HK / T+2 / no Cboe symbol / FULL (Build 2 P06,
+  OA-12: a listing on a known venue in a currency with a USD pair trades in its venue session; before it was UNSUPPORTED,
+  quotes and marks only), AAPL unchanged, the 12 London rows in GBP with price_scale 0.01 (Yahoo quotes pence), all 38
   rows by currency, the other 760 rows still US listings;
 - ``upsert_from_yahoo_meta`` writes the same classification for a foreign venue, and refuses a Yahoo symbol another row
   owns (naming that row) instead of a silent no-op insert;
 - ``repair_foreign_listings`` fixes deliberately mis-seeded rows in place, is a no-op the second time, leaves a row that an
   open order or a position references (ONE WARN attention each, resolved by the run that repairs it), takes the Yahoo
-  symbol back from a duplicate a pre-fix resolve created, and leaves a holder that something references alone;
+  symbol back from a duplicate a pre-fix resolve created, and leaves a holder that something references alone (the
+  listing left without a Yahoo symbol is LIMITED: no venue session, no prints); it also adds the 17 FX crosses once
+  (``ensure_fx_master``) and re-classifies the foreign rows of the old UNSUPPORTED classification;
 - the markets endpoint's function (``api_products.markets_view``): the US Exchange equities / options lists exclude the
   foreign rows (before the repair they led the list — the owner's screen); the account search puts them in Foreign
   Markets & FX; Yahoo prints reach them through the corrected symbol.
@@ -91,6 +94,14 @@ def repair(rt) -> dict:
     return out
 
 
+def core(out: dict) -> dict:
+    """The foreign-listing part of a repair result (Build 2 adds the support re-classification and the FX master keys)."""
+    return {k: out[k] for k in ("repaired", "skipped", "moved")}
+
+
+FX_ADDED_17 = "; foreign rows re-classified 0 (FULL {full}, LIMITED 0); FX master: {added} pair(s) added, 0 spot lag(s) corrected"
+
+
 def repair_log_lines(rt) -> list:
     return [msg for level, msg in rt.log.records if level == "INFO" and msg.startswith("instrument repair (foreign universe listings)")]
 
@@ -122,13 +133,14 @@ class FreshSeedTests(unittest.TestCase):
     def test_hong_kong_listing_is_foreign_and_aapl_is_unchanged(self):
         m = self.rt.instruments
         hk = m.get("0700-HK")
-        self.assertEqual(("EQUITY", "Tencent Holdings Ltd.", "HKD", FOREIGN_GROUP, ("FOREIGN_FX", "PB"), "0700.HK", 2, None, "UNSUPPORTED", Decimal("1")),
+        self.assertEqual(("EQUITY", "Tencent Holdings Ltd.", "HKD", FOREIGN_GROUP, ("FOREIGN_FX", "PB"), "0700.HK", 2, None, "FULL", Decimal("1")),
                          (hk.kind, hk.name, hk.currency, hk.session_group, hk.account_kinds, hk.yahoo_symbol, hk.settle_days, hk.cboe_symbol, hk.support,
                           hk.price_scale))
         self.assertEqual("FOREIGN", FOREIGN_GROUP)                               # the group upsert_from_yahoo_meta has always used
         self.assertEqual(("HK", True, "HK"), (hk.spec["venue_suffix"], hk.spec["foreign"], hk.spec["country"]))   # universe spec keys kept
         self.assertNotIn("quote_unit", hk.spec)                                  # HKD is quoted in dollars: no scale
-        self.assertIn("orders are refused", hk.spec["note"])
+        self.assertIn("trades in its venue's session", hk.spec["note"])     # Build 2 (OA-12): tradable, venue session from Yahoo
+        self.assertEqual(("Hong Kong Exchanges", None), (hk.spec["venue"], hk.spec.get("limited_reason")))
         # tradeability (§7.2): Foreign Markets & FX and prime brokers; never the US Exchange account, Debt or Treasury
         self.assertEqual([True, True, False, False, False], [m.tradeable_in(hk, k) for k in ("FOREIGN_FX", "PB", "US_EXCHANGE", "DEBT", "TREASURY")])
         aapl = m.get("AAPL")
@@ -147,7 +159,7 @@ class FreshSeedTests(unittest.TestCase):
                          dict(Counter(e["currency"] for e in FOREIGN_ROWS)))    # 12 + 8 + 4 + 3 + 3 + 2 + 2 + 2 + 1 + 1 = 38
         for e in FOREIGN_ROWS:
             inst = m.get(e["ticker"])
-            self.assertEqual((e["currency"], e["yahoo"], FOREIGN_GROUP, FOREIGN_ACCOUNT_KINDS, None, "UNSUPPORTED"),
+            self.assertEqual((e["currency"], e["yahoo"], FOREIGN_GROUP, FOREIGN_ACCOUNT_KINDS, None, "FULL"),
                              (inst.currency, inst.yahoo_symbol, inst.session_group, inst.account_kinds, inst.cboe_symbol, inst.support), e["ticker"])
             # T+2 everywhere except NSE India (RELIANCE.NS), which settles T+1 since 2023-01-27
             self.assertEqual(1 if e["yahoo"].endswith(".NS") else 2, inst.settle_days, e["ticker"])
@@ -206,7 +218,7 @@ class UpsertAgreementTests(unittest.TestCase):
                                                           "longName": "BASF SE", "exchangeTimezoneName": "Europe/Berlin"})
             zz = m.upsert_from_yahoo_meta(tx, "ZZTEST", {"symbol": "ZZTEST", "currency": "USD", "exchangeName": "NMS", "instrumentType": "EQUITY",
                                                          "longName": "ZZ Test Corp"})
-        self.assertEqual(classification(m.get("SHEL-L")), classification(vod))  # GBP x 0.01, FOREIGN, T+2, FOREIGN_FX+PB, no Cboe, UNSUPPORTED
+        self.assertEqual(classification(m.get("SHEL-L")), classification(vod))  # GBP x 0.01, FOREIGN, T+2, FOREIGN_FX+PB, no Cboe, FULL
         self.assertEqual(classification(m.get("ALV-DE")), classification(bas))
         self.assertEqual(("VOD.L", "LSE", "Europe/London", "L"), (vod.yahoo_symbol, vod.spec["exchange"], vod.spec["tz"], vod.spec["venue_suffix"]))
         self.assertEqual(("FULL", "US_EQUITY", ("US_EXCHANGE", "PB"), 1, "ZZTEST", "USD"),
@@ -240,7 +252,9 @@ class RepairTests(unittest.TestCase):
 
     def test_repair_fixes_mis_seeded_rows_once(self):
         rt = self.rt
-        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, repair(rt))           # a fresh seed has nothing to repair
+        first = repair(rt)
+        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, core(first))          # a fresh seed has nothing to repair
+        self.assertEqual(([], 17, []), (first["support"], len(first["fx_added"]), first["fx_spot_lag"]))   # it adds the 17 FX crosses once
         want = {iid: row_of(rt, iid) for iid in ("0700-HK", "SHEL-L")}          # the rows a fresh seed writes
         for iid in want:
             mis_seed(rt, iid)
@@ -262,13 +276,16 @@ class RepairTests(unittest.TestCase):
         self.assertEqual(Decimal("0.01"), rt.instruments.get("SHEL-L").price_scale)
         lines = repair_log_lines(rt)
         self.assertEqual(2, len(lines))                                         # one INFO line per run (the fresh-seed run, then this one)
-        self.assertEqual("instrument repair (foreign universe listings): 2 corrected [0700-HK, SHEL-L]; 0 left as recorded [none]", lines[1])
+        self.assertEqual("instrument repair (foreign universe listings): 2 corrected [0700-HK, SHEL-L]; 0 left as recorded [none]"
+                         + FX_ADDED_17.format(full=38, added=0), lines[1])
         # the second run is a no-op: nothing corrected, rows byte-identical (updated_ts included)
         before = {iid: row_of(rt, iid) for iid in want}
         rt.clock.advance(60)
-        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, repair(rt))
+        again = repair(rt)
+        self.assertEqual(({"repaired": [], "skipped": {}, "moved": {}}, [], []), (core(again), again["support"], again["fx_added"]))
         self.assertEqual(before, {iid: row_of(rt, iid) for iid in want})
-        self.assertEqual("instrument repair (foreign universe listings): 0 corrected [none]; 0 left as recorded [none]", repair_log_lines(rt)[-1])
+        self.assertEqual("instrument repair (foreign universe listings): 0 corrected [none]; 0 left as recorded [none]" + FX_ADDED_17.format(full=38, added=0),
+                         repair_log_lines(rt)[-1])
         self.assertEqual([], open_repair_attention(rt))
 
     def test_rows_referenced_by_an_open_order_or_a_position_are_left_and_reported(self):
@@ -292,7 +309,8 @@ class RepairTests(unittest.TestCase):
         self.assertIn("open order O-900001 (WORKING)", msg)
         self.assertIn("cancel that order", msg)
         self.assertEqual("instrument repair (foreign universe listings): 2 corrected [8306-T, 9988-HK]; 2 left as recorded"
-                         " [6758-T: a position lot references it; 7203-T: open order O-900001 (WORKING) references it]", repair_log_lines(rt)[-1])
+                         " [6758-T: a position lot references it; 7203-T: open order O-900001 (WORKING) references it]"
+                         + FX_ADDED_17.format(full=36, added=17), repair_log_lines(rt)[-1])
         # a restart with nothing changed: same answer, still ONE attention item per row
         out = repair(rt)
         self.assertEqual(([], ["6758-T", "7203-T"]), (out["repaired"], sorted(out["skipped"])))
@@ -319,16 +337,16 @@ class RepairTests(unittest.TestCase):
         mis_seed(rt, "0941-HK")                                                  # frees Yahoo 0941.HK ...
         self.resolved_duplicate(rt, "0941.HK", "CHINA MOBILE")                   # ... which a pre-fix resolve then took
         out = repair(rt)
-        self.assertEqual({"repaired": ["0941-HK"], "skipped": {}, "moved": {"0941.HK": "0941-HK"}}, out)
+        self.assertEqual({"repaired": ["0941-HK"], "skipped": {}, "moved": {"0941.HK": "0941-HK"}}, core(out))
         r = m.get("0941-HK")
-        self.assertEqual(("HKD", FOREIGN_GROUP, FOREIGN_ACCOUNT_KINDS, "0941.HK", None, "UNSUPPORTED"),
+        self.assertEqual(("HKD", FOREIGN_GROUP, FOREIGN_ACCOUNT_KINDS, "0941.HK", None, "FULL"),
                          (r.currency, r.session_group, r.account_kinds, r.yahoo_symbol, r.cboe_symbol, r.support))
         self.assertNotIn("yahoo_symbol_held_by", r.spec)
         dup = m.get("0941.HK")                                                   # kept (nothing is deleted), without a quote source
         self.assertEqual((None, "0941-HK", "UNSUPPORTED"), (dup.yahoo_symbol, dup.spec["yahoo_symbol_moved_to"], dup.support))
         self.assertEqual("instrument repair (foreign universe listings): 1 corrected [0941-HK]; 0 left as recorded [none]; Yahoo symbol of the"
-                         " resolved duplicate 0941.HK moved to 0941-HK", repair_log_lines(rt)[-1])
-        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, repair(rt))
+                         " resolved duplicate 0941.HK moved to 0941-HK" + FX_ADDED_17.format(full=38, added=17), repair_log_lines(rt)[-1])
+        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, core(repair(rt)))
 
     def test_a_referenced_holder_keeps_the_yahoo_symbol(self):
         rt = self.rt
@@ -338,11 +356,15 @@ class RepairTests(unittest.TestCase):
         insert_order(rt, "O-900010", "1299.HK", "WORKING", account=FOREIGN_FX)    # a holder something references is never changed
         holder = row_of(rt, "1299.HK")
         out = repair(rt)
-        self.assertEqual({"repaired": ["1299-HK"], "skipped": {}, "moved": {}}, out)
+        self.assertEqual({"repaired": ["1299-HK"], "skipped": {}, "moved": {}}, core(out))
         r = m.get("1299-HK")
         self.assertEqual(("HKD", FOREIGN_GROUP, None, "1299.HK"), (r.currency, r.session_group, r.yahoo_symbol, r.spec["yahoo_symbol_held_by"]))
+        # without a Yahoo symbol the listing has no venue session and no prints: LIMITED, said why (re-classified in the same run)
+        self.assertEqual((["1299-HK"], "LIMITED"), (out["support"], r.support))
+        self.assertIn("no Yahoo symbol", r.spec["limited_reason"])
         self.assertEqual(holder, row_of(rt, "1299.HK"))
-        self.assertEqual({"repaired": [], "skipped": {}, "moved": {}}, repair(rt))
+        again = repair(rt)
+        self.assertEqual(({"repaired": [], "skipped": {}, "moved": {}}, []), (core(again), again["support"]))
 
 
 # ===== the markets endpoint and the quote path (server.build_runtime, offline) ===========================================================
@@ -394,7 +416,7 @@ class MarketsTests(unittest.TestCase):
         status, hits, _ = rt.router.handle("GET", f"/api/instruments?q=0700&account={FOREIGN_FX}")
         self.assertEqual(200, status)
         self.assertEqual(["0700-HK"], [h["instrument_id"] for h in hits])
-        self.assertEqual(("HKD", "UNSUPPORTED", FOREIGN_GROUP), (hits[0]["currency"], hits[0]["support"], hits[0]["session_group"]))
+        self.assertEqual(("HKD", "FULL", FOREIGN_GROUP), (hits[0]["currency"], hits[0]["support"], hits[0]["session_group"]))
         status, hits, _ = rt.router.handle("GET", f"/api/instruments?q=0700&account={US_EXCHANGE}")
         self.assertEqual((200, []), (status, hits))
         status, hits, _ = rt.router.handle("GET", f"/api/instruments?q=SHEL&account={FOREIGN_FX}")

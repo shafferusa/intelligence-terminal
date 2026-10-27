@@ -22,8 +22,21 @@ Conventions stated here
   and are resized on each partial fill; the row says so (``disclosure``).
 - ``TRS_OVERLAY`` (receive / pay the primary's notional through the account's prime broker) appears only in a PB
   account of a PB/OTC-eligible lifetime when the swaps modules exist (WP-17 and WP-26's TRS); it is booked on the OTC desk, not as an order
-  leg (``package()`` refuses it).  FX forwards, options on futures and the bond DV01 hedge are NOT IN THIS BUILD:
-  labelled rows (``not_in_this_build``), never fabricated.
+  leg (``package()`` refuses it; the panel opens the OTC tab's TRS form prefilled from the candidate's ``prefill``, PO-10).
+- ``FX_FORWARD`` (Build 2, OA-09): an FX position, or a foreign listing's currency exposure (qty x price x price scale in the
+  listing's currency), is hedged by an outright 3-month forward priced by ``services.fx.forward_rate`` (covered interest parity,
+  ``computed``, its inputs carried); it is dealt on the FX desk (``submit_via: fx``, ``prefill``), never an order leg.
+- ``DV01_FUTURES`` (Build 2, OA-05): a bond is hedged with US Treasury futures sized by DV01: n = round(|position DV01| /
+  contract DV01) with the position DV01 from ``services.bonds.dv01_c`` (full reprice for +1 bp) and the contract DV01 =
+  tables.FUT_DV01 duration x price x multiplier / 10,000 (an APPROXIMATE duration table, labelled); the root by the bond's
+  remaining life (<= 3.5 y ZT, <= 7 y ZF, <= 15 y ZN, else ZB); the futures trade in the lifetime's US Exchange account
+  (``trade_account``).  Options on futures stay NOT IN THIS BUILD (a labelled row, never fabricated).
+- Every candidate carries ``ratio_text`` ("1 contract per 100 shares", "60 shares per contract") and ``zero_size`` when it
+  sizes to nothing (fewer than 100 shares, less than one futures contract): the panel hides those with one line saying why.
+- POSITION MODE (USX-12 / ORC-4, ``position_candidates``; ``GET /api/hedges?mode=position``): the candidates for the position
+  ALREADY HELD in the account (signed quantity from the ledger), sized to it, with NO primary order: a one-leg hedge is its
+  own order (``submit_via: order``), a hedge of several option legs one all-or-none package (``submit_via: package``,
+  strategies.POSITION_HEDGE), the TRS / FX forward on their own desks.  A flat position has nothing to hedge (said).
 - ``package()`` turns a candidate (or the ticket's explicit ``legs``) into WAITING_PARENT child orders through
   ``orders.create_hedge_children``; option legs are materialised from the chain first (``options.ensure_option``) and
   an unlisted contract is refused (NOT_LISTED), never invented.
@@ -39,10 +52,10 @@ from . import tables
 from .books import account_row, eligibility as _eligibility, split_account_id
 from .clock import ny_of
 from .commands import ConflictError, RejectError, TxContext
-from .instruments import EQUITY_KINDS, parse_occ
+from .instruments import EQUITY_KINDS, fx_cross_id, parse_occ
 from .ledger import position as _position
 from .products import options as _options
-from .units import from_c, qprice
+from .units import from_c, qprice, to_c
 
 MIN_DAYS = 90
 PUT_PCT = Decimal("0.93")
@@ -55,6 +68,10 @@ PCT4 = Decimal("0.0001")
 CENT = Decimal("0.01")
 NOT_BUILT = "NOT IN THIS BUILD"
 SEQUENTIAL_NOTE = "sequential; a leg can rest (the legs are released after the primary fills, sized to its filled quantity x ratio)"
+FX_FORWARD_TENOR = "3M"
+# DV01_FUTURES: the Treasury future by the bond's remaining life in years (the last bucket has no limit)
+BOND_FUTURE_BUCKETS = ((Decimal("3.5"), "ZT"), (Decimal(7), "ZF"), (Decimal(15), "ZN"), (None, "ZB"))
+UNIT_NAMES = {"OPTION": ("contract", "contracts"), "FUTURE": ("contract", "contracts"), "EQUITY": ("share", "shares"), "TRS": ("unit", "units")}
 
 
 @dataclass
@@ -106,13 +123,18 @@ class HedgeCandidate:
     disclosure: str = SEQUENTIAL_NOTE
     rule: str = ""
     not_in_this_build: bool = False
+    mode: str = "order"              # order: the hedge legs of a NEW primary | position: hedges a position already held (no primary)
+    ratio_text: Optional[str] = None
+    extra: dict = field(default_factory=dict)     # zero_size, prefill (FX desk / OTC form), trade_account, position_qty
 
     def to_dict(self) -> dict:
-        return {"id": self.id, "label": self.label, "legs": [l.to_dict() for l in self.legs], "cost": _s(self.cost), "protection_level": _s(self.protection_level),
-                "net_cash": _s(self.net_cash), "greeks": self.greeks, "chain_quality": self.chain_quality, "as_of": self.as_of, "editable": self.editable,
-                "available": self.available, "reason": self.reason, "note": self.note, "fees": _s(self.fees), "submit_via": self.submit_via, "expiry": self.expiry,
-                "protection": self.protection, "ratio": _s(self.ratio), "fill_mode": self.fill_mode, "disclosure": self.disclosure, "rule": self.rule,
-                "not_in_this_build": self.not_in_this_build}
+        d = {"id": self.id, "label": self.label, "legs": [l.to_dict() for l in self.legs], "cost": _s(self.cost), "protection_level": _s(self.protection_level),
+             "net_cash": _s(self.net_cash), "greeks": self.greeks, "chain_quality": self.chain_quality, "as_of": self.as_of, "editable": self.editable,
+             "available": self.available, "reason": self.reason, "note": self.note, "fees": _s(self.fees), "submit_via": self.submit_via, "expiry": self.expiry,
+             "protection": self.protection, "ratio": _s(self.ratio), "fill_mode": self.fill_mode, "disclosure": self.disclosure, "rule": self.rule,
+             "not_in_this_build": self.not_in_this_build, "mode": self.mode, "ratio_text": self.ratio_text, "zero_size": False}
+        d.update(self.extra or {})
+        return d
 
 
 def _s(x) -> Optional[str]:
@@ -134,6 +156,42 @@ def ratio_of(leg_qty: int, primary_qty: int) -> Optional[Decimal]:
     if not primary_qty or leg_qty is None:
         return None
     return qprice((Decimal(int(leg_qty)) / Decimal(int(primary_qty))).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_EVEN))
+
+
+def _primary_units(inst) -> Tuple[str, str]:
+    if inst.kind in ("OPTION", "FUTURE"):
+        return "contract", "contracts"
+    if inst.kind == "FX":
+        base = str(inst.instrument_id)[:3]
+        return base, base
+    if inst.kind == "BOND":
+        return "of face", "of face"
+    return "share", "shares"
+
+
+def ratio_text(ratio, leg_kind: str, inst, held: bool = False) -> Optional[str]:
+    """USX-36: the ratio in a trader's words: 0.01 option per share -> "1 contract per 100 shares", 0.002 future per share ->
+    "1 contract per 500 shares", 60 shares per option -> "60 shares per contract"; ``held`` adds "held" (position mode)."""
+    if ratio is None:
+        return None
+    r = Decimal(str(ratio))
+    if r <= 0:
+        return None
+    ls, lp = UNIT_NAMES.get(leg_kind, ("unit", "units"))
+    ps, pp = _primary_units(inst)
+    tail = " held" if held else ""
+    if leg_kind == "OPTION" and ps == "share":
+        return f"1 contract per 100 shares{tail}"        # the option sizing rule: n = floor(shares / 100) (one contract = 100 shares)
+    if r < 1:
+        inv = Decimal(1) / r
+        if inv == inv.to_integral_value():
+            n = int(inv)
+            return f"1 {ls} per {n:,} {pp if n != 1 else ps}{tail}"
+        return f"1 {ls} per about {round_half_up(inv):,} {pp}{tail}"
+    if r == r.to_integral_value():
+        n = int(r)
+        return f"{n:,} {ls if n == 1 else lp} per {ps}{tail}"
+    return f"{qprice(r)} {lp} per {ps}{tail}"
 
 
 def _pct_text(level: Optional[Decimal]) -> str:
@@ -219,6 +277,19 @@ def _mark_of(services, instrument_id: str) -> Tuple[Optional[Decimal], str, Opti
     q = v.to_dict() if hasattr(v, "to_dict") else {}
     q.update({"last": str(px), "value": str(px), "quality": v.quality, "quote_time": v.quote_time})
     return px, v.quality, q
+
+
+def _request_quote(services, instrument_id: str) -> str:
+    """A futures leg without a mark: ask the quote cache for it (the worker fetches it off this thread) and say so - the panel
+    asks again a few seconds later.  Returns the reason text."""
+    cache = getattr(services, "cache", None)
+    if cache is not None and hasattr(cache, "subscribe"):
+        try:
+            cache.subscribe([instrument_id], 120, "PAGE")
+            return f"{instrument_id}: no quote yet - requested (the hedges are priced again in a few seconds)"
+        except Exception:   # noqa: BLE001 - a cache that cannot take the request leaves the plain reason
+            pass
+    return f"{instrument_id} mark unavailable"
 
 
 def _spot_of(services, chain, underlying_id: str) -> Tuple[Optional[Decimal], str]:
@@ -313,15 +384,15 @@ def _equity_candidates(services, account_id: str, inst, side: str, qty: int, cha
     k_edit = _edit_decimal(edits, "strike")
     note = f"{exp_note}; S {S} ({s_src}); n = floor({qty:,} / 100) = {n}"
 
-    def unavailable(reason: str) -> None:
+    def unavailable(reason: str, zero: bool = False) -> None:
         for cid, label in option_ids:
             out.append(HedgeCandidate(cid, label, [], None, None, None, {}, quality, chain.quote_time, dict(base_edit), False, reason, note, None, expiry=expiry,
-                                      ratio=ratio_of(n, qty) if n > 0 else None))
+                                      ratio=ratio_of(n, qty) if n > 0 else None, extra={"zero_size": True} if zero else {}))
 
     if expiry is None:
         unavailable(exp_note)
     elif n <= 0:
-        unavailable(f"fewer than 100 shares: no option hedge sizes to one contract (floor({qty:,} / 100) = 0)")
+        unavailable(f"fewer than 100 shares: no option hedge sizes to one contract (floor({qty:,} / 100) = 0)", zero=True)
     else:
         rows = chain.rows_for(expiry)
         puts = [r for r in rows if r.right == "P"]
@@ -408,7 +479,7 @@ def _index_overlay(services, inst, qty: int, S: Decimal, quality: str, as_of: Op
     px, q, quote = _mark_of(services, fut.instrument_id)
     if px is None:
         return HedgeCandidate("INDEX_OVERLAY", f"Index overlay ({fut.symbol})", [HedgeLeg(fut.instrument_id, side, 0, "last", None, {}, "FUTURE", fut.symbol, symbol=fut.symbol)],
-                              None, None, None, greeks, quality, as_of, editable, False, f"{fut.symbol} mark unavailable", beta_note)
+                              None, None, None, greeks, quality, as_of, editable, False, _request_quote(services, fut.instrument_id), beta_note)
     notional = Decimal(qty) * S
     per_contract = px * fut.multiplier
     raw = notional * beta / per_contract
@@ -426,6 +497,8 @@ def _index_overlay(services, inst, qty: int, S: Decimal, quality: str, as_of: Op
     if n > 0:
         c.fees = fee
         c.net_cash = -fee
+    else:
+        c.extra["zero_size"] = True                   # USX-36: never listed as 'SELL 0 ESZ26'; the panel hides it and says why
     return c
 
 
@@ -446,13 +519,17 @@ def _trs_overlay(services, account_id: str, inst, side: str, qty: int, S: Decima
         return None
     long_primary = side in ("BUY", "BUY_TO_COVER")
     leg_side = "PAY" if long_primary else "RECEIVE"
-    leg = HedgeLeg(None, leg_side, int(qty), "otc.preview", S, {"last": str(S), "value": str(S), "quality": quality, "quote_time": as_of}, "TRS",
+    leg = HedgeLeg(None, leg_side, int(qty), "underlying level", S, {"last": str(S), "value": str(S), "quality": quality, "quote_time": as_of,
+                                                                    "source": "underlying level (the reset price); the PB deals its spread on the OTC tab",
+                                                                    "delay_label": "Cboe delayed (chain underlying)"}, "TRS",
                    f"{leg_side} total return on {qty:,} {inst.symbol}", symbol=inst.symbol)
+    # PO-10: the panel's button opens the OTC tab's TRS form with these terms (swapticket.prefill, C21); it is never an order leg
+    prefill = {"kind": "TRS", "terms": {"underlying_id": inst.instrument_id, "units": int(qty), "receiver": not long_primary}}
     return HedgeCandidate("TRS_OVERLAY", f"TRS overlay: {leg_side.lower()} the total return on {qty:,} {inst.symbol} through {acct['broker'] or 'the PB'}", [leg], None, None, None,
                           {"delta_shares": str(-qty if long_primary else qty), "note": "the swap's return leg offsets the primary one for one"}, quality, as_of,
                           {"strike": False, "expiry": False, "ratio": True}, True, "", f"booked on the OTC desk (otc.book), not as an order leg; {el.pb_otc_reason}",
-                          None, submit_via="otc", disclosure="booked on the OTC desk through the account's prime broker (otc.book); not an order leg",
-                          rule=f"notional = {qty:,} x {S}", ratio=Decimal(1))
+                          None, submit_via="otc", disclosure="booked on the OTC tab through the account's prime broker: opens the TRS form prefilled; not an order leg",
+                          rule=f"notional = {qty:,} x {S}", ratio=Decimal(1), extra={"prefill": prefill, "trade_account": account_id})
 
 
 # ---- option, futures, FX, bond primaries ---------------------------------------------------------------------------------------
@@ -518,49 +595,248 @@ def _futures_candidates(services, inst, side: str, qty: int, today: date, now: i
                        margin=_futures_margin(nxt, int(qty)))
         out.append(HedgeCandidate("CALENDAR", f"Calendar: {opp} {qty} {nxt.symbol} against the {inst.symbol} position", [leg], Decimal(0), None, -fee,
                                   {"delta_shares": None, "note": "the next month offsets the front month one for one (calendar spread)"}, q, now, editable, px is not None,
-                                  "" if px is not None else f"{nxt.symbol} mark unavailable", "futures are margined (IM); no premium", fee,
+                                  "" if px is not None else _request_quote(services, nxt.instrument_id), "futures are margined (IM); no premium", fee,
                                   rule=f"{opp} {qty} of the next listed month ({nxt.symbol}, expiry {nxt.expiry})", ratio=Decimal(1)))
     out.append(HedgeCandidate("OPTIONS_ON_FUTURES", f"Options on {root} futures", [], None, None, None, {}, "n/a", now, {}, False, NOT_BUILT, NOT_BUILT, not_in_this_build=True))
     return out
 
 
+# ---- FX forwards (OA-09) and DV01 futures (OA-05) ------------------------------------------------------------------------------------
+def _trade_account(services, account_id: str, role: str) -> str:
+    """The account a hedge on another desk is dealt in: this one when it is a PB account (it trades both), else the lifetime's
+    ``role`` account (futures trade in US Exchange, FX in Foreign Markets & FX)."""
+    try:
+        lid, own = split_account_id(account_id)
+    except ValueError:
+        return account_id
+    return account_id if (own == role or own.startswith("PB_")) else f"{lid}:{role}"
+
+
+def _fx_forward(services, account_id: str, inst, side: str, qty: int, now: int) -> HedgeCandidate:
+    """OA-09: an outright forward against the currency exposure of an FX position or a foreign listing, priced by
+    ``services.fx.forward_rate`` (CIP, computed) for the 3-month tenor; dealt on the FX desk (``prefill``), never an order leg."""
+    cid = "FX_FORWARD"
+    editable = {"strike": False, "expiry": False, "ratio": False}
+    long_ = side in ("BUY", "BUY_TO_COVER")
+    if inst.kind == "FX":
+        pair = str(inst.instrument_id).upper()
+        ccy, other = pair[:3], pair[3:]
+        amount = Decimal(int(qty)).quantize(CENT)
+        basis = f"{qty:,} {ccy} ({pair} base units)"
+    else:
+        ccy, other = str(inst.currency or "USD").upper(), "USD"
+        pair = fx_cross_id(ccy, other)
+        px, _q, _quote = _mark_of(services, inst.instrument_id)
+        if px is None:
+            return HedgeCandidate(cid, f"FX forward ({ccy})", [], None, None, None, {}, "n/a", now, editable, False,
+                                  f"{inst.symbol}: no price, so the {ccy} amount to hedge is unknown", "")
+        scale = Decimal(str(getattr(inst, "price_scale", 1) or 1))
+        amount = (Decimal(int(qty)) * px * scale).quantize(CENT)
+        basis = f"{qty:,} x {px}" + (f" x {scale}" if scale != 1 else "") + f" = {ccy} {amount:,}"
+    sell_ccy, buy_ccy = (ccy, other) if long_ else (other, ccy)
+    verb = "sell" if long_ else "buy"
+    label = f"FX forward: {verb} {ccy} {amount:,} against {other} ({FX_FORWARD_TENOR})"
+    fxm = getattr(services, "fx", None)
+    if fxm is None or not hasattr(fxm, "forward_rate"):
+        return HedgeCandidate(cid, label, [], None, None, None, {}, "n/a", now, editable, False, "the FX desk is not loaded in this runtime: no forward price", basis)
+    try:
+        td = fxm.fx_trade_date(services, now)
+        vd = fxm.tenor_date(services, pair, FX_FORWARD_TENOR, td)
+        F, inputs = fxm.forward_rate(services, pair, vd)
+    except Exception as e:   # noqa: BLE001 - a missing input is an unavailable forward, never a guess
+        return HedgeCandidate(cid, label, [], None, None, None, {}, "n/a", now, editable, False, f"no forward price: {e}", basis)
+    if F is None:
+        return HedgeCandidate(cid, label, [], None, None, None, {}, "n/a", now, editable, False, f"no forward price: {(inputs or {}).get('note') or 'an input is missing'}", basis)
+    F = qprice(F)
+    other_amt = (amount * F if pair.startswith(ccy) else amount / F).quantize(CENT)
+    spot = (inputs or {}).get("spot") or {}
+    quote = {"value": str(F), "last": str(F), "quality": "computed", "source": "covered interest parity (FX desk: spot and the two money-market rates)",
+             "quote_time": spot.get("quote_time"), "method": "cip_forward", "inputs": {k: v for k, v in (inputs or {}).items() if k in ("spot", "r_base", "r_quote", "days")}}
+    leg = HedgeLeg(None, "SELL" if long_ else "BUY", int(amount), "forward outright (CIP)", F, quote, "FX_FORWARD",
+                   f"{verb} {ccy} {amount:,} / {'buy' if long_ else 'sell'} {other} {other_amt:,} at {F}, value {vd.isoformat()}", symbol=pair, expiry=vd.isoformat())
+    prefill = {"kind": "FX", "mode": "FORWARD", "tenor": FX_FORWARD_TENOR, "buy_ccy": buy_ccy, "sell_ccy": sell_ccy, "amount": str(amount), "amount_ccy": ccy,
+               "instrument_id": pair}
+    rule = f"amount = {basis}; F = {pair} {FX_FORWARD_TENOR} outright {F} for value {vd.isoformat()} (covered interest parity, computed)"
+    return HedgeCandidate(cid, label, [leg], Decimal(0), None, Decimal(0), {"note": "a forward carries no premium: both amounts change hands on the value date"},
+                          "computed", spot.get("quote_time") or now, editable, True, "", rule, None, submit_via="fx", expiry=vd.isoformat(),
+                          protection=f"locks {pair} at {F} for {ccy} {amount:,} until {vd.isoformat()}", fill_mode="FX DESK",
+                          disclosure="dealt on the FX desk (a forward is not an order leg): opens the desk prefilled with this deal; the dealt rate adds the desk's disclosed spread",
+                          rule=rule, extra={"prefill": prefill, "trade_account": _trade_account(services, account_id, "FOREIGN_FX")})
+
+
+def _bond_years(services, inst, today: date) -> Optional[Decimal]:
+    maturity = None
+    bonds = getattr(services, "bonds", None)
+    if bonds is not None and hasattr(bonds, "bond_terms"):
+        try:
+            maturity = bonds.bond_terms(inst).maturity
+        except Exception:   # noqa: BLE001 - falls back to the master's expiry
+            maturity = None
+    if maturity is None and inst.expiry:
+        maturity = date.fromisoformat(str(inst.expiry)[:10])
+    if maturity is None:
+        return None
+    return (Decimal((maturity - today).days) / Decimal("365.25")).quantize(Decimal("0.01"))
+
+
+def _dv01_futures(services, account_id: str, inst, side: str, qty: int, today: date, now: int) -> HedgeCandidate:
+    """OA-05: Treasury futures against a bond's DV01 (the module docstring DV01_FUTURES); the futures trade in US Exchange."""
+    cid, label = "DV01_FUTURES", "DV01 hedge with Treasury futures"
+    editable = {"strike": False, "expiry": False, "ratio": False}
+
+    def off(reason: str, note: str = "", zero: bool = False) -> HedgeCandidate:
+        return HedgeCandidate(cid, label, [], None, None, None, {}, "n/a", now, editable, False, reason, note, extra={"zero_size": True} if zero else {})
+
+    bonds = getattr(services, "bonds", None)
+    if bonds is None or not hasattr(bonds, "dv01_c"):
+        return off("the bond engine is not loaded in this runtime: no DV01")
+    face = int(qty) if side in ("BUY", "BUY_TO_COVER") else -int(qty)
+    try:
+        dv, dv_in = bonds.dv01_c(services, inst, face)
+    except Exception as e:   # noqa: BLE001 - no DV01 is an unavailable hedge, never a guess
+        return off(f"DV01 unavailable: {e}")
+    if dv is None:
+        return off(f"DV01 unavailable: {(dv_in or {}).get('note') or (dv_in or {}).get('basis') or 'no yield'}")
+    years = _bond_years(services, inst, today)
+    root = next(r for lim, r in BOND_FUTURE_BUCKETS if lim is None or (years is not None and years <= lim))
+    fut = front_month(services, root, today)
+    if fut is None:
+        return off(f"no listed {root} contract in the master")
+    px, q, quote = _mark_of(services, fut.instrument_id)
+    if px is None:
+        return off(_request_quote(services, fut.instrument_id))
+    dur = tables.FUT_DV01.get(root)
+    per_c = to_c(dur * px * fut.multiplier / Decimal(10000))
+    if per_c <= 0:
+        return off(f"{fut.symbol}: no contract DV01")
+    raw = Decimal(abs(int(dv))) / Decimal(per_c)
+    n = round_half_up(raw)
+    leg_side = "SELL" if dv < 0 else "BUY"                  # a long bond loses when yields rise: the short futures gain
+    formula = (f"n = round(|position DV01| {from_c(abs(int(dv))):,} / contract DV01 {from_c(per_c):,}) = round({raw.quantize(PCT4)}) = {n}; "
+               f"contract DV01 = {dur} x {px} x {fut.multiplier} / 10,000 = {from_c(per_c):,} USD per bp (approximate duration table)")
+    if n <= 0:
+        return off("the position's DV01 is less than half of one contract's", formula, zero=True)
+    fee = from_c(tables.fee_c("FUTURE", n)[0])
+    trade_acct = _trade_account(services, account_id, "US_EXCHANGE")
+    leg = HedgeLeg(fut.instrument_id, leg_side, n, "last", px, quote or {}, "FUTURE", f"{leg_side} {n} {fut.symbol}", symbol=fut.symbol, expiry=fut.expiry, fee=fee,
+                   margin=_futures_margin(fut, n))
+    life = "unknown" if years is None else f"{years} years"
+    cross = "" if str(inst.currency or "USD").upper() == "USD" else f"; a cross-market hedge of a {inst.currency} bond with US Treasury futures (basis risk)"
+    note = (f"{root} for a bond with {life} left (<= 3.5 y ZT, <= 7 y ZF, <= 15 y ZN, else ZB){cross}; the futures trade in {trade_acct}, not in this account"
+            f"; futures are margined (IM), no premium")
+    prot = (f"position DV01 {from_c(int(dv)):,} USD per bp offset by {n} x {from_c(per_c):,} = {from_c(n * per_c):,} (approximate)")
+    c = HedgeCandidate(cid, f"DV01 hedge: {leg_side} {n} {fut.symbol} (in {trade_acct})", [leg], Decimal(0), None, -fee,
+                       {"delta_shares": None, "dv01_position": str(from_c(int(dv))), "dv01_contract": str(from_c(per_c)), "note": (dv_in or {}).get("basis") or ""},
+                       q, now, editable, True, "", note, fee, rule=formula, protection=prot, fill_mode=None,
+                       disclosure=f"its own futures order in {trade_acct} (the futures do not trade in this account)",
+                       extra={"trade_account": trade_acct})
+    c.ratio_text = "sized by DV01 (not by face)"
+    return c
+
+
 # ---- the entry points --------------------------------------------------------------------------------------------------------------
 def candidates(services, account_id: str, inst, side: str, qty: int, chain=None, now: Optional[int] = None, edits: Optional[dict] = None):
     """§10.9: the candidate list for a primary, or a status dict (``fetching`` / ``unavailable``) when the chain is not cached.
-    Closing trades (SELL / BUY_TO_COVER / STC / BTC) get no candidates.  ``edits`` = the ticket's ``{strike, expiry}``
-    overrides for the protective option leg."""
+    Closing trades (SELL / BUY_TO_COVER / STC / BTC of equities and options) get no candidates.  ``edits`` = the ticket's
+    ``{strike, expiry}`` overrides for the protective option leg.  Every candidate gets its ``ratio_text``."""
     now = int(now if now is not None else services.clock.epoch())
     today = ny_of(now).date()
     side = str(side or "").upper()
     qty = int(qty)
     kind = inst.kind
-    if side in ("SELL", "BUY_TO_COVER", "STC", "BTC") and kind != "FUTURE":
+    if side in ("SELL", "BUY_TO_COVER", "STC", "BTC") and kind not in ("FUTURE", "FX", "BOND"):
         return []
-    if kind in EQUITY_KINDS:
+    out: List[HedgeCandidate]
+    if kind in EQUITY_KINDS and str(inst.currency or "USD").upper() != "USD":
+        out = [_fx_forward(services, account_id, inst, side, qty, now)]          # a foreign listing: its currency exposure
+    elif kind in EQUITY_KINDS:
         snap, status = _chain_for(services, inst.instrument_id, chain, now)
         if status is not None:
             return status
         S, s_src = _spot_of(services, snap, inst.instrument_id)
         if S is None:
             return {"status": "unavailable", "candidates": [], "note": f"{inst.symbol}: no underlying price (chain and mark unavailable)"}
-        return _equity_candidates(services, account_id, inst, side, qty, snap, S, s_src, chain_quality(services, snap, now, inst), today, now, edits)
-    if kind == "OPTION":
+        out = _equity_candidates(services, account_id, inst, side, qty, snap, S, s_src, chain_quality(services, snap, now, inst), today, now, edits)
+    elif kind == "OPTION":
         if not inst.underlying_id:
             return []
         snap, status = _chain_for(services, inst.underlying_id, chain, now)
         if status is not None:
             return status
         under = services.instruments.get(inst.underlying_id)
-        return _option_candidates(services, account_id, inst, side, qty, snap, chain_quality(services, snap, now, under), now)
-    if kind == "FUTURE":
-        return _futures_candidates(services, inst, side, qty, today, now)
-    if kind == "FX":
-        return [HedgeCandidate("FX_FORWARD", f"FX forward on {inst.symbol}", [], None, None, None, {}, "n/a", now, {}, False, f"{NOT_BUILT} (FX forwards are Build 2)", NOT_BUILT,
-                               not_in_this_build=True)]
-    if kind == "BOND":
-        return [HedgeCandidate("DV01_FUTURES", "DV01-matched ZN / ZB futures", [], None, None, None, {}, "n/a", now, {}, False, f"{NOT_BUILT} (bonds are Build 2)",
-                               "n = round(position DV01 / contract DV01) with tables.FUT_DV01 (approximate)", not_in_this_build=True)]
-    return []
+        out = _option_candidates(services, account_id, inst, side, qty, snap, chain_quality(services, snap, now, under), now)
+    elif kind == "FUTURE":
+        out = _futures_candidates(services, inst, side, qty, today, now)
+    elif kind == "FX":
+        out = [_fx_forward(services, account_id, inst, side, qty, now)]
+    elif kind == "BOND":
+        out = [_dv01_futures(services, account_id, inst, side, qty, today, now)]
+    else:
+        return []
+    for c in out:
+        if c.ratio_text is None and c.legs:
+            c.ratio_text = ratio_text(c.ratio, c.legs[0].kind, inst)
+    return out
+
+
+def _position_side(kind: str, held: int) -> str:
+    """The opening side of the position's direction, which the candidate rules are written for (no order is placed in it)."""
+    if kind == "OPTION":
+        return "BTO" if held > 0 else "STO"
+    if kind in EQUITY_KINDS:
+        return "BUY" if held > 0 else "SELL_SHORT"
+    return "BUY" if held > 0 else "SELL"
+
+
+def position_qty(services, account_id: str, instrument_id: str) -> int:
+    """The signed quantity held (the ledger's position; 0 when flat)."""
+    with services.db.reader() as conn:
+        held, _ = _position(conn, account_id, instrument_id)
+    return int(held or 0)
+
+
+def position_candidates(services, account_id: str, inst, chain=None, now: Optional[int] = None, edits: Optional[dict] = None):
+    """USX-12 / ORC-4: hedge the position ALREADY HELD in ``account_id`` (module docstring POSITION MODE).  Returns
+    ``(held, result)``: ``result`` is the candidate list sized to |held| (each marked ``mode: position`` with how it trades:
+    ``submit_via`` order | package | otc | fx, and never a primary order) or a status dict (``fetching`` / ``unavailable``, or
+    ``flat`` when nothing is held)."""
+    now = int(now if now is not None else services.clock.epoch())
+    held = position_qty(services, account_id, inst.instrument_id)
+    if held == 0:
+        return 0, {"status": "flat", "candidates": [], "note": f"no {inst.symbol} position in {account_id}: there is nothing to hedge"}
+    out = candidates(services, account_id, inst, _position_side(inst.kind, held), abs(held), chain=chain, now=now, edits=edits)
+    if isinstance(out, dict):
+        return held, out
+    what = f"the {abs(held):,} {inst.symbol} you {'hold' if held > 0 else 'are short'}"
+    for c in out:
+        c.mode = "position"
+        c.extra["position_qty"] = held
+        if c.ratio_text and c.ratio is not None and c.legs:
+            c.ratio_text = ratio_text(c.ratio, c.legs[0].kind, inst, held=True)
+        if c.submit_via in ("otc", "fx"):
+            continue
+        legs = [l for l in c.legs if l.qty > 0]
+        if len(legs) > 1 and all(l.kind == "OPTION" for l in legs):
+            c.submit_via, c.fill_mode = "package", "AON"
+            c.disclosure = f"hedges {what}: the {len(legs)} option legs trade together as one all-or-none package; no order in {inst.symbol}"
+        else:
+            c.submit_via, c.fill_mode = "order", None
+            where = c.extra.get("trade_account")
+            c.disclosure = (f"hedges {what}: the leg is its own order" + (f" in {where}" if where and where != account_id else "")
+                            + f" (preview and submit it on the ticket); no order in {inst.symbol}")
+    return held, out
+
+
+def position_payload(inst, account_id: str, held: int, result) -> dict:
+    """The JSON of ``GET /api/hedges?mode=position``: ``{mode, position, status, candidates, as_of, chain_quality, note}``."""
+    pos = {"instrument_id": inst.instrument_id, "symbol": inst.symbol, "kind": inst.kind, "qty": held, "account_id": account_id,
+           "direction": "long" if held > 0 else ("short" if held < 0 else "flat")}
+    if isinstance(result, dict):
+        return dict(result, mode="position", position=pos)
+    first = next((c for c in result if c.chain_quality not in (None, "n/a")), None)
+    note = f"hedges for the position held ({held:+,} {inst.symbol}): only the hedge legs trade - nothing is bought or sold in {inst.symbol}"
+    return {"mode": "position", "position": pos, "status": "ready", "candidates": [c.to_dict() for c in result],
+            "chain_quality": first.chain_quality if first else None, "as_of": first.as_of if first else None, "note": note}
 
 
 def _resolve_legs(ctx: TxContext, services, praw, inst, candidate_id: Optional[str], ratio, edits: Optional[dict]) -> Tuple[List[dict], Any]:
@@ -627,5 +903,42 @@ def package(ctx: TxContext, services, primary_order_id: str, candidate_id: Optio
     return _orders.create_hedge_children(ctx, services, primary_order_id, resolved, candidate_id or "HEDGE")
 
 
+def register_routes(router) -> None:
+    """C1 (BUILD2_PLAN): ``GET /api/hedges`` is served here (ahead of api_products' route) so ``mode=position`` reaches
+    ``position_candidates`` (USX-12 / ORC-4); every other call answers exactly as before: ``account_id``, ``instrument_id``,
+    ``side``, ``qty`` -> the candidate list; 202 ``{status: fetching, retry_ms}`` while the chain loads; 400 QTY_INVALID;
+    404 for an unknown account or instrument."""
+    from .api import ApiError, NotFound, RETRY_MS
+
+    def hedges_route(req):
+        rt = req.rt
+        aid = req.q("account_id") or ""
+        with rt.db.reader() as conn:
+            if account_row(conn, aid) is None:
+                raise NotFound(f"account {aid} does not exist")
+        iid = str(req.q("instrument_id") or "").strip().upper()
+        inst = rt.instruments.get(iid)
+        if inst is None:
+            raise NotFound(f"instrument {iid} is not in the master")
+        if str(req.q("mode") or "").lower() == "position":
+            edits = {k: req.q(k) for k in ("strike", "expiry") if req.q(k)}
+            held, out = position_candidates(rt, aid, inst, now=req.now, edits=edits or None)
+            body = position_payload(inst, aid, held, out)
+            if body.get("status") == "fetching":
+                return 202, dict(body, retry_ms=body.get("retry_ms") or RETRY_MS)
+            return body
+        qty = req.q_int("qty", 0, 0, 10**9)
+        if qty <= 0:
+            raise ApiError(400, "QTY_INVALID", "qty must be a positive whole number")
+        out = candidates(rt, aid, inst, (req.q("side") or "BUY").upper(), qty, now=req.now)
+        if isinstance(out, dict):
+            if out.get("status") == "fetching":
+                return 202, dict(out, retry_ms=out.get("retry_ms") or RETRY_MS)
+            return out
+        return [c.to_dict() for c in out]
+
+    router.add("GET", r"/api/hedges", hedges_route)
+
+
 __all__ = ["HedgeCandidate", "HedgeLeg", "candidates", "package", "pick_expiry", "snap_strike", "round_to_100", "round_half_up", "ratio_of", "front_month",
-           "chain_quality", "MIN_DAYS", "SEQUENTIAL_NOTE"]
+           "chain_quality", "MIN_DAYS", "SEQUENTIAL_NOTE", "position_candidates", "position_payload", "position_qty", "ratio_text", "register_routes"]

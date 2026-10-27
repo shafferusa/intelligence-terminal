@@ -296,10 +296,15 @@ class PrivateCreditTests(unittest.TestCase):
         for over, code in cases:
             r = commit(rt, **over)
             self.assertEqual((400, code), (r.http, r.code), (over, r.body))
-        # P1 (Personal, 1,000,000.00) cannot fund 4,900,000.00: 409 INSUFFICIENT_FUNDS with the three amounts; nothing is written
+        # Build 2 P08 (OA-30): P1 (Personal, NAV 1,000,000.00) is below its qualified-purchaser threshold 5,000,000.00 -> the same rule as Private
+        # Markets refuses the commitment, 400 NOT_ELIGIBLE_QP with the plain-English reason
         r = commit(rt, account_id="P1:CREDIT")
-        self.assertEqual((409, "INSUFFICIENT_FUNDS", 490000000, 0, 100000000), (r.http, r.code, r.body["error"]["details"]["need_c"], r.body["error"]["details"]["own_available_c"],
-                                                                                r.body["error"]["details"]["treasury_available_c"]))
+        self.assertEqual((400, "NOT_ELIGIBLE_QP", 500000000), (r.http, r.code, r.body["error"]["details"]["qp_threshold_c"]))
+        self.assertIn("Private Markets unlock at 5,000,000.00 NAV", r.body["error"]["message"])
+        # F1 (25,000,000.00) cannot fund 30,000,000.00 at 98.00 = 29,400,000.00: 409 INSUFFICIENT_FUNDS with the three amounts; nothing is written
+        r = commit(rt, principal="30000000.00")
+        self.assertEqual((409, "INSUFFICIENT_FUNDS", 2940000000, 0, 2500000000), (r.http, r.code, r.body["error"]["details"]["need_c"], r.body["error"]["details"]["own_available_c"],
+                                                                                  r.body["error"]["details"]["treasury_available_c"]))
         self.assertEqual(([], []), (q(rt, "SELECT loan_id FROM private_loans"), q(rt, "SELECT instrument_id FROM instruments WHERE instrument_id LIKE 'PC-%'")))
         # a percent spread is accepted ("6.00%" = 0.06); the replay returns the stored result and no second loan; a reused id with another payload is 409
         r = commit(rt, "ui:pc-commit-3", spread="6.00%")
@@ -402,22 +407,77 @@ class PrivateCreditTests(unittest.TestCase):
         mark_c, inputs = pc.pc_mark(rt, row)
         self.assertEqual((490000000, "amortised cost (no spread observation)", None), (mark_c, inputs["note"], inputs["oas_now_pct"]))
         rt.rates = rates
-        # a loan committed with no OAS print stored: oas_issue null -> amortised cost, however the spread moves later
+        # Build 2 P08 (OA-22): no OAS print stored (FRED down) -> the commitment is refused with the reason, 409 OAS_UNAVAILABLE, nothing written;
+        # committed only with the explicit acknowledgement: oas_issue null -> amortised cost until the first print ON OR AFTER the start date
+        # (10-20) is back-filled by the nightly coupon accrual
         rt2tmp = tempfile.mkdtemp(prefix="fst-pc2-")
         try:
             rt2 = runtime(rt2tmp, oas=None)
             try:
                 r = commit(rt2, "ui:pc-commit-7")
+                self.assertEqual((409, "OAS_UNAVAILABLE", "acknowledge_no_spread"), (r.http, r.code, r.body["error"]["details"]["acknowledge"]))
+                self.assertIn("no ICE BofA US high-yield OAS print (BAMLH0A0HYM2) is loaded", r.body["error"]["message"])
+                self.assertEqual([], q(rt2, "SELECT loan_id FROM private_loans"))
+                r = commit(rt2, "ui:pc-commit-7b", acknowledge_no_spread=True)
                 self.assertTrue(r.ok, r.body)
-                self.assertEqual((None, 490000000, "amortised cost (no spread observation)"), (r.body["loan"]["oas_issue"], r.body["loan"]["mark_c"], r.body["mark"]["note"]))
+                self.assertEqual((None, 490000000, "amortised cost (no spread observation); the issue spread is back-filled from the first BAMLH0A0HYM2 print on or after 2026-10-20"),
+                                 (r.body["loan"]["oas_issue"], r.body["loan"]["mark_c"], r.body["mark"]["note"]))
                 rt2.rates.put(pc.OAS_SERIES, [(date(2026, 10, 20), Decimal("9.00"))], persist=False)
-                self.assertEqual(490000000, pc.pc_mark(rt2, one(rt2, "SELECT * FROM private_loans"))[0])
+                rt2.clock.set(at(date(2026, 10, 21)))
+                self.assertTrue(accrue(rt2, LOAN, "2026-10-20", pc.KIND_CPN).ok)               # the night of 10-20 back-fills 9.00 of 10-20 first
+                row = one(rt2, "SELECT * FROM private_loans")
+                self.assertEqual(("9.00", "2026-10-20", 1), (row["oas_issue"], row["oas_issue_as_of"], row["oas_backfilled"]))
+                self.assertEqual(490000000, pc.pc_mark(rt2, row)[0])                           # OAS unchanged since the (back-filled) issue: the cost
                 # the views by scope: the account, the lifetime, every book; another lifetime sees nothing
                 self.assertEqual(([LOAN], [LOAN], [LOAN], []), tuple([v["loan_id"] for v in pc.loans_view(rt2, s)] for s in (F1_CREDIT, "F1:ALL", "ALL", "P1:ALL")))
             finally:
                 rt2.close()
         finally:
             shutil.rmtree(rt2tmp, ignore_errors=True)
+
+    # ---- Build 2 P08: a partial prepayment at par (OA-29) and the SOFR refusal (OA-22) -----------------------------------------------------
+    def test_partial_prepayment_at_par_and_sofr_refusal(self):
+        rt = self.rt = runtime(self.tmp)
+        # no SOFR print at all -> 409 RATE_UNAVAILABLE: the coupon cannot be set, nothing is committed
+        rates, rt.rates = rt.rates, RateStore()
+        rt.rates.put(pc.OAS_SERIES, [(date(2026, 10, 19), Decimal("3.00"))], persist=False)
+        r = commit(rt, "ui:pc-commit-8")
+        self.assertEqual((409, "RATE_UNAVAILABLE"), (r.http, r.code))
+        self.assertEqual([], q(rt, "SELECT loan_id FROM private_loans"))
+        rt.rates = rates
+        # §19.18 Testco: 5,000,000.00 at 98.00 (OID 100,000.00 over 1,096 nights), SOFR 3.87 + 6.00 = 9.87 %; nights 10-20 and 10-21 accrued:
+        # coupon cum 2 to_c(5,000,000 x 0.0987 x 2 / 360) = to_c(2,741.6667) = 2,741.67; OID cum 2 to_c(100,000 x 2 / 1,096) = to_c(182.4818) = 182.48
+        self.assertTrue(commit(rt, "ui:pc-commit-9").ok)
+        accrue_nights(self, rt, LOAN, date(2026, 10, 20), date(2026, 10, 21))
+        self.assertEqual((274167, 490018248), (bal(rt, F1_CREDIT, "1220", "USD", LOAN), bal(rt, F1_CREDIT, "1130", "USD", LOAN)))
+        # Thu 10-22 10:00: 1,002,741.67 received = the accrued coupon 2,741.67 + 1,000,000.00 of face at par -> face 4,000,000.00 left;
+        # its amortised cost = to_c(4,000,000 x 98 / 100) + to_c(80,000 x 2 / 1,096) = 3,920,000.00 + to_c(145.9854) = 3,920,145.99
+        # cost retired 4,900,182.48 - 3,920,145.99 = 980,036.49; realised 1,000,000.00 - 980,036.49 = 19,963.51 (the prepaid face's unaccreted OID)
+        rt.clock.set(at(date(2026, 10, 22), "10:00"))
+        r = execute(rt, "pc.repay", {"loan_id": LOAN, "amount": "1002741.67"})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual((True, "OPEN", 274167, 98003649, 1996351, 400000000), (r.body["partial"], r.body["status"], r.body["accrued_paid_c"], r.body["cost_retired_c"],
+                                                                               r.body["realised_c"], r.body["face_left_c"]))
+        self.assertEqual([("1010", None, 274167), ("1220", LOAN, -274167), ("1010", None, 100000000), ("1130", LOAN, -98003649), ("4000", LOAN, -1996351)],
+                         lines_of(rt, r.body["entry_id"]))
+        self.assertEqual((400000000, 392014599, 0), (one(rt, "SELECT principal_c FROM private_loans")["principal_c"], bal(rt, F1_CREDIT, "1130", "USD", LOAN),
+                                                     bal(rt, F1_CREDIT, "1220", "USD", LOAN)))
+        self.assertEqual((8000000, 14599), tuple(one(rt, "SELECT base_c, cum_c FROM accrual_state WHERE kind='pcoid' AND ref_id=?", (LOAN,)).values()))
+        assert_integrity(self, rt, "full")                                                  # L24: 3,920,000.00 + 145.99 = 3,920,145.99
+        # night 10-22 on the smaller face: coupon to_c(4,000,000 x 0.0987 / 360) = to_c(1,096.6667) = 1,096.67 (a new segment); OID cum 3 on 80,000:
+        # to_c(80,000 x 3 / 1,096) = to_c(218.9781) = 218.98 -> 218.98 - 145.99 = 72.99; 1130 = 3,920,145.99 + 72.99 = 3,920,218.98
+        rt.clock.set(at(date(2026, 10, 23)))
+        self.assertEqual(109667, accrue(rt, LOAN, "2026-10-22", pc.KIND_CPN).body["amount_c"])
+        self.assertEqual(7299, accrue(rt, LOAN, "2026-10-22", pc.KIND_OID).body["amount_c"])
+        self.assertEqual(392021898, bal(rt, F1_CREDIT, "1130", "USD", LOAN))
+        with rt.db.reader() as conn:
+            self.assertEqual(274167, pc.coupon_paid_c(conn, one(rt, "SELECT * FROM private_loans")))          # the next payment pays only what is owed since
+        # the full payoff: accrued 1,096.67 + face 4,000,000.00 against the cost 3,920,218.98 -> realised 79,781.02
+        rt.clock.set(at(date(2026, 10, 23), "10:00"))
+        r = execute(rt, "pc.repay", {"loan_id": LOAN, "full": True})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual((False, "REPAID", 109667, 392021898, 7978102), (r.body["partial"], r.body["status"], r.body["accrued_paid_c"], r.body["cost_retired_c"], r.body["realised_c"]))
+        assert_integrity(self, rt, "full")
 
     # ---- the schedule roll and the UI component ---------------------------------------------------------------------------------------------
     def test_modified_following_and_component_file(self):

@@ -50,15 +50,16 @@ class AccountingTests(unittest.TestCase):
             # MARKET BUY 100 at last 339.50 x 1.02 = 346.29 -> 34,629.00 + 1.00 = 34,630.00
             tx.x("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, order_type, tif, status, session_group, created_ts, updated_ts, expires_ts, preview_json)"
                  " VALUES ('O-000002','ui:o2',?,?,'BUY',?,'MARKET',?,?,?,?,?,?,?)", common)
-            # SELL_SHORT 100: collateral not yet posted 1.02 x 100 x 339.50 = 34,629.00
+            # SELL_SHORT 100: the cash its fill will take = collateral 1.02 x 100 x 339.50 = 34,629.00 less the sale's own proceeds
+            # 33,950.00 - fee max(100 x 0.005, 1.00) = 1.00 -> 33,949.00 = 680.00 (2 % excess 679.00 + fee 1.00)
             tx.x("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, order_type, tif, status, session_group, created_ts, updated_ts, expires_ts, preview_json)"
                  " VALUES ('O-000003','ui:o3',?,?,'SELL_SHORT',?,'MARKET',?,?,?,?,?,?,?)", common)
             # a FILLED order reserves nothing
             tx.x("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, order_type, limit_px, tif, status, session_group, created_ts, updated_ts, expires_ts, preview_json)"
                  " VALUES ('O-000004','ui:o4',?,?,'BUY',?,'LIMIT','1.00',?,'FILLED',?,?,?,?,?)", (US_EXCHANGE, "AAPL", 100, "DAY", "US_EQUITY", now, now, now + 3600, "{}"))
         c = self.rt.accounting.cash(US_EXCHANGE)["USD"]
-        self.assertEqual(3000100 + 3463000 + 3462900, c.reserved_c)        # 99,260.00
-        self.assertEqual(100000000 - 9926000, c.available_c)               # 900,740.00
+        self.assertEqual(3000100 + 3463000 + 68000, c.reserved_c)          # 65,311.00
+        self.assertEqual(100000000 - 6531100, c.available_c)               # 934,689.00
 
     def test_equity_buy_positions_nav_pnl_today(self):
         # §19.3 with the test fill helper (no matcher): Fri 2026-10-16 fund 500,000.00; snapshots Fri/Sat/Sun 17:45 (NAV 500,000.00)
@@ -158,7 +159,12 @@ class AccountingTests(unittest.TestCase):
         self.assertTrue(buy(rt, US_EXCHANGE, "MSFT", 100, "500.00").ok)
         nav = rt.accounting.nav(US_EXCHANGE)
         self.assertEqual((True, ["MSFT"], "unavailable"), (nav.partial, nav.missing, nav.quality))
-        self.assertIn("1 unpriced", nav.note)
+        # MONEY-5: one NAV definition - the unpriced 100 MSFT stay in NAV at their cost row (100 x 500.00 = 50,000.00) and in the
+        # served assets too, so NAV = assets - liabilities; the note says what the figure is
+        self.assertIn("1 position(s) at cost: no price", nav.note)
+        self.assertEqual(nav.nav_c, nav.assets_c - nav.liabilities_c)
+        bs = rt.accounting.balance_sheet(US_EXCHANGE)
+        self.assertEqual((nav.assets_c, nav.liabilities_c, 0), (bs.assets_c, bs.liabilities_c, bs.rounding_c))
         p = rt.accounting.positions(US_EXCHANGE)[0]
         self.assertEqual(("unavailable", None, None), (p.mark.quality, p.mv_c, p.unrealised_c))
         pnl = rt.accounting.pnl(US_EXCHANGE, "ITD")

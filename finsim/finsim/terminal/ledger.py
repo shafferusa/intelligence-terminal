@@ -60,6 +60,7 @@ CHART: Dict[str, GlSpec] = dict([
     _g("1360", "Cross-currency notional receivable", "ASSET", 1, "financing_asset"),
     _g("1400", "Cash collateral posted — stock borrow", "ASSET", 1, "collateral"),
     _g("1410", "Accrued rebate receivable", "ASSET", 1, "accrued_income"),
+    _g("1420", "Accrued securities-lending fee receivable", "ASSET", 1, "accrued_income"),
     _g("1500", "Reverse repo receivable", "ASSET", 0, "financing_asset"),
     _g("1700", "Options purchased at cost", "ASSET", 1, "positions_cost"),
     _g("2100", "Payable — unsettled purchases", "LIABILITY", 0, "cash_pending_out"),
@@ -70,7 +71,9 @@ CHART: Dict[str, GlSpec] = dict([
     _g("2340", "Accrued swap payable", "LIABILITY", 1, "accrued_expense"),
     _g("2350", "FX settlement payable", "LIABILITY", 0, "cash_pending_out"),
     _g("2360", "Cross-currency notional payable", "LIABILITY", 1, "financing"),
+    _g("2420", "Accrued rebate payable — securities lent", "LIABILITY", 1, "accrued_expense"),
     _g("2500", "Repo borrowing", "LIABILITY", 0, "financing"),
+    _g("2520", "Cash collateral received — securities lent", "LIABILITY", 1, "collateral_received"),
     _g("2600", "Securities sold short (at proceeds)", "LIABILITY", 1, "positions_short"),
     _g("2700", "Prime-broker financing", "LIABILITY", 0, "financing"),
     _g("2750", "Currency loans — principal", "LIABILITY", 0, "financing"),
@@ -84,6 +87,7 @@ CHART: Dict[str, GlSpec] = dict([
     _g("4300", "Interest income — cash and coupons", "INCOME", 1, "income"),
     _g("4320", "Fee income — private credit", "INCOME", 1, "income"),
     _g("4350", "Rebate income — cash collateral", "INCOME", 1, "income"),
+    _g("4360", "Securities-lending fee income", "INCOME", 1, "income"),
     _g("4400", "Futures variation margin", "INCOME", 1, "realised"),
     _g("4450", "Swap results — resets, net coupons, STM settlements", "INCOME", 1, "realised"),
     _g("4500", "Reverse repo interest", "INCOME", 0, "income"),
@@ -91,6 +95,7 @@ CHART: Dict[str, GlSpec] = dict([
     _g("5100", "Interest expense — PB financing", "EXPENSE", 0, "financing_cost"),
     _g("5150", "Interest expense — currency loans", "EXPENSE", 0, "financing_cost"),
     _g("5300", "Securities borrow fees", "EXPENSE", 1, "financing_cost"),
+    _g("5350", "Rebate paid on cash collateral received", "EXPENSE", 1, "financing_cost"),
     _g("5400", "Payments in lieu", "EXPENSE", 1, "financing_cost"),
     _g("5500", "Interest expense — repo", "EXPENSE", 0, "financing_cost"),
     _g("5700", "Buy-in penalties", "EXPENSE", 1, "financing_cost"),
@@ -101,8 +106,8 @@ NATURAL_SIGN = {"ASSET": 1, "EXPENSE": 1, "LIABILITY": -1, "EQUITY": -1, "INCOME
 COST_LONG_GLS = ("1100", "1110", "1120", "1700")
 COST_SHORT_GLS = ("2600", "2900")
 REALISED_GLS = ("4000", "4400", "4450")
-INCOME_GLS = ("4200", "4300", "4320", "4350", "4500")
-FINANCING_GLS = ("5100", "5150", "5300", "5400", "5500", "5700")
+INCOME_GLS = ("4200", "4300", "4320", "4350", "4360", "4500")
+FINANCING_GLS = ("5100", "5150", "5300", "5350", "5400", "5500", "5700")
 FEE_GLS = ("5000",)
 
 

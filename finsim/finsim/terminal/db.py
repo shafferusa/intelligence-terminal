@@ -11,12 +11,19 @@ Conventions
   ``SchemaTooNew`` -> exit 4) -> seed (books, chart, settings, meta) on an empty file, inside one transaction.
 - Later packages cannot edit this file: the complete §3 schema lives here, including the swap / private /
   dividend / news tables and the trailing-stop / fill_mode / lock_until / NEGOTIATED / PRIVATE / SWAP columns.
+- Build 2 hooks (BUILD2_PLAN C4, 2026-10-21): ``ensure_schema_ext(owner, statements)`` lets a product module add its own
+  tables / indexes / columns from its ``bind(rt)`` (idempotent, additive only, logged once); ``open()`` widens the
+  ``otc_contracts.kind`` CHECK to ``OTC_KINDS`` (a one-time table rebuild, only when the stored DDL lacks a kind; the file
+  stays readable by 1.0.3 and SCHEMA_VERSION does not change); ``reader()`` is re-entrant per thread (ORC-7: a nested
+  ``reader()`` on a thread that already holds one gets that same connection, so nested reads never take a second pooled
+  connection and can never exhaust the pool of four).
 """
 from __future__ import annotations
 
 import json
 import os
 import queue
+import re
 import sqlite3
 import threading
 import time as _time
@@ -232,7 +239,7 @@ CREATE TABLE IF NOT EXISTS hedge_packages (package_id TEXT PRIMARY KEY, command_
 CREATE TABLE IF NOT EXISTS otc_contracts (
   contract_id TEXT PRIMARY KEY,
   command_id INTEGER NOT NULL, account_id TEXT NOT NULL REFERENCES accounts(account_id), broker TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('IRS','TRS','XCCY')), terms_json TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('IRS','TRS','XCCY','EQ_OPTION','FX_OPTION','EQ_FORWARD','FX_FORWARD','CDX')), terms_json TEXT NOT NULL,
   notional_c INTEGER NOT NULL, currency TEXT NOT NULL, start_date TEXT NOT NULL, maturity_date TEXT NOT NULL,
   margin_mode TEXT NOT NULL CHECK (margin_mode IN ('CTM','STM')), im_c INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','TERMINATED','MATURED')),
@@ -303,7 +310,7 @@ DEFAULT_SETTINGS = {
     "snapshot_time_et": "17:45",
     "treasury_reserve_c": 0,
     "session_overrides": {},
-    "sweep_confirm_threshold_c": 200000000,
+    "sweep_confirm_threshold_c": 0,                 # SR-12: off unless the owner sets one (the 25 %-of-NAV notional rule still asks)
     "theme": "dark",
     "pb_otc_threshold_c": 2500000000,
     "qp_threshold_c": {"INDIVIDUAL": 500000000, "FUND": 2500000000, "INSTITUTION": 0},
@@ -314,6 +321,13 @@ DEFAULT_SETTINGS = {
 # Id sequences (§3: "order ids O-000001, fill ids F-000001, ...")
 PREFIXES = {"order": "O-", "fill": "F-", "transfer": "X-", "settlement": "S-", "borrow": "B-", "loan": "L-", "fx_deal": "D-",
             "swap": "SWP-", "private_loan": "PC-", "package": "PK-", "preview": "pv:"}
+
+
+#: the OTC contract kinds otc_contracts.kind accepts (C4): swaps (P09) and the PB OTC options / forwards (P12)
+OTC_KINDS = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX")
+_OTC_KIND_CHECK_RE = re.compile(r"kind\s+TEXT\s+NOT\s+NULL\s+CHECK\s*\(\s*kind\s+IN\s*\(([^)]*)\)\s*\)", re.IGNORECASE)
+_EXT_ADD_COLUMN_RE = re.compile(r'^\s*ALTER\s+TABLE\s+"?([A-Za-z_][A-Za-z0-9_]*)"?\s+ADD\s+(?:COLUMN\s+)?"?([A-Za-z_][A-Za-z0-9_]*)"?\s', re.IGNORECASE)
+_EXT_CREATE_RE = re.compile(r'^\s*CREATE\s+(?:UNIQUE\s+)?(?:TABLE|INDEX|VIEW|TRIGGER)\s+IF\s+NOT\s+EXISTS\s+"?([A-Za-z_][A-Za-z0-9_]*)"?', re.IGNORECASE)
 
 
 class DatabaseError(Exception):
@@ -397,6 +411,32 @@ def set_setting(conn: sqlite3.Connection, key: str, value: Any) -> None:
                  (key, dumps(value)))
 
 
+def futures_margin_override(conn: sqlite3.Connection, root: str) -> Optional[Tuple[int, int]]:
+    """SR-11: ``(im_c, mm_c)`` per contract the owner set for a futures root in Settings > Margins & limits
+    (``futures_margin_overrides``), else None (the static ``instruments.FUTURES_SPECS`` values apply).  For NEW requirements only."""
+    m = get_setting(conn, "futures_margin_overrides", {}) or {}
+    d = m.get(str(root or "").upper()) if isinstance(m, dict) else None
+    if not isinstance(d, dict):
+        return None
+    try:
+        im, mm = int(d.get("im_c")), int(d.get("mm_c"))
+    except (TypeError, ValueError):
+        return None
+    return (im, mm) if im > 0 and 0 < mm <= im else None
+
+
+def position_limit_override(conn: sqlite3.Connection, key: str) -> Optional[int]:
+    """SR-11: the position limit (contracts) the owner set for a futures root (spot-month limit) or ``OPTIONS`` (the listed-option
+    position limit used when no tier is known) in ``position_limit_overrides``, else None (the static table applies)."""
+    m = get_setting(conn, "position_limit_overrides", {}) or {}
+    v = m.get(str(key or "").upper()) if isinstance(m, dict) else None
+    try:
+        n = int(v) if v is not None else None
+    except (TypeError, ValueError):
+        return None
+    return n if n is not None and n > 0 else None
+
+
 def get_meta(conn: sqlite3.Connection, key: str, default: Optional[str] = None) -> Optional[str]:
     row = conn.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
     return row[0] if row else default
@@ -418,6 +458,8 @@ class Database:
         self._pool: "queue.Queue[sqlite3.Connection]" = queue.Queue(maxsize=4)
         self._all_readers: List[sqlite3.Connection] = []
         self._opened = False
+        self._local = threading.local()          # .conn / .depth: the pooled reader this thread holds (re-entrant reader, ORC-7)
+        self._ext_logged: set = set()            # ensure_schema_ext owners already logged
 
     # ---- connections ------------------------------------------------------------------------------------------------
     def _connect(self, query_only: bool) -> sqlite3.Connection:
@@ -451,6 +493,14 @@ class Database:
             finally:
                 self._writer = None
             raise
+        try:
+            self._widen_otc_kinds()
+        except Exception:
+            try:
+                self._writer.close()
+            finally:
+                self._writer = None
+            raise
         if existed:
             self._compact_startup()
         for _ in range(4):
@@ -458,6 +508,115 @@ class Database:
             self._all_readers.append(c)
             self._pool.put(c)
         self._opened = True
+
+    def _widen_otc_kinds(self) -> bool:
+        """C4: widen the ``otc_contracts.kind`` CHECK to ``OTC_KINDS`` when the stored DDL lacks one of them (a database
+        created by 1.0.3 or earlier).  SQLite cannot alter a CHECK, so the table is rebuilt once with the documented
+        procedure (foreign keys off -> new table from the stored DDL with the wider CHECK -> copy every column -> drop ->
+        rename -> foreign_key_check -> commit).  The stored DDL is the source, so columns added later stay; nothing else
+        changes and SCHEMA_VERSION stays (1.0.3 reads the file as before).  Returns True when it rebuilt the table."""
+        conn = self._writer
+        row = conn.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='otc_contracts'").fetchone()
+        if row is None or not row[0]:
+            return False
+        sql = str(row[0])
+        m = _OTC_KIND_CHECK_RE.search(sql)
+        if m is None:
+            if self.log:
+                self.log.warning("otc_contracts: the kind CHECK was not recognised; left as it is")
+            return False
+        have = [x.strip().strip("'\"") for x in m.group(1).split(",") if x.strip()]
+        if all(k in have for k in OTC_KINDS):
+            return False
+        kinds = list(dict.fromkeys(list(OTC_KINDS) + have))
+        new_sql = sql[:m.start()] + "kind TEXT NOT NULL CHECK (kind IN (" + ",".join(f"'{k}'" for k in kinds) + "))" + sql[m.end():]
+        tmp_sql, n = re.subn(r'^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?"?otc_contracts"?', "CREATE TABLE otc_contracts_widen", new_sql, count=1, flags=re.IGNORECASE)
+        if n != 1:
+            if self.log:
+                self.log.warning("otc_contracts: unexpected stored DDL; the kind CHECK was not widened")
+            return False
+        cols = ",".join(f'"{r[1]}"' for r in conn.execute("PRAGMA table_info(otc_contracts)").fetchall())
+        extra = [r[0] for r in conn.execute("SELECT sql FROM sqlite_master WHERE tbl_name='otc_contracts' AND type IN ('index','trigger') AND sql IS NOT NULL").fetchall()]
+        conn.execute("PRAGMA foreign_keys=OFF")
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                conn.execute("DROP TABLE IF EXISTS otc_contracts_widen")
+                conn.execute(tmp_sql)
+                conn.execute(f"INSERT INTO otc_contracts_widen ({cols}) SELECT {cols} FROM otc_contracts")
+                conn.execute("DROP TABLE otc_contracts")
+                conn.execute("ALTER TABLE otc_contracts_widen RENAME TO otc_contracts")
+                for s in extra:
+                    conn.execute(s)
+                bad = conn.execute("PRAGMA foreign_key_check").fetchall()
+                if bad:
+                    raise DatabaseError(f"otc_contracts rebuild: foreign_key_check reports {len(bad)} row(s)")
+                conn.execute("COMMIT")
+            except BaseException:
+                try:
+                    conn.execute("ROLLBACK")
+                except sqlite3.Error:
+                    pass
+                raise
+        finally:
+            conn.execute("PRAGMA foreign_keys=ON")
+        if self.log:
+            self.log.info("otc_contracts.kind CHECK widened to %s (was %s); rows kept", ",".join(kinds), ",".join(have))
+        return True
+
+    def ensure_schema_ext(self, owner: str, statements) -> dict:
+        """C4: idempotent, additive DDL for a product module (callable from its ``bind(rt)``): ``CREATE TABLE / INDEX /
+        VIEW / TRIGGER IF NOT EXISTS ...`` run as given; ``ALTER TABLE t ADD [COLUMN] c ...`` runs only when ``PRAGMA
+        table_info(t)`` lacks ``c``.  Anything else (a DROP, an UPDATE, a CREATE without IF NOT EXISTS) is refused with
+        ValueError before anything runs.  One writer transaction (or the caller's own, when this thread already holds the
+        writer in one); the first call per owner logs one INFO line.  Returns ``{owner, created, added, present}``."""
+        if isinstance(statements, str):
+            statements = [statements]
+        plan = []
+        for s in statements or []:
+            s = str(s or "").strip().rstrip(";").strip()
+            if not s:
+                continue
+            m = _EXT_ADD_COLUMN_RE.match(s + " ")
+            if m is not None:
+                plan.append(("add", s, m.group(1), m.group(2)))
+                continue
+            m = _EXT_CREATE_RE.match(s)
+            if m is not None:
+                plan.append(("create", s, m.group(1), None))
+                continue
+            raise ValueError(f"ensure_schema_ext({owner}): only CREATE ... IF NOT EXISTS and ALTER TABLE ... ADD COLUMN are allowed, got {s[:100]!r}")
+        out = {"owner": str(owner), "created": [], "added": [], "present": []}
+
+        def run(conn: sqlite3.Connection) -> None:
+            names = {r[0] for r in conn.execute("SELECT name FROM sqlite_master").fetchall()}
+            for kind, s, name, col in plan:
+                if kind == "add":
+                    cols = {r[1] for r in conn.execute(f'PRAGMA table_info("{name}")').fetchall()}
+                    if not cols:
+                        raise DatabaseError(f"ensure_schema_ext({owner}): table {name} does not exist ({s[:100]!r})")
+                    if col in cols:
+                        out["present"].append(f"{name}.{col}")
+                        continue
+                    conn.execute(s)
+                    out["added"].append(f"{name}.{col}")
+                else:
+                    if name in names:
+                        out["present"].append(name)
+                        continue
+                    conn.execute(s)
+                    names.add(name)
+                    out["created"].append(name)
+
+        if self.writer_owned_by_current_thread() and self._writer is not None and self._writer.in_transaction:
+            run(self._writer)
+        else:
+            with self.writer() as tx:
+                run(tx.conn)
+        if self.log and (owner not in self._ext_logged or out["created"] or out["added"]):
+            self._ext_logged.add(owner)
+            self.log.info("schema ext %s: created %s, added %s, already present %d", owner, out["created"] or "-", out["added"] or "-", len(out["present"]))
+        return out
 
     def _compact_startup(self) -> None:
         """TX-6 (2026-10-21), before any reader, worker or request exists: older builds journaled the whole quote cache as
@@ -537,17 +696,32 @@ class Database:
     @contextmanager
     def reader(self) -> Iterator[sqlite3.Connection]:
         """A pooled read-only connection (never the writer lock).  If this thread currently holds the writer inside
-        a transaction, the writer connection is handed out instead so the read sees the uncommitted state."""
+        a transaction, the writer connection is handed out instead so the read sees the uncommitted state.
+
+        Re-entrant per thread (ORC-7): a ``reader()`` nested inside another one on the same thread gets the connection
+        the thread already holds (depth counted) and the connection goes back to the pool only at the outermost exit, so
+        nested reads (a view calling accounting calling marks ...) never wait for a second pooled connection."""
         if self.writer_owned_by_current_thread() and self._writer is not None and self._writer.in_transaction:
             yield self._writer
+            return
+        loc = self._local
+        held = getattr(loc, "conn", None)
+        if held is not None:
+            loc.depth = int(getattr(loc, "depth", 0) or 0) + 1
+            try:
+                yield held
+            finally:
+                loc.depth -= 1
             return
         try:
             conn = self._pool.get(timeout=2.0)
         except queue.Empty as e:
             raise BusyError("no reader connection available within 2 s") from e
+        loc.conn, loc.depth = conn, 1
         try:
             yield conn
         finally:
+            loc.conn, loc.depth = None, 0
             self._pool.put(conn)
 
     # ---- writer ---------------------------------------------------------------------------------------------------

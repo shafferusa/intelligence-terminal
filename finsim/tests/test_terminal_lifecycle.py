@@ -120,10 +120,16 @@ class LifecycleTests(unittest.TestCase):
         rt = self.start(at=TUE_14)
         # the bond jobs (WP-10, Build 2) were wired into the REGISTRY by the WP-15 integration: accrual next to ACCRUE_DAILY, coupon / maturity /
         # monthly benchmark listing after the private-credit payments
-        self.assertEqual(["SETTLE_DUE", "ACCRUE_DAILY", "BOND_ACCRUE", "PAY_MONTHLY", "PB_MONTHLY_MIN", "DIVIDEND", "DIVPAY", "PC_PAY", "BOND_COUPON", "BOND_MATURITY",
+        # LOAN_MATURE (Build 2 P04, the MONEY-1 follow-up) runs right after the private-credit payments, before SWEEP_OUT can move the repayment cash;
+        # jobs a product module added through C13 add_product_job (FX forwards, repo, ...) sit in the order their module chose and are left out here
+        from finsim.terminal.lifecycle_eod import PRODUCT_JOBS
+        core = [j.name for j in lifecycle.REGISTRY if j.name not in PRODUCT_JOBS]
+        snap = [j.name for j in lifecycle.REGISTRY].index("SNAPSHOT")
+        self.assertTrue(all([j.name for j in lifecycle.REGISTRY].index(n) < snap for n in PRODUCT_JOBS if n in [j.name for j in lifecycle.REGISTRY]))
+        self.assertEqual(["SETTLE_DUE", "ACCRUE_DAILY", "BOND_ACCRUE", "PAY_MONTHLY", "PB_MONTHLY_MIN", "DIVIDEND", "DIVPAY", "PC_PAY", "LOAN_MATURE", "BOND_COUPON", "BOND_MATURITY",
                           "BOND_LISTING", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS",
                           "OPTION_EXPIRY", "FUTURES_VM", "FUTURES_FINAL", "SWAP_VM", "OPTION_MARGIN_MARK", "COLLATERAL_MARK", "BORROW_CLEANUP", "SWEEP_OUT", "MARKS_RECORD",
-                          "SNAPSHOT", "EXPIRE_ORDERS", "HOUSEKEEPING", "INTEGRITY_FULL"], [j.name for j in lifecycle.REGISTRY])
+                          "SNAPSHOT", "EXPIRE_ORDERS", "HOUSEKEEPING", "INTEGRITY_FULL"], core)
         self.assertEqual([j.name for j in lifecycle.REGISTRY], [j.name for j in rt.lifecycle.jobs])
         # services.lifecycle.accrue_segment is the §11.3 helper the credit / swap / private-credit modules consume
         self.assertIs(lifecycle.accrue_segment, rt.lifecycle.accrue_segment)
@@ -136,7 +142,7 @@ class LifecycleTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             lifecycle.run_now(rt, job="NOPE")
         st = rt.lifecycle.status()
-        self.assertEqual(28, len(st["jobs"]))                                    # 24 + the four bond jobs wired by the WP-15 integration
+        self.assertEqual(29 + len(PRODUCT_JOBS), len(st["jobs"]))               # 24 + the four bond jobs (WP-15) + LOAN_MATURE (P04) + product-added jobs
         integ = next(j for j in st["jobs"] if j["name"] == "INTEGRITY_FULL")
         self.assertEqual(("2026-10-20T14", "DONE", True, 0), (integ["last_key"], integ["last_status"], integ["available"], integ["failing"]))
         div = next(j for j in st["jobs"] if j["name"] == "DIVIDEND")
@@ -146,25 +152,27 @@ class LifecycleTests(unittest.TestCase):
     # ---- §19.11 catch-up ------------------------------------------------------------------------------------------------------
     def test_19_11_catch_up_accruals_settlement_marks_snapshots(self):
         rt = self.start()
-        # Fri 10-16 10:00: A funded 200,000.00; the §19.5 short (borrow B-000001 collateral 51,000.00, fill 1,000 ABC @ 50.00, settlement
-        # +49,995.00 due Mon 10-19) and the §19.6 EUR loan 1,000,000.00 at ECBDFR 2.00 + 0.75 = 2.75 % (opened 10-16)
+        # Fri 10-16 10:00: A funded 200,000.00; the §19.5 short (borrow B-000001; the fill 1,000 ABC @ 50.00 posts the collateral 51,000.00 from
+        # the proceeds 49,995.00 + 1,005.00 cash, so its settlement row is SETTLED at 0) and the §19.6 EUR loan 1,000,000.00 at ECBDFR 2.00 + 0.75
+        # = 2.75 % (opened 10-16)
         fund(rt, US_EXCHANGE, 20000000)
         sh.setup_abc(rt, fund_c=0)
         sh.short_abc(self, rt)
         r = execute(rt, "credit.loan_draw", {"account_id": CREDIT, "currency": "EUR", "amount_c": 100000000, "term_days": None})
         self.assertTrue(r.ok, r.body)
-        self.assertEqual((14900000, 980000000), (bal(rt, US_EXCHANGE, "1010"), bal(rt, TREASURY, "1010")))     # 200,000 - 51,000; 10,000,000 - 200,000
+        self.assertEqual((19899500, 980000000), (bal(rt, US_EXCHANGE, "1010"), bal(rt, TREASURY, "1010")))     # 200,000 - 1,005; 10,000,000 - 200,000
         # the clock stops Fri 16:00 (no tick) and restarts Tue 10-20 09:00; the Friday and Monday closes come from daily bars
         rt.fp.set_daily("ABC", [("2026-10-16", "50.00"), ("2026-10-19", "50.00")])
         rt.fp.set_daily("SPY", [("2026-10-16", "769.32"), ("2026-10-19", "770.00")])
         rt.fp.set_daily("EURUSD=X", [("2026-10-16", "1.1238"), ("2026-10-19", "1.1238")])
         out = tick(rt, "2026-10-20T09:00:00-04:00")
+        from finsim.terminal.lifecycle_eod import PRODUCT_JOBS          # jobs product modules add (C13) are skipped here when their module is not bound
         self.assertEqual({}, {k: v for k, v in out["skipped_modules"].items() if k not in ("DIVIDEND", "DIVPAY", "PC_PAY", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS", "SWAP_VM",
-                                                                                         "BOND_ACCRUE", "BOND_COUPON", "BOND_MATURITY", "BOND_LISTING")})
+                                                                                         "BOND_ACCRUE", "BOND_COUPON", "BOND_MATURITY", "BOND_LISTING") and k not in PRODUCT_JOBS})
         self.assertEqual([], [i for i in out["ran"] if i["status"] in ("FAILED", "RETRY")])
-        # Monday's settlement: Dr 1010 / Cr 1200 49,995.00 (settle:S-000001), once
-        self.assertEqual([("S-000001", "DONE")], [(r["key"], r["status"]) for r in jobs_done(rt, "SETTLE_DUE")])
-        self.assertEqual([("settle:S-000001", 4999500)], idem_amounts(rt, "settle:"))
+        # no settlement is due Monday: the short's proceeds went to the lender at the fill (S-000001 SETTLED at 0), so nothing moves twice
+        self.assertEqual([], [(r["key"], r["status"]) for r in jobs_done(rt, "SETTLE_DUE")])
+        self.assertEqual([], idem_amounts(rt, "settle:"))
         self.assertEqual(0, bal(rt, US_EXCHANGE, "1200"))
         # the Friday and Monday CLOSE marks from daily() bars, note "recorded late"
         marks = sc.q(rt, "SELECT instrument_id, mark_date, price, method, note FROM marks ORDER BY instrument_id, mark_date")
@@ -198,7 +206,7 @@ class LifecycleTests(unittest.TestCase):
         st = sc.one(rt, "SELECT * FROM accrual_state WHERE kind='cashint' AND ref_id=?", (TREASURY,))
         self.assertEqual(("2026-10-16", 980000000, "0.0337", 360, "2026-10-19", 366956), (st["segment_start"], st["base_c"], st["rate"], st["day_basis"], st["accrued_through"], st["cum_c"]))
         # sweep-out keys once per calendar day (Fri, Sat, Sun, Mon) per account and currency that holds cash:
-        #  A Fri: settled 149,000 + 49,995 = 198,995.00 - payables 0 - reserved 0 - maintenance 0 - buffer 10,000.00 = 188,995.00 swept; Sat/Sun/Mon: 10,000 - 10,000 = 0 -> nothing idle
+        #  A Fri: settled 200,000 - 1,005 = 198,995.00 - payables 0 - reserved 0 - maintenance 0 - buffer 10,000.00 = 188,995.00 swept; Sat/Sun/Mon: 10,000 - 10,000 = 0 -> nothing idle
         #  CREDIT EUR Fri: buffer to_c(10,000 / 1.1238) = to_c(8,898.380495) = 8,898.38 -> 1,000,000.00 - 8,898.38 = 991,101.62 swept
         sw = {r["key"]: r["status"] for r in jobs_done(rt, "SWEEP_OUT")}
         self.assertEqual({"T1:US_EXCHANGE:USD:2026-10-16": "DONE", "T1:US_EXCHANGE:USD:2026-10-17": "SKIPPED", "T1:US_EXCHANGE:USD:2026-10-18": "SKIPPED", "T1:US_EXCHANGE:USD:2026-10-19": "SKIPPED",
@@ -489,10 +497,11 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(("EXPIRED", "WORKING"), (sc.order_row(rt, d_id)["status"], sc.order_row(rt, g_id)["status"]))
         self.assertEqual([("WORKING", "EXPIRED")], [(e["from_status"], e["to_status"]) for e in sc.q(rt, "SELECT from_status, to_status FROM order_events WHERE order_id=? AND to_status='EXPIRED'", (d_id,))])
         self.assertEqual([(d_id, "DONE")], [(r["key"], r["status"]) for r in jobs_done(rt, "EXPIRE_ORDERS")])
-        # GTC: created + 90 days = 2027-01-18 14:00; at 2027-01-19 the key appears and the order expires
-        self.assertEqual(sc.ep("2026-10-20T14:00:00") + 90 * 86400, sc.order_row(rt, g_id)["expires_ts"])
-        self.assertEqual([], tick(rt, "2027-01-18T13:00:00-05:00", only="EXPIRE_ORDERS")["ran"])
-        out = tick(rt, "2027-01-19T10:00:00-05:00", only="EXPIRE_ORDERS")
+        # GTC (USX-31, P05): the session close of the 90th calendar day, DST-safe; 2026-10-20 + 90 days = Mon 2027-01-18, Martin Luther King Jr.
+        # Day (no session), so the last session close on or before it: Fri 2027-01-15 16:00 ET; one second after it the key appears
+        self.assertEqual(sc.ep("2027-01-15T16:00:00"), sc.order_row(rt, g_id)["expires_ts"])
+        self.assertEqual([], tick(rt, "2027-01-15T15:59:00-05:00", only="EXPIRE_ORDERS")["ran"])
+        out = tick(rt, "2027-01-15T16:00:01-05:00", only="EXPIRE_ORDERS")
         self.assertEqual([(g_id, "DONE")], [(i["key"], i["status"]) for i in out["ran"]])
         self.assertEqual("EXPIRED", sc.order_row(rt, g_id)["status"])
         self.assertIn("90 days", sc.order_row(rt, g_id)["reason"])
@@ -525,10 +534,12 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(r.ok, r.body)
         r = execute(rt, "test.vm_loss", {"account_id": US_EXCHANGE, "amount_c": 500000 + 3000100, "instrument_id": fut, "key": "t1"})
         self.assertTrue(r.ok, r.body)
-        self.assertEqual(-500000, bal(rt, US_EXCHANGE, "1010"))
+        # C12 a: own settled 30,001.00 against 35,001.00 -> shortfall 5,000.00; Treasury sweeps its 100.00, the rest 4,900.00 overdraws:
+        # 1010 = 30,001.00 + 100.00 - 35,001.00 = -4,900.00
+        self.assertEqual(-490000, bal(rt, US_EXCHANGE, "1010"))
         self.assertEqual(1, len(sc.q(rt, "SELECT 1 FROM attention WHERE code='FUNDING_SHORTFALL' AND resolved_ts IS NULL")))
         deposit(rt, 10000000)
-        fund(rt, US_EXCHANGE, 500000)
+        fund(rt, US_EXCHANGE, 490000)
         self.assertEqual(0, bal(rt, US_EXCHANGE, "1010"))
         out = tick(rt, "2026-10-21T09:00:00-04:00", only="HOUSEKEEPING")
         self.assertEqual([("2026-10-21", "DONE")], [(i["key"], i["status"]) for i in out["ran"]])

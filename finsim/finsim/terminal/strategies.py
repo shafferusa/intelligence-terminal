@@ -34,6 +34,14 @@ Conventions
   package 0, spreads of opposite rights on one expiry take the larger side (one side loses at expiry).  When WP-03's
   ``services.options.margin_requirement_c`` is bound, the incremental requirement against the account's positions is also
   reported; the API labels which one it shows.
+- Option rows (USX-13 / APIUI-08): the preview (``preview_view``) materialises the legs' OPTION rows from the cached chain
+  (``strategies.ensure_instruments``) BEFORE the incremental margin, and the margin sees any leg still missing from the
+  master (a resolution inside ``order.submit``) as a stand-in row built exactly as the master would build it (OCC root,
+  expiry, right, strike, x100, the underlying's index flag) - never ``INSTRUMENT_UNKNOWN`` for a strike not traded before.
+- ``POSITION_HEDGE`` (USX-12 / ORC-4): a package of the option legs of a hedge candidate for a position ALREADY HELD
+  (``hedges.position_candidates``; params ``underlying``, ``candidate_id``, ``edits``): the same legs, prices, fees, margin
+  (the held shares cover a sold call) and payoff (the held position included, measured from spot, NOT traded); all-or-none;
+  nothing is bought or sold in the underlying.  Not one of the 60 templates (never listed in the catalogue).
 """
 from __future__ import annotations
 
@@ -49,7 +57,7 @@ from . import tables
 from .books import account_kind_for, account_row, eligibility
 from .commands import Command, ConflictError, RejectError
 from .execution import fee_for
-from .instruments import EQUITY_KINDS, INDEX_OPTION_ROOTS
+from .instruments import EQUITY_KINDS, INDEX_OPTION_ROOTS, Instrument, parse_occ
 from .orders_preview import quote_of
 from .quotes import QUALITY_RANK, QuoteRecord, freshness
 from .quotes.cache import record_from_chain_row
@@ -83,6 +91,11 @@ GRID_NOTE = ("P&L at expiry versus the underlying's price (±35 %): every leg fr
              "underlying; fees are shown separately and excluded")
 MIXED_EXPIRY_NOTE = (" · legs expire on different dates: every leg is valued at intrinsic on the near expiry, so this understates the "
                      "later leg's remaining value")
+POSITION_HEDGE = "POSITION_HEDGE"
+POSITION_HEDGE_META = {"key": POSITION_HEDGE, "group": "HEDGE", "title": "Hedge of a position held",
+                       "simple": "the option legs of a hedge for a position you already hold, traded together all-or-none; nothing is bought or sold in the underlying",
+                       "legs": []}
+HELD_NOTE = " · the position already held is part of the payoff (measured from today's spot), but it is not traded"
 
 
 class ChainPending(ConflictError):
@@ -348,12 +361,15 @@ class PackageSpec:
     warnings: List[str] = field(default_factory=list)
     missing_instruments: List[str] = field(default_factory=list)
     conventions: Dict[str, str] = field(default_factory=dict)
+    params_extra: Optional[dict] = None              # POSITION_HEDGE: candidate_id, edits, position_qty (echoed for the submit)
 
     def to_dict(self) -> dict:
-        strat = BY_KEY[self.strategy_key]
+        strat = BY_KEY.get(self.strategy_key) or dict(POSITION_HEDGE_META, title=self.title)
+        params = {"underlying": self.underlying_id, "other": self.other_id, "units": self.units, "tenor_months": self.tenor_months}
+        params.update(self.params_extra or {})
         return {"strategy": {k: v for k, v in strat.items() if k != "legs"}, "strategy_key": self.strategy_key, "title": self.title, "group": self.group,
-                "group_label": GROUP_LABELS.get(self.group, self.group), "account_id": self.account_id, "underlying_id": self.underlying_id,
-                "other_id": self.other_id, "params": {"underlying": self.underlying_id, "other": self.other_id, "units": self.units, "tenor_months": self.tenor_months},
+                "group_label": GROUP_LABELS.get(self.group, "Position hedge" if self.group == "HEDGE" else self.group), "account_id": self.account_id,
+                "underlying_id": self.underlying_id, "other_id": self.other_id, "params": params,
                 "spot": str(self.spot), "legs": [l.to_dict() for l in self.legs], "fill_mode": self.fill_mode, "primary_index": self.primary_index,
                 "expiry": self.expiry, "totals": dict(self.totals), "margin": dict(self.margin), "payoff": dict(self.payoff), "chain_quality": self.chain_quality,
                 "as_of": self.as_of, "warnings": list(self.warnings), "missing_instruments": list(self.missing_instruments),
@@ -626,12 +642,34 @@ def _greek(sign: Decimal, contracts: int, g) -> Optional[Decimal]:
 
 
 # ===== the package ==================================================================================================================
-def package_legs(services, account_id: str, key: str, params: Optional[dict] = None) -> PackageSpec:
+def _totals(legs: Sequence[PackageLeg], spot: Decimal, margin: dict, units: int, tenor: int) -> dict:
+    net_cash = sum(l.cash_c for l in legs)
+    fees = sum(l.fee_c for l in legs)
+    premium = sum(l.cash_c for l in legs if l.kind == "OPTION")
+    deltas = [l.delta_shares for l in legs if l.delta_shares is not None]
+    delta = _q2(sum(deltas)) if deltas else None
+    vegas = [l.vega for l in legs if l.kind == "OPTION" and l.vega is not None]
+    thetas = [l.theta for l in legs if l.kind == "OPTION" and l.theta is not None]
+    return {"net_cash": str(from_c(net_cash)), "net_cash_c": net_cash, "fees": str(from_c(fees)), "fees_c": fees,
+            "net_cash_after_fees": str(from_c(net_cash - fees)), "net_cash_after_fees_c": net_cash - fees,
+            "net_option_premium": str(from_c(premium)), "net_option_premium_c": premium, "delta_shares": _s(delta),
+            "dollar_delta": None if delta is None else str(from_c(to_c(delta * spot))), "vega": _s(_q2(sum(vegas))) if vegas else None,
+            "theta": _s(_q2(sum(thetas))) if thetas else None, "futures_margin": str(from_c(sum(l.margin_c or 0 for l in legs if l.kind == "FUTURE"))),
+            "futures_margin_c": sum(l.margin_c or 0 for l in legs if l.kind == "FUTURE"), "option_margin": margin.get("requirement"),
+            "option_margin_c": margin.get("requirement_c"), "spot": str(spot), "units": units, "tenor_months": tenor, "legs": len(legs),
+            "greeks_note": "delta / vega / theta from the Cboe chain's greeks × contracts × 100, signed; stock and swap legs ±shares; futures notional / spot"}
+
+
+def package_legs(services, account_id: str, key: str, params: Optional[dict] = None, materialise=None) -> PackageSpec:
     """Resolve one template for one account against today's cached quotes (§13.16).  ``params``: ``underlying`` (default SPY),
     ``other`` (second name, default QQQ), ``units`` (default 1000), ``tenor_months`` (default 3), ``strikes`` ({leg index: override}).
     Raises ``RejectError`` UNKNOWN_STRATEGY / ACCOUNT_UNKNOWN / INSTRUMENT_UNKNOWN / UNITS / TENOR / STRIKES / NOT_AVAILABLE and
-    ``ChainPending`` (409 CHAIN_PENDING) while the chain is being fetched.  Never fetches, never writes."""
+    ``ChainPending`` (409 CHAIN_PENDING) while the chain is being fetched.  Never fetches; writes nothing itself - ``materialise``
+    (the preview's: ``_ensure_legs``) is called with the legs BEFORE the incremental margin when an option row is missing.
+    ``key`` POSITION_HEDGE resolves a hedge of a position held (``_position_hedge_spec``)."""
     params = dict(params or {})
+    if str(key or "").strip().upper() == POSITION_HEDGE:
+        return _position_hedge_spec(services, account_id, params, materialise)
     strat = BY_KEY.get(str(key or "").strip().upper())
     if strat is None:
         raise RejectError("UNKNOWN_STRATEGY", f"unknown strategy {key!r}", {"known": sorted(BY_KEY)})
@@ -796,23 +834,13 @@ def package_legs(services, account_id: str, key: str, params: Optional[dict] = N
     for sym, (snap, fresh) in snaps.items():
         if not fresh:
             warnings.append(f"the {sym} chain is {now - int(snap.fetched_at)} s old (stale); a refresh is in flight")
-    net_cash = sum(l.cash_c for l in legs)
-    fees = sum(l.fee_c for l in legs)
-    premium = sum(l.cash_c for l in legs if l.kind == "OPTION")
-    deltas = [l.delta_shares for l in legs if l.delta_shares is not None]
-    delta = _q2(sum(deltas)) if deltas else None
-    vegas = [l.vega for l in legs if l.kind == "OPTION" and l.vega is not None]
-    thetas = [l.theta for l in legs if l.kind == "OPTION" and l.theta is not None]
+    if materialise is not None and missing:
+        # APIUI-08: the option rows exist BEFORE the incremental margin looks them up (the preview's light command)
+        materialise(legs)
+        missing = [l.instrument_id for l in legs if l.kind == "OPTION" and not l.materialised]
     index_under = under.kind == "INDEX" or under.symbol in INDEX_OPTION_ROOTS
     margin = _margin_block(services, account_id, legs, spot, index_under)
-    totals = {"net_cash": str(from_c(net_cash)), "net_cash_c": net_cash, "fees": str(from_c(fees)), "fees_c": fees,
-              "net_cash_after_fees": str(from_c(net_cash - fees)), "net_cash_after_fees_c": net_cash - fees,
-              "net_option_premium": str(from_c(premium)), "net_option_premium_c": premium, "delta_shares": _s(delta),
-              "dollar_delta": None if delta is None else str(from_c(to_c(delta * spot))), "vega": _s(_q2(sum(vegas))) if vegas else None,
-              "theta": _s(_q2(sum(thetas))) if thetas else None, "futures_margin": str(from_c(sum(l.margin_c or 0 for l in legs if l.kind == "FUTURE"))),
-              "futures_margin_c": sum(l.margin_c or 0 for l in legs if l.kind == "FUTURE"), "option_margin": margin.get("requirement"),
-              "option_margin_c": margin.get("requirement_c"), "spot": str(spot), "units": units, "tenor_months": tenor, "legs": len(legs),
-              "greeks_note": "delta / vega / theta from the Cboe chain's greeks × contracts × 100, signed; stock and swap legs ±shares; futures notional / spot"}
+    totals = _totals(legs, spot, margin, units, tenor)
     near = min(expiries) if expiries else None
     payoff = payoff_grid(legs, spot, levels, under_id, mixed_expiries=len(tenors_used) > 1)
     fill_mode = fill_mode_for(strat)
@@ -821,11 +849,11 @@ def package_legs(services, account_id: str, key: str, params: Optional[dict] = N
                        margin, payoff, chain_quality, now, warnings, missing, {k: tables.CONVENTIONS[k] for k in CONVENTION_KEYS if k in tables.CONVENTIONS})
 
 
-def _margin_block(services, account_id: str, legs: Sequence[PackageLeg], spot: Decimal, index: bool) -> dict:
+def _margin_block(services, account_id: str, legs: Sequence[PackageLeg], spot: Decimal, index: bool, held_shares: int = 0) -> dict:
     option_legs = [{"index": l.index, "instrument_id": l.instrument_id, "side": l.template_side, "right": l.right, "strike": l.strike, "expiry": l.expiry,
                     "qty": l.qty, "est_price": l.est_price, "mark": _dec(l.quote.get("mid")) if l.quote.get("mid") else l.est_price}
                    for l in legs if l.kind == "OPTION" and l.strike is not None and l.est_price is not None]
-    long_shares = sum(l.qty for l in legs if l.kind == "STOCK" and l.template_side == "BUY")
+    long_shares = sum(l.qty for l in legs if l.kind == "STOCK" and l.template_side == "BUY") + max(0, int(held_shares))
     if not option_legs:
         return {"requirement_c": 0, "requirement": "0.00", "method": "none (no option legs)", "detail": [], "incremental_c": None, "incremental": None,
                 "formula": tables.CONVENTIONS["OPT_MARGIN"]}
@@ -840,14 +868,57 @@ def _margin_block(services, account_id: str, legs: Sequence[PackageLeg], spot: D
     return out
 
 
+class _LegMaster:
+    """The instrument master seen through a package's option legs that are not in it yet (APIUI-08): ``get`` answers the
+    stand-in row of such a leg (``_stand_in``) and delegates everything else to the real master.  Nothing is written."""
+
+    def __init__(self, real, extra: Dict[str, Instrument]):
+        self._real = real
+        self._extra = dict(extra)
+
+    def get(self, instrument_id, conn=None):
+        x = self._extra.get(instrument_id)
+        if x is not None:
+            return x
+        return self._real.get(instrument_id) if conn is None else self._real.get(instrument_id, conn)
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+def _stand_in(services, leg: PackageLeg) -> Optional[Instrument]:
+    """The OPTION row ``InstrumentMaster.ensure_option`` would write for ``leg`` (OCC root / expiry / right / strike, x100, the
+    underlying's index flag), as a value only - for the incremental margin of a leg not materialised yet."""
+    parsed = parse_occ(leg.instrument_id or "")
+    if parsed is None:
+        return None
+    root, expiry, right, strike = parsed
+    under = services.instruments.get(leg.symbol) if leg.symbol else None
+    if under is None:
+        return None
+    index = under.kind == "INDEX" or root in INDEX_OPTION_ROOTS
+    return Instrument(leg.instrument_id, "OPTION", leg.instrument_id, f"{under.symbol} {expiry.isoformat()} {right}{strike}", "USD", D(OPTION_MULT), D("0.01"), 1, ONE,
+                      "US_INDEX_OPTIONS" if index else "US_EQUITY_OPTIONS", 1, ("US_EXCHANGE", "PB"), None, leg.instrument_id, under.instrument_id,
+                      expiry.isoformat(), strike, right, "EUROPEAN" if index else "AMERICAN", "CASH" if index else "PHYSICAL",
+                      {"root": root, "index": index, "stand_in": True}, "FULL", "ACTIVE")
+
+
 def _incremental_margin(services, account_id: str, legs: Sequence[PackageLeg], options) -> Tuple[int, Any]:
     """``after − before`` through WP-03's ``margin_requirement_c(positions, marks)`` with the package's option legs as synthetic
-    positions (signed qty, mark = the leg's estimated price).  Not guarded: a failure in the margin module surfaces."""
+    positions (signed qty, mark = the leg's estimated price).  A leg whose OPTION row is not in the master yet is seen through
+    ``_LegMaster`` (APIUI-08).  Not guarded otherwise: a failure in the margin module surfaces."""
     from .accounting import PositionView
     from .quotes import MarkView
     marks_src = getattr(services, "marks", None)
     marks = marks_src.snapshot() if marks_src is not None and hasattr(marks_src, "snapshot") else marks_src
     positions = list(services.accounting.positions(account_id, snapshot=marks))
+    stand_ins = {}
+    for l in legs:
+        if l.kind == "OPTION" and l.instrument_id and services.instruments.get(l.instrument_id) is None:
+            s = _stand_in(services, l)
+            if s is not None:
+                stand_ins[l.instrument_id] = s
+    master = _LegMaster(services.instruments, stand_ins) if stand_ins else None
     before, _ = options.margin_requirement_c(positions, marks)
     synthetic = []
     for l in legs:
@@ -861,14 +932,143 @@ def _incremental_margin(services, account_id: str, legs: Sequence[PackageLeg], o
                                       currency="USD", qty=qty, cost_c=abs(l.cash_c), avg_px=l.est_price, mark=mark, mv_c=mv, mv_base_c=mv, notional_c=mv,
                                       unrealised_c=0, unrealised_base_c=0, realised_itd_c=0, income_itd_c=0, financing_itd_c=0, fees_itd_c=0, income_pending_c=0,
                                       day_pnl_c=None, weight=None, days_held=None, settle_px=None, borrow=None, lots=[], extra={"package_leg": True}))
-    after, detail = options.margin_requirement_c(positions + synthetic, marks)
+    after, detail = (options.margin_requirement_c(positions + synthetic, marks, instruments=master) if master is not None
+                     else options.margin_requirement_c(positions + synthetic, marks))
     return max(0, int(after) - int(before)), detail
+
+
+# ===== POSITION_HEDGE: the option legs of a hedge for a position held (USX-12 / ORC-4) ===================================================
+def _position_hedge_spec(services, account_id: str, params: dict, materialise=None) -> PackageSpec:
+    """``hedges.position_candidates`` -> the candidate ``params['candidate_id']`` -> its option legs as one AON package (module
+    docstring POSITION_HEDGE).  Raises NOT_AVAILABLE for a candidate that is not a package of option legs (it trades as its own
+    order, or on the OTC / FX desk), for a flat position, or a candidate not offered; ChainPending while the chain loads."""
+    from . import hedges as _hedges
+    under_id = str(params.get("underlying") or params.get("instrument_id") or "").strip().upper()
+    cand_id = str(params.get("candidate_id") or "").strip().upper()
+    edits = params.get("edits") if isinstance(params.get("edits"), dict) else None
+    with services.db.reader() as conn:
+        row = account_row(conn, str(account_id or ""))
+        acct = dict(row) if row is not None else None
+    if acct is None:
+        raise RejectError("ACCOUNT_UNKNOWN", f"account {account_id!r} does not exist")
+    akind = account_kind_for(acct)
+    if akind not in LISTED_ACCOUNT_KINDS:
+        raise RejectError("NOT_AVAILABLE", f"{POSITION_HEDGE}: listed options trade in US Exchange or a prime-broker account, not {akind}",
+                          {"reason": f"NOT AVAILABLE HERE / listed options do not trade in a {akind} account"})
+    inst = services.instruments.get(under_id)
+    if inst is None:
+        raise RejectError("INSTRUMENT_UNKNOWN", f"instrument {under_id!r} is not in the master (resolve it first)")
+    if not cand_id:
+        raise RejectError("NOT_AVAILABLE", f"{POSITION_HEDGE}: name the hedge (candidate_id)", {"reason": "no candidate_id"})
+    held, res = _hedges.position_candidates(services, account_id, inst, edits=edits)
+    if isinstance(res, dict):
+        if res.get("status") == "fetching":
+            raise ChainPending(str(res.get("underlying_id") or under_id))
+        raise RejectError("NOT_AVAILABLE", f"{POSITION_HEDGE}: {res.get('note') or 'no hedge for this position'}", {"reason": res.get("note"), "status": res.get("status")})
+    cand = next((c for c in res if c.id == cand_id), None)
+    if cand is None:
+        raise RejectError("NOT_AVAILABLE", f"hedge {cand_id} is not offered for the {held:+,} {inst.symbol} held", {"candidates": [c.id for c in res]})
+    if not cand.available:
+        raise RejectError("NOT_AVAILABLE", f"{cand.id}: {cand.reason}", {"reason": cand.reason})
+    src = [l for l in cand.legs if int(l.qty) > 0]
+    if not src or any(l.kind != "OPTION" or not l.instrument_id or l.est_price is None for l in src):
+        how = f"on the {'OTC' if cand.submit_via == 'otc' else 'FX'} desk" if cand.submit_via in ("otc", "fx") else "as its own order"
+        raise RejectError("NOT_AVAILABLE", f"{cand.id} is not a package of option legs: it trades {how}", {"submit_via": cand.submit_via})
+    opt_under = inst.underlying_id if inst.kind == "OPTION" else inst.instrument_id
+    under = services.instruments.get(opt_under)
+    if under is None:
+        raise RejectError("INSTRUMENT_UNKNOWN", f"underlying {opt_under!r} is not in the master")
+    snap, fresh = _chain_for(services, under.instrument_id)
+    spot = _level_of(services, under, snap)
+    if spot is None:
+        raise RejectError("NOT_AVAILABLE", f"{POSITION_HEDGE}: no price for {under.symbol}", {"reason": f"NOT AVAILABLE / no price for {under.symbol}"})
+    now = int(services.clock.epoch())
+    today = services.clock.today()
+    legs: List[PackageLeg] = []
+    qualities: List[str] = []
+    expiries: List[str] = []
+    tenors = set()
+    for i, hl in enumerate(src):
+        root, exp, right, k = parse_occ(hl.instrument_id)
+        buy = hl.side in ("BTO", "BUY")
+        sign = ONE if buy else -ONE
+        opt_inst = services.instruments.get(hl.instrument_id)
+        mult = opt_inst.multiplier if opt_inst is not None else D(OPTION_MULT)
+        px = qprice(hl.est_price)
+        n = int(hl.qty)
+        gross = mul_c(n, px, mult)
+        fee_c, fee_basis = fee_for(services, acct, opt_inst if opt_inst is not None else SimpleNamespace(kind="OPTION"), n)
+        q = dict(hl.quote or {})
+        quality = str(q.get("quality") or "unavailable")
+        qualities.append(quality)
+        pct = _q2((k / spot - ONE) * HUNDRED)
+        tenor_m = max(1, _round_int(D((exp - today).days) / D("30.4375")))
+        tenors.add(tenor_m)
+        expiries.append(exp.isoformat())
+        what = (f"{'buy' if buy else 'sell'} {n} {under.symbol} {exp.isoformat()} {k} {'call' if right == 'C' else 'put'} at {px} "
+                f"({'+' if pct >= 0 else ''}{pct} % from spot)")
+        legs.append(PackageLeg(i, "OPTION", under.instrument_id, hl.instrument_id, "BTO" if buy else "STO", "BUY" if buy else "SELL", n, px, "Cboe " + ("ask" if buy else "bid"),
+                               -gross if buy else gross, fee_c, fee_basis, mult, strike=k, expiry=exp.isoformat(), right=right, tenor_months=tenor_m, pct_from_spot=pct,
+                               delta_shares=_greek(sign, n, q.get("delta")), vega=_greek(sign, n, q.get("vega")), theta=_greek(sign, n, q.get("theta")), iv=q.get("iv"),
+                               quote={"bid": q.get("bid"), "ask": q.get("ask"), "bid_size": q.get("bid_size"), "ask_size": q.get("ask_size"), "mid": q.get("mid"),
+                                      "quality": quality, "source": q.get("source"), "as_of": q.get("quote_time"), "fetched_at": q.get("fetched_at"),
+                                      "delay_label": q.get("delay_label"), "basis": "Cboe " + ("ask" if buy else "bid"), "chain_fresh": fresh},
+                               materialised=opt_inst is not None, what=what))
+    if materialise is not None and any(not l.materialised for l in legs):
+        materialise(legs)
+    missing = [l.instrument_id for l in legs if not l.materialised]
+    warnings: List[str] = []
+    if not fresh:
+        warnings.append(f"the {under.symbol} chain is {now - int(snap.fetched_at)} s old (stale); a refresh is in flight")
+    index_under = under.kind == "INDEX" or under.symbol in INDEX_OPTION_ROOTS
+    held_shares = held if inst.kind in EQUITY_KINDS else 0
+    margin = _margin_block(services, account_id, legs, spot, index_under, held_shares=held_shares)
+    units = abs(int(held))
+    tenor = max(tenors) if tenors else DEFAULT_TENOR_MONTHS
+    totals = _totals(legs, spot, margin, units, tenor)
+    payoff_legs = list(legs)
+    if inst.kind in EQUITY_KINDS:
+        payoff_legs.append(PackageLeg(len(legs), "STOCK", under.instrument_id, under.instrument_id, "HELD", "BUY" if held > 0 else "SELL", units, spot,
+                                      "position held (from spot)", 0, 0, "", ONE, booking="held", what=f"the {units:,} {inst.symbol} held (not traded)"))
+    payoff = payoff_grid(payoff_legs, spot, {under.instrument_id: spot}, under.instrument_id, mixed_expiries=len(set(expiries)) > 1)
+    if inst.kind in EQUITY_KINDS:
+        payoff["grid_note"] = payoff.get("grid_note", "") + HELD_NOTE
+    chain_quality = max(qualities, key=lambda q: QUALITY_RANK.get(q, 9)) if qualities else None
+    extra = {"candidate_id": cand.id, "edits": edits or {}, "position_qty": int(held), "hedge_of": inst.instrument_id, "position_hedge": True}
+    return PackageSpec(POSITION_HEDGE, cand.label, "HEDGE", account_id, under.instrument_id, None, units, tenor, spot, legs, "AON", None, min(expiries) if expiries else None,
+                       totals, margin, payoff, chain_quality, now, warnings, missing, {k: tables.CONVENTIONS[k] for k in CONVENTION_KEYS if k in tables.CONVENTIONS},
+                       params_extra=extra)
 
 
 # ===== materialising option rows (light command) ===============================================================================
 def _ensure_rid(payload: dict, today: str) -> str:
     h = hashlib.sha256((payload["underlying_id"] + "|" + "|".join(sorted(payload["occs"]))).encode("utf-8")).hexdigest()[:40]
     return f"strat:ensure:{today}:{h}"
+
+
+def _ensure_legs(services, legs: Sequence[PackageLeg]) -> List[str]:
+    """``ensure_instruments`` for a list of legs (``package_legs``' ``materialise`` hook in the preview): the light command
+    per underlying, then each leg's ``materialised`` flag from the master."""
+    missing = [l for l in legs if l.kind == "OPTION" and l.instrument_id and services.instruments.get(l.instrument_id) is None]
+    if not missing:
+        for l in legs:
+            if l.kind == "OPTION" and l.instrument_id:
+                l.materialised = True
+        return []
+    bus = getattr(services, "bus", None)
+    if bus is None:
+        raise RuntimeError("ensure_instruments needs services.bus")
+    created: List[str] = []
+    today = services.clock.today().isoformat()
+    for sym in sorted({l.symbol for l in missing}):
+        payload = {"underlying_id": sym, "occs": sorted({l.instrument_id for l in missing if l.symbol == sym})}
+        res = bus.execute(Command("strategies.ensure_instruments", payload, _ensure_rid(payload, today), "ui"))
+        if not res.ok:
+            raise RuntimeError(f"strategies.ensure_instruments failed: {res.code} {res.message}")
+        created.extend(res.body.get("created") or [])
+    for l in missing:
+        l.materialised = services.instruments.get(l.instrument_id) is not None
+    return created
 
 
 def ensure_instruments(services, spec: PackageSpec) -> List[str]:
@@ -973,15 +1173,19 @@ def preview_view(services, body: dict) -> Tuple[int, dict]:
     account_id = str(body.get("account_id") or "")
     key = str(body.get("key") or body.get("strategy_key") or "")
     params = body.get("params") if isinstance(body.get("params"), dict) else {k: v for k, v in body.items() if k not in ("account_id", "key", "strategy_key")}
+    has_bus = getattr(services, "bus", None) is not None
     try:
-        spec = package_legs(services, account_id, key, params)
+        # APIUI-08: the option rows are materialised BEFORE the incremental margin (the materialise hook), so every template
+        # previews on strikes never traded before
+        spec = package_legs(services, account_id, key, params, materialise=(lambda legs: _ensure_legs(services, legs)) if has_bus else None)
     except ChainPending as e:
         return 202, {"status": "fetching", "underlying": e.underlying_id, "retry_ms": FETCH_RETRY_MS, "message": e.message}
-    if spec.missing_instruments and getattr(services, "bus", None) is not None:
+    if spec.missing_instruments and has_bus:
         ensure_instruments(services, spec)
     return 200, spec.to_dict()
 
 
 __all__ = ["GROUPS", "STRATEGIES", "BY_KEY", "GROUP_LABELS", "LegSpec", "PackageLeg", "PackageSpec", "ChainPending", "parse_rule", "resolve_strike",
            "zero_cost_call", "add_months", "expiry_for_tenor", "size_legs", "fill_mode_for", "order_side", "payoff_grid", "package_margin_c", "availability",
-           "front_month", "package_legs", "ensure_instruments", "ensure_instruments_tx", "h_ensure_instruments", "register", "catalogue_view", "preview_view"]
+           "front_month", "package_legs", "ensure_instruments", "ensure_instruments_tx", "h_ensure_instruments", "register", "catalogue_view", "preview_view",
+           "POSITION_HEDGE"]

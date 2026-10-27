@@ -145,6 +145,7 @@ class TrsXccyIntegrationTests(unittest.TestCase):
     # ---- SWAP_VM of an XCCY: the pair's recorded 17:00 close of its date, else CAUGHT_UP ----------------------------------------------
     def test_xccy_vm_uses_the_recorded_fx_close_of_its_date(self):
         rt = self.xccy()
+        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 20), "17:00"))   # the 17:00 ET close (LC-3: the 14:00 print is not a close)
         rt.clock.set("2026-05-20T17:10:00-04:00")
         self.assertEqual(-431865, st.vm(rt, "2026-05-20").body["mark_c"])                    # day 1 at the deal rate 1.1238: the §19.16 mark0 -4,318.65
         # Thu 05-21: the EURUSD 17:00 close 1.1300 is recorded; the live print is still Wednesday's 1.1238.  The mark at 1.1300 (4 periods left):

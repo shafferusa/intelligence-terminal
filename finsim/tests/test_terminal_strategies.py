@@ -17,7 +17,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 from typing import Dict, List
 
-from tests.terminal_helpers import T1, TREASURY, US_EXCHANGE, make_runtime
+from tests.terminal_helpers import T1, TREASURY, US_EXCHANGE, buy, make_runtime
 from finsim.terminal import books, strategies as st
 from finsim.terminal.commands import RejectError
 from finsim.terminal.db import set_setting
@@ -399,6 +399,40 @@ class _RuntimeCase(unittest.TestCase):
         self.assertEqual(("30550.00", "-54450.00", ["769.45"], False, False), (po["max_gain"], po["max_loss"], po["breakevens"], po["unlimited_up"], po["unlimited_down"]))
         self.assertEqual((0, "covered call"), (spec.margin["requirement_c"], spec.margin["detail"][0]["rule"]))   # the 1,000 shares cover the 10 calls
         self.assertEqual([], spec.warnings)
+
+    # ---- USX-12 / ORC-4: the collar of a position ALREADY HELD as one AON package (POSITION_HEDGE) --------------------------------------
+    def test_position_hedge_collar_package(self):
+        rt = self.rt
+        self._spy_record()
+        rt.chains.put(self._hedge_chain())
+        from finsim.terminal import hedges
+        rt.hedges = hedges
+        with self.assertRaises(RejectError) as cm:                                                       # nothing held: nothing to hedge
+            st.package_legs(rt, US_EXCHANGE, "POSITION_HEDGE", {"underlying": "SPY", "candidate_id": "COLLAR_7"})
+        self.assertEqual("NOT_AVAILABLE", cm.exception.code)
+        self.assertTrue(buy(rt, US_EXCHANGE, "SPY", 1000, "769.32").ok)
+        spec = st.package_legs(rt, US_EXCHANGE, "position_hedge", {"underlying": "SPY", "candidate_id": "COLLAR_7"})
+        # n = floor(1,000 / 100) = 10; expiry: nearest listed >= 90 days = 2027-02-19; put 0.93 x 769.32 = 715.4676 -> P715 bought at the ask 12.40;
+        # call 1.07 x 769.32 = 823.1724 -> nearest listed C820 (3.17 away; 800 is 23.17) sold at the bid 9.00
+        self.assertEqual(("POSITION_HEDGE", "AON", None, "2027-02-19", 1000), (spec.strategy_key, spec.fill_mode, spec.primary_index, spec.expiry, spec.units))
+        self.assertEqual([("SPY270219P00715000", "BTO", 10, D("12.4")), ("SPY270219C00820000", "STO", 10, D("9"))],
+                         [(l.instrument_id, l.side, l.qty, l.est_price) for l in spec.legs])
+        # cash: -12.40 x 100 x 10 = -12,400.00; +9.00 x 100 x 10 = +9,000.00 -> -3,400.00; fees 2 x 10 x 0.65 = 13.00 -> -3,413.00 after fees
+        self.assertEqual(("-3400.00", "13.00", "-3413.00"), (spec.totals["net_cash"], spec.totals["fees"], spec.totals["net_cash_after_fees"]))
+        # the 10 calls are covered by the 1,000 shares HELD (not bought in the package): no option margin
+        self.assertEqual(0, spec.margin["requirement_c"])
+        # payoff with the held shares measured from spot 769.32: below 715 (715 - 769.32) x 1,000 - 3,400 = -54,320 - 3,400 = -57,720.00;
+        # above 820 (820 - 769.32) x 1,000 - 3,400 = 50,680 - 3,400 = 47,280.00; breakeven 769.32 + 3.40 = 772.72
+        po = spec.payoff
+        self.assertEqual(("47280.00", "-57720.00", ["772.72"]), (po["max_gain"], po["max_loss"], po["breakevens"]))
+        # the legs only: nothing in SPY itself; the params echo what the submit sends back
+        d = spec.to_dict()
+        self.assertEqual(["SPY270219P00715000", "SPY270219C00820000"], [l["instrument_id"] for l in d["legs"]])
+        self.assertEqual(("SPY", "COLLAR_7", 1000), (d["params"]["underlying"], d["params"]["candidate_id"], d["params"]["position_qty"]))
+        # a one-leg hedge (the protective put) is not a package: it trades as its own order
+        with self.assertRaises(RejectError) as cm:
+            st.package_legs(rt, US_EXCHANGE, "POSITION_HEDGE", {"underlying": "SPY", "candidate_id": "INDEX_OVERLAY"})
+        self.assertEqual("NOT_AVAILABLE", cm.exception.code)
 
     # ---- a beta-hedged long against the front ES -------------------------------------------------------------------------------------
     def test_beta_hedged_long_sizes_two_es_from_the_front_month(self):

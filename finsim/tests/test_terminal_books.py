@@ -68,7 +68,12 @@ class BooksTests(unittest.TestCase):
         self.assertFalse(e.can_onboard)
         f = books.eligibility(self.rt, "F1")
         self.assertEqual((2500000000, True, True, True, True), (f.nav_c, f.ecp, f.pb_otc, f.private_markets, f.can_onboard))
-        self.assertIn("meets the PB/OTC threshold", f.pb_otc_reason)
+        # design 13.10 / BM-03: the Fund book is eligible by profile from day one (it started at the 25,000,000.00 threshold), so a fee
+        # or a loss below the threshold never takes new relationships away; the same for its Private Markets (qualified from day one)
+        self.assertIn("Fund profile: eligible for prime brokers and OTC from day one", f.pb_otc_reason)
+        self.assertTrue(f.by_profile)
+        self.assertTrue(books.eligibility(self.rt, "F1", nav_c=2499999900).can_onboard)          # 24,999,999.00 = 25,000,000.00 - a 1.00 fee
+        self.assertTrue(books.eligibility(self.rt, "F1", nav_c=2499999900).private_markets)
         i = books.eligibility(self.rt, "I1")
         self.assertEqual((True, True, True, "institutional profile"), (i.pb_otc, i.private_markets, i.can_onboard, i.pb_otc_reason))
         self.assertIn("institutional", i.private_reason)

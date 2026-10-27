@@ -12,6 +12,13 @@
  * accounting.BUYING_POWER_TEXT on hover) -- the same figure the ticket's 409 INSUFFICIENT_FUNDS check uses.
  * The clock renders the browser's time the moment this file loads (no '--:--:--' first paint); the server time replaces
  * it as soon as a poll syncs T.clock (2026-10-21 fix).
+ * P&L today (BM-15 / USX-11) is the account's TOTAL P&L today - fees, financing and income included, the figure Portfolio
+ * shows - with realised / unrealised / fees (and income / financing / FX when not zero) on hover.
+ * Server down (SHELL-26): the server chip turns red, the integrity dot greys ('unknown - server unreachable': the check
+ * cannot be made) and the banner says 'Server unreachable since ...' - next to the FAKE DATA line in offline mode, never
+ * hidden by it.  The server chip reads 'server ok'; version, pid, uptime and the database are its hover text (SHELL-15).
+ * With no account picked (or one that a reset closed - BM-16) the card is the selected book's: name, NAV, lifetime and
+ * 'pick an account (Alt+1..9)'; an account whose figures cannot be read says why (APIUI-10).
  */
 (function () {
   'use strict';
@@ -48,33 +55,45 @@
     });
   }
   function renderIntegrity() {
-    var dot = T.q('#integrity-dot'); var h = T.state.health; if (!dot) { return; }
-    if (!h || !h.integrity) { dot.className = 'idot unknown'; dot.title = 'integrity: not checked yet'; return; }
-    var i = h.integrity;
-    if (i.ok && !i.hold) { dot.className = 'idot'; dot.title = 'integrity ok' + (i.checked_at ? ' . checked ' + T.fmt.time(i.checked_at) : ''); }
-    else { dot.className = 'idot bad'; dot.title = (i.hold ? 'INTEGRITY_HOLD: ' : 'integrity failed: ') + ((i.problems || []).map(function (p) { return p.check || p.code || p; }).join(', ') || 'see the attention strip'); }
+    var dot = T.q('#integrity-dot'); var h = T.state.health;
+    var down = T.state.server_ok === false;
+    if (dot) {
+      if (down) { dot.className = 'idot unknown'; dot.title = 'integrity: unknown - server unreachable (the last check was ' + (h && h.integrity && h.integrity.ok ? 'ok' : 'not ok or not made') + ')'; }
+      else if (!h || !h.integrity || h.integrity.ok == null) { dot.className = 'idot unknown'; dot.title = 'integrity: not checked yet'; }
+      else {
+        var i = h.integrity;
+        if (i.ok && !i.hold) { dot.className = 'idot'; dot.title = 'integrity ok' + (i.checked_at ? ' . checked ' + T.fmt.time(i.checked_at) : ''); }
+        else { dot.className = 'idot bad'; dot.title = (i.hold ? 'INTEGRITY_HOLD: ' : 'integrity failed: ') + ((i.problems || []).map(function (p) { return p.check || p.code || p; }).join(', ') || 'see the attention strip'); }
+      }
+    }
     var sd = T.q('#server-dot');
     if (sd) {
-      var ok = T.state.server_ok !== false;
-      sd.className = 'chip ' + (ok ? 'OPEN' : 'err');
-      sd.textContent = ok ? ('v' + (h.version || '?') + ' pid ' + (h.pid || '?')) : 'server unreachable';
-      sd.title = ok ? ('finsim-terminal ' + (h.version || '') + ' . schema ' + (h.schema || '') + ' . uptime ' + T.fmt.age(h.uptime_s) + ' . db ' + (h.db_path || '')) : 'no answer from the server since ' + T.fmt.time(T.state.server_down_since);
+      h = h || {};
+      sd.className = 'chip ' + (down ? 'err' : (T.state.server_ok ? 'OPEN' : ''));
+      sd.textContent = down ? 'server unreachable' : (T.state.server_ok ? 'server ok' : 'server ?');
+      sd.title = down ? ('no answer from the server since ' + T.fmt.time(T.state.server_down_since) + ' ET')
+        : ('FinSim terminal ' + (h.version ? 'v' + h.version : '') + (h.pid ? ' . pid ' + h.pid : '') + (h.schema ? ' . schema ' + h.schema : '') +
+           (h.uptime_s != null ? ' . up ' + T.fmt.age(h.uptime_s) : '') + (h.db_path ? '\ndatabase ' + h.db_path : '') + (h.port ? '\nport ' + h.port : ''));
     }
   }
   function renderBanner() {
     var b = T.q('#banner'); if (!b) { return; }
     var h = T.state.health || {};
-    var msg = null, cls = '';
-    if (h.offline) { msg = 'FAKE DATA - not market prices (serve --offline: a FakeProvider replaces every market-data source)'; cls = 'offline'; }
-    else if (T.state.server_ok === false) { msg = 'Server unreachable since ' + T.fmt.time(T.state.server_down_since) + ' ET - nothing on this page updates; figures are the last ones received'; cls = 'offline'; }
-    else if (h.providers) {
-      var ps = Object.keys(h.providers); var down = ps.filter(function (p) { return h.providers[p] && h.providers[p].ok === false; });
+    var lines = [], cls = '';
+    /* the server first: in offline mode the FAKE DATA line must never hide that nothing updates any more */
+    if (T.state.server_ok === false) { lines.push('Server unreachable since ' + T.fmt.time(T.state.server_down_since) + ' ET - nothing on this page updates; figures are the last ones received'); cls = 'offline'; }
+    if (h.offline) { lines.push('FAKE DATA - not market prices: this server runs offline and a stand-in provider replaces every market-data source'); cls = 'offline'; }
+    else if (h.providers && T.state.server_ok !== false) {
+      var ps = Object.keys(h.providers).filter(function (p) { return h.providers[p] && h.providers[p].ok != null; });
+      var down = ps.filter(function (p) { return h.providers[p].ok === false; });
       if (ps.length && down.length === ps.length) {
         var since = Math.min.apply(null, down.map(function (p) { return h.providers[p].last_err_ts || h.providers[p].last_ok_ts || T.clock.nowInt(); }));
-        msg = 'offline since ' + T.fmt.hm(since) + ' ET - every market-data provider is unreachable; last valid marks shown; executions paused'; cls = 'warn';
+        lines.push('offline since ' + T.fmt.hm(since) + ' ET - every market-data provider is unreachable; last valid marks shown; executions paused'); cls = cls || 'warn';
       }
     }
-    b.hidden = !msg; b.className = cls; b.textContent = msg || '';
+    b.hidden = !lines.length; b.className = cls;
+    T.clear(b);
+    lines.forEach(function (l) { b.appendChild(T.h('div', null, l)); });
   }
   function card() {
     var el = T.q('#acct-card'); if (!el) { return; }
@@ -83,12 +102,16 @@
     function cell(k, v, title, cls) { return T.h('span', { class: 'ac', title: title || '' }, T.h('b', { class: cls || '' }, v), T.h('i', null, k)); }
     if (!id || !d || (d.account && d.account.account_id !== id)) {
       var book = T.book.current();
-      if (!book) { el.appendChild(T.h('span', { class: 'muted' }, 'no book loaded')); return; }
+      if (!book) { el.appendChild(T.h('span', { class: 'muted' }, T.state.server_ok === false ? 'server unreachable' : 'loading books ...')); return; }
       var nav = book.nav && typeof book.nav === 'object' ? T.money(book.nav, 'value') : T.money(book, 'nav');
-      el.appendChild(T.h('span', { class: 'ac-name' }, book.name || book.book_code));
-      el.appendChild(cell('book NAV', nav, 'NAV of the open lifetime (server figure)'));
+      el.appendChild(T.h('span', { class: 'ac-name', title: (book.profile_label || book.profile || '') + ' . ' + book.book_code }, book.name || book.book_code));
+      el.appendChild(cell('book NAV', nav, 'NAV of the open lifetime (server figure)' + (book.nav && book.nav.quality ? ' . quality ' + book.nav.quality : '')));
       if (book.lifetime) { el.appendChild(cell('lifetime', book.lifetime.lifetime_id, 'started ' + (book.lifetime.started || ''))); }
-      el.appendChild(cell('account', id ? id + ' (loading)' : 'none', 'Alt+1..9 picks an account'));
+      var err = id && T.state.account_error;
+      if (err) { el.appendChild(cell('account', T.accountName ? T.accountName(id) : id, 'could not read ' + id + ': ' + T.api.describe(err), 'neg')); el.appendChild(T.h('span', { class: 'ac-err', title: T.api.describe(err) }, 'unavailable: ' + (err.code || 'error'))); return; }
+      var usx = T.keys && T.keys.label ? T.keys.label('nav.us_exchange') : '';
+      el.appendChild(cell('account', id ? (T.accountName ? T.accountName(id) : id) + ' ...' : 'pick an account' + (usx ? ' (' + usx + ' opens US Exchange)' : ''),
+        id ? 'loading ' + id : 'pick an account of this book in the sidebar' + (usx ? ' (' + usx + ' opens US Exchange; the keys are in Settings > Keyboard)' : '') + '; the card then shows its NAV, buying power, cash and P&L'));
       return;
     }
     var a = d.account || {};
@@ -97,6 +120,7 @@
     var pnl = (d.pnl && d.pnl.TODAY) || null;
     var comps = pnl && pnl.components || {};
     el.appendChild(T.h('span', { class: 'ac-name', title: a.account_id + (a.broker ? ' . ' + a.broker : '') }, a.name || a.account_id));
+    if (a.status && a.status !== 'OPEN') { el.appendChild(T.stateTag(a.status)); }
     var navTitle = 'equity (NAV) at the current marks' + (d.nav && d.nav.quality ? ' . quality ' + d.nav.quality : '') + (d.marks_partial ? ' . NAV excludes unpriced positions' : '');
     el.appendChild(cell('NAV', (d.nav && typeof d.nav === 'object') ? T.money(d.nav, 'nav') === 'n/a' ? T.money(d.nav, 'value') : T.money(d.nav, 'nav') : T.money(d, 'nav'), navTitle, d.marks_partial ? 'neg' : ''));
     if (bp) {
@@ -122,9 +146,15 @@
     var loans = Array.isArray(d.loans) ? d.loans.length : (d.loans == null ? 0 : d.loans);
     el.appendChild(cell('loans', String(loans), 'open currency loans and PB financing'));
     if (pnl) {
-      var r = T.money(comps, 'realised'), u = T.money(comps, 'unrealised');
+      /* the TOTAL P&L today (fees included): the figure Portfolio shows; its parts on hover */
       var today = T.money(pnl, 'pnl');
-      el.appendChild(cell('P&L today', (r !== 'n/a' || u !== 'n/a') ? r + ' / ' + u : today, 'realised / unrealised today (' + (pnl.baseline && pnl.baseline.note ? pnl.baseline.note : 'vs the last 17:45 ET snapshot') + '); total ' + today + (pnl.degraded ? ' . baseline: inception (no snapshot yet)' : ''), T.sign(pnl, 'pnl')));
+      var parts = ['realised ' + T.money(comps, 'realised'), 'unrealised ' + T.money(comps, 'unrealised'), 'fees ' + T.money(comps, 'fees')];
+      [['income', 'income'], ['financing', 'financing'], ['fx_result', 'FX result']].forEach(function (k) { var v = T.num(comps, k[0]); if (v) { parts.push(k[1] + ' ' + T.money(comps, k[0])); } });
+      var ptitle = pnl.error ? ('P&L today unavailable: ' + pnl.error) :
+        ('P&L today ' + today + ' (fees included) = NAV now - NAV at the baseline - deposits / transfers (' + (pnl.baseline && pnl.baseline.note ? pnl.baseline.note : 'vs the last 17:45 ET snapshot') + ')' +
+         '\n' + parts.join(' . ') + '\nrealised + income - financing - fees + unrealised + FX = explained' + (T.num(pnl, 'residual') ? ' (residual ' + T.money(pnl, 'residual') + ')' : '') +
+         (pnl.degraded ? '\nbaseline: inception (no snapshot yet)' : ''));
+      el.appendChild(cell('P&L today', T.fmt.signed(today), ptitle, T.sign(pnl, 'pnl')));
     }
     if (d.attention && (Array.isArray(d.attention) ? d.attention.length : d.attention)) { el.appendChild(cell('attention', String(Array.isArray(d.attention) ? d.attention.length : d.attention), 'open attention items for this account', 'neg')); }
   }
@@ -133,7 +163,7 @@
     T.state.on('sessions', renderChips);
     T.state.on('health', function () { renderIntegrity(); renderBanner(); });
     T.state.on('server_ok', function () { renderIntegrity(); renderBanner(); });
-    ['account_detail', 'active_account', 'books', 'book', 'route', 'positions'].forEach(function (k) { T.state.on(k, card); });
+    ['account_detail', 'active_account', 'books', 'book', 'route', 'positions', 'keybinds'].forEach(function (k) { T.state.on(k, card); });
     renderChips(); renderIntegrity(); renderBanner(); card();
   }
   T.components.header = { init: init, card: card, chipText: chipText, tickClock: tickClock };

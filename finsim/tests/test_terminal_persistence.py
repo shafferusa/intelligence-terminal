@@ -160,8 +160,8 @@ class RestartPersistenceTests(unittest.TestCase):
         f = r.body["fills"][0]
         self.assertEqual((41400000, 600, 40650000, 750000, "2026-10-26"), (f["gross_c"], f["fee_c"], f["cost_relieved_c"], f["realised_c"], f["settle_date"]))
         self.assertEqual((300, 10050000), (rt.accounting.position(A, "AAPL").qty, rt.accounting.position(A, "AAPL").cost_c))
-        # S10 §19.5 Fri 10:05: A funded 200,000.00 (T 5,646,367.50 - 200,000 = 5,446,367.50); SELL_SHORT 1,000 ABC @ 50.00: borrow B-000001 collateral 51,000.00
-        # (A settled 149,000.00), fill 50,000.00 fee 5.00, receivable 49,995.00 due Mon
+        # S10 §19.5 Fri 10:05: A funded 200,000.00 (T 5,646,367.50 - 200,000 = 5,446,367.50); SELL_SHORT 1,000 ABC @ 50.00: borrow B-000001, fill 50,000.00
+        # fee 5.00; the fill posts the collateral 51,000.00 from the proceeds 49,995.00 + 1,005.00 cash (A settled 198,995.00; its row due Mon is SETTLED at 0)
         rt, _ = self.restart("2026-10-23T10:05:00-04:00")
         self.marks["ABC"] = ("50.00", "delayed")
         fund(rt, A, 20000000)
@@ -169,20 +169,23 @@ class RestartPersistenceTests(unittest.TestCase):
         sh.finra(rt, "ABC", [("2026-10-20", 20000, 100000), ("2026-10-21", 25000, 100000), ("2026-10-22", 30000, 100000)])    # ratio 0.30 on the last 3 sessions -> GC
         sh.quote(rt, "ABC", "50.00", 100000)
         sh.short_abc(self, rt)
-        self.assertEqual((14900000, 5100000, 544636750), (bal(rt, A, "1010"), bal(rt, A, "1400", "USD", "ABC"), bal(rt, T, "1010")))
-        # S11 Fri 17:31: SWEEP_OUT A: 149,000 - 0 - 0 - 0 - 10,000 = 139,000.00 back to Treasury (A 10,000.00).  No 17:30 tick ran on Wed or Thu, so their keys
-        # are caught up now: the first (10-21) sweeps, the later dates find nothing idle — one key per calendar day
+        self.assertEqual((19899500, 5100000, 544636750), (bal(rt, A, "1010"), bal(rt, A, "1400", "USD", "ABC"), bal(rt, T, "1010")))
+        # S11 Fri 17:31: SWEEP_OUT A: 198,995 - 0 - 0 - 0 - 10,000 = 188,995.00 back to Treasury (A 10,000.00).  No 17:30 tick ran on Wed or Thu; A held
+        # cash at those 17:30s (the sweep-ins for the Wed / Thu purchases), so their keys exist (LC-2) and were caught up by the Thu / Fri 00:35 ticks
+        # after the payables had settled: nothing idle, terminal.  Fri's own key sweeps - one key per calendar day, none created for a day A held nothing
+        self.assertEqual([("T1:US_EXCHANGE:USD:2026-10-20", "SKIPPED"), ("T1:US_EXCHANGE:USD:2026-10-21", "SKIPPED"), ("T1:US_EXCHANGE:USD:2026-10-22", "SKIPPED")],
+                         [(r["key"], r["status"]) for r in jobs_done(rt, "SWEEP_OUT")])
         rt, _ = self.restart("2026-10-23T17:31:00-04:00")
         out = lifecycle.run_now(rt, job="SWEEP_OUT")
-        self.assertEqual([("T1:US_EXCHANGE:USD:2026-10-21", "DONE"), ("T1:US_EXCHANGE:USD:2026-10-22", "SKIPPED"), ("T1:US_EXCHANGE:USD:2026-10-23", "SKIPPED")],
-                         [(i["key"], i["status"]) for i in out["ran"]])
-        self.assertEqual([13900000], [t["amount_c"] for t in sc.q(rt, "SELECT amount_c FROM transfers WHERE kind='SWEEP_OUT'")])
-        self.assertEqual((1000000, 544636750 + 13900000), (bal(rt, A, "1010"), bal(rt, T, "1010")))
-        # S12 Mon 10-26 00:35, one tick: both receivables settle (A 10,000 + 413,994 + 49,995 = 473,989.00); Friday's ABC close 50.00 from the bars; collateral mark Fri
+        self.assertEqual([("T1:US_EXCHANGE:USD:2026-10-23", "DONE")], [(i["key"], i["status"]) for i in out["ran"]])
+        self.assertEqual([18899500], [t["amount_c"] for t in sc.q(rt, "SELECT amount_c FROM transfers WHERE kind='SWEEP_OUT'")])
+        self.assertEqual((1000000, 544636750 + 18899500), (bal(rt, A, "1010"), bal(rt, T, "1010")))
+        # S12 Mon 10-26 00:35, one tick: the AAPL receivable settles (A 10,000 + 413,994 = 423,994.00; the short's row due the same day was SETTLED at 0
+        # by its collateral entry and moves nothing); Friday's ABC close 50.00 from the bars; collateral mark Fri
         # at 50.00 (no movement); the §19.5 nights Fri/Sat/Sun: fee 0.42 / 0.41 / 0.42, rebate 4.77 / 4.78 / 4.77 (2310 = 1.25, 1410 = 14.32); Treasury nights:
         # Fri 10-23 on 5,446,367.50 (the 17:31 sweep belongs to Saturday's accounting day): x 0.0337 = 183,542.58475; / 360 = 509.8405 -> 509.84;
-        # Sat 10-24 on 5,585,367.50: x 0.0337 = 188,226.88475; / 360 = 522.8525 -> 522.85; Sun cum 1,045.7049 -> 1,045.70 -> 522.85; the Saturday / Sunday
-        # sweep-out keys then return the settled 473,989 - 10,000 = 463,989.00 (catch-up on the current state); snapshots Fri, Sat, Sun
+        # Sat 10-24 on 5,446,367.50 + 188,995 = 5,635,362.50: x 0.0337 = 189,911.71625; / 360 = 527.532545 -> 527.53; Sun cum 1,055.065090 -> 1,055.07 -> 527.54;
+        # the Saturday / Sunday sweep-out keys then return the settled 423,994 - 10,000 = 413,994.00 (catch-up on the current state); snapshots Fri, Sat, Sun
         rt, _ = self.restart("2026-10-26T00:35:00-04:00")
         out = tick(rt)
         self.assertEqual([], [i for i in out["ran"] if i["status"] in ("FAILED", "RETRY")])
@@ -191,8 +194,8 @@ class RestartPersistenceTests(unittest.TestCase):
         self.assertEqual([("accr:rebate:B-000001:2026-10-23", 477), ("accr:rebate:B-000001:2026-10-24", 478), ("accr:rebate:B-000001:2026-10-25", 477)], idem_amounts(rt, "accr:rebate:"))
         self.assertEqual((125, 1432, "2026-10-23", 5100000), (bal(rt, A, "2310", "USD", "ABC"), bal(rt, A, "1410", "USD", "ABC"), sh.borrow_row(rt, "B-000001")["last_mark_date"],
                                                                 sh.borrow_row(rt, "B-000001")["collateral_c"]))
-        self.assertEqual([50984, 52285, 52285], [a for k, a in idem_amounts(rt, "accr:cashint:") if k.endswith(("10-23", "10-24", "10-25"))])
-        self.assertEqual(46398900, sum(t["amount_c"] for t in sc.q(rt, "SELECT amount_c FROM transfers WHERE kind='SWEEP_OUT' AND business_date>='2026-10-26'")))
+        self.assertEqual([50984, 52753, 52754], [a for k, a in idem_amounts(rt, "accr:cashint:") if k.endswith(("10-23", "10-24", "10-25"))])
+        self.assertEqual(41399400, sum(t["amount_c"] for t in sc.q(rt, "SELECT amount_c FROM transfers WHERE kind='SWEEP_OUT' AND business_date>='2026-10-26'")))
         self.assertEqual(1000000, bal(rt, A, "1010"))
         self.assertEqual(["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25"], [r["snap_date"] for r in sc.q(rt, "SELECT snap_date FROM nav_snapshots WHERE account_id='T1:ALL' ORDER BY snap_date")])
         # S13 Mon 17:12: the Monday close 52.00 is recorded (bars) and the collateral mark calls to_c(1.02 x 1,000 x 52) = 53,040.00 (+2,040.00 from A's 10,000.00)

@@ -231,7 +231,7 @@ class RoundTrip(ApiBase):
         self.assertEqual(("AAPL", 100, "33950.00", Decimal("339.50"), "delayed"), (p["instrument_id"], p["qty"], p["cost"], Decimal(p["mark"]["value"]), p["mark"]["quality"]))
         self.assertEqual(p["mark"]["value"], p["mark"]["mark"])                   # both spellings for the UI
         self.assertEqual(p["mark"]["as_of"], p["mark"]["quote_time"])
-        self.assertEqual("33950.00", pf["by_class"]["securities"]["mv_base"])
+        self.assertEqual("33950.00", {c["klass"]: c for c in pf["by_class"]}["securities"]["mv"])          # P03 BM-04: by_class is a list of class rows
         det, _ = self.ok("GET", f"/api/accounts/{USX}")
         self.assertEqual("33951.00", det["cash"]["USD"]["settled"])
         self.assertEqual("33951.00", det["cash"]["USD"]["payable"])
@@ -398,9 +398,14 @@ class Errors(ApiBase):
         self.assertEqual(("AAPL", "EQUITY", True), (inst["instrument_id"], inst["kind"], inst["optionable"]))
         status, body, _ = self.get("/api/instruments/MSFT/bars")
         self.assertEqual(202, status)                                            # not in the cache yet: subscribed and fetching
+        # C8: the chart's bars come from ONE worker fetch of the session (request_bars), never from this thread: 202, then the bars
+        status, body, _ = self.get("/api/instruments/AAPL/bars?range=1d")
+        self.assertEqual((202, "fetching"), (status, body["status"]))
+        self.rt.worker.tick()
         bars, _ = self.ok("GET", "/api/instruments/AAPL/bars?range=1d")
-        self.assertEqual(1, len(bars["bars"]))
+        self.assertEqual(1, len(bars["bars"]))                                   # the FakeProvider holds one bar ...
         self.assertEqual(61900, bars["bars"][0]["v"])
+        self.assertFalse(bars["full_session"])                                   # ... and says it is not the whole session
 
     def test_quotes_instruments_and_markets(self):
         q, _ = self.ok("GET", "/api/quotes?ids=AAPL,MSFT")
@@ -522,6 +527,71 @@ class Lights(ApiBase):
         self.assertEqual("10000000.00", r["nav"])
         c, _ = self.ok("GET", "/api/compliance?scope=ALL&book=T")
         self.assertIsInstance(c, list)
+
+
+# ===== the owner's keyboard keys (2026-10-21 17:10; docs/KEYBINDS.md) ==================================================================
+class Keybinds(ApiBase):
+    #: a slice of static/keys.js's defaults, as the client sends them with every save (keybind_defaults)
+    DEFAULTS = {"nav.us_exchange": "F1", "nav.debt": "F2", "page.news": "F12", "book.next": None, "ticket.buy": "B", "grid.buy": "B",
+                "ticket.clear": "Escape", "dialog.close": "Escape"}
+
+    def kb(self, n, binds, defaults=True):
+        body = {"request_id": f"ui:api-kb-{n:04d}", "keybinds": binds}
+        if defaults:
+            body["keybind_defaults"] = self.DEFAULTS
+        return self.handle("PATCH", "/api/settings", body)
+
+    def refused(self, n, binds, **kw):
+        status, out, _ = self.kb(n, binds, **kw)
+        self.assertEqual((400, "SETTING_VALUE", "keyboard keys"), (status, out["error"]["code"], out["error"]["details"].get("field")), out)
+        return out["error"]
+
+    def test_keybinds_checked_saved_journaled_and_kept(self):
+        # F1 is US Exchange's by default: giving it to Debt alone would put one key on two actions -> refused, nothing stored
+        err = self.refused(1, {"nav.debt": "F1"})
+        self.assertEqual(("F1", ["nav.debt", "nav.us_exchange"]), (err["details"]["key"], err["details"]["actions"]))
+        s, _ = self.ok("GET", "/api/settings")
+        self.assertNotIn("keybinds", s)
+        # the swap in one save; only the owner's changes are stored (the defaults live in keys.js)
+        status, s, _ = self.kb(2, {"nav.debt": "F1", "nav.us_exchange": "F2"})
+        self.assertEqual((200, {"nav.debt": "F1", "nav.us_exchange": "F2"}), (status, s["keybinds"]))
+        # null = no key; an unbound action may take a free key; ticket and table may share B, a global action may not
+        status, s, _ = self.kb(3, {"page.news": None, "book.next": "Alt+B"})
+        self.assertEqual((200, None, "Alt+B"), (status, s["keybinds"]["page.news"], s["keybinds"]["book.next"]))
+        err = self.refused(4, {"book.next": "B"})
+        self.assertEqual("B", err["details"]["key"])
+        # one canonical form (Ctrl+Alt+Shift+Key), browser-reserved keys and malformed action names are refused with the field named
+        for n, bad in enumerate(("shift+f1", "Shift+Ctrl+F1", "Shift+?", "Ctrl+", "F25", "Esc", "b", 7), start=5):
+            self.refused(n, {"book.next": bad})
+        self.assertIn("closes the tab", self.refused(20, {"book.next": "Ctrl+W"})["message"])
+        self.assertIn("Windows closes the window", self.refused(21, {"book.next": "Alt+F4"})["message"])
+        self.refused(22, {"Nav.Debt": "F3"})
+        self.assertIn("not an action of this build", self.refused(23, {"nav.nope": "F3"})["message"])
+        self.assertIn("keybind_defaults", self.refused(24, {"book.next": "F2"}, defaults=False)["message"])   # KB-R1-08: never checked without the defaults
+        # KB-R1-07: a trailing newline is not the canonical form (Python '$' matches before a final newline: fullmatch)
+        self.refused(30, {"page.news": "F1\n"})
+        self.refused(31, {"nav.debt\n": "F3"})
+        # KB-R1-05: Ctrl+F4 closes the tab, Ctrl+Page Up / Down switch tabs, Ctrl+Esc is the Windows Start menu
+        self.assertIn("closes the tab", self.refused(32, {"book.next": "Ctrl+F4"})["message"])
+        self.assertIn("switches tabs", self.refused(33, {"book.next": "Ctrl+PageDown"})["message"])
+        self.assertIn("Start menu", self.refused(34, {"book.next": "Ctrl+Escape"})["message"])
+        # an override equal to its default is dropped (Reset one)
+        status, s, _ = self.kb(25, {"page.news": "F12"})
+        self.assertEqual((200, {"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}), (status, s["keybinds"]))
+        with self.rt.db.reader() as conn:                                          # journaled like every setting: before / after
+            ev = [json.loads(r[0]) for r in conn.execute("SELECT payload_json FROM events WHERE type='SETTINGS_CHANGED' AND ref_id='keybinds' ORDER BY id").fetchall()]
+        self.assertEqual(3, len(ev))
+        self.assertEqual(({"nav.debt": "F1", "nav.us_exchange": "F2", "page.news": None, "book.next": "Alt+B"}, {"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}),
+                         (ev[-1]["before"]["keybinds"], ev[-1]["after"]["keybinds"]))
+        # a lifetime reset keeps them; so does a restart of the server on the same database
+        if "book.reset_lifetime" in self.rt.bus.kinds():
+            self.ok("POST", "/api/books/T/reset", {"request_id": "ui:api-kb-reset-0001", "confirm": "RESET", "starting_capital": "10000000.00"})
+        self.rt.close()
+        self.rt = build(self.tmp)
+        s, _ = self.ok("GET", "/api/settings")
+        self.assertEqual({"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}, s["keybinds"])
+        st, _ = self.ok("GET", "/api/state")
+        self.assertEqual(s["keybinds"], st["settings"]["keybinds"])
 
 
 # ===== the codec =========================================================================================================================

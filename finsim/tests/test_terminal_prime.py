@@ -26,7 +26,11 @@ from finsim.terminal.quotes.rates import RateStore
 PB_GS, PB_JPM, PB_BOFA, PB_MS, PB_DB = pb("GS"), pb("JPM"), pb("BOFA"), pb("MS"), pb("DB")
 SEED_GS = {"name": "Goldman Sachs", "equity_per_share": "0.0030", "equity_min_c": 100, "option_per_contract": "0.55", "futures_per_side": "2.00",
            "financing_spread": "0.0125", "credit_interest_spread": "0.0075", "gc_rate": "0.0040", "htb_add": "0.0010", "otc_spread_mult": "1.0",
-           "swap_margin_mode": "CTM", "monthly_minimum_c": 0, "irs_half_width_bp": "1.0", "trs_spread": "0.0060", "note": "modelled assumptions; real PB schedules vary"}
+           "swap_margin_mode": "CTM", "monthly_minimum_c": 0, "irs_half_width_bp": "1.0", "trs_spread": "0.0060", "note": "modelled assumptions; real PB schedules vary",
+           # SR-10 / C22: the OTC terms of the GS seed (prime.OTC_SEEDS, assumed): IM 50 bp of |DV01| / 10 % / 2 % / 15 % / 6 %, half-widths
+           # 1.00 vol point (equity options), 0.30 (FX options), 2 bp (forwards)
+           "irs_im_bp": "50", "trs_im_pct": "0.10", "xccy_im_pct": "0.02", "option_im_pct": "0.15", "forward_im_pct": "0.06", "eq_option_hw_vol": "0.0100",
+           "fx_option_hw_vol": "0.0030", "forward_hw_bp": "2.0"}
 
 
 def _h_fund(ctx, payload):
@@ -490,18 +494,22 @@ class PrimeTests(unittest.TestCase):
         self.assertEqual([("ERROR", PB_DB, None)], [(x["severity"], x["account_id"], x["resolved_ts"]) for x in q(rt, "SELECT * FROM attention WHERE code='FUNDING_SHORTFALL'")])
         assert_integrity(self, rt, "full")
 
-    # ---- OTC non-swap endpoints answer NOT_IN_THIS_BUILD; account.close only a flat PB account --------------------------------------------------
+    # ---- the OTC gate (Build 2 P12: options and forwards are live); account.close only a flat PB account (PO-16: the relationship read) ---------
     def test_otc_gate_and_close(self):
         self.assertEqual(("IRS", "TRS", "XCCY"), (prime.require_otc_kind("irs"), prime.require_otc_kind("TRS"), prime.require_otc_kind(" xccy ")))
-        for k in ("FRA", "CAP", "FLOOR", "SWAPTION", "OPTION", "FX_OPTION", "FORWARD"):
+        self.assertEqual(("EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD"), tuple(prime.require_otc_kind(k) for k in ("eq_option", "FX_OPTION", "EQ_FORWARD", " fx_forward")))
+        for k in ("FRA", "CAP", "FLOOR", "SWAPTION", "OPTION", "FORWARD"):           # not offered, and the two generic names (not products)
             with self.assertRaises(RejectError) as cm:
                 prime.require_otc_kind(k)
             self.assertEqual(("NOT_IN_THIS_BUILD", 400), (cm.exception.code, cm.exception.http), k)
         with self.assertRaises(RejectError) as cm:
+            prime.require_otc_kind("OPTION")
+        self.assertIn("EQ_OPTION (equity) or FX_OPTION (FX)", cm.exception.message)
+        with self.assertRaises(RejectError) as cm:
             prime.require_otc_kind("BANANA")
         self.assertEqual("OTC_KIND", cm.exception.code)
         rows = prime.otc_unsupported()
-        self.assertEqual((7, {"NOT_IN_THIS_BUILD"}), (len(rows), {x["state"] for x in rows}))
+        self.assertEqual((4, {"NOT_IN_THIS_BUILD"}), (len(rows), {x["state"] for x in rows}))
         self.assertIn("PB OTC: forward rate agreements", [x["item"] for x in rows])
         rt = self.start()
         self.eligible()
@@ -509,8 +517,14 @@ class PrimeTests(unittest.TestCase):
         self.assertTrue(fund(rt, PB_GS, 100000).ok)                          # 1,000.00 in the account: not flat
         r = execute(rt, "account.close", {"account_id": PB_GS})
         self.assertEqual((409, "NOT_FLAT"), (r.http, r.code))
-        self.assertIn("balance 1010 USD 1,000.00", r.body["error"]["details"]["reasons"])
+        self.assertIn("Cash - settled USD 1,000.00", r.body["error"]["details"]["reasons"])   # what it holds, in words (the advance on 3100 is history)
+        with rt.db.reader() as conn:                                        # PO-16: the same test as a read, with what the account was opened with
+            rel = prime.relationship(conn, PB_GS)
+        self.assertEqual((False, r.body["error"]["details"]["reasons"], "GS", 0, None), (rel["flat"], rel["reasons"], rel["broker"], rel["schedule_edits"], rel["last_edit"]))
+        self.assertEqual("no agreements recorded with Goldman Sachs (the account was opened without the onboarding dialog)", rel["agreements_line"])
         self.assertTrue(execute(rt, "treasury.transfer", {"from_account": PB_GS, "to_account": TREASURY, "currency": "USD", "amount_c": 100000}).ok)
+        with rt.db.reader() as conn:
+            self.assertEqual((True, []), (prime.relationship(conn, PB_GS)["flat"], prime.close_check(conn, PB_GS)))
         r = execute(rt, "account.close", {"account_id": PB_GS})
         self.assertTrue(r.ok, r.body)
         self.assertEqual(("CLOSED", rt.clock.epoch()), (r.body["status"], r.body["closed_ts"]))
@@ -520,6 +534,32 @@ class PrimeTests(unittest.TestCase):
         self.assertEqual((404, "NOT_PB"), (lambda x: (x.http, x.code))(execute(rt, "account.close", {"account_id": US_EXCHANGE})))
         self.assertEqual(1, one(rt, "SELECT COUNT(*) n FROM events WHERE type='ACCOUNT_CLOSED'")["n"])
         assert_integrity(self, rt, "full")
+
+
+    # ---- SR-10 / C22: initial margin follows each prime broker's schedule (money) ----------------------------------------------------------
+    def test_sr10_im_terms_follow_the_pb_schedule(self):
+        from tests import test_terminal_swaps as sw
+        from finsim.terminal.products import swaps
+        rt = self.rt = sw.runtime(self.tmp)
+        self.assertTrue(deposit(rt, 1510000000).ok)                          # T1 at 25,100,000.00: past the PB/OTC threshold (sw's module docstring)
+        for broker in ("GS", "DB"):
+            self.assertTrue(execute(rt, "test.open_pb_unchecked", {"lifetime_id": T1, "broker": broker}).ok)
+        # the seeds differ by broker: GS keeps this build's static rule (50 bp / 10 % / 2 %), DB asks 60 bp / 15 % / 3 %; options 15 % / 20 %, forwards 6 % / 10 %
+        gs, db = prime.im_params(rt, PB_GS), prime.im_params(rt, PB_DB)
+        self.assertEqual((Decimal("50"), Decimal("0.10"), Decimal("0.02"), Decimal("0.15"), Decimal("0.06")), tuple(gs[k] for k in prime.IM_FIELDS))
+        self.assertEqual((Decimal("60"), Decimal("0.15"), Decimal("0.03"), Decimal("0.20"), Decimal("0.10")), tuple(db[k] for k in prime.IM_FIELDS))
+        # the IRS 10,000,000 2y pay-fixed of test_terminal_swaps (flat 4.00 %): annuity 1.90386435, |DV01| = 10,000,000 x 0.0001 x 1.90386435 =
+        # 1,903.86 -> IM GS = 1,903.86 x 50 = 95,193.00; DB = 1,903.86 x 60 = 114,231.60 (its half-width 1.5 bp moves the dealt rate, not the DV01)
+        p_gs, p_db = swaps.preview(rt, PB_GS, "IRS", sw.TERMS), swaps.preview(rt, PB_DB, "IRS", sw.TERMS)
+        self.assertEqual((190386, 9519300, "0.04010"), (p_gs["dv01_c"], p_gs["im_c"], p_gs["dealt_rate"]))
+        self.assertEqual((190386, 11423160, "0.04015"), (p_db["dv01_c"], p_db["im_c"], p_db["dealt_rate"]))
+        # an edit applies to the next deal: DB irs_im_bp 40 -> 1,903.86 x 40 = 76,154.40; an option IM of 25 % is stored as 0.25
+        self.assertTrue(update_schedule(rt, PB_DB, irs_im_bp="40", option_im_pct="0.25").ok)
+        self.assertEqual((7615440, Decimal("0.25")), (swaps.preview(rt, PB_DB, "IRS", sw.TERMS)["im_c"], prime.im_params(rt, PB_DB)["option_im_pct"]))
+        # ranges are the field's: a percentage of 100 % or more is refused (stored as a fraction), a vol half-width above 20 vol points too
+        for fields in ({"option_im_pct": "1.5"}, {"eq_option_hw_vol": "0.25"}, {"irs_im_bp": "-1"}):
+            r = update_schedule(rt, PB_DB, **fields)
+            self.assertEqual((400, "SCHEDULE_VALUE"), (r.http, r.code), fields)
 
 
 if __name__ == "__main__":

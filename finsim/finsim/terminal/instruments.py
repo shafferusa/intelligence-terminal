@@ -14,9 +14,24 @@ Conventions
   equity whose currency is not USD, e.g. ``0700-HK`` HKD, Yahoo ``0700.HK``) and by ``upsert_from_yahoo_meta`` (a non-US
   venue): ISO currency (Yahoo's minor units GBp / ZAc / ILA -> GBP / ZAR / ILS with ``price_scale`` 0.01: London is quoted
   in pence, marks stay as quoted and ``accounting`` applies the scale), session group FOREIGN (the venue session comes
-  from Yahoo's currentTradingPeriod), T+2 (T+1 venues by suffix), account kinds FOREIGN_FX + PB, no Cboe symbol, support
-  UNSUPPORTED (quotes and marks only: orders are refused in this build).  ``repair_foreign_listings`` corrects, in place,
-  databases seeded before 2026-10-21 (every universe equity was seeded USD / US_EQUITY with its ticker as Yahoo symbol).
+  from Yahoo's currentTradingPeriod), T+2 (T+1 venues by suffix), account kinds FOREIGN_FX + PB, no Cboe symbol.
+  Build 2 (P06, OA-12): a listing with a Yahoo symbol on a venue of ``FOREIGN_VENUES`` whose currency has a USD pair in the
+  FX master trades (support FULL: its venue session from the quote record, settlement in its currency, the USD conversion
+  shown in the preview and booked with the fill, a venue tax from ``fx.venue_fee_c``); any other foreign row is LIMITED
+  (quotes and marks only, ``spec.limited_reason`` says why).  ``repair_foreign_listings`` corrects, in place, databases
+  seeded before 2026-10-21 (every universe equity was seeded USD / US_EQUITY with its ticker as Yahoo symbol), lifts the
+  foreign rows of the old UNSUPPORTED classification to FULL / LIMITED, adds the FX crosses and the T+1 spot pairs.
+- FX master: the 25 USD pairs of the universe (market convention, ``fx_pair_id``) plus the major crosses ``FX_CROSSES``
+  (``EURJPY`` = JPY per EUR, Yahoo ``EURJPY=X``); a cross's id puts the currency earlier in ``CCY_ORDER`` first
+  (``fx_cross_id``).  Spot settles T+2 US business days, USD/CAD and USD/TRY T+1 (``FX_SPOT_T1``, market convention).
+- Cache (TX-2): ``get`` / ``all`` never keep a row read on a connection inside an open transaction (a rolled-back command
+  must not leave a phantom row); ``invalidate(ids)`` drops ids from memory and the next ``all()`` re-reads the table.
+- ADV of names resolved on demand (hotfix 1.0.3.1, 2026-10-21, BORROW_AVAIL): a ticker resolved through Yahoo has no ``adv`` in
+  its spec (the seed's universe carries it), so the borrow tier was NONE and every short was refused.  The quote worker computes
+  it from Yahoo daily bars (``range=3mo&interval=1d``) when the name is resolved and when ``lending.locate`` finds it missing:
+  ``adv_from_daily`` = the mean volume of the COMPLETED sessions that report one (never zero-filled, at least
+  ``ADV_MIN_SESSIONS``), stored in the spec (``instruments.set_adv``) with its basis "ADV from Yahoo daily bars, 3 months
+  (N sessions FIRST to LAST)"; a master ADV is never overwritten; no data -> no ADV -> no borrow.
 """
 from __future__ import annotations
 
@@ -26,7 +41,7 @@ import re
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, timedelta
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from typing import Dict, Iterable, List, Optional, Tuple
 
 from . import config
@@ -101,16 +116,63 @@ UNIVERSE_SPEC_KEYS = ("adv", "beta", "shares_outstanding", "shares_asof", "cik",
 # foreign listings: the classification shared by seed() and upsert_from_yahoo_meta() (foreign_listing_fields)
 FOREIGN_GROUP = "FOREIGN"                 # sessions.state("FOREIGN", foreign=<the quote's Yahoo currentTradingPeriod>)
 FOREIGN_ACCOUNT_KINDS = ("FOREIGN_FX", "PB")
-FOREIGN_SUPPORT = "UNSUPPORTED"           # quotes and marks only: orders_preview refuses; the matcher never sees a FOREIGN session open
+FOREIGN_SUPPORT = "FULL"                  # Build 2 (OA-12): a listing on a known venue in a currency with a USD pair trades
+FOREIGN_LIMITED = "LIMITED"               # any other foreign row: quotes and marks only (spec.limited_reason)
 FOREIGN_SETTLE_DAYS = 2
 FOREIGN_SETTLE_BY_SUFFIX = {"NS": 1, "BO": 1, "TO": 1, "V": 1}   # venues on T+1: India NSE/BSE (since 2023-01-27), Canada TSX/TSXV (2024-05-27)
 MINOR_UNITS = {"GBp": "GBP", "GBX": "GBP", "ZAc": "ZAR", "ZAC": "ZAR", "ILA": "ILS"}   # Yahoo quotes London in pence, JSE in cents, TASE in agorot
 MINOR_UNIT_LABEL = {"GBP": "GBp", "ZAR": "ZAc", "ILS": "ILA"}
-FOREIGN_NOTE = ("foreign listing: quotes and marks only in this build; orders are refused because the venue session (Yahoo"
-                " currentTradingPeriod) is not wired into order matching")
+#: the venues a foreign listing trades on in this terminal (Yahoo symbol suffix -> venue); mainland China A-shares (.SS / .SZ)
+#: settle in onshore CNY through Stock Connect and stay LIMITED
+FOREIGN_VENUES = {"L": "London Stock Exchange", "HK": "Hong Kong Exchanges", "T": "Tokyo Stock Exchange", "KS": "Korea Exchange (KOSPI)",
+                  "KQ": "Korea Exchange (KOSDAQ)", "TW": "Taiwan Stock Exchange", "TWO": "Taipei Exchange", "SR": "Saudi Exchange (Tadawul)",
+                  "PA": "Euronext Paris", "DE": "Deutsche Boerse Xetra", "F": "Frankfurt Stock Exchange", "AS": "Euronext Amsterdam",
+                  "BR": "Euronext Brussels", "LS": "Euronext Lisbon", "MI": "Borsa Italiana (Milan)", "MC": "Bolsa de Madrid",
+                  "SW": "SIX Swiss Exchange", "ST": "Nasdaq Stockholm", "OL": "Oslo Bors", "HE": "Nasdaq Helsinki", "VI": "Wiener Boerse",
+                  "IR": "Euronext Dublin", "NS": "National Stock Exchange of India", "BO": "BSE (Bombay)", "AX": "ASX (Australia)",
+                  "NZ": "NZX (New Zealand)", "TO": "Toronto Stock Exchange", "V": "TSX Venture Exchange", "SI": "Singapore Exchange",
+                  "JO": "Johannesburg Stock Exchange", "SA": "B3 (Sao Paulo)", "MX": "Bolsa Mexicana de Valores", "WA": "Warsaw Stock Exchange",
+                  "BK": "Stock Exchange of Thailand", "JK": "Indonesia Stock Exchange", "IS": "Borsa Istanbul", "PR": "Prague Stock Exchange",
+                  "BD": "Budapest Stock Exchange"}
+FOREIGN_NOTE = ("foreign listing: trades in its venue's session (Yahoo currentTradingPeriod) and settles T+2 in its currency (T+1 venues"
+                " by suffix); when the account and Treasury lack the currency, the USD conversion is shown in the preview and booked with the fill")
+#: the FX master: crosses listed next to the 25 USD pairs (Yahoo ``EURJPY=X``); a cross's id = fx_cross_id(a, b)
+FX_CROSSES = ("EURJPY", "EURGBP", "EURCHF", "GBPJPY", "AUDJPY", "EURAUD", "EURCAD", "CHFJPY", "GBPCHF", "CADJPY", "NZDJPY", "AUDNZD",
+              "GBPAUD", "EURNZD", "AUDCAD", "EURSEK", "EURNOK")
+#: market order of currencies in a pair name: the earlier one is the base (EUR > GBP > AUD > NZD > USD > CAD > CHF ... > JPY)
+CCY_ORDER = ("EUR", "GBP", "AUD", "NZD", "USD", "CAD", "CHF", "NOK", "SEK", "DKK", "PLN", "CZK", "HUF", "TRY", "ZAR", "MXN", "BRL", "ILS",
+             "SGD", "HKD", "CNH", "TWD", "INR", "KRW", "IDR", "THB", "SAR", "JPY")
+#: spot value T+1 by market convention (every other pair T+2)
+FX_SPOT_T1 = ("USDCAD", "USDTRY")
 OPEN_ORDER_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 REPAIR_CODE = "INSTRUMENT_NOT_REPAIRED"
 _VENUE_RE = re.compile(r"\.([A-Z]{1,3})$")
+ADV_DAYS = 63                    # ~3 months of sessions: YahooChart.daily(days > 22) asks range=3mo&interval=1d
+ADV_MIN_SESSIONS = 5             # fewer completed sessions with a volume -> no ADV (no borrow)
+ADV_BASIS = "ADV from Yahoo daily bars, 3 months"
+
+
+def adv_from_daily(bars, today: date) -> Optional[dict]:
+    """The average daily volume of Yahoo daily bars (BORROW_AVAIL): the mean volume of the sessions dated before ``today``
+    (today's bar may still be forming) that report a volume - a missing volume is skipped, never zero-filled - rounded
+    HALF_EVEN to whole shares.  ``{adv, sessions, first, last, basis}``; None with fewer than ``ADV_MIN_SESSIONS`` such
+    sessions or an average of 0 shares (no data -> no ADV -> no borrow; nothing is invented)."""
+    vols = sorted((b.date, int(b.v)) for b in (bars or []) if getattr(b, "v", None) is not None and b.date < today)
+    if len(vols) < ADV_MIN_SESSIONS:
+        return None
+    adv = int((Decimal(sum(v for _, v in vols)) / Decimal(len(vols))).quantize(Decimal(1), rounding=ROUND_HALF_EVEN))
+    if adv <= 0:
+        return None
+    first, last = vols[0][0].isoformat(), vols[-1][0].isoformat()
+    return {"adv": adv, "sessions": len(vols), "first": first, "last": last, "basis": f"{ADV_BASIS} ({len(vols)} sessions {first} to {last})"}
+
+
+def needs_adv(inst) -> bool:
+    """An equity-like, ACTIVE, tradeable, Yahoo-quoted row with no ADV in its spec (a name resolved on demand):
+    ``lending.locate`` gives it NO borrow until the quote worker has stored one from Yahoo daily bars."""
+    if inst is None or inst.kind not in EQUITY_KINDS or inst.status != "ACTIVE" or not inst.yahoo_symbol or inst.support in ("UNSUPPORTED", "COMPUTED"):
+        return False
+    return (inst.spec or {}).get("adv") in (None, "", 0, "0")
 
 
 @dataclass(frozen=True)
@@ -294,6 +356,52 @@ def fx_pair_id(ccy: str) -> str:
     return f"USD{ccy}" if ccy in USD_FIRST else f"{ccy}USD"
 
 
+def _ccy_rank(ccy: str) -> float:
+    """Position in ``CCY_ORDER``; an unlisted currency sorts just before JPY (JPY is always the quote currency)."""
+    try:
+        return float(CCY_ORDER.index(ccy))
+    except ValueError:
+        return CCY_ORDER.index("JPY") - 0.5
+
+
+def fx_cross_id(a: str, b: str) -> str:
+    """The market-convention name of a pair of two currencies (``("JPY", "EUR") -> "EURJPY"``; with USD it is
+    ``fx_pair_id``): the currency earlier in ``CCY_ORDER`` is the base."""
+    a, b = a.upper(), b.upper()
+    if a == "USD":
+        return fx_pair_id(b)
+    if b == "USD":
+        return fx_pair_id(a)
+    return f"{a}{b}" if _ccy_rank(a) <= _ccy_rank(b) else f"{b}{a}"
+
+
+def fx_spot_days(pair: str) -> int:
+    """Spot value lag in business days: T+1 for USD/CAD and USD/TRY (market convention), T+2 for every other pair."""
+    return 1 if str(pair or "").upper() in FX_SPOT_T1 else 2
+
+
+def fx_pip(pair: str) -> Decimal:
+    """0.01 for a JPY-quoted pair, else 0.0001 (sentence FX_SPOT)."""
+    return Decimal("0.01") if "JPY" in str(pair or "").upper() else Decimal("0.0001")
+
+
+def fx_pair_fields(pair: str) -> dict:
+    """The ``_insert`` fields of one FX master row (a USD pair or a cross): kind FX, quote currency, pip tick, FX_SPOT session,
+    spot lag, the accounts that convert currencies, the Yahoo symbol (``JPY=X`` inverted for USDJPY, ``EURJPY=X`` for a cross)."""
+    pair = pair.upper()
+    base, quote = pair[:3], pair[3:]
+    ysym, invert = fx_yahoo(pair)
+    cross = "USD" not in (base, quote)
+    spec = {"base": base, "quote": quote, "pip": str(fx_pip(pair))}
+    if cross:
+        spec["cross"] = True
+    else:
+        spec["ccy"] = quote if base == "USD" else base
+    return {"instrument_id": pair, "kind": "FX", "symbol": pair, "name": f"{CCY_NAMES.get(base, base)} / {CCY_NAMES.get(quote, quote)}", "currency": quote,
+            "tick": str(fx_pip(pair)), "session_group": "FX_SPOT", "settle_days": fx_spot_days(pair), "account_kinds": ["FOREIGN_FX", "CREDIT", "TREASURY", "PB"],
+            "yahoo_symbol": ysym, "yahoo_invert": 1 if invert else 0, "spec": spec, "support": "FULL"}
+
+
 def otc_reference_ids(conn: sqlite3.Connection) -> Dict[str, List[str]]:
     """``{instrument_id: [account_id, ...]}`` of the instruments that OPEN OTC contracts of OPEN lifetimes observe without
     holding them: the underlying of a TRS (its mark, its reset CLOSE, its dividends) and the USD pair of a cross-currency
@@ -302,18 +410,25 @@ def otc_reference_ids(conn: sqlite3.Connection) -> Dict[str, List[str]]:
     out: Dict[str, List[str]] = {}
     rows = conn.execute("SELECT c.account_id, c.kind, c.terms_json FROM otc_contracts c JOIN accounts a ON a.account_id=c.account_id"
                         " JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN' AND a.status='OPEN' AND l.status='OPEN'"
-                        " AND c.kind IN ('TRS','XCCY') ORDER BY c.contract_id").fetchall()
+                        " AND c.kind IN ('TRS','XCCY','EQ_OPTION','EQ_FORWARD','FX_OPTION','FX_FORWARD') ORDER BY c.contract_id").fetchall()
     for r in rows:
         try:
             terms = json.loads(r["terms_json"] or "{}")
         except ValueError:
             terms = {}
-        iid = None
-        if r["kind"] == "TRS" and terms.get("underlying_id"):
-            iid = str(terms["underlying_id"]).upper()
-        elif r["kind"] == "XCCY" and terms.get("foreign_ccy"):
-            iid = fx_pair_id(str(terms["foreign_ccy"]))
-        if iid:
+        ids: List[str] = []
+        kind = r["kind"]
+        if kind in ("TRS", "EQ_OPTION", "EQ_FORWARD") and terms.get("underlying_id"):
+            ids.append(str(terms["underlying_id"]).upper())
+        elif kind == "XCCY" and terms.get("foreign_ccy"):
+            ids.append(fx_pair_id(str(terms["foreign_ccy"])))
+        elif kind in ("FX_OPTION", "FX_FORWARD") and terms.get("pair"):
+            pair = str(terms["pair"]).upper().replace("/", "")
+            ids.append(pair)
+            for c in (pair[:3], pair[3:6]):                      # a cross (EURJPY) also needs each leg's USD pair
+                if len(c) == 3 and c != "USD":
+                    ids.append(fx_pair_id(c))
+        for iid in ids:
             accts = out.setdefault(iid, [])
             if r["account_id"] not in accts:
                 accts.append(r["account_id"])
@@ -350,14 +465,31 @@ def foreign_listing_fields(yahoo_symbol: Optional[str], currency: Optional[str],
     if not price_scale.is_finite() or not Decimal(0) < price_scale <= Decimal(1):
         raise ValueError(f"foreign listing {yahoo_symbol}: quote scale {scale!r} must be in (0, 1]")
     suffix = venue_suffix(yahoo_symbol)
-    spec = {"foreign": True, "venue_suffix": suffix, "note": FOREIGN_NOTE}
+    support, why = foreign_support(yahoo_symbol, suffix, ccy)
+    spec = {"foreign": True, "venue_suffix": suffix, "venue": FOREIGN_VENUES.get(suffix or ""), "note": FOREIGN_NOTE if support == FOREIGN_SUPPORT else why}
+    if why:
+        spec["limited_reason"] = why
     if price_scale != 1:
         label = MINOR_UNIT_LABEL.get(ccy) if price_scale == Decimal("0.01") else None
         spec["quote_unit"] = label or f"{price_scale} {ccy}"
         spec["quote_unit_note"] = f"Yahoo quotes this listing in {spec['quote_unit']}; values are {ccy} = quoted price x {price_scale}"
     return {"currency": ccy, "price_scale": str(price_scale), "session_group": FOREIGN_GROUP,
             "settle_days": FOREIGN_SETTLE_BY_SUFFIX.get(suffix, FOREIGN_SETTLE_DAYS), "account_kinds": list(FOREIGN_ACCOUNT_KINDS),
-            "yahoo_symbol": str(yahoo_symbol).strip() if yahoo_symbol else None, "cboe_symbol": None, "support": FOREIGN_SUPPORT, "spec": spec}
+            "yahoo_symbol": str(yahoo_symbol).strip() if yahoo_symbol else None, "cboe_symbol": None, "support": support, "spec": spec}
+
+
+def foreign_support(yahoo_symbol: Optional[str], suffix: Optional[str], ccy: str) -> Tuple[str, str]:
+    """``(support, reason)`` of a foreign listing (OA-12): FULL when it has a Yahoo symbol (the venue session and the prints come
+    from it), its venue is in ``FOREIGN_VENUES`` and its currency has a USD pair in the FX master (``CCY_NAMES``: the account
+    can hold, value and convert it); else LIMITED with the reason (quotes and marks only)."""
+    if not yahoo_symbol:
+        return FOREIGN_LIMITED, "no Yahoo symbol: no venue session and no prints, so orders cannot be judged (quotes and marks only)"
+    if (suffix or "") not in FOREIGN_VENUES:
+        return FOREIGN_LIMITED, (f"venue .{suffix} is not in this terminal's venue table: quotes and marks only" if suffix
+                                 else "no venue suffix on the Yahoo symbol: quotes and marks only")
+    if ccy not in CCY_NAMES:
+        return FOREIGN_LIMITED, f"{ccy} has no USD pair in the FX master: the listing cannot be valued or funded here (quotes only)"
+    return FOREIGN_SUPPORT, ""
 
 
 def universe_is_foreign(e: dict) -> bool:
@@ -405,13 +537,31 @@ class InstrumentMaster:
         self.db = db
         self.log = log
         self._cache: Dict[str, Instrument] = {}
+        self._uncached: Optional[Dict[str, Instrument]] = None
         self._loaded = False
 
     # ---- read -----------------------------------------------------------------------------------------------------
+    @staticmethod
+    def _in_tx(conn) -> bool:
+        """True when ``conn`` is inside an open transaction: what it reads may still roll back (TX-2), so it is never cached."""
+        try:
+            return bool(conn.in_transaction)
+        except Exception:   # noqa: BLE001 - a stand-in connection without the flag: treat as committed
+            return False
+
     def load(self) -> None:
+        """Read the whole table into memory.  Inside an open transaction (``db.reader()`` hands this thread's writer while it
+        holds one) the rows are used for that call only and the master stays unloaded, so a rollback leaves no phantom."""
         with self.db.reader() as conn:
             rows = conn.execute("SELECT * FROM instruments").fetchall()
-        self._cache = {r["instrument_id"]: row_to_instrument(r) for r in rows}
+            in_tx = self._in_tx(conn)
+        cache = {r["instrument_id"]: row_to_instrument(r) for r in rows}
+        if in_tx:
+            self._uncached = cache
+            self._loaded = False
+            return
+        self._cache = cache
+        self._uncached = None
         self._loaded = True
 
     def get(self, instrument_id: str, conn: Optional[sqlite3.Connection] = None) -> Optional[Instrument]:
@@ -420,24 +570,40 @@ class InstrumentMaster:
             return inst
         if conn is not None:
             row = conn.execute("SELECT * FROM instruments WHERE instrument_id=?", (instrument_id,)).fetchone()
+            in_tx = self._in_tx(conn)
         else:
             with self.db.reader() as c:
                 row = c.execute("SELECT * FROM instruments WHERE instrument_id=?", (instrument_id,)).fetchone()
+                in_tx = self._in_tx(c)
         if row is None:
             return None
         inst = row_to_instrument(row)
-        self._cache[instrument_id] = inst
+        if not in_tx:                              # TX-2: a row read inside an open transaction may still roll back
+            self._cache[instrument_id] = inst
         return inst
 
     def all(self) -> List[Instrument]:
         if not self._loaded:
             self.load()
+            if not self._loaded:                   # read inside an open transaction: this call's rows, nothing cached
+                rows = getattr(self, "_uncached", None) or {}
+                self._uncached = None
+                return list(rows.values())
         return list(self._cache.values())
+
+    def invalidate(self, ids: Iterable[str]) -> None:
+        """TX-2: forget ``ids`` (a command that touched them rolled back); the next ``all()`` re-reads the committed table, so a
+        committed row stays listed and a rolled-back one is gone."""
+        for i in ids or ():
+            self._cache.pop(str(i), None)
+        self._loaded = False
 
     def count(self, kind: Optional[str] = None) -> int:
         return sum(1 for i in self.all() if kind is None or i.kind == kind)
 
     def search(self, q: str, kinds: Iterable[str] = (), limit: int = 20) -> List[Instrument]:
+        """Exact id / symbol / Yahoo symbol / alias first, then symbol prefix, then name or alias contains (SR-14: a listed
+        company found by its former private name through ``spec.aliases``)."""
         q = (q or "").strip().upper()
         kinds = tuple(kinds)
         if not q:
@@ -447,11 +613,13 @@ class InstrumentMaster:
             if kinds and inst.kind not in kinds:
                 continue
             sym = inst.symbol.upper()
-            if sym == q or inst.instrument_id.upper() == q or (inst.yahoo_symbol or "").upper() == q:
+            raw = (inst.spec or {}).get("aliases") if isinstance(inst.spec, dict) else None
+            aliases = [str(a).upper() for a in (raw if isinstance(raw, (list, tuple)) else ([raw] if raw else []))]
+            if sym == q or inst.instrument_id.upper() == q or (inst.yahoo_symbol or "").upper() == q or q in aliases:
                 hits.append((0, inst))
-            elif sym.startswith(q):
+            elif sym.startswith(q) or any(a.startswith(q) for a in aliases):
                 hits.append((1, inst))
-            elif q in inst.name.upper():
+            elif q in inst.name.upper() or any(q in a for a in aliases):
                 hits.append((2, inst))
         hits.sort(key=lambda t: (t[0], t[1].symbol))
         return [i for _, i in hits[:limit]]
@@ -502,12 +670,58 @@ class InstrumentMaster:
         inserted = cur.rowcount == 1
         if inserted:
             self._cache.pop(row["instrument_id"], None)
+            self._loaded = False
         return inserted
+
+    UPSERT_COLUMNS = ("kind", "symbol", "name", "currency", "multiplier", "tick", "lot", "price_scale", "session_group", "settle_days", "account_kinds",
+                      "yahoo_symbol", "yahoo_invert", "cboe_symbol", "underlying_id", "expiry", "strike", "right", "style", "exercise", "spec", "support",
+                      "status")
+
+    def upsert(self, tx, **fields) -> Optional[Instrument]:
+        """Public insert-or-update of one master row inside the caller's writer transaction (P07's Treasury master, any product
+        list refreshed by a job).  ``instrument_id`` is required; a NEW row also needs kind, symbol, name, currency and
+        session_group (defaults as ``_insert``: multiplier 1, tick 0.01, lot 1, scale 1, T+1, FULL, ACTIVE); an EXISTING row has
+        exactly the given columns replaced (``spec`` replaces the whole spec, ``account_kinds`` the list) and ``updated_ts`` set.
+        Unknown keys are refused (ValueError).  The row is read back on ``tx.conn`` and returned (not cached inside the open
+        transaction, TX-2); the master's memory forgets the id so the next read after the commit is the stored row."""
+        iid = str(fields.pop("instrument_id", "") or "").strip()
+        if not iid:
+            raise ValueError("upsert needs instrument_id")
+        bad = [k for k in fields if k not in self.UPSERT_COLUMNS]
+        if bad:
+            raise ValueError(f"upsert: unknown column(s) {', '.join(sorted(bad))}")
+        conn = tx.conn
+        ts = int(tx.now.timestamp())
+        exists = conn.execute("SELECT 1 FROM instruments WHERE instrument_id=?", (iid,)).fetchone() is not None
+        if not exists:
+            missing = [k for k in ("kind", "symbol", "name", "currency", "session_group") if not fields.get(k)]
+            if missing:
+                raise ValueError(f"upsert of the new row {iid}: {', '.join(missing)} required")
+            self._insert(conn, ts, instrument_id=iid, **fields)
+        elif fields:
+            cols, vals = [], []
+            for k, v in fields.items():
+                col = "spec_json" if k == "spec" else k
+                if k == "spec":
+                    v = json.dumps(v if isinstance(v, dict) else {})
+                elif k == "account_kinds":
+                    v = json.dumps(list(v or []))
+                elif k in ("multiplier", "tick", "price_scale", "strike") and v is not None:
+                    v = str(v)
+                elif k in ("lot", "settle_days", "yahoo_invert"):
+                    v = int(v)
+                cols.append(f"{col}=?")
+                vals.append(v)
+            conn.execute(f"UPDATE instruments SET {', '.join(cols)}, updated_ts=? WHERE instrument_id=?", (*vals, ts, iid))
+        self._cache.pop(iid, None)
+        self._loaded = False
+        row = conn.execute("SELECT * FROM instruments WHERE instrument_id=?", (iid,)).fetchone()
+        return None if row is None else row_to_instrument(row)
 
     def seed(self, tx, cal=None) -> int:
         """First run (§7.4): equities / ETFs / ADRs / REITs / preferreds from ``universe.json`` (crypto skipped; the 38
         non-USD rows are foreign listings through ``foreign_listing_fields``, every other row a US listing), 25 FX
-        pairs, indices, yields, the next 4 months of every futures root, bonds LIMITED, the private-company master
+        pairs vs USD (the crosses come from ``ensure_fx_master`` at start), indices, yields, the next 4 months of every futures root, bonds LIMITED, the private-company master
         when its file exists.  Idempotent (INSERT OR IGNORE); returns the number of rows inserted.  ``cal`` (optional)
         is the TradingCalendar used for the futures last-trade dates."""
         conn = tx.conn
@@ -529,14 +743,9 @@ class InstrumentMaster:
                               session_group="US_EQUITY", settle_days=1, account_kinds=["US_EXCHANGE", "PB"], yahoo_symbol=ticker,
                               cboe_symbol=ticker.replace("-", "."), spec=spec, support="FULL")
         for ccy in uni.get("fx") or {}:
-            pair = fx_pair_id(ccy)
-            ysym, invert = fx_yahoo(pair)
-            base, quote = pair[:3], pair[3:]
-            pip = "0.01" if "JPY" in pair else "0.0001"
-            n += self._insert(conn, ts, instrument_id=pair, kind="FX", symbol=pair, name=f"{CCY_NAMES.get(base, base)} / {CCY_NAMES.get(quote, quote)}",
-                              currency=quote, tick=pip, session_group="FX_SPOT", settle_days=2,
-                              account_kinds=["FOREIGN_FX", "CREDIT", "TREASURY", "PB"], yahoo_symbol=ysym, yahoo_invert=1 if invert else 0,
-                              spec={"base": base, "quote": quote, "pip": pip, "ccy": ccy}, support="FULL")
+            n += self._insert(conn, ts, **fx_pair_fields(fx_pair_id(ccy)))
+        # the major crosses (Build 2, OA-14: EURJPY=X ...) are added by ensure_fx_master, which the server runs on every start right
+        # after the seed (repair_foreign_listings), so a fresh and an old database get them the same way
         for iid, name, ysym, csym in INDICES:
             n += self._insert(conn, ts, instrument_id=iid, kind="INDEX", symbol=iid, name=name, currency="USD", session_group="US_EQUITY",
                               settle_days=0, account_kinds=[], yahoo_symbol=ysym, cboe_symbol=csym, spec={"reference": True}, support="LIMITED")
@@ -628,11 +837,65 @@ class InstrumentMaster:
         repaired.sort()
         if repaired:
             self._loaded = False
+        support = self._upgrade_foreign_support(conn, ts)
+        fx_master = self.ensure_fx_master(tx)
         if self.log:
-            self.log.info("instrument repair (foreign universe listings): %d corrected [%s]; %d left as recorded [%s]%s", len(repaired),
+            self.log.info("instrument repair (foreign universe listings): %d corrected [%s]; %d left as recorded [%s]%s; foreign rows re-classified %d"
+                          " (FULL %d, LIMITED %d); FX master: %d pair(s) added, %d spot lag(s) corrected", len(repaired),
                           ", ".join(repaired) or "none", len(skipped), "; ".join(f"{k}: {v}" for k, v in sorted(skipped.items())) or "none",
-                          "".join(f"; Yahoo symbol of the resolved duplicate {k} moved to {v}" for k, v in sorted(moved.items())))
-        return {"repaired": repaired, "skipped": skipped, "moved": moved}
+                          "".join(f"; Yahoo symbol of the resolved duplicate {k} moved to {v}" for k, v in sorted(moved.items())),
+                          len(support["changed"]), support["full"], support["limited"], len(fx_master["added"]), len(fx_master["spot_lag"]))
+        return {"repaired": repaired, "skipped": skipped, "moved": moved, "support": support["changed"], "fx_added": fx_master["added"],
+                "fx_spot_lag": fx_master["spot_lag"]}
+
+    def _upgrade_foreign_support(self, conn: sqlite3.Connection, ts: int) -> dict:
+        """Build 2 (OA-12): every foreign listing row (``spec.foreign``) gets the support ``foreign_support`` gives it now - FULL on a
+        known venue in a currency with a USD pair, else LIMITED with the reason - in place of the old UNSUPPORTED (quotes only).
+        Only ``support`` and the spec's note / limited reason / venue change; booked history is untouched (an UNSUPPORTED row was
+        never traded).  Idempotent: a row already classified this way is skipped."""
+        changed: List[str] = []
+        full = limited = 0
+        rows = conn.execute("SELECT instrument_id, kind, currency, yahoo_symbol, support, spec_json FROM instruments WHERE session_group=?"
+                            " AND kind IN ('EQUITY','ETF','ADR','REIT','PREFERRED') AND status='ACTIVE'", (FOREIGN_GROUP,)).fetchall()
+        for r in rows:
+            spec = _spec_of(r)
+            if not spec.get("foreign"):
+                continue                                           # a crypto / fund row resolved as FOREIGN: not a listing
+            suffix = venue_suffix(r["yahoo_symbol"]) or spec.get("venue_suffix")
+            support, why = foreign_support(r["yahoo_symbol"], suffix, str(r["currency"] or ""))
+            full += support == FOREIGN_SUPPORT
+            limited += support != FOREIGN_SUPPORT
+            new = dict(spec, venue=FOREIGN_VENUES.get(suffix or ""), note=FOREIGN_NOTE if support == FOREIGN_SUPPORT else why)
+            if why:
+                new["limited_reason"] = why
+            else:
+                new.pop("limited_reason", None)
+            if r["support"] == support and new == spec:
+                continue
+            conn.execute("UPDATE instruments SET support=?, spec_json=?, updated_ts=? WHERE instrument_id=?", (support, json.dumps(new), ts, r["instrument_id"]))
+            self._cache.pop(r["instrument_id"], None)
+            changed.append(r["instrument_id"])
+        if changed:
+            self._loaded = False
+        return {"changed": sorted(changed), "full": full, "limited": limited}
+
+    def ensure_fx_master(self, tx) -> dict:
+        """Idempotent: the FX crosses of ``FX_CROSSES`` exist (a database seeded before Build 2 has the 25 USD pairs only), and
+        the T+1 spot pairs (``FX_SPOT_T1``) carry settle_days 1 (a deal's own value date is stored on the deal, so nothing booked
+        moves).  Returns ``{"added": [ids], "spot_lag": [ids]}``."""
+        conn = tx.conn
+        ts = int(tx.now.timestamp())
+        added = [p for p in FX_CROSSES if self._insert(conn, ts, **fx_pair_fields(p))]
+        lag = []
+        for pair in FX_SPOT_T1:
+            cur = conn.execute("UPDATE instruments SET settle_days=?, updated_ts=? WHERE instrument_id=? AND kind='FX' AND settle_days<>?",
+                               (fx_spot_days(pair), ts, pair, fx_spot_days(pair)))
+            if cur.rowcount:
+                lag.append(pair)
+                self._cache.pop(pair, None)
+        if added or lag:
+            self._loaded = False
+        return {"added": added, "spot_lag": lag}
 
     def _release_resolved_duplicate(self, conn: sqlite3.Connection, ts: int, holder: str, iid: str) -> bool:
         """The row holding a foreign listing's Yahoo symbol is a duplicate the pre-fix resolve made (typing ``0700.HK`` while
@@ -733,7 +996,7 @@ class InstrumentMaster:
     def upsert_from_yahoo_meta(self, tx, symbol: str, meta: dict) -> Instrument:
         """Resolve an unknown ticker from Yahoo chart meta (§7.3): US exchanges -> FULL; a non-US venue or a non-USD quote
         -> the foreign-listing classification the seed also writes (``foreign_listing_fields``: GBp -> GBP x 0.01,
-        FOREIGN, T+2, FOREIGN_FX + PB, UNSUPPORTED); crypto / mutual funds UNSUPPORTED.  A Yahoo symbol another row
+        FOREIGN, T+2, FOREIGN_FX + PB, FULL on a known venue else LIMITED); crypto / mutual funds UNSUPPORTED.  A Yahoo symbol another row
         already owns (``0700.HK`` is the seeded ``0700-HK``, ``JPY=X`` is ``USDJPY``) is refused with that row's id
         (RejectError ``ALREADY_IN_MASTER``) instead of an insert the unique Yahoo-symbol index would silently drop."""
         from .commands import RejectError
@@ -783,8 +1046,8 @@ class InstrumentMaster:
         return self.get(symbol, tx.conn)
 
     def ensure_foreign_listing(self, tx, yahoo_symbol: str, meta: dict) -> Instrument:
-        """A foreign listing from Yahoo meta: the shared classification (``foreign_listing_fields``) — quotes and marks only
-        in this build (support UNSUPPORTED, "foreign listings are not executable in this build")."""
+        """A foreign listing from Yahoo meta: the shared classification (``foreign_listing_fields``): FULL on a known venue in a
+        currency with a USD pair, else LIMITED with the reason."""
         return self.upsert_from_yahoo_meta(tx, yahoo_symbol, dict(meta, exchangeName=meta.get("exchangeName") or "FOREIGN"))
 
     # ---- rules ----------------------------------------------------------------------------------------------------

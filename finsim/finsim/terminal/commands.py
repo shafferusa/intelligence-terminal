@@ -11,6 +11,15 @@ under one process-wide writer lock, with a client-supplied ``request_id`` that i
   they touch no ledger table, but still run inside the lock and the transaction.
 Handlers never open transactions, never sleep, never do network I/O; the mark snapshot they use is the immutable
 ``ctx.marks`` taken at the start of the command.
+
+Build 2 (2026-10-21):
+- TX-2: a command that rolls back takes its instrument rows with it - rows it inserted (rowid above the start's) and the
+  instruments it touched are evicted from the instrument master's memory (``InstrumentMaster.invalidate``), so no process
+  keeps serving or trading a row the database does not have and a retry of the same request id works.  A
+  ``sqlite3.IntegrityError`` is DUPLICATE_POSTING (409) only for a UNIQUE / PRIMARY KEY violation (a repeated idem key); a
+  FOREIGN KEY / CHECK / NOT NULL failure is a 500 with its own code (DB_FOREIGN_KEY / DB_CHECK / DB_NOT_NULL / DB_CONSTRAINT).
+- TX-3: the ERROR attention of a failed command (COMMAND_FAILED and the DB_* codes) is ONE open row per (kind, reference) - the
+  order / package / contract / account the payload names - updated with the latest error and a count, never one per attempt.
 """
 from __future__ import annotations
 
@@ -194,6 +203,33 @@ class TxContext:
 
 
 Handler = Callable[[TxContext, dict], dict]
+#: the payload keys that name what a command is about (the reference its failure attention is de-duplicated on, TX-3)
+REF_KEYS = (("order_id", "order"), ("package_id", "package"), ("contract_id", "contract"), ("loan_id", "loan"), ("borrow_id", "borrow"),
+            ("repo_id", "repo"), ("account_id", "account"), ("instrument_id", "instrument"), ("job", "job"))
+
+
+def command_ref(payload: Optional[dict]) -> Tuple[Optional[str], Optional[str]]:
+    """``(ref_type, ref_id)`` of a command from its payload (the first of REF_KEYS present), else (None, None)."""
+    if isinstance(payload, dict):
+        for key, kind in REF_KEYS:
+            v = payload.get(key)
+            if isinstance(v, (str, int)) and str(v):
+                return kind, str(v)[:120]
+    return None, None
+
+
+def integrity_code(e: sqlite3.IntegrityError) -> Optional[str]:
+    """None for a UNIQUE / PRIMARY KEY violation (a duplicate posting); else the 500 code of the constraint that failed."""
+    msg = str(e).upper()
+    if "UNIQUE" in msg or "PRIMARY KEY" in msg:
+        return None
+    if "FOREIGN KEY" in msg:
+        return "DB_FOREIGN_KEY"
+    if "CHECK" in msg:
+        return "DB_CHECK"
+    if "NOT NULL" in msg:
+        return "DB_NOT_NULL"
+    return "DB_CONSTRAINT"
 
 
 def _error_body(code: str, message: str, details: Optional[dict] = None, request_id: Optional[str] = None, **extra) -> dict:
@@ -235,14 +271,31 @@ class CommandBus:
             return FixedMarks({}, as_of=self.clock.epoch())
         return self.marks_provider.snapshot()
 
-    def _attention_after_rollback(self, severity: str, code: str, message: str, details: dict) -> Optional[int]:
+    def _attention_after_rollback(self, severity: str, code: str, message: str, details: dict, dedupe: bool = False,
+                                  ref: Tuple[Optional[str], Optional[str]] = (None, None)) -> Optional[int]:
+        """The attention row of a rolled-back command, in its own short transaction.  ``dedupe`` (TX-3): an open row with the same
+        code, command kind and reference is updated (latest error, ``count`` + 1, time) instead of a new row per attempt."""
         conn = self.db.writer_conn()
         try:
             conn.execute("BEGIN IMMEDIATE")
+            ref_type, ref_id = ref
+            if dedupe:
+                row = conn.execute("SELECT id, details_json FROM attention WHERE source='bus' AND code=? AND resolved_ts IS NULL AND ref_type IS ? AND ref_id IS ?"
+                                   " AND details_json LIKE ? ORDER BY id DESC LIMIT 1", (code, ref_type, ref_id, f'%"kind":{dumps(details.get("kind"))}%')).fetchone()
+                if row is not None:
+                    try:
+                        prev = json.loads(row["details_json"] or "{}")
+                    except ValueError:
+                        prev = {}
+                    merged = dict(details, count=int(prev.get("count") or 1) + 1, first_ts=prev.get("first_ts") or prev.get("ts"))
+                    conn.execute("UPDATE attention SET ts=?, message=?, details_json=? WHERE id=?", (self.clock.epoch(), message, dumps(merged), int(row["id"])))
+                    conn.execute("COMMIT")
+                    return int(row["id"])
+                details = dict(details, count=1, first_ts=self.clock.epoch())
             cur = conn.execute(
                 "INSERT INTO attention(ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts, auto_resolve)"
                 " VALUES (?,?,?,?,?,?,?,?,?,NULL,0)",
-                (self.clock.epoch(), severity, "bus", code, message, dumps(details), details.get("account_id"), None, None))
+                (self.clock.epoch(), severity, "bus", code, message, dumps(details), details.get("account_id"), ref_type, ref_id))
             conn.execute("COMMIT")
             return int(cur.lastrowid)
         except sqlite3.Error as e:   # the attention row itself failed: log loudly, never raise over the original error
@@ -277,6 +330,8 @@ class CommandBus:
                     pass
                 return Result(False, 503, _error_body("RETRY", f"database busy: {e}", request_id=rid), retry_after=1)
             t0 = _time.monotonic()
+            ctx: Optional[TxContext] = None
+            inst_rowid0 = self._instrument_rowid(conn)
             try:
                 payload_json = canonical_json(cmd.payload)
                 sha = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
@@ -318,20 +373,29 @@ class CommandBus:
                 conn.execute("COMMIT")
                 committed = Result(True, 200, body, command_id=command_id)
             except RejectError as e:
-                self._rollback(conn)
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
                 if self.log:
                     self.log.info("command %s %s rejected: %s %s", cmd.kind, rid, e.code, e.message)
                 return Result(False, e.http, _error_body(e.code, e.message, e.details, request_id=rid))
             except DuplicatePosting as e:
-                self._rollback(conn)
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
                 incident = self._attention_after_rollback("WARN", "DUPLICATE_POSTING", str(e), {"request_id": rid, "kind": cmd.kind, "idem_key": e.idem_key})
                 return Result(False, 409, _error_body("DUPLICATE_POSTING", e.message, {"idem_key": e.idem_key, "incident_id": incident}, request_id=rid))
             except sqlite3.IntegrityError as e:
-                self._rollback(conn)
-                incident = self._attention_after_rollback("WARN", "DUPLICATE_POSTING", f"{cmd.kind}: {e}", {"request_id": rid, "kind": cmd.kind})
-                return Result(False, 409, _error_body("DUPLICATE_POSTING", str(e), {"incident_id": incident}, request_id=rid))
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
+                icode = integrity_code(e)
+                if icode is None:                    # a UNIQUE / PRIMARY KEY violation: a repeated idem key
+                    incident = self._attention_after_rollback("WARN", "DUPLICATE_POSTING", f"{cmd.kind}: {e}", {"request_id": rid, "kind": cmd.kind})
+                    return Result(False, 409, _error_body("DUPLICATE_POSTING", str(e), {"incident_id": incident}, request_id=rid))
+                if self.log:
+                    self.log.error("command %s %s failed on a database constraint: %s", cmd.kind, rid, e)
+                incident = self._attention_after_rollback("ERROR", "COMMAND_FAILED", f"{cmd.kind}: the database refused a row ({e}); nothing was written",
+                                                          {"request_id": rid, "kind": cmd.kind, "error": str(e), "code": icode}, dedupe=True,
+                                                          ref=command_ref(cmd.payload))
+                return Result(False, 500, _error_body(icode, f"{cmd.kind}: the database refused a row ({e}); nothing was written",
+                                                      {"incident_id": incident}, request_id=rid))
             except IntegrityFailure as e:
-                self._rollback(conn)
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
                 problems = e.report.to_dict().get("problems", [])
                 if self.log:
                     self.log.error("command %s %s failed integrity: %s", cmd.kind, rid, problems)
@@ -340,13 +404,14 @@ class CommandBus:
                 return Result(False, 500, _error_body("INTEGRITY", "command rolled back: the ledger-level integrity check failed",
                                                       {"problems": problems, "incident_id": incident}, request_id=rid))
             except Exception as e:   # noqa: BLE001 — every failure is loud: rolled back, logged, surfaced
-                self._rollback(conn)
+                self._rollback_and_evict(conn, ctx, cmd, inst_rowid0)
                 tb = traceback.format_exc()
                 if self.log:
                     self.log.exception("command %s %s failed", cmd.kind, rid)
                 code = getattr(e, "code", None) if isinstance(e, LedgerError) else None
                 incident = self._attention_after_rollback("ERROR", "COMMAND_FAILED", f"{cmd.kind}: {e}",
-                                                          {"request_id": rid, "kind": cmd.kind, "error": str(e), "code": code, "traceback": tb[-2000:]})
+                                                          {"request_id": rid, "kind": cmd.kind, "error": str(e), "code": code, "traceback": tb[-2000:]},
+                                                          dedupe=True, ref=command_ref(cmd.payload))
                 return Result(False, 500, _error_body(code or "COMMAND_FAILED", str(e), {"incident_id": incident}, request_id=rid))
         finally:
             self.db.release_writer()
@@ -365,6 +430,58 @@ class CommandBus:
                 conn.execute("ROLLBACK")
         except sqlite3.Error:
             pass
+
+    @staticmethod
+    def _instrument_rowid(conn: sqlite3.Connection) -> Optional[int]:
+        try:
+            return int(conn.execute("SELECT COALESCE(MAX(rowid), 0) FROM instruments").fetchone()[0] or 0)
+        except sqlite3.Error:
+            return None
+
+    def _rollback_and_evict(self, conn: sqlite3.Connection, ctx: Optional[TxContext], cmd: Command, inst_rowid0: Optional[int]) -> List[str]:
+        """TX-2: roll back, then evict from the instrument master's memory every instrument the command inserted (rowid above the
+        start's, read before the rollback) or touched, so the cache never outlives the rows.  Returns the evicted ids."""
+        ids: Set[str] = set()
+        if inst_rowid0 is not None:
+            try:
+                if conn.in_transaction:
+                    ids.update(r[0] for r in conn.execute("SELECT instrument_id FROM instruments WHERE rowid > ?", (inst_rowid0,)).fetchall())
+            except sqlite3.Error:
+                pass
+        if ctx is not None:
+            ids.update(i for _a, i in ctx.touched_instruments if i)
+        if isinstance(cmd.payload, dict) and isinstance(cmd.payload.get("instrument_id"), str):
+            ids.add(cmd.payload["instrument_id"])
+        self._rollback(conn)
+        if ids:
+            self._evict_instruments(sorted(ids), conn)
+        return sorted(ids)
+
+    def _evict_instruments(self, ids: List[str], conn: Optional[sqlite3.Connection] = None) -> None:
+        """``InstrumentMaster.invalidate(ids)`` when the master has it; else the committed rows are read again on the writer
+        connection (outside any transaction after the rollback) and replace the cached ones - a row the database does not have
+        leaves the cache, a committed row stays listed (``all()`` keeps every instrument)."""
+        master = getattr(self.services, "instruments", None) if self.services is not None else None
+        if master is None:
+            return
+        fn = getattr(master, "invalidate", None)
+        try:
+            if callable(fn):
+                fn(ids)
+                return
+            cache = getattr(master, "_cache", None)
+            if not isinstance(cache, dict) or conn is None:
+                return
+            from .instruments import row_to_instrument
+            for i in ids:
+                row = conn.execute("SELECT * FROM instruments WHERE instrument_id=?", (i,)).fetchone()
+                if row is None:
+                    cache.pop(i, None)
+                else:
+                    cache[i] = row_to_instrument(row)
+        except Exception:   # noqa: BLE001 — an eviction failure is logged, never raised over the original error
+            if self.log:
+                self.log.exception("instrument cache eviction after a rollback failed")
 
 
 def require_amount_c(payload: dict, key_c: str = "amount_c", key: str = "amount") -> int:

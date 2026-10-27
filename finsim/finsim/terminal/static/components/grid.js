@@ -8,10 +8,13 @@
  *     rows: [], rowKey(row), rowClass(row), onEnter(row), onKey(key, row) -> bool, onClick(row, event), filter: true,
  *     tools: true, csv: 'file.csv', groupBy(row) -> label, subtotal(rows, label) -> {colKey: html},
  *     footer(rows) -> {colKey: html}, empty: 'no rows', focus: true, restore: otherGrid.state() });
- *   g.update(rows); g.selected(); g.select(i); g.rows(); g.state(); g.restore(state); g.destroy();
+ *   g.update(rows[, {empty: 'no transactions'}]); g.empty(text); g.selected(); g.select(i); g.rows(); g.state(); g.restore(state); g.destroy();
+ *   A page mounts with empty: 'loading ...' and passes the real empty text with the first answer (BM-17), so a table that
+ *   received 0 rows says 'no transactions' instead of 'loading ...' forever.
  *   T.components.grid.busy() -> true while a pointer is pressed inside any grid's table.
- * Keys while the grid is the key target (T.keys.grid; set on focus / click / mount with focus:true):
- * Up / Down move, Enter -> onEnter(row), any other key -> onKey(key, row) (pages map b / s / x).
+ * Keys while the grid is the key target (T.keys.grid; set on focus / click / mount with focus:true) are the registry's
+ * table actions (keys.js, Settings > Keyboard): grid.up / grid.down move, grid.open -> onEnter(row), grid.buy / sell /
+ * cancel / round -> onKey('b' | 's' | 'x' | 'r', row, e) (the 1.0.3 letters, whatever key the owner gave the action).
  *
  * Re-renders cost the viewer nothing (UI-ops fix 2026-10-21: a poll re-render swallowed a click on a row's b button,
  * and a page rebuild cleared the filter box):
@@ -250,12 +253,16 @@
       clearTimeout(pressTimer);
       pressTimer = setTimeout(function () { if (pressed === self) { pressed = null; self.release(0); } }, PRESS_MAX_MS);
     }
+    /* the registry's table actions (keys.js; Settings > Keyboard): the pages' onKey(k, row, e) keep receiving the 1.0.3
+       letters 'b' / 's' / 'x' / 'r' (T.keys.legacy), whatever key the owner gave the action */
     handle.key = function (e) {
-      if (e.key === 'ArrowDown') { select(state.sel + 1, true); return true; }
-      if (e.key === 'ArrowUp') { select(state.sel - 1, true); return true; }
+      var id = T.keys.action(e, 'grid');
+      if (id === 'grid.down') { select(state.sel + 1, true); return true; }
+      if (id === 'grid.up') { select(state.sel - 1, true); return true; }
       var row = visibleRows[state.sel];
-      if (e.key === 'Enter') { if (row && spec.onEnter) { spec.onEnter(row); return true; } return false; }
-      if (spec.onKey && row) { return !!spec.onKey(e.key, row, e); }
+      if (id === 'grid.open') { if (row && spec.onEnter) { spec.onEnter(row); return true; } return false; }
+      var k = id ? T.keys.legacy(id) : null;
+      if (k && spec.onKey && row) { return !!spec.onKey(k, row, e); }
       return false;
     };
     table.addEventListener('pointerdown', press);
@@ -277,6 +284,14 @@
     scroll.addEventListener('keydown', function (e) { if (handle.key(e)) { e.preventDefault(); e.stopPropagation(); } });
     input.addEventListener('input', function () { state.filter = input.value; state.sel = -1; state.selKey = null; render(); });
     handle.update = function (rows) { allRows = rows || []; render(); };
+    /* update(rows, {empty}) (BM-17 / USX-24 / OA-32): an answer that arrived names what an empty table means ('no
+       transactions'); it replaces the mount's 'loading ...' and stays for later answers.  The rows go through the plain
+       update above (which never touches the filter, the sort or the selection). */
+    handle.update = (function (setRows) {
+      return function (rows, opts) { if (opts && opts.empty != null) { spec.empty = String(opts.empty); } setRows(rows); };
+    })(handle.update);
+    /* the empty-table text alone (a page that learns it without new rows) */
+    handle.empty = function (text) { spec.empty = String(text == null ? '' : text); render(); };
     handle.rows = function () { return visibleRows; };
     handle.selected = function () { return visibleRows[state.sel] || null; };
     handle.select = select;
@@ -308,4 +323,5 @@
     return handle;
   }
   T.components.grid = { mount: mount, cmp: cmp, busy: function () { return pressed !== null; }, PRESS_MAX_MS: PRESS_MAX_MS };
+  if (T.keys && typeof T.keys.uses === 'function') { T.keys.uses('components/grid.js'); }      /* table keys follow Settings > Keyboard */
 })();

@@ -22,8 +22,14 @@ Conventions
   (``last_error_at``), so §8.2 ages it on schedule — stale 60 s after the last good fetch while an error is attached,
   5 min after it at the latest — and executions pause (``is_executable`` -> STALE) until a good fetch replaces it.
 - Restored records (``load_persisted`` after a restart) come back ``close`` or ``stale``, never ``delayed``, until the
-  first live fetch replaces them: the cache downgrades ``delayed`` → ``stale`` for them, so a DAY order can never match
-  on a print the process has not observed itself.
+  first live fetch replaces them: they carry ``restored=True``, which ``freshness`` / ``is_executable`` honour (EXEC-3:
+  the label alone did not stop the order path), so a DAY order can never match on a print the process has not observed
+  itself; a failed first fetch keeps the flag.
+- ``due()`` hands out first the ids that were never observed and carry an ORDER / HELD / PAGE / WATCH pin (an instrument
+  page or a ticket just opened: USX-08), so their first fetch starts within one worker tick, ahead of every refresh.
+- ``ChainCache.underlying_quote(uid)`` (EXEC-7): the Cboe underlying bid / ask / sizes of a fresh cached chain as a
+  ``QuoteRecord`` (method ``chain_underlying``), so a stock order fills at the observed ask (buys) / bid (sells) while a
+  fresh chain of it is in memory (nothing is fetched for this).
 - ``ChainCache``: an LRU of two reduced chains with ONE in-flight fetch per underlying shared by every requester
   (single-flight ``Future``); the worker serves pending requests one at a time so the SPX parse never overlaps another.
 - Persistence (TX-6, 2026-10-21): ``persist()`` (the worker's 60 s slot and shutdown) upserts only the records that
@@ -82,6 +88,11 @@ VACUUM_MAX_LIVE_BYTES = 256 * 1024 * 1024          # the transient copy is built
 
 def _rank(priority: str) -> int:
     return PRIORITY_RANK.get(priority, UNKNOWN_RANK)
+
+
+def _observed(rec: Optional[QuoteRecord]) -> bool:
+    """A record with a price observed at some point (a restored or failing record still counts: it has a price)."""
+    return rec is not None and (rec.last is not None or rec.mid is not None)
 
 
 # ---- record builders -----------------------------------------------------------------------------------------------------------
@@ -289,8 +300,7 @@ class QuoteCache:
             else:
                 rec = copy.copy(old)
                 rec.error = str(error)[:200]
-            # not a QuoteRecord field yet: rides in __dict__, so to_dict() / the API carry it; from_dict() drops it, put() clears it
-            rec.last_error_at = int(now)
+            rec.last_error_at = int(now)               # a QuoteRecord field (EXEC-2); put() replaces the record and clears it
             rec.quality = self.quality_for(rec, now)
             self._recs[inst.instrument_id] = rec
             if old is None or old.error != rec.error:   # a repeat of the same failure only moves the attempt time: not rewritten
@@ -529,7 +539,8 @@ class QuoteCache:
                         free.append(i)
                     else:
                         browse.append(i)
-            out.sort(key=lambda t: (_rank(t[1]), t[0]))
+            # USX-08: a name never observed (an instrument page / ticket just opened) goes first, ahead of every refresh
+            out.sort(key=lambda t: (0 if not _observed(self._recs.get(t[0])) else 1, _rank(t[1]), t[0]))
             out.extend((i, BROWSE) for i in sorted(free))
             if browse:
                 n = min(len(browse), self._browse_budget(now))
@@ -577,6 +588,7 @@ class QuoteCache:
                         self.log.warning("quote_cache row %s unreadable: %s", r["instrument_id"], e)
                     continue
                 rec.quality = "stale" if rec.last is not None or rec.mid is not None else "unavailable"
+                rec.restored = True                       # EXEC-3: never executable until a live fetch replaces it
                 self._recs[rec.instrument_id] = rec
                 self._restored.add(rec.instrument_id)
                 self._gone.discard(rec.instrument_id)
@@ -797,6 +809,25 @@ class ChainCache:
         """The last snapshot whatever its age (valuation keeps the last mark)."""
         with self._lock:
             return self._snaps.get(underlying_id)
+
+    def underlying_quote(self, underlying_id: str, max_age_s: Optional[int] = None) -> Optional[QuoteRecord]:
+        """EXEC-7: the underlying's Cboe bid / ask / sizes / last from a FRESH cached chain snapshot (fetched within
+        ``max_age_s``, default the CHAIN refresh interval), as a ``QuoteRecord`` with method ``chain_underlying``; None when
+        no fresh snapshot is cached or it carries no usable bid / ask.  ``quote_time`` is the underlying's last trade time
+        (the chain observation time when Cboe gives none) and ``fetched_at`` the chain fetch, so ``is_executable`` judges it
+        like any delayed print.  Never fetches."""
+        snap = self.get(underlying_id, max_age_s=int(max_age_s if max_age_s is not None else QUOTE_INTERVALS["CHAIN"]))
+        if snap is None:
+            return None
+        u = snap.underlying
+        bid, ask = getattr(u, "bid", None), getattr(u, "ask", None)
+        if bid is None or ask is None or bid <= 0 or ask < bid:
+            return None
+        qt = getattr(u, "last_trade_time", None) or snap.quote_time
+        return QuoteRecord(instrument_id=underlying_id, provider="cboe", source=f"{snap.source} ({snap.cboe_symbol}) underlying", method="chain_underlying",
+                           last=getattr(u, "last", None), bid=bid, ask=ask, bid_size=getattr(u, "bid_size", None), ask_size=getattr(u, "ask_size", None),
+                           mid=qprice((bid + ask) / 2), prev_close=getattr(u, "prev_close", None), quote_time=None if qt is None else int(qt),
+                           fetched_at=int(snap.fetched_at), delay_s=snap.delay_s, delay_label=snap.delay_label, quality="delayed")
 
     def last_error(self, underlying_id: str) -> Optional[str]:
         with self._lock:

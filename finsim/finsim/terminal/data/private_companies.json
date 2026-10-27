@@ -14,7 +14,8 @@
     "first_trade_source_url": "PUBLIC only: a report of the first trading day",
     "status_source_url": "the cited filing or report behind the status (FILED_IPO: the confidential or public registration statement)",
     "status_as_of": "the date of that filing or report",
-    "acquired": "{by, acquirer_ticker, on, source_url}: a completed acquisition; from 'on' the company is no longer privately traded"
+    "acquired": "{by, acquirer_ticker, on, source_url}: a completed acquisition; from 'on' the company is no longer privately traded",
+    "aliases": "the company's common names (e.g. SpaceX, xAI, Cursor): the search finds the listed ticker that now carries the company (its own ticker, or its acquirer's) by them"
   },
   "companies": [
     {
@@ -62,6 +63,9 @@
     {
       "company_id": "PRV-SPACEX",
       "name": "Space Exploration Technologies Corp. (SpaceX)",
+      "aliases": [
+        "SpaceX"
+      ],
       "sector": "Aerospace and launch",
       "country": "US",
       "status": "PUBLIC",
@@ -85,6 +89,10 @@
     {
       "company_id": "PRV-XAI",
       "name": "xAI Corp.",
+      "aliases": [
+        "xAI",
+        "X.AI"
+      ],
       "sector": "AI",
       "country": "US",
       "status": "PRIVATE",
@@ -243,6 +251,10 @@
     {
       "company_id": "PRV-ANYSPHERE",
       "name": "Anysphere, Inc. (Cursor)",
+      "aliases": [
+        "Cursor",
+        "Anysphere"
+      ],
       "sector": "AI developer tools",
       "country": "US",
       "status": "PRIVATE",
@@ -498,6 +510,9 @@
     {
       "company_id": "PRV-CEREBRAS",
       "name": "Cerebras Systems Inc.",
+      "aliases": [
+        "Cerebras"
+      ],
       "sector": "AI chips",
       "country": "US",
       "status": "PUBLIC",

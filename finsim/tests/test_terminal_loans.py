@@ -314,6 +314,58 @@ class LoanTests(unittest.TestCase):
         r = accrue(rt, loan_id, "2026-10-19")
         self.assertEqual((400, "NIGHT_BEFORE_DRAW"), (r.http, r.code))
 
+    # ---- Build 2 P08: the lender is a bank of the counterparty directory (assumed terms), the C26 view, the full payoff ---------------------
+    def test_lender_choice_view_and_full_payoff(self):
+        rt = self.rt
+        # Tue 10-20 11:00: EUR 1,000,000.00 from Deutsche Bank AG, whose ASSUMED EUR spread is 0.60 %: ECBDFR 2.00 (obs 10-19) + 0.60 = 2.60 %;
+        # tenor 1M = 30 days -> 10-20 + 30 = Thu 2026-11-19 (a business day)
+        r = execute(rt, "credit.loan_draw", {"account_id": CREDIT, "currency": "EUR", "amount_c": 100000000, "counterparty_id": "BANK_DB", "tenor": "1M"})
+        self.assertTrue(r.ok, r.body)
+        loan_id = r.body["loan_id"]
+        self.assertEqual(("Deutsche Bank AG", "BANK_DB", "Deutsche Bank AG (assumed terms)", "0.006", "0.026", "2026-11-19"),
+                         (r.body["loan"]["lender"], r.body["loan"]["counterparty_id"], r.body["loan"]["lender_label"], r.body["loan"]["spread"], r.body["loan"]["rate"],
+                          r.body["loan"]["maturity_date"]))
+        self.assertIn("from Deutsche Bank AG (assumed terms) at ECBDFR 2.00 % (2026-10-19) + 0.60 % = 2.60 %, ACT/360, matures 2026-11-19", r.body["memo"])
+        # refusals, nothing written: Deutsche Bank does not lend AUD in its terms; 400 days is beyond its longest tenor (12M = 365 days);
+        # an agent lender is not a bank; an unknown id
+        for over, code in (({"currency": "AUD"}, "CURRENCY_NOT_LENT"), ({"tenor": None, "term_days": 400}, "TERM"), ({"counterparty_id": "AGENT_BNY"}, "COUNTERPARTY_KIND"),
+                           ({"counterparty_id": "BANK_NOPE"}, "COUNTERPARTY_UNKNOWN")):
+            p = dict({"account_id": CREDIT, "currency": "EUR", "amount_c": 100000, "counterparty_id": "BANK_DB", "tenor": "1M"}, **over)
+            x = execute(rt, "credit.loan_draw", {k: v for k, v in p.items() if v is not None})
+            self.assertEqual((400, code), (x.http, x.code), over)
+        # the facility maximum (assumed USD 250,000,000 for Deutsche Bank): the open EUR 1,000,000.00 is USD to_c(1,000,000 x 1.1238) = 1,123,800.00;
+        # EUR 222,000,000.00 more is USD 249,483,600.00 -> 250,607,400.00 > 250,000,000.00 -> 409 FACILITY_LIMIT naming what is left (248,876,200.00)
+        x = execute(rt, "credit.loan_draw", {"account_id": CREDIT, "currency": "EUR", "amount_c": 22200000000, "counterparty_id": "BANK_DB", "tenor": "1M"})
+        self.assertEqual((409, "FACILITY_LIMIT", 112380000, 24948360000), (x.http, x.code, x.body["error"]["details"]["used_usd_c"], x.body["error"]["details"]["draw_usd_c"]))
+        self.assertIn("248,876,200.00", x.body["error"]["message"])
+        self.assertEqual(1, one(rt, "SELECT COUNT(*) n FROM loans")["n"])
+        # Thu 10-22 00:10 (before the 00:30 run): the view shows the two nights a repayment would post first, posting nothing:
+        # night 10-20 = to_c(1,000,000 x 0.026 / 360) = to_c(72.2222) = 72.22; cum night 2 = to_c(144.4444) = 144.44 -> 72.22; payoff 1,000,144.44
+        rt.clock.set("2026-10-22T00:10:00-04:00")
+        v = credit.loans_view(rt, account_id=CREDIT)["rows"][0]
+        self.assertEqual((0, [("2026-10-20", 7222), ("2026-10-21", 7222)], 14444, 14444, 100014444, "2", "0.6", "2.6", "2026-10-19", True),
+                         (v["accrued_posted_c"], [(n["night"], n["amount_c"]) for n in v["pending_nights"]], v["pending_c"], v["accrued_c"], v["payoff_c"],
+                          v["index_value_pct"], v["spread_pct"], v["all_in_pct"], v["index_as_of"], v["repayable"]))
+        self.assertEqual(0, bal(rt, CREDIT, "2755", "EUR"))
+        # the full payoff needs EUR 1,000,144.44 settled; the account holds EUR 1,000,000.00 -> 409, "buy EUR 144.44 with Convert", nothing posted
+        r = execute(rt, "credit.loan_repay", {"loan_id": loan_id, "full": True})
+        self.assertEqual((409, "INSUFFICIENT_CASH_CCY", "buy EUR 144.44 with Convert"), (r.http, r.code, r.body["error"]["details"]["hint"]))
+        self.assertEqual(0, bal(rt, CREDIT, "5150", "EUR"))
+        # EUR 144.44 deposited into the Treasury (not moved by hand): the repayment sweeps exactly the shortfall 144.44 in, one SWEEP_IN linked
+        # to the loan (the same currency, no FX)
+        deposit(rt, 14444, "EUR")
+        r = execute(rt, "credit.loan_repay", {"loan_id": loan_id, "full": True})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("sweep", 14444, 14444), (r.body["funding"]["source"], r.body["funding"]["sweep_c"], r.body["funding"]["shortfall_c"]))
+        self.assertEqual([("SWEEP_IN", 14444, "EUR", "loan", loan_id)], [(t["kind"], t["amount_c"], t["currency"], t["linked_type"], t["linked_id"])
+                                                                         for t in q(rt, "SELECT * FROM transfers WHERE kind='SWEEP_IN'")])
+        # the two nights posted first (72.22 + 72.22), then interest 144.44 + principal 1,000,000.00 = 1,000,144.44 repaid; CLOSED; EUR 0 left
+        self.assertEqual((14444, 100000000, 0, True, 0, ["2026-10-20", "2026-10-21"]), (r.body["paid_interest_c"], r.body["paid_principal_c"], r.body["principal_left_c"],
+                                                                                          r.body["closed"], r.body["settled_c"], [n["night"] for n in r.body["accrued_nights"]]))
+        self.assertEqual((14444, 0, 0), (bal(rt, CREDIT, "5150", "EUR"), bal(rt, CREDIT, "2750", "EUR"), bal(rt, CREDIT, "2755", "EUR")))
+        self.assertEqual([], credit.loans_view(rt, account_id=CREDIT)["rows"])
+        assert_integrity(self, rt, "full")
+
 
 # ---- small readers ---------------------------------------------------------------------------------------------------------------------------------
 def credit_accrued(rt, loan_id):

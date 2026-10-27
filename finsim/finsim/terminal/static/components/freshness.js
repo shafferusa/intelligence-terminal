@@ -15,6 +15,12 @@
  * q-computed (purple MODEL, italic), q-private (blue LAST ROUND yyyy-mm-dd, never dimmed), q-stale (amber STALE age,
  * struck through), q-unavailable (red dash N/A).  Tooltip: source, provider time, fetched time, delay label, the rule
  * that produced the state, the price basis and, for computed marks, the inputs with their times.
+ * Times: only a NUMBER (epoch seconds) is formatted as a time; a date string (a curve input's as_of '2026-10-20') is
+ * printed as it is (OA-04: it threw RangeError 'Invalid time value' and the bond page head never painted).
+ * An archived mark (a closed lifetime's stored snapshot: method 'snapshot', 'frozen at reset') reads 'FROZEN hh:mm' (BM-31).
+ * Units (OA-15): opts.unit / opts.scale / opts.ccy (or the record's quote_unit / price_scale / currency) show a listing
+ * quoted in a minor unit as 'GBp 2,700.00' with the major-currency value on hover ('GBP 27.00 = 2,700.00 GBp x 0.01', a
+ * display conversion of the quoted price); opts.showMajor adds it inline.
  */
 (function () {
   'use strict';
@@ -30,6 +36,10 @@
     unknown: 'the record carries no quality field - treated as not executable'
   };
   function num(x) { if (x == null || x === '') { return null; } var n = Number(x); return isFinite(n) ? x : null; }
+  /* epoch seconds of a time field, or null (a date string is not a time: printed as it is) */
+  function epoch(x) { return T.epochOf ? T.epochOf(x) : (typeof x === 'number' && isFinite(x) && x ? x : null); }
+  function when(x) { var e = epoch(x); return e != null ? T.fmt.dt(e) : String(x); }
+  function isFrozen(rec) { return !!(rec && (rec.method === 'snapshot' || /^frozen/i.test(String(rec.delay_label || '')))); }
   function pick(rec, field) {
     if (!rec || typeof rec !== 'object') { return null; }
     if (field) { return num(rec[field]); }
@@ -51,14 +61,22 @@
     if (m) { return m[1]; }
     return rec.quote_time ? T.fmt.date(rec.quote_time) : '';
   }
+  /* the unit of a quoted price: {unit, scale, ccy} when the listing is quoted in a minor unit (price_scale != 1) */
+  function unitOf(rec, opts) {
+    var unit = opts.unit || (rec && rec.quote_unit) || null;
+    var scale = opts.scale != null ? opts.scale : (rec && rec.price_scale != null ? rec.price_scale : null);
+    if (!unit || scale == null || !isFinite(Number(scale)) || Number(scale) === 1) { return null; }
+    return { unit: String(unit), scale: Number(scale), ccy: opts.ccy || (rec && rec.currency) || '' };
+  }
   /* normalise any shape into {value, quality, label, title, cls} */
   T.freshness = function (rec, opts) {
     opts = opts || {};
-    var value = pick(rec, opts.field);
+    var bf = !opts.field && (opts.basis === 'ask' || opts.basis === 'bid') && rec && num(rec[opts.basis]) != null ? opts.basis : null;
+    var value = pick(rec, opts.field || bf);
     var q = rec && rec.quality ? String(rec.quality) : null;
     if (value == null) { q = 'unavailable'; }
     else if (!q) { q = 'unknown'; }
-    var qt = rec ? (rec.quote_time != null ? rec.quote_time : (rec.as_of != null && typeof rec.as_of === 'number' ? rec.as_of : null)) : null;
+    var qt = rec ? (epoch(rec.quote_time) != null ? epoch(rec.quote_time) : epoch(rec.as_of)) : null;
     var age = rec && typeof rec.age_s === 'number' ? rec.age_s : (qt ? T.clock.now() - qt : null);
     var label;
     switch (q) {
@@ -71,11 +89,13 @@
       case 'unavailable': label = 'N/A'; break;
       default: label = 'NO STATUS';
     }
+    var frozen = q !== 'unavailable' && isFrozen(rec);
+    if (frozen) { label = 'FROZEN' + (qt ? ' ' + T.fmt.hm(qt) : (rec.as_of ? ' ' + String(rec.as_of).slice(0, 10) : '')); }
     var lines = [];
     if (rec) {
       lines.push((rec.source || rec.provider || 'source unknown') + (rec.method ? ' . ' + rec.method : ''));
       if (qt) { lines.push('provider time ' + T.fmt.dt(qt) + ':' + T.fmt.time(qt).slice(6) + ' ET' + (age != null ? ' (' + T.fmt.age(age) + ' ago)' : '')); }
-      if (rec.fetched_at) { lines.push('fetched ' + T.fmt.dt(rec.fetched_at) + ' ET'); }
+      if (epoch(rec.fetched_at) != null) { lines.push('fetched ' + T.fmt.dt(rec.fetched_at) + ' ET'); }
       if (rec.delay_label) { lines.push(rec.delay_label); }
       if (rec.error) { lines.push('provider error: ' + rec.error); }
     }
@@ -85,19 +105,27 @@
     if (rec && rec.inputs && typeof rec.inputs === 'object') {
       Object.keys(rec.inputs).forEach(function (k) {
         var v = rec.inputs[k];
-        if (v && typeof v === 'object') { lines.push('input ' + k + ' = ' + (v.value != null ? v.value : JSON.stringify(v)) + (v.as_of ? ' (' + T.fmt.dt(v.as_of) + ')' : '') + (v.quality ? ' ' + v.quality : '')); }
+        if (v && typeof v === 'object') { lines.push('input ' + k + ' = ' + (v.value != null ? v.value : JSON.stringify(v)) + (v.as_of ? ' (as of ' + when(v.as_of) + ')' : '') + (v.quality ? ' ' + v.quality : '')); }
         else { lines.push('input ' + k + ' = ' + v); }
       });
     }
     if (rec && rec.note) { lines.push(rec.note); }
     if (rec && rec.executable === false && q !== 'unavailable') { lines.push('not executable'); }
-    var cls = 'q-' + (q === 'unknown' ? 'stale' : q);
-    return { value: value, quality: q, label: label, title: lines.join('\n'), cls: cls, age: age };
+    if (frozen) { lines.push('frozen: the last mark of a closed lifetime, kept read-only'); }
+    var u = value != null ? unitOf(rec, opts) : null;
+    var major = null;
+    if (u) {
+      major = (u.ccy ? u.ccy + ' ' : '') + T.fmt.money((Number(value) * u.scale).toFixed(4), 2);
+      lines.unshift(major + ' = ' + T.fmt.px(value) + ' ' + u.unit + ' x ' + u.scale + ' (the listing is quoted in ' + u.unit + ')');
+    }
+    var cls = frozen ? 'q-close' : 'q-' + (q === 'unknown' ? 'stale' : q);
+    return { value: value, quality: q, label: label, title: lines.join('\n'), cls: cls, age: age, unit: u ? u.unit : null, major: major };
   };
   T.pxHtml = function (rec, opts) {
     opts = opts || {};
     var f = T.freshness(rec, opts);
     var shown = f.value == null ? '-' : (opts.money ? T.fmt.money(f.value, opts.dp) : T.fmt.px(f.value));
+    if (f.unit && f.value != null) { shown = f.unit + ' ' + shown + (opts.showMajor && f.major ? ' (' + f.major + ')' : ''); }
     var size = opts.size === 'big' ? ' big' : (opts.size === 'inline' ? ' inline' : '');
     return '<span class="pxw ' + f.cls + size + '" title="' + T.esc(f.title) + '" data-q="' + T.esc(f.quality) + '">' +
       '<span class="px">' + T.esc(shown) + '</span>' +

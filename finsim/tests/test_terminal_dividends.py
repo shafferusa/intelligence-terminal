@@ -49,10 +49,10 @@ class DividendTests(unittest.TestCase):
         return rt
 
     def positions(self):
-        """§19.19 setup: short 1,000 ABC at 50.00 on Fri 10-16 (§19.5: borrow B-000001, collateral 1.02 × 1,000 × 50 = 51,000.00,
-        fee 1,000 × 0.005 = 5.00, proceeds 49,995.00 receivable T+1), long 1,000 AAPL at 339.50 on Mon 10-19 (gross 339,500.00,
-        fee 5.00, payable 339,505.00 T+1 = Tue 10-20); both settled on Tue 10-20.  US_EXCHANGE was funded 600,000.00, so after
-        the settlements 1010 = 600,000 − 51,000 + 49,995 − 339,505 = 259,490.00."""
+        """§19.19 setup: short 1,000 ABC at 50.00 on Fri 10-16 (§19.5: borrow B-000001, fee 1,000 × 0.005 = 5.00; the fill posts the
+        collateral 1.02 × 1,000 × 50 = 51,000.00 from the sale's own proceeds 49,995.00 + 1,005.00 cash, so its settlement row is
+        SETTLED at 0), long 1,000 AAPL at 339.50 on Mon 10-19 (gross 339,500.00, fee 5.00, payable 339,505.00 T+1 = Tue 10-20),
+        settled on Tue 10-20.  US_EXCHANGE was funded 600,000.00, so after the settlement 1010 = 600,000 − 1,005 − 339,505 = 259,490.00."""
         rt = self.rt
         sh.setup_abc(rt, fund_c=60_000_000)
         sh.short_abc(self, rt)
@@ -61,7 +61,7 @@ class DividendTests(unittest.TestCase):
         rt.clock.set("2026-10-20T10:00:00-04:00")
         r = execute(rt, "test.settle_due", {"as_of": "2026-10-20"}, actor="lifecycle")
         self.assertTrue(r.ok, r.body)
-        self.assertEqual(2, len(r.body["settled"]))
+        self.assertEqual(1, len(r.body["settled"]))                    # the AAPL payable; the short's proceeds went to the lender
         self.assertEqual(25_949_000, bal(rt, US_EXCHANGE, "1010"))
 
     def events(self, aapl=(("2026-11-09", "0.26"),), abc=(("2026-11-09", "0.10"),), splits=()):

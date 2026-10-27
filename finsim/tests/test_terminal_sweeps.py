@@ -85,20 +85,31 @@ class SweepTests(unittest.TestCase):
         self.assertEqual(384660000, rt.accounting.nav(US_EXCHANGE).nav_c)
         self.assertEqual(999997500, rt.accounting.nav("ALL").nav_c)
         assert_integrity(self, rt, "full")                                                   # L19 sweep linkage holds
-        # funding refusal: Treasury settled 100.00 (withdraw 6,153,275.00), A available 0.00, BUY 1,000 AAPL at 339.50
+        # funding alone no longer refuses (FUNDS_WAIT, hotfix 2026-10-21): Treasury settled 100.00 (withdraw 6,153,275.00), A available 0.00,
+        # BUY 1,000 AAPL at 339.50 -> the preview is ok with the queue warning and the order is accepted SUSPENDED, waiting for funds
         execute(rt, "treasury.withdraw", {"lifetime_id": T1, "amount_c": 615327500, "currency": "USD"})
         self.assertEqual(10000, bal(rt, TREASURY, "1010"))
         rt.marks.set_quote(sc.rec("AAPL", "339.50", now - 60, now))
         req2 = dict(account_id=US_EXCHANGE, instrument_id="AAPL", side="BUY", qty=1000, order_type="MARKET")
         pv = orders.preview(rt, req2)
-        # need 1,000 x 339.50 + 5.00 = 339,505.00; own 0.00; Treasury 100.00
-        self.assertEqual(False, pv["ok"])
-        b = pv["blockers"][0]
-        self.assertEqual(("INSUFFICIENT_FUNDS", 33950500, 0, 10000), (b["code"], b["details"]["need_c"], b["details"]["own_available_c"], b["details"]["treasury_available_c"]))
+        # need 1,000 x 339.50 + 5.00 = 339,505.00; own 0.00; Treasury 100.00 -> available 100.00: not fundable now, so it queues
+        f = pv["funding"]
+        self.assertEqual((True, [], "339505.00", "0.00", "100.00", "100.00", False, True), (pv["ok"], pv["blockers"], f["need"], f["available"], f["treasury_available"],
+                                                                                          f["sweep_in"], f["ok"], f["queued"]))
+        self.assertIn("will queue: waiting for funds (needs USD 339,505.00, available USD 100.00); it executes automatically when cash frees up", pv["warnings"])
+        self.assertEqual((False, True), (pv["execution"]["fill_now"], pv["execution"]["queued"]))
         n_cmd = sc.one(rt, "SELECT COUNT(*) n FROM commands")["n"]
         r = sc.submit(rt, **req2)
-        self.assertEqual((409, "INSUFFICIENT_FUNDS"), (r.http, r.code))
-        self.assertEqual((n_cmd, 1), (sc.one(rt, "SELECT COUNT(*) n FROM commands")["n"], sc.one(rt, "SELECT COUNT(*) n FROM orders")["n"]))
+        self.assertTrue(r.ok, r.body)
+        o = r.body["order"]
+        self.assertEqual(("SUSPENDED", 0, "waiting for funds: needs USD 339,505.00, available USD 100.00"), (o["status"], o["filled_qty"], o["reason"]))
+        # one command, the order stored, no fill and no second sweep; one INFO item; the queued order reserves nothing (available stays 0.00,
+        # buying power = Treasury 100.00)
+        self.assertEqual((n_cmd + 1, 2, 1, 1), (sc.one(rt, "SELECT COUNT(*) n FROM commands")["n"], sc.one(rt, "SELECT COUNT(*) n FROM orders")["n"],
+                                                sc.one(rt, "SELECT COUNT(*) n FROM transfers WHERE kind='SWEEP_IN'")["n"],
+                                                sc.one(rt, "SELECT COUNT(*) n FROM attention WHERE code='ORDER_WAITING_FUNDS' AND severity='INFO' AND resolved_ts IS NULL")["n"]))
+        self.assertEqual((0, 10000), (rt.accounting.cash(US_EXCHANGE)["USD"].reserved_c, rt.accounting.buying_power(US_EXCHANGE, "USD").total_c))
+        assert_integrity(self, rt, "full")
 
     def test_d2_buy_100_aapl_zero_cash(self):
         # D2: BUY 100 AAPL with 0 cash in the account at the observed last 339.50 (no ask in the free feed, disclosed)
@@ -129,22 +140,27 @@ class SweepTests(unittest.TestCase):
         r = execute(rt, "test.vm_loss", {"account_id": US_EXCHANGE, "amount_c": 500000, "instrument_id": fut, "key": "t1"})
         self.assertTrue(r.ok, r.body)
         f = r.body["funding"]
-        # need 5,000.00; own 0.00; Treasury 100.00 cannot cover the whole shortfall -> nothing swept, unfunded 5,000.00, overdraft
-        self.assertEqual((False, 500000, "overdraft", None, 10000), (f["funded"], f["unfunded_c"], f["source"], f["sweep_id"], f["treasury_available_c"]))
-        self.assertEqual(-500000, bal(rt, US_EXCHANGE, "1010"))
-        self.assertEqual(0, sc.one(rt, "SELECT COUNT(*) n FROM transfers WHERE kind='SWEEP_IN'")["n"])
+        # C12 a (the one cascade): need 5,000.00; own 0.00; Treasury sweeps what it has, min(5,000.00, 100.00) = 100.00, as ONE linked
+        # SWEEP_IN; no PB (not a PB account); the rest 5,000.00 - 100.00 = 4,900.00 is posted under the overdraft rule:
+        # 1010 = 0.00 + 100.00 - 5,000.00 = -4,900.00
+        self.assertEqual((False, 490000, "sweep+overdraft", 10000, 10000), (f["funded"], f["unfunded_c"], f["source"], f["sweep_c"], f["treasury_available_c"]))
+        self.assertEqual(-490000, bal(rt, US_EXCHANGE, "1010"))
+        sw = sc.one(rt, "SELECT amount_c, shortfall_c FROM transfers WHERE kind='SWEEP_IN'")
+        self.assertEqual((10000, 10000), (sw["amount_c"], sw["shortfall_c"]))           # L19: the sweep moves exactly the part it covers
         att = sc.one(rt, "SELECT * FROM attention WHERE code='FUNDING_SHORTFALL' AND resolved_ts IS NULL")
         self.assertEqual(("ERROR", US_EXCHANGE), (att["severity"], att["account_id"]))
         assert_integrity(self, rt, "full")                                                   # L18 accepts the negative 1010 while the item is open
         rt.marks.set_quote(sc.rec("AAPL", "339.50", now - 60, now))
         rs = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="BUY", qty=1, order_type="LIMIT", limit_px="300.00")
         self.assertEqual((409, "FUNDING_SHORTFALL"), (rs.http, rs.code))
-        # a deposit + transfer of 5,000.00 brings 1010 back to 0 -> the item auto-resolves (the housekeeping job calls this after transfers)
+        # a deposit + transfer of 4,900.00 brings 1010 back to 0 -> the item auto-resolves at the transfer (Build 2 P04: a transfer resolves the
+        # lifetime's covered shortfalls; the housekeeping job then finds nothing left)
         deposit(rt, 10000000)
-        fund(rt, US_EXCHANGE, 500000)
+        r = fund(rt, US_EXCHANGE, 490000)
         self.assertEqual(0, bal(rt, US_EXCHANGE, "1010"))
+        self.assertEqual(1, r.body["shortfalls_resolved"])
         rr = execute(rt, "test.resolve", {"account_id": US_EXCHANGE})
-        self.assertEqual(1, rr.body["resolved"])
+        self.assertEqual(0, rr.body["resolved"])
         self.assertEqual(0, sc.one(rt, "SELECT COUNT(*) n FROM attention WHERE code='FUNDING_SHORTFALL' AND resolved_ts IS NULL")["n"])
         rs = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="AAPL", side="BUY", qty=1, order_type="LIMIT", limit_px="300.00")
         self.assertTrue(rs.ok, rs.body)

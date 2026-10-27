@@ -14,9 +14,13 @@ Conventions stated here (the §1.3 sentences that bite in this module)
   mark exists the contract's own cost basis stands in, labelled; ``S`` = the underlying's mark — unavailable raises
   MARK_UNAVAILABLE, never a number.  One (underlying, expiry) with written calls AND puts: both sides fully spread
   (iron condor) → the larger side; otherwise the sides add (a conservative, disclosed approximation of Reg T).
-  The requirement is moved to 1310 against 1010 by ``execution.recompute_option_margin`` so buying power is honest
-  (L16 ties ``margin_state`` to 1310); an increase that cannot be funded in a lifecycle run follows the overdraft
-  rule (§11.6).
+  The requirement is RESERVED (decision s7.6, SR-13): ``execution.recompute_option_margin`` upserts ``margin_state``
+  and ``accounting.reserved_c`` subtracts it from available and buying power - no cash moves, nothing is posted to 1310
+  (L16 checks the stored requirement against its own groups).  An increase own cash + Treasury + PB cannot cover is
+  refused at a fill; in a lifecycle run it opens ONE ERROR FUNDING_SHORTFALL (no forced liquidation).  A database that
+  still holds 1310 balances from an earlier version is migrated ONCE at start (``options.migrate_margin``: every OPEN
+  account's 1310 released to 1010, idem ``migrate:omargin:{account}``, memo "decision 6: option margin is a
+  reservation").
 - OCC (``options.expire``, key ``{account}:{option_id}``): the underlying's OBSERVED close of the expiry date decides —
   the ``marks`` CLOSE row (MARKS_RECORD), else a cached record / mark whose quote_time is on that date at or after
   the session end − 60 s (then recorded as the CLOSE row); intrinsic ≥ 0.01 → EXERCISE (long) / ASSIGNMENT (short)
@@ -32,11 +36,11 @@ Conventions stated here (the §1.3 sentences that bite in this module)
   is rolled, not realised) and the stock leg at the strike with a T+1 settlement row; the lot reliefs of the option
   carry the rolled premium as proceeds so they net to zero realised (per-lot rounding may leave ±1 cent per lot that
   nets to zero across the reliefs; the ledger's 4000 line is the authority).
-- Margin moves inside the lifecycle commands follow the overdraft rule (§11.6): ``options.expire`` and
+- Margin recomputes inside the lifecycle commands follow the overdraft rule (§11.6): ``options.expire`` and
   ``options.margin_mark`` recompute the account ONCE per command through ``execution.recompute_option_margin(...,
   overdraft=True)`` — the EXPIRY fill is applied with ``defer_margin`` so the fill path does not recompute first
-  without the rule — and an increase that cannot be funded is still posted under an ERROR ``FUNDING_SHORTFALL``.  The
-  owner's early exercise is a user action: its margin move is funded normally and an unfundable increase refuses it.
+  without the rule — and a reservation that cannot be covered opens an ERROR ``FUNDING_SHORTFALL``.  The owner's early
+  exercise is a user action: an uncovered increase refuses it.
 - ``expiry_keys`` lists written contracts (negative positions) before long ones, so a spread's long leg still covers
   the short while the short is assigned or lapses: no transient naked requirement is posted between two keys.
 - Position cost in the margin formula is read as ``|cost_c|``: ``v_positions`` carries −cost for shorts, while the
@@ -426,11 +430,48 @@ def _unit_cost(cost_c: int, qty: int) -> Decimal:
     return unit
 
 
+def _trim_working_sells(ctx: TxContext, account_id: str, instrument_id: str, sides: Tuple[str, ...], holding: int, why: str) -> List[dict]:
+    """TX-3: after an exercise / assignment delivered shares (or closed option contracts), the account's working ``sides`` orders
+    on ``instrument_id`` may sell more than it still holds (``holding``); the newest are reduced or CANCELLED first, each with an
+    order event (``why``) and an event, so no order is left resting on shares that are gone (the matcher would otherwise
+    retry an OVERSELL on every pass).  Returns what changed."""
+    conn = ctx.conn
+    q = ",".join("?" for _ in sides)
+    rows = conn.execute(f"SELECT order_id, qty, filled_qty, status, side FROM orders WHERE account_id=? AND instrument_id=? AND side IN ({q})"
+                        " AND status IN ('WORKING','PARTIAL','WAITING_PARENT','SUSPENDED') ORDER BY created_ts DESC, order_id DESC",
+                        [account_id, instrument_id] + list(sides)).fetchall()
+    excess = sum(int(r["qty"]) - int(r["filled_qty"]) for r in rows) - max(0, int(holding))
+    out: List[dict] = []
+    for r in rows:
+        if excess <= 0:
+            break
+        rem = int(r["qty"]) - int(r["filled_qty"])
+        cut = min(rem, excess)
+        excess -= cut
+        oid = r["order_id"]
+        if cut >= rem:                 # nothing of it can sell any more: the remainder is cancelled (a partial fill keeps its fills)
+            conn.execute("UPDATE orders SET status='CANCELLED', reason=?, updated_ts=? WHERE order_id=?", (why, ctx.ts, oid))
+            conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
+                         (oid, ctx.ts, r["status"], "CANCELLED", f"{why}: the {rem:,} still to sell are no longer held"))
+            ctx.event("ORDER_CANCELLED", account_id=account_id, instrument_id=instrument_id, ref_type="order", ref_id=oid, reason=why)
+            out.append({"order_id": oid, "status": "CANCELLED", "cut": cut})
+        else:
+            new_qty = int(r["qty"]) - cut
+            conn.execute("UPDATE orders SET qty=?, updated_ts=? WHERE order_id=?", (new_qty, ctx.ts, oid))
+            conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
+                         (oid, ctx.ts, r["status"], r["status"], f"{why}: reduced by {cut:,} to {new_qty:,}"))
+            ctx.event("ORDER_RESIZED", account_id=account_id, instrument_id=instrument_id, ref_type="order", ref_id=oid, qty=new_qty, reason=why)
+            out.append({"order_id": oid, "status": r["status"], "qty": new_qty, "cut": cut})
+    return out
+
+
 def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under: Instrument, signed_qty: int, obs: dict, idem_base: str,
-              origin: str, note: str, overdraft: bool = True) -> dict:
+              origin: str, note: str, overdraft: bool = True, trade_date: Optional[date] = None) -> dict:
     """EXERCISE / ASSIGNMENT with physical delivery (§5.4): one entry, two fill rows (option at 0, stock at the strike), the
     stock lot or FIFO relief, the T+1 settlement row, funding for a purchase, a borrow for a short delivery.  Returns the
-    result dict or a ``{"skip": (code, message)}`` when a borrow is needed and none can be opened."""
+    result dict or a ``{"skip": (code, message)}`` when a borrow is needed and none can be opened.  ``trade_date`` (LC-1,
+    OPTION_EXPIRY): the expiry date is the trade date and the business date whenever the job runs, and settlement is
+    ``cal.settlement_date(expiry, settle_days)`` - an expiry processed on Monday still trades Friday and settles Monday."""
     conn = ctx.conn
     n = abs(int(signed_qty))
     long = signed_qty > 0
@@ -442,7 +483,8 @@ def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under:
     KQ = mul_c(Q, K, Decimal(1), under.price_scale)
     stock_buy = (long and right == "C") or ((not long) and right == "P")
     pos_qty, _ = position(conn, account_id, under.instrument_id)
-    tdate = _trade_date(ctx.now, under.session_group, ctx.cal)
+    tdate = trade_date or _trade_date(ctx.now, under.session_group, ctx.cal)
+    bdate = trade_date.isoformat() if trade_date is not None else None
     settle = ctx.cal.settlement_date(tdate, under.settle_days)
     opt_side = "LONG" if long else "SHORT"
     P = _fifo_cost(conn, account_id, opt.instrument_id, opt_side, n)        # the premium rolled: long cost / short proceeds
@@ -477,7 +519,7 @@ def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under:
                      else dr(account_id, opt_gl, ccy, P, instrument_id=opt.instrument_id, memo="premium received rolled into the basis"))
         lines.append(cr(account_id, "2100", ccy, KQ, memo="payable at settlement"))
         memo = f"{tag} -> BUY {Q:,} {under.symbol} @ {K}, basis {fmt_money(cost)}; {under.symbol} close {close_px} ({obs['mark_date']}); {note}"
-        entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{stock_fill}", ref_type="fill", ref_id=stock_fill))
+        entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{stock_fill}", ref_type="fill", ref_id=stock_fill, business_date=bdate))
         _insert_fill(ctx, opt_fill, account_id, opt, "SELL" if long else "BUY", n, Decimal(0), 0, tdate, None, origin, "exercise: premium rolled into the stock basis",
                      obs, entry_id, f"{idem_base}:OPT", note)
         _insert_fill(ctx, stock_fill, account_id, under, "BUY", Q, K, KQ, tdate, settle, origin, "strike", obs, entry_id, f"{idem_base}:UND", note)
@@ -510,7 +552,7 @@ def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under:
             lines.append(cr(account_id, "2600", ccy, short_proceeds, instrument_id=under.instrument_id, memo="short proceeds (delivery without shares)"))
         memo = f"{tag} -> SELL {Q:,} {under.symbol} @ {K}, proceeds {fmt_money(proceeds)}" + (f", FIFO cost {fmt_money(cost_rel)}, realised {fmt_money(realised)}" if deliver else "") \
             + (f", {short_qty:,} delivered short (borrow {borrow_id})" if short_qty else "") + f"; {under.symbol} close {close_px} ({obs['mark_date']}); {note}"
-        entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{stock_fill}", ref_type="fill", ref_id=stock_fill))
+        entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{stock_fill}", ref_type="fill", ref_id=stock_fill, business_date=bdate))
         _insert_fill(ctx, opt_fill, account_id, opt, "SELL" if long else "BUY", n, Decimal(0), 0, tdate, None, origin, "exercise: premium rolled into the proceeds",
                      obs, entry_id, f"{idem_base}:OPT", note)
         _insert_fill(ctx, stock_fill, account_id, under, "SELL", Q, K, KQ, tdate, settle, origin, "strike", obs, entry_id, f"{idem_base}:UND", note)
@@ -522,23 +564,36 @@ def _physical(ctx: TxContext, services, account_id: str, opt: Instrument, under:
         settle_id = _settlement(ctx, stock_fill, account_id, ccy, KQ, "1200", settle)
         out = {"stock_side": "SELL", "stock_fill_id": stock_fill, "lot_id": lot_id, "proceeds_c": proceeds, "cost_relieved_c": cost_rel, "realised_c": realised,
                "short_qty": short_qty, "borrow_id": borrow_id, "funding": None}
+        # TX-3: the delivered shares can no longer be sold by a working SELL; trim / cancel what exceeds the long left
+        held_after, _ = position(conn, account_id, under.instrument_id)
+        trimmed = _trim_working_sells(ctx, account_id, under.instrument_id, ("SELL",), max(0, held_after), "shares delivered by exercise" if long else "shares delivered by assignment")
+        if trimmed:
+            out["orders_trimmed"] = trimmed
+    # TX-3: closing option contracts by exercise leaves fewer to sell: working STC orders beyond the long contracts left are trimmed
+    if long:
+        left, _ = position(conn, account_id, opt.instrument_id)
+        trimmed_opt = _trim_working_sells(ctx, account_id, opt.instrument_id, ("STC",), max(0, left), "contracts exercised")
+        if trimmed_opt:
+            out["option_orders_trimmed"] = trimmed_opt
     out.update({"option_fill_id": opt_fill, "entry_id": entry_id, "settle_id": settle_id, "settle_date": settle.isoformat(), "premium_c": P, "strike": str(K),
-                "qty": Q, "contracts": n, "reliefs": [r.__dict__ for r in reliefs], "memo": memo})
+                "qty": Q, "contracts": n, "reliefs": [r.__dict__ for r in reliefs], "memo": memo, "trade_date": tdate.isoformat()})
     return out
 
 
-def _lapse(ctx: TxContext, services, account_id: str, opt: Instrument, signed_qty: int, obs: dict, idem: str, note: str) -> dict:
+def _lapse(ctx: TxContext, services, account_id: str, opt: Instrument, signed_qty: int, obs: dict, idem: str, note: str, trade_date: Optional[date] = None) -> dict:
     """EXPIRY fill at 0 (§5.4): long ``Dr 4000 / Cr 1700 cost``; short ``Dr 2900 premium / Cr 4000``; no cash, no settlement.
-    Applied with ``defer_margin`` so the caller's single recompute (overdraft rule, §11.6) moves 1310 — not the fill path."""
+    Applied with ``defer_margin`` so the caller's single recompute (overdraft rule, §11.6) adjusts the margin — not the fill
+    path; dated the expiry date (LC-1)."""
     n = abs(int(signed_qty))
     side = "STC" if signed_qty > 0 else "BTC"
     spec = execution.FillSpec(None, account_id, opt.instrument_id, side, n, Decimal(0), "EXPIRY", obs, idem, None,
-                              execution.PRICE_BASIS_OF_ORIGIN["EXPIRY"], fee_override_c=0, defer_margin=True, note=note)
+                              execution.PRICE_BASIS_OF_ORIGIN["EXPIRY"], fee_override_c=0, defer_margin=True, note=note, trade_date=trade_date)
     fr = execution.apply_fill(ctx, spec, services)
     return {"fill_id": fr.fill_id, "entry_id": fr.entry_id, "realised_c": fr.realised_c, "cost_relieved_c": fr.cost_relieved_c, "memo": fr.memo}
 
 
-def _cash_settle(ctx: TxContext, services, account_id: str, opt: Instrument, signed_qty: int, intrinsic: Decimal, obs: dict, idem: str, origin: str, note: str) -> dict:
+def _cash_settle(ctx: TxContext, services, account_id: str, opt: Instrument, signed_qty: int, intrinsic: Decimal, obs: dict, idem: str, origin: str, note: str,
+                 trade_date: Optional[date] = None) -> dict:
     """Index option cash settlement (§5.4): long ``Dr 1200 intrinsic×100×n / Cr 1700 cost / 4000 diff``; short ``Dr 2900 premium /
     Cr 2100 intrinsic×100×n / 4000 diff`` — a fill at the intrinsic with a T+1 settlement row; a short's payable is funded
     with the overdraft rule."""
@@ -547,7 +602,7 @@ def _cash_settle(ctx: TxContext, services, account_id: str, opt: Instrument, sig
     long = signed_qty > 0
     ccy = opt.currency
     gross = opt.contract_value_c(intrinsic, n)
-    tdate = _trade_date(ctx.now, opt.session_group, ctx.cal)
+    tdate = trade_date or _trade_date(ctx.now, opt.session_group, ctx.cal)          # LC-1: the expiry date when the job runs late
     settle = ctx.cal.settlement_date(tdate, opt.settle_days)
     conn.execute("PRAGMA defer_foreign_keys=ON")
     fill_id = next_id(conn, "fill")
@@ -567,7 +622,8 @@ def _cash_settle(ctx: TxContext, services, account_id: str, opt: Instrument, sig
     if realised:
         lines.append(cr(account_id, "4000", ccy, realised, instrument_id=opt.instrument_id, memo="realised"))
     memo = f"{origin} {n} {opt.symbol} cash-settled at the intrinsic {intrinsic} ({obs['underlying_id']} close {obs['close']} {obs['mark_date']}), realised {fmt_money(realised)}; {note}"
-    entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{fill_id}", ref_type="fill", ref_id=fill_id))
+    entry_id = ctx.post(Entry("EXERCISE" if long else "ASSIGN", memo, lines, f"fill:{fill_id}", ref_type="fill", ref_id=fill_id,
+                              business_date=trade_date.isoformat() if trade_date is not None else None))
     _insert_fill(ctx, fill_id, account_id, opt, "SELL" if long else "BUY", n, intrinsic, gross, tdate, settle if gross else None, origin, "intrinsic (cash settlement)",
                  obs, entry_id, idem, note)
     settle_id = _settlement(ctx, fill_id, account_id, ccy, gross if long else -gross, "1200" if long else "2100", settle) if gross else None
@@ -634,15 +690,16 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
     note = f"OCC: intrinsic {intr} vs threshold {config.OCC_THRESHOLD} at the observed close {S}"
     index = is_index_option(inst)
     outcome: dict
+    # LC-1: every expiry fill is dated the expiry date (trade date, business date, settlement from it), whenever the job runs
     if intr < config.OCC_THRESHOLD:
         kind = "EXPIRY"
-        outcome = _lapse(ctx, services, account_id, inst, pos_qty, obs, idem, note)
+        outcome = _lapse(ctx, services, account_id, inst, pos_qty, obs, idem, note, trade_date=expiry)
     elif index:
         kind = "EXERCISE" if pos_qty > 0 else "ASSIGNMENT"
-        outcome = _cash_settle(ctx, services, account_id, inst, pos_qty, intr, obs, idem, kind, note)
+        outcome = _cash_settle(ctx, services, account_id, inst, pos_qty, intr, obs, idem, kind, note, trade_date=expiry)
     else:
         kind = "EXERCISE" if pos_qty > 0 else "ASSIGNMENT"
-        outcome = _physical(ctx, services, account_id, inst, under, pos_qty, obs, idem, kind, note)
+        outcome = _physical(ctx, services, account_id, inst, under, pos_qty, obs, idem, kind, note, trade_date=expiry)
         if "skip" in outcome:
             code, message = outcome["skip"]
             return _skip(ctx, JOB_EXPIRY, key, code, message, account_id, iid, {"expiry": inst.expiry, "underlying_id": under.instrument_id})
@@ -657,8 +714,8 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
 
 
 def h_margin_mark(ctx: TxContext, payload: dict) -> dict:
-    """OPTION_MARGIN_MARK (17:10 and after every option fill through WP-02): recompute §13.3 and move 1310 (overdraft rule
-    for an unfundable increase); ``margin_state`` row; key ``{account}:{date}``."""
+    """OPTION_MARGIN_MARK (17:10 and after every option fill through WP-02): recompute §13.3 and reserve it (``margin_state``;
+    an uncovered reservation opens the FUNDING_SHORTFALL item, SR-13); key ``{account}:{date}``."""
     services = _services_of(ctx)
     account_id = str(payload.get("account_id") or "")
     d = str(payload.get("date") or ny_of(ctx.ts).date().isoformat())
@@ -677,7 +734,8 @@ def h_margin_mark(ctx: TxContext, payload: dict) -> dict:
         if e.code != "MARK_UNAVAILABLE":
             raise
         return _skip(ctx, JOB_MARGIN, key, "MARGIN_PENDING_MARK", e.message, account_id, account_id, e.details)
-    _job_done(ctx, JOB_MARGIN, key, "DONE", f"requirement {fmt_money(res['required_c'])} (delta {fmt_money(res['delta_c'])})")
+    _job_done(ctx, JOB_MARGIN, key, "DONE", f"requirement {fmt_money(res['required_c'])} reserved (delta {fmt_money(res['delta_c'])})"
+              + (f"; {fmt_money(res['shortfall_c'])} uncovered" if res.get("shortfall_c") else ""))
     _resolve_attention(ctx, ("MARGIN_PENDING_MARK",), key)
     return {"status": "DONE", "key": key, "posted": bool(res.get("entry_id")), "margin": res}
 
@@ -744,6 +802,58 @@ def h_exercise(ctx: TxContext, payload: dict) -> dict:
             "result": res, "margin": margin, "warnings": warnings, "idem_key": idem}
 
 
+def h_migrate_margin(ctx: TxContext, payload: dict) -> dict:
+    """SR-13 one-time migration (decision s7.6): release every OPEN account's 1310 balance to 1010 - option margin is now a
+    reservation (``margin_state`` keeps the requirement).  Idem ``migrate:omargin:{account}`` (``:{n}`` for a later
+    balance an older binary may have posted); accounts of CLOSED lifetimes keep their history untouched."""
+    from ..ledger import natural
+    conn = ctx.conn
+    rows = conn.execute("SELECT g.account_id, SUM(g.balance_c) b FROM gl_balances g JOIN accounts a ON a.account_id=g.account_id JOIN lifetimes l ON"
+                        " l.lifetime_id=a.lifetime_id WHERE g.gl='1310' AND g.currency='USD' AND a.status='OPEN' AND l.status='OPEN' GROUP BY g.account_id"
+                        " HAVING SUM(g.balance_c) <> 0 ORDER BY g.account_id").fetchall()
+    released = []
+    for r in rows:
+        aid = r["account_id"]
+        amount = natural("1310", int(r["b"]))
+        idem = f"migrate:omargin:{aid}"
+        n = 1
+        while conn.execute("SELECT 1 FROM journal_entries WHERE idem_key=?", (idem,)).fetchone() is not None:
+            n += 1
+            idem = f"migrate:omargin:{aid}:{n}"
+        lines = ([dr(aid, "1010", "USD", amount, memo="option margin released to cash"), cr(aid, "1310", "USD", amount, memo="decision 6: option margin is a reservation")]
+                 if amount > 0 else [dr(aid, "1310", "USD", -amount, memo="decision 6: option margin is a reservation"), cr(aid, "1010", "USD", -amount)])
+        entry_id = ctx.post(Entry("OPT_MARGIN", f"decision 6: option margin is a reservation - {aid} 1310 {fmt_money(amount)} released to settled cash", lines, idem,
+                                  ref_type="margin", ref_id=aid))
+        ctx.touched_accounts.add(aid)
+        execution.auto_resolve_shortfall(ctx, aid, "USD")
+        ctx.event("MARGIN_MIGRATED", account_id=aid, ref_type="margin", ref_id=aid, amount_c=amount, entry_id=entry_id, idem_key=idem)
+        released.append({"account_id": aid, "amount_c": amount, "entry_id": entry_id, "idem_key": idem})
+    return {"released": released, "note": "decision 6: option margin is a reservation" if released else "nothing to release"}
+
+
+def bind(services) -> None:
+    """At start: the one-time SR-13 migration when an OPEN account still holds a 1310 balance (a request id per start, the
+    entries idempotent per account), so the reservation rule and the ledger agree before anything else runs."""
+    bus = getattr(services, "bus", None)
+    db = getattr(services, "db", None)
+    if bus is None or db is None or "options.migrate_margin" not in bus.kinds():
+        return
+    with db.reader() as conn:
+        n = conn.execute("SELECT COUNT(*) FROM (SELECT g.account_id FROM gl_balances g JOIN accounts a ON a.account_id=g.account_id JOIN lifetimes l ON"
+                         " l.lifetime_id=a.lifetime_id WHERE g.gl='1310' AND a.status='OPEN' AND l.status='OPEN' GROUP BY g.account_id HAVING SUM(g.balance_c) <> 0)").fetchone()[0]
+    if not int(n or 0):
+        return
+    from ..commands import Command
+    clock = getattr(services, "clock", None)
+    res = bus.execute(Command("options.migrate_margin", {}, f"migrate:omargin:{int(clock.epoch()) if clock is not None else 0}", "init"))
+    log = getattr(services, "log", None)
+    if log is not None:
+        if res.ok:
+            log.info("SR-13 option margin migration: %s", (res.body or {}).get("released"))
+        else:
+            log.error("SR-13 option margin migration failed: %s %s", res.code, res.message)
+
+
 def register(bus, services=None) -> None:
     """Register the handlers; remember the runtime (``bus.services``) as the fallback master for ``margin_requirement_c``."""
     global _services
@@ -753,6 +863,7 @@ def register(bus, services=None) -> None:
     bus.register("options.margin_mark", h_margin_mark)
     bus.register("options.expire", h_expire)
     bus.register("options.exercise", h_exercise)
+    bus.register("options.migrate_margin", h_migrate_margin)
 
 
 # ---- due keys for the lifecycle (WP-08 may use these in its due()) ----------------------------------------------------------------
@@ -803,17 +914,36 @@ def margin_mark_keys(conn, today: str) -> List[Tuple[str, str]]:
 
 
 # ---- chain view and materialisation (§7.4 ensure_option, §15 /api/instruments/{id}/chain) ----------------------------------------------
-def _chain_quality(services, chain, now: int, under: Optional[Instrument] = None) -> str:
-    """The chain's freshness at ``now``: ``close`` outside the underlying's option session (index options to 16:15),
-    ``delayed`` while the snapshot is younger than the feed's delay plus grace (15 min), else ``stale``."""
+def chain_freshness(services, chain, now: int, under: Optional[Instrument] = None) -> Tuple[str, Optional[int], Optional[str]]:
+    """USX-09: ``(quality, age_s, reason)`` of a chain at ``now`` by the rule the ticket enforces on its contracts
+    (``quotes.freshness`` on the option record, whose quote_time / fetched_at / delay are the chain's): ``close`` outside the
+    option session (index options to 16:15); ``stale`` when the PROVIDER time is older than the feed's delay + 5 min grace
+    (``config.STALE_GRACE_S``) or the chain was fetched more than 5 min ago (``config.FETCH_GRACE_S``) or carries no time;
+    else ``delayed``.  ``age_s`` = now - the provider time; ``reason`` says why it is stale."""
     group = "US_INDEX_OPTIONS" if under is not None and under.kind == "INDEX" else "US_EQUITY_OPTIONS"
+    qt = getattr(chain, "quote_time", None)
+    age = None if qt is None else max(0, int(now) - int(qt))
     try:
         session = services.sessions.state(group, now)
         if not session.open:
-            return "close"
+            return "close", age, None
     except Exception:   # noqa: BLE001 — no session table (offline tooling): judge by age alone
         pass
-    return "delayed" if int(chain.fetched_at) >= int(now) - CHAIN_STALE_S else "stale"
+    delay = int(getattr(chain, "delay_s", 0) or 0)
+    if qt is None:
+        return "stale", None, "the chain carries no provider time"
+    if age > delay + config.STALE_GRACE_S:
+        return "stale", age, (f"provider time {ny_of(int(qt)).strftime('%H:%M:%S')} ET is {age // 60} min old (feed delay {delay // 60} min + "
+                              f"{config.STALE_GRACE_S // 60} min grace): orders on it are refused until a fresh chain")
+    fetched_age = int(now) - int(chain.fetched_at)
+    if fetched_age > config.FETCH_GRACE_S:
+        return "stale", age, f"fetched {fetched_age // 60} min ago: a refresh is needed before an order can use it"
+    return "delayed", age, None
+
+
+def _chain_quality(services, chain, now: int, under: Optional[Instrument] = None) -> str:
+    """The chain's freshness at ``now`` (``chain_freshness``)."""
+    return chain_freshness(services, chain, now, under)[0]
 
 
 def leg_dict(row, snap, quality: str, now: int, listed: Optional[bool] = None) -> dict:
@@ -920,14 +1050,15 @@ def chain_view(services, underlying_id: str, expiry: Optional[str] = None, chain
     exp = expiry or expiries[0]
     if exp not in expiries:
         raise RejectError("NOT_FOUND", f"{underlying_id}: expiry {exp} is not listed", {"expiries": expiries})
-    quality = _chain_quality(services, snap, now, under)
+    quality, age_s, stale_reason = chain_freshness(services, snap, now, under)
     by_strike: Dict[Decimal, dict] = {}
     for row in snap.rows_for(exp):
         d = leg_dict(row, snap, quality, now, listed=master.get(row.occ) is not None)
         by_strike.setdefault(row.strike, {"strike": str(row.strike), "call": None, "put": None})["call" if row.right == "C" else "put"] = d
     return {"underlying_id": underlying_id, "underlying": underlying_dict(snap, quality, now, underlying_id),
             "expiries": expiries, "expiry": exp, "rows": [by_strike[k] for k in sorted(by_strike)], "as_of": snap.quote_time, "fetched_at": snap.fetched_at,
-            "delay_label": snap.delay_label, "quality": quality, "source": snap.source, "n_kept": snap.n_kept(), "note": stale_note}
+            "delay_label": snap.delay_label, "quality": quality, "age_s": age_s, "stale_reason": stale_reason, "source": snap.source, "n_kept": snap.n_kept(),
+            "note": stale_note or stale_reason}
 
 
 __all__ = ["margin_requirement_c", "reserved_shares", "observed_close", "intrinsic_of", "is_index_option", "h_expire", "h_margin_mark", "h_exercise", "register",

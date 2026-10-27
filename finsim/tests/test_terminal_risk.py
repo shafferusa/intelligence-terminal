@@ -142,6 +142,24 @@ def book_swap(rt, aid, cid, notional_c, mark_c, vm_balance_c, im_c, pay_fixed=Tr
     assert r.ok, r.body
 
 
+def book_trs(rt, aid, cid, underlying, units, notional_c, im_c, receiver=True):
+    """An OPEN CTM TRS row (mark 0, VM 0) on ``underlying`` with its SWAP instrument (spec otc_kind TRS, the underlying) and ONE entry
+    Dr 1330 IM / Cr 1010 (L22: 1330 = im, no VM yet)."""
+    with rt.db.writer() as tx:
+        tx.x("INSERT INTO instruments(instrument_id, kind, symbol, name, currency, multiplier, tick, lot, price_scale, session_group, settle_days, account_kinds, yahoo_symbol,"
+             " yahoo_invert, cboe_symbol, underlying_id, expiry, strike, right, style, exercise, spec_json, support, status, created_ts, updated_ts)"
+             " VALUES (?,?,?,?,'USD','1','0.01',1,'1','US_BONDS',0,?,NULL,0,NULL,?,'2027-10-20',NULL,NULL,NULL,NULL,?,'COMPUTED','ACTIVE',?,?)",
+             (cid, "SWAP", cid, f"TRS receive {units:,} {underlying}", json.dumps(["PB"]), underlying,
+              json.dumps({"otc_kind": "TRS", "underlying_id": underlying, "receiver": receiver, "units": units}), tx.ts, tx.ts))
+        cmd = tx.one("SELECT MAX(id) FROM commands")[0]
+        tx.x("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date, maturity_date, margin_mode, im_c, status,"
+             " last_reset_date, reset_px, mark_c, mark_ts, vm_balance_c, inputs_json, closed_ts) VALUES (?,?,?,?,'TRS',?,?,'USD','2026-10-20','2027-10-20','CTM',?,'OPEN',"
+             "'2026-10-20','339.50',0,?,0,NULL,NULL)", (cid, cmd, aid, "GS", json.dumps({"receiver": receiver, "units": units, "underlying_id": underlying}), notional_c, im_c, tx.ts))
+    rt.instruments.refresh(cid)
+    r = post_entry(rt, [[aid, "1330", "USD", im_c, cid], [aid, "1010", "USD", -im_c]], f"otc:margin:{cid}", kind="OTC_MARGIN", memo="TRS IM (test seed)")
+    assert r.ok, r.body
+
+
 class ModelMarks:
     """Wraps the FixedMarks provider: the marks of ``inputs_by_id`` come back as option-model marks (method ``model``) carrying the
     §8.6 inputs, so the risk scenarios can re-price them through ``marks.price_option``; everything else is delegated."""
@@ -216,7 +234,8 @@ class RiskReportTests(unittest.TestCase):
         self.assertEqual({"AAPL", "SPY"}, {r.instrument_id for r in v.positions})
         # one bucket: 724,160 / 9,999,992.50 = 0.0724160... -> 0.0724
         self.assertEqual([("US equities", 72416000, 0, 72416000, 72416000, D("0.0724"))], [(e["bucket"], e["long_c"], e["short_c"], e["net_c"], e["gross_c"], e["pct_nav"]) for e in v.exposures])
-        self.assertEqual({"securities": {"long_c": 72416000, "short_c": 0, "net_c": 72416000, "gross_c": 72416000, "n": 2}}, v.exposure_by_class)
+        # by class with its % of NAV: 724,160 / 9,999,992.50 = 0.0724
+        self.assertEqual({"securities": {"long_c": 72416000, "short_c": 0, "net_c": 72416000, "gross_c": 72416000, "n": 2, "pct_nav": D("0.0724")}}, v.exposure_by_class)
         # per account: the US Exchange account's NAV is 1,000,000 - 7.50 = 999,992.50; its % of NAV is against the lifetime's NAV (0.0724)
         a = v.exposure_by_account[US_EXCHANGE]
         self.assertEqual((72416000, 0, 72416000, 99999250, D("0.0724")), (a["gross_c"], a["short_c"], a["net_c"], a["nav_c"], a["pct_nav"]))
@@ -443,6 +462,110 @@ class RiskReportTests(unittest.TestCase):
         va = risk.report(rt, gs)
         self.assertEqual((101850000, 29925000, 1), (va.long_c, va.financing_liquidity["pb"][0]["headroom_c"], len(va.otc)))
         assert_integrity(self, rt, "full")
+
+
+    def test_leverage_gross_notional_per_account_pb_and_book(self):
+        """Owner 2026-10-21 18:29: "calculate gross notional against nav too ... prob going to leverage w TRS" - the multiples by hand."""
+        rt = self.rt
+        self.assertTrue(fund(rt, US_EXCHANGE, 100000000).ok)                        # 1,000,000.00 Treasury -> US Exchange
+        # US Exchange: 1,000 AAPL @ 339.50 (fee 1,000 x 0.005 = 5.00) -> MV 339,500.00; 2 ESZ26 @ 7,700 (fee 2 x 2.25 = 4.50) -> notional
+        # 2 x 50 x 7,700 = 770,000.00 (IM 2 x 17,500 = 35,000.00 posted); short 100 SPY @ 769.32 (fee 0) -> -76,932.00 (collateral 102 %)
+        self.assertTrue(buy(rt, US_EXCHANGE, "AAPL", 1000, "339.50").ok)
+        set_mark(rt, "ESZ26", "7700")
+        open_position(rt, US_EXCHANGE, "ESZ26", "LONG", 2, "7700", fee_c=450)
+        open_position(rt, US_EXCHANGE, "SPY", "SHORT", 100, "769.32")
+        # Goldman PB (financing on): 3,000 AAPL @ 339.50 (fee 9.00) -> 1,018,500.00; a TRS receiving AAPL on 10,000 shares at 339.50 = notional
+        # 3,395,000.00 (IM 10 % = 339,500.00, mark 0); an IRS pay fixed 10,000,000.00 (mark -123.45, VM posted 160,000.00, IM 50,000.00)
+        gs = add_account(rt, T1, "PB_GS", "Goldman Sachs", "PB", 60, broker="GS", financing=True)
+        self.assertTrue(fund(rt, gs, 150000000).ok)                                 # 1,500,000.00
+        self.assertTrue(buy(rt, gs, "AAPL", 3000, "339.50", fee_c=900).ok)
+        book_trs(rt, gs, "SWP-000002", "AAPL", 10000, 339500000, 33950000)
+        book_swap(rt, gs, "SWP-000001", 1000000000, -12345, -16000000, 5000000)
+        rt.swaps = types.SimpleNamespace(dv01_c=lambda services, row: 75000 if row["kind"] == "IRS" else None)
+        v = risk.report(rt, "ALL")
+        # NAV = 10,000,000 - 5.00 - 4.50 - 9.00 - 123.45 (the IRS overlay) = 9,999,858.05 (IM / VM / collateral are assets: NAV-neutral)
+        self.assertEqual(999985805, v.nav_c)
+        # headline: long = 339,500 + 1,018,500 + 770,000 + 3,395,000 (TRS) = 5,523,000.00; short = 76,932.00 (SPY);
+        # gross = 5,599,932.00; net = 5,446,068.00 (the IRS is not in the headline)
+        self.assertEqual((552300000, 7693200, 559993200, 544606800), (v.long_c, v.short_c, v.gross_c, v.net_c))
+        # gross NOTIONAL = 339,500 + 1,018,500 + 76,932 (|MV|) + 770,000 (ES) + 3,395,000 (TRS) + 10,000,000 (IRS) = 15,599,932.00
+        self.assertEqual((1559993200, 339500000, []), (v.gross_notional_c, v.trs_notional_c, v.notional_missing))
+        # / 9,999,858.05: gross 5,599,932 -> 0.56000115 -> 0.5600; notional 15,599,932 -> 1.56001534 -> 1.5600; long 5,523,000 -> 0.55230784 -> 0.5523;
+        # short 76,932 -> 0.00769331 -> 0.0077; net 5,446,068 -> 0.54461453 -> 0.5446; TRS 3,395,000 -> 0.33950482 -> 0.3395
+        self.assertEqual((D("0.5600"), D("1.5600"), D("0.5523"), D("0.0077"), D("0.5446"), D("0.3395")),
+                         (v.gross_leverage, v.gross_notional_leverage, v.long_pct_nav, v.short_pct_nav, v.net_pct_nav, v.trs_pct_nav))
+        self.assertEqual(v.leverage, v.gross_leverage)
+        lev = {r["account_id"]: r for r in v.leverage_by_account}
+        # US Exchange (NAV 1,000,000 - 5.00 - 4.50 = 999,990.50): long 339,500 + 770,000 = 1,109,500; short 76,932; gross 1,186,432; net 1,032,568;
+        # notional 1,186,432 -> 1,186,432 / 999,990.50 = 1.18644327 -> 1.1864; long 1.10951054 -> 1.1095; short 0.07693273 -> 0.0769; net 1.03257781 -> 1.0326
+        u = lev[US_EXCHANGE]
+        self.assertEqual((99999050, 110950000, 7693200, 118643200, 103256800, 118643200), (u["nav_c"], u["long_c"], u["short_c"], u["gross_c"], u["net_c"], u["gross_notional_c"]))
+        self.assertEqual((D("1.1864"), D("1.1864"), D("1.1095"), D("0.0769"), D("1.0326")),
+                         (u["gross_leverage"], u["gross_notional_leverage"], u["long_pct_nav"], u["short_pct_nav"], u["net_pct_nav"]))
+        # Goldman (NAV 1,500,000 - 9.00 - 123.45 = 1,499,867.55): gross 1,018,500 + 3,395,000 = 4,413,500 -> 2.94259316 -> 2.9426;
+        # notional 4,413,500 + 10,000,000 = 14,413,500 -> 9.60984855 -> 9.6098; TRS 3,395,000 -> 2.26353320 -> 2.2635
+        g = lev[gs]
+        self.assertEqual((149986755, 441350000, 1441350000, D("2.9426"), D("9.6098"), D("2.2635"), D("0.0000")),
+                         (g["nav_c"], g["gross_c"], g["gross_notional_c"], g["gross_leverage"], g["gross_notional_leverage"], g["trs_pct_nav"], g["short_pct_nav"]))
+        pb = v.financing_liquidity["pb"][0]                                        # the PB row carries the same multiples
+        self.assertEqual((gs, D("2.9426"), D("9.6098"), D("2.2635"), 339500000), (pb["account_id"], pb["gross_leverage"], pb["gross_notional_leverage"], pb["trs_pct_nav"], pb["trs_notional_c"]))
+        self.assertEqual(D("2.9426"), v.exposure_by_account[gs]["gross_leverage"])
+        # per book: one open lifetime -> its NAV = the scope's NAV and the same multiples
+        self.assertEqual([(T1, 999985805, D("0.5600"), D("1.5600"))], [(b["lifetime_id"], b["nav_c"], b["gross_leverage"], b["gross_notional_leverage"]) for b in v.by_book])
+        # BM-27: the equity delta = stocks 339,500 + 1,018,500 - 76,932 = 1,281,068 + index futures 770,000 + TRS 3,395,000 = 5,446,068.00
+        self.assertEqual((128106800, 77000000, 339500000, 0, 544606800), (v.delta["equities_c"], v.delta["index_futures_c"], v.delta["trs_c"], v.delta["options_c"], v.delta["total_c"]))
+        by_u = {r["underlying"]: r for r in v.delta_by_underlying}
+        self.assertEqual((135800000, 339500000, 475300000), (by_u["AAPL"]["stock_c"], by_u["AAPL"]["trs_c"], by_u["AAPL"]["total_c"]))
+        # PO-18: readable contract labels; signed DV01 of the IRS (+750.00); the TRS has no DV01 row
+        labels = {c["contract_id"]: c["label"] for c in v.otc[0]["contracts_detail"]}
+        self.assertEqual("TRS AAPL (receive)", labels["SWP-000002"])
+        self.assertEqual([("SWP-000001", 75000)], [(r["instrument_id"], r["dv01_c"]) for r in v.dv01_rows])
+        # warnings stay warnings: TRS AAPL is 33.95 % of NAV (> 25 %) and GS's posted VM is 10.67 % of its NAV; nothing about leverage (0.56x < 2x)
+        self.assertEqual(["CONCENTRATION", "OTC_VM"], sorted(w["code"] for w in v.warnings))
+        self.assertIn("TRS AAPL", next(w["message"] for w in v.warnings if w["code"] == "CONCENTRATION"))
+        d = v.to_dict()
+        self.assertEqual(("0.5600", "1.5600", "15599932.00", "0.3395"), (d["gross_leverage"], d["gross_notional_leverage"], d["gross_notional"], d["trs_pct_nav"]))
+        assert_integrity(self, rt, "full")
+
+    def test_unpriced_private_at_cost_and_futures_maintenance_after_the_trade(self):
+        rt = self.rt
+        self.assertTrue(fund(rt, US_EXCHANGE, 100000000).ok)
+        set_mark(rt, "ESZ26", "7700")
+        open_position(rt, US_EXCHANGE, "ESZ26", "LONG", 2, "7700", fee_c=450)          # fee 4.50
+        # SR-03: 70,000 shares of a private name WITHOUT a price per share, bought at 50.00 -> cost 3,500,000.00; NAV carries it at cost
+        add_instrument(rt, "PRV-NOMARK", "PRIVATE", "Nomark Inc.", "PRIVATE_MARKETS", ["PRIVATE"], 30)
+        priv = add_account(rt, T1, "PRIVATE", "Private Markets", "TRADING", 50)
+        self.assertTrue(fund(rt, priv, 400000000).ok)
+        open_position(rt, priv, "PRV-NOMARK", "LONG", 70000, "50.00", lock_until="2027-04-20")
+        v = risk.report(rt, "ALL")
+        # NAV = 10,000,000 - 4.50 = 9,999,995.50 (the private position at its cost, partial)
+        self.assertEqual((999999550, True, ["PRV-NOMARK"]), (v.nav_c, v.partial, v.missing))
+        # the bucket at carrying value: 3,500,000 / 9,999,995.50 = 0.35000016 -> 0.3500 (was 0.00 %: "NAV excludes it")
+        self.assertEqual((350000000, D("0.3500"), 350000000, ["PRV-NOMARK"]), (v.private["mv_c"], v.private["pct_nav"], v.private["at_cost_c"], v.private["unpriced"]))
+        p = v.private["positions"][0]
+        self.assertEqual((350000000, D("0.3500"), "at cost (no mark)", True), (p["mv_c"], p["pct_nav"], p["basis"], p["at_cost"]))
+        self.assertEqual([("PRV-NOMARK", 350000000, D("0.3500"), "at cost (no mark)")], [(c["instrument_id"], c["mv_c"], c["pct_nav"], c["note"]) for c in v.concentration if c["instrument_id"] == "PRV-NOMARK"])
+        w = {x["code"]: x for x in v.warnings}
+        self.assertEqual(("0.3500", "0.3500", "INFO"), (w["CONCENTRATION"]["value"], w["PRIVATE_ILLIQUID"]["value"], w["UNPRICED"]["severity"]))
+        self.assertEqual("PRV-NOMARK has no valid mark; NAV carries it at cost (3,500,000.00)", w["UNPRICED"]["message"])
+        # the private pre-trade line: 10,000 more at 50.00 = 500,000.00 -> (3,500,000 + 500,000) / 9,999,995.50 = 0.40000018 -> 0.4000
+        lines = risk.pretrade(rt, priv, rt.instruments.get("PRV-NOMARK"), "BUY", 10000, {"economics": {"gross": "500000.00"}})
+        self.assertEqual([("CONCENTRATION", "WARN", "0.4000"), ("PRIVATE_ILLIQUID", "WARN", "0.4000")], [(x["code"], x["severity"], x["value"]) for x in lines])
+        # ORC-1: maintenance after the trade = 15,900.00 per contract x |held + signed order|: SELL 2 closes (0.00), BUY 1 -> 3 x 15,900 = 47,700.00,
+        # SELL 3 -> short 1 -> 15,900.00
+        es = rt.instruments.get("ESZ26")
+
+        def maint(side, qty):
+            m = [x for x in risk.pretrade(rt, US_EXCHANGE, es, side, qty, {}) if x["code"] == "FUTURES_MAINTENANCE"][0]
+            return m["value"], m["severity"], m["message"]
+        val, sev, msg = maint("SELL", 2)
+        self.assertEqual(("0.00", "INFO"), (val, sev))
+        self.assertEqual("maintenance margin after the trade 0.00: flat after the trade (+2 held, 2 sold)", msg)
+        self.assertEqual("47700.00", maint("BUY", 1)[0])
+        val, _sev, msg = maint("SELL", 3)
+        self.assertEqual("15900.00", val)
+        self.assertIn("1 contract short after the trade (+2 held, 3 sold) x 15,900.00 per contract", msg)
+        assert_integrity(self, rt, "ledger")
 
 
 # ---- compliance ---------------------------------------------------------------------------------------------------------------------

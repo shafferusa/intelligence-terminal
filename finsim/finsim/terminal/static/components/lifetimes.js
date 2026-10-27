@@ -9,6 +9,8 @@
  *
  * Reads  GET  /api/books                      -> the sidebar rows (the current lifetime, NAV, eligibility, past_lifetimes)
  *        GET  /api/books/{code}/lifetimes     -> {book_code, lifetimes: [...]} newest first with the stored final figures
+ *        GET  /api/lifetimes/{lifetime}       -> the current lifetime's read model: the agreements signed with each dealer
+ *                                                ("ISDA Master / CSA / PBA with Goldman Sachs, signed 2026-10-21", PO-16)
  * Writes POST /api/books/{code}/reset         {confirm: "RESET", starting_capital: "1000000.00", name?}
  *                                            -> {closed: LifetimeView, opened: {lifetime_id, accounts, ...}, integrity_ok, ...}
  *
@@ -64,6 +66,17 @@
     return historyLinks(lid).map(function (l) { return '<a href="' + esc(l[0]) + '"' + (l[0].charAt(0) === '/' ? ' target="_blank" rel="noopener"' : '') + '>' + esc(l[1]) + '</a>'; }).join(' ');
   }
 
+  /* PO-16: "ISDA Master / CSA / PBA with Goldman Sachs, signed 2026-10-21" per dealer; "none" without a relationship */
+  function agreementsText(rows) {
+    var by = {}, order = [];
+    (rows || []).forEach(function (r) {
+      if (!by[r.broker]) { by[r.broker] = { name: r.broker_name || r.broker, kinds: [], signed: r.signed_date }; order.push(r.broker); }
+      by[r.broker].kinds.push(r.label || (r.kind === 'ISDA_MASTER' ? 'ISDA Master' : r.kind));
+    });
+    if (!order.length) { return 'none (no prime-broker relationship in this lifetime)'; }
+    return order.map(function (k) { var g = by[k]; return g.kinds.join(' / ') + ' with ' + g.name + ', signed ' + (g.signed || ''); }).join('; ');
+  }
+
   var COLUMNS = [
     { key: 'lifetime_id', label: 'lifetime', cls: 'l' },
     { key: 'name', label: 'name', cls: 'l', text: function (x) { return x.name || ''; } },
@@ -102,7 +115,7 @@
   function mount(el, opts) {
     opts = opts || {};
     var code = String(opts.book || (T.book && T.book.code) || '').toUpperCase();
-    var state = { book: null, rows: null, last: null, error: null, dead: false };
+    var state = { book: null, rows: null, view: null, last: null, error: null, dead: false };
     var root = T.h('div', { class: 'lifetimes' });
     T.clear(el).appendChild(root);
 
@@ -119,7 +132,8 @@
           ['started', fmtDate(lt, 'started')],
           ['starting capital', T.money(lt, 'starting_capital')],
           ['NAV now', b.nav ? (T.money(b, 'nav') + (b.nav.quality ? ' (' + b.nav.quality + (b.nav.partial ? ', partial' : '') + ')' : '')) : 'n/a'],
-          ['past lifetimes', String(b.past_lifetimes == null ? 0 : b.past_lifetimes)]
+          ['past lifetimes', String(b.past_lifetimes == null ? 0 : b.past_lifetimes)],
+          ['agreements', agreementsText((state.view && state.view.agreements) || [])]
         ]));
       }
       var btn = T.h('button', { class: 'btn danger', onclick: openDialog, disabled: !lt }, 'Reset lifetime...');
@@ -181,6 +195,7 @@
           if (r && r.integrity_ok === false) { T.ui.toast('the final integrity check of ' + lt.lifetime_id + ' FAILED: recorded on the lifetime and in Attention (nothing deleted)', 'err', 8000); }
           if (T.poll && T.poll.kickAll) { T.poll.kickAll(); }
           if (T.state) { T.state.active_account = null; T.state.account_detail = null; }
+          if (T.store) { T.store.set('active_account', null); }      /* the closed lifetime's account is never remembered (P01) */
           load();
           if (T.router && T.router.rerender) { T.router.rerender(); }
         }, function (e) {
@@ -194,7 +209,8 @@
     }
 
     function past() {
-      var box = T.h('div', { class: 'section' }, T.h('h2', null, 'lifetimes of ' + code, T.h('small', null, 'newest first; History opens the archived, read-only pages')));
+      var bname = (state.book && state.book.name) || opts.book_name || code;
+      var box = T.h('div', { class: 'section' }, T.h('h2', null, 'lifetimes of ' + bname, T.h('small', null, 'newest first; History opens the archived, read-only pages')));
       if (state.error) { box.appendChild(T.h('div', { class: 'error' }, state.error)); box.appendChild(T.h('button', { class: 'btn small', onclick: load }, 'Retry')); return box; }
       var rows = state.rows;
       if (!rows) { box.appendChild(T.h('div', { class: 'empty' }, 'loading lifetimes ...')); return box; }
@@ -223,6 +239,8 @@
         var list = Array.isArray(r) ? r : (r && r.books) || [];
         state.book = null;
         list.forEach(function (b) { if (b && b.book_code === code) { state.book = b; } });
+        var lid = state.book && state.book.lifetime && state.book.lifetime.lifetime_id;
+        return lid ? T.api.get('/api/lifetimes/' + encodeURIComponent(lid), null, { nobook: true }).then(function (v) { state.view = v; }, function () { state.view = null; }) : null;
       }, function (e) { state.error = T.api.fail(e, 'books'); });
       var b = T.api.get('/api/books/' + encodeURIComponent(code) + '/lifetimes', null, { nobook: true }).then(function (r) {
         state.rows = Array.isArray(r) ? r : (r && r.lifetimes) || [];

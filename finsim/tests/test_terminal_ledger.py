@@ -153,7 +153,7 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(100, natural("3000", -100))     # equity
         self.assertEqual(100, natural("4000", -100))     # income
         self.assertEqual(100, natural("5000", 100))      # expense
-        self.assertEqual(52, len(CHART))
+        self.assertEqual(57, len(CHART))         # Build 2 P08: + 1420 / 2420 / 2520 / 4360 / 5350 (securities lent out)
 
 
 if __name__ == "__main__":

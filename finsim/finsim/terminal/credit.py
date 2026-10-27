@@ -1,15 +1,24 @@
 """Currency loans and prime-broker financing draws (TERMINAL_DESIGN.md §2.12 credit.py, §5.4, §11.3, §12.2, §13.6,
-§13.7, §19.6, §19.23; WP-05).
+§13.7, §19.6, §19.23; WP-05; Build 2 P08: the lender is a counterparty of the directory, GET /api/credit/loans = C26).
 
 Conventions stated here (the §1.3 sentences that bite in this module)
-- A cash loan (``loans.kind = CASH_LOAN``) is drawn in the Credit Instruments account from the lender "Money market
-  (paper)": ``Dr 1010:ccy / Cr 2750:ccy`` (idem ``loan:{loan_id}:draw``).  The drawn currency is SETTLED cash at once
+- A cash loan (``loans.kind = CASH_LOAN``) is drawn in the Credit Instruments account from a LENDER: a bank of the
+  counterparty directory (``counterparty_id``, e.g. ``BANK_DB`` = "Deutsche Bank AG (assumed terms)"; P08, OA-17) whose
+  ASSUMED terms give the spread over the currency's policy index, the currencies it lends, the tenors and a facility maximum
+  in USD (the book's open loans from that bank plus the new one, at the snapshot FX); without a ``counterparty_id`` (older
+  callers) the house money-market line "Money market (paper)" at the index + 0.75 % is used.  ``Dr 1010:ccy / Cr 2750:ccy``
+  (idem ``loan:{loan_id}:draw``).  The drawn currency is SETTLED cash at once
   and can be spot-converted or transferred the same day; the loan is a liability from the draw date and accrues from
   the draw night (the night of the accounting day it was drawn in, if open at 17:00 ET).
-- Rate: the currency's policy index + 0.75 % (``tables.POLICY_INDEX`` / ``LOAN_SPREAD``), FLOATING: every night uses the
-  latest published observation on or before that night (RATE_LAG, ``RateStore.as_of_le``); a currency without a policy
-  series is refused ``CURRENCY_UNSUPPORTED``; a series without an observation is 409 ``RATE_UNAVAILABLE`` — a rate is
-  never defaulted.  Monthly proxies (``POLICY_INDEX_MONTHLY``) are labelled in the memo.
+- Rate: the currency's policy index + the lender's spread (``tables.POLICY_INDEX``; the house line ``LOAN_SPREAD``), FLOATING:
+  every night uses the latest published observation on or before that night (RATE_LAG, ``RateStore.as_of_le``); a currency
+  without a policy series is refused ``CURRENCY_UNSUPPORTED``; a series without an observation is 409 ``RATE_UNAVAILABLE`` —
+  a rate is never defaulted.  Monthly proxies (``POLICY_INDEX_MONTHLY``) are labelled in the memo.
+- VIEW (C26, ``loans_view`` / GET /api/credit/loans): per loan the index value and its as-of date, the spread and the all-in
+  rate, the interest posted so far, the nights a repayment now would first post (``pending_nights``: exactly what
+  ``catch_up_accruals`` would post, computed with the same cumulative rounding, never posted by a read) and the PAYOFF =
+  principal + posted interest + those nights; a night that cannot be computed (no index print) leaves the payoff unknown
+  with the reason, never a guess.
 - ACCRUAL (§11.3): ``Dr 5150:ccy / Cr 2755:ccy`` per calendar night (idem ``accr:loan:{loan_id}:{D}``, base at that
   command's FX rate, ACT/360, GBP ACT/365) through WP-08's cumulative-rounding helper ``lifecycle.accrue_segment(ctx,
   kind, ref, base_c, rate, basis, night) -> int`` (consumed as ``services.lifecycle.accrue_segment``; tests inject a
@@ -52,20 +61,48 @@ from datetime import date, timedelta
 from decimal import Decimal
 from typing import List, Optional, Tuple
 
+import weakref
+
 from . import tables
-from .books import account_row, lifetime_row
+from .books import account_row, lifetime_row, split_account_id
+from .clock import accounting_day
 from .commands import ConflictError, RejectError, TxContext, require_amount_c
 from .db import next_id
 from .ledger import Entry, LedgerError, Line, balance, cr, dr
-from .units import fmt_money, qprice
+from .units import fmt_money, from_c, fx_c, qprice, to_c
 
 LENDER = "Money market (paper)"
+HOUSE_LENDER_NOTE = "house money-market line (index + 0.75 %), used when no bank is chosen"
+SCHEMA_EXT = ["ALTER TABLE loans ADD COLUMN counterparty TEXT"]
+_SCHEMA_DONE: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
 LOAN_KIND = "CASH_LOAN"
 PB_KIND = "PB_MARGIN"
 ACCRUAL_KIND = "loan"
 
 
 # ---- small helpers -----------------------------------------------------------------------------------------------------------
+def ensure_schema(db, conn=None) -> None:
+    """``loans.counterparty`` (C4 ``Database.ensure_schema_ext``; idempotent).  From ``bind`` (no ``conn``): once per
+    Database object.  From a handler (``conn`` = its transaction; a runtime built without ``bind``, as tests do): only when
+    the column is missing, inside that transaction (a rollback takes the DDL with it, so nothing is cached then)."""
+    if db is None:
+        return
+    fn = getattr(db, "ensure_schema_ext", None)
+    if conn is not None:
+        if not _has_counterparty_col(conn) and callable(fn):
+            fn("credit", SCHEMA_EXT)
+        return
+    if _SCHEMA_DONE.get(db):
+        return
+    if callable(fn):
+        fn("credit", SCHEMA_EXT)
+    _SCHEMA_DONE[db] = True
+
+
+def _has_counterparty_col(conn) -> bool:
+    return any(r[1] == "counterparty" for r in conn.execute("PRAGMA table_info(loans)").fetchall())
+
+
 def _ccy(x) -> str:
     c = str(x or "").upper()
     if len(c) != 3 or not c.isalpha():
@@ -143,6 +180,8 @@ def loan_view(conn, loan_id: str) -> dict:
     return {"loan_id": r["loan_id"], "account_id": r["account_id"], "kind": r["kind"], "currency": r["currency"], "principal_c": int(r["principal_c"]),
             "accrued_c": acc, "total_due_c": int(r["principal_c"]) + acc, "index_name": r["index_name"], "spread": r["spread"], "day_basis": int(r["day_basis"]),
             "opened_date": r["opened_date"], "maturity_date": r["maturity_date"], "lender": r["lender"], "status": r["status"], "closed_ts": r["closed_ts"],
+            "counterparty_id": r["counterparty"] if "counterparty" in r.keys() else None,
+            "lender_label": r["lender"] if r["lender"] == LENDER or r["kind"] != LOAN_KIND else f"{r['lender']} (assumed terms)",
             "accrued_through": st["accrued_through"] if st else None, "segment_start": st["segment_start"] if st else None,
             "segment_rate": st["rate"] if st else None, "monthly_proxy": r["index_name"] in tables.POLICY_INDEX_MONTHLY}
 
@@ -295,48 +334,109 @@ def _credit_account(ctx: TxContext, payload: dict):
         raise RejectError("ACCOUNT_REQUIRED", "account_id is required")
     acct = _open_account(ctx.conn, aid)
     if acct["kind"] != "TRADING" or acct["role"] != "CREDIT":
-        raise RejectError("NOT_CREDIT_ACCOUNT", f"{aid} is not the Credit Instruments account: cash loans are drawn there (PB financing uses credit.pb_draw)",
+        raise RejectError("NOT_CREDIT_ACCOUNT", f"{aid} is not the Credit Instruments account: currency loans are drawn and repaid there",
                           {"account_id": aid, "role": acct["role"], "kind": acct["kind"]})
     return acct
 
 
-def h_loan_draw(ctx: TxContext, payload: dict) -> dict:
-    """``credit.loan_draw {account_id, currency, amount_c | amount, term_days | null, memo?}``."""
-    services = _services(ctx)
-    acct = _credit_account(ctx, payload)
-    aid = acct["account_id"]
-    ccy = _ccy(payload.get("currency"))
-    amount_c = require_amount_c(payload)
+def _lender_terms(ctx: TxContext, services, payload: dict, ccy: str, amount_c: int, aid: str) -> dict:
+    """The lender of a new loan: a bank of the counterparty directory (``counterparty_id``) with its ASSUMED terms, else the
+    house money-market line.  Checks the currency and the facility maximum (the book's OPEN loans from that bank plus this
+    one, in USD at the snapshot FX)."""
+    cid = str(payload.get("counterparty_id") or "").strip()
+    if not cid:
+        return {"counterparty_id": None, "name": LENDER, "label": LENDER, "spread": tables.LOAN_SPREAD, "tenors": None, "max_usd": None, "note": HOUSE_LENDER_NOTE}
+    cps = getattr(services, "counterparties", None)
+    if cps is None or not hasattr(cps, "loan_terms"):
+        from . import counterparties as cps          # the directory module (bound as services.counterparties in the server)
+    t = cps.loan_terms(services, cid, ccy, ctx.conn)
+    if t["max_usd"] is not None and t["max_usd"] > 0:
+        lid, _role = split_account_id(aid)
+        used_c = 0
+        if _has_counterparty_col(ctx.conn):
+            for r in ctx.conn.execute("SELECT l.currency, l.principal_c FROM loans l JOIN accounts a ON a.account_id=l.account_id WHERE l.status='OPEN'"
+                                      " AND l.kind='CASH_LOAN' AND l.counterparty=? AND a.lifetime_id=?", (cid, lid)).fetchall():
+                used_c += fx_c(int(r["principal_c"]), _fx_rate(ctx, r["currency"]))
+        new_c = fx_c(int(amount_c), _fx_rate(ctx, ccy))
+        cap_c = to_c(t["max_usd"])
+        if used_c + new_c > cap_c:
+            raise ConflictError("FACILITY_LIMIT", f"{t['label']}: the facility maximum is USD {fmt_money(cap_c)}; open loans use USD {fmt_money(used_c)} and this draw is"
+                                f" USD {fmt_money(new_c)} - draw at most USD {fmt_money(max(0, cap_c - used_c))} equivalent, pick another bank or raise its assumed maximum",
+                                {"counterparty_id": cid, "max_usd_c": cap_c, "used_usd_c": used_c, "draw_usd_c": new_c})
+    return t
+
+
+def _term_days(payload: dict, terms: dict) -> Optional[int]:
+    """``tenor`` (OPEN / 1W / 1M / 3M / 6M / 12M) or ``term_days``; a bank only offers its own tenors (an open-ended loan only
+    when OPEN is one of them) and a term up to its longest tenor."""
+    tenor = payload.get("tenor")
     term = payload.get("term_days")
-    if term is not None:
+    if tenor not in (None, ""):
+        from .counterparties import tenor_days
+        term = tenor_days(str(tenor).upper())
+    elif term not in (None, ""):
         try:
             term = int(term)
         except (TypeError, ValueError) as e:
             raise RejectError("TERM", f"term_days must be an integer number of days, got {term!r}") from e
         if term <= 0:
             raise RejectError("TERM", "term_days must be positive (or null for an open-ended loan)")
+    else:
+        term = None
+    tenors = terms.get("tenors")
+    if tenors:
+        from .counterparties import tenor_days
+        if term is None and "OPEN" not in tenors:
+            raise RejectError("TERM", f"{terms['label']} does not lend open-ended in its terms (tenors {', '.join(tenors)}): pick a tenor")
+        days = [d for d in (tenor_days(t) for t in tenors) if d]
+        if term is not None and days and term > max(days):
+            raise RejectError("TERM", f"{terms['label']} lends up to {max(days)} days in its terms (tenors {', '.join(tenors)})")
+    return term
+
+
+def h_loan_draw(ctx: TxContext, payload: dict) -> dict:
+    """``credit.loan_draw {account_id, currency, amount_c | amount, counterparty_id?, tenor? | term_days | null, memo?}``."""
+    services = _services(ctx)
+    acct = _credit_account(ctx, payload)
+    aid = acct["account_id"]
+    ccy = _ccy(payload.get("currency"))
+    amount_c = require_amount_c(payload)
+    ensure_schema(getattr(services, "db", None), ctx.conn)
+    policy_series(ccy)                                        # CURRENCY_UNSUPPORTED before anything else
+    lender = _lender_terms(ctx, services, payload, ccy, amount_c, aid)
+    term = _term_days(payload, lender)
     sid, obs_date, pct = index_observation(services, ccy, ctx.today)
-    rate = loan_rate(pct, tables.LOAN_SPREAD)
     fx_rate = _fx_rate(ctx, ccy)
+    spread = Decimal(str(lender["spread"]))
+    rate = loan_rate(pct, spread)
     basis = tables.daycount(ccy)
     opened = date.fromisoformat(ctx.today)
     maturity = ctx.cal.roll_following(opened + timedelta(days=term)).isoformat() if term else None
     loan_id = next_id(ctx.conn, "loan")
     note = str(payload.get("memo") or "")
-    label = f"{sid} {_pct(pct)} % ({obs_date.isoformat()}) + {_pct(tables.LOAN_SPREAD * 100)} % = {_pct(rate * 100)} %, ACT/{basis}"
+    label = f"{sid} {_pct(pct)} % ({obs_date.isoformat()}) + {_pct(spread * 100)} % = {_pct(rate * 100)} %, ACT/{basis}"
     if sid in tables.POLICY_INDEX_MONTHLY:
         label += " (monthly proxy)"
-    memo = f"loan draw {loan_id}: {ccy} {fmt_money(amount_c)} from {LENDER} at {label}" + (f", matures {maturity}" if maturity else ", open-ended") + (f": {note}" if note else "")
-    entry_id = ctx.post(Entry("LOAN", memo, [dr(aid, "1010", ccy, amount_c, memo="drawn: settled at once"), cr(aid, "2750", ccy, amount_c, memo=f"principal, {LENDER}")],
+    memo = (f"loan draw {loan_id}: {ccy} {fmt_money(amount_c)} from {lender['label']} at {label}" + (f", matures {maturity}" if maturity else ", open-ended")
+            + (f": {note}" if note else ""))
+    entry_id = ctx.post(Entry("LOAN", memo, [dr(aid, "1010", ccy, amount_c, memo="drawn: settled at once"), cr(aid, "2750", ccy, amount_c, memo=f"principal, {lender['name']}")],
                               f"loan:{loan_id}:draw", ref_type="loan", ref_id=loan_id))
-    ctx.conn.execute("INSERT INTO loans(loan_id, command_id, account_id, kind, currency, principal_c, index_name, spread, day_basis, opened_date, maturity_date, lender,"
-                     " status, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',NULL)",
-                     (loan_id, ctx.command_id, aid, LOAN_KIND, ccy, amount_c, sid, str(tables.LOAN_SPREAD), basis, opened.isoformat(), maturity, LENDER))
+    if _has_counterparty_col(ctx.conn):
+        ctx.conn.execute("INSERT INTO loans(loan_id, command_id, account_id, kind, currency, principal_c, index_name, spread, day_basis, opened_date, maturity_date, lender,"
+                         " status, closed_ts, counterparty) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',NULL,?)",
+                         (loan_id, ctx.command_id, aid, LOAN_KIND, ccy, amount_c, sid, str(qprice(spread)), basis, opened.isoformat(), maturity, lender["name"],
+                          lender["counterparty_id"]))
+    else:
+        ctx.conn.execute("INSERT INTO loans(loan_id, command_id, account_id, kind, currency, principal_c, index_name, spread, day_basis, opened_date, maturity_date, lender,"
+                         " status, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',NULL)",
+                         (loan_id, ctx.command_id, aid, LOAN_KIND, ccy, amount_c, sid, str(qprice(spread)), basis, opened.isoformat(), maturity, lender["name"]))
     ctx.event("LOAN_DRAWN", account_id=aid, ref_type="loan", ref_id=loan_id, kind=LOAN_KIND, currency=ccy, amount_c=amount_c, rate=str(rate),
-              index={"series": sid, "value": str(pct), "obs_date": obs_date.isoformat()}, maturity_date=maturity, lender=LENDER, entry_id=entry_id)
+              index={"series": sid, "value": str(pct), "obs_date": obs_date.isoformat()}, maturity_date=maturity, lender=lender["name"],
+              counterparty_id=lender["counterparty_id"], entry_id=entry_id)
     view = loan_view(ctx.conn, loan_id)
     view.update(rate=str(rate), index={"series": sid, "value": str(pct), "obs_date": obs_date.isoformat()}, fx_rate=str(fx_rate))
-    return {"loan": view, "loan_id": loan_id, "entry_id": entry_id, "settled_c": balance(ctx.conn, aid, "1010", ccy), "memo": memo}
+    return {"loan": view, "loan_id": loan_id, "entry_id": entry_id, "settled_c": balance(ctx.conn, aid, "1010", ccy), "memo": memo,
+            "lender": {k: (str(v) if isinstance(v, Decimal) else v) for k, v in lender.items()}}
 
 
 def _repayment(ctx: TxContext, loan, amount_c: Optional[int], idem: str, memo_prefix: str) -> dict:
@@ -356,12 +456,23 @@ def _repayment(ctx: TxContext, loan, amount_c: Optional[int], idem: str, memo_pr
                           f"the repayment {fmt_money(amount_c)} exceeds it", {"principal_c": principal, "accrued_c": accrued, "total_due_c": total, "amount_c": amount_c,
                                                                                "accrued_at_repayment_c": caught_c})
     settled = balance(ctx.conn, aid, "1010", ccy)
+    funding = None
     if settled < amount_c:
-        short = amount_c - settled
-        hint = _cash_hint(ccy, short)
-        raise ConflictError("INSUFFICIENT_CASH_CCY", f"{aid} holds {ccy} {fmt_money(settled)} settled; the repayment needs {fmt_money(amount_c)}: {hint}",
-                            {"settled_c": settled, "amount_c": amount_c, "shortfall_c": short, "currency": ccy, "account_id": aid,
-                             "hint": hint, "total_due_c": total, "accrued_at_repayment_c": caught_c})
+        # P08: the book's Treasury cash IN THE SAME CURRENCY covers the shortfall by one linked sweep-in (the daily sweep-out moves a
+        # loan's idle proceeds there); a currency neither holds is never converted automatically (no automatic FX): refused with the hint
+        from . import execution
+        try:
+            funding = execution.fund(ctx, aid, ccy, amount_c, "loan", loan_id, None, immediate=True, services=_services(ctx))
+        except ConflictError as e:
+            if e.code != "INSUFFICIENT_FUNDS":
+                raise
+            t_avail = max(0, int((e.details or {}).get("treasury_available_c") or 0))
+            short = amount_c - settled - t_avail
+            hint = _cash_hint(ccy, short)
+            raise ConflictError("INSUFFICIENT_CASH_CCY", f"{aid} holds {ccy} {fmt_money(settled)} settled" + (f" and its Treasury {fmt_money(t_avail)}" if t_avail else "")
+                                + f"; the repayment needs {fmt_money(amount_c)}: {hint}",
+                                {"settled_c": settled, "treasury_available_c": t_avail, "amount_c": amount_c, "shortfall_c": short, "currency": ccy, "account_id": aid,
+                                 "hint": hint, "total_due_c": total, "accrued_at_repayment_c": caught_c}) from e
     pay_accrued = min(amount_c, accrued)
     pay_principal = amount_c - pay_accrued
     _fx_rate(ctx, ccy)
@@ -386,7 +497,7 @@ def _repayment(ctx: TxContext, loan, amount_c: Optional[int], idem: str, memo_pr
     return {"loan_id": loan_id, "entry_id": entry_id, "amount_c": amount_c, "interest_c": pay_accrued, "principal_c": pay_principal, "principal_left_c": left,
             "paid_interest_c": pay_accrued, "paid_principal_c": pay_principal,
             "closed": closed, "settled_c": balance(ctx.conn, aid, "1010", ccy), "loan": loan_view(ctx.conn, loan_id), "memo": memo,
-            "accrued_nights": nights, "accrued_at_repayment_c": caught_c}
+            "accrued_nights": nights, "accrued_at_repayment_c": caught_c, "funding": None if funding is None else funding.to_dict()}
 
 
 def _cash_hint(ccy: str, short_c: Optional[int] = None) -> str:
@@ -493,7 +604,7 @@ def _pb_account(conn, account_id: str):
     if acct["kind"] != "PB":
         raise RejectError("NOT_PB", f"{account_id} is not a prime-broker account")
     if not int(acct["pb_financing"] or 0):
-        raise RejectError("PB_FINANCING_OFF", f"{account_id}: PB financing is switched off (Settings → pb_financing)")
+        raise RejectError("PB_FINANCING_OFF", f"{account_id}: PB financing is switched off - switch it on in this account's Cash & financing page or in Settings > Accounts")
     return acct
 
 
@@ -585,6 +696,143 @@ def h_pb_repay(ctx: TxContext, payload: dict) -> dict:
     return {"loan_id": lid, "entry_id": entry_id, "amount_c": amount_c, "financed_left_c": left, "closed": left == 0, "settled_c": balance(ctx.conn, aid, "1010", "USD"), "memo": memo}
 
 
+# ---- the loans view (C26: GET /api/credit/loans) ------------------------------------------------------------------------------
+def pending_nights(services, conn, loan, today) -> Tuple[List[dict], Optional[str]]:
+    """The nights a repayment made now would post first (``catch_up_accruals``), computed exactly as it would post them:
+    the same RATE_LAG observation, the principal standing at each night's close and the same cumulative rounding of the
+    loan's ``accrual_state`` segment - but nothing is written.  Returns ``(nights, problem)``; ``problem`` names the first
+    night that cannot be computed (no index print), in which case the list stops there."""
+    from .lending_accruals import segment_amount
+    st = accrual_state(conn, loan["loan_id"])
+    row = None if st is None else dict(st)
+    out: List[dict] = []
+    for night in nights_due(conn, loan, today):
+        try:
+            sid, obs_date, pct = index_observation(services, loan["currency"], night)
+        except RejectError as e:
+            return out, f"night of {night.isoformat()}: {e.message}"
+        rate = loan_rate(pct, loan["spread"])
+        base_c = principal_at_close_c(conn, loan["loan_id"], night)
+        posted, start, cum_new = segment_amount(row, base_c, rate, int(loan["day_basis"]), night.isoformat())
+        row = {"segment_start": start, "base_c": base_c, "rate": str(qprice(rate)), "day_basis": int(loan["day_basis"]), "accrued_through": night.isoformat(), "cum_c": cum_new}
+        out.append({"night": night.isoformat(), "amount_c": int(posted), "base_c": base_c, "rate": str(rate), "index_pct": str(pct), "index_as_of": obs_date.isoformat()})
+    return out, None
+
+
+def _view_row(services, conn, r, today, snap) -> dict:
+    """One row of GET /api/credit/loans (C26 shape plus the ledger figures behind it)."""
+    loan = dict(r)
+    kind, ccy = loan["kind"], loan["currency"]
+    cid = loan.get("counterparty")
+    obs = None
+    rates = getattr(services, "rates", None)
+    if rates is not None and hasattr(rates, "as_of_le"):
+        obs = rates.as_of_le(loan["index_name"], today)
+    spread = Decimal(str(loan["spread"]))
+    if kind == PB_KIND:
+        posted = balance(conn, loan["account_id"], "2300", "USD")
+        pend, problem = [], None
+        lender_label = f"{loan['lender']} (prime broker)"
+    else:
+        posted = accrued_c(conn, loan["loan_id"])
+        pend, problem = pending_nights(services, conn, loan, today) if loan["status"] == "OPEN" else ([], None)
+        lender_label = loan["lender"] if loan["lender"] == LENDER else f"{loan['lender']} (assumed terms)"
+    pending_c = sum(int(n["amount_c"]) for n in pend)
+    principal = int(loan["principal_c"])
+    payoff = None if problem else principal + posted + pending_c
+    all_in = None if obs is None else qprice(Decimal(str(obs[1])) + spread * 100)
+    fx = None
+    if ccy != "USD" and snap is not None:
+        try:
+            v = snap.fx(ccy)
+            fx = None if v is None or v.mark is None else v.mark
+        except Exception:   # noqa: BLE001
+            fx = None
+    return {"loan_id": loan["loan_id"], "account_id": loan["account_id"], "kind": kind, "currency": ccy, "principal_c": principal, "lender": loan["lender"],
+            "lender_label": lender_label, "counterparty_id": cid, "index_name": loan["index_name"], "index_value_pct": None if obs is None else str(obs[1]),
+            "index_as_of": None if obs is None else obs[0].isoformat(), "spread_pct": str(qprice(spread * 100)), "all_in_pct": None if all_in is None else str(all_in),
+            "accrued_posted_c": posted, "pending_nights": pend, "pending_c": pending_c, "accrued_c": posted + pending_c, "payoff_c": payoff,
+            "payoff_note": problem or ("principal + interest posted + the nights a repayment now posts first" if pend else "principal + interest posted"),
+            "day_basis": int(loan["day_basis"]), "opened_date": loan["opened_date"], "maturity_date": loan["maturity_date"], "status": loan["status"],
+            "monthly_proxy": loan["index_name"] in tables.POLICY_INDEX_MONTHLY, "payoff_usd_c": None if payoff is None or (ccy != "USD" and fx is None) else
+            (payoff if ccy == "USD" else fx_c(payoff, fx)), "repayable": kind == LOAN_KIND and loan["status"] == "OPEN"}
+
+
+def loans_view(services, account_id: Optional[str] = None, lifetime_id: Optional[str] = None, status: Optional[str] = "OPEN", now: Optional[int] = None) -> dict:
+    """C26 ``GET /api/credit/loans?account_id=|book=``: ``{rows, as_of, today}`` (OPEN loans by default; ``status=all``)."""
+    from .marks import shared_reader
+    now_ts = int(now if now is not None else services.clock.epoch())
+    today = accounting_day(now_ts)
+    snap = services.marks.snapshot() if getattr(services, "marks", None) is not None else None
+    with shared_reader(services.db) as conn:
+        sql, params = "SELECT l.* FROM loans l JOIN accounts a ON a.account_id=l.account_id WHERE 1=1", []
+        if account_id:
+            sql += " AND l.account_id=?"
+            params.append(account_id)
+        if lifetime_id:
+            sql += " AND a.lifetime_id=?"
+            params.append(lifetime_id)
+        if status and status.upper() != "ALL":
+            sql += " AND l.status=?"
+            params.append(status.upper())
+        rows = [_view_row(services, conn, r, today, snap) for r in conn.execute(sql + " ORDER BY l.status DESC, l.opened_date, l.loan_id", params).fetchall()]
+    return {"rows": rows, "as_of": now_ts, "accounting_day": today.isoformat(),
+            "note": "index prints as published with their dates; all-in = index + the lender's ASSUMED spread; interest accrues nightly ACT/360 (GBP ACT/365) and is paid at repayment"}
+
+
+def bind(rt) -> None:
+    """Credit's column in ``loans`` (C4) at start."""
+    ensure_schema(getattr(rt, "db", None))
+
+
+def register_routes(r) -> None:
+    """C1 / C26: GET /api/credit/loans (+ /{id}); POST /api/credit/loans with the lender (``counterparty_id``) and the tenor; POST
+    /api/credit/loans/{id}/repay with ``amount`` or ``full: true`` (the payoff, nights owed first) - these take over the older
+    routes of api_products (first match wins)."""
+    from .api import ApiError, NotFound, ok_or_raise, run_command
+
+    def loans_get(req):
+        rt = req.rt
+        aid = req.q("account_id")
+        lid = None if aid else req.lifetime()
+        return loans_view(rt, account_id=aid, lifetime_id=lid, status=req.q("status") or "OPEN")
+
+    def loan_get(req):
+        rt = req.rt
+        out = loans_view(rt, status="ALL")
+        row = next((x for x in out["rows"] if x["loan_id"] == req.params[0]), None)
+        if row is None:
+            raise NotFound(f"loan {req.params[0]} does not exist")
+        return row
+
+    def loan_post(req):
+        payload = {"account_id": req.b("account_id"), "currency": str(req.b("currency") or "").upper(), "amount_c": req.amount_c(), "term_days": req.b("term_days"),
+                   "tenor": req.b("tenor"), "counterparty_id": req.b("counterparty_id"), "memo": req.b("memo")}
+        payload = {k: v for k, v in payload.items() if v not in (None, "")}
+        res = run_command(req, "credit.loan_draw", payload)
+        body = ok_or_raise(res)
+        loan = body.get("loan") or {}
+        idx = loan.get("index") or {}
+        headers = {"X-Replayed": "1"} if res.replayed else {}
+        return 200, {"loan": loan, "lender": body.get("lender"), "rate": {"index": loan.get("index_name"), "as_of": idx.get("obs_date"), "value": idx.get("value"),
+                     "spread": loan.get("spread"), "all_in": loan.get("rate"), "monthly_proxy": loan.get("monthly_proxy")}, "result": body}, headers
+
+    def loan_repay(req):
+        payload = {"loan_id": req.params[0]}
+        if req.b("full"):
+            if req.b("amount") not in (None, "") or req.b("amount_c") is not None:
+                raise ApiError(400, "AMOUNT", "give an amount or full: true, not both")
+            payload["full"] = True
+        else:
+            payload["amount_c"] = req.amount_c()
+        return run_command(req, "credit.loan_repay", payload)
+
+    r.add("GET", r"/api/credit/loans", loans_get)
+    r.add("GET", r"/api/credit/loans/([^/]+)", loan_get)
+    r.add("POST", r"/api/credit/loans", loan_post)
+    r.add("POST", r"/api/credit/loans/([^/]+)/repay", loan_repay)
+
+
 def register(bus) -> None:
     bus.register("credit.loan_draw", h_loan_draw)
     bus.register("credit.loan_repay", h_loan_repay)
@@ -597,4 +845,5 @@ def register(bus) -> None:
 __all__ = ["LENDER", "LOAN_KIND", "PB_KIND", "ACCRUAL_KIND", "loan_row", "loan_view", "loans_of", "accrued_c", "principal_at_close_c", "accrual_state", "nights_due",
            "policy_series", "index_observation", "loan_rate", "accrual_lines_loan", "post_loan_accrual", "catch_up_accruals", "pb_loan_id", "pb_schedule", "headroom_c",
            "pb_draw", "pb_draw_for_funding",
-           "h_loan_draw", "h_loan_repay", "h_loan_accrue", "h_loan_mature", "h_pb_draw", "h_pb_repay", "register"]
+           "h_loan_draw", "h_loan_repay", "h_loan_accrue", "h_loan_mature", "h_pb_draw", "h_pb_repay", "register", "register_routes", "bind",
+           "loans_view", "pending_nights", "ensure_schema"]

@@ -108,10 +108,11 @@ START_WAIT_S = 60.0
 STOP_WAIT_S = 30.0
 PY = "py -3.12 -m finsim"
 
-POWERSHELL_SEQUENCE = """cd C:\\Users\\logan\\intelligence-terminal\\finsim
+# ORC-9: the version in the printed sequence is finsim.terminal.VERSION (never a literal that goes stale at the next release)
+POWERSHELL_SEQUENCE = f"""cd C:\\Users\\logan\\intelligence-terminal\\finsim
 py -3.12 -m finsim stop                 # stops the OLD 0.11.0 engine too (same /api/shutdown route); prints the finsim.db sha256
-py -3.12 -m finsim install --no-open    # replaces Startup\\FinSim Server.vbs, removes the "FinSim Server" task, starts 1.0.0
-py -3.12 -m finsim status               # must show finsim-terminal 1.0.0, integrity ok, the Startup entry, finsim.db unchanged
+py -3.12 -m finsim install --no-open    # replaces Startup\\FinSim Server.vbs, removes the "FinSim Server" task, starts {VERSION}
+py -3.12 -m finsim status               # must show finsim-terminal {VERSION}, integrity ok, the Startup entry, finsim.db unchanged
 py -3.12 -m finsim open"""
 
 Folders = Tuple[str, str, str]          # (Startup, Desktop, Start Menu Programs)

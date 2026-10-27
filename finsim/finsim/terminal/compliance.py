@@ -26,6 +26,18 @@ Conventions
   said so); wash sale = a loss sale with a buy of the same instrument within 30 days before or after (IRS 1091);
   self-trading = an opposite-side working order, or a fill within 60 s, in another own account on the same instrument.
 - EU / UK 0.1 % / 0.5 % short disclosure concerns foreign listings (Build 2): no notice is produced in this build.
+
+Build 2 (2026-10-21):
+- Relevance (OA-26): an FX deal gets no securities notice at all (13F / 13D/G / Reg SHO / Rule 201 / wash sale do not apply to
+  currencies); an order on a FOREIGN listing skips the US-only rules (13F, 13D/G and Section 16, 13h-1, Form SHO, Reg SHO, Rule
+  201, US option / futures limits) and says once that the venue's own rules are not modelled.
+- Wash sale (USX-23): a sale is checked against REPLACEMENT purchases only - the purchases that opened the lots this sale closes
+  (first-in, first-out) are not counted.
+- Position limits (SR-11): ``settings.position_limit_overrides`` ``{key: contracts}`` replaces the static table - a futures root
+  (``"ES"``) for its spot-month limit, ``"OPTIONS"`` for the default per-underlying option limit, ``"OPTIONS:<UNDERLYING>"`` for one
+  underlying - labelled "your override".
+- One reading connection for the whole check (``marks.shared_reader``, ORC-5): the order preview's own connection when it runs
+  inside one.
 """
 from __future__ import annotations
 
@@ -36,7 +48,9 @@ from typing import Any, Dict, List, Optional
 
 from . import tables
 from .books import profile_of, split_account_id
+from .db import get_setting
 from .instruments import EQUITY_KINDS
+from .marks import shared_reader
 from .risk import jsonable, PCT4
 from .units import fmt_money, from_c, fx_c, mul_c, to_c
 
@@ -51,6 +65,13 @@ SELF_TRADE_WINDOW_S = 60
 PDT_SESSIONS = 5
 PDT_TRADES = 4
 OPTION_NOTICE_FRACTION = Decimal("0.8")
+#: rules that concern US-listed securities only: not run for an order on a FOREIGN listing (OA-26)
+US_ONLY_RULES = ("13F", "13F_FROM_START", "13H1", "13DG", "SECTION_16", "FORM_SHO", "REG_SHO", "RULE_201", "OPTION_LIMITS", "FUTURES_LIMITS")
+
+
+def _foreign(inst) -> bool:
+    g = str(getattr(inst, "session_group", "") or "")
+    return g == "FOREIGN" or g.startswith("FOREIGN:")
 
 
 @dataclass
@@ -98,9 +119,20 @@ class _Ctx:
         self.lid = lid
         self.now = int(services.clock.epoch())          # the wall clock (the self-trading window); the snapshot's as_of only labels marks
         self.today: date = services.clock.today()
-        with services.db.reader() as conn:
+        with shared_reader(services.db) as conn:
             self.profile = profile_of(conn, lid)
             self.accounts = [r["account_id"] for r in conn.execute("SELECT account_id FROM accounts WHERE lifetime_id=? ORDER BY sort_order, account_id", (lid,)).fetchall()]
+            try:
+                raw = get_setting(conn, "position_limit_overrides", {}) or {}
+            except Exception:   # noqa: BLE001 - an unreadable setting is the static table
+                raw = {}
+        self.limit_overrides: Dict[str, int] = {}
+        for k, v in (raw.items() if isinstance(raw, dict) else []):
+            try:
+                if int(v) > 0:
+                    self.limit_overrides[str(k).upper()] = int(v)
+            except (TypeError, ValueError):
+                continue
         self.rules = tuple(tables.BOOK_PROFILES.get(self.profile, {}).get("rules", ()))
         self.positions = self.acc.positions(f"{lid}:ALL", snapshot=self.snap)
         self.nav_c = int(self.acc.nav(f"{lid}:ALL", snapshot=self.snap).nav_c)
@@ -110,7 +142,7 @@ class _Ctx:
         return rule in self.rules
 
     def rows(self, sql: str, params=()):
-        with self.services.db.reader() as conn:
+        with shared_reader(self.services.db) as conn:
             return conn.execute(sql, params).fetchall()
 
     def placeholders(self) -> str:
@@ -384,7 +416,7 @@ def rule_form_sho(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
 def rule_option_limits(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
     out: List[Notice] = []
     rule = "Listed option position limits"
-    lim = int(LIMITS["OPTION_POSITION_LIMITS"]["default"])
+    default_lim = int(ctx.limit_overrides.get("OPTIONS") or LIMITS["OPTION_POSITION_LIMITS"]["default"])
     sides: Dict[str, Dict[str, int]] = {}
 
     def add(inst, qty: int):
@@ -402,8 +434,11 @@ def rule_option_limits(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
             return []
         add(o.inst, int(o.qty) if o.buy else -int(o.qty))
         sides = {k: v for k, v in sides.items() if k == o.inst.underlying_id}
-    thr = f"{lim:,} contracts per side (default tier; the class's own limit may be lower)"
     for uid, s in sorted(sides.items()):
+        own = ctx.limit_overrides.get(f"OPTIONS:{str(uid).upper()}")
+        lim = int(own or default_lim)
+        thr = (f"{lim:,} contracts per side (your override)" if (own or "OPTIONS" in ctx.limit_overrides)
+               else f"{lim:,} contracts per side (default tier; the class's own limit may be lower)")
         worst = max(s["bull"], s["bear"])
         status = "breach" if worst >= lim else ("notice" if Decimal(worst) >= OPTION_NOTICE_FRACTION * lim else "ok")
         msg = {"breach": "at or above the position limit", "notice": "within 20 % of the position limit", "ok": "below the position limit"}[status]
@@ -432,7 +467,8 @@ def rule_futures_limits(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
             return []
         net = {root: net.get(root, 0) + (int(o.qty) if o.buy else -int(o.qty))}
     for root, n in sorted(net.items()):
-        lim = table.get(root)
+        own = ctx.limit_overrides.get(str(root).upper())
+        lim = own or table.get(root)
         if lim is None:
             out.append(ctx.notice(rule, "info", "no limit in the static table", f"net {n:+,}", f"{root}: no spot-month limit in the table", "FUTURES_LIMITS", {"root": root, "net": n},
                                   o.account_id if o else None, o.iid if o else None))
@@ -440,7 +476,8 @@ def rule_futures_limits(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
         worst = abs(n)
         status = "breach" if worst >= lim else ("notice" if Decimal(worst) >= OPTION_NOTICE_FRACTION * lim else "ok")
         msg = {"breach": "at or above the spot-month limit", "notice": "within 20 % of the spot-month limit", "ok": "below the spot-month limit"}[status]
-        out.append(ctx.notice(rule, status, f"{lim:,} contracts ({root}); applied to the net position across all listed months (approximation)", f"net {n:+,}",
+        out.append(ctx.notice(rule, status, f"{lim:,} contracts ({root}{', your override' if own else ''}); applied to the net position across all listed months"
+                              " (approximation)", f"net {n:+,}",
                               f"{root}: {msg} (net {n:+,} contracts" + (", incl. this order)" if o else ")"), "FUTURES_LIMITS", {"root": root, "net": n, "limit": lim},
                               o.account_id if o else None, o.iid if o else None))
     return out
@@ -473,14 +510,16 @@ def rule_wash_sale(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
             if px >= pos.avg_px:
                 return [ctx.notice(rule, "ok", thr, None, f"a sale of {sym} at {px} against an average cost of {pos.avg_px} is not a loss", "WASH_SALE",
                                    {"expected_price": str(px), "avg_px": str(pos.avg_px)}, o.account_id, o.iid)]
-            buys = ctx.rows(f"SELECT fill_id, trade_date, qty FROM fills WHERE account_id IN ({q}) AND instrument_id=? AND side='BUY' AND trade_date >= ? ORDER BY trade_date",
-                            ctx.accounts + [o.iid, since])
-            msg = (f"this sale of {sym} at {px} is below the average cost {pos.avg_px}; a purchase within the {WASH_DAYS} days before ({len(buys)} found since {buys[0]['trade_date']})"
-                   f" or after it makes the loss a wash sale (informational)" if buys else
+            closing = _closing_open_fills(ctx, o)        # USX-23: the purchases that opened the lots this sale closes are not replacements
+            buys = [b for b in ctx.rows(f"SELECT fill_id, trade_date, qty FROM fills WHERE account_id IN ({q}) AND instrument_id=? AND side='BUY' AND trade_date >= ?"
+                                        f" ORDER BY trade_date", ctx.accounts + [o.iid, since]) if b["fill_id"] not in closing]
+            msg = (f"this sale of {sym} at {px} is below the average cost {pos.avg_px}; a replacement purchase within the {WASH_DAYS} days before"
+                   f" ({len(buys)} found since {buys[0]['trade_date']}, not counting the lots this sale closes) or after it makes the loss a wash sale"
+                   f" (informational)" if buys else
                    f"this sale of {sym} at {px} is below the average cost {pos.avg_px}: buying it back within {WASH_DAYS} days would make the loss a wash sale")
             return [ctx.notice(rule, "notice" if buys else "ok", thr, f"{px} vs {pos.avg_px}", msg, "WASH_SALE",
-                               {"expected_price": str(px), "avg_px": str(pos.avg_px), "recent_buys": [{"fill_id": b["fill_id"], "trade_date": b["trade_date"], "qty": int(b["qty"])} for b in buys]},
-                               o.account_id, o.iid)]
+                               {"expected_price": str(px), "avg_px": str(pos.avg_px), "recent_buys": [{"fill_id": b["fill_id"], "trade_date": b["trade_date"], "qty": int(b["qty"])} for b in buys],
+                                "lots_closed_from": sorted(closing)}, o.account_id, o.iid)]
         return [ctx.notice(rule, "n/a", thr, None, "not a purchase or a sale of a held position", "WASH_SALE", {}, o.account_id, o.iid)]
     losses = ctx.rows(f"SELECT lr.lot_id, f.fill_id, f.account_id, f.instrument_id, f.trade_date, lr.realised_c, (SELECT open_fill_id FROM lots WHERE lot_id=lr.lot_id) open_fill"
                       f" FROM lot_relief lr JOIN fills f ON f.fill_id=lr.close_fill_id WHERE f.account_id IN ({q}) AND f.trade_date >= ? AND lr.realised_c < 0 ORDER BY f.trade_date",
@@ -506,6 +545,19 @@ def rule_wash_sale(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
                               f" and added to the replacement basis (informational)", "WASH_SALE", h, None, iid))
     if not out:
         out.append(ctx.notice(rule, "ok", thr, None, f"no loss sale with a repurchase within {WASH_DAYS} days", "WASH_SALE", {"loss_sales_checked": len(losses)}))
+    return out
+
+
+def _closing_open_fills(ctx: _Ctx, o: _Order) -> set:
+    """The fills that opened the lots a SELL / STC of ``o.qty`` would relieve (first-in, first-out, as the ledger relieves them)."""
+    left = int(o.qty)
+    out = set()
+    for r in ctx.rows("SELECT open_fill_id, qty_remaining FROM lots WHERE account_id=? AND instrument_id=? AND side='LONG' AND qty_remaining > 0"
+                      " ORDER BY open_ts, lot_id", (o.account_id, o.iid)):
+        if left <= 0:
+            break
+        out.add(r["open_fill_id"])
+        left -= int(r["qty_remaining"])
     return out
 
 
@@ -647,12 +699,20 @@ RULE_FNS = {"REG_T": rule_reg_t, "PDT": rule_pdt, "CASH_ACCOUNT_GOOD_FAITH": rul
 def _run(ctx: _Ctx, o: Optional[_Order]) -> List[Notice]:
     out: List[Notice] = []
     seen = set()
+    foreign = o is not None and _foreign(o.inst)
     for key in ctx.rules:
         fn = RULE_FNS.get(key)
         if fn is None or fn in seen:
             continue
+        if foreign and key in US_ONLY_RULES:
+            continue
         seen.add(fn)
         out.extend(fn(ctx, o))
+    if foreign:
+        exch = (o.inst.spec or {}).get("exchange") if isinstance(getattr(o.inst, "spec", None), dict) else None
+        out.append(ctx.notice("Foreign venue rules", "info", None, None, f"{o.inst.symbol} trades on a foreign venue{f' ({exch})' if exch else ''}: the US"
+                              " securities-law notices (13F, 13D/G, Section 16, 13h-1, Form SHO, Reg SHO, Rule 201) do not apply to it, and the venue's own"
+                              " disclosure and short-selling rules are not modelled in this terminal", "FOREIGN_VENUE", {}, o.account_id, o.iid))
     return out
 
 
@@ -662,7 +722,10 @@ def profile_rules(profile: str) -> List[str]:
 
 
 def pretrade(services, account_id: str, inst, side: str, qty: int, pv: Optional[dict] = None, snapshot=None) -> List[Notice]:
-    """Notices for one order before it is placed (the ``orders.preview`` hook: ``pv["compliance"]``).  Never a block."""
+    """Notices for one order before it is placed (the ``orders.preview`` hook: ``pv["compliance"]``).  Never a block.  An FX deal
+    gets none (OA-26: no securities rule applies to a currency)."""
+    if getattr(inst, "kind", None) == "FX":
+        return []
     lid, _role = split_account_id(account_id)
     ctx = _Ctx(services, lid, snapshot)
     return _run(ctx, _Order(account_id, inst, (side or "").upper(), int(qty), dict(pv or {})))

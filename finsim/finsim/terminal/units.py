@@ -10,8 +10,9 @@ Conventions
 """
 from __future__ import annotations
 
+import re
 from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
-from typing import Iterable, List, Sequence, Union
+from typing import Iterable, List, Optional, Sequence, Union
 
 from finsim.money import D
 
@@ -97,3 +98,38 @@ def fmt_money(c: int) -> str:
 
 def sum_c(values: Iterable[int]) -> int:
     return sum(int(v) for v in values)
+
+
+_MONEY_RE = re.compile(r"[0-9]+(\.[0-9]{1,2})?")
+MONEY_INPUT_MAX_C = 100_000_000_000_000          # 1,000,000,000,000.00: a typo guard on typed amounts (BM-21)
+
+
+def parse_money(value, field: str = "amount", *, allow_zero: bool = False, max_c: Optional[int] = MONEY_INPUT_MAX_C) -> int:
+    """STRICT money input in major units -> integer cents (BM-21; deposits, withdrawals and transfers typed by the owner).
+
+    Accepted: a plain decimal string ``"1000000"`` / ``"1000000.5"`` / ``"1000000.50"`` (or an int of whole units).
+    Refused with ``ValueError`` and a plain sentence naming ``field``: empty, a bool or float, a sign, an exponent
+    (``"1e6"``), a thousands separator or space (``"1,000"``), more than 2 decimals (``"100.005"`` is never rounded to
+    100.00 silently), zero unless ``allow_zero``, and anything above ``max_c`` (default 1,000,000,000,000.00, a typo
+    guard: ``"999999999999999"`` is refused instead of becoming a 999-trillion deposit)."""
+    if value is None or isinstance(value, (bool, float)):
+        raise ValueError(f"{field} must be a plain amount such as 1000000.00")
+    s = str(int(value)) if isinstance(value, int) else str(value).strip()
+    if not s:
+        raise ValueError(f"{field} is required")
+    if not _MONEY_RE.fullmatch(s):
+        if "e" in s.lower():
+            raise ValueError(f"{field} {s!r}: write the amount in full digits (no exponent)")
+        if "," in s or " " in s or "_" in s:
+            raise ValueError(f"{field} {s!r}: digits and one decimal point only (no thousands separators)")
+        if s.startswith(("-", "+")):
+            raise ValueError(f"{field} {s!r}: a positive amount without a sign")
+        if "." in s and len(s.split(".", 1)[1]) > 2:
+            raise ValueError(f"{field} {s!r}: at most 2 decimals (cents)")
+        raise ValueError(f"{field} {s!r} is not an amount: digits with at most 2 decimals, e.g. 1000000.00")
+    n = to_c(s)
+    if n <= 0 and not allow_zero:
+        raise ValueError(f"{field} must be more than 0.00")
+    if max_c is not None and n > int(max_c):
+        raise ValueError(f"{field} {fmt_money(n)} is above {fmt_money(int(max_c))}: check the amount")
+    return n

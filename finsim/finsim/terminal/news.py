@@ -7,7 +7,10 @@ Conventions (every one of them is a requirement, not a preference)
   fetched with ``BROWSER_UA`` — Yahoo only, per the UA policy (iron rule 7).  (2) The Federal Reserve press feed
   (``config.NEWS_FED_RSS``) with ``GOV_UA = LoganTerminal/1.0 (loganshaffer87@gmail.com)`` (iron rule 6; the old
   ``finsim/engines/realnews.py`` sent a browser UA to the Fed — not allowed here), parsed with ``xml.etree``.
-  (3) The repository's own newspaper editions from ``<repo>/site/reports/index.json`` read from disk (no network).
+  (3) The newspaper's editions: the PUBLISHED index (``config.NEWS_PAPER_INDEX_URL``, GitHub Pages, honest terminal UA)
+  read at most once an hour on the paper slot (``paper_url``; SHELL-09 2026-10-21: the routines publish to Pages, which
+  this working copy never pulls, so the local ``<repo>/site/reports/index.json`` ended five weeks back), the local file
+  as the fallback when the published index cannot be read (``--offline``: the local file only).
   The User-Agent is always ``quotes.http.ua_for(url)``; nothing here ever chooses a UA by hand.
 - ``refresh(which)`` runs on the quote worker's refresher slot ONLY (``quotes.worker.RatesRefresher`` registers
   ``news_yahoo`` / ``news_fed`` / ``news_paper`` when ``services.news`` exists), never on a request thread.  The network
@@ -22,8 +25,9 @@ Conventions (every one of them is a requirement, not a preference)
   (``/api/health.news.injection_flags`` and the health footer); nothing is interpreted, scored or summarised.
 - Newspaper rule: the ``am`` / ``pm`` (weekday) and ``sat`` / ``sun`` (weekend) slots are news; the ``learn`` slot is a
   lesson and is skipped.  The window is TODAY's editions (New York date); when today has none yet (before the 06:30
-  morning brief) the previous day's editions are used instead, so the column is always "today's editions" as the page
-  says.  One item per edition (its title; the summary travels with ``editions()``) and one per ``headlines[]`` entry
+  morning brief) the previous day's editions are used instead.  When the newest edition is older than yesterday the
+  latest editions (up to ``STALE_EDITIONS``, newest first) are listed with their dates and flagged ``stale`` with the
+  newest date, so the page says "newest edition YYYY-MM-DD" instead of looking like an empty working feed.  One item per edition (its title; the summary travels with ``editions()``) and one per ``headlines[]`` entry
   (link = the edition link + ``#headline-N`` so the dedupe key stays unique).  Edition times are the publication
   schedule of the newspaper (``config/settings.yml``): am 06:30, pm 16:30, sat / sun 09:00 ET.
 - Failures surface, never silently: a failing fetch keeps the last items, records the source state (``health()``:
@@ -72,6 +76,10 @@ SLOT_LABEL = {"am": "Morning brief", "pm": "Closing brief", "sat": "Weekly Revie
 PAPER_NAME = "Logan's Daily Newspaper"
 FED_PUBLISHER = "Federal Reserve Board"
 PROVIDER_NAMES = {"yahoo": "yahoo_news", "fed": "fed", "newspaper": "newspaper"}
+STALE_EDITIONS = 4                            # editions listed when the newest one is older than yesterday
+PAPER_REMOTE_EVERY_S = 3600                   # the published index is read at most once an hour (the paper slot runs more often)
+PAPER_REMOTE_RETRY_S = 900                    # after a failed read of the published index, the next try (the local copy serves meanwhile)
+COMPLIANCE_QUIET = ("ok", "n/a", "na", "")    # compliance statuses that are not notices (SHELL-11: never counted)
 OPEN_ORDER_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 SEVERITIES = ("ERROR", "WARN", "INFO")
 ATTENTION_ITEMS = 25
@@ -214,17 +222,29 @@ def parse_newspaper_index(raw, today: date, base_url: str = NEWS_PAPER_URL) -> T
         if not isinstance(d, str) or not _DATE_RE.match(d) or not isinstance(path, str) or not _PATH_RE.match(path) or ".." in path.split("/"):
             continue
         by_date.setdefault(d, []).append(e)
-    pick = None
+    order = ["am", "sat", "sun", "pm"]
+    picked: List[Tuple[date, dict]] = []
+    stale = False
     for cand in (today, today - timedelta(days=1)):
         if cand.isoformat() in by_date:
-            pick = cand
+            picked = [(cand, e) for e in sorted(by_date[cand.isoformat()], key=lambda x: order.index(x["slot"]))]
             break
-    if pick is None:
+    if not picked:
+        # the newest edition is older than yesterday: the latest editions with their dates (never a date after today)
+        past = sorted((d for d in by_date if d <= today.isoformat()), reverse=True)
+        for d in past:
+            for e in sorted(by_date[d], key=lambda x: -order.index(x["slot"])):
+                picked.append((date.fromisoformat(d), e))
+            if len(picked) >= STALE_EDITIONS:
+                break
+        picked = picked[:STALE_EDITIONS]
+        stale = bool(picked)
+    if not picked:
         return [], []
+    newest = max(d for d, _ in picked).isoformat()
     editions: List[dict] = []
     items: List[dict] = []
-    order = ["am", "sat", "sun", "pm"]
-    for e in sorted(by_date[pick.isoformat()], key=lambda x: order.index(x["slot"])):
+    for pick, e in picked:
         slot = e["slot"]
         link = base_url + e["path"]
         when = edition_time(pick, slot)
@@ -232,9 +252,12 @@ def parse_newspaper_index(raw, today: date, base_url: str = NEWS_PAPER_URL) -> T
         headlines = [sanitize(h) for h in (e.get("headlines") or []) if isinstance(h, str)]
         headlines = [h for h in headlines if h][:12]
         rm = e.get("reading_minutes")
-        editions.append({"date": pick.isoformat(), "slot": slot, "label": SLOT_LABEL[slot], "title": title, "summary": sanitize(e.get("summary"), 1200),
-                         "headlines": headlines, "reading_minutes": int(rm) if isinstance(rm, int) and not isinstance(rm, bool) else None,
-                         "path": e["path"], "link": link, "time": when})
+        ed = {"date": pick.isoformat(), "slot": slot, "label": SLOT_LABEL[slot], "title": title, "summary": sanitize(e.get("summary"), 1200),
+              "headlines": headlines, "reading_minutes": int(rm) if isinstance(rm, int) and not isinstance(rm, bool) else None,
+              "path": e["path"], "link": link, "time": when}
+        if stale:
+            ed.update(stale=True, newest=newest)
+        editions.append(ed)
         publisher = f"{PAPER_NAME} ({SLOT_LABEL[slot]})"
         items.append({"source": "newspaper", "title": title, "publisher": publisher, "link": link, "time": when, "tickers": [], "category": "edition"})
         for i, h in enumerate(headlines, start=1):
@@ -290,7 +313,7 @@ class NewsStore:
 
     def __init__(self, db, clock, getter: Optional[Getter] = None, index_path: Optional[str] = None, log=None, health=None,
                  sleep: Optional[Callable[[float], None]] = None, market_queries=MARKET_QUERIES, max_queries: int = MAX_QUERIES,
-                 base_url: str = NEWS_PAPER_URL, timeout: float = 20.0):
+                 base_url: str = NEWS_PAPER_URL, timeout: float = 20.0, paper_url: Optional[str] = None):
         self.db = db
         self.clock = clock
         self._getter = getter
@@ -308,6 +331,12 @@ class NewsStore:
         self._editions: List[dict] = []
         self._paper_mtime_ns: Optional[int] = None
         self._paper_day: Optional[str] = None
+        self.paper_url = paper_url               # the published index (None: the local file only, as in the tests)
+        self._remote_raw: Optional[bytes] = None
+        self._remote_ok_ts: Optional[int] = None
+        self._remote_next_ts: int = 0
+        self._remote_error: Optional[str] = None
+        self._paper_meta: dict = {}
 
     # ---- network (no lock held) --------------------------------------------------------------------------------------
     def _get(self, url: str, accept: str) -> bytes:
@@ -443,29 +472,72 @@ class NewsStore:
         self._ok("fed", len(rows), new)
         return new
 
+    def _remote_index(self, now: int) -> Tuple[Optional[bytes], bool]:
+        """The published index (SHELL-09): fetched at most once per ``PAPER_REMOTE_EVERY_S`` (after a failure, again after
+        ``PAPER_REMOTE_RETRY_S``); between fetches the last good copy is re-used.  Returns ``(raw or None, fetched now)``;
+        a failure is remembered in ``_remote_error`` (the local file then serves) and never raised from here."""
+        if not self.paper_url:
+            return None, False
+        if now < self._remote_next_ts:
+            return self._remote_raw, False
+        try:
+            raw = self._get(self.paper_url, "application/json")
+            if len(raw) > FEED_MAX_BYTES:
+                raise NewsError("published newspaper index too large")
+            parse_newspaper_index(raw, self.clock.today(), self.base_url)      # validates the shape before it replaces the last good copy
+        except Exception as e:   # noqa: BLE001 — FetchError / NewsError: recorded; the last good copy or the local file serves
+            self._remote_error = f"{type(e).__name__}: {e}"[:200]
+            self._remote_next_ts = now + PAPER_REMOTE_RETRY_S
+            if self.log is not None:
+                self.log.warning("published newspaper index unavailable (%s); the %s serves", self._remote_error,
+                                 "last published copy" if self._remote_raw is not None else "local file")
+            return self._remote_raw, False
+        self._remote_raw, self._remote_ok_ts, self._remote_error = raw, now, None
+        self._remote_next_ts = now + PAPER_REMOTE_EVERY_S
+        return raw, True
+
     def _refresh_newspaper(self) -> int:
         path = self.index_path
         today = self.clock.today()
+        now = int(self.clock.epoch())
         try:
-            if not path:
-                raise NewsError("newspaper index path not configured")
-            st = os.stat(path)
-            if self._paper_mtime_ns == st.st_mtime_ns and self._paper_day == today.isoformat():
-                return 0                                  # unchanged since the last read on the same day
-            with open(path, "rb") as fh:
-                raw = fh.read(FEED_MAX_BYTES + 1)
-            if len(raw) > FEED_MAX_BYTES:
-                raise NewsError("newspaper index too large")
+            raw, fetched = self._remote_index(now)
+            origin, mtime = ("published", None) if raw is not None else ("local", None)
+            if raw is not None:
+                if not fetched and self._paper_day == today.isoformat() and self._paper_meta.get("origin") == "published":
+                    return 0                              # the same published copy, already parsed today
+            else:
+                if not path:
+                    raise NewsError("newspaper index path not configured" + (f"; published index: {self._remote_error}" if self._remote_error else ""))
+                st = os.stat(path)
+                mtime = st.st_mtime_ns
+                if self._paper_mtime_ns == mtime and self._paper_day == today.isoformat() and self._paper_meta.get("origin") == "local":
+                    return 0                              # unchanged since the last read on the same day
+                with open(path, "rb") as fh:
+                    raw = fh.read(FEED_MAX_BYTES + 1)
+                if len(raw) > FEED_MAX_BYTES:
+                    raise NewsError("newspaper index too large")
             editions, rows = parse_newspaper_index(raw, today, self.base_url)
         except Exception as e:   # noqa: BLE001 — OSError / NewsError / ValueError: recorded, re-raised
             self._fail("newspaper", f"{type(e).__name__}: {e}")
             raise
         new = self._store(rows)
+        newest = max((ed["date"] for ed in editions), default=None)
+        meta = {"origin": origin, "url": self.paper_url if origin == "published" else None, "local_path": None if origin == "published" else path,
+                "fetched_ts": self._remote_ok_ts if origin == "published" else now, "remote_error": self._remote_error,
+                "newest": newest, "stale": bool(editions and editions[0].get("stale")), "editions": len(editions)}
         with self._lock:
             self._editions = editions
-            self._paper_mtime_ns, self._paper_day = st.st_mtime_ns, today.isoformat()
+            self._paper_mtime_ns, self._paper_day = mtime, today.isoformat()
+            self._paper_meta = meta
         self._ok("newspaper", len(rows), new)
         return new
+
+    def paper_meta(self) -> dict:
+        """Where the newspaper column comes from (``origin`` published / local, the published index's last good read, its
+        last error), the newest edition's date and ``stale`` (newest older than yesterday)."""
+        with self._lock:
+            return dict(self._paper_meta)
 
     # ---- storage --------------------------------------------------------------------------------------------------------
     def _store(self, rows: List[dict]) -> int:
@@ -533,11 +605,55 @@ class NewsStore:
             return {s: self._states[s].to_dict() for s in SOURCES}
 
     def health(self) -> dict:
-        """``/api/health.news``: injection flags, last fetch per source, the per-source states, the row count."""
+        """``/api/health.news``: injection flags, last fetch per source, the per-source states, the row count, where the
+        newspaper column comes from (``paper``)."""
         with self.db.reader() as conn:
             rows = int(conn.execute("SELECT COUNT(*) FROM news_items").fetchone()[0])
         return {"injection_flags": self.injection_flags, "fetched": self.fetched(), "sources": self.states(), "rows": rows,
-                "intervals": {k.lower(): int(v) for k, v in NEWS_INTERVALS.items()}}
+                "intervals": {k.lower(): int(v) for k, v in NEWS_INTERVALS.items()}, "paper": self.paper_meta()}
+
+
+# ---- which book an attention row belongs to (SHELL-03) -------------------------------------------------------------------------
+_LIFETIME_RE = re.compile(r"^[A-Z]+[0-9]+$")
+
+
+def attention_lifetime(row) -> Optional[str]:
+    """The lifetime an attention row belongs to: its account's lifetime (``P1:US_EXCHANGE`` -> ``P1``), a ``lifetime`` ref
+    (``ref_type='lifetime'``), or ``details.lifetime_id`` / ``details.closed``; None for a global row (providers, the
+    whole-database integrity run, the curve, workers, API incidents)."""
+    get = row.get if isinstance(row, dict) else (lambda k: row[k] if k in row.keys() else None)
+    aid = get("account_id")
+    if aid and ":" in str(aid):
+        lid = str(aid).split(":", 1)[0]
+        if _LIFETIME_RE.match(lid):
+            return lid
+    if get("ref_type") == "lifetime" and get("ref_id") and _LIFETIME_RE.match(str(get("ref_id"))):
+        return str(get("ref_id"))
+    raw = get("details_json")
+    if raw:
+        try:
+            d = json.loads(raw) if isinstance(raw, str) else dict(raw)
+        except (TypeError, ValueError):
+            d = {}
+        for k in ("lifetime_id", "closed"):
+            v = d.get(k) if isinstance(d, dict) else None
+            if isinstance(v, str) and _LIFETIME_RE.match(v):
+                return v
+    return None
+
+
+def attention_book(row) -> Optional[str]:
+    """The book code of an attention row (``P`` / ``F`` / ``I`` ...), None for a global row."""
+    lid = attention_lifetime(row)
+    return re.match(r"^([A-Z]+)", lid).group(1) if lid else None
+
+
+def attention_in_books(row, books) -> bool:
+    """True when the row is global or belongs to one of ``books`` (book codes; None = every book, the consolidated view)."""
+    if books is None:
+        return True
+    b = attention_book(row)
+    return b is None or b in books
 
 
 # ---- the attention summary -----------------------------------------------------------------------------------------------
@@ -597,12 +713,18 @@ def attention_summary(services, scope: str = "ALL", check: bool = False) -> dict
             vm = _count(conn, "SELECT COUNT(*) FROM otc_vm v JOIN otc_contracts c ON c.contract_id=v.contract_id LEFT JOIN journal_entries e ON e.entry_id=v.entry_id"
                               f" WHERE v.delta_c < 0 AND {wc} AND ((e.ts IS NOT NULL AND e.ts > ? AND e.ts <= ?) OR (e.ts IS NULL AND v.vm_date IN (?, ?)))",
                         pc + [day_start, now, (aday - timedelta(days=1)).isoformat(), aday.isoformat()])
-        # open attention: global rows (no account) + the scope's accounts; lifetime-scoped rows only for the scope's lifetimes
-        wa, pa = (_in("account_id", accounts) if accounts else ("0", []))
-        wl, pl = (_in("ref_id", lids) if lids else ("0", []))
-        sql = ("SELECT id, ts, severity, source, code, message, account_id, ref_type, ref_id FROM attention WHERE resolved_ts IS NULL"
-               f" AND (account_id IS NULL OR {wa}) AND (ref_type IS NULL OR ref_type <> 'lifetime' OR {wl}) ORDER BY id DESC")
-        for r in conn.execute(sql, pa + pl).fetchall():
+        # open attention: the SAME set as GET /api/attention for this book (SHELL-03): global rows plus every row that belongs to a
+        # lifetime of the scope's books (account, lifetime ref or details.lifetime_id); the consolidated scope counts every row
+        books = None if sc.kind == "ALL_BOOKS" else {re.match(r"^([A-Z]+)", lid).group(1) for lid in lids}
+        acct_set = set(accounts)
+
+        def keep(x) -> bool:
+            if sc.kind == "ACCOUNT" and x["account_id"]:
+                return x["account_id"] in acct_set                # an account scope: that account's rows (+ the book's / global ones below)
+            return attention_in_books(x, books)
+        rows_all = conn.execute("SELECT id, ts, severity, source, code, message, account_id, ref_type, ref_id, details_json FROM attention"
+                                " WHERE resolved_ts IS NULL ORDER BY id DESC").fetchall()
+        for r in (x for x in rows_all if keep(x)):
             sev = r["severity"] if r["severity"] in open_by else "INFO"
             open_by[sev] += 1
             if len(items) < ATTENTION_ITEMS:
@@ -654,7 +776,8 @@ def _optional_count(services, module_attr: str, fn_names: Tuple[str, ...], scope
             return None
         if isinstance(res, (list, tuple)):
             if module_attr == "compliance":
-                return sum(1 for n in res if (getattr(n, "status", None) or (n.get("status") if isinstance(n, dict) else None)) != "ok")
+                # SHELL-11: only notices count (info / notice / warn / breach); 'ok' and 'n/a' rows ("no short positions") never do
+                return sum(1 for n in res if str(getattr(n, "status", None) or (n.get("status") if isinstance(n, dict) else None) or "").lower() not in COMPLIANCE_QUIET)
             return len(res)
         seq = getattr(res, list_attr, None)
         if seq is None and isinstance(res, dict):
@@ -688,4 +811,5 @@ def _provider_pauses(services, conn, now: int) -> dict:
 
 __all__ = ["NewsStore", "NewsItem", "SourceState", "NewsError", "attention_summary", "sanitize", "is_instruction_like", "safe_link",
            "parse_yahoo_news", "parse_fed_rss", "parse_newspaper_index", "edition_time", "SOURCES", "MARKET_QUERIES", "RETENTION", "TITLE_LIMIT",
-           "NEWS_SLOTS", "SKIPPED_SLOTS", "OPEN_ORDER_STATUSES"]
+           "NEWS_SLOTS", "SKIPPED_SLOTS", "OPEN_ORDER_STATUSES", "attention_lifetime", "attention_book", "attention_in_books", "STALE_EDITIONS",
+           "COMPLIANCE_QUIET"]

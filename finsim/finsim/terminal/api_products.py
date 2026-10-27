@@ -20,16 +20,38 @@ import json
 from decimal import Decimal
 from typing import Dict, List, Optional
 
+from datetime import date, timedelta
+
 from . import books as _books, config
 from .accounting import ScopeError
 from .api import (ApiError, MAX_QUOTE_IDS, NotBuilt, NotFound, PACKAGES, RETRY_MS, Request, mark_dict, need, ok_or_raise, quote_dict, run_command,
                   OPEN_ORDER_STATUSES)
 from .api_views import _account_or_404, account_row, order_full
-from .commands import Result
+from .commands import ConflictError, Result
 from .instruments import EQUITY_KINDS, parse_futures_id
 from .quotes.cache import PRIORITY_RANK
 
 NOT_REJECTIONS = ("CONFIRM_REQUIRED", "PREVIEW_STALE", "REQUEST_ID_REUSED", "BAD_REQUEST_ID")
+#: C5 (BUILD2_PLAN): instrument kinds that have no Yahoo quote: never subscribed (quote null, no 'up to 15 min delayed' record);
+#: their page shows the product module's ``instrument_extra`` instead
+NO_YAHOO_KINDS = ("BOND", "PRIVATE", "SWAP", "IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD")
+#: USX-26: the futures tab's group headers in trader words
+FUTURES_GROUP_LABELS = {"CME_EQUITY_INDEX": "CME equity index", "CME_RATES": "CME rates", "CME_FX": "CME FX", "NYMEX_ENERGY": "NYMEX energy",
+                        "COMEX_METALS": "COMEX metals", "CBOT_GRAINS": "CBOT grains"}
+EXPIRY_WEEK_D = 7               # USX-26: a cash-settled / energy month inside its last 7 calendar days before expiry is not the active month
+#: USX-26: groups whose contracts deliver from the first notice day (the last business day of the month BEFORE the contract month): the
+#: market rolls out of a month a few days before that, so such a month stops being the active one ``NOTICE_ROLL_D`` days before its
+#: contract month begins (GCV26 is not the active gold contract in October: GCZ26 is)
+NOTICE_GROUPS = ("CME_RATES", "COMEX_METALS", "CBOT_GRAINS")
+NOTICE_ROLL_D = 3
+STALE_PRINT_SESSIONS = 10       # USX-27: a FULL row with no print for more than this many sessions is flagged 'possibly delisted'
+MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+BARS_RETRY_S = 60               # C8: after a failed full-session fetch, the chart asks the worker again at most once a minute
+#: C5: which runtime module answers ``instrument_extra(rt, inst, now)`` for a kind (the first bound one that defines it)
+EXTRA_MODULES = {"BOND": ("bonds", "treasuries"), "PRIVATE": ("private",), "FX": ("fx",), "SWAP": ("swaps", "otc_options"),
+                 "IRS": ("swaps", "otc_options"), "TRS": ("swaps", "otc_options"), "XCCY": ("swaps", "otc_options"),
+                 "EQ_OPTION": ("otc_options", "swaps"), "FX_OPTION": ("otc_options", "swaps"), "EQ_FORWARD": ("otc_options", "swaps"),
+                 "FX_FORWARD": ("otc_options", "swaps")}
 MARKET_ROWS = 60                # the cap of the DEBT bonds list; the US Exchange / PB equity and option-underlying lists have none
 BROWSE = "BROWSE"               # the cache's slow list class (quotes/cache.py): at most config.BROWSE_PER_MIN refreshes a minute
 BROWSE_TTL_S = 1800             # a listed row's BROWSE subscription lives 30 min after the page's last load (the page reloads every 30 s)
@@ -48,11 +70,140 @@ def _inst_or_404(rt, iid: str):
 def _inst_row(rt, inst, rec=None, now: int = 0, position: Optional[int] = None) -> dict:
     return {"instrument_id": inst.instrument_id, "symbol": inst.symbol, "name": inst.name, "kind": inst.kind, "currency": inst.currency, "support": inst.support,
             "status": inst.status, "session_group": inst.session_group, "quote": quote_dict(rec, now), "position": position,
-            "optionable": bool(inst.cboe_symbol) and inst.kind in EQUITY_KINDS}
+            "optionable": bool(inst.cboe_symbol) and inst.kind in EQUITY_KINDS,
+            "price_scale": str(inst.price_scale), "quote_unit": (inst.spec or {}).get("quote_unit") if isinstance(inst.spec, dict) else None}
 
 
 def _replay(res: Result) -> dict:
     return {"X-Replayed": "1"} if res.replayed else {}
+
+
+def book_guard(req: Request, account_id) -> None:
+    """C7 (SHELL-02): a request whose ``?book=`` names a book that does not own ``account_id`` is refused 409 BOOK_MISMATCH before
+    anything is previewed or booked (the ticket would otherwise book into the other book while the switcher says otherwise)."""
+    sel = req.q("book")
+    aid = str(account_id or "")
+    if not sel or not aid:
+        return
+    try:
+        lid, _role = _books.split_account_id(aid)
+    except ValueError:
+        return
+    owner = _books.book_code_of(lid)
+    if owner == str(sel).upper():
+        return
+    with req.rt.db.reader() as conn:
+        names = {b.code: b.name for b in _books.books(conn)}
+    raise ApiError(409, "BOOK_MISMATCH", f"account {aid} belongs to the {names.get(owner, owner)}, not the selected {names.get(str(sel).upper(), sel)}: "
+                   f"switch books or pick an account of this book", {"account_id": aid, "book": owner, "selected": str(sel).upper()})
+
+
+def _month_label(inst) -> str:
+    """The contract month in words ("Dec 2026") from the futures id (root, year, month), else from the expiry date."""
+    parsed = parse_futures_id(inst.instrument_id)
+    if parsed:
+        try:
+            return f"{MONTH_NAMES[int(parsed[2]) - 1]} {int(parsed[1])}"
+        except (ValueError, IndexError, TypeError):
+            pass
+    try:
+        d = date.fromisoformat(str(inst.expiry))
+    except (TypeError, ValueError):
+        return inst.symbol
+    return f"{MONTH_NAMES[d.month - 1]} {d.year}"
+
+
+def roll_date(inst) -> Optional[date]:
+    """USX-26: the day a futures month stops being the active one: for the physically delivered groups (``NOTICE_GROUPS``)
+    ``NOTICE_ROLL_D`` days before its contract month begins (ahead of the first notice day), for the others ``EXPIRY_WEEK_D`` days
+    before its expiry (the roll week of the cash-settled index, FX and energy contracts)."""
+    parsed = parse_futures_id(inst.instrument_id)
+    if inst.session_group in NOTICE_GROUPS and parsed:
+        try:
+            return date(int(parsed[1]), int(parsed[2]), 1) - timedelta(days=NOTICE_ROLL_D)
+        except (TypeError, ValueError):
+            pass
+    try:
+        return date.fromisoformat(str(inst.expiry)) - timedelta(days=EXPIRY_WEEK_D)
+    except (TypeError, ValueError):
+        return None
+
+
+def active_months(rt, today: date) -> Dict[str, dict]:
+    """USX-26: per futures root, the ACTIVE listed months (by expiry) and the active one: the month with the highest observed volume
+    (the cached quotes' day volume; open interest is not in the free feed) when it beats the baseline, else the baseline = the first
+    month before its roll date (``roll_date``: GCZ26, not GCV26 in October), else the front."""
+    by_root: Dict[str, list] = {}
+    for inst in rt.instruments.all():
+        if inst.kind != "FUTURE" or inst.status != "ACTIVE":
+            continue
+        parsed = parse_futures_id(inst.instrument_id)
+        root = parsed[0] if parsed else inst.symbol
+        by_root.setdefault(root, []).append(inst)
+    cache = getattr(rt, "cache", None)
+    out: Dict[str, dict] = {}
+    for root, insts in by_root.items():
+        insts.sort(key=lambda x: (x.expiry or "9999-12-31", x.instrument_id))
+        recs = cache.get_many([i.instrument_id for i in insts]) if cache is not None else {}
+        base = None
+        for i in insts:
+            rd = roll_date(i)
+            if rd is None or today < rd:
+                base = i
+                break
+        base = base or insts[-1]
+
+        def vol(i):
+            r = recs.get(i.instrument_id)
+            v = getattr(r, "day_volume", None) if r is not None else None
+            try:
+                return int(v or 0)
+            except (TypeError, ValueError):
+                return 0
+        best = max(insts, key=lambda i: (vol(i), -insts.index(i)))
+        pick, why = (best, "highest observed volume") if vol(best) > vol(base) and best is not base else \
+                    (base, "the next month: the front one is in its delivery / expiry roll" if base is not insts[0] else "front month")
+        out[root] = {"active": pick, "why": why, "months": insts}
+    return out
+
+
+def print_age(rt, quote: Optional[dict], now: int) -> tuple:
+    """USX-27: ``(last_print_age_d, sessions since the print (counted up to STALE_PRINT_SESSIONS + 1), print date)`` of a list row's
+    compact quote (None when it has no print)."""
+    qt = (quote or {}).get("quote_time")
+    if not qt:
+        return None, None, None
+    from .clock import ny_of
+    d0 = ny_of(int(qt)).date()
+    d1 = ny_of(int(now)).date()
+    age_d = max(0, (d1 - d0).days)
+    if age_d <= STALE_PRINT_SESSIONS:
+        return age_d, None, d0
+    n, d = 0, d0 + timedelta(days=1)
+    while d <= d1 and n <= STALE_PRINT_SESSIONS:
+        if rt.cal.is_business_day(d):
+            n += 1
+        d += timedelta(days=1)
+    return age_d, n, d0
+
+
+def instrument_extra(rt, inst, now: int) -> Optional[dict]:
+    """C5: the product module's ``instrument_extra(rt, inst, now) -> {headline {value, quality, as_of, source, note}, spec_view
+    [{label, value}], actions}`` for this kind (``EXTRA_MODULES``), else None.  A failure is logged and answered as
+    ``{"error": ...}`` on the page (never hidden, never a 500 for the whole instrument page)."""
+    for attr in EXTRA_MODULES.get(getattr(inst, "kind", ""), ()):
+        mod = getattr(rt, attr, None)
+        fn = getattr(mod, "instrument_extra", None) if mod is not None else None
+        if not callable(fn):
+            continue
+        try:
+            out = fn(rt, inst, now)
+        except Exception as e:   # noqa: BLE001 - surfaced on the page and in the log
+            if getattr(rt, "log", None):
+                rt.log.exception("instrument_extra %s for %s failed", attr, inst.instrument_id)
+            return {"error": f"{type(e).__name__}: {e}", "source": attr}
+        return out if isinstance(out, dict) else None
+    return None
 
 
 def compact_quote(rec, now: int) -> Optional[dict]:
@@ -75,7 +226,11 @@ def _quotes_for(rt, ids: List[str], now: int, priority: Optional[str] = "PAGE", 
     if cache is None or not ids:
         return {}
     if priority:
-        cache.subscribe(ids, ttl_s, priority)
+        # C5: bonds, private names, swaps and OTC contracts have no Yahoo quote: never subscribed (their own modules price them)
+        master = getattr(rt, "instruments", None)
+        sub = [i for i in ids if master is None or getattr(master.get(i), "kind", None) not in NO_YAHOO_KINDS]
+        if sub:
+            cache.subscribe(sub, ttl_s, priority)
     shape = compact_quote if compact else quote_dict
     return {k: shape(v, now) for k, v in cache.get_many(ids).items()}
 
@@ -186,6 +341,7 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
     rows: List[dict] = []
     extra: dict = {}
     fast: Optional[set] = None      # set by the equities / options tabs: the rows quoted fast; every other row is a BROWSE row
+    fut_meta: Dict[str, dict] = {}   # the futures tab: per active month its root, why it is the active one and the listed months (USX-26)
     work_rows: Optional[set] = None  # the options tab: underlyings with an open order on themselves OR on one of their options
     what = ""
 
@@ -235,22 +391,26 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
             fast, work_rows = quick, work
             what = "optionable underlyings"
         elif tab == "futures":
-            front: Dict[str, object] = {}
-            for inst in master.all():
-                if inst.kind != "FUTURE" or inst.status != "ACTIVE":
-                    continue
-                parsed = parse_futures_id(inst.instrument_id)
-                root = parsed[0] if parsed else inst.symbol
-                cur = front.get(root)
-                if cur is None or (inst.expiry or "") < (cur.expiry or ""):
-                    front[root] = inst
-            ids = pick(list(held) + working) + [i.instrument_id for i in sorted(front.values(), key=lambda x: (x.session_group, x.symbol)) if i.instrument_id not in held]
+            # USX-26: one row per root = its ACTIVE month (observed volume, else the first month outside its expiry week), the other listed
+            # months in `months` for a picker; held / working contracts are listed as they are
+            act = active_months(rt, rt.clock.today())
+            for root, a in act.items():
+                inst = a["active"]
+                fut_meta[inst.instrument_id] = {"root": root, "why": a["why"],
+                                                "months": [{"instrument_id": m.instrument_id, "symbol": m.symbol, "expiry": m.expiry, "label": _month_label(m),
+                                                            "active": m is inst} for m in a["months"]]}
+            own = [i for i in pick(list(held) + working) if getattr(master.get(i), "kind", None) == "FUTURE"]
+            ids = own + [a["active"].instrument_id for a in sorted(act.values(), key=lambda a: (a["active"].session_group, a["active"].symbol))
+                         if a["active"].instrument_id not in own]
             extra["groups"] = sorted({master.get(i).session_group for i in ids if master.get(i)})
+            extra["group_labels"] = {g: FUTURES_GROUP_LABELS.get(g, g.replace("_", " ")) for g in extra["groups"]}
         elif tab == "otc":
             ids = []
             swaps = getattr(rt, "swaps", None)
-            extra["otc"] = {"state": "available" if swaps is not None else f"NOT_BUILT {PACKAGES['swaps']}", "kinds": ["IRS", "TRS", "XCCY"],
-                            "not_in_this_build": ["OTC options", "FX options", "FRAs", "caps"]}
+            otc_opt = getattr(rt, "otc_options", None)
+            kinds = ["IRS", "TRS", "XCCY"] + (["EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD"] if otc_opt is not None else [])
+            extra["otc"] = {"state": "available" if swaps is not None else "not available in this version", "kinds": kinds,
+                            "not_in_this_build": ["swaptions", "caps / floors", "FRAs"] + ([] if otc_opt is not None else ["OTC equity / FX options", "OTC forwards"])}
         else:
             raise ApiError(400, "BAD_REQUEST", f"unknown tab {tab!r}", {"tabs": [t["key"] for t in tabs]})
     elif kind == "CREDIT":
@@ -259,7 +419,8 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
         ids = pick(list(held) + working + watched)
         rates = getattr(rt, "rates", None)
         extra = {"loans": loans, "borrows": borrows, "rates": rates.view() if rates is not None and hasattr(rates, "view") else None,
-                 "repo": {"state": "NOT_IN_THIS_BUILD", "note": "repo / reverse repo and lending out of inventory are not in this build"}}
+                 "repo": ({"state": "available", "note": "repo / reverse repo and securities lending: Credit Instruments desk"} if getattr(rt, "counterparties", None) is not None
+                          else {"state": "NOT_YET", "note": "repo / reverse repo and lending out of inventory are not in this version yet"})}
     elif kind == "FOREIGN_FX":
         tabs = [{"key": "fx", "label": "FX spot"}, {"key": "listings", "label": "Foreign listings"}]
         tab = tab or "fx"
@@ -267,16 +428,19 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
             # held / working / watched first, then every foreign listing of the master (account kind FOREIGN_FX)
             ids = pick(list(held) + working + watched
                        + fill(("EQUITY", "ETF", "ADR", "REIT", "PREFERRED"), 400, lambda x: "FOREIGN_FX" in x.account_kinds))
-            extra["note"] = ("foreign listings show live (delayed) quotes and marks; trading them is not in this build "
-                             "(a foreign session and FX settlement are needed)")
+            extra["note"] = ("foreign listings: delayed quotes and marks; orders settle in the listing's currency" if callable(getattr(getattr(rt, "fx", None), "venue_fee_c", None))
+                             else "foreign listings show delayed quotes and marks; trading them is not in this version yet")
         else:
             ids = fill(("FX",), 40)
+    elif kind == "DEBT" and callable(getattr(getattr(rt, "treasuries", None), "debt_markets", None)):
+        return rt.treasuries.debt_markets(rt, aid, tab, now)          # Build 2 P07: the same answer as GET /api/debt/markets
     elif kind == "DEBT":
         tabs = [{"key": "curve", "label": "Treasury curve"}, {"key": "bonds", "label": "Bonds (LIMITED)"}]
         tab = tab or "curve"
         ids = fill(("BOND",), MARKET_ROWS) if tab == "bonds" else []
         extra["curve"] = curve_view(rt, now)
-        extra["note"] = "model price, not executable in this build"
+        extra["note"] = ("bonds trade at the computed price with its inputs shown" if callable(getattr(getattr(rt, "bonds", None), "dv01_c", None))
+                         else "model price, not executable in this version")
     elif kind == "PRIVATE":
         tabs = [{"key": "companies", "label": "Private companies"}]
         tab = tab or "companies"
@@ -313,10 +477,21 @@ def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
         row["quote"] = recs.get(i)
         row["mark"] = mark_dict(snap.mark(i)) if snap is not None and (not compact or row["quote"] is None) else None
         row["group"] = inst.session_group
+        if inst.kind == "FUTURE":
+            row["group_label"] = FUTURES_GROUP_LABELS.get(inst.session_group, inst.session_group.replace("_", " "))
+            meta = fut_meta.get(i)
+            if meta is not None:
+                row.update(root=meta["root"], active_why=meta["why"], months=meta["months"], month_label=_month_label(inst))
         if compact:
             row["working"] = i in working_set
             row["fast"] = i in fast                    # quoted fast (PAGE): a position / working order here, or on its options
             row["queued"] = i in queued
+            age_d, sessions, d0 = print_age(rt, row["quote"], now)
+            row["last_print_age_d"] = age_d
+            if sessions is not None and sessions > STALE_PRINT_SESSIONS and inst.support == "FULL" and i not in held and i not in working_set:
+                # USX-27: no print for more than 10 sessions: shown (searchable) but not offered for b / s; a held / working row keeps its actions
+                row["stale_note"] = f"no print since {d0.isoformat()} - possibly delisted"
+                row["tradeable"] = False
         rows.append(row)
     out = {"account_id": aid, "kind": acct["kind"], "role": acct["role"], "tab": tab, "tabs": tabs, "rows": rows, "sessions": rt.sessions.states(), "server_time": now}
     out.update(extra)
@@ -339,6 +514,49 @@ def curve_view(rt, now: int) -> dict:
             "source": pc.source, "fetched_at": pc.fetched_at, "shift_grid_bp": [-50, -25, 0, 25, 50]}
 
 
+def schedule_reference(rt, broker) -> dict:
+    """C9 (PO-19): the dealer's seed schedule (``prime.seed_schedule``) and the field specs (``prime.FIELD_SPECS``: label, unit / kind,
+    min, max) so the editor shows the seed next to each field and checks ranges before the confirm dialog."""
+    try:
+        from . import prime as _prime
+    except Exception:   # noqa: BLE001 - no prime module: nothing to add
+        return {}
+    out: dict = {}
+    seed_fn = getattr(_prime, "seed_schedule", None)
+    if callable(seed_fn) and broker:
+        try:
+            out["seed"] = seed_fn(broker)
+        except Exception as e:   # noqa: BLE001 - an unknown broker: said so, the schedule itself still answers
+            out["seed"] = None
+            out["seed_error"] = str(e)[:200]
+    specs = getattr(_prime, "FIELD_SPECS", None)
+    if isinstance(specs, dict):
+        fields = []
+        for name, spec in specs.items():
+            if isinstance(spec, dict):
+                f = dict(spec)
+            elif isinstance(spec, (tuple, list)) and len(spec) >= 4 and isinstance(spec[0], str) and spec[0] in ("decimal", "cents", "enum", "int"):
+                kind, lo, hi, label = spec[0], spec[1], spec[2], spec[3]          # the 1.0.x shape (kind, min, max, label)
+                f = {"kind": kind, "label": label, "min": lo if kind != "enum" else None, "max": hi, "choices": list(lo) if kind == "enum" else None}
+            elif isinstance(spec, (tuple, list)) and len(spec) >= 4:
+                label, unit, lo, hi = spec[0], spec[1], spec[2], spec[3]          # the C22 shape (label, unit, min, max)
+                f = {"label": label, "unit": unit, "min": lo, "max": hi}
+            else:
+                continue
+            f["field"] = name
+            for k in ("min", "max"):
+                if isinstance(f.get(k), Decimal):
+                    f[k] = str(f[k])
+            if f.get("kind") == "cents" and str(name).endswith("_c"):
+                f["field_usd"] = str(name)[:-2]                              # the API serves cents fields as USD without the suffix
+                for k in ("min", "max"):
+                    if isinstance(f.get(k), int) and not isinstance(f.get(k), bool):
+                        f[k + "_usd"] = str(Decimal(f[k]) / 100)
+            fields.append(f)
+        out["fields"] = fields
+    return out
+
+
 # ---- the routes --------------------------------------------------------------------------------------------------------------
 def register_routes(r) -> None:
     def instruments(req: Request):
@@ -351,6 +569,19 @@ def register_routes(r) -> None:
             acct = _account_or_404(rt, req.q("account"))
             ak = _books.account_kind_for(acct)
             hits = [i for i in hits if rt.instruments.tradeable_in(i, ak)]
+            tp = getattr(getattr(rt, "private", None), "tradeable_private", None)
+            if ak == "PRIVATE" and callable(tp):
+                # C6: a listed / acquired company (or anything the private module refuses) is not offered in the Private Markets search
+                keep = []
+                for i in hits:
+                    try:
+                        ok = tp(rt, i.instrument_id)
+                        ok = ok[0] if isinstance(ok, tuple) else bool(ok)
+                    except Exception:   # noqa: BLE001 - a failing check keeps the row (the ticket's own validation still runs)
+                        ok = True
+                    if ok:
+                        keep.append(i)
+                hits = keep
         cache = getattr(rt, "cache", None)
         recs = cache.get_many([i.instrument_id for i in hits]) if cache is not None and hits else {}
         return [_inst_row(rt, i, recs.get(i.instrument_id), req.now) for i in hits]
@@ -367,8 +598,9 @@ def register_routes(r) -> None:
             inst = exact[0] if exact else None
         if inst is not None:
             if inst.support == "UNSUPPORTED":
-                raise ApiError(400, "UNSUPPORTED", "foreign listings and crypto are not in this build", {"symbol": sym, "instrument_id": inst.instrument_id,
-                                                                                                        "exchange": (inst.spec or {}).get("exchange")})
+                what = ("foreign listing: quotes and marks only in this version" if inst.session_group == "FOREIGN" else "not offered in this version")
+                raise ApiError(400, "UNSUPPORTED", f"{inst.symbol}: {what}", {"symbol": sym, "instrument_id": inst.instrument_id,
+                                                                                "exchange": (inst.spec or {}).get("exchange")})
             d = inst.to_dict()
             d["optionable"] = bool(inst.cboe_symbol) and inst.kind in EQUITY_KINDS
             d["exchange"] = (inst.spec or {}).get("exchange")
@@ -388,9 +620,15 @@ def register_routes(r) -> None:
 
     def instrument(req: Request):
         rt = req.rt
+        if rt.instruments.get(str(req.params[0] or "").strip().upper()) is None:
+            try:
+                _materialise_option(rt, req.params[0])        # a contract the cached chain lists (never one from thin air)
+            except Exception:   # noqa: BLE001 - not listed / no chain: the 404 below says it is not in the master
+                pass
         inst = _inst_or_404(rt, req.params[0])
         iid = inst.instrument_id
-        recs = _quotes_for(rt, [iid], req.now)
+        no_yahoo = inst.kind in NO_YAHOO_KINDS
+        recs = {} if no_yahoo else _quotes_for(rt, [iid], req.now)        # C5: bonds / private / swaps / OTC are never subscribed
         snap = rt.marks.snapshot([iid])
         with rt.db.reader() as conn:
             positions = [dict(p) for p in conn.execute("SELECT v.account_id, v.qty, v.cost_c FROM v_positions v JOIN accounts a ON a.account_id=v.account_id"
@@ -410,9 +648,13 @@ def register_routes(r) -> None:
         d["optionable"] = bool(inst.cboe_symbol) and inst.kind in EQUITY_KINDS
         d["exchange"] = (inst.spec or {}).get("exchange")
         d["cik"] = (inst.spec or {}).get("cik")
-        return {"instrument": d, "quote": recs.get(iid), "mark": mark_dict(snap.mark(iid)), "session": rt.sessions.state(inst.session_group, req.now),
-                "support": inst.support, "optionable": d["optionable"], "spec": inst.spec or None, "positions": positions, "working_orders": working,
-                "chain_cached": bool(getattr(rt, "chains", None) is not None and rt.chains.peek(iid) is not None)}
+        out = {"instrument": d, "quote": None if no_yahoo else recs.get(iid), "mark": mark_dict(snap.mark(iid)), "session": rt.sessions.state(inst.session_group, req.now),
+               "support": inst.support, "optionable": d["optionable"], "spec": inst.spec or None, "positions": positions, "working_orders": working,
+               "chain_cached": bool(getattr(rt, "chains", None) is not None and rt.chains.peek(iid) is not None)}
+        extra = instrument_extra(rt, inst, req.now)
+        if extra is not None:
+            out["extra"] = extra
+        return out
 
     def bars(req: Request):
         rt = req.rt
@@ -420,6 +662,47 @@ def register_routes(r) -> None:
         iid = inst.instrument_id
         cache = getattr(rt, "cache", None)
         rec = cache.get(iid) if cache is not None else None
+        if inst.kind in NO_YAHOO_KINDS:
+            raise NotFound(f"{iid}: no exchange 1-minute bars (its price is computed or negotiated)", {"instrument_id": iid, "kind": inst.kind})
+        worker = getattr(rt, "worker", None)
+        if worker is not None and callable(getattr(worker, "request_bars", None)) and inst.kind != "OPTION" and inst.yahoo_symbol:
+            # C8 (USX-06): every 1-minute bar of the session through the quote worker (one shared fetch, never this thread)
+            err = worker.bars_error(iid) if hasattr(worker, "bars_error") else None
+            kept = worker.bars(iid) if hasattr(worker, "bars") else None
+            last_req = getattr(rt, "_bars_requested", None)
+            if last_req is None:
+                last_req = rt._bars_requested = {}
+            fut = None
+            if err is None or req.now - int(last_req.get(iid, 0)) >= BARS_RETRY_S:
+                last_req[iid] = req.now
+                fut = worker.request_bars(iid)
+            if fut is not None and fut.done() and fut.exception() is None:
+                kept, err = fut.result(), None
+            elif fut is not None and not fut.done() and kept is None:
+                if cache is not None:
+                    cache.subscribe([iid], 90, "PAGE")
+                return 202, {"status": "fetching", "retry_ms": RETRY_MS, "instrument_id": iid}
+            elif fut is not None and fut.done() and fut.exception() is not None:
+                err = str(fut.exception())
+            if cache is not None:
+                cache.subscribe([iid], 90, "PAGE")
+            if kept is not None:
+                d = rec.to_dict() if rec is not None else {}
+                return {"instrument_id": iid, "range": req.q("range") or "1d", "bars": kept.get("bars") or [], "count": kept.get("count"),
+                        "full_session": bool(kept.get("full_session")), "bar": d.get("bar"), "prev_close": d.get("prev_close"),
+                        "session": rt.sessions.state(inst.session_group, req.now), "quote_time": kept.get("quote_time"), "fetched_at": kept.get("fetched_at"),
+                        "source": kept.get("source"), "quality": getattr(rec, "quality", None), "delay_label": kept.get("delay_label"),
+                        "note": kept.get("note") or "", "error": err}
+            if rec is not None and (rec.bars_tail or rec.last is not None):
+                d = rec.to_dict()
+                return {"instrument_id": iid, "range": req.q("range") or "1d", "bars": d.get("bars_tail") or [], "full_session": False, "bar": d.get("bar"),
+                        "prev_close": d.get("prev_close"), "session": rt.sessions.state(inst.session_group, req.now), "quote_time": rec.quote_time,
+                        "fetched_at": rec.fetched_at, "source": rec.source, "quality": rec.quality, "delay_label": rec.delay_label,
+                        "note": "the full session could not be fetched; the last bars of the quote are shown", "error": err}
+            return {"instrument_id": iid, "range": req.q("range") or "1d", "bars": [], "count": 0, "full_session": False, "bar": None, "prev_close": None,
+                    "session": rt.sessions.state(inst.session_group, req.now), "quote_time": None, "fetched_at": None, "source": "Yahoo Finance chart",
+                    "quality": "unavailable", "delay_label": None, "available": False, "error": err or "the provider answered nothing",
+                    "note": f"no 1-minute bars for {inst.symbol}: {err or 'the provider answered nothing'}"}
         if rec is None or (not rec.bars_tail and rec.last is None):
             if cache is not None and getattr(rt, "worker", None) is not None:
                 cache.subscribe([iid], 90, "PAGE")
@@ -456,12 +739,13 @@ def register_routes(r) -> None:
     def rates(req: Request):
         store = need(req.rt, "rates")
         out = store.view()
-        out["source"] = "FRED (observation dates shown); monthly proxies labelled"
+        out["source"] = "per series: FRED, or a labelled free fallback while FRED is down (observation dates shown; monthly proxies labelled)"
         return out
 
     def order_preview(req: Request):
         orders = need(req.rt, "orders")
         body = dict(req.body or {})
+        book_guard(req, body.get("account_id"))
         _materialise_option(req.rt, body.get("instrument_id"))
         body.pop("request_id", None)
         return orders.preview(req.rt, body)
@@ -471,6 +755,7 @@ def register_routes(r) -> None:
         orders = need(rt, "orders")
         payload = dict(req.body or {})
         payload.pop("request_id", None)
+        book_guard(req, payload.get("account_id"))
         _materialise_option(rt, payload.get("instrument_id"))
         res = run_command(req, "order.submit", payload)
         if res.ok:
@@ -622,7 +907,8 @@ def register_routes(r) -> None:
         from . import news as _news
         attention = _news.attention_summary(rt, scope) if hasattr(_news, "attention_summary") else None
         return {"items": [i.to_dict() if hasattr(i, "to_dict") else i for i in items], "attention": attention, "fetched": store.fetched(), "editions": store.editions(),
-                "health": store.health(), "scope": scope, "sentence": "News is shown as fetched; nothing is interpreted, scored or summarised (NEWS)"}
+                "paper": store.paper_meta() if hasattr(store, "paper_meta") else None, "health": store.health(), "scope": scope,
+                "sentence": "News is shown as fetched; nothing is interpreted, scored or summarised (NEWS)"}
 
     def risk(req: Request):
         mod = need(req.rt, "risk")
@@ -654,17 +940,32 @@ def register_routes(r) -> None:
         acct = _account_or_404(rt, aid)
         if acct["kind"] != "PB":
             raise NotFound(f"{aid} is not a prime-broker account")
+        try:
+            from . import prime as _prime
+        except Exception:   # noqa: BLE001 - no prime module: the stored row as it is
+            _prime = None
+        eff = None
         with rt.db.reader() as conn:
             row = conn.execute("SELECT * FROM pb_schedules WHERE account_id=?", (aid,)).fetchone()
+            if row is not None and _prime is not None and hasattr(_prime, "read_schedule"):
+                try:
+                    eff = _prime.read_schedule(conn, aid).to_dict()      # missing terms run on the broker's seed (SR-10)
+                except Exception:   # noqa: BLE001 - an unreadable row: the stored JSON below
+                    eff = None
         from . import tables
         if row is None:
             need(rt, "prime")
             raise NotFound(f"{aid} has no schedule row yet")
-        try:
-            sched = json.loads(row["schedule_json"])
-        except ValueError:
-            sched = None
-        return {"account_id": aid, "broker": acct["broker"], "schedule": sched, "updated_ts": row["updated_ts"], "fields_note": getattr(tables, "_PB_FIELDS_NOTE", "")}
+        sched = eff
+        if sched is None:
+            try:
+                sched = json.loads(row["schedule_json"])
+            except ValueError:
+                sched = None
+        note = getattr(_prime, "FIELDS_NOTE", None) if _prime is not None else None
+        out = {"account_id": aid, "broker": acct["broker"], "schedule": sched, "updated_ts": row["updated_ts"], "fields_note": note or getattr(tables, "_PB_FIELDS_NOTE", "")}
+        out.update(schedule_reference(rt, acct["broker"]))
+        return out
 
     def schedule_patch(req: Request):
         rt, aid = req.rt, req.params[0]
@@ -674,18 +975,28 @@ def register_routes(r) -> None:
         payload = {k: v for k, v in (req.body or {}).items() if k != "request_id"}
         payload["account_id"] = aid
         res = run_command(req, "account.update_schedule", payload)
-        ok_or_raise(res)
-        return 200, schedule_get(req), _replay(res)
+        body = ok_or_raise(res)
+        out = schedule_get(req)
+        out.update(before=body.get("before"), after=body.get("after"), note=body.get("note"))         # C9: the change, before / after
+        return 200, out, _replay(res)
 
     # ---- OTC swaps (WP-17 / WP-26), private markets (WP-19), private credit (WP-21): alive when their modules are bound -------
     def otc_preview(req: Request):
         swaps = need(req.rt, "swaps")
         kind = str(req.b("kind") or "").upper()
-        if kind not in ("IRS", "TRS", "XCCY"):
-            raise ApiError(400, "NOT_IN_THIS_BUILD" if kind else "BAD_REQUEST", f"OTC kind {kind!r}: only IRS, TRS and XCCY swaps are in this build")
+        allowed = ("IRS", "TRS", "XCCY") + (("EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD") if getattr(req.rt, "otc_options", None) is not None else ())
+        if kind not in allowed:
+            raise ApiError(400, "NOT_IN_THIS_BUILD" if kind else "BAD_REQUEST", f"OTC kind {kind!r}: the prime brokers here deal {', '.join(allowed)}")
         aid = str(req.b("account_id") or "")
         _account_or_404(req.rt, aid)
-        return swaps.preview(req.rt, aid, kind, dict(req.b("terms") or {}))
+        try:
+            return swaps.preview(req.rt, aid, kind, dict(req.b("terms") or {}))
+        except ConflictError as e:
+            # V104R1-06: an input being fetched for this preview (a first quote): 202 + retry_ms, the ticket asks again by itself
+            retry = (e.details or {}).get("retry_ms")
+            if not retry:
+                raise
+            return 202, dict(e.details or {}, status="fetching", pending=True, code=e.code, message=e.message, retry_ms=int(retry)), {}
 
     def otc_book(req: Request):
         payload = {k: v for k, v in (req.body or {}).items() if k != "request_id"}
@@ -797,4 +1108,4 @@ def register_routes(r) -> None:
     r.add("POST", r"/api/bonds/trade", bonds_trade)
 
 
-__all__ = ["register_routes", "markets_view", "curve_view"]
+__all__ = ["register_routes", "markets_view", "curve_view", "instrument_extra", "NO_YAHOO_KINDS", "EXTRA_MODULES"]

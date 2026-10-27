@@ -87,8 +87,8 @@ SWEEP_LOOKBACK_DAYS = 14
 
 # accrual kinds whose line functions live in later packages: kind -> (services attribute, table, id column, contract kinds)
 ACCRUAL_PRODUCT: Dict[str, Tuple[str, str, str, Tuple[str, ...]]] = {
-    "swaprcv": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY")),
-    "swappay": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY")),
+    "swaprcv": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX")),
+    "swappay": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX")),
     "trsfin": ("swaps_trs", "otc_contracts", "contract_id", ("TRS",)),
     "pccpn": ("private_credit", "private_loans", "loan_id", ()),
     "pcoid": ("private_credit", "private_loans", "loan_id", ()),
@@ -380,7 +380,7 @@ class SettleDue(Job):
             lines = [dr(aid, gl, ccy, need, memo="payable settled"), cr(aid, "1010", ccy, need, memo=f"settlement {key} paid")]
             what = f"pay {ccy} {fmt_money(need)}"
         desc = f" ({fill['side']} {int(fill['qty']):,} {iid} @ {fill['price']})" if fill else ""
-        memo = f"settlement {key} of fill {s['fill_id']}{desc}: {what}, due {due}"
+        memo = f"settlement {key} " + (f"of fill {s['fill_id']}{desc}" if s["fill_id"] else f"({str(s['leg'] or 'cash').lower()})") + f": {what}, due {due}"
         entry_id = ctx.post(Entry("SETTLE", memo, lines, f"settle:{key}", ref_type="settlement", ref_id=key))
         conn.execute("UPDATE settlements SET status='SETTLED', settled_ts=?, entry_id=? WHERE settle_id=?", (ctx.ts, entry_id, key))
         conn.execute("UPDATE attention SET resolved_ts=? WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (ctx.ts, key))
@@ -745,8 +745,11 @@ class PbMonthlyMin(Job):
             raise RejectError("ACCOUNT_CLOSED", f"account {aid} is not open")
         first = date.fromisoformat(ym + "-01")
         last = (first.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        # LC-4: the month's commissions only - the previous month's minimum charge (pay:pbmin:..., posted on the 1st) is not a fee
+        # of this month (prime.fees_charged_c excludes it the same way)
         row = ctx.conn.execute("SELECT COALESCE(SUM(l.amount_c),0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
-                               " WHERE l.account_id=? AND l.gl='5000' AND e.business_date BETWEEN ? AND ?", (aid, first.isoformat(), last.isoformat())).fetchone()
+                               " WHERE l.account_id=? AND l.gl='5000' AND e.business_date BETWEEN ? AND ? AND e.idem_key NOT LIKE 'pay:pbmin:%'",
+                               (aid, first.isoformat(), last.isoformat())).fetchone()
         fees = int(row[0] or 0)
         minimum = self._minimum(services, acct)
         hook = getattr(getattr(services, "prime", None), "monthly_minimum_line", None)
@@ -775,6 +778,11 @@ class SweepOut(Job):
     retry_skipped = False
 
     def due(self, conn, clock, cal, sessions) -> List[str]:
+        """LC-2: a key ``{account}:{ccy}:{date}`` exists only for a date whose sweep time (17:30) has passed AND at which the
+        account HELD settled cash in that currency (the ledger's 1010 balance from the entries posted by then): a past day
+        on which the account was empty never gets a key, so cash that arrives later (a mid-session transfer, a sale that
+        settles at 00:30) is never swept back under an earlier date - it waits for its own day's 17:30.  After genuine
+        downtime the days the account held cash are caught up (and run on today's balance, as before)."""
         now = clock.epoch()
         today = clock.today()
         hhmm = str(get_setting(conn, "sweep_out_time_et", "17:30") or "17:30")
@@ -786,12 +794,27 @@ class SweepOut(Job):
             aid = acct["account_id"]
             opened = ny_of(int(acct["opened_ts"])).date()
             start = max(opened, today - timedelta(days=SWEEP_LOOKBACK_DAYS))
-            ccys = {r["currency"] for r in conn.execute("SELECT DISTINCT currency FROM gl_balances WHERE account_id=? AND gl='1010' AND balance_c<>0", (aid,)).fetchall()}
+            if start > last:
+                continue
+            days = []
             d = start
             while d <= last:
-                for ccy in sorted(ccys):
-                    keys.append(f"{aid}:{ccy}:{d.isoformat()}")
+                days.append(d)
                 d += timedelta(days=1)
+            cut0 = epoch_of(days[0], hhmm)
+            held: Dict[str, int] = {r["currency"]: int(r["n"] or 0) for r in conn.execute(
+                "SELECT l.currency, SUM(l.amount_c) n FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id WHERE l.account_id=? AND l.gl='1010'"
+                " AND e.ts <= ? GROUP BY l.currency", (aid, cut0)).fetchall()}
+            later = conn.execute("SELECT l.currency, l.amount_c, e.ts FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id WHERE l.account_id=?"
+                                 " AND l.gl='1010' AND e.ts > ? AND e.ts <= ? ORDER BY e.ts", (aid, cut0, epoch_of(days[-1], hhmm))).fetchall()
+            i = 0
+            for d in days:
+                cut = epoch_of(d, hhmm)
+                while i < len(later) and int(later[i]["ts"]) <= cut:
+                    held[later[i]["currency"]] = held.get(later[i]["currency"], 0) + int(later[i]["amount_c"])
+                    i += 1
+                for ccy in sorted(c for c, n in held.items() if n > 0):
+                    keys.append(f"{aid}:{ccy}:{d.isoformat()}")
         return self.filter_done(conn, keys)
 
     def payload(self, key: str) -> dict:

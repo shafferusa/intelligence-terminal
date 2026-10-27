@@ -7,12 +7,14 @@ static table ("verify against the exchange"), compliance thresholds carry "verif
 """
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from typing import Dict, Optional, Tuple
 
 from .units import to_c
 
 D = Decimal
+_CONV_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 # ---- 12.1 fees ----------------------------------------------------------------------------------------------------
 EQUITY_KINDS = ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED")
@@ -126,7 +128,7 @@ SESSIONS = {
     "US_EQUITY_OPTIONS": {"kind": "US", "open": "09:30", "close": "16:00", "early": "13:00", "holidays": "NYSE file", "note": ""},
     "US_INDEX_OPTIONS": {"kind": "US", "open": "09:30", "close": "16:15", "early": "13:15", "holidays": "NYSE file", "note": ""},
     "US_BONDS": {"kind": "US", "open": "08:00", "close": "17:00", "early": "14:00", "holidays": "NYSE (SIFMA approximated)",
-                 "note": "SIFMA holidays approximated by the NYSE calendar (Build 2 product)"},
+                 "note": "SIFMA holidays approximated by the NYSE calendar"},
     "CME_EQUITY_INDEX": {"kind": "CME", "open": "18:00", "close": "17:00", "early": "13:00", "holidays": "NYSE approximation", "note": "CME holidays are approximated from the NYSE calendar."},
     "CME_RATES": {"kind": "CME", "open": "18:00", "close": "17:00", "early": "13:00", "holidays": "NYSE approximation", "note": "CME holidays are approximated from the NYSE calendar."},
     "NYMEX_ENERGY": {"kind": "CME", "open": "18:00", "close": "17:00", "early": "13:00", "holidays": "NYSE approximation", "note": "CME holidays are approximated from the NYSE calendar."},
@@ -196,9 +198,13 @@ BOOK_PROFILES = {
 
 # ---- 1.3 conventions stated on screen (one sentence each, verbatim) -------------------------------------------------
 CONVENTIONS: Dict[str, str] = {
-    "FILL_PRICE": "Fills happen at the last observed trade (Yahoo, up to 15 min delayed) or, for options, at the Cboe delayed bid/ask; no price is invented.",
-    "LIMIT_RULE": "A marketable limit fills at the observed price on its first look; afterwards a crossed limit fills at the limit price.",
-    "STOP_RULE": "Stops trigger on the observed last trade and fill at that print; a gap through the stop fills at the gap price.",
+    "FILL_PRICE": ("Fills happen at the last observed trade (Yahoo, up to 15 min delayed) or, for options, at the Cboe delayed bid/ask; a stock or ETF fills at"
+                   " its Cboe delayed ask (buys) / bid (sells) while a chain of it observed no earlier than that trade is cached; no price is invented."),
+    "LIMIT_RULE": ("A limit fills at the observed price whenever that price is at or better than the limit; a limit that was resting (not marketable at"
+                   " its previous look) and is then crossed fills at the limit price. Listed options are judged on the Cboe delayed ask (buys) / bid (sells),"
+                   " never on the contract's own last trade."),
+    "STOP_RULE": ("Stops trigger on the observed last trade and fill at that print; a gap through the stop fills at the gap price. Listed options trigger on"
+                  " the Cboe delayed ask (buy stops) / bid (sell stops) and fill there, never on the contract's own last trade."),
     "PARTICIPATION": "Each new 1-minute bar lets at most 10 % of its volume fill; the remainder keeps working.",
     "NO_VOLUME": "With no volume information the order fills in full.",
     "SESSION": "Orders entered outside the session rest until it opens; DAY orders expire at that session's close; GTC after 90 days.",
@@ -209,8 +215,8 @@ CONVENTIONS: Dict[str, str] = {
     "OCC": "At expiry an option in the money by USD 0.01 or more is exercised or assigned from the observed closing price; early assignment is not simulated.",
     "FUT_SETTLE": "Futures settle daily at the observed price at or before the group's settlement time — not the exchange's official settlement.",
     "FUT_MARGIN": "Initial margins are a static table; verify against the exchange.",
-    "OPT_MARGIN": "Short-option margin is a Reg T-style approximation and is moved to a margin deposit so buying power is honest.",
-    "SHORT_COLLATERAL": "A borrow posts 102 % cash collateral from the account, marked daily both ways; sale proceeds settle as ordinary cash; the collateral is held at the lender until the borrow is returned.",
+    "OPT_MARGIN": "Short-option margin is a Reg T-style approximation RESERVED on the account's cash (decision s7.6): it reduces available cash and buying power; no cash moves.",
+    "SHORT_COLLATERAL": "A short sale's borrow is located at submit; at each fill the lender receives 102 % cash collateral, funded first by the sale's own proceeds, the 2 % excess and the fee from the account's cash; marked daily both ways; held at the lender until the borrow is returned. A borrow with no order posts the whole 102 % from cash.",
     "BORROW_AVAIL": "Borrow availability and fee tiers are estimated from FINRA daily short volume and average volume; a real locate would come from a lender.",
     "ACCRUAL": "Interest, borrow fees and rebates accrue for each calendar day the balance is open at 17:00 ET, ACT/360 (GBP ACT/365, bonds ACT/ACT), rounded cumulatively so daily postings never drift from the total.",
     "RATE_LAG": "Floating rates use the latest published observation on or before the accrual day (SOFR is published the next morning).",
@@ -229,7 +235,9 @@ CONVENTIONS: Dict[str, str] = {
     "SWAP_MARK": "A swap's mark is the clean present value from the live par curve (IRS) or the underlying's observed price since the last reset (TRS), labelled computed; the current period's coupons accrue separately and are paid on the payment date.",
     "SWAP_VM": "Swaps carry daily variation margin with the prime broker: the day's change in the computed mark moves in cash — collateralised-to-market (collateral, not P&L) unless the PB schedule says settled-to-market (realised each day, like futures).",
     "SWAP_RESET": "IRS floating legs fix at each reset from the latest published reference rate, or compound SOFR daily in arrears when booked so; TRS resets settle the return and financing legs in cash and reset the notional to the underlying's current value; cross-currency swaps exchange notional at start and maturity and, when booked mark-to-market, reset the USD notional at each reset with the difference settled in cash.",
-    "TRAILING": "A trailing stop ratchets with each observed print in your favour (sell: highest last minus the trail; buy: lowest last plus the trail) and never moves back; it triggers on the observed last and fills at that print.",
+    "TRAILING": ("A trailing stop ratchets with each observed print in your favour (sell: highest last minus the trail; buy: lowest last plus the trail) and"
+                 " never moves back; it triggers on the observed last and fills at that print. A listed option trails its Cboe delayed bid (sells) / ask (buys)"
+                 " instead, from its first executable look, never its own last trade."),
     "AON": "An option-only package fills all-or-none: every leg must have a fresh Cboe quote with displayed size for the whole quantity in the same observation, or nothing fills; packages with a stock or futures leg fill sequentially (the hedge legs after the primary, resized on partial fills).",
     "PRIVATE_MARK": "A private company's mark is the last reported round's implied price per share with its date (never dimmed as stale; it changes only when a new round or a sourced secondary indication is recorded); the P&L is mark minus cost, realised on sale.",
     "PRIVATE_TRADE": "Private secondaries are negotiated: the trade executes at the price you enter (default the last round's price ± your discount or premium), pays the placement fee you set (default 3 %), settles after the lag you set (default T+30 calendar days) and carries a lock-up (default 6 months) that the Sell ticket warns about.",
@@ -242,3 +250,22 @@ CONVENTIONS: Dict[str, str] = {
     "PERF": "Performance statistics use daily NAV-to-NAV returns with capital flows removed, annualised by √252, Sharpe and Sortino against SOFR, beta and alpha from a daily regression on SPY's observed closes; they need at least two daily snapshots and are per lifetime.",
     "NEWS": "Headlines are real and unedited: Yahoo Finance news search, the Federal Reserve press feed and this repository's own newspaper editions; they are shown as text and never interpreted.",
 }
+
+
+def add_conventions(sentences: Dict[str, str]) -> Dict[str, str]:
+    """C16 (Build 2): a product module registers its own convention sentences at import, e.g.
+    ``tables.add_conventions({"FX_FORWARD": "..."})``.  setdefault semantics: a key already present keeps its text (the
+    core sentences above stay authoritative and a module imported twice changes nothing); returns the sentences actually
+    added.  Keys are upper-case words (``^[A-Z][A-Z0-9_]*$``), texts non-empty one-line strings; anything else is a
+    ValueError, so a typo fails at import instead of showing a blank sentence.  Other packages never edit this file:
+    their constants live in their own module and only their sentences come here (served as ``/api/state.conventions``)."""
+    added: Dict[str, str] = {}
+    for key, text in dict(sentences or {}).items():
+        if not isinstance(key, str) or not _CONV_KEY_RE.match(key):
+            raise ValueError(f"add_conventions: key {key!r} must match {_CONV_KEY_RE.pattern}")
+        if not isinstance(text, str) or not text.strip() or chr(10) in text:
+            raise ValueError(f"add_conventions: {key}: the sentence must be a non-empty one-line string")
+        if key not in CONVENTIONS:
+            CONVENTIONS[key] = text.strip()
+            added[key] = CONVENTIONS[key]
+    return added

@@ -10,6 +10,9 @@ Conventions
   instruments with a WORKING / PARTIAL / WAITING_PARENT order — and keeps the option underlyings of those on the
   chain cache's pin list (CHAIN 90 s).  Chains are fetched ONE at a time (single-flight) and shared by every
   requester; a materialised option gets its ``chain`` record from each snapshot.
+- A failed Cboe chain fetch is attached to every cached option record of that underlying (``record_error``, EXEC-2): their
+  ``fetched_at`` stays the last good chain, so they go stale 60 s after it (ERROR_AGE_S) and executions pause - the chain's own
+  failure (``ChainCache.fail``) never reached the option records before.
 - A FUTURE whose per-contract symbol Yahoo rejects (404) falls back to the continuous ``<root>=F`` ONLY for the front
   month (method ``front_month_continuous``, source "continuous front month (reference)"); deferred months stay
   ``unavailable`` with the error (never priced off the front).
@@ -25,28 +28,37 @@ Conventions
   ``provider_health.update``, in the ``provider_health`` table and ONE open WARN attention per provider (auto-resolved
   on the next success).  Nothing is retried in a tight loop and nothing is ever invented when a fetch fails.
 - Light commands here: ``provider_health.update``, ``dividends.upsert``, ``instruments.upsert`` (resolve by symbol via
-  ``InstrumentMaster.upsert_from_yahoo_meta``), ``finra.record``.  ``register_all(bus)`` registers every WP-01 handler.
+  ``InstrumentMaster.upsert_from_yahoo_meta``), ``instruments.set_adv``, ``finra.record``.  ``register_all(bus)`` registers
+  every WP-01 handler.
+- ADV (hotfix 1.0.3.1, 2026-10-21, BORROW_AVAIL): a name resolved on demand has no ADV in its spec, so it could never be borrowed.
+  After a resolve, and whenever ``lending.locate`` meets such a name (``request_adv``, never on the request thread), the worker
+  fetches 3 months of Yahoo daily bars, computes ``instruments.adv_from_daily`` and stores it with its basis through
+  ``instruments.set_adv`` (one fetch per name per ``ADV_RETRY_S`` when Yahoo gives no volume: no data, no borrow).
+- FUNDS_WAIT orders (SUSPENDED waiting for funds, hotfix 1.0.3.1) are pinned like working ones, so the automatic resume re-checks
+  them at a current price.
 """
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import threading
 import time as _time
-from collections import deque
-from concurrent.futures import ThreadPoolExecutor
+from collections import OrderedDict, deque
+from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import time as dtime
 from typing import Callable, Dict, List, Optional, Tuple
 
 from ..clock import ny_of, ny_str
-from ..commands import Command
+from ..commands import Command, RejectError
 from ..config import NEWS_INTERVALS, QUOTE_INTERVALS
 from ..db import canonical_json
-from ..instruments import EQUITY_KINDS, Instrument, fx_pair_id, otc_reference_ids, parse_futures_id
+from ..instruments import ADV_DAYS, EQUITY_KINDS, Instrument, adv_from_daily, fx_pair_id, needs_adv, otc_reference_ids, parse_futures_id
 from . import cache as _cache_mod, rates as _rates_mod
 from .cache import ChainCache, QuoteCache, record_from_intraday, records_from_chain
 from .http import FetchError
-from .providers import ProviderSet
+from .parsers import chart_bars, parse_intraday
+from .providers import YAHOO_DELAY_LABEL, ProviderSet
 from .rates import FRED_SERIES, SHIFT_SYMBOLS
 
 PIN_SCAN_S = 30
@@ -56,8 +68,17 @@ HEALTH_VOLATILE = ("last_ok_ts", "requests_today")     # the fields every succes
 FETCH_WAIT_S = 15.0
 RESOLVE_MAX = 50
 SLOT_RETRY_S = 3600
+ADV_RETRY_S = 600                # one Yahoo daily-bars fetch per name per 10 min when it gave no ADV (the ticket re-previews every 5 s)
+ADV_MAX = 50
 SPLIT_CODE = "SPLIT_MANUAL_REVIEW"
 PROVIDER_LABEL = {"yahoo": "Yahoo", "cboe": "Cboe", "treasury": "Treasury.gov", "fred": "FRED", "finra": "FINRA", "frankfurter": "Frankfurter"}
+# C14 (Build 2): product refreshers and the chart's full-session bars
+REFRESH_BACKOFF_S = (60, 120, 300, 900, 1800, 3600)     # a failing refresher retries after these (1st, 2nd ... failure in a row), then hourly
+REFRESHER_NAME_RE = re.compile(r"^[A-Za-z0-9_.:-]{1,40}$")
+BARS_MAX_AGE_S = 60              # request_bars answers from memory while the last fetch is younger than this
+BARS_KEEP = 12                   # full-session bar snapshots kept in memory (LRU): ~400 small dicts each
+BARS_PER_TICK = 2                # bar fetches started per worker tick (the Yahoo rate limiter spaces them further)
+INTRADAY_QUERY = "range=1d&interval=1m&includePrePost=false"
 
 
 
@@ -133,6 +154,36 @@ def h_instruments_upsert(ctx, payload: dict) -> dict:
     return {"instrument": inst.to_dict()}
 
 
+def h_instruments_set_adv(ctx, payload: dict) -> dict:
+    """Light: ``{instrument_id, adv, sessions, first, last, basis}`` (``instruments.adv_from_daily`` on Yahoo daily bars)
+    -> the row's spec ``adv`` / ``adv_basis`` / ``adv_sessions`` / ``adv_from`` / ``adv_to`` / ``adv_asof`` (BORROW_AVAIL).
+    A row whose spec already has an ADV (the seeded master) is left as it is."""
+    iid = str(payload.get("instrument_id") or "")
+    row = ctx.conn.execute("SELECT spec_json FROM instruments WHERE instrument_id=?", (iid,)).fetchone()
+    if row is None:
+        raise RejectError("INSTRUMENT_UNKNOWN", f"instrument {iid!r} is not in the master")
+    try:
+        spec = json.loads(row["spec_json"] or "{}")
+    except (TypeError, ValueError):
+        spec = {}
+    spec = spec if isinstance(spec, dict) else {}
+    if spec.get("adv") not in (None, "", 0, "0"):
+        return {"instrument_id": iid, "adv": spec.get("adv"), "skipped": "the master already has an ADV"}
+    try:
+        adv = int(payload.get("adv"))
+    except (TypeError, ValueError) as e:
+        raise RejectError("ADV_INVALID", f"adv must be a whole number of shares, got {payload.get('adv')!r}") from e
+    if adv <= 0:
+        raise RejectError("ADV_INVALID", "adv must be positive (no data -> no ADV)")
+    spec.update({"adv": adv, "adv_basis": str(payload.get("basis") or "ADV from Yahoo daily bars"), "adv_sessions": int(payload.get("sessions") or 0),
+                 "adv_from": payload.get("first"), "adv_to": payload.get("last"), "adv_asof": ctx.ts})
+    ctx.conn.execute("UPDATE instruments SET spec_json=?, updated_ts=? WHERE instrument_id=?", (json.dumps(spec), ctx.ts, iid))
+    master = getattr(ctx.services, "instruments", None) if ctx.services is not None else None
+    if master is not None and hasattr(master, "invalidate"):
+        master.invalidate([iid])                      # TX-2: re-read after the commit (the worker refreshes the row then)
+    return {"instrument_id": iid, "adv": adv, "basis": spec["adv_basis"]}
+
+
 def h_finra_record(ctx, payload: dict) -> dict:
     """Light: ``{day, rows: [[symbol, short_volume, total_volume]]}`` → ``finra_short``."""
     day = str(payload["day"])
@@ -147,6 +198,7 @@ def register(bus) -> None:
     bus.register("provider_health.update", h_provider_health_update, light=True)
     bus.register("dividends.upsert", h_dividends_upsert, light=True)
     bus.register("instruments.upsert", h_instruments_upsert, light=True)
+    bus.register("instruments.set_adv", h_instruments_set_adv, light=True)
     bus.register("finra.record", h_finra_record, light=True)
 
 
@@ -156,6 +208,110 @@ def register_all(bus) -> None:
     _cache_mod.register(bus)
     _rates_mod.register(bus)
     register(bus)
+
+
+# ---- C14: product refreshers registered from a module's bind(rt) ------------------------------------------------------------------
+_REFRESHERS: "OrderedDict[str, tuple]" = OrderedDict()      # name -> (interval_s, fn, run_after_et, label): waiting for the next worker
+_REG_LOCK = threading.Lock()
+
+
+def register_refresher(name: str, interval_s: Optional[int], fn: Callable, run_after_et: Optional[str] = None, label: Optional[str] = None) -> None:
+    """C14 (Build 2): a product module's periodic fetch (Treasury prices, ECB / MOF yields, NY Fed SOFR ...), registered from its
+    ``bind(rt)``: product modules are bound before the runtime builds its QuoteWorker, and the NEXT worker built takes every
+    registration waiting (so a process that builds several runtimes - the tests - never leaks one runtime's refreshers into
+    another's worker; each runtime's bind registers again).  A worker that already runs takes a refresher through
+    ``QuoteWorker.add_refresher`` (same arguments).
+
+    - ``fn(services, now)`` runs on the QuoteWorker's fetch threads (inline when ``fetch_threads=0``, as tests drive ``tick()``):
+      never on a request thread and never inside the writer; it writes through ``services.bus`` like every other light command.
+      ``services.providers`` is the FakeProvider set in ``--offline`` mode: a refresher must not touch the network then.
+    - Schedule: the first run at the worker's first tick (startup), then every ``interval_s`` seconds; with ``run_after_et``
+      ("HH:MM", New York) never before that time of day and at most once per ET day when ``interval_s`` is None.  One run per name
+      at a time (a run still in flight is never started twice).
+    - Outcome: an exception is an error (``FetchError.status`` kept) recorded in provider health under ``name`` (``/api/health``
+      providers, Data Status; three in a row raise the provider attention) and retried with a back-off (1, 2, 5, 15, 30 min, then
+      hourly); a normal return records ok; returning ``"retry"`` (published data not out yet) records ok and runs again in an hour.
+    - ``label`` names the source in the attention text (default: the name).  Registering a name again replaces it (idempotent)."""
+    if not isinstance(name, str) or not REFRESHER_NAME_RE.match(name):
+        raise ValueError(f"register_refresher: name {name!r} must match {REFRESHER_NAME_RE.pattern}")
+    if not callable(fn):
+        raise TypeError("register_refresher: fn must be callable as fn(services, now)")
+    if interval_s is not None:
+        interval_s = int(interval_s)
+        if interval_s <= 0:
+            raise ValueError("register_refresher: interval_s must be positive (or None with run_after_et)")
+    if run_after_et is not None:
+        try:
+            hh, mm = [int(x) for x in str(run_after_et).split(":")[:2]]
+            dtime(hh, mm)
+        except (TypeError, ValueError) as e:
+            raise ValueError(f"register_refresher: run_after_et {run_after_et!r} is not HH:MM") from e
+    elif interval_s is None:
+        raise ValueError("register_refresher: give interval_s, run_after_et or both")
+    with _REG_LOCK:
+        _REFRESHERS[name] = (interval_s, fn, run_after_et, label)
+        if label:
+            PROVIDER_LABEL.setdefault(name, str(label))
+
+
+def unregister_refresher(name: str) -> None:
+    """Drop a registration still waiting for a worker (tests; a module that is unbound before the worker is built)."""
+    with _REG_LOCK:
+        _REFRESHERS.pop(name, None)
+
+
+def registered_refreshers() -> List[str]:
+    """The registrations waiting for the next worker."""
+    with _REG_LOCK:
+        return list(_REFRESHERS)
+
+
+def _take_registrations() -> List[tuple]:
+    with _REG_LOCK:
+        regs = list(_REFRESHERS.items())
+        _REFRESHERS.clear()
+    return regs
+
+
+class Refresher:
+    """One registered refresher's schedule and outcome counters (``QuoteWorker.stats()["refreshers"]``)."""
+
+    def __init__(self, name: str, interval_s: Optional[int], fn: Callable, run_after_et: Optional[str] = None):
+        self.name, self.fn, self.interval_s = name, fn, interval_s
+        self.after_et = dtime(*[int(x) for x in run_after_et.split(":")[:2]]) if run_after_et else None
+        self.last_run: Optional[int] = None
+        self.last_ok_ts: Optional[int] = None
+        self.last_error: Optional[str] = None
+        self.last_result: Optional[str] = None
+        self.retry_at: Optional[int] = None
+        self.runs = 0
+        self.failures = 0
+        self.streak = 0
+        self.in_flight = False
+        self.last_duration_s: Optional[float] = None
+
+    def due(self, now: int) -> bool:
+        if self.in_flight:
+            return False
+        if self.retry_at is not None:
+            return now >= self.retry_at
+        if self.last_run is None:
+            return True                              # startup run
+        if self.after_et is not None:
+            ny = ny_of(now)
+            if ny.time() < self.after_et:
+                return False
+            new_day = ny.date() > ny_of(self.last_run).date()
+            if self.interval_s is None:
+                return new_day
+            return new_day or now - self.last_run >= int(self.interval_s)
+        return now - self.last_run >= int(self.interval_s or 0)
+
+    def to_dict(self) -> dict:
+        return {"name": self.name, "interval_s": self.interval_s, "after_et": None if self.after_et is None else self.after_et.strftime("%H:%M"),
+                "last_run": self.last_run, "last_ok_ts": self.last_ok_ts, "last_error": self.last_error, "last_result": self.last_result, "runs": self.runs,
+                "failures": self.failures, "failures_in_a_row": self.streak, "retry_at": self.retry_at, "in_flight": self.in_flight,
+                "last_duration_s": self.last_duration_s}
 
 
 # ---- refresher slots --------------------------------------------------------------------------------------------------------------
@@ -432,11 +588,24 @@ class QuoteWorker(threading.Thread):
         self._changed: List[str] = []
         self._resolve: deque = deque()
         self._resolve_errors: Dict[str, Tuple[str, Optional[int]]] = {}
+        self._adv: deque = deque()
+        self._adv_tried: Dict[str, int] = {}
+        self._adv_errors: Dict[str, str] = {}
         self._last_pin_scan: Optional[int] = None
         self._scanned: Dict[str, set] = {}
         self.refresher = RatesRefresher(providers, cache, curve, rates, fxstore, instruments, self.db, bus, clock, cal, services, log)
         self.stats_ = {"ticks": 0, "last_tick_ts": None, "fetches": 0, "fetch_errors": 0, "changed": 0, "chains": 0, "chain_errors": 0, "loop_errors": 0,
-                       "last_error": None, "matcher_calls": 0, "resolved": 0}
+                       "last_error": None, "matcher_calls": 0, "resolved": 0, "refresher_runs": 0, "refresher_errors": 0, "bars_fetches": 0, "bars_errors": 0,
+                       "adv_set": 0}
+        # C14: registered product refreshers and the chart's full-session bars (request_bars)
+        self._refreshers: Dict[str, Refresher] = {}
+        self._bars: "OrderedDict[str, dict]" = OrderedDict()
+        self._bars_pending: deque = deque()
+        self._bars_futures: Dict[str, Future] = {}
+        self._bars_inflight: set = set()
+        self._bars_errors: Dict[str, str] = {}
+        for name, (interval_s, fn, after_et, _label) in _take_registrations():      # this runtime's binds registered them just before
+            self._install_refresher(name, interval_s, fn, after_et)
 
     # ---- public ------------------------------------------------------------------------------------------------------
     def set_matcher(self, matcher) -> None:
@@ -451,6 +620,71 @@ class QuoteWorker(threading.Thread):
     def request_chain(self, underlying_id: str):
         self.chains.keep_on_screen(underlying_id)
         return self.chains.request(underlying_id)
+
+    def request_bars(self, instrument_id: str, max_age_s: int = BARS_MAX_AGE_S) -> Future:
+        """C14 / C8: the full-session 1-minute bars of an instrument (the chart), like ``request_chain``: a ``Future`` that resolves to
+        the kept snapshot (``bars()``) - at once when the last fetch is younger than ``max_age_s`` - else ONE fetch per instrument is
+        queued for the worker (never the request thread) and every requester shares it.  A failed fetch sets the exception (a
+        ``FetchError``) on the future and is kept in ``bars_error()``; the same Yahoo answer also refreshes the instrument's quote."""
+        iid = str(instrument_id)
+        now = int(self.clock.epoch())
+        with self._lock:
+            snap = self._bars.get(iid)
+            if snap is not None and int(snap.get("fetched_at") or 0) >= now - int(max_age_s):
+                self._bars.move_to_end(iid)
+                f: Future = Future()
+                f.set_result(snap)
+                return f
+            f = self._bars_futures.get(iid)
+            if f is None:
+                f = Future()
+                self._bars_futures[iid] = f
+                if iid not in self._bars_pending and iid not in self._bars_inflight:
+                    self._bars_pending.append(iid)
+            return f
+
+    def bars(self, instrument_id: str) -> Optional[dict]:
+        """The last full-session bar snapshot kept for an instrument (whatever its age), else None.  Shape:
+        ``{instrument_id, symbol, bars: [{t, o, h, l, c, v, complete}], count, fetched_at, quote_time, provider_session, source,
+        delay_label, full_session, note}`` (prices as strings, ``t`` epoch seconds, ``complete`` = the minute had ended at the fetch)."""
+        with self._lock:
+            return self._bars.get(str(instrument_id))
+
+    def bars_error(self, instrument_id: str) -> Optional[str]:
+        with self._lock:
+            return self._bars_errors.get(str(instrument_id))
+
+    def refreshers(self) -> Dict[str, dict]:
+        """C14: the registered refreshers' schedules and outcomes."""
+        with self._lock:
+            return {n: r.to_dict() for n, r in self._refreshers.items()}
+
+    def add_refresher(self, name: str, interval_s: Optional[int], fn: Callable, run_after_et: Optional[str] = None, label: Optional[str] = None) -> None:
+        """C14 for a worker that already runs: the same arguments and rules as ``register_refresher``, on this worker only."""
+        if not isinstance(name, str) or not REFRESHER_NAME_RE.match(name):
+            raise ValueError(f"add_refresher: name {name!r} must match {REFRESHER_NAME_RE.pattern}")
+        if not callable(fn):
+            raise TypeError("add_refresher: fn must be callable as fn(services, now)")
+        if interval_s is None and run_after_et is None:
+            raise ValueError("add_refresher: give interval_s, run_after_et or both")
+        if label:
+            PROVIDER_LABEL.setdefault(name, str(label))
+        self._install_refresher(name, None if interval_s is None else int(interval_s), fn, run_after_et)
+
+    def remove_refresher(self, name: str) -> None:
+        self._drop_refresher(name)
+
+    def _install_refresher(self, name: str, interval_s: Optional[int], fn: Callable, run_after_et: Optional[str]) -> None:
+        with self._lock:
+            old = self._refreshers.get(name)
+            ref = Refresher(name, interval_s, fn, run_after_et)
+            if old is not None:                      # a re-registration keeps the schedule it had (no extra startup run)
+                ref.last_run, ref.last_ok_ts, ref.runs, ref.failures = old.last_run, old.last_ok_ts, old.runs, old.failures
+            self._refreshers[name] = ref
+
+    def _drop_refresher(self, name: str) -> None:
+        with self._lock:
+            self._refreshers.pop(name, None)
 
     def resolve(self, symbol: str) -> dict:
         """Queue a Yahoo meta fetch for an unknown ticker (never on the request thread); see ``resolve_status``."""
@@ -469,12 +703,39 @@ class QuoteWorker(threading.Thread):
             return {"status": "error", "message": err[0], "http_status": err[1]}
         return {"status": "resolving" if queued else "idle"}
 
+    def request_adv(self, instrument_id: str) -> str:
+        """Queue a Yahoo daily-bars ADV fetch for a name with none in its spec (``lending.locate``, a resolve); never on the
+        request thread.  Returns ``queued`` (now or already), ``tried`` (fetched within ``ADV_RETRY_S`` and Yahoo gave no
+        usable volume) or ``full``."""
+        iid = str(instrument_id or "").strip()
+        now = int(self.clock.epoch())
+        with self._lock:
+            if iid in self._adv:
+                return "queued"
+            last = self._adv_tried.get(iid)
+            if last is not None and now - last < ADV_RETRY_S:
+                return "tried"
+            if len(self._adv) >= ADV_MAX:
+                return "full"
+            self._adv.append(iid)
+        return "queued"
+
+    def adv_status(self, instrument_id: str) -> Optional[str]:
+        """The last ADV fetch error of a name (None when none)."""
+        with self._lock:
+            return self._adv_errors.get(str(instrument_id))
+
     def stats(self) -> dict:
         with self._lock:
             d = dict(self.stats_)
         d.update(alive=self.is_alive(), stopping=self._stop_event.is_set(), cache_size=self.cache.size(), chains=self.chains.stats(), slots=self.refresher.stats(),
-                 providers=self.providers.health.snapshot() if self.providers.health is not None else {}, fetch_threads=self.fetch_threads)
+                 providers=self.providers.health.snapshot() if self.providers.health is not None else {}, fetch_threads=self.fetch_threads,
+                 refreshers=self.refreshers(), bars=self._bars_stats())
         return d
+
+    def _bars_stats(self) -> dict:
+        with self._lock:
+            return {"kept": list(self._bars), "pending": list(self._bars_pending), "in_flight": sorted(self._bars_inflight), "errors": dict(self._bars_errors)}
 
     def run(self) -> None:
         if self.fetch_threads > 0 and self._pool is None:
@@ -506,7 +767,7 @@ class QuoteWorker(threading.Thread):
     # ---- one pass ----------------------------------------------------------------------------------------------------
     def tick(self, now: Optional[int] = None) -> dict:
         now = int(now if now is not None else self.clock.epoch())
-        report = {"now": now, "fetched": [], "errors": [], "changed": [], "chain": None, "slots": [], "resolved": []}
+        report = {"now": now, "fetched": [], "errors": [], "changed": [], "chain": None, "slots": [], "resolved": [], "adv": []}
         if self._last_pin_scan is None or now - self._last_pin_scan >= PIN_SCAN_S:
             self._scan_pins(now)
             self._last_pin_scan = now
@@ -533,8 +794,11 @@ class QuoteWorker(threading.Thread):
         uid = self.chains.take_pending()
         if uid is not None:
             report["chain"] = self._fetch_chain(uid, now)
+        report["bars"] = self._serve_bars()
         self._run_resolves(report)
+        self._run_adv(report)
         report["slots"] = self.refresher.run_due(now)
+        report["refreshers"] = self._run_refreshers(now)
         changed = self._drain_changed()
         if changed:
             report["changed"] = changed
@@ -553,7 +817,8 @@ class QuoteWorker(threading.Thread):
             with self.db.reader() as conn:
                 held = [r[0] for r in conn.execute("SELECT DISTINCT p.instrument_id FROM v_positions p JOIN accounts a ON a.account_id = p.account_id"
                                                    " JOIN lifetimes l ON l.lifetime_id = a.lifetime_id WHERE l.status='OPEN' AND p.qty != 0").fetchall()]
-                orders = [r[0] for r in conn.execute("SELECT DISTINCT instrument_id FROM orders WHERE status IN ('WORKING','PARTIAL','WAITING_PARENT')").fetchall()]
+                orders = [r[0] for r in conn.execute("SELECT DISTINCT instrument_id FROM orders WHERE status IN ('WORKING','PARTIAL','WAITING_PARENT')"
+                                                     " OR (status='SUSPENDED' AND reason LIKE 'waiting for funds%')").fetchall()]
                 # the underlyings of OPEN TRS contracts and the FX pairs of OPEN XCCY contracts are observed like held names: their
                 # marks drive SWAP_VM, the NAV overlay and the resets (WP-15 integration)
                 held += [i for i in otc_reference_ids(conn) if self.instruments is None or self.instruments.get(i) is not None]
@@ -650,19 +915,34 @@ class QuoteWorker(threading.Thread):
             if self.log:
                 self.log.warning("late fetch apply failed: %s", e)
 
+    def _option_records_failed(self, uid: str, error: str, status: Optional[int], now: int) -> int:
+        """EXEC-2: attach a failed chain fetch to every cached option record of the underlying (``record_error`` keeps their last
+        good ``fetched_at``), so ERROR_AGE_S makes them stale 60 s after the last good chain and executions pause."""
+        if self.instruments is None:
+            return 0
+        n = 0
+        for inst in self.instruments.by_underlying(uid):
+            if inst.kind != "OPTION" or self.cache.raw(inst.instrument_id) is None:
+                continue
+            self.cache.record_error(inst, f"Cboe chain: {error}", None, now, provider="cboe")   # never the 1-hour not-found retry: chains have their own schedule
+            n += 1
+        return n
+
     def _fetch_chain(self, uid: str, now: int) -> dict:
         inst = self.instruments.get(uid) if self.instruments is not None else None
         sym = inst.cboe_symbol if inst is not None else None
         if not sym:
             self.chains.fail(uid, FetchError(f"{uid}: no Cboe symbol", status=404, retryable=False))
+            self._option_records_failed(uid, "no Cboe symbol", None, now)
             return {"underlying": uid, "ok": False, "error": "no Cboe symbol"}
         try:
             snap = self.providers.cboe.chain(sym, uid)
         except Exception as e:   # noqa: BLE001 — surfaced on the future, in health and in stats
             self.chains.fail(uid, e if isinstance(e, FetchError) else FetchError(f"{type(e).__name__}: {e}", retryable=False))
+            n = self._option_records_failed(uid, str(e)[:160], getattr(e, "status", None), now)
             with self._lock:
                 self.stats_["chain_errors"] += 1
-            return {"underlying": uid, "ok": False, "error": str(e)[:200]}
+            return {"underlying": uid, "ok": False, "error": str(e)[:200], "option_records_flagged": n}
         self.chains.put(snap)
         n = 0
         for rec in records_from_chain(snap, self.instruments):
@@ -673,6 +953,135 @@ class QuoteWorker(threading.Thread):
         with self._lock:
             self.stats_["chains"] += 1
         return {"underlying": uid, "ok": True, "contracts": snap.n_kept(), "records": n}
+
+    # ---- C14 internals: refreshers and bars --------------------------------------------------------------------------------
+    def _run_refreshers(self, now: int) -> List[str]:
+        with self._lock:
+            due = [r for r in self._refreshers.values() if r.due(now)]
+            for r in due:
+                r.in_flight = True
+        for r in due:
+            if self._pool is not None and self.fetch_threads > 0:
+                try:
+                    self._pool.submit(self._run_refresher, r, now)
+                    continue
+                except RuntimeError:                 # the pool is shutting down: run inline once
+                    pass
+            self._run_refresher(r, now)
+        return [r.name for r in due]
+
+    def _run_refresher(self, ref: Refresher, now: int) -> bool:
+        t0 = _time.monotonic()
+        ref.last_run = now
+        ref.runs += 1
+        health = self.providers.health if self.providers is not None else None
+        try:
+            result = ref.fn(self.services, now)
+        except Exception as e:   # noqa: BLE001 - an error is recorded (health + stats), backed off, never raised into the loop
+            ref.failures += 1
+            ref.streak += 1
+            ref.last_error = (str(e) if isinstance(e, FetchError) else f"{type(e).__name__}: {e}")[:200]
+            ref.retry_at = now + REFRESH_BACKOFF_S[min(ref.streak, len(REFRESH_BACKOFF_S)) - 1]
+            with self._lock:
+                self.stats_["refresher_runs"] += 1
+                self.stats_["refresher_errors"] += 1
+            if health is not None:
+                health.record(ref.name, False, getattr(e, "status", None), ref.last_error)
+            if self.log:
+                self.log.warning("refresher %s failed (%d in a row; next try %s): %s", ref.name, ref.streak, ny_str(ref.retry_at), ref.last_error)
+            return False
+        finally:
+            ref.in_flight = False
+            ref.last_duration_s = round(_time.monotonic() - t0, 2)
+        ref.streak = 0
+        ref.last_ok_ts = now
+        ref.last_error = None
+        ref.last_result = None if result is None else str(result)[:200]
+        ref.retry_at = now + SLOT_RETRY_S if result == "retry" else None
+        with self._lock:
+            self.stats_["refresher_runs"] += 1
+        if health is not None:
+            health.record(ref.name, True, 200)
+        return True
+
+    def _serve_bars(self) -> List[str]:
+        taken: List[str] = []
+        with self._lock:
+            while self._bars_pending and len(taken) < BARS_PER_TICK:
+                iid = self._bars_pending.popleft()
+                self._bars_inflight.add(iid)
+                taken.append(iid)
+        for iid in taken:
+            if self._pool is not None and self.fetch_threads > 0:
+                try:
+                    self._pool.submit(self._bars_job, iid)
+                    continue
+                except RuntimeError:
+                    pass
+            self._bars_job(iid)
+        return taken
+
+    def _bars_job(self, iid: str) -> None:
+        now = int(self.clock.epoch())
+        try:
+            snap = self._fetch_bars(iid, now)
+        except Exception as e:   # noqa: BLE001 - surfaced on the future and in bars_error / stats
+            err = e if isinstance(e, FetchError) else FetchError(f"{type(e).__name__}: {e}", retryable=False)
+            with self._lock:
+                self._bars_errors[iid] = str(err)[:200]
+                self.stats_["bars_errors"] += 1
+                f = self._bars_futures.pop(iid, None)
+                self._bars_inflight.discard(iid)
+            if f is not None and not f.done():
+                f.set_exception(err)
+            return
+        with self._lock:
+            self._bars[iid] = snap
+            self._bars.move_to_end(iid)
+            while len(self._bars) > BARS_KEEP:
+                self._bars.popitem(last=False)
+            self._bars_errors.pop(iid, None)
+            self.stats_["bars_fetches"] += 1
+            f = self._bars_futures.pop(iid, None)
+            self._bars_inflight.discard(iid)
+        if f is not None and not f.done():
+            f.set_result(snap)
+
+    def _fetch_bars(self, iid: str, now: int) -> dict:
+        """One Yahoo 1-day / 1-minute chart: every minute bar of the session (``YahooChart.intraday_bars`` when the provider has it,
+        else the chart itself through ``_chart`` + ``parsers.chart_bars``; a provider with neither - the FakeProvider - gives the
+        bars it holds, disclosed as not the full session).  The same answer refreshes the instrument's quote record."""
+        inst = self.instruments.get(iid) if self.instruments is not None else None
+        if inst is None:
+            raise FetchError(f"{iid}: not in the instrument master", status=404, retryable=False)
+        if inst.kind == "OPTION" or not inst.yahoo_symbol:
+            raise FetchError(f"{iid}: no 1-minute chart source for this instrument", status=404, retryable=False)
+        y = self.providers.yahoo
+        sym = inst.yahoo_symbol
+        full = True
+        fn = getattr(y, "intraday_bars", None)
+        if callable(fn):
+            iq, bars = fn(sym)
+        else:
+            chart = getattr(y, "_chart", None)
+            if callable(chart):
+                res = chart(sym, INTRADAY_QUERY)
+                iq = parse_intraday(res, sym, int(self.clock.epoch()))
+                bars = [b for b in chart_bars(res) if int(b.t) % 60 == 0]      # Yahoo's trailing last-trade point is not a 1-minute bar
+            else:
+                iq = y.intraday(sym)
+                bars, full = list(iq.bars_tail or []), False
+        rec = record_from_intraday(inst, iq)
+        changed = self.cache.put(rec, now)
+        with self._lock:
+            self._changed.extend(changed)
+        fetched = int(iq.fetched_at or now)
+        rows = [{"t": int(b.t), "o": None if b.o is None else str(b.o), "h": None if b.h is None else str(b.h), "l": None if b.l is None else str(b.l),
+                 "c": None if b.c is None else str(b.c), "v": b.v, "complete": int(b.t) <= fetched - 60} for b in sorted(bars, key=lambda b: int(b.t))]
+        note = "" if full else f"this source keeps only the last {len(rows)} one-minute bars, not the whole session"
+        return {"instrument_id": iid, "symbol": sym, "bars": rows, "count": len(rows), "fetched_at": fetched, "quote_time": iq.quote_time,
+                "provider_session": None if iq.provider_session is None else list(iq.provider_session), "source": f"Yahoo Finance chart ({sym}), 1-minute bars",
+                "delay_label": YAHOO_DELAY_LABEL, "full_session": full, "note": note}
 
     def _run_resolves(self, report: dict) -> None:
         with self._lock:
@@ -695,9 +1104,49 @@ class QuoteWorker(threading.Thread):
         if self.instruments is not None:
             self.instruments.refresh(sym)
             self.instruments.load()
+            if needs_adv(self.instruments.get(sym)):
+                self.request_adv(sym)                   # BORROW_AVAIL: a resolved equity gets its ADV from Yahoo daily bars right away
         with self._lock:
             self.stats_["resolved"] += 1
         report["resolved"].append(sym)
+
+    def _run_adv(self, report: dict) -> None:
+        """One queued ADV per tick (BORROW_AVAIL): 3 months of Yahoo daily bars -> ``adv_from_daily`` -> ``instruments.set_adv``
+        (light).  A fetch error or no usable volume stores nothing (no data -> no borrow) and is retried after ADV_RETRY_S."""
+        with self._lock:
+            iid = self._adv.popleft() if self._adv else None
+        if iid is None:
+            return
+        now = int(self.clock.epoch())
+        inst = self.instruments.get(iid) if self.instruments is not None else None
+        if not needs_adv(inst):
+            return
+        with self._lock:
+            self._adv_tried[iid] = now
+        try:
+            bars = self.providers.yahoo.daily(inst.yahoo_symbol, ADV_DAYS)          # range=3mo&interval=1d
+        except FetchError as e:
+            with self._lock:
+                self._adv_errors[iid] = f"Yahoo daily bars: {e}"[:200]
+            return
+        got = adv_from_daily(bars, ny_of(now).date())
+        if got is None:
+            with self._lock:
+                self._adv_errors[iid] = f"Yahoo daily bars for {inst.yahoo_symbol}: fewer than the minimum completed sessions with a volume (no ADV, no borrow)"
+            return
+        if self.bus is None:
+            return
+        res = self.bus.execute(Command("instruments.set_adv", dict(got, instrument_id=iid), f"inst:adv:{_id_safe(iid)}:{now}", "worker"))
+        if not res.ok:
+            with self._lock:
+                self._adv_errors[iid] = f"instruments.set_adv: {res.code} {res.message}"[:200]
+            return
+        if self.instruments is not None:
+            self.instruments.refresh(iid)
+        with self._lock:
+            self._adv_errors.pop(iid, None)
+            self.stats_["adv_set"] += 1
+        report["adv"].append(iid)
 
     def _drain_changed(self) -> List[str]:
         with self._lock:
@@ -719,5 +1168,5 @@ class QuoteWorker(threading.Thread):
                 self.log.exception("matcher.on_quotes failed")
 
 
-__all__ = ["QuoteWorker", "RatesRefresher", "Slot", "register", "register_all", "h_provider_health_update", "h_dividends_upsert", "h_instruments_upsert",
-           "h_finra_record"]
+__all__ = ["QuoteWorker", "RatesRefresher", "Slot", "Refresher", "register", "register_all", "register_refresher", "unregister_refresher",
+           "registered_refreshers", "h_provider_health_update", "h_dividends_upsert", "h_instruments_upsert", "h_instruments_set_adv", "h_finra_record"]

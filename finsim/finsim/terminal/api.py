@@ -57,8 +57,9 @@ from .accounting import ScopeError
 from .clock import accounting_day, iso as _iso, ny_str
 from .commands import Command, ConflictError, RejectError, Result
 from .db import BusyError, DatabaseError, dumps, get_setting, set_setting
+from .news import attention_book, attention_in_books
 from .tables import BOOK_PROFILES, CONVENTIONS
-from .units import from_c, to_c
+from .units import fmt_money, from_c, to_c
 
 LOOPBACK = ("127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost")
 RETRY_MS = 1500
@@ -73,48 +74,75 @@ PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP
             "options": "WP-03", "hedges": "WP-03", "futures": "WP-04", "fx": "WP-05", "credit": "WP-05", "lending": "WP-06", "repo": "WP-06",
             "prime": "WP-07", "lifecycle": "WP-08", "risk": "WP-09", "compliance": "WP-09", "bonds": "WP-10", "swaps": "WP-17", "dividends": "WP-18",
             "private": "WP-19", "performance": "WP-20", "private_credit": "WP-21", "news": "WP-22", "lifetimes": "WP-23", "strategies": "WP-24",
-            "glossary": "WP-25", "swaps_trs": "WP-26"}
+            "glossary": "WP-25", "swaps_trs": "WP-26", "otc_options": "B2-P12", "counterparties": "B2-P08", "treasuries": "B2-P07"}
 
-# §20 — the unsupported / limited list, served by GET /api/unsupported (rendered in Settings and in search)
+# C3 (BUILD2_PLAN): the optional UI files planned by Build 2 packages.  While one is missing on disk, /static/<path> answers 200 with a
+# one-line JavaScript comment (so index.html can list it and the console shows no 404); the real file replaces the stub as soon as it lands.
+PLANNED_STATIC = ("pages/markets_debt.js", "components/bondticket.js", "pages/markets_fx.js", "components/fxdesk.js", "pages/markets_credit.js",
+                  "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js",
+                  "components/cdsticket.js")
+
+# §20 — what the terminal does NOT do, or does only in part, served by GET /api/unsupported (Settings > Unsupported, search).
+# SHELL-07 / APIUI-15 (2026-10-21): trader wording only (no endpoints, package ids, doc or glossary references).  The static rows are
+# the decided ones (not offered, not simulated) and the standing disclosures (delayed data, approximations); what a product module
+# still lacks comes from the module itself (``unsupported()`` rows) or from ``PLANNED`` below while that module / capability is
+# not in the running build - so nothing that is built is ever listed as missing.
 UNSUPPORTED = [
-    {"item": "Private equity deal flow (buyouts), investment banking, clients / institutions / investors, careers / missions", "state": "NOT_IN_THIS_BUILD",
-     "wording": "NOT IN THIS BUILD", "where": "nowhere in the terminal (TERMINAL_DECISIONS s5)"},
-    {"item": "MBS / structured, exotic OTC (variance, vol, dividend, inflation swaps, barriers), commodity physicals, crypto", "state": "NOT_IN_THIS_BUILD",
-     "wording": "grey rows wherever a list would show them; search says 'not in this build'", "where": "Markets lists, search"},
-    {"item": "Private credit (direct loans, OID, amendment fees, quarterly payments)", "state": "SUPPORTED", "wording": "computed marks with their inputs",
-     "where": "Credit page section (WP-21)"},
-    {"item": "Private markets (secondaries at negotiated prices, last-round marks)", "state": "SUPPORTED", "wording": "in eligible lifetimes; 'valuation only' without a sourced price",
-     "where": "Private Markets account page (WP-19); QP sentence when locked"},
-    {"item": "PB OTC swaps: IRS, TRS, cross-currency", "state": "SUPPORTED", "wording": "computed marks, daily VM and resets; dealt at the model par rate +/- the PB's half-width",
-     "where": "PB page OTC tab (WP-17 / WP-26)"},
-    {"item": "Trailing stops; all-or-none option packages; the 60 strategy templates", "state": "SUPPORTED", "wording": "ticket type TRAIL; hedge panel Strategies tab",
-     "where": "ticket, hedge panel"},
-    {"item": "Bonds (Treasury benchmarks, curated corporates): execution", "state": "LIMITED", "wording": "model price, not executable in this build",
-     "where": "Debt Instruments page (curve + list)"},
-    {"item": "Foreign listings, foreign bonds", "state": "NOT_IN_THIS_BUILD", "wording": "resolve refuses non-US exchanges", "where": "Foreign Markets & FX page shows FX spot only"},
-    {"item": "FX forwards, FX options", "state": "NOT_IN_THIS_BUILD", "wording": "fx.forward -> 400", "where": "hedge panel label for FX primaries"},
-    {"item": "Repo / reverse repo, securities lending out of inventory", "state": "NOT_IN_THIS_BUILD", "wording": "Credit page sections present with the label",
-     "where": "Credit Instruments page"},
-    {"item": "PB OTC options and forwards (FX / equity options, FRAs, caps)", "state": "NOT_IN_THIS_BUILD", "wording": "/api/otc/preview -> 400 NOT_IN_THIS_BUILD; swaps are live",
-     "where": "PB page OTC tab"},
-    {"item": "Splits applied to lots", "state": "NOT_IN_THIS_BUILD", "wording": "a Yahoo split event raises an Attention WARN 'manual review'", "where": "positions row note"},
-    {"item": "Recall notices from lender data", "state": "LIMITED", "wording": "INFO notice from the FINRA ratio heuristic only; no buy-ins ever", "where": "Attention INFO"},
-    {"item": "Early assignment of short options", "state": "NOT_SIMULATED", "wording": "not simulated", "where": "glossary OCC sentence"},
-    {"item": "Options on futures", "state": "NOT_IN_THIS_BUILD", "wording": "NOT IN THIS BUILD", "where": "hedge panel label for futures primaries"},
-    {"item": "Borrow availability / tiers", "state": "HEURISTIC", "wording": "estimated from FINRA + ADV, disclosed", "where": "ticket borrow block (BORROW_AVAIL)"},
-    {"item": "Futures initial margins, CME holiday calendar, settlement price", "state": "APPROXIMATED", "wording": "static table / NYSE approximation / observed print",
-     "where": "sentences FUT_MARGIN, CME_CAL, FUT_SETTLE"},
-    {"item": "Live quotes", "state": "NONE", "wording": "everything is delayed, close or computed; 'live' is reserved", "where": "freshness on every price"},
-    {"item": "Cboe NBBO for equity fills", "state": "OPPORTUNISTIC", "wording": "only when a fresh chain is already cached; otherwise Yahoo last", "where": "preview price_basis"},
-    {"item": "Executions when Yahoo / Cboe are down", "state": "PAUSED", "wording": "paused (stale) - no second equity source", "where": "Attention WARN, ticket blocker"},
-    {"item": "Treasury interest on non-USD cash", "state": "ZERO", "wording": "0 %", "where": "sentence CASH_INT"},
-    {"item": "Policy rates for JPY/CHF/CAD/AUD loans", "state": "MONTHLY_PROXY", "wording": "monthly OECD series (as-of month shown)", "where": "loan form note"},
-    {"item": "Risk and compliance", "state": "INFORM_ONLY", "wording": "warnings and notices only; not a compliance system", "where": "'warnings only' header on the Risk page"},
-    {"item": "Phone / LAN access, access keys", "state": "NOT_IN_THIS_BUILD", "wording": "loopback only", "where": "-"},
-    {"item": "Performance statistics tab", "state": "SUPPORTED", "wording": "per lifetime; needs >= 2 daily snapshots", "where": "Portfolio -> Performance"},
-    {"item": "Private marks under scenario shocks; VaR", "state": "NOT_APPLIED", "wording": "private marks are not shocked; no VaR in this build", "where": "Risk table note"},
-    {"item": "OTC dealt rates", "state": "MODELLED", "wording": "model par rate +/- the PB's half-width; IM static (DV01 x 50 bp / 10 % TRS / 2 % XCCY)",
-     "where": "preview 'cost of dealing'; sentence SWAP_MARK"},
+    {"item": "Private-equity deal flow (buyouts), investment banking, client / investor management", "state": "NOT_OFFERED",
+     "wording": "not a trading product; nothing in the terminal offers it", "where": "nowhere"},
+    {"item": "Mortgage-backed and structured products", "state": "NOT_OFFERED", "wording": "no free, reliable price source; never priced with invented data",
+     "where": "not listed"},
+    {"item": "Exotic OTC derivatives: variance / volatility / dividend / inflation swaps, barrier options", "state": "NOT_OFFERED",
+     "wording": "no free source for the volatility and inflation inputs they need; never priced with invented data", "where": "prime-broker OTC tab"},
+    {"item": "Physical commodities (owning or delivering the commodity)", "state": "NOT_OFFERED",
+     "wording": "commodity exposure is through listed futures only", "where": "Futures tab"},
+    {"item": "Crypto", "state": "NOT_OFFERED", "wording": "not tradeable; search says so", "where": "search"},
+    {"item": "Options on futures", "state": "NOT_OFFERED", "wording": "no free delayed source for CME option prices", "where": "hedge panel of a futures position"},
+    {"item": "Early assignment of short options", "state": "NOT_SIMULATED",
+     "wording": "short options are exercised / assigned only at expiry, by moneyness at the close", "where": "exercise and assignment notes on the instrument page and on positions"},
+    {"item": "Forced liquidation and margin calls that close positions", "state": "NOT_SIMULATED",
+     "wording": "a margin shortfall raises a warning and an attention item; nothing is ever sold for you", "where": "Risk page, attention strip"},
+    {"item": "Stock splits applied to lots", "state": "LIMITED", "wording": "a split raises an attention warning for manual review; lots are not adjusted",
+     "where": "attention strip, position notes"},
+    {"item": "Recall notices from lender data", "state": "LIMITED", "wording": "an information notice from the FINRA short-volume heuristic only; no buy-ins ever",
+     "where": "attention strip"},
+    {"item": "Borrow availability and fee tiers", "state": "HEURISTIC", "wording": "estimated from FINRA short volume and average daily volume, disclosed",
+     "where": "ticket borrow block"},
+    {"item": "Futures initial / maintenance margins and position limits", "state": "APPROXIMATED",
+     "wording": "static tables (assumed values; edit them in Settings > Margins & limits); verify current exchange values", "where": "Settings > Margins & limits"},
+    {"item": "CME holiday calendar; futures settlement prices", "state": "APPROXIMATED",
+     "wording": "CME holidays follow the NYSE calendar; the settlement is the observed print at settle time", "where": "Settings > Calendar, futures notes"},
+    {"item": "Live quotes", "state": "NONE", "wording": "every price is delayed, a close or computed; 'live' is never claimed", "where": "the freshness chip on every price"},
+    {"item": "Cboe NBBO for equity fills", "state": "OPPORTUNISTIC", "wording": "used only when a fresh option chain is already cached; otherwise the Yahoo last",
+     "where": "the price basis in the order preview"},
+    {"item": "Executions while Yahoo / Cboe are down", "state": "PAUSED", "wording": "paused as stale: there is no second equity source",
+     "where": "attention strip, ticket"},
+    {"item": "Treasury interest on non-USD cash", "state": "ZERO", "wording": "0 %", "where": "Treasury"},
+    {"item": "Policy rates for JPY / CHF / CAD / AUD loans", "state": "MONTHLY_PROXY", "wording": "monthly OECD series, its as-of month shown",
+     "where": "loan form"},
+    {"item": "Risk and compliance", "state": "INFORM_ONLY", "wording": "warnings and notices only; not a compliance system", "where": "Risk page"},
+    {"item": "Private marks under scenario shocks; value at risk", "state": "NOT_APPLIED", "wording": "private marks are not shocked; no VaR",
+     "where": "Risk page"},
+    {"item": "OTC dealt rates", "state": "MODELLED", "wording": "the model par rate plus or minus the dealer's half-width; margins from the dealer schedule",
+     "where": "the swap preview's cost of dealing"},
+    {"item": "Phone / LAN access", "state": "NOT_OFFERED", "wording": "the terminal answers on this computer only (127.0.0.1)", "where": "-"},
+]
+# A row shown while the running build lacks the module / capability that removes it (``present(rt)`` false).  Each test is the
+# hook the owning package adds (BUILD2_PLAN contracts), so the row disappears by itself when that package ships.
+PLANNED = [
+    {"present": lambda rt: getattr(rt, "otc_options", None) is not None,
+     "row": {"item": "OTC equity and FX options and forwards with a prime broker", "state": "NOT_YET", "wording": "not in this version yet",
+             "where": "prime-broker OTC tab"}},
+    {"present": lambda rt: callable(getattr(getattr(rt, "fx", None), "forward_rate", None)),
+     "row": {"item": "FX forwards and FX crosses", "state": "NOT_YET", "wording": "spot only in this version", "where": "Foreign Markets & FX"}},
+    {"present": lambda rt: callable(getattr(getattr(rt, "fx", None), "venue_fee_c", None)),
+     "row": {"item": "Trading foreign listings", "state": "NOT_YET", "wording": "quotes and marks only in this version", "where": "Foreign Markets & FX"}},
+    {"present": lambda rt: callable(getattr(getattr(rt, "bonds", None), "dv01_c", None)),
+     "row": {"item": "Bond execution (Treasuries, corporates, foreign government bonds)", "state": "LIMITED",
+             "wording": "model price only, not executable in this version", "where": "Debt Instruments"}},
+    {"present": lambda rt: getattr(rt, "counterparties", None) is not None,
+     "row": {"item": "Repo / reverse repo, securities lending out of inventory, the counterparty directory", "state": "NOT_YET",
+             "wording": "not in this version yet", "where": "Credit Instruments"}},
 ]
 
 
@@ -297,6 +325,39 @@ def lifetime_for(rt, book_code: Optional[str] = None) -> str:
     return lids[0]
 
 
+def unsupported_rows(rt) -> List[dict]:
+    """SHELL-07: the static rows, then every bound product module's own ``unsupported()`` rows (OPTIONAL_MODULES order), then the
+    ``PLANNED`` rows whose capability the running build lacks.  Each row: item, state, wording, where (trader wording)."""
+    rows: List[dict] = [dict(r) for r in UNSUPPORTED]
+    try:
+        from .server import OPTIONAL_MODULES as attrs
+    except Exception:   # noqa: BLE001 - a stand-in runtime: the static rows only
+        attrs = {}
+    seen = set()
+    for attr in attrs:
+        mod = getattr(rt, attr, None)
+        fn = getattr(mod, "unsupported", None) if mod is not None else None
+        if not callable(fn) or id(mod) in seen:
+            continue
+        seen.add(id(mod))
+        try:
+            got = fn() or []
+        except Exception as e:   # noqa: BLE001 - named, never hidden
+            got = [{"item": f"{attr}: the list of what it does not do failed ({type(e).__name__})", "state": "UNKNOWN", "wording": str(e)[:200], "where": "-"}]
+        for r in got:
+            if isinstance(r, dict) and r.get("item"):
+                rows.append({"item": str(r.get("item")), "state": str(r.get("state") or "NOT_OFFERED"), "wording": str(r.get("wording") or ""),
+                             "where": str(r.get("where") or "")})
+    for p in PLANNED:
+        try:
+            have = bool(p["present"](rt))
+        except Exception:   # noqa: BLE001 - a failing probe means "not present"
+            have = False
+        if not have:
+            rows.append(dict(p["row"]))
+    return rows
+
+
 def need(rt, attr: str):
     """The bound product module / service or 501 NOT_BUILT with its package id."""
     mod = getattr(rt, attr, None)
@@ -316,10 +377,43 @@ class Router:
         self.rt = rt
         self.routes: List[Tuple[str, "re.Pattern[str]", Handler, bool, bool]] = []
         self.static_dir = os.path.join(config.package_dir(), "static")
+        self.product_routes: Dict[str, int] = {}
         from . import api_views, api_products
         _register_core(self)
+        self._register_products()
         api_views.register_routes(self)
         api_products.register_routes(self)
+
+    def _register_products(self) -> None:
+        """C1 (BUILD2_PLAN): every bound optional product module that defines ``register_routes(router)`` adds its routes
+        BEFORE ``api_views`` / ``api_products`` (``server.OPTIONAL_MODULES`` order, ``rt.<attr>``), so a product route can
+        take over a path there (first match wins); the core routes (health, state, settings, static ...) stay first.  A module
+        whose ``register_routes`` raises is reported in ``rt.modules`` (``error: register_routes: ...``) and logged; its
+        routes are dropped and the server still starts."""
+        rt = self.rt
+        try:
+            from .server import OPTIONAL_MODULES as attrs
+        except Exception:   # noqa: BLE001 - a stand-in runtime without the server module: no product routes
+            return
+        seen = set()
+        for attr in attrs:
+            mod = getattr(rt, attr, None)
+            fn = getattr(mod, "register_routes", None) if mod is not None else None
+            if not callable(fn) or id(mod) in seen:
+                continue
+            seen.add(id(mod))
+            before = len(self.routes)
+            try:
+                fn(self)
+            except Exception as e:   # noqa: BLE001 - reported, never hidden; the rest of the API still serves
+                del self.routes[before:]
+                mods = getattr(rt, "modules", None)
+                if isinstance(mods, dict):
+                    mods[attr] = f"error: register_routes: {type(e).__name__}: {e}"
+                if getattr(rt, "log", None):
+                    rt.log.exception("optional module %s: register_routes failed", attr)
+                continue
+            self.product_routes[attr] = len(self.routes) - before
 
     def add(self, method: str, pattern: str, fn: Handler, *, mutating: Optional[bool] = None, loopback: bool = False) -> None:
         mut = (method in ("POST", "PATCH", "DELETE")) if mutating is None else bool(mutating)
@@ -468,6 +562,8 @@ class Router:
             rel = "index.html"
         base = os.path.abspath(self.static_dir)
         full = os.path.abspath(os.path.join(base, *rel.split("/")))
+        if ".." not in rel.split("/") and rel in PLANNED_STATIC and (full == base or full.startswith(base + os.sep)) and not os.path.isfile(full):
+            return 200, f"/* {rel}: not built yet */\n".encode("ascii"), {"Content-Type": "application/javascript; charset=utf-8", "Cache-Control": NO_STORE}
         if ".." in rel.split("/") or not (full == base or full.startswith(base + os.sep)) or not os.path.isfile(full):
             raise NotFound(f"no static file {rel}")
         with open(full, "rb") as f:
@@ -513,8 +609,153 @@ class _ResultError(ApiError):
 
 # ---- light commands owned by the API layer (§4.1 "api.py") ---------------------------------------------------------------
 SETTING_KEYS = {"participation_rate", "sweep_out_time_et", "snapshot_time_et", "treasury_reserve_c", "session_overrides", "sweep_confirm_threshold_c", "theme",
-                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "news_enabled", "build2_bonds"}
+                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "news_enabled", "build2_bonds",
+                "treasury_reserve_by_book", "futures_margin_overrides", "position_limit_overrides", "keybinds"}
 CENT_SETTINGS = {"treasury_reserve_c", "sweep_confirm_threshold_c", "pb_otc_threshold_c"}
+#: the words a refusal uses for a setting (BM-02: never the internal key)
+SETTING_LABELS = {"participation_rate": "participation rate", "sweep_out_time_et": "sweep-out time", "snapshot_time_et": "snapshot time",
+                  "treasury_reserve_c": "Treasury reserve", "treasury_reserve_by_book": "Treasury reserve", "session_overrides": "session overrides",
+                  "sweep_confirm_threshold_c": "sweep confirmation threshold", "theme": "theme", "pb_otc_threshold_c": "PB / OTC eligibility threshold",
+                  "qp_threshold_c": "qualified-purchaser threshold", "book_defaults": "book names and starting capitals", "private_defaults": "private markets defaults",
+                  "news_enabled": "news", "build2_bonds": "bond execution", "futures_margin_overrides": "futures margins",
+                  "position_limit_overrides": "position limits", "keybinds": "keyboard keys"}
+#: the settings ``book.update_settings`` owns (names rename the book at once; SR-07): a Settings save of these goes through it
+BOOK_SETTING_KEYS = ("book_defaults", "pb_otc_threshold", "pb_otc_threshold_c", "qp_threshold", "qp_threshold_c")
+OPTION_LIMIT_KEY = "OPTIONS"            # position_limit_overrides key of the default listed-option position limit (contracts)
+_HHMM_RE = re.compile(r"^([01][0-9]|2[0-3]):[0-5][0-9]$")
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# ---- keyboard keys (owner 2026-10-21 17:10: the F-keys, and his own keys saved in the app; docs/KEYBINDS.md) -----------------
+# static/keys.js holds every action and its DEFAULT key; the setting ``keybinds`` stores only the owner's overrides
+# ({action_id: key | null}, null = no key).  A save sends {"keybinds": {...changes}, "keybind_defaults": {...every default}}:
+# the defaults are used to check the result (never stored).  The rules below mirror keys.js (parse / scopeOf / REFUSED).
+KEYBIND_ID_RE = re.compile(r"^[a-z0-9_.]{1,64}$")
+KEYBIND_NAMED = frozenset({"Enter", "Escape", "Space", "Tab", "Backspace", "Delete", "Insert", "Home", "End", "PageUp", "PageDown",
+                           "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"})
+KEYBIND_PUNCT = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+_KEYBIND_FKEY_RE = re.compile(r"^F([1-9]|1[0-9]|2[0-4])$")
+#: keys a browser or Windows never hands to a page (or that the page needs), refused with the reason (keys.js REFUSED)
+KEYBIND_REFUSED = {
+    "Ctrl+W": "the browser closes the tab or window with it - the app never sees it",
+    "Ctrl+Shift+W": "the browser closes the window with it - the app never sees it",
+    "Ctrl+T": "the browser opens a new tab with it - the app never sees it",
+    "Ctrl+Shift+T": "the browser reopens the last closed tab with it - the app never sees it",
+    "Ctrl+N": "the browser opens a new window with it - the app never sees it",
+    "Ctrl+Shift+N": "the browser opens a private window with it - the app never sees it",
+    "Ctrl+Tab": "the browser switches tabs with it - the app never sees it",
+    "Ctrl+Shift+Tab": "the browser switches tabs with it - the app never sees it",
+    "Ctrl+L": "the browser puts the cursor in its address bar with it",
+    "Alt+F4": "Windows closes the window with it - the app never sees it",
+    "Alt+Tab": "Windows switches windows with it - the app never sees it",
+    "Alt+Shift+Tab": "Windows switches windows with it - the app never sees it",
+    "Ctrl+F4": "the browser closes the tab with it - the app never sees it",
+    "Ctrl+PageUp": "the browser switches tabs with it - the app never sees it",
+    "Ctrl+PageDown": "the browser switches tabs with it - the app never sees it",
+    "Ctrl+Escape": "Windows opens the Start menu with it - the app never sees it",
+    "Ctrl+Shift+Escape": "Windows opens the Task Manager with it - the app never sees it",
+    "Alt+Escape": "Windows switches windows with it - the app never sees it",
+    "Tab": "it moves the cursor between boxes and buttons",
+    "Shift+Tab": "it moves the cursor between boxes and buttons",
+}
+KEYBIND_WIDGET_SCOPES = ("ticket", "grid", "dialog")
+KEYBIND_MAX = 400
+
+
+def keybind_canonical(text) -> Optional[str]:
+    """``text`` when it is a key in the ONE canonical form, else None: ``Ctrl+Alt+Shift+Key`` (modifiers optional, in that
+    order); Key = F1-F24, A-Z, 0-9, a named key (Enter, Escape, Space, Tab, Backspace, Delete, Insert, Home, End, PageUp,
+    PageDown, ArrowUp/Down/Left/Right) or one ASCII punctuation character - never with Shift (the character carries it:
+    '?', not 'Shift+/'; '!' not 'Shift+1')."""
+    if not isinstance(text, str) or not text:
+        return None
+    s, shift = text, False
+    for mod in ("Ctrl+", "Alt+", "Shift+"):
+        if s.startswith(mod) and len(s) > len(mod):
+            s = s[len(mod):]
+            shift = shift or mod == "Shift+"
+    single = len(s) == 1
+    ok = bool(_KEYBIND_FKEY_RE.fullmatch(s)) or s in KEYBIND_NAMED or (single and ("A" <= s <= "Z" or "0" <= s <= "9" or s in KEYBIND_PUNCT))
+    if not ok or (shift and single and not "A" <= s <= "Z"):
+        return None
+    return text
+
+
+def keybind_scope(action_id) -> str:
+    """Where an action acts, from its id (keys.js scopeOf): ticket.* the dock ticket, grid.* a table, dialog.* an open dialog,
+    everything else global.  Two actions may share a key only in different widget scopes (neither global)."""
+    head = str(action_id).split(".", 1)[0]
+    return head if head in KEYBIND_WIDGET_SCOPES else "global"
+
+
+def _keybind_map(value, label: str) -> Dict[str, Optional[str]]:
+    """{action_id: canonical key | None}; every refusal names the field (and the action / key)."""
+    if not isinstance(value, dict):
+        raise RejectError("SETTING_VALUE", f"{label}: expected a map of action to key (or null for no key)", {"field": label})
+    if len(value) > KEYBIND_MAX:
+        raise RejectError("SETTING_VALUE", f"{label}: {len(value)} entries (at most {KEYBIND_MAX})", {"field": label})
+    out: Dict[str, Optional[str]] = {}
+    for aid, key in value.items():
+        a = str(aid)
+        if not KEYBIND_ID_RE.fullmatch(a):                     # fullmatch: 'page.news\n' is not an action name ('$' matches before a final newline)
+            raise RejectError("SETTING_VALUE", f"{label}: {a!r} is not an action name (lower-case letters, digits, '_' and '.')", {"field": label, "action": a})
+        if key is None:
+            out[a] = None
+            continue
+        if not isinstance(key, str) or keybind_canonical(key) is None:
+            raise RejectError("SETTING_VALUE", f"{label}: {key!r} is not a key in the one form the app stores (Ctrl+Alt+Shift+Key: F1-F24, "
+                              "A-Z, 0-9, Enter, Escape, Space, the arrows ... or one punctuation character)", {"field": label, "action": a, "key": key})
+        if key in KEYBIND_REFUSED:
+            raise RejectError("SETTING_VALUE", f"{label}: {key} cannot be used: {KEYBIND_REFUSED[key]}", {"field": label, "action": a, "key": key})
+        out[a] = key
+    return out
+
+
+def keybind_clash(binding: Dict[str, Optional[str]]) -> Optional[Tuple[str, str, str]]:
+    """The first key held by two actions that can act together (the same scope, or either global): (key, id_a, id_b)."""
+    by_key: Dict[str, List[str]] = {}
+    for aid in sorted(binding):
+        key = binding[aid]
+        if key:
+            by_key.setdefault(key, []).append(aid)
+    for key in sorted(by_key):
+        ids = by_key[key]
+        for i, a in enumerate(ids):
+            for b in ids[i + 1:]:
+                sa, sb = keybind_scope(a), keybind_scope(b)
+                if sa == sb or "global" in (sa, sb):
+                    return key, a, b
+    return None
+
+
+def _keybinds_merge(conn, new: Dict[str, Optional[str]], defaults: Optional[Dict[str, Optional[str]]]) -> Dict[str, Optional[str]]:
+    """The overrides stored after this save: the stored ones updated with ``new``.  The client's defaults
+    (``keybind_defaults``, every action of keys.js) are required: an action this build does not have is refused, an
+    override equal to its default (or of an action the build no longer has) is dropped - only the owner's changes are kept,
+    at most KEYBIND_MAX.  The keys in force (defaults + overrides) must never put one key on two actions that can act
+    together - else nothing is written and the refusal names the key and both actions."""
+    label = SETTING_LABELS["keybinds"]
+    if defaults is None:                                       # KB-R1-08: every check needs the build's actions and default keys
+        raise RejectError("SETTING_VALUE", f"{label}: send keybind_defaults (every action of this build with its default key) with keybinds",
+                          {"field": label})
+    cur = get_setting(conn, "keybinds", {})
+    merged = dict(cur) if isinstance(cur, dict) else {}
+    merged.update(new)
+    unknown = sorted(a for a in new if a not in defaults)
+    if unknown:
+        raise RejectError("SETTING_VALUE", f"{label}: {unknown[0]!r} is not an action of this build", {"field": label, "action": unknown[0]})
+    # only the owner's changes of actions this build has: an override equal to its default, or of an action that no longer
+    # exists, is dropped (the stored map never grows past the actions of the build)
+    merged = {a: k for a, k in merged.items() if a in defaults and defaults[a] != k}
+    if len(merged) > KEYBIND_MAX:
+        raise RejectError("SETTING_VALUE", f"{label}: {len(merged)} changed keys (at most {KEYBIND_MAX})", {"field": label})
+    in_force = dict(defaults)
+    in_force.update(merged)
+    hit = keybind_clash(in_force)
+    if hit:
+        key, a, b = hit
+        raise RejectError("SETTING_VALUE", f"{label}: {key} would be the key of two actions ({a} and {b}); swap them or pick another key",
+                          {"field": label, "key": key, "actions": [a, b]})
+    return merged
 
 
 def h_attention_open(ctx, payload: dict) -> dict:
@@ -568,6 +809,13 @@ def h_watchlist_add(ctx, payload: dict) -> dict:
         raise RejectError("ACCOUNT_UNKNOWN", f"account {aid} does not exist")
     if ctx.conn.execute("SELECT 1 FROM instruments WHERE instrument_id=?", (iid,)).fetchone() is None:
         raise RejectError("INSTRUMENT_UNKNOWN", f"instrument {iid} is not in the master (resolve it first)")
+    priv = getattr(ctx.services, "private", None) if ctx.services is not None else None
+    tp = getattr(priv, "tradeable_private", None)
+    krow = ctx.conn.execute("SELECT kind FROM instruments WHERE instrument_id=?", (iid,)).fetchone()
+    if callable(tp) and krow is not None and krow[0] == "PRIVATE":
+        ok, why, trade_in = tp(ctx.services, iid, conn=ctx.conn, now=ctx.ts)
+        if not ok:
+            raise RejectError("NOT_PRIVATE", why, {"instrument_id": iid, "trade_in": trade_in})
     pos = ctx.conn.execute("SELECT COALESCE(MAX(position), 0) + 1 FROM watchlists WHERE account_id=? AND name=?", (aid, name)).fetchone()[0]
     ctx.conn.execute("INSERT OR IGNORE INTO watchlists(account_id, name, instrument_id, position) VALUES (?,?,?,?)", (aid, name, iid, int(pos)))
     return {"account_id": aid, "name": name, "instrument_id": iid, "added": True}
@@ -579,7 +827,108 @@ def h_watchlist_remove(ctx, payload: dict) -> dict:
     return {"account_id": aid, "name": name, "instrument_id": iid, "removed": int(cur.rowcount or 0)}
 
 
+def _money_c(key: str, value, minimum: int = 0) -> int:
+    """A decimal USD amount (or integer cents for ``*_c`` callers that send ints) -> cents; refused in plain words."""
+    label = SETTING_LABELS.get(key, key)
+    if isinstance(value, bool) or value is None or (isinstance(value, str) and not value.strip()):
+        raise RejectError("SETTING_VALUE", f"{label}: enter an amount", {"field": label})
+    try:
+        c = to_c(str(value).strip().replace(",", ""))
+    except (ValueError, ArithmeticError, TypeError):
+        raise RejectError("SETTING_VALUE", f"{label}: {value!r} is not an amount", {"field": label}) from None
+    if c < minimum:
+        raise RejectError("SETTING_VALUE", ("reserve must be 0 or more" if "reserve" in key else f"{label} must be {from_c(minimum)} or more"), {"field": label})
+    return c
+
+
+def _margin_overrides(value) -> dict:
+    """SR-11: ``{root: {im, mm}}`` (USD per contract; ``im_c`` / ``mm_c`` cents accepted) -> ``{root: {im_c, mm_c}}``; an empty
+    entry (both blank) removes the root's override.  IM > 0, 0 < MM <= IM, root in the futures table."""
+    from .instruments import FUTURES_SPECS
+    if not isinstance(value, dict):
+        _bad("futures_margin_overrides", value)
+    out = {}
+    for root, d in value.items():
+        r = str(root).strip().upper()
+        if r not in FUTURES_SPECS:
+            raise RejectError("SETTING_VALUE", f"futures margins: {root!r} is not a futures root of the table", {"field": "futures margins", "roots": sorted(FUTURES_SPECS)})
+        if d is None or (isinstance(d, dict) and all(d.get(k) in (None, "") for k in ("im", "mm", "im_c", "mm_c"))):
+            continue
+        if not isinstance(d, dict):
+            _bad("futures_margin_overrides", value)
+        im = int(d["im_c"]) if isinstance(d.get("im_c"), int) and not isinstance(d.get("im_c"), bool) else _money_c("futures_margin_overrides", d.get("im"), 1)
+        mm = int(d["mm_c"]) if isinstance(d.get("mm_c"), int) and not isinstance(d.get("mm_c"), bool) else _money_c("futures_margin_overrides", d.get("mm"), 1)
+        if im <= 0 or mm <= 0 or mm > im:
+            raise RejectError("SETTING_VALUE", f"futures margins {r}: initial must be above 0 and maintenance between 0 and the initial margin", {"field": "futures margins", "root": r})
+        out[r] = {"im_c": im, "mm_c": mm}
+    return out
+
+
+def _limit_overrides(value) -> dict:
+    """SR-11: ``{key: limit}`` whole contracts > 0: a futures root (spot-month limit) or ``OPTIONS`` (the listed-option position
+    limit used when no tier is known); an empty value removes the override."""
+    from .instruments import FUTURES_SPECS
+    if not isinstance(value, dict):
+        _bad("position_limit_overrides", value)
+    out = {}
+    for key, v in value.items():
+        k = str(key).strip().upper()
+        if k != OPTION_LIMIT_KEY and k not in FUTURES_SPECS:
+            raise RejectError("SETTING_VALUE", f"position limits: {key!r} is not a futures root or {OPTION_LIMIT_KEY}", {"field": "position limits"})
+        if v in (None, ""):
+            continue
+        try:
+            n = int(str(v).strip().replace(",", ""))
+        except (TypeError, ValueError):
+            raise RejectError("SETTING_VALUE", f"position limits {k}: {v!r} is not a whole number of contracts", {"field": "position limits"}) from None
+        if n <= 0:
+            raise RejectError("SETTING_VALUE", f"position limits {k}: the limit must be 1 contract or more", {"field": "position limits"})
+        out[k] = n
+    return out
+
+
+def _session_overrides(value) -> dict:
+    """``{"YYYY-MM-DD": {group | "*": "HH:MM" | "CLOSED"}}`` (what SessionTable applies); every part checked."""
+    from .tables import SESSIONS
+    if not isinstance(value, dict):
+        _bad("session_overrides", value)
+    out: Dict[str, Dict[str, str]] = {}
+    for day, groups in value.items():
+        if not _DATE_RE.match(str(day)) or not isinstance(groups, dict):
+            raise RejectError("SETTING_VALUE", f"session overrides: {day!r} is not a date (YYYY-MM-DD) with its groups", {"field": "session overrides"})
+        try:
+            date.fromisoformat(str(day))
+        except ValueError:
+            raise RejectError("SETTING_VALUE", f"session overrides: {day!r} is not a calendar date", {"field": "session overrides"}) from None
+        row = {}
+        for g, v in groups.items():
+            g = str(g).strip()
+            if g != "*" and g not in SESSIONS:
+                raise RejectError("SETTING_VALUE", f"session overrides {day}: unknown session group {g!r}", {"field": "session overrides", "groups": sorted(SESSIONS)})
+            v = str(v or "").strip().upper()
+            if v != "CLOSED" and not _HHMM_RE.match(v):
+                raise RejectError("SETTING_VALUE", f"session overrides {day} {g}: {v!r} is not a close time (HH:MM) or CLOSED", {"field": "session overrides"})
+            row[g] = v
+        if row:
+            out[str(day)] = row
+    return out
+
+
 def _setting_value(key: str, value):
+    if key == "keybinds":                                      # merged with the stored overrides and checked in h_settings_set
+        return _keybind_map(value, SETTING_LABELS[key])
+    if key == "treasury_reserve_by_book":
+        if not isinstance(value, dict) or not value:
+            _bad(key, value)
+        return {str(k).upper(): _money_c(key, v, 0) for k, v in value.items()}
+    if key == "futures_margin_overrides":
+        return _margin_overrides(value)
+    if key == "position_limit_overrides":
+        return _limit_overrides(value)
+    if key == "session_overrides":
+        return _session_overrides(value)
+    if key == "treasury_reserve_c":
+        return _money_c(key, value, 0)
     if key in CENT_SETTINGS:
         return to_c(str(value)) if not isinstance(value, bool) and isinstance(value, (int, str, float, Decimal)) else _bad(key, value)
     if key == "qp_threshold_c":
@@ -625,10 +974,15 @@ def _setting_value(key: str, value):
 
 
 def _bad(key, value):
-    raise RejectError("SETTING_VALUE", f"{key}: {value!r} is not a valid value")
+    label = SETTING_LABELS.get(key, key)
+    raise RejectError("SETTING_VALUE", f"{label}: {value!r} is not a valid value", {"field": label})
 
 
 def h_settings_set(ctx, payload: dict) -> dict:
+    payload = dict(payload)
+    kb_defaults = payload.pop("keybind_defaults", None)        # keys.js defaults: checks a keybinds save, never stored
+    if kb_defaults is not None:
+        kb_defaults = _keybind_map(kb_defaults, "keyboard defaults")
     before, after = {}, {}
     for key, value in payload.items():
         k = str(key)
@@ -641,12 +995,24 @@ def h_settings_set(ctx, payload: dict) -> dict:
         try:
             v = _setting_value(k, value)
         except (ValueError, ArithmeticError) as e:
-            raise RejectError("SETTING_VALUE", f"{k}: {value!r} is not a valid value") from e
-        if k == "book_defaults":
+            label = SETTING_LABELS.get(k, k)
+            raise RejectError("SETTING_VALUE", f"{label}: {value!r} is not a valid value", {"field": label}) from e
+        if k == "keybinds":                                    # only the owner's overrides; one key never on two actions
+            v = _keybinds_merge(ctx.conn, v, kb_defaults)
+        elif k == "book_defaults":
             cur = get_setting(ctx.conn, k, {}) or {}
             for code, row in v.items():
                 cur[code] = dict(cur.get(code) or {}, **row)
             v = cur
+        elif k == "treasury_reserve_by_book":                 # merge: one book's reserve never touches another's (BM-01)
+            cur = get_setting(ctx.conn, k, None)
+            if not isinstance(cur, dict):                     # first per-book save: every book starts from the old global value
+                old = int(get_setting(ctx.conn, "treasury_reserve_c", 0) or 0)
+                cur = {r["book_code"]: old for r in ctx.conn.execute("SELECT book_code FROM books ORDER BY sort_order").fetchall()}
+            unknown = [c for c in v if ctx.conn.execute("SELECT 1 FROM books WHERE book_code=?", (c,)).fetchone() is None]
+            if unknown:
+                raise RejectError("BOOK_UNKNOWN", f"no book {unknown[0]!r}", {"field": "Treasury reserve"})
+            v = dict(cur, **v)
         before[k] = get_setting(ctx.conn, k)
         set_setting(ctx.conn, k, v)
         after[k] = v
@@ -677,7 +1043,86 @@ def settings_map(rt) -> dict:
             out[r["key"]] = r["value_json"]
     out["gtc_days"] = config.GTC_DAYS
     out["ecp_floor_c"] = config.ECP_FLOOR_C
+    out["tables"] = static_tables()
+    rb = out.get("treasury_reserve_by_book")
+    if isinstance(rb, dict):                                  # cents per book -> USD strings, like every other amount the API serves
+        out["treasury_reserve_by_book"] = {str(k): (_cents(v) if isinstance(v, int) and not isinstance(v, bool) else v) for k, v in rb.items()}
     return out
+
+
+def static_tables() -> dict:
+    """SR-11: the static futures margin table and position limits the overrides replace (assumed values, labelled so)."""
+    from .instruments import FUTURES_SPECS
+    from .tables import COMPLIANCE_LIMITS
+    spot = COMPLIANCE_LIMITS.get("FUTURES_SPOT_MONTH") or {}
+    opt = COMPLIANCE_LIMITS.get("OPTION_POSITION_LIMITS") or {}
+    return {"futures": [{"root": r, "name": s.name, "group": s.group, "im_c": int(s.im_c), "mm_c": int(s.mm_c), "spot_month_limit": spot.get(r)}
+                        for r, s in FUTURES_SPECS.items()],
+            "option_limit": {"key": OPTION_LIMIT_KEY, "default": opt.get("default"), "tiers": opt.get("tiers"), "unit": opt.get("unit", "contracts")},
+            "note": "assumed values - verify current exchange values; an override applies to new requirements and new checks"}
+
+
+_COUNT_WORDS = {1: "One book", 2: "Two books", 3: "Three books", 4: "Four books", 5: "Five books"}
+
+
+def conventions_view(rt) -> dict:
+    """``CONVENTIONS`` with the BOOKS / QP / ELIGIBILITY sentences built from the live settings (SHELL-22 / C10): the book names
+    and the starting capitals of new lifetimes (``book_defaults``), the qualified-purchaser thresholds per profile and the PB /
+    OTC threshold - never a fixed number that Settings can change."""
+    conv = dict(CONVENTIONS)
+    try:
+        with rt.db.reader() as conn:
+            books = _books.books(conn)
+            defaults = get_setting(conn, "book_defaults", {}) or {}
+            thr = _books.pb_otc_threshold_c(conn)
+            qps = {b.code: _books.qp_threshold_c(conn, b.profile) for b in books}
+    except Exception:   # noqa: BLE001 - the static sentences stand rather than a failing page
+        return conv
+    if not books:
+        return conv
+    parts, qp_parts = [], []
+    for b in books:
+        d = defaults.get(b.code) if isinstance(defaults, dict) else None
+        cap = int((d or {}).get("starting_capital_c", b.starting_capital_c) or b.starting_capital_c)
+        parts.append(f"{b.name} (USD {fmt_money(cap)})")
+        qp = qps[b.code]
+        fund_day_one = b.profile == "FUND" and qp > 0 and cap >= qp
+        qp_parts.append(f"from the start for the {b.name}" if qp == 0 else
+                        (f"from day one for the {b.name} (it starts at or above USD {fmt_money(qp)})" if fund_day_one else
+                         f"at USD {fmt_money(qp)} of NAV for the {b.name}"))
+    count = _COUNT_WORDS.get(len(books), f"{len(books)} books")
+    conv["BOOKS"] = (f"{count}, each its own lifetime with its own Treasury, accounts and ledger: {', '.join(parts)} - the capital a new lifetime starts with "
+                     f"(Settings > Books); books never transfer to each other.")
+    conv["QP"] = ("Private markets need accredited-investor / qualified-purchaser status (Rule 506, Rule 144 transfer restrictions); here the Private "
+                  f"Markets account opens {'; '.join(qp_parts)} (editable in Settings > Books); once open it stays open.")
+    conv["ELIGIBILITY"] = ("OTC swaps need Eligible Contract Participant status (CEA 1a(18): more than USD 10M invested) and a dealer's ISDA Master + CSA + "
+                           f"Prime Brokerage Agreement; this terminal unlocks prime brokers and OTC when a book's NAV reaches USD {fmt_money(thr)} "
+                           "(Settings > Books; the Fund and Institutional books from day one) - dealers' real minimums vary; relationships already open "
+                           "stay open if NAV later falls.")
+    return conv
+
+
+def prime_brokers_view(rt) -> List[dict]:
+    """C10: ``prime.brokers()`` (each dealer with its seed schedule, ASSUMED and editable once opened), [] when prime is not bound."""
+    prime = getattr(rt, "prime", None)
+    fn = getattr(prime, "brokers", None) if prime is not None else None
+    if not callable(fn):
+        try:
+            from . import prime as _prime   # the module when rt.prime is a service object
+            fn = getattr(_prime, "brokers", None)
+        except Exception:   # noqa: BLE001
+            fn = None
+    if not callable(fn):
+        return []
+    try:
+        rows = list(fn() or [])
+    except Exception:   # noqa: BLE001 - the modal says so instead of a failing /api/state
+        return []
+    for r in rows:
+        if isinstance(r, dict):
+            r.setdefault("assumed", True)
+            r.setdefault("note", "modelled assumptions (not the dealer's real terms); editable in Settings > Prime brokers once the account is open")
+    return rows
 
 
 def thread_alive(th) -> bool:
@@ -699,6 +1144,60 @@ def _worker_health(th, last_tick_ts, errors, last_error, cycle_s: int, now: int,
     if note:
         d["note"] = note
     return d
+
+
+def _db_files(rt) -> dict:
+    """SHELL-14: the database's main file and its WAL (the WAL holds recent commits until a checkpoint)."""
+    path = getattr(rt.db, "path", None) or getattr(rt, "db_path", None) or ""
+    out = {}
+    for name, p in (("file", path), ("wal", path + "-wal"), ("shm", path + "-shm")):
+        try:
+            out[name] = os.path.getsize(p)
+        except OSError:
+            out[name] = 0
+    return out
+
+
+def _db_size(rt) -> int:
+    f = _db_files(rt)
+    return int(f.get("file", 0)) + int(f.get("wal", 0))
+
+
+#: the clock-time jobs of the lifecycle scheduler (their ``when`` in lifecycle.REGISTRY), for "next job" in Data Status (SHELL-14);
+#: (job, New York time or a settings key holding one, trading days only)
+LIFECYCLE_TIMES = (("HOUSEKEEPING", "00:15", False), ("SETTLE_DUE / ACCRUE_DAILY", "00:30", False), ("DIVIDEND / PC_PAY / BOND_COUPON / SWAP_FIX", "00:40", False),
+                   ("MARKS_RECORD", "16:20", True), ("SWAP_VM", "17:05", False), ("COLLATERAL_MARK / OPTION_MARGIN_MARK", "17:10", True),
+                   ("SWEEP_OUT", "sweep_out_time_et", False), ("SNAPSHOT", "snapshot_time_et", False))
+
+
+def next_lifecycle_job(rt, now: int) -> dict:
+    """The next clock-time job of the scheduler: the scheduler's own ``next_due()`` when it has one, else the earliest of
+    ``LIFECYCLE_TIMES`` (today / tomorrow, New York time, trading-day jobs on business days) and INTEGRITY_FULL (hourly at :05)."""
+    from datetime import timedelta
+    from .clock import epoch_of, ny_of
+    lc = getattr(rt, "lifecycle", None)
+    fn = getattr(lc, "next_due", None)
+    if callable(fn):
+        got = fn()
+        if isinstance(got, dict) and got.get("job"):
+            return got
+    with rt.db.reader() as conn:
+        settings = {k: get_setting(conn, k) for k in ("sweep_out_time_et", "snapshot_time_et")}
+    today = ny_of(now).date()
+    cands = []
+    for d in (today, today + timedelta(days=1)):
+        for job, when, trading in LIFECYCLE_TIMES:
+            hhmm = settings.get(when) or {"sweep_out_time_et": config.SWEEP_OUT_TIME_ET, "snapshot_time_et": config.SNAPSHOT_TIME_ET}.get(when, when)
+            if trading and not rt.cal.is_business_day(d):
+                continue
+            ts = epoch_of(d, str(hhmm))
+            if ts > now:
+                cands.append((ts, job))
+    hour = ny_of(now).replace(minute=5, second=0, microsecond=0)
+    nxt = hour if int(hour.timestamp()) > now else hour + timedelta(hours=1)
+    cands.append((int(nxt.timestamp()), "INTEGRITY_FULL"))
+    ts, job = min(cands)
+    return {"job": job, "at_ts": ts, "source": "the scheduler's documented times"}
 
 
 def health_view(rt) -> dict:
@@ -737,19 +1236,40 @@ def health_view(rt) -> dict:
     }
     lifecycle = {"due": (lc.due_count() if lc is not None and hasattr(lc, "due_count") else None), "failing": failing}
     if lc is None:
-        lifecycle["note"] = f"NOT_BUILT {PACKAGES['lifecycle']}: no scheduled jobs run in this build"
+        lifecycle["note"] = "no scheduled jobs run in this build"
+    else:
+        try:
+            lifecycle["next_due"] = next_lifecycle_job(rt, now)
+        except Exception as e:   # noqa: BLE001 - shown as unknown, never a failing health
+            lifecycle["next_due"] = {"job": None, "error": f"{type(e).__name__}: {e}"}
+        try:
+            busy = list((getattr(lc, "_busy", None) or {}).items())
+            lifecycle["blocked"] = [{"job": jk[0], "key": jk[1], "retries": b.get("n"), "since": b.get("since"), "cause": b.get("cause")} for jk, b in sorted(busy)]
+        except Exception:   # noqa: BLE001 - a scheduler without the busy map: nothing blocked is reported
+            lifecycle["blocked"] = []
     news = getattr(rt, "news", None)
     lock = getattr(rt, "lock", None)
     started = int(getattr(rt, "started_ts", now) or now)
     return {"app": APP_ID, "version": VERSION, "schema": SCHEMA_VERSION, "pid": os.getpid(), "uptime_s": max(0, now - started), "started_ts": started,
-            "db_path": getattr(rt, "db_path", None) or getattr(rt.db, "path", None), "db_size": rt.db.size(), "state_version": state_version,
+            "db_path": getattr(rt, "db_path", None) or getattr(rt.db, "path", None), "db_size": _db_size(rt), "db_files": _db_files(rt), "state_version": state_version,
             "offline": bool(getattr(rt, "offline", False)), "ready": bool(getattr(rt, "ready", True)),
             "clock": {"utc": _iso(rt.clock.now()), "ny": ny.strftime("%Y-%m-%d %H:%M:%S ET"), "trading_day": rt.clock.today().isoformat(),
                       "accounting_day": accounting_day(rt.clock.now()).isoformat(), "epoch": now},
             "integrity": integrity, "providers": providers, "workers": workers, "lifecycle": lifecycle, "attention_open": attention_open,
             "calendar": rt.cal.source(), "lock": {"path": getattr(lock, "path", None), "pid": os.getpid() if lock is not None else None},
             "news": (news.health() if news is not None else None), "port": getattr(rt, "port", None), "home": getattr(rt, "home", None),
-            "modules": dict(getattr(rt, "modules", {}))}
+            "modules": dict(getattr(rt, "modules", {})), "refreshers": _refreshers(w)}
+
+
+def _refreshers(w) -> dict:
+    """The quote worker's registered product refreshers (C14) with their schedule and last outcome, for Data Status."""
+    fn = getattr(w, "refreshers", None) if w is not None else None
+    if not callable(fn):
+        return {}
+    try:
+        return dict(fn() or {})
+    except Exception:   # noqa: BLE001 - Data Status shows none rather than failing health
+        return {}
 
 
 def _register_core(router: Router) -> None:
@@ -773,8 +1293,9 @@ def _register_core(router: Router) -> None:
         lid = req.lifetime()
         snap = rt.marks.snapshot()
         with rt.db.reader() as conn:
-            attention = [dict(x) for x in conn.execute("SELECT * FROM attention WHERE resolved_ts IS NULL ORDER BY ts DESC, id DESC LIMIT 100").fetchall()]
             book_code = _books.book_code_of(lid)
+            attention = [dict(x) for x in conn.execute("SELECT * FROM attention WHERE resolved_ts IS NULL ORDER BY ts DESC, id DESC LIMIT 300").fetchall()
+                         if attention_in_books(x, {book_code})][:100]
         rep = rt.accounting.last_report() or {}
         return {"app": APP_ID, "version": VERSION, "offline": bool(getattr(rt, "offline", False)), "book": book_code, "lifetime_id": lid,
                 "accounts": api_views.account_rows(rt, lid, snap), "books": api_views.books_view(rt, snap, unlock=False), "settings": settings_map(rt),
@@ -783,8 +1304,9 @@ def _register_core(router: Router) -> None:
                                                             "epoch": req.now},
                 "attention": attention, "integrity": {"ok": rep.get("ok"), "hold": bool(rt.accounting.hold_state()), "checked_at": rep.get("checked_at"),
                                                       "failing": rep.get("failing", [])},
-                "conventions": dict(CONVENTIONS), "book_profiles": {k: v["label"] for k, v in BOOK_PROFILES.items()},
-                "unsupported": UNSUPPORTED, "state_version": rt.db.state_version(), "started_ts": getattr(rt, "started_ts", None)}
+                "conventions": conventions_view(rt), "book_profiles": {k: v["label"] for k, v in BOOK_PROFILES.items()},
+                "prime_brokers": prime_brokers_view(rt), "unsupported": unsupported_rows(rt), "state_version": rt.db.state_version(),
+                "started_ts": getattr(rt, "started_ts", None)}
 
     def sessions(req: Request):
         return {"sessions": req.rt.sessions.states(), "rules": req.rt.sessions.rules(), "server_time": req.now,
@@ -798,18 +1320,30 @@ def _register_core(router: Router) -> None:
                 "source": src.get("file"), "years": src.get("years"), "fallback_years": src.get("fallback_years"), "fallback": year in (src.get("fallback_years") or [])}
 
     def attention(req: Request):
+        """SHELL-03: the selected book's rows (any of its lifetimes: an account of it, a lifetime ref or details.lifetime_id) plus the
+        global rows (providers, integrity, curve, workers); ``?all=1`` = every book (consolidated); ``?resolved=1`` adds resolved rows."""
+        books = attention_books(req)
         with req.rt.db.reader() as conn:
-            if req.q("all") in ("1", "true", "yes"):
+            if req.q("resolved") in ("1", "true", "yes"):
                 rows = conn.execute("SELECT * FROM attention ORDER BY ts DESC, id DESC LIMIT ?", (req.q_int("limit", 200, 1, 2000),)).fetchall()
             else:
                 rows = conn.execute("SELECT * FROM attention WHERE resolved_ts IS NULL ORDER BY ts DESC, id DESC LIMIT ?", (req.q_int("limit", 500, 1, 2000),)).fetchall()
-        return [dict(x) for x in rows]
+        return [dict(x) for x in rows if attention_in_books(x, books)]
 
     def attention_resolve(req: Request):
         try:
             aid = int(req.params[0])
         except ValueError:
             raise NotFound(f"attention item {req.params[0]!r} does not exist")
+        sel = req.q("book")
+        if sel:
+            with req.rt.db.reader() as conn:
+                row = conn.execute("SELECT * FROM attention WHERE id=?", (aid,)).fetchone()
+                owner = attention_book(row) if row is not None else None
+                if owner is not None and owner != str(sel).upper():
+                    names = {b.code: b.name for b in _books.books(conn)}
+                    raise ApiError(409, "BOOK_MISMATCH", f"this item belongs to the {names.get(owner, owner)}; switch to that book to resolve it",
+                                   {"id": aid, "book": owner, "selected": str(sel).upper()})
         return run_command(req, "attention.resolve", {"id": aid})
 
     def jobs(req: Request):
@@ -844,15 +1378,66 @@ def _register_core(router: Router) -> None:
         return settings_map(req.rt)
 
     def settings_patch(req: Request):
+        rt = req.rt
         payload = {k: v for k, v in (req.body or {}).items() if k != "request_id"}
-        res = run_command(req, "settings.set", payload)
-        ok_or_raise(res)
-        if "session_overrides" in res.body.get("after", {}) and hasattr(req.rt.sessions, "set_overrides"):
-            req.rt.sessions.set_overrides(res.body["after"]["session_overrides"])
-        return 200, settings_map(req.rt), ({"X-Replayed": "1"} if res.replayed else {})
+        book = payload.pop("book", None) or req.q("book")
+        # BM-01 / APIUI-04: the Treasury reserve is per book ({treasury_reserve, book} from the Treasury page of that book)
+        for key in ("treasury_reserve", "treasury_reserve_c"):
+            if key in payload:
+                value = payload.pop(key)
+                if not book:
+                    raise ApiError(400, "BOOK_REQUIRED", "choose the book whose Treasury reserve this is", {"field": "Treasury reserve"})
+                code = str(book).upper()
+                with rt.db.reader() as conn:
+                    if _books.book_of(conn, code) is None:
+                        raise ApiError(404, "UNKNOWN_BOOK", f"book {book!r} does not exist")
+                payload["treasury_reserve_by_book"] = dict(payload.get("treasury_reserve_by_book") or {}, **{code: value})
+        # SR-07: names, starting capitals and thresholds go through book.update_settings (a name renames the book at once)
+        book_part = {k: payload.pop(k) for k in list(payload) if k in BOOK_SETTING_KEYS}
+        if book_part and "book.update_settings" not in rt.bus.kinds():
+            payload.update(book_part)                         # no lifetimes module: stored as plain settings, as before
+            book_part = {}
+        replayed = False
+        results = []
+        if book_part:
+            rid = req.request_id if not payload else f"{req.request_id}:books"
+            res = rt.bus.execute(Command("book.update_settings", book_part, rid, "ui"))
+            ok_or_raise(res)
+            replayed = replayed or res.replayed
+            results.append(res)
+        if payload or not book_part:
+            rid = req.request_id if not book_part else f"{req.request_id}:settings"
+            res = rt.bus.execute(Command("settings.set", payload, rid, "ui")) if "settings.set" in rt.bus.kinds() else run_command(req, "settings.set", payload)
+            ok_or_raise(res)
+            replayed = replayed or res.replayed
+            after = (res.body or {}).get("after", {}) if isinstance(res.body, dict) else {}
+            if "session_overrides" in after and hasattr(rt.sessions, "set_overrides"):
+                rt.sessions.set_overrides(after["session_overrides"])
+        return 200, settings_map(rt), ({"X-Replayed": "1"} if replayed else {})
 
     def unsupported(req: Request):
-        return {"items": UNSUPPORTED, "count": len(UNSUPPORTED)}
+        rows = unsupported_rows(req.rt)
+        return {"items": rows, "count": len(rows)}
+
+    def legacy(req: Request):
+        """SHELL-20: is the old simulation's archive view up on its port?  A 0.3 s loopback connect (nothing is sent)."""
+        import socket
+        port = config.LEGACY_PORT
+        up = False
+        try:
+            with socket.create_connection((config.HOST, port), timeout=0.3):
+                up = True
+        except OSError:
+            up = False
+        return {"up": up, "url": f"http://{config.HOST}:{port}/", "port": port, "command": "py -3.12 -m finsim legacy"}
+
+    def lifetime_view(req: Request):
+        """The read model of one lifetime (final figures, accounts, the signed agreements with each dealer - PO-16)."""
+        mod = need(req.rt, "lifetimes")
+        try:
+            return mod.history(req.rt, req.params[0])
+        except RejectError as e:
+            raise NotFound(e.message)
 
     def static_root(req: Request):
         return r.static("index.html")
@@ -872,9 +1457,23 @@ def _register_core(router: Router) -> None:
     r.add("GET", r"/api/settings", settings_get)
     r.add("PATCH", r"/api/settings", settings_patch)
     r.add("GET", r"/api/unsupported", unsupported)
+    r.add("GET", r"/api/legacy", legacy)
+    r.add("GET", r"/api/lifetimes/([A-Z]+[0-9]+)", lifetime_view)
     r.add("GET", r"/", static_root)
     r.add("GET", r"/index\.html", static_root)
     r.add("GET", r"/static/(.+)", static_file)
+
+
+def attention_books(req: "Request"):
+    """SHELL-03: the book codes the attention strip of this request shows (None = every book, ``?all=1``): ``?book=`` else the
+    selected book (the Accounting's, else the first open lifetime's)."""
+    if req.q("all") in ("1", "true", "yes"):
+        return None
+    try:
+        lid = req.lifetime()
+    except ScopeError:
+        return None
+    return {_books.book_code_of(lid)}
 
 
 def get_setting_safe(rt, key: str, default=None):
@@ -884,4 +1483,4 @@ def get_setting_safe(rt, key: str, default=None):
 
 __all__ = ["Router", "Request", "ApiError", "NotFound", "NotBuilt", "encode", "quote_dict", "mark_dict", "error_body", "run_command", "ok_or_raise", "need",
            "lifetime_for", "register", "health_view", "settings_map", "thread_alive", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
-           "OPEN_ORDER_STATUSES"]
+           "OPEN_ORDER_STATUSES", "PLANNED_STATIC"]

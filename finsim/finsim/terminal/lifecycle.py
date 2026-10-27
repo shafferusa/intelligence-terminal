@@ -25,6 +25,15 @@ Conventions stated here
   as a WARN attention (unless the handler surfaced its own ERROR, or the outcome is a quiet terminal no-op such as
   SWEEP_OUT "nothing idle"), and retried.  Nothing is ever posted in place of missing data, and no failure is swallowed:
   every outcome is in ``jobs_done`` / ``job_failures`` / ``attention`` and in ``status()`` (``/api/jobs``).
+  TX-4: a failing ``due()`` or ``before()`` is recorded under the pseudo-keys ``(job, 'due')`` / ``(job, 'before')`` and
+  a failing batch under its first key; the job is skipped while that row is parked (the backoff holds for the pseudo-keys
+  too), and the next success deletes the row(s) and resolves the JOB_FAILED item - a batch success clears every recorded
+  failure of its job.
+- BUSY (TX-5): a 503 outcome (the database write lock held elsewhere) is RETRIED next tick - never a failure row - but
+  it is counted (``errors`` / ``last_error``, so health ``workers.lifecycle.errors_1h`` is real), logged once per
+  attempt, and after ``BLOCKED_AFTER`` consecutive RETRYs of one key ONE WARN attention ``LIFECYCLE_BLOCKED`` names the
+  busy cause (written as soon as the database takes a write; kept in ``status()['blocked']`` until then); the key's next
+  success resolves it.  FAILED outcomes count too.
 - SERIES: keys of one object run in date order; when a key skips or fails, the later keys of its series wait (an
   accrual night never jumps over a pending night; a futures settle never jumps over a missing print).
 - MODULES: a job whose product module is not bound as ``services.<name>`` (or whose command is not registered) is
@@ -42,6 +51,7 @@ import hashlib
 import threading
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from .clock import ny_of
 from .commands import Command, RejectError, TxContext
 from .db import dumps
 from .lifecycle_eod import LIGHT_HANDLERS, REGISTRY
@@ -54,6 +64,7 @@ BACKOFF_S = (60, 120, 240, 480, 960)
 HOURLY_S = 3600
 ERROR_AFTER = 5
 RID_MAX = 80
+BLOCKED_AFTER = 3            # TX-5: consecutive 503 RETRYs of one key before the WARN LIFECYCLE_BLOCKED
 
 
 # ---- the bus handlers -------------------------------------------------------------------------------------------------------------
@@ -154,6 +165,9 @@ class LifecycleScheduler(threading.Thread):
         self.last_tick_ts: Optional[int] = None
         self.last_error: Optional[str] = None
         self.last_result: Optional[dict] = None
+        self.errors = 0                                   # TX-5: RETRY / FAILED outcomes and job faults (health errors_1h samples it)
+        self.retries = 0
+        self._busy: Dict[Tuple[str, str], dict] = {}      # (job, key) -> {n, since, cause, attention}
 
     # ---- thread ------------------------------------------------------------------------------------------------------------------
     def run(self) -> None:
@@ -161,6 +175,7 @@ class LifecycleScheduler(threading.Thread):
             try:
                 self.tick()
             except Exception as e:   # noqa: BLE001 — the thread never dies silently: logged, kept in status, retried next tick
+                self.errors += 1
                 self.last_error = f"{type(e).__name__}: {e}"
                 if self.log is not None:
                     self.log.exception("lifecycle tick failed")
@@ -224,15 +239,23 @@ class LifecycleScheduler(threading.Thread):
                 state.skipped_modules[job.name] = note
                 self._status.setdefault(job.name, {}).update(note=note)
                 continue
-            keys = self._due(job, state)
+            # TX-4: a due() / before() fault parks the whole job for its backoff (the pseudo-keys honour parked_until)
+            if self._parked(parked, job.name, "due", state.now) or self._parked(parked, job.name, "before", state.now):
+                continue
+            keys = self._due(job, state, failing)
             if keys and job.name not in state.before_done:
                 state.before_done.add(job.name)
                 try:
                     if job.before(self.services, keys):
-                        keys = self._due(job, state)
+                        keys = self._due(job, state, failing)
                 except Exception as e:   # noqa: BLE001 — surfaced like a failing key
                     self._record_failure(job.name, "before", f"{type(e).__name__}: {e}", state.now)
+                    failing.add((job.name, "before"))
+                    parked[(job.name, "before")] = state.now + 1           # parked for the rest of this tick; the stored backoff holds after it
                     continue
+                if (job.name, "before") in failing:
+                    self._clear_failure(job.name, "before", state.now)
+                    failing.discard((job.name, "before"))
             if not keys:
                 continue
             if job.batch:
@@ -242,6 +265,10 @@ class LifecycleScheduler(threading.Thread):
                 item = self._run_batch(job, keys, state)
                 if item.get("status") == "DONE":
                     progress += 1
+                    stale = [k for (jn, k) in failing if jn == job.name and k not in ("due", "before")]
+                    for k in stale:                                         # TX-4: a batch success clears its recorded failures
+                        self._clear_failure(job.name, k, state.now)
+                        failing.discard((job.name, k))
                 continue
             stalled: Set[str] = set()
             for key in keys:
@@ -267,17 +294,23 @@ class LifecycleScheduler(threading.Thread):
                         stalled.add(series)
         return progress
 
-    def _due(self, job: Job, state: _TickState) -> List[str]:
+    def _due(self, job: Job, state: _TickState, failing: Optional[Set[Tuple[str, str]]] = None) -> List[str]:
         try:
             with self.db.reader() as conn:
-                return list(job.due(conn, self.clock, self.cal, self.sessions))
+                keys = list(job.due(conn, self.clock, self.cal, self.sessions))
         except Exception as e:   # noqa: BLE001 — a broken due() is a job failure, surfaced and retried with backoff
             msg = f"due() raised {type(e).__name__}: {e}"
             if self.log is not None:
                 self.log.exception("lifecycle %s due() failed", job.name)
             if not self._parked(self._load_failures(state.now)[0], job.name, "due", state.now):
                 self._record_failure(job.name, "due", msg, state.now)
+                if failing is not None:
+                    failing.add((job.name, "due"))
             return []
+        if failing is not None and (job.name, "due") in failing:             # TX-4: a due() that works again clears its failure
+            self._clear_failure(job.name, "due", state.now)
+            failing.discard((job.name, "due"))
+        return keys
 
     def _run_key(self, job: Job, key: str, state: _TickState, failing: Set[Tuple[str, str]]) -> dict:
         kind = job.command_kind(key) if hasattr(job, "command_kind") else job.kind
@@ -290,6 +323,8 @@ class LifecycleScheduler(threading.Thread):
             if (job.name, key) in failing:
                 self._clear_failure(job.name, key, state.now)
                 failing.discard((job.name, key))
+            if (job.name, key) in self._busy:
+                self._unblock(job.name, key, state.now)
             if item["status"] == "SKIPPED":
                 retry = job.retry_payload(self.services, key, res)
                 if retry is not None:
@@ -302,6 +337,7 @@ class LifecycleScheduler(threading.Thread):
             job.after_commit(self.services, key, res)
         elif res.http == 503:
             item.update(status="RETRY", note=f"{res.code}: {res.message}", code=res.code)
+            self._busy_retry(job.name, key, f"{res.code}: {res.message}", state.now)
         else:
             item.update(status="FAILED", note=f"{res.code}: {res.message}", code=res.code)
             self._record_failure(job.name, key, f"{res.code}: {res.message}", state.now)
@@ -363,9 +399,61 @@ class LifecycleScheduler(threading.Thread):
         ts = self._deferred.get((job, key))
         return ts is not None and ts > now
 
+    # ---- TX-5: the database is busy (503) ------------------------------------------------------------------------------------------
+    def _busy_retry(self, job: str, key: str, cause: str, now: int) -> None:
+        """Count, log and (after BLOCKED_AFTER in a row) surface a key that the database keeps answering busy for."""
+        self.errors += 1
+        self.retries += 1
+        self.last_error = f"{job} {key}: {cause} (retried next tick)"
+        b = self._busy.setdefault((job, key), {"n": 0, "since": now, "cause": cause, "attention": None})
+        b["n"] += 1
+        b["cause"] = cause
+        if self.log is not None:
+            self.log.warning("lifecycle %s %s RETRY %d (database busy): %s", job, key, b["n"], cause)
+        if b["n"] >= BLOCKED_AFTER and b["attention"] is None:
+            message = (f"{job} {key}: {b['n']} attempts since {ny_of(int(b['since'])).strftime('%H:%M:%S')} ET were refused because the database is busy ({cause}); "
+                       "settlements, accruals and marks wait until it frees - another program (a second server, a database tool) may hold it")
+            try:
+                with self.db.writer(timeout=1.0) as tx:
+                    open_row = tx.one("SELECT id FROM attention WHERE source=? AND code='LIFECYCLE_BLOCKED' AND ref_type='job' AND ref_id=? AND resolved_ts IS NULL",
+                                      (SOURCE, f"{job}:{key}"))
+                    if open_row is None:
+                        tx.x("INSERT INTO attention(ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts, auto_resolve)"
+                             " VALUES (?,?,?,?,?,?,NULL,'job',?,NULL,1)",
+                             (now, "WARN", SOURCE, "LIFECYCLE_BLOCKED", message, dumps({"job": job, "key": key, "retries": b["n"], "cause": cause, "since": b["since"],
+                                                                                          "ref_type": "job", "ref_id": f"{job}:{key}", "auto_resolve": 1}), f"{job}:{key}"))
+                b["attention"] = "open"
+            except Exception as e:   # noqa: BLE001 — the database is the busy thing: kept in status()['blocked'] and written at a later attempt
+                if self.log is not None:
+                    self.log.warning("lifecycle could not record LIFECYCLE_BLOCKED for %s %s yet: %s", job, key, e)
+
+    def _unblock(self, job: str, key: str, now: int) -> None:
+        b = self._busy.pop((job, key), None)
+        if b is None:
+            return
+        try:
+            with self.db.writer(timeout=2.0) as tx:
+                tx.x("UPDATE attention SET resolved_ts=? WHERE source=? AND code='LIFECYCLE_BLOCKED' AND ref_type='job' AND ref_id=? AND resolved_ts IS NULL",
+                     (now, SOURCE, f"{job}:{key}"))
+                if b.get("attention") is None and int(b.get("n") or 0) >= BLOCKED_AFTER:
+                    # the database refused every write while it was busy (an outside lock): the delay is still recorded, as resolved history
+                    tx.x("INSERT INTO attention(ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts, auto_resolve)"
+                         " VALUES (?,?,?,?,?,?,NULL,'job',?,?,1)",
+                         (int(b["since"]), "WARN", SOURCE, "LIFECYCLE_BLOCKED",
+                          f"{job} {key} waited {int(b['n'])} attempts from {ny_of(int(b['since'])).strftime('%H:%M:%S')} ET for a busy database ({b['cause']}); it ran at "
+                          f"{ny_of(int(now)).strftime('%H:%M:%S')} ET", dumps({"job": job, "key": key, "retries": int(b["n"]), "cause": b["cause"], "since": b["since"],
+                                                                               "ran_ts": now, "ref_type": "job", "ref_id": f"{job}:{key}"}), f"{job}:{key}", now))
+        except Exception as e:   # noqa: BLE001 — resolved at the next success of any key of the job
+            if self.log is not None:
+                self.log.warning("lifecycle could not resolve LIFECYCLE_BLOCKED for %s %s: %s", job, key, e)
+        if self.log is not None:
+            self.log.info("lifecycle %s %s ran after %d busy retries", job, key, int(b.get("n") or 0))
+
     def _record_failure(self, job: str, key: str, error: str, now: int) -> None:
         error = str(error)[:500]
         ref = f"{job}:{key}"
+        self.errors += 1                                  # TX-5: every FAILED key, batch, due() and before() fault counts
+        self.last_error = f"{job} {key}: {error}"
         with self.db.writer() as tx:
             row = tx.one("SELECT failures FROM job_failures WHERE job=? AND key=?", (job, key))
             n = (int(row["failures"]) if row else 0) + 1
@@ -413,7 +501,8 @@ class LifecycleScheduler(threading.Thread):
                          "last_status": lr["status"] if lr else mem.get("status"), "last_note": lr["note"] if lr else mem.get("note"), "next_due": j.when,
                          "failing": failing.get(j.name, 0)})
         return {"jobs": jobs, "ticks": self.ticks, "last_tick_ts": self.last_tick_ts, "interval_s": self.interval_s, "alive": self.is_alive(), "last_error": self.last_error,
-                "deferred": len(self._deferred), "last_result": self.last_result}
+                "deferred": len(self._deferred), "last_result": self.last_result, "errors": self.errors, "retries": self.retries,
+                "blocked": [{"job": j, "key": k, "retries": b["n"], "since": b["since"], "cause": b["cause"]} for (j, k), b in sorted(self._busy.items())]}
 
 
 def run_now(services, job: Optional[str] = None) -> dict:

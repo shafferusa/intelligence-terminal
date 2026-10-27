@@ -14,6 +14,12 @@
  *   T.components.preview.packageResult(res)     the result of a strategy package submit (AON or sequential).
  *   T.components.preview.errorAsBlocker(e)      an ApiError -> a blocker row {code, message, details, http}.
  *
+ * Build 2 (P10): the result's fill prices are the EXECUTED prices, plain (with the fill's own quote record in the tooltip when
+ * it carries one) - never a struck-through 'NO STATUS' chip (USX-21); the header echoes the typed limit / stop / trail when the
+ * preview carries none (a refused limit reads 'LMT 300.001 (your limit, refused)', USX-34); a non-USD need shows the
+ * funding.fx_conversion plan (pair, deal rate, USD amount, value date, spread cost, executable or why not) that the ticket's
+ * 'convert USD -> GBP as shown' box accepts (OA-12); NO_QUOTE reads 'no quote yet - fetching' (USX-08).
+ *
  * Conventions this file keeps
  * - Nothing is computed here: every figure is a field of the server's preview / result; the panel formats and labels.
  *   Cents fields (`*_c`, integers) are shown through T.fmt.cents, decimal strings through T.fmt.money.
@@ -29,12 +35,15 @@
   var T = window.T;
   var REASON_KEYS = {
     NOT_ELIGIBLE: 'ELIGIBILITY', NOT_ELIGIBLE_QP: 'QP', LIFETIME_CLOSED: 'LIFETIME', QUOTE_STALE: 'STALE', NO_BORROW: 'BORROW_AVAIL',
-    INSUFFICIENT_FUNDS: 'AVAILABLE', INSUFFICIENT_FUNDS_CCY: 'AVAILABLE', CONFIRM_REQUIRED: 'SWEEP', TRAIL_INVALID: 'TRAILING', AON_LEGS: 'AON',
+    INSUFFICIENT_FUNDS: 'AVAILABLE', INSUFFICIENT_FUNDS_CCY: 'AVAILABLE', CONFIRM_REQUIRED: 'SWEEP', TRAIL_INVALID: 'TRAILING', AON_LEGS: 'AON', NO_QUOTE: 'STALE',
     AON_SIZE: 'AON', AON_STALE: 'AON', LOCKUP: 'PRIVATE_TRADE', STOP_SIDE: 'STOP_RULE', SESSION: 'SESSION', LAST_SESSION: 'SESSION',
     PRICE_REQUIRED: 'PRIVATE_TRADE', PRICE_TICK: 'LIMIT_RULE', FUNDING_SHORTFALL: 'SWEEP', PREVIEW_STALE: 'FILL_PRICE'
   };
   var PLAIN = {
     QUOTE_STALE: 'the last observed print is too old to execute against; the order can rest as a LIMIT, or wait for a fresh quote',
+    NO_QUOTE: 'no quote yet - the first print is being fetched (up to 15 min delayed); the preview refreshes by itself when it arrives',
+    USE_OWN_TICKET: 'this instrument is dealt on its own ticket (the bond ticket, the FX desk, the private ticket or the OTC tab), not with an order',
+    INSUFFICIENT_FUNDS_CCY_CONVERT: 'tick "convert USD as shown" to buy the currency at the fill (the conversion plan is below), or deal it on the FX desk first',
     NO_BORROW: 'a short sale needs a borrow first; none is available for this name right now',
     INSUFFICIENT_FUNDS: 'the worst-case cash need exceeds own available + Treasury available + PB headroom; add funds, transfer, or size down',
     INSUFFICIENT_FUNDS_CCY: 'the foreign-currency need exceeds the cash held in that currency; deal the FX leg first (never automatic)',
@@ -69,13 +78,36 @@
     return Object.assign({}, q);
   }
   function sideLabel(s) { return String(s || '').replace(/_/g, ' '); }
-  function typeLabel(pv) {
-    var t = pv.order_type || '';
-    if (t === 'LIMIT') { return 'LMT ' + T.fmt.px(pv.limit_px); }
-    if (t === 'STOP') { return 'STP ' + T.fmt.px(pv.stop_px); }
-    if (t === 'STOP_LIMIT') { return 'STP ' + T.fmt.px(pv.stop_px) + ' LMT ' + T.fmt.px(pv.limit_px); }
-    if (t === 'TRAILING_STOP') { var tr = pv.trail || {}; return 'TRAIL ' + (tr.trail_amt != null ? T.fmt.px(tr.trail_amt) : (tr.trail_pct != null ? T.fmt.num(tr.trail_pct, 2) + ' %' : '')); }
+  /* USX-34: a price the server did not echo (a refused limit) is the user's own number from the request, labelled as such */
+  function own(pv, req, k) {
+    if (pv[k] != null && pv[k] !== '') { return T.fmt.px(pv[k]); }
+    var v = req && req[k];
+    return v != null && v !== '' ? String(v) + ' (yours' + ((pv.blockers || []).length ? ', refused' : '') + ')' : 'n/a';
+  }
+  function typeLabel(pv, req) {
+    var t = pv.order_type || (req && req.order_type) || '';
+    if (t === 'LIMIT') { return 'LMT ' + own(pv, req, 'limit_px'); }
+    if (t === 'STOP') { return 'STP ' + own(pv, req, 'stop_px'); }
+    if (t === 'STOP_LIMIT') { return 'STP ' + own(pv, req, 'stop_px') + ' LMT ' + own(pv, req, 'limit_px'); }
+    if (t === 'TRAILING_STOP') {
+      var tr = pv.trail || {};
+      var amt = tr.trail_amt != null ? tr.trail_amt : (req && req.trail_amt); var pct = tr.trail_pct != null ? tr.trail_pct : (req && req.trail_pct);
+      return 'TRAIL ' + (amt != null && amt !== '' ? T.fmt.px(amt) : (pct != null && pct !== '' ? T.fmt.ratePct(pct) : ''));
+    }
     return t === 'MARKET' ? 'MKT' : t;
+  }
+  /* OA-12: the USD -> currency conversion that would fund a non-USD need (fx.conversion_plan, C17) */
+  function conversionBox(fc) {
+    if (!fc || typeof fc !== 'object') { return null; }
+    function c(name) { return typeof fc[name] === 'number' ? T.fmt.cents(fc[name]) : (fc[name.replace(/_c$/, '')] != null ? T.fmt.money(fc[name.replace(/_c$/, '')]) : null); }
+    var rows = [['deal', 'BUY ' + (fc.buy_ccy || '') + ' ' + (c('buy_c') || 'n/a') + ' / SELL ' + (fc.sell_ccy || 'USD') + ' ' + (c('usd_c') || 'n/a')],
+                ['rate', (fc.rate_quoted || fc.rate || 'n/a') + (fc.pair ? ' (' + fc.pair + (fc.mid ? ' mid ' + fc.mid : '') + ', the desk spread against you)' : '')],
+                ['spread cost', c('spread_cost_c') ? 'USD ' + c('spread_cost_c') : 'n/a'], ['value date', (fc.value_date || 'n/a') + (fc.settle_date ? ' (the trade settles ' + fc.settle_date + ')' : '')]];
+    if (fc.usd_available != null) { rows.push(['USD available', T.fmt.money(fc.usd_available) + (fc.usd_fundable === false ? ' - NOT enough for the USD side' : '')]); }
+    rows.push(['executable', fc.executable ? (fc.requested ? 'yes - converts at the fill (asked for)' : 'yes - tick "convert USD as shown" to use it') : 'NO: ' + (fc.reason || 'not executable now')]);
+    var box = T.h('div', { class: fc.executable ? 'blue-box pv-fxconv' : 'warn-box pv-fxconv' }, T.h('b', null, 'FX conversion ' + (fc.requested ? '(asked for)' : '(offered)')), T.kv(rows));
+    if (fc.text) { box.appendChild(T.h('div', { class: 'hint' }, fc.text)); }
+    return box;
   }
   function plain(code) { return PLAIN[code] || ''; }
   function reasonFor(code) { var k = REASON_KEYS[code]; return k ? T.conv(k) : ''; }
@@ -99,6 +131,7 @@
     if (d.notional != null) { rows.push(['notional', T.fmt.money(d.notional)]); }
     if (d.nav != null) { rows.push(['lifetime NAV', T.fmt.money(d.nav)]); }
     if (d.fx_leg && typeof d.fx_leg === 'object') { rows.push(['FX leg', 'buy ' + d.fx_leg.buy_ccy + ' ' + T.fmt.money(d.fx_leg.amount) + ' / sell ' + d.fx_leg.sell_ccy + ' first']); }
+    if (d.fx_conversion && typeof d.fx_conversion === 'object') { rows.push(['FX conversion', conversionBox(d.fx_conversion)]); }
     if (d.locate && typeof d.locate === 'object') { rows.push(['locate', 'available ' + T.fmt.qty(d.locate.qty_available) + ' of ' + T.fmt.qty(d.locate.qty) + ' . tier ' + (d.locate.tier || '?')]); if (d.locate.basis) { rows.push(['basis', d.locate.basis]); } }
     if (d.lifetime_id) { rows.push(['lifetime', d.lifetime_id]); }
     if (d.qp_threshold != null) { rows.push(['QP threshold', T.fmt.money(d.qp_threshold)]); }
@@ -114,9 +147,12 @@
       var code = b.code || 'ERROR';
       var row = T.h('div', { class: 'pv-blocker error-box', dataset: { code: code } });
       row.appendChild(T.h('div', { class: 'row' }, badge(code, 'red', 'http ' + (b.http || '')), T.h('span', { class: 'pv-msg' }, b.message || '')));
-      var p = plain(code); if (p) { row.appendChild(T.h('div', { class: 'hint' }, p)); }
+      var p = plain(code);
+      if (code === 'INSUFFICIENT_FUNDS_CCY' && b.details && b.details.fx_conversion && b.details.fx_conversion.executable) { p = plain('INSUFFICIENT_FUNDS_CCY_CONVERT'); }
+      if (p) { row.appendChild(T.h('div', { class: 'hint' }, p)); }
       var am = amounts(b.details); if (am) { row.appendChild(am); }
-      var r = reasonFor(code); if (r) { row.appendChild(T.h('div', { class: 'conv' }, T.h('b', null, REASON_KEYS[code]), r)); }
+      if (b.details && typeof b.details.note === 'string' && b.details.note) { row.appendChild(T.h('div', { class: 'hint' }, b.details.note)); }
+      var r = reasonFor(code); if (r) { row.appendChild(T.h('div', { class: 'conv' }, T.h('b', { title: REASON_KEYS[code] }, T.convTitle(REASON_KEYS[code])), r)); }
       box.appendChild(row);
     });
     void pv;
@@ -160,11 +196,12 @@
     T.clear(el);
     if (!pv) { el.appendChild(T.h('div', { class: 'empty' }, 'no preview yet')); return el; }
     var inst = pv.instrument || {};
+    var req = opts.request || null;
     var head = T.h('div', { class: 'pv-head' });
-    head.appendChild(T.h('span', { class: 'side-' + T.esc(pv.side || '') + ' pv-side' }, sideLabel(pv.side)));
-    head.appendChild(T.h('span', { class: 'mono' }, ' ' + T.fmt.qty(pv.qty) + ' '));
-    head.appendChild(T.h('b', { class: 'mono' }, inst.symbol || inst.id || '?'));
-    head.appendChild(T.h('span', { class: 'muted' }, ' ' + typeLabel(pv) + ' ' + (pv.tif || '')));
+    head.appendChild(T.h('span', { class: 'side-' + T.esc(pv.side || (req && req.side) || '') + ' pv-side' }, sideLabel(pv.side || (req && req.side))));
+    head.appendChild(T.h('span', { class: 'mono' }, ' ' + T.fmt.qty(pv.qty != null ? pv.qty : (req && req.qty)) + ' '));
+    head.appendChild(T.h('b', { class: 'mono' }, inst.symbol || inst.id || (req && req.instrument_id) || '?'));
+    head.appendChild(T.h('span', { class: 'muted' }, ' ' + typeLabel(pv, req) + ' ' + (pv.tif || (req && req.tif) || '')));
     if (inst.support && inst.support !== 'FULL') { head.appendChild(T.stateTag(inst.support)); }
     el.appendChild(head);
     if (inst.name) { el.appendChild(T.h('div', { class: 'hint' }, (inst.name || '') + ' . ' + (inst.kind || '') + ' . ' + (inst.currency || '') + (inst.multiplier && inst.multiplier !== '1' ? ' . x' + inst.multiplier : '') + (inst.lot && inst.lot !== 1 ? ' . lot ' + T.fmt.qty(inst.lot) : '') + (inst.expiry ? ' . expires ' + inst.expiry : ''))); }
@@ -178,6 +215,8 @@
         q.bid != null || q.ask != null ? T.h('span', { class: 'muted' }, ' bid / ask ', T.px(q, { field: 'bid', size: 'inline' }), ' / ', T.px(q, { field: 'ask', size: 'inline' })) : null,
         q.executable === false ? badge('NOT EXECUTABLE' + (q.reason ? ' ' + q.reason : ''), 'red') : null));
     } else { leg.appendChild(T.h('div', { class: 'row' }, T.h('span', { class: 'muted' }, 'quote '), T.px(null))); }
+    var qn = (pv.quote && pv.quote.note) || (q && q.note) || '';
+    if (qn) { leg.appendChild(T.h('div', { class: 'hint' }, qn)); }
     if (ex) {
       var basis = ex.price_basis || '';
       var own = basis === 'limit' || basis === 'stop' || basis === 'last_mark' || basis === 'unavailable';
@@ -201,13 +240,18 @@
       var tkv = [['trail', tr.trail_amt != null ? T.fmt.px(tr.trail_amt) + ' (price units)' : T.fmt.num(tr.trail_pct, 2) + ' %'],
                  ['reference last', tr.trail_ref_px != null ? T.fmt.px(tr.trail_ref_px) : 'unavailable'], ['initial stop', tr.stop_px != null ? T.fmt.px(tr.stop_px) : 'unavailable'],
                  ['ratchet', /SELL/.test(pv.side || '') ? 'sell: stop = highest observed last - trail; moves up only' : 'buy: stop = lowest observed last + trail; moves down only']];
-      var trailBox = T.h('div', null, T.kv(tkv), T.h('div', { class: 'conv' }, T.h('b', null, 'TRAILING'), T.conv('TRAILING') || 'A trailing stop ratchets with each observed print in your favour and never moves back; it triggers on the observed last and fills at that print.'));
+      var trailBox = T.h('div', null, T.kv(tkv), T.h('div', { class: 'conv' }, T.h('b', { title: 'TRAILING' }, T.convTitle('TRAILING')), T.conv('TRAILING') || 'A trailing stop ratchets with each observed print in your favour and never moves back; it triggers on the observed last and fills at that print.'));
       el.appendChild(sec('Trailing stop', trailBox));
     }
     var ec = pv.economics;
     if (ec) {
-      el.appendChild(sec('Economics', T.kv([['gross', money(ec.gross)], ['fee', money(ec.fee) + (ec.fee_basis ? '  (' + ec.fee_basis + ')' : '')], ['net cash', signedMoney(ec.net_cash)],
-        ['currency', ec.currency || ''], ['settle date', ec.settle_date || 'n/a'], ec.accrued != null ? ['accrued', money(ec.accrued)] : null])));
+      var ekv = [['gross', money(ec.gross)], ['fee', money(ec.fee) + (ec.fee_basis ? '  (' + ec.fee_basis + ')' : '')]];
+      if (Array.isArray(ec.fee_lines) && ec.fee_lines.length > 1) {
+        ec.fee_lines.forEach(function (fl) { ekv.push(['  ' + (fl.label || 'fee'), money(fl.amount != null ? fl.amount : (typeof fl.amount_c === 'number' ? (fl.amount_c / 100).toFixed(2) : null)) + (fl.basis && fl.basis !== fl.label ? '  (' + fl.basis + ')' : '')]); });
+      }
+      ekv.push(['net cash', signedMoney(ec.net_cash)], ['currency', ec.currency || ''], ['trade date', ec.trade_date || 'n/a'], ['settle date', ec.settle_date || 'n/a']);
+      if (ec.accrued != null) { ekv.push(['accrued', money(ec.accrued)]); }
+      el.appendChild(sec('Economics', T.kv(ekv)));
     }
     var f = pv.funding;
     if (f) {
@@ -216,18 +260,28 @@
                  ['sweep-in from Treasury', T.h('span', { class: Number(f.sweep_in) > 0 ? 'pv-sweep' : '' }, money(f.sweep_in) + (f.sweep_source && f.sweep_source !== 'NONE' ? ' (' + f.sweep_source + ')' : ''))],
                  ['Treasury available', money(f.treasury_available)], ['PB financing', money(f.pb_financing)]];
       if (f.fx_leg) { fkv.push(['FX leg first', 'buy ' + f.fx_leg.buy_ccy + ' ' + money(f.fx_leg.amount) + ' / sell ' + f.fx_leg.sell_ccy + (f.fx_leg.rate ? ' @ ' + f.fx_leg.rate : '') + (f.fx_leg.settle_date ? ' settles ' + f.fx_leg.settle_date : '')]); }
-      fkv.push(['fundable', f.ok ? 'yes' : 'NO']);
-      if (f.confirm_required) { fkv.push(['confirm', 'REQUIRED: ' + (f.confirm_reason || '') + (f.threshold ? ' (threshold ' + money(f.threshold) + ')' : '') + (f.nav ? ', NAV ' + money(f.nav) : '')]); }
+      if (f.fx_convert) { fkv.push(['FX conversion', 'USD converted at the fill (asked for)']); }
+      var hl = f.hedge_legs;
+      if (hl && typeof hl === 'object') {
+        fkv.push(['hedge legs', hl.need == null ? (hl.note || 'not priced yet') : 'need ' + money(hl.need) + ' = premium ' + money(hl.premium) + ' + fees ' + money(hl.fees) +
+          (hl.initial_margin != null ? ' + initial margin ' + money(hl.initial_margin) : '') + (hl.unpriced && hl.unpriced.length ? ' (unpriced: ' + hl.unpriced.join(', ') + ')' : '')]);
+      }
+      fkv.push(['fundable', f.ok ? 'yes' : (f.queued ? 'not now - the order QUEUES (waiting for funds) and executes automatically when cash frees up' : 'NO')]);
+      if (f.confirm_required) {
+        var rules = Array.isArray(f.confirm_rules) ? f.confirm_rules.filter(function (x) { return x && x.text; }).map(function (x) { return x.text; }) : [];
+        fkv.push(['confirm', 'REQUIRED: ' + (rules.length ? rules.join('; ') : (f.confirm_reason || '')) + (f.nav ? ' (NAV ' + money(f.nav) + ')' : '')]);
+      }
       var fbox = T.h('div', null, T.kv(fkv));
       if (f.fx_leg && f.fx_leg.note) { fbox.appendChild(T.h('div', { class: 'hint' }, f.fx_leg.note)); }
+      var fcb = conversionBox(f.fx_conversion); if (fcb) { fbox.appendChild(fcb); }
       /* available is the own spendable cash floored at zero (accounting.AVAILABLE_TEXT): max(0, the server's formula) */
       if (f.formula) { fbox.appendChild(T.h('div', { class: 'hint' }, 'available = ' + (/^max\(0,/.test(f.formula) ? f.formula : 'max(0, ' + f.formula + ')'))); }
-      el.appendChild(sec('Funding plan', fbox, f.ok === false ? 'pv-blocked' : ''));
+      el.appendChild(sec('Funding plan', fbox, f.ok === false && !f.queued ? 'pv-blocked' : ''));
     }
     var b = pv.borrow;
     if (b && (b.needed || b.qty != null)) {
       el.appendChild(sec('Borrow (short sale)', T.h('div', null, T.kv([['availability', T.fmt.qty(b.qty_available) + ' of ' + T.fmt.qty(b.qty) + (b.available === false ? ' (NOT available)' : '')], ['tier', b.tier || 'n/a'], ['fee', b.fee_rate != null ? T.fmt.rate(b.fee_rate) : 'n/a'],
-        ['rebate', b.rebate_rate != null ? T.fmt.rate(b.rebate_rate) : 'n/a'], ['collateral (102 %)', money(b.collateral)], ['lender', b.lender || 'n/a'], ['valid until', b.valid_until ? T.fmt.time(b.valid_until) : 'n/a']]),
+        ['rebate', b.rebate_rate != null ? T.fmt.rate(b.rebate_rate) : 'n/a'], ['collateral (102 %)', money(b.collateral) + ' . posted at each fill: the sale proceeds first, the 2 % excess + fee from cash'], ['lender', b.lender || 'n/a'], ['valid until', b.valid_until ? T.fmt.time(b.valid_until) : 'n/a']]),
         b.basis ? T.h('div', { class: 'hint' }, b.basis) : null)));
     }
     var mg = pv.margin;
@@ -272,13 +326,23 @@
   }
 
   /* ---------------------------------------------------------------- results --------------------------------------- */
+  /* USX-21 / APIUI-13: a fill price is the EXECUTED price - shown plain; the quote it used (when the fill carries its record)
+     is in the tooltip, never a struck-through 'NO STATUS' chip */
+  function fillPrice(f) {
+    var q = f.quote && typeof f.quote === 'object' ? f.quote : null;
+    var lines = ['executed price of ' + (f.fill_id || 'the fill') + (f.price_basis ? ' (basis: ' + f.price_basis + ')' : '')];
+    if (q) {
+      var b = f.price_basis && q[f.price_basis] != null ? f.price_basis : null;
+      lines.push('quote used: ' + (b ? b + ' ' + T.fmt.px(q[b]) : (q.last != null ? 'last ' + T.fmt.px(q.last) : '')) + (q.source ? ' . ' + q.source : '') + (q.quote_time ? ' . ' + T.fmt.time(q.quote_time) + ' ET' : ''));
+    }
+    return T.h('span', { class: 'mono pv-fillpx', title: lines.join('\n') }, T.fmt.px(f.price));
+  }
   function fillsTable(fills) {
     var t = T.h('table', { class: 'pv-fills' });
     t.appendChild(T.h('thead', null, T.h('tr', null, T.h('th', { class: 'l' }, 'fill'), T.h('th', null, 'qty'), T.h('th', null, 'price'), T.h('th', { class: 'l' }, 'basis'), T.h('th', null, 'fee'))));
     var tb = T.h('tbody');
     (fills || []).forEach(function (f) {
-      var rec = Object.assign({}, f.quote || {}, { value: f.price });
-      tb.appendChild(T.h('tr', null, T.h('td', { class: 'l mono' }, f.fill_id || ''), T.h('td', { class: 'num' }, T.fmt.qty(f.qty)), T.h('td', { class: 'num' }, T.px(rec, { field: 'value', size: 'inline', basis: f.price_basis })),
+      tb.appendChild(T.h('tr', null, T.h('td', { class: 'l mono' }, f.fill_id || ''), T.h('td', { class: 'num' }, T.fmt.qty(f.qty)), T.h('td', { class: 'num' }, fillPrice(f)),
         T.h('td', { class: 'l' }, f.price_basis || ''), T.h('td', { class: 'num' }, money(f.fee))));
       if (f.cap_note) { tb.appendChild(T.h('tr', null, T.h('td', { class: 'l hint', colspan: '5' }, f.cap_note + (f.settle_date ? ' . settles ' + f.settle_date : '')))); }
     });
@@ -294,7 +358,7 @@
   }
   function orderLine(o) {
     return T.h('div', { class: 'row' }, T.h('b', { class: 'mono' }, o.order_id || ''), T.h('span', { class: 'st-' + T.esc(o.status || '') }, o.status || ''),
-      T.h('span', { class: 'muted' }, sideLabel(o.side) + ' ' + T.fmt.qty(o.qty) + ' ' + (o.symbol || o.instrument_id || '') + ' ' + (o.order_type || '') + (o.limit_px ? ' ' + T.fmt.px(o.limit_px) : '') + (o.stop_px ? ' stop ' + T.fmt.px(o.stop_px) : '') + (o.trail_amt ? ' trail ' + T.fmt.px(o.trail_amt) : '') + (o.trail_pct ? ' trail ' + o.trail_pct + ' %' : '')));
+      T.h('span', { class: 'muted' }, sideLabel(o.side) + ' ' + T.fmt.qty(o.qty) + ' ' + (o.symbol || o.instrument_id || '') + ' ' + (o.order_type || '') + (o.limit_px ? ' ' + T.fmt.px(o.limit_px) : '') + (o.stop_px ? ' stop ' + T.fmt.px(o.stop_px) : '') + (o.trail_amt ? ' trail ' + T.fmt.px(o.trail_amt) : '') + (o.trail_pct ? ' trail ' + T.fmt.ratePct(o.trail_pct) : '')));
   }
   function result(res, ctx) {
     ctx = ctx || {};
@@ -318,6 +382,7 @@
     var ex = (res.preview && res.preview.execution) || (ctx.preview && ctx.preview.execution) || {};
     if ((o.status === 'WORKING' || o.status === 'PARTIAL') && (dec.reason === 'AWAITING_SESSION' || ex.rests_until)) { kv.push(['resting until', ex.rests_until ? whenText(ex.rests_until) : 'the session opens']); }
     else if (o.status === 'WORKING' && dec.reason) { kv.push(['working', dec.reason + (dec.note ? ' . ' + dec.note : '')]); }
+    if (o.status === 'SUSPENDED' && o.reason) { var fw = /^waiting for funds/.test(o.reason); kv.push([fw ? 'queued' : 'suspended', o.reason + (fw ? ' (executes automatically when cash frees up; cancel to drop it)' : '')]); }
     if (o.expires_ts) { kv.push(['expires', whenText(o.expires_ts)]); }
     if (o.last_event && o.last_event.note) { kv.push(['event', o.last_event.note]); }
     if (res.hedge_package) { kv.push(['hedge package', res.hedge_package + ' (legs WAITING_PARENT; released after the primary fills, resized on partial fills)']); }
@@ -348,10 +413,20 @@
     if (res.margin) { box.appendChild(T.kv([['option margin (package, once)', money(res.margin.requirement)], res.margin.detail ? ['detail', res.margin.detail] : null])); }
     if (res.sweeps && res.sweeps.length) { box.appendChild(sweepsList(res.sweeps)); }
     if (res.warnings && res.warnings.length) { box.appendChild(warnings(res.warnings)); }
-    if (p.fill_mode === 'AON') { box.appendChild(T.h('div', { class: 'conv' }, T.h('b', null, 'AON'), T.conv('AON'))); }
+    if (p.fill_mode === 'AON') { box.appendChild(T.h('div', { class: 'conv' }, T.h('b', { title: 'AON' }, T.convTitle('AON')), T.conv('AON'))); }
     return box;
   }
 
+  /* the FX conversion plan of a preview (its funding block, else a blocker's details): the ticket offers its checkbox from it */
+  function fxConversionOf(pv) {
+    if (!pv) { return null; }
+    if (pv.funding && pv.funding.fx_conversion) { return pv.funding.fx_conversion; }
+    var hit = null;
+    (pv.blockers || []).forEach(function (b) { if (!hit && b && b.details && b.details.fx_conversion) { hit = b.details.fx_conversion; } });
+    return hit;
+  }
+
   T.components.preview = { render: render, blockers: blockers, diff: diff, result: result, packageResult: packageResult, amounts: amounts,
-                           errorAsBlocker: errorAsBlocker, reason: reasonFor, plain: plain, quoteRec: quoteRec, detailsOf: detailsOf, whenText: whenText, fillsTable: fillsTable };
+                           errorAsBlocker: errorAsBlocker, reason: reasonFor, plain: plain, quoteRec: quoteRec, detailsOf: detailsOf, whenText: whenText, fillsTable: fillsTable,
+                           conversionBox: conversionBox, fxConversionOf: fxConversionOf, fillPrice: fillPrice };
 })();

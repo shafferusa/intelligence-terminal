@@ -5,7 +5,7 @@ by the WP-15 integration).
 
 Conventions stated here
 - TICK ORDER (§11.1): SETTLE_DUE → ACCRUE_DAILY → BOND_ACCRUE → PAY_MONTHLY → PB_MONTHLY_MIN → DIVIDEND → DIVPAY → PC_PAY →
-  BOND_COUPON → BOND_MATURITY → BOND_LISTING → SWAP_FIX →
+  LOAN_MATURE → BOND_COUPON → BOND_MATURITY → BOND_LISTING → SWAP_FIX →
   SWAP_PAY → TRS_RESET → XCCY_EVENTS → OPTION_EXPIRY → FUTURES_VM → FUTURES_FINAL → SWAP_VM → OPTION_MARGIN_MARK →
   COLLATERAL_MARK → BORROW_CLEANUP → SWEEP_OUT → MARKS_RECORD → SNAPSHOT → EXPIRE_ORDERS → HOUSEKEEPING → INTEGRITY_FULL.
   The scheduler iterates the phase-1 jobs (up to SNAPSHOT) until a pass completes nothing new, so a catch-up tick
@@ -31,8 +31,8 @@ Conventions stated here
 - EXPIRY: EXPIRE_ORDERS runs ``order.expire`` per order whose ``expires_ts`` has passed (DAY at the session close,
   GTC after 90 days) or whose instrument expired; nothing fills after expiry.  COLLATERAL_MARK runs
   ``credit.collateral_mark`` at 17:10 per OPEN borrow and trading day from the recorded CLOSE (missing → SKIPPED,
-  retried); a past day waits until the nights before it are accrued (the interleave of ``lifecycle_jobs``), today's
-  never waits.  BORROW_CLEANUP returns borrowed quantity backing nothing (``lending.cleanup_due``).
+  retried); a day waits until the nights before it are accrued (the interleave of ``lifecycle_jobs``) - today's too
+  (LC-5: a catch-up after 17:10 accrues Fri / Sat / Sun on the collateral of their nights before marking Monday).  BORROW_CLEANUP returns borrowed quantity backing nothing (``lending.cleanup_due``).
 - HOUSEKEEPING (00:15 daily, key ``{date}``): lists the next futures months and marks contracts past their last trade
   date EXPIRED (``InstrumentMaster.ensure_futures_listings``), marks expired options EXPIRED, runs the private company
   master sync (``services.private.reseed``: new rows, forward status moves such as a listing, the listed tickers and
@@ -42,6 +42,14 @@ Conventions stated here
 - INTEGRITY_FULL (hourly at :05, key ``{YYYY-MM-DDTHH}``, and on the scheduler's first tick): ``accounting.integrity
   ("full")`` runs scheduler-side on a reader connection (it records ``meta.integrity_json``, the per-lifetime
   INTEGRITY_HOLD and its attention rows itself); the light command ``lifecycle.integrity_full`` then records the key.
+- LOAN_MATURE (MONEY-1 follow-up): from the maturity date (the accounting day) each OPEN cash loan with a maturity date runs
+  ``credit.loan_mature`` once per maturity date (key ``{loan_id}:{maturity_date}``): every night owed is posted first, then
+  principal + interest are repaid from the account's settled cash; when the cash is short the loan ROLLS one business day
+  (WARN ``LOAN_ROLLED``), which gives a new key the next day.  A night that cannot accrue skips the key (WARN, retried).
+- ``add_product_job(job, before="SNAPSHOT")`` (C13): a product module's ``bind(rt)`` adds its own job to ``REGISTRY`` (the
+  scheduler copies REGISTRY when it is built, after every bind; ``lifecycle.register`` registers the ``lifecycle.*`` kinds of
+  the jobs present then).  Idempotent by job name: a second call replaces the job in place (the latest definition, same
+  position); ``before`` names the job it goes in front of (None or unknown -> before the phase-3 jobs).
 - PRODUCT JOBS: the product handlers write their own ``jobs_done`` row (DONE, or SKIPPED with a note and a WARN
   attention) — futures (``vm_keys`` / ``final_keys``) and options (``expiry_keys`` / ``margin_mark_keys``) exist;
   swaps, TRS / XCCY, dividends, private credit and bonds are separate packages: each is skipped with a note until its
@@ -64,7 +72,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .books import account_row, open_lifetimes
-from .clock import epoch_of, ny_of
+from .clock import accounting_day, epoch_of, ny_of
 from .commands import Command, RejectError, TxContext
 from .db import canonical_json, dumps, get_setting
 from .instruments import otc_reference_ids
@@ -478,8 +486,10 @@ class CollateralMark(Job):
             for d in trading_days(sessions, group, start, today):
                 if now < epoch_of(d, COLLATERAL_MARK_ET):
                     break
-                if d < today and d > opened and (through is None or through < (d - timedelta(days=1)).isoformat()):
-                    break                                       # a past day waits for the nights before it (interleave)
+                if d > opened and (through is None or through < (d - timedelta(days=1)).isoformat()):
+                    # a day's mark waits for the nights before it (interleave) - TODAY too (LC-5): in a catch-up after 17:10 the
+                    # Fri / Sat / Sun rebates accrue on the collateral that stood those nights, then Monday is marked
+                    break
                 keys.append(f"{b['borrow_id']}:{d.isoformat()}")
         return self.filter_done(conn, keys)
 
@@ -630,6 +640,50 @@ def h_integrity_full(ctx: TxContext, payload: dict) -> dict:
     return {"status": "DONE", "key": payload.get("key"), "note": note, "summary": s}
 
 
+# ---- LOAN_MATURE (MONEY-1 follow-up) ----------------------------------------------------------------------------------------------
+class LoanMature(Job):
+    name = "LOAN_MATURE"
+    kind = "lifecycle.loan_mature"
+    module = "credit"
+    when = "the maturity date (accounting day) per open cash loan with a maturity date; cash short -> rolled one business day"
+
+    def due(self, conn, clock, cal, sessions) -> List[str]:
+        lids = open_lifetimes(conn)
+        if not lids:
+            return []
+        q = ",".join("?" for _ in lids)
+        today = accounting_day(clock.now()).isoformat()
+        rows = conn.execute(f"SELECT l.loan_id, l.maturity_date FROM loans l JOIN accounts a ON a.account_id=l.account_id WHERE l.status='OPEN'"
+                            f" AND l.kind='CASH_LOAN' AND l.maturity_date IS NOT NULL AND l.maturity_date <= ? AND a.status='OPEN' AND a.lifetime_id IN ({q})"
+                            " ORDER BY l.maturity_date, l.loan_id", [today] + lids).fetchall()
+        return self.filter_done(conn, [f"{r['loan_id']}:{r['maturity_date']}" for r in rows])
+
+    def series_of(self, key: str) -> Optional[str]:
+        return key.rsplit(":", 1)[0]
+
+    def payload(self, key: str) -> dict:
+        lid, d = key.rsplit(":", 1)
+        return {"key": key, "loan_id": lid, "maturity_date": d}
+
+    def run(self, ctx: TxContext, key: str, services) -> dict:
+        credit = module(services, "credit", "finsim.terminal.credit")
+        if credit is None or not hasattr(credit, "h_loan_mature"):
+            raise RejectError("NOT_IN_THIS_BUILD", "loan maturity needs the credit module (WP-05)")
+        loan_id, d = key.rsplit(":", 1)
+        row = ctx.conn.execute("SELECT status, maturity_date FROM loans WHERE loan_id=?", (loan_id,)).fetchone()
+        if row is None or row["status"] != "OPEN":
+            return {"status": "DONE", "note": "the loan is already closed", "posted": False}
+        if row["maturity_date"] != d:
+            return {"status": "DONE", "note": f"the maturity moved to {row['maturity_date']}", "posted": False}
+        out = dict(credit.h_loan_mature(ctx, {"loan_id": loan_id}) or {})
+        if out.get("rolled"):
+            note = f"cash short: rolled to {out.get('maturity_date')} (due {fmt_money(int(out.get('total_due_c') or 0))})"
+        else:
+            note = (f"repaid at maturity: interest {fmt_money(int(out.get('paid_interest_c') or 0))}, principal {fmt_money(int(out.get('paid_principal_c') or 0))}"
+                    + (f" ({int(out.get('accrued_nights') or 0)} night(s) caught up)" if out.get("accrued_nights") else ""))
+        return dict(out, status="DONE", note=note, posted=True)
+
+
 # ---- product-handler jobs ---------------------------------------------------------------------------------------------------------------
 class ProductJob(Job):
     """A job whose command is a product handler that writes its own ``jobs_done`` row (module docstring PRODUCT JOBS)."""
@@ -718,11 +772,37 @@ BOND_MATURITY = ProductJob("BOND_MATURITY", "bonds.mature", "bonds", "maturity_k
 BOND_LISTING = ProductJob("BOND_LISTING", "bonds.list", "bonds", "listing_keys", ("month",), "first business day of the month, 00:15 ET",
                           lambda conn, clock, cal, sessions, s: (conn, clock.epoch(), cal))
 
-REGISTRY: List[Job] = [SettleDue(), AccrueDaily(), BOND_ACCRUE, PayMonthly(), PbMonthlyMin(), DIVIDEND, DIVPAY, PC_PAY, BOND_COUPON, BOND_MATURITY, BOND_LISTING,
-                       SWAP_FIX, SWAP_PAY, TRS_RESET, XCCY_EVENTS, OPTION_EXPIRY,
+REGISTRY: List[Job] = [SettleDue(), AccrueDaily(), BOND_ACCRUE, PayMonthly(), PbMonthlyMin(), DIVIDEND, DIVPAY, PC_PAY, LoanMature(), BOND_COUPON, BOND_MATURITY,
+                       BOND_LISTING, SWAP_FIX, SWAP_PAY, TRS_RESET, XCCY_EVENTS, OPTION_EXPIRY,
                        FUTURES_VM, FUTURES_FINAL, SWAP_VM, OPTION_MARGIN_MARK, CollateralMark(), BorrowCleanup(), SweepOut(), MarksRecord(), Snapshot(), ExpireOrders(),
                        Housekeeping(), IntegrityFull()]
 LIGHT_HANDLERS = {"lifecycle.marks_record": h_marks_record, "lifecycle.integrity_full": h_integrity_full}
 
+
+#: the names of the jobs product modules added through ``add_product_job`` (the rest of REGISTRY is the core tick order)
+PRODUCT_JOBS: set = set()
+
+
+def add_product_job(job: Job, before: Optional[str] = "SNAPSHOT") -> Job:
+    """C13: add a product's job to ``REGISTRY`` from its ``bind(rt)`` (product modules are bound before the scheduler is
+    built and before ``lifecycle.register``).  Idempotent by ``job.name``: an existing job of that name is replaced in place
+    (same position; the latest definition wins); else it goes in front of ``before`` (default SNAPSHOT: the end of phase 1),
+    or in front of the first phase-3 job when ``before`` is None / unknown.  Returns the job now in the registry.  A
+    ProductJob's command kind is registered by its own module; a ``lifecycle.*`` kind is registered by
+    ``lifecycle.register`` (which runs after the binds)."""
+    if not getattr(job, "name", None) or not getattr(job, "kind", None):
+        raise ValueError("a lifecycle job needs a name and a command kind")
+    PRODUCT_JOBS.add(job.name)
+    for i, j in enumerate(REGISTRY):
+        if j.name == job.name:
+            REGISTRY[i] = job
+            return job
+    idx = next((i for i, j in enumerate(REGISTRY) if before and j.name == before), None)
+    if idx is None:
+        idx = next((i for i, j in enumerate(REGISTRY) if j.phase >= 3), len(REGISTRY))
+    REGISTRY.insert(idx, job)
+    return job
+
 __all__ = ["REGISTRY", "LIGHT_HANDLERS", "MarksRecord", "Snapshot", "ExpireOrders", "CollateralMark", "BorrowCleanup", "Housekeeping", "IntegrityFull", "ProductJob",
+           "LoanMature", "add_product_job", "PRODUCT_JOBS",
            "recorded_set", "record_time", "h_marks_record", "h_integrity_full", "BENCHMARK"]

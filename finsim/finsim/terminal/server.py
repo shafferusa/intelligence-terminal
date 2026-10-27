@@ -5,18 +5,26 @@ Conventions
 - ONE process, no child processes: the quote worker (scheduler + fetch pool), the matcher, the lifecycle scheduler and
   the HTTP request threads are threads of this process; the supervisor runs on the main thread.  Nothing here spawns
   a shell or an interpreter (TERMINAL_DECISIONS §17).
-- Single instance: ``<home>/terminal.lock`` is byte-locked (``msvcrt.locking(LK_NBLCK)`` on Windows, ``fcntl.flock``
-  elsewhere) for the process lifetime — the OS releases it on death, so there are no stale-lock heuristics and never
-  an ``os.kill(pid, 0)``.  The locked byte sits beyond the JSON (offset ``LOCK_OFFSET``), so ``{pid, port, started_ts,
-  version}`` stays readable by ``status`` / ``stop`` / a second server while it is held.  A second ``serve`` on the
-  same home exits 3 BEFORE opening the database; so does a port that is already bound (``SO_EXCLUSIVEADDRUSE`` on
-  Windows + ``allow_reuse_address = False``: a second bind fails with WinError 10048 / ``OSError``).
-- Startup order (exit codes): offline guard [5] -> lock [3] -> log -> DB open / migrate [4 newer schema] / seed /
-  first-run lifetimes (``books.ensure_first_run``: P1 / F1 / I1 with their capital, idempotent) / ``integrity("ledger")``
-  recorded (a failure holds that lifetime and opens an ERROR attention; the server still starts) -> master, persisted
-  quotes (``close`` / ``stale``, never ``delayed``), curve / rates / FX stores, provider health -> bind [3] -> workers
-  (quote worker, matcher, lifecycle when WP-08 is merged) -> HTTP thread -> ``ready`` -> supervisor loop.  Health
-  answers only from the ready point.  Any other failure is logged with its traceback and exits 5.
+- Single instance: ``<home>/terminal.lock`` AND ``<db_path>.lock`` (the database's own lock, TX-1 2026-10-21) are
+  byte-locked (``msvcrt.locking(LK_NBLCK)`` on Windows, ``fcntl.flock`` elsewhere) for the process lifetime — the OS
+  releases them on death, so there are no stale-lock heuristics and never an ``os.kill(pid, 0)``.  The locked byte sits
+  beyond the JSON (offset ``LOCK_OFFSET``), so ``{pid, port, started_ts, version, home, db}`` stays readable by
+  ``status`` / ``stop`` / a second server while it is held.  A second ``serve`` on the same home, OR on any home with
+  the same ``--db`` / ``FINSIM_TERMINAL_DB`` (or a database whose own folder's ``terminal.lock`` is held by a running
+  terminal, e.g. 1.0.3), exits 3 naming the holder's pid / port BEFORE anything opens the database; so does a port
+  that is already bound (``SO_EXCLUSIVEADDRUSE`` on Windows + ``allow_reuse_address = False``: a second bind fails with
+  WinError 10048 / ``OSError``) — the port is bound before the database is opened, backed up or migrated, so a refused
+  start never writes a backup or a meta row.
+- Startup order (exit codes): offline guard [5] -> home lock [3] -> database lock [3] -> bind [3] -> log -> DB open /
+  migrate [4 newer schema] / seed / first-run lifetimes (``books.ensure_first_run``: P1 / F1 / I1 with their capital,
+  idempotent) / ``integrity("ledger")`` recorded (a failure holds that lifetime and opens an ERROR attention; the server
+  still starts) -> master, persisted quotes (``close`` / ``stale``, never ``delayed``), curve / rates / FX stores,
+  provider health -> workers (quote worker, matcher, lifecycle when WP-08 is merged) -> HTTP thread -> ``ready`` ->
+  supervisor loop.  Connections that arrive while the database opens wait in the listen backlog; health answers only
+  from the ready point.  Any other failure is logged with its traceback and exits 5.
+- A client that drops its connection (the browser aborting a request on navigation: ConnectionAbortedError /
+  ConnectionResetError / BrokenPipeError) is one DEBUG line in the log, never a traceback on stderr; every other
+  exception while serving keeps its full traceback (stderr and the log).
 - ``Runtime`` is the ``services`` bundle every handler sees (§2.12): ``db, clock, cal, sessions, instruments, cache,
   chains, providers, worker, marks, accounting, bus, matcher, lifecycle, router, httpd, log, lock, settings,
   started_ts, news, books, rates, curve, fxstore, previews`` plus one attribute per product module (``orders, options,
@@ -66,6 +74,7 @@ except ImportError:   # pragma: no cover - POSIX
     import fcntl
 
 EXIT_OK, EXIT_INSTANCE, EXIT_SCHEMA, EXIT_STARTUP = 0, 3, 4, 5
+CLIENT_GONE = (ConnectionAbortedError, ConnectionResetError, BrokenPipeError)
 LOCK_OFFSET = 1 << 20              # the locked byte sits far beyond the JSON so the file stays readable while held
 MAX_BODY = 2 << 20
 SUPERVISOR_INTERVAL_S = 30.0
@@ -85,7 +94,11 @@ def _join(th, timeout: float) -> None:
 OPTIONAL_MODULES = {"orders": "orders", "options": "products.options", "futures": "products.futures", "fx": "fx", "credit": "credit", "lending": "lending",
                     "hedges": "hedges", "risk": "risk", "compliance": "compliance", "strategies": "strategies", "performance": "performance", "prime": "prime",
                     "lifetimes": "lifetimes", "swaps": "products.swaps", "swaps_trs": "products.swaps_trs", "private": "products.private",
-                    "private_credit": "products.private_credit", "dividends": "products.dividends", "bonds": "products.bonds", "repo": "repo"}
+                    "private_credit": "products.private_credit", "dividends": "products.dividends", "bonds": "products.bonds", "repo": "repo",
+                    # Build 2 (BUILD2_PLAN C2): PB OTC options / forwards (P12), the counterparty directory (P08), real Treasuries (P07, optional);
+                    # a module that is not in the tree stays "missing" (tolerated), its routes answer 501 / are simply absent
+                    "otc_options": "products.otc_options", "counterparties": "counterparties", "treasuries": "products.treasuries",
+                    "swaps_cds": "products.swaps_cds"}
 
 
 # ---- the single-instance lock ---------------------------------------------------------------------------------------------------
@@ -164,6 +177,38 @@ def default_home() -> str:
     return os.path.join(os.path.expanduser("~"), ".finsim")
 
 
+def db_lock_path(db_path: str) -> str:
+    """TX-1: the database's own lock file, next to it (``<db_path>.lock``)."""
+    return os.path.abspath(db_path) + ".lock"
+
+
+def probe_lock(path: str) -> Optional[dict]:
+    """The holder's JSON (``{"pid": None}`` when unreadable) when ANOTHER handle holds the byte lock of an existing lock file,
+    else None.  Nothing is created or written (an absent file is simply not held); used for the ``terminal.lock`` of the
+    database's own folder, which a terminal on that home (1.0.3 included) holds while it has the database open."""
+    if not os.path.isfile(path):
+        return None
+    try:
+        fh = open(path, "rb")
+    except OSError:
+        return None
+    try:
+        try:
+            if msvcrt is not None:
+                fh.seek(LOCK_OFFSET)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+                fh.seek(LOCK_OFFSET)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+            else:   # pragma: no cover - POSIX
+                fcntl.flock(fh.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            return InstanceLock(path).read() or {"pid": None}
+        return None
+    finally:
+        fh.close()
+
+
 def _same_path(a: str, b: str) -> bool:
     return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
 
@@ -188,6 +233,8 @@ class TerminalServer(ThreadingHTTPServer):
     daemon_threads = True
     request_queue_size = 64
 
+    log = None                       # the runtime's logger (set by serve); handle_error writes there
+
     def server_bind(self) -> None:
         if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
@@ -195,6 +242,39 @@ class TerminalServer(ThreadingHTTPServer):
         host, port = self.server_address[:2]
         self.server_name = str(host)
         self.server_port = int(port)
+
+    def handle_error(self, request, client_address) -> None:   # noqa: ARG002 - stdlib signature
+        """SHELL-24 / USX-37: a client that went away (the browser aborting a keep-alive or in-flight request) is one DEBUG
+        line, never a stderr traceback that buries real errors; any other exception keeps its full traceback (log + the
+        stdlib's stderr report)."""
+        exc = sys.exc_info()[1]
+        if isinstance(exc, CLIENT_GONE):
+            if self.log is not None:
+                self.log.debug("client %s dropped the connection: %s", client_address, exc)
+            return
+        if self.log is not None:
+            self.log.error("exception while serving %s\n%s", client_address, traceback.format_exc())
+        super().handle_error(request, client_address)
+
+
+class _StartingHandler(BaseHTTPRequestHandler):
+    """The bound socket's handler until the runtime is built (``serve`` swaps in ``make_handler(rt)`` before it serves);
+    never reached in practice because nothing is served before then."""
+    protocol_version = "HTTP/1.1"
+
+    def do_GET(self):   # noqa: N802
+        body = b'{"error":{"code":"STARTING","message":"the terminal is starting","details":{}},"request_id":null}'
+        self.send_response(503)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Retry-After", "1")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    do_POST = do_PATCH = do_PUT = do_DELETE = do_HEAD = do_GET
+
+    def log_message(self, fmt, *args):   # noqa: D401 - quiet
+        pass
 
 
 def make_handler(rt) -> type:
@@ -277,7 +357,7 @@ class Runtime:
 
     def __init__(self):
         for name in ("db", "clock", "cal", "sessions", "instruments", "cache", "chains", "providers", "worker", "marks", "accounting", "bus", "matcher", "lifecycle",
-                     "router", "httpd", "log", "lock", "news", "rates", "curve", "fxstore", "previews", "supervisor", "fp", "port", "home", "db_path"):
+                     "router", "httpd", "log", "lock", "db_lock", "news", "rates", "curve", "fxstore", "previews", "supervisor", "fp", "port", "home", "db_path"):
             setattr(self, name, None)
         for name in OPTIONAL_MODULES:
             setattr(self, name, None)
@@ -393,6 +473,8 @@ class Runtime:
             except Exception as e:   # noqa: BLE001
                 if self.log:
                     self.log.error("db close failed: %s", e)
+        if self.db_lock is not None:
+            self.db_lock.release()
         if self.lock is not None:
             self.lock.release()
 
@@ -518,6 +600,11 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     _bind_optional(rt, bus, log)
     # first run (§3.1) and the recorded ledger-level integrity run
     _books.ensure_first_run(rt)
+    try:                                                      # BM-01: the old global Treasury reserve becomes every book's, once
+        _books.migrate_treasury_reserve(rt)
+    except Exception:   # noqa: BLE001 — logged; the per-book map is created by the next Settings save anyway
+        if log:
+            log.exception("treasury reserve migration failed")
     try:
         report = rt.accounting.integrity("ledger")
         if not report.ok and log:
@@ -542,7 +629,9 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     try:
         from .news import NewsStore
         getter = _offline_getter if offline else None          # --offline: the newspaper index from disk only; Yahoo / Fed fetches refuse
-        rt.news = NewsStore(rt.db, rt.clock, getter=getter, index_path=config.newspaper_index(), log=log, health=rt.providers.health) if enabled else None
+        paper_url = None if offline else config.NEWS_PAPER_INDEX_URL     # SHELL-09: the published index (hourly), the local file as fallback
+        rt.news = (NewsStore(rt.db, rt.clock, getter=getter, index_path=config.newspaper_index(), log=log, health=rt.providers.health, paper_url=paper_url)
+                   if enabled else None)
         rt.modules["news"] = "bound" if rt.news is not None else "disabled"
     except ModuleNotFoundError:
         rt.news = None
@@ -608,13 +697,22 @@ class Supervisor:
                 rt.log.error("supervisor could not record %s for %s: %s", code, name, e)
 
     def check(self, now: Optional[int] = None) -> dict:
-        """One pass; returns what it did (``restarted``, ``stalled``)."""
+        """One pass; returns what it did (``restarted``, ``stalled``, ``eligibility`` notices opened / resolved)."""
         rt = self.rt
         now = int(now if now is not None else rt.clock.epoch())
         self.last_tick_ts = now
         out = {"restarted": [], "stalled": [], "recovered": []}
         if rt.stop_event.is_set():
             return out
+        try:                                                  # SR-09: ELIGIBILITY_BELOW_THRESHOLD notices (light; no network)
+            if getattr(rt, "bus", None) is not None and getattr(rt, "accounting", None) is not None:
+                el = _books.eligibility_notices(rt)
+                if el.get("opened") or el.get("resolved"):
+                    out["eligibility"] = el
+        except Exception as e:   # noqa: BLE001 — the watchdog's worker checks still run; the failure is logged
+            self.last_error = f"eligibility notices: {type(e).__name__}: {e}"
+            if rt.log:
+                rt.log.exception("eligibility notices failed")
         for name, th, stats_fn, err_key, tick_key in list(self._workers()):
             if th is None:
                 continue
@@ -684,7 +782,10 @@ def _say(msg: str, out: Optional[Callable[[str], None]]) -> None:
     if out is None:
         return
     try:
-        out(msg)
+        if out is print:
+            print(msg, flush=True)        # V104R1-08: a launcher reading a pipe / file sees 'ready http://...' at once, not at shutdown
+        else:
+            out(msg)
     except Exception:   # noqa: BLE001 — stdout may be None under pythonw
         pass
 
@@ -708,20 +809,53 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
         started = info.get("started_ts")
         _say(f"another FinSim Terminal (PID {info.get('pid', '?')}, started {started if started is not None else '?'}, port {info.get('port', '?')}) owns {home}", out)
         return EXIT_INSTANCE
+    # TX-1: the database's own lock (<db_path>.lock) and the lock of the home that holds the database file, BEFORE the database is
+    # opened, backed up or migrated: two homes can never run two writers on one terminal.db
+    db_lock = InstanceLock(db_lock_path(db_path))
+    holder: Optional[dict] = None
+    if not db_lock.acquire():
+        holder = db_lock.read() or {"pid": None}
+    else:
+        other = os.path.join(os.path.dirname(os.path.abspath(db_path)), "terminal.lock")
+        if not _same_path(other, lock.path):
+            holder = probe_lock(other)
+            if holder is not None:
+                db_lock.release()
+    if holder is not None:
+        _say(f"another FinSim Terminal (PID {holder.get('pid') or '?'}, port {holder.get('port') or '?'}) has the database {db_path} open; "
+             f"refusing to open it a second time (nothing was opened or written)", out)
+        lock.release()
+        return EXIT_INSTANCE
+    # the port before the database (TX-1): a refused bind leaves no backup, no migration and no meta row behind
+    try:
+        httpd = TerminalServer((host, int(port)), _StartingHandler)
+    except OSError as e:
+        info = lock.read() or {}
+        _say(f"port {port} is in use ({e}); lock pid {info.get('pid', os.getpid())}; nothing was opened or written", out)
+        db_lock.release()
+        lock.release()
+        return EXIT_INSTANCE
+    bound_port = int(httpd.server_address[1])
+    early = {"pid": os.getpid(), "port": bound_port, "started_ts": int(_time.time()), "version": VERSION, "home": home, "db": db_path, "starting": True}
+    lock.write(early)
+    db_lock.write(early)
     if log is None:
         try:
             from finsim.log import get_logger
             log = get_logger("terminal", os.path.join(home, "terminal.log"), os.environ.get("FINSIM_LOG_LEVEL") or "INFO")
         except Exception:   # noqa: BLE001 — a logger that cannot open its file must not stop the server
             log = None
+    httpd.log = log
     rt: Optional[Runtime] = None
     try:
         try:
-            rt = build_runtime(home, db_path, clock=clock, offline=offline, fake_provider=fake_provider, log=log, books=books, fetch_threads=fetch_threads, port=port, lock=lock)
+            rt = build_runtime(home, db_path, clock=clock, offline=offline, fake_provider=fake_provider, log=log, books=books, fetch_threads=fetch_threads, port=bound_port, lock=lock)
         except SchemaTooNew as e:
             _say(str(e), out)
             if log:
                 log.error("%s", e)
+            httpd.server_close()
+            db_lock.release()
             lock.release()
             return EXIT_SCHEMA
         except Exception:   # noqa: BLE001
@@ -729,21 +863,17 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
             if log:
                 log.error("startup failed\n%s", tb)
             _say("startup failed; the traceback is in " + os.path.join(home, "terminal.log"), out)
+            httpd.server_close()
+            db_lock.release()
             lock.release()
             return EXIT_STARTUP
-        try:
-            httpd = TerminalServer((host, int(port)), make_handler(rt))
-        except OSError as e:
-            info = lock.read() or {}
-            _say(f"port {port} is in use ({e}); lock pid {info.get('pid', os.getpid())}", out)
-            if log:
-                log.error("bind %s:%s failed: %s", host, port, e)
-            rt.db.close()
-            lock.release()
-            return EXIT_INSTANCE
+        rt.db_lock = db_lock
+        httpd.RequestHandlerClass = make_handler(rt)
         rt.httpd = httpd
-        rt.port = int(httpd.server_address[1])
-        lock.write({"pid": os.getpid(), "port": rt.port, "started_ts": rt.started_ts, "version": VERSION, "home": home, "db": db_path})
+        rt.port = bound_port
+        info = {"pid": os.getpid(), "port": rt.port, "started_ts": rt.started_ts, "version": VERSION, "home": home, "db": db_path}
+        lock.write(info)
+        db_lock.write(info)
         rt.start_workers()
         stop = rt.stop_event
 
@@ -779,12 +909,19 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
         if rt is not None:
             rt.shutdown()
         else:
+            try:
+                httpd.server_close()
+            except Exception:   # noqa: BLE001
+                pass
+            db_lock.release()
             lock.release()
         return EXIT_OK
     finally:
+        if db_lock.held:
+            db_lock.release()
         if lock.held:
             lock.release()
 
 
 __all__ = ["TerminalServer", "Runtime", "Supervisor", "InstanceLock", "build_runtime", "serve", "make_handler", "offline_refusal", "default_home",
-           "EXIT_OK", "EXIT_INSTANCE", "EXIT_SCHEMA", "EXIT_STARTUP", "LOCK_OFFSET", "OPTIONAL_MODULES"]
+           "EXIT_OK", "EXIT_INSTANCE", "EXIT_SCHEMA", "EXIT_STARTUP", "LOCK_OFFSET", "OPTIONAL_MODULES", "db_lock_path", "probe_lock", "CLIENT_GONE"]

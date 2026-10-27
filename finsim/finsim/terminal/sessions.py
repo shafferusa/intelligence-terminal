@@ -13,11 +13,15 @@ Conventions (New York time; the rules live in ``tables.SESSIONS``)
   order placed Tue 17:30 expires Wed 16:00).
 - ``session_overrides`` (settings): ``{"2026-12-24": {"CME_EQUITY_INDEX": "13:00" | "CLOSED"}}`` adds an early close
   or a closure without a code change.
+- FOREIGN (Build 2, OA-12): a foreign listing's session is its venue's, from the quote record's Yahoo currentTradingPeriod
+  (``state("FOREIGN", now, foreign={open_ts, close_ts[, tz]})``); its trade date is the VENUE's local date of the open
+  (``venue_date``), and after today's session ended the next open is estimated from today's hours on the next weekday
+  (``next_venue_session``; Yahoo publishes only the current period, venue holidays are not modelled - said in the note).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from typing import Dict, List, Optional
 
 from . import tables
@@ -53,6 +57,39 @@ class Session:
 def _t(hhmm: str) -> time:
     h, m = hhmm.split(":")[:2]
     return time(int(h), int(m))
+
+
+VENUE_DATE_SHIFT_S = 8 * 3600       # a venue opens 07:00-10:30 local at UTC-6 .. UTC+13: open + 8 h (UTC) falls on the local date
+
+
+def venue_date(open_ts: int, tz: Optional[str] = None) -> date:
+    """The trade date of a foreign venue's session = the venue's LOCAL calendar date of its open (a Tokyo session opening
+    Wed 20:00 ET trades on Thursday in Tokyo).  With the venue's time zone (``tz``, Yahoo exchangeTimezoneName) it is exact;
+    without it, the UTC date of open + 8 h: venues open between 07:00 and 10:30 local time at offsets UTC-6 .. UTC+13, so open
+    + 8 h in UTC always falls on the local date (London 08:00 BST -> 15:00 UTC same day; Sydney 10:00 AEDT = 23:00 UTC the
+    day before -> 07:00 UTC on the local date; Mexico 08:30 CST = 14:30 UTC -> 22:30 UTC the same day)."""
+    o = int(open_ts)
+    if tz:
+        try:
+            from finsim.tzfallback import get_zone
+            return datetime.fromtimestamp(o, timezone.utc).astimezone(get_zone(str(tz))).date()
+        except Exception:   # noqa: BLE001 - an unknown zone falls back to the rule below
+            pass
+    return datetime.fromtimestamp(o + VENUE_DATE_SHIFT_S, timezone.utc).date()
+
+
+def next_venue_session(open_ts: int, close_ts: int, now: int) -> Optional[tuple]:
+    """``(open_ts, close_ts)`` of a foreign venue's next session after ``now`` when today's has ended: the same hours on the
+    next weekday of the venue's local date (an estimate: Yahoo publishes only the current trading period; venue holidays
+    are not modelled).  None when nothing is found within 10 days."""
+    o, c = int(open_ts), int(close_ts)
+    if c > now:
+        return o, c
+    for k in range(1, 11):
+        o2, c2 = o + 86400 * k, c + 86400 * k
+        if c2 > now and venue_date(o2).weekday() < 5:
+            return o2, c2
+    return None
 
 
 class SessionTable:
@@ -139,10 +176,17 @@ class SessionTable:
         if group == "FOREIGN" or group.startswith("FOREIGN:") or group == "PRIVATE_MARKETS":
             if foreign and foreign.get("open_ts") is not None and foreign.get("close_ts") is not None:
                 o, c = int(foreign["open_ts"]), int(foreign["close_ts"])
-                td = str(foreign.get("trade_date") or ny_of(o).date().isoformat())
+                td = str(foreign.get("trade_date") or venue_date(o, foreign.get("tz")).isoformat())
                 if o <= now < c:
                     return SessionState(group, True, "OPEN", o, c, None, td, False, "session from Yahoo currentTradingPeriod")
-                return SessionState(group, False, "CLOSED", None, None, o if o > now else None, td, False, "session from Yahoo currentTradingPeriod")
+                if o > now:
+                    return SessionState(group, False, "CLOSED", None, None, o, td, False, "session from Yahoo currentTradingPeriod (opens later today)")
+                nxt = next_venue_session(o, c, now)
+                if nxt is None:
+                    return SessionState(group, False, "CLOSED", None, None, None, td, False, "session from Yahoo currentTradingPeriod (ended)")
+                return SessionState(group, False, "CLOSED", None, None, nxt[0], venue_date(nxt[0], foreign.get("tz")).isoformat(), False,
+                                    "today's venue session ended; the next open is estimated from today's hours on the next weekday"
+                                    " (venue holidays are not modelled)")
             note = tables.SESSIONS.get("PRIVATE_MARKETS" if group == "PRIVATE_MARKETS" else "FOREIGN", {}).get("note", "")
             return SessionState(group, False, "CLOSED", None, None, None, None, False, note or "no session information")
         sessions = self._window(group, now)

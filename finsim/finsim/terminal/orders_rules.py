@@ -9,18 +9,36 @@ bid for sells), the same price the order fills at.  The contract's own last trad
 last can be months old, and a last of 0 means it never traded.  An option trailing stop takes its reference from that
 side on its first executable look (whatever reference the ticket entered).  Equities, futures and FX keep the observed
 last (STOP_RULE / LIMIT_RULE / TRAILING).
+
+Build 2 (2026-10-21):
+- LIMIT_RULE (EXEC-5): a limit fills at the executable price whenever that price is at or better than the limit, whatever look
+  it is; the LIMIT price (LIMIT_CROSSED) is used only for an order that was RESTING - not marketable at its previous executable
+  look - and is now crossed (the classic resting-limit convention).  The state is ``OrderRow.limit_rested`` (the
+  ``orders.limit_rested`` column, persisted by ``order.match`` whenever it changes: ``Decision.persist_rested``); a database
+  without the column falls back to "first look done and nothing filled".
+- STOP_LIMIT (EXEC-4): a stop reached while the limit is not marketable is a trigger too: ``Decision.triggered`` asks for a
+  command (``wants_command``) and the order rests as a triggered limit.
+- PARTICIPATION (EXEC-6): the cap is per (instrument, 1-minute bar) across every order, account and book: ``evaluate`` /
+  ``fill_cap`` take what other fills already took from that bar (``bar_used``) and fill at most participation x volume minus that.
+- Expiry day (EXEC-9): no OPENING option fill (BTO / STO) at or after 15:30 ET on the option's expiry day (``LAST_SESSION``);
+  closing trades go on until the close.
+
+FUNDS_WAIT (hotfix 1.0.3.1, 2026-10-21, ported to 1.0.4): an order whose only blocker is funding is accepted and SUSPENDED with a
+reason that starts with ``FUNDS_WAIT`` ("waiting for funds: needs X, available Y"); it holds no reservation and is resumed
+automatically (``orders.plan_funds_resume``).  The pure helpers live here (``funds_wait_reason``, ``funds_wait_from_error``,
+``is_funds_wait``).
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_EVEN
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from . import config, execution, tables
 from .clock import ny_of
 from .instruments import Instrument
 from .quotes import QuoteRecord, is_executable
-from .units import qprice
+from .units import fmt_money, qprice
 
 ORDER_TYPES = ("MARKET", "LIMIT", "STOP", "STOP_LIMIT", "TRAILING_STOP")
 TIFS = ("DAY", "GTC")
@@ -35,6 +53,37 @@ LIVE_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
 STOP_TYPES = ("STOP", "STOP_LIMIT", "TRAILING_STOP")
 NEEDS_QUOTE_TYPES = ("MARKET", "STOP", "STOP_LIMIT", "TRAILING_STOP")
 OPTION_LAST_OPEN_ET = "15:30"
+# FUNDS_WAIT (hotfix 1.0.3.1): an order whose only blocker is funding is accepted and SUSPENDED with a reason that starts with
+# FUNDS_WAIT; it holds no reservation and is resumed automatically (``orders.plan_funds_resume``)
+FUNDS_WAIT = "waiting for funds"
+FUNDS_CODES = ("INSUFFICIENT_FUNDS", "INSUFFICIENT_FUNDS_CCY")
+AUTO_RESUME_NOTE = "resumed: funds available"
+FUNDS_WAIT_ITEM = "ORDER_WAITING_FUNDS"      # the INFO attention item of an order queued for funds at submit
+
+
+def funds_wait_reason(ccy: str, need_c: int, available_c: int, fx_first: bool = False) -> str:
+    """``waiting for funds: needs USD 1,000,249.25, available USD 12,000.00`` (available = own + Treasury + PB headroom
+    the order can draw now); a foreign-currency wait adds that the FX leg is the owner's (never automatic)."""
+    return (f"{FUNDS_WAIT}: needs {ccy} {fmt_money(int(need_c))}, available {ccy} {fmt_money(max(0, int(available_c)))}"
+            + ("; deal the FX leg first (never automatic)" if fx_first else ""))
+
+
+def funds_wait_from_error(e) -> str:
+    """The FUNDS_WAIT reason of a fill-time funding refusal (``execution.fund``'s ConflictError: need_c, own_available_c,
+    treasury_available_c, pb_draw_c; ``fx.fund_ccy``'s own_settled_c); the refusal's own message when its details lack
+    the amounts."""
+    d = getattr(e, "details", None) or {}
+    try:
+        need = int(d["need_c"])
+        own = d.get("own_available_c") if d.get("own_available_c") is not None else d.get("own_settled_c")
+        avail = max(0, int(own or 0)) + max(0, int(d.get("treasury_available_c") or 0)) + max(0, int(d.get("pb_draw_c") or 0))
+        return funds_wait_reason(str(d.get("currency") or "USD"), need, avail, fx_first=getattr(e, "code", "") == "INSUFFICIENT_FUNDS_CCY")
+    except (KeyError, TypeError, ValueError):
+        return f"{FUNDS_WAIT}: {getattr(e, 'message', e)}"
+
+
+def is_funds_wait(reason: Optional[str]) -> bool:
+    return str(reason or "").startswith(FUNDS_WAIT)
 
 
 # ---- rows and decisions -------------------------------------------------------------------------------------------------
@@ -72,10 +121,21 @@ class OrderRow:
     tick: Decimal = Decimal("0.01")
     multiplier: Decimal = Decimal(1)
     price_scale: Decimal = Decimal(1)
+    limit_rested: Optional[bool] = None      # the limit was NOT marketable at its previous executable look (None: unknown / not stored)
+    rested_col: bool = False                 # the database has the orders.limit_rested column (so a change can be persisted)
+    expiry: Optional[str] = None             # the instrument's expiry (options: the 15:30 ET opening cut-off, EXEC-9)
 
     @property
     def remaining(self) -> int:
         return max(0, int(self.qty) - int(self.filled_qty))
+
+    @property
+    def resting(self) -> bool:
+        """EXEC-5: was this limit resting (not marketable) at its previous executable look?  The stored state when known, else
+        the pre-Build-2 inference: its first executable look is done and nothing has filled."""
+        if self.limit_rested is not None:
+            return bool(self.limit_rested)
+        return bool(self.first_eval_done) and int(self.filled_qty) == 0
 
     @classmethod
     def from_row(cls, r, inst: Optional[Instrument] = None) -> "OrderRow":
@@ -85,8 +145,16 @@ class OrderRow:
                 d(r["limit_px"]), d(r["stop_px"]), d(r["trail_amt"]), d(r["trail_pct"]), d(r["trail_ref_px"]), r["fill_mode"], r["tif"], r["status"],
                 bool(r["triggered"]), bool(r["first_eval_done"]), r["last_bar_ts"], r["last_quote_time"], r["session_group"], int(r["expires_ts"]),
                 Decimal(str(r["participation"] or config.PARTICIPATION_RATE)), r["borrow_id"], r["package_id"], r["parent_order_id"], d(r["ratio"]))
+        try:
+            keys = r.keys()
+        except AttributeError:                    # a plain dict
+            keys = list(r)
+        if "limit_rested" in keys:
+            o.rested_col = True
+            o.limit_rested = None if r["limit_rested"] is None else bool(r["limit_rested"])
         if inst is not None:
             o.kind, o.lot, o.tick, o.multiplier, o.price_scale = inst.kind, int(inst.lot), inst.tick, inst.multiplier, inst.price_scale
+            o.expiry = inst.expiry
         return o
 
 
@@ -109,10 +177,12 @@ class Decision:
     cap_note: str = ""
     first_look: bool = False
     note: str = ""
+    rested: Optional[bool] = None             # EXEC-5: the limit's state after this look (True = resting); None for non-limit looks
+    persist_rested: bool = False              # the state changed and the database can store it: the matcher issues order.match
 
     @property
     def wants_command(self) -> bool:
-        return self.action in ("FILL", "TRIGGER", "RATCHET") or self.first_look
+        return self.action in ("FILL", "TRIGGER", "RATCHET") or self.first_look or self.triggered or self.persist_rested
 
     def to_dict(self) -> dict:
         d = dict(self.__dict__)
@@ -249,11 +319,24 @@ def volume_bar(order: OrderRow, rec: Optional[QuoteRecord]):
     return with_volume[-1] if with_volume else newer[-1]
 
 
-def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal) -> Tuple[int, str]:
+BarUsed = Union[int, Callable[[str, int], int], None]
+
+
+def _bar_used(bar_used: BarUsed, instrument_id: str, bar_t: int) -> int:
+    if bar_used is None:
+        return 0
+    if callable(bar_used):
+        return max(0, int(bar_used(instrument_id, int(bar_t)) or 0))
+    return max(0, int(bar_used))
+
+
+def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal, bar_used: BarUsed = None) -> Tuple[int, str]:
     """§10.6: ``(qty cap this pass, disclosure)``.  Equities / futures: at most ``participation`` x the latest completed
     1-minute bar's volume, in lots, and never the same bar twice (NO_NEW_BAR); no bar or no volume -> the remaining
-    quantity (NO_VOLUME); a completed bar with zero volume -> 0 (NO_VOLUME_THIS_BAR).  Options: the displayed ask
-    (buys) / bid (sells) size (None -> remaining, disclosed; 0 -> 0).  FX: remaining (no volume concept)."""
+    quantity (NO_VOLUME); a completed bar with zero volume -> 0 (NO_VOLUME_THIS_BAR).  The cap is per (instrument, bar)
+    across every order, account and book (EXEC-6): ``bar_used`` (an int, or ``fn(instrument_id, bar_t)``) is what fills
+    already took from that bar, and only the rest of the cap is offered (BAR_CAP_USED when nothing is left).  Options: the
+    displayed ask (buys) / bid (sells) size (None -> remaining, disclosed; 0 -> 0).  FX: remaining (no volume concept)."""
     kind = inst.kind if inst is not None else order.kind
     lot = max(1, int(inst.lot if inst is not None else order.lot))
     remaining = order.remaining
@@ -282,12 +365,31 @@ def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrum
     raw = (participation * Decimal(v) / Decimal(lot)).to_integral_value(rounding=ROUND_FLOOR) * lot
     cap = max(lot, int(raw))
     unit = "contracts" if kind == "FUTURE" else "shares"
-    return min(remaining, cap), f"latest 1-minute bar volume {v:,}; {pct} % participation caps a pass at {cap:,} {unit}"
+    used = _bar_used(bar_used, order.instrument_id, int(bar.t))
+    at = ny_of(int(bar.t)).strftime("%H:%M")
+    if used <= 0:
+        return min(remaining, cap), f"latest 1-minute bar ({at}) volume {v:,}; {pct} % participation caps it at {cap:,} {unit} across all orders and books"
+    left = max(0, (cap - used) // lot * lot)
+    if left <= 0:
+        return 0, (f"the {pct} % participation cap of the {at} bar ({cap:,} of {v:,} {unit}) is already used by other fills ({used:,}) across all orders and"
+                   f" books: BAR_CAP_USED")
+    return min(remaining, left), (f"latest 1-minute bar ({at}) volume {v:,}; {pct} % participation caps it at {cap:,} {unit} across all orders and books;"
+                                  f" {used:,} already filled against it, {left:,} left")
+
+
+def opening_cutoff_passed(order, now: int, expiry: Optional[str] = None) -> bool:
+    """EXEC-9: an OPENING option trade (BTO / STO) on the option's expiry day at or after 15:30 ET (``OPTION_LAST_OPEN_ET``)."""
+    exp = expiry if expiry is not None else getattr(order, "expiry", None)
+    if getattr(order, "kind", None) != "OPTION" or getattr(order, "side", None) not in OPENING_SIDES or not exp:
+        return False
+    ny = ny_of(int(now))
+    return ny.date().isoformat() == str(exp) and ny.strftime("%H:%M") >= OPTION_LAST_OPEN_ET
 
 
 def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, participation: Optional[Decimal] = None,
-             inst: Optional[Instrument] = None) -> Decision:
-    """§10.5, exactly and purely (no I/O).  See the module docstring for the sentences this implements."""
+             inst: Optional[Instrument] = None, bar_used: BarUsed = None) -> Decision:
+    """§10.5, exactly and purely (no I/O).  See the module docstring for the sentences this implements.  ``bar_used``: what
+    other fills already took from a 1-minute bar (EXEC-6; an int or ``fn(instrument_id, bar_t)``, read by the caller)."""
     participation = Decimal(participation if participation is not None else order.participation)
     if order.status not in OPEN_STATUSES:
         return Decision("NONE", None, 0, "NOT_OPEN", None)
@@ -295,6 +397,9 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
         return Decision("NONE", None, 0, "EXPIRED_PENDING", None, note="past expires_ts: the lifecycle expires it; never fills after expiry")
     if session is None or not session.open:
         return Decision("NONE", None, 0, "AWAITING_SESSION", None, note=getattr(session, "phase", "CLOSED"))
+    if opening_cutoff_passed(order, now, getattr(inst, "expiry", None) if inst is not None else None):
+        return Decision("NONE", None, 0, "LAST_SESSION", None, note=f"the option expires today: no new opening trade fills after {OPTION_LAST_OPEN_ET} ET"
+                        " on its expiry day (the order rests until it expires; cancel it or close instead)")
     ok, reason = is_executable(rec, session, now)
     if not ok:
         return Decision("NONE", None, 0, reason, None, note=_not_executable_note(rec))
@@ -345,17 +450,25 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
         fill_basis, why = (basis if option else "stop_print"), "STOP_TRIGGERED"
     elif otype == "TRAILING_STOP":
         fill_basis, why = (basis if option else "stop_print"), "TRAIL_TRIGGERED"
-    elif otype in ("LIMIT", "STOP_LIMIT"):
+    rested_after: Optional[bool] = None
+    if otype in ("LIMIT", "STOP_LIMIT"):
         limit = order.limit_px
         marketable = (px_exec <= limit) if buy else (px_exec >= limit)
         crossed = (trig <= limit) if buy else (trig >= limit)
-        if (first_look or triggered_now) and marketable:
+        # EXEC-5: the limit price only for an order that was RESTING at its previous executable look (a just-triggered stop-limit
+        # and a first look were not resting); every other marketable look fills at the observed executable price
+        was_resting = (not first_look) and (not triggered_now) and order.resting
+        if marketable and not was_resting:
             price, why = px_exec, "LIMIT_MARKETABLE"
-        elif (not first_look) and crossed:
+            rested_after = False
+        elif was_resting and (marketable or crossed):
             price, fill_basis, why = qprice(limit), "limit", "LIMIT_CROSSED"
+            rested_after = False
         else:
-            return Decision("NONE", None, 0, "NOT_MARKETABLE", bar_ts, qt, triggered=triggered_now, first_look=first_look)
-    cap, cap_note = fill_cap(order, rec, inst, participation)
+            persist = order.rested_col and order.limit_rested is not True
+            return Decision("NONE", None, 0, "NOT_MARKETABLE", bar_ts, qt, triggered=triggered_now, first_look=first_look, rested=True, persist_rested=persist,
+                            note=(f"stop reached on the observed {trig_basis} {trig}: rests as a limit at {limit}" if triggered_now else ""))
+    cap, cap_note = fill_cap(order, rec, inst, participation, bar_used)
     qty = min(order.remaining, cap)
     note = ""
     gap_word = basis if option else "print"
@@ -364,10 +477,13 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
             note = f"gap through the stop {stop}: filled at the {gap_word} {price} (STOP_RULE)"
     if triggered_now and option:
         note = (note + "; " if note else "") + f"triggered on the observed {trig_basis} {trig} (Cboe chain NBBO; an option never triggers on its own last trade)"
+    persist = rested_after is not None and order.rested_col and order.limit_rested is not False
     if qty <= 0:
-        reason = next((r for r in ("NO_NEW_BAR", "NO_VOLUME_THIS_BAR", "SAME_OBSERVATION") if r in cap_note), "NO_SIZE")
-        return Decision("TRIGGER" if triggered_now else "NONE", None, 0, reason, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note)
-    return Decision("FILL", price, qty, why, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note)
+        reason = next((r for r in ("NO_NEW_BAR", "NO_VOLUME_THIS_BAR", "SAME_OBSERVATION", "BAR_CAP_USED") if r in cap_note), "NO_SIZE")
+        return Decision("TRIGGER" if triggered_now else "NONE", None, 0, reason, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note,
+                        rested=rested_after, persist_rested=persist)
+    return Decision("FILL", price, qty, why, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note, rested=rested_after,
+                    persist_rested=persist)
 
 
 def evaluate_package(pkg, legs: List[OrderRow], recs: Dict[str, Optional[QuoteRecord]], session, now: int) -> PackageDecision:

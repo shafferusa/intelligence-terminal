@@ -53,7 +53,7 @@ class CoreTests(unittest.TestCase):
             self.assertEqual({"INDIVIDUAL": 500000000, "FUND": 2500000000, "INSTITUTION": 0}, get_setting(conn, "qp_threshold_c"))
             self.assertEqual({"fee_pct": "0.03", "settle_days": 30, "lockup_months": 6}, get_setting(conn, "private_defaults"))
             self.assertEqual({"T": {"name": "Test Book", "starting_capital_c": 1000000000}}, get_setting(conn, "book_defaults"))
-            self.assertEqual(200000000, get_setting(conn, "sweep_confirm_threshold_c"))
+            self.assertEqual(0, get_setting(conn, "sweep_confirm_threshold_c"))          # SR-12: the sweep confirmation is off by default
 
     def test_seed_counts(self):
         m = self.rt.instruments

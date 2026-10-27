@@ -12,6 +12,27 @@ Conventions
 - Treasury.gov: the latest ``NEW_DATE`` entry of the monthly par-curve feed, tenors 1M…30Y as years (8 dp).
 - FRED: blank and "." observations are skipped.  Frankfurter: units of currency per USD.  FINRA: pipe file, values
   rounded HALF_EVEN to whole shares, rows with total ≤ 0 or short > 1.05 × total dropped.
+- FRED MAINTENANCE (ORC-8, 2026-10-21): during site maintenance fred.stlouisfed.org (and the api.stlouisfed.org key route)
+  answer HTTP 200 with an HTML page titled "Site Maintenance" instead of a CSV / JSON.  ``parse_fred_csv`` /
+  ``parse_fred_json`` recognise any HTML body and raise ``FetchError("FRED unavailable (maintenance)", kind="maintenance")``
+  (never the old "unexpected FRED CSV header"), so the provider can say so in Data Status and serve the fallbacks.
+- DEBT SOURCES (Build 2 P07; every body is untrusted text, parsed with json / csv / bounded regular expressions only):
+  * ``parse_mspd``: fiscaldata ``v1/debt/mspd/mspd_table_3_market`` (one row per issue / reopening; the first row of a
+    CUSIP carries its total outstanding) -> one record per CUSIP: type BILL / NOTE / BOND / TIPS / FRN, coupon (percent),
+    the ORIGINAL issue date (the earliest tranche), maturity, the coupon months ("05/15", "11/15"), outstanding (USD mn).
+  * ``parse_auctions``: fiscaldata ``v1/accounting/od/auctions_query`` -> the auction rows (TIPS when
+    ``inflation_index_security`` = Yes, FRN when ``floating_rate`` = Yes; coupon ``int_rate`` once auctioned).
+  * ``parse_fedinvest``: TreasuryDirect FedInvest "Today's Prices" HTML (``todaySecurityPriceDetail``): "Prices For:
+    <date>" and one row per CUSIP: SECURITY TYPE, RATE, MATURITY DATE, CALL DATE, BUY, SELL, END OF DAY.  What the columns
+    are (Federal Investments Program, data.gov "Federal Investments Program Rates and Prices"): BUY = the price federal
+    accounts INVEST at, SELL = the price they REDEEM at (the bid side), END OF DAY = the end-of-day valuation price; a
+    0.000000 means "not offered / not published yet" and is read as no price (None), never as zero.
+  * ``parse_nyfed_rates``: markets.newyorkfed.org ``api/rates/secured/sofr/last/N.json`` -> [(effective date, percent)].
+  * ``parse_ecb_csv``: data-api.ecb.europa.eu ``format=csvdata`` -> {series key: [(date, value)]} (KEY, TIME_PERIOD,
+    OBS_VALUE columns; several keys in one answer when the request joins them with "+").
+  * ``parse_mof_jgb``: www.mof.go.jp ``jgbcme.csv`` (JGB yields by maturity 1Y..40Y, one row per business day, "-" when
+    missing) -> the latest dated row with at least six maturities as ``(date, {years: percent})``.
+  * ``parse_treasury_real_xml``: the Treasury.gov daily REAL yield curve (TC_5YEAR .. TC_30YEAR) as a ``ParCurve``.
 """
 from __future__ import annotations
 
@@ -494,8 +515,35 @@ def parse_treasury_xml(text, fetched_at: int = 0) -> Optional[ParCurve]:
     return best
 
 
+FRED_MAINTENANCE = "FRED unavailable (maintenance)"
+
+
+def looks_like_html(text) -> bool:
+    """True when a body that should be CSV / JSON is an HTML page (FRED's "Site Maintenance" page, an error page)."""
+    if isinstance(text, (bytes, bytearray)):
+        head = bytes(text[:2048]).decode("utf-8", "replace")
+    else:
+        head = str(text or "")[:2048]
+    h = head.lstrip().lower()
+    return h.startswith("<") or "<html" in h or "<!doctype" in h or "site maintenance" in h
+
+
+def _fred_html_error(text) -> FetchError:
+    if isinstance(text, (bytes, bytearray)):
+        head = bytes(text[:4096]).decode("utf-8", "replace")
+    else:
+        head = str(text or "")[:4096]
+    low = head.lower()
+    if "maintenance" in low or "back soon" in low:
+        return FetchError(FRED_MAINTENANCE, retryable=False, kind="maintenance")
+    return FetchError("FRED answered an HTML page instead of data", retryable=False, kind="maintenance")
+
+
 def parse_fred_csv(text) -> List[Tuple[date, Decimal]]:
-    """``[(date, value)]`` sorted; blank and "." observations skipped (copied from finsim2 ``parse_csv``)."""
+    """``[(date, value)]`` sorted; blank and "." observations skipped (copied from finsim2 ``parse_csv``).  An HTML body
+    (FRED MAINTENANCE) raises ``FetchError(kind="maintenance")``."""
+    if looks_like_html(text):
+        raise _fred_html_error(text)
     if isinstance(text, (bytes, bytearray)):
         text = text.decode("utf-8", "replace")
     reader = csv.reader(io.StringIO(text))
@@ -557,7 +605,300 @@ def parse_finra(text, wanted: Optional[Iterable[str]] = None) -> Dict[str, Tuple
     return out
 
 
+def parse_fred_json(text) -> List[Tuple[date, Decimal]]:
+    """The api.stlouisfed.org ``series/observations`` JSON (the FRED_API_KEY route): ``[(date, value)]`` sorted, "." skipped;
+    an HTML body raises ``FetchError(kind="maintenance")``."""
+    if looks_like_html(text):
+        raise _fred_html_error(text)
+    try:
+        payload = json.loads(text.decode("utf-8", "replace") if isinstance(text, (bytes, bytearray)) else text)
+    except ValueError:
+        raise FetchError("FRED JSON did not parse", retryable=False) from None
+    obs = payload.get("observations") if isinstance(payload, dict) else None
+    if not isinstance(obs, list):
+        raise FetchError("unexpected FRED JSON payload", retryable=False)
+    out: Dict[date, Decimal] = {}
+    for o in obs:
+        if not isinstance(o, dict):
+            continue
+        d = _iso_date(o.get("date"))
+        raw = str(o.get("value") or "").strip()
+        if d is None or raw in ("", "."):
+            continue
+        v = dec(raw)
+        if v is not None:
+            out[d] = v
+    return sorted(out.items())
+
+
+def parse_nyfed_rates(text) -> List[Tuple[date, Decimal]]:
+    """markets.newyorkfed.org reference rates JSON (``refRates[].effectiveDate`` / ``percentRate``) -> ``[(date, percent)]``."""
+    if looks_like_html(text):
+        raise FetchError("the NY Fed answered an HTML page instead of data", retryable=False)
+    try:
+        payload = json.loads(text.decode("utf-8", "replace") if isinstance(text, (bytes, bytearray)) else text)
+    except ValueError:
+        raise FetchError("NY Fed JSON did not parse", retryable=False) from None
+    rows = payload.get("refRates") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        raise FetchError("unexpected NY Fed payload", retryable=False)
+    out: Dict[date, Decimal] = {}
+    for r in rows:
+        if not isinstance(r, dict):
+            continue
+        d = _iso_date(r.get("effectiveDate"))
+        v = dec(r.get("percentRate"))
+        if d is not None and v is not None:
+            out[d] = v
+    return sorted(out.items())
+
+
+def parse_ecb_csv(text) -> Dict[str, List[Tuple[date, Decimal]]]:
+    """data-api.ecb.europa.eu ``format=csvdata`` -> ``{series key: [(date, value)]}`` (sorted; blank values skipped)."""
+    if looks_like_html(text):
+        raise FetchError("the ECB data API answered an HTML page instead of data", retryable=False)
+    if isinstance(text, (bytes, bytearray)):
+        text = text.decode("utf-8", "replace")
+    reader = csv.reader(io.StringIO(text))
+    header = next(reader, None) or []
+    try:
+        ik, it, iv = header.index("KEY"), header.index("TIME_PERIOD"), header.index("OBS_VALUE")
+    except ValueError:
+        raise FetchError("unexpected ECB CSV header", retryable=False) from None
+    out: Dict[str, Dict[date, Decimal]] = {}
+    for row in reader:
+        if len(row) <= max(ik, it, iv):
+            continue
+        key = row[ik].strip()[:80]
+        d = _iso_date(row[it])
+        v = dec(row[iv])
+        if not key or d is None or v is None:
+            continue
+        out.setdefault(key, {})[d] = v
+    return {k: sorted(v.items()) for k, v in out.items()}
+
+
+_MOF_TENOR = re.compile(r"^(\d{1,2})Y$")
+
+
+def parse_mof_jgb(text) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
+    """www.mof.go.jp ``jgbcme.csv`` -> the latest row with >= 6 maturities: ``(date, {years: percent})`` (None when none)."""
+    if looks_like_html(text):
+        raise FetchError("MOF answered an HTML page instead of the CSV", retryable=False)
+    if isinstance(text, (bytes, bytearray)):
+        text = text.decode("utf-8", "replace")
+    lines = list(csv.reader(io.StringIO(text)))
+    head_i = next((i for i, r in enumerate(lines[:10]) if r and r[0].strip().lower() == "date"), None)
+    if head_i is None:
+        raise FetchError("unexpected MOF JGB CSV (no Date header)", retryable=False)
+    tenors: List[Tuple[int, Decimal]] = []
+    for j, h in enumerate(lines[head_i][1:], start=1):
+        m = _MOF_TENOR.match(h.strip())
+        if m:
+            tenors.append((j, Decimal(int(m.group(1))).quantize(TENOR_Q)))
+    best: Optional[Tuple[date, Dict[Decimal, Decimal]]] = None
+    for r in lines[head_i + 1:]:
+        if not r:
+            continue
+        parts = r[0].strip().split("/")
+        try:
+            d = date(int(parts[0]), int(parts[1]), int(parts[2]))
+        except (ValueError, IndexError):
+            continue
+        pts: Dict[Decimal, Decimal] = {}
+        for j, years in tenors:
+            if j < len(r):
+                v = dec(r[j])
+                if v is not None:
+                    pts[years] = v.quantize(Decimal("0.0001"))
+        if len(pts) >= 6 and (best is None or d > best[0]):
+            best = (d, pts)
+    return best
+
+
+REAL_TENORS: List[Tuple[str, str, Decimal]] = [("TC_5YEAR", "5Y", Decimal(5)), ("TC_7YEAR", "7Y", Decimal(7)), ("TC_10YEAR", "10Y", Decimal(10)),
+                                               ("TC_20YEAR", "20Y", Decimal(20)), ("TC_30YEAR", "30Y", Decimal(30))]
+
+
+def parse_treasury_real_xml(text, fetched_at: int = 0) -> Optional[ParCurve]:
+    """The LATEST ``NEW_DATE`` entry of the daily REAL yield curve feed (TC_5YEAR .. TC_30YEAR, percent) as a ``ParCurve``."""
+    try:
+        root = ET.fromstring(text if isinstance(text, (bytes, bytearray)) else str(text))
+    except ET.ParseError:
+        raise FetchError("treasury real-yield XML did not parse", retryable=False) from None
+    best: Optional[ParCurve] = None
+    for el in root.iter():
+        if _local(el.tag) != "properties":
+            continue
+        fields = {_local(ch.tag): (ch.text or "").strip() for ch in el}
+        d = _iso_date(fields.get("NEW_DATE"))
+        if d is None:
+            continue
+        pts: Dict[Decimal, Decimal] = {}
+        for xml_field, _label, years in REAL_TENORS:
+            v = fields.get(xml_field)
+            if v in (None, ""):
+                continue
+            try:
+                pts[years.quantize(TENOR_Q)] = Decimal(v).quantize(Decimal("0.0001"))
+            except ArithmeticError:
+                continue
+        if len(pts) >= 3 and (best is None or d > best.as_of):
+            best = ParCurve(d, pts, source="treasury.gov daily real yield curve", fetched_at=fetched_at)
+    return best
+
+
+# ---- fiscaldata (MSPD, auctions) and TreasuryDirect FedInvest ------------------------------------------------------------
+CUSIP_RE = re.compile(r"^[0-9]{3}[0-9A-Z]{5}[0-9]$")
+MSPD_TYPES = {"Bills Maturity Value": "BILL", "Notes": "NOTE", "Bonds": "BOND", "Inflation-Protected Securities": "TIPS", "Floating Rate Notes": "FRN"}
+FEDINVEST_TYPES = {"MARKET BASED BILL": "BILL", "MARKET BASED NOTE": "NOTE", "MARKET BASED BOND": "BOND", "TIPS": "TIPS", "MARKET BASED FRN": "FRN"}
+
+
+def _fd_rows(text) -> Tuple[List[dict], dict]:
+    if looks_like_html(text):
+        raise FetchError("fiscaldata answered an HTML page instead of data", retryable=False)
+    try:
+        payload = json.loads(text.decode("utf-8", "replace") if isinstance(text, (bytes, bytearray)) else text)
+    except ValueError:
+        raise FetchError("fiscaldata JSON did not parse", retryable=False) from None
+    if not isinstance(payload, dict) or not isinstance(payload.get("data"), list):
+        raise FetchError("unexpected fiscaldata payload", retryable=False)
+    return [r for r in payload["data"] if isinstance(r, dict)], (payload.get("meta") if isinstance(payload.get("meta"), dict) else {})
+
+
+def _nul(v) -> Optional[str]:
+    s = None if v is None else str(v).strip()
+    return None if s in (None, "", "null", "None") else s[:64]
+
+
+def _pct(v) -> Optional[Decimal]:
+    s = _nul(v)
+    if s is None:
+        return None
+    try:
+        d = Decimal(s)
+    except ArithmeticError:
+        return None
+    if not d.is_finite():
+        return None
+    return d.quantize(Decimal("0.000001")).normalize()
+
+
+def parse_mspd(text) -> Tuple[Optional[date], List[dict]]:
+    """``(record_date, [security])`` from ``mspd_table_3_market`` (module docstring DEBT SOURCES); matured or malformed
+    rows are kept out by the caller (it knows today), never invented."""
+    rows, _meta = _fd_rows(text)
+    by: Dict[str, dict] = {}
+    record: Optional[date] = None
+    for r in rows:
+        kind = MSPD_TYPES.get(str(r.get("security_class1_desc") or "").strip())
+        cusip = str(r.get("security_class2_desc") or "").strip().upper()
+        if kind is None or not CUSIP_RE.match(cusip):
+            continue
+        rd = _iso_date(r.get("record_date"))
+        if rd is not None and (record is None or rd > record):
+            record = rd
+        mat = _iso_date(r.get("maturity_date"))
+        issue = _iso_date(r.get("issue_date"))
+        if mat is None:
+            continue
+        sec = by.get(cusip)
+        if sec is None:
+            sec = by[cusip] = {"cusip": cusip, "type": kind, "coupon_pct": None, "issue": issue, "maturity": mat, "pay_dates": [],
+                               "outstanding_musd": None, "issue_yield_pct": _pct(r.get("yield_pct")), "record_date": rd, "tranches": 0}
+        sec["tranches"] += 1
+        if issue is not None and (sec["issue"] is None or issue < sec["issue"]):
+            sec["issue"] = issue
+            sec["issue_yield_pct"] = _pct(r.get("yield_pct"))
+        rate = _pct(r.get("interest_rate_pct"))
+        if rate is not None and kind != "BILL":
+            sec["coupon_pct"] = rate
+        out_amt = _pct(r.get("outstanding_amt"))
+        if out_amt is not None:
+            sec["outstanding_musd"] = out_amt
+        if kind != "BILL" and not sec["pay_dates"]:
+            sec["pay_dates"] = [p for p in (_nul(r.get(f"interest_pay_date_{i}")) for i in (1, 2, 3, 4)) if p and re.match(r"^\d{2}/\d{2}$", p)]
+    return record, [by[c] for c in sorted(by)]
+
+
+def parse_auctions(text) -> List[dict]:
+    """``auctions_query`` rows -> ``[{cusip, type, term, auction_date, issue, maturity, coupon_pct, high_yield_pct,
+    investment_rate_pct, discount_rate_pct, reopening, first_coupon, spread_pct, cmb}]`` (module docstring DEBT SOURCES)."""
+    rows, _meta = _fd_rows(text)
+    out: List[dict] = []
+    for r in rows:
+        cusip = str(r.get("cusip") or "").strip().upper()
+        st = str(r.get("security_type") or "").strip().title()
+        if not CUSIP_RE.match(cusip) or st not in ("Bill", "Note", "Bond", "Tips", "Frn", "Cmb"):
+            continue
+        kind = {"Bill": "BILL", "Note": "NOTE", "Bond": "BOND", "Tips": "TIPS", "Frn": "FRN", "Cmb": "BILL"}[st]
+        if str(r.get("inflation_index_security") or "").strip().lower() == "yes":
+            kind = "TIPS"
+        if str(r.get("floating_rate") or "").strip().lower() == "yes":
+            kind = "FRN"
+        mat, issue = _iso_date(r.get("maturity_date")), _iso_date(r.get("issue_date"))
+        if mat is None or issue is None:
+            continue
+        out.append({"cusip": cusip, "type": kind, "term": _nul(r.get("security_term")), "auction_date": _iso_date(r.get("auction_date")), "issue": issue,
+                    "maturity": mat, "coupon_pct": _pct(r.get("int_rate")), "high_yield_pct": _pct(r.get("high_yield")),
+                    "investment_rate_pct": _pct(r.get("high_investment_rate")), "discount_rate_pct": _pct(r.get("high_discnt_rate")),
+                    "reopening": str(r.get("reopening") or "").strip().lower() == "yes", "first_coupon": _iso_date(r.get("first_int_payment_date")),
+                    "spread_pct": _pct(r.get("spread")), "cmb": str(r.get("cash_management_bill_cmb") or "").strip().lower() == "yes"})
+    return out
+
+
+_FI_DATE = re.compile(r"Prices\s+For:\s*([A-Za-z]{3,9})\s+(\d{1,2}),\s*(\d{4})")
+_FI_ROW = re.compile(r"<tr>\s*<td>\s*([0-9A-Z]{9})\s*</td>\s*<td[^>]*>([^<]{0,40})</td>\s*<td>([^<]{0,12})</td>\s*<td>([^<]{0,12})</td>\s*"
+                     r"<td>([^<]{0,12})</td>\s*<td>([^<]{0,16})</td>\s*<td>([^<]{0,16})</td>\s*<td>([^<]{0,16})</td>", re.S)
+_MONTHS = {m: i + 1 for i, m in enumerate(("january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november",
+                                            "december"))}
+
+
+def _us_date(s) -> Optional[date]:
+    m = re.match(r"^\s*(\d{1,2})/(\d{1,2})/(\d{4})\s*$", str(s or ""))
+    if not m:
+        return None
+    try:
+        return date(int(m.group(3)), int(m.group(1)), int(m.group(2)))
+    except ValueError:
+        return None
+
+
+def _fi_price(s) -> Optional[Decimal]:
+    v = dec(s)
+    return None if v is None or v <= 0 or v > 1000 else v
+
+
+def parse_fedinvest(text) -> Tuple[Optional[date], Dict[str, dict]]:
+    """TreasuryDirect FedInvest "Today's Prices" -> ``(price date, {cusip: {type, rate_pct, maturity, call, buy, sell, eod}})``
+    (module docstring DEBT SOURCES: a 0.000000 price is None)."""
+    if isinstance(text, (bytes, bytearray)):
+        text = bytes(text[:4_000_000]).decode("utf-8", "replace")
+    text = str(text)[:4_000_000]
+    m = _FI_DATE.search(text)
+    when: Optional[date] = None
+    if m and m.group(1).lower() in _MONTHS:
+        try:
+            when = date(int(m.group(3)), _MONTHS[m.group(1).lower()], int(m.group(2)))
+        except ValueError:
+            when = None
+    out: Dict[str, dict] = {}
+    for g in _FI_ROW.findall(text):
+        cusip = g[0].strip().upper()
+        kind = FEDINVEST_TYPES.get(" ".join(g[1].split()).upper())
+        if kind is None or not CUSIP_RE.match(cusip):
+            continue
+        rate = dec(g[2].replace("%", ""))
+        out[cusip] = {"cusip": cusip, "type": kind, "rate_pct": rate, "maturity": _us_date(g[3]), "call": _us_date(g[4]), "buy": _fi_price(g[5]),
+                      "sell": _fi_price(g[6]), "eod": _fi_price(g[7])}
+    if when is None and out:
+        raise FetchError("FedInvest page without its 'Prices For' date", retryable=False)
+    return when, out
+
+
 __all__ = ["num", "dec", "intv", "et_naive_to_epoch", "YahooIntraday", "DailyBar", "DivEvent", "SplitEvent", "Events", "ChainUnderlying", "ChainRow",
            "ChainSnapshot", "ParCurve", "FxRates", "chart_result", "chart_bars", "clean_meta", "parse_intraday", "parse_daily", "parse_events", "parse_chain",
            "parse_treasury_xml", "parse_fred_csv", "parse_frankfurter", "parse_finra", "OCC_TAIL", "TENORS", "TENOR_Q", "TENOR_YEARS", "YAHOO_DELAY_S",
-           "YAHOO_DELAY_LABEL", "DAILY_DELAY_LABEL"]
+           "YAHOO_DELAY_LABEL", "DAILY_DELAY_LABEL", "FRED_MAINTENANCE", "looks_like_html", "parse_fred_json", "parse_nyfed_rates", "parse_ecb_csv",
+           "parse_mof_jgb", "parse_treasury_real_xml", "REAL_TENORS", "parse_mspd", "parse_auctions", "parse_fedinvest", "CUSIP_RE", "MSPD_TYPES",
+           "FEDINVEST_TYPES"]

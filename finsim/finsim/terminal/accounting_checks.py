@@ -381,33 +381,60 @@ def l14_loans_match(conn, today, cal, flt: Filter) -> List[Problem]:
 
 
 # ---- L15 / L16 / L17 / L18 -----------------------------------------------------------------------------------------------
+def _im_rate_recorded(conn, account_id: str, instrument_id: str) -> Optional[int]:
+    """SR-11: the IM per contract the position was last margined at - ``im_per_c`` of the latest ``futures_settle`` row that
+    carries it (each fill records it); None for positions margined before the rate was recorded (the table applies)."""
+    for r in conn.execute("SELECT quote_json FROM futures_settle WHERE account_id=? AND instrument_id=? ORDER BY settle_date DESC", (account_id, instrument_id)).fetchall():
+        try:
+            v = (json.loads(r["quote_json"] or "{}") or {}).get("im_per_c")
+        except (ValueError, TypeError, AttributeError):
+            v = None
+        if v is not None:
+            return int(v)
+    return None
+
+
 def l15_futures_margin(conn, today, cal, flt: Filter) -> List[Problem]:
     w, p = _in("v.account_id", flt.accounts)
     need: Dict[Tuple[str, str], int] = {}
     for r in _rows(conn, "SELECT v.account_id, v.instrument_id, v.qty, i.spec_json FROM v_positions v JOIN instruments i ON i.instrument_id=v.instrument_id"
                          f" WHERE i.kind='FUTURE'{w}", p):
-        try:
-            im = int(json.loads(r["spec_json"] or "{}").get("im_c") or 0)
-        except (ValueError, TypeError):
-            im = 0
+        im = _im_rate_recorded(conn, r["account_id"], r["instrument_id"])
+        if im is None:
+            try:
+                im = int(json.loads(r["spec_json"] or "{}").get("im_c") or 0)
+            except (ValueError, TypeError):
+                im = 0
         need[(r["account_id"], r["instrument_id"])] = im * abs(int(r["qty"]))
     w2, p2 = _in("account_id", flt.accounts)
     bal = {(r["account_id"], r["instrument_id"]): natural("1300", r["balance_c"]) for r in _rows(conn, f"SELECT account_id, instrument_id, balance_c FROM gl_balances WHERE gl='1300'{w2}", p2)}
     out = []
     for key in sorted(set(need) | set(bal)):
         if need.get(key, 0) != bal.get(key, 0):
-            out.append(Problem("L15", "ERROR", f"{key[0]} 1300 {key[1]}", need.get(key, 0), bal.get(key, 0), "futures initial margin ≠ im_c × |qty|", _lid(key[0])))
+            out.append(Problem("L15", "ERROR", f"{key[0]} 1300 {key[1]}", need.get(key, 0), bal.get(key, 0), "futures initial margin ≠ the margined rate × |qty|", _lid(key[0])))
     return out
 
 
 def l16_option_margin(conn, today, cal, flt: Filter) -> List[Problem]:
+    """SR-13 (decision s7.6): option margin is a RESERVATION, so the check is on ``margin_state`` itself - the stored requirement
+    is never negative and equals the requirement recomputed from its own stored inputs (the detail's per-group requirements,
+    which the formula summed); a row without a detail (a hand-made one) is only checked for its sign."""
     w, p = _in("account_id", flt.accounts)
-    req = {r["account_id"]: int(r["options_required_c"]) for r in _rows(conn, f"SELECT account_id, options_required_c FROM margin_state WHERE 1{w}", p)}
-    bal = {r["account_id"]: natural("1310", r["balance_c"]) for r in _rows(conn, f"SELECT account_id, SUM(balance_c) balance_c FROM gl_balances WHERE gl='1310'{w} GROUP BY 1", p)}
     out = []
-    for aid in sorted(set(req) | set(bal)):
-        if req.get(aid, 0) != bal.get(aid, 0):
-            out.append(Problem("L16", "ERROR", f"{aid} 1310", req.get(aid, 0), bal.get(aid, 0), "option margin deposit ≠ margin_state.options_required_c", _lid(aid)))
+    for r in _rows(conn, f"SELECT account_id, options_required_c, options_detail_json FROM margin_state WHERE 1{w}", p):
+        aid, req = r["account_id"], int(r["options_required_c"])
+        if req < 0:
+            out.append(Problem("L16", "ERROR", f"{aid} margin_state", "≥ 0", req, "negative option margin requirement", _lid(aid)))
+            continue
+        try:
+            detail = json.loads(r["options_detail_json"] or "{}") or {}
+        except (ValueError, TypeError):
+            detail = {}
+        if not isinstance(detail, dict) or "requirement_c" not in detail:
+            continue
+        recomputed = sum(int(g.get("requirement_c") or 0) for g in (detail.get("groups") or []))
+        if int(detail["requirement_c"]) != req or recomputed != req:
+            out.append(Problem("L16", "ERROR", f"{aid} margin_state", req, recomputed, "option margin requirement ≠ its recomputed groups", _lid(aid)))
     return out
 
 
@@ -493,10 +520,14 @@ def l20_request_linkage(conn, today, cal, flt: Filter) -> List[Problem]:
 
 
 def l21_settlement_health(conn, today, cal, flt: Filter) -> List[Problem]:
-    w, p = _in("account_id", flt.accounts)
+    """A PENDING settlement more than 5 business days overdue means the SETTLE_DUE job is stuck.  SR-02: settlements of a
+    CLOSED (reset) lifetime are frozen with it - SETTLE_DUE settles OPEN lifetimes only - so they are not a stuck job and
+    never raise the hold."""
+    w, p = _in("s.account_id", flt.accounts)
     limit = cal.add_business_days(today, -5).isoformat()
     out = []
-    for r in _rows(conn, f"SELECT settle_id, account_id, due_date FROM settlements WHERE status='PENDING' AND due_date < ?{w}", [limit] + p):
+    for r in _rows(conn, "SELECT s.settle_id, s.account_id, s.due_date FROM settlements s JOIN accounts a ON a.account_id=s.account_id"
+                         f" JOIN lifetimes lt ON lt.lifetime_id=a.lifetime_id WHERE s.status='PENDING' AND s.due_date < ? AND lt.status='OPEN'{w}", [limit] + p):
         out.append(Problem("L21", "ERROR", f"settlement {r['settle_id']}", f"settled by {limit}", r["due_date"], "PENDING settlement more than 5 business days overdue (the job is stuck)", _lid(r["account_id"])))
     return out
 
@@ -591,11 +622,31 @@ CHECKS = [l1_entries_balance, l2_lines_valid, l3_gl_balances_match, l4_ledger_id
           l13_collateral_match, l14_loans_match, l15_futures_margin, l16_option_margin, l17_orders_consistent, l18_cash_floor, l19_sweep_linkage,
           l20_request_linkage, l21_settlement_health, l22_otc_margin_match, l23_lifetime_frozen, l24_private_lots, l25_books_isolated]
 
+#: BM-26: what each check proves, in trader wording (the Integrity tab lists one row per check run)
+CHECK_NAMES = {
+    "L1": "every journal entry balances", "L2": "every journal line is valid", "L3": "account balances equal the journal",
+    "L4": "assets = liabilities + equity in every currency", "L5": "internal transfers net to zero", "L6": "capital is explained by deposits",
+    "L7": "positions equal their fills", "L8": "tax lots are consistent", "L9": "cost accounts equal the open lots",
+    "L10": "pending settlements equal receivables and payables", "L11": "no fill, settlement or accrual posted twice",
+    "L12": "every short has a live borrow", "L13": "borrow collateral matches the ledger", "L14": "loans match their principal",
+    "L15": "futures initial margin matches the positions", "L16": "the option margin reservation matches its requirement", "L17": "orders are consistent with their fills",
+    "L18": "settled cash below zero only under an open funding shortfall", "L19": "every sweep-in is linked and exact",
+    "L20": "every fill and transfer has its entry and command", "L21": "no settlement is stuck past its due date",
+    "L22": "OTC margin matches the contracts", "L23": "closed lifetimes stay frozen", "L24": "private lots carry their terms",
+    "L25": "books never post to each other",
+}
+
+
+def check_code(fn) -> str:
+    return fn.__name__.split("_")[0].upper()
+
 
 def ledger_checks(conn: sqlite3.Connection, today: date, cal, accounts: Optional[Set[str]] = None, entries: Optional[List[int]] = None,
-                  lifetimes: Optional[List[str]] = None, closed_lifetimes: Optional[List[str]] = None, scoped: bool = False) -> List[Problem]:
+                  lifetimes: Optional[List[str]] = None, closed_lifetimes: Optional[List[str]] = None, scoped: bool = False,
+                  runs: Optional[List[dict]] = None) -> List[Problem]:
     """Run L1–L25.  ``scoped`` (inside a command) skips the whole-table checks that no touched key can change (L11,
-    L21, L23) — they run in the ledger / full modes."""
+    L21, L23) — they run in the ledger / full modes.  ``runs`` (BM-26), when given, receives one row per check run:
+    ``{code, name, ok, count, errors, warnings, message}``."""
     if accounts is None and lifetimes is not None:
         q = ",".join("?" for _ in lifetimes)
         accounts = {r["account_id"] for r in conn.execute(f"SELECT account_id FROM accounts WHERE lifetime_id IN ({q})", list(lifetimes)).fetchall()} if lifetimes else set()
@@ -604,8 +655,15 @@ def ledger_checks(conn: sqlite3.Connection, today: date, cal, accounts: Optional
     for fn in CHECKS:
         if scoped and fn in (l11_no_duplicate_keys, l21_settlement_health, l23_lifetime_frozen):
             continue
+        code = check_code(fn)
         try:
-            out.extend(fn(conn, today, cal, flt)[:flt.max_problems])
+            got = fn(conn, today, cal, flt)[:flt.max_problems]
         except Exception as e:   # noqa: BLE001 — a broken check is itself a finding, never a silent pass
-            out.append(Problem(fn.__name__.split("_")[0].upper(), "ERROR", "check", None, None, f"check raised {type(e).__name__}: {e}"))
+            got = [Problem(code, "ERROR", "check", None, None, f"check raised {type(e).__name__}: {e}")]
+        out.extend(got)
+        if runs is not None:
+            errs = sum(1 for p in got if p.severity == "ERROR")
+            warns = sum(1 for p in got if p.severity == "WARN")
+            runs.append({"code": code, "name": CHECK_NAMES.get(code, fn.__name__), "ok": errs == 0, "count": len(got), "errors": errs, "warnings": warns,
+                         "message": "ok" if not got else "; ".join(f"{p.scope}: {p.detail}" for p in got[:3]) + (f" (+{len(got) - 3} more)" if len(got) > 3 else "")})
     return out

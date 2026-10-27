@@ -10,7 +10,15 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   ``PC-000001`` (one sequence for every book), a ``private_loans`` row and an instrument row of the same id (kind PRIVATE
   with ``spec.loan_id`` — the kind the MarkProvider dispatches to ``pc_mark``; the design's "kind BOND" would route the
   loan to the par-curve bond model — support COMPUTED, session group PRIVATE_MARKETS).  ``oas_issue`` is the latest FRED
-  ``BAMLH0A0HYM2`` print at commitment (null when the rate store has none; the mark is then the amortised cost).
+  ``BAMLH0A0HYM2`` print at commitment.
+- PRE-TRADE (Build 2 P08): the commitment needs the same qualified-purchaser gate as Private Markets (``books.require_private``:
+  the Personal book below its QP threshold is refused NOT_ELIGIBLE_QP with the plain-English rule, OA-30); a SOFR print within
+  10 days (else 409 RATE_UNAVAILABLE: the coupon cannot be set, nothing is committed); and an HY OAS print within 7 days
+  (else 409 OAS_UNAVAILABLE naming FRED's state - the mark would have no spread at issue - unless the owner explicitly
+  acknowledges ``acknowledge_no_spread: true``; such a loan books with ``oas_issue`` null and the FIRST print on or after its
+  start date is back-filled as its issue spread (``oas_issue_as_of``, ``oas_backfilled``) by the nightly coupon accrual, never
+  a stale or earlier print, OA-22).  The borrower is picked from the private company master (``company_id`` linked; a name
+  outside the master is accepted as free text and said so).
 - CURRENCY / INDEX: this build commits USD loans floating off SOFR only — the coupon resets nightly from the USD policy
   series and the mark's spread input is the US high-yield OAS, which is a USD spread; any other currency is refused
   400 CURRENCY_UNSUPPORTED and any other index 400 INDEX_UNSUPPORTED (nothing is approximated).  ``spread`` is a decimal
@@ -34,11 +42,18 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   attention when the accrual is not yet complete).
 - FEES (``pc.amend_fee``, idem ``pcfee:{loan_id}:{request_id}``): an amendment / arrangement fee the owner RECORDS when
   received, ``Dr 1010 / Cr 4320``; nothing is generated.
-- REPAYMENT (``pc.repay {loan_id, amount}``, idem ``pc:{loan_id}:repay:{request_id}``): the amount received pays the
-  accrued coupon first (``Cr 1220``), the rest retires the WHOLE amortised cost (``Cr 1130``) and the difference is
-  realised on 4000 (a par repayment before full accretion realises the unaccreted OID as a gain; a repayment below the
-  amortised cost a loss); the loan is REPAID.  A partial prepayment is not in this build.  Nights not yet accrued before
-  the repayment day are accrued first (same idem keys as the job); a missing SOFR for them is 409 ACCRUAL_PENDING.
+- REPAYMENT (``pc.repay {loan_id, amount | full: true}``, idem ``pc:{loan_id}:repay:{request_id}``): nights not yet accrued
+  before the repayment day are accrued first (same idem keys as the job; a missing SOFR for them is 409 ACCRUAL_PENDING);
+  the amount received pays the accrued coupon first (``Cr 1220``).  When the rest covers the face (or ``full``), it retires
+  the WHOLE amortised cost (``Cr 1130``) and the difference is realised on 4000 (a par repayment before full accretion
+  realises the unaccreted OID as a gain; below the amortised cost a loss); the loan is REPAID.  Otherwise it is a PARTIAL
+  PREPAYMENT AT PAR (OA-29): that much face is retired; the remaining loan's amortised cost becomes exactly what it would be
+  had it always been the smaller face (``to_c(face' x issue price / 100) + to_c(OID' x nights accreted / total nights)``),
+  the difference between it and the cost before is the cost retired, the rest of the payment is realised on 4000; the
+  coupon accrues on the new face from that night and the OID keeps accreting straight-line on the smaller total (L24 holds
+  at every step).
+- MATURITY CONVENTION (OA-29): ``maturity_date`` is the contractual (unadjusted) date start + term months; the last payment
+  is made on it rolled modified following (``final_payment_date``), and both are shown side by side.
 - MARK (``pc_mark``, method ``pc_model``, quality computed, never executable): ``amortised_cost × (1 − ΔOAS × T)`` with
   ``ΔOAS = (OAS_now − OAS_issue) / 100`` from FRED ``BAMLH0A0HYM2`` (the latest print on or before today) and ``T`` = days
   to maturity / 365, ``to_c`` HALF_EVEN, floored at zero; equals the amortised cost when the spread is unchanged or
@@ -77,6 +92,8 @@ OAS_SERIES = "BAMLH0A0HYM2"
 ID_PREFIX = "PC-"
 SUPPORTED = {"USD": "SOFR"}                 # currency -> the policy index this build floats off (module docstring CURRENCY / INDEX)
 RATE_LAG_MAX_DAYS = 10
+OAS_MAX_AGE_DAYS = 7
+SCHEMA_EXT = ["ALTER TABLE private_loans ADD COLUMN oas_issue_as_of TEXT", "ALTER TABLE private_loans ADD COLUMN oas_backfilled INTEGER NOT NULL DEFAULT 0"]
 PAY_FROM_ET = "00:40"
 PAYMENT_MONTHS = (1, 2, 3, 4, 6, 12)
 MAX_TERM_MONTHS = 360
@@ -317,6 +334,8 @@ def accrue_night(ctx: TxContext, services, kind: str, ref: str, night) -> dict:
     index = None
     if kind == KIND_CPN:
         index = index_for_night(services, loan, night_d)
+        if backfill_oas(ctx, services, loan) is not None:
+            loan = loan_row(ctx.conn, loan_id)
     lines = accrual_lines_pc(ctx, loan, night_d, index, kind)
     st = lifecycle_jobs.accrual_state_row(ctx.conn, kind, loan_id)
     out = dict(base, cum_c=int(st["cum_c"]) if st else 0, segment_start=st["segment_start"] if st else None, rate=str(st["rate"]) if st else None)
@@ -369,16 +388,110 @@ def coupon_accrued_through_c(conn: sqlite3.Connection, loan, through: date) -> i
 
 
 def coupon_paid_c(conn: sqlite3.Connection, loan) -> int:
-    """Σ coupon payments so far (the 1220 credits of the ``pcpay:{loan}:{date}`` entries)."""
+    """Σ coupon paid so far: every 1220 credit of the loan - the ``pcpay:{loan}:{date}`` payments and the coupon part of a
+    partial prepayment (``pc:{loan}:repay:...``), so the next payment pays only what is still owed."""
     row = conn.execute("SELECT COALESCE(SUM(-l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
-                       " WHERE l.account_id=? AND l.gl='1220' AND l.instrument_id=? AND e.idem_key LIKE ?",
-                       (loan["account_id"], loan["instrument_id"], f"pcpay:{loan['loan_id']}:%")).fetchone()
+                       " WHERE l.account_id=? AND l.gl='1220' AND l.instrument_id=? AND l.amount_c < 0 AND e.ref_type='private_loan' AND e.ref_id=?",
+                       (loan["account_id"], loan["instrument_id"], loan["loan_id"])).fetchone()
     return int(row[0] or 0)
 
 
 def coupon_due_c(conn: sqlite3.Connection, loan, through: date) -> int:
     """The coupon a payment on the day after ``through`` pays: accrued for the nights ≤ ``through`` minus paid so far."""
     return coupon_accrued_through_c(conn, loan, through) - coupon_paid_c(conn, loan)
+
+
+# ---- schema, pre-trade checks and the OAS back-fill (Build 2 P08) ---------------------------------------------------------------
+def ensure_schema(db, conn=None) -> None:
+    """C4: ``private_loans.oas_issue_as_of`` / ``oas_backfilled`` (idempotent; inside a handler's transaction when ``conn`` is given)."""
+    if db is None or not callable(getattr(db, "ensure_schema_ext", None)):
+        return
+    if conn is not None:
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(private_loans)").fetchall()}
+        if "oas_backfilled" in cols:
+            return
+    db.ensure_schema_ext("private_credit", SCHEMA_EXT)
+
+
+def _cols(conn) -> set:
+    return {r[1] for r in conn.execute("PRAGMA table_info(private_loans)").fetchall()}
+
+
+def oas_status(services, on: date) -> dict:
+    """The HY OAS print a commitment would take (``{ok, value, as_of, source, reason}``): the latest print on or before
+    ``on`` within OAS_MAX_AGE_DAYS; the reason names FRED's state when it is in maintenance."""
+    rates = getattr(services, "rates", None)
+    got = rates.as_of_le(OAS_SERIES, on) if rates is not None and hasattr(rates, "as_of_le") else None
+    fred = rates.fred_status() if rates is not None and hasattr(rates, "fred_status") else {}
+    down = " - FRED is unavailable (maintenance)" if fred.get("maintenance") else ""
+    if got is None:
+        return {"ok": False, "value": None, "as_of": None, "reason": f"no ICE BofA US high-yield OAS print ({OAS_SERIES}) is loaded{down}"}
+    age = (on - got[0]).days
+    if age > OAS_MAX_AGE_DAYS:
+        return {"ok": False, "value": str(got[1]), "as_of": got[0].isoformat(),
+                "reason": f"the last ICE BofA US high-yield OAS print ({OAS_SERIES}) is {got[1]} % of {got[0].isoformat()}, {age} days old{down}"}
+    return {"ok": True, "value": str(got[1]), "as_of": got[0].isoformat(), "reason": ""}
+
+
+def sofr_status(services, on: date) -> dict:
+    rates = getattr(services, "rates", None)
+    got = rates.as_of_le("SOFR", on) if rates is not None and hasattr(rates, "as_of_le") else None
+    if got is None or (on - got[0]).days > RATE_LAG_MAX_DAYS:
+        return {"ok": False, "value": None if got is None else str(got[1]), "as_of": None if got is None else got[0].isoformat(),
+                "reason": f"no SOFR print within {RATE_LAG_MAX_DAYS} days on or before {on.isoformat()}"}
+    return {"ok": True, "value": str(got[1]), "as_of": got[0].isoformat(), "source": rates.source("SOFR") if hasattr(rates, "source") else None, "reason": ""}
+
+
+def first_oas_on_or_after(services, start: date) -> Optional[Tuple[date, Decimal]]:
+    rates = getattr(services, "rates", None)
+    if rates is None or not hasattr(rates, "series"):
+        return None
+    for d, v in rates.series(OAS_SERIES):
+        if d >= start:
+            return d, qprice(v)
+    return None
+
+
+def backfill_oas(ctx: TxContext, services, loan) -> Optional[dict]:
+    """A loan committed without an OAS print (acknowledged) takes the FIRST print on or after its start date as its issue
+    spread, once (``oas_issue``, ``oas_issue_as_of``, ``oas_backfilled = 1``); None when there is nothing to do."""
+    if loan["oas_issue"] not in (None, ""):
+        return None
+    if "oas_backfilled" not in _cols(ctx.conn):
+        return None
+    got = first_oas_on_or_after(services, _date(loan["start_date"]))
+    if got is None:
+        return None
+    ctx.conn.execute("UPDATE private_loans SET oas_issue=?, oas_issue_as_of=?, oas_backfilled=1 WHERE loan_id=?", (_plain2(got[1]), got[0].isoformat(), loan["loan_id"]))
+    ctx.event("PC_OAS_BACKFILLED", account_id=loan["account_id"], instrument_id=loan["instrument_id"], ref_type="private_loan", ref_id=loan["loan_id"],
+              oas_issue=_plain2(got[1]), as_of=got[0].isoformat())
+    return {"oas_issue": _plain2(got[1]), "as_of": got[0].isoformat()}
+
+
+def eligibility_view(services, lifetime_id: str) -> dict:
+    """The QP gate of private credit for one lifetime (the Private Markets rule; OA-30)."""
+    from .. import books as _bk
+    try:
+        e = _bk.eligibility(services, lifetime_id)
+    except RejectError as ex:
+        return {"eligible": False, "reason": ex.message}
+    return {"eligible": bool(e.private_markets), "reason": e.private_reason, "nav_c": e.nav_c, "qp_threshold_c": e.qp_threshold_c,
+            "rule": _bk._sentence("QP")}
+
+
+def borrowers_view(services, lifetime_id: Optional[str] = None) -> dict:
+    """The commit form's borrower list (the private company master, ``company_id`` linked), the QP gate and the rate checks."""
+    cps = getattr(services, "counterparties", None)
+    rows = []
+    if cps is not None and hasattr(cps, "directory"):
+        rows = [{"company_id": e.get("company_id"), "name": e["name"], "sector": e.get("sector"), "status": e.get("status"), "country": e.get("country")}
+                for e in cps.directory(services, types=["PRIVATE_BORROWER"])]
+    else:
+        with shared_reader(services.db) as c:
+            rows = [dict(r) for r in c.execute("SELECT company_id, name, sector, status, country FROM private_companies WHERE status IN ('PRIVATE','FILED_IPO') ORDER BY name").fetchall()]
+    today = ny_of(int(services.clock.epoch())).date()
+    return {"borrowers": rows, "eligibility": eligibility_view(services, lifetime_id) if lifetime_id else None, "sofr": sofr_status(services, today),
+            "oas": oas_status(services, today), "note": "borrowers come from the private company master; a name outside it is free text and says so"}
 
 
 # ---- the mark (§8.6 pc_model) ---------------------------------------------------------------------------------------------------------
@@ -402,14 +515,17 @@ def pc_mark(services, loan, conn: Optional[sqlite3.Connection] = None, now: Opti
     issue_pct = None if loan["oas_issue"] in (None, "") else Decimal(str(loan["oas_issue"]))
     inputs: Dict[str, Any] = {"method": "pc_model", "series": OAS_SERIES, "formula": "amortised_cost x (1 - dOAS x T), T = days remaining / 365",
                               "amortised_cost_c": cost, "days_remaining": days, "t_years": str(t_years.quantize(Decimal("0.0000001"))), "as_of": now_ts,
-                              "oas_issue_pct": None if issue_pct is None else _plain2(issue_pct), "oas_issue_as_of": spec.get("oas_issue_as_of"),
+                              "oas_issue_pct": None if issue_pct is None else _plain2(issue_pct),
+                              "oas_issue_as_of": (loan["oas_issue_as_of"] if "oas_issue_as_of" in loan.keys() and loan["oas_issue_as_of"] else spec.get("oas_issue_as_of")),
+                              "oas_backfilled": bool(loan["oas_backfilled"]) if "oas_backfilled" in loan.keys() and loan["oas_backfilled"] is not None else False,
                               "oas_now_pct": None if now_obs is None else _plain2(now_obs[1]), "oas_now_as_of": None if now_obs is None else now_obs[0].isoformat(),
                               "delta_oas_pct": None, "qualities": ["computed"], "status": loan["status"]}
     if loan["status"] != "OPEN":
         inputs["note"] = f"loan {loan['status']}: nothing to mark"
         return 0, inputs
     if issue_pct is None or now_obs is None:
-        inputs["note"] = "amortised cost (no spread observation)"
+        inputs["note"] = "amortised cost (no spread observation)" + (
+            f"; the issue spread is back-filled from the first {OAS_SERIES} print on or after {loan['start_date']}" if issue_pct is None else "")
         return cost, inputs
     delta_pct = (Decimal(str(now_obs[1])) - issue_pct)
     inputs["delta_oas_pct"] = _plain2(delta_pct)
@@ -502,7 +618,13 @@ def loan_view(services, loan, conn: Optional[sqlite3.Connection] = None, now: Op
                 "income_c": balance(c, loan["account_id"], "4300", loan["currency"], loan["instrument_id"]),
                 "realised_c": balance(c, loan["account_id"], "4000", loan["currency"], loan["instrument_id"]),
                 "mark_c": mark["mark_c"], "unrealised_c": (mark["mark_c"] - cost) if loan["status"] == "OPEN" else 0, "mark": mark,
-                "days_remaining": max(0, (maturity - today).days), "oas_issue": loan["oas_issue"], "oas_issue_as_of": spec.get("oas_issue_as_of"),
+                "days_remaining": max(0, (maturity - today).days), "oas_issue": loan["oas_issue"],
+                "oas_issue_as_of": (loan["oas_issue_as_of"] if "oas_issue_as_of" in loan.keys() and loan["oas_issue_as_of"] else spec.get("oas_issue_as_of")),
+                "oas_backfilled": bool(loan["oas_backfilled"]) if "oas_backfilled" in loan.keys() and loan["oas_backfilled"] is not None else False,
+                "oas_pending": loan["oas_issue"] in (None, ""), "final_payment_date": final_payment_date(services.cal, loan).isoformat(),
+                "maturity_text": (loan["maturity_date"] if final_payment_date(services.cal, loan).isoformat() == loan["maturity_date"] else
+                                  f"{loan['maturity_date']} (paid {final_payment_date(services.cal, loan).isoformat()}, modified following)"),
+                "company_linked": bool(loan["company_id"]), "partial_prepayment": True,
                 "schedule": projected_schedule(services, loan, c, today), "convention": "PRIVATE_CREDIT"}
     with shared_reader(services.db, conn) as c:
         return body(c)
@@ -623,6 +745,9 @@ def h_commit(ctx: TxContext, payload: dict) -> dict:
     acc = getattr(services, "accounting", None)
     if acc is not None and hasattr(acc, "is_held") and acc.is_held(lid):
         raise ConflictError("INTEGRITY_HOLD", f"lifetime {lid} is under an integrity hold; no new commitments until it clears")
+    from .. import books as _bk
+    _bk.require_private(services, lid)                       # OA-30: the Private Markets QP rule (NOT_ELIGIBLE_QP with the plain-English reason)
+    ensure_schema(getattr(services, "db", None), conn)
     currency = str(payload.get("currency") or "USD").strip().upper()
     if currency not in SUPPORTED:
         raise RejectError("CURRENCY_UNSUPPORTED", f"{currency}: private loans float off SOFR and are marked with the US high-yield OAS in this build; "
@@ -668,10 +793,19 @@ def h_commit(ctx: TxContext, payload: dict) -> dict:
     cash_out = to_c(from_c(principal_c) * issue_price / PAR)
     if cash_out <= 0:
         raise RejectError("AMOUNT", "the cash out rounds to zero")
-    rates = getattr(services, "rates", None)
-    oas = rates.latest(OAS_SERIES) if rates is not None and hasattr(rates, "latest") else None
-    oas_issue = None if oas is None else _plain2(oas[1])
-    oas_as_of = None if oas is None else oas[0].isoformat()
+    so = sofr_status(services, start)
+    if not so["ok"]:
+        raise ConflictError("RATE_UNAVAILABLE", f"{so['reason']}: the coupon (SOFR + spread) cannot be set, so nothing is committed (never a defaulted rate)",
+                            {"series": "SOFR", "sofr": so})
+    oa = oas_status(services, start)
+    ack = bool(payload.get("acknowledge_no_spread"))
+    if not oa["ok"] and not ack:
+        raise ConflictError("OAS_UNAVAILABLE", f"{oa['reason']}: the loan's mark would have no spread at issue. Commit anyway only by acknowledging it: the mark then stays"
+                            f" the amortised cost until the first OAS print on or after {start.isoformat()} is back-filled as the issue spread",
+                            {"series": OAS_SERIES, "oas": oa, "acknowledge": "acknowledge_no_spread"})
+    oas_issue = oa["value"] if oa["ok"] else None
+    oas_issue = None if oas_issue is None else _plain2(Decimal(oas_issue))
+    oas_as_of = oa["as_of"] if oa["ok"] else None
     funding = execution.fund(ctx, aid, currency, cash_out, "private_loan", loan_id, None, immediate=True, services=services)
     master._insert(conn, ctx.ts, instrument_id=iid, kind="PRIVATE", symbol=iid, name=f"{borrower} direct loan {maturity.isoformat()}", currency=currency,
                    session_group="PRIVATE_MARKETS", settle_days=0, account_kinds=["CREDIT"],
@@ -687,13 +821,18 @@ def h_commit(ctx: TxContext, payload: dict) -> dict:
                  " day_basis, payment_months, start_date, maturity_date, next_payment_date, oas_issue, status, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',NULL)",
                  (loan_id, ctx.command_id, aid, iid, company_id, borrower, currency, principal_c, _plain2(issue_price), index, str(spread), 360, payment_months,
                   start.isoformat(), maturity.isoformat(), next_payment.isoformat(), oas_issue))
+    if "oas_issue_as_of" in _cols(conn):
+        conn.execute("UPDATE private_loans SET oas_issue_as_of=? WHERE loan_id=?", (oas_as_of, loan_id))
     loan = loan_row(conn, loan_id)
     ctx.event("PC_COMMITTED", account_id=aid, instrument_id=iid, ref_type="private_loan", ref_id=loan_id, borrower=borrower, principal_c=principal_c,
               issue_price=_plain2(issue_price), cash_out_c=cash_out, index=index, spread=str(spread), term_months=term_months, payment_months=payment_months,
               maturity_date=maturity.isoformat(), next_payment_date=next_payment.isoformat(), oas_issue=oas_issue, entry_id=entry_id, funding=funding.to_dict())
     view = loan_view(services, loan, conn, ctx.ts)
+    warnings = [] if oa["ok"] else [f"committed without a spread print ({oa['reason']}): the mark is the amortised cost until the first print on or after {start.isoformat()}"]
+    if not company_id:
+        warnings.append(f"{borrower} is not in the private company master: free text, not linked to a company")
     return {"loan_id": loan_id, "loan": view, "mark": view["mark"], "schedule": view["schedule"], "cash_out_c": cash_out, "entry_id": entry_id, "entries": [entry_id],
-            "funding": funding.to_dict(), "convention": "PRIVATE_CREDIT"}
+            "funding": funding.to_dict(), "convention": "PRIVATE_CREDIT", "warnings": warnings, "sofr": so, "oas": oa}
 
 
 def h_amend_fee(ctx: TxContext, payload: dict) -> dict:
@@ -730,35 +869,87 @@ def _principal_lines(loan, received_c: int, cost_c: int, memo: str) -> Tuple[Lis
     return lines, realised
 
 
+def _partial_cost_after(conn, loan, face_left_c: int) -> int:
+    """The amortised cost of the loan had its face always been ``face_left_c`` (module docstring REPAYMENT): the cash-out of that
+    face plus the straight-line OID of that face for the nights accreted so far."""
+    st = lifecycle_jobs.accrual_state_row(conn, KIND_OID, loan["loan_id"])
+    nights = total_nights(loan)
+    n = 0 if st is None or not st["accrued_through"] else (_date(st["accrued_through"]) - _date(st["segment_start"])).days + 1
+    cash_left = to_c(from_c(int(face_left_c)) * Decimal(str(loan["issue_price"])) / PAR)
+    oid_left = int(face_left_c) - cash_left
+    return cash_left + (to_c(from_c(oid_left) * Decimal(n) / Decimal(nights)) if nights > 0 else 0)
+
+
 def h_repay(ctx: TxContext, payload: dict) -> dict:
-    """``pc.repay {loan_id, amount_c | amount}`` — module docstring REPAYMENT."""
+    """``pc.repay {loan_id, amount_c | amount | full: true}`` — module docstring REPAYMENT (full repayment or a partial
+    prepayment at par)."""
     services = _services(ctx)
     conn = ctx.conn
     loan = _open_loan(conn, payload)
-    amount = require_amount_c(payload)
     caught_up = _catch_up_accruals(ctx, services, loan)
+    loan = loan_row(conn, loan["loan_id"])
     aid, iid, ccy, loan_id = loan["account_id"], loan["instrument_id"], loan["currency"], loan["loan_id"]
     accrued = accrued_c(conn, loan)
+    face = int(loan["principal_c"])
+    if payload.get("full"):
+        if payload.get("amount_c") is not None or payload.get("amount") not in (None, ""):
+            raise RejectError("AMOUNT", "give an amount or full: true, not both")
+        amount = accrued + face
+    else:
+        amount = require_amount_c(payload)
     if amount < accrued:
-        raise RejectError("AMOUNT_BELOW_ACCRUED", f"{fmt_money(amount)} is below the accrued coupon {fmt_money(accrued)}: a repayment pays the accrued coupon first and retires "
-                          "the whole loan (a partial prepayment is not in this build)", {"accrued_c": accrued, "amortised_cost_c": amortised_cost_c(conn, loan)})
+        raise RejectError("AMOUNT_BELOW_ACCRUED", f"{fmt_money(amount)} is below the accrued coupon {fmt_money(accrued)}: a repayment pays the accrued coupon first",
+                          {"accrued_c": accrued, "amortised_cost_c": amortised_cost_c(conn, loan), "face_c": face})
     cost = amortised_cost_c(conn, loan)
     principal_part = amount - accrued
     lines: List[Line] = []
     if accrued:
         lines += [dr(aid, "1010", ccy, accrued, memo="accrued coupon received"), cr(aid, "1220", ccy, accrued, instrument_id=iid, memo="accrued coupon paid")]
-    plines, realised = _principal_lines(loan, principal_part, cost, f"repayment of {loan_id} received")
-    lines += plines
-    memo = (f"private credit repayment {loan_id} ({loan['borrower']}): received {fmt_money(amount)} = accrued coupon {fmt_money(accrued)} + {fmt_money(principal_part)} against"
-            f" amortised cost {fmt_money(cost)} (face {fmt_money(int(loan['principal_c']))}); realised {fmt_money(realised)}")
+    partial = 0 < principal_part < face
+    if partial:
+        face_left = face - principal_part
+        cost_after = _partial_cost_after(conn, loan, face_left)
+        retired = cost - cost_after
+        plines, realised = _principal_lines(loan, principal_part, retired, f"partial prepayment of {loan_id} received")
+        lines += plines
+        memo = (f"private credit partial prepayment {loan_id} ({loan['borrower']}): received {fmt_money(amount)} = accrued coupon {fmt_money(accrued)} + face"
+                f" {fmt_money(principal_part)} at par; face {fmt_money(face)} -> {fmt_money(face_left)}, amortised cost {fmt_money(cost)} -> {fmt_money(cost_after)}"
+                f" (cost retired {fmt_money(retired)}); realised {fmt_money(realised)}")
+    elif principal_part <= 0:
+        if not accrued:
+            raise RejectError("AMOUNT", "nothing to repay: give an amount above the accrued coupon")
+        partial = True                                              # only the accrued coupon was paid: the loan stays open, nothing retired
+        face_left, cost_after, retired, realised = face, cost, 0, 0
+        memo = f"private credit coupon received early {loan_id} ({loan['borrower']}): accrued coupon {fmt_money(accrued)}; face {fmt_money(face)} unchanged"
+    else:
+        plines, realised = _principal_lines(loan, principal_part, cost, f"repayment of {loan_id} received")
+        lines += plines
+        retired, face_left, cost_after = cost, 0, 0
+        memo = (f"private credit repayment {loan_id} ({loan['borrower']}): received {fmt_money(amount)} = accrued coupon {fmt_money(accrued)} + {fmt_money(principal_part)}"
+                f" against amortised cost {fmt_money(cost)} (face {fmt_money(face)}); realised {fmt_money(realised)}")
     entry_id = ctx.post(Entry("PRIVATE_LOAN", memo, lines, f"pc:{loan_id}:repay:{ctx.request_id}", ref_type="private_loan", ref_id=loan_id)) if lines else None
-    _close_loan(ctx, loan)
-    _resolve_skips(ctx, f"{loan_id}:{loan['next_payment_date']}")
+    if partial:
+        if face_left != face:
+            conn.execute("UPDATE private_loans SET principal_c=? WHERE loan_id=?", (face_left, loan_id))
+            st = lifecycle_jobs.accrual_state_row(conn, KIND_OID, loan_id)
+            oid_left = face_left - to_c(from_c(face_left) * Decimal(str(loan["issue_price"])) / PAR)
+            if st is not None:
+                conn.execute("UPDATE accrual_state SET base_c=?, cum_c=? WHERE kind=? AND ref_id=?",
+                             (oid_left, cost_after - to_c(from_c(face_left) * Decimal(str(loan["issue_price"])) / PAR), KIND_OID, loan_id))
+        status = "OPEN"
+    else:
+        _close_loan(ctx, loan)
+        _resolve_skips(ctx, f"{loan_id}:{loan['next_payment_date']}")
+        status = "REPAID"
+    ctx.touched_accounts.add(aid)
+    ctx.touched_instruments.add((aid, iid))
     ctx.event("PC_REPAID", account_id=aid, instrument_id=iid, ref_type="private_loan", ref_id=loan_id, amount_c=amount, accrued_paid_c=accrued, principal_received_c=principal_part,
-              amortised_cost_c=cost, realised_c=realised, entry_id=entry_id, nights_caught_up=len([x for x in caught_up if x.get("posted")]))
+              amortised_cost_c=cost, cost_retired_c=retired, realised_c=realised, face_left_c=face_left, partial=partial, entry_id=entry_id,
+              nights_caught_up=len([x for x in caught_up if x.get("posted")]))
     loan = loan_row(conn, loan_id)
     return {"loan_id": loan_id, "loan": loan_view(services, loan, conn, ctx.ts), "entries": [] if entry_id is None else [entry_id], "entry_id": entry_id,
-            "accrued_paid_c": accrued, "principal_received_c": principal_part, "amortised_cost_c": cost, "realised_c": realised, "status": "REPAID"}
+            "accrued_paid_c": accrued, "principal_received_c": principal_part, "amortised_cost_c": cost, "cost_retired_c": retired, "realised_c": realised,
+            "face_left_c": face_left, "partial": partial, "status": status}
 
 
 def h_pay(ctx: TxContext, payload: dict) -> dict:
@@ -836,6 +1027,19 @@ def register(bus, services=None) -> None:
     bus.register("pc.pay", h_pay)
 
 
-__all__ = ["register", "h_commit", "h_amend_fee", "h_repay", "h_pay", "accrue_night", "accrual_lines_pc", "pc_mark", "mark_view", "loan_view", "loans_view", "loans_of",
+def bind(rt) -> None:
+    """C4: the back-fill columns of ``private_loans``."""
+    ensure_schema(getattr(rt, "db", None))
+
+
+def register_routes(r) -> None:
+    """GET /api/credit/private/borrowers?book= (the commit form: the company master, the QP gate, the SOFR / OAS checks)."""
+    def borrowers(req):
+        return borrowers_view(req.rt, req.lifetime())
+
+    r.add("GET", r"/api/credit/private/borrowers", borrowers)
+
+
+__all__ = ["register", "bind", "register_routes", "borrowers_view", "eligibility_view", "oas_status", "sofr_status", "backfill_oas", "ensure_schema", "h_commit", "h_amend_fee", "h_repay", "h_pay", "accrue_night", "accrual_lines_pc", "pc_mark", "mark_view", "loan_view", "loans_view", "loans_of",
            "pay_keys", "payment_schedule", "modified_following", "coupon_rate", "coupon_due_c", "index_for_night", "cash_out_c", "oid_total_c", "total_nights",
            "HANDLER_KINDS", "OAS_SERIES", "KIND_CPN", "KIND_OID", "JOB"]

@@ -3,12 +3,16 @@ key helpers (TERMINAL_DESIGN.md §2.12 products/futures.py, §5.4, §10.7, §11.
 §12.3, §13.4, §19.8; TERMINAL_WORKPLAN.md WP-04).
 
 Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
-- FUT_MARGIN: initial margin is the static per-contract table of ``instruments.FUTURES_SPECS`` carried on the row's
-  ``spec.im_c``; ``balance(1300, instrument) == im_c × |position|`` at all times (L15).  A fill moves
-  ``im_c × (|position after| − |position before|)`` between 1010 and 1300 (``im:{fill_id}``): an increase is funded
-  first (``execution.fund(immediate=True)`` — the deposit leaves settled cash at once; the fee and the margin move are
-  netted, so a closing fill never sweeps for its fee), a decrease is released.  Maintenance (``spec.mm_c``) is
-  reported by ``accounting`` and Risk, never liquidated.
+- FUT_MARGIN: initial margin per contract is the owner's Settings > Margins & limits override of the root when set
+  (``futures_margin_overrides``, SR-11), else the static table of ``instruments.FUTURES_SPECS`` carried on the row's
+  ``spec.im_c`` (``accounting.futures_rates_c``).  The rate applies to NEW requirements: each fill sets the position's
+  requirement to ``rate × |position after|`` and moves 1300 to it (``im:{fill_id}``; without an override change this
+  is ``rate × (|after| − |before|)``), and records the rate on the day's ``futures_settle`` row (``im_per_c``) so L15
+  checks ``balance(1300) == im_per_c of the last fill × |position|`` even after the owner edits the table.  An increase
+  is funded first with ``execution.fund(commitments=True)`` (USX-17: the deposit leaves settled cash at once and never
+  spends cash the account's payables and working orders need, the rule the preview shows; the fee and the margin move
+  are netted, so a closing fill never sweeps for its fee), a decrease is released.  Maintenance (the override's mm, else
+  ``spec.mm_c``) is reported by ``accounting`` and Risk, never liquidated.
 - No cost posting: a futures lot carries ``cost_c = 0`` (L8 waives the cost formula for FUTURE lots) and the fill
   price on ``lots.unit_cost`` for display; closing reliefs carry proceeds 0 and realise nothing in 4000.  Every cent
   of futures P&L reaches the ledger through 4400 (variation margin) and through nothing else.
@@ -76,6 +80,34 @@ Leg = Tuple[int, Decimal]       # (signed contracts, reference price)
 
 
 # ---- pure helpers ---------------------------------------------------------------------------------------------------------
+def _spec_or_none(inst, key: str):
+    v = (inst.spec or {}).get(key)
+    if v is None:
+        fs = FUTURES_SPECS.get(str((inst.spec or {}).get("root") or ""))
+        v = getattr(fs, key, None) if fs is not None else None
+    return v
+
+
+def _override_root(inst, conn=None) -> bool:
+    """True when the owner's Settings override covers the instrument's root (SR-11)."""
+    if conn is None:
+        return False
+    from ..db import futures_margin_override
+    return futures_margin_override(conn, str((inst.spec or {}).get("root") or "")) is not None
+
+
+def futures_rates_c(conn, inst) -> Tuple[int, int]:
+    """``(IM, MM)`` per contract for NEW requirements (SR-11): ``accounting.futures_rates_c`` (override, else the table);
+    a row whose spec lacks the table values reads ``instruments.FUTURES_SPECS`` of its root."""
+    from ..accounting import futures_rates_c as _rates
+    im, mm = _rates(conn, inst)
+    if im <= 0:
+        im = _spec_c(inst, "im_c")
+    if mm <= 0:
+        mm = _spec_or_none(inst, "mm_c") or im * 9 // 10
+    return int(im), int(mm)
+
+
 def _spec_c(inst, key: str) -> int:
     v = (inst.spec or {}).get(key)
     if v is None:
@@ -300,6 +332,10 @@ def _settles_after(conn, account: str, iid: str, ds: str) -> List[str]:
 
 
 def _write_row(ctx: TxContext, account: str, iid: str, ds: str, settle_px: Decimal, qty_after: int, vm_c: int, info: dict, entry_id: Optional[int]) -> None:
+    if "im_per_c" not in info:                    # SR-11: a VM rewrite of the date's row keeps the rate its fills recorded (L15)
+        prev = _row(ctx.conn, account, iid, ds)
+        if prev is not None and _row_info(prev).get("im_per_c") is not None:
+            info = dict(info, im_per_c=int(_row_info(prev)["im_per_c"]))
     ctx.conn.execute(
         "INSERT INTO futures_settle(account_id, instrument_id, settle_date, settle_px, qty_after, vm_c, quote_json, entry_id) VALUES (?,?,?,?,?,?,?,?)"
         " ON CONFLICT(account_id, instrument_id, settle_date) DO UPDATE SET settle_px=excluded.settle_px, qty_after=excluded.qty_after, vm_c=excluded.vm_c,"
@@ -387,8 +423,20 @@ def _record_mark(ctx: TxContext, inst, ds: str, obs: Observed) -> None:
 
 
 # ---- the fill (§10.7 for futures; called by execution.apply_fill through services.futures) --------------------------------
-def _reference_after_fill(ctx: TxContext, inst, account: str, d: date, pos_before: int, signed: int, price: Decimal, fill_id: str) -> dict:
-    """Upsert the trade date's ``futures_settle`` row after a fill (module docstring: seed / after-settle reference)."""
+def im_rate_c(conn, account: str, inst) -> int:
+    """The initial margin per contract the account's position was last margined at (L15, SR-11): ``im_per_c`` of the latest
+    ``futures_settle`` row that carries it (written by fills), else the static table (``spec.im_c``)."""
+    for r in conn.execute("SELECT quote_json FROM futures_settle WHERE account_id=? AND instrument_id=? ORDER BY settle_date DESC", (account, inst.instrument_id)).fetchall():
+        v = _row_info(r).get("im_per_c")
+        if v is not None:
+            return int(v)
+    return _spec_c(inst, "im_c")
+
+
+def _reference_after_fill(ctx: TxContext, inst, account: str, d: date, pos_before: int, signed: int, price: Decimal, fill_id: str,
+                          im_per_c: Optional[int] = None) -> dict:
+    """Upsert the trade date's ``futures_settle`` row after a fill (module docstring: seed / after-settle reference); the row
+    records the IM rate the fill margined the position at (``im_per_c``, SR-11)."""
     conn = ctx.conn
     iid = inst.instrument_id
     ds = d.isoformat()
@@ -408,11 +456,15 @@ def _reference_after_fill(ctx: TxContext, inst, account: str, d: date, pos_befor
         info = dict(_row_info(same_day))
         info.update({"legs": [[q, str(r)] for q, r in legs], "unposted_c": unposted, "fills": fills, "ref_after_fill": None if ref is None else str(ref),
                      "note": "settle print kept in 'price'; settle_px is the weighted reference of the position after the fills since the settle"})
+        if im_per_c is not None:
+            info["im_per_c"] = int(im_per_c)
         settle_px = ref if ref is not None else qprice(str(info.get("price") or same_day["settle_px"]))
         _write_row(ctx, account, iid, ds, settle_px, qty_after, int(same_day["vm_c"]), info, same_day["entry_id"])
     else:
         info = {"kind": "seed", "legs": [[q, str(r)] for q, r in legs], "unposted_c": unposted, "fills": fills,
                 "note": "reference until the day's settle: weighted legs of the carried position and the day's fills; nothing posted (FUT_SETTLE)"}
+        if im_per_c is not None:
+            info["im_per_c"] = int(im_per_c)
         if ref is not None:
             settle_px = ref
         elif base is not None:
@@ -457,18 +509,21 @@ def apply_fill(ctx: TxContext, spec, services=None):
     pos_after = pos_before + signed
     closing = min(qty, abs(pos_before)) if pos_before and (pos_before > 0) != (signed > 0) else 0
     opening = qty - closing
-    im_per = _spec_c(inst, "im_c")
-    im_delta = im_per * (abs(pos_after) - abs(pos_before))
+    # SR-11: the requirement after the fill at the CURRENT rate (override or table); 1300 moves from what is posted to it
+    im_per = futures_rates_c(conn, inst)[0]
+    posted_before = balance(conn, spec.account_id, "1300", ccy, inst.instrument_id)
+    im_delta = im_per * abs(pos_after) - posted_before
     gross_c = inst.contract_value_c(price, qty)
     if spec.fee_override_c is not None:
         fee_c, fee_basis = int(spec.fee_override_c), "override (system fill)"
     else:
-        fee_c, fee_basis = execution.fee_for(services, acct, inst, qty, gross_c)
+        fee_c, fee_basis = execution.fee_for(services, acct, inst, qty, gross_c, side=spec.side)
     fill_id = next_id(conn, "fill")
     funding = None
     need = fee_c + im_delta
     if need > 0:
-        funding = execution.fund(ctx, spec.account_id, ccy, need, "fill", fill_id, None, immediate=True, services=services)
+        # USX-17: commitments mode - the margin leaves settled cash now and must not spend cash promised to payables / working orders
+        funding = execution.fund(ctx, spec.account_id, ccy, need, "fill", fill_id, tdate, commitments=True, services=services)
     memo = (f"{spec.side} {qty:,} {inst.symbol} @ {price}, fee {fmt_money(fee_c)}; initial margin {'+' if im_delta >= 0 else ''}{fmt_money(im_delta)} "
             f"({abs(pos_before):,} -> {abs(pos_after):,} contracts x {fmt_money(im_per)}; FUT_MARGIN)" + (f" ({spec.note})" if spec.note else ""))
     entry_kind = "FINAL" if final else "FILL"
@@ -500,15 +555,15 @@ def apply_fill(ctx: TxContext, spec, services=None):
     lot_id = None
     if opening:
         lot_id = open_lot(ctx.tx, spec.account_id, inst.instrument_id, "LONG" if signed > 0 else "SHORT", fill_id, opening, price, 0, ccy)
-    reference = _reference_after_fill(ctx, inst, spec.account_id, tdate, pos_before, signed, price, fill_id)
+    reference = _reference_after_fill(ctx, inst, spec.account_id, tdate, pos_before, signed, price, fill_id, im_per_c=im_per)
     ctx.touched_instruments.add((spec.account_id, inst.instrument_id))
     ctx.touched_accounts.add(spec.account_id)
     if im_delta < 0:
         execution.auto_resolve_shortfall(ctx, spec.account_id, ccy)
     new_qty, _ = position(conn, spec.account_id, inst.instrument_id)
     margin = {"im_per_contract_c": im_per, "im_delta_c": im_delta, "im_posted_c": balance(conn, spec.account_id, "1300", ccy, inst.instrument_id),
-              "maintenance_c": _spec_c(inst, "mm_c") * abs(new_qty), "im_entry_id": im_entry, "fee_entry_id": fee_entry, "closing": closing, "opening": opening,
-              "reference": reference}
+              "maintenance_c": futures_rates_c(conn, inst)[1] * abs(new_qty), "im_entry_id": im_entry, "fee_entry_id": fee_entry, "closing": closing,
+              "opening": opening, "reference": reference, "rate_source": "Settings override" if _override_root(inst, conn) else "contract table (assumed)"}
     return execution.FillResult(fill_id, entry_id, spec.account_id, inst.instrument_id, spec.side, effect, qty, price, gross_c, fee_c, fee_basis, ccy, rate,
                                 tdate.isoformat(), None, None, lot_id, reliefs, 0, 0, funding, new_qty, memo, margin, spec.price_basis)
 

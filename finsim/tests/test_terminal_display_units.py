@@ -9,9 +9,10 @@ Four defects seen on the live app:
     zero, with "reserved (Treasury sweep covers N)" beside it; the preview's funding block and the fill's sweep use the
     same figure.  Second pass (checker #2 regression): the floor must not reach a NEW order's fundability.  What the
     account's working orders already need beyond its own cash ("committed") comes off the Treasury / PB part of buying
-    power (``accounting.buying_power_split``), so a second order that the Treasury cannot also pay for is refused with 409
-    INSUFFICIENT_FUNDS at submit instead of being accepted and SUSPENDED at the open; each fill still sweeps exactly its
-    own shortfall.
+    power (``accounting.buying_power_split``), so a second order that the Treasury cannot also pay for is never accepted
+    WORKING and SUSPENDED at the open: since the FUNDS_WAIT hotfix (2026-10-21) it is queued SUSPENDED at submit,
+    "waiting for funds", reserving nothing, and resumes when cash frees up; each fill still sweeps exactly its own
+    shortfall.
 (d) The header clock showed '--:--:--' until the first poll (checked statically: the JS cannot run here).
 
 The world: the three real books (P 1,000,000.00 / F 25,000,000.00 / I 1,000,000,000.00) built by ``server.build_runtime``
@@ -176,8 +177,14 @@ class MoneyOnTheWire(Base):
         act = self.ok("GET", "/api/activity?limit=200")
         texts = [r["summary"] for r in act["rows"]]
         self.assertFalse([s for s in texts if "amount_c" in s], "activity text shows minor units")
-        # the P1 initial capital event: 100,000,000 cents -> "amount USD 1,000,000.00"
-        self.assertTrue(any("CAPITAL_DEPOSITED" in s and "amount USD 1,000,000.00" in s for s in texts), texts[:6])
+        self.assert_no_minor_units("/api/activity", act)
+        # the P1 initial capital: ONE row (P03 BM-25: the CAPITAL_DEPOSITED event is folded into its transfer row), the amount
+        # 100,000,000 cents shown as "USD 1,000,000.00" in the text and in the detail table
+        cap = [r for r in act["rows"] if r["type"] == "transfer" and "CAPITAL_DEPOSITED" in (r.get("events") or [])]
+        self.assertEqual(1, len(cap), texts[:6])
+        self.assertIn("USD 1,000,000.00", cap[0]["summary"])
+        self.assertEqual("1,000,000.00", cap[0]["detail"]["amount"])
+        self.assertFalse([r for r in act["rows"] if r["type"] == "event" and r.get("ref_id") == cap[0]["ref_id"]])   # no second row for it
 
 
 # ===== (b) rate units ===================================================================================================================
@@ -306,7 +313,8 @@ class NewOrderFundability(Base):
     """Checker #2 reproduced the floor leaking into the pre-trade check: with ``available_c`` floored, a second order was
     checked against the whole Treasury although the first order's reservation would sweep part of it, was accepted, and
     was SUSPENDED at the open.  The rule now (``buying_power_split``): fundable iff max(0, need - available) <= Treasury
-    left + PB left, where left = after the account's commitments (= need - signed spendable <= Treasury + PB)."""
+    left + PB left, where left = after the account's commitments (= need - signed spendable <= Treasury + PB); an order
+    that is not fundable is queued SUSPENDED (FUNDS_WAIT) and reserves nothing."""
     MKT = {"account_id": "P1:US_EXCHANGE", "instrument_id": "AAPL", "side": "BUY", "order_type": "MARKET", "tif": "DAY", "confirm_large": True}
     LMT = {"account_id": "P1:US_EXCHANGE", "instrument_id": "AAPL", "side": "BUY", "qty": 1, "order_type": "LIMIT", "tif": "DAY"}
 
@@ -321,7 +329,7 @@ class NewOrderFundability(Base):
             suspended = conn.execute("SELECT COUNT(*) FROM attention WHERE code='ORDER_SUSPENDED'").fetchone()[0]
         return st, sweeps, int(suspended)
 
-    def test_second_order_beyond_treasury_after_commitments_is_refused_not_suspended(self):
+    def test_second_order_beyond_treasury_after_commitments_queues_without_reserving(self):
         a = self.submit(dict(self.MKT, qty=1700), "units:big-a-0001")
         self.assertEqual((200, "WORKING"), (a[0], a[1]["order"]["status"]))       # closed session: rests until Wed 09:30
         bp = self.ok("GET", "/api/accounts/P1:US_EXCHANGE")["buying_power"]["USD"]
@@ -333,10 +341,12 @@ class NewOrderFundability(Base):
         f = self.ok("POST", "/api/orders/preview", dict(self.MKT, qty=1300))["funding"]
         self.assertEqual(("0.00", "588701.50", "441356.50", "441356.50", "411298.50", "411298.50", False),
                          (f["available"], f["reserved"], f["need"], f["shortfall"], f["sweep_in"], f["treasury_available"], f["ok"]))
+        # FUNDS_WAIT (hotfix 2026-10-21): B is not refused - it is accepted SUSPENDED, waiting for funds, and reserves nothing, so the
+        # buying power is still 411,298.50 (it is never accepted WORKING and suspended at the open, the regression this test guards)
         st, out, _h = self.submit(dict(self.MKT, qty=1300), "units:big-b-0001")
-        self.assertEqual((409, "INSUFFICIENT_FUNDS"), (st, out["error"]["code"]))
-        d = out["error"]["details"]
-        self.assertEqual(("441356.50", "0.00", "411298.50"), (d["need"], d["own_available"], d["treasury_available"]))
+        self.assertEqual((200, "SUSPENDED", "waiting for funds: needs USD 441,356.50, available USD 411,298.50"), (st, out["order"]["status"], out["order"]["reason"]))
+        bp = self.ok("GET", "/api/accounts/P1:US_EXCHANGE")["buying_power"]["USD"]
+        self.assertEqual(("588701.50", "411298.50", "411298.50"), (bp["committed"], bp["treasury_available"], bp["total"]))
         # B': 1,100 x 339.50 = 373,450.00 + fee 5.50 = 373,455.50 <= 411,298.50 -> accepted; its reservation 1,100 x 346.29 = 380,919.00
         # + 5.50 = 380,924.50 -> committed 588,701.50 + 380,924.50 = 969,626.00 -> buying power 1,000,000.00 - 969,626.00 = 30,374.00
         f = self.ok("POST", "/api/orders/preview", dict(self.MKT, qty=1100))["funding"]
@@ -345,13 +355,14 @@ class NewOrderFundability(Base):
         self.assertEqual((200, "WORKING"), (b[0], b[1]["order"]["status"]))
         bp = self.ok("GET", "/api/accounts/P1:US_EXCHANGE")["buying_power"]["USD"]
         self.assertEqual(("969626.00", "30374.00", "30374.00"), (bp["committed"], bp["treasury_available"], bp["total"]))
-        # Wed 09:35 ET, a fresh 339.50 print: both fill and each sweeps exactly its own need -- A 1,700 x 339.50 + 8.50 = 577,158.50,
-        # B' 373,455.50 -- nothing is suspended; Treasury 1,000,000.00 - 577,158.50 - 373,455.50 = 49,386.00
+        # Wed 09:35 ET, a fresh 339.50 print: A and B' fill and each sweeps exactly its own need -- A 1,700 x 339.50 + 8.50 = 577,158.50,
+        # B' 373,455.50 -- nothing working is suspended; Treasury 1,000,000.00 - 577,158.50 - 373,455.50 = 49,386.00; the queued B
+        # (441,356.50) still does not fit and keeps waiting
         self.rt.clock.set("2026-10-21T09:35:00-04:00")
         quote(self.rt, "AAPL", "339.50", age=30)
         self.rt.matcher.sweep()
         st, sweeps, suspended = self.statuses()
-        self.assertEqual(({"O-000001": "FILLED", "O-000002": "FILLED"}, [57715850, 37345550], 0), (st, sweeps, suspended))
+        self.assertEqual(({"O-000001": "FILLED", "O-000002": "SUSPENDED", "O-000003": "FILLED"}, [57715850, 37345550], 0), (st, sweeps, suspended))
         self.assertEqual({"USD": "49386.00"}, self.ok("GET", "/api/treasury?book=P")["treasury"]["cash_by_ccy"])
         self.assertTrue(self.rt.accounting.integrity("ledger").ok)
 
@@ -364,10 +375,11 @@ class NewOrderFundability(Base):
         # LIMIT reservation = 1 x 330.00 + fee max(0.005, 1.00) = 331.00 (own cash 0.00) -> committed 331.00; Treasury left 662.00 - 331.00 = 331.00
         bp = self.ok("GET", "/api/accounts/P1:US_EXCHANGE")["buying_power"]["USD"]
         self.assertEqual(("331.00", "662.00", "331.00", "331.00"), (bp["committed"], bp["treasury_gross"], bp["treasury_available"], bp["total"]))
-        # one cent over: 330.01 + 1.00 = 331.01 > 331.00 -> refused
+        # one cent over: 330.01 + 1.00 = 331.01 > 331.00 -> not fundable: queued SUSPENDED (FUNDS_WAIT), reserving nothing
         f = self.ok("POST", "/api/orders/preview", dict(self.LMT, limit_px="330.01"))["funding"]
-        self.assertEqual(("331.01", "331.00", False), (f["need"], f["treasury_available"], f["ok"]))
-        self.assertEqual(409, self.submit(dict(self.LMT, limit_px="330.01"), "units:lmt-b-0001")[0])
+        self.assertEqual(("331.01", "331.00", False, True), (f["need"], f["treasury_available"], f["ok"], f["queued"]))
+        q = self.submit(dict(self.LMT, limit_px="330.01"), "units:lmt-b-0001")
+        self.assertEqual((200, "SUSPENDED", "waiting for funds: needs USD 331.01, available USD 331.00"), (q[0], q[1]["order"]["status"], q[1]["order"]["reason"]))
         # exactly at it: 330.00 + 1.00 = 331.00 <= 331.00 -> accepted (shortfall = sweep-in = 331.00)
         f = self.ok("POST", "/api/orders/preview", dict(self.LMT, limit_px="330.00"))["funding"]
         self.assertEqual(("331.00", "331.00", "331.00", True), (f["need"], f["shortfall"], f["sweep_in"], f["ok"]))
@@ -378,13 +390,15 @@ class NewOrderFundability(Base):
         self.assertEqual(("662.00", "0.00", "0.00"), (bp["committed"], bp["treasury_available"], bp["total"]))
         row = next(r for r in self.ok("GET", "/api/accounts?book=P") if r["account_id"] == "P1:US_EXCHANGE")
         self.assertEqual(("0.00", "662.00", "662.00", "0.00"), (row["available_usd"], row["reserved_usd"], row["sweep_covers_usd"], row["unfunded_usd"]))
-        self.assertEqual(409, self.submit(dict(self.LMT, limit_px="330.00"), "units:lmt-c-0001")[0])
-        # Wed 09:35 ET, AAPL 330.00: both limits fill at 330.00; each sweeps its own 330.00 + 1.00 = 331.00; Treasury 662.00 - 662.00 = 0.00
+        q = self.submit(dict(self.LMT, limit_px="330.00"), "units:lmt-c-0001")
+        self.assertEqual((200, "SUSPENDED", "waiting for funds: needs USD 331.00, available USD 0.00"), (q[0], q[1]["order"]["status"], q[1]["order"]["reason"]))
+        # Wed 09:35 ET, AAPL 330.00: both working limits fill at 330.00; each sweeps its own 330.00 + 1.00 = 331.00; Treasury 662.00 - 662.00 = 0.00;
+        # the two queued limits (each 331.00 at the executable 330.00) find nothing left and keep waiting
         self.rt.clock.set("2026-10-21T09:35:00-04:00")
         quote(self.rt, "AAPL", "330.00", age=30)
         self.rt.matcher.sweep()
         st, sweeps, suspended = self.statuses()
-        self.assertEqual((["FILLED", "FILLED"], [33100, 33100], 0), (sorted(st.values()), sweeps, suspended))
+        self.assertEqual((["FILLED", "FILLED", "SUSPENDED", "SUSPENDED"], [33100, 33100], 0), (sorted(st.values()), sweeps, suspended))
         self.assertEqual({"USD": "0.00"}, self.ok("GET", "/api/treasury?book=P")["treasury"]["cash_by_ccy"])
         self.assertTrue(self.rt.accounting.integrity("ledger").ok)
 

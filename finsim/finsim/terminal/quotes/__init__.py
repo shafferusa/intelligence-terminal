@@ -6,6 +6,9 @@ Conventions
   the current session (``quote_time ≥ session.opened_at``) and the provider's own session must not have ended
   (``now ≤ provider_session.end + 60``).  Options are executable only with ``bid > 0 and ask ≥ bid``.
 - A ``private`` mark (method ``private_round``) is valuation only: never stale, never executable (sentence PRIVATE_MARK).
+- A record restored from ``quote_cache`` after a restart (``restored=True``) is at best ``stale`` until a live fetch replaces
+  it (EXEC-3): no order ever executes on a print the running process has not observed itself.  ``last_error_at`` is the time
+  of the last FAILED attempt (EXEC-2: ``fetched_at`` always stays the last successful observation).
 - Valuation never blocks: a stale/close record is still the last valid mark with its time; ``unavailable`` shows a
   dash and the dependent NAV is partial.
 - ``MarkSet`` is an immutable snapshot used by one command or one read; ``FixedMarks`` is the test / offline
@@ -66,6 +69,8 @@ class QuoteRecord:
     error: Optional[str] = None
     inputs: Optional[dict] = None
     quality: str = "unavailable"
+    last_error_at: Optional[int] = None    # the last failed attempt (EXEC-2); fetched_at stays the last good observation
+    restored: bool = False                 # loaded from quote_cache after a restart: never executable until a live put (EXEC-3)
 
     def price(self) -> Optional[Decimal]:
         """The valuation price: mid for chain records with a usable NBBO, else last."""
@@ -148,6 +153,8 @@ def freshness(rec: Optional[QuoteRecord], session, now: int) -> str:
         return "stale"
     if rec.error is not None and now - rec.fetched_at > ERROR_AGE_S:
         return "stale"
+    if getattr(rec, "restored", False):
+        return "stale"                     # EXEC-3: a print the running process has not observed itself never executes
     if rec.delay_s == 0 and rec.method == "direct":
         return "live"
     return "delayed"

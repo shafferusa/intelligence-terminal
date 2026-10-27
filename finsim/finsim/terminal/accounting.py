@@ -33,16 +33,16 @@ from .accounting_checks import Problem, ledger_checks
 from .books import open_lifetime, open_lifetimes, split_account_id
 from .clock import accounting_day, ny_of
 from .commands import Touched
-from .db import dumps, get_meta, get_setting, set_meta
+from .db import dumps, futures_margin_override, get_meta, get_setting, set_meta
 from .instruments import EQUITY_KINDS, row_to_instrument
 from .ledger import CHART, FEE_GLS, FINANCING_GLS, INCOME_GLS, REALISED_GLS, natural
 from .marks import shared_reader
 from .quotes import MarkView, QUALITY_RANK, unavailable
-from .units import from_c, fx_c, mul_c, qprice, to_c
+from .units import fmt_money, from_c, fx_c, mul_c, qprice, to_c
 
 ACCOUNT_ID_RE = re.compile(config.ACCOUNT_ID_RE)
-NAV_ASSET_GLS = ("1010", "1200", "1210", "1220", "1225", "1230", "1250", "1300", "1310", "1320", "1330", "1360", "1400", "1410", "1500")
-NAV_LIAB_GLS = ("2100", "2300", "2310", "2320", "2330", "2340", "2350", "2360", "2500", "2700", "2750", "2755")
+NAV_ASSET_GLS = ("1010", "1200", "1210", "1220", "1225", "1230", "1250", "1300", "1310", "1320", "1330", "1360", "1400", "1410", "1420", "1500")
+NAV_LIAB_GLS = ("2100", "2300", "2310", "2320", "2330", "2340", "2350", "2360", "2420", "2500", "2520", "2700", "2750", "2755")
 ENCUMBRANCE_GLS = ("1400", "1300", "1310", "1320", "1330")
 CLASS_OF_KIND = {"EQUITY": "securities", "ETF": "securities", "ADR": "securities", "REIT": "securities", "PREFERRED": "securities", "BOND": "securities",
                  "OPTION": "listed options", "FUTURE": "futures", "FX": "FX", "PRIVATE": "private / illiquid", "SWAP": "OTC derivatives",
@@ -79,14 +79,16 @@ AVAILABLE_TEXT = ("available = max(0, settled cash + receivables due by the sett
                   "payable settles (directive amendment -7); a part Treasury cannot cover is 'unfunded'; settled cash below zero is "
                   "'overdrawn' (an open funding shortfall, s11.6). Buying power = available + the Treasury available and PB headroom "
                   "left after what this account's working orders and payables already need beyond its own cash: max(0, own spendable "
-                  "+ Treasury available + PB headroom); a new order beyond it is refused (directive amendment -8).")
+                  "+ Treasury available + PB headroom); a new order beyond it is never accepted as working (directive amendment -8): it queues, "
+                  "waiting for funds and reserving nothing, and executes automatically when cash frees up.")
 
 # What a NEW order can draw (``buying_power_split``; ``BuyingPower.formula``; the ticket preview's fundability).
 BUYING_POWER_TEXT = ("buying power = max(0, own spendable cash + Treasury available + PB headroom) = available + Treasury left + PB left: "
                      "what this account's working orders, payables and any overdraft need beyond its own cash ('committed') comes off "
                      "Treasury available first and PB headroom second, exactly as their fills will sweep it; a new order whose shortfall "
-                     "exceeds Treasury left + PB left is refused (directive amendment -8), so an accepted order is never suspended for "
-                     "cash this account had already promised")
+                     "exceeds Treasury left + PB left is never accepted as working (directive amendment -8): it queues SUSPENDED, waiting "
+                     "for funds and reserving nothing, and executes automatically when cash frees up, so a working order is never "
+                     "suspended for cash this account had already promised")
 
 
 @dataclass
@@ -111,6 +113,8 @@ class CashView:
     sweep_covers_c: int = 0
     unfunded_c: int = 0
     overdrawn_c: int = 0
+    options_required_c: int = 0        # SR-13: the short-option margin requirement reserved in this currency (inside reserved_c)
+    orders_reserved_c: int = 0         # what working orders reserve (reserved_c minus the option margin)
     definition: str = AVAILABLE_TEXT
     to_dict = _d
 
@@ -158,6 +162,7 @@ class BuyingPower:
     committed_c: int = 0
     treasury_gross_c: int = 0
     pb_headroom_gross_c: int = 0
+    immediate_c: int = 0             # USX-17: own cash an IMMEDIATE posting may use (futures / OTC initial margin): immediate_available_c
     formula: str = BUYING_POWER_TEXT
     to_dict = _d
 
@@ -359,6 +364,7 @@ class IntegrityReport:
     ms: int
     holds: Dict[str, bool] = field(default_factory=dict)
     warnings: int = 0
+    checks: List[dict] = field(default_factory=list)     # BM-26: one row per check run {code, name, ok, count, errors, warnings, message}
 
     @property
     def failing(self) -> List[str]:
@@ -366,7 +372,8 @@ class IntegrityReport:
 
     def to_dict(self) -> dict:
         return {"ok": self.ok, "hold": self.hold, "checked_at": self.checked_at, "mode": self.mode, "lifetime_id": self.lifetime_id,
-                "problems": [p.to_dict() for p in self.problems], "ms": self.ms, "holds": dict(self.holds), "failing": self.failing}
+                "problems": [p.to_dict() for p in self.problems], "ms": self.ms, "holds": dict(self.holds), "failing": self.failing,
+                "checks": [dict(c) for c in self.checks]}
 
 
 @dataclass
@@ -402,20 +409,61 @@ def _mark_price(snapshot, iid: str) -> Tuple[Optional[Decimal], MarkView]:
     return view.mark, view
 
 
+def futures_rates_c(conn: sqlite3.Connection, inst) -> Tuple[int, int]:
+    """``(initial, maintenance)`` margin per contract of a future for NEW requirements (SR-11): the owner's Settings > Margins &
+    limits override of its root (``db.futures_margin_override``), else the static contract table on the row
+    (``spec.im_c`` / ``spec.mm_c``, maintenance 90 % of initial when the table has none; decisions s7.4)."""
+    spec = inst.spec or {}
+    ov = futures_margin_override(conn, str(spec.get("root") or ""))
+    if ov is not None:
+        return int(ov[0]), int(ov[1])
+    im = int(spec.get("im_c") or 0)
+    mm = int(spec.get("mm_c") or 0) or (im * 9 // 10)
+    return im, mm
+
+
 def reserved_c(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, master=None) -> int:
     """§6.1: cash reserved by WORKING / PARTIAL / WAITING_PARENT orders of the account in ``ccy``.  BUY sides reserve
     remaining × ref_px × multiplier × scale + est. fee (ref_px = limit for LIMIT/STOP_LIMIT, else last × 1.02);
-    SELL_SHORT reserves 1.02 × remaining × last (collateral not yet posted)."""
+    SELL_SHORT reserves the cash its fill will take (SHORT_COLLATERAL, hotfix 1.0.3.1): the 102 % collateral
+    1.02 × remaining × last less the sale's own proceeds remaining × last − est. fee = the 2 % excess + fee.  A SUSPENDED
+    order reserves nothing (FUNDS_WAIT: it waits for cash and blocks no other order), nor do the WAITING_PARENT hedge legs
+    of a SUSPENDED primary (they are counted again with the primary when ``orders.plan_funds_resume`` resumes it).  The
+    account's short-option margin requirement
+    (``margin_state``, USD) is reserved too (SR-13, decision s7.6: a reservation, no cash movement).  FUTURES (ORC-3) reserve what their fill
+    will take from cash, never the notional: ``max(0, fee + IM × (|P + q| − |P|))`` with the position P running over the
+    account's working orders of that contract in order (a BUY covering a short releases margin and reserves nothing; a
+    SELL that opens a short reserves its initial margin).  Worked: short 1 ESZ26, a working BUY 1 -> |0| − |−1| < 0 ->
+    0.00 reserved (the old rule reserved 1 × 7,750 × 50 = 387,500.00); flat, BUY 2 -> 2.25 × 2 + 17,500.00 × 2 = 35,004.50."""
     cache: dict = {}
     total = 0
-    rows = conn.execute("SELECT instrument_id, side, qty, filled_qty, order_type, limit_px FROM orders WHERE account_id=? AND status IN ('WORKING','PARTIAL','WAITING_PARENT')",
-                        (account_id,)).fetchall()
+    rows = conn.execute("SELECT o.instrument_id, o.side, o.qty, o.filled_qty, o.order_type, o.limit_px FROM orders o"
+                        " LEFT JOIN orders p ON p.order_id = o.parent_order_id WHERE o.account_id=?"
+                        " AND (o.status IN ('WORKING','PARTIAL') OR (o.status='WAITING_PARENT' AND (p.status IS NULL OR p.status <> 'SUSPENDED')))"
+                        " ORDER BY o.created_ts, o.order_id", (account_id,)).fetchall()
+    fut_pos: Dict[str, int] = {}
+    if ccy == "USD":
+        # SR-13 (decision s7.6): the short-option margin requirement is a reservation on the account's USD cash
+        ms = conn.execute("SELECT options_required_c FROM margin_state WHERE account_id=?", (account_id,)).fetchone()
+        total += max(0, int(ms["options_required_c"] or 0)) if ms is not None else 0
     for r in rows:
         inst = _instrument(conn, master, r["instrument_id"], cache)
         if inst is None or inst.currency != ccy:
             continue
         remaining = int(r["qty"]) - int(r["filled_qty"])
         if remaining <= 0:
+            continue
+        if inst.kind == "FUTURE":
+            iid = inst.instrument_id
+            if iid not in fut_pos:
+                pr = conn.execute("SELECT qty FROM v_positions WHERE account_id=? AND instrument_id=?", (account_id, iid)).fetchone()
+                fut_pos[iid] = int(pr["qty"] or 0) if pr is not None else 0
+            p = fut_pos[iid]
+            q = remaining if r["side"] in BUY_SIDES else -remaining
+            im, _mm = futures_rates_c(conn, inst)
+            fee, _ = tables.fee_c(inst.kind, remaining)
+            total += max(0, int(fee) + im * (abs(p + q) - abs(p)))
+            fut_pos[iid] = p + q
             continue
         last, _view = _mark_price(snapshot, inst.instrument_id)
         if r["side"] in BUY_SIDES:
@@ -428,7 +476,9 @@ def reserved_c(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, ma
             fee, _ = tables.fee_c(inst.kind, remaining)
             total += mul_c(remaining, ref, inst.multiplier, inst.price_scale) + fee
         elif r["side"] == "SELL_SHORT" and last is not None:
-            total += mul_c(remaining, last * config.COLLATERAL_PCT, inst.multiplier, inst.price_scale)
+            coll = mul_c(remaining, last * config.COLLATERAL_PCT, inst.multiplier, inst.price_scale)
+            fee, _ = tables.fee_c(inst.kind, remaining)
+            total += coll - max(0, min(mul_c(remaining, last, inst.multiplier, inst.price_scale) - fee, coll))
     return total
 
 
@@ -476,6 +526,48 @@ def available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date
     return max(0, spendable_c(conn, account_id, ccy, settle_date, snapshot, master, now))
 
 
+def immediate_available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None,
+                          now: Optional[datetime] = None) -> int:
+    """What may leave the account's SETTLED cash now (sentence AVAILABLE, the immediate rule; MONEY-6, C12 c)::
+
+        immediate = max(0, min(settled, settled + receivables due by settle_date - payables - reserved))
+
+    The movement leaves 1010 at once, so it can never spend more than the settled balance (L18), and it never spends cash
+    the account's payables and working orders already need (net of what settles in by ``settle_date``).  Internal
+    transfers (``treasury.h_transfer``), the Treasury's sweep-ins (``treasury_available_c``) and the initial margin a fill
+    or a booking posts at once (``execution.fund(commitments=True)``: futures IM, OTC IM) measure against it.
+    ``settle_date`` None -> today's accounting day.  Worked (s7, Wed 18:00 = accounting day Thu): settled 0.00, a sale's
+    receivable 344,995.00 due Thu -> available 344,995.00 but immediate min(0.00, 344,995.00) = 0.00."""
+    _d0, settled, recv, pay, reserved = _available_parts(conn, account_id, ccy, settle_date, snapshot, master, now)
+    return max(0, min(settled, settled + recv - pay - reserved))
+
+
+def view_settle_date(cal, now: datetime) -> date:
+    """USX-10: the settlement date of the account views (Cash & financing, header, sidebar, ``Accounting.cash`` /
+    ``available_view`` / ``buying_power`` without an explicit date): the next standard settlement date after today's
+    accounting day, ``cal.settlement_date(accounting day, 1)`` (T+1, what a new US order settles at).  Receivables due
+    by it offset the payables, so a same-day round trip (BUY then SELL, both settling T+1) leaves available at settled
+    cash less the round trip's cost instead of 0.00 with a phantom Treasury sweep; the preview and the fill read the
+    same formula at the order's own settle date."""
+    d = accounting_day(now)
+    if cal is None:
+        return d
+    try:
+        return cal.settlement_date(d, 1)
+    except Exception:   # noqa: BLE001 - a calendar without settlement_date keeps the accounting day (never a guess)
+        return d
+
+
+def treasury_available_c(conn: sqlite3.Connection, lifetime_id: str, ccy: str, snapshot, master=None, now: Optional[datetime] = None) -> int:
+    """The Treasury cash a sweep-in may move now (BM-01, C12 a): the Treasury's immediate available in that currency minus
+    the reserve of the lifetime's book (``books.treasury_reserve_c``, USD only).  Signed: a reserve above the cash gives a
+    negative figure (the Treasury page shows it floored); ``execution.fund`` sweeps ``min(shortfall, max(0, it))``, the
+    preview / buying power read the same function, so the previewed sweep-in is the executed one."""
+    from .books import treasury_reserve_c as _reserve
+    tre = f"{lifetime_id}:TREASURY"
+    return immediate_available_c(conn, tre, ccy, None, snapshot, master, now) - _reserve(conn, lifetime_id, ccy)
+
+
 def liquidity_split(settled_c: int, receivable_due_c: int, payable_c: int, reserved_c_: int, treasury_available_c: int) -> Dict[str, int]:
     """The display split of one account / currency (``AVAILABLE_TEXT``), all natural cents::
 
@@ -513,8 +605,9 @@ def buying_power_split(spendable_c: int, treasury_available_c: int, pb_headroom_
     trade is refused when it cannot be paid for after the sweeps), while each FILL still sweeps exactly its own shortfall
     against the floored ``available_c``.  Worked (the regression the checker reproduced): own cash 0.00, a resting MARKET BUY
     1,700 AAPL reserving 1,700 x 346.29 + 8.50 = 588,701.50, Treasury 1,000,000.00 -> own 0.00, committed 588,701.50,
-    treasury_left 1,000,000.00 − 588,701.50 = 411,298.50 = total; a second BUY needing 441,356.50 is refused (441,356.50 >
-    411,298.50) instead of being accepted and SUSPENDED at the open."""
+    treasury_left 1,000,000.00 − 588,701.50 = 411,298.50 = total; a second BUY needing 441,356.50 is not fundable (441,356.50 >
+    411,298.50): it is never accepted WORKING and SUSPENDED at the open - since the FUNDS_WAIT hotfix (1.0.3.1) it is queued
+    SUSPENDED at submit, "waiting for funds", reserving nothing, and resumes when cash frees up."""
     spendable = int(spendable_c)
     own = max(0, spendable)
     committed = max(0, -spendable)
@@ -565,6 +658,8 @@ class _Calc:
     swaps_pos_c: int = 0
     swaps_neg_c: int = 0
     futures_ote_c: int = 0
+    cost_long_c: int = 0             # MONEY-5: unpriced long positions carried at cost (base)
+    cost_short_c: int = 0            # MONEY-5: unpriced short positions carried at their proceeds (base)
     rates: Dict[str, Optional[Decimal]] = field(default_factory=dict)
 
     @property
@@ -634,15 +729,21 @@ class Accounting:
         return shared_reader(self.db)
 
     # ---- cash -------------------------------------------------------------------------------------------------------
+    def view_date(self) -> date:
+        """USX-10: the settlement date of the account views (``view_settle_date``: T+1 after today's accounting day)."""
+        return view_settle_date(self.cal, self.clock.now())
+
     def cash(self, account_id: str, snapshot=None) -> Dict[str, CashView]:
         """Per currency: settled / pending / held / margin / reserved and ``available`` (floored; ``available_c``) with the
-        split of what lies beyond own cash (``liquidity_split``) against Treasury's available cash in that currency."""
+        split of what lies beyond own cash (``liquidity_split``) against Treasury's available cash in that currency.
+        Receivables count when due by the view's settlement date (``view_settle_date``, USX-10), the date a new order
+        settles at, so a same-day round trip nets its sale against its purchase."""
         snap = self._snapshot(snapshot)
         with self._conn() as conn:
             acct = self._scope(conn, account_id).accounts[0]
             ccys = {r[0] for r in conn.execute("SELECT DISTINCT currency FROM gl_balances WHERE account_id=?", (account_id,)).fetchall()} | {"USD"}
             out: Dict[str, CashView] = {}
-            today = accounting_day(self.clock.now())
+            today = self.view_date()
             for ccy in sorted(ccys):
                 b = {gl: natural(gl, _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl=? AND currency=?", (account_id, gl, ccy)))
                      for gl in ("1010", "1200", "1250", "2100", "2350", "1400", "1300", "1310", "1320", "1330", "1230", "1210", "1220", "1225", "1410")}
@@ -653,16 +754,20 @@ class Accounting:
                 payable = b["2100"] + b["2350"]
                 tre = 0 if acct["kind"] == "TREASURY" else self.treasury_available_c(conn, acct["lifetime_id"], ccy, snap)
                 s = liquidity_split(b["1010"], recv_due, payable, reserved, tre)
+                opt_req = 0
+                if ccy == "USD":
+                    ms = conn.execute("SELECT options_required_c FROM margin_state WHERE account_id=?", (account_id,)).fetchone()
+                    opt_req = max(0, int(ms["options_required_c"] or 0)) if ms is not None else 0
                 out[ccy] = CashView(account_id, ccy, b["1010"], receivable, payable, receivable - payable, b["1400"], b["1300"] + b["1310"], reserved,
                                     s["available_c"], b["1230"] + b["1210"] + b["1220"] + b["1225"] + b["1410"], b["1320"] + b["1330"],
-                                    s["spendable_c"], s["needs_c"], s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"])
+                                    s["spendable_c"], s["needs_c"], s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"], opt_req, reserved - opt_req)
             return out
 
     def available(self, account_id: str, currency: str, settle_date: Optional[date] = None, snapshot=None) -> int:
-        """``available_c`` (floored at zero; ``AVAILABLE_TEXT``)."""
+        """``available_c`` (floored at zero; ``AVAILABLE_TEXT``) at ``settle_date`` (None: the view's date, USX-10)."""
         snap = self._snapshot(snapshot)
         with self._conn() as conn:
-            return available_c(conn, account_id, currency, settle_date, snap, self.instruments, self.clock.now())
+            return available_c(conn, account_id, currency, settle_date or self.view_date(), snap, self.instruments, self.clock.now())
 
     def available_view(self, account_id: str, currency: str = "USD", settle_date: Optional[date] = None, snapshot=None) -> AvailableView:
         """The liquidity line of one account (sidebar / header): available floored at zero, reserved, what the Treasury
@@ -670,16 +775,15 @@ class Accounting:
         snap = self._snapshot(snapshot)
         with self._conn() as conn:
             acct = self._scope(conn, account_id).accounts[0]
-            d, settled, recv, pay, reserved = _available_parts(conn, account_id, currency, settle_date, snap, self.instruments, self.clock.now())
+            d, settled, recv, pay, reserved = _available_parts(conn, account_id, currency, settle_date or self.view_date(), snap, self.instruments, self.clock.now())
             tre = 0 if acct["kind"] == "TREASURY" else self.treasury_available_c(conn, acct["lifetime_id"], currency, snap)
             s = liquidity_split(settled, recv, pay, reserved, tre)
             return AvailableView(account_id, currency, d.isoformat(), settled, recv, pay, reserved, s["spendable_c"], s["available_c"], s["needs_c"], tre,
                                  s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"])
 
     def treasury_available_c(self, conn: sqlite3.Connection, lifetime_id: str, currency: str, snap) -> int:
-        tre = f"{lifetime_id}:TREASURY"
-        reserve = int(get_setting(conn, "treasury_reserve_c", 0) or 0) if currency == "USD" else 0
-        return available_c(conn, tre, currency, None, snap, self.instruments, self.clock.now()) - reserve
+        """``treasury_available_c`` (module function): Treasury immediate available − the book's reserve (BM-01)."""
+        return treasury_available_c(conn, lifetime_id, currency, snap, self.instruments, self.clock.now())
 
     def pb_headroom_c(self, conn: sqlite3.Connection, acct: dict, snap) -> int:
         """§6.1 / §12.4: 50 % of the PB account's long market value − balance(2700) − OTC IM/VM posted, capped by
@@ -705,8 +809,10 @@ class Accounting:
         at the fill, so the previewed sweep-in is the executed one); ``treasury_available_c`` / ``pb_headroom_c`` = Treasury
         available / PB headroom minus what the account's working orders, payables and overdraft already need beyond its own
         cash (``committed_c``).  The ticket preview (``orders_preview``) and the submit check read these three fields, so a
-        new order is refused when the account's earlier commitments plus its own shortfall exceed Treasury + PB."""
+        new order whose own shortfall exceeds what the account's earlier commitments leave of Treasury + PB is not accepted
+        as working: it queues SUSPENDED, waiting for funds (FUNDS_WAIT, ``orders.plan_funds_resume``)."""
         snap = self._snapshot(snapshot)
+        settle_date = settle_date or self.view_date()          # USX-10: the view's date when the caller names none (header / Cash page)
         with self._conn() as conn:
             sc = self._scope(conn, account_id)
             acct = sc.accounts[0]
@@ -714,8 +820,9 @@ class Accounting:
             tre = 0 if acct["kind"] == "TREASURY" else self.treasury_available_c(conn, acct["lifetime_id"], currency, snap)
             pb = self.pb_headroom_c(conn, acct, snap) if currency == "USD" else 0
             s = buying_power_split(spend, tre, pb)
+            imm = immediate_available_c(conn, account_id, currency, settle_date, snap, self.instruments, self.clock.now())
             return BuyingPower(account_id, currency, s["available_c"], s["treasury_available_c"], s["pb_headroom_c"], s["total_c"],
-                               settle_date.isoformat() if settle_date else None, s["committed_c"], s["treasury_gross_c"], s["pb_headroom_gross_c"])
+                               settle_date.isoformat() if settle_date else None, s["committed_c"], s["treasury_gross_c"], s["pb_headroom_gross_c"], imm)
 
     # ---- positions ------------------------------------------------------------------------------------------------------
     def _gl_by_instrument(self, conn: sqlite3.Connection, aid: str) -> Dict[str, Dict[str, Tuple[int, int]]]:
@@ -743,8 +850,10 @@ class Accounting:
         today = self.clock.today()
         out: List[PositionView] = []
         settle_px: Dict[str, Decimal] = {}
-        for r in conn.execute("SELECT instrument_id, settle_px FROM futures_settle WHERE account_id=? ORDER BY settle_date", (aid,)).fetchall():
+        fut_last: Dict[str, Any] = {}
+        for r in conn.execute("SELECT instrument_id, settle_px, settle_date, qty_after, quote_json FROM futures_settle WHERE account_id=? ORDER BY settle_date", (aid,)).fetchall():
             settle_px[r["instrument_id"]] = Decimal(r["settle_px"])
+            fut_last[r["instrument_id"]] = r
         borrows: Dict[str, dict] = {}
         for r in conn.execute("SELECT borrow_id, instrument_id, qty, qty_returned, fee_rate, rebate_rate, tier, collateral_c FROM borrows WHERE account_id=? AND status='OPEN'", (aid,)).fetchall():
             b = borrows.setdefault(r["instrument_id"], {"borrow_ids": [], "qty": 0, "collateral_c": 0, "fee_rate": r["fee_rate"], "rebate_rate": r["rebate_rate"], "tier": r["tier"]})
@@ -753,7 +862,7 @@ class Accounting:
             b["collateral_c"] += int(r["collateral_c"])
         prev_pos = (day_base or {}).get("positions", {}) if day_base else {}
 
-        def finish(iid, inst, kind, qty, cost_c, mark_view, mv_c, notional_c, unreal_c, ccy, lots, settle, extra, klass):
+        def finish(iid, inst, kind, qty, cost_c, mark_view, mv_c, notional_c, unreal_c, ccy, lots, settle, extra, klass, symbol=None, name=None, avg_px=None):
             gl = glmap.get(iid, {})
             realised, income, financing, fees = self._pl_cum(gl)
             rate = rate_of(ccy)
@@ -774,20 +883,24 @@ class Accounting:
             elif qty and inst is not None and kind not in ("SWAP", "PRIVATE_LOAN"):
                 denom = Decimal(abs(qty)) * inst.multiplier * inst.price_scale
                 avg = qprice((Decimal(abs(cost_c)) / Decimal(100) / denom).quantize(Decimal("0.0001"))) if denom else None
+            if avg_px is not None:
+                avg = avg_px
             weight = None
-            if nav_for_weight and mv_base is not None:
+            if nav_for_weight and nav_for_weight > 0 and mv_base is not None:      # V104R1-03: no share of a NAV at or below zero
                 weight = (Decimal(mv_base) / Decimal(nav_for_weight)).quantize(Decimal("0.0001"))
             days = None
             if lots:
                 days = (today - date.fromisoformat(min(l.open_date for l in lots))).days
-            out.append(PositionView(aid, iid, inst.symbol if inst else iid, inst.name if inst else iid, kind, klass, ccy, qty, cost_c, avg, mark_view, mv_c, mv_base,
+            out.append(PositionView(aid, iid, symbol or (inst.symbol if inst else iid), name or (inst.name if inst else iid), kind, klass, ccy, qty, cost_c, avg, mark_view, mv_c, mv_base,
                                     notional_c, unreal_c, unreal_base, realised, income, -financing, -fees, pending, day, weight, days, settle,
                                     borrows.get(iid), lots, extra))
 
+        emitted: set = set()
         for r in conn.execute("SELECT instrument_id, qty, cost_c, currency FROM v_positions WHERE account_id=? ORDER BY instrument_id", (aid,)).fetchall():
             iid, qty, cost_c = r["instrument_id"], int(r["qty"] or 0), int(r["cost_c"] or 0)
             if qty == 0 and cost_c == 0:
                 continue
+            emitted.add(iid)
             inst = _instrument(conn, self.instruments, iid, cache)
             kind = inst.kind if inst else "EQUITY"
             ccy = inst.currency if inst else (r["currency"] or "USD")
@@ -817,7 +930,39 @@ class Accounting:
                 unreal = None if mv_c is None else mv_c - cost_c
             if kind == "PRIVATE" and lots:
                 extra["lock_until"] = max((l.lock_until or "") for l in lots) or None
+            if kind == "BOND":
+                extra["accrued_c"] = glmap.get(iid, {}).get("1220", (0, 0))[0]      # accrued interest receivable of this bond (its currency)
+            if kind not in ("FUTURE", "SWAP", "PRIVATE_LOAN") and mark is None and qty:
+                # MONEY-5: an unpriced position stays in NAV AT COST (the cost row of the balance sheet; a short at its proceeds),
+                # never dropped and never valued at a guess: unrealised is 0 against the cost and the row says why
+                extra["at_cost"] = True
+                extra["at_cost_note"] = "no price: carried at cost in NAV"
             finish(iid, inst, kind, qty, cost_c, view, mv_c, notional, unreal, ccy, lots, settle, extra, CLASS_OF_KIND.get(kind, "securities"))
+
+        # MONEY-3: a future closed flat since its last settle carries the closed contracts' P&L (futures_settle unposted_c of the
+        # latest reference row, a 'seed' the day's VM has not settled) until FUTURES_VM posts it to 4400 - a zero-quantity row,
+        # so NAV, P&L today and the snapshot include the closing trade before the evening variation margin
+        for iid, r in sorted(fut_last.items()):
+            if iid in emitted or int(r["qty_after"] or 0) != 0:
+                continue
+            try:
+                info = json.loads(r["quote_json"] or "{}")
+            except ValueError:
+                info = {}
+            if not isinstance(info, dict) or info.get("kind") == "settle":
+                continue
+            pending = int(info.get("unposted_c") or 0)
+            if not pending:
+                continue
+            inst = _instrument(conn, self.instruments, iid, cache)
+            ccy = inst.currency if inst else "USD"
+            if archived_detail is not None:
+                mark_v, view = None, MarkView(iid, None, "close", "stored snapshot (archived lifetime)", "snapshot", None, None, "frozen at reset", None, False, "frozen at reset")
+            else:
+                mark_v, view = _mark_price(snap, iid)
+            extra = {"open_trade_equity_c": pending, "reference_px": str(r["settle_px"]), "im_c": 0, "pending_vm_c": pending, "pending_vm_date": r["settle_date"],
+                     "note": f"closed flat since the last settle: {fmt_money(pending)} is posted by the {r['settle_date']} variation margin"}
+            finish(iid, inst, "FUTURE", 0, 0, view, 0, 0, pending, ccy, [], Decimal(r["settle_px"]), extra, CLASS_OF_KIND["FUTURE"])
 
         for r in conn.execute("SELECT * FROM otc_contracts WHERE account_id=? AND status='OPEN' ORDER BY contract_id", (aid,)).fetchall():
             cid = r["contract_id"]
@@ -853,7 +998,17 @@ class Accounting:
                      "dv01_c": dv01, "accrued_c": gl.get("1225", (0, 0))[0] - gl.get("2340", (0, 0))[0], "margin_mode": r["margin_mode"], "maturity_date": r["maturity_date"],
                      "start_date": r["start_date"], "last_reset_date": r["last_reset_date"],
                      "model_mark": None if live is None else live.to_dict()}
-            finish(cid, inst, "SWAP", sign * int(r["notional_c"]), 0, view, mark_c, int(r["notional_c"]), mark_c, r["currency"], [], None, extra, "OTC derivatives")
+            # APIUI-07: the quantity of a swap is its signed notional in whole units of its currency (10,000,000.00 -> 10,000,000),
+            # like a private loan's principal; notional_c stays exact in extra / notional
+            extra["qty_unit"] = r["currency"]
+            # OTC-R1-03: a short readable label for the tables ('CDX.NA.IG S47 5Y buy protection', 'TRS ORCL (pay)', 'IRS pay fixed 4.80 % to
+            # 2029-10-29') - the instrument name leads with a generic phrase a narrow column cuts before the index / notional
+            try:
+                from .risk import contract_label
+                extra["label"] = contract_label(inst, extra)
+            except Exception:   # noqa: BLE001 - the label is a convenience; the name stays
+                extra["label"] = None
+            finish(cid, inst, "SWAP", sign * (int(r["notional_c"]) // 100), 0, view, mark_c, int(r["notional_c"]), mark_c, r["currency"], [], None, extra, "OTC derivatives")
 
         for r in conn.execute("SELECT * FROM private_loans WHERE account_id=? AND status='OPEN' ORDER BY loan_id", (aid,)).fetchall():
             iid = r["instrument_id"]
@@ -885,6 +1040,41 @@ class Accounting:
             extra = {"principal_c": int(r["principal_c"]), "borrower": r["borrower"], "accrued_c": gl.get("1220", (0, 0))[0], "next_payment_date": r["next_payment_date"],
                      "maturity_date": r["maturity_date"], "index": r["index_name"], "spread": r["spread"], "issue_price": r["issue_price"]}
             finish(iid, inst, "PRIVATE_LOAN", int(r["principal_c"]) // 100, cost_c, view, mark_c, mark_c, unreal, r["currency"], [], None, extra, "private credit")
+        fxm = getattr(self.services, "fx", None) if self.services else None
+        if archived_detail is None and fxm is not None and hasattr(fxm, "forward_overlays"):
+            for o in fxm.forward_overlays(self.services, conn, aid, snap):
+                if o.get("mtm_c") is None:
+                    continue
+                mtm = int(o["mtm_c"])
+                view = MarkView(o["deal_id"], from_c(mtm), o.get("quality") or "computed", "FX forward (covered interest parity)", "cip",
+                                snap.as_of() if snap is not None else None, None, "model", o.get("inputs"), False, o.get("note") or "")
+                # V104R1-02 / -03: a desk forward is shown by its pair and legs (it has no instrument row), its quantity is the pair's
+                # base amount (+ bought, - sold: fx.forward_mtm's sign) and its notional the USD amount it exchanges - the USD leg when
+                # it has one, else the base amount at its USD rate (None without a rate: never a guessed notional); the MTM stays the
+                # market value (NAV carries the unposted MTM until the value date)
+                buy_ccy, sell_ccy = str(o.get("buy_ccy") or ""), str(o.get("sell_ccy") or "")
+                buy_c, sell_c = int(o.get("buy_c") or 0), int(o.get("sell_c") or 0)
+                pair = str(o.get("pair") or (buy_ccy + sell_ccy))
+                base = pair[:3]
+                buying_base = buy_ccy == base
+                base_c = buy_c if buying_base else sell_c
+                sign = 1 if buying_base else -1
+                if "USD" in (buy_ccy, sell_ccy):
+                    usd_c = buy_c if buy_ccy == "USD" else sell_c
+                else:
+                    r_base = rate_of(base)
+                    usd_c = None if r_base is None else fx_c(base_c, r_base)
+                notional = None if usd_c is None else sign * abs(int(usd_c))
+                legs = f"buy {buy_ccy} {fmt_money(buy_c)} / sell {sell_ccy} {fmt_money(sell_c)}"
+                try:
+                    k_px = qprice(Decimal(str(o.get("rate")))) if o.get("rate") not in (None, "") else None
+                except Exception:   # noqa: BLE001 - a rate that does not parse leaves the column empty
+                    k_px = None
+                finish(o["deal_id"], None, "FX_FORWARD", sign * (abs(base_c) // 100), 0, view, mtm, notional, mtm, "USD", [], None,
+                       {"pair": pair, "value_date": o.get("value_date"), "buy": [buy_ccy, buy_c], "sell": [sell_ccy, sell_c],
+                        "rate": o.get("rate"), "desk_forward": True, "qty_unit": base, "deal_id": o["deal_id"],
+                        "notional_basis": ("the USD leg" if "USD" in (buy_ccy, sell_ccy) else f"{base} amount at its USD rate") if notional is not None else f"no USD rate for {base}"},
+                       "FX forwards", symbol=f"{pair} fwd", name=f"FX forward {o['deal_id']}: {legs}, value {o.get('value_date')}", avg_px=k_px)
         return out
 
     @staticmethod
@@ -939,12 +1129,21 @@ class Accounting:
             if p.unrealised_c is None:
                 c.missing.append(p.instrument_id)
                 worst = max(worst, QUALITY_RANK["unavailable"])
+                # MONEY-5: NAV (= S + U) carries an unpriced position at its cost row (S), so assets / liabilities do too
+                if p.kind not in ("FUTURE", "SWAP") and p.cost_c:
+                    rate = rate_of(p.currency)
+                    if rate is not None:
+                        b = fx_c(int(p.cost_c), rate)
+                        if b >= 0:
+                            c.cost_long_c += b
+                        else:
+                            c.cost_short_c += -b
                 continue
             worst = max(worst, QUALITY_RANK.get(p.mark.quality, 5))
             c.U[p.currency] = c.U.get(p.currency, 0) + int(p.unrealised_c)
             if p.kind == "FUTURE":
                 c.futures_ote_c += int(p.unrealised_base_c or 0)
-            elif p.kind == "SWAP":
+            elif p.kind in ("SWAP", "FX_FORWARD"):           # an overlay at market (a desk FX forward like a swap: unposted MTM)
                 if (p.mv_base_c or 0) >= 0:
                     c.swaps_pos_c += int(p.mv_base_c or 0)
                 else:
@@ -1006,8 +1205,8 @@ class Accounting:
             out: List[PositionView] = []
             for calc in self._calcs(conn, sc, snap, with_day=True):
                 for p in calc.positions:
-                    if calc.nav_c and p.mv_base_c is not None:
-                        p.weight = (Decimal(p.mv_base_c) / Decimal(calc.nav_c)).quantize(Decimal("0.0001"))
+                    # V104R1-03: a share of the account's NAV only when that NAV is positive (a share of a negative NAV reads backwards)
+                    p.weight = (Decimal(p.mv_base_c) / Decimal(calc.nav_c)).quantize(Decimal("0.0001")) if (calc.nav_c > 0 and p.mv_base_c is not None) else None
                     out.append(p)
             return out
 
@@ -1042,13 +1241,15 @@ class Accounting:
         return NavView(sc.key, nav, assets, liabs, quality, bool(missing or fxm), missing, as_of, sum(c.cash_c for c in calcs), sum(c.pending_c for c in calcs),
                        sum(c.mv_long_c for c in calcs), sum(c.mv_short_c for c in calcs), sum(c.unrealised_c for c in calcs), sum(c.fx_result_c for c in calcs),
                        capital, transfers, realised, income, financing, fees, nav - capital - transfers, {c.account_id: c.nav_c for c in calcs}, list(sc.lifetime_ids),
-                       sc.archived, fxm, "NAV excludes %d unpriced position(s)" % len(missing) if missing else "")
+                       sc.archived, fxm, ("%d position(s) at cost: no price" % len(missing)) if missing else "")
 
     @staticmethod
     def _bs_totals(calcs: List[_Calc]) -> Tuple[int, int]:
         """§6.3 assets / liabilities in base at the rates each calc used: cash, receivables, accrued income, margin and
         collateral (NAV asset codes) + long positions at market + futures OTE (positive) + swaps (positive);
-        payables, accrued expenses, financing (NAV liability codes) + shorts at market + OTE (negative) + swaps (negative)."""
+        payables, accrued expenses, financing (NAV liability codes) + shorts at market + OTE (negative) + swaps (negative).
+        An unpriced position is carried AT COST like NAV carries it (MONEY-5: a long's cost row in assets, a short's proceeds
+        in liabilities), so ``nav_c == assets_c - liabilities_c`` (to FX rounding) whatever is priced."""
         assets = liabs = 0
         for c in calcs:
             for ccy, v in c.assets_native.items():
@@ -1059,8 +1260,8 @@ class Accounting:
                 rate = c.rates.get(ccy)
                 if rate is not None:
                     liabs += fx_c(v, rate)
-            assets += c.mv_long_c + max(0, c.futures_ote_c) + c.swaps_pos_c
-            liabs += c.mv_short_c + max(0, -c.futures_ote_c) + c.swaps_neg_c
+            assets += c.mv_long_c + max(0, c.futures_ote_c) + c.swaps_pos_c + c.cost_long_c
+            liabs += c.mv_short_c + max(0, -c.futures_ote_c) + c.swaps_neg_c + c.cost_short_c
         return assets, liabs
 
     def nav(self, scope: str, snapshot=None) -> NavView:
@@ -1118,28 +1319,31 @@ class Accounting:
 
             gl_rows("assets", "Cash — settled", ("1010",))
             gl_rows("assets", "Receivables (sales, FX)", ("1200", "1250"))
-            gl_rows("assets", "Accrued income", ("1210", "1220", "1225", "1230", "1410"))
+            gl_rows("assets", "Accrued income", ("1210", "1220", "1225", "1230", "1410", "1420"))
             cost_long = gl_rows("assets", "Securities and options at cost (long)", ("1100", "1110", "1120", "1700"))
-            add("assets", "Unrealised on long positions", "unrealised_long", {}, sum(p.unrealised_base_c or 0 for c in calcs for p in c.positions if p.kind not in ("FUTURE", "SWAP", "PRIVATE_LOAN") and p.qty > 0), True)
+            add("assets", "Unrealised on long positions", "unrealised_long", {}, sum(p.unrealised_base_c or 0 for c in calcs for p in c.positions if p.kind not in ("FUTURE", "SWAP", "FX_FORWARD", "PRIVATE_LOAN") and p.qty > 0), True)
             gl_rows("assets", "Private credit at amortised cost", ("1130",))
             add("assets", "Private credit mark adjustment", "unrealised_pc", {}, sum(p.unrealised_base_c or 0 for c in calcs for p in c.positions if p.kind == "PRIVATE_LOAN"), True)
             gl_rows("assets", "Futures initial margin", ("1300",))
-            gl_rows("assets", "Option margin deposit", ("1310",))
+            # SR-13: option margin is a reservation (decision s7.6): 1310 holds nothing after the start-up migration, so no row shows; an
+            # archived lifetime reset before it keeps its historical deposit row
+            gl_rows("assets", "Option margin deposit (before decision s7.6)", ("1310",))
             add("assets", "Futures open trade equity (positive)", "ote_pos", {}, sum(max(0, c.futures_ote_c) for c in calcs))
             gl_rows("assets", "OTC margin posted (IM, VM)", ("1320", "1330"))
-            add("assets", "OTC swaps at market (positive)", "swaps_pos", {}, sum(c.swaps_pos_c for c in calcs))
+            add("assets", "OTC swaps and FX forwards at market (positive)", "swaps_pos", {}, sum(c.swaps_pos_c for c in calcs))
             gl_rows("assets", "Cross-currency notional receivable", ("1360",))
             gl_rows("assets", "Cash collateral posted (held at lender)", ("1400",))
             gl_rows("assets", "Reverse repo", ("1500",))
             gl_rows("liabilities", "Payables (purchases, FX)", ("2100", "2350"))
             gl_rows("liabilities", "Securities and options sold short at proceeds", ("2600", "2900"))
-            add("liabilities", "Unrealised on short positions (mark − proceeds)", "unrealised_short", {}, -sum(p.unrealised_base_c or 0 for c in calcs for p in c.positions if p.kind not in ("FUTURE", "SWAP", "PRIVATE_LOAN") and p.qty < 0), True)
-            gl_rows("liabilities", "Accrued expenses", ("2300", "2310", "2320", "2340", "2755"))
+            add("liabilities", "Unrealised on short positions (mark − proceeds)", "unrealised_short", {}, -sum(p.unrealised_base_c or 0 for c in calcs for p in c.positions if p.kind not in ("FUTURE", "SWAP", "FX_FORWARD", "PRIVATE_LOAN") and p.qty < 0), True)
+            gl_rows("liabilities", "Accrued expenses", ("2300", "2310", "2320", "2340", "2420", "2755"))
             add("liabilities", "Futures open trade equity (negative)", "ote_neg", {}, sum(max(0, -c.futures_ote_c) for c in calcs))
             gl_rows("liabilities", "OTC variation margin received", ("2330",))
-            add("liabilities", "OTC swaps at market (negative)", "swaps_neg", {}, sum(c.swaps_neg_c for c in calcs))
+            add("liabilities", "OTC swaps and FX forwards at market (negative)", "swaps_neg", {}, sum(c.swaps_neg_c for c in calcs))
             gl_rows("liabilities", "Cross-currency notional payable", ("2360",))
             gl_rows("liabilities", "Repo", ("2500",))
+            gl_rows("liabilities", "Cash collateral received (shares lent)", ("2520",))
             gl_rows("liabilities", "Prime-broker financing", ("2700",))
             gl_rows("liabilities", "Currency loans", ("2750",))
             assets = sum(r["base_c"] for r in rows if r["section"] == "assets")
@@ -1276,8 +1480,9 @@ class Accounting:
             for r in conn.execute("SELECT g.account_id, SUM(g.base_c) b FROM gl_balances g JOIN accounts a ON a.account_id=g.account_id WHERE a.lifetime_id=? AND g.gl='3100' AND g.account_id<>? GROUP BY g.account_id",
                                   (lifetime_id, tre)).fetchall():
                 by_acct[r["account_id"]] = natural("3100", int(r["b"] or 0))
-            reserve = int(get_setting(conn, "treasury_reserve_c", 0) or 0)
-            avail = available_c(conn, tre, "USD", None, snap, self.instruments, self.clock.now()) - reserve
+            from .books import treasury_reserve_c as _reserve
+            reserve = _reserve(conn, lifetime_id, "USD")                         # BM-01: the reserve of this lifetime's book
+            avail = treasury_available_c(conn, lifetime_id, "USD", snap, self.instruments, self.clock.now())
             enc = sum(v for (gl, ccy), v in calc.gl.items() if gl in ENCUMBRANCE_GLS)
             retained = calc.nav_c - calc.capital_c + advances
             return TreasuryView(lifetime_id, tre, cash, accrued, calc.capital_c, capital_by, advances, by_acct, retained, avail, reserve, calc.nav_c, enc,
@@ -1351,8 +1556,10 @@ class Accounting:
             cache: dict = {}
             for r in conn.execute("SELECT v.instrument_id, v.qty FROM v_positions v JOIN instruments i ON i.instrument_id=v.instrument_id WHERE v.account_id=? AND i.kind='FUTURE'", (account_id,)).fetchall():
                 inst = _instrument(conn, self.instruments, r["instrument_id"], cache)
-                fut_req += int((inst.spec or {}).get("im_c") or 0) * abs(int(r["qty"])) if inst else 0
+                fut_req += futures_rates_c(conn, inst)[0] * abs(int(r["qty"])) if inst else 0
             margin = {"futures_required_c": fut_req, "futures_posted_c": b1300, "options_required_c": int(ms["options_required_c"]) if ms else 0, "options_posted_c": b1310,
+                      # SR-13: the option requirement is reserved on the account's cash, never moved (1310 stays 0 after the migration)
+                      "options_reserved_c": int(ms["options_required_c"]) if ms else 0, "options_margin_mode": "reserved (decision s7.6: no cash movement)",
                       "otc_im_c": natural("1330", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1330'", (account_id,))),
                       "otc_vm_posted_c": natural("1320", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1320'", (account_id,))),
                       "otc_vm_received_c": natural("2330", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='2330'", (account_id,)))}
@@ -1376,12 +1583,12 @@ class Accounting:
             for a in sc.accounts:
                 aid = a["account_id"]
                 if a["kind"] != "TREASURY":
-                    v = max(0, available_c(conn, aid, "USD", None, snap, self.instruments, self.clock.now()))
+                    v = max(0, available_c(conn, aid, "USD", self.view_date(), snap, self.instruments, self.clock.now()))
                     acct_avail += v
                     detail["accounts"][aid] = v
                 for r in conn.execute("SELECT v.instrument_id, v.qty FROM v_positions v JOIN instruments i ON i.instrument_id=v.instrument_id WHERE v.account_id=? AND i.kind='FUTURE'", (aid,)).fetchall():
                     inst = _instrument(conn, self.instruments, r["instrument_id"], cache)
-                    mm = int((inst.spec or {}).get("mm_c") or 0) if inst else 0
+                    mm = futures_rates_c(conn, inst)[1] if inst else 0          # SR-11: the Settings override's maintenance, else the table
                     posted = natural("1300", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1300' AND instrument_id=?", (aid, r["instrument_id"])))
                     s = max(0, mm * abs(int(r["qty"])) - posted)
                     if s:
@@ -1399,10 +1606,13 @@ class Accounting:
         t0 = _time.monotonic()
         today = self.clock.today()
         owned = self.db.writer_owned_by_current_thread()
+        runs: List[dict] = []
         if mode == "scoped":
             with self._conn() as conn:
-                problems = ledger_checks(conn, today, self.cal, accounts=set(touched.accounts) if touched else set(), entries=list(touched.entries) if touched else [], scoped=True)
-            return IntegrityReport(not any(p.severity == "ERROR" for p in problems), False, self.clock.epoch(), mode, lifetime_id, problems, int((_time.monotonic() - t0) * 1000))
+                problems = ledger_checks(conn, today, self.cal, accounts=set(touched.accounts) if touched else set(), entries=list(touched.entries) if touched else [], scoped=True,
+                                         runs=runs)
+            return IntegrityReport(not any(p.severity == "ERROR" for p in problems), False, self.clock.epoch(), mode, lifetime_id, problems, int((_time.monotonic() - t0) * 1000),
+                                   checks=runs)
         with self._conn() as conn:
             if lifetime_id:
                 row = conn.execute("SELECT status FROM lifetimes WHERE lifetime_id=?", (lifetime_id,)).fetchone()
@@ -1412,15 +1622,23 @@ class Accounting:
             else:
                 lids = open_lifetimes(conn)
                 closed = [r["lifetime_id"] for r in conn.execute("SELECT lifetime_id FROM lifetimes WHERE status='CLOSED'").fetchall()]
-            problems = ledger_checks(conn, today, self.cal, lifetimes=lids + closed, closed_lifetimes=closed)
+            problems = ledger_checks(conn, today, self.cal, lifetimes=lids + closed, closed_lifetimes=closed, runs=runs)
             if mode == "full":
-                problems.extend(self._mark_checks(conn, lids, snapshot))
+                marks = self._mark_checks(conn, lids, snapshot)
+                problems.extend(marks)
+                for code, name in (("M1", "the P&L explain ties (no residual)"), ("M2", "assets - liabilities = NAV"), ("M3", "the Treasury identity holds"),
+                                   ("M4", "the daily snapshots chain without a break"), ("M5", "a snapshot every calendar day"), ("M0", "the mark-dependent checks ran")):
+                    got = [p for p in marks if p.id == code]
+                    if got or code != "M0":
+                        runs.append({"code": code, "name": name, "ok": not any(p.severity == "ERROR" for p in got), "count": len(got),
+                                     "errors": sum(1 for p in got if p.severity == "ERROR"), "warnings": sum(1 for p in got if p.severity == "WARN"),
+                                     "message": "ok" if not got else "; ".join(f"{p.scope}: {p.detail}" for p in got[:3]) + (f" (+{len(got) - 3} more)" if len(got) > 3 else "")})
         holds = {lid: any(p.severity == "ERROR" and (p.lifetime_id in (lid, None)) for p in problems) for lid in lids}
         for lid in closed:
             holds[lid] = any(p.severity == "ERROR" and p.lifetime_id == lid for p in problems)
         ok = not any(p.severity == "ERROR" for p in problems)
         report = IntegrityReport(ok, any(holds.values()), self.clock.epoch(), mode, lifetime_id, problems, int((_time.monotonic() - t0) * 1000), holds,
-                                 sum(1 for p in problems if p.severity == "WARN"))
+                                 sum(1 for p in problems if p.severity == "WARN"), runs)
         self._record(report, owned)
         return report
 
@@ -1474,9 +1692,19 @@ class Accounting:
                            for lid, h in report.holds.items() if h})
 
         def write(conn: sqlite3.Connection) -> None:
-            set_meta(conn, "integrity_json", payload)
-            set_meta(conn, "integrity_ts", str(report.checked_at))
-            set_meta(conn, "integrity_hold_json", hold_json)
+            hold = hold_json
+            if report.lifetime_id:                     # a run limited to one lifetime re-decides that lifetime's hold only
+                try:
+                    prev = json.loads(get_meta(conn, "integrity_hold_json", "{}") or "{}")
+                except ValueError:
+                    prev = {}
+                prev = {k: v for k, v in (prev or {}).items() if k not in report.holds}
+                prev.update(json.loads(hold_json))
+                hold = dumps(prev)
+            else:
+                set_meta(conn, "integrity_json", payload)
+                set_meta(conn, "integrity_ts", str(report.checked_at))
+            set_meta(conn, "integrity_hold_json", hold)
             for lid, held in report.holds.items():
                 open_row = conn.execute("SELECT id FROM attention WHERE source='integrity' AND code='INTEGRITY' AND ref_type='lifetime' AND ref_id=? AND resolved_ts IS NULL", (lid,)).fetchone()
                 if held and open_row is None:
