@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Willard Libby Checked His Atomic Clock Against Timber From a Pharaoh&rsquo;s Tomb. Within a Few Centuries, It Kept Time. — Learning Brief, Wed, Oct 28, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-28",
+    "slot": "learn",
+    "title": "Willard Libby Checked His Atomic Clock Against Timber From a Pharaoh’s Tomb. Within a Few Centuries, It Kept Time.",
+    "path": "reports/2026/10/2026-10-28-learn.html",
+    "summary": "Day 6 of the Connected Path: a differential equation states how fast a quantity changes in terms of how much is left — the rule, run backwards, that let Willard Libby turn a fixed half-life into a clock, and that a federal court's own test, the Curve of Knowns, checked against timber from a pharaoh's tomb.",
+    "headlines": [
+      "Day 6 of 293 · Mathematics: a differential equation (dN/dt = −kN) fixes a quantity's whole future and past once you know its starting value",
+      "Libby's 1949 Curve of Knowns tested radiocarbon dating against tree-ring wood and timber from Pharaoh Djoser's tomb before anyone trusted it",
+      "Watch or Read: Discovery of Radiocarbon Dating (about 10-15 min)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-28T04:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Willard Libby Checked His Atomic Clock Against Timber From a Pharaoh&rsquo;s Tomb. Within a Few Centuries, It Kept Time.</h1>
+      <p class="paper-dateline">
+        Wednesday, October 28, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A differential equation states how fast a quantity changes in terms of how much of it is
+        currently there &mdash; the same rule, run forward as decay and backward as a clock, that let
+        Willard Libby turn a fixed half-life into a working atomic calendar, and that he had to check,
+        before anyone would trust it, against timber from a pharaoh&rsquo;s tomb.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 6 of 293 &middot; Mathematics 6 of 24 &middot; Differential equations: rules for change</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A chemist&rsquo;s clock, checked against a pharaoh</h3>
+      <p>
+        In the late 1940s, Willard Libby, a chemistry professor at the University of Chicago, worked
+        out a new kind of clock. Every living thing takes in a small, steady trickle of radioactive
+        carbon-14 from the air while it is alive; once it dies, that intake stops, and the carbon-14
+        already in its tissue decays away at a fixed pace. If Libby could measure how much was left, he
+        reasoned, he could say how long ago the thing had died. The trouble was that no one had ever
+        tested such a clock against anything independently dated.
+      </p>
+      <p>
+        So Libby and a young chemist named James Arnold went looking for wood and charcoal whose ages
+        were already known by other means, with no radioactivity involved in fixing those ages at
+        all. One sample, a fragment of a giant California sequoia known as the Centennial Stump,
+        felled in 1874, carried tree rings the dendrochronologist A. E. Douglass had already counted
+        back to a known span, 1031 to 928 B.C. &mdash; a date fixed simply by counting rings, decades
+        before anyone measured the wood&rsquo;s radioactivity. Another sample came from Egypt: acacia
+        wood from the tomb of the pharaoh Djoser (then usually written Zoser) at Saqqara, supplied by
+        Ambrose Lansing of the Metropolitan Museum of Art, whose age &mdash; from Egyptian chronology
+        and the written record, not from radioactivity &mdash; was put at about 4,650 years. Libby and
+        Arnold measured each sample&rsquo;s faint carbon-14 activity with shielded Geiger counters and
+        compared the radiocarbon age the measurement implied against the age historians and
+        dendrochronologists had already assigned, independently, by entirely different methods. Their
+        paper, &ldquo;Age Determinations by Radiocarbon Content: Checks with Samples of Known
+        Age,&rdquo; appeared in <em>Science</em> on December 23, 1949. The agreement, they wrote, was
+        satisfactory &mdash; within the few centuries their method&rsquo;s precision allowed. Plotted
+        as one chart, known age against radiocarbon age, it became known as the Curve of Knowns.
+        Libby won the 1960 Nobel Prize in Chemistry for the method it validated.
+      </p>
+      <p>
+        How can a rule about how fast atoms vanish tell you how long ago something died? And why would
+        anyone trust that rule enough to publish ages from it before a single independent check had
+        been run?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A differential equation is a rule that states how fast a quantity is changing right now in
+        terms of how much of that quantity currently exists &mdash; not a formula for the quantity
+        itself, but a rule connecting the quantity to its own rate of change. Carbon-14&rsquo;s decay
+        obeys one of the simplest kinds there is: dN/dt = &minus;kN, read &ldquo;the rate at which the
+        amount N is changing equals a negative constant k times N itself.&rdquo; In plain words: the
+        fewer carbon-14 atoms remain, the slower they disappear, in direct proportion.
+      </p>
+      <p>
+        A rule like that, by itself, describes a whole family of possible histories &mdash; it says
+        how any amount would change, not which amount you actually have. Pin down one more fact, the
+        quantity&rsquo;s value at some starting moment (its <strong>initial condition</strong>), and
+        the differential equation fixes everything else: the quantity&rsquo;s entire future, and, run
+        in reverse, its entire past. That reversibility is exactly what turns a decay rule into a
+        clock.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with what the equation is actually claiming. dN/dt is calculus notation &mdash; Day
+        4&rsquo;s derivative &mdash; for the instantaneous rate at which N, the number of carbon-14
+        atoms in a sample, is changing at a given moment. Setting that rate equal to &minus;kN says the
+        rate of loss is always proportional to the amount currently present: twice as much carbon-14
+        decays twice as fast, in absolute terms, even though the <em>fraction</em> lost per unit time,
+        k, never changes. That constant-fraction behavior is Day 2&rsquo;s exponential growth running
+        backwards: instead of a quantity multiplying by a fixed factor greater than one each period, it
+        multiplies by a fixed factor less than one. The mathematics is identical; only the sign of the
+        rate, and the direction the quantity moves, differ.
+      </p>
+      <p>
+        Because the relative rate of change (dN/dt)/N is pinned at the constant &minus;k, the only
+        function that satisfies the equation is an exponential: N(t) = N<sub>0</sub>&middot;e<sup>&minus;kt</sup>,
+        where N<sub>0</sub> is the amount present at time t = 0 and e is the same base used for
+        continuous compounding. You can check this solves the equation by differentiating it: the
+        derivative of N<sub>0</sub>e<sup>&minus;kt</sup> with respect to t is &minus;k times
+        N<sub>0</sub>e<sup>&minus;kt</sup> itself &mdash; that is, &minus;kN, exactly what the equation
+        demands. The decay rate k is a property of the carbon-14 nucleus alone, fixed by nuclear
+        physics; nothing about temperature, chemical form or pressure changes it, which is why it
+        makes a trustworthy clock mechanism in the first place.
+      </p>
+      <p>
+        A convenient way to describe that constant k is the <strong>half-life</strong>: the time it
+        takes for exactly half of any starting amount to decay, written t&frac12;. Set N(t&frac12;) =
+        N<sub>0</sub>/2 in the solution above: 1/2 = e<sup>&minus;k&middot;t&frac12;</sup>. Taking the
+        natural logarithm of both sides and rearranging gives t&frac12; = ln 2 / k &mdash; a fixed
+        number, the same whether you start with a gram of carbon-14 or a thousand grams, because
+        halving time depends only on the fraction remaining, never on the starting amount. Carbon-14&rsquo;s
+        currently accepted half-life is 5,730 years, set at the 1962 Radiocarbon Conference in
+        Cambridge; Libby&rsquo;s own 1949 work used an earlier value, about 5,568 years, now called the
+        Libby half-life and still used by convention in some older date listings even though it is
+        roughly 3% short of the modern figure.
+      </p>
+      <p>
+        Running the equation backwards is what makes it a clock rather than just a decay law. If you
+        measure how much carbon-14 activity N remains in a sample today and you know (or can reasonably
+        assume) the activity N<sub>0</sub> it started with when the organism died, you can solve
+        N = N<sub>0</sub>e<sup>&minus;kt</sup> for the elapsed time: t = (t&frac12; / ln 2) &times;
+        ln(N<sub>0</sub> / N). Measure half the original activity left, and the elapsed time is exactly
+        one half-life, 5,730 years; measure a quarter left, and it is two half-lives, 11,460 years. The
+        differential equation&rsquo;s forward direction &mdash; predicting how much will remain after a
+        known time &mdash; and its backward direction &mdash; inferring elapsed time from how much
+        remains &mdash; are the same equation, solved for different variables.
+      </p>
+      <p>
+        That backward solution rests on two separate assumptions, and they are not equally solid.
+        The first, that k itself stays constant, is settled nuclear physics: a radioactive
+        nucleus&rsquo;s decay rate does not drift with time, climate or chemistry, so this half of the
+        method needed no empirical rescue. The second assumption is far less automatic: that
+        N<sub>0</sub>, the starting level of carbon-14 relative to ordinary carbon in a once-living
+        thing, has stayed roughly constant across the span the method is used for &mdash; because that
+        starting level depends on how much carbon-14 the atmosphere itself was carrying when the
+        organism was alive, which in turn depends on cosmic-ray intensity, the strength of Earth&rsquo;s
+        magnetic field, and (in the twentieth century) human activity. Libby could not derive that
+        assumption from physics the way he could the first one; it needed direct testing against
+        samples whose ages were already known by some other method entirely. That is exactly what the
+        Curve of Knowns did: it is a test of the second assumption, not the first, and the physics
+        behind the first assumption is part of why Libby felt justified publishing before every
+        wrinkle in the second was ironed out.
+      </p>
+      <p>
+        The Curve of Knowns passed for samples a few thousand years old, but the second assumption did
+        not hold up perfectly once the method was pushed further back. Libby himself raised the
+        possibility, as early as the mid-1950s, that the atmosphere&rsquo;s carbon-14 level might have
+        drifted over longer stretches of time than his first checks could probe. In 1967 the chemist
+        Hans Suess published the first real calibration curve, built by radiocarbon-dating wood from
+        bristlecone pines &mdash; trees whose rings, in California&rsquo;s White Mountains, run back
+        thousands of years further than the samples Libby had used &mdash; and found exactly the drift
+        he had worried about: radiocarbon ages and true calendar ages diverge by centuries once you go
+        back far enough. That is why every radiocarbon date reported since has to be run through a
+        calibration curve (today&rsquo;s IntCal series, continually extended and revised) before it is
+        read as a calendar year, and why &ldquo;radiocarbon years&rdquo; and calendar years are not
+        quite the same unit.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        That division between the two assumptions is the answer to both halves of the opening puzzle.
+        The decay rule itself, dN/dt = &minus;kN, is a statement about nuclear physics that holds
+        however humans use it, which is why Libby could trust the clock&rsquo;s mechanism &mdash; its
+        forward law &mdash; before running a single check. What genuinely needed testing was whether
+        the atmosphere's carbon-14 level had actually stayed roughly constant for as far back as the
+        method would be asked to reach, and the Curve of Knowns tested exactly that, by comparing
+        radiocarbon ages against ages already fixed by tree rings and Egyptian chronology. The timber
+        from Djoser&rsquo;s tomb, at about 4,650 independently known years, and the sequoia whose rings
+        Libby and Arnold could count by hand both came back within a few centuries of their radiocarbon
+        ages &mdash; satisfactory agreement for a first test, and good enough to tell Libby the second
+        assumption held, at least approximately, over that stretch of the past.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Differential equation</dt>
+        <dd>A rule stating how fast a quantity changes in terms of the quantity&rsquo;s own current
+        value, rather than a direct formula for the quantity itself.</dd>
+        <dt>Initial condition</dt>
+        <dd>The quantity&rsquo;s known value at some starting moment, which, together with the
+        differential equation, pins down one specific history rather than a whole family of them.</dd>
+        <dt>Exponential decay</dt>
+        <dd>The solution to dN/dt = &minus;kN: a quantity that shrinks by the same fraction every
+        equal stretch of time, never reaching exactly zero.</dd>
+        <dt>Half-life</dt>
+        <dd>The fixed time for exactly half of any starting amount to decay, t&frac12; = ln 2 / k
+        &mdash; the same number regardless of the starting amount.</dd>
+        <dt>Rate constant</dt>
+        <dd>The k in dN/dt = &minus;kN: the fixed fraction of what remains that decays per unit time,
+        set by the physics of the specific nucleus and unaffected by its chemical environment.</dd>
+        <dt>Calibration</dt>
+        <dd>Correcting a radiocarbon age for the fact that the atmosphere&rsquo;s carbon-14 level has
+        not actually stayed perfectly constant, using an independent clock &mdash; tree rings, today
+        extended into the IntCal curves &mdash; to translate &ldquo;radiocarbon years&rdquo; into
+        calendar years.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: A Drug Leaving the Bloodstream</h3>
+      <p>
+        The same differential equation governs how most drugs, including ordinary caffeine, leave the
+        bloodstream: the elimination rate is proportional to how much of the drug is currently
+        circulating, dC/dt = &minus;kC, the identical rule with concentration C in place of carbon-14
+        atoms N. The National Academies&rsquo; Institute of Medicine, reviewing the pharmacology in a
+        2001 report, put caffeine&rsquo;s elimination half-life in healthy adults at about five hours
+        on average, with a wide individual range of roughly 1.5 to 9.5 hours; pregnancy and some
+        medicines lengthen it, and smoking shortens it.
+      </p>
+      <div class="worked">
+        <p><strong>1. Start with a dose and its half-life.</strong> 200 mg of caffeine at 8 a.m.;
+        assume an average five-hour half-life.</p>
+        <p><strong>2. Halve it once per half-life.</strong> By 1 p.m. (one half-life later), about
+        100 mg remains.</p>
+        <p><strong>3. Halve it again.</strong> By 6 p.m. (two half-lives), about 50 mg remains.</p>
+        <p><strong>4. Halve it a third time.</strong> By 11 p.m. (three half-lives), about 25 mg
+        remains &mdash; an eighth of the original dose, still enough to disturb some people&rsquo;s
+        sleep.</p>
+        <p><strong>5. See what repeated dosing does.</strong> Taken on a regular schedule rather than
+        once, the same equation says the drug builds toward a steady level, reached after roughly four
+        to five half-lives &mdash; which is exactly why a dosing interval is set relative to a drug&rsquo;s
+        own half-life, not to the clock on the wall.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">dN/dt = &minus;kN &nbsp;&rArr;&nbsp; N(t) = N<sub>0</sub>&middot;e<sup>&minus;kt</sup>, &nbsp; t&frac12; = ln 2 / k</p>
+        <p class="expr-spoken visually-hidden">The rate of change of N with respect to t equals negative k times N. This implies N of t equals N-naught times e to the negative k t, and the half-life equals the natural log of 2, divided by k.</p>
+        <dl>
+          <dt>N</dt>
+          <dd>the amount of the decaying quantity (carbon-14 atoms, or a drug&rsquo;s blood
+          concentration) present at time t</dd>
+          <dt>N<sub>0</sub></dt>
+          <dd>the amount present at the starting moment, t = 0 &mdash; the initial condition</dd>
+          <dt>k</dt>
+          <dd>the rate constant: the fixed fraction of what remains that decays per unit time</dd>
+          <dt>t&frac12;</dt>
+          <dd>the half-life: the fixed time for exactly half of any starting amount to decay</dd>
+        </dl>
+      </div>
+      <p>The same equation, solved backwards to read elapsed time from a measured fraction remaining:</p>
+      <div class="formula">
+        <p class="expr">t = (t&frac12; / ln 2) &times; ln(N<sub>0</sub> / N)</p>
+        <p class="expr-spoken visually-hidden">Elapsed time t equals the half-life divided by the natural log of 2, multiplied by the natural log of N-naught divided by N.</p>
+        <dl>
+          <dt>t</dt>
+          <dd>the elapsed time since the starting moment &mdash; the quantity radiocarbon dating
+          actually wants</dd>
+          <dt>N<sub>0</sub> / N</dt>
+          <dd>how many times smaller the remaining amount is than the starting amount; a ratio of 2
+          gives one half-life elapsed, a ratio of 4 gives two</dd>
+        </dl>
+      </div>
+      <p>
+        With carbon-14&rsquo;s modern half-life of 5,730 years, wood retaining half its original
+        activity is about 5,730 years old; wood retaining a quarter is about 11,460 years old. Those
+        two numbers are the entire method, before any instrument or calibration curve enters the
+        picture.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can recognize dN/dt = &minus;kN, you can recognize the same rule wearing different
+        clothes everywhere a quantity&rsquo;s rate of loss (or growth) depends only on how much of it
+        currently exists: a drug clearing the bloodstream, a capacitor discharging, a population
+        declining under a fixed death rate, a radioactive tracer used in medical imaging. The equation
+        does the same two things every time &mdash; it predicts the future from the present, and, with
+        enough independent confirmation that its constants genuinely hold, it can be run backwards to
+        infer the past. The second half is the harder-earned one, and the Djoser-timber test is the
+        model for how to earn it: find cases where the answer is already known some other way, and see
+        whether the rule gets them right before trusting it on cases where it is the only clock
+        available.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 2&rsquo;s exponential growth is today&rsquo;s exponential decay with the sign
+        of the rate flipped &mdash; the same constant-fraction-per-period mathematics, and the same
+        logarithm (there, base ten and a doubling time; here, the natural log and a half-life) used to
+        extract the rate from the data. Day 4&rsquo;s derivative is the dN/dt in today&rsquo;s equation
+        itself: a differential equation is simply a statement that names a rule for a derivative,
+        rather than a formula for the quantity whose derivative it is.
+      </p>
+      <p>
+        <b>Across.</b> History&rsquo;s own chronology was rewritten by this equation&rsquo;s calibration
+        problem. Colin Renfrew&rsquo;s <em>Before Civilization: The Radiocarbon Revolution and
+        Prehistoric Europe</em> (1973) argued that once radiocarbon dates were calibrated against
+        tree-ring sequences &mdash; correcting for exactly the non-constant atmospheric carbon-14 level
+        this lesson flagged as the method&rsquo;s weaker assumption &mdash; Malta&rsquo;s megalithic
+        temples came out older than Egypt&rsquo;s pyramids, and Stonehenge older than the Mycenaean
+        civilization once credited with inspiring it. That overturned the assumption that
+        monument-building in prehistoric Europe had simply diffused outward from a more advanced Near
+        East.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p><a href="https://axial.acs.org/multidisciplinary/discovery-of-radiocarbon-dating">Discovery of Radiocarbon Dating</a>
+        &mdash; American Chemical Society, National Historic Chemical Landmarks program &middot;
+        Reading &middot; about 10-15 minutes</p>
+        <p>The ACS&rsquo;s own history of how Libby&rsquo;s Chicago group built and tested the method,
+        written for its 2016 landmark designation &mdash; the people, the instruments and the checks
+        behind the equation this lesson just solved.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A differential equation states a quantity&rsquo;s rate of change in terms of the quantity
+        itself; add a starting value, and it fixes the whole future and past.</li>
+        <li>dN/dt = &minus;kN solves to exponential decay, N(t) = N<sub>0</sub>e<sup>&minus;kt</sup>,
+        with a fixed half-life t&frac12; = ln 2 / k that does not depend on the starting amount.</li>
+        <li>Carbon-14&rsquo;s rate constant k is settled nuclear physics; the method&rsquo;s real
+        assumption is that the atmosphere&rsquo;s starting carbon-14 level stayed roughly constant,
+        which needed independent testing and still needs calibration today.</li>
+        <li>Libby tested that assumption, before trusting the method, against samples of already-known
+        age &mdash; tree rings and timber from a pharaoh&rsquo;s tomb.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        After the Chernobyl accident in April 1986, judging only by what the decay rule above leaves
+        behind after one year, why did health authorities worry about iodine-131 (half-life about 8
+        days) for weeks but about cesium-137 (half-life about 30 years) for decades?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Arnold and Libby, &ldquo;Age Determinations by Radiocarbon Content:
+      Checks with Samples of Known Age,&rdquo; <em>Science</em> 110 (Dec. 23, 1949): 678&ndash;680; the
+      American Chemical Society&rsquo;s National Historic Chemical Landmark materials on Libby&rsquo;s
+      discovery; the 1962 Cambridge Radiocarbon Conference half-life revision; the National Academies&rsquo;
+      Institute of Medicine 2001 report on caffeine pharmacology; Colin Renfrew&rsquo;s <em>Before
+      Civilization</em> (1973). All checked via web search this run; the exact OCR figures in a
+      non-official scan of the 1949 paper were treated as indicative, not definitive.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a
+      href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-27-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
