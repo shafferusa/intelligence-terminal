@@ -43,6 +43,13 @@ Conventions
     a percent; every other rate field (``rate``, ``*_rate``, ``spread``, ``all_in``, ``segment_rate``) is a fraction, and a
     percent elsewhere is named ``*_pct``.  The UI formats a fraction with ``T.fmt.rate`` and a percent with
     ``T.fmt.ratePct`` (``static/core.js``).
+- DATED CURVES (C12, FINSIM1_PLAN P4): ``CurveStore.for_date(d)`` is the curve OF a past date - the UST_PAR curve dated d, else
+  the last business date before it within ``FOR_DATE_LOOKBACK_BD`` (3) business days (an NYSE business day without a Treasury
+  curve, such as Veterans Day, values on the previous one) - as a read-only view with the same ``discount_factors`` /
+  ``par_rate`` / ``annuity`` method as the live store (``DatedCurve``); None when there is none.  It reads ``curve_points``
+  (cached per date; ``load_persisted`` clears the cache), never only the in-memory latest curve, so a curve an importer records
+  after the runtime was built is visible.  A store with fixed discount factors (the test fixture) serves them for every date on
+  or after their own date.
 - Persistence: every observation goes to ``curve_points`` (series, as_of, tenor, value) through the light command
   ``rates.record`` (idempotent request ids derived from the payload hash); ``marks.record`` writes ``marks`` rows
   (CLOSE / SETTLE / CURVE) for the lifecycle jobs.  Stores work without a database (pure, for tests).
@@ -51,7 +58,7 @@ from __future__ import annotations
 
 import hashlib
 import threading
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal, getcontext
 from typing import Dict, Iterable, List, Optional, Tuple
 
@@ -64,6 +71,7 @@ from .providers import FxRates, ParCurve, TENOR_Q, TENOR_YEARS
 getcontext().prec = 34
 CURVE_SERIES = "UST_PAR"
 FX_SERIES = "FRANKFURTER_USD"
+FOR_DATE_LOOKBACK_BD = 3              # C12: a dated curve looks back at most 3 business days (Veterans Day has no Treasury curve)
 OBS_TENOR = "OBS"
 HALF = Decimal("0.5")
 DF_Q = Decimal("0.0000000001")
@@ -150,6 +158,7 @@ class CurveStore:
         self._lock = threading.RLock()
         self._curve: Optional[ParCurve] = None
         self._fixed: Optional[Tuple[Dict[Decimal, Decimal], date]] = None
+        self._by_date: Dict[date, ParCurve] = {}          # C12: the curves of past dates seen in memory or read from curve_points
 
     # ---- state ---------------------------------------------------------------------------------------------------
     def latest(self) -> Optional[ParCurve]:
@@ -164,6 +173,8 @@ class CurveStore:
 
     def put(self, curve: ParCurve, persist: bool = True) -> None:
         with self._lock:
+            if curve is not None and curve.points:
+                self._by_date[curve.as_of] = curve          # C12: every dated curve stays reachable through for_date
             if self._curve is not None and curve.as_of < self._curve.as_of:
                 return
             self._curve = curve
@@ -244,6 +255,88 @@ class CurveStore:
         last = dfs[max(dfs)]
         return ((Decimal(1) - last) * 2 / sum(dfs.values(), Decimal(0))).quantize(DF_Q)
 
+    # ---- dated curves (C12) -------------------------------------------------------------------------------------------
+    def fixed_as_of(self) -> Optional[date]:
+        with self._lock:
+            return None if self._fixed is None else self._fixed[1]
+
+    def _curve_rows(self, d: date) -> Optional[ParCurve]:
+        """The UST_PAR curve dated exactly ``d`` from ``curve_points`` (None without a database or a row)."""
+        if self.db is None:
+            return None
+        try:
+            with self.db.reader() as conn:
+                rows = conn.execute("SELECT tenor, value, source, fetched_ts FROM curve_points WHERE series=? AND as_of=?",
+                                    (CURVE_SERIES, d.isoformat())).fetchall()
+        except Exception:   # noqa: BLE001 - a database without curve_points (a pure store) has no dated curve
+            return None
+        pts: Dict[Decimal, Decimal] = {}
+        src, fts = "treasury.gov daily par yield curve", 0
+        for r in rows:
+            years = TENOR_YEARS.get(r["tenor"])
+            if years is None:
+                try:
+                    years = Decimal(r["tenor"]).quantize(TENOR_Q)
+                except ArithmeticError:
+                    continue
+            try:
+                pts[years] = Decimal(r["value"])
+            except ArithmeticError:
+                continue
+            src, fts = r["source"] or src, int(r["fetched_ts"] or 0)
+        return ParCurve(d, pts, source=src, fetched_at=fts) if pts else None
+
+    def curve_on(self, d) -> Optional[ParCurve]:
+        """The par curve dated exactly ``d``: the latest in memory when it is of that date, else the per-date cache, else
+        ``curve_points`` (cached once found; a miss is not cached, so a curve recorded later is seen)."""
+        d = d if isinstance(d, date) else date.fromisoformat(str(d)[:10])
+        with self._lock:
+            latest = self._curve
+            if latest is not None and latest.as_of == d and latest.points:
+                return latest
+            got = self._by_date.get(d)
+        if got is not None:
+            return got
+        got = self._curve_rows(d)
+        if got is not None:
+            with self._lock:
+                self._by_date[d] = got
+        return got
+
+    def for_date(self, d, cal=None, lookback_bd: int = FOR_DATE_LOOKBACK_BD) -> Optional["DatedCurve"]:
+        """C12: the curve view OF date ``d`` - the UST_PAR curve of ``d``, else of the last business date before it within
+        ``lookback_bd`` business days (``cal``: the trading calendar; without one, Monday to Friday) - with the live store's
+        ``discount_factors`` / ``par_rate`` / ``annuity``.  None when absent.  Fixed discount factors (the test fixture) are served
+        for every date on or after their own date."""
+        d = d if isinstance(d, date) else date.fromisoformat(str(d)[:10])
+        with self._lock:
+            fixed = self._fixed
+        if fixed is not None:
+            if fixed[1] > d:
+                return None
+            view = DatedCurve(d)
+            view.set_fixed_dfs(dict(fixed[0]), fixed[1])
+            return view
+
+        def business(x: date) -> bool:
+            if cal is not None and hasattr(cal, "is_business_day"):
+                return bool(cal.is_business_day(x))
+            return x.weekday() < 5
+        x, seen = d, 0
+        for _ in range(int(lookback_bd) * 3 + 7):         # calendar days: enough for 3 business days across a long weekend
+            if x == d or business(x):
+                got = self.curve_on(x)
+                if got is not None:
+                    view = DatedCurve(d)
+                    view.put(got, persist=False)
+                    return view
+                if x != d:
+                    seen += 1
+                    if seen >= int(lookback_bd):
+                        break
+            x = x - timedelta(days=1)
+        return None
+
     # ---- persistence ---------------------------------------------------------------------------------------------------
     def _persist(self, curve: ParCurve) -> None:
         if self.bus is None and self.db is None:
@@ -255,6 +348,8 @@ class CurveStore:
     def load_persisted(self) -> bool:
         if self.db is None:
             return False
+        with self._lock:
+            self._by_date = {}                               # C12: the per-date cache is re-read from curve_points
         with self.db.reader() as conn:
             row = conn.execute("SELECT MAX(as_of) AS d FROM curve_points WHERE series=?", (CURVE_SERIES,)).fetchone()
             if row is None or row["d"] is None:
@@ -275,6 +370,22 @@ class CurveStore:
             return False
         self.put(ParCurve(date.fromisoformat(row["d"]), pts, source=src, fetched_at=fts), persist=False)
         return True
+
+
+class DatedCurve(CurveStore):
+    """C12: a read-only view of ONE dated curve (``CurveStore.for_date``): the same ``par_yield`` / ``discount_factors`` /
+    ``annuity`` / ``par_rate`` as the live store; ``requested`` is the date asked for, ``as_of()`` the curve's own date (it may be up
+    to 3 business days earlier).  Nothing is persisted."""
+
+    def __init__(self, requested: date):
+        super().__init__(None, None, None, None)
+        self.requested = requested
+
+    def put(self, curve: ParCurve, persist: bool = False) -> None:
+        super().put(curve, persist=False)
+
+    def for_date(self, d, cal=None, lookback_bd: int = FOR_DATE_LOOKBACK_BD):
+        return self
 
 
 class RateStore:
@@ -517,6 +628,6 @@ def register(bus) -> None:
     bus.register("marks.record", h_marks_record, light=True)
 
 
-__all__ = ["CurveStore", "RateStore", "FxStore", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "OECD_10Y", "SHIFT_SYMBOLS",
+__all__ = ["CurveStore", "DatedCurve", "FOR_DATE_LOOKBACK_BD", "RateStore", "FxStore", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "OECD_10Y", "SHIFT_SYMBOLS",
            "CURVE_SERIES", "FX_SERIES", "OBS_TENOR", "h_rates_record", "h_marks_record", "pct_to_fraction", "fraction_to_pct", "treasury_cash_rate",
            "PERCENT", "UNIT_PERCENT", "UNIT_FRACTION", "UNITS_NOTE"]

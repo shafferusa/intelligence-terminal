@@ -4,7 +4,10 @@
   script or stylesheet is loaded from a CDN (no http(s):// in src/href except the legacy link);
 - every `:root` token of finsim/finsim/static/style.css (and the light theme) is present in terminal.css with the SAME
   value, plus the s17.2 aliases;
-- index.html carries the mount roots the scripts expect (#bookswitcher, #news, #history, ...);
+- index.html carries the mount roots the scripts expect (#bookswitcher, #history, ...) and no #news root (news was removed in 1.0.5);
+- the shell of FINSIM1_PLAN C1 / 15.7: the routes (the Dashboard is the default and the fallback, #/news redirects, the new pages),
+  the 74-action key registry with the 1.0.5 default map and its hiding rule, the optional pages listed in index.html, api.py and the
+  fixture server alike, the sidebar's first row, the meta description;
 - the fixture server serves every s15 route with its fixture (WP-13's fixtures may be absent -> reported as skipped),
   substitutes the time placeholders, honours scenarios, serves the static UI with no-store and stubs optional files;
 - no glossary (owner amendment 18:28); every page / component registers itself; brackets balance in every JS file
@@ -34,16 +37,21 @@ NEW_CSS = os.path.join(STATIC, "terminal.css")
 INDEX = os.path.join(STATIC, "index.html")
 ALIASES = {"--panel": "var(--bg2)", "--panel-2": "var(--bg3)", "--text": "var(--fg)", "--muted": "var(--fg2)",
            "--up": "var(--green)", "--down": "var(--red)", "--warn": "var(--accent)", "--stale": "var(--purple)"}
-REQUIRED_IDS = ["app", "header", "banner", "attention", "sidebar", "bookswitcher", "nav", "main", "page", "news", "history",
+REQUIRED_IDS = ["app", "header", "banner", "attention", "sidebar", "bookswitcher", "nav", "main", "page", "history",
                 "dock", "dock-body", "modal-root", "toast-root", "help", "clock", "session-chips", "acct-card", "integrity-dot"]
 PAGES = ["markets", "instrument", "positions", "orders", "cash", "transactions", "treasury", "portfolio", "accounting", "risk",
-         "activity", "watchlists", "settings", "history"]
+         "activity", "watchlists", "settings", "history", "dashboard"]
 COMPONENTS = ["sidebar", "header", "attention", "freshness", "grid", "chart", "chain", "bookswitcher"]
 QUALITIES = ["live", "delayed", "close", "computed", "private", "stale", "unavailable"]
 # BUILD2_PLAN C3 / C11: the product plug-ins of Build 2 - loaded by index.html as optional scripts and stubbed by the fixture
 # server (and by api.py on the real server) until their packages build them, so no 404 reaches the console
 PLANNED_OPTIONAL = ["pages/markets_debt.js", "components/bondticket.js", "pages/markets_fx.js", "components/fxdesk.js",
-                    "pages/markets_credit.js", "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js"]
+                    "pages/markets_credit.js", "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js",
+                    # FINSIM1_PLAN C1: the pages of the new navigation and the import panel (NOT YET BUILT until their packages land)
+                    "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
+                    "components/imports.js"]
+#: the strings of the removed news feature that no page of the shell may show (P1 acceptance 3; the allowlist is not news)
+NEWS_STRINGS = ["Daily News", "Newspaper", "briefing", "headlines", "news feed", "/api/news"]
 
 
 def read(path: str) -> str:
@@ -263,14 +271,32 @@ class StaticFilesTest(unittest.TestCase):
         acts = {m.group(1): (None if m.group(3) == "null" else m.group(3)[1:-1]) for m in re.finditer(r"act\('([a-z0-9_.]+)', '([A-Za-z ]+)', (null|'[^']*')", src)}
         acts.update({"nav.account_%d" % n: None for n in range(1, 10)})              # the two loops of keys.js
         acts.update({"ticket.hedge_%d" % n: str(n) for n in range(1, 6)})
-        self.assertEqual(68, len(acts))
+        self.assertEqual(74, len(acts))                                         # FINSIM1_PLAN C1: 68 - page.news + 7 page actions
+        self.assertNotIn("page.news", acts)
+        # the 1.0.5 default map (FINSIM1_PLAN 15.7 item 3): every 1.0.4 key except F12, which opens the Dashboard
         owner = {"F1": "nav.us_exchange", "F2": "nav.debt", "F3": "nav.credit", "F4": "nav.foreign_fx", "F5": "nav.private", "F6": "nav.prime_broker",
-                 "F7": "page.portfolio", "F8": "nav.orders", "F9": "dock.toggle", "F10": "page.treasury", "F11": "page.risk", "F12": "page.news",
+                 "F7": "page.portfolio", "F8": "nav.orders", "F9": "dock.toggle", "F10": "page.treasury", "F11": "page.risk", "F12": "page.dashboard",
                  "Shift+F1": "book.personal", "Shift+F2": "book.fund", "Shift+F3": "book.institutional", "Shift+F4": "nav.positions", "Shift+F5": "nav.cash",
                  "Shift+F6": "nav.transactions", "Shift+F7": "page.accounting", "Shift+F8": "page.activity", "Shift+F9": "page.watchlists",
                  "Shift+F10": "page.history", "Shift+F11": "page.settings", "Shift+F12": "app.help_2", "/": "app.search", "?": "app.help", "Escape": "dialog.close"}
         for key, aid in owner.items():
             self.assertEqual(key, acts.get(aid), aid)
+        fkeys = {k: a for a, k in acts.items() if k and re.fullmatch(r"(Shift\+)?F([1-9]|1[0-2])", k)}
+        self.assertEqual({k: v for k, v in owner.items() if re.fullmatch(r"(Shift\+)?F([1-9]|1[0-2])", k)}, fkeys)   # exactly the 24 F-key slots above
+        # the new page actions have no default key in 1.0.5 and name the page that must be loaded for them to show (the hiding rule)
+        new_pages = {"page.pending": "pending", "page.completed": "completed", "page.accounts": "accounts", "page.cash_collateral": "cash_collateral",
+                     "page.derivatives": "derivatives"}
+        for aid in list(new_pages) + ["page.trading"]:
+            self.assertIn(aid, acts)
+            self.assertIsNone(acts[aid], aid)
+        for aid, page in new_pages.items():                                   # a label may hold an escaped quote (that account\'s)
+            self.assertRegex(src, r"act\('%s', 'Pages', null, '(?:[^'\\]|\\.)*', \{ page: '%s' \}\);" % (re.escape(aid), page))
+        self.assertRegex(src, r"act\('page\.dashboard', 'Pages', 'F12', 'Dashboard', \{ page: 'dashboard' \}\);")
+        self.assertRegex(src, r"act\('page\.trading', 'Pages', null, '[^']*'\);")                       # Trading is always available
+        # the help ('?') and Settings > Keyboard list only actions that work: T.keys.groups() keeps the available ones
+        self.assertIn("return !a.page || !!(T.pages && T.pages[a.page]);", src)
+        self.assertIn("return a.group === g && available(a.id);", src)
+        self.assertIn("K.available = available", src)
         for aid, key in acts.items():
             self.assertRegex(aid, api.KEYBIND_ID_RE)
             if key is not None:
@@ -287,6 +313,128 @@ class StaticFilesTest(unittest.TestCase):
         p = _Refs()
         p.feed(read(INDEX))
         self.assertEqual(p.scripts.index("/static/core.js") + 1, p.scripts.index("/static/keys.js"))
+
+
+class ShellTests(unittest.TestCase):
+    """FINSIM1_PLAN C1 / C2 / 15.7 (release 1.0.5): the routes and redirects, the optional pages of the new navigation, the sidebar's
+    first row and the news feature gone from the shell's own files."""
+
+    @staticmethod
+    def routes():
+        """core.js ROUTES as (compiled regex, the returned object's source), in order (first match wins, like the router)."""
+        core = read(os.path.join(STATIC, "core.js"))
+        start = core.index("var ROUTES = [")
+        block = core[start:core.index("\n  ];", start)]
+        out = [(re.compile(m.group(1)), m.group(2)) for m in re.finditer(r"\[/(.+?)/, function \((?:m)?\) \{ return (\{[^}]*\}); \}\]", block)]
+        return core, out
+
+    @staticmethod
+    def page_of(routes, h):
+        for rx, ret in routes:
+            if rx.match(h):
+                return ret
+        return None
+
+    def test_routes_default_fallback_redirects_and_new_pages(self):
+        core, routes = self.routes()
+        self.assertGreaterEqual(len(routes), 20)
+        expect = {"#/dashboard": "{ page: 'dashboard' }", "#/news": "{ page: 'dashboard', removed: true }", "#/news?x=1": "{ page: 'dashboard', removed: true }",
+                  "#/trading": "{ page: 'trading' }", "#/accounts": "{ page: 'accounts' }",
+                  "#/pending": "{ page: 'pending', query: parseQuery(m[1]) }", "#/pending?account=F1:US_EXCHANGE": "{ page: 'pending', query: parseQuery(m[1]) }",
+                  "#/completed?status=settling": "{ page: 'completed', query: parseQuery(m[1]) }",
+                  "#/cash": "{ page: 'cash_collateral', query: parseQuery(m[1]) }", "#/cash?account=F1:PB_GS": "{ page: 'cash_collateral', query: parseQuery(m[1]) }",
+                  "#/derivatives": "{ page: 'derivatives', tab: m[1] || null }", "#/derivatives/otc": "{ page: 'derivatives', tab: m[1] || null }",
+                  "#/history": "{ page: 'history', hub: true, tab: m[1] || null }", "#/history/nav": "{ page: 'history', hub: true, tab: m[1] || null }",
+                  "#/h/P1/portfolio": "{ page: 'history', lifetime: dec(m[1]), sub: m[2], tab: m[3] || null }",
+                  "#/a/F1%3AUS_EXCHANGE/markets": "{ page: 'markets', account: dec(m[1]), tab: m[2] || null }",
+                  "#/a/F1%3AUS_EXCHANGE/cash": "{ page: m[2], account: dec(m[1]) }", "#/portfolio": "{ page: 'portfolio', tab: m[1] || 'positions' }",
+                  "#/activity?type=orders": "{ page: 'activity', query: parseQuery(m[1]) }", "#/settings/data": "{ page: 'settings', tab: m[1] || 'general' }"}
+        for h, ret in expect.items():
+            self.assertEqual(ret, self.page_of(routes, h), h)
+        for h in ("#/nope", "#/newsletter", "#/pending/x", "#/dashboard/x", "#/"):
+            self.assertIsNone(self.page_of(routes, h), h)                     # unknown: the router's fallback
+        # the default route and the unknown-route fallback are the Dashboard; the old news address redirects with its one-time toast
+        self.assertIn("var DEFAULT_ROUTE = '#/dashboard';", core)
+        self.assertIn("hash = hash || DEFAULT_ROUTE;", core)
+        self.assertIn("return { page: 'dashboard', hash: DEFAULT_ROUTE, unknown: hash };", core)
+        self.assertIn("T.ui.toast('no page ' + r.unknown + ' - showing the Dashboard', '', 3500); replaceHash(DEFAULT_ROUTE);", core)
+        self.assertIn("T.ui.toast('That page was removed - showing the Dashboard', '', 4000); replaceHash(DEFAULT_ROUTE);", core)
+        self.assertIn("if (!location.hash) { replaceHash(DEFAULT_ROUTE); }", core)
+        self.assertNotIn("#news", core)
+        # the provider names of the retired news sources stay in T.PROVIDER_LABEL until the rest of the news code goes (P1b); they are
+        # inert (no such provider is ever loaded or reported), so only the rest of core.js is searched
+        start = core.index("T.PROVIDER_LABEL = {")
+        rest = core[:start] + core[core.index("};", start):]
+        self.assertNotIn("Daily News", rest)
+        # #/trading: the last venue used (remembered on a Markets / instrument page), else US Exchange Markets
+        self.assertIn("T.store.get('last_venue', null)", core)
+        self.assertIn("T.store.set('last_venue', r.account)", core)
+        self.assertIn("accountsOf('US_EXCHANGE')[0]", core)
+        # the new pages: their T.pages entry, else the NOT YET BUILT panel (no API call); the hub is T.pages.history.hub
+        for page in ("pending", "completed", "accounts", "cash_collateral", "derivatives", "history"):
+            self.assertRegex(core, r"\n    %s: \['(?:[^'\\]|\\.)+', '(?:[^'\\]|\\.)+'\]" % page)
+        self.assertIn("var h = T.pages.history && T.pages.history.hub;", core)
+        # C2: T.hasModule reads /api/health .modules, which the boot fetches before the first route renders
+        self.assertIn("T.hasModule = function (name)", core)
+        self.assertIn("m[name] === 'bound'", core)
+        self.assertIn("var bootHealth = T.api.get('/api/health'", core)
+        # C1: on an account page Pending / Completed open filtered to it, Cash & Collateral opens its Cash & financing
+        self.assertIn("'page.pending': function () { var id = routeAccount(); T.router.go(id ? '#/pending?account=' + encodeURIComponent(id) : '#/pending'); }", core)
+        self.assertIn("'page.completed': function () { var id = routeAccount(); T.router.go(id ? '#/completed?account=' + encodeURIComponent(id) : '#/completed'); }", core)
+        self.assertIn("'page.cash_collateral': function () { var id = routeAccount(); T.router.go(id ? T.router.account(id, 'cash') : '#/cash'); }", core)
+        self.assertNotIn("'page.news'", core)
+
+    def test_optional_pages_listed_alike_and_the_dashboard_required(self):
+        from finsim.terminal import api
+        p = _Refs()
+        p.feed(read(INDEX))
+        for rel in api.PLANNED_STATIC:                                         # api.py, index.html and the fixture server list the same optional files
+            self.assertIn("/static/" + rel, p.optional, rel)
+            self.assertIn(rel, fx.OPTIONAL_STATIC, rel)
+        for rel in ("pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js", "components/imports.js"):
+            self.assertIn(rel, api.PLANNED_STATIC, rel)
+        self.assertIn("/static/pages/dashboard.js", p.scripts)                 # 15.7 item 1: required in 1.0.5
+        self.assertNotIn("/static/pages/dashboard.js", p.optional)
+        self.assertNotIn("pages/dashboard.js", api.PLANNED_STATIC)
+        self.assertNotIn("pages/dashboard.js", fx.OPTIONAL_STATIC)
+        self.assertTrue(os.path.isfile(os.path.join(STATIC, "pages", "dashboard.js")))
+        self.assertLess(p.scripts.index("/static/pages/history.js"), p.scripts.index("/static/pages/dashboard.js"))
+        # news is gone from the shell: no page file, no tag, no root, no fixture route
+        self.assertFalse(os.path.exists(os.path.join(STATIC, "pages", "news.js")))
+        self.assertNotIn("/static/pages/news.js", p.scripts)
+        self.assertNotIn("news", p.ids)
+        self.assertNotIn("pages/news.js", fx.OPTIONAL_STATIC)
+        self.assertIsNone(fx.match_route("GET", "/api/news"))
+        self.assertEqual("attention_summary", fx.match_route("GET", "/api/attention/summary"))
+        # the meta description says what this is (F15)
+        html = read(INDEX)
+        m = re.search(r'<meta name="description" content="([^"]+)">', html)
+        self.assertEqual("Ledger-backed paper-trading simulator: real delayed market data, simulated executions, fictional capital.", m.group(1))
+        self.assertNotIn("no simulation", html)
+
+    def test_sidebar_first_row_and_no_news_strings(self):
+        side = read(os.path.join(STATIC, "components", "sidebar.js"))
+        first = re.search(r"nav\.appendChild\(item\('([^']+)', '([^']+)', \{ key: keyOf\('([a-z_.]+)'\)", side)
+        self.assertEqual(("#/dashboard", "Dashboard", "page.dashboard"), first.groups())    # 15.7 item 2: the Dashboard row (F12) at the top
+        for name, path in (("sidebar.js", os.path.join(STATIC, "components", "sidebar.js")), ("dashboard.js", os.path.join(STATIC, "pages", "dashboard.js")),
+                           ("index.html", INDEX)):
+            src = read(path)
+            for s in NEWS_STRINGS:
+                self.assertNotIn(s.lower(), src.lower(), "%s still says %r" % (name, s))
+        self.assertNotIn("Daily News", read(os.path.join(STATIC, "keys.js")))
+        # Settings > Data Status shows its news block only when a server still reports one (15.7 item 5)
+        settings = read(os.path.join(STATIC, "pages", "settings.js"))
+        self.assertIn("var nw = h.news || null;\n      if (nw) {\n        p.appendChild(T.h('h2', null, 'news'));", settings)
+        self.assertNotIn("news is off in this runtime", settings)
+
+    def test_c4_shell_classes(self):
+        css = read(NEW_CSS)
+        for cls in ("filterbar", "stage-chip", "stage-working", "stage-partial", "stage-held", "stage-queued", "stage-filled", "stage-cancelled",
+                    "stage-expired", "stage-rejected", "stage-settling", "stage-failed", "badge-asof", "badge-model", "drawer", "drawer-tabs", "kv-grid"):
+            self.assertRegex(css, r"\.%s[\s,.{:>]" % re.escape(cls), cls)
+        core = read(os.path.join(STATIC, "core.js"))
+        self.assertIn("T.kvGrid = function (pairs)", core)
+        self.assertIn("T.stageChip = function (stage, label, title)", core)
 
 
 class FixtureServerTest(unittest.TestCase):

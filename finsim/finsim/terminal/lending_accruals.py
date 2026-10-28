@@ -692,7 +692,11 @@ def pro_rata_c_(total_c: int, qty: int, outstanding: int) -> int:
 
 
 def sl_collateral_mark(ctx: TxContext, services, r, mark_date: str) -> dict:
-    """The daily 102 % collateral mark of a securities loan from the recorded CLOSE of ``mark_date`` (missing -> RejectError, retried)."""
+    """The daily 102 % collateral mark of a securities loan from the recorded CLOSE of ``mark_date`` (missing -> RejectError, retried).
+    POSTCLOSE-06: the 17:10 mark of D, and its funding sweep, are dated D like the stock-borrow mark (``lending.mark_stamp``)."""
+    from .lending import mark_stamp            # lazy: lending <-> lending_accruals would be an import cycle at module level
+    from .lifecycle_jobs import with_asof
+    stamp = mark_stamp(ctx, mark_date)
     lid, aid, iid = r["loan_id"], r["account_id"], r["instrument_id"]
     if r["status"] != "OPEN":
         return {"loan_id": lid, "skipped": "closed", "delta_c": 0}
@@ -709,12 +713,12 @@ def sl_collateral_mark(ctx: TxContext, services, r, mark_date: str) -> dict:
     if delta > 0:
         lines = [dr(aid, "1010", "USD", delta, memo=f"more collateral in ({lid})"), cr(aid, "2520", "USD", delta, instrument_id=iid, memo=lid)]
     elif delta < 0:
-        execution.fund(ctx, aid, "USD", -delta, "sec_loan", lid, None, immediate=True, overdraft=True, services=services)
+        with_asof(ctx, stamp, lambda: execution.fund(ctx, aid, "USD", -delta, "sec_loan", lid, None, immediate=True, overdraft=True, services=services))
         lines = [dr(aid, "2520", "USD", -delta, instrument_id=iid, memo=lid), cr(aid, "1010", "USD", -delta, memo=f"excess collateral returned ({lid})")]
     if delta:
         eid = ctx.post(Entry("SECLEND", f"collateral mark {mark_date} on {lid}: 102 % of {sl_outstanding(r):,} x {mark} = {fmt_money(required)} ({note});"
                                         f" {'more collateral in' if delta > 0 else 'excess returned'} {fmt_money(abs(delta))}", lines, f"slmark:{lid}:{mark_date}",
-                             ref_type="sec_loan", ref_id=lid))
+                             ref_type="sec_loan", ref_id=lid, business_date=stamp))
     ctx.conn.execute("UPDATE sec_loans SET collateral_c=?, last_mark_date=? WHERE loan_id=?", (required, mark_date, lid))
     ctx.touched_accounts.add(aid)
     ctx.touched_instruments.add((aid, iid))

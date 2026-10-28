@@ -12,20 +12,25 @@ Conventions stated here
   resolves the dependencies between jobs (a CLOSE recorded late feeds the collateral mark, the mark feeds the night's
   accrual) inside ONE tick; SNAPSHOT then sees the settled state; expiry, housekeeping and integrity run last.
 - MARKS (§11.4): the US CLOSE is captured from 16:20 ET (index options 16:35; every group: its session close + 20 min)
-  from a record whose ``quote_time`` is on that date and at or after the session end − 60 s; futures SETTLE at the
+  from a record whose ``quote_time`` is on that date and at or after the session end − 60 s - for an equity / ETF the OFFICIAL
+  closing print only (POSTCLOSE-01: quote time at or after the close, never a pre-16:00 print; else the session's daily bar,
+  rounded to the tick; else retried every 5 minutes, never recorded early), and until the day's 17:05 swap VM a recorded equity
+  CLOSE that differs from the official print the cache then holds is re-recorded and disclosed (CLOSE_REVISED); futures SETTLE at the
   group's settle time + 5 min from the print at or before the settle time (``products.futures.select_print``); FX
   at 17:05.  After downtime the missed dates come from ``YahooChart.daily`` bars (method ``daily_close``, note
   "recorded late") — fetched scheduler-side, outside any transaction, and written through the light command
   ``lifecycle.marks_record``; a date with no daily bar (symbol delisted) stays unrecorded with one WARN attention
   MARK_MISSING; a provider failure defers the key an hour.  SPY is always recorded (the §6.9 benchmark).  When the
-  next session's ``prev_close`` differs from a recorded CLOSE by more than one tick an INFO CLOSE_REVISED item
-  reports it; postings already made are never reversed.  The underlyings of OPEN TRS contracts and the FX pairs of OPEN
+  next session's ``prev_close`` differs from a recorded CLOSE (by any amount, one tick included: POSTCLOSE-02) an INFO CLOSE_REVISED
+  item reports it; postings already made are never reversed.  The underlyings of OPEN TRS contracts and the FX pairs of OPEN
   cross-currency swaps are recorded too (their resets settle at those closes).  Held and working instruments, the underlyings of held
   options and the FX pairs of foreign cash balances are the recorded set.
 - SNAPSHOT (§6.6): at the ``snapshot_time_et`` setting (17:45) every calendar day, per OPEN account and per lifetime
   (``{lifetime}:ALL``), key ``{scope}:{date}``, from ``accounting.snapshot_row`` (NAV, cumulative components,
-  ``flows_day_c``, ``pnl_day_c``, ``partial``, ``missing``) — catch-up writes the missed days from the ledger as it
-  stands, flagged ``late`` in ``detail_json``; an existing row is never replaced (``nav_snapshots`` PK = idem).  The
+  ``flows_day_c``, ``pnl_day_c``, ``partial``, ``missing``) at the date's recorded CLOSE / SETTLE marks (PORTFOLIO-14,
+  ``snapshot_row(dated=True)``) — a catch-up writes each missed day as the BUSINESS-DATE NAV of that day (``accounting.nav_as_of``,
+  C9d: the entries dated on or before it at its own marks, never the ledger as it stands), flagged ``late`` in ``detail_json``;
+  an existing row is never replaced (``nav_snapshots`` PK = idem; a restatement writes versions beside it, ``navhistory``).  The
   job first calls ``books.unlock_private`` (scheduler-side) so a lifetime that crossed the QP threshold gets its
   Private Markets account before its snapshot.
 - EXPIRY: EXPIRE_ORDERS runs ``order.expire`` per order whose ``expires_ts`` has passed (DAY at the session close,
@@ -85,6 +90,9 @@ SETTLE_DELAY_S = 5 * 60           # futures SETTLE at settle time + 5 min; FX at
 MARKS_LOOKBACK_DAYS = 10
 MISSING_RETRY_S = 3600            # a date whose daily bar is missing or whose provider failed: retried hourly
 MISSING_PARK_S = 86400            # after MARK_MISSING was raised: once a day
+TODAY_RETRY_S = 300               # POSTCLOSE-01: today's official close not published yet -> retried every 5 minutes, never recorded early
+REVISE_UNTIL_ET = "17:05"         # POSTCLOSE-01: until the day's swap VM (17:05) a recorded equity CLOSE that differs from the official print is re-recorded
+OFFICIAL_CLOSE_KINDS = ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED")   # their CLOSE is the regular-session closing print (at or after the close)
 COLLATERAL_MARK_ET = "17:10"
 MARGIN_MARK_ET = "17:10"
 HOUSEKEEPING_ET = "00:15"
@@ -208,7 +216,31 @@ class MarksRecord(Job):
                 if ready is None or now < ready:
                     continue
                 keys.append(f"{iid}:{d.isoformat()}")
+            # POSTCLOSE-01: until today's 17:05 VM, a recorded equity CLOSE of today that differs from the official closing print the cache
+            # now holds (quote time at or after the close) is re-recorded ("{iid}:{date}:r"), so the VM, the collateral marks and the
+            # evening snapshot read the official close
+            if inst.kind in OFFICIAL_CLOSE_KINDS and today.isoformat() in have and now < epoch_of(today, REVISE_UNTIL_ET):
+                rec = _quote_record(self.services, iid)
+                official = self._official_print(rec, inst, today, sessions)
+                if official is not None:
+                    row = conn.execute("SELECT price FROM marks WHERE instrument_id=? AND mark_date=? AND kind='CLOSE'", (iid, today.isoformat())).fetchone()
+                    if row is not None and Decimal(str(row["price"])) != official:
+                        keys.append(f"{iid}:{today.isoformat()}:r")
         return keys
+
+    @staticmethod
+    def _official_print(rec, inst, d: date, sessions) -> Optional[Decimal]:
+        """POSTCLOSE-01: the official closing print of an equity for ``d`` in a cached record - its price when its quote time is on ``d``
+        and AT OR AFTER the session close (Yahoo's regularMarketPrice once the closing auction printed), else None (a 15:59:59 print is
+        not the close: the key waits and retries)."""
+        if rec is None or getattr(rec, "error", None):
+            return None
+        close = sessions.session_close(inst.session_group, d)
+        qt = getattr(rec, "quote_time", None)
+        px = rec.price() if hasattr(rec, "price") else getattr(rec, "last", None)
+        if close is None or qt is None or px is None or ny_of(int(qt)).date() != d or int(qt) < int(close):
+            return None
+        return qprice(px)
 
     # -- print resolution (scheduler-side, outside any transaction)
     def _from_record(self, services, inst, d: date, now: int) -> Optional[dict]:
@@ -235,10 +267,14 @@ class MarksRecord(Job):
         px = rec.price() if hasattr(rec, "price") else getattr(rec, "last", None)
         if close is None or qt is None or px is None:
             return None
-        if ny_of(int(qt)).date() != d or int(qt) < int(close) - 60:
+        official = inst.kind in OFFICIAL_CLOSE_KINDS
+        # POSTCLOSE-01: an equity's CLOSE is the regular-session closing print - quote time at or after the close, never a pre-16:00 print
+        # (the 15:59:59 ORCL 130.55 of 2026-10-27 against the official 130.53); options and FX keep the one-minute tolerance
+        if ny_of(int(qt)).date() != d or int(qt) < int(close) - (0 if official else 60):
             return None
         return {"instrument_id": inst.instrument_id, "mark_date": d.isoformat(), "kind": "CLOSE", "price": str(qprice(px)), "currency": inst.currency, "quality": "close",
-                "source": getattr(rec, "source", "") or "", "method": "direct", "quote_time": int(qt), "fetched_at": int(getattr(rec, "fetched_at", 0) or now), "note": None,
+                "source": getattr(rec, "source", "") or "", "method": "official_close" if official else "direct", "quote_time": int(qt),
+                "fetched_at": int(getattr(rec, "fetched_at", 0) or now), "note": "official close: the regular-session closing print" if official else None,
                 "prev_close": None if getattr(rec, "prev_close", None) is None else str(rec.prev_close)}
 
     def _from_daily(self, services, inst, d: date, now: int, bars_cache: dict, failures: dict) -> Tuple[Optional[dict], str]:
@@ -269,9 +305,16 @@ class MarksRecord(Job):
             qt = sessions.settle_time(inst.session_group, d)
         else:
             qt = sessions.session_close(inst.session_group, d)
-        return {"instrument_id": inst.instrument_id, "mark_date": d.isoformat(), "kind": mark_kind(inst), "price": str(qprice(bar.c)), "currency": inst.currency,
+        px = Decimal(str(bar.c))
+        if inst.kind in OFFICIAL_CLOSE_KINDS:
+            # POSTCLOSE-01: a daily bar carries the official close as a float (ORCL 130.52999878): an equity's closing print is on its tick grid
+            tick = Decimal(str(inst.tick or "0.01"))
+            if tick > 0:
+                px = (px / tick).quantize(Decimal(1)) * tick
+        late = d < ny_of(now).date()
+        return {"instrument_id": inst.instrument_id, "mark_date": d.isoformat(), "kind": mark_kind(inst), "price": str(qprice(px)), "currency": inst.currency,
                 "quality": "close", "source": "Yahoo daily bars (observed close)", "method": "daily_close", "quote_time": None if qt is None else int(qt), "fetched_at": now,
-                "note": "recorded late"}, "recorded"
+                "note": "recorded late" if late else "official close from the daily bar (the session has closed)"}, "recorded"
 
     def _revision(self, conn, inst, row: dict, sessions) -> Optional[dict]:
         """CLOSE_REVISED: the record's prev_close vs the recorded CLOSE of the previous trading day, beyond one tick."""
@@ -286,7 +329,8 @@ class MarksRecord(Job):
         if rec is None:
             return None
         diff = abs(Decimal(str(pc)) - Decimal(rec["price"]))
-        if diff <= Decimal(inst.tick or "0.01"):
+        if diff == 0:
+            # POSTCLOSE-02: any difference is disclosed, a one-tick one included (C 122.68 recorded vs the official 122.69 on 2026-10-27)
             return None
         return {"instrument_id": inst.instrument_id, "mark_date": prev.isoformat(), "recorded": rec["price"], "prev_close": str(pc), "diff": str(diff)}
 
@@ -301,10 +345,25 @@ class MarksRecord(Job):
         failures: dict = {}
         with services.db.reader() as conn:
             for key in keys:
-                iid, ds = key.rsplit(":", 1)
+                revise = key.endswith(":r")
+                iid, ds = (key[:-2] if revise else key).rsplit(":", 1)
                 d = date.fromisoformat(ds)
                 inst = master.get(iid, conn)
                 if inst is None:
+                    continue
+                if revise:
+                    # POSTCLOSE-01: today's recorded CLOSE differs from the official closing print the cache now holds -> re-record it before
+                    # the 17:05 VM (INSERT OR REPLACE), disclosed as CLOSE_REVISED; postings already made are never reversed
+                    old = conn.execute("SELECT price FROM marks WHERE instrument_id=? AND mark_date=? AND kind='CLOSE'", (iid, ds)).fetchone()
+                    px = self._official_print(_quote_record(services, iid), inst, d, services.sessions)
+                    row = self._from_record(services, inst, d, now) if px is not None else None
+                    if old is None or row is None or Decimal(str(old["price"])) == px:
+                        continue
+                    row.pop("prev_close", None)
+                    row["note"] = f"official close {px} re-recorded before the {REVISE_UNTIL_ET} VM (was {old['price']})"
+                    rows.append(row)
+                    revised.append({"instrument_id": iid, "mark_date": ds, "recorded": str(old["price"]), "prev_close": str(px),
+                                    "diff": str(abs(px - Decimal(str(old["price"])))), "rerecorded": True})
                     continue
                 row = self._from_record(services, inst, d, now)
                 outcome = "recorded"
@@ -322,6 +381,10 @@ class MarksRecord(Job):
                 if outcome == "no_bar" and d < ny_of(now).date():
                     missing.append({"instrument_id": iid, "mark_date": ds, "symbol": getattr(inst, "yahoo_symbol", None)})
                     scheduler.defer(self.name, key, MISSING_PARK_S)
+                elif d == ny_of(now).date():
+                    # POSTCLOSE-01: today's official close is not published yet (no print at or after the close, no daily bar): retried in 5
+                    # minutes, never recorded early from a pre-close print
+                    scheduler.defer(self.name, key, TODAY_RETRY_S)
                 else:
                     scheduler.defer(self.name, key, MISSING_RETRY_S)
         res = None
@@ -352,8 +415,13 @@ def h_marks_record(ctx: TxContext, payload: dict) -> dict:
     for r in payload.get("revised") or []:
         ref = f"{r['instrument_id']}:{r['mark_date']}"
         if ctx.conn.execute("SELECT 1 FROM attention WHERE code='CLOSE_REVISED' AND ref_type='mark' AND ref_id=?", (ref,)).fetchone() is None:
-            ctx.attention("INFO", SOURCE, "CLOSE_REVISED", f"{r['instrument_id']}: the next session's prev_close {r['prev_close']} differs from the recorded CLOSE {r['recorded']}"
-                          f" of {r['mark_date']} by {r['diff']}; postings already made are not reversed (disclosed)", dict(r, ref_type="mark", ref_id=ref, auto_resolve=1))
+            if r.get("rerecorded"):
+                text = (f"{r['instrument_id']}: the CLOSE of {r['mark_date']} was re-recorded at the official closing print {r['prev_close']} (it read {r['recorded']},"
+                        f" a difference of {r['diff']}) before the {REVISE_UNTIL_ET} variation margin; postings already made are not reversed")
+            else:
+                text = (f"{r['instrument_id']}: the next session's prev_close {r['prev_close']} differs from the recorded CLOSE {r['recorded']}"
+                        f" of {r['mark_date']} by {r['diff']}; postings already made are not reversed (disclosed)")
+            ctx.attention("INFO", SOURCE, "CLOSE_REVISED", text, dict(r, ref_type="mark", ref_id=ref, auto_resolve=1))
             opened += 1
     return dict(out, attention=opened)
 
@@ -407,8 +475,14 @@ class Snapshot(Job):
         conn = ctx.conn
         if conn.execute("SELECT 1 FROM nav_snapshots WHERE account_id=? AND snap_date=?", (scope, ds)).fetchone() is not None:
             return {"status": "DONE", "note": "already present", "posted": False}
-        row = services.accounting.snapshot_row(scope, d)
         late = d < ny_of(ctx.ts).date()
+        if late and hasattr(services.accounting, "nav_as_of"):
+            # C9d / PORTFOLIO-01: a LATE (catch-up) snapshot is the business-date NAV of its date at that date's marks, never the
+            # ledger as it stands now (the 10-22 row taken 10-23 08:04 had counted 10-23's settlements and accruals)
+            row = services.accounting.nav_as_of(scope, d, snapshot=ctx.marks)
+        else:
+            # PORTFOLIO-14: the evening snapshot values listed positions at their recorded CLOSE / SETTLE of the date
+            row = services.accounting.snapshot_row(scope, d, dated=True)
         if late:
             detail = json.loads(row["detail_json"] or "{}")
             detail["late"] = True

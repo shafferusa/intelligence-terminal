@@ -32,6 +32,11 @@
  *   and working orders already need, then one Treasury sweep, then PB financing), the schedule and the fixing BEFORE anything
  *   is booked; booking needs a confirmation that repeats those numbers.  A cross-currency preview and its confirmation show the
  *   deal FX rate with its source and time.
+ * - FINSIM1 (P4): a contract booked as of its trade date (the owner's Goldman contracts) carries an AS-OF badge with its source label
+ *   ("As-of booking - simulated OTC trade with ..., value date ..., entered ... by the operator at the owner's instruction (batch ...)")
+ *   and the chip CONFIRMED (as-of booking at the owner's instruction; no electronic confirmation in the simulator); every mark is
+ *   badged MODEL (a valuation from observed inputs, never a dealer price); the drawer shows the trade / value dates, the IRS contract
+ *   curve spread, what NAV carries now (the intraday model mark or the mark of the last VM), the cost basis and the P&L by kind.
  * - The contracts table: status and Terminate first, then the contract, kind and side, notional, maturity, the live model mark
  *   (computed), the VM balance (+ received / - posted), IM and DV01; the dealt terms, accrued legs, next events, fixings and
  *   the VM history (each entry linked to its journal entry) are in the drawer.  It sits in its own horizontal scroller, so
@@ -207,6 +212,32 @@
     }
     if (c.kind === 'IRS') { return (c.fixed_rate_pct || fmtPct(c.fixed_rate)) + ' fixed' + (c.par_rate_dealt ? ' (model par ' + fmtPct(c.par_rate_dealt) + ' at dealing)' : ''); }
     return (d.terms_text || d.summary || '') || 'see the details below';
+  }
+  /* FINSIM1 (P4): the as-of badge of a contract booked at the owner's instruction (its source label as the title) */
+  function asofBadge(c) {
+    if (!c || !(c.asof || c.booking === 'AS_OF')) { return null; }
+    return T.h('span', { class: 'badge-asof', title: c.source_label || 'as-of booking' }, 'AS-OF');
+  }
+  function modelBadge() {
+    return T.h('span', { class: 'badge-model', title: 'a model valuation from observed inputs - never a dealer-confirmed price' }, 'MODEL');
+  }
+  /* PORTFOLIO-06: the contract against the market now, per kind (C13 position fields) */
+  function nowText(c) {
+    var f = c.position || {}, x = f.extra || {};
+    if (f.entry == null && f.current == null) { return null; }
+    if (c.kind === 'TRS') {
+      return (x.underlying_id || '') + ' ' + (f.current == null ? 'not observed now' : px(f.current)) + ' vs reset ' + px(f.entry) + ' on ' +
+        (f.units == null ? '' : T.fmt.qty(f.units)) + ' reference shares';
+    }
+    if (c.kind === 'CDX') {
+      return 'spread now ' + (f.current || 'not observed') + ' vs dealt ' + (f.entry || '') + ' . coupon ' + (x.coupon_bp || '') + ' bp' +
+        (x.upfront ? ' . upfront ' + x.upfront + ' ' + money(x, 'upfront').replace('-', '') : '');
+    }
+    if (c.kind === 'IRS') {
+      return 'par now ' + (f.current == null ? 'n/a' : fmtPct(f.current)) + (x.curve_spread_bp ? ' (with the contract curve spread)' : '') + ' vs fixed ' +
+        fmtPct(f.entry) + ' . DV01 ' + (x.dv01 == null && x.dv01_c == null ? 'n/a' : money(x, 'dv01'));
+    }
+    return x.summary || null;
   }
   /* the accrued legs per currency (an XCCY's foreign legs accrue in their own currency) */
   function accruedText(c) {
@@ -855,17 +886,24 @@
     function appendRow(body, c) {
       var mark = c.mark || {};
       var open = !!state.open[c.contract_id];
-      var markTitle = (mark.quality || '') + (mark.as_of ? ' as of ' + nyTime(mark.as_of) + ' ET' : '') + (mark.note ? ' . ' + mark.note : '') + ' . NAV overlay (mark at the last VM) ' + money(c, 'mark');
+      var pf = c.position || null;
+      var markTitle = (mark.quality || '') + (mark.as_of ? ' as of ' + nyTime(mark.as_of) + ' ET' : '') + (mark.note ? ' . ' + mark.note : '') +
+        (pf ? ' . in NAV ' + money(pf, 'mv') + ' (' + (pf.mark_label || '') + ')' : ' . the mark at the last VM ' + money(c, 'mark'));
       var notional = c.notional == null && c.notional_c == null ? 'n/a' : (T.fmt.compact ? T.fmt.compact(c.notional != null ? c.notional : (c.notional_c / 100)) : money(c, 'notional'));
+      var statusCell = T.h('td', { class: 'l' });
+      if (c.confirm_status) { statusCell.appendChild(T.stageChip('filled', c.confirm_status, c.confirm_label || '')); statusCell.appendChild(document.createTextNode(' ')); }
+      statusCell.appendChild(c.status === 'OPEN' ? T.h('button', { class: 'btn small', title: 'OPEN - terminate at the current model mark', onclick: function () { onTerminate(c); } }, 'Terminate')
+        : (T.stateTag ? T.stateTag(c.status) : T.h('span', null, c.status || '')));
+      var badge = asofBadge(c);
       var tr = T.h('tr', { class: c.status === 'OPEN' ? '' : 'dim', 'data-contract': c.contract_id },
-        T.h('td', { class: 'l' }, c.status === 'OPEN' ? T.h('button', { class: 'btn small', title: 'OPEN - terminate at the current model mark', onclick: function () { onTerminate(c); } }, 'Terminate')
-          : (T.stateTag ? T.stateTag(c.status) : (c.status || ''))),
+        statusCell,
         T.h('td', { class: 'l' }, T.h('a', { href: '#', title: (open ? 'hide' : 'show') + ' the terms and history', onclick: function (e) { e.preventDefault(); state.open[c.contract_id] = !state.open[c.contract_id]; renderContracts(); } },
-          (open ? '- ' : '+ ') + c.contract_id)),
+          (open ? '- ' : '+ ') + c.contract_id), badge ? ' ' : '', badge),
         T.h('td', { class: 'st-side' }, T.h('b', null, kindShort(c)), ' ', sideText(c.side, c) + (c.fixing_method === 'COMPOUND_ARREARS' ? ' (compounded)' : '')),
         T.h('td', { class: 'num', title: money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '') }, notional + ' ' + (c.notional_ccy || c.currency || '')),
         T.h('td', { class: 'l' }, c.maturity_date || ''),
-        T.h('td', { class: 'num ' + (T.signCls ? T.signCls(mark.value) : ''), title: markTitle }, amt(mark.value) + (mark.quality && mark.quality !== 'computed' ? ' ' + mark.quality : '')),
+        T.h('td', { class: 'num ' + (T.signCls ? T.signCls(mark.value) : ''), title: markTitle }, amt(mark.value) + (mark.quality && mark.quality !== 'computed' ? ' ' + mark.quality : ''),
+          ' ', modelBadge()),
         T.h('td', { class: 'num', title: (c.margin_mode || '') + ': + received from the PB / - posted to the PB' }, money(c, 'vm_balance')),
         T.h('td', { class: 'num' }, money(c, 'im_balance')),
         T.h('td', { class: 'num' }, c.dv01 == null && c.dv01_c == null ? 'n/a' : money(c, 'dv01')));
@@ -877,11 +915,28 @@
       var box = T.h('div', { class: 'history st-drawer' });
       var mark = c.mark || {};
       var d = c.detail || {};
-      var kv = [['dealt', dealtText(c)], ['side', sideText(c.side, c)], ['notional', money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '')],
-        ['dates', (c.start_date || '') + ' to ' + (c.maturity_date || '') + ' . ' + (c.margin_mode || 'CTM') + ' variation margin'],
-        ['model mark', amt(mark.value) + ' . ' + (mark.quality || '') + (mark.as_of ? ' as of ' + nyTime(mark.as_of) + ' ET' : '') + (mark.note ? ' . ' + mark.note : '')],
-        ['NAV overlay', money(c, 'mark') + ' (the mark at the last variation margin; 0 after a settled-to-market settlement)'],
-        ['accrued', accruedText(c)]];
+      var vmCount = (h.vm || []).length;
+      var pf = c.position || null;
+      var kv = [];
+      if (c.source_label) { kv.push(['source', T.h('span', null, asofBadge(c), asofBadge(c) ? ' ' : '', c.source_label)]); }
+      if (c.confirm_status) { kv.push(['confirmation', c.confirm_label || c.confirm_status]); }
+      kv.push(['dealt', dealtText(c)]);
+      kv.push(['side', sideText(c.side, c)]);
+      kv.push(['notional', money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '')]);
+      kv.push(['dates', (c.trade_date ? 'traded ' + c.trade_date + ' . ' : '') + (c.start_date || '') + ' to ' + (c.maturity_date || '') + ' . ' + (c.margin_mode || 'CTM') +
+        ' variation margin' + (c.asof && c.entered_ts ? ' . entered ' + nyTime(c.entered_ts) + ' ET' : '')]);
+      if (c.curve_spread_text) { kv.push(['curve spread', c.curve_spread_text]); }
+      var now = nowText(c);
+      if (now) { kv.push(['now', now]); }
+      kv.push(['model mark', T.h('span', null, amt(mark.value) + ' . ' + (mark.quality || '') + (mark.as_of ? ' as of ' + nyTime(mark.as_of) + ' ET' : '') +
+        (mark.note ? ' . ' + mark.note : '') + ' ', modelBadge())]);
+      if (pf) {
+        kv.push(['in NAV', money(pf, 'mv') + ' (' + (pf.mark_label || '') + ') . unrealised ' + money(pf, 'unrealised') +
+          ((T.num(pf, 'cost') || 0) !== 0 ? ' against the contract cost ' + money(pf, 'cost') : '')]);
+      }
+      kv.push(['last VM mark', money(c, 'mark') + (vmCount ? ' (the mark at the last variation margin; 0 after a settled-to-market settlement)'
+        : ' (no variation margin yet: the mark at booking)')]);
+      kv.push(['accrued', accruedText(c)]);
       if (c.kind === 'TRS') {
         var fn = d.financing_now || null;
         kv.push(['financing now', fn ? (fmtPct(fn.rate) + ' (SOFR ' + fn.sofr + ' % ' + fn.obs_date + ', spread ' + fmtPct(d.spread) + ')') : 'no SOFR print within 10 days (waits; never defaulted)']);
@@ -901,7 +956,9 @@
       if (c.detail_error) { kv.push(['detail', c.detail_error]); }
       kv.push(['next events', eventsText(c.next_events) || 'none']);
       kv.push(['DV01', c.dv01 == null && c.dv01_c == null ? 'n/a' : money(c, 'dv01') + ' (PV change for +1 bp)']);
-      kv.push(['swap result', money(c, 'result')]);
+      kv.push(['swap result', money(c, 'result') + ' realised' + ((T.num(c, 'financing') || 0) !== 0 ? ' . financing ' + money(c, 'financing') : '') +
+        ((T.num(c, 'coupons') || 0) !== 0 ? ' . coupons / premium ' + money(c, 'coupons') : '') + ((T.num(c, 'dividends') || 0) !== 0 ? ' . dividend equivalents ' +
+        money(c, 'dividends') : '') + ' (financing and coupons: + paid / - received)']);
       kv.push(['remaining periods', String(c.remaining_periods == null ? '' : c.remaining_periods)]);
       box.appendChild(T.kv(kv));
       var vm = h.vm || [];
@@ -1072,7 +1129,8 @@
     findContract(acct, cid).then(function (c) {
       var mark = c.mark || {};
       var kv = T.kv([['kind / side', kindShort(c) + ' . ' + sideText(c.side, c)], ['notional', money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '')],
-        ['status', c.status || ''], ['maturity', c.maturity_date || ''], ['model mark', amt(mark.value) + (mark.quality ? ' (' + mark.quality + ')' : '')],
+        ['status', (c.status || '') + (c.confirm_label ? ' . ' + c.confirm_label : '')], c.source_label ? ['source', c.source_label] : null,
+        ['maturity', c.maturity_date || ''], ['model mark', amt(mark.value) + (mark.quality ? ' (' + mark.quality + ')' : '') + ' . MODEL'],
         ['VM balance', money(c, 'vm_balance') + ' (' + (c.margin_mode || 'CTM') + ')'], ['IM', money(c, 'im_balance')], ['accrued', accruedText(c)],
         ['next', eventsText((c.next_events || []).slice(0, 2)) || 'none']]);
       var actions = T.h('div', { class: 'actions' });

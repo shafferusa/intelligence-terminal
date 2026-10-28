@@ -504,7 +504,8 @@ class LendingTests(unittest.TestCase):
         s = sc.submit(rt, account_id=US_EXCHANGE, instrument_id="ABC", side="SELL", qty=10, order_type="MARKET")        # C27: recall first
         self.assertEqual((400, "SHARES_ON_LOAN"), (s.http, s.body["error"]["code"]))
         # Fri 17:10 mark at the CLOSE 50.00: 102 % = 51,000.00, no movement; Mon 17:15 at the CLOSE 52.00: to_c(1.02 x 1,000 x 52.00) = 53,040.00,
-        # +2,040.00 more collateral in (Dr 1010 / Cr 2520; business day 10-20)
+        # +2,040.00 more collateral in (Dr 1010 / Cr 2520; business day 10-19: FINSIM1_PLAN 15.13 POSTCLOSE-06, the evening mark of D is dated D,
+        # like the stock-borrow mark - before 1.0.5 it took the accounting day 10-20)
         sh.close_mark(rt, "ABC", "2026-10-16", "50.00")
         rt.clock.set("2026-10-16T17:12:00-04:00")
         mk = execute(rt, "lifecycle.seclend_mark", {"key": f"{lid}:2026-10-16"}, f"job:SECLEND_COLLATERAL_MARK:{lid}:2026-10-16", actor="lifecycle")
@@ -523,13 +524,16 @@ class LendingTests(unittest.TestCase):
         # Tue 10-20 10:00 recall: nights 10-17 .. 10-19 first -
         #   fee (CLOSE 50.00 carried Sat / Sun): cum 2 to_c(0.708333) = 0.71 -> 0.36; cum 3 to_c(1.0625) = 1.06 -> 0.35; night 10-19 at the CLOSE 52.00
         #   restarts the segment: to_c(52,000.00 x 0.00255 / 360) = to_c(0.368333) = 0.37 -> fee total 0.35 + 0.36 + 0.35 + 0.37 = 1.43
-        #   rebate on 51,000.00 (the Mon 17:15 mark belongs to 10-20): cum 2 9.55 -> 4.78; cum 3 to_c(14.3225) = 14.32 -> 4.77; cum 4 to_c(19.096667) = 19.10 -> 4.78
-        #   -> rebate total 19.10; collateral 53,040.00 back to the borrower; fee 1.43 received, rebate 19.10 paid
+        #   rebate on 51,000.00 for nights 10-17 / 10-18: cum 2 to_c(9.548333) = 9.55 -> 4.78; cum 3 to_c(14.3225) = 14.32 -> 4.77; night 10-19 on the
+        #   collateral at the close of 10-19, 53,040.00 (the Mon 17:15 mark of 10-19 is dated 10-19, POSTCLOSE-06), restarts the segment:
+        #   to_c(53,040.00 x 0.0337 / 360) = to_c(4.965133) = 4.97 -> rebate total 4.77 + 4.78 + 4.77 + 4.97 = 19.29
+        #   (it was 19.10, with night 10-19 on 51,000.00, while the mark took business date 10-20); collateral 53,040.00 back to the borrower;
+        #   fee 1.43 received, rebate 19.29 paid
         rt.clock.set("2026-10-20T10:00:00-04:00")
         rc = execute(rt, "credit.recall_securities", {"loan_id": lid})
         self.assertTrue(rc.ok, rc.body)
-        self.assertEqual((1000, True, 5304000, 143, 1910), (rc.body["qty"], rc.body["closed"], rc.body["collateral_returned_c"], rc.body["fee_received_c"], rc.body["rebate_paid_c"]))
-        self.assertEqual((0, 0, 0, 143, 1910), (bal(rt, US_EXCHANGE, "2520", "USD", "ABC"), bal(rt, US_EXCHANGE, "1420", "USD", "ABC"), bal(rt, US_EXCHANGE, "2420", "USD", "ABC"),
+        self.assertEqual((1000, True, 5304000, 143, 1929), (rc.body["qty"], rc.body["closed"], rc.body["collateral_returned_c"], rc.body["fee_received_c"], rc.body["rebate_paid_c"]))
+        self.assertEqual((0, 0, 0, 143, 1929), (bal(rt, US_EXCHANGE, "2520", "USD", "ABC"), bal(rt, US_EXCHANGE, "1420", "USD", "ABC"), bal(rt, US_EXCHANGE, "2420", "USD", "ABC"),
                                                  bal(rt, US_EXCHANGE, "4360", "USD", "ABC"), bal(rt, US_EXCHANGE, "5350", "USD", "ABC")))
         with rt.db.reader() as conn:
             self.assertEqual(0, lending.lent_qty(conn, US_EXCHANGE, "ABC"))

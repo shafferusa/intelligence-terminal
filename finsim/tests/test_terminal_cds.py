@@ -197,10 +197,16 @@ class CdxBookedTests(unittest.TestCase):
         self.assertEqual((p["upfront_c"], 258333), (up, reb))
         # IM: Dr 1330 / Cr 1010 60,000.00
         self.assertEqual([("1330", 6000000), ("1010", -6000000)], self.lines(f"im:{cid}:open"))
-        # the initial payment entry: Cr 4450 |upfront| (the upfront received is an OTC result), Cr 2340 2,583.33 (the pre-trade part of the full first
-        # coupon), Dr 1200 |upfront| + 2,583.33 receivable on 10-22
+        # the initial payment entry: Cr 2345 |upfront| (the upfront received is the contract's COST BASIS, FINSIM1 C11 / PORTFOLIO-08 - never a day-one
+        # realised gain), Cr 2340 2,583.33 (the pre-trade part of the full first coupon), Dr 1200 |upfront| + 2,583.33 receivable on 10-22
         net = -up + reb
-        self.assertEqual([("4450", up), ("2340", -258333), ("1200", net)], self.lines(f"otc:{cid}:upfront"))
+        self.assertEqual([("2345", up), ("2340", -258333), ("1200", net)], self.lines(f"otc:{cid}:upfront"))
+        # C9c: the position carries MV = mark0 against the cost basis 1335 - 2345 = upfront (negative: received), so unrealised = mark0 - upfront = the cost
+        # of dealing and nothing is realised; the upfront sits on 2345 for the contract
+        self.assertEqual((-up, 0), (bal(rt, PB_GS, "2345", "USD", cid), bal(rt, PB_GS, "4450", "USD", cid)))
+        pos = rt.accounting.position(PB_GS, cid)
+        self.assertEqual((p["mark0_c"] - up, 0), (pos.unrealised_c, rt.accounting.nav(PB_GS).realised_c))
+        self.assertEqual(p["cost_of_dealing_c"], pos.unrealised_c)
         s = self.q("SELECT * FROM settlements WHERE leg='UPFRONT'")
         self.assertEqual([(PB_GS, net, "1200", "2026-10-22", "PENDING")], [(x["account_id"], x["amount_c"], x["gl"], x["due_date"], x["status"]) for x in s])
         # the premium leg starts at the accrual start with the rebate as its cumulative; the seller's kind is marked done through the maturity
@@ -273,7 +279,7 @@ class CdxBookedTests(unittest.TestCase):
             key = f"swappay:{cid}:{night}"
             r = execute(rt, "lifecycle.accrue", {"key": key, "kind": "swappay", "ref": cid, "night": night}, f"job:ACCRUE_DAILY:{key}", actor="lifecycle")
             self.assertTrue(r.ok and r.body["status"] == "DONE", (night, r.body))
-        self.assertEqual([("4450", 8334), ("2340", -8334)], self.lines(f"accr:swappay:{cid}:2026-10-22"))
+        self.assertEqual([("4453", 8334), ("2340", -8334)], self.lines(f"accr:swappay:{cid}:2026-10-22"))           # 4453: CDS premium (financing)
         self.assertEqual(758333, bal(rt, PB_GS, "2340", "USD", cid))
         # the coupon of 12-21: Dr 2340 / Cr 1010 7,583.33 (the full first coupon; the rebate received at the trade refunded 2,583.33 of it)
         r = execute(rt, "cdx.coupon", {"contract_id": cid, "date": "2026-12-21", "key": f"{cid}:2026-12-21"}, f"job:CDX_COUPON:{cid}:2026-12-21", actor="lifecycle")
@@ -281,7 +287,7 @@ class CdxBookedTests(unittest.TestCase):
         self.assertEqual([("2340", 758333), ("1010", -758333)], self.lines(f"cdxcpn:{cid}:2026-12-21"))
         self.assertEqual((0, -758333), (bal(rt, PB_GS, "2340", "USD", cid), self.q("SELECT amount_c FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,))[0]["amount_c"]))
         # the premium expense booked = 61 nights (10-22 .. 12-21 is 60 nights + the rebate days netted): 7,583.33 - 2,583.33 = 5,000.00 over 60 nights
-        self.assertEqual(500000, sum(a for gl, a in (x for n in range(60) for x in self.lines(f"accr:swappay:{cid}:{(first + timedelta(days=n)).isoformat()}")) if gl == "4450"))
+        self.assertEqual(500000, sum(a for gl, a in (x for n in range(60) for x in self.lines(f"accr:swappay:{cid}:{(first + timedelta(days=n)).isoformat()}")) if gl == "4453"))
         # terminate 12-21 10:00 at mid - 0.50 bp (the dealer buys the protection back below mid): night 12-21 accrued first (3,000,000 x 1 % / 360 = 83.33),
         # then the value, the VM unwind (none posted here), the accrued premium 83.33 paid and the IM 60,000.00 released; FRED printed 0.78 % for Fri 12-18
         rt.rates.put("BAMLC0A0CM", [(date(2026, 12, 18), D("0.78"))], persist=False)
@@ -295,8 +301,13 @@ class CdxBookedTests(unittest.TestCase):
         self.assertEqual((val, 8333, 6000000, "2026-12-21"), (t["termination_value_c"], t["accrued_pay_c"], t["im_released_c"], t["accrued_through"]))
         # cash = the value (negative: the buyer pays to close a contract worth less than nothing at 77.5 bp) - the accrued 83.33
         self.assertEqual(val - 8333, t["cash_c"])
-        for gl in ("1330", "1320", "2330", "2340", "1225"):
+        for gl in ("1330", "1320", "2330", "2340", "1225", "2345", "1335"):
             self.assertEqual(0, bal(rt, PB_GS, gl, "USD", cid), gl)
+        # the contract cost (the upfront received, 2345) is released into the swap result with the close-out: Dr 2345 |upfront| / Cr 4450 |upfront|;
+        # 4450 = the termination value + the released upfront (realised), the premium on 4453
+        self.assertEqual(-body["initial_payment"]["upfront_c"], t["cost_released_c"])
+        self.assertIn(("2345", -body["initial_payment"]["upfront_c"]), self.lines(f"otc:{cid}:terminate"))
+        self.assertEqual(val - body["initial_payment"]["upfront_c"], bal(rt, PB_GS, "4450", "USD", cid))
         self.assertEqual([], self.q("SELECT * FROM accrual_state WHERE ref_id=?", (cid,)))
         assert_integrity(self, rt)
 
@@ -311,13 +322,25 @@ class CdxBookedTests(unittest.TestCase):
         body = self.book(hy, "ui:cdx-book-hy-sell")
         cid = body["contract_id"]
         up = body["initial_payment"]["upfront_c"]
-        self.assertEqual([("4450", up), ("1225", 430556), ("2100", -(up + 430556))], self.lines(f"otc:{cid}:upfront"))
+        # the seller PAYS the upfront: Dr 1335 (the contract cost paid, C11), Dr 1225 the rebate paid, Cr 2100 the payable on 10-22
+        self.assertEqual([("1335", up), ("1225", 430556), ("2100", -(up + 430556))], self.lines(f"otc:{cid}:upfront"))
         s = self.q("SELECT amount_c, gl FROM settlements WHERE leg='UPFRONT'")
         self.assertEqual([(-(up + 430556), "2100")], [(x["amount_c"], x["gl"]) for x in s])
         st = {r["kind"]: r for r in self.q("SELECT * FROM accrual_state WHERE ref_id=?", (cid,))}
         self.assertEqual((430556, "0.05", "2031-12-20"), (st["swaprcv"]["cum_c"], st["swaprcv"]["rate"], st["swappay"]["accrued_through"]))
         row = self.q("SELECT terms_json FROM otc_contracts WHERE contract_id=?", (cid,))[0]
         self.assertIs(True, json.loads(row["terms_json"])["receiver"])                            # long credit: a positive position quantity
+        assert_integrity(self, rt)
+        # terminated the same day: the upfront the seller PAID (the contract cost on 1335) is released into the swap result with the close-out -
+        # Dr 4450 |upfront| / Cr 1335 |upfront| - so 4450 = the termination value - the upfront paid and 1335 is 0 (C11 / PORTFOLIO-08)
+        r = execute(rt, "otc.terminate", {"contract_id": cid}, "ui:cdx-term-hy-sell")
+        self.assertTrue(r.ok, r.body)
+        t = r.body
+        self.assertEqual((-up, 0, 0), (t["cost_released_c"], bal(rt, PB_GS, "1335", "USD", cid), bal(rt, PB_GS, "2345", "USD", cid)))
+        self.assertIn(("1335", -up), self.lines(f"otc:{cid}:terminate"))
+        self.assertIn(("4450", up), self.lines(f"otc:{cid}:terminate"))
+        self.assertEqual(t["termination_value_c"] - up, bal(rt, PB_GS, "4450", "USD", cid))
+        self.assertEqual(t["realised_c"], t["termination_value_c"] - up)
         assert_integrity(self, rt)
 
     def test_no_price_without_a_fresh_proxy(self):

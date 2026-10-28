@@ -1,14 +1,25 @@
-"""WP-00 ledger tests (TERMINAL_DESIGN.md §19.10): balance validation, idem keys, the rounding plug, FIFO, L3, CLOSED accounts."""
+"""WP-00 ledger tests (TERMINAL_DESIGN.md §19.10): balance validation, idem keys, the rounding plug, FIFO, L3, CLOSED accounts; FINSIM1 C11
+(P4): the new OTC GLs (4451 / 4452 / 4453 / 1335 / 2345), the business date from ``ctx.asof_date`` and the chart rows on a database built from
+the 1.0.3.1 schema (tests/fixtures/terminal/schema_1031.sql, P1's fixture)."""
 from __future__ import annotations
 
+import os
 import random
 import shutil
+import sqlite3
 import tempfile
+import types
 import unittest
 from decimal import Decimal
 
-from tests.terminal_helpers import DEBT, TREASURY, US_EXCHANGE, assert_integrity, bal, buy, fund, make_runtime, post_entry, sell
-from finsim.terminal.ledger import CHART, natural
+from tests.terminal_helpers import DEBT, TREASURY, US_EXCHANGE, assert_integrity, bal, buy, execute, fund, make_runtime, post_entry, sell
+from finsim.terminal import config, ledger
+from finsim.terminal.clock import FakeClock
+from finsim.terminal.db import Database
+from finsim.terminal.ledger import CHART, Entry, cr, dr, natural
+
+SCHEMA_1031 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "terminal", "schema_1031.sql")
+NEW_GLS = ("1335", "2345", "4451", "4452", "4453")
 
 
 class LedgerTests(unittest.TestCase):
@@ -153,7 +164,122 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(100, natural("3000", -100))     # equity
         self.assertEqual(100, natural("4000", -100))     # income
         self.assertEqual(100, natural("5000", 100))      # expense
-        self.assertEqual(57, len(CHART))         # Build 2 P08: + 1420 / 2420 / 2520 / 4360 / 5350 (securities lent out)
+        # Build 2 P08: + 1420 / 2420 / 2520 / 4360 / 5350 (securities lent out) = 57; FINSIM1 C11: + 1335 / 2345 / 4451 / 4452 / 4453 = 62
+        self.assertEqual(62, len(CHART))
+
+    def test_otc_gls_kinds_and_groups(self):
+        """C11 / PORTFOLIO-08: 1335 / 2345 are the per-contract cost basis (asset / liability), outside the lot-tied cost GLs (L9) and outside
+        realised; 4451 / 4453 are financing (kind EXPENSE: a cost is positive, a financing RECEIVED is a negative cost, the sign the P&L explain
+        subtracts), 4452 is income; 4450 stays the realised swap result."""
+        kinds = {gl: (CHART[gl].kind, CHART[gl].per_instrument) for gl in NEW_GLS}
+        self.assertEqual({"1335": ("ASSET", True), "2345": ("LIABILITY", True), "4451": ("EXPENSE", True), "4452": ("INCOME", True),
+                          "4453": ("EXPENSE", True)}, kinds)
+        self.assertEqual(("1335", "2345"), ledger.OTC_COST_GLS)
+        for gl in ledger.OTC_COST_GLS:
+            self.assertNotIn(gl, ledger.COST_LONG_GLS + ledger.COST_SHORT_GLS + ledger.REALISED_GLS + ledger.INCOME_GLS + ledger.FINANCING_GLS)
+        self.assertIn("4451", ledger.FINANCING_GLS)
+        self.assertIn("4453", ledger.FINANCING_GLS)
+        self.assertIn("4452", ledger.INCOME_GLS)
+        self.assertEqual(("4000", "4400", "4450"), ledger.REALISED_GLS)
+        # a TRS payer RECEIVES 455.31 of financing: Cr 4451 455.31 -> stored -45531 -> natural (EXPENSE) -455.31, a negative cost; an IRS
+        # payer's pay leg Dr 4453 983.33 -> natural +983.33, a cost; a dividend equivalent received Cr 4452 -> natural +, income
+        self.assertEqual((-45531, 98333, 5000), (natural("4451", -45531), natural("4453", 98333), natural("4452", -5000)))
+
+    def test_business_date_from_asof_date(self):
+        """C11: ``ledger.post`` dates an entry ``entry.business_date``, else ``ctx.asof_date``, else the accounting day of now."""
+        def h(ctx, payload):
+            lines = [dr(US_EXCHANGE, "1230", "USD", 100), cr(US_EXCHANGE, "2300", "USD", 100)]
+            ctx.post(Entry("ADJUST", "now", list(lines), "t:bd:now"))
+            ctx.asof_date = payload["asof"]
+            ctx.post(Entry("ADJUST", "as of", list(lines), "t:bd:asof"))
+            ctx.post(Entry("ADJUST", "own date wins", list(lines), "t:bd:own", business_date="2026-10-19"))
+            ctx.asof_date = None
+            ctx.post(Entry("ADJUST", "now again", list(lines), "t:bd:after"))
+            return {}
+        self.rt.bus.register("test.asof", h)
+        # the runtime's clock: Tue 2026-10-20 14:00 ET -> accounting day 2026-10-20
+        r = execute(self.rt, "test.asof", {"asof": "2026-10-16"}, "t:asof-bd-0001")
+        self.assertTrue(r.ok, r.body)
+        with self.rt.db.reader() as conn:
+            got = {row["idem_key"]: row["business_date"] for row in conn.execute("SELECT idem_key, business_date FROM journal_entries WHERE idem_key LIKE 't:bd:%'")}
+        self.assertEqual({"t:bd:now": "2026-10-20", "t:bd:asof": "2026-10-16", "t:bd:own": "2026-10-19", "t:bd:after": "2026-10-20"}, got)
+        # a date object is accepted as well (the funding module reads either form)
+        self.assertEqual("2026-10-16", ledger.asof_business_date(types.SimpleNamespace(asof_date=__import__("datetime").date(2026, 10, 16))))
+        self.assertIsNone(ledger.asof_business_date(types.SimpleNamespace()))
+
+
+class ChartOnOldDatabaseTests(unittest.TestCase):
+    """P4 acceptance 2 (C11, review finding F01): a database built from the 1.0.3.1 schema has no chart row for the new OTC codes; a journal
+    line on one is refused with foreign keys on.  ``ledger.ensure_chart_rows`` (called from ``swaps.bind``) adds them on the raw file, and the
+    repo code opening the file with swaps bound accepts one line on each of 4451, 4452, 4453, 1335 and 2345."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-chart-otc-")
+        self.path = os.path.join(self.tmp, "terminal.db")
+        with open(SCHEMA_1031, "r", encoding="utf-8") as f:
+            sql = f.read()
+        conn = sqlite3.connect(self.path)
+        conn.executescript(sql)
+        conn.close()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    @staticmethod
+    def _parents(conn) -> None:
+        conn.execute("INSERT INTO lifetimes(lifetime_id, book_code, seq, name, started_ts, starting_capital_c, status) VALUES ('F1','F',1,'Fund Book 1',0,0,'OPEN')")
+        conn.execute("INSERT INTO accounts(account_id, book_code, lifetime_id, role, name, kind, opened_ts) VALUES ('F1:PB_GS','F','F1','PB_GS','Goldman Sachs (PB)','PB',0)")
+        conn.execute("INSERT INTO commands(id, request_id, kind, actor, payload_json, payload_sha256, result_json, http_status, started_ts, finished_ts, duration_ms,"
+                     " app_version, state_version) VALUES (1,'test:otc-chart-0001','test.chart','cli','{}','0','{}',200,0,0,0,'1.0.3.1',1)")
+        conn.execute("INSERT INTO journal_entries(entry_id, command_id, ts, business_date, kind, memo, idem_key) VALUES (1,1,0,'2026-10-21','TEST','otc chart (test)','test:otc-chart:1')")
+
+    @staticmethod
+    def _line(conn, line_no: int, gl: str) -> None:
+        conn.execute("INSERT INTO journal_lines(entry_id, line_no, account_id, gl, currency, amount_c, base_c, fx_rate, fx_source, instrument_id)"
+                     " VALUES (1,?,'F1:PB_GS',?,'USD',1,1,'1','base','SWP-000001')", (line_no, gl))
+
+    def test_ensure_chart_rows_on_the_raw_1031_file(self):
+        raw = sqlite3.connect(self.path)
+        raw.row_factory = sqlite3.Row
+        raw.execute("PRAGMA foreign_keys=ON")
+        have = {r["gl"] for r in raw.execute("SELECT gl FROM chart").fetchall()}
+        self.assertEqual(52, len(have))
+        self.assertEqual(set(), set(NEW_GLS) & have)                                  # 1.0.3.1 knows none of the new OTC codes
+        self._parents(raw)
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+            self._line(raw, 1, "4451")
+        added = ledger.ensure_chart_rows(raw, NEW_GLS)                               # the five codes only
+        self.assertEqual(5, added)
+        for i, gl in enumerate(NEW_GLS, start=1):
+            self._line(raw, i, gl)
+        self.assertEqual([], raw.execute("PRAGMA foreign_key_check").fetchall())
+        row = raw.execute("SELECT name, kind, per_instrument, bucket FROM chart WHERE gl='2345'").fetchone()
+        self.assertEqual((CHART["2345"].name, "LIABILITY", 1, "otc_cost"), tuple(row))
+        self.assertEqual(0, ledger.ensure_chart_rows(raw, NEW_GLS))                 # idempotent: INSERT OR IGNORE
+        self.assertEqual(62 - 52 - 5, ledger.ensure_chart_rows(raw))                # the lending codes 1.0.3.1 never seeded come with a full sync
+        raw.commit()
+        raw.close()
+
+    def test_repo_code_with_swaps_bound_accepts_a_line_on_each_new_gl(self):
+        from finsim.terminal.products import swaps
+        db = Database(self.path, FakeClock("2026-10-27T18:00:00-04:00"), None)
+        db.open(books=list(config.BOOKS))
+        try:
+            swaps.bind(types.SimpleNamespace(db=db, log=None))
+            with db.writer() as tx:
+                self.assertEqual(1, tx.one("PRAGMA foreign_keys")[0])
+                self._parents(tx.conn)
+                for i, gl in enumerate(NEW_GLS, start=1):
+                    self._line(tx.conn, i, gl)
+                self.assertEqual([], tx.q("PRAGMA foreign_key_check"))
+            with db.reader() as conn:
+                self.assertEqual(sorted(NEW_GLS), [r[0] for r in conn.execute("SELECT DISTINCT gl FROM journal_lines ORDER BY gl").fetchall()])
+                cols = {r[1] for r in conn.execute("PRAGMA table_info(otc_contracts)").fetchall()}
+                self.assertTrue(set(swaps.C10_COLUMNS) <= cols, cols)                # C10: the as-of columns on the old file
+                self.assertTrue({"ref_type", "ref_id"} <= {r[1] for r in conn.execute("PRAGMA table_info(settlements)").fetchall()})
+            swaps.bind(types.SimpleNamespace(db=db, log=None))                       # a second bind adds nothing and raises nothing
+        finally:
+            db.close()
 
 
 if __name__ == "__main__":

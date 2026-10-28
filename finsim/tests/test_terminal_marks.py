@@ -360,5 +360,110 @@ class MarkSelectionTests(unittest.TestCase):
         self.assertEqual("Yahoo Finance chart (JPY=X)", r.source)
 
 
+class OfficialCloseTests(unittest.TestCase):
+    """POSTCLOSE-01 / -02 (FINSIM1_PLAN 15.13): an equity's recorded CLOSE is the official closing print - never a pre-16:00 print - recorded
+    only once it is available, re-recorded before the 17:05 VM when the official print differs, and every revision is disclosed.
+
+    The owner's 2026-10-27 case: the cache held ORCL 130.55 with quote time 15:59:59 at 16:16; the official close was 130.53 (the daily bar
+    130.52999878).  On 130.55 a short TRS of 38,700 units last margined at 130.55 posts NO_CHANGE; on the official 130.53 its VM is
+    -38,700 x (130.53 - 130.55) = +774.00 received - the 774.00 the 1.0.4 release missed."""
+
+    DAY = date(2026, 10, 27)
+
+    def setUp(self):
+        from tests.terminal_helpers import US_EXCHANGE, buy, fund
+        from finsim.terminal.lifecycle_eod import MarksRecord, h_marks_record
+        self.tmp = tempfile.mkdtemp(prefix="fst-officialclose-")
+        self.rt = make_runtime(self.tmp, at="2026-10-27T10:00:00-04:00")
+        self.assertTrue(fund(self.rt, US_EXCHANGE, 100000000).ok)
+        self.assertTrue(buy(self.rt, US_EXCHANGE, "ORCL", 10, "130.00", fee_c=0).ok)          # held: ORCL is in the recorded set
+        self.rt.bus.register("lifecycle.marks_record", h_marks_record, light=True)
+        self.records = {}
+        rt = self.rt
+
+        class Cache:
+            def get(_self, iid):
+                return self.records.get(iid)
+        rt.cache = Cache()
+        self.job = MarksRecord()
+        self.job.services = rt
+        self.deferred = []
+
+        class Sched:
+            def defer(_self, name, key, seconds):
+                self.deferred.append((key, seconds))
+        self.sched = Sched()
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _rec(self, px, hhmmss):
+        h, m, s = (int(x) for x in hhmmss.split(":"))
+        qt = epoch_of(self.DAY, f"{h:02d}:{m:02d}") + s
+        self.records["ORCL"] = QuoteRecord("ORCL", "yahoo", "Yahoo Finance chart (ORCL)", "direct", last=qprice(px), quote_time=qt, fetched_at=qt + 60)
+
+    def _due(self):
+        with self.rt.db.reader() as conn:
+            return [k for k in self.job.due(conn, self.rt.clock, self.rt.cal, self.rt.sessions) if k.startswith("ORCL:")]
+
+    def _close(self):
+        with self.rt.db.reader() as conn:
+            r = conn.execute("SELECT price, method, note FROM marks WHERE instrument_id='ORCL' AND mark_date=? AND kind='CLOSE'", (self.DAY.isoformat(),)).fetchone()
+        return None if r is None else (r["price"], r["method"], r["note"])
+
+    def test_a_pre_close_print_is_never_the_close_the_daily_bar_is(self):
+        rt = self.rt
+        rt.clock.set("2026-10-27T16:21:00-04:00")
+        self._rec("130.55", "15:59:59")                       # the 15:59:59 print: not the closing print
+        self.assertEqual(["ORCL:2026-10-27"], self._due())
+        self.job.run_batch(rt, ["ORCL:2026-10-27"], self.sched)
+        self.assertIsNone(self._close())                        # nothing recorded early ...
+        self.assertEqual([("ORCL:2026-10-27", 300)], self.deferred)   # ... retried in 5 minutes
+        # the session's daily bar carries the official close as a float: 130.52999878 -> on the 0.01 tick grid 130.53
+        rt.fp.set_daily("ORCL", [("2026-10-27", "130.52999878")])
+        self.job.run_batch(rt, ["ORCL:2026-10-27"], self.sched)
+        price, method, note = self._close()
+        self.assertEqual(("130.53", "daily_close"), (price, method))
+        self.assertIn("official close", note)
+        # the VM a short TRS of 38,700 last margined at 130.55 receives on this close: -38,700 x (130.53 - 130.55) = +774.00
+        self.assertEqual(Decimal("774.00"), Decimal(-38700) * (Decimal(price) - Decimal("130.55")))
+
+    def test_the_official_print_is_recorded_and_re_recorded_before_the_vm(self):
+        rt = self.rt
+        rt.clock.set("2026-10-27T16:21:00-04:00")
+        self._rec("130.55", "16:00:00")                       # a print stamped at the close
+        self.job.run_batch(rt, self._due(), self.sched)
+        self.assertEqual(("130.55", "official_close"), self._close()[:2])
+        # 16:40: the official closing print the cache now holds is 130.53 -> a revision key before the 17:05 VM, re-recorded and disclosed
+        rt.clock.set("2026-10-27T16:40:00-04:00")
+        self._rec("130.53", "16:00:02")
+        self.assertEqual(["ORCL:2026-10-27:r"], self._due())
+        self.job.run_batch(rt, ["ORCL:2026-10-27:r"], self.sched)
+        price, method, note = self._close()
+        self.assertEqual(("130.53", "official_close"), (price, method))
+        self.assertIn("was 130.55", note)
+        with rt.db.reader() as conn:
+            att = conn.execute("SELECT severity, message FROM attention WHERE code='CLOSE_REVISED'").fetchall()
+        self.assertEqual(1, len(att))
+        self.assertIn("re-recorded at the official closing print 130.53", att[0]["message"])
+        self.assertEqual([], self._due())                       # in line now: no key
+        # after the 17:05 VM nothing is re-recorded any more (the VM and the collateral marks have read the close)
+        rt.clock.set("2026-10-27T17:06:00-04:00")
+        self._rec("130.50", "16:00:05")
+        self.assertEqual([], self._due())
+
+    def test_a_one_tick_revision_is_disclosed(self):
+        """POSTCLOSE-02: C recorded 122.68 for 10-27, the next session's prev_close 122.69 - one tick - is now disclosed."""
+        from finsim.terminal.lifecycle_eod import MarksRecord
+        rt = self.rt
+        with rt.db.writer() as tx:
+            tx.conn.execute("INSERT INTO marks(instrument_id, mark_date, kind, price, currency, quality, source, method, quote_time, fetched_at, note)"
+                            " VALUES ('C','2026-10-27','CLOSE','122.68','USD','close','test','direct',NULL,0,NULL)")
+        with rt.db.reader() as conn:
+            rev = MarksRecord()._revision(conn, rt.instruments.get("C"), {"prev_close": "122.69", "mark_date": "2026-10-28"}, rt.sessions)
+        self.assertEqual(("2026-10-27", "122.68", "122.69", "0.01"), (rev["mark_date"], rev["recorded"], rev["prev_close"], rev["diff"]))
+
+
 if __name__ == "__main__":
     unittest.main()

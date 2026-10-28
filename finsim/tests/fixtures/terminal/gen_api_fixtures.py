@@ -179,6 +179,16 @@ ATTENTION = [
 ]
 write("attention", ATTENTION)
 write("attention_resolve", dict(ATTENTION[1], resolved_ts=NOW))
+# GET /api/attention/summary?book= (attention.attention_summary; the 1.0.5 Dashboard's tiles): the same counts the retired news page showed -
+# working orders 2 (US Exchange), pending settlements 5 (US Exchange 3 + Foreign Markets & FX 2), the 3 open items above
+write("attention_summary", {"scope": "P2:ALL", "scope_kind": "LIFETIME", "lifetimes": ["P2"], "accounts": [a["account_id"] for a in ACCOUNTS],
+                            "as_of": NOW, "accounting_day": TODAY, "window_start": "$NOW-3600",
+                            "integrity": {"ok": True, "checked_at": "$NOW-600", "mode": "ledger", "failing": [], "warnings": 0, "problems": []},
+                            "hold": {"held": False, "lifetimes": [], "since": {}, "failing": {}},
+                            "open": {"ERROR": 0, "WARN": 2, "INFO": 1}, "attention_open": 3,
+                            "items": [{k: r[k] for k in ("id", "ts", "severity", "source", "code", "message", "account_id", "ref_type", "ref_id")} for r in ATTENTION],
+                            "warnings": 3, "compliance": 4, "collateral_calls_today": 0, "collateral_marks_today": 0, "swap_vm_payments_today": 0, "recalls": 0,
+                            "working_orders": 2, "pending_settlements": 5, "providers": {"down": [], "refused_ua": [], "paused": 0}, "notes": []})
 write("state", {"accounts": ACCOUNTS, "settings": SETTINGS, "sessions": SESSIONS, "clock": CLOCK, "attention": ATTENTION, "integrity": INTEGRITY, "version": "1.0.0", "schema": 1,
                 "conventions": CONV, "prime_brokers": config.PRIME_BROKERS, "pb_schedules": tables.PB_SCHEDULES, "books": BOOKS})
 write("sessions", {"sessions": SESSIONS, "rules": {g: tables.SESSIONS[g] for g in SESSIONS}, "server_time": NOW})
@@ -477,8 +487,6 @@ write("credit_private_post", {"loan": {"loan_id": "pl:1", "borrower": "NewCo", "
 write("credit_private_action", {"loan": {"loan_id": "pl:1", "status": "OPEN"}, "entries": [40]})
 write("credit_private", [])
 write("dividends", [{"instrument_id": "AAPL", "ex_date": "2026-11-07", "amount": "0.26", "pay_date": "2026-11-14", "source": "Yahoo chart events", "convention": "cash on the pay date Yahoo gives", "position_qty": 500, "expected": "130.00"}])
-write("news", {"items": [{"source": "yahoo", "title": "Stocks edge lower as yields climb; Apple slips after supplier report", "publisher": "Reuters", "link": "https://finance.yahoo.com/news/example-1", "time": "$NOW-1800", "tickers": ["AAPL", "SPY"], "category": "markets"}, {"source": "fed", "title": "Federal Reserve Board announces approval of application by Example Bancorp", "publisher": "Federal Reserve Board", "link": "https://www.federalreserve.gov/newsevents/pressreleases/example.htm", "time": "$NOW-7200", "tickers": [], "category": "fed"}, {"source": "newspaper", "title": "Logan's Daily Newspaper - Closing brief", "publisher": "intelligence-terminal", "link": "https://shafferusa.github.io/intelligence-terminal/reports/2026/10/2026-10-20-pm.html", "time": "$NOW-10800", "tickers": [], "category": "edition"}],
-               "attention": {"integrity": "ok", "hold": False, "open": {"ERROR": 0, "WARN": 2, "INFO": 1}, "warnings": 3, "compliance": 4, "collateral_calls_today": 0, "recalls": 0, "working_orders": 2, "pending_settlements": 5, "providers": {"down": []}}, "fetched": {"yahoo": "$NOW-300", "fed": "$NOW-1800", "newspaper": "$NOW-240"}, "editions": [{"date": TODAY, "slot": "pm", "title": "Closing brief", "path": "reports/2026/10/2026-10-20-pm.html"}]})
 write("unsupported", {"items": [
     {"item": "Private equity deal flow (buyouts), investment banking, clients / institutions / investors, careers / missions", "state": "NOT_IN_THIS_BUILD", "wording": "NOT IN THIS BUILD", "where": "nowhere in the terminal (TERMINAL_DECISIONS s5)"},
     {"item": "MBS / structured, exotic OTC (variance, vol, dividend, inflation swaps, barriers), commodity physicals, crypto", "state": "NOT_IN_THIS_BUILD", "wording": "grey rows wherever a list would show them; search says 'not in this build'", "where": "Markets lists, search"},

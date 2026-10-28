@@ -6,16 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b0e14">
 <meta name="application-name" content="FinSim Paper Terminal">
-<meta name="description" content="Ledger-backed paper-trading terminal: real delayed market data, fictional capital, no simulation.">
+<meta name="description" content="Ledger-backed paper-trading simulator: real delayed market data, simulated executions, fictional capital.">
 <link rel="stylesheet" href="/static/terminal.css">
 </head>
 <body>
 <!-- TERMINAL_DESIGN.md s17.1: header | banner | attention strip | sidebar . main . dock; modal, toast and help roots.
      Every id below is a mount root that core.js or a component expects; keep them (test_terminal_static.py checks
-     #bookswitcher, #news, #history among others).  Optional components (ticket, preview, hedge, news, private markets,
-     swap ticket, private credit, performance, lifetimes, PB schedule and the product plug-ins of the Debt, Foreign
-     Markets & FX, Credit and PB OTC marketplaces) are loaded below; each one registers itself (T.components /
-     T.pages / T.marketPlugins / T.ticketKinds) when its file is built; a stub answers until then (no 404). -->
+     #bookswitcher, #history among others).  The Dashboard (pages/dashboard.js) is the landing page.  Optional components
+     (ticket, preview, hedge, private markets, swap ticket, private credit, performance, lifetimes, PB schedule, the
+     product plug-ins of the Debt, Foreign Markets & FX, Credit and PB OTC marketplaces, and the pages of the new
+     navigation: Pending / Completed Trades, Accounts, Cash & Collateral, Derivatives, the import panel) are loaded
+     below; each one registers itself (T.components / T.pages / T.marketPlugins / T.ticketKinds) when its file is built;
+     a stub answers until then (no 404) and its route shows NOT YET BUILT. -->
 <div id="app">
   <header id="header">
     <span class="logo">FINSIM PAPER TERMINAL<span class="tag-paper" title="PAPER TRADING - fictional capital; free delayed market data.">PAPER TRADING</span></span>
@@ -34,7 +36,6 @@
   <main id="main">
     <div id="page-status" role="status" hidden></div>
     <div id="page"></div>
-    <div id="news" hidden></div>
     <div id="history" hidden></div>
   </main>
   <aside id="dock">
@@ -71,6 +72,7 @@
 <script src="/static/pages/watchlists.js"></script>
 <script src="/static/pages/settings.js"></script>
 <script src="/static/pages/history.js"></script>
+<script src="/static/pages/dashboard.js"></script>
 <!-- optional (other packages); a missing file is tolerated -->
 <script src="/static/components/ticket.js" data-optional="1"></script>
 <script src="/static/components/preview.js" data-optional="1"></script>
@@ -81,7 +83,6 @@
 <script src="/static/components/swapticket.js" data-optional="1"></script>
 <script src="/static/components/privateticket.js" data-optional="1"></script>
 <script src="/static/components/privatecredit.js" data-optional="1"></script>
-<script src="/static/pages/news.js" data-optional="1"></script>
 <script src="/static/pages/private_markets.js" data-optional="1"></script>
 <!-- product plug-ins (C3 / C11): Debt (bond list + bond ticket), Foreign Markets & FX (FX desk), Credit (credit desk), PB OTC -->
 <script src="/static/pages/markets_debt.js" data-optional="1"></script>
@@ -93,6 +94,14 @@
 <script src="/static/pages/markets_otc.js" data-optional="1"></script>
 <script src="/static/components/otcticket.js" data-optional="1"></script>
 <script src="/static/components/cdsticket.js" data-optional="1"></script>
+<!-- the pages of the new navigation (FINSIM1_PLAN C1): Pending / Completed Trades, Accounts, Cash & Collateral, Derivatives,
+     and the import panel; each route shows NOT YET BUILT and calls nothing until its file lands -->
+<script src="/static/pages/pending.js" data-optional="1"></script>
+<script src="/static/pages/completed.js" data-optional="1"></script>
+<script src="/static/pages/accounts.js" data-optional="1"></script>
+<script src="/static/pages/cash_collateral.js" data-optional="1"></script>
+<script src="/static/pages/derivatives.js" data-optional="1"></script>
+<script src="/static/components/imports.js" data-optional="1"></script>
 <script>window.T && window.T.boot && window.T.boot();</script>
 </body>
 </html>

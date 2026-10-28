@@ -15,6 +15,15 @@ Conventions
   that is already bound (``SO_EXCLUSIVEADDRUSE`` on Windows + ``allow_reuse_address = False``: a second bind fails with
   WinError 10048 / ``OSError``) — the port is bound before the database is opened, backed up or migrated, so a refused
   start never writes a backup or a meta row.
+- STARTUP-03 (FINSIM1_PLAN P1 task 6): the lock JSON also carries ``code`` (the code tree that runs: the folder holding the
+  ``finsim`` package).  A held home lock prints ``already_running_message``: "FinSim is already running: finsim-terminal
+  <version>, PID <pid>, since <ET time>, http://127.0.0.1:<port>/ (code <tree>). Open it with `python -m finsim open` or the
+  FinSim desktop icon. To run this copy instead: `python -m finsim stop`, then `python -m finsim serve`." (exit 3; a lock
+  written by an older release has no ``code`` and the clause is left out).  A port another program holds prints
+  ``port_taken_message``: "port <p> is used by another program (no FinSim lock in <home>); run `python -m finsim status`
+  or pass --port" - never the refused process's own pid.
+- Provider health is restored from ``provider_health`` at start EXCEPT the retired news providers (``attention.retired_provider``:
+  yahoo_news, fed, newspaper, news_*): their stored rows stay in the database, inert, and never show (FINSIM1_PLAN 15.7 item 5).
 - Startup order (exit codes): offline guard [5] -> home lock [3] -> database lock [3] -> bind [3] -> log -> DB open /
   migrate [4 newer schema] / seed / first-run lifetimes (``books.ensure_first_run``: P1 / F1 / I1 with their capital,
   idempotent) / ``integrity("ledger")`` recorded (a failure holds that lifetime and opens an ERROR attention; the server
@@ -60,6 +69,7 @@ from typing import Callable, Deque, Dict, Optional, Tuple
 from . import APP_ID, VERSION, config
 from . import accounting as _accounting, books as _books, treasury as _treasury
 from .api import Router, register as _register_api, thread_alive
+from .attention import retired_provider
 from .calendar import TradingCalendar
 from .clock import Clock, RealClock
 from .commands import Command, CommandBus
@@ -98,7 +108,40 @@ OPTIONAL_MODULES = {"orders": "orders", "options": "products.options", "futures"
                     # Build 2 (BUILD2_PLAN C2): PB OTC options / forwards (P12), the counterparty directory (P08), real Treasuries (P07, optional);
                     # a module that is not in the tree stays "missing" (tolerated), its routes answer 501 / are simply absent
                     "otc_options": "products.otc_options", "counterparties": "counterparties", "treasuries": "products.treasuries",
-                    "swaps_cds": "products.swaps_cds"}
+                    "swaps_cds": "products.swaps_cds",
+                    # FINSIM1_PLAN C2: the FinSim1 completion build - the Dashboard (P1), the two trade blotters (P2), NAV history and
+                    # restatements (P3), cash / settlement / collateral (P6), the historical import (P5); each stays "missing" until it lands
+                    "dashboard": "dashboard", "blotters": "blotters", "navhistory": "navhistory", "collateral": "collateral", "importer": "importer"}
+
+
+def code_tree() -> str:
+    """STARTUP-03: the code tree this process runs (the folder that holds the ``finsim`` package), written into the lock."""
+    return os.path.dirname(os.path.dirname(config.package_dir()))
+
+
+def already_running_message(info: Optional[dict], host: str = config.HOST) -> str:
+    """STARTUP-03: what a second ``serve`` on a held home prints (exit 3), from the holder's lock JSON (``{}`` when unreadable)."""
+    info = info if isinstance(info, dict) else {}
+    version = info.get("version")
+    pid = info.get("pid")
+    started = info.get("started_ts")
+    port = info.get("port")
+    parts = [f"{APP_ID} {version}" if version else f"{APP_ID} (version unknown)", f"PID {pid if pid is not None else '?'}"]
+    if isinstance(started, (int, float)) and not isinstance(started, bool) and started > 0:
+        from .clock import ny_str
+        parts.append(f"since {ny_str(int(started))}")
+    if port:
+        parts.append(f"http://{host}:{port}/")
+    head = "FinSim is already running: " + ", ".join(parts)
+    if info.get("code"):
+        head += f" (code {info['code']})"
+    return (head + ". Open it with `python -m finsim open` or the FinSim desktop icon. To run this copy instead: `python -m finsim stop`, "
+            "then `python -m finsim serve`.")
+
+
+def port_taken_message(port, home: str) -> str:
+    """STARTUP-03: a port bound by another program (this home's lock is ours, so it is no FinSim of this home)."""
+    return f"port {port} is used by another program (no FinSim lock in {home}); run `python -m finsim status` or pass --port"
 
 
 # ---- the single-instance lock ---------------------------------------------------------------------------------------------------
@@ -622,6 +665,7 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
                 log.warning("%s load_persisted failed: %s", type(store).__name__, e)
     with rt.db.reader() as conn:
         rows = conn.execute("SELECT * FROM provider_health").fetchall()
+    rows = [r for r in rows if not retired_provider(r["provider"])]          # 15.7 item 5: the retired news providers stay inert
     if rows and rt.providers.health is not None:
         rt.providers.health.load(rows)
     # news (WP-22) BEFORE the quote worker: the refresher reads services.news at construction
@@ -805,9 +849,7 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
     os.makedirs(home, exist_ok=True)
     lock = InstanceLock(os.path.join(home, "terminal.lock"))
     if not lock.acquire():
-        info = lock.read() or {}
-        started = info.get("started_ts")
-        _say(f"another FinSim Terminal (PID {info.get('pid', '?')}, started {started if started is not None else '?'}, port {info.get('port', '?')}) owns {home}", out)
+        _say(already_running_message(lock.read() or {}, host), out)
         return EXIT_INSTANCE
     # TX-1: the database's own lock (<db_path>.lock) and the lock of the home that holds the database file, BEFORE the database is
     # opened, backed up or migrated: two homes can never run two writers on one terminal.db
@@ -830,13 +872,15 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
     try:
         httpd = TerminalServer((host, int(port)), _StartingHandler)
     except OSError as e:
-        info = lock.read() or {}
-        _say(f"port {port} is in use ({e}); lock pid {info.get('pid', os.getpid())}; nothing was opened or written", out)
+        _say(port_taken_message(port, home), out)
+        if log is not None:
+            log.warning("port %s is in use: %s", port, e)
         db_lock.release()
         lock.release()
         return EXIT_INSTANCE
     bound_port = int(httpd.server_address[1])
-    early = {"pid": os.getpid(), "port": bound_port, "started_ts": int(_time.time()), "version": VERSION, "home": home, "db": db_path, "starting": True}
+    early = {"pid": os.getpid(), "port": bound_port, "started_ts": int(_time.time()), "version": VERSION, "home": home, "db": db_path, "starting": True,
+             "code": code_tree()}
     lock.write(early)
     db_lock.write(early)
     if log is None:
@@ -871,7 +915,7 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
         httpd.RequestHandlerClass = make_handler(rt)
         rt.httpd = httpd
         rt.port = bound_port
-        info = {"pid": os.getpid(), "port": rt.port, "started_ts": rt.started_ts, "version": VERSION, "home": home, "db": db_path}
+        info = {"pid": os.getpid(), "port": rt.port, "started_ts": rt.started_ts, "version": VERSION, "home": home, "db": db_path, "code": code_tree()}
         lock.write(info)
         db_lock.write(info)
         rt.start_workers()
@@ -924,4 +968,5 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
 
 
 __all__ = ["TerminalServer", "Runtime", "Supervisor", "InstanceLock", "build_runtime", "serve", "make_handler", "offline_refusal", "default_home",
-           "EXIT_OK", "EXIT_INSTANCE", "EXIT_SCHEMA", "EXIT_STARTUP", "LOCK_OFFSET", "OPTIONAL_MODULES", "db_lock_path", "probe_lock", "CLIENT_GONE"]
+           "EXIT_OK", "EXIT_INSTANCE", "EXIT_SCHEMA", "EXIT_STARTUP", "LOCK_OFFSET", "OPTIONAL_MODULES", "db_lock_path", "probe_lock", "CLIENT_GONE",
+           "code_tree", "already_running_message", "port_taken_message"]

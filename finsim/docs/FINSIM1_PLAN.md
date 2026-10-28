@@ -59,8 +59,8 @@ each with its reason (section 9). They ship in two releases (section 15):
 - 1.0.5: P1a, Part A of P2 / P3 / P4 / P6, P5's phase-1 scope and P8-lite, with the owner's positions imported;
 - 1.0.6: P1b, Part B of P2 / P3 / P4 / P6, P7, the rest of P5 and the full P8.
 
-The "Starts after" column gives the order inside each phase. Where it or a package section disagrees with section 15, section 15
-wins.
+The "Starts after" column gives the order inside each phase. Where it, a package section or any other section disagrees with section
+15, section 15 wins (15.1 rule 1 lists the statements it supersedes).
 
 | Package | Scope | Starts after |
 |---|---|---|
@@ -75,10 +75,10 @@ wins.
 | P8 | Acceptance: browser smoke, directive test map, whole-fund reconciliation, end-to-end proof on an owner-DB copy | all others |
 
 The build proceeds on the owner's answers to Q2, Q3 and Q5 (2026-10-27 15:04 EDT, "Use Goldman terms") and on the defaults of the
-other 11 owner questions (section 8). The import is applied to the live database only at the 1.0.5 deploy, no later than 2026-11-19
-and before 16:00 ET that day. Under the owner's standing pre-approval (2026-10-27 15:12 EDT) it follows a dry run on a fresh copy that
-meets his conditions, and the dry-run report is sent to him (section 15.8). The gate also updates the commit and release tooling
-(section 12).
+other 11 owner questions (section 8). The import is applied to the live database only at the 1.0.5 deploy (or a 1.0.5.1 hotfix's,
+section 15.8 step 8), no later than 2026-11-19 and before 16:00 ET that day. Under the owner's standing pre-approval (2026-10-27 15:12
+EDT) it follows a dry run on a fresh copy on which P8-lite's checker passes his five conditions, and the dry-run report and its
+plain-English summary are sent to him (section 15.8). The gate also updates the commit and release tooling (section 12).
 
 ## 1. Where the build starts (facts checked 12:10-13:30 EDT, rechecked 14:54 EDT)
 
@@ -659,7 +659,8 @@ Section 15 runs this order as two releases:
 - phase 1 (1.0.5): steps 1-2, Part A of P2 / P3 / P4 / P6 in the wave-2 pool, P5's phase-1 scope, P8-lite and the gate;
 - phase 2 (1.0.6): P1b, Part B of P2 / P3 / P4 / P6 and P7 in the pool, the rest of P5, the full P8 and the gate.
 
-The steps below hold inside each phase as section 15 adjusts them.
+The steps below hold inside each phase as section 15 adjusts them. Every dry run of the real batch, in either phase, runs between 00:00
+and 16:00 ET (15.1 rule 7).
 
 1. **Precondition.** finsim-104-complete has finished: integrate, port, CDX hooks, verify on an owner-DB copy, fix. Its suite is green
    on both interpreters.
@@ -2304,8 +2305,9 @@ All 78 gap ids are covered. The 35 reconciliation lines sit in the batch (P5).
 
 ## 12. Gate and deploy (orchestrator; owner flag)
 
-This gate runs twice:
+This gate runs for each release:
 - for 1.0.5 (section 15.8, which lists that gate's differences);
+- for a 1.0.5.1 hotfix, only when a code defect postpones the import (section 15.8 step 8);
 - for 1.0.6 (section 15.9).
 
 Under the owner's standing pre-approval (2026-10-27 15:12 EDT), a release that passes it deploys, and the import is applied, without
@@ -2341,7 +2343,7 @@ asking (section 15.8).
    - then report to the owner.
 7. **Import** (at the 1.0.5 deploy), per section 7 as section 15.8 step 8 adjusts it:
    - stop; data pack; dry run;
-   - check his conditions and send him the report;
+   - check his five conditions with P8-lite's checker (section 15.6 item 3) and send him the report and its plain-English summary;
    - apply with backup; open.
 
    It runs no later than 2026-11-19 and before 16:00 ET.
@@ -2640,7 +2642,9 @@ batch header `owner_answers`); batch line 34 is declined (section 7, P5 acceptan
 
 ## 15. Two-phase delivery (1.0.5 positions, 1.0.6 directive completion)
 
-The orchestrator decided this at 15:40 EDT on 2026-10-27, and it was written into the plan from 16:16 EDT.
+The orchestrator decided this at 15:40 EDT on 2026-10-27, and it was written into the plan from 16:16 EDT. An independent critic then
+checked this section and raised 16 findings (S-01..S-16: 4 major, 12 minor). Each was verified against the plan, the batch and the
+code, and this section was revised from 17:18 EDT; 15.12 answers each one.
 
 Revision 3 needs 18-22 h of wall clock before a single gate. The importer refuses at or after 16:00 ET (S0), so one release landing
 after 16:00 ET on 2026-10-28 would move the owner's positions to Thursday.
@@ -2662,15 +2666,28 @@ The rest of his directive follows right after. The build therefore ships twice f
 1. **Precedence.**
    - This section decides the phase of every item. The package sections are not rewritten: a builder builds the tasks and acceptance
      items of its package that this section gives to its phase, by number, and leaves the rest.
-   - Where sections 0, 5, 7 or 12, a "Depends on" line or an acceptance item disagree with this section on order, dependency or
-     timing, this section wins.
+   - Where any other section (0, 1, 5, 7, 8, 9 and 12 included), a "Depends on" line, an acceptance item or the batch header
+     disagrees with this section on order, dependency, timing or approval, this section wins. The statements it supersedes outside
+     the package sections (critic S-16):
+
+     | Where | Old statement | Now |
+     |---|---|---|
+     | Section 1, the live app | 1.0.3.1 runs; the Portfolio fix "ships with the 1.0.4 deploy" | 1.0.3.2, with the Portfolio fix, went live at 15:19 EDT, and 1.0.4 at 16:54 EDT (pid 9448; BUILD_LOG 16:55) |
+     | 9.1 | the doc texts are applied "at the 1.0.5 gate" | at the 1.0.6 gate, except P1a's KEYBINDS line for F12 (15.8 step 1) |
+     | 9.5 | the gate sets "1.0.5 (this build)" | this build ships 1.0.5, then 1.0.6, and 1.0.5.1 only if a code defect postpones the import (15.8 step 8) |
+     | 9.6 | the attended launcher check runs "at the 1.0.5 deploy" | at the 1.0.6 deploy, because P7 is phase 2 (section 12 step 8) |
+     | 9.12 | PORTFOLIO-20 "ships with the 1.0.4 deploy" | the live fix shipped in 1.0.3.2 at 15:19 EDT; P3 adds the contract test in 1.0.5 (15.10) |
+     | 9.15, Q12, section 7 step 5 | the apply needs "the owner's typed go" | his standing pre-approval (2026-10-27 15:12 EDT), on the conditions of 15.8 step 8 |
+     | Batch header `status` and `modes.apply` | "Apply needs FinSim1 1.0.5 (... packages P1a / P1b - P7) ... and the owner's typed go" | written before the two-phase split and the standing pre-approval; the file stays byte-identical, because its sha256 is pinned, and the owner's summary says so (15.6 item 3) |
 2. **What builders read.** Every builder in either phase gets this whole section with its package section and sections 2-5, 13 and 14
    (section 5, machine notes).
 3. **Strict sequence.**
    - No phase-2 edit touches the tree before the 1.0.5 gate has committed it and verified that commit from its archive (15.8 steps 4-5).
    - The dry run and the apply run the owner's database in a maintenance runtime on a 7.6 GB machine, so they never run beside four
-     builders. Phase 2's pool launches after the import has been applied or postponed. A postponed import runs at a time when at most
-     two agents are working.
+     builders. Phase 2's pool launches after the import has been applied, or postponed for a data or clock reason. A postponement
+     caused by a code defect holds phase 2 until a 1.0.5.1 hotfix has passed its gate and the import has run (15.8 step 8).
+   - A postponed import runs while at most two other agents are working; the orchestrator plans phase-2 launches to keep that window
+     (15.8 step 8).
 4. **The import wins.** A Part A builder who finds that an import step (15.4) needs a Part B item builds it in its own files and says so
    in its notes. It never leaves an import step to phase 2.
 5. **1.0.5 never claims more than it does.**
@@ -2680,54 +2697,101 @@ The rest of his directive follows right after. The build therefore ships twice f
    - ownership, hooks first, both suites green, hand-worked money tests;
    - honest labels and the UI rules;
    - never the live app, `%USERPROFILE%\.finsim`, ports 8765 / 8865, git or VERSION.
+7. **Every real-batch dry run runs between 00:00 and 16:00 ET** (critic S-12).
+   - S0 refuses at or after 16:00 ET, and when the copy holds an F1 snapshot dated on the run's day (P5 task 3); every dry run starts
+     with S0 (P5 task 5). A copy taken before 17:45 ET of the run's day, or on an earlier day, holds no such snapshot, so the clock is
+     the rule that binds.
+   - It covers every dry run of IMP-F1-20261027-A: P5's acceptance 2 and its phase-2 remainder, P8-lite item 3 and its re-run in each
+     fix round, P8 task 5, a correction's (15.9 item 8) and the apply day's. Report mode is read-only, has no clock rule and runs at
+     any time.
+   - Work that is ready between 16:00 and 00:00 ET does everything else first (suites, walks, fixes of other findings) and runs its
+     dry run after 00:00 ET.
+   - S0's rule is not relaxed for dry runs: after 16:00 the catch-up would run the day's closing jobs without their inputs in the
+     pack, so the dry run would no longer predict the apply.
+   - Option closes: the pack takes L's official option close from the Cboe chain's previous close (P5 task 3), which is certainly L's
+     only while the chain quotes the session after L. The apply day's pack is therefore fetched after 09:45 ET. A pack fetched earlier,
+     as a night run's is, records the chain's own timestamp with each close, and P5 uses L's Yahoo last trade, labelled, when it cannot
+     tie the chain's close to L; that run's option figures are estimates.
 
 ### 15.2 Phase 1 (release 1.0.5), step by step
 
 1. **Precondition.** Section 5 step 1 holds: finsim-104-complete, now its remainder wf_fe749d86-2ef, has finished with both suites
-   green.
+   green. Done: 1.0.4 was gated, committed (6222093) and deployed at 16:54 EDT (BUILD_LOG 16:55).
+   - **Durable copies** (critic S-04). Batch revision 3 and its build script lived only under %TEMP%, where Storage Sense deleted
+     release staging on this machine on 10-09. At 16:56 EDT the orchestrator copied the batch byte for byte to
+     `finsim\docs\imports\IMP-F1-20261027-A.jsonl` (committed with `finsim/docs` at the gate) and mirrored the scratchpad, the batch
+     and `build3\rev3_batch.py` included, to `C:\Users\logan\finsim-orchestrator\scratchpad-mirror\`.
+   - At 17:18 EDT both batch copies had sha256 `75690c19327713c6648d20b710495f5ef0b5a924ed263748b3f74aa51bd11d2f` (121,468 bytes),
+     and the mirrored `rev3_batch.py` had sha256 `23c4743df5947127da2acb64bb7539645ab892c7f001a5b6a3016b8ccf5ee43b`, each equal to
+     the scratchpad file's.
+   - Before P1a starts, the orchestrator checks these hashes again. P5 task 9 copies the batch from
+     `docs\imports\IMP-F1-20261027-A.jsonl` (from the mirror if that is missing) and verifies its sha256 against this plan's. A
+     scratchpad file that vanishes is restored from the mirror.
 2. **P1a alone,** as the P1 section's split defines it, plus the interim items of 15.7.
 3. **Part A pool.** P2, P3, P4 and P6 start together on P1a's result (4 builders). These hook tiers replace rule 2's lists for phase 1.
 
    | Package | Tier 1 (first ~45 min) |
    |---|---|
-   | P2 | the paths and answer shapes of C7's read routes (15.3 E3); `blotters.counts`; the stage vocabulary; `blotters.source_label` (15.7 item 7); C8's columns; the C20 / C21 signatures |
-   | P3 | C9 (a), (b), (c), (f), (g), (h) |
-   | P4 | C10's columns; C11 with `ledger.OTC_COST_GLS` and `ensure_chart_rows`; C12; a C13 stub |
-   | P6 | C15's columns; Treasury stamping and `sweep_in` under `ctx.asof_date`; C16 at its Part A depth (15.3); C21 |
+   | P2 | the path and answer shape of `GET /api/blotter/executions` (15.3 E3); `blotters.source_label` (15.7 item 7); C8's columns; the C20 / C21 signatures |
+   | P3 | C9 (a), (b), (c), (g), (h) |
+   | P4 | C10's columns; C11 with `ledger.OTC_COST_GLS` and `ensure_chart_rows`; C12; a C13 stub that returns None, so C9c keeps today's overlay |
+   | P6 | C15's columns; Treasury stamping and `sweep_in` under `ctx.asof_date`; `lending.lender_label`, C16's only Part A function (15.3 E4); C21 |
 
    - Tier 2:
-     - C8's bookings; C9 (d), (e) and (i); C10's booking;
+     - C8's bookings; C9 (d) and (i); C10's booking;
      - C13 for real (P4 tasks 5-6) and P4 task 7 (P3's test (d) waits for it);
      - C15's as-of dating, sweeps and transfers; settlement fail / resolve; C17; C20.
-   - Section 5's in-wave dependencies hold, minus the Part B hooks: C14, `orders.gtd_supported` and the C16 margin parts.
+   - Section 5's in-wave dependencies hold, minus the Part B hooks: C14, `orders.gtd_supported`, C7's pending and execution-detail
+     routes with `blotters.counts` and the stage vocabulary, C9e, C9f, and C16 apart from `lender_label`.
+   - **Order inside each Part A package** (critic S-15): its import items first (its rows of 15.4), then its 1.0.5 display items
+     (15.7), then the rest of its Part A.
+     - P4 builds tasks 5-6 (C13 for real: intraday marks and display fields) last. If P4 is still working 4.5 h into the pool, the
+       orchestrator may move them to Part B: C13 stays the stub, C9c keeps today's overlay (labelled "as of the last VM"), and
+       PORTFOLIO-02 moves to 1.0.6 (15.10).
+     - A moved item is left out whole, never half-built (rule 5).
+   - **New optional modules stay importable** (critic S-14).
+     - `server._bind_optional` imports every OPTIONAL_MODULES entry. A ModuleNotFoundError that names another module, or a failing
+       `bind`, marks the module "error"; a `register` error other than TypeError stops `build_runtime`; and `test_terminal_api` fails
+       when any module errored. One half-built module would turn every builder's suite red.
+     - So every new optional module of this build (`blotters`, `navhistory`, `collateral`, `importer`) imports another package's new
+       module lazily, inside the function that needs it, and keeps its import, `register` and `bind` exception-free at every save.
 4. **Integration** (the orchestrator's integrator):
    - apply every Part A request; run the Part A remainders; get both suites green;
    - walk every sidebar page and every route P1a registered, in the three books (the six new routes show NOT YET BUILT, 15.7).
 5. **P5, phase-1 scope** (15.5).
-   - Recommended: P5 takes the first free Part A slot (normally P2's) for its hook-independent work: batch validation, report mode,
-     data-pack fetch, CLI, locks / backup / cutoff / refusal guards, restore and the mini batch.
-   - Until step 4 has landed, its unfinished tests live in a file the suite does not collect (for example `X\wip_import_tests.py`). They
-     move to `test_terminal_import.py` once they pass, so no other builder's suite goes red.
-   - Its real-batch dry run waits for step 4.
-6. **P8-lite** (15.6). Recommended: write its fund reconcile test while P5 works (two builders). Its dry-run check and its walk wait for
-   P5.
-7. **Fixes:** at most two rounds, each re-verified by P8-lite (items 1-4 of 15.6; the directive map and the browser-smoke file are
-   phase 2).
+   - Recommended: P5 takes the first free Part A slot (normally P2's, now the shortest Part A) for its hook-independent work: batch
+     validation, report mode, data-pack fetch, CLI, locks / backup / cutoff / refusal guards, restore and the mini batch.
+   - While the pool runs, `importer.py` follows step 3's optional-module rule: it imports `navhistory`, `collateral` and `blotters`
+     lazily inside its functions and stays importable, with `register` and `bind` exception-free, at every save.
+   - Until step 4 has landed, its unfinished tests live in `X\wip_import_tests.py`, which the suite does not collect (the name does not
+     match `test_terminal_*.py`). P5's owns list gains that file. The tests move to `test_terminal_import.py` once they pass, and P5
+     deletes the file before the gate, so no other builder's suite goes red and nothing stray is committed.
+   - Its real-batch dry run waits for step 4 and runs between 00:00 and 16:00 ET (rule 7).
+6. **P8-lite** (15.6). Recommended: write its fund reconcile test and its condition checker (15.6 item 3) while P5 works (two
+   builders). Its dry-run check and its walk wait for P5, and its dry run for 00:00 ET (rule 7).
+7. **Fixes:** at most two rounds, each re-verified by P8-lite (items 1-4 of 15.6, the checker included; the directive map and the
+   browser-smoke file are phase 2). The two rounds are budgeted at 2-3 h together (15.11).
 8. **Gate, deploy and import** (15.8).
 
 ### 15.3 Part A and Part B of P2, P3, P4 and P6
 
 **Part A** has three parts:
-- every contract hook the package owns, both tiers;
+- every contract hook the package owns, both tiers, except as E1-E4 below say;
 - every task, test and acceptance item that the import of IMP-F1-20261027-A and its dry run need;
 - the small display items that let 1.0.5 show the owner's positions honestly (15.7).
 
-**Part B** is the rest. Three exceptions to "every contract hook in Part A":
+**Part B** is the rest. Four exceptions to "every contract hook in Part A":
 - **E1 - C6 probes ship with their features.**
-  - The four probe functions: `orders.gtd_supported` (P2 task 7), `swaps.rfq_rows` (P4 task 8), `collateral.pledges_view` (P6 task 6)
-    and `collateral.margin_calls_rows` (P6 task 5; 15.7 item 6 makes it the margin-calls probe).
+  - The five probe functions:
+    - `orders.gtd_supported` (P2 task 7);
+    - `blotters.execution_detail` (P2 task 4): the function behind `GET /api/executions/{id}`, whose drawer carries the C15 fail /
+      resolve actions; 15.7 item 6 makes it the settlement-failure probe;
+    - `swaps.rfq_rows` (P4 task 8);
+    - `collateral.pledges_view` (P6 task 6);
+    - `collateral.margin_calls_rows` (P6 task 5; 15.7 item 6 makes it the margin-calls probe).
   - None of them exists in 1.0.5, not even as a stub. A callable probe removes its PLANNED row from the Unsupported page, so 1.0.5 would
-    claim GTD orders, dealer quotes, CSA securities collateral and margin calls that it does not have.
+    claim GTD orders, the owner-triggered settlement fail, dealer quotes, CSA securities collateral and margin calls that it does not
+    have.
 - **E2 - all of C14 is Part B.**
   - The import never uses RFQs (C14).
   - `rfq_rows` is an E1 probe.
@@ -2735,27 +2799,34 @@ The rest of his directive follows right after. The build therefore ships twice f
     hashes (15.9 item 8).
   - In 1.0.5 the PB OTC desk keeps today's direct `otc.book`.
   - The `confirm_status` / `confirmed_ts` columns belong to C10 and are Part A.
-- **E3 - C7's write routes ship with their tasks.**
-  - These are P2 tasks 5-6, and only P2's own pages call them:
-    - PATCH `/api/orders/{id}` (amend);
-    - POST `/api/orders/{id}/replace`;
-    - the `GET /api/orders/{id}` takeover (settlements, `?review=1`).
-  - Part A keeps C7's read routes (`GET /api/blotter/pending`, `GET /api/blotter/executions`, `GET /api/executions/{id}`),
-    `blotters.counts` and the stage vocabulary.
+- **E3 - C7's routes ship with their pages, except the executions route** (critic S-15).
+  - Part A keeps only `GET /api/blotter/executions`, with `blotters.source_label`: P5's tests read the as-of labels through it, and P2's
+    acceptance counts the owner's 320 executions with it.
+  - Part B, because only 1.0.6 pages call them:
+    - `GET /api/blotter/pending` with its stages, status filters and package grouping, `blotters.counts` and the stage vocabulary (the
+      Pending page and P1b's Dashboard);
+    - `GET /api/executions/{id}` (`blotters.execution_detail`, an E1 probe) and its drawer (P2 task 4);
+    - PATCH `/api/orders/{id}` (amend), POST `/api/orders/{id}/replace` and the `GET /api/orders/{id}` takeover (settlements,
+      `?review=1`): P2 tasks 5-6.
+- **E4 - other hooks with no 1.0.5 consumer move to Part B** (critic S-15).
+  - C9e `performance.returns_summary` (P1b's Dashboard, P3's return tiles).
+  - C9f `T.pages.accounting.renderCashTab` (P6's Cash & Collateral page).
+  - C16's `summary`, `position_requirements` and `custodian_of` (P1b's Dashboard, P3 tasks 5 and 13, P6's Accounts page).
+  - C16's `lending.lender_label` stays Part A (15.7 item 8).
 
 **P2**
 
 | | Part A (1.0.5) | Part B (1.0.6) |
 |---|---|---|
-| Tasks | 1 except E1 / E3<br>2, server side only: `GET /api/blotter/pending` with every row field, the derived stages, the status filters, package grouping and the derived package state (PK-000001 never open); RFQ rows only once `swaps.rfq_rows` exists<br>3, server side only: `GET /api/blotter/executions` with the union, columns, statuses, sources through `blotters.source_label`, filters, CSV and paging<br>4, server side only: `GET /api/executions/{id}`<br>9; 10<br>from 11, only the as-of badge and label on the account Orders page's order-history and fills rows (15.7 item 7)<br>from 12, the tests of these | the pages of 2 (`pending.js`: New order, row actions, polling) and 3 (`completed.js`: filters, the import-batch filter)<br>the drawer of 4, with the C15 fail / resolve actions<br>5; 6; 7 (with `orders.gtd_supported`); 8<br>the rest of 11<br>from 12, the tests of these |
-| Acceptance | 1 (a), (d), (g), (h), (i), (j), (k)<br>2, except the rejection recorders (task 8) and the GTD / next-session wording (task 7)<br>3 through the API: 320 executions = 315 fills + 5 Financing rows; CSV 320 / 315; Pending open 0 rows; the Cancelled filter with O-000008 / O-000018 and their reasons | 1 (b), (c), (e), (f)<br>2's recorders and GTD wording<br>3's drawer timelines<br>4 |
+| Tasks | 1 except E1 / E3<br>3, server side only: `GET /api/blotter/executions` with the union, columns, statuses, sources through `blotters.source_label`, filters, CSV and paging<br>9; 10<br>from 11, only the as-of badge and label on the account Orders page's order-history and fills rows (15.7 item 7)<br>from 12, the tests of these | 2 whole (E3): `GET /api/blotter/pending` with every row field, the derived stages, the status filters, package grouping and the derived package state (PK-000001 never open), RFQ rows once `swaps.rfq_rows` exists, `blotters.counts`, the stage vocabulary, and `pending.js` (New order, row actions, polling)<br>the page of 3 (`completed.js`: filters, the import-batch filter)<br>4 whole (E3): `GET /api/executions/{id}` (`blotters.execution_detail`) and the drawer with the C15 fail / resolve actions<br>5; 6; 7 (with `orders.gtd_supported`); 8<br>the rest of 11<br>from 12, the tests of these |
+| Acceptance | 1 (a), (d), (g), (h), (i), (j), (k)<br>2 for the executions route: every 3B field, the union of every source, its status and source filters, paging, and the CSV equal to the rows<br>3 through the API: 320 executions = 315 fills + 5 Financing rows; CSV 320 / 315 | 1 (b), (c), (e), (f)<br>2 for the pending route (status filters, stages), the rejection recorders and the GTD wording<br>3: Pending open 0 rows; the Cancelled filter with O-000008 / O-000018, their reasons and drawer timelines<br>4 |
 
 **P3**
 
 | | Part A (1.0.5) | Part B (1.0.6) |
 |---|---|---|
-| Tasks | 1<br>2, with the readers labelled "restated on \<date\> (batch X)" where 1.0.5 shows them (Performance, the TODAY / MTD / YTD baselines); the toggle to the original belongs to task 9<br>3<br>from 5, only borrow lenders through `lending.lender_label` in every payload P3 serves (position detail, Accounting borrows, counterparties) and the as-of label fields of 15.7 item 7<br>from 7, only C9e `performance.returns_summary`<br>8<br>14: the portfolio contract test, because C9c changes the rows `portfolio.js` reads | 4<br>the rest of 5, including the derivative rows rendering the C13 fields (PORTFOLIO-06)<br>6<br>the return tiles of 7<br>9: NAV history API, portfolio as of a date, the History hub with its toggle and split view<br>10; 11; 12; 13 |
-| Acceptance | 1 (a), (d), (g), (h)<br>2: Portfolio NAV ties A - L; the restatement of 10-21..10-26 with no import (mark-policy effects, the 10-22 dating line, residual 0)<br>3, limited to: Portfolio (OTC rows, an OTC row's drawer), account Positions, Accounting (balance sheet, trial balance with the new GLs, the cash tab) and Risk rendering, with 0 console errors and 0 HTTP >= 400 | 1 (b), (c), (e), (f)<br>2: the History series, the STT drawer, VMRK sector, exposure definitions<br>the rest of 3 |
+| Tasks | 1<br>2, with the readers labelled "restated on \<date\> (batch X)" where 1.0.5 shows them (Performance, the TODAY / MTD / YTD baselines); the toggle to the original belongs to task 9<br>3<br>from 5, only borrow lenders through `lending.lender_label` in every payload P3 serves (position detail, Accounting borrows, counterparties, and `accounting.obligations()`, which feeds the account Cash & financing page's borrows table) and the as-of label fields of 15.7 item 7<br>8<br>14: the portfolio contract test, because C9c changes the rows `portfolio.js` reads | 4<br>the rest of 5, including the derivative rows rendering the C13 fields (PORTFOLIO-06)<br>6 (the Portfolio row drawer)<br>7 whole: C9e `performance.returns_summary` (E4) and the return tiles<br>C9f `renderCashTab` (E4)<br>9: NAV history API, portfolio as of a date, the History hub with its toggle and split view<br>10; 11; 12; 13 |
+| Acceptance | 1 (a), (d), (g), (h)<br>2: Portfolio NAV ties A - L; the restatement of 10-21..10-26 with no import (mark-policy effects, the 10-22 dating line, residual 0)<br>3, limited to: Portfolio (the option and OTC rows with marks; Enter on each opens its instrument page with no HTTP >= 400), account Positions (an option row's drawer on US Exchange, an OTC contract's drawer on Goldman (PB)), the US Exchange Cash & financing borrows reading "street lender (assumed terms)", Accounting (balance sheet, trial balance with the new GLs, the cash tab) and Risk rendering, with 0 console errors and 0 HTTP >= 400 | 1 (b), (c), (e), (f)<br>2: the History series, the STT drawer, VMRK sector, exposure definitions<br>the rest of 3, with the Portfolio row drawer |
 
 **P4**
 
@@ -2768,7 +2839,7 @@ The rest of his directive follows right after. The build therefore ships twice f
 
 | | Part A (1.0.5) | Part B (1.0.6) |
 |---|---|---|
-| Tasks | 1: C15 whole; C17; C21; C16 at Part A depth: `lender_label` and `custodian_of` real; `summary` and `position_requirements` real for restricted, collateral posted / received, encumbered, failed settlements and by-counterparty, answering "unavailable" with the reason for the margin and margin-call fields until tasks 4-5; no `margin_calls_rows` and no `pledges_view` (E1)<br>2 whole (S0 requires `settlement.fail` / `settlement.resolve`)<br>3, except the Cash & Collateral page, the Dashboard and the reuse-flag editor: the flag is stored, default off, and CashView and the account cash page show "restricted"<br>9 whole | 4<br>5, with `margin_calls_rows`<br>6, with `pledges_view`<br>7; 8; 10<br>task 3's displays on the Cash & Collateral page and the Dashboard, and the reuse-flag editor<br>C16's margin parts |
+| Tasks | 1: C15 whole; C17; C21; from C16 only `lending.lender_label` (E4: `summary`, `position_requirements` and `custodian_of` are Part B); no `margin_calls_rows` and no `pledges_view` (E1)<br>2 whole (S0 requires `settlement.fail` / `settlement.resolve`)<br>3, except the Cash & Collateral page, the Dashboard and the reuse-flag editor: the flag is stored, default off, and CashView and the account cash page show "restricted"<br>9 whole | 4<br>5, with `margin_calls_rows`<br>6, with `pledges_view`<br>7; 8; 10<br>task 3's displays on the Cash & Collateral page and the Dashboard, and the reuse-flag editor<br>C16's `summary`, `position_requirements` and `custodian_of` (E4), with their margin parts |
 | Acceptance | 1 (a), (b), (e), (f), (h), (i), (j)<br>2: restricted 0 before any OTC; integrity ok<br>walk: the account cash page's restricted line on a seeded home with OTC VM, 0 console errors | 1 (c), (c'), (d), (g)<br>2: Accounts, the Cash & Collateral figures, Reg T excess<br>3 |
 
 ### 15.4 Every import step is in phase 1
@@ -2806,9 +2877,11 @@ Nothing the import touches is in Part B.
 **Phase 1:**
 - tasks 1-7, 9 and 10 whole; every test runs, including the Completed Trades source labels through C7's executions route, which is
   Part A;
+- task 9 copies the batch from `docs\imports\IMP-F1-20261027-A.jsonl` (15.2 step 1) and verifies its sha256;
 - from task 8: the CLI as `python -m finsim.terminal.importer ...` (and `importer.main(argv)`), and the read-only C19 routes;
-- acceptance 1 and 2 whole: the real batch's report and dry run on a fresh owner-DB copy, with a pack fetched for the build-day window;
-- its "Depends on" becomes P1a and Part A (not P1b or P7).
+- acceptance 1 and 2 whole: the real batch's report and dry run on a fresh owner-DB copy, with a pack fetched for the build-day window
+  (the dry run between 00:00 and 16:00 ET, rule 7);
+- its "Depends on" becomes P1a and Part A (not P1b or P7); its owns list gains `X\wip_import_tests.py` until the gate (15.2 step 5).
 
 **Waits for phase 2, with the reason:**
 - `components\imports.js` (task 8). Its hosts are the History hub's Imports tab (P3 task 9) and Completed Trades' batch filter (P2 task
@@ -2819,11 +2892,13 @@ Nothing the import touches is in Part B.
 - **Phase-2 additions:**
   - `imports.js`, with its tests, and the walk on a fresh copy of the live database that holds the applied import;
   - the C18 path: `python -m finsim import --help` exits 0, and the mini batch runs through it;
-  - report mode and a dry run on that copy: lines 24-33 report `already_imported` and 0 entries are posted.
+  - report mode and a dry run on that copy: lines 24-33 report `already_imported` and 0 entries are posted (report mode at any time,
+    the dry run between 00:00 and 16:00 ET, rule 7).
 
 ### 15.6 P8-lite (acceptance for 1.0.5)
 
-P8 builds it in its own files. The directive map, the browser-smoke test and `terminal_cdp.py` are phase 2.
+P8 builds it in its own files; its owns list gains `X\terminal_import_check.py` (item 3). The directive map, the browser-smoke test and
+`terminal_cdp.py` are phase 2.
 
 1. **Suites.** Both green on py-3.12 and py-3.14 through `scratchpad\run_suite.py` (P7's runner is phase 2), with exact counts and the
    reason for every skip.
@@ -2831,55 +2906,74 @@ P8 builds it in its own files. The directive map, the browser-smoke test and `te
    the T-bill pledged under the CSA, and the T-bill half of "collateral transfers change no P&L".
 3. **The real batch, independently of P5.**
    - Take a fresh sqlite3-backup copy of `~/.finsim/terminal.db` (source opened `mode=ro`) into a new folder under `scratchpad\checks\`.
-   - Fetch a pack for the build-day window; run the report, then the dry run.
-   - Record each check below with its evidence. The first five are the owner's import conditions.
+   - Fetch a pack for the build-day window; run the report, then the dry run (between 00:00 and 16:00 ET, rule 7).
+   - **The checker** (critic S-02) is a deliverable, not throwaway evidence: the orchestrator reruns it on the apply day (15.8 step 8).
+     - It is `X\terminal_import_check.py`, P8's. The suite does not collect it (its name does not match `test_terminal_*.py`); the gate
+       commits it through the `terminal_*.py` pathspec.
+     - Call: `py -3.12 tests\terminal_import_check.py --batch <batch> --source <the database the dry run copied> --dryrun <its work
+       folder> [--second <a second dry run's work folder>] --summary <file>`.
+     - It opens every database `mode=ro` and writes only the summary file, so on the apply day it can read the stopped live database.
+     - It prints PASS or FAIL with the evidence for each check below (idempotency only with `--second`), and it exits 0 only when the
+       first five pass.
+     - It computes the row hashes, the business-date cash and the trial balance itself, from the databases. It checks the terms
+       against both the batch's payloads (lines 24-33 and the package record) and the table below. It reads the integrity result and
+       the restatement residuals from the result database.
+     - Its `--summary` writes the owner's plain-English report (below) from the dry run's report JSON and its own results.
+     - P8-lite runs it on the build-day dry run and after every fix round's re-run.
+   - The checks. The first five are the owner's import conditions.
      - **Preserved lines unchanged:** lines 1-21 report present_differs and 22-23 present_match. Every F1 order, fill, lot, borrow,
        settlement, futures VM, transfer and `nav_snapshots` row that existed before the dry run is identical after it (row hashes; the
        import only adds rows).
-     - **Imports at his exact terms:**
+     - **Imports at his exact terms** (critic S-06: the OTC contracts and the options carry different dates):
 
-       | Product | Terms |
-       |---|---|
-       | TRS | reset 129.13 / 697.52 on 38,700 / 7,200 units |
-       | CDX | 64 / 352 bp on 3,000,000 / 4,000,000 |
-       | IRS | 4.720 % pay fixed on 7,500,000 |
-       | Options | premiums 3.55 / 23.59 / 2.10 / 17.64 / 10.25 on 387 / 72 / 105 / 150 / 150 |
+       | Product | Side | Terms | Dates |
+       |---|---|---|---|
+       | TRS ORCL / META | short (pay total return) | reset 129.13 / 697.52 on 38,700 / 7,200 units | trade, value and start date 2026-10-21; entered as executed 19:45 ET |
+       | CDX IG / HY | buy protection | 64 / 352 bp on 3,000,000 / 4,000,000 | as the TRS |
+       | IRS | pay fixed | 4.720 % on 7,500,000 | as the TRS |
+       | Options | BTO ORCL 140C, META 660C, IBIT 46C and QQQ 700P; STO QQQ 675P (all expiring 2026-11-20) | premiums 3.55 / 23.59 / 2.10 / 17.64 / 10.25 on 387 / 72 / 105 / 150 / 150 | trade date 2026-10-22 at 16:00 ET; settlement 2026-10-23 |
 
-       The sides match, the value date is 2026-10-21 and the trade date 2026-10-22.
-     - **No account below zero:** every account closes every business date at or above zero through the day before the build day, and
-       every current balance is >= 0.
+     - **No account below zero:** every account closes every business date at or above zero through the day before the run, and every
+       current balance is >= 0.
      - **Integrity:** integrity full ok and the trial balance balanced.
      - **Residual 0:** the restatement residual is 0 for every account and F1:ALL on every date.
-     - **Idempotent:** a second dry run on the result posts 0 entries, and the -wal file is empty.
-   - Then write the owner's report as a file, in plain English:
+     - **Idempotent:** a second dry run on the result posts 0 entries, and the -wal file is empty. It runs on the build day and in every
+       fix round; on the apply day the five conditions decide (15.8 step 8).
+   - The owner's report, in plain English (the checker's `--summary`):
      - every line's decision and status;
      - the business-date cash table and the funding moves;
      - the restated NAV with its split;
      - the bridge to the workbook's 25,770,700.86;
-     - where the figures differ from this plan's estimates.
+     - where the figures differ from this plan's estimates;
+     - that the batch file's header was written before the two-phase split and the standing pre-approval, so it still names
+       "packages P1a / P1b - P7" and "the owner's typed go"; the file is unchanged on purpose, because its sha256 is pinned (15.1
+       rule 1).
 4. **Browser walk** of the dry-run result served `--offline` (Playwright py-3.14, 1440x900 and 1100 px; screenshots under
    `scratchpad\sweep\finsim1-105-p8lite\`).
 
    | Page | What it must show |
    |---|---|
-   | Dashboard | the 1.0.5 attention tiles; every 1.0.5 sidebar entry of the Fund book renders |
-   | Portfolio | the 5 options and 5 OTC contracts with marks; one option drawer; one OTC drawer |
-   | US Exchange | Positions: the 5 shorts' drawers say "street lender (assumed terms)"<br>Orders: the as-of option orders and fills with the AS-OF badge, the D1 label, the entered time and the batch |
-   | Goldman (PB) | Markets > OTC: the contracts table with 5 contracts at his dealt terms, CONFIRMED as-of, MODEL marks, and a contract drawer<br>Positions<br>Cash & financing: the restricted line |
+   | Dashboard | the 1.0.5 attention tiles; every 1.0.5 sidebar entry of the Fund book renders; none of P1's news strings |
+   | Portfolio | the 5 options and 5 OTC contracts with marks; Enter on one option row and on one OTC row opens its instrument page with no HTTP >= 400 (the Portfolio row drawer is P3 task 6, 1.0.6; critic S-01) |
+   | US Exchange | Positions: one option row's drawer; the 5 shorts' drawers say "street lender (assumed terms)"<br>Orders: the as-of option orders and fills with the AS-OF badge, the D1 label, the entered time and the batch<br>Cash & financing: the 5 borrows read "street lender (assumed terms)" (critic S-07) |
+   | Goldman (PB) | Markets > OTC: the contracts table with 5 contracts at his dealt terms, CONFIRMED as-of, MODEL marks, and a contract drawer<br>Positions: one OTC contract's drawer, with its swap marks<br>Cash & financing: the restricted line |
    | Risk | the contracts in exposure |
-   | Accounting | A - L = NAV; 4451 / 4453 / 1335 / 2345 in the trial balance; borrows with "(assumed terms)"; the cash tab |
+   | Accounting | A - L = NAV; 4451, 4453 and 2345 in the trial balance (1335 and 4452 carry no line in this batch: both CDX receive their upfront, the TRS and the IRS have none, the options are listed, and no ORCL / META ex-date falls in the window; critic S-05); borrows with "(assumed terms)"; the cash tab |
+   | Settings | Data Status has no news section; none of P1's news strings (critic S-09) |
 
-   - **Keys:** the 1.0.5 key map (15.7 item 3) on F1-F12 and Shift+F1-F12.
+   - **Keys:** the 1.0.5 key map (15.7 item 3) on F1-F12 and Shift+F1-F12; the "?" help and Settings > Keyboard list none of the five
+     page actions whose pages are not built (critic S-11).
    - **No errors:** 0 console errors, 0 HTTP >= 400, and no "undefined", "NaN" or "[object Object]".
    - **Wording check.**
-     - Scope: the text of every position row and drawer, order and fill row, contract row and drawer, Risk position row, and the
-       Accounting position, borrow and margin sections.
+     - Scope: the text of every position row and drawer, order and fill row, contract row and drawer, Risk position row, the account
+       Cash & financing borrows table, and the Accounting position, borrow and margin sections.
      - It contains none of "modeled", "modelled", "hypothetical" or "estimated", in any case.
      - Allowed, and listed in the evidence:
        - the valuation-quality labels "MODEL", "model, intraday" and "as of the last VM" on OTC marks (D4);
        - terms disclosures that are not position rows, such as the PB fee schedule's "modelled assumptions" note;
        - memos of journal entries written before 1.0.5 (records are never altered, D3).
-5. **Defects** go to their owning package (P1a, P2, P3, P4, P6 or P5). A Part B, P1b or P7 item is minor and marked "phase 2".
+5. **Defects** go to their owning package (P1a, P2, P3, P4, P6 or P5; the checker's to P8). A Part B, P1b or P7 item is minor and
+   marked "phase 2".
 
 ### 15.7 What 1.0.5 looks like between the phases
 
@@ -2889,6 +2983,9 @@ acceptance 3 where they differ.
 
 1. **A 1.0.5 Dashboard.**
    - P1a writes `pages\dashboard.js`. It is required: not `data-optional`, and not in PLANNED_STATIC / OPTIONAL_STATIC.
+   - P1a adds `GET /api/attention/summary?book=` (critic S-08): `api.py` serves it from `attention.attention_summary`, with its test in
+     `test_terminal_attention.py`. C3 names the module but no route; today the summary rides inside `/api/news`, which P1a removes in
+     the same step, and P1 task 8's attention test and acceptance 2 already call the route.
    - It shows the "Requires your attention" tiles from `GET /api/attention/summary?book=` (C3), ported from the 1.0.4 news page's strip
      with its links:
 
@@ -2921,29 +3018,38 @@ acceptance 3 where they differ.
 
    - `page.pending`, `page.completed`, `page.accounts`, `page.cash_collateral`, `page.derivatives` and `page.trading` have no default
      key in 1.0.5.
+   - The "?" help and Settings > Keyboard list only actions that work (critic S-11): an action whose page is not in the build
+     (`T.pages.<name>` undefined) is hidden. So the five page actions above other than `page.trading` appear only in 1.0.6, when their
+     pages load. The registry still holds 74 actions.
    - In 1.0.6 P1b switches on the Q10 map, the hub re-target and C1's account-page F8 / Shift+F8 keys, together with the pages they open.
      Otherwise the owner's F8, Shift+F4, Shift+F6, Shift+F8 and Shift+F10 would open NOT YET BUILT panels in the meantime.
-   - P1a's static test asserts this map; P1b's asserts Q10.
+   - P1a's static test asserts this map and the hiding rule; P1b's asserts Q10.
 4. **New routes.**
    - `#/pending`, `#/completed`, `#/accounts`, `#/cash`, `#/derivatives` and `#/history(/tab)` show the NOT YET BUILT panel and make no
      API call: optional stubs, and for the hub until `T.pages.history.hub` exists.
    - No sidebar entry and no default key points at them in 1.0.5. `#/trading` works.
 5. **News in 1.0.5.**
    - No news job runs (`news.py` is gone, so there is no NewsStore and no worker slot), `/api/news` answers 404, and nothing shows news.
-   - P1a also makes two of P1 task 2's edits:
+   - P1a also makes three of P1 task 2's edits:
      - `server.py` skips the retired providers' `provider_health` rows on load, with its test, so a stale news failure never becomes a
        permanent WARN in the strip;
-     - `index.html` gets its new meta description and header comment, since P1a edits that file anyway.
-   - Left for P1b, and inert in 1.0.5:
-     - the Settings > Data Status news block and the `news_enabled` setting;
+     - `index.html` gets its new meta description and header comment, since P1a edits that file anyway;
+     - `settings.js` skips the Data Status news block when the health answer has no news (critic S-09). Once `news.py` is gone,
+       `/api/health` sends `news` null, and the block would otherwise still show a "news" heading and "news is off in this runtime".
+   - Left for P1b, and inert in 1.0.5 (none of it shows):
+     - the block's code and the `news_enabled` setting;
      - `T.PROVIDER_LABEL`'s news keys and `attention.js`'s injection row;
      - the news code in worker / config / server / db / tables.
 6. **Unsupported page.**
    - The margin-calls PLANNED row probes `callable(collateral.margin_calls_rows)` instead of the `collateral` module (E1).
    - Until that probe passes, the forced-liquidation row reads "Forced liquidation: never - positions are never sold for you; a margin
      shortfall raises a warning and an attention item". After that it uses C6's wording.
-   - In 1.0.5, settlement-failure simulation and the historical import are supported. Margin calls, OTC dealer quotes, GTD /
-     next-session orders and CSA securities collateral stay PLANNED.
+   - The settlement-failure PLANNED row probes `callable(blotters.execution_detail)` instead of the `collateral` module (E1; critic
+     S-10): the owner's fail / resolve actions live in that function's drawer (P2 task 4, 1.0.6). Until then the row reads "Simulated
+     counterparty settlement fails: NOT_YET - unfunded payables are already marked failed and retried automatically; the fail you
+     trigger yourself, and its resolution, are not in this version yet".
+   - In 1.0.5 the historical import is supported (the importer module). Margin calls, the owner-triggered settlement fail, OTC dealer
+     quotes, GTD / next-session orders and CSA securities collateral stay PLANNED.
 7. **As-of labels wherever 1.0.5 lists his rows.**
    - P2 adds `blotters.source_label(conn, kind, row) -> {source, label, asof, entered_ts, batch_id}` (tier 1), where kind is `order`,
      `fill` or `otc_contract`. It returns:
@@ -2955,8 +3061,11 @@ acceptance 3 where they differ.
      contracts payload.
    - `orders.js` (P2), `positions.js` / `activity.js` (P3) and `swapticket.js` (P4) show `.badge-asof` with the label.
    - C7's executions route uses the same function.
-8. **Lender wording.** Every payload that returns a stored borrow lender passes it through `lending.lender_label`: P3 for its payloads,
-   P6 for its own (the credit desk's stock borrows and the account cash page). His 5 shorts then read "street lender (assumed terms)".
+8. **Lender wording.** Every payload that returns a stored borrow lender passes it through `lending.lender_label`:
+   - P3 for its payloads: position detail, Accounting borrows, counterparties, and `accounting.obligations()`, whose `borrows` feed the
+     account Cash & financing page's borrows table (`cash.js` line 172 shows `r.lender` as it arrives; critic S-07);
+   - P6 for its own: the credit desk's stock borrows and the counterparty exposures in `lending.py`.
+   - His 5 shorts then read "street lender (assumed terms)" everywhere.
 9. **Nothing the owner uses breaks.**
    - Every 1.0.4 page, account tab, ticket and key works as before.
    - New in 1.0.5:
@@ -2965,9 +3074,10 @@ acceptance 3 where they differ.
      - restricted cash shows on the PB cash page.
    - Arriving in 1.0.6: the Pending, Completed, Accounts, Cash & Collateral, Derivatives and History pages, the full Dashboard, the new
      sidebar and the new keys.
-   - P1a acceptance 3 checks this 1.0.5 behaviour: the 1.0.5 Dashboard on `/`, the sidebar's first row, the 1.0.5 key map, and NOT YET
-     BUILT on the six new routes. P1b's acceptance checks the Q10 behaviour. The integrator's walk (15.2 step 4) and P8-lite item 4 check
-     the whole.
+   - P1a acceptance 3 checks this 1.0.5 behaviour: the 1.0.5 Dashboard on `/`, the sidebar's first row, the 1.0.5 key map with the
+     hidden page actions, NOT YET BUILT on the six new routes, Settings > Data Status without a news section, and P1's news-string
+     search on the Dashboard and Settings (critic S-09). P1b's acceptance checks the Q10 behaviour. The integrator's walk (15.2 step 4)
+     and P8-lite item 4 check the whole.
 
 ### 15.8 The 1.0.5 gate, deploy and import (orchestrator)
 
@@ -2998,20 +3108,35 @@ acceptance 3 where they differ.
    Then run `install_release.ps1 -OwnerSaidDeploy`. It backs up terminal.db, -wal and -shm first, and rolls back automatically if the
    after-install check fails. Report to the owner.
 8. **Import** on 2026-10-28, the apply day.
-   - Start no later than 14:30 ET: it takes about an hour, and S0 refuses at 16:00 ET.
+   - Start no later than 14:30 ET: it takes about an hour, and S0 refuses at 16:00 ET. Fetch the pack after 09:45 ET, so that the Cboe
+     chain's previous close is L's official close (rule 7).
    - Follow section 7's apply procedure, with three 1.0.5 changes:
      - The commands are `py -3.12 -m finsim.terminal.importer ...`, run from the installed release's `finsim` folder (C18 ships in
        1.0.6).
-     - Step 4's "show the owner the report" becomes: send him the dry-run report and the plain-English summary.
-     - Step 5's "his typed go" becomes his standing pre-approval. The apply runs when the dry run on a fresh copy meets his five
-       conditions (P8-lite item 3's first five checks, on the apply-day pack), with
-       `--owner-go "standing pre-approval 2026-10-27 15:12 EDT: All FinSim releases"`, which is stored in `import_batches.owner_go`.
+     - Step 4: run P8-lite's checker (15.6 item 3) on the apply-day dry run, with `--source` the stopped live database (opened
+       `mode=ro`) and `--dryrun` the dry run's work folder. Run it from the 1.0.5 commit's verified extract (step 5), so that no
+       phase-2 edit can change it. Send him the dry-run report and the summary the checker writes.
+     - Step 5: "his typed go" becomes his standing pre-approval. The apply runs only when the checker prints PASS for all five
+       conditions, with `--owner-go "standing pre-approval 2026-10-27 15:12 EDT: All FinSim releases"`, which is stored in
+       `import_batches.owner_go`. Idempotency was proven on the build-day and fix-round runs; the apply day does not repeat the second
+       dry run.
    - Tell the owner before stopping the terminal. Afterwards restart it with `python -m finsim open`, check Portfolio, the PB contracts
      table, restricted cash and integrity, and report.
-   - If a condition fails or any step refuses:
-     - do not apply; restart the terminal unchanged and tell him why;
-     - for ASOF_CURRENT_FUNDS, only he can decide a transfer into Treasury;
-     - retry on the next business day before 16:00 ET (the window then runs through that day's L), and no later than 2026-11-19.
+   - If, after a complete apply, 1.0.5 does not start on the imported file or integrity full is not ok (critic S-13): stop, restore per
+     section 7, restart 1.0.5 on the restored file, confirm integrity, and report. The restore is allowed only while no owner command
+     has run since the apply (15.9 item 8). The cause is then handled as below.
+   - If it starts with integrity ok but a page check fails, keep the import: his positions are in place, and the checker verified them.
+     Report, and fix the page as 1.0.5.1 when it hides or misstates his positions, else in 1.0.6.
+   - If a condition fails or any step refuses: do not apply; restart the terminal unchanged and tell him why. Then, by cause:
+     - **A code defect** (a refusal or a failed condition that a code change fixes): phase 2 does not start. The owning package fixes
+       it, P8-lite re-verifies (items 1-4, the checker included), and the fix ships as 1.0.5.1 through steps 1-7 of this list
+       (VERSION 1.0.5.1, its own commit, archive check, release and deploy). The import retries the same day if it can still start by
+       14:30 ET, else on the next business day. Phase 2 starts after it (rule 3).
+     - **A data or clock cause** (his transfer into Treasury for ASOF_CURRENT_FUNDS, which only he can decide; a missing input; 1.0.5
+       not installed by 14:30 ET): phase 2 may start. On the retry day the orchestrator plans phase-2 launches so that at most two other
+       agents run from 13:00 ET (or from an earlier retry start it sets, never before 09:45 ET) until the apply has ended, and the
+       import starts by 14:30 ET.
+     - Every retry runs before 16:00 ET on a business day (its window then runs through that day's L), and no later than 2026-11-19.
    - If an apply ends PARTIAL: re-run the apply the same day before 16:00 ET (it resumes idempotently); otherwise restore per section 7
      and report.
    - If 1.0.5 is not installed by 14:30 ET on 2026-10-28, the import moves to 2026-10-29 before 16:00 ET. 1.0.5 still deploys when its
@@ -3020,7 +3145,8 @@ acceptance 3 where they differ.
 
 ### 15.9 Phase 2 (release 1.0.6)
 
-1. **Start** after 15.8 step 5 (the commit verified) and once the import has been applied or postponed (rule 3).
+1. **Start** after 15.8 step 5 (the commit verified) and once the import has been applied, or postponed for a data or clock reason. A
+   postponement caused by a code defect first ships 1.0.5.1 and runs the import (15.8 step 8, rule 3).
 2. **Pool of 4.**
    - First batch: P1b, P2 Part B, P3 Part B and P6 Part B. P4 Part B takes the first free slot (normally P1b's) and P7 the next.
    - Why this order:
@@ -3030,28 +3156,53 @@ acceptance 3 where they differ.
      - C14 has a single consumer, P2's Pending rows and rejection recorder, which codes against its names.
      - P7 consumes nothing.
    - Hooks first:
-     - P2: `orders.gtd_supported` and the E3 routes;
+     - P2: `orders.gtd_supported` and the E3 routes: the pending route with `blotters.counts` and the stage vocabulary, the
+       execution-detail route with `blotters.execution_detail`, amend and replace;
+     - P3: C9e and C9f (E4);
      - P4: the C14 table, its command names and `rfq_rows`;
-     - P6: C16's margin parts, `margin_calls_rows` and `pledges_view`;
+     - P6: C16's `summary`, `position_requirements` and `custodian_of` (E4) with their margin parts, `margin_calls_rows` and
+       `pledges_view`;
      - P1b: `dashboard.py`.
 3. **Integration** and remainders.
-4. **P5's phase-2 remainder** (15.5), in a pool slot once P2 and P3 Part B have landed its hosts; otherwise after step 3.
+4. **P5's phase-2 remainder** (15.5), in a pool slot once P2 and P3 Part B have landed its hosts; otherwise after step 3. Its report
+   mode runs at any time, its dry run between 00:00 and 16:00 ET (rule 7).
 5. **The full P8** (its section).
    - Its owner-DB items use a fresh copy of the live database, which holds the applied import (if the import is still unapplied, the
      newest dry-run copy).
    - P8 task 5's dry run of the real batch then reports lines 24-33 `already_imported` and posts nothing. Before the apply, it is the full
-     dry run on 1.0.6.
+     dry run on 1.0.6. It runs between 00:00 and 16:00 ET (rule 7), so P8 does its other work (suites, smoke, directive map, fund
+     reconcile, the page walk) first.
    - The fund reconcile test gains the T-bill pledge leg.
 6. **Fixes:** at most two rounds.
 7. **The 1.0.6 gate.**
    - Section 12 in full: VERSION 1.0.6; CHANGELOG; the deferred doc texts of section 9 items 1-2; the P7 paths and the README guard; P7's
      `run_terminal_suite.py` on the archive.
-   - The owner's deploy conditions as in 15.8 step 7, on a post-import copy: his 33 positions, the restated versions and the balances
-     served by 1.0.6 equal 1.0.5's on the same copy, and integrity is ok.
+   - The owner's deploy conditions as in 15.8 step 7, on a post-import copy (critic S-03):
+     - his 33 positions (quantities and cost), the restated NAV versions and the ledger balances served by 1.0.6 equal 1.0.5's on the
+       same copy, except the differences the phase-2 packages list as intended in their results, each with its reason and the test
+       that pins it (for example a Reg T deficit reservation lowering available cash, or a correction under item 8);
+     - any other difference blocks the deploy;
+     - integrity is ok.
    - Deploy; then the attended launcher check (9.6) when the owner is available; then the final report per section 20.
 8. **Rules for phase 2.**
    - **Part A behaviour is final.** The imported rows are never re-booked or altered. P5's tests and the Part A money tests stay green
-     unchanged, unless a Part B task changes a behaviour on purpose; then that test's owner says why.
+     unchanged, unless a Part B task changes a behaviour on purpose or a Part A defect is fixed (next point); then that test's owner
+     says why.
+   - **A Part A defect in posted entries is fixed forward** (critic S-03). If phase 2 (the History split, the Derivatives tabs, the full
+     P8, the fund reconcile) finds a defect in entries the import already posted on the live database - a GL, a VM, an accrual, a
+     restated split:
+     - the owning package fixes the code and adds a correction command in its own files: actor import, deterministic request ids
+       `corr:<batch>:<n>:<part>` (a re-run replays), and no UPDATE or DELETE of any stored row. It posts dated, labelled entries, each
+       on the business date of the entry it corrects, with the memo "correction of \<entry id\>: \<reason\> (batch
+       IMP-F1-20261027-A)", and never a plug to a target figure (D3);
+     - `nav.restate` then writes new versions for the dates it moves (reason "correction", a `correction` group, residual 0);
+     - it runs like the import: a dry run on a fresh copy between 00:00 and 16:00 ET, the checker, a backup first, under the standing
+       pre-approval, shipped in a 1.0.5.x release or in 1.0.6;
+     - the owner gets a plain-English report of what changed and why.
+   - **The pre-import restore** (section 7) discards everything after the apply. It is used only while no owner command (actor `ui`)
+     and no fill of his orders (actor `matcher`) has run since the apply's last command; the server's own provider and lifecycle
+     commands do not count, because the scheduler derives them again. After that a restore needs his decision, and a correction is
+     the default.
    - **New lifecycle jobs start forward.** A job that first ships in 1.0.6 (MARGIN_CALL, RFQ_DEALER, the 17:05 OTC confirmation) starts
      on the first accounting day it runs on an existing database. It creates no call, quote or confirmation for a date before 1.0.6 was
      installed.
@@ -3068,6 +3219,9 @@ acceptance 3 where they differ.
 | 1.0.6 | UI: 02, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21<br>OMS: 01, 02, 03, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17<br>PORTFOLIO: 03, 04, 05, 06, 07, 09, 11, 12, 13, 15, 16, 17, 18, 19<br>STARTUP: 01, 02, 04, 05, 06, 07, 09<br>TEST: 02, 04, 05, 06, 08, 09, 10 | 61 |
 | Deferred | STARTUP-08 (9.4; each gate updates the scratchpad tooling) | 1 |
 
+If P4's tasks 5-6 slip (15.2 step 3), PORTFOLIO-02 moves from the 1.0.5 row to the 1.0.6 row (15 and 62), and PORTFOLIO-06's C13
+fields move with it.
+
 **Started in 1.0.5 and completed in 1.0.6:**
 
 | Gap ids | Done in 1.0.5 | Done in 1.0.6 |
@@ -3077,12 +3231,10 @@ acceptance 3 where they differ.
 | UI-07..UI-12 | the routes | the pages, sidebar entries and keys |
 | UI-13 | the 74-action registry | the Q10 map |
 | UI-15 | retired providers hidden | the rest |
-| OMS-01, OMS-02, OMS-07, OMS-13, OMS-14 | the blotter read routes | the pages |
+| OMS-02, OMS-07, OMS-13 | the executions route | the Completed Trades page |
 | OMS-09 | the fail state and commands | the drawer actions |
 | OMS-17, TEST-02 | the API tests | the page tests |
 | PORTFOLIO-06 | the C13 fields | the rows that render them |
-| PORTFOLIO-07 | C9e | the tiles and the Dashboard |
-| PORTFOLIO-11, PORTFOLIO-12, PORTFOLIO-16 | C16 at Part A depth | the full features |
 | TEST-04 | the test without the T-bill pledge leg | the pledge leg |
 
 **Phase-1 gap ids per builder:**
@@ -3099,41 +3251,137 @@ acceptance 3 where they differ.
 
 ### 15.11 Hours
 
-Wall clock, estimated realistically: Build 2's packages took 1.5-4 h each with four builders, and the Part A packages sit at the top of
-that range.
+Wall clock. Build 2's packages took 1.5-4 h each with four builders. P4's Part A sits above that range, and the first end-to-end dry
+run, the two fix rounds and rule 7's dry-run window are budgeted at their slow end (critic S-15).
 
 **Phase 1 (1.0.5)**
 
 | Step | Hours |
 |---|---|
-| 0. finsim-104-remainder finishes (running since 14:58) | sets the start S |
-| 1. P1a alone, with 15.7 | 2-2.5 |
-| 2. Part A pool (P2 3.5-4.5; P3, P4 and P6 4-5 each) | 4-5 |
+| 0. finsim-104 is done: 1.0.4 went live at 16:54 EDT (BUILD_LOG 16:55) | sets the start S, when P1a starts: about 17:30 EDT on 10-27 |
+| 1. P1a alone, with 15.7 | 2-2.75 |
+| 2. Part A pool (P2 2.5-3.5; P3 3.5-4.5; P4 4-5, or 3.5-4.5 when its tasks 5-6 slip; P6 3.5-4.5) | 4-5 |
 | 3. Integration and Part A remainders | 1-1.5 |
-| 4. P5, phase 1 | 4-5 after step 3; 3-3.5 after step 3 if it started early in P2's slot |
-| 5. P8-lite | 2-2.5; 1-1.5 after P5 if the fund test was written alongside |
-| 6. Fixes (at most 2 rounds) | 1-2 |
-| 7. Gate | 1.5-2; 1-1.5 if the tooling is prepared during step 4 |
+| 4. P5, phase 1 | 3.5-4.5 after step 3 if it started early in P2's slot; 4.5-5.5 otherwise |
+| 5. P8-lite | 1-1.5 after P5 if the fund test and the checker were written alongside; 2-2.5 otherwise |
+| 6. Fixes (at most 2 rounds, each re-verified by P8-lite items 1-4) | 2-3 |
+| 7. Gate | 1-1.5 if the tooling is prepared during step 4; 1.5-2 otherwise |
 | 8. Deploy | 0.5 |
-| 9. Import | 1-1.5; starts by 14:30 ET |
-| Total | 17-22.5 run one after another; 14.5-19.5 with the three overlaps |
+| 9. Import | 1-1.5; the pack after 09:45 ET, the start by 14:30 ET |
+| Total | 18.5-24.25 run one after another; 16-21.75 with the three overlaps |
 
-- With S = 18:00 EDT on 10-27, the overlapped path applies the import between about 08:30 and 13:30 EDT on 10-28.
-- Run one after another, the steps end between about 11:00 and 16:30 and can miss 16:00 ET.
-- At the slow end of the overlapped path, the import still starts by 14:30 ET only if S is no later than about 20:30 EDT. Otherwise it
-  moves to 10-29 (15.8 step 8).
+- With S = 17:30 EDT, integration (step 3) ends at about 00:30-02:45 EDT on 10-28, so every phase-1 dry run falls inside rule 7's
+  window. On the overlapped path the import ends at about 10:45-15:15 EDT: at the fast end it waits for the 09:45 ET pack, and at the
+  slow end it starts at about 13:45 EDT.
+- Run one after another, the steps end at about 12:00-17:45 EDT and can miss 16:00 ET.
+- Steps 4-8 take 8-11 h after step 3, so the import starts by 14:30 ET only if step 3 ends by about 03:30 EDT (06:30 at the fast end).
+  The hourly progress lines say so: 10-28 holds while step 3 is on course to end by about 03:30 EDT; once it ends later, they tell
+  the owner that 10-29 is the likely apply day (15.8 step 8).
 
 **Phase 2 (1.0.6)**
 
 | Step | Hours |
 |---|---|
-| 1. Pool (P1b 2-2.5, P2B 4.5-5.5, P3B 4.5-5.5, P6B 4-5, P4B 3-4, P7 2-3: about 22 builder-hours; P4B starts when P1b ends, P7 when the next builder ends, so the P6B-then-P7 slot finishes last) | 6-7.5 |
+| 1. Pool (P1b 2-2.5, P2B 5.5-7, P3B 5-6, P6B 4.5-5.5, P4B 3-4, P7 2-3: about 25 builder-hours with the E3 / E4 hooks; P4B starts when P1b ends, P7 when the next builder ends, so the P6B-then-P7 slot finishes last) | 6.5-8.5 |
 | 2. Integration and remainders | 1-1.5 |
-| 3. P5's phase-2 remainder | 1-1.5 (inside step 1 when its hosts land early) |
-| 4. Full P8 | 3-4 |
+| 3. P5's phase-2 remainder | 1-1.5 (inside step 1 when its hosts land early; its dry run between 00:00 and 16:00 ET) |
+| 4. Full P8 | 3-4 (its real-batch dry run between 00:00 and 16:00 ET) |
 | 5. Fixes (at most 2 rounds) | 1.5-2.5 |
 | 6. Gate | 2-2.5 |
 | 7. Deploy and report; the attended launcher check when the owner is available | 0.5-1 |
-| Total | 15-20.5 (14-19 with P5 inside the pool) |
+| Total | 15.5-21.5 (14.5-20 with P5 inside the pool) |
 
-Starting after the import (about 10:00-14:00 EDT on 10-28), 1.0.6 passes its gate at about 00:00-09:30 EDT on 10-29.
+Starting after the import (about 10:45-15:15 EDT on 10-28), 1.0.6 passes its gate at about 03:00-12:00 EDT on 10-29. At the fast end
+P8's dry run waits for 00:00 ET (rule 7) while the first fix round runs.
+
+### 15.12 Critic answers (S-01..S-16)
+
+An independent critic checked this section as written from 16:16 EDT and raised 16 findings: 4 major (S-01..S-04) and 12 minor. Each
+was verified against the plan, the batch (sha256 `75690c19...`), the code and BUILD_LOG. All 16 hold and all 16 are fixed; none was
+rejected. Where the evidence called for it, the fix differs from the critic's proposal, and the line says how. One line per finding:
+verdict and evidence, then where the fix lives.
+
+- **S-01** (major) - fixed. Holds: `portfolio.js` (lines 107-117) sends Enter to the instrument page (a desk forward to the FX desk)
+  and has no drawer; the only position drawer is `positions.js` (lines 240-275), and P3 task 6 is Part B. P3's Part A acceptance 3 and
+  P8-lite item 4 now check the Portfolio rows' marks and that Enter opens each row's instrument page (`instrument.js` renders OTC kinds;
+  a CDX contract is kind SWAP in the master), and walk the option drawer on US Exchange > Positions and the OTC drawer on Goldman (PB) >
+  Positions (15.3, 15.6). Moving task 6 into Part A was not chosen: it would lengthen the path to the import.
+- **S-02** (major) - fixed. Holds: P8 owned four test files only, and the five conditions and the owner's summary existed only as
+  build-day evidence. P8-lite now delivers `X\terminal_import_check.py`: read-only, PASS or FAIL with evidence per condition,
+  idempotency with `--second`, and the plain-English summary from the importer's report JSON. It runs on the build day, after every fix
+  round and on the apply day, where the apply runs only on five PASS (15.6 item 3, 15.8 step 8, sections 0 and 12). It lives in the repo
+  rather than `scratchpad\checks\`, because the scratchpad is under %TEMP% (S-04).
+- **S-03** (major) - fixed. Holds: nothing allowed a forward fix of entries the import posted, the 1.0.6 condition "equal 1.0.5's" left
+  no room for one, and a restore discards everything after the apply. 15.9 item 8 adds a labelled, idempotent correction command
+  (dated entries, no row edits, no plug) followed by `nav.restate` and a report to the owner, and allows the pre-import restore only
+  while no `ui` or `matcher` command has run since the apply (MAX(commands.id) alone would also move with the server's own provider and
+  lifecycle commands). 15.9 item 7 compares 1.0.6 with 1.0.5 except listed, tested, intended differences.
+- **S-04** (major) - fixed. Holds for the plan's text: the batch and `rev3_batch.py` were only in %TEMP% until the orchestrator acted on
+  this finding at 16:56 EDT (BUILD_LOG), copying the batch to `docs\imports\IMP-F1-20261027-A.jsonl` and mirroring both to
+  `C:\Users\logan\finsim-orchestrator\scratchpad-mirror\`. At 17:18 EDT both batch copies hashed `75690c19...` (121,468 bytes) and the
+  mirrored script `23c4743d...`, equal to the scratchpad's. 15.2 step 1 records them and has the orchestrator check again before P1a;
+  P5 task 9 copies from `docs\imports` (15.5).
+- **S-05** (minor) - fixed. Holds: `api_views.trial_balance` (line 769) lists only the (gl, currency) groups present in `gl_balances`.
+  Both CDX are bought below their coupon, so their upfronts are received (2345); the TRS and the IRS have none; the options are listed
+  (1700); the batch records no ORCL / META ex-date in the window (the last were 10-09 and 09-21). 15.6 item 4 now expects 4451, 4453
+  and 2345 and says why 1335 and 4452 are absent.
+- **S-06** (minor) - fixed. Holds: batch lines 24-28 carry trade and value date 2026-10-21 with exec 19:45 ET; lines 29-33 trade
+  2026-10-22 at 16:00 ET and settle 2026-10-23. 15.6 item 3's terms table now gives each product's side and dates.
+- **S-07** (minor) - fixed. Holds: `cash.js` line 172 shows `r.lender` from `accounting.obligations()` (line 1550) through
+  `api_views.account_cash` (line 1339), both P3's files. 15.7 item 8 and P3's Part A task-5 list now give `obligations()` to P3, and
+  P8-lite walks US Exchange > Cash & financing, whose borrows table joins the wording scope (15.3, 15.6).
+- **S-08** (minor) - fixed. Holds: `api.py` serves only `/api/attention` (line 1453), and the summary rides inside `/api/news`
+  (`api_products.py` lines 895-911); P1 task 8's test and acceptance 2 call the route, but no task builds it. 15.7 item 1 makes it
+  P1a's, with its test.
+- **S-09** (minor) - fixed. Holds: `settings.js` lines 582-584 always add the "news" heading and, with `h.news` null (`api.py` line 1260
+  once `server.py` lines 629-638 find no `news.py`), "news is off in this runtime". P1a skips the block (15.7 item 5); P1a acceptance 3
+  and P8-lite item 4 check Settings and run P1's news-string search on the Dashboard and Settings (15.7 item 9, 15.6).
+- **S-10** (minor) - fixed. Holds: C6 probes the `collateral` module, bound in 1.0.5, while the owner's fail / resolve actions live in
+  the Part B drawer. The row now probes `blotters.execution_detail` (E1: it ships with the drawer), and in 1.0.5 it says that unfunded
+  payables are marked failed and retried while the fail he triggers himself is not in this version yet (15.3 E1, 15.7 item 6).
+- **S-11** (minor) - fixed. Holds: the "?" help and Settings > Keyboard follow the registry (P1 task 5). They now hide an action whose
+  page is not in the build, so the five new page actions appear only in 1.0.6; P1a's static test and P8-lite's keys check assert it
+  (15.7 item 3, 15.6 item 4).
+- **S-12** (minor) - fixed. Holds: S0 refuses from 16:00 ET and on an apply-day snapshot, and every dry run starts with S0. New rule 7:
+  every real-batch dry run runs between 00:00 and 16:00 ET (report mode at any time), and the steps and hours are scheduled around it
+  (15.2, 15.5, 15.9, 15.11, section 5). The alternative, relaxing S0 for dry runs, is not taken: after 16:00 the catch-up would run the
+  day's closing jobs without their inputs, so the dry run would no longer predict the apply. Night dry runs raised one more point, also
+  in rule 7: L's option close comes from the Cboe chain's previous close, so the apply day's pack is fetched after 09:45 ET, and a
+  night pack's option figures are labelled estimates.
+- **S-13** (minor) - fixed. Holds. A code-defect postponement now holds phase 2 and ships 1.0.5.1 through the gate first; a data or
+  clock postponement lets phase 2 run but keeps at most two other agents from 13:00 ET on the retry day; after a complete apply, a
+  failed start or integrity restores the backup (while no owner command has run), and a page defect keeps the import and is fixed as
+  1.0.5.1 or in 1.0.6. The critic proposed restoring on any failed check; a page defect is not a reason to take his positions out
+  again (rule 3, 15.8 step 8, 15.9 item 1, section 12).
+- **S-14** (minor) - fixed. Holds: `server._bind_optional` (lines 490-526) marks a module "error" when a ModuleNotFoundError names
+  another module or `bind` raises, a `register` error other than TypeError propagates, and `test_terminal_api` (line 104) asserts that
+  none errored. Every new optional module, the importer included, now imports other new modules lazily and keeps its import,
+  `register` and `bind` exception-free at every save; `X\wip_import_tests.py` joins P5's owns list and is deleted before the gate
+  (15.2 steps 3 and 5, 15.5).
+- **S-15** (minor) - fixed. Holds: those hooks have no 1.0.5 consumer, and the fix rounds and P5's first end-to-end run were budgeted at
+  the fast end. E3 / E4 move the pending and execution-detail routes, `counts`, the stage vocabulary, C9e, C9f and C16's `summary` /
+  `position_requirements` / `custodian_of` to Part B; each Part A package builds its import items first, and P4's tasks 5-6 may slip;
+  the fix rounds get 2-3 h; the hours are recomputed from S = 17:30 EDT, and the hourly lines tell the owner that 10-29 is likely once
+  step 3 ends after about 03:30 EDT (15.2, 15.3, 15.9, 15.10, 15.11).
+- **S-16** (minor) - fixed. Holds: 9.1, 9.6, 9.12, 9.15, Q12 and the batch header contradict this section, and so do 9.5 and section 1's
+  live-app facts (same cause, not in the finding). Rule 1 now covers every section and the batch header and lists each superseded
+  statement; section 0's line points to it. The batch stays byte-identical, and the owner's summary explains its header (15.1, 15.6
+  item 3).
+
+### 15.13 Post-close findings folded into phase 1 (orchestrator, 2026-10-27 17:50 EDT)
+
+A verifier ran the deployed 1.0.4 release after today's close on a copy of the owner's database with his five OTC trades booked at
+16:06 ET (Goldman terms). Full report and evidence: `C:\Users\logan\AppData\Local\Temp\claude\C--Users-logan-intelligence-terminal\5e0edd51-72c4-438a-89eb-77c644650257\scratchpad\checks\postclose-1027\` (report in BUILD_LOG 17:47 EDT, "VERIFIER POST-CLOSE OTC"). Integrity
+full ok and trial balances balanced throughout; the IRS VM (-2,076.23), the CDX marks and upfronts and the 17:10 collateral marks
+recompute by hand. These items are now part of phase 1 because the import makes the owner's TRS / CDX / IRS live from 10-28:
+
+| Id | Severity | What | Owner (phase 1) |
+|---|---|---|---|
+| POSTCLOSE-01 | major | MARKS_RECORD accepts any print with quote_time >= close - 60 s as the day's CLOSE and never revisits it. On 10-27 it recorded ORCL 130.55 (the 15:59:59 print, fetched 16:16) while the official close is 130.53 (Yahoo regularMarketPrice at 16:04, daily bar 130.52999878, 16:00 minute bar 130.53). SWAP_VM for SWP-000001 then posted NO_CHANGE instead of +774.00 received (-38,700 x (130.53 - 130.55)), the drawer (+774.00) and the positions (0.00) disagree, and TRS resets would settle on the same wrong close (first reset 2026-11-27). 25 open CLOSE_REVISED items 10-22..10-26 show it is routine. Fix: the recorded CLOSE of an equity is the official closing print (the regular-session close: Yahoo regularMarketPrice / the daily bar once the session is closed and the print is at or after 16:00, never a pre-16:00 print), recorded only after it is available (retry, not record early); a CLOSE_REVISED found before the day's 17:05 VM re-records the mark; TRS VM / resets read only the official close. Hand-worked money test with the ORCL numbers. | P3 Part A (lifecycle_eod.py MarksRecord / _revision) with P4 Part A (swaps_trs.py close_on / _vm_close / mark_trs; swaps.py h_vm) |
+| POSTCLOSE-02 | minor | Same root cause: B-000002 (C) collateral marked on 122.68 (16:00:00 print) instead of the official 122.69 (difference 122.40), and a one-tick revision is never disclosed (_revision skips diff <= tick). Fixed by POSTCLOSE-01's rule. | P3 Part A |
+| POSTCLOSE-03 | minor | CDX CLOSE_PENDING raises 2 WARNs every business evening (the ':r1' retry in pass 2 of the same tick is not quiet) and retries every 5 minutes all night; the wording says "close / intraday price" for a FRED observation and shows raw series codes. Make the first pending evening quiet as the docstring says, retry at a sane cadence, and word it for a daily FRED observation ("ICE BofA IG OAS for 10-27 not published yet"). | P4 Part A (swaps.py _vm_pending / _skip) |
+| POSTCLOSE-06 | minor | One command, two business dates: the 17:05 SWAP_VM entry is dated 10-27 while its funding sweep (X-000020) and the 17:10 collateral marks "of 10-27" are dated 10-28 (the 17:00 ET ACCT_DAY cut-off), so the PB pays VM from 0.00 settled cash on 10-27 and the funding shows on 10-28. A lifecycle job of business date D stamps its entries and its funding sweeps with D. | P6 Part A (Treasury stamping, C15) with P4 |
+| POSTCLOSE-07 | minor | The CDX upfront shows as today's realised P&L (+288,810.81) against unrealised -295,032.55 on trades opened today, and the portfolio footer's gross short (6,786,915.05) does not tie to the NAV block's mv_short (6,491,882.50). The upfront reclassification is already P4 Part A task 7 (GL 2345); the footer must use the same short definition as NAV. | P4 Part A (task 7) with P3 Part A (portfolio_view footer) |
+| POSTCLOSE-04 | minor | GET /api/accounts/F1:PB_GS positions_count counts v_positions only: the PB header says 0 positions while it holds 5 OTC contracts. | P3 Part A if trivial (api_views.account_detail), else phase 2 |
+| POSTCLOSE-05 | minor | Cash page sweep "for" column reads "swapvm swapvm (SWP-000003 2026-10-27)" and links to Transactions; CDX- contracts never get the OTC-tab link; the stored memo is raw. | phase 2 (P6 Part B cash.js) unless trivial |
+| POSTCLOSE-08 | minor | Wording: "unchanged vs the last VM" with no VM yet; "the mark at the last variation margin" on never-margined contracts; "reset every 1 m"; the VM memo ends with the job code "(SWAP_VM; ...)". | P4 Part A if trivial, else phase 2 |

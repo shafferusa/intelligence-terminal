@@ -3,10 +3,16 @@
  *
  * Loaded right after core.js and before every component (index.html).  It extends T.keys (created by core.js, whose keys
  * section dispatches the global actions) with:
- *   T.keys.ACTIONS    every action: {id, group, scope, key (its DEFAULT key or null), label, typing, files, legacy, family}.
- *                     The scope comes from the id: 'ticket.*' acts in the dock ticket, 'grid.*' in a table (its selected
+ *   T.keys.ACTIONS    every action: {id, group, scope, key (its DEFAULT key or null), label, typing, files, legacy, family,
+ *                     page}.  The scope comes from the id: 'ticket.*' acts in the dock ticket, 'grid.*' in a table (its selected
  *                     row), 'dialog.*' while a dialog or the keyboard help is open, everything else is 'global' (anywhere).
- *                     api.py (keybind_scope) uses the same rule.
+ *                     api.py (keybind_scope) uses the same rule.  74 actions (FINSIM1_PLAN C1).
+ *   only what works   an action that opens a page names it (`page`: T.pages.<page>); while that page is not in the build
+ *                     (T.pages.<page> undefined) the action is hidden from the '?' help and Settings > Keyboard
+ *                     (T.keys.available(id); T.keys.groups() lists the available ones only).  The 1.0.5 default map keeps every
+ *                     1.0.4 key except F12, which opens the Dashboard (the news page is gone); the actions of the pages of the new
+ *                     navigation (Pending / Completed Trades, Accounts, Cash & Collateral, Derivatives) and Trading have no
+ *                     default key yet (FINSIM1_PLAN 15.7 item 3).
  *   canonical keys    ONE form: Ctrl+Alt+Shift+Key, the modifiers in that order.  Key = F1..F24, A..Z, 0..9, a named key
  *                     (Enter Escape Space Tab Backspace Delete Insert Home End PageUp PageDown ArrowUp ArrowDown ArrowLeft
  *                     ArrowRight) or one ASCII punctuation character; Shift is part of a punctuation or digit character
@@ -199,7 +205,7 @@
   function act(id, group, key, label, o) {
     o = o || {};
     var a = { id: id, group: group, scope: scopeOf(id), key: key || null, label: label, typing: !!o.typing, files: o.files || null,
-              legacy: o.legacy || null, family: o.family || null, note: o.note || null };
+              legacy: o.legacy || null, family: o.family || null, note: o.note || null, page: o.page || null };
     ACTIONS.push(a); BY_ID[id] = a;
   }
   /* Navigation: the selected book's accounts (F1 - F6) and the pages of the account you are on */
@@ -220,16 +226,22 @@
   act('book.fund', 'Books', 'Shift+F2', 'Select the Fund book', { family: 'book.select' });
   act('book.institutional', 'Books', 'Shift+F3', 'Select the Institutional book', { family: 'book.select' });
   act('book.next', 'Books', null, 'Next book (Personal, Fund, Institutional in turn)');
-  /* Pages */
+  /* Pages (an action naming a `page` is shown only while that page is in the build: T.keys.available) */
+  act('page.dashboard', 'Pages', 'F12', 'Dashboard', { page: 'dashboard' });
   act('page.portfolio', 'Pages', 'F7', 'Portfolio');
   act('page.treasury', 'Pages', 'F10', 'Treasury');
   act('page.risk', 'Pages', 'F11', 'Risk');
-  act('page.news', 'Pages', 'F12', 'Daily News');
   act('page.accounting', 'Pages', 'Shift+F7', 'Accounting');
   act('page.activity', 'Pages', 'Shift+F8', 'Activity');
   act('page.watchlists', 'Pages', 'Shift+F9', 'Watchlists');
   act('page.history', 'Pages', 'Shift+F10', 'History of the book\'s last past lifetime');
   act('page.settings', 'Pages', 'Shift+F11', 'Settings');
+  act('page.trading', 'Pages', null, 'Trading: the last venue you used (else US Exchange)');
+  act('page.pending', 'Pages', null, 'Pending Trades (on an account page: that account\'s)', { page: 'pending' });
+  act('page.completed', 'Pages', null, 'Completed Trades (on an account page: that account\'s)', { page: 'completed' });
+  act('page.accounts', 'Pages', null, 'Accounts', { page: 'accounts' });
+  act('page.cash_collateral', 'Pages', null, 'Cash & Collateral (on an account page: its Cash & financing)', { page: 'cash_collateral' });
+  act('page.derivatives', 'Pages', null, 'Derivatives', { page: 'derivatives' });
   /* Order ticket: the dock (anywhere) and the keys inside the ticket (their current keys are the defaults) */
   act('dock.toggle', 'Order ticket', 'F9', 'Show / hide the order ticket (on an account page)');
   act('ticket.preview', 'Order ticket', 'Enter', 'Preview the order (in the symbol box: look the symbol up)', { typing: true, files: DESKS });
@@ -402,8 +414,14 @@
   function paren(id) { var l = label(id); return l ? ' (' + l + ')' : ''; }
   /* the keys in force of several actions for one hint: labels(['grid.buy', 'grid.sell']) -> 'B / S' ('' when none has a key) */
   function labels(ids, sep) { return (ids || []).map(label).filter(Boolean).join(sep || ' / '); }
+  /* an action works in this build: it names no page, or its page is loaded (T.pages.<page>) - else the help and Settings >
+     Keyboard leave it out (FINSIM1_PLAN 15.7 item 3: never a key on screen for a page that is not built) */
+  function available(id) {
+    var a = BY_ID[id]; if (!a) { return false; }
+    return !a.page || !!(T.pages && T.pages[a.page]);
+  }
   function groups() {
-    return GROUPS.map(function (g) { return { name: g, where: GROUP_WHERE[g], actions: ACTIONS.filter(function (a) { return a.group === g; }) }; });
+    return GROUPS.map(function (g) { return { name: g, where: GROUP_WHERE[g], actions: ACTIONS.filter(function (a) { return a.group === g && available(a.id); }) }; });
   }
   function defaults() { var o = {}; ACTIONS.forEach(function (a) { o[a.id] = a.key; }); return o; }
   function fileNames(list) {
@@ -421,7 +439,7 @@
   K.presses = presses;
   K.fires = fires; K.action = action; K.is = is; K.holders = holders; K.clashes = clashes; K.clash = function (a, b) { return clash(BY_ID[a], BY_ID[b]); };
   K.kbd = function (idOrCombo) { return kbdHtml(BY_ID[idOrCombo] ? binding(idOrCombo) : idOrCombo); };
-  K.binding = binding; K.label = label; K.paren = paren; K.labels = labels; K.groups = groups; K.defaults = defaults;
+  K.binding = binding; K.label = label; K.paren = paren; K.labels = labels; K.groups = groups; K.defaults = defaults; K.available = available;
   K.overrides = function () { return plain(overrides); };
   K.overridden = overridden; K.lost = function (id) { return lost[id] || null; }; K.lostAll = function () { return plain(lost); };
   K.bindings = function () { return plain(eff); };

@@ -76,7 +76,7 @@ from decimal import Decimal, ROUND_HALF_EVEN
 from typing import Dict, Iterable, List, Optional
 
 from . import config, execution
-from .books import account_row, lifetime_row
+from .books import account_kind_for, account_row, lifetime_row
 from .commands import Command, ConflictError, RejectError, TxContext
 from .db import dumps, next_id
 from .clock import ny_of
@@ -105,7 +105,20 @@ FUNDS_RESUME_BACKOFF_MAX_S = 1800    # ... up to 30 min, before the next automat
 FILLSPEC_FX_CONVERT = "fx_convert" in getattr(execution.FillSpec, "__dataclass_fields__", {})
 #: Build 2 schema additions of the order book (C4 ``Database.ensure_schema_ext``, run by ``bind``): the resting state of a limit
 #: (EXEC-5) and the per-bar index the participation cap reads (EXEC-6)
-SCHEMA_EXT = ["ALTER TABLE orders ADD COLUMN limit_rested INTEGER", "CREATE INDEX IF NOT EXISTS ix_fills_bar ON fills(instrument_id, bar_ts)"]
+SCHEMA_EXT = ["ALTER TABLE orders ADD COLUMN limit_rested INTEGER", "CREATE INDEX IF NOT EXISTS ix_fills_bar ON fills(instrument_id, bar_ts)",
+              # FINSIM1_PLAN C8 (additive, D2): ``booking`` AS_OF / HISTORICAL_MODEL on an as-of booked order or fill (NULL = booked live),
+              # its true entry time ``entered_ts`` and the batch line key ``import_key`` (one row per key: DUPLICATE_IMPORT); and the
+              # amend / replace / good-till-date / next-session columns of the order engine (written from 1.0.6; NULL / 0 until then)
+              "ALTER TABLE orders ADD COLUMN booking TEXT", "ALTER TABLE orders ADD COLUMN entered_ts INTEGER", "ALTER TABLE orders ADD COLUMN import_key TEXT",
+              "ALTER TABLE orders ADD COLUMN replaces_order_id TEXT", "ALTER TABLE orders ADD COLUMN replaced_by_order_id TEXT",
+              "ALTER TABLE orders ADD COLUMN amend_count INTEGER NOT NULL DEFAULT 0", "ALTER TABLE orders ADD COLUMN gtd_date TEXT",
+              "ALTER TABLE orders ADD COLUMN activate_ts INTEGER",
+              "ALTER TABLE fills ADD COLUMN booking TEXT", "ALTER TABLE fills ADD COLUMN entered_ts INTEGER", "ALTER TABLE fills ADD COLUMN import_key TEXT",
+              "CREATE UNIQUE INDEX IF NOT EXISTS ux_orders_import_key ON orders(import_key) WHERE import_key IS NOT NULL",
+              "CREATE UNIQUE INDEX IF NOT EXISTS ux_fills_import_key ON fills(import_key) WHERE import_key IS NOT NULL"]
+#: C8: the booking values of an as-of row (``orders.booking`` / ``fills.booking``; NULL = a live order or fill)
+BOOKING_AS_OF = "AS_OF"
+BOOKING_HISTORICAL_MODEL = "HISTORICAL_MODEL"
 
 
 def bind(rt) -> None:
@@ -168,6 +181,10 @@ def order_view(conn, order_id: str) -> dict:
                                                 " FROM fills WHERE order_id=? ORDER BY ts, fill_id", (order_id,)).fetchall()]
     ev = conn.execute("SELECT ts, from_status, to_status, note FROM order_events WHERE order_id=? ORDER BY id DESC LIMIT 1", (order_id,)).fetchone()
     d["last_event"] = dict(ev) if ev else None
+    if d.get("booking"):                 # C8 / 15.7 item 7: an as-of or historical-model order names its source (the D1 label), flat as
+        from .blotters import source_label   # in the executions rows and the account payloads: source, source_label, asof, badge, batch_id
+        src = source_label(conn, "order", r)
+        d.update(source=src["source"], source_label=src["label"], asof=src["asof"], badge=src["badge"], batch_id=src["batch_id"])
     return d
 
 
@@ -914,6 +931,379 @@ def record_rejection(services, request_id: str, req: dict, code: str, message: s
     return res
 
 
+# ---- as-of listed booking (FINSIM1_PLAN C8; D1, D3, D7, D10) ---------------------------------------------------------------------------
+class Forbidden(RejectError):
+    """403: the command is not open to this actor (an as-of booking from the order ticket)."""
+    http = 403
+
+
+ASOF_KEYS = frozenset({"account_id", "instrument_id", "instrument_spec", "side", "qty", "price", "order_type", "tif", "fee_rule", "as_of"})
+ASOF_REQUIRED = ASOF_KEYS - {"instrument_spec"}
+ASOF_AS_OF_KEYS = frozenset({"trade_date", "exec_ts", "batch_id", "line_key", "historical_model"})
+ASOF_PKG_KEYS = frozenset({"account_id", "package", "legs", "order_type", "tif", "fee_rule", "as_of"})
+ASOF_PKG_AS_OF_KEYS = frozenset({"trade_date", "exec_ts", "batch_id", "historical_model"})
+ASOF_PKG_INFO_KEYS = frozenset({"strategy_key", "fill_mode", "label"})
+ASOF_LEG_KEYS = frozenset({"line_key", "instrument_id", "instrument_spec", "side", "qty", "price"})
+ASOF_SPEC_KEYS = frozenset({"occ", "underlying_id", "expiry", "strike", "right", "style", "multiplier", "chain_row"})
+ASOF_OPTION_SIDES = ("BTO", "STO", "BTC", "STC")
+ASOF_EQUITY_SIDES = ("BUY", "SELL")
+ASOF_EQUITY_KINDS = ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED")
+ASOF_FEE_RULES = ("SCHEDULE", "NONE")
+ASOF_PRICE_BASIS = "as_of"
+
+
+def _asof_refuse_ui(ctx: TxContext) -> None:
+    if str(ctx.actor or "") == "ui":
+        raise Forbidden("AS_OF_FORBIDDEN", "an as-of booking is entered only by the historical import at the owner's instruction, never from the order ticket")
+
+
+def _asof_keys(what: str, d, allowed: frozenset, required: Iterable[str]) -> dict:
+    if not isinstance(d, dict):
+        raise RejectError("ASOF_PAYLOAD", f"{what} must be an object")
+    extra = sorted(set(d) - allowed)
+    if extra:
+        raise RejectError("ASOF_PAYLOAD", f"{what} carries fields an as-of booking does not take: {', '.join(extra)} (machine fields only)",
+                          {"unexpected": extra, "allowed": sorted(allowed)})
+    missing = sorted(k for k in required if d.get(k) is None or d.get(k) == "")
+    if missing:
+        raise RejectError("ASOF_PAYLOAD", f"{what} lacks {', '.join(missing)}", {"missing": missing})
+    return d
+
+
+def _asof_when(ctx: TxContext, as_of: dict) -> tuple:
+    """``(trade_date, exec_ts)`` of an ``as_of`` block: an ISO trade date that is an exchange business day in the past, and an
+    execution time (ISO with its UTC offset, or epoch seconds) on that New York date and not after now."""
+    from datetime import date as _date, datetime as _dt
+    try:
+        td = _date.fromisoformat(str(as_of.get("trade_date") or ""))
+    except ValueError as e:
+        raise RejectError("ASOF_DATES", f"as_of.trade_date {as_of.get('trade_date')!r} is not an ISO date") from e
+    raw = as_of.get("exec_ts")
+    ts = None
+    if isinstance(raw, int) and not isinstance(raw, bool):
+        ts = int(raw)
+    else:
+        try:
+            dt = _dt.fromisoformat(str(raw or "").strip())
+            ts = int(dt.timestamp()) if dt.tzinfo is not None else None
+        except ValueError:
+            ts = None
+    if ts is None:
+        raise RejectError("ASOF_DATES", f"as_of.exec_ts {raw!r} must be an ISO time with its UTC offset (2026-10-22T16:00:00-04:00) or epoch seconds")
+    if ts > ctx.ts:
+        raise RejectError("ASOF_DATES", "an as-of execution time cannot be in the future", {"exec_ts": ts, "now": ctx.ts})
+    if ny_of(ts).date() != td:
+        raise RejectError("ASOF_DATES", f"the execution time {ny_of(ts).strftime('%Y-%m-%d %H:%M ET')} is not on the trade date {td.isoformat()}",
+                          {"trade_date": td.isoformat(), "exec_ts": ts})
+    if not ctx.cal.is_business_day(td):
+        raise RejectError("ASOF_DATES", f"{td.isoformat()} is not an exchange business day", {"trade_date": td.isoformat()})
+    return td, ts
+
+
+def _asof_account(ctx: TxContext, services, account_id: str, exec_ts: int):
+    conn = ctx.conn
+    acct = account_row(conn, account_id)
+    if acct is None:
+        raise RejectError("ACCOUNT_UNKNOWN", f"account {account_id} does not exist")
+    if acct["status"] != "OPEN":
+        raise RejectError("ACCOUNT_CLOSED", f"account {account_id} is closed")
+    lid = acct["lifetime_id"]
+    lrow = lifetime_row(conn, lid)
+    if lrow is None or lrow["status"] != "OPEN":
+        raise RejectError("LIFETIME_CLOSED", f"lifetime {lid} is closed (History is read-only)", {"lifetime_id": lid})
+    acc = getattr(services, "accounting", None)
+    if acc is not None and hasattr(acc, "is_held") and acc.is_held(lid):
+        raise ConflictError("INTEGRITY_HOLD", f"lifetime {lid} is on an integrity hold: the whole-ledger check failed and is unresolved", {"lifetime_id": lid})
+    if int(acct["opened_ts"] or 0) > int(exec_ts):
+        raise ConflictError("ASOF_BEFORE_ACCOUNT", f"{account_id} was opened {ny_of(int(acct['opened_ts'])).strftime('%Y-%m-%d %H:%M ET')}, after the execution time",
+                            {"opened_ts": int(acct["opened_ts"]), "exec_ts": int(exec_ts)})
+    return acct
+
+
+def _asof_duplicate(conn, line_key: str) -> None:
+    """409 DUPLICATE_IMPORT when an order or a fill already carries the batch line key (a replay of the same command id never
+    gets here: the bus answers it from the stored result)."""
+    o = conn.execute("SELECT order_id FROM orders WHERE import_key=?", (line_key,)).fetchone()
+    f = conn.execute("SELECT fill_id FROM fills WHERE import_key=?", (line_key,)).fetchone()
+    if o is not None or f is not None:
+        raise ConflictError("DUPLICATE_IMPORT", f"the batch line {line_key} is already booked ({o['order_id'] if o is not None else f['fill_id']}): nothing was written",
+                            {"line_key": line_key, "order_id": o["order_id"] if o is not None else None, "fill_id": f["fill_id"] if f is not None else None})
+
+
+def _asof_price(raw) -> Decimal:
+    try:
+        px = Decimal(str(raw))
+    except Exception as e:   # noqa: BLE001
+        raise RejectError("ASOF_PAYLOAD", f"price {raw!r} is not a number") from e
+    if not px.is_finite() or px <= 0:
+        raise RejectError("ASOF_PAYLOAD", f"price must be positive, got {raw!r}")
+    if qprice(px) != px:
+        raise ConflictError("ASOF_TERMS_MISMATCH", f"the price {raw} cannot be stored exactly (4 decimals at most): nothing was written",
+                            {"price": str(raw), "stored": str(qprice(px))})
+    return px
+
+
+def _asof_instrument(ctx: TxContext, services, iid: str, spec, side: str) -> tuple:
+    """``(instrument, created)``: the listed instrument of an as-of booking.  An option's ``instrument_spec`` must describe the OCC
+    symbol exactly (underlying, expiry, strike, right, multiplier 100, style); a missing contract is created inside this command
+    from the data pack's Cboe chain row (``InstrumentMaster.ensure_option`` on the command's transaction - the audit trail is the
+    command row).  Equities / ETFs take no spec and must already be in the master."""
+    from .instruments import parse_occ
+    conn = ctx.conn
+    master = services.instruments
+    inst = master.get(iid, conn)
+    created = False
+    parsed = parse_occ(iid)
+    if parsed is not None or (isinstance(spec, dict) and spec):
+        if not isinstance(spec, dict):
+            raise RejectError("ASOF_SPEC", f"{iid}: an option booking carries its instrument_spec")
+        _asof_keys(f"{iid} instrument_spec", spec, ASOF_SPEC_KEYS, ("occ", "underlying_id", "expiry", "strike", "right", "style", "multiplier"))
+        if parsed is None or str(spec.get("occ") or "").upper() != iid.upper():
+            raise RejectError("ASOF_SPEC", f"{iid} is not the OCC symbol of the spec ({spec.get('occ')!r})", {"instrument_id": iid, "occ": spec.get("occ")})
+        root, expiry, right, strike = parsed
+        want = {"underlying_id": str(spec.get("underlying_id") or "").upper(), "expiry": str(spec.get("expiry") or ""), "right": str(spec.get("right") or "").upper(),
+                "strike": str(spec.get("strike") or ""), "multiplier": str(spec.get("multiplier") or ""), "style": str(spec.get("style") or "").upper()}
+        try:
+            strike_ok = Decimal(want["strike"]) == strike
+            mult_ok = Decimal(want["multiplier"]) == Decimal(100)
+        except Exception:   # noqa: BLE001
+            strike_ok = mult_ok = False
+        bad = [k for k, ok in (("expiry", want["expiry"] == expiry.isoformat()), ("right", want["right"] == right), ("strike", strike_ok),
+                               ("multiplier", mult_ok), ("style", want["style"] in ("AMERICAN", "EUROPEAN"))) if not ok]
+        if bad:
+            raise RejectError("ASOF_SPEC", f"{iid}: the spec's {', '.join(bad)} do not describe this contract", {"fields": bad, "spec": _jsonable({k: v for k, v in spec.items() if k != 'chain_row'})})
+        under = master.get(want["underlying_id"], conn)
+        if under is None:
+            raise RejectError("ASOF_SPEC", f"{iid}: the underlying {want['underlying_id']} is not in the instrument master", {"underlying_id": want["underlying_id"]})
+        if inst is None:
+            row = spec.get("chain_row")
+            if not isinstance(row, dict) or not row:
+                raise RejectError("ASOF_CHAIN_ROW", f"{iid} is not in the master: the booking needs the data pack's Cboe chain row to create it", {"instrument_id": iid})
+            listed = str(row.get("option") or row.get("occ") or "").strip().upper()
+            if listed and listed != iid.upper():
+                raise RejectError("ASOF_CHAIN_ROW", f"{iid}: the chain row is for {listed}", {"instrument_id": iid, "chain_row_option": listed})
+            inst = master.ensure_option(ctx.tx, iid, under, row)
+            created = True
+        if inst is None or inst.kind != "OPTION":
+            raise RejectError("ASOF_SPEC", f"{iid} is not a listed option in the master")
+        stored = {"underlying_id": str(inst.underlying_id or "").upper(), "expiry": str(inst.expiry or ""), "right": str(inst.right or "").upper(),
+                  "multiplier": Decimal(str(inst.multiplier)), "style": str(inst.style or "").upper()}
+        diff = [k for k in ("underlying_id", "expiry", "right", "style") if stored[k] != want[k]] + ([] if stored["multiplier"] == Decimal(100) else ["multiplier"])
+        if inst.strike is None or Decimal(str(inst.strike)) != strike:
+            diff.append("strike")
+        if diff:
+            raise ConflictError("ASOF_TERMS_MISMATCH", f"{iid}: the contract in the master differs from the spec in {', '.join(diff)}: nothing was written",
+                                {"fields": diff})
+        if side not in ASOF_OPTION_SIDES:
+            raise RejectError("ASOF_SIDE", f"an option is booked BTO / STO / BTC / STC, not {side}")
+    else:
+        if inst is None:
+            raise RejectError("INSTRUMENT_UNKNOWN", f"instrument {iid!r} is not in the master")
+        if inst.kind not in ASOF_EQUITY_KINDS:
+            raise RejectError("ASOF_KIND", f"{inst.symbol} is {inst.kind}: an as-of listed booking takes listed options, equities and ETFs only")
+        if side not in ASOF_EQUITY_SIDES:
+            raise RejectError("ASOF_SIDE", f"an as-of {inst.kind.lower()} booking is BUY or SELL (an as-of short sale would need an as-of borrow, which is not booked)")
+    if inst.status != "ACTIVE":
+        raise ConflictError("INSTRUMENT_EXPIRED", f"{inst.symbol} is {inst.status}")
+    return inst, created
+
+
+def _asof_insert_order(ctx: TxContext, acct, inst, side: str, qty: int, px: Decimal, request_id: str, exec_ts: int, booking: str, line_key: str,
+                       block: dict, package_id: Optional[str] = None, fill_mode: str = "SEQUENTIAL") -> str:
+    """The order row of an as-of booking (C8): LIMIT at the price, DAY, created at the execution time, then FILLED by the caller."""
+    conn = ctx.conn
+    oid = next_id(conn, "order")
+    expires = exec_ts
+    try:
+        close = ctx.sessions.session_close(inst.session_group, ny_of(exec_ts).date())
+        if close is not None and int(close) >= exec_ts:
+            expires = int(close)
+    except Exception:   # noqa: BLE001 - the order is filled at once; its DAY window ends at the execution time
+        expires = exec_ts
+    preview = {"kind": "as_of", "booking": booking, "as_of": _jsonable(block), "price": str(px), "qty": int(qty), "side": side,
+               "note": "as-of booking at the owner's instruction: booked at the owner's dealt price, no live preview"}
+    conn.execute(
+        "INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, filled_qty, avg_px, order_type, limit_px, stop_px, trail_amt, trail_pct, trail_ref_px,"
+        " fill_mode, tif, status, triggered, first_eval_done, last_bar_ts, last_quote_time, session_group, created_ts, updated_ts, expires_ts, participation, borrow_id,"
+        " package_id, parent_order_id, ratio, fees_c, reason, preview_json) VALUES (?,?,?,?,?,?,0,NULL,'LIMIT',?,NULL,NULL,NULL,NULL,?,'DAY','WORKING',0,1,NULL,NULL,?,?,?,?,"
+        "'0.10',NULL,?,NULL,NULL,0,NULL,?)",
+        (oid, request_id, acct["account_id"], inst.instrument_id, side, int(qty), str(px), fill_mode, inst.session_group, exec_ts, exec_ts, expires, package_id,
+         dumps(preview)))
+    conn.execute("UPDATE orders SET booking=?, entered_ts=?, import_key=? WHERE order_id=?", (booking, ctx.ts, line_key, oid))
+    return oid
+
+
+def _asof_quote(px: Decimal, td, block: dict, line_key: str) -> dict:
+    """The provenance stored with an as-of fill (fills.quote_json): the owner's dealt price - not an observed quote."""
+    return {"source": "as-of booking at the owner's instruction", "price": str(px), "trade_date": td.isoformat(), "batch_id": block.get("batch_id"),
+            "line_key": line_key, "quality": "as_of", "method": "as_of",
+            "note": f"the owner's dealt price for {td.isoformat()}; an as-of booking entered by the operator, not an observed quote"}
+
+
+def _asof_fill(ctx: TxContext, services, acct, inst, oid: str, side: str, qty: int, px: Decimal, td, exec_ts: int, booking: str, line_key: str, fee_rule: str,
+               block: dict, defer_margin: bool):
+    """Fill the as-of order at exactly the payload's price, quantity and side (C8): ``execution.apply_fill`` with the trade date
+    (business date of every entry, settlement T+1 from it) and the execution time (fills.ts, lots.open_ts); the order turns FILLED
+    with its events at the execution time.  Anything else is 409 ASOF_TERMS_MISMATCH and the command writes nothing."""
+    conn = ctx.conn
+    conn.execute("UPDATE orders SET filled_qty=? WHERE order_id=?", (int(qty), oid))         # the slice being paid for reserves nothing
+    spec = execution.FillSpec(oid, acct["account_id"], inst.instrument_id, side, int(qty), px, "ORDER", _asof_quote(px, td, block, line_key), f"asof:{line_key}", None,
+                              ASOF_PRICE_BASIS, fee_override_c=0 if fee_rule == "NONE" else None, cap_note="as-of booking at the owner's dealt price (no participation cap)",
+                              defer_margin=defer_margin, trade_date=td, exec_ts=exec_ts, booking=booking, entered_ts=ctx.ts, import_key=line_key,
+                              note=(f"historical model as of {td.isoformat()}" if booking == BOOKING_HISTORICAL_MODEL else f"as-of {td.isoformat()}"))
+    fr = execution.apply_fill(ctx, spec, services)
+    if int(fr.qty) != int(qty) or Decimal(str(fr.price)) != px or fr.side != side or fr.trade_date != td.isoformat():
+        raise ConflictError("ASOF_TERMS_MISMATCH", f"the fill would store {fr.side} {fr.qty} @ {fr.price} on {fr.trade_date}, not {side} {qty} @ {px} on {td.isoformat()}:"
+                            " nothing was written", {"stored": {"side": fr.side, "qty": fr.qty, "price": str(fr.price), "trade_date": fr.trade_date},
+                                                      "payload": {"side": side, "qty": int(qty), "price": str(px), "trade_date": td.isoformat()}})
+    conn.execute("UPDATE orders SET filled_qty=?, avg_px=?, status='FILLED', fees_c=?, first_eval_done=1, updated_ts=?, reason=NULL WHERE order_id=?",
+                 (int(qty), str(px), int(fr.fee_c), exec_ts, oid))
+    when = ny_of(ctx.ts).strftime("%Y-%m-%d %H:%M ET")
+    batch = block.get("batch_id")
+    _order_event(conn, oid, exec_ts, None, "WORKING", f"as-of; entered {when} by the operator at the owner's instruction (batch {batch}): {side} {int(qty):,}"
+                 f" {inst.symbol} LIMIT {px} DAY")
+    _order_event(conn, oid, exec_ts, "WORKING", "FILLED", f"filled {int(qty):,} @ {px} (as-of booking at the owner's dealt price, trade date {td.isoformat()})")
+    ctx.event("ORDER_SUBMITTED", account_id=acct["account_id"], instrument_id=inst.instrument_id, ref_type="order", ref_id=oid, side=side, qty=int(qty), order_type="LIMIT",
+              tif="DAY", limit_px=str(px), asof=True, booking=booking, trade_date=td.isoformat(), exec_ts=exec_ts, batch_id=batch, line_key=block.get("line_key"))
+    ctx.event("ORDER_FILLED", account_id=acct["account_id"], instrument_id=inst.instrument_id, ref_type="order", ref_id=oid, fill_id=fr.fill_id, qty=fr.qty, price=str(fr.price),
+              price_basis=ASOF_PRICE_BASIS, gross_c=fr.gross_c, fee_c=fr.fee_c, filled_qty=int(qty), sweep_id=fr.funding.sweep_id if fr.funding is not None else None,
+              asof=True, booking=booking, trade_date=td.isoformat(), exec_ts=exec_ts, batch_id=batch)
+    return fr
+
+
+def _asof_margin(ctx: TxContext, services, account_id: str, link: str) -> dict:
+    """The option-margin recomputation after an as-of option booking (``execution.recompute_option_margin``; an increase that
+    own cash, Treasury and PB headroom cannot cover is refused 409 as at any fill).  When the underlying has no mark yet
+    (MARK_UNAVAILABLE: the historical import runs with the server stopped and only the data pack's prices) nothing is assumed:
+    the requirement is left to the end-of-day option margin job (OPTION_MARGIN_MARK), which reserves it as soon as the
+    underlying is marked, and the answer says so (``pending``)."""
+    try:
+        return execution.recompute_option_margin(ctx, services, account_id, link)
+    except RejectError as e:
+        if e.code != "MARK_UNAVAILABLE":
+            raise
+        return {"required_c": None, "pending": True, "code": e.code, "details": _jsonable(e.details),
+                "note": f"{e.message}; the end-of-day option margin job reserves it as soon as the underlying has a mark"}
+
+
+def _asof_common(ctx: TxContext, payload: dict, as_of_keys: frozenset) -> tuple:
+    if str(payload.get("order_type") or "") != "LIMIT" or str(payload.get("tif") or "") != "DAY":
+        raise RejectError("ASOF_PAYLOAD", "an as-of listed booking is order_type LIMIT, tif DAY", {"order_type": payload.get("order_type"), "tif": payload.get("tif")})
+    fee_rule = str(payload.get("fee_rule") or "")
+    if fee_rule not in ASOF_FEE_RULES:
+        raise RejectError("ASOF_PAYLOAD", f"fee_rule is SCHEDULE or NONE, not {fee_rule!r}")
+    block = _asof_keys("as_of", payload.get("as_of"), as_of_keys, [k for k in as_of_keys if k != "historical_model"])
+    hm = block.get("historical_model", False)
+    if not isinstance(hm, bool):
+        raise RejectError("ASOF_PAYLOAD", "as_of.historical_model is true or false")
+    td, exec_ts = _asof_when(ctx, block)
+    booking = BOOKING_HISTORICAL_MODEL if hm else BOOKING_AS_OF
+    return fee_rule, block, td, exec_ts, booking
+
+
+def _asof_qty(raw) -> int:
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw <= 0:
+        raise RejectError("ASOF_PAYLOAD", f"qty must be a positive integer, got {raw!r}")
+    return int(raw)
+
+
+def h_book_as_of(ctx: TxContext, payload: dict) -> dict:
+    """``trade.book_as_of`` (C8; actor import - the UI is refused 403 AS_OF_FORBIDDEN): ONE listed execution booked as of its trade
+    date at the owner's dealt price (D1, D10).  Writes the order (FILLED, LIMIT at the price, DAY, created at the execution time,
+    booking AS_OF or HISTORICAL_MODEL, ``entered_ts`` now, ``import_key`` = the line key), its events (submitted "as-of; entered
+    ... by the operator at the owner's instruction" -> FILLED, at the execution time), the fill (``fills.ts`` / ``lots.open_ts`` = the
+    execution time; every entry dated the trade date; settlement T+1 from it) funded as of the trade date (C20, ``ctx.asof_date``),
+    and creates a missing option contract from the payload's spec and chain row.  Fee: the account's schedule (SCHEDULE; DEFAULT
+    USD 0.65 per contract) or none.  Refusals write nothing: 409 DUPLICATE_IMPORT, ASOF_TERMS_MISMATCH, ASOF_CURRENT_FUNDS,
+    INSUFFICIENT_FUNDS; 400 ASOF_* for a malformed payload.  Worked (P2 acceptance g): BTO 387 ORCL261120C00140000 @ 3.55 on
+    2026-10-22 16:00 ET -> premium 387 x 3.55 x 100 = 137,385.00, fee 387 x 0.65 = 251.55; Dr 1700 137,385.00 / Dr 5000 251.55 /
+    Cr 2100 137,636.55; settlement due 2026-10-23."""
+    _asof_refuse_ui(ctx)
+    services = _services(ctx)
+    _asof_keys("the payload", payload, ASOF_KEYS, ASOF_REQUIRED)
+    fee_rule, block, td, exec_ts, booking = _asof_common(ctx, payload, ASOF_AS_OF_KEYS)
+    line_key = str(block["line_key"])
+    side = str(payload["side"]).upper()
+    qty = _asof_qty(payload["qty"])
+    px = _asof_price(payload["price"])
+    conn = ctx.conn
+    _asof_duplicate(conn, line_key)
+    acct = _asof_account(ctx, services, str(payload["account_id"]), exec_ts)
+    inst, created = _asof_instrument(ctx, services, str(payload["instrument_id"]), payload.get("instrument_spec"), side)
+    if not services.instruments.tradeable_in(inst, account_kind_for(acct)):
+        raise RejectError("NOT_TRADEABLE_HERE", f"{inst.symbol} ({inst.kind}) does not trade in {acct['account_id']}", {"account_kinds": list(inst.account_kinds)})
+    ctx.asof_date = td.isoformat()                       # C11 / C15 / C20: every entry, sweep and funding measure of this command is dated the trade date
+    oid = _asof_insert_order(ctx, acct, inst, side, qty, px, ctx.request_id, exec_ts, booking, line_key, block)
+    fr = _asof_fill(ctx, services, acct, inst, oid, side, qty, px, td, exec_ts, booking, line_key, fee_rule, block, defer_margin=True)
+    margin = _asof_margin(ctx, services, acct["account_id"], f"fill:{fr.fill_id}") if inst.kind == "OPTION" else None
+    from .blotters import source_label
+    o = _order_raw(conn, oid)
+    return {"order": order_view(conn, oid), "fill": fr.to_dict(), "funding": None if fr.funding is None else fr.funding.to_dict(), "margin": margin,
+            "instrument_created": created, "booking": booking, "line_key": line_key, "batch_id": block.get("batch_id"), "trade_date": td.isoformat(),
+            "exec_ts": exec_ts, "sweeps": _sweeps_for(conn, [fr.fill_id]), "source": source_label(conn, "order", o)}
+
+
+def h_book_as_of_package(ctx: TxContext, payload: dict) -> dict:
+    """``trade.book_as_of_package`` (C8; actor import): ONE command books a listed option package as of its trade date - the legs
+    in the listed order (long before short), each its own order and fill with ``import_key`` = its line key, ONE ``hedge_packages``
+    row and ONE option-margin recomputation after the last leg.  Worked (P2 acceptance h): BTO 150 QQQ 700P @ 17.64 = 264,600.00 and
+    STO 150 QQQ 675P @ 10.25 = 153,750.00, fees 150 x 0.65 = 97.50 each; a fully covered bear put spread reserves option margin 0."""
+    _asof_refuse_ui(ctx)
+    services = _services(ctx)
+    _asof_keys("the payload", payload, ASOF_PKG_KEYS, ASOF_PKG_KEYS)
+    fee_rule, block, td, exec_ts, booking = _asof_common(ctx, payload, ASOF_PKG_AS_OF_KEYS)
+    info = _asof_keys("package", payload.get("package"), ASOF_PKG_INFO_KEYS, ("strategy_key", "fill_mode"))
+    fill_mode = str(info.get("fill_mode") or "").upper()
+    if fill_mode not in ("AON", "SEQUENTIAL"):
+        raise RejectError("ASOF_PAYLOAD", f"package.fill_mode is AON or SEQUENTIAL, not {fill_mode!r}")
+    legs = payload.get("legs")
+    if not isinstance(legs, list) or len(legs) < 2:
+        raise RejectError("ASOF_PAYLOAD", "a package books two legs or more")
+    conn = ctx.conn
+    acct = _asof_account(ctx, services, str(payload["account_id"]), exec_ts)
+    keys = [str(_asof_keys(f"leg {i + 1}", l, ASOF_LEG_KEYS, ("line_key", "instrument_id", "instrument_spec", "side", "qty", "price"))["line_key"])
+            for i, l in enumerate(legs)]
+    if len(set(keys)) != len(keys):
+        raise RejectError("ASOF_PAYLOAD", "every leg carries its own line key")
+    for k in keys:
+        _asof_duplicate(conn, k)
+    resolved = []
+    for i, l in enumerate(legs):
+        side = str(l["side"]).upper()
+        inst, created = _asof_instrument(ctx, services, str(l["instrument_id"]), l.get("instrument_spec"), side)
+        if inst.kind != "OPTION":
+            raise RejectError("ASOF_PAYLOAD", f"leg {i + 1}: an as-of package books listed options only")
+        if not services.instruments.tradeable_in(inst, account_kind_for(acct)):
+            raise RejectError("NOT_TRADEABLE_HERE", f"{inst.symbol} does not trade in {acct['account_id']}")
+        resolved.append((l, inst, created, side, _asof_qty(l["qty"]), _asof_price(l["price"])))
+    if len({r[1].underlying_id for r in resolved}) != 1:
+        raise RejectError("ASOF_PAYLOAD", "the legs of an as-of package are options on one underlying")
+    ctx.asof_date = td.isoformat()
+    pid = next_id(conn, "package")
+    legs_json = [{"line_key": r[0]["line_key"], "instrument_id": r[1].instrument_id, "side": r[3], "qty": r[4], "price": str(r[5])} for r in resolved]
+    strategy = str(info["strategy_key"])
+    conn.execute("INSERT INTO hedge_packages(package_id, command_id, account_id, primary_order_id, candidate_id, strategy_key, legs_json, fill_mode, status, created_ts)"
+                 " VALUES (?,?,?,NULL,?,?,?,?,?,?)", (pid, ctx.command_id, acct["account_id"], strategy, strategy, dumps(legs_json), fill_mode, "WORKING", exec_ts))
+    orders_out, fills_out, created_any = [], [], []
+    for i, (l, inst, created, side, qty, px) in enumerate(resolved):
+        lblock = dict(block, line_key=l["line_key"], package_key=ctx.request_id, label=info.get("label"))
+        oid = _asof_insert_order(ctx, acct, inst, side, qty, px, f"{ctx.request_id}:L{i + 1}", exec_ts, booking, str(l["line_key"]), lblock, package_id=pid,
+                                 fill_mode=fill_mode)
+        fr = _asof_fill(ctx, services, acct, inst, oid, side, qty, px, td, exec_ts, booking, str(l["line_key"]), fee_rule, lblock, defer_margin=True)
+        orders_out.append(oid)
+        fills_out.append(fr)
+        if created:
+            created_any.append(inst.instrument_id)
+    margin = _asof_margin(ctx, services, acct["account_id"], f"asofpkg:{pid}")
+    conn.execute("UPDATE hedge_packages SET status='FILLED' WHERE package_id=?", (pid,))
+    ctx.event("PACKAGE_FILLED", account_id=acct["account_id"], ref_type="package", ref_id=pid, fills=[f.fill_id for f in fills_out], asof=True, booking=booking,
+              trade_date=td.isoformat(), exec_ts=exec_ts, batch_id=block.get("batch_id"), strategy_key=strategy, margin_required_c=margin.get("required_c"))
+    return {"package": {"package_id": pid, "strategy_key": strategy, "fill_mode": fill_mode, "label": info.get("label"), "status": "FILLED", "legs": legs_json},
+            "orders": [order_view(conn, oid) for oid in orders_out], "fills": [f.to_dict() for f in fills_out], "margin": margin,
+            "instruments_created": created_any, "booking": booking, "batch_id": block.get("batch_id"), "trade_date": td.isoformat(), "exec_ts": exec_ts,
+            "sweeps": _sweeps_for(conn, [f.fill_id for f in fills_out])}
+
+
 def register(bus) -> None:
     bus.register("order.submit", h_submit)
     bus.register("order.cancel", h_cancel)
@@ -923,3 +1313,6 @@ def register(bus) -> None:
     bus.register("order.resume", h_resume)
     bus.register("order.resume_funded", h_resume_funded)
     bus.register("order.record_rejection", h_record_rejection, light=True)
+    # FINSIM1_PLAN C8: the as-of listed bookings of the historical import (actor import; the UI is refused)
+    bus.register("trade.book_as_of", h_book_as_of)
+    bus.register("trade.book_as_of_package", h_book_as_of_package)

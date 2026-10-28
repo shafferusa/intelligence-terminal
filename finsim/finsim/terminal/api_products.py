@@ -1,5 +1,6 @@
-"""The instrument, quote, order, credit, FX, options, hedge, strategy, news, performance and OTC / private routes of the API
-(TERMINAL_DESIGN.md §15; WP-11).  Companion of ``api.py``.
+"""The instrument, quote, order, credit, FX, options, hedge, strategy, performance and OTC / private routes of the API
+(TERMINAL_DESIGN.md §15; WP-11).  Companion of ``api.py``.  (``/api/news`` was removed with the news feature in 1.0.5: it answers
+404 NOT_FOUND like any unknown route; the attention summary it carried is ``GET /api/attention/summary``.)
 
 Conventions
 - Fetch-triggering reads never fetch on the request thread: ``/resolve`` queues the symbol on the quote worker and
@@ -9,7 +10,8 @@ Conventions
 - Previews (``/api/orders/preview``, ``/api/fx/preview``, ``/api/otc/preview``, ``/api/private/preview``,
   ``/api/strategies/preview``) are POSTs that write nothing and need no ``request_id``; every other POST is a command.
 - A 4xx from ``order.submit`` is recorded as an ``order_rejections`` row (``orders.record_rejection``), except the
-  "come back with more" answers (CONFIRM_REQUIRED, PREVIEW_STALE, REQUEST_ID_REUSED) which are not rejections.
+  "come back with more" answers (``api.NOT_REJECTIONS``: CONFIRM_REQUIRED, PREVIEW_STALE, REQUEST_ID_REUSED, BAD_REQUEST_ID) which are
+  not rejections.
 - Routes of a desk whose module is not merged (prime WP-07, swaps WP-17 / WP-26, private WP-19, private credit WP-21,
   lifetimes WP-23) answer 501 NOT_BUILT with the package id; the handlers below are written against the documented
   module names so they come alive when those packages land (``getattr`` guarded, never a fake number meanwhile).
@@ -24,14 +26,13 @@ from datetime import date, timedelta
 
 from . import books as _books, config
 from .accounting import ScopeError
-from .api import (ApiError, MAX_QUOTE_IDS, NotBuilt, NotFound, PACKAGES, RETRY_MS, Request, mark_dict, need, ok_or_raise, quote_dict, run_command,
-                  OPEN_ORDER_STATUSES)
+from .api import (ApiError, MAX_QUOTE_IDS, NOT_REJECTIONS, NotBuilt, NotFound, PACKAGES, RETRY_MS, Request, mark_dict, need, ok_or_raise, quote_dict,
+                  run_command, OPEN_ORDER_STATUSES)
 from .api_views import _account_or_404, account_row, order_full
 from .commands import ConflictError, Result
 from .instruments import EQUITY_KINDS, parse_futures_id
 from .quotes.cache import PRIORITY_RANK
 
-NOT_REJECTIONS = ("CONFIRM_REQUIRED", "PREVIEW_STALE", "REQUEST_ID_REUSED", "BAD_REQUEST_ID")
 #: C5 (BUILD2_PLAN): instrument kinds that have no Yahoo quote: never subscribed (quote null, no 'up to 15 min delayed' record);
 #: their page shows the product module's ``instrument_extra`` instead
 NO_YAHOO_KINDS = ("BOND", "PRIVATE", "SWAP", "IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD")
@@ -892,24 +893,6 @@ def register_routes(r) -> None:
         status, body = mod.preview_view(req.rt, dict(req.body or {}))
         return int(status), body
 
-    def news(req: Request):
-        rt = req.rt
-        store = need(rt, "news")
-        source = req.q("source")
-        try:
-            items = store.items(req.q_int("limit", 60, 1, 200), source)
-        except ValueError as e:
-            raise ApiError(400, "BAD_REQUEST", str(e))
-        try:
-            scope = req.scope("ALL")
-        except ScopeError:
-            scope = "ALL_BOOKS"
-        from . import news as _news
-        attention = _news.attention_summary(rt, scope) if hasattr(_news, "attention_summary") else None
-        return {"items": [i.to_dict() if hasattr(i, "to_dict") else i for i in items], "attention": attention, "fetched": store.fetched(), "editions": store.editions(),
-                "paper": store.paper_meta() if hasattr(store, "paper_meta") else None, "health": store.health(), "scope": scope,
-                "sentence": "News is shown as fetched; nothing is interpreted, scored or summarised (NEWS)"}
-
     def risk(req: Request):
         mod = need(req.rt, "risk")
         return mod.report(req.rt, req.scope("ALL"))
@@ -1090,7 +1073,6 @@ def register_routes(r) -> None:
     r.add("GET", r"/api/hedges", hedges)
     r.add("GET", r"/api/strategies", strategies)
     r.add("POST", r"/api/strategies/preview", strategies_preview, mutating=False)
-    r.add("GET", r"/api/news", news)
     r.add("GET", r"/api/risk", risk)
     r.add("GET", r"/api/compliance", compliance)
     r.add("GET", r"/api/portfolio/performance", performance)

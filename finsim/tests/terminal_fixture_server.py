@@ -28,7 +28,9 @@ Conventions
   server (``stop()`` does).  Mutating routes without ``request_id`` (body or X-Request-Id) answer 400
   ``BAD_REQUEST_ID`` exactly like the real API, so the UI's request-id discipline is exercised.
 - Missing OPTIONAL scripts (other packages' components / pages, listed in OPTIONAL_STATIC) answer an empty JS stub
-  with 200 so the browser console stays clean; any other missing static file is a 404.
+  with 200 so the browser console stays clean; any other missing static file is a 404.  OPTIONAL_STATIC lists the same
+  optional files as ``finsim.terminal.api.PLANNED_STATIC`` (FINSIM1_PLAN C1) plus the older optional components.
+- There is no news route (the news feature was removed in 1.0.5): ``/api/news`` answers 404 like any unknown route.
 """
 from __future__ import annotations
 
@@ -56,13 +58,16 @@ NY = get_zone("America/New_York")
 WP13_FIXTURES = {"preview_aapl", "hedges_aapl", "orders_submit_aapl", "strategies_list", "strategies_iron_condor"}
 OPTIONAL_STATIC = {"components/ticket.js", "components/preview.js", "components/hedge.js", "components/performance.js",
                    "components/lifetimes.js", "components/pbschedule.js", "components/swapticket.js",
-                   "components/privateticket.js", "components/privatecredit.js", "pages/news.js", "pages/private_markets.js",
+                   "components/privateticket.js", "components/privatecredit.js", "pages/private_markets.js",
                    # the product plug-ins of Build 2 (BUILD2_PLAN C3 / C11): stubs until their packages build them
                    "pages/markets_debt.js", "components/bondticket.js",          # P07 Debt Instruments
                    "pages/markets_fx.js", "components/fxdesk.js",                # P06 Foreign Markets & FX
                    "pages/markets_credit.js", "components/creditdesk.js",        # P08 Credit Instruments
                    "pages/markets_otc.js", "components/otcticket.js",            # P12 PB OTC options / forwards
-                   "components/cdsticket.js"}                                    # CDX (CDS index) ticket
+                   "components/cdsticket.js",                                    # CDX (CDS index) ticket
+                   # FINSIM1_PLAN C1: the pages of the new navigation and the import panel (NOT YET BUILT until their packages land)
+                   "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
+                   "components/imports.js"}
 MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8",
         ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json",
         ".txt": "text/plain; charset=utf-8", ".csv": "text/csv; charset=utf-8"}
@@ -128,6 +133,7 @@ ROUTES = [
     ("GET", r"/api/compliance$", "compliance", "/api/compliance?scope=ALL", None),
     ("GET", r"/api/activity$", "activity", "/api/activity?limit=50", None),
     ("GET", r"/api/attention$", "attention", "/api/attention", None),
+    ("GET", r"/api/attention/summary$", "attention_summary", "/api/attention/summary?book=P", None),
     ("POST", r"/api/attention/[^/]+/resolve$", "attention_resolve", "/api/attention/2/resolve", {}),
     ("GET", r"/api/jobs$", "jobs", "/api/jobs", None),
     ("POST", r"/api/jobs/run$", "jobs_run", "/api/jobs/run", {"job": "SETTLE_DUE"}),
@@ -162,7 +168,6 @@ ROUTES = [
     ("GET", r"/api/strategies$", "strategies_list", "/api/strategies?account_id=" + A, None),
     ("POST", r"/api/strategies/preview$", "strategies_iron_condor", "/api/strategies/preview", {"account_id": A, "key": "iron_condor", "params": {"underlying": "AAPL", "units": 1, "tenor_months": 3}}),
     ("GET", r"/api/dividends$", "dividends", "/api/dividends?account_id=" + A, None),
-    ("GET", r"/api/news$", "news", "/api/news?limit=50", None),
     ("GET", r"/api/unsupported$", "unsupported", "/api/unsupported", None),
     ("GET", r"/api/watchlists$", "watchlists", "/api/watchlists", None),
     ("POST", r"/api/watchlists$", "watchlists", "/api/watchlists", {"account_id": A, "name": "core", "instrument_id": "NVDA"}),

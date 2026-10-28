@@ -1,7 +1,8 @@
 /* Instrument workspace (TERMINAL_DESIGN.md s17.5 #/a/{account}/i/{instrument}; WP-12; Build 2 P10): quote header (last,
  * bid / ask, day range, prev close, session, freshness, support / limitation text, a curated and labelled spec), the session's
  * 1-minute chart (components/chart.js from GET /api/instruments/{id}/bars - a 202 'fetching' is asked again until the bars
- * arrive; refreshed every 2 min while the session is open), position & lots in this account (the positions poller), working
+ * arrive; refreshed every 2 min while the session is open), position & lots in this account (the positions poller; an OTC
+ * contract's quantity in its own units with their label and a TRS's notional beside it, P8L-02), working
  * orders on it (the orders poller), the option chain when the instrument is optionable (components/chain.js; opens on the
  * nearest expiry 7-30 days out with the at-the-money row in view; click bid / ask -> ticket leg), and the ticket docked right.
  *
@@ -209,7 +210,14 @@
       var ps = (T.state.positions || []).filter(function (p) { return p.instrument_id === id; });
       if (!ps.length) { posEl.appendChild(T.h('div', { class: 'empty' }, T.state.positions ? 'no position' : 'loading ...')); return; }
       var p = ps[0];
-      posEl.appendChild(T.kv([['quantity', T.fmt.qty(p.qty)], ['avg cost', p.avg_px != null ? T.fmt.px(p.avg_px) : 'n/a'], ['mark', T.px(p.mark, { size: 'inline' })], ['market value', T.money(p, 'mv')],
+      /* P8L-02: an OTC contract's quantity is its units with their label (a TRS its reference shares, a CDX / IRS its notional), never
+         its notional read as a quantity; a TRS shows its notional on its own line */
+      var c = T.contractQty(p);
+      var qtyRow = c ? ['quantity', T.h('span', { class: c.n > 0 ? 'pos' : (c.n < 0 ? 'neg' : '') }, T.fmt.qty(c.n) + ' ' + c.label),
+                        (c.isNotional ? 'the contract\'s notional (its face, never its market value)' : 'the contract\'s reference units') + '; negative = the short side']
+                     : ['quantity', T.fmt.qty(p.qty)];
+      posEl.appendChild(T.kv([qtyRow, c && !c.isNotional ? ['notional', c.ccy + ' ' + c.notional, 'the contract\'s face (never its market value)'] : null,
+        ['avg cost', p.avg_px != null ? T.fmt.px(p.avg_px) : 'n/a'], ['mark', T.px(p.mark, { size: 'inline' })], ['market value', T.money(p, 'mv')],
         p.kind === 'FUTURE' ? ['exposure (notional)', T.money(p, 'notional')] : null, ['unrealised', T.money(p, 'unrealised')], ['P&L today', T.money(p, 'day_pnl')], ['realised ITD', T.money(p, 'realised_itd')]]));
       if (p.lots && p.lots.length) {
         var g = T.h('div'); posEl.appendChild(g);

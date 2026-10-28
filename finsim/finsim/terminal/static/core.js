@@ -20,6 +20,14 @@
  *   T.router  also draws the account tab bar (Markets / Positions / Orders / Cash & financing / Transactions) on every
  *             account page, switches the book for an account of another book, never opens a ticket on an account of a
  *             closed lifetime, corrects unknown routes / tabs, and passes an optional ?query on #/activity and #/risk.
+ *             FINSIM1_PLAN C1: #/dashboard is the default route and the unknown-route fallback ("no page X - showing the
+ *             Dashboard"); the removed news page's address #/news redirects there with a one-time toast; #/trading opens the
+ *             last venue used (T.store last_venue), else the book's US Exchange Markets; #/pending?query, #/completed?query,
+ *             #/accounts, #/cash?query, #/derivatives(/tab) and #/history(/tab) render T.pages.pending / completed /
+ *             accounts / cash_collateral / derivatives and T.pages.history.hub - a NOT YET BUILT panel (and no API call)
+ *             while that file is not in the build.
+ *   T.hasModule(name)  C2: true when GET /api/health .modules[name] is "bound" (the health poll's last answer, fetched once
+ *             before the first route renders); a page calls an optional module's routes only when it is true.
  *
  * Conventions this file enforces on screen
  * - Nothing is computed here: every figure is a field of an API response; this file formats and routes.
@@ -272,6 +280,24 @@
   };
   T.sign = function (row, name) { var n = T.num(row, name); return n == null || n === 0 ? '' : (n > 0 ? 'pos' : 'neg'); };
   T.signCls = function (x) { var n = Number(String(x == null ? '' : x).replace(/,/g, '')); return !isFinite(n) || n === 0 ? '' : (n > 0 ? 'pos' : 'neg'); };
+  /* P8L-02: the quantity of an OTC contract's position row (kind SWAP / class 'OTC derivatives'; never an FX-desk forward) in its
+     own units with their label - a TRS its reference shares ('38,700 ORCL reference shares'), a CDX / IRS its notional ('USD
+     notional') - from the contract fields the server sends (extra.units / extra.unit_label), signed like the row (negative = the
+     short side: pay total return, buy protection, pay fixed).  Without those fields the row's own signed notional is shown with a
+     notional label, so a notional is never read as a quantity.  Display only: {n, label, ccy, notional, isNotional}, or null for
+     any other row. */
+  T.contractQty = function (r) {
+    if (!r) { return null; }
+    var ex = r.extra || {}; var k = String(r.kind || '').toUpperCase();
+    if (ex.desk_forward || !(k === 'SWAP' || r.klass === 'OTC derivatives')) { return null; }
+    var q = Number(r.qty) || 0; var u = Number(ex.units);
+    var useUnits = ex.units != null && ex.units !== '' && isFinite(u) && u !== 0 && !!ex.unit_label;
+    var ccy = ex.qty_unit || r.currency || 'USD';
+    var label = useUnits ? String(ex.unit_label) : ccy + ' notional';
+    var notional = T.money(ex, 'notional');
+    return { n: useUnits ? (q < 0 ? -Math.abs(u) : Math.abs(u)) : q, label: label, ccy: ccy,
+             notional: notional === 'n/a' ? T.fmt.qty(Math.abs(q)) : notional.replace(/^-/, ''), isNotional: / notional$/.test(label) };
+  };
 
   /* ---------------------------------------------------------------- clock ----------------------------------------- */
   T.clock = {
@@ -326,7 +352,7 @@
       T.book.adopt(code);
       var cur = T.router.current;
       if (cur && cur.account) { T.router.go('#/portfolio'); return; }
-      if (cur && cur.page === 'history') { T.router.go('#/settings/lifetimes'); return; }
+      if (cur && cur.page === 'history' && !cur.hub) { T.router.go('#/settings/lifetimes'); return; }
       T.router.rerender();
     },
     /* select the book without leaving the page (the router, for an account of that book): remembered; the active account -
@@ -543,6 +569,18 @@
     pairs.forEach(function (p) { if (!p) { return; } box.appendChild(T.h('div', { title: p[2] || '' }, p[0])); box.appendChild(T.h('div', { title: p[2] || '' }, p[1] == null ? 'n/a' : p[1])); });
     return box;
   };
+  /* C4: label | value pairs in columns (.kv-grid): [[label, value | element, title?], ...]; a null value shows n/a */
+  T.kvGrid = function (pairs) {
+    var box = T.h('div', { class: 'kv-grid' });
+    (pairs || []).forEach(function (p) { if (!p) { return; } box.appendChild(T.h('div', { title: p[2] || '' }, T.h('span', null, p[0]), T.h('span', null, p[1] == null ? 'n/a' : p[1]))); });
+    return box;
+  };
+  /* C4: an order / settlement stage chip: stage = working | partial | held | queued | filled | cancelled | expired | rejected |
+     settling | failed (any case); label defaults to the stage in words */
+  T.stageChip = function (stage, label, title) {
+    var s = String(stage == null ? '' : stage).toLowerCase();
+    return T.h('span', { class: 'stage-chip stage-' + s.replace(/[^a-z_]/g, ''), title: title || '' }, label || s.replace(/_/g, ' '));
+  };
   T.tabs = function (list, active, onPick) {
     var box = T.h('div', { class: 'tabs', role: 'tablist' });
     list.forEach(function (t) {
@@ -737,6 +775,15 @@
   };
   /* the attention strip's handle (components/attention.js replaces expand with the real one) */
   T.attention = T.attention || { expand: function () { var c = T.components.attention; if (c && c.expand) { c.expand(); } } };
+  /* C2 (FINSIM1_PLAN): is the optional server module `name` bound in this build?  From the last /api/health answer (the boot
+     reads it before the first route renders; the health poller keeps it fresh).  A page calls a route of an optional module
+     only when this is true; otherwise its section says "unavailable" with the reason and makes no request. */
+  T.hasModule = function (name) {
+    var h = T.state.health; var m = h && h.modules;
+    return !!(m && typeof m === 'object' && m[name] === 'bound');
+  };
+  /* false until a health answer with the module list has arrived (a page may wait for the 'health' state event) */
+  T.modulesKnown = function () { var h = T.state.health; return !!(h && h.modules && typeof h.modules === 'object'); };
 
   /* ---------------------------------------------------------------- theme ----------------------------------------- */
   T.theme = {
@@ -952,8 +999,20 @@
     String(s || '').split('&').forEach(function (kv) { if (!kv) { return; } var i = kv.indexOf('='); var k = dec(i < 0 ? kv : kv.slice(0, i)); if (k) { out[k] = i < 0 ? '' : dec(kv.slice(i + 1)); } });
     return out;
   }
+  var DEFAULT_ROUTE = '#/dashboard';
   var ROUTES = [
-    [/^#\/news$/, function () { return { page: 'news' }; }],
+    [/^#\/dashboard$/, function () { return { page: 'dashboard' }; }],
+    /* the removed news page (1.0.4 and earlier): its old address lands on the Dashboard with a one-time toast */
+    [/^#\/news(?:[\/?].*)?$/, function () { return { page: 'dashboard', removed: true }; }],
+    /* the last venue used (T.store last_venue), else the book's US Exchange Markets (render below) */
+    [/^#\/trading$/, function () { return { page: 'trading' }; }],
+    /* the pages of the new navigation (C1): a NOT YET BUILT panel until their file is in the build */
+    [/^#\/pending(?:\?(.*))?$/, function (m) { return { page: 'pending', query: parseQuery(m[1]) }; }],
+    [/^#\/completed(?:\?(.*))?$/, function (m) { return { page: 'completed', query: parseQuery(m[1]) }; }],
+    [/^#\/accounts$/, function () { return { page: 'accounts' }; }],
+    [/^#\/cash(?:\?(.*))?$/, function (m) { return { page: 'cash_collateral', query: parseQuery(m[1]) }; }],
+    [/^#\/derivatives(?:\/([a-z_-]+))?$/, function (m) { return { page: 'derivatives', tab: m[1] || null }; }],
+    [/^#\/history(?:\/([a-z_-]+))?$/, function (m) { return { page: 'history', hub: true, tab: m[1] || null }; }],
     [/^#\/treasury$/, function () { return { page: 'treasury' }; }],
     [/^#\/portfolio(?:\/([a-z]+))?$/, function (m) { return { page: 'portfolio', tab: m[1] || 'positions' }; }],
     [/^#\/accounting(?:\/([a-z-]+))?$/, function (m) { return { page: 'accounting', tab: m[1] || 'pnl' }; }],
@@ -994,14 +1053,38 @@
     el.appendChild(links);
   }
   function tabKeys(list) { return Array.isArray(list) ? list.map(function (t) { return typeof t === 'string' ? t : (t && (t.key || t[0])); }).filter(Boolean) : null; }
+  /* the NOT YET BUILT panel of a route whose page file is not in this build: its name and where its content is meanwhile */
+  var NOT_BUILT = {
+    pending: ['Pending Trades', 'working orders are on each account\'s Orders page and under Activity'],
+    completed: ['Completed Trades', 'fills are on each account\'s Orders page; settlements are under Activity'],
+    accounts: ['Accounts', 'every account is in the sidebar; Treasury has its own page'],
+    cash_collateral: ['Cash & Collateral', 'cash, financing and collateral are on each account\'s Cash & financing page and under Accounting'],
+    derivatives: ['Derivatives', 'OTC contracts are on the prime-broker account\'s Markets page (OTC tab); listed options and futures are on the account Positions pages'],
+    history: ['History', 'the pages of a past lifetime are reached from Settings > Lifetimes; account activity is under Activity']
+  };
+  /* the History hub (C1): T.pages.history.hub = {render(el, route), unmount?, tabs?} or a render function; null while not built */
+  function historyHub() {
+    var h = T.pages.history && T.pages.history.hub;
+    if (typeof h === 'function') { return { render: h }; }
+    return h && typeof h.render === 'function' ? h : null;
+  }
+  /* #/trading: the last venue used while it is an open account of the selected book, else the book's US Exchange Markets */
+  function tradingHash() {
+    var last = T.store.get('last_venue', null);
+    var book = T.book.current(); var ids = book && Array.isArray(book.accounts) ? book.accounts : null;
+    if (last && (ids ? ids.indexOf(last) >= 0 : !!T.accountOwner(last)) && !closedRow(last)) { return T.router.account(last, 'markets'); }
+    var id = accountsOf('US_EXCHANGE')[0] || gAccount();
+    return id ? T.router.account(id, 'markets') : null;
+  }
   function replaceHash(h) { try { history.replaceState(history.state, '', h); } catch (e) { /* the address bar keeps the old hash */ } }
   var _currentPage = null;
   T.router = {
     current: null,
+    DEFAULT: DEFAULT_ROUTE,
     parse: function (hash) {
-      hash = hash || '#/news';
+      hash = hash || DEFAULT_ROUTE;
       for (var i = 0; i < ROUTES.length; i++) { var m = ROUTES[i][0].exec(hash); if (m) { var r = ROUTES[i][1](m); r.hash = hash; return r; } }
-      return { page: 'news', hash: '#/news', unknown: hash };
+      return { page: 'dashboard', hash: DEFAULT_ROUTE, unknown: hash };
     },
     go: function (hash) { if (location.hash === hash) { T.router.render(); } else { location.hash = hash; } },
     replace: replaceHash,
@@ -1014,7 +1097,16 @@
       var r = T.router.parse(location.hash);
       var prev = T.router.current;
       /* SHELL-19: an unknown address says so and the address bar is corrected (no history entry) */
-      if (r.unknown) { T.ui.toast('no page ' + r.unknown + ' - showing Daily News', '', 3500); replaceHash('#/news'); }
+      if (r.unknown) { T.ui.toast('no page ' + r.unknown + ' - showing the Dashboard', '', 3500); replaceHash(DEFAULT_ROUTE); }
+      /* C1: the removed news page's address (an old bookmark) lands on the Dashboard, said once */
+      if (r.removed) { T.ui.toast('That page was removed - showing the Dashboard', '', 4000); replaceHash(DEFAULT_ROUTE); r.hash = DEFAULT_ROUTE; }
+      /* C1: #/trading is the last venue used (else US Exchange Markets): the address becomes that venue's */
+      if (r.page === 'trading') {
+        var venue = tradingHash();
+        if (!venue) { T.ui.toast('the accounts are still loading - showing the Dashboard', '', 2500); }
+        replaceHash(venue || DEFAULT_ROUTE);
+        r = T.router.parse(venue || DEFAULT_ROUTE);
+      }
       /* SHELL-02: an account of another book selects that book (switcher, sidebar and header follow); an account no open
          lifetime holds is shown as a read-only notice and is never made the active account */
       if (r.account) {
@@ -1033,17 +1125,20 @@
         T.poll.kick('account_detail'); T.poll.kick('positions'); T.poll.kick('orders');
       }
       if (r.closed && (T.state.active_account === r.account || T.store.get('active_account', null) === r.account)) { T.forgetAccount(); }
+      if (r.account && !r.closed && (r.page === 'markets' || r.page === 'instrument')) { T.store.set('last_venue', r.account); }   /* #/trading */
       T.state.quote_ids = []; T.state.chain_target = null;
       if (_currentPage && _currentPage.unmount) { try { _currentPage.unmount(); } catch (e) { console.error(e); } }
       T.poll.clearPage();
-      var page = T.q('#page'), news = T.q('#news'), hist = T.q('#history');
-      page.hidden = r.page === 'news' || r.page === 'history'; news.hidden = r.page !== 'news'; hist.hidden = r.page !== 'history';
-      var container = r.page === 'news' ? news : (r.page === 'history' ? hist : page);
-      var mod = T.pages[r.page];
+      /* an archived lifetime's History pages (#/h/...) have their own container; every other page (the History hub too) is #page */
+      var page = T.q('#page'), hist = T.q('#history');
+      var archived = r.page === 'history' && !r.hub;
+      page.hidden = archived; hist.hidden = !archived;
+      var container = archived ? hist : page;
+      var mod = r.hub ? historyHub() : T.pages[r.page];
       T.clear(container);
       /* SHELL-19: an unknown tab of a page that lists its tabs (mod.tabs / mod.TABS / mod.SECTIONS: [key] or [{key}] or
          [[key, label]]) falls back to the first one */
-      var keys = mod && r.page !== 'history' ? tabKeys(mod.tabs || mod.TABS || mod.SECTIONS) : null;
+      var keys = mod && !archived ? tabKeys(mod.tabs || mod.TABS || mod.SECTIONS) : null;
       if (keys && keys.length && r.tab && keys.indexOf(r.tab) < 0) {
         T.ui.toast('no tab ' + r.tab + ' here - showing ' + keys[0], '', 3000);
         r.tab = keys[0]; r.hash = r.hash.replace(/\/[^\/?]*$/, '/' + keys[0]); replaceHash(r.hash);
@@ -1051,11 +1146,9 @@
       if (r.closed) {
         closedNotice(container, r);
         _currentPage = null;
-      } else if (r.page === 'news' && !mod) {
-        T.notBuilt(container, 'Daily News', 'the attention strip above carries the same health, integrity and provider state');
-        _currentPage = null;
       } else if (!mod) {
-        T.notBuilt(container, 'this page (' + r.page + ')');
+        var nb = NOT_BUILT[r.page];
+        if (nb) { T.notBuilt(container, nb[0], nb[1]); } else { T.notBuilt(container, 'this page (' + r.page + ')'); }
         _currentPage = null;
       } else {
         if (r.account) { container.appendChild(accountBar(r)); }
@@ -1424,9 +1517,17 @@
     'book.fund': function () { selectBook('F', 'FUND', 'Fund'); },
     'book.institutional': function () { selectBook('I', 'INSTITUTION', 'Institutional'); },
     'book.next': function () { T.book.cycle(); },
-    'page.portfolio': goPage('#/portfolio'), 'page.treasury': goPage('#/treasury'), 'page.risk': goPage('#/risk'), 'page.news': goPage('#/news'),
+    'page.dashboard': goPage('#/dashboard'),
+    'page.portfolio': goPage('#/portfolio'), 'page.treasury': goPage('#/treasury'), 'page.risk': goPage('#/risk'),
     'page.accounting': goPage('#/accounting'), 'page.activity': goPage('#/activity'), 'page.watchlists': goPage('#/watchlists'), 'page.settings': goPage('#/settings'),
     'page.history': goHistory,
+    'page.trading': goPage('#/trading'),
+    /* C1: on an account page, Pending / Completed Trades open filtered to that account and Cash & Collateral opens its Cash & financing */
+    'page.pending': function () { var id = routeAccount(); T.router.go(id ? '#/pending?account=' + encodeURIComponent(id) : '#/pending'); },
+    'page.completed': function () { var id = routeAccount(); T.router.go(id ? '#/completed?account=' + encodeURIComponent(id) : '#/completed'); },
+    'page.accounts': goPage('#/accounts'),
+    'page.cash_collateral': function () { var id = routeAccount(); T.router.go(id ? T.router.account(id, 'cash') : '#/cash'); },
+    'page.derivatives': goPage('#/derivatives'),
     'dock.toggle': toggleDock,
     'app.search': focusSearch,
     'app.help': function () { T.ui.help(); },
@@ -1541,6 +1642,15 @@
       if (c && c.init) { try { c.init(); } catch (e) { console.error('component', n, 'init failed', e); } }
       else { console.warn('component missing at boot:', n); }
     });
+    /* C2: /api/health (the module list behind T.hasModule) is read with /api/state, so the first route knows what is bound */
+    var bootHealth = T.api.get('/api/health', null, { nobook: true }).then(function (h) {
+      if (h && typeof h === 'object' && !T.state.health) {
+        if (h.clock && h.clock.utc) { T.clock.sync(h.clock.utc); }
+        if (h.version) { T.VERSION = h.version; }
+        T.state.state_version = h.state_version;
+        T.state.set('health', h);
+      }
+    }, function () { /* the health poller reports an unreachable server */ });
     T.api.get('/api/state', null, { nobook: true }).then(function (s) {
       T.state.conventions = s.conventions || {};
       T.state.settings = s.settings || null;
@@ -1560,9 +1670,9 @@
     }, function (e) {
       T.api.fail(e, 'bootstrap /api/state');
       setTimeout(function () { rereadKeys(true); }, 3000);     /* the owner's keys: asked again (KB-R1-03) */
-    }).then(function () {
+    }).then(function () { return bootHealth; }).then(function () {
       Object.keys(pollers).forEach(function (n) { T.poll.start(n); });
-      if (!location.hash) { replaceHash('#/news'); }
+      if (!location.hash) { replaceHash(DEFAULT_ROUTE); }
       T.router.render();
       validateActive();
     });

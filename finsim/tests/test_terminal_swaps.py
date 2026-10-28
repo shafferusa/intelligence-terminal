@@ -421,15 +421,18 @@ class SwapTests(unittest.TestCase):
         self.assertNotIn("swaprcv", rt.lifecycle.job("ACCRUE_DAILY").notes)
         # fixed pay leg 10,000,000 x 0.0401 / 360 = 1,113.8889 per night, cumulative rounding:
         # to_c(1,113.8889) = 1,113.89; to_c(2,227.7778) = 2,227.78 (+1,113.89); to_c(3,341.6667) = 3,341.67 (+1,113.89);
-        # to_c(4,455.5556) = 4,455.56 (+1,113.89); to_c(5,569.4444) = 5,569.44 (+1,113.88) -> Dr 4450 / Cr 2340
+        # to_c(4,455.5556) = 4,455.56 (+1,113.89); to_c(5,569.4444) = 5,569.44 (+1,113.88) -> Dr 4453 / Cr 2340 (4453 = swap coupons, a financing GL:
+        # FINSIM1 C11 / PORTFOLIO-08 moved the coupon accruals off the realised 4450)
         for d, amount in zip(range(20, 25), (111389, 111389, 111389, 111389, 111388)):
             e = entry_by_idem(rt, f"accr:swappay:{SWP1}:2026-10-{d}")
-            self.assertEqual([("4450", SWP1, amount), ("2340", SWP1, -amount)], lines_of(rt, e["entry_id"]), d)
-            # floating receive leg at 3.87 %: 10,000,000 x 0.0387 / 360 = 1,075.00 every night -> Dr 1225 / Cr 4450
+            self.assertEqual([("4453", SWP1, amount), ("2340", SWP1, -amount)], lines_of(rt, e["entry_id"]), d)
+            # floating receive leg at 3.87 %: 10,000,000 x 0.0387 / 360 = 1,075.00 every night -> Dr 1225 / Cr 4453
             e = entry_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-10-{d}")
-            self.assertEqual([("1225", SWP1, 107500), ("4450", SWP1, -107500)], lines_of(rt, e["entry_id"]), d)
-        # 2340 = 5,569.44; 1225 = 5 x 1,075.00 = 5,375.00; 4450 = 5,375.00 - 5,569.44 = -194.44 (net -38.89 x 4 - 38.88)
-        self.assertEqual((556944, 537500, -19444), (bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1)))
+            self.assertEqual([("1225", SWP1, 107500), ("4453", SWP1, -107500)], lines_of(rt, e["entry_id"]), d)
+        # 2340 = 5,569.44; 1225 = 5 x 1,075.00 = 5,375.00; 4453 (kind EXPENSE: a cost is positive) = 5,569.44 paid - 5,375.00 received = +194.44
+        # (net 38.89 x 4 + 38.88); 4450 untouched (0.00)
+        self.assertEqual((556944, 537500, 19444, 0), (bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "4453", inst=SWP1),
+                                                     bal(rt, PB_GS, "4450", inst=SWP1)))
         st = {r["kind"]: r for r in q(rt, "SELECT * FROM accrual_state WHERE ref_id=?", (SWP1,))}
         self.assertEqual(("2026-10-20", "2026-10-24", 556944, "0.0401"), (st["swappay"]["segment_start"], st["swappay"]["accrued_through"], st["swappay"]["cum_c"], st["swappay"]["rate"]))
         self.assertEqual(("2026-10-20", "2026-10-24", 537500, "0.0387"), (st["swaprcv"]["segment_start"], st["swaprcv"]["accrued_through"], st["swaprcv"]["cum_c"], st["swaprcv"]["rate"]))
@@ -457,12 +460,12 @@ class SwapTests(unittest.TestCase):
         self.assertEqual("2027-04-19", (date(2026, 10, 20) + timedelta(days=181)).isoformat())
         accrue_nights(self, rt, date(2026, 10, 20), 182)
         # fixed leg: nights 1..181 cumulate to to_c(10,000,000 x 0.0401 x 181/360) = to_c(201,613.8889) = 201,613.89; the 182nd night (2027-04-19)
-        # trues up to the 30/360 coupon 10,000,000 x 0.0401 x 180/360 = 200,500.00 -> -1,113.89 (Dr 2340 / Cr 4450); 2340 = 200,500.00
+        # trues up to the 30/360 coupon 10,000,000 x 0.0401 x 180/360 = 200,500.00 -> -1,113.89 (Dr 2340 / Cr 4453); 2340 = 200,500.00
         e = entry_by_idem(rt, f"accr:swappay:{SWP1}:2027-04-19")
-        self.assertEqual([("2340", SWP1, 111389), ("4450", SWP1, -111389)], lines_of(rt, e["entry_id"]))
+        self.assertEqual([("2340", SWP1, 111389), ("4453", SWP1, -111389)], lines_of(rt, e["entry_id"]))
         # floating leg: 182 x 1,075.00 = 195,650.00 = 10,000,000 x 0.0387 x 182/360 exactly
         e = entry_by_idem(rt, f"accr:swaprcv:{SWP1}:2027-04-19")
-        self.assertEqual([("1225", SWP1, 107500), ("4450", SWP1, -107500)], lines_of(rt, e["entry_id"]))
+        self.assertEqual([("1225", SWP1, 107500), ("4453", SWP1, -107500)], lines_of(rt, e["entry_id"]))
         self.assertEqual((20050000, 19565000), (bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1225", inst=SWP1)))
         self.assertEqual(364, len(q(rt, "SELECT 1 FROM journal_entries WHERE idem_key LIKE 'accr:swap%'")))
         assert_integrity(self, rt, "full")
@@ -479,8 +482,8 @@ class SwapTests(unittest.TestCase):
         pay_row = one(rt, "SELECT * FROM otc_resets WHERE contract_id=? AND kind='PAY'", (SWP1,))
         self.assertEqual(("2027-04-20", -485000), (pay_row["event_date"], pay_row["amount_c"]))
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='ACCRUALS_PENDING' AND resolved_ts IS NULL"))
-        # 4450 over the period: receive 195,650.00 - pay 200,500.00 = -4,850.00 (the net coupon, realised)
-        self.assertEqual(-485000, bal(rt, PB_GS, "4450", inst=SWP1))
+        # 4453 over the period: pay 200,500.00 - receive 195,650.00 = +4,850.00 (the net coupon: a financing cost, kind EXPENSE); nothing on 4450
+        self.assertEqual((485000, 0), (bal(rt, PB_GS, "4453", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1)))
         # SWAP_FIX 2027-04-20 re-fixes from the latest SOFR <= that date: 3.95 (2027-04-16) -> 0.03950
         r = execute(rt, "swap.fix", {"contract_id": SWP1, "date": "2027-04-20", "key": f"{SWP1}:2027-04-20"}, f"job:SWAP_FIX:{SWP1}:2027-04-20", actor="lifecycle")
         self.assertTrue(r.ok, r.body)
@@ -546,10 +549,11 @@ class SwapTests(unittest.TestCase):
         self.assertEqual([("1010", None, 49020), ("1320", SWP1, -49020)], lines_of(rt, e["entry_id"]))
         e2 = entry_by_idem(rt, f"im:{SWP1}:release")
         self.assertEqual([("1010", None, 2451000), ("1330", SWP1, -2451000)], lines_of(rt, e2["entry_id"]))
-        # every per-contract balance is 0 but 4450 = 195,650.00 - 200,500.00 = -4,850.00 (realised); NAV = cash 95,150.00 = 100,000 - 4,850.00
-        self.assertEqual((0, 0, 0, 0, 0, -485000, 9515000),
+        # every per-contract balance is 0 but 4453 = 200,500.00 paid - 195,650.00 received = +4,850.00 (the net coupon, a financing cost); 4450 = 0
+        # (value 0 at maturity, nothing realised); NAV = cash 95,150.00 = 100,000 - 4,850.00
+        self.assertEqual((0, 0, 0, 0, 0, 485000, 0, 9515000),
                          (bal(rt, PB_GS, "1320", inst=SWP1), bal(rt, PB_GS, "2330", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1), bal(rt, PB_GS, "1225", inst=SWP1),
-                          bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "1010")))
+                          bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "4453", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "1010")))
         nav = rt.accounting.nav(PB_GS)
         self.assertEqual((9515000, 0), (nav.nav_c, nav.unrealised_c))
         c = contract(rt)
@@ -577,10 +581,10 @@ class SwapTests(unittest.TestCase):
         r = execute(rt, "otc.terminate", {"contract_id": SWP1}, "ui:swap-term-0001")
         self.assertTrue(r.ok, r.body)
         # MONEY-2: no ACCRUE_DAILY ran, but the contract was open across the night of 10-20 (its start), so the termination posts that night
-        # first on both legs: pay fixed to_c(10,000,000 x 0.0401 x 1 / 360) = to_c(1,113.888..) = 1,113.89 (Dr 4450 / Cr 2340), receive SOFR
-        # to_c(10,000,000 x 0.0387 / 360) = 1,075.00 (Dr 1225 / Cr 4450)
-        self.assertEqual([("4450", SWP1, 111389), ("2340", SWP1, -111389)], lines_of(rt, entry_by_idem(rt, f"accr:swappay:{SWP1}:2026-10-20")["entry_id"]))
-        self.assertEqual([("1225", SWP1, 107500), ("4450", SWP1, -107500)], lines_of(rt, entry_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-10-20")["entry_id"]))
+        # first on both legs: pay fixed to_c(10,000,000 x 0.0401 x 1 / 360) = to_c(1,113.888..) = 1,113.89 (Dr 4453 / Cr 2340), receive SOFR
+        # to_c(10,000,000 x 0.0387 / 360) = 1,075.00 (Dr 1225 / Cr 4453)
+        self.assertEqual([("4453", SWP1, 111389), ("2340", SWP1, -111389)], lines_of(rt, entry_by_idem(rt, f"accr:swappay:{SWP1}:2026-10-20")["entry_id"]))
+        self.assertEqual([("1225", SWP1, 107500), ("4453", SWP1, -107500)], lines_of(rt, entry_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-10-20")["entry_id"]))
         # value = the day-2 mark 17,114.00: Dr 2330 17,114.00 / Cr 1010 17,114.00 (VM unwound) + Dr 1010 17,114.00 / Cr 4450 17,114.00 (value); the
         # accrued legs settle net: Dr 2340 1,113.89 / Cr 1225 1,075.00 / Cr 1010 38.89 -> cash -17,114.00 + 17,114.00 - 38.89 = -38.89 (own cash 21,921.00:
         # no sweep); IM Dr 1010 95,193.00 / Cr 1330 95,193.00
@@ -595,15 +599,16 @@ class SwapTests(unittest.TestCase):
         self.assertEqual(4, len(r.body["entries"]))
         self.assertIn(e["entry_id"], r.body["entries"])
         self.assertIn(e2["entry_id"], r.body["entries"])
-        # L22 all zero; cash 21,921.00 - 38.89 + 95,193.00 = 117,075.11 = NAV (nothing left but cash); 4450 = 17,114.00 + 1,075.00 - 1,113.89 = 17,075.11
-        self.assertEqual((0, 0, 0, 0, 0, 1707511, 11707511),
+        # L22 all zero; cash 21,921.00 - 38.89 + 95,193.00 = 117,075.11 = NAV (nothing left but cash); 4450 = the termination value 17,114.00 (realised),
+        # 4453 = 1,113.89 paid - 1,075.00 received = +38.89 (a financing cost): 17,114.00 - 38.89 = 17,075.11 of P&L
+        self.assertEqual((0, 0, 0, 0, 0, 1711400, 3889, 11707511),
                          (bal(rt, PB_GS, "1320", inst=SWP1), bal(rt, PB_GS, "2330", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1), bal(rt, PB_GS, "1225", inst=SWP1),
-                          bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "1010")))
+                          bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "4453", inst=SWP1), bal(rt, PB_GS, "1010")))
         c = contract(rt)
         self.assertEqual(("TERMINATED", 0, 0, 0), (c["status"], c["mark_c"], c["vm_balance_c"], c["im_c"]))
         self.assertIsNotNone(c["closed_ts"])
         nav = rt.accounting.nav(PB_GS)
-        self.assertEqual((11707511, 0, 1707511), (nav.nav_c, nav.unrealised_c, nav.realised_c))
+        self.assertEqual((11707511, 0, 1711400), (nav.nav_c, nav.unrealised_c, nav.realised_c))
         self.assertEqual([], rt.accounting.positions(PB_GS))
         self.assertEqual("EXPIRED", rt.instruments.get(SWP1).status)
         self.assertEqual([], q(rt, "SELECT 1 FROM accrual_state WHERE ref_id=?", (SWP1,)))
@@ -638,9 +643,10 @@ class SwapTests(unittest.TestCase):
                          (r.body["termination_value_c"], r.body["result_c"], r.body["cash_c"], r.body["accrued_receive_c"], r.body["accrued_pay_c"], r.body["im_released_c"]))
         e = entry_by_idem(rt, f"otc:{SWP1}:terminate")
         self.assertEqual([("4450", SWP1, 190386), ("1010", None, -190386), ("2340", SWP1, 556944), ("1225", SWP1, -537500), ("1010", None, -19444)], lines_of(rt, e["entry_id"]))
-        # 4450 for the contract: accruals 5,375.00 - 5,569.44 = -194.44, termination -1,903.86 -> -2,098.30
-        self.assertEqual((0, 0, 0, -209830, 9790170), (bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1),
-                                                       bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "1010")))
+        # 4450 for the contract: the termination value -1,903.86 (realised); 4453: the accruals 5,569.44 paid - 5,375.00 received = +194.44 (a financing
+        # cost); together -2,098.30 = 100,000.00 - 97,901.70
+        self.assertEqual((0, 0, 0, -190386, 19444, 9790170), (bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1),
+                                                              bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "4453", inst=SWP1), bal(rt, PB_GS, "1010")))
         self.assertEqual(9790170, rt.accounting.nav(PB_GS).nav_c)
         self.assertEqual([], q(rt, "SELECT 1 FROM transfers WHERE kind='SWEEP_IN'"))
         assert_integrity(self, rt, "full")
@@ -667,9 +673,10 @@ class SwapTests(unittest.TestCase):
         e = entry_by_idem(rt, f"otc:{SWP1}:terminate")
         self.assertEqual([("4450", SWP1, 190386), ("1010", None, -190386), ("2340", SWP1, 334167), ("1225", SWP1, -322500), ("1010", None, -11667)],
                          lines_of(rt, e["entry_id"]))
-        # 4450 = -1,903.86 + 3,225.00 - 3,341.67 = -2,020.53; NAV = cash 97,979.47 = 100,000.00 - 2,020.53; every contract balance 0 (L22)
-        self.assertEqual((0, 0, 0, -202053, 9797947), (bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1),
-                                                       bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "1010")))
+        # 4450 = the termination value -1,903.86; 4453 = 3,341.67 paid - 3,225.00 received = +116.67 (a financing cost); together -2,020.53;
+        # NAV = cash 97,979.47 = 100,000.00 - 2,020.53; every contract balance 0 (L22)
+        self.assertEqual((0, 0, 0, -190386, 11667, 9797947), (bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "2340", inst=SWP1), bal(rt, PB_GS, "1330", inst=SWP1),
+                                                              bal(rt, PB_GS, "4450", inst=SWP1), bal(rt, PB_GS, "4453", inst=SWP1), bal(rt, PB_GS, "1010")))
         self.assertEqual(9797947, rt.accounting.nav(PB_GS).nav_c)
         self.assertEqual([], q(rt, "SELECT 1 FROM transfers WHERE kind='SWEEP_IN'"))
         # the scheduler afterwards posts nothing more for the contract (TERMINATED: no keys), nothing twice
@@ -817,10 +824,10 @@ class SwapTests(unittest.TestCase):
         self.assertEqual((28, (f"swaprcv:{SWP1}:2026-11-17", "SKIPPED")), (len([1 for _k, s in rcv if s == "DONE"]), rcv[-1]))
         self.assertEqual(31, len([1 for k, s in ran(out, "ACCRUE_DAILY") if k.startswith("swappay") and s == "DONE"]))
         # nights 1..3 at 3.87 %: F = (1 + 0.0387/360)^n = 1.0001075^n; cumulative to_c(10,000,000 x (F - 1)): 1,075.00; 1.00021501155625 -> 2,150.12 (+1,075.12);
-        # 1.000322534669992296875 -> 3,225.35 (+1,075.23) -> Dr 1225 / Cr 4450
+        # 1.000322534669992296875 -> 3,225.35 (+1,075.23) -> Dr 1225 / Cr 4453
         for night, amount in (("2026-10-20", 107500), ("2026-10-21", 107512), ("2026-10-22", 107523)):
             e = entry_by_idem(rt, f"accr:swaprcv:{SWP1}:{night}")
-            self.assertEqual([("1225", SWP1, amount), ("4450", SWP1, -amount)], lines_of(rt, e["entry_id"]), night)
+            self.assertEqual([("1225", SWP1, amount), ("4453", SWP1, -amount)], lines_of(rt, e["entry_id"]), night)
         # after 28 nights: to_c(10,000,000 x (1.0001075^7 x (1 + 0.039/360)^10 x (1 + 0.0395/360)^11 - 1)) = 30,472.46 (exact rationals);
         # fixed leg 31 nights: to_c(10,000,000 x 0.0401 x 31/360) = to_c(34,530.5556) = 34,530.56
         self.assertEqual((3047246, 3453056), (bal(rt, PB_GS, "1225", inst=SWP1), bal(rt, PB_GS, "2340", inst=SWP1)))
@@ -837,7 +844,7 @@ class SwapTests(unittest.TestCase):
         self.assertEqual([(f"swaprcv:{SWP1}:2026-11-1{d}", "DONE") for d in (7, 8, 9)], [(k, s) for k, s in ran(out, "ACCRUE_DAILY") if k.startswith("swaprcv")])
         for night, amount in (("2026-11-17", 110056), ("2026-11-18", 110069), ("2026-11-19", 110081)):
             e = entry_by_idem(rt, f"accr:swaprcv:{SWP1}:{night}")
-            self.assertEqual([("1225", SWP1, amount), ("4450", SWP1, -amount)], lines_of(rt, e["entry_id"]), night)
+            self.assertEqual([("1225", SWP1, amount), ("4453", SWP1, -amount)], lines_of(rt, e["entry_id"]), night)
         self.assertEqual(3377452, bal(rt, PB_GS, "1225", inst=SWP1))
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='RATE_UNAVAILABLE' AND resolved_ts IS NULL"))
         # the payment: only the floating leg pays on 2026-11-20 (the fixed leg pays on 2027-04-20): receive 33,774.52 = the period's posted accruals ->
@@ -858,7 +865,7 @@ class SwapTests(unittest.TestCase):
         out = rt.lifecycle.tick(at="2026-11-21T00:40:00-05:00", only="ACCRUE_DAILY")
         self.assertIn((f"swaprcv:{SWP1}:2026-11-20", "DONE"), ran(out, "ACCRUE_DAILY"))
         e = entry_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-11-20")
-        self.assertEqual([("1225", SWP1, 109722), ("4450", SWP1, -109722)], lines_of(rt, e["entry_id"]))
+        self.assertEqual([("1225", SWP1, 109722), ("4453", SWP1, -109722)], lines_of(rt, e["entry_id"]))
         v = swaps.contract_view(rt, SWP1)
         self.assertEqual(("COMPOUND_ARREARS", "2026-11-20", "2026-12-21", 1, 109722, "0.03950000", "1.000109722222222222"),
                          (v["fixing_method"], v["fixing"]["period_start"], v["fixing"]["period_end"], v["fixing"]["nights"], v["fixing"]["accrued_c"], v["fixing"]["rate_so_far"],

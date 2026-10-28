@@ -79,7 +79,7 @@ D_MAP = {
         ("test_terminal_reconcile", "test_d10_goldman_and_pb_swaps_with_daily_vm_through_the_api")],
     "D11 Rule 201 / 13D-G / self-trading notices, none blocks": [("test_terminal_risk", "test_d11_compliance_notices")],
     "D12 integrity after every step; a corrupted entry fails and shows under Requires your attention": [
-        ("test_terminal_bus", "test_d12_corrupted_balance_rolls_back"), ("test_terminal_news", "test_attention_shows_integrity_failure"),
+        ("test_terminal_bus", "test_d12_corrupted_balance_rolls_back"), ("test_terminal_attention", "test_attention_shows_integrity_failure"),
         ("test_terminal_reconcile", "test_d1_d2_d12_through_the_api_in_one_db")],
 }
 

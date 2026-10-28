@@ -46,6 +46,14 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   is retried (the §11.2 row; the overdraft rule of §11.6 is for calls, not settlements).  FX legs settle through
   ``fx.settle_deal`` (both legs of a deal).  Private trades carry calendar-day due dates on their rows, so the same
   job settles them on any day.  Idem ``settle:{settle_id}``.
+- SETTLEMENT FAILS (FINSIM1_PLAN C15, OMS-09; the state lives in ``collateral``): once the due date has passed (the
+  accounting day is later than it) an unfunded payable is marked FAILED "not funded on its due date" and keeps its
+  ERROR attention and its retries; when it settles it becomes RESOLVED.  A settlement the owner failed by hand
+  (``settlement.fail``, a simulated counterparty fail) is skipped until he resolves it (``settlement.resolve``).
+- AS-OF DATING (C15, D7): a settlement whose fill or OTC contract carries booking AS_OF or HISTORICAL_MODEL (the historical import) posts
+  with business date = its due date and ``ctx.asof_date`` = its due date, so its funding (C20) is measured on that date's
+  balances and its sweep is dated with it.  Once such a settlement has FAILED it settles later like any late settlement,
+  dated the day it settles.
 - PAY_MONTHLY (00:45 on the 1st, key ``{account}:{yyyy-mm}``): settles the accrued balances as they stand when it runs —
   borrow fees and rebates per instrument through ``lending.settle_accrued`` (``pay:bfee:{borrow}:{yyyy-mm}``), PB
   financing interest ``Dr 2300 / Cr 1010`` (``pay:pb:{account}:{yyyy-mm}``), cash / PB credit interest ``Dr 1010 /
@@ -56,7 +64,8 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   ``sweep_out = 1`` and per currency: ``excess = settled − payables pending − reserved by working orders − futures
   maintenance shortfall − buffer`` (the USD buffer converted at the snapshot rate for a foreign currency); ``excess > 0``
   returns to Treasury as one SWEEP_OUT transfer; otherwise the key is SKIPPED "nothing idle" for that date; a currency is
-  never swept negative; Treasury is never swept.
+  never swept negative; Treasury is never swept.  The C9b cash adjusters (``accounting.adjustments_c``: restricted
+  collateral received, D9) stay in the account too: restricted cash is never swept.
 - Money is integer cents / Decimal; nothing here is a float; failures raise and are recorded by the scheduler.
 """
 from __future__ import annotations
@@ -141,6 +150,16 @@ def open_accounts(conn: sqlite3.Connection, kinds: Optional[Tuple[str, ...]] = N
     sql += " ORDER BY b.sort_order, l.seq, a.sort_order, a.account_id"
     rows = conn.execute(sql, params).fetchall()
     return [r for r in rows if kinds is None or r["kind"] in kinds]
+
+
+def restricted_at_close(services, conn: sqlite3.Connection, account_id: str, ccy: str, d) -> int:
+    """C21 / D9: the collateral received that sits in the account's settled cash at the close of ``d`` (``collateral.restricted_c``
+    as of that business date) - 0 while the collateral module is not bound (the base is then the settled cash, as before)."""
+    coll = getattr(services, "collateral", None) if services is not None else None
+    fn = getattr(coll, "restricted_c", None)
+    if not callable(fn):
+        return 0
+    return max(0, int(fn(conn, account_id, ccy, as_of=d.isoformat() if isinstance(d, date) else str(d)) or 0))
 
 
 def balance_at_close(conn: sqlite3.Connection, account_id: str, gl: str, ccy: str, d: date) -> int:
@@ -317,6 +336,97 @@ class Job:
 
 
 # ---- SETTLE_DUE -----------------------------------------------------------------------------------------------------------------
+def _has_col(conn: sqlite3.Connection, table: str, col: str) -> bool:
+    return col in {r[1] for r in conn.execute(f'PRAGMA table_info("{table}")').fetchall()}
+
+
+def settlement_booking(conn: sqlite3.Connection, s) -> Optional[str]:
+    """C15: the booking of what a settlement settles - its fill's ``fills.booking`` (C8) or, for an OTC payment (``ref_type``
+    'otc'), its contract's ``otc_contracts.booking`` (C10).  None when the column or the row is absent (a live trade)."""
+    keys = set(s.keys())
+    if s["fill_id"]:
+        if not _has_col(conn, "fills", "booking"):
+            return None
+        r = conn.execute("SELECT booking FROM fills WHERE fill_id=?", (s["fill_id"],)).fetchone()
+        return r["booking"] if r is not None else None
+    if "ref_type" in keys and s["ref_type"] == "otc" and s["ref_id"] and _has_col(conn, "otc_contracts", "booking"):
+        r = conn.execute("SELECT booking FROM otc_contracts WHERE contract_id=?", (s["ref_id"],)).fetchone()
+        return r["booking"] if r is not None else None
+    return None
+
+
+def with_asof(ctx: TxContext, d: Optional[str], fn):
+    """Run ``fn()`` with ``ctx.asof_date`` = ``d`` (C15 / C20), restoring what the context carried before; ``d`` None runs it as is."""
+    if not d:
+        return fn()
+    had = hasattr(ctx, "asof_date")
+    prev = getattr(ctx, "asof_date", None)
+    ctx.asof_date = d
+    try:
+        return fn()
+    finally:
+        if had:
+            ctx.asof_date = prev
+        else:
+            try:
+                del ctx.asof_date
+            except AttributeError:
+                pass
+
+
+def _collateral():
+    """The collateral module (the C15 fail state), or None when it does not import."""
+    try:
+        from . import collateral
+        return collateral
+    except Exception:   # noqa: BLE001 - a build without it keeps settlements without a fail state
+        return None
+
+
+def post_settlement(ctx: TxContext, s, services, *, business_date: Optional[str] = None) -> dict:
+    """Settle one PENDING trade settlement row now (§5.4): a receivable ``Dr 1010 / Cr 1200|1250``; a payable funded through
+    ``execution.fund`` (own settled cash -> one Treasury sweep linked to the settlement -> PB financing; 409 INSUFFICIENT_FUNDS
+    before anything moved) then ``Dr 2100|2350 / Cr 1010``.  Idem ``settle:{settle_id}``; ``business_date`` dates the entry
+    (an as-of settlement, C15).  Marks the row SETTLED, resolves its SETTLEMENT_UNFUNDED item and any covered funding
+    shortfall.  Used by SETTLE_DUE and ``settlement.resolve`` (C15)."""
+    from . import execution
+    conn = ctx.conn
+    key = s["settle_id"]
+    aid, ccy, amt, gl, due = s["account_id"], s["currency"], int(s["amount_c"]), s["gl"], s["due_date"]
+    acct = account_row(conn, aid)
+    if acct is None or acct["status"] != "OPEN":
+        raise RejectError("ACCOUNT_CLOSED", f"account {aid} is not open")
+    fill = conn.execute("SELECT instrument_id, side, qty, price FROM fills WHERE fill_id=?", (s["fill_id"],)).fetchone() if s["fill_id"] else None
+    iid = fill["instrument_id"] if fill else None
+    funding = None
+    if amt > 0:
+        lines = [dr(aid, "1010", ccy, amt, memo=f"settlement {key} received"), cr(aid, gl, ccy, amt, memo="receivable settled")]
+        what = f"receive {ccy} {fmt_money(amt)}"
+    else:
+        need = -amt
+        # C21 / D9: an OTC payment (``ref_type`` otc: a CDX upfront, a swap payment) goes to the account's CSA counterparty and may use the
+        # collateral that counterparty posted (netting under one ISDA / CSA); any other settlement may not
+        csa = {"csa_netting": True} if "ref_type" in set(s.keys()) and s["ref_type"] == "otc" and acct["kind"] == "PB" else {}
+        funding = execution.fund(ctx, aid, ccy, need, "settlement", key, _date(due), immediate=True, services=services, **csa)
+        lines = [dr(aid, gl, ccy, need, memo="payable settled"), cr(aid, "1010", ccy, need, memo=f"settlement {key} paid")]
+        what = f"pay {ccy} {fmt_money(need)}"
+    desc = f" ({fill['side']} {int(fill['qty']):,} {iid} @ {fill['price']})" if fill else ""
+    memo = f"settlement {key} " + (f"of fill {s['fill_id']}{desc}" if s["fill_id"] else f"({str(s['leg'] or 'cash').lower()})") + f": {what}, due {due}"
+    if business_date:
+        memo += f" (as-of: dated its due date {business_date})"
+    entry_id = ctx.post(Entry("SETTLE", memo, lines, f"settle:{key}", ref_type="settlement", ref_id=key, business_date=business_date))
+    conn.execute("UPDATE settlements SET status='SETTLED', settled_ts=?, entry_id=? WHERE settle_id=?", (ctx.ts, entry_id, key))
+    conn.execute("UPDATE attention SET resolved_ts=? WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (ctx.ts, key))
+    execution.auto_resolve_shortfall(ctx, aid, ccy)
+    if iid:
+        ctx.touched_instruments.add((aid, iid))
+    ctx.touched_accounts.add(aid)
+    ctx.event("SETTLED", account_id=aid, instrument_id=iid, ref_type="settlement", ref_id=key, fill_id=s["fill_id"], currency=ccy, amount_c=amt, entry_id=entry_id,
+              due_date=due, funding=funding.to_dict() if funding else None, business_date=business_date)
+    return {"entry_id": entry_id, "amount_c": amt, "currency": ccy, "what": what, "due_date": due, "business_date": business_date,
+            "funding": funding.to_dict() if funding else None}
+
+
 class SettleDue(Job):
     name = "SETTLE_DUE"
     kind = "lifecycle.settle"
@@ -326,8 +436,11 @@ class SettleDue(Job):
         now = clock.epoch()
         today = clock.today()
         cutoff = today if now >= epoch_of(today, ACCRUE_FROM_ET) else today - timedelta(days=1)
+        # C15: a settlement the owner failed by hand (a simulated counterparty fail) waits for his resolution
+        held = (" AND NOT (COALESCE(s.fail_state, '')='FAILED' AND COALESCE(s.fail_kind, '')='SIMULATED' AND s.resolution IS NULL)"
+                if _has_col(conn, "settlements", "fail_state") else "")
         rows = conn.execute("SELECT s.settle_id FROM settlements s JOIN accounts a ON a.account_id=s.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id"
-                            " WHERE s.status='PENDING' AND s.due_date<=? AND a.status='OPEN' AND l.status='OPEN'"
+                            " WHERE s.status='PENDING' AND s.due_date<=? AND a.status='OPEN' AND l.status='OPEN'" + held +
                             " ORDER BY CASE WHEN s.amount_c > 0 THEN 0 ELSE 1 END, s.due_date, s.settle_id", (cutoff.isoformat(),)).fetchall()
         return [r["settle_id"] for r in rows]
 
@@ -335,14 +448,19 @@ class SettleDue(Job):
         return {"key": key, "settle_id": key}
 
     def run(self, ctx: TxContext, key: str, services) -> dict:
-        from . import execution
         conn = ctx.conn
         s = conn.execute("SELECT * FROM settlements WHERE settle_id=?", (key,)).fetchone()
         if s is None:
             raise RejectError("NOT_FOUND", f"settlement {key} does not exist")
         if s["status"] != "PENDING":
             return {"status": "DONE", "note": "already settled", "posted": False}
-        aid, ccy, amt, gl, due = s["account_id"], s["currency"], int(s["amount_c"]), s["gl"], s["due_date"]
+        aid, ccy, amt, due = s["account_id"], s["currency"], int(s["amount_c"]), s["due_date"]
+        coll = _collateral()
+        track = coll is not None and coll.has_fail_columns(conn)
+        fail_state = s["fail_state"] if track else None
+        if track and fail_state == "FAILED" and s["fail_kind"] == "SIMULATED" and not s["resolution"]:
+            return {"status": "SKIPPED", "quiet": True, "posted": False, "note": f"{coll.SIMULATED_LABEL}: nothing moves until the owner resolves it"}
+        past_due = ctx.today > str(due)                 # the 17:00 ET cut-off of the due date has passed: a missed settlement date
         if s["fx_deal_id"]:
             fxm = module(services, "fx", "finsim.terminal.fx")
             if fxm is None or not hasattr(fxm, "settle_deal"):
@@ -350,47 +468,36 @@ class SettleDue(Job):
             out = fxm.settle_deal(ctx, str(s["fx_deal_id"]), services=services)
             if any(u.get("settle_id") == key for u in out.get("unfunded") or []):
                 u = next(x for x in out["unfunded"] if x.get("settle_id") == key)
-                return {"status": "SKIPPED", "code": "SETTLEMENT_UNFUNDED", "surfaced": True, "deal": out,
+                failed = bool(track and past_due and coll.mark_failed(ctx, key, "UNFUNDED", f"{coll.UNFUNDED_LABEL}: FX deal {s['fx_deal_id']} could not be funded"))
+                return {"status": "SKIPPED", "code": "SETTLEMENT_UNFUNDED", "surfaced": True, "deal": out, "failed": failed or fail_state == "FAILED",
                         "note": f"SETTLEMENT_UNFUNDED: {ccy} {fmt_money(int(u.get('amount_c') or -amt))} for FX deal {s['fx_deal_id']} could not be funded; retried"}
+            if track:
+                for r in conn.execute("SELECT settle_id FROM settlements WHERE fx_deal_id=? AND status='SETTLED' AND fail_state='FAILED'", (s["fx_deal_id"],)).fetchall():
+                    coll.mark_resolved(ctx, r["settle_id"])
             return {"status": "DONE", "note": f"FX deal {s['fx_deal_id']} leg {s['leg']} {ccy} {fmt_money(abs(amt))}", "deal": out, "posted": True}
-        acct = account_row(conn, aid)
-        if acct is None or acct["status"] != "OPEN":
-            raise RejectError("ACCOUNT_CLOSED", f"account {aid} is not open")
-        fill = conn.execute("SELECT instrument_id, side, qty, price FROM fills WHERE fill_id=?", (s["fill_id"],)).fetchone() if s["fill_id"] else None
-        iid = fill["instrument_id"] if fill else None
-        funding = None
-        if amt > 0:
-            lines = [dr(aid, "1010", ccy, amt, memo=f"settlement {key} received"), cr(aid, gl, ccy, amt, memo="receivable settled")]
-            what = f"receive {ccy} {fmt_money(amt)}"
-        else:
+        # C15: an as-of settlement (the import's fills and OTC payments) settles on its own due date, unless it already failed;
+        # a HISTORICAL_MODEL booking (C8, as_of.historical_model) is as-of exactly like AS_OF (P5-R1)
+        asof = str(due) if fail_state != "FAILED" and settlement_booking(conn, s) in ("AS_OF", "HISTORICAL_MODEL") else None
+        try:
+            res = with_asof(ctx, asof, lambda: post_settlement(ctx, s, services, business_date=asof))
+        except ConflictError as e:
+            if e.code != "INSUFFICIENT_FUNDS":
+                raise
             need = -amt
-            try:
-                funding = execution.fund(ctx, aid, ccy, need, "settlement", key, _date(due), immediate=True, services=services)
-            except ConflictError as e:
-                if e.code != "INSUFFICIENT_FUNDS":
-                    raise
-                open_row = conn.execute("SELECT id FROM attention WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (key,)).fetchone()
-                if open_row is None:
-                    ctx.attention("ERROR", SOURCE, "SETTLEMENT_UNFUNDED",
-                                  f"{aid}: {ccy} {fmt_money(need)} due {due} for settlement {key} cannot be funded ({e.message}); it stays pending and is retried",
-                                  dict(e.details, account_id=aid, ref_type="settlement", ref_id=key, auto_resolve=1))
-                return {"status": "SKIPPED", "code": "SETTLEMENT_UNFUNDED", "surfaced": True, "details": e.details,
-                        "note": f"SETTLEMENT_UNFUNDED: {ccy} {fmt_money(need)} due {due} could not be funded (own {fmt_money(int(e.details.get('own_available_c', 0)))},"
-                                f" Treasury {fmt_money(int(e.details.get('treasury_available_c', 0)))}); retried"}
-            lines = [dr(aid, gl, ccy, need, memo="payable settled"), cr(aid, "1010", ccy, need, memo=f"settlement {key} paid")]
-            what = f"pay {ccy} {fmt_money(need)}"
-        desc = f" ({fill['side']} {int(fill['qty']):,} {iid} @ {fill['price']})" if fill else ""
-        memo = f"settlement {key} " + (f"of fill {s['fill_id']}{desc}" if s["fill_id"] else f"({str(s['leg'] or 'cash').lower()})") + f": {what}, due {due}"
-        entry_id = ctx.post(Entry("SETTLE", memo, lines, f"settle:{key}", ref_type="settlement", ref_id=key))
-        conn.execute("UPDATE settlements SET status='SETTLED', settled_ts=?, entry_id=? WHERE settle_id=?", (ctx.ts, entry_id, key))
-        conn.execute("UPDATE attention SET resolved_ts=? WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (ctx.ts, key))
-        execution.auto_resolve_shortfall(ctx, aid, ccy)
-        if iid:
-            ctx.touched_instruments.add((aid, iid))
-        ctx.event("SETTLED", account_id=aid, instrument_id=iid, ref_type="settlement", ref_id=key, fill_id=s["fill_id"], currency=ccy, amount_c=amt, entry_id=entry_id,
-                  due_date=due, funding=funding.to_dict() if funding else None)
-        return {"status": "DONE", "note": f"{what} (due {due})", "entry_id": entry_id, "amount_c": amt, "currency": ccy, "posted": True,
-                "funding": funding.to_dict() if funding else None}
+            open_row = conn.execute("SELECT id FROM attention WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (key,)).fetchone()
+            if open_row is None:
+                ctx.attention("ERROR", SOURCE, "SETTLEMENT_UNFUNDED",
+                              f"{aid}: {ccy} {fmt_money(need)} due {due} for settlement {key} cannot be funded ({e.message}); it stays pending and is retried",
+                              dict(e.details, account_id=aid, ref_type="settlement", ref_id=key, auto_resolve=1))
+            failed = bool(track and past_due and coll.mark_failed(ctx, key, "UNFUNDED", f"{coll.UNFUNDED_LABEL} ({due}): {e.message}"))
+            return {"status": "SKIPPED", "code": "SETTLEMENT_UNFUNDED", "surfaced": True, "details": e.details, "failed": failed or fail_state == "FAILED",
+                    "note": f"SETTLEMENT_UNFUNDED: {ccy} {fmt_money(need)} due {due} could not be funded (own {fmt_money(int(e.details.get('own_available_c', 0)))},"
+                            f" Treasury {fmt_money(int(e.details.get('treasury_available_c', 0)))}); retried"
+                            + ("; marked failed (its settlement date has passed)" if (failed or fail_state == "FAILED") else "")}
+        resolved = bool(track and fail_state == "FAILED" and coll.mark_resolved(ctx, key))
+        return {"status": "DONE", "note": f"{res['what']} (due {due})" + (f", dated {asof} (as-of)" if asof else "") + ("; resolved after the fail" if resolved else ""),
+                "entry_id": res["entry_id"], "amount_c": amt, "currency": ccy, "posted": True, "funding": res["funding"], "business_date": asof,
+                "resolved": resolved}
 
 
 # ---- ACCRUE_DAILY ------------------------------------------------------------------------------------------------------------------
@@ -592,7 +699,8 @@ class AccrueDaily(Job):
                     f" (financing balance at the close of {d}), night of {d} (ACCRUAL, RATE_LAG)")
             hook = getattr(prime, "accrual_lines_pb", None)
         else:
-            base = max(0, balance_at_close(ctx.conn, aid, "1010", "USD", night))
+            # D9 / C21: no credit interest on the counterparty's collateral (restricted as of that night, when collateral is bound)
+            base = max(0, balance_at_close(ctx.conn, aid, "1010", "USD", night) - restricted_at_close(services, ctx.conn, aid, "USD", night))
             spread = Decimal(str(sched.get("credit_interest_spread") if sched.get("credit_interest_spread") is not None else tables.RATES["pb_credit"]["spread"] * -1))
             rate = qprice(max(Decimal(0), Decimal(sofr) / Decimal(100) - spread))
             idem, dr_gl, cr_gl, inst = f"accr:pbcredit:{aid}:{d}", "1230", "4300", CASH_INSTRUMENT
@@ -846,17 +954,21 @@ class SweepOut(Job):
             if fx is None:
                 return {"status": "SKIPPED", "quiet": True, "note": f"no USD rate for {ccy} in the mark snapshot: the buffer cannot be converted, nothing swept", "posted": False}
             buffer_c = to_c(from_c(buffer_c) / fx[0])
-        excess = settled - payables - reserved - maint - buffer_c
-        formula = {"settled_c": settled, "payables_c": payables, "reserved_c": reserved, "futures_maintenance_shortfall_c": maint, "buffer_c": buffer_c, "excess_c": excess,
-                   "text": "excess = settled - payables pending - reserved - futures maintenance shortfall - buffer (SWEEP)"}
+        adj_fn = getattr(_acc, "adjustments_c", None)          # C9b: restricted collateral received (D9) and the like stay in the account
+        adjusted = int(adj_fn(conn, aid, ccy, ctx.marks, getattr(services, "instruments", None)) or 0) if callable(adj_fn) else 0
+        excess = settled - adjusted - payables - reserved - maint - buffer_c
+        formula = {"settled_c": settled, "adjustments_c": adjusted, "payables_c": payables, "reserved_c": reserved, "futures_maintenance_shortfall_c": maint,
+                   "buffer_c": buffer_c, "excess_c": excess,
+                   "text": "excess = settled - restricted (collateral received) - payables pending - reserved - futures maintenance shortfall - buffer (SWEEP)"}
         if excess <= 0:
             return {"status": "SKIPPED", "quiet": True, "note": f"nothing idle: {fmt_money(settled)} - {fmt_money(payables)} - {fmt_money(reserved)} - {fmt_money(maint)}"
-                                                                 f" - {fmt_money(buffer_c)} = {fmt_money(excess)} {ccy}", "formula": formula, "posted": False}
+                                                                 f" - {fmt_money(buffer_c)}" + (f" - restricted {fmt_money(adjusted)}" if adjusted else "")
+                                                                 + f" = {fmt_money(excess)} {ccy}", "formula": formula, "posted": False}
         tid = _treasury.sweep_out(ctx, aid, ccy, excess, f"idle {ccy} cash above the account's needs on {d}")
         return {"status": "DONE", "note": f"swept {ccy} {fmt_money(excess)} to Treasury ({tid})", "transfer_id": tid, "amount_c": excess, "currency": ccy, "formula": formula,
                 "posted": True}
 
 
 __all__ = ["Job", "SettleDue", "AccrueDaily", "PayMonthly", "PbMonthlyMin", "SweepOut", "accrue_segment", "module", "job_row", "write_job_done", "open_accounts",
-           "balance_at_close", "sofr_for_night", "last_trading_day", "trading_days", "nights_between", "nights_from_state", "accrual_state_row", "monthly_key_due",
+           "balance_at_close", "restricted_at_close", "settlement_booking", "with_asof", "post_settlement", "sofr_for_night", "last_trading_day", "trading_days", "nights_between", "nights_from_state", "accrual_state_row", "monthly_key_due",
            "ACTOR", "SOURCE", "CASH_INSTRUMENT", "PB_MIN_INSTRUMENT", "RATE_LAG_MAX_DAYS", "ACCRUAL_PRODUCT"]

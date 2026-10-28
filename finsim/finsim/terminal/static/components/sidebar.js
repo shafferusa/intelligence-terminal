@@ -1,4 +1,4 @@
-/* Sidebar (TERMINAL_DESIGN.md s17.1 / s17.2, B16 order; WP-12).  Below the book switcher: Daily News -> Portfolio ->
+/* Sidebar (TERMINAL_DESIGN.md s17.1 / s17.2, B16 order; WP-12).  Below the book switcher: Dashboard -> Portfolio ->
  * Treasury (with its NAV and cash) -> the selected book's accounts: US Exchange -> Debt Instruments -> Credit Instruments
  * -> Foreign Markets & FX -> Private Markets (when the lifetime has it; otherwise a dimmed row with ONE short reason, the
  * full sentence on hover) -> each opened prime broker -> "+ Open prime broker account" (driven by the server's
@@ -11,7 +11,9 @@
  * exactly that at the fill -- and UNFUNDED / overdrawn amounts are red (T.fmt.liquidity; the definition is the hover
  * text).  Only the selected book's accounts are listed, even while an answer for the previous book is still in flight.
  * Account 1 .. 9 (Settings > Keyboard) follow this order (T.sidebarAccounts); each row shows the key in force of its page or
- * account (keys.js registry: F1 US Exchange ... F12 Daily News by default; nothing when the action has no key).
+ * account (keys.js registry: F1 US Exchange ... F12 Dashboard by default; nothing when the action has no key).
+ * FINSIM1_PLAN 15.7 item 2 (1.0.5): the Dashboard (the landing page) is the first row; the rest of this order stays until the
+ * directive's navigation lands (P1 task 3).  Settings lights up on an archived lifetime's pages (#/h/...) only.
  * The onboarding modal (s13.10; SHELL-16 / PO-15) lists every dealer of /api/state.prime_brokers with its seed fee schedule
  * side by side (modelled assumptions, editable after opening in Settings > Prime brokers), marks the dealers already
  * open, posts /api/books/{code}/onboard {broker} and says 'already open' when the server answers created: false.
@@ -78,7 +80,7 @@
     T.clear(nav);
     var book = T.book.current(); var e = (book && book.eligibility) || {};
     var accts = tradingAccounts();
-    nav.appendChild(item('#/news', 'Daily News', { key: keyOf('page.news') }));
+    nav.appendChild(item('#/dashboard', 'Dashboard', { key: keyOf('page.dashboard') }));
     nav.appendChild(item('#/portfolio', 'Portfolio', { key: keyOf('page.portfolio'), prefix: '#/portfolio' }));
     nav.appendChild(item('#/treasury', 'Treasury', { key: keyOf('page.treasury') }));
     var tre = treasuryRow();
@@ -123,7 +125,7 @@
     nav.appendChild(item('#/watchlists', 'Watchlists', { key: keyOf('page.watchlists') }));
     nav.appendChild(T.h('div', { class: 'nav-section' }, 'Terminal'));
     /* History pages are reached from Settings > Lifetimes: Settings stays lit there (SHELL-23) */
-    nav.appendChild(item('#/settings', 'Settings', { key: keyOf('page.settings'), isActive: function (r) { return r.page === 'settings' || r.page === 'history'; } }));
+    nav.appendChild(item('#/settings', 'Settings', { key: keyOf('page.settings'), isActive: function (r) { return r.page === 'settings' || (r.page === 'history' && !r.hub); } }));
   }
   /* PO-15: the dealers (C10: [{broker, name, schedule, agreements}]); the static names when the server sends none */
   function dealers() {

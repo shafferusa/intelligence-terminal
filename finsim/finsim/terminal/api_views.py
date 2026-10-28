@@ -41,7 +41,7 @@ from .api import (ApiError, NotBuilt, NotFound, PACKAGES, Request, encode, mark_
 from .clock import accounting_day, ny_of
 from .instruments import EQUITY_KINDS
 from .ledger import CHART
-from .news import attention_lifetime
+from .attention import attention_lifetime
 from .quotes.rates import UNIT_FRACTION, fraction_to_pct, treasury_cash_rate
 from .units import fmt_money, from_c, fx_c, to_c
 
@@ -308,6 +308,10 @@ def order_full(rt, conn, order_id: str, with_events: bool = False) -> dict:
         raise NotFound(f"order {order_id} does not exist")
     d = _orders.order_view(conn, order_id)
     d["symbol"] = _symbol(rt, d.get("instrument_id"))
+    with_source(conn, "order", d)                              # 15.7 item 7: the as-of badge and label of a booked-as-of order
+    for f in d.get("fills") or []:
+        if isinstance(f, dict):
+            with_source(conn, "fill", f)
     if with_events:
         d["events"] = [dict(e) for e in conn.execute("SELECT ts, from_status, to_status, note FROM order_events WHERE order_id=? ORDER BY id", (order_id,)).fetchall()]
         fids = [f["fill_id"] for f in d.get("fills", [])]
@@ -318,8 +322,76 @@ def order_full(rt, conn, order_id: str, with_events: bool = False) -> dict:
     return d
 
 
+SIMULATED_SOURCE = {"source": "simulated", "label": "Simulated fill", "asof": False, "entered_ts": None, "batch_id": None, "booking": None, "badge": None}
+
+
+def source_of(conn, kind: str, row, cache: Optional[dict] = None) -> dict:
+    """15.7 item 7: ``{source, label, asof, entered_ts, batch_id, booking, badge}`` of an order / fill / OTC contract row from P2's
+    ``blotters.source_label`` (the D1 as-of labels, "Historical model (not an independent execution)", "System (...)", "Simulated fill"),
+    imported lazily; without that module (or on its failure) a row reads "Simulated fill" with its stored ``booking``."""
+    try:
+        from . import blotters as _bl                       # optional module: imported where needed, never at module level (15.2 step 3)
+        fn = getattr(_bl, "source_label", None)
+        if callable(fn):
+            return dict(fn(conn, kind, row, cache))
+    except Exception:   # noqa: BLE001 - the plain label below; a page never breaks on the label
+        pass
+    out = dict(SIMULATED_SOURCE)
+    try:
+        out["booking"] = row["booking"]
+    except (KeyError, IndexError, TypeError):
+        pass
+    return out
+
+
+def source_fields(src: dict) -> dict:
+    """The flat fields P2's executions rows carry (``blotters``): ``source, source_label, asof, badge, batch_id`` (+ ``booking``)."""
+    return {"source": src.get("source"), "source_label": src.get("label"), "asof": bool(src.get("asof")), "badge": src.get("badge"),
+            "batch_id": src.get("batch_id"), "booking": src.get("booking")}
+
+
+def with_source(conn, kind: str, d: dict, cache: Optional[dict] = None) -> dict:
+    """``d`` with the source fields of P2's executions rows - ``booking``, ``source`` / ``source_label`` (trader wording: "Simulated fill",
+    or the D1 as-of label), ``asof``, ``badge`` (AS-OF / MODEL / None), ``batch_id`` and the ``entered_ts`` of an as-of row - what
+    orders.js / positions.js / activity.js show as the ``.badge-asof`` badge (15.7 item 7)."""
+    src = source_of(conn, kind, d, cache)
+    booking = d.get("booking")
+    d.update(source_fields(src))
+    d["booking"] = booking or src.get("booking")
+    if d.get("entered_ts") is None:
+        d["entered_ts"] = src.get("entered_ts")
+    return d
+
+
+def lender_text(name) -> str:
+    """C16 / 15.7 item 8: a stored borrow lender as shown - ``lending.lender_label`` ("street lender (modelled)" -> "street lender (assumed
+    terms)"); the stored rows are never rewritten."""
+    try:
+        from . import lending as _lending
+        fn = getattr(_lending, "lender_label", None)
+        if callable(fn):
+            return fn(name)
+    except Exception:   # noqa: BLE001 - the same rule, here
+        pass
+    s = "" if name is None else str(name)
+    for old in ("modelled)", "modeled)"):
+        if s.endswith(old):
+            return s[: -len(old)] + "assumed terms)"
+    return s
+
+
+def borrows_shown(rows: List[dict]) -> List[dict]:
+    """Borrow rows with the lender worded for the page (``lender_text``) and the stored text kept in ``lender_stored``."""
+    for r in rows:
+        if "lender" in r:
+            r["lender_stored"] = r.get("lender")
+            r["lender"] = lender_text(r.get("lender"))
+    return rows
+
+
 def fill_rows(rt, conn, where: str, params: list, now: int, limit: int = 500) -> List[dict]:
     out = []
+    cache: dict = {}
     for r in conn.execute(f"SELECT * FROM fills WHERE {where} ORDER BY ts DESC, fill_id DESC LIMIT ?", params + [int(limit)]).fetchall():
         d = dict(r)
         raw = d.pop("quote_json", None)
@@ -332,7 +404,7 @@ def fill_rows(rt, conn, where: str, params: list, now: int, limit: int = 500) ->
             qd["age_s"] = None if qt is None else max(0, now - int(qt))
         d["quote"] = qd or None
         d["symbol"] = _symbol(rt, d.get("instrument_id"))
-        out.append(d)
+        out.append(with_source(conn, "fill", d, cache))
     return out
 
 
@@ -471,7 +543,7 @@ def _ref_party(rt, conn, ref_type: Optional[str], ref_id: Optional[str]) -> Opti
             return {"party": r["lender"], "role": "lender"} if r else None
         if ref_type == "borrow":
             r = conn.execute("SELECT lender FROM borrows WHERE borrow_id=?", (ref_id,)).fetchone()
-            return {"party": r["lender"], "role": "lender"} if r else None
+            return {"party": lender_text(r["lender"]), "role": "lender"} if r else None
         if ref_type == "repo":
             r = conn.execute("SELECT * FROM repos WHERE repo_id=?", (ref_id,)).fetchone()
             cid = dict(r).get("counterparty") if r else None
@@ -621,6 +693,11 @@ def pnl_out(view) -> dict:
             b["label"], b["note"] = "inception (no snapshot yet)", f"no daily snapshot before this {view.period} period yet: measured from the lifetime's start (never invented)"
     else:
         b["label"], b["note"] = f"snapshot {b.get('snap_date')}", "the last daily snapshot before the period"
+        rs = b.get("restated")
+        if isinstance(rs, dict) and rs.get("text"):
+            # C9d: the baseline read from a restated version says so (the original stays stored beside it)
+            b["label"] = f"snapshot {b.get('snap_date')} ({rs['text']})"
+            b["note"] = f"the last daily snapshot before the period, {rs['text']}; the original snapshot is kept unchanged"
     d["baseline"] = b
     return d
 
@@ -698,11 +775,13 @@ def by_class(positions, nav_c: Optional[int] = None) -> List[dict]:
 
 
 def portfolio_footer(rt, positions, snap) -> dict:
-    """BM-05 footer: gross long / gross short = the market value of the long / short rows (base USD; a short as a positive
-    amount), net = long - short; futures carry no market value (their P&L is open trade equity), so their exposure is
-    beside it as notional (contracts x multiplier x mark, converted at the snapshot's FX).  Unpriced rows are counted, not
-    valued."""
-    long_c = short_c = fl_c = fs_c = 0
+    """BM-05 footer: gross long / gross short = the market value of the long / short SECURITIES and option rows (base USD; a short
+    as a positive amount) - the NAV block's own ``mv_long`` / ``mv_short`` definition (POSTCLOSE-07: the two figures tie); net =
+    long - short.  OTC contracts and desk FX forwards are beside it at their market value (``otc_mv_positive`` /
+    ``otc_mv_negative``, the contract value NAV carries, never a notional); futures carry no market value (their P&L is open
+    trade equity), so their exposure is beside it as notional (contracts x multiplier x mark, converted at the snapshot's FX).
+    Unpriced rows are counted, not valued."""
+    long_c = short_c = fl_c = fs_c = otc_pos = otc_neg = 0
     unpriced = 0
     fx_missing: List[str] = []
     for p in positions:
@@ -723,13 +802,20 @@ def portfolio_footer(rt, positions, snap) -> dict:
         if p.mv_base_c is None:
             unpriced += 1
             continue
+        if p.kind in ("SWAP", "FX_FORWARD"):
+            if p.mv_base_c >= 0:
+                otc_pos += int(p.mv_base_c)
+            else:
+                otc_neg += -int(p.mv_base_c)
+            continue
         if p.mv_base_c >= 0:
             long_c += int(p.mv_base_c)
         else:
             short_c += -int(p.mv_base_c)
     return {"gross_long_c": long_c, "gross_short_c": short_c, "net_c": long_c - short_c, "futures_notional_long_c": fl_c, "futures_notional_short_c": fs_c,
-            "unpriced": unpriced, "fx_missing": sorted(set(fx_missing)), "count": len(positions),
-            "note": "gross long / short = market value of the long / short rows in USD; futures at notional (contracts x multiplier x mark), they carry no market value"}
+            "otc_mv_positive_c": otc_pos, "otc_mv_negative_c": otc_neg, "unpriced": unpriced, "fx_missing": sorted(set(fx_missing)), "count": len(positions),
+            "note": ("gross long / short = market value of the long / short securities and option rows in USD (the NAV block's long / short market value);"
+                     " OTC contracts and FX forwards at their market value beside it; futures at notional (contracts x multiplier x mark), they carry no market value")}
 
 
 def portfolio_view(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"), with_day: bool = True) -> dict:
@@ -903,6 +989,8 @@ def _detail_of(pl: dict) -> dict:
             out[k[:-2]] = fmt_money(v)
         elif isinstance(v, (dict, list)):
             out[k] = json.dumps(v, default=str)[:300]
+        elif k == "lender":
+            out[k] = lender_text(v)                       # C16: "street lender (assumed terms)"
         else:
             out[k] = v
     return out
@@ -1037,16 +1125,20 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
                          "system": system, "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"], "lifetime_id": lid,
                          "summary": code_words(r["type"]) + (f" - {ref_txt}" if ref_txt else "") + (": " + ", ".join(bits) if bits else ""),
                          "ref_type": r["ref_type"], "ref_id": r["ref_id"], "id": int(r["id"]), "detail": _detail_of(pl)})
-        # ---- fills
+        # ---- fills (15.7 item 7: each with its booking and source label - "Simulated fill", or the as-of label with the AS-OF badge)
         wf, pf = acct_clause("account_id")
+        src_cache: dict = {}
         for r in conn.execute(f"SELECT * FROM fills WHERE {wf} AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, fill_id DESC LIMIT ?", pf + [since, since, lim]).fetchall():
             sym = _symbol(rt, r["instrument_id"])
+            src = source_of(conn, "fill", r, src_cache)
             rows.append({"ts": int(r["ts"]), "type": "fill", "category": "orders", "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"],
                          "summary": f"{r['fill_id']} {r['side']} {int(r['qty']):,} {sym} @ {r['price']} ({r['price_basis']}, {r['origin']})",
                          "ref_type": "fill", "ref_id": r["fill_id"], "entry_id": r["entry_id"], "order_id": r["order_id"],
+                         **source_fields(src), "entered_ts": src.get("entered_ts"),
                          "detail": {"fill": r["fill_id"], "order": r["order_id"], "side": r["side"], "quantity": f"{int(r['qty']):,}", "instrument": sym,
                                     "price": r["price"], "price basis": r["price_basis"], "origin": r["origin"], "gross": f"{r['currency']} {fmt_money(int(r['gross_c']))}",
-                                    "fee": f"{r['currency']} {fmt_money(int(r['fee_c'] or 0))}", "trade date": r["trade_date"], "settles": r["settle_date"]}})
+                                    "fee": f"{r['currency']} {fmt_money(int(r['fee_c'] or 0))}", "trade date": r["trade_date"], "settles": r["settle_date"],
+                                    "source": src.get("label")}})
         # ---- job results: system rows (no book owns them)
         if want_system and not account:
             for r in conn.execute("SELECT job, key, run_ts, status, note FROM jobs_done WHERE (? IS NULL OR run_ts >= ?) ORDER BY run_ts DESC LIMIT ?", (since, since, lim)).fetchall():
@@ -1090,7 +1182,7 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
 
 
 def activity_extras(rt, tokens: set, *, account: Optional[str] = None, lifetime_ids: Optional[List[str]] = None) -> dict:
-    """SHELL-27: the news tiles 'working orders' / 'pending settlements' open #/activity?type=orders|settlements; those views
+    """SHELL-27: the Dashboard's attention tiles 'working orders' / 'pending settlements' open #/activity?type=orders|settlements; those views
     also list what is open NOW in the book (or the account): ``working_orders`` (WORKING / PARTIAL / WAITING_PARENT orders)
     and ``pending_settlements`` (the ladder), so the tile's count can be read row by row."""
     cats, _raw, _sys = _activity_wants(tokens)
@@ -1246,6 +1338,12 @@ def register_routes(r) -> None:
                                                     " ORDER BY ts DESC", (aid, aid, today)).fetchall()]
             attention = [dict(x) for x in conn.execute("SELECT * FROM attention WHERE resolved_ts IS NULL AND account_id=? ORDER BY ts DESC", (aid,)).fetchall()]
             npos = int(conn.execute("SELECT COUNT(*) FROM v_positions WHERE account_id=? AND qty != 0", (aid,)).fetchone()[0])
+            # POSTCLOSE-04: an open OTC contract and an open private loan are positions too (the PB header said 0 while holding 5 contracts)
+            for sql in ("SELECT COUNT(*) FROM otc_contracts WHERE account_id=? AND status='OPEN'", "SELECT COUNT(*) FROM private_loans WHERE account_id=? AND status='OPEN'"):
+                try:
+                    npos += int(conn.execute(sql, (aid,)).fetchone()[0])
+                except Exception:   # noqa: BLE001 - a table of a module that is not built: nothing of that kind is held
+                    pass
         return {"account": row, "cash": cash, "buying_power": bp, "nav": nav_out(nav), "pnl": pnl_block(rt, aid, snap), "positions_count": npos,
                 "working_orders": row["working_orders"], "pending_settlements": ob.settlements, "pending_in": money_map(ob.pending_in), "pending_out": money_map(ob.pending_out),
                 "next_due": ob.next_due, "borrows": ob.borrows, "loans": ob.loans, "margin": ob.margin, "collateral": {"held_at_lender_c": ob.collateral_c}, "otc": ob.otc,
@@ -1270,7 +1368,7 @@ def register_routes(r) -> None:
             entries = [dict(e) for e in conn.execute("SELECT DISTINCT e.entry_id, e.ts, e.kind, e.memo, e.ref_type, e.ref_id, e.business_date FROM journal_entries e"
                                                      " JOIN journal_lines l ON l.entry_id=e.entry_id WHERE l.account_id=? AND l.instrument_id=? ORDER BY e.entry_id DESC LIMIT 100",
                                                      (aid, iid)).fetchall()]
-            borrows = [dict(b) for b in conn.execute("SELECT * FROM borrows WHERE account_id=? AND instrument_id=? ORDER BY opened_ts DESC", (aid, iid)).fetchall()]
+            borrows = borrows_shown([dict(b) for b in conn.execute("SELECT * FROM borrows WHERE account_id=? AND instrument_id=? ORDER BY opened_ts DESC", (aid, iid)).fetchall()])
             marks = [dict(m) for m in conn.execute("SELECT * FROM marks WHERE instrument_id=? ORDER BY mark_date DESC, kind LIMIT 60", (iid,)).fetchall()]
             # WP-18: the dividend rows of the name with their state and the DIVIDEND convention (ex-date income / in lieu, pay date)
             div = getattr(rt, "dividends", None)
@@ -1679,7 +1777,7 @@ def cash_financing_view(rt, scope: str, snap) -> dict:
         aids = [a["account_id"] for a in accounts]
         wa, pa = _in("account_id", aids) if aids else ("1=0", [])
         loans = _rows_or_none(conn, f"SELECT * FROM loans WHERE status='OPEN' AND {wa} ORDER BY opened_date, loan_id", pa)
-        borrows = _rows_or_none(conn, f"SELECT * FROM borrows WHERE status='OPEN' AND {wa} ORDER BY opened_ts, borrow_id", pa)
+        borrows = borrows_shown(_rows_or_none(conn, f"SELECT * FROM borrows WHERE status='OPEN' AND {wa} ORDER BY opened_ts, borrow_id", pa))
         repos = _rows_or_none(conn, f"SELECT * FROM repos WHERE status='OPEN' AND {wa} ORDER BY opened_date, repo_id", pa)
         lent = _rows_or_none(conn, f"SELECT * FROM sec_loans WHERE status='OPEN' AND {wa} ORDER BY opened_ts, loan_id", pa)
         w1, p1 = _in("t.from_account", aids) if aids else ("1=0", [])

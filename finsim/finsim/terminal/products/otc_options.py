@@ -38,8 +38,9 @@ Conventions stated here
   against you.  The difference from the mid model value is the cost of dealing - the day-one P&L, shown before booking.
 - PREMIUM: an option's premium = units (or the base notional) x the dealt price per unit, paid (bought) or received (sold) on
   T+1 (equity) / T+2 (FX: the pair's spot date) through a settlement row (2100 payable / 1200 receivable) that SETTLE_DUE pays with
-  the usual Treasury sweep; at the trade it is booked as an OTC result (4450: ``Dr 4450 / Cr 2100`` bought, ``Dr 1200 / Cr 4450``
-  sold), and the contract's value is the NAV overlay (mid model value; together = the cost of dealing).  Forwards have no premium.
+  the usual Treasury sweep; at the trade it is booked as the contract's COST BASIS (FINSIM1 C11 / PORTFOLIO-08: ``Dr 1335 / Cr 2100``
+  bought, ``Dr 1200 / Cr 2345`` sold), released into the swap result 4450 at expiry or termination (``swaps.close_contract``), and
+  the contract's value is its market value (mid model value; MV - cost = the cost of dealing on day one).  Forwards have no premium.
 - IM (C22): a SOLD option posts ``option_im_pct`` x the underlying notional in USD; a BOUGHT option none (its premium is the most it
   can lose); a forward ``forward_im_pct`` x its USD notional either side.  ``Dr 1330 / Cr 1010`` after ``swaps.fund_commitment``
   (PO-07: measured against available cash, then one Treasury sweep, then PB financing, else 409).  A deal whose IM plus premium
@@ -1187,11 +1188,13 @@ def book(ctx: TxContext, payload: dict) -> dict:
         memo = (f"OTC option premium {cid}: {side_text}; premium {rule} = USD {fmt_money(prem)} {'payable' if sign > 0 else 'receivable'}"
                 f" {deal['premium_date'].isoformat()} (dealt at {deal['deal_sigma'] * 100:.2f} % vol, mid {deal['sigma'] * 100:.2f} %; the cost of dealing"
                 f" {fmt_money(deal['cost_c'])} is the day-one result) (OTC_OPTION)")
-        if sign > 0:
-            lines = [dr(aid, "4450", "USD", prem, instrument_id=cid, memo="OTC option premium paid"), cr(aid, "2100", "USD", prem, memo=f"premium payable {deal['premium_date']}")]
+        if sign > 0:                             # C11: the premium is the contract's cost basis (1335 paid / 2345 received), released at expiry
+            lines = [dr(aid, "1335", "USD", prem, instrument_id=cid, memo="OTC option premium paid (contract cost)"),
+                     cr(aid, "2100", "USD", prem, memo=f"premium payable {deal['premium_date']}")]
             settle_amt, gl = -prem, "2100"
         else:
-            lines = [dr(aid, "1200", "USD", prem, memo=f"premium receivable {deal['premium_date']}"), cr(aid, "4450", "USD", prem, instrument_id=cid, memo="OTC option premium received")]
+            lines = [dr(aid, "1200", "USD", prem, memo=f"premium receivable {deal['premium_date']}"),
+                     cr(aid, "2345", "USD", prem, instrument_id=cid, memo="OTC option premium received (contract cost)")]
             settle_amt, gl = prem, "1200"
         entries.append(ctx.post(Entry("OTC_PREMIUM", memo, lines, f"otc:{cid}:premium", ref_type="otc", ref_id=cid)))
         settle_id = next_id(conn, "settlement")
@@ -1496,7 +1499,7 @@ def terminate(ctx: TxContext, payload: dict) -> dict:
     entries = [e for e in (closed["entry_id"], closed["im_entry_id"]) if e is not None]
     return {"contract": view, "contract_id": cid, "termination_value_c": value_c, "mid_value_c": mid_c, "result_c": closed["result_c"], "cash_c": closed["cash_c"],
             "entries": entries, "im_released_c": closed["im_released_c"], "accrued_receive_c": 0, "accrued_pay_c": 0, "inputs": inputs, "rule": rule,
-            "funding": closed.get("funding")}
+            "funding": closed.get("funding"), "cost_released_c": closed.get("cost_released_c", 0), "realised_c": closed.get("realised_c")}
 
 
 def _require_observed(services, kind: str, inputs: dict, terms: dict) -> None:

@@ -31,15 +31,17 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   (RATE_LAG: the latest print ≤ the night, at most 10 days old, never defaulted) + spread for the receiver and SOFR − spread
   for the payer: the dealer's spread goes against the client on both sides, as the IRS half-width does (DEVIATION from
   §13.12 "reversed for the payer", which would pay a short synthetic more than the PB charges a long one).  Owed by us →
-  ``Dr 4450 / Cr 2340``; owed to us → ``Dr 1225 / Cr 4450``.  A night of a period whose opening reset has not run yet raises
-  RESET_PENDING (the night accrues on that reset's notional, so it waits).
+  ``Dr 4451 / Cr 2340``; owed to us → ``Dr 1225 / Cr 4451`` (4451 = the swap financing leg, a financing GL, FINSIM1 C11).  A
+  night of a period whose opening reset has not run yet raises RESET_PENDING (the night accrues on that reset's notional, so it
+  waits).  The night of an as-of contract before its entered day posts with business date night + 1 (D7).
 - TRS DIVIDENDS (DIVIDEND): every ``dividends`` row of the underlying with an ex-date in (start, the night or the reset date]
   not yet accrued posts once (idem ``trsdiv:{contract}:{ex_date}``, business date the ex-date): ``to_c(units × amount)``;
-  receiver ``Dr 1225 / Cr 4450``, payer ``Dr 4450 / Cr 2340``.  A row that only appears after its period's reset is accrued
+  receiver ``Dr 1225 / Cr 4452``, payer ``Dr 4452 / Cr 2340`` (4452 = dividend equivalents, an income GL, FINSIM1 C11).  A row that only appears after its period's reset is accrued
   when it is seen and paid at the next reset (disclosed).  No row → nothing; a dividend is never invented.
 - TRS_RESET (16:25 ET on each reset date, key ``{contract}:{date}``, idem ``trsreset:{contract}:{date}``): needs the
-  underlying's CLOSE of that date — the recorded ``marks`` row (kind CLOSE), else the observed print stamped on that date
-  within [session close − 60 s, close + 15 min] — else SKIPPED CLOSE_PENDING (WARN, retried); needs the financing accrued
+  underlying's OFFICIAL CLOSE of that date — the recorded ``marks`` row (kind CLOSE), else the observed print stamped on that
+  date within [session close, close + 15 min], never a print before the close (POSTCLOSE-01: a 15:59:59 print is not the
+  close) — else SKIPPED CLOSE_PENDING (WARN, retried); needs the financing accrued
   through the night before (else SKIPPED ACCRUALS_PENDING).  Then ONE entry: the return leg ``sign × to_c(units × (S_close −
   reset_px))`` ``Dr 1010 / Cr 4450`` or reverse (STM: less the VM reference already settled daily), the accrued 1225 received
   ``Dr 1010 / Cr 1225``, the accrued 2340 paid ``Dr 2340 / Cr 1010``, the CTM VM balance unwound (``Dr 2330 / Cr 1010`` or
@@ -111,6 +113,11 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   that posted no entry against the VMs.
 - READS (ORC-6): every read goes through the caller's connection or ``marks.shared_reader``; the marks read a snapshot of
   the one underlying / pair they need.
+- AS-OF (FINSIM1 C10): ``book_as_of`` books a TRS the owner dealt on a past date at his reset price exactly (``terms.reset_px``,
+  D10); start = the value date; the underlying's recorded close of the trade date and SOFR of that date are required valuation
+  inputs (409 ASOF_INPUT_MISSING otherwise; the day-0 VM ``(reset_px - close) x units`` with the side's sign is posted by
+  ``swaps.h_book_as_of`` on the value date).  Every payment to the counterparty (a reset, an XCCY payment) is funded with CSA
+  netting (C21) under ``ctx.asof_date`` = its own date.
 - JOBS: the handlers write their own ``jobs_done`` row (DONE, or SKIPPED with a note — quiet for "not yet"); ``reset_keys`` /
   ``event_keys`` list every key that is not DONE.  Money is integer cents / Decimal end to end; there are no floats.
 """
@@ -145,7 +152,7 @@ TRS_IM_PCT, XCCY_IM_PCT = Decimal("0.10"), Decimal("0.02")
 RESET_MONTHS = (1, 3, 6, 12)
 XCCY_PERIOD_MONTHS = 6
 XCCY_BASES = ("30/360", "ACT/360")
-CLOSE_BEFORE_S, CLOSE_AFTER_S = 60, 900
+CLOSE_BEFORE_S, CLOSE_AFTER_S = 0, 900      # POSTCLOSE-01: the official close is a print at or after the session close, never before it
 SESSION_LOOKBACK_DAYS = 10            # the last trading day on or before a VM date is looked for this far back
 PIN_TTL_S = 300                       # PO-08: a previewed underlying / FX pair is fetched at ORDER priority for 5 minutes
 EVENT_ORDER = {"START": 0, "PAY": 1, "FX_RESET": 2, "END": 3}
@@ -476,20 +483,24 @@ def _vm_reference(conn: sqlite3.Connection, cid: str) -> int:
     return swaps._reference_mark_c(conn, cid)
 
 
-def _fund(ctx: TxContext, services, aid: str, ccy: str, need_c: int, link_type: str, link_id: str, overdraft: bool, commit: bool = False) -> dict:
+def _fund(ctx: TxContext, services, aid: str, ccy: str, need_c: int, link_type: str, link_id: str, overdraft: bool, commit: bool = False,
+          csa: Optional[bool] = None) -> dict:
     """Make ``need_c`` of ``ccy`` settled in ``aid`` before a payment: USD through ``execution.fund`` (own cash, one Treasury
     sweep, PB financing, then 409 or the overdraft rule), a foreign currency through ``fx.fund_ccy`` (own cash, Treasury's
     cash in that currency, else 409 INSUFFICIENT_FUNDS_CCY with the Convert hint; never automatic FX).  ``overdraft``
     (lifecycle obligations, §11.6): an unfundable foreign payment is still posted under an open ERROR FUNDING_SHORTFALL.
     ``commit`` (the owner's IM, start exchange and termination payments, PO-07): USD is measured against the account's
-    available cash (``swaps.fund_commitment``), never against cash a pending settlement already needs."""
+    available cash (``swaps.fund_commitment``), never against cash a pending settlement already needs.  ``csa`` (C21; default: every
+    lifecycle payment, not a commitment): a payment to the CSA counterparty may use the collateral it posted."""
     need_c = int(need_c)
     if need_c <= 0:
         return {"need_c": 0, "funded": True, "source": "none"}
+    csa = (not commit) if csa is None else bool(csa)
     if ccy == "USD" and commit:
-        return swaps.fund_commitment(ctx, services, aid, "USD", need_c, link_type, link_id).to_dict()
+        return swaps.fund_commitment(ctx, services, aid, "USD", need_c, link_type, link_id, csa_netting=csa).to_dict()
     if ccy == "USD":
-        return execution.fund(ctx, aid, "USD", need_c, link_type, link_id, None, immediate=True, overdraft=overdraft, services=services).to_dict()
+        return execution.fund(ctx, aid, "USD", need_c, link_type, link_id, None, immediate=True, overdraft=overdraft, services=services,
+                              **swaps._csa_kw(csa)).to_dict()
     try:
         return fxmod.fund_ccy(ctx, aid, ccy, need_c, (link_type, link_id), services=services).to_dict()
     except ConflictError as e:
@@ -524,7 +535,8 @@ def _jobs(conn: sqlite3.Connection, job: str, cid: str) -> Dict[str, sqlite3.Row
 
 
 def _close_from_view(mv, d: date, close_ts: int, label: str) -> Tuple[Optional[Decimal], dict]:
-    """The observed print as the CLOSE of ``d``: stamped on ``d`` within [close − 60 s, close + 15 min], not stale."""
+    """The observed print as the official CLOSE of ``d``: stamped on ``d`` within [close, close + 15 min] (never a print before the
+    session close: POSTCLOSE-01), not stale."""
     if mv is None or mv.mark is None:
         return None, {"note": f"no observed {label} print"}
     qt = mv.quote_time
@@ -613,8 +625,10 @@ def _vm_close(services, label: str, group: str, d: date, close_fn, view) -> Tupl
     if view is not None and getattr(view, "mark", None) is not None and qt is not None and ny_of(int(qt)).date() > r and not _is_reference_rate(view):
         return None, {"vm_outcome": "CAUGHT_UP", "close_date": r.isoformat(),
                       "note": f"no {label} close of {r.isoformat()} was recorded or observed and the price available is of a later session ({ny_str(int(qt))})"}
-    return None, {"vm_outcome": "CLOSE_PENDING", "close_date": r.isoformat(), "quiet": r != d,
-                  "note": f"no {label} close of {r.isoformat()} recorded or observed yet ({info.get('note') or 'no print at the close'})"}
+    # POSTCLOSE-03 (the same root cause as the CDX proxy): quiet until two hours after the session close - the official close is normally
+    # recorded by then; the same tick's second pass never warns about a close that is minutes late
+    return None, {"vm_outcome": "CLOSE_PENDING", "close_date": r.isoformat(), "quiet": r != d, "quiet_until": int(_close_ts) + 7200,
+                  "note": f"no {label} official close of {r.isoformat()} recorded or observed yet ({info.get('note') or 'no print at the close'})"}
 
 
 # ---- TRS: terms, deal, preview, booking ---------------------------------------------------------------------------------------------
@@ -763,10 +777,71 @@ def _trs_dict(deal: TrsDeal) -> dict:
             "conventions": list(CONVENTIONS)}
 
 
-def _book_trs(ctx: TxContext, services, acct: dict, terms: TrsTerms) -> dict:
+RESET_WORDS = {1: "monthly resets", 3: "quarterly resets", 6: "semi-annual resets", 12: "annual resets"}
+
+
+def _trs_deal_asof(services, conn: sqlite3.Connection, acct: dict, terms: TrsTerms, reset_px: Decimal, a: dict) -> TrsDeal:
+    """C10: the deal of an as-of TRS - the owner's reset price booked exactly (D10), start = the value date (the trade date rolled to a
+    business day), the trade date's recorded close and SOFR print required (409 ASOF_INPUT_MISSING otherwise)."""
+    inst = _trs_underlying(services, conn, terms.underlying_id)
+    td, vd = a["trade_date"], a["value_date"]
+    start = swaps.effective_date(services.cal, td)
+    if start != vd:
+        raise ConflictError("ASOF_TERMS_MISMATCH", f"the value date {vd.isoformat()} is not the swap's start {start.isoformat()} (the trade date rolled to a business"
+                            " day); nothing was written", {"differences": [{"term": "value_date", "payload": vd.isoformat(), "stored": start.isoformat()}]})
+    close, info = close_on(services, conn, None, inst, td)
+    if close is None:
+        raise ConflictError("ASOF_INPUT_MISSING", f"no recorded {inst.instrument_id} close of {td.isoformat()} (the day-0 valuation input of the TRS); nothing was"
+                            " written", {"input": "CLOSE", "instrument_id": inst.instrument_id, "date": td.isoformat(), "note": info.get("note")})
+    try:
+        sofr = sofr_for_night(services, start)
+    except RejectError as e:
+        raise ConflictError("ASOF_INPUT_MISSING", f"no SOFR print on or before {start.isoformat()} (the financing input of the TRS): {e.message}; nothing was written",
+                            {"input": "SOFR", "date": start.isoformat()}) from e
+    notional = to_c(Decimal(terms.units) * reset_px)
+    sched = prime.read_schedule(conn, acct)
+    mult = qprice(Decimal(sched.otc_spread_mult))
+    trs_spread = qprice(Decimal(sched.trs_spread))
+    spread = qprice(trs_spread * mult)
+    periods = swaps.period_schedule(services.cal, start, terms.tenor_months, terms.reset_months)
+    imp = swaps.im_params(services, acct["account_id"])
+    im_pct = Decimal(imp["trs_im_pct"])
+    im = to_c(im_pct * from_c(notional))
+    quote = MarkView(inst.instrument_id, reset_px, "close", "the dealt reset price (as-of booking)", "dealt", a["exec_ts"], a["exec_ts"], "dealt",
+                     {"close": info, "close_px": str(close), "trade_date": td.isoformat()}, False,
+                     f"dealt at {_px_text(reset_px)}; the recorded close of {td.isoformat()} is {_px_text(close)}")
+    return TrsDeal(acct, terms, inst, quote, reset_px, notional, trs_spread, mult, spread, start, periods[-1][1], periods, im, str(sched.swap_margin_mode).upper(), sofr,
+                   im_pct, imp["source"])
+
+
+def book_as_of(ctx: TxContext, payload: dict, a: dict) -> dict:
+    """C10 as-of booking of a TRS (``swaps.h_book_as_of`` ran the gates and set ``ctx.asof_date`` = the value date): ``terms.reset_px``
+    is the owner's dealt initial price, booked exactly; nothing else is taken from the market but the valuation inputs."""
+    services = _services(ctx)
+    kind = prime.require_otc_kind(payload.get("kind"))
+    if kind != "TRS":
+        raise ConflictError("ASOF_INPUT_MISSING", f"an as-of {kind} is not supported (no recorded inputs of its trade date); nothing was written", {"kind": kind})
+    acct = _pb_acct(ctx.conn, str(payload.get("account_id") or ""))
+    raw = dict(payload.get("terms") or {})
+    px_raw = raw.pop("reset_px", None)
+    if px_raw is None or isinstance(px_raw, (bool, float)):
+        raise RejectError("TERMS", "reset_px (the dealt initial price, a decimal string) is required for an as-of TRS", {"field": "reset_px"})
+    try:
+        reset_px = Decimal(str(px_raw).strip())
+    except (InvalidOperation, ValueError) as e:
+        raise RejectError("TERMS", f"reset_px is not a price: {px_raw!r}", {"field": "reset_px"}) from e
+    if not reset_px.is_finite() or reset_px <= 0:
+        raise RejectError("TERMS", f"reset_px must be a positive price, got {px_raw!r}", {"field": "reset_px"})
+    terms = parse_trs_terms(raw)
+    deal = _trs_deal_asof(services, ctx.conn, acct, terms, qprice(reset_px), a)
+    return _book_trs(ctx, services, acct, terms, deal=deal, as_of=a)
+
+
+def _book_trs(ctx: TxContext, services, acct: dict, terms: TrsTerms, deal: Optional[TrsDeal] = None, as_of: Optional[dict] = None) -> dict:
     conn = ctx.conn
     aid = acct["account_id"]
-    deal = _trs_deal(services, conn, ctx.marks, acct, terms, ny_of(ctx.ts).date())
+    if deal is None:
+        deal = _trs_deal(services, conn, ctx.marks, acct, terms, ny_of(ctx.ts).date())
     broker = prime.broker_of(acct)
     cid = next_id(conn, "swap")
     uid = deal.inst.instrument_id
@@ -775,20 +850,24 @@ def _book_trs(ctx: TxContext, services, acct: dict, terms: TrsTerms) -> dict:
     side = "receive" if terms.receiver else "pay"
     memo = (f"OTC IM {cid}: TRS {side} total return on {terms.units:,} {uid} @ {_px_text(deal.reset_px)} ({quote_label(deal.quote)}; notional"
             f" {fmt_money(deal.notional_c)} USD) to {deal.maturity.isoformat()} with {broker}; IM = {swaps.pct_text(deal.im_pct)} x notional ="
-            f" {fmt_money(deal.im_c)} ({deal.im_source}); financing SOFR {'+' if terms.receiver else '-'} {_pct(deal.spread)} (SWAP_MARK)")
+            f" {fmt_money(deal.im_c)} ({deal.im_source}); financing SOFR {'+' if terms.receiver else '-'} {_pct(deal.spread)}")
     entry_id = ctx.post(Entry("OTC_IM", memo, [dr(aid, "1330", "USD", deal.im_c, instrument_id=cid, memo="OTC initial margin"),
                                                cr(aid, "1010", "USD", deal.im_c, memo="IM paid")], idem, ref_type="otc", ref_id=cid))
-    name = (f"TRS {side} {terms.units:,} {uid} @ {_px_text(deal.reset_px)} ({deal.start.isoformat()} to {deal.maturity.isoformat()}, reset every"
-            f" {terms.reset_months} m, {broker})")
+    name = (f"TRS {side} {terms.units:,} {uid} @ {_px_text(deal.reset_px)} ({deal.start.isoformat()} to {deal.maturity.isoformat()},"
+            f" {RESET_WORDS.get(terms.reset_months, f'resets every {terms.reset_months} months')}, {broker})")
     _insert_instrument(services, ctx, cid, name, deal.maturity, {"contract_id": cid, "otc_kind": "TRS", "broker": broker, "underlying_id": uid, "units": terms.units,
                                                                   "receiver": terms.receiver, "reset_months": terms.reset_months, "start_date": deal.start.isoformat(),
                                                                   "maturity_date": deal.maturity.isoformat(), "margin_mode": deal.margin_mode}, underlying_id=uid)
     pj = [[s.isoformat(), e.isoformat(), p.isoformat()] for s, e, p in deal.periods]
     t = dict(terms.to_dict(), kind="TRS", spread=str(deal.spread), trs_spread=str(deal.trs_spread), otc_spread_mult=str(deal.mult), financing_index="SOFR",
-             financing_basis="ACT/360", periods=pj, fixed_periods=pj, trade_date=ny_of(ctx.ts).date().isoformat(), start_date=deal.start.isoformat(),
-             maturity_date=deal.maturity.isoformat(), reset_px0=str(deal.reset_px), notional0_c=deal.notional_c, im_pct=str(deal.im_pct), dealt_ts=ctx.ts,
-             model=TRS_MODEL, quote=_quote_dict(deal.quote))
+             financing_basis="ACT/360", periods=pj, fixed_periods=pj, trade_date=(as_of["trade_date"] if as_of else ny_of(ctx.ts).date()).isoformat(),
+             start_date=deal.start.isoformat(), maturity_date=deal.maturity.isoformat(), reset_px0=str(deal.reset_px), notional0_c=deal.notional_c,
+             im_pct=str(deal.im_pct), dealt_ts=(as_of["exec_ts"] if as_of else ctx.ts), model=TRS_MODEL, quote=_quote_dict(deal.quote))
+    if as_of:
+        t["reset_px_dealt"] = str(deal.reset_px)
     inputs = {"as_of": ctx.ts, "model": TRS_MODEL, "reset_px": str(deal.reset_px), "underlying": _quote_dict(deal.quote)}
+    if as_of:
+        inputs["valuation_date"] = as_of["trade_date"].isoformat()           # the as-of mark is of the trade date, whenever it was entered
     conn.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date, maturity_date, margin_mode, im_c,"
                  " status, last_reset_date, reset_px, mark_c, mark_ts, vm_balance_c, inputs_json, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',?,?,0,?,0,?,NULL)",
                  (cid, ctx.command_id, aid, broker, "TRS", dumps(t), deal.notional_c, "USD", deal.start.isoformat(), deal.maturity.isoformat(), deal.margin_mode,
@@ -1371,9 +1450,9 @@ def _trs_dividends(ctx: TxContext, row: dict, terms: dict, through: date) -> Lis
             continue
         if terms.get("receiver"):
             lines = [dr(aid, "1225", "USD", amount, instrument_id=cid, memo="dividend receivable (TRS receiver)"),
-                     cr(aid, "4450", "USD", amount, instrument_id=cid, memo=f"{uid} dividend ex {r['ex_date']}")]
+                     cr(aid, "4452", "USD", amount, instrument_id=cid, memo=f"{uid} dividend equivalent ex {r['ex_date']}")]
         else:
-            lines = [dr(aid, "4450", "USD", amount, instrument_id=cid, memo=f"{uid} dividend ex {r['ex_date']}"),
+            lines = [dr(aid, "4452", "USD", amount, instrument_id=cid, memo=f"{uid} dividend equivalent ex {r['ex_date']}"),
                      cr(aid, "2340", "USD", amount, instrument_id=cid, memo="dividend payable (TRS payer)")]
         memo = (f"TRS dividend {cid}: {uid} {qprice(r['amount'])} per share ex {r['ex_date']} ({r['source']}) x {units:,} units = {fmt_money(amount)},"
                 f" {'receivable' if terms.get('receiver') else 'payable'} until the next reset (DIVIDEND)")
@@ -1413,15 +1492,16 @@ def _trs_night(ctx: TxContext, services, row: dict, night: date) -> dict:
     n = (night - _date(st2["segment_start"])).days + 1
     lines: List[Line] = []
     if owed > 0:
-        lines = [dr(aid, "4450", "USD", owed, instrument_id=cid, memo="TRS financing accrued (paid by us)"),
+        lines = [dr(aid, "4451", "USD", owed, instrument_id=cid, memo="TRS financing accrued (paid by us)"),
                  cr(aid, "2340", "USD", owed, instrument_id=cid, memo="TRS financing payable")]
     elif owed < 0:
         lines = [dr(aid, "1225", "USD", -owed, instrument_id=cid, memo="TRS financing receivable"),
-                 cr(aid, "4450", "USD", -owed, instrument_id=cid, memo="TRS financing accrued (received)")]
+                 cr(aid, "4451", "USD", -owed, instrument_id=cid, memo="TRS financing accrued (received)")]
     memo = (f"TRS financing {cid} night of {night_s}: {fmt_money(base)} x (SOFR {pct} % ({obs.isoformat()}) {'+' if receiver else '-'} {_pct(spread)}) ="
             f" {_pct(rate)} ACT/360, night {n} of the segment: cumulative to_c(N x r x {n} / 360) = {fmt_money(int(st2['cum_c']))}"
             f" ({'paid by' if receiver else 'received by'} the {'receiver' if receiver else 'payer'}) (ACCRUAL, RATE_LAG)")
-    entry_id = ctx.post(Entry("ACCRUAL", memo, lines, f"accr:trsfin:{cid}:{night_s}", ref_type="otc", ref_id=cid)) if lines else None
+    entry_id = ctx.post(Entry("ACCRUAL", memo, lines, f"accr:trsfin:{cid}:{night_s}", ref_type="otc", ref_id=cid,
+                              business_date=swaps.lifecycle_business_date(row, night))) if lines else None
     divs = _trs_dividends(ctx, row, terms, night)
     if entry_id is not None:
         ctx.touched_instruments.add((aid, cid))
@@ -1481,7 +1561,8 @@ def _xccy_night(ctx: TxContext, services, row: dict, kind: str, night: date) -> 
     entry_id = None
     if res["lines"]:
         memo = res["memo"] + (f" (XCCY {spec.currency} leg; base at this command's FX rate)" if spec.currency != "USD" else " (XCCY USD leg)")
-        entry_id = ctx.post(Entry("ACCRUAL", memo, res["lines"], f"accr:{kind}:{cid}:{night_s}", ref_type="otc", ref_id=cid))
+        entry_id = ctx.post(Entry("ACCRUAL", memo, res["lines"], f"accr:{kind}:{cid}:{night_s}", ref_type="otc", ref_id=cid,
+                                  business_date=swaps.lifecycle_business_date(row, night)))
         ctx.touched_instruments.add((aid, cid))
         ctx.event("SWAP_ACCRUAL", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, kind=kind, leg=spec.side, currency=spec.currency, night=night_s,
                   amount_c=amount, rate=res.get("rate"), entry_id=entry_id)
@@ -1604,7 +1685,10 @@ def h_reset(ctx: TxContext, payload: dict) -> dict:
     elif mode == "CTM" and vb < 0:
         lines += [dr(aid, "1010", "USD", -vb, memo="VM posted returned by the PB"), cr(aid, "1320", "USD", -vb, instrument_id=cid, memo="VM posted released at the reset")]
         cash += -vb
-    funding = _fund(ctx, services, aid, "USD", -cash, "trsreset", idem, overdraft=True) if cash < 0 else None
+    funding = None
+    if cash < 0:
+        with swaps.asof_context(ctx, d):          # the reset of d is funded on d (C10 / C20) with CSA netting (C21)
+            funding = _fund(ctx, services, aid, "USD", -cash, "trsreset", idem, overdraft=True)
     new_notional = to_c(Decimal(units) * close_px)
     memo = (f"TRS reset {cid} {ds}: return {'+' if sign > 0 else '-'}{units:,} x ({uid} close {close_px} - reset {reset_px}) = {fmt_money(ret)}"
             f"{'' if mode == 'CTM' else f' (STM: {fmt_money(settle)} after the {fmt_money(ref)} settled daily)'}; accrued received {fmt_money(recv)}, accrued paid"
@@ -1944,7 +2028,7 @@ def _terminate_xccy(ctx: TxContext, services, row: dict) -> Tuple[dict, int, dic
         racc, pacc = balance(conn, aid, "1225", lc, cid), balance(conn, aid, "2340", bc, cid)
         ln, bn = balance(conn, aid, "1360", lc, cid), balance(conn, aid, "2360", bc, cid)
         idem = f"xccy:{cid}:terminate"
-        funding = _fund(ctx, services, aid, bc, pacc + bn, "xccy", idem, overdraft=False, commit=True)
+        funding = _fund(ctx, services, aid, bc, pacc + bn, "xccy", idem, overdraft=False, commit=True, csa=True)
         lines: List[Line] = []
         if racc:
             lines += [dr(aid, "1010", lc, racc, memo="accrued receive leg settled"), cr(aid, "1225", lc, racc, instrument_id=cid, memo="accrued receive leg settled")]
@@ -1991,7 +2075,8 @@ def terminate(ctx: TxContext, payload: dict) -> dict:
     view = swaps.contract_view(services, cid, conn=conn, detail=True, now_ts=ctx.ts)
     entries = [e for e in extra + [closed["entry_id"], closed["im_entry_id"]] if e is not None]
     return {"contract": view, "contract_id": cid, "termination_value_c": value, "result_c": closed["result_c"], "cash_c": closed["cash_c"], "entries": entries,
-            "im_released_c": closed["im_released_c"], "accrued_receive_c": closed["accrued_receive_c"], "accrued_pay_c": closed["accrued_pay_c"], "inputs": inputs}
+            "im_released_c": closed["im_released_c"], "accrued_receive_c": closed["accrued_receive_c"], "accrued_pay_c": closed["accrued_pay_c"], "inputs": inputs,
+            "cost_released_c": closed.get("cost_released_c", 0), "realised_c": closed.get("realised_c")}
 
 
 # ---- lifecycle key helpers (WP-08 ProductJob: keys_fn(conn, now_ts)) -------------------------------------------------------------------

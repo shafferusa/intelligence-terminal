@@ -24,12 +24,23 @@ Conventions (sentences TREASURY, SWEEP)
   rates load" before anything is posted (BM-20), never a 500.
 - Typed amounts: a decimal string in ``amount`` is read STRICTLY (``units.parse_money``: at most 2 decimals, no
   exponent, sign or separators, a typo guard above 1,000,000,000,000.00; BM-21); ``amount_c`` (integer cents) as before.
+- AS-OF DATING (FINSIM1_PLAN C15 / D7 / D8, POSTCLOSE-06): when the command context carries ``ctx.asof_date`` = D (an
+  as-of booking of the historical import, an as-of settlement, a lifecycle job of business date D that runs after the
+  17:00 ET accounting-day cut-off), every transfer row this module writes carries ``transfers.business_date`` = D and its
+  journal entry ``business_date`` = D (``business_date(ctx)``); without it, the accounting day as before.
+- AS-OF SWEEP-IN (C15 / C20): under ``ctx.asof_date`` = D, ``sweep_in`` measures Treasury on the business-date figure
+  ``asof_sweepable_c`` = Treasury's settled cash at the close of D (journal lines with business_date <= D;
+  ``accounting.cash_view_at`` when present) less the book's reserve - never today's ``sweepable_c``.  The current-balance
+  floor stays with ``execution.fund`` (409 ASOF_CURRENT_FUNDS) and the L18 check at commit.  Worked (P6 test j): Treasury
+  900,000.00 at the close of D and 5,000,000.00 now -> a 950,000.00 as-of sweep is refused 409 INSUFFICIENT_FUNDS;
+  25,000,000.00 at the close of D and 2,000,000.00 now -> a 1,701,918.50 as-of sweep posts, dated D.
 """
 from __future__ import annotations
 
+from datetime import date
 from typing import Optional
 
-from .books import account_row, lifetime_row, split_account_id
+from .books import account_row, lifetime_row, split_account_id, treasury_reserve_c
 from .commands import ConflictError, RejectError, TxContext, require_amount_c
 from .db import dumps, next_id
 from .ledger import Entry, LedgerError, cr, dr
@@ -88,6 +99,45 @@ def sweepable_c(ctx: TxContext, lifetime_id: str, ccy: str) -> int:
     return treasury_available_c(ctx.conn, lifetime_id, ccy, ctx.marks, _master(ctx), ctx.now)
 
 
+# ---- as-of dating (C15) -------------------------------------------------------------------------------------------------
+def asof_date(ctx) -> Optional[str]:
+    """C15: the business date an as-of command posts on (``ctx.asof_date``: a date or an ISO string), else None."""
+    d = getattr(ctx, "asof_date", None)
+    if d is None or d == "":
+        return None
+    return d.isoformat() if isinstance(d, date) else str(d)[:10]
+
+
+def business_date(ctx) -> str:
+    """The business date of the rows this module writes: ``ctx.asof_date`` when set (C15), else the accounting day."""
+    return asof_date(ctx) or ctx.today
+
+
+def settled_at_close_c(conn, account_id: str, ccy: str, d) -> int:
+    """Settled cash (1010, natural cents) of ``account_id`` at the close of business date ``d``: the journal lines whose entry
+    has ``business_date <= d`` (C9h ``accounting.cash_view_at(...)["settled_c"]`` when that hook is in the build, else the same
+    sum read here)."""
+    ds = d.isoformat() if isinstance(d, date) else str(d)[:10]
+    from . import accounting as _acc
+    fn = getattr(_acc, "cash_view_at", None)
+    if callable(fn):
+        v = fn(conn, account_id, ccy, date.fromisoformat(ds))
+        got = v.get("settled_c") if isinstance(v, dict) else getattr(v, "settled_c", None)
+        if got is not None:
+            return int(got)
+    row = conn.execute("SELECT COALESCE(SUM(l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
+                       " WHERE l.account_id=? AND l.gl='1010' AND l.currency=? AND e.business_date<=?", (account_id, ccy, ds)).fetchone()
+    return int(row[0] or 0)
+
+
+def asof_sweepable_c(ctx_or_conn, lifetime_id: str, ccy: str, d) -> int:
+    """C15 / C20: what the lifetime's Treasury could sweep AS OF business date ``d`` (signed): its settled cash at the close
+    of ``d`` less the book's reserve.  ``execution.fund`` (under ``ctx.asof_date``) sizes the sweep on this figure and
+    ``sweep_in`` checks the same one, so the previewed as-of sweep is the one that posts."""
+    conn = getattr(ctx_or_conn, "conn", ctx_or_conn)
+    return settled_at_close_c(conn, f"{lifetime_id}:TREASURY", ccy, d) - treasury_reserve_c(conn, lifetime_id, ccy)
+
+
 def require_rate(ctx: TxContext, ccy: str) -> None:
     """BM-20: a non-USD posting needs the currency's USD rate in the command's mark snapshot; refuse plainly (409, no
     ERROR attention, the message not prefixed with its own code) before anything is posted."""
@@ -117,7 +167,7 @@ def _transfer_row(ctx: TxContext, kind: str, from_account: Optional[str], to_acc
     ctx.conn.execute(
         "INSERT INTO transfers(transfer_id, command_id, ts, business_date, kind, from_account, to_account, currency, amount_c, linked_type, linked_id,"
         " shortfall_c, entry_id, idem_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        (tid, ctx.command_id, ctx.ts, ctx.today, kind, from_account, to_account, ccy, int(amount_c), linked_type, linked_id, shortfall_c, entry_id, idem_key))
+        (tid, ctx.command_id, ctx.ts, business_date(ctx), kind, from_account, to_account, ccy, int(amount_c), linked_type, linked_id, shortfall_c, entry_id, idem_key))
     return tid
 
 
@@ -134,7 +184,7 @@ def post_init_capital(ctx: TxContext, lifetime_id: str, amount_c: int, ccy: str 
         raise RejectError("ACCOUNT_UNKNOWN", f"account {aid} does not exist")
     entry_id = ctx.post(Entry("CAPITAL", f"{source}: {ccy} {fmt_money(amount_c)} to {aid}",
                               [dr(aid, "1010", ccy, amount_c, memo=source), cr(aid, "3000", ccy, amount_c, memo=source)],
-                              idem, ref_type="lifetime", ref_id=lifetime_id))
+                              idem, ref_type="lifetime", ref_id=lifetime_id, business_date=asof_date(ctx)))
     tid = _transfer_row(ctx, "INITIAL_CAPITAL", None, aid, ccy, amount_c, entry_id, f"xfer:{idem}")
     ctx.event("CAPITAL_DEPOSITED", account_id=aid, ref_type="transfer", ref_id=tid, amount_c=int(amount_c), currency=ccy, source=source, initial=True)
     return {"account_id": aid, "amount_c": int(amount_c), "currency": ccy, "skipped": False, "entry_id": entry_id, "transfer_id": tid}
@@ -162,7 +212,7 @@ def _deposit(ctx: TxContext, row, aid: str, amount_c: int, ccy: str, payload: di
     idem = f"deposit:{ctx.request_id}"
     entry_id = ctx.post(Entry("CAPITAL", f"capital deposit {ccy} {fmt_money(amount_c)} to {aid}" + (f": {typed}" if typed else ""),
                               [dr(aid, "1010", ccy, amount_c, memo=memo), cr(aid, "3000", ccy, amount_c, memo=memo)], idem,
-                              ref_type="lifetime", ref_id=row["lifetime_id"]))
+                              ref_type="lifetime", ref_id=row["lifetime_id"], business_date=asof_date(ctx)))
     tid = _transfer_row(ctx, "DEPOSIT", None, aid, ccy, amount_c, entry_id, f"xfer:{idem}")
     ctx.event("CAPITAL_DEPOSITED", account_id=aid, ref_type="transfer", ref_id=tid, amount_c=amount_c, currency=ccy, memo=memo)
     return {"transfer_id": tid, "account_id": aid, "amount_c": amount_c, "currency": ccy, "entry_id": entry_id, "settled_c": _settled(ctx, aid, ccy),
@@ -188,7 +238,7 @@ def _withdraw(ctx: TxContext, row, aid: str, amount_c: int, ccy: str, payload: d
     idem = f"withdraw:{ctx.request_id}"
     entry_id = ctx.post(Entry("CAPITAL", f"capital withdrawal {ccy} {fmt_money(amount_c)} from {aid}" + (f": {typed}" if typed else ""),
                               [dr(aid, "3000", ccy, amount_c, memo=memo), cr(aid, "1010", ccy, amount_c, memo=memo)], idem,
-                              ref_type="lifetime", ref_id=row["lifetime_id"]))
+                              ref_type="lifetime", ref_id=row["lifetime_id"], business_date=asof_date(ctx)))
     tid = _transfer_row(ctx, "WITHDRAWAL", aid, None, ccy, amount_c, entry_id, f"xfer:{idem}")
     ctx.event("CAPITAL_WITHDRAWN", account_id=aid, ref_type="transfer", ref_id=tid, amount_c=amount_c, currency=ccy, memo=memo)
     return {"transfer_id": tid, "account_id": aid, "amount_c": amount_c, "currency": ccy, "entry_id": entry_id, "settled_c": _settled(ctx, aid, ccy)}
@@ -196,20 +246,27 @@ def _withdraw(ctx: TxContext, row, aid: str, amount_c: int, ccy: str, payload: d
 
 # ---- transfers ----------------------------------------------------------------------------------------------------------
 def _post_transfer(ctx: TxContext, kind: str, src: str, dst: str, ccy: str, amount_c: int, memo: str, linked_type=None, linked_id=None,
-                   shortfall_c=None, event: str = "TRANSFER") -> dict:
+                   shortfall_c=None, event: str = "TRANSFER", idem_key: Optional[str] = None, entry_kind: Optional[str] = None,
+                   entry_memo: Optional[str] = None) -> dict:
+    """One internal transfer: entry ``Dr 3100 / Cr 1010`` (source) + ``Dr 1010 / Cr 3100`` (destination) and its ``transfers`` row,
+    both dated ``business_date(ctx)`` (C15).  ``idem_key`` (journal entry and transfer row; default ``xfer:{transfer_id}``),
+    ``entry_kind`` (default the transfer kind) and ``entry_memo`` serve the as-of funding commands (``collateral``: idem
+    ``asofsweep:...``, entry kind ASOF_FUNDING, memo "as-of funding")."""
     tid = next_id(ctx.conn, "transfer")
-    idem = f"xfer:{tid}"
-    entry_id = ctx.post(Entry("TRANSFER" if kind == "TRANSFER" else kind, f"{kind.lower().replace('_', '-')} {ccy} {fmt_money(amount_c)} {src} -> {dst}: {memo}",
+    idem = idem_key or f"xfer:{tid}"
+    bd = business_date(ctx)
+    text = entry_memo if entry_memo is not None else f"{kind.lower().replace('_', '-')} {ccy} {fmt_money(amount_c)} {src} -> {dst}: {memo}"
+    entry_id = ctx.post(Entry(entry_kind or ("TRANSFER" if kind == "TRANSFER" else kind), text,
                               [dr(src, "3100", ccy, amount_c, memo=memo), cr(src, "1010", ccy, amount_c, memo=memo),
                                dr(dst, "1010", ccy, amount_c, memo=memo), cr(dst, "3100", ccy, amount_c, memo=memo)],
-                              idem, ref_type="transfer", ref_id=tid))
+                              idem, ref_type="transfer", ref_id=tid, business_date=asof_date(ctx)))
     ctx.conn.execute(
         "INSERT INTO transfers(transfer_id, command_id, ts, business_date, kind, from_account, to_account, currency, amount_c, linked_type, linked_id,"
         " shortfall_c, entry_id, idem_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        (tid, ctx.command_id, ctx.ts, ctx.today, kind, src, dst, ccy, int(amount_c), linked_type, linked_id, shortfall_c, entry_id, idem))
+        (tid, ctx.command_id, ctx.ts, bd, kind, src, dst, ccy, int(amount_c), linked_type, linked_id, shortfall_c, entry_id, idem))
     ctx.event(event, account_id=dst, ref_type="transfer", ref_id=tid, from_account=src, to_account=dst, amount_c=int(amount_c), currency=ccy,
-              linked_type=linked_type, linked_id=linked_id, shortfall_c=shortfall_c, memo=memo)
-    return {"transfer_id": tid, "entry_id": entry_id, "from_account": src, "to_account": dst, "amount_c": int(amount_c), "currency": ccy}
+              linked_type=linked_type, linked_id=linked_id, shortfall_c=shortfall_c, memo=memo, business_date=bd)
+    return {"transfer_id": tid, "entry_id": entry_id, "from_account": src, "to_account": dst, "amount_c": int(amount_c), "currency": ccy, "business_date": bd}
 
 
 def h_transfer(ctx: TxContext, payload: dict) -> dict:
@@ -247,7 +304,8 @@ def check_transfer(ctx: TxContext, src: str, ccy: str, amount_c: int) -> int:
     imm = immediate_available_c(ctx.conn, src, ccy, None, ctx.marks, master, ctx.now)
     if imm >= amount_c:
         return imm
-    d0, settled, recv, pay, reserved = _available_parts(ctx.conn, src, ccy, None, ctx.marks, master, ctx.now)
+    parts = _available_parts(ctx.conn, src, ccy, None, ctx.marks, master, ctx.now)
+    settled, recv, pay, reserved = parts[1], parts[2], parts[3], parts[4]
     # every pending receivable is cash that has not settled yet (a sale due tomorrow counts in 'available' after 17:00, never in settled cash)
     later = ctx.conn.execute("SELECT COALESCE(SUM(amount_c),0) AS n, MIN(due_date) AS d FROM settlements WHERE account_id=? AND currency=? AND status='PENDING'"
                              " AND amount_c > 0", (src, ccy)).fetchone()
@@ -286,7 +344,10 @@ def _resolve_shortfalls(ctx: TxContext, lifetime_id: str, ccy: str) -> int:
 def sweep_in(ctx: TxContext, account: str, ccy: str, amount_c: int, linked_type: str, linked_id: str, shortfall_c: int) -> str:
     """Move exactly ``amount_c`` from the lifetime's Treasury to ``account`` as one linked SWEEP_IN transfer.  Raises
     ``ConflictError INSUFFICIENT_FUNDS`` (with the three amounts) when Treasury's available cash in that currency,
-    net of the book's reserve (``sweepable_c``), cannot cover it.  Returns the transfer id."""
+    net of the book's reserve (``sweepable_c``), cannot cover it.  Under ``ctx.asof_date`` = D (C15) the figure is the
+    business-date one, ``asof_sweepable_c`` (Treasury settled at the close of D less the reserve), and the sweep is dated D;
+    today's balance is not consulted here (``execution.fund`` and L18 keep the current-balance floor).  Returns the
+    transfer id."""
     amount_c = int(amount_c)
     if amount_c <= 0:
         raise RejectError("AMOUNT", "sweep amount must be positive")
@@ -298,8 +359,14 @@ def sweep_in(ctx: TxContext, account: str, ccy: str, amount_c: int, linked_type:
     tre = f"{lid}:TREASURY"
     if account == tre:
         raise RejectError("SAME_ACCOUNT", "Treasury cannot sweep into itself")
-    t_avail = sweepable_c(ctx, lid, ccy)
+    d = asof_date(ctx)
+    t_avail = asof_sweepable_c(ctx, lid, ccy, d) if d else sweepable_c(ctx, lid, ccy)
     if t_avail < amount_c:
+        if d:
+            raise ConflictError("INSUFFICIENT_FUNDS", f"Treasury {tre} had {ccy} {fmt_money(max(t_avail, 0))} available for {account} at the close of {d}"
+                                f" (business date); the as-of sweep needs {fmt_money(amount_c)}",
+                                {"need_c": amount_c, "treasury_available_c": t_avail, "currency": ccy, "account_id": account, "linked_type": linked_type,
+                                 "linked_id": linked_id, "as_of": d})
         raise ConflictError("INSUFFICIENT_FUNDS", f"Treasury {tre} has {ccy} {fmt_money(max(t_avail, 0))} available for {account}; the sweep needs {fmt_money(amount_c)}",
                             {"need_c": amount_c, "treasury_available_c": t_avail, "currency": ccy, "account_id": account, "linked_type": linked_type,
                              "linked_id": linked_id})

@@ -236,6 +236,13 @@
           }, function (e) { b.disabled = false; err.hidden = false; err.textContent = T.api.fail(e, 'private credit repay'); });
         } }] });
     }
+    /* 15.7 item 7: a fill booked as of an earlier date carries the AS-OF badge, its entered time and batch; the full label is the title */
+    function fillSourceHtml(f) {
+      if (!f || !f.badge) { return '<span class="muted">' + T.esc((f && f.source_label) || 'Simulated fill') + '</span>'; }
+      var short = f.badge === 'MODEL' ? 'historical model' : 'entered ' + (f.entered_ts ? T.fmt.dt(f.entered_ts) : 'n/a') + (f.batch_id ? ', batch ' + f.batch_id : '');
+      return '<span class="' + (f.badge === 'MODEL' ? 'badge-model' : 'badge-asof') + '" title="' + T.esc(f.source_label || '') + '">' + T.esc(f.badge) + '</span> <span title="' +
+             T.esc(f.source_label || '') + '">' + T.esc(short) + '</span>';
+    }
     function detail(r) {
       drawer.hidden = false; T.clear(drawer);
       drawer.appendChild(T.h('h2', null, r.instrument_id + ' detail', T.h('button', { class: 'btn small', style: 'float:right', onclick: function () { drawer.hidden = true; } }, 'x')));
@@ -257,7 +264,8 @@
         block('fills (with the quote used)', d.fills, [
           { key: 'ts', label: 'time', cls: 'l', text: function (f) { return T.fmt.dt(f.ts); } }, { key: 'side', label: 'side', cls: 'l' }, { key: 'qty', label: 'qty', text: function (f) { return T.fmt.qty(f.qty); } },
           { key: 'price', label: 'price', text: function (f) { return T.fmt.px(f.price); } }, { key: 'fee', label: 'fee', text: function (f) { return T.money(f, 'fee'); } }, { key: 'origin', label: 'origin', cls: 'l' },
-          { key: 'quote', label: 'quote used', html: quoteUsedHtml, text: function (f) { return f.price_basis || ''; } }, { key: 'settle_date', label: 'settles', cls: 'l' }]);
+          { key: 'quote', label: 'quote used', html: quoteUsedHtml, text: function (f) { return f.price_basis || ''; } }, { key: 'settle_date', label: 'settles', cls: 'l' },
+          { key: 'source', label: 'source', cls: 'l', html: fillSourceHtml, text: function (f) { return f.source_label || 'Simulated fill'; } }]);
         block('lots', d.lots || p.lots, [{ key: 'lot_id', label: 'lot', cls: 'l' }, { key: 'side', label: 'side', cls: 'l' }, { key: 'open_date', label: 'opened', cls: 'l' }, { key: 'qty_remaining', label: 'qty', text: function (l) { return T.fmt.qty(l.qty_remaining); } }, { key: 'unit_cost', label: 'unit cost', text: function (l) { return T.fmt.px(l.unit_cost); } }, { key: 'cost', label: 'cost', text: function (l) { return T.money(l, 'cost'); } }, { key: 'lock_until', label: 'lock', cls: 'l', text: function (l) { return l.lock_until || ''; } }]);
         block('cash flows (journal entries)', d.entries, [{ key: 'ts', label: 'time', cls: 'l', text: function (e) { return T.fmt.dt(e.ts); } }, { key: 'kind', label: 'kind', cls: 'l', text: function (e) { return e.kind_label || T.codeWords(e.kind); } }, { key: 'memo', label: 'memo', cls: 'l' }, { key: 'net', label: 'net cash', text: function (e) { var n = e.net_cash || {}; return Object.keys(n).map(function (c) { return c + ' ' + T.money(n, c); }).join(' '); } }]);
         block('mark history', d.marks_history, [{ key: 'mark_date', label: 'date', cls: 'l' }, { key: 'kind', label: 'kind', cls: 'l' }, { key: 'price', label: 'price', html: function (m) { return T.pxHtml(m); }, text: function (m) { return String(m.price); } }, { key: 'source', label: 'source', cls: 'l' }]);

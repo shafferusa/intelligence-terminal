@@ -8,7 +8,11 @@
  * The page is built ONCE and its figures are updated in place: the poll never rebuilds a form, so typed values survive (PO-06).
  *
  * - cash by currency: settled / receivable / payable / pending / held at lender / margin / OTC margin / reserved / accrued /
- *   available and "beyond own cash" (headers wrap: BM-34).  `available` is the account's own spendable cash FLOORED AT ZERO
+ *   available and "beyond own cash" (headers wrap: BM-34).  Under the grid, the "restricted (collateral received)" line (FINSIM1
+ *   D9 / C21, the CashView's C9b adjustments): the counterparties' collateral inside settled cash - variation margin received
+ *   under the CSA net of VM posted (floored at 0) plus cash collateral received for shares lent - which available, buying
+ *   power and the sweep exclude.  With the collateral module bound (T.hasModule('collateral')) the margin panel shows its
+ *   parts (GET /api/collateral/restricted); else no request goes out and the panel shows the CashView total only.  `available` is the account's own spendable cash FLOORED AT ZERO
  *   (accounting.AVAILABLE_TEXT); what working orders and payables need beyond it is "reserved R (Treasury sweep covers N)",
  *   UNFUNDED / overdrawn flagged (T.fmt.liquidity(r, '')); the definition is the hover text.
  * - margin & collateral: futures required / posted, short-option margin (a reservation), OTC IM, VM posted, VM received
@@ -82,7 +86,7 @@
   function render(el, route) {
     ensureCss();
     var acct = route.account; var role = roleOf(acct);
-    var data = null, loans = null, contracts = null, S = null, dead = false, banks = null;
+    var data = null, loans = null, contracts = null, S = null, dead = false, banks = null, restricted = null;
     T.pageHead(el, 'Cash & financing', T.accountName ? T.accountName(acct) : acct);
     var root = T.h('div', { class: 'cashp' }); el.appendChild(root);
     var spin = T.h('div', { class: 'spin' }); root.appendChild(spin);
@@ -97,6 +101,8 @@
         var hasLoans = (d.loans || []).length > 0 || role === 'CREDIT';
         extras.push(hasLoans ? T.api.get('/api/credit/loans', { account_id: acct }).then(function (x) { loans = (x && x.rows) || []; }, function (e) { loans = null; console.warn('credit loans', e); }) : Promise.resolve(loans = []));
         extras.push((d.otc || []).length ? T.api.get('/api/otc/contracts', { account_id: acct }).then(function (x) { contracts = Array.isArray(x) ? x : []; }, function (e) { contracts = null; console.warn('otc contracts', e); }) : Promise.resolve(contracts = []));
+        /* FINSIM1 C21: the parts of the restricted figure, only from a build whose collateral module is bound (rule 5: no request otherwise) */
+        extras.push(T.hasModule && T.hasModule('collateral') ? T.api.get('/api/collateral/restricted', { account_id: acct }).then(function (x) { restricted = x || null; }, function (e) { restricted = null; console.warn('restricted', e); }) : Promise.resolve(restricted = null));
         return Promise.all(extras).then(function () {
           if (dead) { return; }
           if (spin.parentNode) { spin.parentNode.removeChild(spin); }
@@ -119,6 +125,7 @@
       cols.push({ key: 'available', label: 'available', html: function (r) { return '<span class="pos">' + T.esc(liquidity(r).available) + '</span>'; }, text: function (r) { return liquidity(r).available; }, title: function (r) { return liquidity(r).title; } });
       cols.push({ key: 'beyond_own_cash', label: 'beyond own cash', cls: 'l', html: function (r) { var l = liquidity(r); return l.extra ? '<span class="' + (l.warn ? 'neg' : '') + '">' + T.esc(l.extra) + '</span>' : ''; }, text: function (r) { return liquidity(r).extra; }, title: function (r) { return liquidity(r).title; } });
       S.cash = gridIn(pc, { columns: cols, rowKey: function (r) { return r.currency; }, empty: 'no cash balances' }, 'cash-grid');
+      S.restricted = T.h('div', { class: 'line', id: 'cash-restricted', title: RESTRICTED_TEXT }); pc.appendChild(S.restricted);
       pc.appendChild(T.convNote(['AVAILABLE', 'SWEEP']));
       root.appendChild(pc);
       /* ---- settlements ladder + margin & collateral */
@@ -128,7 +135,7 @@
         { key: 'due_date', label: 'date', cls: 'l', text: function (r) { return r.due_date || r.date || ''; } }, { key: 'currency', label: 'ccy', cls: 'l' },
         { key: 'amount', label: 'amount', html: function (r) { return '<span class="' + T.sign(r, 'amount') + '">' + T.esc(T.money(r, 'amount')) + '</span>'; }, text: function (r) { return T.money(r, 'amount'); } },
         { key: 'leg', label: 'leg', cls: 'l', text: function (r) { return T.codeWords(r.leg || r.kind || ''); }, title: function (r) { return r.leg || ''; } }, { key: 'ref', label: 'ref', cls: 'l', text: function (r) { return r.fill_id || r.fx_deal_id || r.ref || ''; } },
-        { key: 'status', label: 'status', cls: 'l', text: function (r) { return T.codeWords(r.status || 'PENDING'); } }] });
+        { key: 'status', label: 'status', cls: 'l', text: function (r) { return ladderStatus(r); }, title: function (r) { return r.fail_reason || ''; } }] });
       two.appendChild(ladder);
       var mp = T.h('div', { class: 'panel', id: 'cash-margin' }, T.h('h2', null, 'margin & collateral'));
       S.marginKv = T.h('div'); mp.appendChild(S.marginKv);
@@ -194,18 +201,60 @@
 
     var LINK_WORDS = { fill: 'fill', otc_im: 'OTC initial margin', otc: 'OTC margin', otc_vm: 'OTC variation margin', swap_vm: 'swap variation margin', fx_deal: 'FX deal',
                        settlement: 'settlement', loan: 'loan', pb: 'PB financing', futures_vm: 'futures variation margin', vm: 'variation margin', borrow: 'stock borrow',
-                       repo: 'repo', private: 'private trade' };
+                       repo: 'repo', private: 'private trade', swapvm: 'swap variation margin', cdxcpn: 'CDX coupon', asof_sweep: 'as-of sweep, batch',
+                       asof_funding: 'as-of funding, line' };
     function linkedHtml(r) {
       if (!r.linked_id) { return '<span class="muted">' + T.esc(r.kind === 'SWEEP_OUT' ? 'idle cash after the close' : '') + '</span>'; }
       var t = String(r.linked_type || '');
       var parts = String(r.linked_id).split(':');
       var word = LINK_WORDS[t] || t.replace(/_/g, ' ');
       if (t === 'otc' && (parts[0] === 'im' || parts[0] === 'vm') && parts.length > 1) { word = parts[0] === 'im' ? 'OTC initial margin' : 'OTC variation margin'; parts.shift(); }
+      if (parts.length > 1 && parts[0] === t) { parts.shift(); }               /* POSTCLOSE-05: an idem-style link repeats its type ("swapvm:SWP-000003:2026-10-27") */
       var core = parts.shift();
       var tail = parts.map(function (x) { return x === 'open' ? 'at booking' : x; }).join(' ');
       var what = word + ' ' + core + (tail ? ' (' + tail + ')' : '');
-      var href = /^SWP-|^OTC-/.test(core) ? T.router.account(acct, 'markets/otc') : T.router.account(acct, 'transactions');
+      var href = /^(SWP|OTC|CDX)-/.test(core) ? T.router.account(acct, 'markets/otc') : T.router.account(acct, 'transactions');
       return '<a href="' + T.esc(href) + '" title="what this sweep funded">' + T.esc(what) + '</a>';
+    }
+    /* FINSIM1 C21 / C9b: the restricted part of a currency row = its "restricted" adjustment (0.00 when none; n/a from a server
+     * without the adjustments) */
+    var RESTRICTED_TEXT = 'the counterparties\' collateral inside settled cash: variation margin received under the CSA net of variation margin posted ' +
+                          '(floored at 0; one CSA per prime broker) + cash collateral received for shares lent; excluded from available, buying power ' +
+                          'and the sweep, it earns no credit interest; a variation-margin payment to the same counterparty may use it';
+    function restrictedAdj(r) {
+      if (!r || !Array.isArray(r.adjustments)) { return null; }
+      return r.adjustments.filter(function (a) { return a && a.key === 'restricted'; })[0] || { key: 'restricted', amount: '0.00' };
+    }
+    function restrictedText(r) { var a = restrictedAdj(r); return a ? T.money(a, 'amount') : 'n/a'; }
+    /* FINSIM1 C15: a pending settlement that failed reads "failed" (the owner's simulated counterparty fail, or not funded on its
+     * due date and retried automatically); the reason is the hover */
+    function ladderStatus(r) {
+      if (r.fail_state === 'FAILED') { return r.fail_kind === 'SIMULATED' ? 'failed (simulated)' : 'failed - retried'; }
+      return T.codeWords(r.status || 'PENDING');
+    }
+    /* the line under the cash grid: per currency, the restricted part of settled cash and what is held back with it */
+    function paintRestricted(cash) {
+      var rows = Object.keys(cash || {}).map(function (c) { return Object.assign({ currency: c }, cash[c]); });
+      var known = rows.filter(function (r) { return Array.isArray(r.adjustments); });
+      T.clear(S.restricted);
+      if (!rows.length) { return; }
+      if (!known.length) { S.restricted.appendChild(T.h('span', null, 'restricted (collateral received): not reported by this server')); return; }
+      var held = known.filter(function (r) { return T.num(restrictedAdj(r), 'amount'); });
+      S.restricted.appendChild(T.h('b', null, 'restricted (collateral received): '));
+      if (!held.length) { S.restricted.appendChild(T.h('span', null, '0.00 - no counterparty collateral sits in this account\'s cash')); return; }
+      S.restricted.appendChild(T.h('span', null, held.map(function (r) { return r.currency + ' ' + restrictedText(r) + ' of settled ' + T.money(r, 'settled'); }).join(' . ') +
+        ' - the counterparties\' collateral: not available, never swept, earns no credit interest'));
+    }
+    /* the margin panel's rows: the total, and its parts from the collateral module when it is bound */
+    function restrictedRows(cashUsd) {
+      var p = restricted;
+      if (p && p.restricted != null) {
+        return [['restricted (collateral received)', T.money(p, 'restricted'), p.definition || RESTRICTED_TEXT],
+                ['of which net VM received under the CSA', T.money(p, 'csa_restricted') + (p.reuse_allowed ? ' (reuse allowed)' : ''),
+                 'VM received ' + T.money(p, 'vm_received') + ' - VM posted ' + T.money(p, 'vm_posted') + ', floored at 0; one CSA per prime broker'],
+                ['of which cash collateral for shares lent', T.money(p, 'seclend_cash'), 'cash the borrowers of your lent shares posted (never netted)']];
+      }
+      return [['restricted (collateral received)', cashUsd ? restrictedText(cashUsd) : 'n/a', RESTRICTED_TEXT]];
     }
     function today() { var h = T.state && T.state.health; return (h && h.clock && h.clock.accounting_day) || null; }
     function update() {
@@ -213,6 +262,7 @@
       S.asOf.textContent = d.as_of ? 'as of ' + T.fmt.time(d.as_of) : '';
       var cash = d.cash || {};
       S.cash.update(Object.keys(cash).map(function (c) { return Object.assign({ currency: c }, cash[c]); }), { empty: 'no cash balances' });
+      paintRestricted(cash);
       S.ladder.update(d.ladder || d.settlements || [], { empty: 'nothing pending' });
       /* margin & collateral (BM-12): VM posted and received from the served names */
       var m = d.margin || {}; var coll = d.collateral || {};
@@ -222,7 +272,7 @@
         ['short-option margin (reserved, no cash moves)', T.money(m, m.options_reserved != null || m.options_reserved_c != null ? 'options_reserved' : 'options_required')],
         ['OTC initial margin (IM)', T.money(m, 'otc_im')], ['OTC VM posted', T.money(m, 'otc_vm_posted'), 'variation margin paid to the dealer (the mark fell): collateral, not P&L'],
         ['OTC VM received', T.money(m, 'otc_vm_received'), 'variation margin received from the dealer (the mark rose): collateral, not P&L'],
-        ['collateral at lenders (102 %)', T.money(coll, 'held_at_lender')]]));
+        ['collateral at lenders (102 %)', T.money(coll, 'held_at_lender')]].concat(restrictedRows((d.cash || {}).USD))));
       var crows = contracts && contracts.length ? contracts : (d.otc || []);
       S.vmBox.hidden = !crows.length;
       S.vm.update(crows.filter(function (c) { return !c.status || c.status === 'OPEN'; }), { empty: 'no OTC contracts' });

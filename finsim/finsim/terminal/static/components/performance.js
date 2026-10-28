@@ -112,8 +112,16 @@
     return h + '</ul>';
   }
 
+  /* C9d: the snapshots read from a restated version are labelled "restated on <date> (batch X)"; the dates are in the hover */
+  function restatedTag(v) {
+    var r = v.restated || [];
+    if (!r.length) { return ''; }
+    var dates = r.map(function (x) { return x.snap_date; }).join(', ');
+    return ' <span class="badge-asof" title="' + esc(r.length + ' snapshot(s) ' + (r[0].text || 'restated') + ': ' + dates + ' (the originals are kept unchanged)') + '">restated</span>';
+  }
+
   function render(el, v) {
-    var h = '<div class="perf"><div class="perf-head"><span class="perf-title">Performance</span>' +
+    var h = '<div class="perf"><div class="perf-head"><span class="perf-title">Performance</span>' + restatedTag(v) +
             '<span class="perf-window muted">' + windowText(v) + '</span></div>';
     if (v.status !== 'ok') {
       h += '<p class="perf-empty">' + esc(v.status) + ' (' + v.n_snapshots + ' of ' + v.needed + ' snapshots)</p>';

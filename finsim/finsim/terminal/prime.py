@@ -39,7 +39,12 @@ Conventions stated here (the §1.3 sentences and the §12.4 / §13.7 rules that 
   of 2026-10-20".
 - PB credit interest (§12.4, kind ``pbcredit``): on POSITIVE settled USD (1010 at 17:00 ET of D) at ``max(0, SOFR -
   credit_interest_spread)`` ACT/360: ``Dr 1230 / Cr 4300`` (idem ``accr:pbcredit:{account}:{D}``); a floored rate or a
-  non-positive balance posts nothing (the night is recorded as accrued with 0 so it is never retried).  4300 is a
+  non-positive balance posts nothing (the night is recorded as accrued with 0 so it is never retried).  FINSIM1 D9 / C21:
+  the base is ``max(0, settled - restricted)`` - the collateral the counterparty posted under the CSA (VM received net of
+  VM posted) and securities-lending cash collateral earn the fund no credit interest (CSA interest on cash collateral is
+  not simulated).  Both bases are read on BUSINESS DATES (``balance_at_close``: the journal lines whose entry has
+  ``business_date <= D``, the ``lifecycle_jobs`` NIGHTS rule), so an as-of posting dated D counts in night D exactly as the
+  re-accrual of the import (C17) restates it; for postings made in real time this is the 17:00 ET balance as before.  4300 is a
   per-instrument code and the ledger refuses an empty instrument id (``ledger.validate`` INSTRUMENT_REQUIRED, L2), so
   the line carries the currency code ``USD`` as its instrument id (``CASH_INSTRUMENT``); no position is ever created
   from it (positions come from lots, swaps and private loans only).
@@ -569,6 +574,30 @@ def balance_at(conn, account_id: str, gl: str, ccy: str, cutoff_ts: int) -> int:
     return natural(gl, int(row[0] or 0))
 
 
+def balance_at_close(conn, account_id: str, gl: str, ccy: str, night) -> int:
+    """Natural-sign balance of (account, gl, ccy) at the close of business date ``night``: the journal lines whose entry has
+    ``business_date <= night`` (an entry posted after 17:00 ET belongs to the next business date; an as-of entry to its own)."""
+    row = conn.execute("SELECT COALESCE(SUM(l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
+                       " WHERE l.account_id=? AND l.gl=? AND l.currency=? AND e.business_date <= ?",
+                       (account_id, gl, ccy, _as_date(night).isoformat())).fetchone()
+    return natural(gl, int(row[0] or 0))
+
+
+def restricted_at_close(services, conn, account_id: str, night) -> int:
+    """D9 / C21: the collateral received in the account's settled USD at the close of ``night`` (``collateral.restricted_c`` as
+    of that business date); 0 while the collateral module is not bound."""
+    coll = getattr(services, "collateral", None) if services is not None else None
+    fn = getattr(coll, "restricted_c", None)
+    if not callable(fn):
+        return 0
+    return max(0, int(fn(conn, account_id, "USD", as_of=_as_date(night).isoformat()) or 0))
+
+
+def credit_base_c(conn, services, account_id: str, night) -> int:
+    """The PB credit interest base of a night: ``max(0, settled - restricted)`` at the close of that business date (D9)."""
+    return max(0, balance_at_close(conn, account_id, "1010", "USD", night) - restricted_at_close(services, conn, account_id, night))
+
+
 def financing_rate(sofr_pct: Decimal, spread) -> Decimal:
     """Decimal fraction: ``SOFR % / 100 + financing_spread`` (3.87 % + 0.0125 -> 0.0512)."""
     return qprice(Decimal(str(sofr_pct)) / Decimal(100) + Decimal(str(spread)))
@@ -602,7 +631,7 @@ def accrual_lines_pb(ctx: TxContext, acct, d, sofr, fx=None) -> List[Line]:
     obs_date, pct = _index(sofr)
     sched = read_schedule(ctx.conn, acct)
     rate = financing_rate(pct, sched.financing_spread)
-    base = max(0, balance_at(ctx.conn, aid, "2700", "USD", night_cutoff_ts(night)))
+    base = max(0, balance_at_close(ctx.conn, aid, "2700", "USD", night))
     amount = int(accrue(ctx, ACCRUAL_KIND_PB, aid, base, rate, FIN_BASIS, night))
     if amount == 0:
         return []
@@ -621,7 +650,7 @@ def accrual_lines_pb_credit(ctx: TxContext, acct, d, sofr, fx=None) -> List[Line
     obs_date, pct = _index(sofr)
     sched = read_schedule(ctx.conn, acct)
     rate = credit_rate(pct, sched.credit_interest_spread)
-    base = max(0, balance_at(ctx.conn, aid, "1010", "USD", night_cutoff_ts(night)))
+    base = credit_base_c(ctx.conn, getattr(ctx, "services", None), aid, night)
     amount = int(accrue(ctx, ACCRUAL_KIND_CREDIT, aid, base, rate, FIN_BASIS, night))
     if amount == 0:
         return []
@@ -692,7 +721,8 @@ def post_pb_accrual(ctx: TxContext, services, acct, night, kind: str = ACCRUAL_K
         gl, spread = "1010", sched.credit_interest_spread
         rate = credit_rate(pct, spread)
         lines = accrual_lines_pb_credit(ctx, acct, night, (obs_date, pct))
-    base = max(0, balance_at(ctx.conn, aid, gl, "USD", night_cutoff_ts(night)))
+    base = (max(0, balance_at_close(ctx.conn, aid, gl, "USD", night)) if kind == ACCRUAL_KIND_PB
+            else credit_base_c(ctx.conn, services, aid, night))
     st = accrual_state(ctx.conn, kind, aid)
     out = {"account_id": aid, "night": night.isoformat(), "kind": kind, "amount_c": 0, "entry_id": None, "rate": str(rate), "spread": str(spread),
            "index": {"series": sid, "value": str(pct), "obs_date": obs_date.isoformat()}, "base_c": base, "cum_c": int(st["cum_c"]) if st else 0,
@@ -1118,7 +1148,7 @@ def register(bus) -> None:
 __all__ = ["ACCRUAL_KIND_PB", "ACCRUAL_KIND_CREDIT", "CASH_INSTRUMENT", "BROKERS", "EDITABLE_FIELDS", "FIELD_SPECS", "FIELDS_NOTE", "OTC_LIVE", "OTC_NOT_BUILT",
            "OTC_GENERIC", "OTC_LABELS", "OTC_SEEDS", "IM_FIELDS", "OTC_TERM_FIELDS", "im_params", "close_check", "relationship", "register_routes", "field_specs",
            "NotFound", "PbSchedule", "Prime", "bind", "brokers", "seed_schedule", "parse_field", "parse_money", "MONEY_ALIASES", "schedule_from_json", "read_schedule", "schedule_view",
-           "pb_headroom_detail", "pb_headroom_c", "HEADROOM_FORMULA", "night_cutoff_ts", "balance_at", "financing_rate", "credit_rate", "accrual_lines_pb",
+           "pb_headroom_detail", "pb_headroom_c", "HEADROOM_FORMULA", "night_cutoff_ts", "balance_at", "balance_at_close", "restricted_at_close", "credit_base_c", "financing_rate", "credit_rate", "accrual_lines_pb",
            "accrual_lines_pb_credit", "accrual_state", "nights_due", "post_pb_accrual", "fees_charged_c", "monthly_minimum_line", "post_monthly_minimum",
            "require_otc_kind", "otc_unsupported", "account_view", "open_pb", "pb_accounts", "h_open_pb", "h_close", "h_update_schedule", "h_pb_accrue",
            "h_monthly_minimum", "register"]

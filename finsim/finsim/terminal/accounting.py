@@ -26,7 +26,7 @@ import time as _time
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from . import config, tables
 from .accounting_checks import Problem, ledger_checks
@@ -35,7 +35,8 @@ from .clock import accounting_day, ny_of
 from .commands import Touched
 from .db import dumps, futures_margin_override, get_meta, get_setting, set_meta
 from .instruments import EQUITY_KINDS, row_to_instrument
-from .ledger import CHART, FEE_GLS, FINANCING_GLS, INCOME_GLS, REALISED_GLS, natural
+from . import ledger as _ledger
+from .ledger import CHART, FEE_GLS, FINANCING_GLS, INCOME_GLS, NATURAL_SIGN, REALISED_GLS, natural
 from .marks import shared_reader
 from .quotes import MarkView, QUALITY_RANK, unavailable
 from .units import fmt_money, from_c, fx_c, mul_c, qprice, to_c
@@ -44,6 +45,47 @@ ACCOUNT_ID_RE = re.compile(config.ACCOUNT_ID_RE)
 NAV_ASSET_GLS = ("1010", "1200", "1210", "1220", "1225", "1230", "1250", "1300", "1310", "1320", "1330", "1360", "1400", "1410", "1420", "1500")
 NAV_LIAB_GLS = ("2100", "2300", "2310", "2320", "2330", "2340", "2350", "2360", "2420", "2500", "2520", "2700", "2750", "2755")
 ENCUMBRANCE_GLS = ("1400", "1300", "1310", "1320", "1330")
+#: C9c / C11: the OTC contract cost GLs (premium / upfront paid, received) - per contract, OUT of NAV_ASSET_GLS / NAV_LIAB_GLS (the
+#: contract's MV replaces its cost there) and out of the listed cost GLs L9 ties to lots.  ``ledger.OTC_COST_GLS`` when P4's ledger has it.
+OTC_COST_GLS: Tuple[str, str] = tuple(getattr(_ledger, "OTC_COST_GLS", ("1335", "2345")))[:2]   # type: ignore[assignment]
+#: PORTFOLIO-08 / C11: the P&L explain buckets.  The swap financing leg (4451) and swap coupons / CDS premium (4453) are FINANCING,
+#: dividend equivalents (4452) are INCOME, whatever bucket list the ledger module carries; 4450 stays realised (return leg, STM,
+#: termination, maturity).  Signs come from the storage balance, so a GL booked on either side reads right: financing and fees are
+#: costs (debit positive), realised and income are gains (credit positive) - for the existing codes this equals ``natural``.
+PL_FINANCING_GLS: Tuple[str, ...] = tuple(dict.fromkeys(tuple(FINANCING_GLS) + ("4451", "4453")))
+PL_INCOME_GLS: Tuple[str, ...] = tuple(dict.fromkeys(tuple(g for g in INCOME_GLS if g not in PL_FINANCING_GLS) + ("4452",)))
+PL_REALISED_GLS: Tuple[str, ...] = tuple(g for g in REALISED_GLS if g not in PL_FINANCING_GLS and g not in PL_INCOME_GLS)
+PL_FEE_GLS: Tuple[str, ...] = tuple(FEE_GLS)
+
+
+def pl_bucket(gl: str) -> Optional[str]:
+    """``realised | income | financing | fees`` for a P&L GL (PORTFOLIO-08), else None."""
+    if gl in PL_FINANCING_GLS:
+        return "financing"
+    if gl in PL_INCOME_GLS:
+        return "income"
+    if gl in PL_REALISED_GLS:
+        return "realised"
+    if gl in PL_FEE_GLS:
+        return "fees"
+    return None
+
+
+def pl_amount(gl: str, natural_c: int) -> int:
+    """A P&L GL's natural balance as its bucket counts it: realised / income credit-positive, financing / fees debit-positive (a
+    cost), from the STORAGE sign - so a financing GL of kind INCOME (4451, 4453) reads as a cost when debited."""
+    spec = CHART.get(gl)
+    storage = NATURAL_SIGN[spec.kind] * int(natural_c) if spec is not None else int(natural_c)
+    return storage if pl_bucket(gl) in ("financing", "fees") else -storage
+
+
+def otc_cost_c(gl: Dict[str, Tuple[int, int]], base: bool = False) -> int:
+    """C9c: one OTC contract's cost basis = natural(1335) - natural(2345) (native cents; ``base`` -> USD base): premium / upfront
+    paid is a positive cost, received a negative one.  ``gl`` = the contract's ``{gl: (natural native, natural base)}``.  Worked
+    (P3 money test d): a CDX upfront RECEIVED of 48,492.57 -> cost -48,492.57; with the mark -49,176.13 the unrealised is
+    -49,176.13 - (-48,492.57) = -683.56, the cost of dealing, and realised stays 0.00."""
+    i = 1 if base else 0
+    return int(gl.get(OTC_COST_GLS[0], (0, 0))[i]) - int(gl.get(OTC_COST_GLS[1], (0, 0))[i])
 CLASS_OF_KIND = {"EQUITY": "securities", "ETF": "securities", "ADR": "securities", "REIT": "securities", "PREFERRED": "securities", "BOND": "securities",
                  "OPTION": "listed options", "FUTURE": "futures", "FX": "FX", "PRIVATE": "private / illiquid", "SWAP": "OTC derivatives",
                  "PRIVATE_LOAN": "private credit"}
@@ -115,13 +157,17 @@ class CashView:
     overdrawn_c: int = 0
     options_required_c: int = 0        # SR-13: the short-option margin requirement reserved in this currency (inside reserved_c)
     orders_reserved_c: int = 0         # what working orders reserve (reserved_c minus the option margin)
+    adjustments: List[dict] = field(default_factory=list)   # C9b: [{key, label, amount_c}] - settled cash that may not be spent (restricted collateral ...)
+    adjustments_total_c: int = 0       # C9b: their total; available / spendable / the split are computed on settled_c - adjustments_total_c
     definition: str = AVAILABLE_TEXT
     to_dict = _d
 
 
 @dataclass
 class AvailableView:
-    """§6.0 / §6.1 liquidity of one account in one currency (``Accounting.available_view``; ``liquidity_split``)."""
+    """§6.0 / §6.1 liquidity of one account in one currency (``Accounting.available_view``; ``liquidity_split``).  ``settled_c``
+    is the ledger's settled cash (GL 1010); ``adjustments_total_c`` what the C9b cash adjusters restrict of it - the split is
+    computed on ``settled_c - adjustments_total_c``."""
     account_id: str
     currency: str
     settle_date: str
@@ -136,6 +182,7 @@ class AvailableView:
     sweep_covers_c: int
     unfunded_c: int
     overdrawn_c: int
+    adjustments_total_c: int = 0
     definition: str = AVAILABLE_TEXT
     to_dict = _d
 
@@ -437,7 +484,7 @@ def reserved_c(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, ma
     0.00 reserved (the old rule reserved 1 × 7,750 × 50 = 387,500.00); flat, BUY 2 -> 2.25 × 2 + 17,500.00 × 2 = 35,004.50."""
     cache: dict = {}
     total = 0
-    rows = conn.execute("SELECT o.instrument_id, o.side, o.qty, o.filled_qty, o.order_type, o.limit_px FROM orders o"
+    rows = conn.execute("SELECT o.order_id, o.account_id, o.instrument_id, o.side, o.qty, o.filled_qty, o.order_type, o.limit_px FROM orders o"
                         " LEFT JOIN orders p ON p.order_id = o.parent_order_id WHERE o.account_id=?"
                         " AND (o.status IN ('WORKING','PARTIAL') OR (o.status='WAITING_PARENT' AND (p.status IS NULL OR p.status <> 'SUSPENDED')))"
                         " ORDER BY o.created_ts, o.order_id", (account_id,)).fetchall()
@@ -450,41 +497,111 @@ def reserved_c(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, ma
         inst = _instrument(conn, master, r["instrument_id"], cache)
         if inst is None or inst.currency != ccy:
             continue
-        remaining = int(r["qty"]) - int(r["filled_qty"])
-        if remaining <= 0:
-            continue
-        if inst.kind == "FUTURE":
-            iid = inst.instrument_id
-            if iid not in fut_pos:
-                pr = conn.execute("SELECT qty FROM v_positions WHERE account_id=? AND instrument_id=?", (account_id, iid)).fetchone()
-                fut_pos[iid] = int(pr["qty"] or 0) if pr is not None else 0
-            p = fut_pos[iid]
-            q = remaining if r["side"] in BUY_SIDES else -remaining
-            im, _mm = futures_rates_c(conn, inst)
-            fee, _ = tables.fee_c(inst.kind, remaining)
-            total += max(0, int(fee) + im * (abs(p + q) - abs(p)))
-            fut_pos[iid] = p + q
-            continue
-        last, _view = _mark_price(snapshot, inst.instrument_id)
-        if r["side"] in BUY_SIDES:
-            if r["order_type"] in ("LIMIT", "STOP_LIMIT") and r["limit_px"]:
-                ref = Decimal(r["limit_px"])
-            elif last is not None:
-                ref = last * Decimal("1.02")
-            else:
-                continue
-            fee, _ = tables.fee_c(inst.kind, remaining)
-            total += mul_c(remaining, ref, inst.multiplier, inst.price_scale) + fee
-        elif r["side"] == "SELL_SHORT" and last is not None:
-            coll = mul_c(remaining, last * config.COLLATERAL_PCT, inst.multiplier, inst.price_scale)
-            fee, _ = tables.fee_c(inst.kind, remaining)
-            total += coll - max(0, min(mul_c(remaining, last, inst.multiplier, inst.price_scale) - fee, coll))
+        total += reserved_for_order(conn, r, snapshot, master, fut_pos=fut_pos, cache=cache)
     return total
 
 
+def reserved_for_order(conn: sqlite3.Connection, order_row, snapshot, master=None, *, fut_pos: Optional[Dict[str, int]] = None,
+                       cache: Optional[dict] = None) -> int:
+    """C9a (FINSIM1_PLAN): the cash ONE working order reserves, in its instrument's currency - the per-row body of ``reserved_c``
+    (whose totals are this function summed over the account's WORKING / PARTIAL / WAITING_PARENT orders plus the SR-13 option
+    margin, which is an account figure, not an order's).  ``order_row`` is an ``orders`` row (or a dict) with at least
+    ``account_id, instrument_id, side, qty, filled_qty, order_type, limit_px``; the order's status is NOT checked here (the
+    caller decides which orders reserve).  A FUTURE reserves against the position running over the account's earlier working
+    orders of that contract: pass the same ``fut_pos`` dict for every order of one account in ``created_ts`` order (``reserved_c``
+    does); without it the position is the account's current one (``v_positions``) and the dict is not kept.  Worked: a LIMIT BUY
+    100 AAPL @ 300.00 reserves 100 x 300.00 + fee 1.00 = 30,001.00; a MARKET BUY 100 with last 339.50 reserves 100 x 346.29 + 1.00
+    = 34,630.00; an order with nothing left to fill reserves 0.00."""
+    cache = {} if cache is None else cache
+    inst = _instrument(conn, master, order_row["instrument_id"], cache)
+    if inst is None:
+        return 0
+    remaining = int(order_row["qty"]) - int(order_row["filled_qty"] or 0)
+    if remaining <= 0:
+        return 0
+    side = order_row["side"]
+    if inst.kind == "FUTURE":
+        iid = inst.instrument_id
+        pos = fut_pos if fut_pos is not None else {}
+        if iid not in pos:
+            pr = conn.execute("SELECT qty FROM v_positions WHERE account_id=? AND instrument_id=?", (order_row["account_id"], iid)).fetchone()
+            pos[iid] = int(pr["qty"] or 0) if pr is not None else 0
+        p = pos[iid]
+        q = remaining if side in BUY_SIDES else -remaining
+        im, _mm = futures_rates_c(conn, inst)
+        fee, _ = tables.fee_c(inst.kind, remaining)
+        pos[iid] = p + q
+        return max(0, int(fee) + im * (abs(p + q) - abs(p)))
+    last, _view = _mark_price(snapshot, inst.instrument_id)
+    if side in BUY_SIDES:
+        if order_row["order_type"] in ("LIMIT", "STOP_LIMIT") and order_row["limit_px"]:
+            ref = Decimal(order_row["limit_px"])
+        elif last is not None:
+            ref = last * Decimal("1.02")
+        else:
+            return 0
+        fee, _ = tables.fee_c(inst.kind, remaining)
+        return mul_c(remaining, ref, inst.multiplier, inst.price_scale) + fee
+    if side == "SELL_SHORT" and last is not None:
+        coll = mul_c(remaining, last * config.COLLATERAL_PCT, inst.multiplier, inst.price_scale)
+        fee, _ = tables.fee_c(inst.kind, remaining)
+        return coll - max(0, min(mul_c(remaining, last, inst.multiplier, inst.price_scale) - fee, coll))
+    return 0
+
+
+# ---- C9b: cash adjusters (FINSIM1_PLAN) --------------------------------------------------------------------------------
+#: key -> (label, fn(conn, account_id, ccy, snapshot, master) -> cents).  Module-global (like api's refusal recorders): a module's
+#: ``bind(rt)`` registers its adjuster once; a repeated registration of the same key replaces it (the latest definition wins).
+_CASH_ADJUSTERS: Dict[str, Tuple[str, Callable]] = {}
+
+
+def add_cash_adjuster(key: str, label: str, fn: Callable) -> None:
+    """C9b: register ``fn(conn, account_id, ccy, snapshot, master) -> cents``, cash of the account that sits in its settled
+    balance (GL 1010) but may not be spent - e.g. P6's "restricted (collateral received)" (D9 / C21).  Every registered
+    adjuster is subtracted from settled cash inside ``_available_parts``, so ``available_c``, ``spendable_c``,
+    ``immediate_available_c`` and buying power exclude it; ``CashView.adjustments`` lists them ``[{key, label, amount_c}]`` and
+    ``adjustments_c`` gives SWEEP_OUT their total.  An adjuster only ever RESTRICTS cash: a negative answer counts as 0.  An
+    adjuster that raises is a defect and the exception propagates (a figure that cannot be computed is never guessed as 0)."""
+    if not key or not callable(fn):
+        raise ValueError("a cash adjuster needs a key and a callable")
+    _CASH_ADJUSTERS[str(key)] = (str(label or key), fn)
+
+
+def remove_cash_adjuster(key: str) -> bool:
+    """Unregister an adjuster (tests); True when it was registered."""
+    return _CASH_ADJUSTERS.pop(str(key), None) is not None
+
+
+def cash_adjusters() -> List[Tuple[str, str]]:
+    """``[(key, label)]`` of the registered adjusters, in registration order."""
+    return [(k, v[0]) for k, v in _CASH_ADJUSTERS.items()]
+
+
+def cash_adjustments(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, master=None, *, skip=()) -> List[dict]:
+    """C9b: ``[{key, label, amount_c}]`` - every registered adjuster's restriction on the account's ``ccy`` cash (0 rows
+    included, so a page can say "restricted 0.00"); ``skip`` names adjuster keys to leave out (for example a payment to the
+    CSA counterparty that may use that counterparty's collateral: C21 csa_netting)."""
+    out = []
+    for key, (label, fn) in list(_CASH_ADJUSTERS.items()):
+        if key in skip:
+            continue
+        out.append({"key": key, "label": label, "amount_c": max(0, int(fn(conn, account_id, ccy, snapshot, master) or 0))})
+    return out
+
+
+def adjustments_c(conn: sqlite3.Connection, account_id: str, ccy: str, snapshot, master=None, *, skip=()) -> int:
+    """C9b: the total the registered adjusters restrict on the account's ``ccy`` cash (natural cents, >= 0); SWEEP_OUT keeps it
+    in the account (restricted cash is never swept)."""
+    if not _CASH_ADJUSTERS:
+        return 0
+    return sum(a["amount_c"] for a in cash_adjustments(conn, account_id, ccy, snapshot, master, skip=skip))
+
+
 def _available_parts(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None,
-                     now: Optional[datetime] = None) -> Tuple[date, int, int, int, int]:
-    """``(settle_date, settled, receivables due by settle_date, payables, reserved)`` in natural cents."""
+                     now: Optional[datetime] = None, *, skip_adjusters=()) -> Tuple[date, int, int, int, int]:
+    """``(settle_date, settled, receivables due by settle_date, payables, reserved)`` in natural cents.  ``settled`` is the
+    account's USABLE settled cash: the GL 1010 balance less every registered cash adjuster (C9b: restricted collateral and
+    the like; ``skip_adjusters`` names keys to leave out)."""
     if settle_date is None:
         if now is None:
             # never the machine's local date: every caller passes the injected clock (Accounting passes clock.now(),
@@ -492,21 +609,25 @@ def _available_parts(conn: sqlite3.Connection, account_id: str, ccy: str, settle
             raise ValueError("available_c needs settle_date or now (the injected clock)")
         settle_date = accounting_day(now)
     settled = natural("1010", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1010' AND currency=?", (account_id, ccy)))
+    settled -= adjustments_c(conn, account_id, ccy, snapshot, master, skip=skip_adjusters)
     recv = _sum(conn, "SELECT COALESCE(SUM(amount_c),0) FROM settlements WHERE account_id=? AND currency=? AND status='PENDING' AND amount_c > 0 AND due_date <= ?",
                 (account_id, ccy, settle_date.isoformat()))
     pay = natural("2100", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl IN ('2100','2350') AND currency=?", (account_id, ccy)))
     return settle_date, settled, recv, pay, reserved_c(conn, account_id, ccy, snapshot, master)
 
 
-def spendable_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None, now: Optional[datetime] = None) -> int:
+def spendable_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None, now: Optional[datetime] = None, *,
+                skip_adjusters=()) -> int:
     """The SIGNED own-cash figure ``settled + Σ receivables due ≤ settle_date − payables − reserved`` (§6.1).  Negative when
     working orders' reservations and payables exceed the account's own cash; shown only split (``liquidity_split``), and
-    the fundability of a NEW order counts it (``buying_power`` / ``buying_power_split``: −spendable is ``committed``)."""
-    _d0, settled, recv, pay, reserved = _available_parts(conn, account_id, ccy, settle_date, snapshot, master, now)
+    the fundability of a NEW order counts it (``buying_power`` / ``buying_power_split``: −spendable is ``committed``).
+    ``settled`` is usable settled cash (C9b: the registered cash adjusters subtracted)."""
+    _d0, settled, recv, pay, reserved = _available_parts(conn, account_id, ccy, settle_date, snapshot, master, now, skip_adjusters=skip_adjusters)
     return settled + recv - pay - reserved
 
 
-def available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None, now: Optional[datetime] = None) -> int:
+def available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None, now: Optional[datetime] = None, *,
+                skip_adjusters=()) -> int:
     """§6.0 / §6.1 available cash: the account's own spendable cash FLOORED AT ZERO (``AVAILABLE_TEXT``; sentence
     AVAILABLE; directive amendment -7)::
 
@@ -523,11 +644,11 @@ def available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date
     one will sweep (the 2026-10-21 regression: accepted, then SUSPENDED at the open).  Settled cash below zero after an
     unfunded call is ``overdrawn`` (an open FUNDING_SHORTFALL, §11.6), never hidden.  ``settle_date`` None -> today's
     accounting day."""
-    return max(0, spendable_c(conn, account_id, ccy, settle_date, snapshot, master, now))
+    return max(0, spendable_c(conn, account_id, ccy, settle_date, snapshot, master, now, skip_adjusters=skip_adjusters))
 
 
 def immediate_available_c(conn: sqlite3.Connection, account_id: str, ccy: str, settle_date: Optional[date], snapshot, master=None,
-                          now: Optional[datetime] = None) -> int:
+                          now: Optional[datetime] = None, *, skip_adjusters=()) -> int:
     """What may leave the account's SETTLED cash now (sentence AVAILABLE, the immediate rule; MONEY-6, C12 c)::
 
         immediate = max(0, min(settled, settled + receivables due by settle_date - payables - reserved))
@@ -538,7 +659,7 @@ def immediate_available_c(conn: sqlite3.Connection, account_id: str, ccy: str, s
     or a booking posts at once (``execution.fund(commitments=True)``: futures IM, OTC IM) measure against it.
     ``settle_date`` None -> today's accounting day.  Worked (s7, Wed 18:00 = accounting day Thu): settled 0.00, a sale's
     receivable 344,995.00 due Thu -> available 344,995.00 but immediate min(0.00, 344,995.00) = 0.00."""
-    _d0, settled, recv, pay, reserved = _available_parts(conn, account_id, ccy, settle_date, snapshot, master, now)
+    _d0, settled, recv, pay, reserved = _available_parts(conn, account_id, ccy, settle_date, snapshot, master, now, skip_adjusters=skip_adjusters)
     return max(0, min(settled, settled + recv - pay - reserved))
 
 
@@ -619,14 +740,256 @@ def buying_power_split(spendable_c: int, treasury_available_c: int, pb_headroom_
             "pb_headroom_gross_c": int(pb_headroom_c), "pb_headroom_c": pb - from_pb, "total_c": own + (tre - from_tre) + (pb - from_pb)}
 
 
+def _iso(d) -> str:
+    return d.isoformat() if hasattr(d, "isoformat") else str(d)
+
+
+def gl_balances_at(conn: sqlite3.Connection, account_id: str, d, gls=None, ccy: Optional[str] = None) -> Dict[Tuple[str, str], int]:
+    """Business-date balances (C9h): ``{(gl, currency): natural cents}`` of one account from the journal lines whose ENTRY's
+    ``business_date`` <= ``d`` (an entry posted at 19:58 ET on D carries business date D+1 and counts from D+1; an as-of entry
+    counts from its own business date).  ``gls`` limits the codes, ``ccy`` the currency.  Never reads ``gl_balances``."""
+    sql = ("SELECT l.gl, l.currency, SUM(l.amount_c) AS a FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
+           " WHERE l.account_id=? AND e.business_date <= ?")
+    params: list = [account_id, _iso(d)]
+    if gls:
+        gls = list(gls)
+        sql += f" AND l.gl IN ({','.join('?' for _ in gls)})"
+        params.extend(gls)
+    if ccy:
+        sql += " AND l.currency=?"
+        params.append(ccy)
+    sql += " GROUP BY l.gl, l.currency"
+    return {(r["gl"], r["currency"]): natural(r["gl"], int(r["a"] or 0)) for r in conn.execute(sql, params).fetchall() if r["gl"] in CHART}
+
+
+def cash_view_at(conn: sqlite3.Connection, account_id: str, ccy: str, d) -> Dict[str, int]:
+    """C9h (FINSIM1_PLAN): the account's business-date cash at the close of business date ``d``, natural cents::
+
+        settled_c    = GL 1010                     (journal lines with business_date <= d)
+        receivable_c = GL 1200 + 1250              (sales / FX proceeds not settled yet)
+        payable_c    = GL 2100 + 2350              (purchases / FX owed, a positive amount)
+
+    The figure an as-of need of date D is funded on (C20), Treasury's as-of sweep check (C15), restricted collateral as of a
+    date (C21), the re-accrual base (C17) and the importer's business-date cash table read.  Worked (owner DB, 10-22): the
+    transfers entered 19:39-19:43 ET on 10-21 carry business date 10-22, so F1:TREASURY reads settled 25,000,000.00 at the
+    close of 10-21 and 1,467,580.80 at the close of 10-22 while its current balance is the later one."""
+    b = gl_balances_at(conn, account_id, d, ("1010", "1200", "1250", "2100", "2350"), ccy)
+    g = lambda gl: int(b.get((gl, ccy), 0))   # noqa: E731
+    return {"settled_c": g("1010"), "receivable_c": g("1200") + g("1250"), "payable_c": g("2100") + g("2350")}
+
+
 def _sum(conn: sqlite3.Connection, sql: str, params=()) -> int:
     return int(conn.execute(sql, params).fetchone()[0] or 0)
 
 
+# ---- C9d / C9i: snapshot readers over the restated versions (FINSIM1_PLAN) ---------------------------------------------------
+VERSIONS_TABLE = "nav_snapshot_versions"
+
+
+def has_versions(conn: sqlite3.Connection) -> bool:
+    """True when ``nav_snapshot_versions`` exists (created by ``navhistory.bind``; an older file or a runtime without the module
+    has none, and every reader below then reads ``nav_snapshots`` exactly as before)."""
+    return conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (VERSIONS_TABLE,)).fetchone() is not None
+
+
+def _version_dict(r) -> dict:
+    d = dict(r)
+    d["restated"] = True
+    d["restated_ts"] = d.get("ts")
+    return d
+
+
+def _original_dict(r) -> dict:
+    d = dict(r)
+    d["restated"] = False
+    d["version"] = 0
+    return d
+
+
+def snapshot_at(conn: sqlite3.Connection, key: str, snap_date) -> Optional[dict]:
+    """The row a reader uses for ``key`` (account id or ``{lifetime}:ALL``) on ``snap_date``: the LATEST restated version when
+    one exists (``restated`` True, with ``version``, ``reason``, ``batch_id`` and ``restated_ts``), else the original
+    ``nav_snapshots`` row (``restated`` False), else None.  A date with only a version row (an account the restatement added)
+    counts."""
+    ds = _iso(snap_date)
+    if has_versions(conn):
+        v = conn.execute(f"SELECT * FROM {VERSIONS_TABLE} WHERE account_id=? AND snap_date=? ORDER BY version DESC LIMIT 1", (key, ds)).fetchone()
+        if v is not None:
+            return _version_dict(v)
+    r = conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? AND snap_date=?", (key, ds)).fetchone()
+    return _original_dict(r) if r is not None else None
+
+
+def original_at(conn: sqlite3.Connection, key: str, snap_date) -> Optional[dict]:
+    """The ORIGINAL ``nav_snapshots`` row (never a version) - the toggle's other side and the restatement's starting point."""
+    r = conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? AND snap_date=?", (key, _iso(snap_date))).fetchone()
+    return _original_dict(r) if r is not None else None
+
+
+def snapshot_chain(conn: sqlite3.Connection, key: str, from_date=None, to_date=None) -> List[dict]:
+    """C9i: the latest-version chain of ``key`` in date order (per date the latest version, else the original), optionally
+    limited to ``from_date`` .. ``to_date`` (inclusive).  Performance, History, M4 / M5 and the baselines read this."""
+    where, params = "account_id=?", [key]
+    if from_date is not None:
+        where += " AND snap_date >= ?"
+        params.append(_iso(from_date))
+    if to_date is not None:
+        where += " AND snap_date <= ?"
+        params.append(_iso(to_date))
+    rows = {r["snap_date"]: _original_dict(r) for r in conn.execute(f"SELECT * FROM nav_snapshots WHERE {where}", params).fetchall()}
+    if has_versions(conn):
+        for v in conn.execute(f"SELECT * FROM {VERSIONS_TABLE} WHERE {where} ORDER BY snap_date, version", params).fetchall():
+            rows[v["snap_date"]] = _version_dict(v)              # ascending versions: the last one per date wins
+    return [rows[d] for d in sorted(rows)]
+
+
+def lender_label(name) -> str:
+    """C16 (P6's ``lending.lender_label``, imported lazily): a stored lender name as shown - "street lender (modelled)" reads "street lender
+    (assumed terms)"; the stored rows are never rewritten.  The same rule applies here when the lending module is absent."""
+    try:
+        from . import lending as _lending
+        fn = getattr(_lending, "lender_label", None)
+        if callable(fn):
+            return fn(name)
+    except Exception:   # noqa: BLE001 - the same rule below
+        pass
+    s = "" if name is None else str(name)
+    for old in ("modelled)", "modeled)"):
+        if s.endswith(old):
+            return s[: -len(old)] + "assumed terms)"
+    return s
+
+
+def _rget(row, key: str, default=None):
+    """``row[key]`` for a dict or a ``sqlite3.Row`` (None-safe; a missing key gives ``default``)."""
+    if row is None:
+        return default
+    try:
+        return row[key]
+    except (KeyError, IndexError):
+        return default
+
+
+def restated_label(row) -> Optional[dict]:
+    """A reader's label of a restated snapshot row (C9d: "restated on <date> (batch X)"), None for an original:
+    ``{snap_date, on, batch_id, version, reason, text}``."""
+    if not _rget(row, "restated"):
+        return None
+    on = ny_of(int(_rget(row, "restated_ts") or _rget(row, "ts") or 0)).date().isoformat()
+    batch = _rget(row, "batch_id")
+    text = f"restated on {on}" + (f" (batch {batch})" if batch else "")
+    return {"snap_date": _rget(row, "snap_date"), "on": on, "batch_id": batch, "version": _rget(row, "version"), "reason": _rget(row, "reason"), "text": text}
+
+
 def _last_snapshot(conn: sqlite3.Connection, key: str, before: Optional[str] = None):
-    if before:
-        return conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? AND snap_date < ? ORDER BY snap_date DESC LIMIT 1", (key, before)).fetchone()
-    return conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? ORDER BY snap_date DESC LIMIT 1", (key,)).fetchone()
+    """The latest snapshot row of ``key`` (dated before ``before`` when given), reading the latest restated version of that date
+    when one exists (C9d readers: ``_last_snapshot``, the TODAY / MTD / YTD baselines, the archived NAV and the day P&L base)."""
+    if not has_versions(conn):
+        if before:
+            return conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? AND snap_date < ? ORDER BY snap_date DESC LIMIT 1", (key, before)).fetchone()
+        return conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? ORDER BY snap_date DESC LIMIT 1", (key,)).fetchone()
+    cond, params = ("AND snap_date < ?", [key, before, key, before]) if before else ("", [key, key])
+    r = conn.execute(f"SELECT MAX(d) FROM (SELECT MAX(snap_date) d FROM nav_snapshots WHERE account_id=? {cond}"
+                     f" UNION ALL SELECT MAX(snap_date) d FROM {VERSIONS_TABLE} WHERE account_id=? {cond})", params).fetchone()
+    if r is None or r[0] is None:
+        return None
+    return snapshot_at(conn, key, r[0])
+
+
+# ---- PORTFOLIO-14: dated marks of a snapshot row -------------------------------------------------------------------------------
+DATED_KINDS = EQUITY_KINDS + ("OPTION", "FUTURE")
+
+
+def dated_mark_row(conn: sqlite3.Connection, iid: str, kind: str, d) -> Optional[sqlite3.Row]:
+    """The stored end-of-day mark of ``iid`` for date ``d``: the ``marks`` row of kind SETTLE (futures) or CLOSE (everything else)
+    dated ``d``, else the latest one before it (a weekend or holiday carries the previous trading day's mark - no re-mark)."""
+    return conn.execute("SELECT * FROM marks WHERE instrument_id=? AND kind=? AND mark_date <= ? ORDER BY mark_date DESC LIMIT 1",
+                        (iid, "SETTLE" if kind == "FUTURE" else "CLOSE", _iso(d))).fetchone()
+
+
+def dated_mark_view(conn: sqlite3.Connection, inst, d, sessions=None) -> Optional[MarkView]:
+    """PORTFOLIO-14: the dated mark of a position for date ``d`` as a MarkView: equities / ETFs at the recorded CLOSE, futures at the
+    SETTLE, options at the recorded CLOSE (the Cboe official close where it was recorded, else the last trade; its stored quality
+    says so); a weekend or holiday carries the previous trading day's stored mark (no re-mark).  The row's ``mark_date`` is kept in
+    ``inputs``.  None when nothing is stored, or when the close of the instrument's last trading day on or before ``d`` was never
+    recorded (an older close is not that day's mark: the caller falls back, labelled)."""
+    row = dated_mark_row(conn, inst.instrument_id, inst.kind, d)
+    if row is None:
+        return None
+    ds = _iso(d)
+    quality = str(row["quality"] or "close")
+    note = f"recorded {row['kind']} of {row['mark_date']}" + (f" (carried to {ds})" if row["mark_date"] != ds else "")
+    if sessions is not None and row["mark_date"] != ds:
+        try:
+            from .lifecycle_jobs import last_trading_day
+            grp = "US_EQUITY" if inst.kind == "FUTURE" else inst.session_group
+            expected = last_trading_day(sessions, grp, date.fromisoformat(ds))
+        except Exception:   # noqa: BLE001 - without a calendar the stored mark is carried as it is
+            expected = None
+        if expected is not None and row["mark_date"] < expected.isoformat():
+            # the close of a trading day on or before d was never recorded: an older close is not that day's mark (only a weekend or a
+            # holiday carries one); the caller falls back - the evening snapshot to the live mark, labelled; a restatement to the original's
+            return None
+    return MarkView(inst.instrument_id, Decimal(str(row["price"])), quality, str(row["source"] or ""), str(row["method"] or row["kind"]).lower(),
+                    row["quote_time"], row["fetched_at"], f"{row['kind'].lower()} of {row['mark_date']}",
+                    {"mark_date": row["mark_date"], "mark_kind": row["kind"], "note": row["note"]}, False, note)
+
+
+def mark_labels(kind: str, view: Optional[MarkView]) -> dict:
+    """``{mark_kind, mark_source, mark_date}`` of a position's mark for ``detail_json`` (PORTFOLIO-14): CLOSE / SETTLE for a stored
+    end-of-day mark (with its date), OVERLAY for an OTC contract (the mark at the last variation margin, or the C13 model mark),
+    LIVE for the snapshot's own quote or model."""
+    if view is None:
+        return {"mark_kind": None, "mark_source": None, "mark_date": None}
+    inputs = view.inputs if isinstance(view.inputs, dict) else {}
+    if inputs.get("mark_kind"):
+        return {"mark_kind": inputs.get("mark_kind"), "mark_source": view.source or None, "mark_date": inputs.get("mark_date")}
+    if kind in ("SWAP", "FX_FORWARD"):
+        return {"mark_kind": "OVERLAY", "mark_source": view.source or None, "mark_date": None}
+    return {"mark_kind": "LIVE" if view.mark is not None else None, "mark_source": view.source or None, "mark_date": None}
+
+
+class DatedMarks:
+    """PORTFOLIO-14: the mark set of the snapshot row of date ``d`` - every listed position (equity / ETF / option / future) at its
+    stored mark of ``d`` (``dated_mark_view``), every other mark from ``base`` (the live snapshot: OTC overlays and models,
+    private and bond models, FX).  A listed name with no stored mark at all falls back to ``base`` and says so (quality stale,
+    never a silent live price).  Everything else a reader asks (``as_of``, ``quote``, ``chain``, ``session``) is ``base``'s."""
+
+    def __init__(self, conn: sqlite3.Connection, master, d, base, sessions=None):
+        self._conn, self._master, self._d, self._base, self._sessions = conn, master, d, base, sessions
+        self._cache: Dict[str, MarkView] = {}
+
+    _OWN = frozenset(("_conn", "_master", "_d", "_base", "_sessions", "_cache"))
+
+    def __getattr__(self, name):
+        if name in DatedMarks._OWN:            # not set yet (never recurse into the base for this wrapper's own state)
+            raise AttributeError(name)
+        return getattr(self._base, name)
+
+    def as_of(self) -> int:
+        return self._base.as_of() if self._base is not None else 0
+
+    def fx(self, ccy: str):
+        return self._base.fx(ccy)
+
+    def mark(self, iid: str) -> MarkView:
+        if iid in self._cache:
+            return self._cache[iid]
+        inst = _instrument(self._conn, self._master, iid, {})
+        view = None
+        if inst is not None and inst.kind in DATED_KINDS:
+            view = dated_mark_view(self._conn, inst, self._d, self._sessions)
+            if view is None:
+                live = self._base.mark(iid) if self._base is not None else None
+                if live is not None and live.mark is not None and live.quality != "unavailable":
+                    view = MarkView(iid, live.mark, "stale", live.source, live.method, live.quote_time, live.fetched_at, live.delay_label, live.inputs, False,
+                                    f"no {'SETTLE' if inst.kind == 'FUTURE' else 'CLOSE'} recorded for {_iso(self._d)}: the live mark of the snapshot time")
+                else:
+                    view = live or unavailable(iid, f"no recorded close for {_iso(self._d)}")
+        if view is None:
+            view = self._base.mark(iid) if self._base is not None else unavailable(iid, "no mark snapshot")
+        self._cache[iid] = view
+        return view
 
 
 @dataclass
@@ -753,14 +1116,17 @@ class Accounting:
                 receivable = b["1200"] + b["1250"]
                 payable = b["2100"] + b["2350"]
                 tre = 0 if acct["kind"] == "TREASURY" else self.treasury_available_c(conn, acct["lifetime_id"], ccy, snap)
-                s = liquidity_split(b["1010"], recv_due, payable, reserved, tre)
+                adj = cash_adjustments(conn, account_id, ccy, snap, self.instruments)          # C9b: restricted cash and the like
+                adj_c = sum(a["amount_c"] for a in adj)
+                s = liquidity_split(b["1010"] - adj_c, recv_due, payable, reserved, tre)
                 opt_req = 0
                 if ccy == "USD":
                     ms = conn.execute("SELECT options_required_c FROM margin_state WHERE account_id=?", (account_id,)).fetchone()
                     opt_req = max(0, int(ms["options_required_c"] or 0)) if ms is not None else 0
                 out[ccy] = CashView(account_id, ccy, b["1010"], receivable, payable, receivable - payable, b["1400"], b["1300"] + b["1310"], reserved,
                                     s["available_c"], b["1230"] + b["1210"] + b["1220"] + b["1225"] + b["1410"], b["1320"] + b["1330"],
-                                    s["spendable_c"], s["needs_c"], s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"], opt_req, reserved - opt_req)
+                                    s["spendable_c"], s["needs_c"], s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"], opt_req, reserved - opt_req,
+                                    adj, adj_c)
             return out
 
     def available(self, account_id: str, currency: str, settle_date: Optional[date] = None, snapshot=None) -> int:
@@ -776,10 +1142,11 @@ class Accounting:
         with self._conn() as conn:
             acct = self._scope(conn, account_id).accounts[0]
             d, settled, recv, pay, reserved = _available_parts(conn, account_id, currency, settle_date or self.view_date(), snap, self.instruments, self.clock.now())
+            adj = adjustments_c(conn, account_id, currency, snap, self.instruments)        # C9b: _available_parts' settled is net of it
             tre = 0 if acct["kind"] == "TREASURY" else self.treasury_available_c(conn, acct["lifetime_id"], currency, snap)
             s = liquidity_split(settled, recv, pay, reserved, tre)
-            return AvailableView(account_id, currency, d.isoformat(), settled, recv, pay, reserved, s["spendable_c"], s["available_c"], s["needs_c"], tre,
-                                 s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"])
+            return AvailableView(account_id, currency, d.isoformat(), settled + adj, recv, pay, reserved, s["spendable_c"], s["available_c"], s["needs_c"], tre,
+                                 s["sweep_covers_c"], s["unfunded_c"], s["overdrawn_c"], adj)
 
     def treasury_available_c(self, conn: sqlite3.Connection, lifetime_id: str, currency: str, snap) -> int:
         """``treasury_available_c`` (module function): Treasury immediate available − the book's reserve (BM-01)."""
@@ -833,11 +1200,12 @@ class Accounting:
 
     @staticmethod
     def _pl_cum(gl: Dict[str, Tuple[int, int]]) -> Tuple[int, int, int, int]:
-        """(realised, income, financing, fees) per instrument in base (natural; financing and fees as positive costs)."""
-        realised = sum(gl.get(g, (0, 0))[1] for g in REALISED_GLS)
-        income = sum(gl.get(g, (0, 0))[1] for g in INCOME_GLS)
-        financing = sum(gl.get(g, (0, 0))[1] for g in FINANCING_GLS)
-        fees = sum(gl.get(g, (0, 0))[1] for g in FEE_GLS)
+        """(realised, income, financing, fees) per instrument in base (natural; financing and fees as positive costs; PORTFOLIO-08:
+        the swap financing / coupon GLs 4451 / 4453 are financing, dividend equivalents 4452 income - ``pl_bucket``)."""
+        realised = sum(pl_amount(g, gl[g][1]) for g in PL_REALISED_GLS if g in gl)
+        income = sum(pl_amount(g, gl[g][1]) for g in PL_INCOME_GLS if g in gl)
+        financing = sum(pl_amount(g, gl[g][1]) for g in PL_FINANCING_GLS if g in gl)
+        fees = sum(pl_amount(g, gl[g][1]) for g in PL_FEE_GLS if g in gl)
         return realised, income, financing, fees
 
     def _positions_of(self, conn: sqlite3.Connection, acct: dict, snap, archived_detail: Optional[dict], day_base: Optional[dict],
@@ -964,10 +1332,15 @@ class Accounting:
                      "note": f"closed flat since the last settle: {fmt_money(pending)} is posted by the {r['settle_date']} variation margin"}
             finish(iid, inst, "FUTURE", 0, 0, view, 0, 0, pending, ccy, [], Decimal(r["settle_px"]), extra, CLASS_OF_KIND["FUTURE"])
 
+        swaps_mod = getattr(self.services, "swaps", None) if self.services else None
+        pos_fields = getattr(swaps_mod, "position_fields", None) if swaps_mod is not None else None
         for r in conn.execute("SELECT * FROM otc_contracts WHERE account_id=? AND status='OPEN' ORDER BY contract_id", (aid,)).fetchall():
             cid = r["contract_id"]
             inst = _instrument(conn, self.instruments, cid, cache)
             gl = glmap.get(cid, {})
+            # C9c: the contract's cost basis = its GL 1335 (premium / upfront paid) less its GL 2345 (premium / upfront received); both stay
+            # out of the NAV asset / liability sets, so assets / liabilities carry the contract at MV and NAV moves by MV - cost only
+            cost_c = otc_cost_c(gl)
             mark_c = int(r["mark_c"] or 0)
             if archived_detail is not None:
                 pd = (archived_detail.get("positions") or {}).get(cid) or {}
@@ -1008,7 +1381,29 @@ class Accounting:
                 extra["label"] = contract_label(inst, extra)
             except Exception:   # noqa: BLE001 - the label is a convenience; the name stays
                 extra["label"] = None
-            finish(cid, inst, "SWAP", sign * (int(r["notional_c"]) // 100), 0, view, mark_c, int(r["notional_c"]), mark_c, r["currency"], [], None, extra, "OTC derivatives")
+            mv_c = mark_c
+            fields = None
+            if archived_detail is None and callable(pos_fields):
+                # C13 (P4): the intraday MV when the live model mark is fresh ("model, intraday"), else the last-VM overlay; a hook that
+                # answers None (the stub) or no MV keeps the overlay above
+                try:
+                    fields = pos_fields(self.services, dict(r), snap, self.clock.epoch())
+                except Exception as e:   # noqa: BLE001 - the overlay stays (labelled) and the reason is kept on the row
+                    fields = None
+                    extra["position_fields_error"] = f"{type(e).__name__}: {e}"
+            if isinstance(fields, dict) and fields.get("mv_c") is not None:
+                mv_c = int(fields["mv_c"])
+                label = str(fields.get("mark_label") or "model")
+                view = MarkView(cid, from_c(mv_c), str(fields.get("quality") or "computed"), label, "swap_model", fields.get("as_of"), None, "model",
+                                {"overlay_c": mark_c, "margin_mode": r["margin_mode"]}, False, label)
+                extra["position_fields"] = {k: v for k, v in fields.items() if k not in ("mv_c", "unrealised_c")}
+                for k in ("units", "unit_label", "entry", "current"):
+                    if fields.get(k) is not None:
+                        extra[k] = fields[k]
+            extra["cost_c"] = cost_c
+            extra["cost_basis"] = "OTC contract cost: premium / upfront paid (GL 1335) less received (GL 2345)"
+            finish(cid, inst, "SWAP", sign * (int(r["notional_c"]) // 100), cost_c, view, mv_c, int(r["notional_c"]), mv_c - cost_c, r["currency"], [], None, extra,
+                   "OTC derivatives")
 
         for r in conn.execute("SELECT * FROM private_loans WHERE account_id=? AND status='OPEN' ORDER BY loan_id", (aid,)).fetchall():
             iid = r["instrument_id"]
@@ -1103,14 +1498,16 @@ class Accounting:
                 c.capital_c += natural(gl, base)
             elif gl == "3100":
                 c.transfers_c += natural(gl, base)
-            elif gl in REALISED_GLS:
-                c.realised_c += natural(gl, base)
-            elif gl in INCOME_GLS:
-                c.income_c += natural(gl, base)
-            elif gl in FINANCING_GLS:
-                c.financing_c += natural(gl, base)
-            elif gl in FEE_GLS:
-                c.fees_c += natural(gl, base)
+            else:
+                bucket = pl_bucket(gl)              # PORTFOLIO-08: 4451 / 4453 financing, 4452 income (storage signs, ``pl_amount``)
+                if bucket == "realised":
+                    c.realised_c += pl_amount(gl, natural(gl, base))
+                elif bucket == "income":
+                    c.income_c += pl_amount(gl, natural(gl, base))
+                elif bucket == "financing":
+                    c.financing_c += pl_amount(gl, natural(gl, base))
+                elif bucket == "fees":
+                    c.fees_c += pl_amount(gl, natural(gl, base))
         rates: Dict[str, Optional[Decimal]] = {}
 
         def rate_of(ccy: str) -> Optional[Decimal]:
@@ -1394,7 +1791,8 @@ class Accounting:
             rows = self._baseline_rows(conn, sc, period)
             if rows:
                 b = {k: sum(int(r[k]) for r in rows) for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
-                baseline = {"inception": False, "snap_date": min(r["snap_date"] for r in rows), "ts": min(int(r["ts"]) for r in rows), "nav_c": b["nav_c"]}
+                baseline = {"inception": False, "snap_date": min(r["snap_date"] for r in rows), "ts": min(int(r["ts"]) for r in rows), "nav_c": b["nav_c"],
+                            "restated": restated_label(next((r for r in rows if _rget(r, "restated")), None))}
                 degraded = False
             else:
                 b = {k: 0 for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
@@ -1422,15 +1820,19 @@ class Accounting:
                 total += natural(r["gl"], int(r["b"] or 0))
             return total
 
-    def snapshot_row(self, scope: str, snap_date: date, snapshot=None) -> dict:
+    def snapshot_row(self, scope: str, snap_date: date, snapshot=None, dated: bool = False) -> dict:
         """Every ``nav_snapshots`` field for ``scope`` at ``snap_date`` (the New York date whose close it represents),
-        incl. ``flows_day_c`` / ``pnl_day_c`` against the previous snapshot (M4) and the ``detail_json`` the day P&L and
-        archived views read.  The SNAPSHOT job (WP-08) inserts it; ``insert_snapshot`` does the write."""
+        incl. ``flows_day_c`` / ``pnl_day_c`` against the previous snapshot (M4; the latest restated version when one exists,
+        C9i) and the ``detail_json`` the day P&L and archived views read.  The SNAPSHOT job (WP-08) inserts it with
+        ``dated=True`` (PORTFOLIO-14: listed positions at their stored CLOSE / SETTLE of ``snap_date``, ``DatedMarks``); a
+        lifetime reset's final row and the tests' helper value at the given snapshot.  ``detail_json`` records each position's
+        mark kind, source and the date of the mark it used."""
         snap = self._snapshot(snapshot)
         with self._conn() as conn:
             sc = self._scope(conn, scope)
             key = sc.snapshot_key or scope
-            calcs = self._calcs(conn, sc, snap)
+            marks = DatedMarks(conn, self.instruments, snap_date, snap, self.sessions) if (dated and not sc.archived) else snap
+            calcs = self._calcs(conn, sc, marks)
             nav = self._nav_from_calcs(sc, calcs, snap.as_of())
             prev = _last_snapshot(conn, key, snap_date.isoformat())
             if prev is not None:
@@ -1446,7 +1848,8 @@ class Accounting:
                     realised, income, financing, fees = p.realised_itd_c, p.income_itd_c, -p.financing_itd_c, -p.fees_itd_c
                     positions[p.instrument_id] = {"account_id": p.account_id, "qty": p.qty, "cost_c": p.cost_c, "mv_c": p.mv_c, "mv_base_c": p.mv_base_c,
                                                   "unrealised_c": p.unrealised_base_c or 0, "pl_cum_c": realised + income - financing - fees,
-                                                  "mark": None if p.mark.mark is None else str(p.mark.mark), "quality": p.mark.quality, "as_of": p.mark.quote_time}
+                                                  "mark": None if p.mark.mark is None else str(p.mark.mark), "quality": p.mark.quality, "as_of": p.mark.quote_time,
+                                                  **mark_labels(p.kind, p.mark)}
                 for ccy in set(c.S) | set(c.U):
                     rate = self._fx_rate(snap, ccy)
                     if rate is not None:
@@ -1456,6 +1859,21 @@ class Accounting:
                     "realised_cum_c": nav.realised_c, "income_cum_c": nav.income_c, "financing_cum_c": nav.financing_c, "fees_cum_c": nav.fees_c,
                     "capital_cum_c": nav.capital_c, "transfers_cum_c": nav.transfers_c, "flows_day_c": flows_day, "pnl_day_c": pnl_day, "quality": nav.quality,
                     "partial": 1 if nav.partial else 0, "detail_json": dumps({"positions": positions, "fx": fx, "missing": nav.missing, "by_account": nav.by_account})}
+
+    def nav_as_of(self, scope: str, d, snapshot=None, live_fallback: bool = True) -> dict:
+        """C9d (FINSIM1_PLAN, PORTFOLIO-01): the ``nav_snapshots`` row of ``scope`` AS OF BUSINESS DATE ``d`` - positions and cash
+        alike from the journal entries whose business_date <= d (a fill at 19:58 ET on D counts from D+1, its business date;
+        never the ledger as it stands), listed positions at the dated marks of d (CLOSE / SETTLE / the option close; a weekend or
+        holiday carries the previous trading day's), OTC contracts at their VM mark of d (``navhistory`` module docstring).  A
+        listed name with no stored mark at all takes the live mark, labelled stale (``live_fallback``; else it is carried at
+        cost and the row is partial).  ``flows_day`` / ``pnl_day`` chain to the latest row before d (C9i).  Nothing is written:
+        the SNAPSHOT job inserts it for a late (catch-up) date and ``nav.restate`` stores it as a version with its split."""
+        from . import navhistory
+        snap = self._snapshot(snapshot) if live_fallback else None
+        with self._conn() as conn:
+            sc = self._scope(conn, scope)
+            key = sc.snapshot_key or scope
+            return navhistory.row_as_of(conn, self, key, [a["account_id"] for a in sc.accounts], d, live=snap)
 
     @staticmethod
     def insert_snapshot(conn: sqlite3.Connection, row: dict) -> None:
@@ -1539,7 +1957,11 @@ class Accounting:
     def obligations(self, account_id: str) -> ObligationsView:
         with self._conn() as conn:
             self._scope(conn, account_id)
-            sett = [dict(r) for r in conn.execute("SELECT settle_id, fill_id, fx_deal_id, leg, currency, amount_c, gl, due_date FROM settlements WHERE account_id=? AND status='PENDING' ORDER BY due_date, settle_id", (account_id,)).fetchall()]
+            # C15 (P6-R1): a FAILED settlement is still PENDING; carry its fail columns (added by collateral.bind) when they exist, so the
+            # account Cash & financing ladder reads "failed (simulated)" / "failed - retried" with the reason instead of "pending"
+            scols = {r[1] for r in conn.execute("PRAGMA table_info(settlements)").fetchall()}
+            extra = "".join(f", {c}" for c in ("fail_state", "fail_kind", "fail_reason") if c in scols)
+            sett = [dict(r) for r in conn.execute(f"SELECT settle_id, fill_id, fx_deal_id, leg, currency, amount_c, gl, due_date{extra} FROM settlements WHERE account_id=? AND status='PENDING' ORDER BY due_date, settle_id", (account_id,)).fetchall()]
             pin: Dict[str, int] = {}
             pout: Dict[str, int] = {}
             for s in sett:
@@ -1548,6 +1970,9 @@ class Accounting:
                 else:
                     pout[s["currency"]] = pout.get(s["currency"], 0) - int(s["amount_c"])
             borrows = [dict(r) for r in conn.execute("SELECT borrow_id, instrument_id, qty, qty_returned, fee_rate, rebate_rate, tier, lender, collateral_c, opened_date, reason, last_mark_date, recall_notice FROM borrows WHERE account_id=? AND status='OPEN'", (account_id,)).fetchall()]
+            for b in borrows:                      # C16 / 15.7 item 8: the account Cash & financing borrows table shows the lender worded, the row stays as stored
+                b["lender_stored"] = b.get("lender")
+                b["lender"] = lender_label(b.get("lender"))
             loans = [dict(r) for r in conn.execute("SELECT loan_id, kind, currency, principal_c, index_name, spread, day_basis, opened_date, maturity_date, lender FROM loans WHERE account_id=? AND status='OPEN'", (account_id,)).fetchall()]
             b1300 = natural("1300", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1300'", (account_id,)))
             b1310 = natural("1310", _sum(conn, "SELECT COALESCE(SUM(balance_c),0) FROM gl_balances WHERE account_id=? AND gl='1310'", (account_id,)))
@@ -1672,7 +2097,7 @@ class Accounting:
                 adv_sum = sum(t.advances_by_account.values())
                 if adv_sum != t.advances_c:
                     out.append(Problem("M3", "WARN", f"{lid}:TREASURY", t.advances_c, adv_sum, "Σ accounts' 3100 ≠ Treasury advances", lid))
-                rows = conn.execute("SELECT * FROM nav_snapshots WHERE account_id=? ORDER BY snap_date", (f"{lid}:ALL",)).fetchall()
+                rows = snapshot_chain(conn, f"{lid}:ALL")          # C9i: the latest-version chain (a restated row chains to the next live one)
                 prev = None
                 for r in rows:
                     if prev is not None:

@@ -1,11 +1,12 @@
 /* Activity (TERMINAL_DESIGN.md s17.1 #/activity; WP-12; Build 2 P03): the selected book's feed newest first - order events,
  * fills, transfers (one row per transfer: the event that describes it is folded in), settlements, financing, OTC, attention -
  * from GET /api/activity (the server keeps it to the book's open lifetime; "All books" = every open lifetime; an account
- * narrows it).  The type filter reads #/activity?type=orders|settlements|transfers|... (the Daily News tiles link there);
+ * narrows it).  The type filter reads #/activity?type=orders|settlements|transfers|... (the Dashboard's attention tiles link there);
  * 'orders' and 'settlements' also list what is open now.  Rows no book owns (job runs, housekeeping, data feeds) are
  * 'system' rows, shown only when that filter is picked.  Enter / a double click opens a row as a table (its fields, and the
  * journal entry with Dr / Cr lines when it has one).  Rows are shown as the server sends them.  Also rendered read-only by
- * the History pages (opts.base / opts.readOnly / opts.journalBase).
+ * the History pages (opts.base / opts.readOnly / opts.journalBase).  A fill booked as of an earlier date (the owner's import)
+ * carries the AS-OF badge with its label - the server's source fields (15.7 item 7).
  */
 (function () {
   'use strict';
@@ -17,6 +18,12 @@
   /* V104R1-04: a reference in words ('otc SWP-000001' -> 'contract SWP-000001', 'fx_deal D-000001' -> 'FX deal D-000001') */
   var REF_WORDS = { otc: 'contract', fx_deal: 'FX deal', sec_loan: 'securities loan', private_loan: 'private loan', borrow: 'borrow', attention: 'item' };
   function refText(r) { return r.ref_type ? (REF_WORDS[r.ref_type] || String(r.ref_type).replace(/_/g, ' ')) + ' ' + (r.ref_id || '') : (r.ref || ''); }
+  /* 15.7 item 7: an as-of (or historical-model) fill shows its badge; the label (entered time, batch) is its title */
+  function sourceBadge(r) {
+    var b = r && r.badge;
+    if (!b) { return ''; }
+    return '<span class="' + (b === 'MODEL' ? 'badge-model' : 'badge-asof') + '" title="' + T.esc(r.source_label || '') + '">' + T.esc(b) + '</span> ';
+  }
   /* a long text cell wraps inside a fixed width instead of pushing the figures off the screen (tables fit 1440 px) */
   function wrapHtml(text, px, title) { return '<span style="display:inline-block; max-width:' + px + 'px; white-space:normal; overflow-wrap:anywhere; line-height:1.25"' + (title ? ' title="' + T.esc(title) + '"' : '') + '>' + T.esc(text == null ? '' : text) + '</span>'; }
   function columns(allBooks) {
@@ -29,7 +36,8 @@
     if (allBooks) { cols.push({ key: 'book_name', label: 'book', cls: 'l', text: function (r) { return shortBook(r.book_name) || (r.system ? 'system' : ''); } }); }
     cols.push({ key: 'account_id', label: 'account', cls: 'l', text: function (r) { return r.account_name || (r.account_id ? T.accountName(r.account_id) : (r.system ? 'system' : (r.lifetime_id ? 'lifetime ' + r.lifetime_id : ''))); }, title: function (r) { return r.account_id || ''; } });
     cols.push({ key: 'symbol', label: 'instrument', cls: 'l', text: function (r) { return r.symbol || r.instrument_id || ''; } });
-    cols.push({ key: 'summary', label: 'what happened', cls: 'l', html: function (r) { return wrapHtml(r.summary || r.message || '', 560); }, text: function (r) { return r.summary || r.message || ''; } });
+    cols.push({ key: 'summary', label: 'what happened', cls: 'l', html: function (r) { return sourceBadge(r) + wrapHtml(r.summary || r.message || '', 560, r.badge ? r.source_label : ''); },
+                text: function (r) { return (r.badge ? r.badge + ' ' : '') + (r.summary || r.message || ''); } });
     cols.push({ key: 'ref', label: 'ref', cls: 'l', text: refText });
     return cols;
   }

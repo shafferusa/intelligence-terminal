@@ -579,10 +579,11 @@
       p.appendChild(T.h('h2', null, 'scheduled jobs'));
       p.appendChild(T.h('div', { class: 'ds-row', style: 'grid-template-columns:170px 90px 1fr auto' }, T.h('span', null, 'lifecycle'), T.h('span', { class: 'st ' + (failing.length ? 'bad' : 'ok') }, failing.length ? 'FAILING' : 'ok'),
         T.h('span', { style: 'white-space:normal' }, (nd.job ? 'next: ' + nd.job + ' at ' + T.fmt.hm(nd.at_ts) + ' ET' + (nd.at_ts && T.fmt.date(nd.at_ts) !== T.fmt.date(T.clock.nowInt()) ? ' (' + T.fmt.date(nd.at_ts) + ')' : '') : (lf.note || 'next job unknown')) + (failing.length ? ' . failing: ' + failing.map(function (j) { return j.name || j.job || j; }).join(', ') : '')), T.h('span')));
+      /* FINSIM1_PLAN 15.7 item 5: the news feature is gone (/api/health sends news null): no block at all - only an older server
+         that still reports one shows it */
       var nw = h.news || null;
-      p.appendChild(T.h('h2', null, 'news'));
-      if (!nw) { p.appendChild(T.h('div', { class: 'empty' }, 'news is off in this runtime')); }
-      else {
+      if (nw) {
+        p.appendChild(T.h('h2', null, 'news'));
         var srcs = nw.sources || {};
         ['yahoo', 'fed', 'newspaper'].forEach(function (k) {
           var s = srcs[k] || {}; var st = s.ok === false ? ['bad', 'DOWN'] : (s.ok ? ['ok', 'OK'] : ['na', 'never']);

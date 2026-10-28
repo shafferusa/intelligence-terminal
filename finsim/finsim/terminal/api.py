@@ -16,6 +16,11 @@ Conventions (every one is enforced here, not left to goodwill)
   ``bus.execute`` to HTTP: a replayed request returns the stored status and body plus ``X-Replayed: 1``; 503
   ``WRITER_BUSY`` / ``RETRY`` carry ``Retry-After: 1``.  A 4xx from ``order.submit`` is recorded through
   ``orders.record_rejection`` (handoff §7: rejected orders are preserved).
+- C5 (FINSIM1_PLAN): ``add_refusal_recorder(kinds, fn)`` - ``run_command`` hands every 4xx result of those command kinds
+  whose code is not in ``NOT_REJECTIONS`` (and that is not a replay) to ``fn(req, kind, payload, result)``; a recorder never
+  changes the HTTP answer and never raises (its exception is logged).
+- The "Requires your attention" summary (``attention.attention_summary``) is served by ``GET /api/attention/summary?book=``;
+  the global strip keeps ``GET /api/attention``.
 - Read handlers call ``Accounting`` / ``QuoteCache`` / ``MarkProvider`` / ``InstrumentMaster`` / ``SessionTable`` on
   the request thread with a pooled reader — never the writer lock, never the network.  The only fetch-triggering reads
   (``/chain``, ``/hedges``, ``/resolve``, ``/bars`` for an unsubscribed symbol, ``/strategies/preview``) enqueue work
@@ -57,7 +62,7 @@ from .accounting import ScopeError
 from .clock import accounting_day, iso as _iso, ny_str
 from .commands import Command, ConflictError, RejectError, Result
 from .db import BusyError, DatabaseError, dumps, get_setting, set_setting
-from .news import attention_book, attention_in_books
+from .attention import attention_book, attention_in_books, attention_summary
 from .tables import BOOK_PROFILES, CONVENTIONS
 from .units import fmt_money, from_c, to_c
 
@@ -74,13 +79,19 @@ PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP
             "options": "WP-03", "hedges": "WP-03", "futures": "WP-04", "fx": "WP-05", "credit": "WP-05", "lending": "WP-06", "repo": "WP-06",
             "prime": "WP-07", "lifecycle": "WP-08", "risk": "WP-09", "compliance": "WP-09", "bonds": "WP-10", "swaps": "WP-17", "dividends": "WP-18",
             "private": "WP-19", "performance": "WP-20", "private_credit": "WP-21", "news": "WP-22", "lifetimes": "WP-23", "strategies": "WP-24",
-            "glossary": "WP-25", "swaps_trs": "WP-26", "otc_options": "B2-P12", "counterparties": "B2-P08", "treasuries": "B2-P07"}
+            "glossary": "WP-25", "swaps_trs": "WP-26", "otc_options": "B2-P12", "counterparties": "B2-P08", "treasuries": "B2-P07",
+            # FINSIM1_PLAN C2: the optional modules of the FinSim1 completion build (a module not in the tree stays "missing")
+            "dashboard": "F1-P1", "blotters": "F1-P2", "navhistory": "F1-P3", "collateral": "F1-P6", "importer": "F1-P5"}
 
 # C3 (BUILD2_PLAN): the optional UI files planned by Build 2 packages.  While one is missing on disk, /static/<path> answers 200 with a
 # one-line JavaScript comment (so index.html can list it and the console shows no 404); the real file replaces the stub as soon as it lands.
 PLANNED_STATIC = ("pages/markets_debt.js", "components/bondticket.js", "pages/markets_fx.js", "components/fxdesk.js", "pages/markets_credit.js",
                   "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js",
-                  "components/cdsticket.js")
+                  "components/cdsticket.js",
+                  # FINSIM1_PLAN C1: the pages of the new navigation (Pending / Completed Trades, Accounts, Cash & Collateral,
+                  # Derivatives) and the import panel; each route shows NOT YET BUILT until its file lands
+                  "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
+                  "components/imports.js")
 
 # §20 — what the terminal does NOT do, or does only in part, served by GET /api/unsupported (Settings > Unsupported, search).
 # SHELL-07 / APIUI-15 (2026-10-21): trader wording only (no endpoints, package ids, doc or glossary references).  The static rows are
@@ -100,8 +111,14 @@ UNSUPPORTED = [
     {"item": "Options on futures", "state": "NOT_OFFERED", "wording": "no free delayed source for CME option prices", "where": "hedge panel of a futures position"},
     {"item": "Early assignment of short options", "state": "NOT_SIMULATED",
      "wording": "short options are exercised / assigned only at expiry, by moneyness at the close", "where": "exercise and assignment notes on the instrument page and on positions"},
-    {"item": "Forced liquidation and margin calls that close positions", "state": "NOT_SIMULATED",
-     "wording": "a margin shortfall raises a warning and an attention item; nothing is ever sold for you", "where": "Risk page, attention strip"},
+    {"item": "Extended-hours trading", "state": "NOT_SIMULATED",
+     "wording": "an order entered outside the regular session rests until the next regular open", "where": "order ticket"},
+    # C6 / 15.7 item 6: the wording follows the margin calls (unsupported_rows swaps it in once collateral.margin_calls_rows exists)
+    {"item": "Forced liquidation", "state": "NEVER", "wording": "positions are never sold for you; a margin shortfall raises a warning and an attention item",
+     "where": "Risk page, attention strip"},
+    {"item": "CSA interest on cash collateral", "state": "NOT_SIMULATED",
+     "wording": "variation margin received under a CSA is restricted and earns no PB credit interest; collateral posted earns none",
+     "where": "prime-broker Cash & financing"},
     {"item": "Stock splits applied to lots", "state": "LIMITED", "wording": "a split raises an attention warning for manual review; lots are not adjusted",
      "where": "attention strip, position notes"},
     {"item": "Recall notices from lender data", "state": "LIMITED", "wording": "an information notice from the FINRA short-volume heuristic only; no buy-ins ever",
@@ -143,7 +160,35 @@ PLANNED = [
     {"present": lambda rt: getattr(rt, "counterparties", None) is not None,
      "row": {"item": "Repo / reverse repo, securities lending out of inventory, the counterparty directory", "state": "NOT_YET",
              "wording": "not in this version yet", "where": "Credit Instruments"}},
+    # FINSIM1_PLAN C6 / 15.3 E1 / 15.7 item 6: a function probe is callable(<module>.<function>); each function ships with its feature
+    {"present": lambda rt: _has_fn(rt, "collateral", "margin_calls_rows"),
+     "row": {"item": "Margin calls", "state": "NOT_YET", "wording": "not in this version yet: a margin shortfall raises a warning and an attention item",
+             "where": "Risk page, attention strip"}},
+    {"present": lambda rt: _has_fn(rt, "blotters", "execution_detail"),
+     "row": {"item": "Simulated counterparty settlement fails", "state": "NOT_YET",
+             "wording": "unfunded payables are already marked failed and retried automatically; the fail you trigger yourself, and its resolution, "
+                        "are not in this version yet", "where": "Activity, account Cash & financing"}},
+    {"present": lambda rt: _has_fn(rt, "swaps", "rfq_rows"),
+     "row": {"item": "OTC dealer quotes (request a quote, then accept or decline it)", "state": "NOT_YET",
+             "wording": "not in this version yet: an OTC contract books at once, at the dealer's model price plus or minus its half-width",
+             "where": "prime-broker OTC tab"}},
+    {"present": lambda rt: _has_fn(rt, "orders", "gtd_supported"),
+     "row": {"item": "Good-till-date and next-session orders", "state": "NOT_YET", "wording": "not in this version yet: orders are DAY or GTC",
+             "where": "order ticket"}},
+    {"present": lambda rt: getattr(rt, "importer", None) is not None,
+     "row": {"item": "Historical trade import", "state": "NOT_YET", "wording": "not in this version yet", "where": "-"}},
+    {"present": lambda rt: _has_fn(rt, "collateral", "pledges_view"),
+     "row": {"item": "Securities pledged as CSA collateral", "state": "NOT_YET", "wording": "not in this version yet: collateral under a CSA is cash",
+             "where": "prime-broker account"}},
 ]
+#: C6 / 15.7 item 6: the forced-liquidation row's wording once margin calls ship (collateral.margin_calls_rows)
+FORCED_LIQUIDATION_ITEM = "Forced liquidation"
+FORCED_LIQUIDATION_WITH_CALLS = "positions are never sold for you; margin calls are recorded and met from cash / Treasury / PB headroom or stay open"
+
+
+def _has_fn(rt, attr: str, fn: str) -> bool:
+    """A C6 function probe: ``callable(rt.<attr>.<fn>)`` (False when the module is not bound)."""
+    return callable(getattr(getattr(rt, attr, None), fn, None))
 
 
 # ---- errors -------------------------------------------------------------------------------------------------------------------
@@ -329,6 +374,14 @@ def unsupported_rows(rt) -> List[dict]:
     """SHELL-07: the static rows, then every bound product module's own ``unsupported()`` rows (OPTIONAL_MODULES order), then the
     ``PLANNED`` rows whose capability the running build lacks.  Each row: item, state, wording, where (trader wording)."""
     rows: List[dict] = [dict(r) for r in UNSUPPORTED]
+    try:
+        calls = _has_fn(rt, "collateral", "margin_calls_rows")
+    except Exception:   # noqa: BLE001 - a failing probe means "not present"
+        calls = False
+    if calls:
+        for r in rows:
+            if r["item"] == FORCED_LIQUIDATION_ITEM:
+                r["wording"] = FORCED_LIQUIDATION_WITH_CALLS
     try:
         from .server import OPTIONAL_MODULES as attrs
     except Exception:   # noqa: BLE001 - a stand-in runtime: the static rows only
@@ -580,8 +633,55 @@ def _plain(x):
 
 
 # ---- commands from the API --------------------------------------------------------------------------------------------------
+#: the "come back with more" answers that are not rejections (never recorded): a confirmation or a fresh preview is needed, or the
+#: request id was reused / malformed
+NOT_REJECTIONS = ("CONFIRM_REQUIRED", "PREVIEW_STALE", "REQUEST_ID_REUSED", "BAD_REQUEST_ID")
+#: C5: [(frozenset of command kinds, fn(req, kind, payload, result))] - see add_refusal_recorder
+_REFUSAL_RECORDERS: List[Tuple[frozenset, Callable]] = []
+
+
+def add_refusal_recorder(kinds, fn: Callable) -> None:
+    """C5 (FINSIM1_PLAN): ``run_command`` calls ``fn(req, kind, payload, result)`` for every 4xx result of a command whose kind is in
+    ``kinds`` (one kind or an iterable) and whose code is not in ``NOT_REJECTIONS`` (a replay is not a new refusal).  The recorder
+    never changes the HTTP answer: an exception it raises is logged and swallowed.  Registering the same function for the same
+    kinds again is a no-op (a module bound twice records once)."""
+    ks = frozenset([kinds] if isinstance(kinds, str) else (str(k) for k in kinds))
+    if not ks or not callable(fn):
+        raise ValueError("add_refusal_recorder needs command kinds and a callable")
+    if any(k == ks and f is fn for k, f in _REFUSAL_RECORDERS):
+        return
+    _REFUSAL_RECORDERS.append((ks, fn))
+
+
+def remove_refusal_recorder(fn: Callable) -> int:
+    """Unregister every C5 recorder entry of ``fn`` (tests); returns how many were removed."""
+    before = len(_REFUSAL_RECORDERS)
+    _REFUSAL_RECORDERS[:] = [(k, f) for k, f in _REFUSAL_RECORDERS if f is not fn]
+    return before - len(_REFUSAL_RECORDERS)
+
+
+def refusal_recorders() -> List[Tuple[frozenset, Callable]]:
+    """The registered C5 recorders (a copy)."""
+    return list(_REFUSAL_RECORDERS)
+
+
+def _record_refusal(req: Request, kind: str, payload: dict, res: Result) -> None:
+    if not (400 <= int(res.http) < 500) or res.replayed or res.code in NOT_REJECTIONS:
+        return
+    for kinds, fn in list(_REFUSAL_RECORDERS):
+        if kind not in kinds:
+            continue
+        try:
+            fn(req, kind, payload, res)
+        except Exception:   # noqa: BLE001 - C5: a recorder never changes the answer; its failure is logged
+            log = getattr(req.rt, "log", None)
+            if log:
+                log.exception("refusal recorder %s failed for %s", getattr(fn, "__name__", fn), kind)
+
+
 def run_command(req: Request, kind: str, payload: dict, actor: str = "ui") -> Result:
-    """Execute one command for this request; a missing handler is 501 NOT_BUILT (the owning package is named)."""
+    """Execute one command for this request; a missing handler is 501 NOT_BUILT (the owning package is named).  A 4xx
+    result goes to the C5 refusal recorders of its kind (``add_refusal_recorder``); the answer itself is returned unchanged."""
     bus = req.rt.bus
     if kind not in bus.kinds():
         owner = {"order": "orders", "credit.borrow": "lending", "credit.return": "lending", "credit.loan": "credit", "credit.pb": "credit", "fx": "fx",
@@ -589,7 +689,10 @@ def run_command(req: Request, kind: str, payload: dict, actor: str = "ui") -> Re
                  "book.onboard": "lifetimes", "account.open_pb": "prime", "account.update_schedule": "prime", "lifecycle": "lifecycle"}
         attr = next((v for k, v in owner.items() if kind.startswith(k)), kind.split(".")[0])
         raise NotBuilt(PACKAGES.get(attr, "?"), attr, f"command {kind} has no handler in this build")
-    return bus.execute(Command(kind, payload, req.request_id or "", actor))
+    res = bus.execute(Command(kind, payload, req.request_id or "", actor))
+    if _REFUSAL_RECORDERS and not res.ok:
+        _record_refusal(req, kind, payload, res)
+    return res
 
 
 def ok_or_raise(res: Result) -> dict:
@@ -1330,6 +1433,18 @@ def _register_core(router: Router) -> None:
                 rows = conn.execute("SELECT * FROM attention WHERE resolved_ts IS NULL ORDER BY ts DESC, id DESC LIMIT ?", (req.q_int("limit", 500, 1, 2000),)).fetchall()
         return [dict(x) for x in rows if attention_in_books(x, books)]
 
+    def attention_summary_view(req: Request):
+        """15.7 item 1 / C3: the "Requires your attention" summary of the selected book (``?book=``; ``?all=1`` = every book,
+        consolidated): ``attention.attention_summary`` over ``{lifetime}:ALL``."""
+        if req.q("all") in ("1", "true", "yes"):
+            scope = "ALL_BOOKS"
+        else:
+            try:
+                scope = req.scope("ALL")
+            except ScopeError:
+                scope = "ALL_BOOKS"
+        return attention_summary(req.rt, scope)
+
     def attention_resolve(req: Request):
         try:
             aid = int(req.params[0])
@@ -1451,6 +1566,7 @@ def _register_core(router: Router) -> None:
     r.add("GET", r"/api/sessions", sessions)
     r.add("GET", r"/api/calendar", calendar)
     r.add("GET", r"/api/attention", attention)
+    r.add("GET", r"/api/attention/summary", attention_summary_view)
     r.add("POST", r"/api/attention/([^/]+)/resolve", attention_resolve)
     r.add("GET", r"/api/jobs", jobs)
     r.add("POST", r"/api/jobs/run", jobs_run, loopback=True)
@@ -1483,4 +1599,4 @@ def get_setting_safe(rt, key: str, default=None):
 
 __all__ = ["Router", "Request", "ApiError", "NotFound", "NotBuilt", "encode", "quote_dict", "mark_dict", "error_body", "run_command", "ok_or_raise", "need",
            "lifetime_for", "register", "health_view", "settings_map", "thread_alive", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
-           "OPEN_ORDER_STATUSES", "PLANNED_STATIC"]
+           "OPEN_ORDER_STATUSES", "PLANNED_STATIC", "PLANNED", "NOT_REJECTIONS", "add_refusal_recorder", "remove_refusal_recorder", "refusal_recorders", "unsupported_rows"]

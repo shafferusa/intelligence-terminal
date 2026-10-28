@@ -1,6 +1,7 @@
 /* Portfolio (TERMINAL_DESIGN.md s17.5 #/portfolio[/tab], B16; WP-12; Build 2 P03).  Tabs Positions | Performance.
  * Positions: the consolidated GET /api/portfolio (scope ALL = the selected book's open lifetime; the "All books" toggle =
- * ALL_BOOKS) with the B16 columns - account (name; the book too in All books), instrument, class, signed quantity, average
+ * ALL_BOOKS) with the B16 columns - account (name; the book too in All books), instrument, class, signed quantity (an OTC
+ * contract in its own units with their label: a TRS its reference shares, a CDX / IRS its notional; P8L-02), average
  * cost, mark (freshness), market value, futures notional, today's P&L, unrealised, realised / income / financing to date,
  * % of the scope's NAV (the server's weight and basis), days held - grouped by class with the server's by_class subtotals
  * (a list; an older dict answer is read too), the footer (gross long / gross short / net and futures notional, server
@@ -28,7 +29,20 @@
           if (r.kind === 'FUTURE' && (r.notional != null || r.notional_c != null)) { h += '<div class="muted" title="futures exposure: contracts x multiplier x mark (not a market value)">notional ' + T.esc((r.currency && r.currency !== 'USD' ? r.currency + ' ' : '') + T.money(r, 'notional')) + '</div>'; }
           return h;
         }, text: function (r) { return (r.symbol || r.instrument_id) + ' ' + (r.name || ''); } },
-      { key: 'qty', label: 'qty', title_h: 'signed quantity: negative = short', html: function (r) { return '<span class="' + (r.qty > 0 ? 'pos' : (r.qty < 0 ? 'neg' : '')) + '">' + T.esc(T.fmt.qty(r.qty)) + '</span>'; }, text: function (r) { return String(r.qty); }, sort: function (r) { return r.qty; } },
+      { key: 'qty', label: 'qty', title_h: 'signed quantity: negative = short; an OTC contract in its own units (a TRS its reference shares, a CDX / IRS its notional), labelled',
+        html: function (r) {
+          /* P8L-02: an OTC contract's quantity is its units with their label (never its notional read as a quantity) */
+          var c = T.contractQty(r);
+          if (c) {
+            var tip = c.isNotional ? 'the contract\'s notional ' + c.ccy + ' ' + c.notional + ' (its face, never its market value); negative = the short side'
+                                   : c.label + '; notional ' + c.ccy + ' ' + c.notional + ' (the face, never the market value); negative = the short side';
+            return '<span class="' + (c.n > 0 ? 'pos' : (c.n < 0 ? 'neg' : '')) + '" title="' + T.esc(tip) + '">' + T.esc(T.fmt.qty(c.n)) + '</span>' +
+                   '<div class="muted" style="font-size:10px" title="' + T.esc(tip) + '">' + T.esc(c.label) + '</div>';
+          }
+          return '<span class="' + (r.qty > 0 ? 'pos' : (r.qty < 0 ? 'neg' : '')) + '">' + T.esc(T.fmt.qty(r.qty)) + '</span>';
+        },
+        text: function (r) { var c = T.contractQty(r); return c ? String(c.n) + ' ' + c.label : String(r.qty); },
+        sort: function (r) { var c = T.contractQty(r); return c ? c.n : r.qty; } },
       { key: 'avg_px', label: 'avg cost', text: function (r) { return r.avg_px == null ? 'n/a' : T.fmt.px(r.avg_px); } },
       { key: 'mark', label: 'mark', html: function (r) { return T.pxHtml(r.mark); }, text: function (r) { return r.mark && r.mark.mark != null ? String(r.mark.mark) : ''; }, sort: function (r) { return r.mark && r.mark.mark != null ? r.mark.mark : ''; } },
       money('mv_base', 'mkt value USD', 'market value in USD at the snapshot FX; a future carries none (its P&L is open trade equity): its notional is under the instrument'),
@@ -97,8 +111,12 @@
         footer: function () {
           var f = data.footer || data.totals || {}; var nav = data.nav || {}; var td = (data.pnl || {}).TODAY;
           var fut = T.num(f, 'futures_notional_long') || T.num(f, 'futures_notional_short') ? T.money(f, 'futures_notional_long') + ' / ' + T.money(f, 'futures_notional_short') : '';
+          /* POSTCLOSE-07: gross long / short are the securities and options at market (the NAV block's definition); OTC contracts and
+             FX forwards are beside them at their market value (the contract value NAV carries, never a notional) */
+          var otc = T.num(f, 'otc_mv_positive') || T.num(f, 'otc_mv_negative') ? T.money(f, 'otc_mv_positive') + ' / ' + T.money(f, 'otc_mv_negative') : '';
           return { account_id: T.esc(acctSel.value || classSel.value ? 'totals (all rows)' : 'totals'),
                    symbol: T.esc('gross long ' + T.money(f, 'gross_long') + ' . gross short ' + T.money(f, 'gross_short') + (Number(f.unpriced || 0) ? ' . ' + f.unpriced + ' unpriced' : '')) +
+                           (otc ? '<div class="muted" title="OTC contracts and FX forwards at market value, positive / negative (not their notional)">OTC at market + / - ' + T.esc(otc) + '</div>' : '') +
                            (fut ? '<div class="muted" title="futures exposure long / short: contracts x multiplier x mark">futures notional long / short ' + T.esc(fut) + '</div>' : ''),
                    mv_base: T.esc(f.net != null || f.net_c != null ? 'net ' + T.money(f, 'net') : ''),
                    unrealised_base: '<span class="' + T.sign(nav, 'unrealised') + '">' + T.esc(T.money(nav, 'unrealised')) + '</span>',

@@ -9,6 +9,9 @@ Conventions
   ``query_only`` connections and never wait on the writer.
 - ``open()``: backup (when the file exists) -> migrate (``meta.schema_version`` gate: a newer file raises
   ``SchemaTooNew`` -> exit 4) -> seed (books, chart, settings, meta) on an empty file, inside one transaction.
+- C11 (FINSIM1_PLAN, the chart sync): every ``open()`` inserts every ``ledger.CHART`` row into ``chart`` (INSERT OR IGNORE,
+  ``_sync_chart``) inside that same migration transaction - not only on a new file - so a GL a later release adds can post on
+  a database an older release created (``journal_lines.gl`` is a foreign key to ``chart``).  Existing rows are never changed.
 - Later packages cannot edit this file: the complete §3 schema lives here, including the swap / private /
   dividend / news tables and the trailing-stop / fill_mode / lock_until / NEGOTIATED / PRIVATE / SWAP columns.
 - Build 2 hooks (BUILD2_PLAN C4, 2026-10-21): ``ensure_schema_ext(owner, statements)`` lets a product module add its own
@@ -651,17 +654,29 @@ class Database:
                 self._seed(conn, books, ts)
             else:
                 set_meta(conn, "schema_version", str(SCHEMA_VERSION))
+            added = self._sync_chart(conn)                     # C11: every open, so a GL added by a release can post on an older file
+            if added and version != 0 and self.log:
+                self.log.info("chart: %d GL row(s) added from the ledger's chart of accounts", added)
             set_meta(conn, "app_version_last_opened", VERSION)
             conn.execute("COMMIT")
         except Exception:
             conn.execute("ROLLBACK")
             raise
 
-    def _seed(self, conn: sqlite3.Connection, books: list, ts: int) -> None:
+    @staticmethod
+    def _sync_chart(conn: sqlite3.Connection) -> int:
+        """C11: INSERT OR IGNORE every ``ledger.CHART`` row into ``chart`` (the caller's transaction); returns the rows added.  An
+        existing row is never altered (its name / kind stay as stored)."""
         from .ledger import CHART   # lazy: ledger imports nothing from db at module level, but keep the direction explicit
+        n = 0
         for gl, spec in CHART.items():
-            conn.execute("INSERT OR IGNORE INTO chart(gl, name, kind, per_instrument, bucket) VALUES (?,?,?,?,?)",
-                         (gl, spec.name, spec.kind, 1 if spec.per_instrument else 0, spec.bucket))
+            cur = conn.execute("INSERT OR IGNORE INTO chart(gl, name, kind, per_instrument, bucket) VALUES (?,?,?,?,?)",
+                               (gl, spec.name, spec.kind, 1 if spec.per_instrument else 0, spec.bucket))
+            n += int(cur.rowcount or 0)
+        return n
+
+    def _seed(self, conn: sqlite3.Connection, books: list, ts: int) -> None:
+        self._sync_chart(conn)
         defaults = {}
         for i, (code, name, profile, capital_c) in enumerate(books):
             conn.execute("INSERT OR IGNORE INTO books(book_code, name, profile, starting_capital_c, sort_order, created_ts) VALUES (?,?,?,?,?,?)",

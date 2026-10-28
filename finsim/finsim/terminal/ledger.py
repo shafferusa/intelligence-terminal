@@ -13,6 +13,18 @@ Conventions
   the residual cent on the last relief; a partial relief takes the pro-rata share of the lot's remaining cost so
   the lot's cost reaches exactly zero with its last share (sentence FIFO, COST_BASIS).
 - ``post`` refuses CLOSED accounts, so an archived lifetime is read-only by construction (L23).
+- C11 (FINSIM1_PLAN, P4): an entry's business date is ``entry.business_date``, else ``ctx.asof_date`` (an as-of booking or a
+  lifecycle job of a past business date sets it on its command context: every entry it posts without its own date - a funding
+  sweep included - then carries that date), else the accounting day of ``ctx.now`` (sentence ACCT_DAY).
+- The OTC GLs (C11, PORTFOLIO-08): 4450 stays the realised "swap results" GL (return leg, STM settlement, termination,
+  maturity); 4451 swap financing (TRS funding leg) and 4453 swap coupons / CDS premium are FINANCING (kind EXPENSE: natural
+  sign = a cost, so a financing or coupon RECEIVED is a negative cost); 4452 dividend equivalents is INCOME; 1335 / 2345 are
+  the per-contract cost basis of an OTC contract - an upfront or option premium paid (asset) / received (liability) at the
+  booking, released into 4450 when the contract terminates, matures or expires.  ``OTC_COST_GLS`` are kept out of
+  ``COST_LONG_GLS`` / ``COST_SHORT_GLS`` (L9 ties those to open lots) and out of the NAV asset / liability sets (the contract's
+  market value replaces its cost there, C9c).
+- ``ensure_chart_rows(conn, codes=None)`` inserts the ``chart`` rows of every ``CHART`` code (or the given ones), INSERT OR
+  IGNORE, so a GL a release adds can post on a database an older release created (``journal_lines.gl`` is a foreign key).
 """
 from __future__ import annotations
 
@@ -57,6 +69,7 @@ CHART: Dict[str, GlSpec] = dict([
     _g("1310", "Margin deposit — listed options", "ASSET", 0, "margin"),
     _g("1320", "Variation margin posted — OTC (PB)", "ASSET", 1, "margin"),
     _g("1330", "Initial margin — OTC (PB)", "ASSET", 1, "margin"),
+    _g("1335", "OTC contract cost — upfront / premium paid", "ASSET", 1, "otc_cost"),
     _g("1360", "Cross-currency notional receivable", "ASSET", 1, "financing_asset"),
     _g("1400", "Cash collateral posted — stock borrow", "ASSET", 1, "collateral"),
     _g("1410", "Accrued rebate receivable", "ASSET", 1, "accrued_income"),
@@ -69,6 +82,7 @@ CHART: Dict[str, GlSpec] = dict([
     _g("2320", "Payments in lieu payable", "LIABILITY", 1, "accrued_expense"),
     _g("2330", "Variation margin received — OTC (PB)", "LIABILITY", 1, "margin_liability"),
     _g("2340", "Accrued swap payable", "LIABILITY", 1, "accrued_expense"),
+    _g("2345", "OTC contract cost — upfront / premium received", "LIABILITY", 1, "otc_cost"),
     _g("2350", "FX settlement payable", "LIABILITY", 0, "cash_pending_out"),
     _g("2360", "Cross-currency notional payable", "LIABILITY", 1, "financing"),
     _g("2420", "Accrued rebate payable — securities lent", "LIABILITY", 1, "accrued_expense"),
@@ -90,6 +104,9 @@ CHART: Dict[str, GlSpec] = dict([
     _g("4360", "Securities-lending fee income", "INCOME", 1, "income"),
     _g("4400", "Futures variation margin", "INCOME", 1, "realised"),
     _g("4450", "Swap results — resets, net coupons, STM settlements", "INCOME", 1, "realised"),
+    _g("4451", "Swap financing leg (TRS funding)", "EXPENSE", 1, "financing_cost"),
+    _g("4452", "Dividend equivalents (TRS)", "INCOME", 1, "income"),
+    _g("4453", "Swap coupons and CDS premium", "EXPENSE", 1, "financing_cost"),
     _g("4500", "Reverse repo interest", "INCOME", 0, "income"),
     _g("5000", "Commissions and fees", "EXPENSE", 1, "fees"),
     _g("5100", "Interest expense — PB financing", "EXPENSE", 0, "financing_cost"),
@@ -106,9 +123,43 @@ NATURAL_SIGN = {"ASSET": 1, "EXPENSE": 1, "LIABILITY": -1, "EQUITY": -1, "INCOME
 COST_LONG_GLS = ("1100", "1110", "1120", "1700")
 COST_SHORT_GLS = ("2600", "2900")
 REALISED_GLS = ("4000", "4400", "4450")
-INCOME_GLS = ("4200", "4300", "4320", "4350", "4360", "4500")
-FINANCING_GLS = ("5100", "5150", "5300", "5350", "5400", "5500", "5700")
+INCOME_GLS = ("4200", "4300", "4320", "4350", "4360", "4500", "4452")
+FINANCING_GLS = ("5100", "5150", "5300", "5350", "5400", "5500", "5700", "4451", "4453")
 FEE_GLS = ("5000",)
+# C11 (FINSIM1_PLAN): the OTC contract cost GLs - an upfront / OTC option premium paid (1335) or received (2345) at the booking, per
+# contract; released into 4450 at termination, maturity or expiry.  NOT in COST_LONG_GLS / COST_SHORT_GLS (L9 ties those to open lots)
+# and not in the NAV asset / liability sets: the contract's market value replaces its cost there (C9c), so A - L = NAV holds.
+OTC_COST_GLS = ("1335", "2345")
+OTC_COST_PAID_GL, OTC_COST_RECEIVED_GL = OTC_COST_GLS
+SWAP_RESULT_GL = "4450"          # realised: return leg, STM settlement, termination / maturity value, released cost basis
+SWAP_FINANCING_GL = "4451"       # financing: the TRS funding leg (SOFR +/- spread)
+SWAP_DIVIDEND_GL = "4452"        # income: dividend equivalents of a TRS
+SWAP_COUPON_GL = "4453"          # financing: IRS / XCCY coupon accruals and the CDS index premium
+
+
+def ensure_chart_rows(conn: sqlite3.Connection, codes=None) -> int:
+    """C11: INSERT OR IGNORE the ``chart`` row of every ``CHART`` code (or of ``codes``) on ``conn`` (the caller's transaction, when it
+    holds one); returns the rows added.  An existing row is never altered.  ``Database.open`` syncs the whole chart on every open; a
+    product module that posts a newer GL calls this from its ``bind`` too (``swaps.bind``), so a database an older release created can
+    take the posting (``journal_lines.gl`` is a foreign key to ``chart``)."""
+    n = 0
+    for code in (CHART if codes is None else codes):
+        spec = CHART.get(str(code))
+        if spec is None:
+            continue
+        cur = conn.execute("INSERT OR IGNORE INTO chart(gl, name, kind, per_instrument, bucket) VALUES (?,?,?,?,?)",
+                           (spec.code, spec.name, spec.kind, 1 if spec.per_instrument else 0, spec.bucket))
+        n += int(cur.rowcount or 0)
+    return n
+
+
+def asof_business_date(ctx) -> Optional[str]:
+    """``ctx.asof_date`` as an ISO date (None when the command context carries none): the business date of an as-of booking or of a
+    lifecycle job's past date (C11)."""
+    d = getattr(ctx, "asof_date", None)
+    if d is None or d == "":
+        return None
+    return d.isoformat() if hasattr(d, "isoformat") else str(d)[:10]
 
 
 def natural(gl: str, balance_c: int) -> int:
@@ -239,7 +290,7 @@ def post(ctx, entry: Entry) -> int:
     rows = validate(ctx, entry)
     conn = ctx.conn
     ts = int(ctx.now.timestamp())
-    business_date = entry.business_date or accounting_day(ctx.now).isoformat()
+    business_date = entry.business_date or asof_business_date(ctx) or accounting_day(ctx.now).isoformat()     # C11
     try:
         cur = conn.execute(
             "INSERT INTO journal_entries(command_id, event_id, ts, business_date, kind, memo, ref_type, ref_id, idem_key) VALUES (?,?,?,?,?,?,?,?,?)",

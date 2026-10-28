@@ -223,11 +223,13 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(all(json.loads(s["detail_json"])["late"] is True for s in snaps))
         self.assertEqual(0, sum(s["partial"] for s in snaps))
         alls = [s for s in snaps if s["account_id"] == "T1:ALL"]
-        # NAV(T1:ALL) = 10,000,000 - 5.00 fee + 3,669.56 cash interest + 19.10 rebate - 1.67 borrow fee - 343.40 loan interest in base (4 x to_c(76.39 x 1.1238) =
-        # 4 x 85.85) + 0.01 FX result (CREDIT's EUR net -991,407.18 at 1.1238 = -1,114,143.39 against -1,114,143.40 booked) = 10,003,338.60;
-        # the whole catch-up lands on the Friday row (late), the later days carry 0
-        self.assertEqual([1000333860] * 4, [s["nav_c"] for s in alls])
-        self.assertEqual([1000333860 - 1000000000, 0, 0, 0], [s["pnl_day_c"] for s in alls])        # Fri: NAV - 10,000,000 capital flow; Sat..Mon: no change
+        # FINSIM1 C9d (P3): a LATE (catch-up) snapshot is the NAV AS OF its date - the journal entries with business_date <= that date, never the
+        # ledger as it stands.  The catch-up's accruals, rebate, borrow fee, loan interest and sweeps were all posted Tue 10-20 09:00 (business date
+        # 10-20: a late posting carries the day it was posted, the NIGHTS rule), so they belong to Tuesday; Fri..Mon read
+        # NAV(T1:ALL) = 10,000,000.00 capital - 5.00 short-sale fee (Fri 10-16) = 9,999,995.00 (CREDIT's EUR loan and its cash net to 0 at 1.1238).
+        # (Before 1.0.5 every late row read 10,003,338.60, the whole catch-up landing on the Friday row.)
+        self.assertEqual([999999500] * 4, [s["nav_c"] for s in alls])
+        self.assertEqual([999999500 - 1000000000, 0, 0, 0], [s["pnl_day_c"] for s in alls])          # Fri: NAV - 10,000,000 capital flow; Sat..Mon: no change
         self.assertEqual([1000000000, 0, 0, 0], [s["flows_day_c"] for s in alls])
         for prev, cur in zip(alls, alls[1:]):
             self.assertEqual(cur["pnl_day_c"], cur["nav_c"] - prev["nav_c"] - cur["flows_day_c"])                     # M4 by hand
@@ -360,7 +362,9 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual([("T1:US_EXCHANGE:USD:2026-10-20", "DONE")], [(i["key"], i["status"]) for i in out["ran"]])
         self.assertEqual((5999900, 4000100), (sc.one(rt, "SELECT amount_c FROM transfers WHERE kind='SWEEP_OUT'")["amount_c"], bal(rt, US_EXCHANGE, "1010")))
         stored = json.loads(sc.one(rt, "SELECT result_json FROM commands WHERE request_id=?", (out["ran"][0]["request_id"],))["result_json"])
-        self.assertEqual({"settled_c": 10000000, "payables_c": 0, "reserved_c": 3000100, "futures_maintenance_shortfall_c": 0, "buffer_c": 1000000, "excess_c": 5999900},
+        # FINSIM1 C9b / D9: nothing restricted here (no collateral received), so the adjustments are 0.00
+        self.assertEqual({"settled_c": 10000000, "adjustments_c": 0, "payables_c": 0, "reserved_c": 3000100, "futures_maintenance_shortfall_c": 0, "buffer_c": 1000000,
+                          "excess_c": 5999900},
                          {k: v for k, v in stored["formula"].items() if k != "text"})
         assert_integrity(self, rt, "full")
 

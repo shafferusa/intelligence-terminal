@@ -1,4 +1,5 @@
-"""WP-00 core tests: schema, seed counts, accounting day, the base-rounding plug, units, ids (TERMINAL_WORKPLAN WP-00)."""
+"""WP-00 core tests: schema, seed counts, accounting day, the base-rounding plug, units, ids (TERMINAL_WORKPLAN WP-00); the chart sync
+on every open (FINSIM1_PLAN C11) on a database built from the 1.0.3.1 schema fixture (tests/fixtures/terminal/schema_1031.sql)."""
 from __future__ import annotations
 
 import os
@@ -13,9 +14,103 @@ from decimal import Decimal
 from tests.terminal_helpers import DEBT, TREASURY, US_EXCHANGE, deposit, make_runtime
 from finsim.terminal import SCHEMA_VERSION, config, units
 from finsim.terminal.calendar import TradingCalendar
-from finsim.terminal.clock import NY, accounting_day, epoch_of, ny_of, trade_date
+from finsim.terminal.clock import NY, FakeClock, accounting_day, epoch_of, ny_of, trade_date
 from finsim.terminal.db import TABLES, Database, get_meta, get_setting, next_id
 from finsim.terminal.ledger import CHART
+
+
+SCHEMA_1031 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "terminal", "schema_1031.sql")
+
+
+class ChartSyncTests(unittest.TestCase):
+    """C11 (FINSIM1_PLAN P1 task 1; review finding F01): Database.open inserts every ledger.CHART row into ``chart`` on EVERY open,
+    inside the migration transaction, so a GL that a release adds can post on a database an older release created."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-chart-sync-")
+        self.path = os.path.join(self.tmp, "terminal.db")
+        with open(SCHEMA_1031, "r", encoding="utf-8") as f:
+            sql = f.read()
+        conn = sqlite3.connect(self.path)
+        conn.executescript(sql)
+        conn.close()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _parents(self, conn) -> None:
+        """A lifetime, an account, a command and a journal entry: the rows a journal line refers to."""
+        conn.execute("INSERT INTO lifetimes(lifetime_id, book_code, seq, name, started_ts, starting_capital_c, status) VALUES ('F1','F',1,'Fund Book 1',0,0,'OPEN')")
+        conn.execute("INSERT INTO accounts(account_id, book_code, lifetime_id, role, name, kind, opened_ts) VALUES ('F1:US_EXCHANGE','F','F1','US_EXCHANGE','US Exchange','TRADING',0)")
+        conn.execute("INSERT INTO commands(id, request_id, kind, actor, payload_json, payload_sha256, result_json, http_status, started_ts, finished_ts, duration_ms,"
+                     " app_version, state_version) VALUES (1,'test:chart-sync-0001','test.chart','cli','{}','0','{}',200,0,0,0,'1.0.3.1',1)")
+        conn.execute("INSERT INTO journal_entries(entry_id, command_id, ts, business_date, kind, memo, idem_key) VALUES (1,1,0,'2026-10-21','TEST','chart sync (test)','test:chart:1')")
+
+    @staticmethod
+    def _line(conn, line_no: int, gl: str) -> None:
+        conn.execute("INSERT INTO journal_lines(entry_id, line_no, account_id, gl, currency, amount_c, base_c, fx_rate, fx_source) VALUES (1,?,'F1:US_EXCHANGE',?,'USD',1,1,'1','base')",
+                     (line_no, gl))
+
+    def test_open_syncs_every_ledger_code_into_a_1031_chart(self):
+        raw = sqlite3.connect(self.path)
+        raw.execute("PRAGMA foreign_keys=ON")
+        before = {r[0]: tuple(r[1:]) for r in raw.execute("SELECT gl, name, kind, per_instrument, bucket FROM chart").fetchall()}
+        self.assertEqual(52, len(before))                                     # the 1.0.3.1 chart
+        self.assertEqual(("1", "1.0.3.1"), (raw.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0],
+                                            raw.execute("SELECT value FROM meta WHERE key='app_version_last_opened'").fetchone()[0]))
+        missing = sorted(set(CHART) - set(before))
+        self.assertTrue({"1420", "2420", "2520", "4360", "5350"} <= set(missing), missing)   # the lending codes 1.0.3.1 never seeded
+        self._parents(raw)
+        with self.assertRaisesRegex(sqlite3.IntegrityError, "FOREIGN KEY constraint failed"):
+            self._line(raw, 1, missing[0])                                    # what F01 found: a line on a code the chart lacks is refused
+        self._line(raw, 1, "1010")                                            # a code the file has is accepted
+        raw.commit()
+        raw.close()
+        # this release opens it: the sync adds exactly the missing codes, with the ledger's own definitions, and alters no stored row
+        db = Database(self.path, FakeClock("2026-10-27T18:00:00-04:00"), None)
+        db.open(books=list(config.BOOKS))
+        try:
+            with db.reader() as conn:
+                after = {r[0]: tuple(r[1:]) for r in conn.execute("SELECT gl, name, kind, per_instrument, bucket FROM chart").fetchall()}
+                self.assertEqual(SCHEMA_VERSION, int(get_meta(conn, "schema_version")))
+                self.assertNotEqual("1.0.3.1", get_meta(conn, "app_version_last_opened"))
+            self.assertTrue(set(CHART) <= set(after))
+            self.assertEqual(sorted(set(after) - set(before)), missing)
+            for gl in missing:
+                spec = CHART[gl]
+                self.assertEqual((spec.name, spec.kind, 1 if spec.per_instrument else 0, spec.bucket), after[gl], gl)
+            for gl, row in before.items():
+                self.assertEqual(row, after[gl], gl)                          # INSERT OR IGNORE: the stored rows stay as they were
+            # with foreign keys on (the writer's PRAGMA), a journal line on EVERY ledger code is accepted now
+            with db.writer() as tx:
+                self.assertEqual(1, tx.one("PRAGMA foreign_keys")[0])
+                for i, gl in enumerate(sorted(CHART), start=2):
+                    self._line(tx.conn, i, gl)
+                self.assertEqual([], tx.q("PRAGMA foreign_key_check"))
+            with db.writer() as tx:                                            # the sync is idempotent: nothing left to add
+                self.assertEqual(0, Database._sync_chart(tx.conn))
+        finally:
+            db.close()
+        # a second open (the next start) adds nothing and keeps the lines
+        db2 = Database(self.path, FakeClock("2026-10-27T18:05:00-04:00"), None)
+        db2.open(books=list(config.BOOKS))
+        try:
+            with db2.reader() as conn:
+                self.assertEqual(len(after), conn.execute("SELECT COUNT(*) FROM chart").fetchone()[0])
+                self.assertEqual(1 + len(CHART), conn.execute("SELECT COUNT(*) FROM journal_lines").fetchone()[0])
+        finally:
+            db2.close()
+
+    def test_new_file_seeds_the_chart_once(self):
+        """A brand-new file still gets the whole chart from the seed (and the sync after it adds nothing)."""
+        path = os.path.join(self.tmp, "fresh", "terminal.db")
+        db = Database(path, FakeClock("2026-10-27T18:00:00-04:00"), None)
+        db.open(books=[config.TEST_BOOK])
+        try:
+            with db.reader() as conn:
+                self.assertEqual(sorted(CHART), [r[0] for r in conn.execute("SELECT gl FROM chart ORDER BY gl").fetchall()])
+        finally:
+            db.close()
 
 
 class CoreTests(unittest.TestCase):

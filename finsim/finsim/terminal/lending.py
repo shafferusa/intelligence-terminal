@@ -55,6 +55,15 @@ Conventions stated here (the §1.3 sentences that bite in this module)
 - Recalls are never generated and 5700 (buy-in penalties) is never posted by this module: three consecutive FINRA
   sessions with a short-volume ratio ≥ 0.80 on a shorted name only open an INFO attention item ``HTB_TIGHTENING``
   ("hard-to-borrow tightening: a lender could recall; consider covering"), resolved when the ratio falls back.
+- LENDER WORDING (FINSIM1_PLAN C16 / rule 4, 1.0.5): a lender's terms are ASSUMED, so new borrows store "street lender
+  (assumed terms)" / "<PB> (prime broker, assumed terms)"; rows stored by earlier releases ("street lender (modelled)",
+  "<PB> (prime broker, modelled)") stay untouched and are SHOWN through ``lender_label`` (a trailing "modelled)" reads
+  "assumed terms)") in every payload this module serves (the credit desk's stock borrows, ``borrow_view``, the
+  counterparty exposures); the other packages' payloads call the same function.
+- COLLATERAL MARK DATING (POSTCLOSE-06): the 17:10 ET mark of trading day D posts after the 17:00 ET accounting-day cut-off;
+  its entry and the Treasury sweep that funds a call carry business date D (``ctx.asof_date`` = D while it posts), so the
+  mark "of D" and its funding sit on D.  A mark caught up on a later calendar day keeps the day it was posted (the
+  catch-up rule of ``lifecycle_jobs`` NIGHTS: nights already accrued are never re-based by a late posting).
 - Idempotency keys (§5.4): ``collat:{borrow}:open``, ``collat:{borrow}:fill:{fill_id}``, ``cmark:{borrow}:{date}``, ``accr:bfee:{borrow}:{night}``,
   ``accr:rebate:{borrow}:{night}``, ``collat:{borrow}:return:{fill_id | cancel:{order} | cleanup:{date} |
   manual:{request_id}}`` and ``pay:bfee:{borrow}:return:{same suffix}`` / ``pay:bfee:{borrow}:late:{night}``.
@@ -85,7 +94,8 @@ LOCATE_TTL_S = 120
 REASON_PENDING = "pending short sale"
 REASON_MANUAL = "manual borrow (no order)"
 LIVE_ORDER_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")
-MODELLED_LENDER = "street lender (modelled)"
+MODELLED_LENDER = "street lender (assumed terms)"          # C16: the wording new borrows store (the name is kept for importers)
+LEGACY_LENDER = "street lender (modelled)"                  # what releases before 1.0.5 stored; shown through lender_label
 HTB_CODE = "HTB_TIGHTENING"
 HTB_MESSAGE = "hard-to-borrow tightening: a lender could recall; consider covering"
 
@@ -284,16 +294,29 @@ def finra_view(conn, symbol: str, today: date, cal) -> dict:
     return {"ratio": ratio, "ratio_day": ratio_day, "rows_last3": len(rows), "window": window}
 
 
+def lender_label(name) -> str:
+    """C16 (rule 4): a stored lender name as shown - a name ending "(modelled)" or ", modelled)" (what releases before 1.0.5
+    stored) reads "(assumed terms)" / ", assumed terms)": "street lender (modelled)" -> "street lender (assumed terms)",
+    "GS (prime broker, modelled)" -> "GS (prime broker, assumed terms)".  Stored rows are never rewritten; anything else is
+    returned unchanged ("" for None)."""
+    s = "" if name is None else str(name)
+    for old in ("modelled)", "modeled)"):
+        if s.endswith(old):
+            return s[: -len(old)] + "assumed terms)"
+    return s
+
+
 def borrow_lender(services, acct, counterparty_id: Optional[str] = None, conn=None) -> Tuple[str, Optional[str]]:
     """``(label, counterparty_id)`` of a borrow's lender (module docstring BORROW_AVAIL): the PB of a prime-broker account,
-    else the agent lender asked for or the directory's default one; the modelled label only when the directory is absent."""
+    else the agent lender asked for or the directory's default one; the street-lender label (assumed terms) only when the
+    directory is absent."""
     if acct is not None and acct["kind"] == "PB" and acct["broker"]:
-        return f"{acct['broker']} (prime broker, modelled)", f"PB_{acct['broker']}"
+        return f"{acct['broker']} (prime broker, assumed terms)", f"PB_{acct['broker']}"
     cps = getattr(services, "counterparties", None)
     if cps is None or not hasattr(cps, "lending_terms"):
         try:
             from . import counterparties as cps
-        except Exception:   # noqa: BLE001 - no directory: the modelled label
+        except Exception:   # noqa: BLE001 - no directory: the street-lender label
             return MODELLED_LENDER, None
     try:
         t = cps.lending_terms(services, counterparty_id, conn) if counterparty_id else cps.default_borrow_lender(services, conn)
@@ -686,6 +709,17 @@ def collateral_mark_lines(ctx, borrow, mark, mark_date: str, qty: Optional[int] 
     return [], 0
 
 
+def mark_stamp(ctx: TxContext, mark_date: str) -> Optional[str]:
+    """POSTCLOSE-06: the business date a collateral mark of ``mark_date`` posts on - ``mark_date`` itself when it runs on that
+    calendar day after the 17:00 ET cut-off (the 17:10 job: the accounting day is already the next one), else None (the
+    accounting day: a mark posted the same afternoon, or caught up on a later day, keeps the day it was posted)."""
+    try:
+        same_day = ny_of(ctx.ts).date().isoformat() == str(mark_date)
+    except Exception:   # noqa: BLE001 - a context without a clock posts as before
+        return None
+    return str(mark_date) if same_day and str(ctx.today) > str(mark_date) else None
+
+
 def collateral_mark(ctx: TxContext, services, borrow_id: str, mark_date: str, mark=None, mark_note: Optional[str] = None) -> dict:
     """``required = to_c(1.02 × collateralised qty × close)`` (``collateral_qty_map``: the whole outstanding of a borrow
     collateralised at open, the short an order borrow backs), ``delta = required − collateral_c``; a call is funded
@@ -713,18 +747,22 @@ def collateral_mark(ctx: TxContext, services, borrow_id: str, mark_date: str, ma
     aid, iid, ccy = b["account_id"], b["instrument_id"], b["currency"]
     funding = None
     entry_id = None
+    stamp = mark_stamp(ctx, mark_date)                       # POSTCLOSE-06: the 17:10 mark of D and its funding sweep sit on D
     if delta > 0:
-        funding = execution.fund(ctx, aid, ccy, delta, "borrow", borrow_id, None, immediate=True, overdraft=True, services=services)
+        from .lifecycle_jobs import with_asof
+        funding = with_asof(ctx, stamp, lambda: execution.fund(ctx, aid, ccy, delta, "borrow", borrow_id, None, immediate=True, overdraft=True,
+                                                               services=services))
     if delta != 0:
         what = "call" if delta > 0 else "excess returned"
         memo = (f"collateral mark {mark_date} on {borrow_id}: 102 % of {cqty:,} x {mark} = {fmt_money(required)} ({mark_note or 'mark given'}); "
                 f"{what} {fmt_money(abs(delta))} (SHORT_COLLATERAL)")
-        entry_id = ctx.post(Entry("COLLATERAL", memo, lines, f"cmark:{borrow_id}:{mark_date}", ref_type="borrow", ref_id=borrow_id))
+        entry_id = ctx.post(Entry("COLLATERAL", memo, lines, f"cmark:{borrow_id}:{mark_date}", ref_type="borrow", ref_id=borrow_id, business_date=stamp))
     conn.execute("UPDATE borrows SET collateral_c=?, last_mark_date=? WHERE borrow_id=?", (required, mark_date, borrow_id))
     ctx.touched_accounts.add(aid)
     ctx.touched_instruments.add((aid, iid))
     ctx.event("COLLATERAL_MARKED", account_id=aid, instrument_id=iid, ref_type="borrow", ref_id=borrow_id, mark=str(mark), mark_date=mark_date, required_c=required,
-              delta_c=delta, entry_id=entry_id, sweep_id=None if funding is None else funding.sweep_id, funded=None if funding is None else funding.funded)
+              delta_c=delta, entry_id=entry_id, sweep_id=None if funding is None else funding.sweep_id, funded=None if funding is None else funding.funded,
+              business_date=stamp or ctx.today)
     return {"borrow_id": borrow_id, "mark_date": mark_date, "mark": str(mark), "mark_note": mark_note, "required_c": required, "delta_c": delta, "entry_id": entry_id,
             "funding": None if funding is None else funding.to_dict()}
 
@@ -776,6 +814,7 @@ def borrow_view(conn, borrow_id: str) -> dict:
     """The row plus ``outstanding``, the instrument's accrued fee / rebate balances and the order's status (API shape)."""
     b = _borrow(conn, borrow_id)
     d = dict(b)
+    d["lender"] = lender_label(b["lender"])                      # C16: the stored row stays as it is; the payload shows the label
     d["outstanding"] = _outstanding(b)
     d["accrued_fees_c"] = balance(conn, b["account_id"], "2310", b["currency"], b["instrument_id"])
     d["accrued_rebate_c"] = balance(conn, b["account_id"], "1410", b["currency"], b["instrument_id"])
@@ -1073,8 +1112,8 @@ def exposure_items(services, conn, account_ids: List[str], snap) -> List[dict]:
     has_cp = any(x[1] == "counterparty" for x in conn.execute("PRAGMA table_info(borrows)").fetchall())
     for b in conn.execute(f"SELECT * FROM borrows WHERE status='OPEN' AND account_id IN ({q}) ORDER BY borrow_id", account_ids).fetchall():
         cid = b["counterparty"] if has_cp else None
-        name = b["lender"]
-        for suffix in (" (agent lender, assumed terms)", " (prime broker, modelled)"):
+        name = lender_label(b["lender"])
+        for suffix in (" (agent lender, assumed terms)", " (prime broker, assumed terms)"):
             if name.endswith(suffix):
                 name = name[: -len(suffix)]
         out.append({"counterparty_id": cid, "name": name, "type": "PRIME_BROKER" if (cid or "").startswith("PB_") else "AGENT_LENDER", "product": "stock borrow",

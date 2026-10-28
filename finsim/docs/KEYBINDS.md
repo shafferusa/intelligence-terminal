@@ -25,7 +25,7 @@ the app (Settings > Keyboard) and every page follows them.
 | F9 | Show / hide the order ticket (the 1.0.3 `t` rules: on an account page; elsewhere it only hides an open ticket) |
 | F10 | Treasury |
 | F11 | Risk |
-| F12 | Daily News |
+| F12 | Dashboard (the landing page: the selected book's "Requires your attention" tiles) |
 | Shift+F1 / Shift+F2 / Shift+F3 | Select the Personal / Fund / Institutional book |
 | Shift+F4 | Positions of the account you are on (elsewhere: US Exchange) |
 | Shift+F5 | Cash & financing of the account you are on (elsewhere: US Exchange) |
@@ -36,6 +36,8 @@ the app (Settings > Keyboard) and every page follows them.
 | Shift+F10 | History of the book's last past lifetime (`#/h/<lifetime>/portfolio`; a book with none: a message) |
 | Shift+F11 | Settings |
 | Shift+F12 | Keyboard help |
+
+Release 1.0.5: the registry holds 74 actions. Trading, Pending Trades, Completed Trades, Accounts, Cash & Collateral and Derivatives have no default key yet. The last five appear in the '?' help and in Settings > Keyboard only once their pages are in the build; Trading is listed in Settings > Keyboard without a key. Every other 1.0.4 key is unchanged. The full map of the new navigation follows in 1.0.6.
 
 ### Single keys (never while you type in a box)
 

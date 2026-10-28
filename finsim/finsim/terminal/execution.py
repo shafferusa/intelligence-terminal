@@ -51,7 +51,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -102,6 +102,10 @@ class FillSpec:
     note: str = ""
     fx_convert: bool = False                # C12 b / C15: a non-USD need beyond own + Treasury cash converts USD first
     trade_date: Optional[date] = None       # LC-1: a system fill of a past date (option expiry run late) pins trade / business date
+    exec_ts: Optional[int] = None           # FINSIM1 C8: an as-of fill's execution time (fills.ts and lots.open_ts); None = the command clock
+    booking: Optional[str] = None           # C8: AS_OF / HISTORICAL_MODEL (fills.booking); None = a live fill
+    entered_ts: Optional[int] = None        # C8: when the as-of fill was really entered (fills.entered_ts)
+    import_key: Optional[str] = None        # C8: the batch line key (fills.import_key, one fill per key)
 
 
 @dataclass
@@ -121,6 +125,7 @@ class FundingResult:
     fx_conversion: Optional[dict] = None
     usd_funding: Optional[dict] = None
     mode: str = "fill"               # fill | immediate | commitments
+    asof: Optional[str] = None       # C20: the business date an as-of need was measured on (ctx.asof_date), else None
 
     def to_dict(self) -> dict:
         d = dict(self.__dict__)
@@ -305,16 +310,117 @@ def _quote_json(spec: FillSpec, ctx: TxContext, ccy: str, rate: Decimal) -> str:
 
 
 # ---- funding (§10.8, §11.6) ------------------------------------------------------------------------------------------
+def asof_day(ctx) -> Optional[date]:
+    """FINSIM1 C20: the business date of an as-of command (``ctx.asof_date``, an ISO 'YYYY-MM-DD' string like ``ctx.today`` and
+    ``Entry.business_date``; a ``date`` is accepted too), else None (a live command)."""
+    v = getattr(ctx, "asof_date", None) if ctx is not None else None
+    if v is None or v == "":
+        return None
+    if isinstance(v, datetime):
+        return v.date()
+    if isinstance(v, date):
+        return v
+    return date.fromisoformat(str(v)[:10])
+
+
+def restricted_cash_c(services, conn, account_id: str, currency: str, csa_netting: bool = False, as_of: Optional[date] = None) -> int:
+    """C21 / D9: the collateral received that ``account_id`` may not spend, ``collateral.restricted_c(conn, account, ccy, csa_netting,
+    as_of)`` (P6: net VM received under the account's CSA, GL 2330 - 1320 floored at 0, plus securities-lending cash collateral,
+    GL 2520; with ``csa_netting`` only the 2520 part - a payment to the CSA counterparty may use its own collateral).  0 while the
+    collateral module is not bound (today's behaviour)."""
+    coll = getattr(services, "collateral", None) if services is not None else None
+    fn = getattr(coll, "restricted_c", None) if coll is not None else None
+    if not callable(fn):
+        return 0
+    return max(0, int(fn(conn, account_id, currency, csa_netting=bool(csa_netting), as_of=as_of) or 0))
+
+
+#: the GLs of the business-date cash figures when C9h is not in the tree: settled cash, receivables, payables (natural signs)
+_AT_CLOSE_GLS = (("1010",), ("1200", "1250"), ("2100", "2350"))
+
+
+def cash_at_close(services, conn, account_id: str, currency: str, d: date) -> Tuple[int, int, int]:
+    """``(settled, receivable, payable)`` natural cents of ``account_id`` at the close of business date ``d``: the journal lines
+    whose entry has business_date <= d - ``accounting.cash_view_at`` (C9h, P3) when it is in the tree, else the same sums read
+    here (1010; 1200 + 1250; 2100 + 2350).  Never today's balances."""
+    from . import accounting as _acc
+    fn = getattr(_acc, "cash_view_at", None)
+    if callable(fn):
+        v = fn(conn, account_id, currency, d)
+        get = v.get if isinstance(v, dict) else (lambda k, _d=None: getattr(v, k, _d))
+        return int(get("settled_c", 0) or 0), int(get("receivable_c", 0) or 0), int(get("payable_c", 0) or 0)
+    out = []
+    for gls, sign in zip(_AT_CLOSE_GLS, (1, 1, -1)):
+        q = ",".join("?" for _ in gls)
+        row = conn.execute(f"SELECT COALESCE(SUM(l.amount_c), 0) FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id WHERE l.account_id=?"
+                           f" AND l.currency=? AND l.gl IN ({q}) AND e.business_date<=?", (account_id, currency, *gls, d.isoformat())).fetchone()
+        out.append(sign * int(row[0] or 0))
+    return out[0], out[1], out[2]
+
+
+def _csa_skip(services) -> tuple:
+    """C21 with the C9b adjusters: the adjuster key of the restricted collateral (``collateral.ADJUSTER_KEY``) when it is
+    registered, so a CSA payment can leave it out of available / immediate cash; () otherwise."""
+    coll = getattr(services, "collateral", None) if services is not None else None
+    key = getattr(coll, "ADJUSTER_KEY", None) if coll is not None else None
+    if not key:
+        return ()
+    from . import accounting as _acc
+    listed = getattr(_acc, "cash_adjusters", None)
+    try:
+        keys = {k for k, _label in listed()} if callable(listed) else set()
+    except Exception:   # noqa: BLE001 - no adjuster list: nothing to leave out
+        keys = set()
+    return (str(key),) if key in keys else ()
+
+
 def own_funds_c(conn, account_id: str, currency: str, settle_date: Optional[date], snapshot, master, now, *, immediate: bool = False,
-                commitments: bool = False) -> int:
+                commitments: bool = False, csa_netting: bool = False, services=None, asof: Optional[date] = None) -> int:
     """The account's own cash a need is measured against (module docstring 'What "own cash" is'): ``commitments`` ->
     ``immediate_available_c`` (never above settled, net of payables / working orders); ``immediate`` -> settled cash
-    (1010, may be negative while a shortfall is open); else ``available_c`` at ``settle_date`` (floored)."""
+    (1010, may be negative while a shortfall is open) less the collateral received it may not spend (C21,
+    ``restricted_cash_c``: all of it by default, only securities-lending collateral with ``csa_netting``); else
+    ``available_c`` at ``settle_date`` (floored).  ``available_c`` / ``immediate_available_c`` already exclude restricted cash
+    through the accounting cash adjusters (C9b), so it is subtracted here only from the raw settled figure.
+
+    ``asof`` = D (C20, an as-of command): the figures at the close of business date D (``cash_at_close``, C9h) less the
+    collateral restricted at D - ``fill``: max(0, settled + receivables - payables - restricted) (the fill's payable settles
+    later, nothing leaves now); ``immediate`` / ``commitments`` move cash now, so the figure is also capped at today's
+    (``min(at D, now)``): a posting dated D still leaves today's settled cash, which L18 keeps at or above zero."""
+    if asof is not None:
+        s, r, p = cash_at_close(services, conn, account_id, currency, asof)
+        x = restricted_cash_c(services, conn, account_id, currency, csa_netting, as_of=asof)
+        if commitments:
+            now_c = own_funds_c(conn, account_id, currency, settle_date, snapshot, master, now, commitments=True, csa_netting=csa_netting, services=services)
+            return min(max(0, min(s, s + r - p) - x), now_c)
+        if immediate:
+            return min(s - x, balance(conn, account_id, "1010", currency) - restricted_cash_c(services, conn, account_id, currency, csa_netting))
+        return max(0, s + r - p - x)
+    if immediate and not commitments:
+        return balance(conn, account_id, "1010", currency) - restricted_cash_c(services, conn, account_id, currency, csa_netting)
+    skip = _csa_skip(services) if csa_netting else ()
+    if skip:
+        # a CSA payment in fill / commitments mode: the restricted adjuster is left out and only the securities-lending part of
+        # the collateral (restricted_c with csa_netting) stays excluded
+        x = restricted_cash_c(services, conn, account_id, currency, True)
+        spend = spendable_c(conn, account_id, currency, settle_date, snapshot, master, now, skip_adjusters=skip) - x
+        if commitments:
+            return max(0, min(balance(conn, account_id, "1010", currency) - x, spend))
+        return max(0, spend)
     if commitments:
         return immediate_available_c(conn, account_id, currency, settle_date, snapshot, master, now)
-    if immediate:
-        return balance(conn, account_id, "1010", currency)
     return available_c(conn, account_id, currency, settle_date, snapshot, master, now)
+
+
+def treasury_available_at_c(services, conn, lifetime_id: str, currency: str, d: date) -> int:
+    """C20: what the lifetime's Treasury could sweep on business date ``d``: its settled cash at the close of ``d`` (C9h) less the
+    book's reserve (``books.treasury_reserve_c``) - the as-of twin of ``accounting.treasury_available_c``.  Signed."""
+    fn = getattr(treasury, "asof_sweepable_c", None)
+    if callable(fn):                           # C15 (P6): the very figure ``sweep_in`` checks under ctx.asof_date
+        return int(fn(conn, lifetime_id, currency, d))
+    from .books import treasury_reserve_c as _reserve
+    s, _r, _p = cash_at_close(services, conn, f"{lifetime_id}:TREASURY", currency, d)
+    return s - _reserve(conn, lifetime_id, currency)
 
 
 def _pb_room(ctx: TxContext, services, acct, currency: str) -> int:
@@ -339,7 +445,8 @@ def _conversion_usd_c(conv: dict) -> Optional[int]:
 
 
 def fund(ctx: TxContext, account_id: str, currency: str, need_c: int, link_type: str, link_id: str, settle_date: Optional[date] = None, *,
-         immediate: bool = False, overdraft: bool = False, services=None, fx_convert: bool = False, commitments: bool = False) -> FundingResult:
+         immediate: bool = False, overdraft: bool = False, services=None, fx_convert: bool = False, commitments: bool = False,
+         csa_netting: bool = False) -> FundingResult:
     """Make ``need_c`` of ``currency`` spendable in ``account_id`` (sentence SWEEP; §10.8; contract C12).
 
     The cascade (MONEY-4: exactly what the preview disclosed): own cash (``own_funds_c`` by mode) -> ONE linked SWEEP_IN
@@ -348,7 +455,20 @@ def fund(ctx: TxContext, account_id: str, currency: str, need_c: int, link_type:
     measured against the USD own cash BEFORE the deal) -> else 409 INSUFFICIENT_FUNDS before anything moved (a refusal
     never leaves a partial sweep), or with ``overdraft`` (lifecycle calls, §11.6) the rest is posted as an overdraft
     under an open FUNDING_SHORTFALL.  Worked (s9): own 0.00, need 250,001.50, Treasury 100,000.00, PB headroom
-    169,750.00 -> SWEEP_IN 100,000.00 + PB draw 150,001.50 (source "sweep+pb")."""
+    169,750.00 -> SWEEP_IN 100,000.00 + PB draw 150,001.50 (source "sweep+pb").
+
+    ``csa_netting`` (C21): a payment to the account's CSA counterparty (variation margin, swap payments, CDX coupons,
+    terminations - P4 passes it) may use the cash collateral that counterparty posted; every other need excludes it.
+
+    As-of (C20, D8: ``ctx.asof_date`` = D, set by an as-of booking or a past-date lifecycle step): own cash and Treasury
+    availability are the figures at the close of business date D (``own_funds_c(asof=D)``, ``treasury_available_at_c``), so a
+    later deposit or transfer never funds an earlier need, and the sweep is dated D (``treasury.sweep_in`` stamps
+    ``ctx.asof_date``, C15).  Today's balance still binds: a sweep that would leave the Treasury's settled cash below zero now
+    is refused 409 ASOF_CURRENT_FUNDS before anything moves, naming the amount to move into Treasury first (with
+    ``overdraft`` the sweep is capped at today's Treasury cash and the rest overdraws the account, section 11.6).  No
+    automatic FX conversion as of a past date.  Worked (P2 acceptance i): Treasury 25,000,000.00 at the close of D and
+    2,000,000.00 now after a transfer dated D+1; an as-of need of 1,701,918.50 sweeps 1,701,918.50 dated D, Treasury closes D at
+    23,298,081.50 and holds 298,081.50 now; with 1,467,580.80 now it is refused (it would leave -234,337.70)."""
     need_c = int(need_c)
     if need_c <= 0:
         return FundingResult(0, 0, 0, funded=True, source="none")
@@ -357,34 +477,61 @@ def fund(ctx: TxContext, account_id: str, currency: str, need_c: int, link_type:
     acct = _open_account(conn, account_id)
     master = getattr(services, "instruments", None)
     mode = "commitments" if commitments else ("immediate" if immediate else "fill")
-    own = own_funds_c(conn, account_id, currency, settle_date, ctx.marks, master, ctx.now, immediate=immediate, commitments=commitments)
+    d = asof_day(ctx)
+    asof = d.isoformat() if d is not None else None
+    own = own_funds_c(conn, account_id, currency, settle_date, ctx.marks, master, ctx.now, immediate=immediate, commitments=commitments,
+                      csa_netting=csa_netting, services=services, asof=d)
     shortfall = need_c - own
     if shortfall <= 0:
-        return FundingResult(need_c, own, 0, funded=True, source="own", mode=mode)
-    res = FundingResult(need_c, own, shortfall, mode=mode)
+        return FundingResult(need_c, own, 0, funded=True, source="own", mode=mode, asof=asof)
+    res = FundingResult(need_c, own, shortfall, mode=mode, asof=asof)
     lid = acct["lifetime_id"]
     is_treasury = acct["kind"] == "TREASURY"
-    t_avail = 0 if is_treasury else treasury_available_c(conn, lid, currency, ctx.marks, master, ctx.now)
+    if is_treasury:
+        t_avail = 0
+    elif d is not None:
+        t_avail = treasury_available_at_c(services, conn, lid, currency, d)
+    else:
+        t_avail = treasury_available_c(conn, lid, currency, ctx.marks, master, ctx.now)
     res.treasury_available_c = t_avail
     from_tre = min(shortfall, max(0, t_avail))
+    tre_now = None
+    if d is not None and from_tre > 0:
+        # D8 / L18: the as-of sweep also leaves today's Treasury settled cash, which must stay at or above zero
+        tre_now = balance(conn, f"{lid}:TREASURY", "1010", currency)
+        if from_tre > max(0, tre_now):
+            if not overdraft:
+                raise ConflictError("ASOF_CURRENT_FUNDS",
+                                    f"{account_id} needs {currency} {fmt_money(need_c)} as of {asof}: Treasury had {fmt_money(max(0, t_avail))} available at "
+                                    f"the close of {asof} but holds {fmt_money(tre_now)} now, and the sweep of {fmt_money(from_tre)} would leave it at "
+                                    f"{fmt_money(tre_now - from_tre)}: move {fmt_money(from_tre - max(0, tre_now))} into Treasury first",
+                                    {"need_c": need_c, "own_available_c": own, "treasury_available_c": t_avail, "treasury_now_c": tre_now, "sweep_c": from_tre,
+                                     "move_first_c": from_tre - max(0, tre_now), "currency": currency, "account_id": account_id, "link_type": link_type,
+                                     "link_id": link_id, "mode": mode, "asof": asof})
+            from_tre = max(0, tre_now)
     rest = shortfall - from_tre
     pb_room = _pb_room(ctx, services, acct, currency) if rest > 0 else 0
     res.pb_headroom_c = pb_room if rest > 0 else None
     from_pb = min(rest, pb_room)
     rest -= from_pb
     fxm = getattr(services, "fx", None)
-    convert = rest > 0 and fx_convert and currency != "USD" and fxm is not None and hasattr(fxm, "convert_for")
+    convert = rest > 0 and fx_convert and d is None and currency != "USD" and fxm is not None and hasattr(fxm, "convert_for")
     details = {"need_c": need_c, "own_available_c": own, "treasury_available_c": t_avail, "pb_headroom_c": pb_room, "pb_draw_c": from_pb,
                "shortfall_c": rest, "currency": currency, "account_id": account_id, "link_type": link_type, "link_id": link_id, "mode": mode}
+    if d is not None:
+        details.update(asof=asof, treasury_now_c=tre_now)
     if rest > 0 and not convert and not overdraft:
         hint = ""
-        if currency != "USD" and fx_convert:
+        if currency != "USD" and fx_convert and d is not None:
+            hint = "; no automatic USD conversion as of a past date"
+        elif currency != "USD" and fx_convert:
             hint = "; the automatic USD conversion is not available yet"
         elif currency != "USD":
             hint = f"; buy {currency} {fmt_money(rest)} with Convert, or ask for the automatic conversion"
+        at = f" at the close of {asof}" if d is not None else ""
         raise ConflictError("INSUFFICIENT_FUNDS",
-                            f"{account_id} needs {currency} {fmt_money(need_c)}: own available {fmt_money(own)}, Treasury available "
-                            f"{fmt_money(max(0, t_avail))}, PB financing {fmt_money(pb_room)}{hint}", details)
+                            f"{account_id} needs {currency} {fmt_money(need_c)}" + (f" as of {asof}" if d is not None else "") + f": own available{at} "
+                            f"{fmt_money(own)}, Treasury available{at} {fmt_money(max(0, t_avail))}, PB financing {fmt_money(pb_room)}{hint}", details)
     sources = []
     if from_tre > 0:
         # the sweep moves exactly the part of the shortfall Treasury covers (L19: amount == recorded shortfall; PB / FX / an
@@ -635,14 +782,20 @@ def apply_fill(ctx: TxContext, spec: FillSpec, services=None) -> FillResult:
     if not lines:
         raise RejectError("ZERO_FILL", f"a fill of {qty:,} {inst.symbol} at {price} moves nothing")
     entry_id = ctx.post(Entry(entry_kind, memo, lines, f"fill:{fill_id}", ref_type="fill", ref_id=fill_id, business_date=business_date))
+    # C8 / D7: an as-of fill carries its execution time in fills.ts and lots.open_ts (the command row keeps the real entry time)
+    fill_ts = int(spec.exec_ts) if spec.exec_ts is not None else ctx.ts
     conn.execute(
         "INSERT INTO fills(fill_id, order_id, account_id, instrument_id, side, qty, price, gross_c, fee_c, currency, fx_rate, ts, trade_date, settle_date,"
         " origin, price_basis, quote_json, bar_ts, cap_qty, cap_note, entry_id, idem_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        (fill_id, spec.order_id, spec.account_id, inst.instrument_id, effect, qty, str(price), gross_c, fee_c, ccy, str(rate), ctx.ts, tdate.isoformat(),
+        (fill_id, spec.order_id, spec.account_id, inst.instrument_id, effect, qty, str(price), gross_c, fee_c, ccy, str(rate), fill_ts, tdate.isoformat(),
          settle_date.isoformat() if settle_date else None, spec.origin, spec.price_basis, _quote_json(spec, ctx, ccy, rate), spec.bar_ts, spec.cap_qty,
          spec.cap_note, entry_id, spec.idem_key))
+    if spec.booking or spec.entered_ts is not None or spec.import_key:
+        conn.execute("UPDATE fills SET booking=?, entered_ts=?, import_key=? WHERE fill_id=?", (spec.booking, spec.entered_ts, spec.import_key, fill_id))
     if opening:
         lot_id = open_lot(ctx.tx, spec.account_id, inst.instrument_id, lot_side, fill_id, qty, price, gross_c, ccy, lock_until=spec.lock_until)
+        if spec.exec_ts is not None:
+            conn.execute("UPDATE lots SET open_ts=? WHERE lot_id=?", (fill_ts, lot_id))
     applied_c = 0
     if inst.kind in EQUITY_KINDS and opening and effect == "SELL":
         # an opening short consumes its borrow BEFORE the settlement row: an order borrow's 102 % collateral is posted now,

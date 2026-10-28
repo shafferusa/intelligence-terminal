@@ -462,7 +462,7 @@ class Errors(ApiBase):
         self.assertEqual("2026-10-20", lt["lifetimes"][0]["ended"])
 
 
-# ===== light commands, settings, watchlists, attention, dividends, news ==================================================================
+# ===== light commands, settings, watchlists, attention, dividends; news gone (1.0.5) ======================================================
 class Lights(ApiBase):
     def test_settings_watchlists_attention(self):
         s, _ = self.ok("PATCH", "/api/settings", {"request_id": "ui:api-set-0001", "participation_rate": "0.20"})
@@ -508,16 +508,156 @@ class Lights(ApiBase):
         self.assertEqual(("AAPL", 100, "26.00", "2026-11-30", True), (row["instrument_id"], row["position_qty"], row["expected"], row["pay_date"], row["pay_date_convention"]))
         self.assertEqual("dividend", row["kind"])
 
-    def test_news_route_with_a_stub_store(self):
-        from finsim.terminal.news import NewsStore
-        self.rt.news = NewsStore(self.rt.db, self.rt.clock, getter=lambda *a: b"{}", index_path=os.path.join(self.tmp, "missing.json"), sleep=lambda s: None)
-        n, _ = self.ok("GET", "/api/news?limit=10&book=T")
-        self.assertEqual([], n["items"])
-        self.assertIn("attention", n)
-        self.assertEqual(0, n["health"]["injection_flags"])
-        self.rt.news = None
-        status, body, _ = self.get("/api/news")
-        self.assertEqual((501, "WP-22"), (status, body["error"]["details"]["package"]))
+    def test_news_is_gone(self):
+        """UI-03 (directive section 2): the news module is deleted, /api/news answers 404 NOT_FOUND like any unknown route (never a 501
+        that promises it), no news job runs and nothing reports a news state; the attention summary it carried has its own route."""
+        import importlib
+        with self.assertRaises(ModuleNotFoundError):
+            importlib.import_module("finsim.terminal.news")
+        for path in ("/api/news", "/api/news?limit=10&book=T"):
+            status, body, _ = self.get(path)
+            self.assertEqual((404, "NOT_FOUND"), (status, body["error"]["code"]), path)
+        self.assertIsNone(self.rt.news)
+        h, _ = self.ok("GET", "/api/health")
+        self.assertIsNone(h.get("news"))                                           # 1.0.5: null; the key itself leaves with the rest of the news code
+        self.assertEqual("missing", h["modules"].get("news"))
+        self.assertFalse({"yahoo_news", "fed", "newspaper"} & set(h["providers"]))
+        self.assertFalse([n for n in self.rt.worker.refresher.stats() if str(n).startswith("news_")])   # no news slot on the quote worker
+        s, _ = self.ok("GET", "/api/attention/summary?book=T")
+        self.assertEqual("T1:ALL", s["scope"])
+        self.assertNotIn("news", s)
+
+    def test_retired_news_providers_skipped_on_load(self):
+        """15.7 item 5: the provider_health rows an older release stored for yahoo_news / fed / newspaper / news_* stay in the database,
+        inert: a restart never loads them, so /api/health never lists them and a stale news failure never becomes a WARN in the strip."""
+        now = self.rt.clock.epoch()
+        with self.rt.db.writer() as tx:
+            for name in ("yahoo_news", "fed", "newspaper", "news_paper"):
+                tx.x("INSERT INTO provider_health(provider, last_ok_ts, last_err_ts, last_error, consecutive_errors, requests_today, day, down_until_ts)"
+                     " VALUES (?,?,?,?,?,?,?,?)", (name, now - 3600, now - 60, "offline: no network", 4, 9, "2026-10-20", now + 600))
+        self.rt.close()
+        self.rt = build(self.tmp)
+        h, _ = self.ok("GET", "/api/health")
+        self.assertFalse({"yahoo_news", "fed", "newspaper", "news_paper"} & set(h["providers"]), sorted(h["providers"]))
+        self.assertIn("yahoo", h["providers"])
+        s, _ = self.ok("GET", "/api/attention/summary?book=T")
+        self.assertEqual((0, []), (s["providers"]["paused"], s["providers"]["down"]))
+        with self.rt.db.reader() as conn:                                          # the stored rows are untouched
+            self.assertEqual(4, conn.execute("SELECT COUNT(*) FROM provider_health WHERE provider IN ('yahoo_news','fed','newspaper','news_paper')").fetchone()[0])
+
+    def test_c5_refusal_recorder_records_a_refused_bond_ticket(self):
+        """C5: a recorder registered for bonds.trade receives the refused ticket (kind, payload, result) and the HTTP answer is the same
+        as without it - also when the recorder raises; an accepted command, another kind and the not-a-rejection codes are never handed over."""
+        got = []
+
+        def recorder(req, kind, payload, res):
+            got.append((kind, dict(payload), res.http, res.code, req.request_id))
+
+        def broken(req, kind, payload, res):
+            raise RuntimeError("recorder failure (test)")
+        bond = sorted(i.instrument_id for i in self.rt.instruments.all() if i.kind == "BOND")[0]
+        trade = {"account_id": "T1:NOPE", "instrument_id": bond, "side": "BUY", "qty": 1000}
+        status0, body0, _ = self.handle("POST", "/api/bonds/trade", dict(trade, request_id="ui:api-c5-0000"))   # no recorder yet
+        self.assertEqual(400, status0, body0)
+        _api.add_refusal_recorder("bonds.trade", recorder)
+        _api.add_refusal_recorder(["bonds.trade", "fx.spot"], broken)
+        _api.add_refusal_recorder("bonds.trade", recorder)                        # registering it again is a no-op
+        try:
+            status1, body1, _ = self.handle("POST", "/api/bonds/trade", dict(trade, request_id="ui:api-c5-0001"))
+            self.assertEqual((status0, body0["error"]), (status1, body1["error"]))   # the answer is unchanged (only the request id differs)
+            self.assertEqual("ui:api-c5-0001", body1["request_id"])
+            self.assertEqual([("bonds.trade", trade, 400, body1["error"]["code"], "ui:api-c5-0001")], got)
+            # another kind's refusal is not this recorder's; a deposit of a valid amount is not a refusal at all
+            status, body, _ = self.handle("POST", "/api/treasury/deposit", {"request_id": "ui:api-c5-0002", "amount": "abc", "currency": "USD"})
+            self.assertEqual((400, "AMOUNT"), (status, body["error"]["code"]))
+            self.assertEqual(1, len(got))
+            # the "come back with more" codes and replays are not rejections
+            req = _api.Request(self.rt, "POST", "/x", (), {}, {}, "127.0.0.1", {})
+            for code, replayed in (("REQUEST_ID_REUSED", False), ("CONFIRM_REQUIRED", False), ("PREVIEW_STALE", False), ("BAD_REQUEST_ID", False), ("SOMETHING", True)):
+                _api._record_refusal(req, "bonds.trade", {}, _api.Result(False, 409, {"error": {"code": code, "message": code}}, replayed=replayed))
+            self.assertEqual(1, len(got))
+            _api._record_refusal(req, "bonds.trade", {}, _api.Result(False, 500, {"error": {"code": "COMMAND_FAILED", "message": "x"}}))   # a 5xx is a failure, not a refusal
+            self.assertEqual(1, len(got))
+        finally:
+            self.assertEqual(1, _api.remove_refusal_recorder(recorder))
+            self.assertEqual(1, _api.remove_refusal_recorder(broken))
+        self.assertFalse([f for _k, f in _api.refusal_recorders() if f in (recorder, broken)])
+
+    def test_c6_unsupported_rows_follow_their_probes(self):
+        """C6 / 15.3 E1 / 15.7 item 6: the static rows (extended hours, forced liquidation, CSA interest) and one PLANNED row per capability
+        this build adds, shown while its probe function is absent and gone as soon as it exists; the forced-liquidation wording follows
+        the margin calls."""
+        import types as _types
+        rt = self.rt
+
+        def rows():
+            u, _ = self.ok("GET", "/api/unsupported")
+            return {r["item"]: r for r in u["items"]}
+        planned = {"Margin calls": ("collateral", "margin_calls_rows"), "Simulated counterparty settlement fails": ("blotters", "execution_detail"),
+                   "OTC dealer quotes (request a quote, then accept or decline it)": ("swaps", "rfq_rows"),
+                   "Good-till-date and next-session orders": ("orders", "gtd_supported"), "Securities pledged as CSA collateral": ("collateral", "pledges_view")}
+        r = rows()
+        self.assertEqual(("NOT_SIMULATED", "an order entered outside the regular session rests until the next regular open"),
+                         (r["Extended-hours trading"]["state"], r["Extended-hours trading"]["wording"]))
+        self.assertEqual(("NOT_SIMULATED", "variation margin received under a CSA is restricted and earns no PB credit interest; collateral posted earns none"),
+                         (r["CSA interest on cash collateral"]["state"], r["CSA interest on cash collateral"]["wording"]))
+        self.assertNotIn("Forced liquidation and margin calls that close positions", r)       # the old row is reworded
+        calls_built = callable(getattr(getattr(rt, "collateral", None), "margin_calls_rows", None))
+        self.assertEqual("NEVER", r["Forced liquidation"]["state"])
+        self.assertEqual(_api.FORCED_LIQUIDATION_WITH_CALLS if calls_built else "positions are never sold for you; a margin shortfall raises a warning and an attention item",
+                         r["Forced liquidation"]["wording"])
+        for item, (attr, fn) in planned.items():                                   # whatever this tree has built: a row iff its probe is absent
+            self.assertEqual(not callable(getattr(getattr(rt, attr, None), fn, None)), item in r, item)
+        self.assertEqual(getattr(rt, "importer", None) is None, "Historical trade import" in r)
+        if "Simulated counterparty settlement fails" in r:
+            self.assertEqual("unfunded payables are already marked failed and retried automatically; the fail you trigger yourself, and its resolution, "
+                             "are not in this version yet", r["Simulated counterparty settlement fails"]["wording"])
+        # every probe present: every PLANNED row of this build is gone and forced liquidation takes the margin-call wording
+        saved = {a: getattr(rt, a, None) for a in ("collateral", "blotters", "swaps", "orders", "importer")}
+        try:
+            rt.collateral = _types.SimpleNamespace(margin_calls_rows=lambda *a: [], pledges_view=lambda *a: [])
+            rt.blotters = _types.SimpleNamespace(execution_detail=lambda *a: {})
+            rt.swaps = _types.SimpleNamespace(rfq_rows=lambda *a: [])
+            rt.orders = _types.SimpleNamespace(gtd_supported=lambda services: True)
+            rt.importer = _types.SimpleNamespace()
+            r = rows()
+            for item in list(planned) + ["Historical trade import"]:
+                self.assertNotIn(item, r, item)
+            self.assertEqual("positions are never sold for you; margin calls are recorded and met from cash / Treasury / PB headroom or stay open",
+                             r["Forced liquidation"]["wording"])
+            # a probe that names a non-callable attribute is "absent"
+            rt.collateral = _types.SimpleNamespace(margin_calls_rows=None, pledges_view=lambda *a: [])
+            r = rows()
+            self.assertIn("Margin calls", r)
+            self.assertEqual("positions are never sold for you; a margin shortfall raises a warning and an attention item", r["Forced liquidation"]["wording"])
+        finally:
+            for a, v in saved.items():
+                setattr(rt, a, v)
+
+    def test_c1_c2_optional_modules_and_pages_of_this_build(self):
+        """C2: the FinSim1 build's optional modules are declared (bound, or missing while their package is not in the tree - tolerated,
+        never an error) with their package ids for 501s; C1: the optional pages are stubbed with a 200 while missing, the Dashboard
+        page is a required file."""
+        h, _ = self.ok("GET", "/api/health")
+        for attr, pkg in (("dashboard", "F1-P1"), ("blotters", "F1-P2"), ("navhistory", "F1-P3"), ("collateral", "F1-P6"), ("importer", "F1-P5")):
+            self.assertEqual(attr, _server.OPTIONAL_MODULES[attr])
+            self.assertEqual(pkg, _api.PACKAGES[attr])
+            self.assertIn(h["modules"].get(attr), ("bound", "missing"), attr)
+            self.assertTrue(hasattr(self.rt, attr), attr)
+        static = os.path.join(config.package_dir(), "static")
+        for rel in ("pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js", "components/imports.js"):
+            self.assertIn(rel, _api.PLANNED_STATIC)
+            status, body, headers = self.get("/static/" + rel)
+            self.assertEqual(200, status, rel)
+            self.assertTrue(headers["Content-Type"].startswith("application/javascript"), rel)
+            if not os.path.isfile(os.path.join(static, *rel.split("/"))):
+                self.assertIn(b"not built yet", body)
+        self.assertNotIn("pages/dashboard.js", _api.PLANNED_STATIC)
+        status, body, _ = self.get("/static/pages/dashboard.js")
+        self.assertEqual(200, status)
+        self.assertIn(b"T.pages.dashboard = ", body)
+        status, body, _ = self.get("/static/pages/news.js")
+        self.assertEqual(404, status)
 
     def test_performance_and_risk_routes(self):
         p, _ = self.ok("GET", "/api/portfolio/performance?scope=ALL&book=T")
@@ -532,7 +672,7 @@ class Lights(ApiBase):
 # ===== the owner's keyboard keys (2026-10-21 17:10; docs/KEYBINDS.md) ==================================================================
 class Keybinds(ApiBase):
     #: a slice of static/keys.js's defaults, as the client sends them with every save (keybind_defaults)
-    DEFAULTS = {"nav.us_exchange": "F1", "nav.debt": "F2", "page.news": "F12", "book.next": None, "ticket.buy": "B", "grid.buy": "B",
+    DEFAULTS = {"nav.us_exchange": "F1", "nav.debt": "F2", "page.dashboard": "F12", "book.next": None, "ticket.buy": "B", "grid.buy": "B",
                 "ticket.clear": "Escape", "dialog.close": "Escape"}
 
     def kb(self, n, binds, defaults=True):
@@ -556,8 +696,8 @@ class Keybinds(ApiBase):
         status, s, _ = self.kb(2, {"nav.debt": "F1", "nav.us_exchange": "F2"})
         self.assertEqual((200, {"nav.debt": "F1", "nav.us_exchange": "F2"}), (status, s["keybinds"]))
         # null = no key; an unbound action may take a free key; ticket and table may share B, a global action may not
-        status, s, _ = self.kb(3, {"page.news": None, "book.next": "Alt+B"})
-        self.assertEqual((200, None, "Alt+B"), (status, s["keybinds"]["page.news"], s["keybinds"]["book.next"]))
+        status, s, _ = self.kb(3, {"page.dashboard": None, "book.next": "Alt+B"})
+        self.assertEqual((200, None, "Alt+B"), (status, s["keybinds"]["page.dashboard"], s["keybinds"]["book.next"]))
         err = self.refused(4, {"book.next": "B"})
         self.assertEqual("B", err["details"]["key"])
         # one canonical form (Ctrl+Alt+Shift+Key), browser-reserved keys and malformed action names are refused with the field named
@@ -569,19 +709,19 @@ class Keybinds(ApiBase):
         self.assertIn("not an action of this build", self.refused(23, {"nav.nope": "F3"})["message"])
         self.assertIn("keybind_defaults", self.refused(24, {"book.next": "F2"}, defaults=False)["message"])   # KB-R1-08: never checked without the defaults
         # KB-R1-07: a trailing newline is not the canonical form (Python '$' matches before a final newline: fullmatch)
-        self.refused(30, {"page.news": "F1\n"})
+        self.refused(30, {"page.dashboard": "F1\n"})
         self.refused(31, {"nav.debt\n": "F3"})
         # KB-R1-05: Ctrl+F4 closes the tab, Ctrl+Page Up / Down switch tabs, Ctrl+Esc is the Windows Start menu
         self.assertIn("closes the tab", self.refused(32, {"book.next": "Ctrl+F4"})["message"])
         self.assertIn("switches tabs", self.refused(33, {"book.next": "Ctrl+PageDown"})["message"])
         self.assertIn("Start menu", self.refused(34, {"book.next": "Ctrl+Escape"})["message"])
         # an override equal to its default is dropped (Reset one)
-        status, s, _ = self.kb(25, {"page.news": "F12"})
+        status, s, _ = self.kb(25, {"page.dashboard": "F12"})
         self.assertEqual((200, {"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}), (status, s["keybinds"]))
         with self.rt.db.reader() as conn:                                          # journaled like every setting: before / after
             ev = [json.loads(r[0]) for r in conn.execute("SELECT payload_json FROM events WHERE type='SETTINGS_CHANGED' AND ref_id='keybinds' ORDER BY id").fetchall()]
         self.assertEqual(3, len(ev))
-        self.assertEqual(({"nav.debt": "F1", "nav.us_exchange": "F2", "page.news": None, "book.next": "Alt+B"}, {"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}),
+        self.assertEqual(({"nav.debt": "F1", "nav.us_exchange": "F2", "page.dashboard": None, "book.next": "Alt+B"}, {"nav.debt": "F1", "nav.us_exchange": "F2", "book.next": "Alt+B"}),
                          (ev[-1]["before"]["keybinds"], ev[-1]["after"]["keybinds"]))
         # a lifetime reset keeps them; so does a restart of the server on the same database
         if "book.reset_lifetime" in self.rt.bus.kinds():

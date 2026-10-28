@@ -1,0 +1,87 @@
+{
+ "scope": "P2:ALL",
+ "scope_kind": "LIFETIME",
+ "lifetimes": [
+  "P2"
+ ],
+ "accounts": [
+  "P2:TREASURY",
+  "P2:US_EXCHANGE",
+  "P2:DEBT",
+  "P2:CREDIT",
+  "P2:FOREIGN_FX",
+  "P2:PB_GS"
+ ],
+ "as_of": "$NOW",
+ "accounting_day": "$TODAY",
+ "window_start": "$NOW-3600",
+ "integrity": {
+  "ok": true,
+  "checked_at": "$NOW-600",
+  "mode": "ledger",
+  "failing": [],
+  "warnings": 0,
+  "problems": []
+ },
+ "hold": {
+  "held": false,
+  "lifetimes": [],
+  "since": {},
+  "failing": {}
+ },
+ "open": {
+  "ERROR": 0,
+  "WARN": 2,
+  "INFO": 1
+ },
+ "attention_open": 3,
+ "items": [
+  {
+   "id": 1,
+   "ts": "$NOW-1500",
+   "severity": "WARN",
+   "source": "orders",
+   "code": "FUNDING_SHORTFALL",
+   "message": "P2:FOREIGN_FX: EUR 10,000 settlement on $TODAY needs USD 11,240.00; Treasury sweep covers it at 17:30 ET",
+   "account_id": "P2:FOREIGN_FX",
+   "ref_type": "settlement",
+   "ref_id": "st:fx:1:USD"
+  },
+  {
+   "id": 2,
+   "ts": "$NOW-4000",
+   "severity": "INFO",
+   "source": "books",
+   "code": "ELIGIBILITY_BELOW_THRESHOLD",
+   "message": "Personal Book NAV 1,002,429.50 is below the PB/OTC threshold of 25,000,000.00; the GS relationship stays open",
+   "account_id": null,
+   "ref_type": "lifetime",
+   "ref_id": "P2"
+  },
+  {
+   "id": 3,
+   "ts": "$NOW-9000",
+   "severity": "WARN",
+   "source": "lifecycle",
+   "code": "SPLIT_MANUAL_REVIEW",
+   "message": "Yahoo reports a 4:1 split event on NVDA (ex 2026-10-19): splits are not applied to lots in this build - manual review",
+   "account_id": "P2:US_EXCHANGE",
+   "ref_type": "instrument",
+   "ref_id": "NVDA"
+  }
+ ],
+ "warnings": 3,
+ "compliance": 4,
+ "collateral_calls_today": 0,
+ "collateral_marks_today": 0,
+ "swap_vm_payments_today": 0,
+ "recalls": 0,
+ "working_orders": 2,
+ "pending_settlements": 5,
+ "providers": {
+  "down": [],
+  "refused_ua": [],
+  "paused": 0
+ },
+ "notes": []
+}

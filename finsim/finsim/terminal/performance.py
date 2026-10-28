@@ -48,7 +48,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Tuple
 
 from finsim.quant.stats import covariance, downside_deviation, mean, sharpe_ratio, sortino_ratio, stdev, variance
 
-from .accounting import ScopeError
+from .accounting import ScopeError, restated_label, snapshot_chain
 from .tables import CONVENTIONS
 
 __all__ = ["BENCHMARK", "NEEDED", "MonthRow", "PerfView", "Snap", "STATUS_INSUFFICIENT", "STATUS_OK", "monthly_table",
@@ -140,6 +140,7 @@ class PerfView:
     monthly: List[MonthRow] = field(default_factory=list)
     notes: List[str] = field(default_factory=list)
     sentence: str = CONVENTIONS["PERF"]
+    restated: List[dict] = field(default_factory=list)          # C9d: the snapshot dates read from a restated version, each labelled
 
     def to_dict(self) -> dict:
         return {"status": self.status, "lifetime_id": self.lifetime_id, "needed": self.needed, "n_snapshots": self.n_snapshots,
@@ -150,7 +151,8 @@ class PerfView:
                 "benchmark": self.benchmark, "pairs_used": self.pairs_used, "pairs_skipped": self.pairs_skipped,
                 "skipped_dates": list(self.skipped_dates), "sofr": self.sofr, "sofr_as_of": self.sofr_as_of,
                 "rf_daily": None if self.rf_daily is None else _r(self.rf_daily, 8), "monthly": [m.to_dict() for m in self.monthly],
-                "notes": list(self.notes), "sentence": self.sentence}
+                "notes": list(self.notes), "sentence": self.sentence,
+                "restated": [{"snap_date": x.get("snap_date"), "on": x.get("on"), "batch_id": x.get("batch_id"), "text": x.get("text")} for x in self.restated]}
 
 
 def _r(x: Optional[float], dp: int = RATIO_DP) -> Optional[float]:
@@ -296,8 +298,9 @@ def monthly_table(snaps: List[Snap]) -> List[MonthRow]:
 def perf_view(services, scope: Optional[str] = None) -> PerfView:
     """Statistics for the lifetime ``scope`` names: ``None`` / ``"ALL"`` = the selected book's open lifetime, ``"P1"``
     or ``"P1:ALL"`` = that lifetime (CLOSED ones included: History pages), an account id = its lifetime.  ``ALL_BOOKS``
-    (several lifetimes) raises ``ScopeError`` -- statistics are per lifetime.  Reads ``nav_snapshots`` (five columns,
-    never ``detail_json``), the benchmark's CLOSE ``marks`` inside the data window and SOFR as a fraction (``sofr_input``)."""
+    (several lifetimes) raises ``ScopeError`` -- statistics are per lifetime.  Reads the lifetime's snapshot chain (C9d: per date
+    the latest restated version, else the original ``nav_snapshots`` row; ``restated`` lists the restated dates, labelled "restated
+    on <date> (batch X)"), the benchmark's CLOSE ``marks`` inside the data window and SOFR as a fraction (``sofr_input``)."""
     key = scope or "ALL"
     if _LIFETIME_RE.match(key):
         key = f"{key}:ALL"
@@ -307,16 +310,23 @@ def perf_view(services, scope: Optional[str] = None) -> PerfView:
         if len(sc.lifetime_ids) != 1:
             raise ScopeError("performance statistics are per lifetime; choose one book")
         lid = sc.lifetime_ids[0]
-        rows = conn.execute("SELECT snap_date, nav_c, flows_day_c, partial, quality FROM nav_snapshots WHERE account_id=? ORDER BY snap_date",
-                            (f"{lid}:ALL",)).fetchall()
+        # C9d readers: per date the latest restated version, else the original (``accounting.snapshot_chain``), each labelled
+        rows = snapshot_chain(conn, f"{lid}:ALL")
         snaps = [Snap.from_row(r) for r in rows]
+        restated = [lab for lab in (restated_label(r) for r in rows) if lab]
         closes: Dict[str, Decimal] = {}
         if snaps:
             for r in conn.execute("SELECT mark_date, price FROM marks WHERE instrument_id=? AND kind='CLOSE' AND mark_date BETWEEN ? AND ?",
                                   (BENCHMARK, snaps[0].snap_date, snaps[-1].snap_date)).fetchall():
                 closes[str(r["mark_date"])] = Decimal(str(r["price"]))
     sofr, as_of = sofr_input(services)
-    return statistics(snaps, closes, sofr, lifetime_id=lid, sofr_as_of=as_of)
+    view = statistics(snaps, closes, sofr, lifetime_id=lid, sofr_as_of=as_of)
+    if restated:
+        view.restated = restated
+        batches = sorted({(x["on"], x.get("batch_id") or "") for x in restated})
+        view.notes.append(f"{len(restated)} snapshot(s) " + "; ".join(f"restated on {on}" + (f" (batch {b})" if b else "") for on, b in batches)
+                          + ": the returns use the restated NAV")
+    return view
 
 
 def sofr_input(services) -> Tuple[Optional[Decimal], Optional[str]]:

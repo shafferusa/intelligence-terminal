@@ -91,14 +91,22 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(0, first.rc if first.rc is not None else 0)
             self.assertTrue(os.path.exists(os.path.join(self.tmp, "terminal.lock")))
             info = _server.InstanceLock(os.path.join(self.tmp, "terminal.lock")).read()
-            self.assertEqual((os.getpid(), first.port, __import__("finsim.terminal", fromlist=["VERSION"]).VERSION), (info["pid"], info["port"], info["version"]))   # readable while the byte lock is held
+            version = __import__("finsim.terminal", fromlist=["VERSION"]).VERSION
+            self.assertEqual((os.getpid(), first.port, version), (info["pid"], info["port"], info["version"]))   # readable while the byte lock is held
+            self.assertEqual(_server.code_tree(), info["code"])                   # STARTUP-03: the code tree that runs
+            self.assertTrue(os.path.isdir(os.path.join(info["code"], "finsim", "terminal")))
             msgs = []
             clock = FakeClock(AT)
             rc2 = _server.serve(port=0, home=self.tmp, db=os.path.join(self.tmp, "terminal.db"), offline=True, out=msgs.append, clock=clock,
                                 fake_provider=FakeProvider(clock), books=[config.TEST_BOOK], fetch_threads=0, log=_Log())
             self.assertEqual(3, rc2)                                               # the lock refuses it ...
-            self.assertIn(f"PID {os.getpid()}", msgs[0])
             self.assertFalse(os.path.exists(os.path.join(self.tmp, "backups")))     # ... before the database was opened (open() backs up first)
+            # STARTUP-03: who runs, since when (New York time), where to open it, which code tree, and what to do instead
+            since = __import__("finsim.terminal.clock", fromlist=["ny_str"]).ny_str(int(info["started_ts"]))
+            self.assertEqual([f"FinSim is already running: finsim-terminal {version}, PID {os.getpid()}, since {since}, http://127.0.0.1:{first.port}/ "
+                              f"(code {_server.code_tree()}). Open it with `python -m finsim open` or the FinSim desktop icon. To run this copy instead: "
+                              "`python -m finsim stop`, then `python -m finsim serve`."], msgs)
+            self.assertTrue(since.endswith(" ET"))
         finally:
             rc = first.stop()
         self.assertEqual(0, rc)
@@ -106,6 +114,41 @@ class ServerTests(unittest.TestCase):
         second = ServerThread(self.tmp).start()                                    # after the first stops, the second starts
         self.assertTrue(second.ready.is_set())
         self.assertEqual(0, second.stop())
+
+    def test_already_running_message_of_an_older_lock(self):
+        """STARTUP-03: a lock written by an older release has no `code`: the clause is left out; an unreadable lock still says what to do."""
+        msg = _server.already_running_message({"pid": 17272, "port": 8765, "started_ts": 1792631054, "version": "1.0.3.1"})
+        # 1792631054 = 2026-10-22 01:04:14 UTC = 2026-10-21 21:04:14 ET (EDT, UTC-4)
+        self.assertEqual("FinSim is already running: finsim-terminal 1.0.3.1, PID 17272, since 2026-10-21 21:04:14 ET, http://127.0.0.1:8765/. "
+                         "Open it with `python -m finsim open` or the FinSim desktop icon. To run this copy instead: `python -m finsim stop`, "
+                         "then `python -m finsim serve`.", msg)
+        self.assertNotIn("(code", msg)
+        msg = _server.already_running_message({})
+        self.assertTrue(msg.startswith("FinSim is already running: finsim-terminal (version unknown), PID ?. Open it with `python -m finsim open`"), msg)
+        self.assertNotIn("None", msg)
+
+    def test_port_taken_by_another_program(self):
+        """STARTUP-03: a port bound by another program is said in words - no FinSim lock in this home, what to run - never with the refused
+        process's own pid, and nothing is opened or written (no database, no backup, the lock released)."""
+        import socket
+        holder = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        holder.bind(("127.0.0.1", 0))
+        holder.listen(1)
+        port = holder.getsockname()[1]
+        try:
+            msgs = []
+            clock = FakeClock(AT)
+            rc = _server.serve(port=port, home=self.tmp, db=os.path.join(self.tmp, "terminal.db"), offline=True, out=msgs.append, clock=clock,
+                               fake_provider=FakeProvider(clock), books=[config.TEST_BOOK], fetch_threads=0, log=_Log())
+        finally:
+            holder.close()
+        self.assertEqual(3, rc)
+        self.assertEqual([f"port {port} is used by another program (no FinSim lock in {self.tmp}); run `python -m finsim status` or pass --port"], msgs)
+        self.assertNotIn(str(os.getpid()), msgs[0])
+        self.assertNotIn("PID", msgs[0])
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "terminal.db")))
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "backups")))
+        self.assertFalse(os.path.exists(os.path.join(self.tmp, "terminal.lock")))   # released and removed
 
     def test_exclusive_bind_oserror(self):
         rt = build(self.tmp)

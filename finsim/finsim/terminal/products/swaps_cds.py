@@ -56,15 +56,18 @@ Conventions stated here (each verified from a public source on 2026-10-21 unless
   shift of the zero curve.
 - BOOKING (``otc.book {account_id, kind: CDX, terms: {index: IG | HY, side: BUY_PROTECTION | SELL_PROTECTION, notional}}``): the
   IM = ``im_pct`` x N (ASSUMED seeds IG 2.00 % / HY 6.00 %, editable per account) posted ``Dr 1330 / Cr 1010`` after
-  ``swaps.fund_commitment`` (PO-07); ONE initial-payment entry ``otc:{contract}:upfront``: the upfront the holder pays is an OTC
-  result (``Dr 4450`` paid / ``Cr 4450`` received), the accrued rebate is the pre-trade part of the full first coupon (buyer:
+  ``swaps.fund_commitment`` (PO-07); ONE initial-payment entry ``otc:{contract}:upfront``: the upfront the holder pays is the
+  contract's COST BASIS (FINSIM1 C11 / PORTFOLIO-08: ``Dr 1335`` paid / ``Cr 2345`` received, per contract; released into the swap
+  result 4450 at termination or maturity - never a day-one realised gain), the accrued rebate is the pre-trade part of the full
+  first coupon (buyer:
   ``Cr 2340`` accrued premium payable, received in cash; seller: ``Dr 1225`` accrued premium receivable, paid in cash), and the
   net cash of the two is a settlement row (``1200`` receivable / ``2100`` payable, leg UPFRONT) that SETTLE_DUE settles on T+1
   with the usual Treasury sweep; the premium leg's accrual state starts at the accrual start with the rebate as its cumulative,
   so the period's accruals add up to the full first coupon exactly.  The contract's mark (mid) is the NAV overlay at once; mark
   minus the upfront = the cost of dealing.  A deal whose IM plus a payable initial payment cannot be funded is refused first.
 - PREMIUM LEG: the ACCRUE_DAILY kinds ``swappay`` (buyer) / ``swaprcv`` (seller) through ``swaps.accrue_leg`` (``leg_specs``: a FIXED
-  leg at C, ACT/360, the coupon periods) - ``Dr 4450 / Cr 2340`` (buyer) or ``Dr 1225 / Cr 4450`` (seller) each night, the last night
+  leg at C, ACT/360, the coupon periods) - ``Dr 4453 / Cr 2340`` (buyer) or ``Dr 1225 / Cr 4453`` (seller) each night (4453 = swap
+  coupons and CDS premium, a financing GL), the last night
   of a period trued up to the coupon (the other kind is marked accrued through the last night at booking, so ACCRUE_DAILY never
   asks for a leg the contract does not have).  CDX_COUPON (C13; 00:45 ET on each coupon payment date, key ``{contract}:{date}``) pays the
   coupon ``C x N x days / 360``: buyer ``Dr 2340 / Cr 1010`` (``execution.fund`` with the overdraft rule), seller ``Dr 1010 / Cr
@@ -77,6 +80,12 @@ Conventions stated here (each verified from a public source on 2026-10-21 unless
 - TERMINATION (``otc.terminate``, owner): every night owed through the termination date (inclusive: the unwind's accrued runs
   through the trade date like the rebate) is accrued first, then ``swaps.close_contract`` settles the value at mid -/+ hs, unwinds
   the VM, settles the accrued premium and releases the IM.  Inputs observed now are required (409 otherwise).
+- AS-OF (FINSIM1 C10): ``book_as_of`` books a CDX the owner dealt on a past date at his dealt spread exactly (``terms.dealt_spread_bp``,
+  D10): the proxy is the observation on or before the trade date (``rates.as_of_le``) plus the account basis, the curve that of the
+  trade date (``CurveStore.for_date``), the upfront and rebate those of the trade date, the initial payment due T+1 from it (a
+  settlement row with ``ref_type`` otc / ``ref_id`` the contract).  A basis that would not deal the payload's spread (more than 0.01
+  bp away) is 409 ASOF_BASIS_NOT_CALIBRATED: set it with ``cdx.terms`` first, so no day-one basis gain or loss is ever booked.
+  A VM of a past date is discounted on that date's curve.  CDX_COUPON payments are funded on their date with CSA netting (C21).
 - EDITABLE ASSUMPTIONS (``cdx.terms``, light; one ``SETTINGS_CHANGED`` event with before / after): per PB account and index the
   basis adjustment (bp, -500 .. 500), the dealer half-spread (bp, 0 .. 100) and the IM (fraction, 0 .. 0.50); stored in the
   ``cdx_terms`` table this module creates (C4 ``ensure_schema_ext``).  Past postings are never restated.
@@ -89,7 +98,7 @@ from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from typing import Callable, Dict, List, Optional, Tuple
 
-from .. import execution, prime, tables
+from .. import prime, tables
 from .. import marks as _marks
 from ..books import account_row, eligibility as _eligibility, split_account_id
 from ..clock import epoch_of, ny_of
@@ -139,7 +148,7 @@ INDEX: Dict[str, dict] = {
 }
 #: the editable assumptions per index (``cdx.terms``): stored form, label, unit, range
 TERM_SPECS = {"basis_bp": {"label": "basis adjustment to the proxy", "unit": "bp", "min": Decimal(-500), "max": Decimal(500),
-                           "hint": "added to the ICE BofA OAS proxy to estimate the CDX spread (assumed; 0 = the proxy as published)"},
+                           "hint": "added to the ICE BofA OAS proxy to approximate the CDX spread (assumed; 0 = the proxy as published)"},
               "half_spread_bp": {"label": "dealer half-spread", "unit": "bp", "min": Decimal(0), "max": Decimal(100),
                                  "hint": "you deal at the mid spread +/- this (x the PB's OTC spread multiplier), against you (assumed)"},
               "im_pct": {"label": "initial margin", "unit": "pct", "min": Decimal(0), "max": Decimal("0.50"),
@@ -355,17 +364,19 @@ def coupon_amount_c(notional_c: int, coupon_bp, s: date, e: date) -> int:
 
 
 # ---- inputs: the curve, the proxy, the editable terms ---------------------------------------------------------------------------------
-def _curve(services, periods, valuation: date) -> Tuple[Dict[Decimal, Decimal], dict]:
-    """The swaps' USD discount factors far enough for the last payment (``swaps.dfs_for``; 409 NO_CURVE without a curve)."""
+def _curve(services, periods, valuation: date, on: Optional[date] = None) -> Tuple[Dict[Decimal, Decimal], dict]:
+    """The swaps' USD discount factors far enough for the last payment (``swaps.dfs_for``; 409 NO_CURVE without a curve); ``on`` (C12):
+    the curve OF that date (a past valuation date or an as-of trade date), never today's."""
     last = max((p for _s, _e, p in periods), default=valuation)
     years = Decimal(max(1, (last - valuation).days)) / D365
     n = int((years * 2).to_integral_value(rounding="ROUND_CEILING")) + 1
-    return swaps.dfs_for(services, max(2, n))
+    return swaps.dfs_for(services, max(2, n), on=on)
 
 
-def proxy(services, index_key: str, today: date, on: Optional[date] = None) -> dict:
+def proxy(services, index_key: str, today: date, on: Optional[date] = None, le: Optional[date] = None) -> dict:
     """The proxy spread of an index: the latest ICE BofA OAS observation from FRED (``on``: the observation OF that date, for a
-    VM), with its date, age in business days and source; ``ok`` False with ``code`` / ``reason`` when there is none or it is stale."""
+    VM; ``le``: the latest on or before that date, for an as-of booking), with its date, age in business days and source; ``ok`` False
+    with ``code`` / ``reason`` when there is none or it is stale."""
     spec = _index(index_key)
     sid = spec["fred"]
     rates = getattr(services, "rates", None)
@@ -385,8 +396,11 @@ def proxy(services, index_key: str, today: date, on: Optional[date] = None) -> d
             later = latest is not None and latest[0] > on
             return dict(base, ok=False, code="CAUGHT_UP" if later else "CLOSE_PENDING", close_date=on.isoformat(),
                         latest_as_of=None if latest is None else latest[0].isoformat(),
-                        reason=(f"FRED has no {sid} observation for {on.isoformat()} but has a later one ({latest[0].isoformat()})" if later
-                                else f"the {sid} observation for {on.isoformat()} is not published yet (FRED posts a business day's value the next morning)"))
+                        reason=(f"ICE BofA {spec['key']} OAS has no value for {on.isoformat()} (FRED skipped that date) and a later one"
+                                f" ({latest[0].isoformat()})" if later
+                                else f"ICE BofA {spec['key']} OAS for {on.isoformat()} not published yet (FRED posts a business day's value the next morning)"))
+    elif le is not None:
+        got = rates.as_of_le(sid, le) if hasattr(rates, "as_of_le") else None
     else:
         got = latest
     if got is None:
@@ -485,17 +499,26 @@ def _blocker(code: str, message: str, **details) -> dict:
     return {"code": code, "message": message, "details": details}
 
 
-def _deal(services, conn, acct: dict, t: dict, now: int) -> dict:
-    """Everything a CDX preview shows and a booking posts; raises 409 PROXY_UNAVAILABLE / PROXY_STALE / NO_CURVE / SERIES."""
+def _deal(services, conn, acct: dict, t: dict, now: int, as_of: Optional[dict] = None) -> dict:
+    """Everything a CDX preview shows and a booking posts; raises 409 PROXY_UNAVAILABLE / PROXY_STALE / NO_CURVE / SERIES.  ``as_of``
+    (C10): the deal of the trade date ``as_of["trade_date"]`` at the payload's dealt spread ``t["dealt_spread_bp"]`` - the proxy on or
+    before that date plus the account basis must deal it within 0.01 bp (409 ASOF_BASIS_NOT_CALIBRATED), the curve is that of the
+    trade date; a missing input is 409 ASOF_INPUT_MISSING."""
     spec = INDEX[t["index"]]
     cal = services.cal
-    today = ny_of(int(now)).date()
+    today = ny_of(int(now)).date() if as_of is None else as_of["trade_date"]
     otr = on_the_run(cal, today)
     if t.get("series") is not None and t["series"] != otr["series"]:
+        if as_of is not None:
+            raise ConflictError("ASOF_TERMS_MISMATCH", f"{spec['name']} S{t['series']} was not the on-the-run series on {today.isoformat()} (S{otr['series']});"
+                                " nothing was written", {"differences": [{"term": "series", "payload": str(t["series"]), "stored": str(otr["series"])}]})
         raise RejectError("SERIES", f"{spec['name']} S{t['series']} is not the on-the-run series: S{otr['series']} (rolled {otr['roll_date'].isoformat()}) is dealt",
                           {"field": "series", "on_the_run": otr["series"]})
-    px = proxy(services, spec["key"], today)
+    px = proxy(services, spec["key"], today, le=today if as_of is not None else None)
     if not px["ok"]:
+        if as_of is not None:
+            raise ConflictError("ASOF_INPUT_MISSING", f"no usable {spec['name']} proxy on {today.isoformat()}: {px['reason']}; nothing was written",
+                                dict(_proxy_view(px), input="CDX proxy", date=today.isoformat()))
         raise ConflictError(px["code"], px["reason"], _proxy_view(px))
     mine = terms_for(conn, acct["account_id"], spec["key"])
     sched = _schedule(conn, acct)
@@ -507,10 +530,32 @@ def _deal(services, conn, acct: dict, t: dict, now: int) -> dict:
                             {"proxy_bp": str(px["spread_bp"]), "basis_bp": str(mine["basis_bp"])})
     side, sign = t["side"], _sign(t["side"])
     deal_bp = (mid + hs) if sign > 0 else (mid - hs)
+    if as_of is not None:
+        raw = t.get("dealt_spread_bp")
+        try:
+            dealt = Decimal(str(raw).strip())
+        except (InvalidOperation, ValueError, TypeError) as e:
+            raise RejectError("TERMS", f"dealt_spread_bp (the owner's dealt spread in bp) is required for an as-of CDX, got {raw!r}", {"field": "dealt_spread_bp"}) from e
+        if not dealt.is_finite() or dealt <= 0:
+            raise RejectError("TERMS", f"dealt_spread_bp must be a positive spread in bp, got {raw!r}", {"field": "dealt_spread_bp"})
+        if abs(deal_bp - dealt) > swaps.ASOF_TOLERANCE_BP:
+            need = (dealt - hs - px["spread_bp"]) if sign > 0 else (dealt + hs - px["spread_bp"])
+            raise ConflictError("ASOF_BASIS_NOT_CALIBRATED", f"the {spec['name']} basis of {acct['account_id']} ({mine['basis_bp']} bp) deals {deal_bp} bp on"
+                                f" {today.isoformat()} (proxy {px['spread_bp']} bp {'+' if sign > 0 else '-'} half-spread {hs} bp), not the dealt {dealt} bp:"
+                                f" set the basis to {need.quantize(BP_Q)} bp first (cdx.terms); nothing was written",
+                                {"proxy_bp": str(px["spread_bp"]), "basis_bp": str(mine["basis_bp"]), "half_spread_bp": str(hs), "deals_bp": str(deal_bp),
+                                 "dealt_bp": str(dealt), "basis_needed_bp": str(need.quantize(BP_Q)), "proxy_as_of": px.get("as_of")})
+        deal_bp = dealt.quantize(BP_Q)                  # D10: the owner's dealt spread, booked exactly
     if deal_bp <= 0:
         raise ConflictError("PROXY_SPREAD", f"the dealt spread {deal_bp} bp is not positive (mid {mid} bp - half-spread {hs} bp)", {})
     periods = coupon_periods(cal, today, otr["maturity"])
-    dfs, curve_inputs = _curve(services, periods, today)
+    try:
+        dfs, curve_inputs = _curve(services, periods, today, on=today if as_of is not None else None)
+    except ConflictError as e:
+        if as_of is None:
+            raise
+        raise ConflictError("ASOF_INPUT_MISSING", f"the CDX cannot be valued as of {today.isoformat()}: {e.message}; nothing was written",
+                            dict(e.details or {}, input="UST_PAR curve", date=today.isoformat())) from e
     df = df_function(dfs)
     n = int(t["notional_c"])
     coupon_bp, rec = spec["coupon_bp"], spec["recovery"]
@@ -670,9 +715,30 @@ def book(ctx: TxContext, payload: dict) -> dict:
     services = ctx.services
     conn = ctx.conn
     acct = swaps._pb_account(conn, str(payload.get("account_id") or ""))
-    aid = acct["account_id"]
     t = parse_terms(payload.get("terms") or {})
     deal = _deal(services, conn, acct, t, ctx.ts)
+    return _book(ctx, services, acct, t, deal)
+
+
+def book_as_of(ctx: TxContext, payload: dict, a: dict) -> dict:
+    """C10 as-of booking of a CDX (``swaps.h_book_as_of`` ran the gates and set ``ctx.asof_date`` = the value date): the owner's dealt
+    spread ``terms.dealt_spread_bp`` booked exactly at the inputs of the trade date (module docstring AS-OF)."""
+    services = ctx.services
+    conn = ctx.conn
+    acct = swaps._pb_account(conn, str(payload.get("account_id") or ""))
+    raw = dict(payload.get("terms") or {})
+    t = parse_terms(raw)
+    t["dealt_spread_bp"] = raw.get("dealt_spread_bp")
+    deal = _deal(services, conn, acct, t, ctx.ts, as_of=a)
+    if deal["trade_date"] != a["value_date"]:
+        raise ConflictError("ASOF_TERMS_MISMATCH", f"a CDX starts on its trade date {deal['trade_date'].isoformat()}, not the value date {a['value_date'].isoformat()};"
+                            " nothing was written", {"differences": [{"term": "value_date", "payload": a["value_date"].isoformat(), "stored": deal["trade_date"].isoformat()}]})
+    return _book(ctx, services, acct, t, deal, as_of=a)
+
+
+def _book(ctx: TxContext, services, acct: dict, t: dict, deal: dict, as_of: Optional[dict] = None) -> dict:
+    conn = ctx.conn
+    aid = acct["account_id"]
     fund = _funding(services, conn, deal, ctx.marks)
     if not fund.get("ok", True):
         raise ConflictError("INSUFFICIENT_FUNDS", fund["note"], {"funding": fund})
@@ -692,10 +758,10 @@ def book(ctx: TxContext, payload: dict) -> dict:
                                                        cr(aid, "1010", "USD", im_c, memo="IM paid")], idem, ref_type="otc", ref_id=cid)))
     pays, reb, cash_in = int(deal["pays_c"]), int(deal["rebate_c"]), int(deal["cash_in_c"])
     lines = []
-    if pays > 0:
-        lines.append(dr(aid, "4450", "USD", pays, instrument_id=cid, memo="CDX upfront paid (OTC result)"))
+    if pays > 0:                                     # C11 / PORTFOLIO-08: the upfront is the contract's cost basis, released at termination / maturity
+        lines.append(dr(aid, "1335", "USD", pays, instrument_id=cid, memo="CDX upfront paid (contract cost)"))
     elif pays < 0:
-        lines.append(cr(aid, "4450", "USD", -pays, instrument_id=cid, memo="CDX upfront received (OTC result)"))
+        lines.append(cr(aid, "2345", "USD", -pays, instrument_id=cid, memo="CDX upfront received (contract cost)"))
     if reb > 0:
         if sign > 0:
             lines.append(cr(aid, "2340", "USD", reb, instrument_id=cid, memo="accrued premium before the trade (part of the full first coupon)"))
@@ -712,12 +778,17 @@ def book(ctx: TxContext, payload: dict) -> dict:
                 f" {fmt_money(abs(pays))} {'paid' if pays > 0 else 'received'} (dealt {deal['deal_bp']} bp vs coupon {spec['coupon_bp']} bp, RPV01"
                 f" {deal['pdeal']['rpv01'].quantize(PX4)}); accrued rebate {deal['rebate_days']} days = {fmt_money(reb)} {'received' if sign > 0 else 'paid'};"
                 f" net {fmt_money(abs(cash_in))} {'receivable' if cash_in > 0 else 'payable'} {sd} (T+{UPFRONT_SETTLE_BD}); proxy {deal['proxy']['series_id']}"
-                f" {deal['proxy']['value_pct']} % as of {deal['proxy']['as_of']} + basis {deal['terms_used']['basis_bp']} bp (CDX_DEAL)")
+                f" {deal['proxy']['value_pct']} % as of {deal['proxy']['as_of']} + basis {deal['terms_used']['basis_bp']} bp; the upfront is the contract's cost,"
+                " released to the swap result when the contract ends")
         entries.append(ctx.post(Entry("CDX_UPFRONT", memo, lines, f"otc:{cid}:upfront", ref_type="otc", ref_id=cid)))
     if cash_in:
         settle_id = next_id(conn, "settlement")
-        conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status) VALUES (?,?,?,?,?,?,?,?,?,'PENDING')",
-                     (settle_id, None, None, aid, "UPFRONT", "USD", cash_in, "1200" if cash_in > 0 else "2100", sd))
+        if swaps.has_columns(conn, "settlements", "ref_type", "ref_id"):         # C10 / C15: the settlement names its contract
+            conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status, ref_type, ref_id)"
+                         " VALUES (?,?,?,?,?,?,?,?,?,'PENDING','otc',?)", (settle_id, None, None, aid, "UPFRONT", "USD", cash_in, "1200" if cash_in > 0 else "2100", sd, cid))
+        else:
+            conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status) VALUES (?,?,?,?,?,?,?,?,?,'PENDING')",
+                         (settle_id, None, None, aid, "UPFRONT", "USD", cash_in, "1200" if cash_in > 0 else "2100", sd))
     periods = deal["periods"]
     stored = {"kind": KIND, "index": spec["key"], "index_name": spec["name"], "series": otr["series"], "version": 1, "tenor": TENOR, "side": deal["side"],
               "receiver": sign < 0, "notional_c": n, "coupon_bp": str(spec["coupon_bp"]), "recovery": str(spec["recovery"]), "fred_series": spec["fred"],
@@ -730,7 +801,7 @@ def book(ctx: TxContext, payload: dict) -> dict:
               "upfront_pct": str((deal["pdeal"]["upfront"] * PCT).quantize(PX4)), "price": str((PCT - deal["pdeal"]["upfront"] * PCT).quantize(PX4)),
               "rebate_days": deal["rebate_days"], "rebate_c": reb, "initial_payment_c": cash_in, "settle_date": sd, "settle_id": settle_id,
               "im_pct": str(deal["im_pct"]), "mark0_c": int(deal["mark0_c"]), "cs01_0_c": int(deal["cs01_c"]), "rpv01_0": str(deal["pdeal"]["rpv01"].quantize(RPV_Q)),
-              "margin_mode": deal["margin_mode"], "dealt_ts": ctx.ts, "model": MODEL}
+              "margin_mode": deal["margin_mode"], "dealt_ts": (as_of["exec_ts"] if as_of else ctx.ts), "model": MODEL, "upfront_gl": "1335" if int(deal["pays_c"]) > 0 else "2345"}
     name = f"CDS index: {side_text} USD {fmt_money(n)} to {otr['maturity'].isoformat()} ({broker})"
     _insert_instrument(services, ctx, cid, name, otr["maturity"], {"contract_id": cid, "otc_kind": KIND, "broker": broker, "index": spec["name"], "series": otr["series"],
                                                                    "side": deal["side"], "receiver": sign < 0, "maturity_date": otr["maturity"].isoformat(),
@@ -794,7 +865,9 @@ def _valuation(services, row: dict, now: int, valuation_date: Optional[date] = N
         out = {"code": px["code"], "reason": px["reason"], "proxy": _proxy_view(px)}
         if valuation_date is not None and px["code"] in ("CAUGHT_UP", "CLOSE_PENDING"):
             d = _date(valuation_date)
-            out.update(vm_outcome=px["code"], note=px["reason"], close_date=b.isoformat(), quiet=not cal.is_business_day(d))
+            out.update(vm_outcome=px["code"], note=px["reason"], close_date=b.isoformat(), quiet=not cal.is_business_day(d),
+                       quiet_until=epoch_of(cal.next_business_day(b), "12:00"),
+                       waits_for="that day's OAS (FRED publishes a business day's value the next morning; never another day's value)")
         return None, out
     with _marks.shared_reader(services.db, conn) as c:
         mine = terms_for(c, row["account_id"], spec["key"])
@@ -807,7 +880,7 @@ def _valuation(services, row: dict, now: int, valuation_date: Optional[date] = N
     if not [p for p in periods if p[1] > v + timedelta(days=1)]:
         return 0, {"as_of": int(now), "valuation_date": v.isoformat(), "note": "no remaining coupon period (at maturity)", "quality": "computed"}
     try:
-        dfs, curve_inputs = _curve(services, periods, v)
+        dfs, curve_inputs = _curve(services, periods, v, on=v if valuation_date is not None else None)     # a past date on its own curve (C12)
     except ConflictError as e:
         return None, {"code": e.code, "reason": e.message}
     side, n = terms.get("side") or "BUY_PROTECTION", int(row["notional_c"])
@@ -959,6 +1032,7 @@ def terminate(ctx: TxContext, payload: dict) -> dict:
     view = swaps.contract_view(services, cid, conn=conn, detail=True, now_ts=ctx.ts)
     entries = [c["entry_id"] for c in caught] + [e for e in (closed["entry_id"], closed["im_entry_id"]) if e is not None]
     return {"contract": view, "contract_id": cid, "termination_value_c": value, "mid_value_c": mid_val, "cost_of_unwinding_c": mid_val - value, "result_c": closed["result_c"],
+            "cost_released_c": closed.get("cost_released_c", 0), "realised_c": closed.get("realised_c"),
             "cash_c": closed["cash_c"], "entries": entries, "im_released_c": closed["im_released_c"], "accrued_receive_c": closed["accrued_receive_c"],
             "accrued_pay_c": closed["accrued_pay_c"], "inputs": inputs, "accrued_through": today.isoformat(), "caught_up": caught, "funding": closed.get("funding")}
 
@@ -1003,7 +1077,8 @@ def h_coupon(ctx: TxContext, payload: dict) -> dict:
     buyer = kind == "swappay"
     funding = None
     if buyer:
-        funding = execution.fund(ctx, aid, ccy, amount, "cdxcpn", idem, None, immediate=True, overdraft=True, services=services)
+        with swaps.asof_context(ctx, d):         # the coupon of d is funded on d (C10 / C20) with CSA netting (C21)
+            funding = swaps.fund_csa(ctx, services, aid, ccy, amount, "cdxcpn", idem, overdraft=True)
         lines = [dr(aid, "2340", ccy, amount, instrument_id=cid, memo="CDX coupon paid (accrued premium settled)"), cr(aid, "1010", ccy, amount, memo="CDX coupon paid")]
     else:
         lines = [dr(aid, "1010", ccy, amount, memo="CDX coupon received"), cr(aid, "1225", ccy, amount, instrument_id=cid, memo="CDX coupon received (accrued premium settled)")]
@@ -1345,6 +1420,6 @@ def bind(rt) -> None:
         pass
 
 
-__all__ = ["INDEX", "KIND", "on_the_run", "accrual_start", "coupon_periods", "hazard", "survival", "df_function", "rpv01", "price", "upfront_c", "value_c", "cs01_from",
+__all__ = ["book_as_of", "INDEX", "KIND", "on_the_run", "accrual_start", "coupon_periods", "hazard", "survival", "df_function", "rpv01", "price", "upfront_c", "value_c", "cs01_from",
            "rebate_c", "coupon_amount_c", "proxy", "terms_for", "parse_terms", "preview", "book", "mark", "cs01_c", "dv01_c", "leg_specs", "terminate", "h_coupon",
            "coupon_keys", "next_events", "contract_detail", "desk", "h_terms", "risk_block", "register_routes", "register", "bind", "unsupported", "PROXY_LABEL", "MODEL"]

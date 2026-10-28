@@ -519,15 +519,25 @@ def l20_request_linkage(conn, today, cal, flt: Filter) -> List[Problem]:
     return out
 
 
+def _has_column(conn: sqlite3.Connection, table: str, column: str) -> bool:
+    try:
+        return any(r[1] == column for r in conn.execute(f'PRAGMA table_info("{table}")').fetchall())
+    except sqlite3.Error:
+        return False
+
+
 def l21_settlement_health(conn, today, cal, flt: Filter) -> List[Problem]:
     """A PENDING settlement more than 5 business days overdue means the SETTLE_DUE job is stuck.  SR-02: settlements of a
     CLOSED (reset) lifetime are frozen with it - SETTLE_DUE settles OPEN lifetimes only - so they are not a stuck job and
-    never raise the hold."""
+    never raise the hold.  C9g (FINSIM1_PLAN): a settlement whose ``fail_state`` is FAILED (P6's column, present once the
+    collateral module has bound) is a recorded settlement fail - shown as FAILED on the pages - not a stuck job, so it is not an
+    integrity failure either."""
     w, p = _in("s.account_id", flt.accounts)
     limit = cal.add_business_days(today, -5).isoformat()
+    failed = " AND COALESCE(s.fail_state, '') <> 'FAILED'" if _has_column(conn, "settlements", "fail_state") else ""
     out = []
     for r in _rows(conn, "SELECT s.settle_id, s.account_id, s.due_date FROM settlements s JOIN accounts a ON a.account_id=s.account_id"
-                         f" JOIN lifetimes lt ON lt.lifetime_id=a.lifetime_id WHERE s.status='PENDING' AND s.due_date < ? AND lt.status='OPEN'{w}", [limit] + p):
+                         f" JOIN lifetimes lt ON lt.lifetime_id=a.lifetime_id WHERE s.status='PENDING' AND s.due_date < ? AND lt.status='OPEN'{failed}{w}", [limit] + p):
         out.append(Problem("L21", "ERROR", f"settlement {r['settle_id']}", f"settled by {limit}", r["due_date"], "PENDING settlement more than 5 business days overdue (the job is stuck)", _lid(r["account_id"])))
     return out
 

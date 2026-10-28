@@ -3,6 +3,44 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.5 (built 2026-10-28; your Goldman trades and options, as of 2026-10-21)
+
+**Your Goldman trades and options**
+
+- New: a historical import that books trades as of their real dates. It runs from the command line (`py -3.12 -m finsim.terminal.importer`), first as a read-only report, then as a dry run on a copy of the database, and only then for real, after a backup. It is idempotent: running it again books nothing twice.
+- Your batch IMP-F1-20261027-A ships with this release, byte for byte. It keeps your 23 existing positions exactly as they were (differences from your workbook are reported, never changed), and books:
+  - with Goldman Sachs, value date 2026-10-21, at your dealt terms: TRS ORCL short 38,700 at 129.13, TRS META short 7,200 at 697.52, CDX.NA.IG 5Y buy protection 3,000,000 at 64 bp, CDX.NA.HY 5Y buy protection 4,000,000 at 352 bp, and a 3-year USD SOFR swap paying 4.720 % fixed on 7,500,000 (Goldman's schedule terms: TRS financing SOFR - 0.60 %, initial margin per the Goldman schedule);
+  - the five listed options as backdated fills at your prices on 2026-10-22 (ORCL 140C, META 660C, IBIT 46C, and the QQQ 700 / 675 put spread as one package);
+  - every margin call, variation margin, financing accrual and payment since then, each on its own date and on that date's official inputs.
+- Every as-of row says so: "As-of booking - simulated ... entered <time> by the operator at the owner's instruction (batch ...)". Nothing is labelled modeled.
+- Your NAV history is restated, never forced: each restated day keeps the original beside it, with the split (original NAV, the effect of each imported line, interest, marks at the official close, dating) and a residual of zero.
+
+**Money, NAV and collateral**
+
+- Restricted cash: collateral the counterparty posts stays its collateral. Variation margin received under the prime broker's CSA (net of what you posted) and cash collateral for shares you lent are excluded from available cash, buying power and the evening sweep, and earn no PB credit interest. A payment to the same counterparty may still use it.
+- Official closes: a stock's recorded close is the regular-session closing print (at or after 16:00), never an earlier print. A close that differs from the official print is re-recorded before the 17:05 swap variation margin, and any revision, one tick included, is reported. (Found by an after-close check on 2026-10-27: a TRS margin would otherwise have been valued on the 15:59:59 print.)
+- OTC contracts carry their cost basis in the Portfolio: a CDX upfront is no longer a day-one realised gain, and TRS financing and swap coupons count as financing.
+- Evening jobs post on their own business date: the 17:05 swap variation margin, the 17:10 collateral marks and the sweeps that fund them.
+- A catch-up snapshot is the NAV of its own business date, valued at that day's recorded closes.
+- Settlement fails: a purchase that cannot be funded by the end of its settlement date is marked failed, keeps its error item and is retried; when it settles it is marked resolved. (The buttons for a fail you trigger yourself arrive with the Completed Trades drawer in 1.0.6.)
+- The Portfolio footer's gross long / short equal the NAV block, with OTC contracts beside them at market value. A prime-broker account counts its OTC contracts as positions, and OTC quantities show in their own units (reference shares or USD notional).
+- Borrow lenders read "street lender (assumed terms)".
+
+**Navigation and news**
+
+- News is gone from FinSim1: the Daily News page, its background jobs and its endpoint are removed; nothing fetches or shows news. Stored headlines stay in the database, untouched.
+- The Dashboard is the landing page (F12), with the selected book's "Requires your attention" tiles. An old news bookmark opens it with "That page was removed - showing the Dashboard".
+- The new navigation's pages (Pending and Completed Trades, Accounts, Cash & Collateral, Derivatives, History) answer at their addresses with NOT YET BUILT until 1.0.6. The data behind Completed Trades is already there: every fill, FX deal, OTC booking and financing trade, one row per execution, with its parent order or ticket.
+- A second start on a running FinSim says who is running (version, PID, since when, address, code folder) and what to do instead.
+- Every start adds the chart-of-accounts rows an older database lacks.
+
+**Tests**
+
+- A whole-fund reconciliation test runs a mixed fund through two days of end-of-day work and checks after every step that NAV = assets - liabilities, margin and collateral are never P&L, the counterparty's collateral is never swept or spent, and no account's cash is below zero at the close of any day.
+- An import checker (tests/terminal_import_check.py) verifies a dry run of the import: your existing records identical, the ten bookings at your exact terms, no account below zero on any business date, integrity ok, restatement residual 0, and a second run books nothing.
+
+**Coming in 1.0.6:** the Pending Trades and Completed Trades blotters, the full Dashboard, the Accounts, Cash & Collateral, Derivatives and History pages, the rest of the news code removed, the Windows startup fix, the directive's full test map and browser check, and 17 small fixes left over from 1.0.4.
+
 ## 1.0.4 (built 2026-10-27)
 
 - Includes the 1.0.3.1 hotfix: short-sale collateral paid from the sale's proceeds, orders that wait for funds, and borrows for names added on demand.

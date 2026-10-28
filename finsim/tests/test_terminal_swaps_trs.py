@@ -248,18 +248,23 @@ class TrsTests(unittest.TestCase):
         self.assertTrue(book(rt).ok)
         add_dividend(rt, "AAPL", "2026-11-09", "0.26")
         # VM (WP-17's swap.vm valuing through mark_trs): day 9, Tue 11-10.  LC-3: with only a 14:00 print of 340.20 the VM of 11-10 never posts at an
-        # intraday price - SKIPPED CLOSE_PENDING (retried; quiet on its first attempt, one WARN attention when it persists)
+        # intraday price - SKIPPED CLOSE_PENDING (retried; quiet on its first attempts until two hours after the close - the same tick's second pass
+        # included, POSTCLOSE-03 - then one WARN attention when it persists)
         rt.marks.set("AAPL", "340.20", "delayed", epoch_of(date(2026, 11, 10), "14:00"))
         rt.clock.set("2026-11-10T17:10:00-05:00")
         r = vm(rt, "2026-11-10")
         self.assertEqual(("SKIPPED", "CLOSE_PENDING", True, None), (r.body["status"], r.body["code"], r.body["retry"], r.body["attention_id"]))
         r = vm(rt, "2026-11-10", suffix=":r1")
+        self.assertEqual(("SKIPPED", "CLOSE_PENDING", None), (r.body["status"], r.body["code"], r.body["attention_id"]))
+        self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='CLOSE_PENDING' AND ref_id=? AND resolved_ts IS NULL", (f"{SWP1}:2026-11-10",)))
+        rt.clock.set("2026-11-10T18:10:00-05:00")                     # still no close two hours after it: one WARN
+        r = vm(rt, "2026-11-10", suffix=":r2")
         self.assertEqual(("SKIPPED", "CLOSE_PENDING"), (r.body["status"], r.body["code"]))
         self.assertEqual(1, len(q(rt, "SELECT 1 FROM attention WHERE code='CLOSE_PENDING' AND ref_id=? AND resolved_ts IS NULL", (f"{SWP1}:2026-11-10",))))
         self.assertEqual([], q(rt, "SELECT 1 FROM otc_vm"))
         # AAPL closes 341.00 -> mark 10,000 x (341.00 - 339.50) = 15,000.00, reference 0 -> we receive 15,000.00; the attention resolves
         set_close(rt, "AAPL", "341.00", "2026-11-10")
-        r = vm(rt, "2026-11-10", suffix=":r2")
+        r = vm(rt, "2026-11-10", suffix=":r3")
         self.assertEqual(("DONE", 1500000, 1500000), (r.body["status"], r.body["mark_c"], r.body["delta_c"]))
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='CLOSE_PENDING' AND resolved_ts IS NULL"))
         # day 10, 11-11, 342.00 -> mark 25,000.00, delta 10,000.00 -> Dr 1010 / Cr 2330 10,000.00 (s19.16)
@@ -276,12 +281,13 @@ class TrsTests(unittest.TestCase):
         # financing nights 11-02 .. 11-30 through ACCRUE_DAILY (29 of the period's 30; 12-01 below)
         rt.clock.set("2026-12-02T10:00:00-05:00")
         accrue_nights(self, rt, date(2026, 11, 2), 29, ("trsfin",))
-        # night 1: Dr 4450 / Cr 2340 421.55; night 2: cumulative 843.09 -> +421.54
-        self.assertEqual([("4450", "USD", SWP1, 42155), ("2340", "USD", SWP1, -42155)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-02"))
-        self.assertEqual([("4450", "USD", SWP1, 42154), ("2340", "USD", SWP1, -42154)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-03"))
-        # the dividend 0.26 ex 11-09 accrues with that night: 10,000 x 0.26 = 2,600.00 Dr 1225 / Cr 4450 (receiver), business date the ex-date
+        # night 1: Dr 4451 / Cr 2340 421.55 (4451 = the swap financing leg, a financing GL - FINSIM1 C11); night 2: cumulative 843.09 -> +421.54
+        self.assertEqual([("4451", "USD", SWP1, 42155), ("2340", "USD", SWP1, -42155)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-02"))
+        self.assertEqual([("4451", "USD", SWP1, 42154), ("2340", "USD", SWP1, -42154)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-03"))
+        # the dividend 0.26 ex 11-09 accrues with that night: 10,000 x 0.26 = 2,600.00 Dr 1225 / Cr 4452 (receiver; 4452 = dividend equivalents, an
+        # income GL), business date the ex-date
         e = entry_by_idem(rt, f"trsdiv:{SWP1}:2026-11-09")
-        self.assertEqual(([("1225", "USD", SWP1, 260000), ("4450", "USD", SWP1, -260000)], "2026-11-09"), (lines_of(rt, e["entry_id"]), e["business_date"]))
+        self.assertEqual(([("1225", "USD", SWP1, 260000), ("4452", "USD", SWP1, -260000)], "2026-11-09"), (lines_of(rt, e["entry_id"]), e["business_date"]))
         # the reset key exists from 16:25 ET of the reset date
         rt.clock.set("2026-12-02T16:20:00-05:00")
         with rt.db.reader() as conn:
@@ -324,11 +330,13 @@ class TrsTests(unittest.TestCase):
         d = json.loads(rr["detail_json"])
         self.assertEqual(("2026-12-02", -1004638, 0, 5500000, 339500000, e["entry_id"]), (rr["event_date"], rr["amount_c"], d["post_mark_c"], d["return_c"],
                                                                                           d["notional_old_c"], rr["entry_id"]))
-        # balances: 1225 = 2340 = 1320 = 2330 = 0; 1330 339,500.00; cash 55,000.00 - 10,046.38 = 44,953.62; 4450 = the period P&L
-        # 55,000 + 2,600 - 12,646.38 = 44,953.62
-        self.assertEqual((0, 0, 0, 0, 33950000, 4495362, 4495362),
+        # balances: 1225 = 2340 = 1320 = 2330 = 0; 1330 339,500.00; cash 55,000.00 - 10,046.38 = 44,953.62; the period P&L 55,000 + 2,600 - 12,646.38
+        # = 44,953.62 split by kind: the return leg 55,000.00 realised on 4450, the dividend equivalent 2,600.00 income on 4452, the financing 12,646.38
+        # a cost on 4451 (kind EXPENSE: positive)
+        self.assertEqual((0, 0, 0, 0, 33950000, 4495362, 5500000, 260000, 1264638),
                          (bal(rt, PB, "1225", inst=SWP1), bal(rt, PB, "2340", inst=SWP1), bal(rt, PB, "1320", inst=SWP1), bal(rt, PB, "2330", inst=SWP1),
-                          bal(rt, PB, "1330", inst=SWP1), bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1)))
+                          bal(rt, PB, "1330", inst=SWP1), bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "4452", inst=SWP1),
+                          bal(rt, PB, "4451", inst=SWP1)))
         # NAV(F1:PB_GS) = 44,953.62 + 339,500.00 = 384,453.62; NAV(F1:ALL) = 25,000,000.00 + 44,953.62
         self.assertEqual((38445362, 2504495362), (rt.accounting.nav(PB).nav_c, rt.accounting.nav("F1:ALL").nav_c))
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code IN ('CLOSE_PENDING','ACCRUALS_PENDING') AND resolved_ts IS NULL"))
@@ -341,7 +349,7 @@ class TrsTests(unittest.TestCase):
         rt.clock.set("2026-12-03T00:40:00-05:00")
         r = accrue(rt, "trsfin", "2026-12-02", suffix=":r1")
         self.assertTrue(r.ok and r.body["status"] == "DONE", r.body)
-        self.assertEqual([("4450", "USD", SWP1, 42838), ("2340", "USD", SWP1, -42838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-12-02"))
+        self.assertEqual([("4451", "USD", SWP1, 42838), ("2340", "USD", SWP1, -42838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-12-02"))
         st = one(rt, "SELECT * FROM accrual_state WHERE kind='trsfin' AND ref_id=?", (SWP1,))
         self.assertEqual(("2026-12-02", 42838, 345000000), (st["segment_start"], st["cum_c"], st["base_c"]))
         # idempotency: no reset key is due any more, a retry answers "already", nothing is posted twice
@@ -370,14 +378,14 @@ class TrsTests(unittest.TestCase):
         self.assertEqual([("USD", 33950000, "otc", f"im:{SWP1}:open"), ("USD", 1500000, "swapvm", f"swapvm:{SWP1}:2026-11-10"),
                           ("USD", 1000000, "swapvm", f"swapvm:{SWP1}:2026-11-11"), ("USD", 3000000, "swapvm", f"swapvm:{SWP1}:2026-12-01")], sweeps(rt))
         self.assertEqual((-5500000, 5500000, 0), (contract(rt)["vm_balance_c"], bal(rt, PB, "1320", inst=SWP1), bal(rt, PB, "1010")))
-        # financing RECEIVED at SOFR - spread = 0.0327: night 1 to_c(308.3792) = 308.38 Dr 1225 / Cr 4450; night 2 cumulative to_c(616.7583) = 616.76
+        # financing RECEIVED at SOFR - spread = 0.0327: night 1 to_c(308.3792) = 308.38 Dr 1225 / Cr 4451; night 2 cumulative to_c(616.7583) = 616.76
         # -> +308.38; 30 nights to_c(111,016.50 x 30 / 360) = to_c(9,251.375) = 9,251.38 (HALF_EVEN ...7|5 -> 8)
         rt.clock.set("2026-12-02T10:00:00-05:00")
         accrue_nights(self, rt, date(2026, 11, 2), 30, ("trsfin",))
-        self.assertEqual([("1225", "USD", SWP1, 30838), ("4450", "USD", SWP1, -30838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-02"))
-        self.assertEqual([("1225", "USD", SWP1, 30838), ("4450", "USD", SWP1, -30838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-03"))
-        # the dividend is PAYABLE by the payer: Dr 4450 / Cr 2340 2,600.00
-        self.assertEqual([("4450", "USD", SWP1, 260000), ("2340", "USD", SWP1, -260000)], lines_by_idem(rt, f"trsdiv:{SWP1}:2026-11-09"))
+        self.assertEqual([("1225", "USD", SWP1, 30838), ("4451", "USD", SWP1, -30838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-02"))
+        self.assertEqual([("1225", "USD", SWP1, 30838), ("4451", "USD", SWP1, -30838)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-03"))
+        # the dividend is PAYABLE by the payer: Dr 4452 / Cr 2340 2,600.00
+        self.assertEqual([("4452", "USD", SWP1, 260000), ("2340", "USD", SWP1, -260000)], lines_by_idem(rt, f"trsdiv:{SWP1}:2026-11-09"))
         self.assertEqual((925138, 260000), (bal(rt, PB, "1225", inst=SWP1), bal(rt, PB, "2340", inst=SWP1)))
         # the reset at 345.00: return leg -55,000.00 (Dr 4450 / Cr 1010), financing received Dr 1010 9,251.38 / Cr 1225, dividend paid Dr 2340 2,600.00 /
         # Cr 1010, the VM posted comes back Dr 1010 55,000.00 / Cr 1320; net cash -55,000 + 9,251.38 - 2,600 + 55,000 = +6,651.38
@@ -389,8 +397,11 @@ class TrsTests(unittest.TestCase):
         self.assertEqual([("1010", "USD", None, -5500000), ("4450", "USD", SWP1, 5500000), ("1010", "USD", None, 925138), ("1225", "USD", SWP1, -925138),
                           ("2340", "USD", SWP1, 260000), ("1010", "USD", None, -260000), ("1010", "USD", None, 5500000), ("1320", "USD", SWP1, -5500000)],
                          lines_by_idem(rt, f"trsreset:{SWP1}:2026-12-02"))
-        # period P&L -55,000 + 9,251.38 - 2,600 = -48,348.62 = 4450; cash 0 + 6,651.38; NAV(F1:ALL) = 25,000,000.00 - 48,348.62
-        self.assertEqual((-4834862, 665138, 0, 0), (bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "1010"), bal(rt, PB, "1320", inst=SWP1), contract(rt)["vm_balance_c"]))
+        # period P&L -55,000 + 9,251.38 - 2,600 = -48,348.62, split by kind: return leg -55,000.00 on 4450; financing RECEIVED 9,251.38 on 4451 (kind
+        # EXPENSE: a negative cost -9,251.38); the dividend equivalent PAID 2,600.00 on 4452 (income -2,600.00); cash 0 + 6,651.38;
+        # NAV(F1:ALL) = 25,000,000.00 - 48,348.62
+        self.assertEqual((-5500000, -925138, -260000, 665138, 0, 0), (bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "4451", inst=SWP1), bal(rt, PB, "4452", inst=SWP1),
+                                                                      bal(rt, PB, "1010"), bal(rt, PB, "1320", inst=SWP1), contract(rt)["vm_balance_c"]))
         self.assertEqual(2495165138, rt.accounting.nav("F1:ALL").nav_c)
         assert_integrity(self, rt, "full")
 
@@ -420,7 +431,9 @@ class TrsTests(unittest.TestCase):
         self.assertEqual((5500000, 0, -1004638), (r.body["return_c"], r.body["settled_return_c"], r.body["cash_c"]))
         self.assertEqual([("1010", "USD", None, 260000), ("1225", "USD", SWP1, -260000), ("2340", "USD", SWP1, 1264638), ("1010", "USD", None, -1264638)],
                          lines_by_idem(rt, f"trsreset:{SWP1}:2026-12-02"))
-        self.assertEqual((4495362, 4495362), (bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "1010")))
+        # the STM VMs realised 55,000.00 on 4450; the dividend equivalent 2,600.00 on 4452, the financing 12,646.38 on 4451: 44,953.62 = the CTM P&L
+        self.assertEqual((5500000, 260000, 1264638, 4495362), (bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "4452", inst=SWP1), bal(rt, PB, "4451", inst=SWP1),
+                                                              bal(rt, PB, "1010")))
         # the RESET row re-bases the reference to 0: 12-02 at 345.00 -> NO_CHANGE; 12-03 at 346.00 -> 10,000 x (346.00 - 345.00) = +10,000.00 settled
         rt.clock.set("2026-12-02T17:10:00-05:00")
         r = vm(rt, "2026-12-02")
@@ -459,14 +472,16 @@ class TrsTests(unittest.TestCase):
         self.assertEqual((3000000, 3000000, 1289227, 33950000, 210773, 0, "TERMINATED"),
                          (r.body["termination_value_c"], r.body["result_c"], r.body["cash_c"], r.body["im_released_c"], r.body["accrued_pay_c"],
                           r.body["accrued_receive_c"], r.body["contract"]["status"]))
-        self.assertEqual([("4450", "USD", SWP1, 42155), ("2340", "USD", SWP1, -42155)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-06"))
+        self.assertEqual([("4451", "USD", SWP1, 42155), ("2340", "USD", SWP1, -42155)], lines_by_idem(rt, f"accr:trsfin:{SWP1}:2026-11-06"))
         self.assertEqual([("2330", "USD", SWP1, 1500000), ("1010", "USD", None, -1500000), ("1010", "USD", None, 3000000), ("4450", "USD", SWP1, -3000000),
                           ("2340", "USD", SWP1, 210773), ("1010", "USD", None, -210773)], lines_by_idem(rt, f"otc:{SWP1}:terminate"))
         self.assertEqual([("1010", "USD", None, 33950000), ("1330", "USD", SWP1, -33950000)], lines_by_idem(rt, f"im:{SWP1}:release"))
         self.assertEqual(3, len(r.body["entries"]))
-        # cash 15,000.00 - 15,000.00 + 30,000.00 - 2,107.73 + 339,500.00 = 367,392.27; 4450 = 30,000.00 - 2,107.73 = 27,892.27; every margin balance 0
-        self.assertEqual((36739227, 2789227, 0, 0, 0, 0), (bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "2330", inst=SWP1),
-                                                           bal(rt, PB, "1330", inst=SWP1), bal(rt, PB, "2340", inst=SWP1), bal(rt, PB, "1225", inst=SWP1)))
+        # cash 15,000.00 - 15,000.00 + 30,000.00 - 2,107.73 + 339,500.00 = 367,392.27; 4450 = the value 30,000.00 (realised), 4451 = the financing
+        # 2,107.73 (a cost): P&L 27,892.27; every margin balance 0
+        self.assertEqual((36739227, 3000000, 210773, 0, 0, 0, 0), (bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "4451", inst=SWP1),
+                                                                    bal(rt, PB, "2330", inst=SWP1), bal(rt, PB, "1330", inst=SWP1), bal(rt, PB, "2340", inst=SWP1),
+                                                                    bal(rt, PB, "1225", inst=SWP1)))
         self.assertEqual((2502789227, []), (rt.accounting.nav("F1:ALL").nav_c, rt.accounting.positions(PB)))
         c = contract(rt)
         self.assertEqual(("TERMINATED", 0, 0, 0), (c["status"], c["mark_c"], c["vm_balance_c"], c["im_c"]))
@@ -497,8 +512,10 @@ class TrsTests(unittest.TestCase):
         self.assertIsNone(entry_by_idem(rt, f"otc:{SWP1}:mature"))          # nothing left to unwind: VM 0, value 0
         c = contract(rt)
         self.assertEqual(("MATURED", 0, 0, 0), (c["status"], c["mark_c"], c["vm_balance_c"], c["im_c"]))
-        # cash 42,353.62 + 339,500.00 = 381,853.62 = NAV(F1:PB_GS); 4450 = 42,353.62; the contract is gone from positions and keys
-        self.assertEqual((38185362, 4235362, 38185362), (bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1), rt.accounting.nav(PB).nav_c))
+        # cash 42,353.62 + 339,500.00 = 381,853.62 = NAV(F1:PB_GS); 4450 = the return 55,000.00, 4451 = the financing 12,646.38: P&L 42,353.62; the contract
+        # is gone from positions and keys
+        self.assertEqual((38185362, 5500000, 1264638, 38185362), (bal(rt, PB, "1010"), bal(rt, PB, "4450", inst=SWP1), bal(rt, PB, "4451", inst=SWP1),
+                                                                   rt.accounting.nav(PB).nav_c))
         self.assertEqual(("EXPIRED", [], []), (rt.instruments.get(SWP1).status, rt.accounting.positions(PB), q(rt, "SELECT 1 FROM accrual_state WHERE ref_id=?", (SWP1,))))
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.reset_keys(conn, rt.clock.epoch()))
@@ -698,13 +715,14 @@ class XccyTests(unittest.TestCase):
         self.assertEqual(("1.1238", "2026-05-20"), (r.body["inputs"]["fx"]["usd_per_unit"], r.body["inputs"]["valuation_date"]))
         self.assertEqual([("1320", "USD", SWP1, 431865), ("1010", "USD", None, -431865)], lines_by_idem(rt, f"swapvm:{SWP1}:2026-05-20"))
         # night 1 through the scheduler (ACCRUE_DAILY -> swaps.accrue_night -> this module): USD receive 11,238,000 x 0.04 / 360 = 1,248.6667 -> 1,248.67
-        # Dr 1225:USD / Cr 4450; EUR pay 10,000,000 x 0.025 / 360 = 694.4444 -> 694.44 Dr 4450:EUR / Cr 2340:EUR, base at this command's rate
+        # Dr 1225:USD / Cr 4453; EUR pay 10,000,000 x 0.025 / 360 = 694.4444 -> 694.44 Dr 4453:EUR / Cr 2340:EUR, base at this command's rate (4453 =
+        # swap coupons, a financing GL - FINSIM1 C11)
         # 694.44 x 1.1238 = 780.4117 -> 780.41
         out = rt.lifecycle.tick(at="2026-05-21T00:40:00-04:00", only="ACCRUE_DAILY")
         self.assertEqual([(f"swappay:{SWP1}:2026-05-20", "DONE"), (f"swaprcv:{SWP1}:2026-05-20", "DONE")],
                          sorted(x for x in ran(out, "ACCRUE_DAILY") if x[0].startswith("swap")))
-        self.assertEqual([("1225", "USD", SWP1, 124867, 124867), ("4450", "USD", SWP1, -124867, -124867)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-05-20", base=True))
-        self.assertEqual([("4450", "EUR", SWP1, 69444, 78041), ("2340", "EUR", SWP1, -69444, -78041)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-05-20", base=True))
+        self.assertEqual([("1225", "USD", SWP1, 124867, 124867), ("4453", "USD", SWP1, -124867, -124867)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-05-20", base=True))
+        self.assertEqual([("4453", "EUR", SWP1, 69444, 78041), ("2340", "EUR", SWP1, -69444, -78041)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-05-20", base=True))
         # nights 2 and 3: cumulative USD to_c(2,497.3333) = 2,497.33 (+1,248.66), to_c(3,746.00) = 3,746.00 (+1,248.67); EUR to_c(1,388.8889) = 1,388.89
         # (+694.45), to_c(2,083.3333) = 2,083.33 (+694.44)
         rt.clock.set("2026-05-23T00:40:00-04:00")
@@ -733,12 +751,12 @@ class XccyTests(unittest.TestCase):
         self.assertTrue(r.ok, r.body)
         self.assertEqual((-219404, -109088, "2027-05-20"), (r.body["preview"]["mark0_c"], r.body["preview"]["dv01_c"], contract(rt)["maturity_date"]))
         # the first period's 184 nights (05-20 .. 11-19): each leg trues up to its 30/360 coupon on the last night - USD cumulative after 183 nights
-        # to_c(449,520 x 183 / 360) = 228,506.00 -> -3,746.00 to land on 224,760.00 (Dr 4450 / Cr 1225); EUR to_c(250,000 x 183 / 360) = 127,083.33
-        # -> -2,083.33 to land on 125,000.00 (Dr 2340 / Cr 4450)
+        # to_c(449,520 x 183 / 360) = 228,506.00 -> -3,746.00 to land on 224,760.00 (Dr 4453 / Cr 1225); EUR to_c(250,000 x 183 / 360) = 127,083.33
+        # -> -2,083.33 to land on 125,000.00 (Dr 2340 / Cr 4453)
         rt.clock.set("2026-11-20T00:35:00-05:00")
         accrue_nights(self, rt, date(2026, 5, 20), 184, ("swaprcv", "swappay"))
-        self.assertEqual([("4450", "USD", SWP1, 374600), ("1225", "USD", SWP1, -374600)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-11-19"))
-        self.assertEqual([("2340", "EUR", SWP1, 208333), ("4450", "EUR", SWP1, -208333)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-11-19"))
+        self.assertEqual([("4453", "USD", SWP1, 374600), ("1225", "USD", SWP1, -374600)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-11-19"))
+        self.assertEqual([("2340", "EUR", SWP1, 208333), ("4453", "EUR", SWP1, -208333)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-11-19"))
         self.assertEqual((22476000, 12500000), (bal(rt, PB, "1225", "USD", SWP1), bal(rt, PB, "2340", "EUR", SWP1)))
         # the payment of 2026-11-20 through WP-17's swap.pay (delegated here): each leg settles in its own currency - Dr 1010:USD / Cr 1225:USD
         # 224,760.00 and Dr 2340:EUR / Cr 1010:EUR 125,000.00 (from the EUR held since the start)
@@ -761,13 +779,21 @@ class XccyTests(unittest.TestCase):
         self.assertEqual([(f"{SWP1}:2026-11-20:FX_RESET", "DONE")], ran(out, "XCCY_EVENTS"))
         self.assertEqual([("1360", "USD", SWP1, 6200000), ("1010", "USD", None, -6200000)], lines_by_idem(rt, f"xccyfx:{SWP1}:2026-11-20"))
         self.assertEqual((1130000000, "1.13", 16276000), (contract(rt)["notional_c"], contract(rt)["reset_px"], bal(rt, PB, "1010")))
-        self.assertEqual(nav_before, rt.accounting.nav(PB).nav_c)
+        # the exchange of notionals is neutral (cash into the receivable); what moves is the model value of the USD coupon leg on its larger notional
+        # (C13, PORTFOLIO-02: the 1.13 print of 17:00 is newer than the mark NAV carried, so NAV carries the intraday model mark).  One period left
+        # (11-20 .. 05-20): USD par 2 x (1 - 0.98034410) / 0.98034410 = 0.04010, A = 0.49017205; EUR flat 2.49 % par 0.02490, A = 0.4938515482.
+        # Before the reset: USD 11,238,000 x (0.0400 - 0.0401) x 0.49017205 = -550.855350; EUR -10,000,000 x (0.0250 - 0.0249) x 0.4938515482 x 1.13
+        # = -558.052249; total -1,108.907599 -> -1,108.91.  After: USD 11,300,000 x -0.0001 x 0.49017205 = -553.894417; total -1,111.946666 -> -1,111.95.
+        # NAV moves by -1,111.95 - (-1,108.91) = -3.04
+        self.assertEqual(nav_before - 304, rt.accounting.nav(PB).nav_c)
+        self.assertEqual((-111195, "model, intraday"), (rt.accounting.position(PB, SWP1).mv_c, rt.accounting.position(PB, SWP1).mark.source))
         # neutral: at the reset rate the notionals are worth the same - 1360:USD 11,300,000.00 vs 2360:EUR 10,000,000 x 1.13 = 11,300,000.00
         self.assertEqual(bal(rt, PB, "1360", "USD", SWP1), fx_c(bal(rt, PB, "2360", "EUR", SWP1), "1.13"))
-        # P&L since the snapshot: the net EUR position after the coupon (9,875,000 cash - 10,000,000 payable = -125,000) x (1.1300 - 1.1238) = -775.00,
-        # all FX result; the reset moved cash into the receivable; residual 0
+        # P&L since the snapshot (taken after the payment, while NAV carried the booking mark -2,194.04: no input had moved since the deal): the net
+        # EUR position after the coupon (9,875,000 cash - 10,000,000 payable = -125,000) x (1.1300 - 1.1238) = -775.00 of FX result, and the contract
+        # from -2,194.04 to the intraday -1,111.95 = +1,082.09 unrealised (one period left, at 1.13); total +307.09, no flows, residual 0
         pl = rt.accounting.pnl(PB, "TODAY")
-        self.assertEqual((-77500, -77500, 0, 0), (pl.pnl_c, pl.components["fx_result_c"], pl.flows_c, pl.residual_c))
+        self.assertEqual((30709, -77500, 108209, 0, 0), (pl.pnl_c, pl.components["fx_result_c"], pl.components["unrealised_c"], pl.flows_c, pl.residual_c))
         assert_integrity(self, rt, "full")
         # the next night accrues on the re-struck notional: 11,300,000 x 0.04 / 360 = 1,255.5556 -> 1,255.56
         rt.clock.set("2026-11-21T00:40:00-05:00")
@@ -828,11 +854,11 @@ class XccyTests(unittest.TestCase):
                           ("1010", "USD", None, 1123800000, 1123800000), ("2360", "USD", SWP1, -1123800000, -1123800000)],
                          lines_by_idem(rt, f"xccy:{SWP1}:start", base=True))
         self.assertEqual([("USD", 22476000, "otc", f"im:{SWP1}:open"), ("EUR", 1000000000, "xccy", f"xccy:{SWP1}:start")], sweeps(rt))
-        # night 1: EUR receive 694.44 Dr 1225:EUR / Cr 4450; USD pay 1,248.67 Dr 4450 / Cr 2340:USD
+        # night 1: EUR receive 694.44 Dr 1225:EUR / Cr 4453; USD pay 1,248.67 Dr 4453 / Cr 2340:USD
         rt.clock.set("2026-05-21T00:40:00-04:00")
         accrue_nights(self, rt, date(2026, 5, 20), 1, ("swaprcv", "swappay"))
-        self.assertEqual([("1225", "EUR", SWP1, 69444), ("4450", "EUR", SWP1, -69444)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-05-20"))
-        self.assertEqual([("4450", "USD", SWP1, 124867), ("2340", "USD", SWP1, -124867)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-05-20"))
+        self.assertEqual([("1225", "EUR", SWP1, 69444), ("4453", "EUR", SWP1, -69444)], lines_by_idem(rt, f"accr:swaprcv:{SWP1}:2026-05-20"))
+        self.assertEqual([("4453", "USD", SWP1, 124867), ("2340", "USD", SWP1, -124867)], lines_by_idem(rt, f"accr:swappay:{SWP1}:2026-05-20"))
         # the FX reset at the 1.1300 close (xccyfx:SWP-000001:2026-11-20): USD notional -> 11,300,000.00; USD is the borrowed leg, so the 62,000.00
         # difference is RECEIVED - Dr 1010:USD 62,000.00 / Cr 2360:USD 62,000.00, s19.16's line
         rt.marks.set("EURUSD", "1.13", "delayed", epoch_of(date(2026, 11, 20), "17:00"))
@@ -917,8 +943,10 @@ class XccyTests(unittest.TestCase):
         self.assertEqual((-431865, -431865, 0, 22476000, "TERMINATED"), (r.body["termination_value_c"], r.body["result_c"], r.body["cash_c"], r.body["im_released_c"],
                                                                          r.body["contract"]["status"]))
         self.assertEqual(("EUR", 208333, "xccy", f"xccy:{SWP1}:terminate"), sweeps(rt)[-1])
-        # 4450 USD = 3,746.00 accrued - 4,318.65 value = -572.65; 4450 EUR = -2,083.33; every contract balance 0 (L22)
-        self.assertEqual((-57265, -208333), (bal(rt, PB, "4450", "USD", SWP1), bal(rt, PB, "4450", "EUR", SWP1)))
+        # 4450 USD = the value -4,318.65 (realised); the coupons on 4453 (kind EXPENSE): USD 3,746.00 received -> -3,746.00, EUR 2,083.33 paid -> +2,083.33;
+        # nothing on 4450 EUR; every contract balance 0 (L22)
+        self.assertEqual((-431865, -374600, 208333, 0), (bal(rt, PB, "4450", "USD", SWP1), bal(rt, PB, "4453", "USD", SWP1), bal(rt, PB, "4453", "EUR", SWP1),
+                                                        bal(rt, PB, "4450", "EUR", SWP1)))
         self.assertEqual((0, 0, 0, 0, 0, 0), (bal(rt, PB, "1225", "USD", SWP1), bal(rt, PB, "2340", "EUR", SWP1), bal(rt, PB, "1360", "USD", SWP1),
                                               bal(rt, PB, "2360", "EUR", SWP1), bal(rt, PB, "1320", "USD", SWP1), bal(rt, PB, "1330", "USD", SWP1)))
         ne = one(rt, "SELECT * FROM otc_resets WHERE contract_id=? AND kind='NOTIONAL_END'", (SWP1,))
