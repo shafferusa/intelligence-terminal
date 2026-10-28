@@ -6040,6 +6040,36 @@
    "probability": "70-85%",
    "basis": "Reuters poll 19 of 34 economists; swaps ~85% per BBH",
    "status": "open"
+  },
+  {
+   "id": "2026-10-28-am-1",
+   "date": "2026-10-28",
+   "slot": "am",
+   "forecast": "The FOMC leaves the federal funds target range unchanged at 3.75-4.00% on Oct 28",
+   "horizon": "2026-10-28",
+   "probability": "85-95%",
+   "basis": "CME FedWatch ~91% hold, Kalshi ~93%; no official signal of a move; no SEP at this meeting",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-28-am-2",
+   "date": "2026-10-28",
+   "slot": "am",
+   "forecast": "At least one FOMC voter dissents from the Oct 28 decision",
+   "horizon": "2026-10-28",
+   "probability": "35-55%",
+   "basis": "Bloomberg and Investing.com previews flag a possible hawkish dissent; no named dissenter confirmed",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-28-am-3",
+   "date": "2026-10-28",
+   "slot": "am",
+   "forecast": "Base case: a hawkish hold (range unchanged, statement leaves December open) AND the 10-year Treasury par yield closes Oct 28 between 4.92% and 5.08%",
+   "horizon": "2026-10-28",
+   "probability": "55-70%",
+   "basis": "Oct 27 par 10Y 4.99%, early Oct 28 ~5.01% (CNBC); typical FOMC-day range; futures pricing",
+   "status": "open"
   }
  ]
 }

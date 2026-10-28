@@ -1,27 +1,87 @@
 {
  "stories": [
   {
-   "id": "anthropic-s1-broadcom-lease",
-   "headline": "Anthropic public S-1 (Oct 26, Nasdaq 'ANT'; H1 rev $16.29B, op loss $693M, net loss $80.7B incl $72.4B FV charge); reported ~$63B BofA/Citi/MS/Blackstone SPV to lease Broadcom chips to Anthropic; AVGO +4%, SMH +3%",
+   "id": "pa-phone-ban-act117",
+   "headline": "PA Act 117 of 2026 (SB 1014) bell-to-bell school phone ban signed Oct 26; compliance 2027-28",
    "status": "New",
-   "verification": "Confirmed-primary (S-1); financing Single-reliable-source (Reuters)",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-am",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
-   "score_rationale": "Lead: most market-moving AI development; chips led the tape",
+   "score_rationale": "Local PA",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "eqt-range-doordash",
+   "headline": "EQT-Range all-stock ~$13B (8-K Oct 26); DoorDash-Instacart ~$17B advanced talks (WSJ/Reuters)",
+   "status": "New",
+   "verification": "Confirmed-primary (EQT); talks reported",
+   "first_seen": "2026-10-28-am",
+   "last_updated": "2026-10-28-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "M&A",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "gev-q3-2026",
+   "headline": "GE Vernova Q3 (8-K): orders $29.3B +96% org, rev $12.6B, backlog $197B, FCF $5.4B, buyback to $20B, guidance raised",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-28-am",
+   "last_updated": "2026-10-28-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Data-centre power demand",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "msft-googl-q3",
+   "headline": "Microsoft (EPS ~4.71, rev ~90.6B) and Alphabet (EPS ~2.94-3.02, rev ~128B) report after close Oct 28; MSFT buyout offer to ~60K staff",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-am",
+   "last_updated": "2026-10-28-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "AI trade test tonight",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "sk-hynix-q3-kospi",
+   "headline": "SK Hynix Q3 rev ~W104.6T, op profit ~W83.3T (prelim); Kospi +6.63% to 6,012.44; Samsung ~+9%, Kioxia ~+14%; Micron ~+4% premarket; SOX +3.6% Oct 27",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-am",
+   "last_updated": "2026-10-28-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Chip rally driver overnight",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "anthropic-s1-broadcom-lease",
+   "headline": "Anthropic S-1: compute commitments ~$542-567B (Fortune), SpaceX up to $120.5B; chip SPV ~$60B ($42B senior + $18B junior; CNBC said $63B); security lapses disclosed; roadshow reportedly wk of Nov 9",
+   "status": "Materially changed",
+   "verification": "Confirmed-primary (S-1); financing size disputed $60-63B",
+   "first_seen": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "AI/IPO",
    "keep_on_watchlist": true
   },
   {
    "id": "fomc-oct-28",
-   "headline": "FOMC Oct 27-28: hold at 3.75-4.00% ~90% priced; Dec hike ~75%; no SEP; Warsh presser 2:30 PM Wed",
+   "headline": "FOMC Oct 28 decision 2 PM: hold ~91% priced (FedWatch), Dec hike ~75%; dissent watch; no SEP; BoC 9:45 today, ECB Thu, BoJ Fri",
    "status": "Developing",
    "verification": "Confirmed-multiple",
    "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
-   "score_rationale": "Fed decision tomorrow",
+   "score_rationale": "Lead: Fed decision day",
    "keep_on_watchlist": true
   },
   {
@@ -50,11 +110,11 @@
   },
   {
    "id": "oil-gulf-diplomacy-oct27",
-   "headline": "WTI settle $99.90 (-1.86), Brent Dec $113.88 (-1.93) per Reuters (single); Tehran meeting with Saudi/Pakistan/Turkey officials Oct 26; Houthi Ras Tanura claim; Iranian mine claim unverified",
+   "headline": "Brent Dec ~$115.6 Oct 28 after Houthi Ras Tanura claim (unconfirmed damage); Iran reportedly offered 2-week regional pause tied to Hormuz (Reuters single); API -2.0M",
    "status": "Continuing",
-   "verification": "Single-reliable-source (settles)",
+   "verification": "Single-reliable-source (truce offer)",
    "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
    "score_rationale": "Oil/inflation channel",
@@ -74,14 +134,14 @@
   },
   {
    "id": "israel-election-oct27",
-   "headline": "Israel election Oct 27: exit polls no majority (Ch13 anti-Netanyahu 53 vs 50; Ch12 52-50; Ch14 60-60); Likud ~25, Yashar 23",
-   "status": "New",
-   "verification": "Confirmed-multiple (exit polls)",
+   "headline": "Israel partial count ~76%: Netanyahu bloc ~54, Eisenkot bloc ~47, Arab parties ~19; Likud ~27, Yashar ~20; shekel/bonds fell",
+   "status": "Developing",
+   "verification": "Confirmed-multiple (partial count)",
    "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
-   "score_rationale": "World: Iran decision overlap",
+   "score_rationale": "World",
    "keep_on_watchlist": true
   },
   {
@@ -98,14 +158,14 @@
   },
   {
    "id": "us-v-california-carter",
-   "headline": "US v. California: 9th Cir dismissed DOJ appeal 2-1 Oct 26 (Bennett, Sanchez; Bumatay dissent); Judge Carter TRO hearing Oct 27 4 PM ET, outcome unknown at press",
+   "headline": "US v. California: Carter heard TRO Oct 27, skeptical, special master planned, written ruling expected Oct 28",
    "status": "Developing",
    "verification": "Confirmed-multiple",
    "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
-   "score_rationale": "Election one week out",
+   "score_rationale": "US",
    "keep_on_watchlist": true
   },
   {
@@ -122,15 +182,15 @@
   },
   {
    "id": "prt-wabash-closure",
-   "headline": "PRT board voted Oct 23 to close Wabash Tunnel Dec 1; ATU Local 85 4-year contract approved",
+   "headline": "PRT board voted Oct 23 to close Wabash Tunnel Dec 1",
    "status": "Resolved",
    "verification": "Confirmed-multiple",
    "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
+   "last_updated": "2026-10-28-am",
    "one_line": null,
    "sources": [],
    "score_rationale": "Local",
-   "keep_on_watchlist": false
+   "keep_on_watchlist": true
   },
   {
    "id": "pa-sb1014-signed",
@@ -676,66 +736,7 @@
    "sources": null,
    "score_rationale": "Oil/inflation channel",
    "keep_on_watchlist": true
-  },
-  {
-   "id": "russia-ukraine-energy-war",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "Energy 'ceasefire' (Oct 11) never confirmed by Kremlin; grid strikes, Ukraine refinery strikes resumed; EU summit no 2027 funding; Oct 17 large overnight attack (Al Jazeera: 8 killed).",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Geopolitics",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "omar-search",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "HSI search of Rep. Omar's home Oct 12; investigation stage, no charges.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "US politics",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "press-secretary-zacharia-out",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Developing",
-   "headline": "Press secretary Zacharia out after five days (Oct 16); no successor named as of Oct 17.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "US politics",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "pa-skill-games",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "Enforcement since Oct 14; distributors agreed to disable machines; legislature returns Oct 19, tax rate split (Shapiro 52% vs ~35%).",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Local/PA",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "allegheny-budget-paid-leave",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "County $1.25B 2027 budget hearings Oct 21/29; pension $1.4B short; paid-leave final vote date unconfirmed.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Local",
-   "keep_on_watchlist": true
   }
- ]
+ ],
+ "updated": "2026-10-28T10:49:33Z"
 }

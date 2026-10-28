@@ -1,207 +1,119 @@
 {
- "fetched": "2026-10-21T06:45:00-04:00",
+ "fetched": "2026-10-28T06:49:33-04:00",
  "earnings_fetched": "2026-10-18",
  "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted. | 2026-10-19 am: Finnhub day-of refresh; TreasuryDirect upcoming refreshed.",
  "events": [
   {
-   "ts_et": "2026-10-21T02:00",
+   "ts_et": "2026-10-28T08:30",
    "type": "data",
-   "name": "UK CPI (Sept)",
+   "name": "Advance goods trade balance (Sept); wholesale/retail inventories",
    "importance": "Medium",
-   "reason": "Global inflation",
+   "reason": "Q3 GDP input",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-21T07:00",
-   "type": "earnings",
-   "name": "AT&T, Philip Morris, Abbott, Thermo Fisher, Danaher, NextEra, Elevance (BMO)",
-   "importance": "Medium",
-   "reason": "Defensives",
-   "source": "finnhub/alphavantage"
-  },
-  {
-   "ts_et": "2026-10-21T10:00",
-   "type": "data",
-   "name": "BLS Usual Weekly Earnings (Q3)",
-   "importance": "Low",
-   "reason": "Wages",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-10-21T10:30",
-   "type": "data",
-   "name": "EIA weekly petroleum status (API -4.93M)",
-   "importance": "Medium",
-   "reason": "Oil above $110",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-21T13:00",
-   "type": "auction",
-   "name": "20-year bond reopening $13B",
+   "ts_et": "2026-10-28T09:45",
+   "type": "central_bank",
+   "name": "Bank of Canada decision + MPR",
    "importance": "High",
-   "reason": "Long-end supply test with 20Y par 5.53%",
-   "source": "treasurydirect"
-  },
-  {
-   "ts_et": "2026-10-21T16:00",
-   "type": "earnings",
-   "name": "META, TSLA, IBM, LRCX, TXN, SAP, CSX, LVS, BKR, KMI (AMC)",
-   "importance": "Critical",
-   "reason": "AI capex test after chip selloff",
-   "source": "company IR/finnhub"
-  },
-  {
-   "ts_et": "2026-10-21T16:05",
-   "type": "earnings",
-   "name": "META, TSLA, IBM, LRCX, TXN",
-   "importance": "Critical",
-   "reason": "META capex guide = AI spending test",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-10-21T16:30",
-   "type": "earnings",
-   "name": "Meta call 4:30, IBM 5:00, Tesla 5:30 (Tesla-SpaceX merger committee questions)",
-   "importance": "Critical",
-   "reason": "AI capex test; merger",
-   "source": "company IR"
-  },
-  {
-   "ts_et": "2026-10-21T17:00",
-   "type": "local",
-   "name": "Allegheny County Council budget hearing (also Oct 29)",
-   "importance": "Low",
-   "reason": "Local",
+   "reason": "Previews split hike/hold",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-22T00:00",
-   "type": "local",
-   "name": "Innamorato to sign paid parental leave ordinance",
-   "importance": "Low",
-   "reason": "Local",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-22T07:00",
-   "type": "earnings",
-   "name": "P&G, Lockheed, Union Pacific, Honeywell, Blackstone, Comcast, Dow, Valero, American Airlines (BMO); Western Digital (AMC)",
-   "importance": "Medium",
-   "reason": "Consumer pricing, defence, private credit, refining",
-   "source": "finnhub/company IR"
-  },
-  {
-   "ts_et": "2026-10-22T08:30",
+   "ts_et": "2026-10-28T10:30",
    "type": "data",
-   "name": "Initial jobless claims, consensus ~200K",
+   "name": "EIA weekly petroleum status",
    "importance": "Medium",
-   "reason": "Labour",
+   "reason": "Oil above $100",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-22T10:00",
-   "type": "data",
-   "name": "Conference Board leading index (Sept)",
-   "importance": "Low",
-   "reason": "Cycle",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-22T13:00",
+   "ts_et": "2026-10-28T11:30",
    "type": "auction",
-   "name": "5-year TIPS $26B",
-   "importance": "Medium",
-   "reason": "Real-yield supply",
+   "name": "$30B 2-year FRN; $75B 17-week bill",
+   "importance": "Low",
+   "reason": "Supply",
    "source": "treasurydirect"
-  },
-  {
-   "ts_et": "2026-10-22T19:30",
-   "type": "data",
-   "name": "Japan national CPI (Sept)",
-   "importance": "Medium",
-   "reason": "BoJ Oct 29-30",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-23T00:00",
-   "type": "local",
-   "name": "PRT board vote on Wabash Tunnel closure",
-   "importance": "Low",
-   "reason": "Local transit",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-23T07:00",
-   "type": "earnings",
-   "name": "SLB (7:00), American Express (BMO)",
-   "importance": "Medium",
-   "reason": "Energy services/consumer",
-   "source": "company IR"
-  },
-  {
-   "ts_et": "2026-10-23T09:45",
-   "type": "data",
-   "name": "S&P Global flash PMIs (Oct); Sept composite 58.4",
-   "importance": "Medium",
-   "reason": "Activity and prices",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-23T10:00",
-   "type": "data",
-   "name": "UMich sentiment final (Oct), prelim 46.3, 1y infl exp 4.7%, 5-10y 3.5%",
-   "importance": "High",
-   "reason": "Inflation expectations before FOMC",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-23T14:00",
-   "type": "space",
-   "name": "NASA Artemis III/IV briefing",
-   "importance": "Medium",
-   "reason": "Program schedule",
-   "source": "nasa.gov"
-  },
-  {
-   "ts_et": "2026-10-24T00:00",
-   "type": "politics",
-   "name": "France union/student protests",
-   "importance": "Low",
-   "reason": "OAT spread",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-24T01:29",
-   "type": "launch",
-   "name": "Falcon 9 Starlink 15-16 (Vandenberg)",
-   "importance": "Low",
-   "reason": "Starlink",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-10-25T00:00",
-   "type": "politics",
-   "name": "Brazil presidential runoff (Lula vs Flávio Bolsonaro)",
-   "importance": "Medium",
-   "reason": "EM/BRL",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-27T00:00",
-   "type": "politics",
-   "name": "Israel general election",
-   "importance": "Medium",
-   "reason": "Middle East",
-   "source": "research"
   },
   {
    "ts_et": "2026-10-28T14:00",
-   "type": "fed",
-   "name": "FOMC decision",
+   "type": "central_bank",
+   "name": "FOMC statement; Warsh presser 14:30",
    "importance": "Critical",
-   "reason": "Hike odds ~17%",
-   "source": "federalreserve.gov"
+   "reason": "Hold priced; December signal",
+   "source": "federalreserve/research"
+  },
+  {
+   "ts_et": "2026-10-28T16:05",
+   "type": "earnings",
+   "name": "Microsoft, Alphabet, ServiceNow, KLA, Rambus (AMC)",
+   "importance": "Critical",
+   "reason": "AI cloud revenue test",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-29T08:15",
+   "type": "central_bank",
+   "name": "ECB decision",
+   "importance": "High",
+   "reason": "Hold expected; Dec hike priced",
+   "source": "newsquawk via research"
+  },
+  {
+   "ts_et": "2026-10-29T13:00",
+   "type": "auction",
+   "name": "$44B 7-year note",
+   "importance": "High",
+   "reason": "Duration supply",
+   "source": "treasurydirect"
+  },
+  {
+   "ts_et": "2026-10-29T16:00",
+   "type": "earnings",
+   "name": "Amazon (AMC)",
+   "importance": "High",
+   "reason": "AWS",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-29T17:00",
+   "type": "local",
+   "name": "Allegheny County Council 2027 budget hearing",
+   "importance": "Low",
+   "reason": "Local",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-10-30T00:00",
+   "type": "central_bank",
+   "name": "Bank of Japan decision",
+   "importance": "Medium",
+   "reason": "Hold expected",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-02T16:00",
+   "type": "earnings",
+   "name": "Apple",
+   "importance": "High",
+   "reason": "Mega-cap",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-03T00:00",
+   "type": "politics",
+   "name": "US midterm elections",
+   "importance": "Critical",
+   "reason": "Control of Congress",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-04T08:30",
+   "type": "treasury",
+   "name": "Quarterly refunding announcement",
+   "importance": "High",
+   "reason": "Coupon sizes",
+   "source": "treasury.gov"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
