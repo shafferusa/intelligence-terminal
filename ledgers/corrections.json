@@ -440,6 +440,15 @@
       "error_source": "Shell positional-parameter expansion ate '$1'/'$11' when the page text passed through a double-quoted shell string",
       "conclusions_changed": false,
       "note": "Surfaced in the 2026-10-21 pm colophon; index.json am entry summary/headline text repaired (page left as published)."
+    },
+    {
+      "found": "2026-10-28",
+      "report": "reports/2026/10/2026-10-28-am.html",
+      "original": "report-meta/index summary and Telegram headline: 'Brent (is back) near 15'",
+      "corrected": "Brent near $115",
+      "error_source": "Shell positional-parameter expansion ate '$11' when the meta/index text passed through a double-quoted shell string (same failure as 2026-10-21 am)",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-28 pm colophon; index.json am entry summary/headline repaired (page left as published; page body was correct)."
     }
   ]
 }

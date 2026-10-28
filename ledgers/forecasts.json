@@ -6070,6 +6070,36 @@
    "probability": "55-70%",
    "basis": "Oct 27 par 10Y 4.99%, early Oct 28 ~5.01% (CNBC); typical FOMC-day range; futures pricing",
    "status": "open"
+  },
+  {
+   "id": "2026-10-28-pm-1",
+   "date": "2026-10-28",
+   "slot": "pm",
+   "forecast": "The FOMC raises the federal funds target range by 25bp at its Dec 8-9 meeting",
+   "horizon": "2026-12-09",
+   "probability": "70-85%",
+   "basis": "CME FedWatch ~85-86% Dec hike as reported Oct 28 afternoon; two hike dissents (Cook, Hammack); Warsh gave no forward guidance",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-28-pm-2",
+   "date": "2026-10-28",
+   "slot": "pm",
+   "forecast": "BEA's advance estimate of Q3 2026 real GDP growth (released Oct 29) is 3.0% annualized or higher",
+   "horizon": "2026-10-29",
+   "probability": "45-60%",
+   "basis": "Consensus ~3.2%; September advance goods deficit widened to $134.9B on record imports, a drag risk",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-28-pm-3",
+   "date": "2026-10-28",
+   "slot": "pm",
+   "forecast": "Alphabet (GOOGL) closes Oct 29 below its Oct 28 close of $324.89",
+   "horizon": "2026-10-29",
+   "probability": "80-92%",
+   "basis": "After-hours ~$294.5 (-9%) at 4:40 PM on EPS miss and negative FCF; overnight reversals of that size are uncommon",
+   "status": "open"
   }
  ]
 }

@@ -1,6 +1,102 @@
 {
  "stories": [
   {
+   "id": "doj-california-ballots",
+   "headline": "Judge Carter signals rejection of DOJ bid to set aside ~20k CA mail ballots; special master; written order pending",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "US elections",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "israel-election-2026",
+   "headline": "Israel count: Netanyahu bloc ~53 seats, Arab parties record 16-19; official results by Nov 4",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "World",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "oil-iran-strike-reports-oct28",
+   "headline": "Brent ~$115.3, WTI ~$102.8 on EIA draw and reports of renewed US strikes on Iran after midterms; Ras Tanura damage unconfirmed",
+   "status": "Developing",
+   "verification": "Single-reliable-source",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Energy/inflation",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "boc-hike-2026-10-28",
+   "headline": "Bank of Canada hikes 25bp to 2.50%, first since 2023",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Central banks; forecast 2026-10-27-pm-2 landed",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ust-curve-bear-steepen-oct28",
+   "headline": "10Y par 5.05% (+6bp), 30Y 5.37%, 2Y 4.67%; 2s10s 38bp",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Rates; Treasury par curve",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "msft-fq1-2027",
+   "headline": "Microsoft FQ1: rev $92.3B +19%, Azure +48%, cRPO $677B, capex $39.4B; ~+4% AH",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "AI revenue test; 8-K read",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "googl-q3-2026",
+   "headline": "Alphabet Q3: Cloud +103% to $30.7B, EPS $2.12 miss on $8.7B equity loss, capex $51.4B, FCF -$9.1B; ~-9% AH",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Mega-cap AI capex vs cash flow test; 8-K read",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "fomc-2026-10-28-hold-dissents",
+   "headline": "FOMC holds 3.75-4.00% on 10-2 vote; Cook and Hammack dissent for hike; Dec hike ~85% priced",
+   "status": "Materially changed",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-28-pm",
+   "last_updated": "2026-10-28-pm",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Lead: market-moving policy; primary statement",
+   "keep_on_watchlist": true
+  },
+  {
    "id": "pa-phone-ban-act117",
    "headline": "PA Act 117 of 2026 (SB 1014) bell-to-bell school phone ban signed Oct 26; compliance 2027-28",
    "status": "New",
@@ -640,103 +736,7 @@
    ],
    "score_rationale": "Diplomacy",
    "keep_on_watchlist": true
-  },
-  {
-   "id": "bessent-energy-shock",
-   "first_seen": "2026-10-19-am",
-   "last_updated": "2026-10-19-am",
-   "status": "New",
-   "headline": "Bessent (Sun shows): Sept inflation an energy shock, eases after Iran conflict; oil could fall by year-end. Declined to call Ukraine an ally (NBC).",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Treasury messaging pre-FOMC",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "anthropic-ipo-valuation",
-   "first_seen": "2026-10-19-am",
-   "last_updated": "2026-10-19-am",
-   "status": "Developing",
-   "headline": "Reuters Oct 15: Q3 rev 16.8B (+45% q/q), adj profitable; investors discuss ~1.5T vs ~2T. FT via newsletter: 10% coupon on 9B junior debt in 60B chip financing (secondhand). Replit default -> OpenAI (TechCrunch). FTC CIDs to OpenAI/Anthropic (TheNextWeb, single).",
-   "one_line": null,
-   "verification": "Single-reliable-source",
-   "sources": null,
-   "score_rationale": "AI financing thread",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "fifth-third-q3-2026",
-   "first_seen": "2026-10-19-am",
-   "last_updated": "2026-10-19-am",
-   "status": "New",
-   "headline": "FITB Q3 (8-K 06:30 ET Oct 19): dil EPS 0.90, adj 1.13; NII 2.276B +3% q/q; NIM 3.34; NCO 0.31%; AOCI -4.92B from -3.29B; TBV/share 22.01.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "First bank print of week",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "china-q3-gdp-2026",
-   "first_seen": "2026-10-19-am",
-   "last_updated": "2026-10-19-am",
-   "status": "New",
-   "headline": "China Q3 GDP +4.5% y/y vs 4.4% poll (Q2 4.3%); Sept IP +5.5%, retail +1.1% vs 0.6%; FAI Jan-Sep -7.2%, property inv -20.6%. LPR Tue Oct 20, hold expected (22/22 Reuters).",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Global demand; copper +0.9%",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "ai-debt-chip-selloff",
-   "first_seen": null,
-   "last_updated": "2026-10-19-am",
-   "status": "Developing",
-   "headline": "Mon am: NQ futures +1.03%, ES +0.47% at 06:22 ET; chips/neoclouds bounce premarket (Stocktwits). Fri breadth 1,870/3,608; 28.6% above 50-EMA proxy. Test: META capex guide Wed Oct 21 AMC.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Lead: market-moving rebound",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "inflation-pipeline-sept-2026",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "Sept CPI 0.6%/3.7% y/y, core 0.3%; PPI +1.3%, core +0.7%; import prices +8.1% y/y. Energy pass-through; breakevens steady 2.32-2.35%.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "Macro",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "treasury-long-end-rally",
-   "first_seen": null,
-   "last_updated": "2026-10-17-sat",
-   "status": "Continuing",
-   "headline": "10y 5.24->5.09 (-15bp), 30y -17bp, 2s10s 44->35. Test: 20-year reopening Wed Oct 21.",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": null,
-   "score_rationale": "Rates",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "gulf-war-oil-hormuz",
-   "first_seen": null,
-   "last_updated": "2026-10-19-am",
-   "status": "Continuing",
-   "headline": "Brent 108.71 (-1.0%) Mon am after 109.86 Fri; Hormuz flows 11.62 mb/d vs 17.15 baseline (Kpler/Reuters). Araghchi 7-day plan via Qatar (day 6 reopen) still on offer; CNN: commanders threaten cables/data centres.",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": null,
-   "score_rationale": "Oil/inflation channel",
-   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-10-28T10:49:33Z"
+ "updated": "2026-10-28T20:46:47Z"
 }
