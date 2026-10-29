@@ -347,8 +347,9 @@ class AttentionSummaryRouteTests(unittest.TestCase):
 
 
 class DashboardPageTests(unittest.TestCase):
-    """The 1.0.5 Dashboard prints the summary's fields as the API sends them: its tiles' keys are summary keys, nothing is computed
-    on the page, it reads GET /api/attention/summary and never the route the full Dashboard brings later."""
+    """The 1.0.6 Dashboard's "Requires your attention" tiles print the summary's fields as the API sends them (the failed-settlements
+    tile reads the trade blotters' / collateral counters): nothing is computed on the page; it reads GET /api/dashboard while the
+    dashboard module is bound, else GET /api/attention/summary alone; each tile is re-linked to the new navigation (P1 task 4)."""
 
     def test_dashboard_tiles_tie_to_the_summary(self):
         path = os.path.join(STATIC, "pages", "dashboard.js")
@@ -358,16 +359,17 @@ class DashboardPageTests(unittest.TestCase):
         self.assertIn("T.pages.dashboard = ", src)
         self.assertEqual((0, 0, 0), js_balance(src))
         keys = re.findall(r"\{ key: '([a-z_]+)'", src)
-        self.assertEqual(["integrity", "hold", "open", "warnings", "compliance", "collateral_calls_today", "recalls", "working_orders", "pending_settlements", "providers"], keys)
+        self.assertEqual(["working_orders", "pending_settlements", "failed", "collateral_calls_today", "recalls", "compliance", "warnings", "integrity", "providers", "open"], keys)
         self.assertIsNone(re.search(r"att\.[A-Za-z_.]+\s*[-+*/%]\s*[\w(]", src))   # no arithmetic on a summary field
-        self.assertIn("'/api/attention/summary'", src)
-        self.assertNotIn("/api/dashboard", src.split("*/", 1)[1])            # the 1.0.5 page calls no /api/dashboard (only its comment names it)
+        self.assertIn("var full = T.hasModule('dashboard');", src)                 # C2: the module's route only while it is bound
+        self.assertIn("var call = full ? T.api.get('/api/dashboard') : T.api.get('/api/attention/summary');", src)
         self.assertNotIn("/api/news", src)
-        # each tile leads where 15.7 item 1 says
+        # each tile leads where P1 task 4 says (the new navigation)
         links = dict(re.findall(r"key: '([a-z_]+)', label: '[^']*', (?:href|act): '?([^',]+)'?", src))
-        self.assertEqual({"integrity": "#/accounting/integrity", "hold": "#/accounting/integrity", "open": "expandStrip", "warnings": "#/risk",
-                          "compliance": "#/risk?section=compliance", "collateral_calls_today": "#/risk?section=financing", "recalls": "#/risk?section=financing",
-                          "working_orders": "#/activity?type=orders", "pending_settlements": "#/activity?type=settlements", "providers": "#/settings/data"}, links)
+        self.assertEqual({"working_orders": "#/pending", "pending_settlements": "#/completed?status=settling", "failed": "#/completed?status=failed",
+                          "collateral_calls_today": "#/cash", "recalls": "#/cash", "compliance": "#/risk?section=compliance", "warnings": "#/risk",
+                          "integrity": "#/accounting/integrity", "providers": "#/settings/market-data", "open": "expandStrip"}, links)
+        keys = [k for k in keys if k != "failed"]                              # the failed-settlements tile reads the counters, not the summary
         server = FixtureServer(0).start()
         try:
             conn = http.client.HTTPConnection("127.0.0.1", server.port, timeout=10)

@@ -640,5 +640,55 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(report.ok, [p.to_dict() for p in report.problems])
 
 
+
+class SofrWaitWordingTests(unittest.TestCase):
+    """V104R2-BW-02 (e), the job side (FINSIM1 P6, 1.0.6): the reason a SOFR-based night waits reads in trader words - no convention code
+    such as "(RATE_LAG; never defaulted)" - and still says that a rate is never assumed; the refusal codes are unchanged."""
+
+    def test_sofr_wait_reasons(self):
+        from finsim.terminal import lifecycle_jobs
+        from finsim.terminal.commands import RejectError
+        with self.assertRaises(RejectError) as cm:
+            lifecycle_jobs.sofr_for_night(types.SimpleNamespace(), date(2026, 10, 27))
+        self.assertEqual("RATE_STORE_MISSING", cm.exception.code)
+        self.assertEqual("no interest-rate data is loaded: SOFR is unknown and a rate is never assumed", cm.exception.message)
+        rates = RateStore()
+        with self.assertRaises(RejectError) as cm:
+            lifecycle_jobs.sofr_for_night(types.SimpleNamespace(rates=rates), date(2026, 10, 27))
+        self.assertEqual("RATE_UNAVAILABLE", cm.exception.code)
+        self.assertEqual("no SOFR print within 10 days on or before 2026-10-27: the night waits for FRED (it publishes SOFR a business day late;"
+                         " a rate is never assumed)", cm.exception.message)
+        self.assertNotIn("RATE_LAG", cm.exception.message)
+
+    def test_private_credit_night_and_swap_fixing_wait_reasons(self):
+        """The same wording for a private-credit coupon night and a swap fixing (the integrator, 1.0.6: the last two places that still said
+        "(RATE_LAG; ...)", one of them in a file no package owned): the refusal codes are unchanged; the reason says that the night or the
+        fixing waits for FRED and that a rate is never assumed."""
+        from finsim.terminal.commands import ConflictError, RejectError
+        from finsim.terminal.products import private_credit, swaps
+        loan = {"index_name": "SOFR", "loan_id": "PL-000001"}
+        with self.assertRaises(RejectError) as cm:
+            private_credit.index_for_night(types.SimpleNamespace(), loan, date(2026, 10, 27))
+        self.assertEqual(("RATE_STORE_MISSING", "no interest-rate data is loaded: SOFR is unknown and a rate is never assumed"),
+                         (cm.exception.code, cm.exception.message))
+        with self.assertRaises(RejectError) as cm:
+            private_credit.index_for_night(types.SimpleNamespace(rates=RateStore()), loan, date(2026, 10, 27))
+        self.assertEqual(("RATE_UNAVAILABLE", "no SOFR print within 10 days on or before 2026-10-27: the night waits for FRED (it publishes SOFR a"
+                                              " business day late; a rate is never assumed)"), (cm.exception.code, cm.exception.message))
+        with self.assertRaises(ConflictError) as cm:
+            swaps.fixing_for(types.SimpleNamespace(rates=RateStore()), date(2026, 10, 27))
+        self.assertEqual(("RATE_UNAVAILABLE", "no SOFR print within 10 days on or before 2026-10-27: the fixing waits for FRED (it publishes SOFR a"
+                                              " business day late; a rate is never assumed)"), (cm.exception.code, cm.exception.message))
+        with self.assertRaises(ConflictError) as cm:
+            swaps.fixing_for(types.SimpleNamespace(), date(2026, 10, 27))
+        self.assertEqual(("RATE_UNAVAILABLE", "no interest-rate data is loaded: SOFR is unknown and a rate is never assumed"),
+                         (cm.exception.code, cm.exception.message))
+        # a print within the 10-day lag is used as it is (unchanged behaviour): SOFR 3.87 % observed 10-19 serves the night / fixing of 10-27
+        rates = RateStore()
+        rates.put("SOFR", [(date(2026, 10, 19), Decimal("3.87"))], persist=False)
+        self.assertEqual((date(2026, 10, 19), Decimal("3.87")), private_credit.index_for_night(types.SimpleNamespace(rates=rates), loan, date(2026, 10, 27)))
+        self.assertEqual((date(2026, 10, 19), Decimal("3.87")), swaps.fixing_for(types.SimpleNamespace(rates=rates), date(2026, 10, 27)))
+
+
 if __name__ == "__main__":
     unittest.main()

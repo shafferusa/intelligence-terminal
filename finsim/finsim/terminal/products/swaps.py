@@ -151,6 +151,16 @@ FINSIM1 (FINSIM1_PLAN P4, the owner's clarification of 2026-10-27: his Goldman T
 - CSA NETTING (C21, P4 task 9): VM, swap payments, CDX coupons, TRS resets and terminations are payments to the CSA counterparty,
   funded with ``csa_netting=True`` (``fund_csa`` / ``fund_commitment(csa_netting=True)``): they may use the cash collateral that
   counterparty posted; an IM may not.
+- RFQ AND CONFIRMATION (C14, OMS-10; 1.0.6): the PB OTC desks ask for a quote - ``otc.rfq.request {account_id, kind, terms}`` runs the
+  gates and prices the deal once (the same refusals as a booking) and stores the request REQUESTED (table ``rfqs``); the RFQ_DEALER
+  lifecycle job (every tick, about 30 s; no matcher) answers it with the model quote labelled "indicative model quote, simulated dealer"
+  (QUOTED, good for 120 s) or, when the model cannot price it now, EXPIRED with the reason; it expires a quote nobody accepted.  ``otc.rfq.
+  accept {rfq_id}`` books within the validity through ``otc.book`` - IRS / TRS / CDX at the quoted rate / reset price / spread (the dealer
+  honours its quote), the other kinds re-priced and refused 409 QUOTE_MOVED when the price moved; ``otc.rfq.decline`` closes it.  Every
+  contract booked now starts PENDING_CONFIRM; the OTC_CONFIRM job confirms it at 17:05 ET of its business day ("simulated confirmation").
+  Both jobs are quiet when idle and start forward (15.9 item 8): a contract booked before this release has no confirmation record and is
+  never touched.  ``contract_timeline`` lists a contract's life (requested, quoted, accepted, booked, IM, confirmation, each VM, fixing,
+  payment, reset, a simulated credit event, the termination); ``derivatives_view`` serves the Derivatives page (UI-11).
 - POSITION FIELDS (C13, PORTFOLIO-02 / -06): ``position_fields`` gives accounting the MV a row and NAV carry - the live model mark
   ("model, intraday") when an input it uses was observed after the mark of the last VM (an STM contract nets what was already
   settled), else that mark ("as of the last VM"; stale when the model cannot run now) - with unrealised = MV - the cost basis and
@@ -212,7 +222,7 @@ FIXED_BASES = ("30/360", "ACT/360")
 FIXINGS = ("TERM", "COMPOUND_ARREARS")
 LEG_GL = {"swaprcv": ("1225", "4453"), "swappay": ("4453", "2340")}      # (debit, credit) of a positive accrual: coupons and CDS premium on 4453 (C11)
 VM_TERMINAL = ("NO_CHANGE", "CAUGHT_UP")                                   # quiet SKIPPED notes that end a VM key
-MODEL = "clean PV = sign x N x (par - K) x annuity on the remaining semi-annual periods; floating leg at par (SWAP_MARK)"
+MODEL = "clean PV = sign x N x (par - K) x annuity on the remaining semi-annual periods; floating leg at par"
 TERM_METHOD = "TERM: the latest SOFR print on or before the reset date (RATE_LAG)"
 COMPOUND_METHOD = ("COMPOUND_ARREARS: every calendar night accrues at the latest SOFR on or before it (RATE_LAG), compounded daily"
                    " F = prod(1 + r/360); the period pays N x (F - 1)")
@@ -792,10 +802,12 @@ def fixing_for(services, d: date) -> Tuple[date, Decimal]:
     (RATE_LAG); 409 ``RATE_UNAVAILABLE`` otherwise — never defaulted."""
     rates = getattr(services, "rates", None)
     if rates is None or not hasattr(rates, "as_of_le"):
-        raise ConflictError("RATE_UNAVAILABLE", "no rate store is bound (services.rates): SOFR is unknown and is never defaulted", {"series": "SOFR"})
+        raise ConflictError("RATE_UNAVAILABLE", "no interest-rate data is loaded: SOFR is unknown and a rate is never assumed", {"series": "SOFR"})
     got = rates.as_of_le("SOFR", d)
     if got is None or (d - got[0]).days > RATE_LAG_MAX_DAYS:
-        raise ConflictError("RATE_UNAVAILABLE", f"no SOFR observation within {RATE_LAG_MAX_DAYS} days on or before {d.isoformat()} (RATE_LAG; waits for FRED)",
+        # V104R2-BW-02 (e) class (the integrator, 1.0.6): the reason in trader words, no convention code; the refusal code is unchanged
+        raise ConflictError("RATE_UNAVAILABLE", f"no SOFR print within {RATE_LAG_MAX_DAYS} days on or before {d.isoformat()}: the fixing waits for FRED"
+                            " (it publishes SOFR a business day late; a rate is never assumed)",
                             {"series": "SOFR", "date": d.isoformat()})
     return got[0], qprice(got[1])
 
@@ -860,11 +872,14 @@ class Deal:
         return self.terms.fixing == "COMPOUND_ARREARS"
 
 
-def _deal(services, conn: sqlite3.Connection, acct: dict, terms: IrsTerms, today: date, as_of: Optional[dict] = None, calibrate: bool = False) -> Deal:
+def _deal(services, conn: sqlite3.Connection, acct: dict, terms: IrsTerms, today: date, as_of: Optional[dict] = None, calibrate: bool = False,
+          firm_rate: Optional[Decimal] = None) -> Deal:
     """The IRS deal of ``today`` (the trade date).  ``as_of`` (C10): the valuation inputs are those OF the trade date (its curve through
     ``CurveStore.for_date``, its SOFR print) and a missing one is 409 ASOF_INPUT_MISSING; ``calibrate`` (owner Q1 variant A): the dealt
     fixed rate is booked exactly and the contract curve spread is set so that rate = par + spread + half-width (pay fixed; par + spread -
-    half-width receiving), so mark0 = the half-width x N x annuity, the cost of dealing - never a day-one gain."""
+    half-width receiving), so mark0 = the half-width x N x annuity, the cost of dealing - never a day-one gain.  ``firm_rate`` (C14): the
+    rate of the dealer's quote the owner accepted within its validity - booked as quoted (the dealer honours its own quote; mark0 is the
+    model value on the curve now)."""
     sched = prime.read_schedule(conn, acct)
     mult = qprice(Decimal(sched.otc_spread_mult))
     hw_bp = qprice(Decimal(sched.irs_half_width_bp) * mult)
@@ -890,6 +905,8 @@ def _deal(services, conn: sqlite3.Connection, acct: dict, terms: IrsTerms, today
             raise RejectError("TERMS", "calibrate_curve_spread_to_rate books a dealt fixed_rate exactly: give fixed_rate")
         spread = ((terms.fixed_rate - par - hw) if terms.pay_fixed else (terms.fixed_rate - par + hw)).quantize(RATE_Q)
         dealt = terms.fixed_rate
+    elif firm_rate is not None:
+        dealt = Decimal(firm_rate).quantize(RATE_Q)          # C14: the accepted quote, as quoted
     elif terms.fixed_rate is not None:
         # a client rate BETTER than the dealer's quote (paying less than par + hw, receiving more than par - hw) would be a fabricated
         # day-one gain in NAV that no dealer gives: refused, as the cross-currency quotes are (WP-26 OFF_MARKET); a worse rate deals as given
@@ -969,7 +986,7 @@ def _deal_dict(deal: Deal) -> dict:
             "fixing": _fixing_dict(deal), "schedule": _schedule_rows(deal), "terms": dict(t.to_dict(), fixed_rate=str(deal.dealt)),
             "inputs": dict(deal.curve_inputs, sofr=str(deal.fix_pct), sofr_obs_date=deal.fix_obs.isoformat(), remaining_periods=deal.n_periods,
                            rate_precision="0.001 % (0.1 bp)", model=MODEL, im_rule=f"IM = |DV01| x {_num_text(deal.im_bp)} bp ({deal.im_source})"),
-            "conventions": list(CONVENTIONS), **_spread_fields(deal.curve_spread)}
+            "conventions": list(CONVENTIONS), "curve_note": IRS_CURVE_NOTE, **_spread_fields(deal.curve_spread)}
 
 
 def _spread_fields(spread) -> dict:
@@ -1036,14 +1053,23 @@ def h_book(ctx: TxContext, payload: dict) -> dict:
     acct = _pb_account(conn, aid)
     require_pb_otc(services, aid)
     if kind != "IRS":
-        return _delegate(services, kind, "book")(ctx, payload)
-    raw_terms = dict(payload.get("terms") or {})
-    if raw_terms.get("calibrate_curve_spread_to_rate") not in (None, False, "", "false", 0):
-        raise RejectError("TERMS", "a contract curve spread is calibrated only when a dealt rate is booked as of its trade date; a new swap deals at the"
-                          " dealer's quote (leave the rate blank) or at a rate no better than it", {"field": "calibrate_curve_spread_to_rate"})
-    terms = parse_irs_terms(raw_terms)
-    deal = _deal(services, conn, acct, terms, ny_of(ctx.ts).date())
-    return _book_irs(ctx, services, acct, terms, deal)
+        out = _delegate(services, kind, "book")(ctx, payload)
+    else:
+        raw_terms = dict(payload.get("terms") or {})
+        if raw_terms.get("calibrate_curve_spread_to_rate") not in (None, False, "", "false", 0):
+            raise RejectError("TERMS", "a contract curve spread is calibrated only when a dealt rate is booked as of its trade date; a new swap deals at the"
+                              " dealer's quote (leave the rate blank) or at a rate no better than it", {"field": "calibrate_curve_spread_to_rate"})
+        firm = getattr(ctx, "rfq_firm", None) or {}
+        firm_rate = None
+        if firm.get("fixed_rate") not in (None, ""):                 # C14: an accepted dealer quote books at its quoted rate
+            firm_rate = Decimal(str(firm["fixed_rate"]))
+            raw_terms["fixed_rate"] = str(firm_rate)
+        terms = parse_irs_terms(raw_terms)
+        deal = _deal(services, conn, acct, terms, ny_of(ctx.ts).date(), firm_rate=firm_rate)
+        out = _book_irs(ctx, services, acct, terms, deal)
+    if mark_new_contract(ctx, out.get("contract_id")):                 # C14: a new contract waits for the simulated 17:05 ET confirmation
+        out["contract"] = contract_view(services, _contract_row(conn, out["contract_id"]), conn=conn, detail=True, now_ts=ctx.ts)
+    return out
 
 
 def _book_irs(ctx: TxContext, services, acct: dict, terms: IrsTerms, deal: Deal, as_of: Optional[dict] = None) -> dict:
@@ -1152,7 +1178,7 @@ def mark(services, contract, at: Optional[int] = None, shift_bp=None, snapshot=N
         stored = int(row.get("mark_c") or 0)
         inputs = {"note": e.message, "stored_mark_c": stored, "stored_mark_ts": row.get("mark_ts"), "qualities": ["stale"], "as_of": row.get("mark_ts")}
         return MarkView(row["contract_id"], from_c(stored), "stale", "swap model (stored mark)", "swap_model", row.get("mark_ts"), now_ts, "model", inputs, False,
-                        "no curve: the last computed mark, labelled stale (SWAP_MARK)")
+                        "no curve: the last computed mark, labelled stale")
 
 
 def dv01_c(services, contract) -> int:
@@ -1349,8 +1375,9 @@ def _vm_core(ctx: TxContext, services, row: dict, ds: str, strict: bool = False)
     aid, ccy, mode = row["account_id"], row["currency"], row["margin_mode"]
     d = date.fromisoformat(ds)
     today = ny_of(ctx.ts).date()
-    if d > today or d < _date(row["start_date"]):
-        raise RejectError("KEY_INVALID", f"VM date {ds} is outside {row['start_date']} .. today {today.isoformat()}")
+    first = vm_first_date(row)
+    if d > today or d < first:
+        raise RejectError("KEY_INVALID", f"VM date {ds} is outside {first.isoformat()} .. today {today.isoformat()}")
 
     def missing(code: str, note: str):
         raise AsOfInputMissing("ASOF_INPUT_MISSING", f"{cid}: the valuation input of {ds} does not exist ({code}: {note}); the as-of booking writes nothing",
@@ -1974,7 +2001,7 @@ def h_terminate(ctx: TxContext, payload: dict) -> dict:
     ref_c = _reference_mark_c(conn, cid)
     memo = (f"Swap termination {cid}: value {fmt_money(value_c)} = the current model mark (par {inputs.get('par_rate')} vs dealt {inputs.get('dealt_rate')}, annuity"
             f" {inputs.get('annuity')}, curve as of {inputs.get('curve_as_of')}); VM balance {fmt_money(int(row['vm_balance_c']))} unwound; accrued legs settled"
-            f" through the night of {through.isoformat()}" + (f" ({len(caught)} night accrual(s) posted first)" if caught else "") + " (SWAP_MARK)")
+            f" through the night of {through.isoformat()}" + (f" ({len(caught)} night accrual(s) posted first)" if caught else ""))
     closed = close_contract(ctx, services, row, "TERMINATED", value_c, ref_c, f"otc:{cid}:terminate", "OTC_TERMINATE", memo, True, False)
     ctx.event("OTC_TERMINATED", account_id=row["account_id"], instrument_id=cid, ref_type="otc", ref_id=cid, termination_value_c=value_c, inputs=inputs,
               caught_up=len(caught), **{k: v for k, v in closed.items() if k not in ("funding", "value_c")})
@@ -1995,6 +2022,57 @@ def _open_contracts(conn: sqlite3.Connection, kinds: Optional[Tuple[str, ...]] =
         sql += f" AND c.kind IN ({','.join('?' for _ in kinds)})"
         params += list(kinds)
     return conn.execute(sql + " ORDER BY c.contract_id", params).fetchall()
+
+
+def _row_get(row, name: str):
+    """A column of an ``otc_contracts`` row (a dict or a sqlite3.Row); None when the column does not exist (an older database)."""
+    try:
+        return row.get(name) if isinstance(row, dict) else row[name]
+    except (KeyError, IndexError):
+        return None
+
+
+def booked_business_day(row) -> Optional[date]:
+    """P8R1-02: the business day of a LIVE booking - the accounting day (ACCT_DAY: the 17:00 ET cut-off) of the instant it was booked
+    (``entered_ts``, else the terms' ``dealt_ts``), the day its IM and the IM's funding sweep carry.  None for an as-of booking (it keeps
+    the owner's value date, D7) and for a row that records neither instant."""
+    if booking_of(row) in (ASOF_BOOKING, HISTORICAL_BOOKING):
+        return None
+    ts = _row_get(row, "entered_ts")
+    if ts in (None, ""):
+        try:
+            ts = _terms({k: row[k] for k in row.keys()} if not isinstance(row, dict) else row).get("dealt_ts")
+        except (ValueError, TypeError, AttributeError):
+            ts = None
+    if ts in (None, "") or isinstance(ts, bool):
+        return None
+    try:
+        return accounting_day(ny_of(int(ts)))
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
+def vm_first_date(row) -> date:
+    """The first date of a contract's SWAP_VM: its start date; P8B-06 (FX_CCS_PLAN G16): a cross-currency swap starts on the spot date of its
+    trade date, and it is marked - and margined under the CSA - from its trade date (``terms.trade_date``), not only from its start.
+    P8R1-02: a LIVE booking is never margined on a business day before its own - the first VM date is at least the booking's accounting day
+    (``booked_business_day``).  A contract booked after the 17:00 ET cut-off of day D (its IM and the IM's sweep carry business date D + 1)
+    gets its first variation margin on D + 1, valued at the close of D + 1 - never on the closed day D after D's snapshot, which put one
+    booking on two business dates and the day-one cost of dealing into a day already closed.  Equity forwards, TRS, IRS and CDX start on
+    the New York calendar date of the booking, so this is where they were dated wrong; an as-of booking keeps its value date (D7)."""
+    start = _date(row["start_date"])
+    first = start
+    if row["kind"] == "XCCY":
+        try:
+            td = _terms({k: row[k] for k in row.keys()} if not isinstance(row, dict) else row).get("trade_date")
+            if td and _date(td) < start:
+                first = _date(td)
+        except (ValueError, TypeError):
+            pass
+    booked = booked_business_day(row)
+    if booked is not None and booked > first:
+        first = booked
+    return first
 
 
 def _jobs(conn: sqlite3.Connection, job: str, cid: str, lo: Optional[str] = None, hi: Optional[str] = None) -> Dict[str, sqlite3.Row]:
@@ -2038,7 +2116,7 @@ def vm_keys(conn: sqlite3.Connection, now_ts: int) -> List[Tuple[str, str]]:
     for row in _open_contracts(conn):
         cid = row["contract_id"]
         last = conn.execute("SELECT MAX(vm_date) AS d FROM otc_vm WHERE contract_id=?", (cid,)).fetchone()
-        d = date.fromisoformat(row["start_date"])
+        d = vm_first_date(row)
         if last is not None and last["d"]:
             d = max(d, date.fromisoformat(last["d"]) + timedelta(days=1))
         if d > today:
@@ -2359,9 +2437,10 @@ def _asof_view(conn: sqlite3.Connection, row: dict, terms: dict) -> dict:
     status = row.get("confirm_status")
     out = {"booking": booking, "entered_ts": row.get("entered_ts"), "import_key": row.get("import_key"),
            "trade_date": row.get("trade_date") or terms.get("trade_date"), "value_date": row.get("value_date") or row.get("start_date"),
-           "confirm_status": status, "confirmed_ts": row.get("confirmed_ts"),
-           "confirm_label": ASOF_CONFIRM_LABEL if (booking in (ASOF_BOOKING, HISTORICAL_BOOKING) and status == CONFIRMED) else None,
+           "confirm_status": status, "confirmed_ts": row.get("confirmed_ts"), "confirm_label": confirm_label(booking, status),
            "source": src, "source_label": src.get("label"), "batch_id": src.get("batch_id"), "asof": bool(src.get("asof"))}
+    if status is None:
+        out["confirm_note"] = NO_CONFIRM_LABEL
     spread = curve_spread(terms)
     if spread:
         out.update(_spread_fields(spread))
@@ -2566,7 +2645,7 @@ def ensure_schema(db) -> dict:
     ``Database.ensure_schema_ext``; inside the caller's transaction when this thread holds the writer in one)."""
     if db is None or not hasattr(db, "ensure_schema_ext"):
         return {}
-    return db.ensure_schema_ext("swaps", C10_SCHEMA)
+    return db.ensure_schema_ext("swaps", C10_SCHEMA + RFQ_SCHEMA)
 
 
 def has_columns(conn: sqlite3.Connection, table: str, *cols: str) -> bool:
@@ -2594,6 +2673,11 @@ def bind(rt) -> None:
     except Exception as e:   # noqa: BLE001 - logged; otc.book_as_of adds the columns itself before it writes them
         if log:
             log.warning("swaps.bind: the as-of columns could not be added: %s", e)
+    try:
+        add_jobs()
+    except Exception as e:   # noqa: BLE001 - logged; the RFQ desk still requests, the quotes wait for the job
+        if log:
+            log.warning("swaps.bind: the RFQ_DEALER / OTC_CONFIRM jobs were not added: %s", e)
 
 
 MARK_INTRADAY = "model, intraday"
@@ -2645,7 +2729,37 @@ def _display_fields(services, row: dict, terms: dict, inputs: dict, conn: sqlite
                    extra={"side": "pay fixed" if terms.get("pay_fixed") else "receive fixed", "fixed_rate": terms.get("fixed_rate"), "par_rate": par, "fair_rate": fair,
                           "dv01_c": dv01, "entry_label": "fixed rate", "current_label": "par now" + (" with the contract curve spread" if spread else ""),
                           **_spread_fields(spread)})
-    else:                                     # XCCY / OTC options and forwards: the notional; their specifics are in the contract's own detail
+    elif kind == "FX_FORWARD":
+        # OTC-18 (FINSIM1_PLAN 15.15b, the 1.0.6 fixer): a forward reads as what it delivers - buy EUR 1,000,000.00 / sell USD 1,120,032.00, value
+        # 2027-01-29 - with the dealt rate against the forward now, never as a USD notional to "receive" or "pay"
+        pair = str(terms.get("pair") or "")
+        base, quote = pair[:3], pair[3:]
+        buy = str(terms.get("side") or "").upper() == "BUY"
+        bc, bn, sc, sn = terms.get("buy_ccy"), int(terms.get("buy_c") or 0), terms.get("sell_ccy"), int(terms.get("sell_c") or 0)
+        legs = f"buy {bc} {fmt_money(bn)} / sell {sc} {fmt_money(sn)}, value {row.get('maturity_date')}"
+        cur = inputs.get("F")
+        out.update(units=int(terms.get("notional_c") or 0) // 100, unit_label=f"{base} {'bought' if buy else 'sold'} forward vs {quote}", entry=terms.get("strike"),
+                   current=None if cur in (None, "") else str(cur),
+                   extra={"side": f"buy {base} / sell {quote}" if buy else f"sell {base} / buy {quote}", "legs": legs, "buy": [bc, bn], "sell": [sc, sn],
+                          "value_date": row.get("maturity_date"), "pair": pair, "entry_label": "dealt rate", "current_label": "forward now (mid)"})
+    elif kind == "EQ_FORWARD":
+        uid = terms.get("underlying_id")
+        buy = str(terms.get("side") or "").upper() == "BUY"
+        cur = inputs.get("F")
+        out.update(units=int(terms.get("units") or 0), unit_label=f"{uid} shares forward", entry=terms.get("strike"), current=None if cur in (None, "") else str(cur),
+                   extra={"side": f"{'long' if buy else 'short'} {uid} forward", "maturity_date": row.get("maturity_date"), "entry_label": "dealt forward",
+                          "current_label": "forward now (mid)", "underlying_id": uid})
+    elif kind in ("EQ_OPTION", "FX_OPTION"):
+        buy = str(terms.get("side") or "").upper() == "BUY"
+        what = "call" if terms.get("right") == "C" else "put"
+        under = terms.get("underlying_id") or terms.get("pair")
+        units = int(terms.get("units") or 0) if kind == "EQ_OPTION" else int(terms.get("notional_c") or 0) // 100
+        cur = inputs.get("price_per_unit")
+        out.update(units=units, unit_label=(f"{under} shares, {what} {terms.get('strike')}" if kind == "EQ_OPTION" else f"{str(under)[:3]} notional, {what} {terms.get('strike')}"),
+                   entry=terms.get("premium_per_unit"), current=None if cur in (None, "") else str(cur),
+                   extra={"side": f"{'bought' if buy else 'sold'} {what}", "expiry": row.get("maturity_date"), "entry_label": "premium per unit",
+                          "current_label": "model price per unit now"})
+    else:                                     # XCCY: the notional; its legs are in the contract's own detail
         out.update(units=n // 100, unit_label=f"{row.get('currency') or 'USD'} notional")
     return out
 
@@ -2751,6 +2865,981 @@ def position_fields(services, row, snapshot=None, now_ts: Optional[int] = None) 
         return _position_fields(services, rowd, got, conn, ts)
 
 
+# ---- RFQ and the simulated confirmation (FINSIM1 C14, OMS-10; P4 task 8) ------------------------------------------------------------------
+#: C14: the quote requests (additive, D2: their own table; the statuses are a column, never a widened CHECK)
+RFQ_SCHEMA = ["CREATE TABLE IF NOT EXISTS rfqs (rfq_id TEXT PRIMARY KEY, command_id INTEGER, account_id TEXT NOT NULL, broker TEXT, kind TEXT NOT NULL,"
+              " terms_json TEXT NOT NULL, status TEXT NOT NULL, requested_ts INTEGER NOT NULL, quoted_ts INTEGER, quote_json TEXT, quote_label TEXT,"
+              " ttl_s INTEGER, expires_ts INTEGER, closed_ts INTEGER, contract_id TEXT, accept_command_id INTEGER, reason TEXT, updated_ts INTEGER)",
+              "CREATE INDEX IF NOT EXISTS ix_rfqs_status ON rfqs(status)",
+              "CREATE INDEX IF NOT EXISTS ix_rfqs_account ON rfqs(account_id)",
+              "CREATE INDEX IF NOT EXISTS ix_rfqs_contract ON rfqs(contract_id)"]
+RFQ_JOB, CONFIRM_JOB = "RFQ_DEALER", "OTC_CONFIRM"
+RFQ_TTL_S = 120                        # a quote is good for 120 s; the dealer job expires it on its first tick after that
+RFQ_OPEN = ("REQUESTED", "QUOTED")
+RFQ_STATUSES = ("REQUESTED", "QUOTED", "ACCEPTED", "DECLINED", "EXPIRED")
+RFQ_WORDS = {"REQUESTED": "awaiting the dealer's quote", "QUOTED": "quoted - awaiting your acceptance", "ACCEPTED": "accepted and booked",
+             "DECLINED": "declined", "EXPIRED": "expired"}
+QUOTE_LABEL = "indicative model quote, simulated dealer"
+FIRM_KINDS = ("IRS", "TRS", "CDX")     # an accepted quote books at its quoted price; the other kinds re-price and must match it (QUOTE_MOVED)
+PENDING_CONFIRM = "PENDING_CONFIRM"
+CONFIRM_ET = "17:05"
+SIM_CONFIRM_LABEL = "CONFIRMED - simulated confirmation"
+PENDING_CONFIRM_LABEL = "PENDING CONFIRMATION - the simulated confirmation runs at 17:05 ET on the trade's business day"
+NO_CONFIRM_LABEL = "no confirmation record: booked before confirmations were simulated"
+#: V104R2-OTC-06: disclosed (the model is unchanged - the owner decides): the Treasury par curve stands in for the SOFR swap curve
+IRS_CURVE_NOTE = ("model par = the Treasury par curve (treasury.gov) used as a proxy for the SOFR swap curve: no SOFR swap rate is sourced, and a real"
+                  " dealer quotes off the SOFR swap curve, which usually sits below Treasury par")
+
+
+def confirm_label(booking, status) -> Optional[str]:
+    """The confirmation of a contract in trader words: an as-of booking's CONFIRMED (the owner's instruction), the simulated 17:05 ET
+    confirmation of a live contract, or PENDING until then; None for a contract booked before confirmations were simulated."""
+    if status == CONFIRMED:
+        return ASOF_CONFIRM_LABEL if booking in (ASOF_BOOKING, HISTORICAL_BOOKING) else SIM_CONFIRM_LABEL
+    if status == PENDING_CONFIRM:
+        return PENDING_CONFIRM_LABEL
+    return None
+
+
+def mark_new_contract(ctx: TxContext, cid: Optional[str]) -> bool:
+    """C14: a contract booked now (``otc.book``, an accepted quote) records its entry time, trade and value dates and starts PENDING_CONFIRM;
+    the OTC_CONFIRM job confirms it at 17:05 ET of its business day.  An as-of contract keeps its own record (CONFIRMED at the owner's
+    instruction).  False when nothing changed (the columns are absent, the contract already carries a status)."""
+    conn = ctx.conn
+    if not cid or not has_columns(conn, "otc_contracts", *C10_COLUMNS):
+        return False
+    row = _contract_row(conn, cid)
+    if row is None or row["confirm_status"] is not None:
+        return False
+    terms = _terms({k: row[k] for k in row.keys()})
+    conn.execute("UPDATE otc_contracts SET entered_ts=?, trade_date=?, value_date=?, confirm_status=? WHERE contract_id=?",
+                 (ctx.ts, terms.get("trade_date") or ny_of(ctx.ts).date().isoformat(), row["start_date"], PENDING_CONFIRM, cid))
+    return True
+
+
+def confirm_date(entered_ts, cal=None) -> Optional[date]:
+    """The business day whose 17:05 ET runs the simulated confirmation of a contract entered at ``entered_ts``: its accounting day (the 17:00
+    ET cut-off), rolled to a business day of the calendar."""
+    if entered_ts in (None, ""):
+        return None
+    d = accounting_day(ny_of(int(entered_ts)))
+    if cal is not None and hasattr(cal, "roll_following"):
+        d = cal.roll_following(d)
+    return d
+
+
+def confirm_keys(conn: sqlite3.Connection, now_ts: int, cal=None) -> List[Tuple[str, str]]:
+    """OTC_CONFIRM: ``(contract_id, confirmation date)`` of every contract PENDING_CONFIRM whose 17:05 ET has passed.  Quiet when idle (no
+    pending contract, no key).  Only contracts this release booked are ever pending: it never confirms a date before it was installed
+    (15.9 item 8: new jobs start forward), and a contract booked before (no confirmation record) is never touched."""
+    if not has_columns(conn, "otc_contracts", "confirm_status", "entered_ts"):
+        return []
+    now = int(now_ts)
+    out: List[Tuple[str, str]] = []
+    for r in conn.execute("SELECT contract_id, entered_ts FROM otc_contracts WHERE confirm_status=? ORDER BY contract_id", (PENDING_CONFIRM,)).fetchall():
+        d = confirm_date(r["entered_ts"], cal)
+        if d is not None and now >= epoch_of(d, CONFIRM_ET):
+            out.append((r["contract_id"], d.isoformat()))
+    return out
+
+
+def h_confirm(ctx: TxContext, payload: dict) -> dict:
+    """``otc.confirm {contract_id, date}`` (OTC_CONFIRM, 17:05 ET): the simulated confirmation of a contract booked live - PENDING_CONFIRM ->
+    CONFIRMED, labelled "simulated confirmation" (there is no electronic confirmation platform in the simulator).  Idempotent; nothing posts."""
+    cid, ds = _key(payload, "otc.confirm")
+    key = f"{cid}:{ds}"
+    row = _open_contract(ctx.conn, cid)
+    if row.get("confirm_status") != PENDING_CONFIRM:
+        return _done_noop(ctx, CONFIRM_JOB, key, "NOT_PENDING", f"{cid} is {row.get('confirm_status') or 'not awaiting a confirmation'}")
+    if ctx.ts < epoch_of(date.fromisoformat(ds), CONFIRM_ET):
+        return _skip(ctx, CONFIRM_JOB, key, "CONFIRM_NOT_YET", f"{cid}: the simulated confirmation runs from {CONFIRM_ET} ET of {ds}", row["account_id"], cid,
+                     quiet=True)
+    ctx.conn.execute("UPDATE otc_contracts SET confirm_status=?, confirmed_ts=? WHERE contract_id=?", (CONFIRMED, ctx.ts, cid))
+    ctx.event("OTC_CONFIRMED", account_id=row["account_id"], instrument_id=cid, ref_type="otc", ref_id=cid, date=ds, broker=row.get("broker"), label=SIM_CONFIRM_LABEL)
+    _job_done(ctx, CONFIRM_JOB, key, "DONE", f"confirmed ({SIM_CONFIRM_LABEL})")
+    return {"status": "DONE", "key": key, "posted": False, "contract_id": cid, "confirm_status": CONFIRMED, "note": SIM_CONFIRM_LABEL}
+
+
+def _has_table(conn: sqlite3.Connection, name: str) -> bool:
+    return conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (name,)).fetchone() is not None
+
+
+def _jloads(s, default=None):
+    if s in (None, ""):
+        return default
+    try:
+        return json.loads(s)
+    except (ValueError, TypeError):
+        return default
+
+
+def _rfq_row(conn: sqlite3.Connection, rid: str) -> Optional[dict]:
+    if not rid or not _has_table(conn, "rfqs"):
+        return None
+    r = conn.execute("SELECT * FROM rfqs WHERE rfq_id=?", (rid,)).fetchone()
+    return None if r is None else {k: r[k] for k in r.keys()}
+
+
+def _hms(ts) -> str:
+    return ny_of(int(ts)).strftime("%H:%M:%S ET") if ts not in (None, "") else "an unrecorded time"
+
+
+def _notional_of(terms: dict) -> Optional[int]:
+    raw_c, raw = terms.get("notional_c"), terms.get("notional")
+    try:
+        if raw_c not in (None, "") and not isinstance(raw_c, bool):
+            return int(Decimal(str(raw_c)))
+        if raw not in (None, ""):
+            return to_c(str(raw).replace(",", ""))
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+    return None
+
+
+def rfq_describe(kind: str, terms: dict, pv: Optional[dict] = None) -> Tuple[str, str, Optional[int], Optional[int]]:
+    """``(instrument words, side words, units, notional cents)`` of a quote request (its terms, else the quote's preview)."""
+    k = str(kind or "").upper()
+    t, pv = dict(terms or {}), dict(pv or {})
+    if k == "IRS":
+        m = t.get("tenor_months")
+        try:
+            m = int(m)
+            tenor = f" {m // 12}Y" if m % 12 == 0 else f" {m}M"
+        except (TypeError, ValueError):
+            tenor = ""
+        pay = _truthy(t.get("pay_fixed")) if "pay_fixed" in t else str(t.get("side") or "").upper().startswith("PAY")
+        return f"USD SOFR interest-rate swap{tenor}", "PAY FIXED" if pay else "RECEIVE FIXED", None, _notional_of(t) or pv.get("notional_c")
+    if k == "TRS":
+        uid = str(t.get("underlying_id") or pv.get("underlying_id") or "?").upper()
+        rec = _truthy(t.get("receiver")) if "receiver" in t else str(t.get("side") or "").upper().startswith("RECEIVE")
+        try:
+            units = int(str(t.get("units")).replace(",", ""))
+        except (TypeError, ValueError):
+            units = None
+        return f"{uid} total return swap", "RECEIVE TOTAL RETURN" if rec else "PAY TOTAL RETURN", units, pv.get("notional_c")
+    if k == "CDX":
+        idx = str(t.get("index") or pv.get("index") or "").upper().replace("CDX.NA.", "").strip(" .")
+        name = {"IG": "CDX.NA.IG", "HY": "CDX.NA.HY"}.get(idx, idx or "CDX")
+        series = pv.get("series") or t.get("series")
+        side = str(t.get("side") or pv.get("side") or "BUY_PROTECTION").upper().replace(" ", "_")
+        side = {"BUY": "BUY_PROTECTION", "SELL": "SELL_PROTECTION"}.get(side, side)
+        return f"{name}{' S' + str(series) if series else ''} 5Y", side.replace("_", " "), None, _notional_of(t) or pv.get("notional_c")
+    if k == "XCCY":
+        r, p = str(t.get("recv_ccy") or "?").upper(), str(t.get("pay_ccy") or "?").upper()
+        # P8B-12: named by the market pair (EUR/USD, USD/JPY), whichever way round the legs go; the side says who pays what
+        foreign = r if r != "USD" else p
+        try:
+            from ..instruments import fx_pair_id as _pair_id
+            pair = _pair_id(foreign) if foreign not in ("?", "USD") else f"{r}{p}"
+        except Exception:   # noqa: BLE001 - an unknown code: the legs as typed
+            pair = f"{r}{p}"
+        return f"{pair[:3]}/{pair[3:]} cross-currency swap", f"RECEIVE {r} / PAY {p}", None, pv.get("usd_notional_c")
+    what = "option" if k in OTC_OPTION_KINDS[:2] else "forward"
+    under = str(t.get("underlying_id") or t.get("pair") or pv.get("underlying_id") or pv.get("pair") or "").upper()
+    side = str(t.get("side") or "").upper().replace("_", " ")
+    right = {"C": " CALL", "P": " PUT", "CALL": " CALL", "PUT": " PUT"}.get(str(t.get("right") or "").upper(), "") if what == "option" else ""
+    try:
+        units = int(str(t.get("units")).replace(",", "")) if t.get("units") not in (None, "") else None
+    except (TypeError, ValueError):
+        units = None
+    return f"{under} OTC {what}".strip(), f"{side or 'TRADE'}{right}", units, pv.get("notional_c")
+
+
+def preview_blocker(pv: Optional[dict]) -> Optional[dict]:
+    """The first reason a priced deal cannot be booked: a blocker the kind's preview raised (a stale vol, a deal that cannot be funded), else
+    a funding line that is not fundable; None when the deal is bookable."""
+    pv = pv or {}
+    for b in pv.get("blockers") or []:
+        if isinstance(b, dict) and b.get("code"):
+            return b
+    for k in ("funding", "im_funding"):
+        f = pv.get(k) or {}
+        if isinstance(f, dict) and f.get("ok") is False:
+            return {"code": "INSUFFICIENT_FUNDS", "message": f.get("note") or "the deal cannot be funded", "details": {"funding": f}}
+    return None
+
+
+def _quote_terms(kind: str, pv: dict) -> Tuple[Optional[dict], dict, str]:
+    """``(firm, compare, words)`` of the simulated dealer's quote, from the kind's preview at quote time: ``firm`` = the price an acceptance
+    books at (IRS rate, TRS reset price, CDX spread), ``compare`` = what the booking must reproduce, ``words`` = the quote in trader words."""
+    k = str(kind or "").upper()
+    if k == "IRS":
+        rate = pv.get("dealt_rate")
+        sign = "+" if pv.get("pay_fixed") else "-"
+        words = (f"{'pay' if pv.get('pay_fixed') else 'receive'} fixed {pv.get('dealt_rate_pct')} (model par {pv.get('par_rate_pct')} {sign}"
+                 f" {pv.get('half_width_bp')} bp half-width)")
+        return {"fixed_rate": rate}, {"fixed_rate": rate}, words
+    if k == "TRS":
+        px = pv.get("reset_px")
+        fin = pv.get("financing") or {}
+        units = pv.get("units")
+        words = (f"reset price {px} on {units:,} {pv.get('underlying_id')} ({pv.get('reset_px_source')}); financing SOFR"
+                 f" {'+' if pv.get('receiver') else '-'} {fin.get('spread_pct') or pv.get('spread_pct')}") if isinstance(units, int) else f"reset price {px}"
+        return {"reset_px": px, "reset_px_source": pv.get("reset_px_source"), "quote": pv.get("quote")}, {"reset_px": px}, words
+    if k == "CDX":
+        bp = pv.get("deal_spread_bp")
+        words = f"{bp} bp (mid {pv.get('mid_spread_bp')} bp); {pv.get('upfront_direction') or ''} upfront".replace(";  upfront", "")
+        return {"dealt_spread_bp": bp}, {"deal_spread_bp": bp}, words
+    # OTC-23 (FINSIM1_PLAN 15.15b, the 1.0.6 fixer): the re-priced kinds spell the deal out - what you buy and sell, both amounts, the dates
+    if k == "XCCY":
+        legs = pv.get("legs") or {}
+        rl, pl = legs.get("receive") or {}, legs.get("pay") or {}
+        cmp = {"deal_rate": pv.get("deal_rate"), "recv_rate": rl.get("rate"), "pay_rate": pl.get("rate")}
+        words = (f"you pay {pl.get('currency')} {_money_words(pl.get('notional_c'))} at {pl.get('rate_pct')} (borrowed) / receive {rl.get('currency')}"
+                 f" {_money_words(rl.get('notional_c'))} at {rl.get('rate_pct')} (lent); exchanged at {pv.get('deal_rate')} on {pv.get('start_date')}"
+                 f" and back on {pv.get('maturity_date')}")
+        return None, cmp, words
+    if k in OTC_OPTION_KINDS[:2]:
+        return None, {"premium_per_unit": pv.get("premium_per_unit")}, (f"{pv.get('side_text') or ''}: premium {pv.get('premium_per_unit')} per unit"
+                                                                        f" ({pv.get('deal_sigma_pct')} vol)").lstrip(": ")
+    if k == "FX_FORWARD" and isinstance(pv.get("delivery"), dict):
+        rc, pc = pv["delivery"].get("receive") or {}, pv["delivery"].get("pay") or {}
+        words = (f"you buy {rc.get('ccy')} {_money_words(rc.get('amount_c'))} / sell {pc.get('ccy')} {_money_words(pc.get('amount_c'))} for value"
+                 f" {pv.get('value_date') or pv.get('expiry')} at {pv.get('strike')} (model forward {pv.get('forward')})")
+        return None, {"strike": pv.get("strike")}, words
+    if k == "EQ_FORWARD":
+        words = (f"you {'buy' if str(pv.get('side') or '').upper() == 'BUY' else 'sell'} {int(pv.get('units') or 0):,} {pv.get('underlying_id')} forward for"
+                 f" {pv.get('expiry')} at {pv.get('strike')} (mid forward {pv.get('forward')})")
+        return None, {"strike": pv.get("strike")}, words
+    return None, {"strike": pv.get("strike")}, f"forward {pv.get('strike')} (model forward {pv.get('forward')})"
+
+
+def _money_words(c) -> str:
+    """Integer cents as an amount for a sentence ('1,000,000.00'); 'n/a' when unknown."""
+    try:
+        return fmt_money(int(c))
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def rfq_view(row, now: int, full: bool = False) -> dict:
+    """One quote request for the desk, the Pending blotter (C7 rows) and the Derivatives page: status in words, the stage, the quote in words
+    with its validity, the actions open to it; ``full`` adds the quote's priced detail (``quote_preview``, what the ticket renders)."""
+    r = {k: row[k] for k in row.keys()} if isinstance(row, sqlite3.Row) else dict(row)
+    terms = _jloads(r.get("terms_json"), {}) or {}
+    quote = _jloads(r.get("quote_json"), {}) or {}
+    pv = quote.get("preview") or {}
+    kind = str(r.get("kind") or "")
+    label, side, units, notional_c = rfq_describe(kind, terms, pv)
+    status = str(r.get("status") or "")
+    exp = r.get("expires_ts")
+    live = status == "QUOTED" and exp is not None and int(now) < int(exp)
+    stage = {"REQUESTED": "AWAITING_DEALER_QUOTE", "QUOTED": "AWAITING_ACCEPTANCE" if live else "QUOTE_LAPSED"}.get(status, status)
+    dealer = config.PRIME_BROKERS.get(str(r.get("broker") or "").upper(), str(r.get("broker") or "the dealer"))
+    words = RFQ_WORDS.get(status, status.lower())
+    if status == "QUOTED" and not live:
+        words = "quote lapsed - the dealer job expires it on its next tick"
+    out = {"rfq_id": r["rfq_id"], "account_id": r["account_id"], "broker": r.get("broker"), "dealer": dealer, "kind": kind,
+           "kind_label": KIND_LABELS.get(kind, kind), "terms": terms, "status": status, "status_words": words, "stage": stage,
+           "requested_ts": r.get("requested_ts"), "quoted_ts": r.get("quoted_ts"), "expires_ts": exp, "ttl_s": r.get("ttl_s"),
+           "valid_s": max(0, int(exp) - int(now)) if live else 0, "closed_ts": r.get("closed_ts"), "contract_id": r.get("contract_id"),
+           "reason": r.get("reason"), "label": label, "summary": f"{label} with {dealer}: {side.lower()}", "side": side, "side_words": side,
+           "units": units, "notional_c": notional_c, "quote_words": quote.get("words"), "quote_label": r.get("quote_label"),
+           "quote": None if not quote else {"words": quote.get("words"), "label": QUOTE_LABEL, "firm": bool(quote.get("firm")), "quoted_ts": quote.get("quoted_ts"),
+                                           "expires_ts": quote.get("expires_ts"), "terms": quote.get("firm") or quote.get("compare")},
+           "actions": {"accept": live, "decline": status in RFQ_OPEN}}
+    if full:
+        out["quote_preview"] = pv or None
+    return out
+
+
+def rfq_rows(services, scope: Optional[str] = None, status: str = "open", account_id: Optional[str] = None, limit: int = 200) -> List[dict]:
+    """C14 (P2's Pending rows, the Derivatives page, the desk): the quote requests of a scope (``{lid}:ALL``), an account or all of them -
+    the open ones (REQUESTED / QUOTED) by default, ``status`` a status or ``all`` - newest first.  [] before the table exists."""
+    now = int(services.clock.epoch())
+    with _marks.shared_reader(services.db) as conn:
+        if not _has_table(conn, "rfqs"):
+            return []
+        where, params = [], []
+        st = str(status or "open").lower()
+        if st == "open":
+            where.append("status IN ('REQUESTED','QUOTED')")
+        elif st != "all":
+            where.append("status=?")
+            params.append(st.upper())
+        if account_id:
+            where.append("account_id=?")
+            params.append(str(account_id))
+        elif scope and str(scope).endswith(":ALL"):
+            where.append("account_id LIKE ?")
+            params.append(str(scope)[:-4] + ":%")
+        elif scope and str(scope) != "ALL":
+            where.append("account_id=?")
+            params.append(str(scope))
+        sql = "SELECT * FROM rfqs" + (" WHERE " + " AND ".join(where) if where else "") + " ORDER BY requested_ts DESC, rfq_id DESC LIMIT ?"
+        rows = conn.execute(sql, params + [max(1, int(limit))]).fetchall()
+    return [rfq_view(r, now) for r in rows]
+
+
+def rfq_detail(services, rid: str) -> Optional[dict]:
+    with _marks.shared_reader(services.db) as conn:
+        row = _rfq_row(conn, rid)
+    return None if row is None else rfq_view(row, int(services.clock.epoch()), full=True)
+
+
+def _ensure_rfq_table(services, conn: sqlite3.Connection) -> None:
+    if not _has_table(conn, "rfqs"):
+        ensure_schema(getattr(services, "db", None))
+    if not _has_table(conn, "rfqs"):
+        raise RejectError("NOT_IN_THIS_BUILD", "quote requests need the rfqs table, which could not be created", {})
+
+
+def h_rfq_request(ctx: TxContext, payload: dict) -> dict:
+    """``otc.rfq.request {account_id, kind, terms}`` (C14): ask the prime broker's simulated dealer for a quote.  The request runs the gates
+    of ``otc.book`` and prices the deal once (``preview``: the terms, the inputs and the funding are checked as a booking checks them - the
+    same refusals); it is stored REQUESTED and the RFQ_DEALER job answers it on the next lifecycle tick (about 30 s)."""
+    services = _services(ctx)
+    kind = prime.require_otc_kind(payload.get("kind"))
+    aid = str(payload.get("account_id") or "")
+    conn = ctx.conn
+    acct = _pb_account(conn, aid)
+    require_pb_otc(services, aid)
+    raw = dict(payload.get("terms") or {})
+    if raw.get("calibrate_curve_spread_to_rate") not in (None, False, "", "false", 0):
+        raise RejectError("TERMS", "a contract curve spread is calibrated only for an as-of booking; a quote request asks for the dealer's price",
+                          {"field": "calibrate_curve_spread_to_rate"})
+    _ensure_rfq_table(services, conn)
+    pv = preview(services, aid, kind, raw, conn=conn, now=ctx.ts)
+    b = preview_blocker(pv)
+    if b is not None:
+        raise ConflictError(str(b["code"]), str(b.get("message") or b["code"]), dict(b.get("details") or {}, blockers=pv.get("blockers") or []))
+    rid = next_id(conn, "rfq")
+    broker = prime.broker_of(acct)
+    conn.execute("INSERT INTO rfqs(rfq_id, command_id, account_id, broker, kind, terms_json, status, requested_ts, ttl_s, updated_ts)"
+                 " VALUES (?,?,?,?,?,?,'REQUESTED',?,?,?)", (rid, ctx.command_id, aid, broker, kind, dumps(raw), ctx.ts, RFQ_TTL_S, ctx.ts))
+    label, side, _u, _n = rfq_describe(kind, raw, pv)
+    ctx.event("RFQ_REQUESTED", account_id=aid, ref_type="rfq", ref_id=rid, kind=kind, broker=broker, label=label, side=side, terms=raw)
+    return {"rfq": rfq_view(_rfq_row(conn, rid), ctx.ts), "rfq_id": rid, "status": "REQUESTED",
+            "note": "the simulated dealer answers on the next lifecycle tick (about 30 s)"}
+
+
+def h_rfq_decline(ctx: TxContext, payload: dict) -> dict:
+    """``otc.rfq.decline {rfq_id}`` (C14): the owner declines an open request or quote; nothing is booked.  409 RFQ_CLOSED when it is no
+    longer open."""
+    conn = ctx.conn
+    rid = str(payload.get("rfq_id") or "")
+    row = _rfq_row(conn, rid)
+    if row is None:
+        raise NotFound("RFQ_UNKNOWN", f"quote request {rid or '(none)'} does not exist", {"rfq_id": rid})
+    if row["status"] not in RFQ_OPEN:
+        raise ConflictError("RFQ_CLOSED", f"{rid} is {row['status'].lower()}: there is nothing to decline", {"rfq_id": rid, "status": row["status"]})
+    conn.execute("UPDATE rfqs SET status='DECLINED', closed_ts=?, reason=?, updated_ts=? WHERE rfq_id=?", (ctx.ts, "declined by you", ctx.ts, rid))
+    ctx.event("RFQ_DECLINED", account_id=row["account_id"], ref_type="rfq", ref_id=rid, kind=row["kind"], was=row["status"])
+    return {"rfq": rfq_view(_rfq_row(conn, rid), ctx.ts), "rfq_id": rid, "status": "DECLINED"}
+
+
+def _quote_moved(conn: sqlite3.Connection, kind: str, quote: dict, cid: str, out: dict) -> List[dict]:
+    """What an acceptance booked that differs from the accepted quote: ``[{term, quoted, booked}]`` (empty when it matches)."""
+    k = str(kind or "").upper()
+    firm = quote.get("firm") or {}
+    row = _contract_row(conn, cid)
+    terms = _terms({kk: row[kk] for kk in row.keys()}) if row is not None else {}
+    diffs: List[dict] = []
+
+    def chk(name, want, have):
+        if want in (None, ""):
+            return
+        if not _dec_eq(want, have):
+            diffs.append({"term": name, "quoted": str(want), "booked": None if have is None else str(have)})
+    if k == "IRS":
+        chk("fixed_rate", firm.get("fixed_rate"), terms.get("fixed_rate"))
+    elif k == "TRS":
+        chk("reset_px", firm.get("reset_px"), row["reset_px"] if row is not None else None)
+    elif k == "CDX":
+        chk("deal_spread_bp", firm.get("dealt_spread_bp"), terms.get("deal_spread_bp"))
+    else:
+        pv = out.get("preview") or {}
+        if k == "XCCY":
+            legs = pv.get("legs") or {}
+            got = {"deal_rate": pv.get("deal_rate"), "recv_rate": (legs.get("receive") or {}).get("rate"), "pay_rate": (legs.get("pay") or {}).get("rate")}
+        elif k in OTC_OPTION_KINDS[:2]:
+            got = {"premium_per_unit": pv.get("premium_per_unit")}
+        else:
+            got = {"strike": pv.get("strike")}
+        for name, want in (quote.get("compare") or {}).items():
+            chk(name, want, got.get(name))
+    return diffs
+
+
+def h_rfq_accept(ctx: TxContext, payload: dict) -> dict:
+    """``otc.rfq.accept {rfq_id}`` (C14): book the quoted deal within the quote's validity (120 s).  IRS / TRS / CDX book at the quoted
+    rate / reset price / spread (the dealer honours its quote); the other kinds (XCCY, OTC options and forwards) re-price on the market
+    prints the quote was priced from (``quote["pinned"]``) and must equal the quote - else 409 QUOTE_MOVED, nothing written (an input that
+    is not a print moved: a vol surface, a curve, the dealer's schedule).  The booking is ``otc.book``'s (gates, IM and its funding); the
+    contract starts PENDING_CONFIRM.  Refused, writing nothing: a request not quoted yet, a quote past its validity (409 QUOTE_EXPIRED -
+    the dealer job marks it EXPIRED), a closed one."""
+    conn = ctx.conn
+    rid = str(payload.get("rfq_id") or "")
+    row = _rfq_row(conn, rid)
+    if row is None:
+        raise NotFound("RFQ_UNKNOWN", f"quote request {rid or '(none)'} does not exist", {"rfq_id": rid})
+    status = row["status"]
+    if status != "QUOTED":
+        why = {"REQUESTED": "the dealer has not quoted yet (the simulated dealer answers on the next lifecycle tick, about 30 s)",
+               "ACCEPTED": f"it was already accepted (contract {row.get('contract_id')})", "DECLINED": "it was declined",
+               "EXPIRED": "the quote expired" + (f" ({row.get('reason')})" if row.get("reason") else "")}.get(status, status.lower())
+        raise ConflictError("QUOTE_EXPIRED" if status == "EXPIRED" else "RFQ_NOT_QUOTED", f"{rid} cannot be accepted: {why}; nothing was booked",
+                            {"rfq_id": rid, "status": status})
+    if row.get("expires_ts") is None or ctx.ts >= int(row["expires_ts"]):
+        raise ConflictError("QUOTE_EXPIRED", f"{rid}: the quote was valid until {_hms(row.get('expires_ts'))} ({int(row.get('ttl_s') or RFQ_TTL_S)} s); request a new"
+                            " quote - nothing was booked", {"rfq_id": rid, "expires_ts": row.get("expires_ts")})
+    quote = _jloads(row.get("quote_json"), {}) or {}
+    firm = quote.get("firm") or None
+    pinned = None if firm else (quote.get("pinned") or None)
+    terms = _jloads(row.get("terms_json"), {}) or {}
+    prev = getattr(ctx, "rfq_firm", None)
+    prev_marks = ctx.marks
+    ctx.rfq_firm = dict(firm, rfq_id=rid, quoted_ts=row.get("quoted_ts"), expires_ts=row.get("expires_ts")) if firm else None
+    tok = None
+    if pinned:                                    # a re-priced kind books on the marks it was quoted from (swaps_trs.MARKS_HOOK)
+        from . import swaps_trs as _trs
+        ctx.marks = _trs.PinnedMarks(prev_marks, pinned)
+        tok = _trs.MARKS_HOOK.set(lambda s: _trs.PinnedMarks(s, pinned))
+    try:
+        out = h_book(ctx, {"account_id": row["account_id"], "kind": row["kind"], "terms": terms})
+    finally:
+        ctx.rfq_firm = prev
+        ctx.marks = prev_marks
+        if tok is not None:
+            _trs.MARKS_HOOK.reset(tok)
+    cid = out.get("contract_id")
+    moved = _quote_moved(conn, row["kind"], quote, cid, out)
+    if moved:
+        raise ConflictError("QUOTE_MOVED", f"{rid}: the dealer's price moved since the quote (" + ", ".join(f"{d['term']} quoted {d['quoted']}, now {d['booked']}"
+                            for d in moved) + "); request a new quote - nothing was booked", {"rfq_id": rid, "differences": moved})
+    conn.execute("UPDATE rfqs SET status='ACCEPTED', closed_ts=?, contract_id=?, accept_command_id=?, reason=?, updated_ts=? WHERE rfq_id=?",
+                 (ctx.ts, cid, ctx.command_id, f"booked as {cid}", ctx.ts, rid))
+    ctx.event("RFQ_ACCEPTED", account_id=row["account_id"], instrument_id=cid, ref_type="rfq", ref_id=rid, kind=row["kind"], contract_id=cid,
+              quote=quote.get("words"))
+    return dict(out, rfq=rfq_view(_rfq_row(conn, rid), ctx.ts), rfq_id=rid)
+
+
+def rfq_keys(conn: sqlite3.Connection, now_ts: int) -> List[Tuple[str, str]]:
+    """RFQ_DEALER: ``(rfq_id, QUOTE)`` for every REQUESTED request and ``(rfq_id, EXPIRE)`` for every QUOTED one past its validity.  Quiet
+    when idle (15.9 item 8): no open request, no key - an import's catch-up cutoff never moves with its ticks."""
+    if not _has_table(conn, "rfqs"):
+        return []
+    now = int(now_ts)
+    out: List[Tuple[str, str]] = []
+    for r in conn.execute("SELECT rfq_id, status, expires_ts FROM rfqs WHERE status IN ('REQUESTED','QUOTED') ORDER BY rfq_id").fetchall():
+        if r["status"] == "REQUESTED":
+            out.append((r["rfq_id"], "QUOTE"))
+        elif r["expires_ts"] is not None and now >= int(r["expires_ts"]):
+            out.append((r["rfq_id"], "EXPIRE"))
+    return out
+
+
+def h_rfq_dealer(ctx: TxContext, payload: dict) -> dict:
+    """``otc.rfq.dealer {rfq_id, action}`` (RFQ_DEALER, every tick; no matcher): QUOTE prices a REQUESTED request with the kind's model on the
+    inputs now - the quote, labelled "indicative model quote, simulated dealer", is good for 120 s (QUOTED); a request the model cannot price
+    now is EXPIRED with the reason.  EXPIRE closes a QUOTED request past its validity.  Writes its own jobs_done row; posts nothing."""
+    services = _services(ctx)
+    conn = ctx.conn
+    rid = str(payload.get("rfq_id") or "")
+    action = str(payload.get("action") or "").upper()
+    key = str(payload.get("key") or f"{rid}:{action}")
+    row = _rfq_row(conn, rid)
+    if row is None:
+        return _done_noop(ctx, RFQ_JOB, key, "UNKNOWN", f"{rid} does not exist")
+    if action == "EXPIRE":
+        if row["status"] != "QUOTED":
+            return _done_noop(ctx, RFQ_JOB, key, "NOT_QUOTED", f"{rid} is {row['status']}")
+        if ctx.ts < int(row["expires_ts"] or 0):
+            return _done_noop(ctx, RFQ_JOB, key, "STILL_VALID", f"{rid} is valid until {_hms(row['expires_ts'])}")
+        reason = f"not accepted within {int(row.get('ttl_s') or RFQ_TTL_S)} s (valid until {_hms(row['expires_ts'])})"
+        conn.execute("UPDATE rfqs SET status='EXPIRED', closed_ts=?, reason=?, updated_ts=? WHERE rfq_id=?", (ctx.ts, reason, ctx.ts, rid))
+        ctx.event("RFQ_EXPIRED", account_id=row["account_id"], ref_type="rfq", ref_id=rid, kind=row["kind"], reason=reason)
+        _job_done(ctx, RFQ_JOB, key, "DONE", f"expired: {reason}")
+        return {"status": "DONE", "key": key, "posted": False, "rfq_id": rid, "outcome": "EXPIRED", "note": reason}
+    if action != "QUOTE":
+        raise RejectError("KEY_INVALID", f"RFQ_DEALER key {key}: the action is QUOTE or EXPIRE")
+    if row["status"] != "REQUESTED":
+        return _done_noop(ctx, RFQ_JOB, key, "NOT_REQUESTED", f"{rid} is {row['status']}")
+    aid, kind = row["account_id"], row["kind"]
+    terms = _jloads(row.get("terms_json"), {}) or {}
+    pinned: Dict[str, dict] = {}
+    try:
+        _pb_account(conn, aid)
+        require_pb_otc(services, aid)
+        from . import swaps_trs as _trs
+        # a kind re-priced at booking (XCCY, the OTC options and forwards): record the market inputs the quote is priced from, so the
+        # acceptance books on them (swaps_trs.MARKS_HOOK); IRS / TRS / CDX keep their firm price in quote["firm"]
+        tok = _trs.MARKS_HOOK.set(None if str(kind).upper() in FIRM_KINDS else (lambda s: _trs.RecordingMarks(s, pinned)))
+        try:
+            pv = preview(services, aid, kind, terms, conn=conn, now=ctx.ts)
+        finally:
+            _trs.MARKS_HOOK.reset(tok)
+        b = preview_blocker(pv)
+        if b is not None:
+            raise ConflictError(str(b["code"]), str(b.get("message") or b["code"]))
+    except RejectError as e:                      # 400 / 409 alike: the dealer does not quote, said with the reason
+        reason = f"the simulated dealer could not quote: {e.message}"
+        conn.execute("UPDATE rfqs SET status='EXPIRED', closed_ts=?, reason=?, updated_ts=? WHERE rfq_id=?", (ctx.ts, reason[:500], ctx.ts, rid))
+        ctx.event("RFQ_EXPIRED", account_id=aid, ref_type="rfq", ref_id=rid, kind=kind, reason=reason, no_quote=True, code=e.code)
+        _job_done(ctx, RFQ_JOB, key, "DONE", f"no quote: {e.code}")
+        return {"status": "DONE", "key": key, "posted": False, "rfq_id": rid, "outcome": "NO_QUOTE", "code": e.code, "note": reason}
+    firm, compare, words = _quote_terms(kind, pv)
+    expires = int(ctx.ts) + RFQ_TTL_S
+    quote = {"firm": firm, "compare": compare, "words": words, "label": QUOTE_LABEL, "quoted_ts": ctx.ts, "expires_ts": expires, "ttl_s": RFQ_TTL_S,
+             "preview": pv}
+    if pinned and not firm:
+        quote["pinned"] = pinned                  # the marks the quote was priced from (an acceptance books on them)
+    label = f"{words} - {QUOTE_LABEL}, valid until {_hms(expires)}"
+    conn.execute("UPDATE rfqs SET status='QUOTED', quoted_ts=?, quote_json=?, quote_label=?, ttl_s=?, expires_ts=?, updated_ts=? WHERE rfq_id=?",
+                 (ctx.ts, dumps(quote), label, RFQ_TTL_S, expires, ctx.ts, rid))
+    ctx.event("RFQ_QUOTED", account_id=aid, ref_type="rfq", ref_id=rid, kind=kind, quote=words, expires_ts=expires, label=QUOTE_LABEL)
+    _job_done(ctx, RFQ_JOB, key, "DONE", f"quoted: {words}")
+    return {"status": "DONE", "key": key, "posted": False, "rfq_id": rid, "outcome": "QUOTED", "note": f"quoted: {words}"}
+
+
+# ---- the contract timeline (OMS-10: requested, quoted, accepted, booked, IM posted, each VM, resets, termination) --------------------------
+TIMELINE_ORDER = {"REQUESTED": 0, "QUOTED": 1, "ACCEPTED": 2, "BOOKED": 3, "IM": 4, "CONFIRMED": 5, "UPFRONT": 5, "FIX": 6, "VM": 7, "PAY": 7, "RESET": 7,
+                  "EXCHANGE": 7, "CREDIT_EVENT": 8, "TERMINATED": 9, "MATURED": 9, "CONFIRM_PENDING": 10}
+RESET_STEPS = {"FIX": ("FIX", "fixing"), "PAY": ("PAY", "payment"), "RESET": ("RESET", "reset"), "NOTIONAL_START": ("EXCHANGE", "start exchange"),
+               "NOTIONAL_END": ("EXCHANGE", "maturity exchange"), "FX_RESET": ("RESET", "FX notional reset")}
+
+
+#: P8R1-03: the booking and the steps that post entries (their business date is said in words when they were recorded after the 17:00 ET
+#: cut-off); a quote request, a quote and its acceptance post nothing
+TIMELINE_POSTING = ("BOOKED", "IM", "UPFRONT", "VM", "PAY", "RESET", "EXCHANGE", "CREDIT_EVENT", "TERMINATED", "MATURED")
+
+
+def contract_timeline(services, contract, conn: Optional[sqlite3.Connection] = None) -> List[dict]:
+    """The life of one OTC contract in time order (OMS-10, P4 task 8): the quote request it came from (requested, quoted, accepted), the
+    booking (an as-of booking with its trade date and entry time), the initial margin, the confirmation, the CDX upfront, every variation
+    margin, fixing, payment, reset and exchange, a simulated credit event, the termination or maturity.  Each step ``{date, business_date,
+    ts, recorded_ts, after_cutoff, step, words, amount_c, entry_id, ref, pending, asof}``; a step still to come (a pending confirmation)
+    has ``pending`` true.
+
+    P8R1-03: ``date`` and ``ts`` never make an instant that did not happen, and the rows read in order:
+    - a step recorded on its own day is shown at its New York calendar date and clock time (``date`` + ``ts``); when it posts entries whose
+      business date is the NEXT day (recorded after the 17:00 ET cut-off), ``after_cutoff`` is true and ``business_date`` names that day,
+      said in words by the page - never that business date beside a clock time of the evening before;
+    - a step recorded on a later day than the business date it belongs to (an as-of booking's lifecycle entered at the import, a variation
+      margin caught up the next morning) is shown at its business date "as of" (``asof`` true, no clock time), and ``recorded_ts`` is when
+      it was recorded; the as-of booking itself keeps its trade date (its ``ts`` is the as-of dealt instant, which orders the steps);
+    - the rows are sorted by that date, then by the time recorded, then by the step's place in the life of a contract."""
+    if conn is None:
+        with _marks.shared_reader(services.db) as c:
+            return contract_timeline(services, contract, c)
+    row = _contract_dict(services, contract, conn)
+    if row is None:
+        return []
+    cid = row["contract_id"]
+    terms = _terms(row)
+    dealer = config.PRIME_BROKERS.get(str(row.get("broker") or "").upper(), str(row.get("broker") or "the dealer"))
+    items: List[dict] = []
+
+    def add(ts, d, step, words, amount_c=None, entry_id=None, ref=None, pending=False, asof=False):
+        """``d`` = the step's business date (its entry's, its job's date; None: the accounting day of ``ts``, as ``ledger.post`` dates)."""
+        t = None if ts in (None, "") or isinstance(ts, bool) else int(ts)
+        cal = ny_of(t).date().isoformat() if t is not None else None
+        bd = d or (accounting_day(ny_of(t)).isoformat() if t is not None else None)
+        recorded = None
+        if asof:                                   # the as-of booking (and its own fixing): the trade date, "as of"
+            shown = d or cal
+        elif t is not None and bd is not None and cal is not None and bd < cal:
+            shown, asof, recorded = bd, True, t     # recorded after the business date it belongs to: "as of" that date
+        else:
+            shown = cal or bd
+        after = bool(not asof and t is not None and bd is not None and cal is not None and bd > cal and step in TIMELINE_POSTING)
+        items.append({"date": shown, "business_date": bd, "ts": t, "recorded_ts": recorded, "after_cutoff": after, "step": step, "words": words,
+                      "amount_c": amount_c, "entry_id": entry_id, "ref": ref, "pending": pending, "asof": asof})
+    if _has_table(conn, "rfqs"):
+        q = conn.execute("SELECT * FROM rfqs WHERE contract_id=? ORDER BY requested_ts LIMIT 1", (cid,)).fetchone()
+        if q is not None:
+            qd = _jloads(q["quote_json"], {}) or {}
+            add(q["requested_ts"], None, "REQUESTED", f"quote requested from {dealer} ({q['rfq_id']})", ref=q["rfq_id"])
+            if q["quoted_ts"]:
+                add(q["quoted_ts"], None, "QUOTED", f"quoted: {qd.get('words') or ''} ({QUOTE_LABEL}), valid until {_hms(q['expires_ts'])}", ref=q["rfq_id"])
+            if q["closed_ts"]:
+                add(q["closed_ts"], None, "ACCEPTED", "quote accepted by you", ref=q["rfq_id"])
+    booking = booking_of(row)
+    booked_ts = None
+    if booking in (ASOF_BOOKING, HISTORICAL_BOOKING):
+        booked_ts = terms.get("dealt_ts") or row.get("entered_ts")
+        add(booked_ts, row.get("trade_date") or terms.get("trade_date"), "BOOKED",
+            f"traded as of {row.get('trade_date') or terms.get('trade_date')} with {dealer} (value date {row.get('value_date') or row.get('start_date')}); entered"
+            f" {ny_of(int(row['entered_ts'])).strftime('%Y-%m-%d %H:%M ET') if row.get('entered_ts') else 'at an unrecorded time'} by the operator at the owner's"
+            " instruction", asof=True)            # ts = the as-of dealt instant (it orders the steps); the page shows "as of", not a clock time
+    else:
+        ev = conn.execute("SELECT ts FROM events WHERE ref_type='otc' AND ref_id=? AND type='OTC_BOOKED' ORDER BY id LIMIT 1", (cid,)).fetchone()
+        booked_ts = ev["ts"] if ev is not None else terms.get("dealt_ts")
+        add(booked_ts, None, "BOOKED", f"booked with {dealer}: {KIND_LABELS.get(row['kind'], row['kind'])}")
+    for idem, step, what, gl in ((f"im:{cid}:open", "IM", "initial margin posted", "1330"), (f"otc:{cid}:upfront", "UPFRONT", "initial payment booked", None),
+                                 (f"otc:{cid}:premium", "UPFRONT", "option premium booked", None)):
+        e = conn.execute("SELECT entry_id, ts, business_date FROM journal_entries WHERE idem_key=?", (idem,)).fetchone()
+        if e is None:
+            continue
+        amt = None
+        if gl:
+            a = conn.execute("SELECT COALESCE(SUM(amount_c), 0) FROM journal_lines WHERE entry_id=? AND gl=?", (e["entry_id"], gl)).fetchone()[0]
+            amt = int(a or 0)
+        add(e["ts"], e["business_date"], step, what + (f" {fmt_money(amt)}" if amt else ""), amount_c=amt, entry_id=e["entry_id"])
+    status = row.get("confirm_status")
+    if status == CONFIRMED:
+        add(row.get("confirmed_ts"), None if booking not in (ASOF_BOOKING, HISTORICAL_BOOKING) else (row.get("trade_date") or None), "CONFIRMED",
+            confirm_label(booking, status))
+    elif status == PENDING_CONFIRM:
+        d = confirm_date(row.get("entered_ts"), getattr(services, "cal", None))
+        add(None if d is None else epoch_of(d, CONFIRM_ET), None if d is None else d.isoformat(), "CONFIRM_PENDING", PENDING_CONFIRM_LABEL, pending=True)
+    for r in conn.execute("SELECT v.vm_date, v.mark_c, v.delta_c, v.mode, v.entry_id, j.ts FROM otc_vm v LEFT JOIN journal_entries j ON j.entry_id=v.entry_id"
+                          " WHERE v.contract_id=? ORDER BY v.vm_date", (cid,)).fetchall():
+        d = int(r["delta_c"])
+        add(r["ts"], r["vm_date"], "VM", f"variation margin {fmt_money(d)} {'received' if d > 0 else 'posted'} ({r['mode']}); mark {fmt_money(int(r['mark_c']))}",
+            amount_c=d, entry_id=r["entry_id"])
+    asof_contract = booking in (ASOF_BOOKING, HISTORICAL_BOOKING)
+    for r in conn.execute("SELECT o.event_date, o.kind, o.amount_c, o.entry_id, o.detail_json, j.ts, j.business_date FROM otc_resets o LEFT JOIN journal_entries j"
+                          " ON j.entry_id=o.entry_id WHERE o.contract_id=? ORDER BY o.event_date, o.kind", (cid,)).fetchall():
+        step, what = RESET_STEPS.get(r["kind"], ("PAY", r["kind"].lower()))
+        det = _detail(r)
+        words = what
+        ts = r["ts"]
+        at_booking = r["kind"] == "FIX" and det.get("source") == "booking"
+        if ts is None and r["kind"] == "FIX":           # a fixing posts nothing: at booking (the first period) or by SWAP_FIX (00:40 ET of its date, or later)
+            if at_booking:
+                ts = booked_ts
+            else:
+                jd = conn.execute("SELECT run_ts FROM jobs_done WHERE job=? AND key=?", (JOB_FIX, f"{cid}:{r['event_date']}")).fetchone()
+                ts = jd["run_ts"] if jd is not None and jd["run_ts"] else epoch_of(_date(r["event_date"]), FIX_ET)
+        if r["kind"] == "FIX":
+            words = f"SOFR fixing {det.get('rate_pct') or det.get('rate')} for {det.get('period_start')}..{det.get('period_end')}"
+        elif r["kind"] in ("PAY", "RESET", "FX_RESET") and int(r["amount_c"] or 0):
+            words = f"{what}: net {fmt_money(int(r['amount_c']))}" + (" (CDX coupon)" if det.get("kind") == "CDX coupon" else "")
+        add(ts, r["business_date"] or r["event_date"], step, words, amount_c=int(r["amount_c"] or 0) if r["kind"] != "FIX" else None, entry_id=r["entry_id"],
+            asof=at_booking and asof_contract)
+    for e in conn.execute("SELECT ts, type, payload_json FROM events WHERE ref_type='otc' AND ref_id=? AND type IN ('CDX_CREDIT_EVENT','OTC_TERMINATED',"
+                          "'SWAP_MATURED','OTC_EXPIRED') ORDER BY id", (cid,)).fetchall():
+        p = _jloads(e["payload_json"], {}) or {}
+        if e["type"] == "CDX_CREDIT_EVENT":
+            ce = conn.execute("SELECT business_date FROM journal_entries WHERE entry_id=?", (p.get("entry_id"),)).fetchone() if p.get("entry_id") else None
+            add(e["ts"], ce["business_date"] if ce is not None else None, "CREDIT_EVENT",
+                f"simulated credit event of {p.get('event_date')}: {p.get('reference_entity')} at {p.get('recovery_pct')} % recovery - net"
+                f" {fmt_money(int(p.get('net_c') or 0))} settling {p.get('settle_date')}; notional {fmt_money(int(p.get('notional_after_c') or 0))}",
+                amount_c=p.get("net_c"), entry_id=p.get("entry_id"))
+        elif e["type"] == "OTC_TERMINATED":
+            add(e["ts"], None, "TERMINATED", f"terminated at the model value {fmt_money(int(p.get('termination_value_c') or 0))}",
+                amount_c=p.get("termination_value_c"))
+        else:
+            add(e["ts"], p.get("date"), "MATURED", "matured: VM unwound, IM released")
+    items.sort(key=lambda x: (x["date"] or "9999-99-99", x["ts"] if x["ts"] is not None else 10 ** 11, TIMELINE_ORDER.get(x["step"], 6)))
+    return items
+
+
+# ---- the Derivatives page (UI-11, P4 task 10): OTC contracts, listed options, futures, servicing --------------------------------------------
+DERIV_TABS = ("otc", "options", "futures", "servicing")
+#: P4 task 10: the delivery rule of each futures root - "fnd" = physical delivery with a first notice day on the last business day of the
+#: month before the delivery month (COMEX metals, CBOT rates and grains); "last_trade" = physical delivery at the last trading day (NYMEX
+#: energy, CME FX); "cash" = cash-settled at expiry.  CME / COMEX / CBOT / NYMEX contract specifications, summarised (approximate dates)
+FUT_DELIVERY = {"GC": "fnd", "SI": "fnd", "HG": "fnd", "ZB": "fnd", "ZN": "fnd", "ZF": "fnd", "ZT": "fnd", "ZC": "fnd", "ZW": "fnd", "ZS": "fnd",
+                "CL": "last_trade", "NG": "last_trade", "6E": "last_trade", "6J": "last_trade", "6B": "last_trade",
+                "ES": "cash", "NQ": "cash", "YM": "cash", "RTY": "cash", "BZ": "cash"}
+
+
+def first_notice(cal, root: str, delivery_month: Optional[date], last_trade: Optional[date]) -> dict:
+    """``{rule, first_notice, act_by, words}`` of a futures contract (P4 task 10): physical delivery with a first notice day on the last business
+    day of the month before the delivery month (roll or close by the business day before it), physical delivery at the last trading day, or
+    cash settlement - dates approximate, on the terminal's NYSE calendar."""
+    rule = FUT_DELIVERY.get(str(root or "").upper(), "cash")
+    if rule == "fnd" and delivery_month is not None and cal is not None:
+        fnd = cal.roll_back(delivery_month - timedelta(days=1))
+        act = cal.roll_back(fnd - timedelta(days=1))
+        return {"rule": "physical", "first_notice": fnd.isoformat(), "act_by": act.isoformat(),
+                "words": (f"physically delivered: first notice about {fnd.isoformat()} (the last business day before the delivery month); roll or close before"
+                          f" about {act.isoformat()} to avoid delivery")}
+    if rule == "last_trade":
+        lt = None if last_trade is None else last_trade.isoformat()
+        return {"rule": "physical", "first_notice": None, "act_by": lt,
+                "words": f"physically delivered: positions still open at the last trading day ({lt or 'see the contract'}) go to delivery - roll or close before it"}
+    lt = None if last_trade is None else last_trade.isoformat()
+    return {"rule": "cash", "first_notice": None, "act_by": None, "words": f"cash-settled at expiry ({lt or 'see the contract'})"}
+
+
+def _deriv_otc(services, lifetime_id: str) -> dict:
+    scope = f"{lifetime_id}:ALL"
+    rows = contracts_view(services, scope=scope)
+    for c in rows:
+        c.pop("inputs", None)                            # the page reads the mark and position fields; the raw inputs stay on the OTC tab
+    credit = {}
+    cds = getattr(services, "swaps_cds", None)
+    fn = getattr(cds, "credit_events_of", None) if cds is not None else None
+    if callable(fn):
+        try:
+            credit = fn(services, [c["contract_id"] for c in rows if c.get("kind") == "CDX"]) or {}
+        except Exception as e:   # noqa: BLE001 - shown unavailable, never a failed page
+            credit = {"error": f"{type(e).__name__}: {e}"}
+    open_rfqs = rfq_rows(services, scope)
+    recent = [r for r in rfq_rows(services, scope, status="all", limit=20) if r["status"] not in RFQ_OPEN]
+    return {"tab": "otc", "lifetime_id": lifetime_id, "contracts": rows, "rfqs": open_rfqs, "recent_rfqs": recent, "credit_events": credit,
+            "credit_event_offered": callable(getattr(cds, "h_credit_event", None)) if cds is not None else False,
+            "note": "OTC values are MODEL numbers from observed inputs, never dealer-confirmed prices; dealing stays on the prime broker's OTC tab"}
+
+
+def _deriv_options(services, lifetime_id: str) -> dict:
+    rk = getattr(services, "risk", None)
+    fn = getattr(rk, "report", None) if rk is not None else None
+    if not callable(fn):
+        return {"tab": "options", "available": False, "reason": "the risk module is not bound in this build: option greeks are unavailable", "rows": [],
+                "strategies": []}
+    view = fn(services, f"{lifetime_id}:ALL")
+    opts = [p for p in (getattr(view, "positions", []) or []) if getattr(p, "kind", None) == "OPTION"]
+    rows = []
+    strategies = []
+    master = getattr(services, "instruments", None)
+    with _marks.shared_reader(services.db) as conn:
+        names = {r["account_id"]: r["name"] for r in conn.execute("SELECT account_id, name FROM accounts WHERE lifetime_id=?", (lifetime_id,)).fetchall()}
+        for p in opts:
+            d = p.to_dict() if hasattr(p, "to_dict") else {}
+            g = getattr(p, "greeks", None) or {}
+            inst = master.get(p.instrument_id, conn) if master is not None else None
+            rows.append({"account_id": p.account_id, "instrument_id": p.instrument_id, "symbol": p.symbol, "name": p.name, "qty": p.qty, "mark": d.get("mark"),
+                         "mv_c": p.mv_base_c if p.mv_base_c is not None else p.mv_c, "quality": p.quality, "underlying_id": p.underlying_id,
+                         "underlying_mark": d.get("underlying_mark"), "right": p.right or (inst.right if inst is not None else None),
+                         "style": p.style or (inst.style if inst is not None else None), "multiplier": d.get("multiplier"),
+                         "strike": None if inst is None or inst.strike is None else str(inst.strike), "expiry": None if inst is None else inst.expiry,
+                         "greeks": {k: (None if v is None else str(v)) for k, v in g.items()} if g else None, "greeks_source": p.greeks_source,
+                         "greeks_note": p.greeks_note, "delta_c": p.delta_c, "label": p.label or p.name})
+        held = {(r["account_id"], r["instrument_id"]) for r in rows}
+        accts = sorted({r["account_id"] for r in rows})
+        if accts:
+            q = ",".join("?" for _ in accts)
+            for pk in conn.execute(f"SELECT package_id, account_id, strategy_key, candidate_id, legs_json, status FROM hedge_packages WHERE account_id IN ({q})"
+                                   " ORDER BY created_ts", tuple(accts)).fetchall():
+                legs = _jloads(pk["legs_json"], []) or []
+                ids = [str(x.get("instrument_id") or "") for x in legs if isinstance(x, dict)]
+                if len(ids) < 2 or not all((pk["account_id"], i) in held for i in ids):
+                    continue                        # a strategy is grouped while every one of its option legs is still held
+                strategies.append({"package_id": pk["package_id"], "account_id": pk["account_id"], "strategy": pk["strategy_key"] or pk["candidate_id"],
+                                   "strategy_words": str(pk["strategy_key"] or pk["candidate_id"] or "").replace("_", " ").lower(),
+                                   "legs": [{"instrument_id": str(x.get("instrument_id")), "side": x.get("side"), "qty": x.get("qty"), "price": x.get("price")}
+                                            for x in legs if isinstance(x, dict)]})
+    for r in rows:
+        r["account_name"] = names.get(r["account_id"], r["account_id"])
+        r["strategy"] = next((s["strategy_words"] for s in strategies if s["account_id"] == r["account_id"] and r["instrument_id"] in
+                              [l["instrument_id"] for l in s["legs"]]), None)
+    rows.sort(key=lambda r: (r.get("expiry") or "", r["underlying_id"] or "", r["instrument_id"]))
+    return {"tab": "options", "available": True, "rows": rows, "strategies": strategies, "as_of": getattr(view, "as_of", None),
+            "greeks_total": getattr(view, "greeks", None), "note": "greeks per contract (Cboe where published, else the model on the mark's inputs); position"
+                                                                   " greeks = per contract x contracts x multiplier"}
+
+
+def _deriv_futures(services, lifetime_id: str) -> dict:
+    acc = getattr(services, "accounting", None)
+    if acc is None or not hasattr(acc, "positions"):
+        return {"tab": "futures", "available": False, "reason": "the accounting service is not bound", "rows": []}
+    scope = f"{lifetime_id}:ALL"
+    snap_fn = getattr(getattr(services, "marks", None), "snapshot", None)
+    snap = snap_fn() if callable(snap_fn) else None
+    positions = [p for p in acc.positions(scope, snapshot=snap) if getattr(p, "kind", None) == "FUTURE"]
+    rows = []
+    cal = getattr(services, "cal", None)
+    with _marks.shared_reader(services.db) as conn:
+        names = {r["account_id"]: r["name"] for r in conn.execute("SELECT account_id, name FROM accounts WHERE lifetime_id=?", (lifetime_id,)).fetchall()}
+        for p in positions:
+            inst = services.instruments.get(p.instrument_id, conn) if getattr(services, "instruments", None) is not None else None
+            spec = dict(getattr(inst, "spec", None) or {}) if inst is not None else {}
+            mult = Decimal(str(getattr(inst, "multiplier", None) or "1")) if inst is not None else Decimal(1)
+            last_trade = _date(inst.expiry) if inst is not None and getattr(inst, "expiry", None) else None
+            month = None
+            try:
+                month = date(int(spec.get("year")), int(spec.get("month")), 1)
+            except (TypeError, ValueError):
+                month = None
+            im_c = balance(conn, p.account_id, "1300", p.currency, p.instrument_id)
+            vms = conn.execute("SELECT settle_date, settle_px, vm_c FROM futures_settle WHERE account_id=? AND instrument_id=? ORDER BY settle_date DESC LIMIT 6",
+                               (p.account_id, p.instrument_id)).fetchall()
+            last = vms[0] if vms else None
+            mark = p.mark.mark if getattr(p, "mark", None) is not None else None
+            ote = None
+            if mark is not None and p.avg_px is not None:
+                ote = to_c((Decimal(str(mark)) - Decimal(str(p.avg_px))) * Decimal(int(p.qty)) * mult)
+            since = None
+            if mark is not None and last is not None:
+                since = to_c((Decimal(str(mark)) - Decimal(str(last["settle_px"]))) * Decimal(int(p.qty)) * mult)
+            fn_ = first_notice(cal, spec.get("root") or (p.symbol or "")[:2], month, last_trade)
+            rows.append({"account_id": p.account_id, "account_name": names.get(p.account_id, p.account_id), "instrument_id": p.instrument_id, "symbol": p.symbol,
+                         "name": p.name, "root": spec.get("root"), "qty": int(p.qty), "multiplier": str(mult), "avg_px": None if p.avg_px is None else str(p.avg_px),
+                         "mark": None if mark is None else str(mark), "quality": getattr(p.mark, "quality", None), "im_c": im_c,
+                         "last_settle": None if last is None else {"date": last["settle_date"], "price": last["settle_px"], "vm_c": int(last["vm_c"] or 0)},
+                         "vm_recent": [{"date": r["settle_date"], "price": r["settle_px"], "vm_c": int(r["vm_c"] or 0)} for r in vms],
+                         "ote_c": ote, "move_since_settle_c": since, "last_trade": None if last_trade is None else last_trade.isoformat(), "delivery": fn_})
+    rows.sort(key=lambda r: (r["last_trade"] or "", r["instrument_id"]))
+    return {"tab": "futures", "available": True, "rows": rows,
+            "note": ("IM = the initial margin posted (GL 1300); daily VM = each settle's variation margin in cash; open trade equity = (mark - average entry) x"
+                     " contracts x multiplier; first notice dates are approximate (exchange rule summarised on the NYSE calendar)")}
+
+
+def _deriv_servicing(services, lifetime_id: str) -> dict:
+    today = ny_of(int(services.clock.epoch())).date()
+    items: List[dict] = []
+    with _marks.shared_reader(services.db) as conn:
+        names = {r["account_id"]: r["name"] for r in conn.execute("SELECT account_id, name FROM accounts WHERE lifetime_id=?", (lifetime_id,)).fetchall()}
+        crows = conn.execute("SELECT * FROM otc_contracts WHERE account_id LIKE ? AND status='OPEN' ORDER BY contract_id", (f"{lifetime_id}:%",)).fetchall()
+        for r in crows:
+            rd = {k: r[k] for k in r.keys()}
+            try:
+                evs = next_events(services, rd, conn, limit=4)
+            except (ConflictError, RejectError) as e:
+                evs = [{"date": None, "event": "UNAVAILABLE", "detail": e.message}]
+            label, side, _u, _n = rfq_describe(rd["kind"], _terms(rd))
+            for e in evs:
+                legs = e.get("legs") or []
+                amt = None
+                if legs and all(l.get("amount_c") is not None for l in legs):
+                    amt = sum(int(l["amount_c"]) * (1 if l.get("side") == "receive" else -1) for l in legs)
+                items.append({"date": e.get("date"), "event": e.get("event"), "kind": "OTC", "contract_id": rd["contract_id"], "account_id": rd["account_id"],
+                              "account_name": names.get(rd["account_id"], rd["account_id"]), "what": f"{rd['contract_id']} {label} ({side.lower()})",
+                              "detail": e.get("detail") or ", ".join(f"{l.get('side')} {l.get('leg')} {fmt_money(int(l['amount_c'])) if l.get('amount_c') is not None else 'not known yet'}"
+                                                                      for l in legs), "amount_c": amt})
+        for r in conn.execute("SELECT l.account_id, l.instrument_id, SUM(l.qty_remaining) AS q, i.kind, i.expiry, i.symbol, i.spec_json FROM lots l JOIN"
+                              " instruments i ON i.instrument_id=l.instrument_id JOIN accounts a ON a.account_id=l.account_id WHERE a.lifetime_id=?"
+                              " AND l.qty_remaining<>0 AND i.kind IN ('OPTION','FUTURE') GROUP BY l.account_id, l.instrument_id", (lifetime_id,)).fetchall():
+            if not r["expiry"]:
+                continue
+            spec = _jloads(r["spec_json"], {}) or {}
+            if r["kind"] == "OPTION":
+                items.append({"date": r["expiry"], "event": "EXPIRY", "kind": "Option", "instrument_id": r["instrument_id"], "account_id": r["account_id"],
+                              "account_name": names.get(r["account_id"], r["account_id"]), "what": f"{r['symbol']} x {int(r['q'])}",
+                              "detail": "listed option expiry: in-the-money contracts are exercised / assigned, the rest expire worthless", "amount_c": None})
+            else:
+                try:
+                    month = date(int(spec.get("year")), int(spec.get("month")), 1)
+                except (TypeError, ValueError):
+                    month = None
+                fn_ = first_notice(getattr(services, "cal", None), spec.get("root"), month, _date(r["expiry"]))
+                if fn_.get("first_notice"):
+                    items.append({"date": fn_["act_by"], "event": "ROLL_BY", "kind": "Future", "instrument_id": r["instrument_id"], "account_id": r["account_id"],
+                                  "account_name": names.get(r["account_id"], r["account_id"]), "what": f"{r['symbol']} x {int(r['q'])}", "detail": fn_["words"],
+                                  "amount_c": None})
+                items.append({"date": r["expiry"], "event": "LAST_TRADE", "kind": "Future", "instrument_id": r["instrument_id"], "account_id": r["account_id"],
+                              "account_name": names.get(r["account_id"], r["account_id"]), "what": f"{r['symbol']} x {int(r['q'])}",
+                              "detail": "last trading day" + (f"; {fn_['words']}" if fn_.get("rule") == "cash" else ""), "amount_c": None})
+    items = [x for x in items if x.get("date") is None or x["date"] >= today.isoformat()]
+    items.sort(key=lambda x: (x.get("date") or "9999-99-99", x.get("kind") or "", x.get("what") or ""))
+    return {"tab": "servicing", "available": True, "rows": items, "as_of": today.isoformat(),
+            "note": "upcoming resets, payments, coupons, maturities, option expiries and futures delivery dates; amounts not known yet show as such"}
+
+
+def derivatives_view(services, lifetime_id: str, tab: str = "otc") -> dict:
+    """``GET /api/derivatives?tab=&book=`` (UI-11, P4 task 10): one tab of the Derivatives page - ``otc`` (the book's OTC contracts with open
+    quote requests on top and CDX credit events), ``options`` (listed options with greeks, strategies grouped), ``futures`` (IM, daily VM,
+    open trade equity, delivery dates), ``servicing`` (what is coming: resets, payments, coupons, expiries, first notice)."""
+    t = str(tab or "otc").lower()
+    if t not in DERIV_TABS:
+        raise RejectError("TAB", f"tab must be one of {', '.join(DERIV_TABS)}", {"tab": t})
+    fn = {"otc": _deriv_otc, "options": _deriv_options, "futures": _deriv_futures, "servicing": _deriv_servicing}[t]
+    out = fn(services, lifetime_id)
+    out.setdefault("available", True)
+    out["generated_ts"] = int(services.clock.epoch())
+    return out
+
+
+# ---- routes (C1: a bound product module adds its routes ahead of api_products) -------------------------------------------------------------
+_PREVIEW_REFUSALS = (400, 409)
+
+
+def _refused_preview(kind: str, account_id: str, e: RejectError) -> dict:
+    """V104R2-BW-05: a correctly refused OTC preview (no curve, no proxy, an unknown underlying, a rate better than the quote ...) answers 200
+    with the reason as a blocker, as the bond / FX / order tickets do - no 4xx (and no console error) for a refusal the trader must read."""
+    return {"refused": True, "bookable": False, "kind": kind, "account_id": account_id, "code": e.code, "message": e.message, "details": e.details or {},
+            "blockers": [{"code": e.code, "message": e.message, "details": e.details or {}}]}
+
+
+def register_routes(router) -> None:
+    """C1 / C14 / UI-11: ``POST /api/otc/preview`` (takes over api_products' route: a refusal answers 200 with its blocker, V104R2-BW-05),
+    ``GET|POST /api/otc/rfqs``, ``GET /api/otc/rfqs/{id}``, ``POST /api/otc/rfqs/{id}/accept|decline``, ``GET /api/otc/contracts/{id}/timeline``
+    and ``GET /api/derivatives?tab=&book=``."""
+    from ..api import ApiError, NotFound as _ApiNotFound, need, run_command
+
+    def otc_preview(req):
+        sw = need(req.rt, "swaps")
+        kind = str(req.b("kind") or "").upper()
+        allowed = ("IRS", "TRS", "XCCY", "CDX") + (OTC_OPTION_KINDS if getattr(req.rt, "otc_options", None) is not None else ())
+        if kind not in allowed:
+            raise ApiError(400, "NOT_IN_THIS_BUILD" if kind else "BAD_REQUEST", f"OTC kind {kind!r}: the prime brokers here deal {', '.join(allowed)}")
+        aid = str(req.b("account_id") or "")
+        with _marks.shared_reader(req.rt.db) as conn:
+            if account_row(conn, aid) is None:
+                raise _ApiNotFound(f"account {aid} does not exist")
+        try:
+            return sw.preview(req.rt, aid, kind, dict(req.b("terms") or {}))
+        except NotBuilt:
+            raise
+        except NotFound:
+            raise
+        except RejectError as e:
+            retry = (e.details or {}).get("retry_ms")
+            if retry:                     # V104R1-06: an input being fetched for this preview: 202 + retry_ms, the ticket asks again by itself
+                return 202, dict(e.details or {}, status="fetching", pending=True, code=e.code, message=e.message, retry_ms=int(retry)), {}
+            if e.http in _PREVIEW_REFUSALS:
+                return _refused_preview(kind, aid, e)
+            raise
+
+    def rfqs_list(req):
+        need(req.rt, "swaps")
+        aid = req.q("account_id")
+        scope = None if aid else req.scope()
+        return rfq_rows(req.rt, scope=scope, status=req.q("status") or "open", account_id=aid, limit=req.q_int("limit", 200, 1, 1000))
+
+    def rfqs_request(req):
+        payload = {k: v for k, v in (req.body or {}).items() if k != "request_id"}
+        return run_command(req, "otc.rfq.request", payload)
+
+    def rfq_one(req):
+        need(req.rt, "swaps")
+        out = rfq_detail(req.rt, req.params[0])
+        if out is None:
+            raise _ApiNotFound(f"quote request {req.params[0]} does not exist")
+        return out
+
+    def rfq_accept(req):
+        return run_command(req, "otc.rfq.accept", {"rfq_id": req.params[0]})
+
+    def rfq_decline(req):
+        return run_command(req, "otc.rfq.decline", {"rfq_id": req.params[0]})
+
+    def timeline(req):
+        need(req.rt, "swaps")
+        with _marks.shared_reader(req.rt.db) as conn:
+            if _contract_row(conn, req.params[0]) is None:
+                raise _ApiNotFound(f"contract {req.params[0]} does not exist")
+            return {"contract_id": req.params[0], "timeline": contract_timeline(req.rt, req.params[0], conn)}
+
+    def derivatives(req):
+        need(req.rt, "swaps")
+        try:
+            return derivatives_view(req.rt, req.lifetime(), req.q("tab") or "otc")
+        except RejectError as e:
+            raise ApiError(400, e.code, e.message, e.details)
+
+    router.add("POST", r"/api/otc/preview", otc_preview, mutating=False)
+    router.add("GET", r"/api/otc/rfqs", rfqs_list)
+    router.add("POST", r"/api/otc/rfqs", rfqs_request)
+    router.add("GET", r"/api/otc/rfqs/([^/]+)", rfq_one)
+    router.add("POST", r"/api/otc/rfqs/([^/]+)/accept", rfq_accept)
+    router.add("POST", r"/api/otc/rfqs/([^/]+)/decline", rfq_decline)
+    router.add("GET", r"/api/otc/contracts/([^/]+)/timeline", timeline)
+    router.add("GET", r"/api/derivatives", derivatives)
+
+
+def _rfq_args(conn, clock, cal, sessions, s):
+    return (conn, clock.epoch())
+
+
+def _confirm_args(conn, clock, cal, sessions, s):
+    return (conn, clock.epoch(), cal)
+
+
+def add_jobs() -> None:
+    """C14: the RFQ_DEALER job (every tick; no matcher) and the OTC_CONFIRM job (17:05 ET) join the lifecycle registry through the existing
+    ``lifecycle_eod.add_product_job`` hook (idempotent by name).  Both are quiet when idle."""
+    from ..lifecycle_eod import ProductJob, add_product_job
+    add_product_job(ProductJob(RFQ_JOB, "otc.rfq.dealer", "swaps", "rfq_keys", ("rfq_id", "action"),
+                               "every lifecycle tick (about 30 s): quotes REQUESTED quote requests, expires QUOTED ones past their 120 s validity", _rfq_args))
+    add_product_job(ProductJob(CONFIRM_JOB, "otc.confirm", "swaps", "confirm_keys", ("contract_id", "date"),
+                               "17:05 ET of a new contract's business day: the simulated confirmation", _confirm_args))
+
+
 # ---- registry ---------------------------------------------------------------------------------------------------------------------
 def register(bus, services=None) -> None:
     """Register ``otc.book`` / ``otc.terminate`` (ui) and ``swap.vm`` / ``swap.fix`` / ``swap.pay`` (lifecycle); the runtime
@@ -2762,9 +3851,17 @@ def register(bus, services=None) -> None:
     bus.register("swap.vm", h_vm)
     bus.register("swap.fix", h_fix)
     bus.register("swap.pay", h_pay)
+    bus.register("otc.rfq.request", h_rfq_request)                 # C14 (P4 task 8): quote request, the dealer's quote, accept / decline
+    bus.register("otc.rfq.accept", h_rfq_accept)
+    bus.register("otc.rfq.decline", h_rfq_decline)
+    bus.register("otc.rfq.dealer", h_rfq_dealer)
+    bus.register("otc.confirm", h_confirm)
 
 
-__all__ = ["h_book_as_of", "parse_as_of", "asof_terms_mismatch", "asof_context", "fund_csa", "lifecycle_business_date", "dated_curve", "curve_spread",
+__all__ = ["rfq_rows", "rfq_view", "rfq_detail", "rfq_keys", "rfq_describe", "h_rfq_request", "h_rfq_accept", "h_rfq_decline", "h_rfq_dealer",
+           "confirm_keys", "confirm_date", "h_confirm", "confirm_label", "mark_new_contract", "contract_timeline", "derivatives_view", "first_notice",
+           "preview_blocker", "register_routes", "add_jobs", "RFQ_SCHEMA", "RFQ_TTL_S", "QUOTE_LABEL", "PENDING_CONFIRM", "SIM_CONFIRM_LABEL",
+           "h_book_as_of", "parse_as_of", "asof_terms_mismatch", "asof_context", "fund_csa", "lifecycle_business_date", "dated_curve", "curve_spread",
            "curve_spread_text", "source_of", "MARK_INTRADAY", "MARK_LAST_VM", "ASOF_CONFIRM_LABEL", "bind", "ensure_schema", "has_columns", "position_fields", "C10_SCHEMA", "C10_COLUMNS", "preview", "mark", "dv01_c", "accrual_lines_swap", "accrue_night", "accrue_leg", "contract_view", "ContractView", "contracts_view", "next_events",
            "vm_keys", "fix_keys", "pay_keys", "register", "parse_irs_terms", "IrsTerms", "Deal", "LegSpec", "irs_leg_specs", "leg_specs", "leg_coupon_c",
            "close_contract", "NotBuilt", "period_schedule", "effective_date", "modified_following", "add_months", "days_30360", "coupon_c", "compound_step",

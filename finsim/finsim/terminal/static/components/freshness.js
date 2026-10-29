@@ -28,7 +28,7 @@
   var RULES = {
     live: 'a real-time print (reserved; no provider in this build produces it)',
     delayed: 'within the provider\'s stated delay during an open session',
-    close: 'session closed - the last valid mark with its time; executions are blocked by the session, valuation is fine',
+    close: 'session closed - the last valid mark with its time (CLOSE at or after the session end; LAST for an earlier print); executions are blocked by the session, valuation is fine',
     computed: 'a model from observed inputs (listed) - never executable',
     private: 'the last reported round - valuation only; never aged into stale, never executable',
     stale: 'older than its stated delay + 5 min, or nothing fetched for 5 min, or a failing provider - executions blocked; valuation keeps this mark',
@@ -68,6 +68,13 @@
     if (!unit || scale == null || !isFinite(Number(scale)) || Number(scale) === 1) { return null; }
     return { unit: String(unit), scale: Number(scale), ccy: opts.ccy || (rec && rec.currency) || '' };
   }
+  /* V104R2-OTC-02: a print inside its provider's session window [start, end) and before its end is a last trade, not the closing print */
+  function beforeSessionEnd(rec, qt) {
+    var ps = rec && rec.provider_session;
+    if (!qt || !ps || ps.length !== 2) { return false; }
+    var a = epoch(ps[0]), b = epoch(ps[1]);
+    return a != null && b != null && qt >= a && qt < b;
+  }
   /* normalise any shape into {value, quality, label, title, cls} */
   T.freshness = function (rec, opts) {
     opts = opts || {};
@@ -82,7 +89,7 @@
     switch (q) {
       case 'live': label = 'LIVE ' + T.fmt.time(qt); break;
       case 'delayed': label = delayShort(rec) + (qt ? ' . ' + T.fmt.time(qt) : ''); break;
-      case 'close': label = 'CLOSE ' + (qt ? T.fmt.hm(qt) : ''); break;
+      case 'close': label = (beforeSessionEnd(rec, qt) ? 'LAST ' : 'CLOSE ') + (qt ? T.fmt.hm(qt) : ''); break;
       case 'computed': label = 'MODEL' + (qt ? ' ' + T.fmt.hm(qt) : ''); break;
       case 'private': label = 'LAST ROUND ' + roundDate(rec); break;
       case 'stale': label = 'STALE ' + (age != null ? T.fmt.age(age) : ''); break;
@@ -100,6 +107,7 @@
       if (rec.error) { lines.push('provider error: ' + rec.error); }
     }
     lines.push('rule: ' + (RULES[q] || RULES.unknown));
+    if (q === 'close' && beforeSessionEnd(rec, qt)) { lines.push('the last print before the session ended at ' + T.fmt.hm(epoch(rec.provider_session[1])) + ' ET - not the official close'); }
     var basis = opts.basis || (rec && rec.price_basis);
     if (basis) { lines.push('basis: ' + basis); }
     if (rec && rec.inputs && typeof rec.inputs === 'object') {

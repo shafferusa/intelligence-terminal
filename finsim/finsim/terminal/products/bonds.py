@@ -1023,8 +1023,9 @@ def check_trade(services, payload: dict, conn, now_ts: int, snapshot, collect: b
         if pos < face:
             block("OVERSELL", f"SELL {face:,} {inst.symbol} but the position is {max(pos, 0):,} face", 400, position=pos, qty=face)
         elif pledged and pos - pledged < face:
-            block("PLEDGED_IN_REPO", f"SELL {face:,} {inst.symbol}: {pledged:,} face is pledged in an open repo and only {max(pos - pledged, 0):,} is free"
-                  " - release the repo first", 409, position=pos, pledged=pledged, qty=face)
+            # FINSIM1 P6-R1: repo.pledged_face also counts the CSA pledges of collateral.pledge (1.0.6), so the words name both
+            block("PLEDGED_IN_REPO", f"SELL {face:,} {inst.symbol}: {pledged:,} face is pledged (an open repo or a CSA pledge to the prime broker) and only"
+                  f" {max(pos - pledged, 0):,} is free - close the repo or release the pledge (Cash & Collateral) first", 409, position=pos, pledged=pledged, qty=face)
         first = conn.execute("SELECT MIN(trade_date) d FROM fills WHERE account_id=? AND instrument_id=?", (account_id, iid)).fetchone()
         if first is not None and first["d"]:
             for c in coupon_dates(terms, date.fromisoformat(first["d"]), tdate):

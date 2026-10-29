@@ -89,6 +89,67 @@ def otc_cost_c(gl: Dict[str, Tuple[int, int]], base: bool = False) -> int:
 CLASS_OF_KIND = {"EQUITY": "securities", "ETF": "securities", "ADR": "securities", "REIT": "securities", "PREFERRED": "securities", "BOND": "securities",
                  "OPTION": "listed options", "FUTURE": "futures", "FX": "FX", "PRIVATE": "private / illiquid", "SWAP": "OTC derivatives",
                  "PRIVATE_LOAN": "private credit"}
+#: PORTFOLIO-04: the finer asset class of a position row (the class above is the grouping the Portfolio has always used)
+ASSET_CLASS_OF_KIND = {"EQUITY": "Equity", "ADR": "Equity", "REIT": "Equity", "PREFERRED": "Equity", "ETF": "ETF", "BOND": "Bond", "OPTION": "Option",
+                       "FUTURE": "Future", "FX": "FX", "FX_FORWARD": "FX forward", "PRIVATE": "Private equity", "PRIVATE_LOAN": "Private credit"}
+OTC_ASSET_CLASS = {"TRS": "OTC TRS", "IRS": "OTC IRS", "CDX": "OTC CDX", "XCCY": "OTC cross-currency swap", "EQ_OPTION": "OTC option", "FX_OPTION": "OTC option",
+                   "EQ_FORWARD": "OTC forward", "FX_FORWARD": "OTC forward"}
+#: PORTFOLIO-04: who stands on the other side of a listed position (simulated executions; the clearing house is named, never a real fill)
+CLEARING_OF_KIND = {"OPTION": "exchange-cleared (OCC)", "FUTURE": "exchange-cleared (CME)", "EQUITY": "exchange-cleared (NSCC)", "ADR": "exchange-cleared (NSCC)",
+                    "REIT": "exchange-cleared (NSCC)", "PREFERRED": "exchange-cleared (NSCC)", "ETF": "exchange-cleared (NSCC)", "BOND": "dealer market (simulated dealer)",
+                    "PRIVATE": "negotiated private transaction", "FX": "FX dealer (simulated)", "FX_FORWARD": "FX dealer (simulated)"}
+SECTORS_TABLE = "instrument_sectors"
+UNCLASSIFIED = "unclassified"
+
+
+def asset_class_of(kind: Optional[str], extra: Optional[dict] = None) -> str:
+    """PORTFOLIO-04: Equity / ETF / Bond / Option / Future / FX / FX forward / OTC TRS / OTC IRS / OTC CDX / OTC option / OTC forward /
+    Private equity / Private credit."""
+    k = str(kind or "")
+    if k == "SWAP":
+        return OTC_ASSET_CLASS.get(str((extra or {}).get("kind") or ""), "OTC")
+    return ASSET_CLASS_OF_KIND.get(k, k.replace("_", " ").title() if k else "Other")
+
+
+def counterparty_of(kind: Optional[str], acct: Optional[dict], extra: Optional[dict] = None, borrow: Optional[dict] = None, qty: int = 0) -> str:
+    """PORTFOLIO-04: the counterparty of a position row - a short's stock-borrow lender (worded through ``lender_label``: "street lender
+    (assumed terms)"), an OTC contract's dealer (the prime broker, bilateral under the ISDA / CSA), a private loan's borrower, else the
+    clearing of a listed instrument ("exchange-cleared (OCC)" for options, "(CME)" for futures, "(NSCC)" for stocks and ETFs)."""
+    k = str(kind or "")
+    ex = extra or {}
+    if borrow and borrow.get("lender") and qty < 0:
+        return lender_label(borrow.get("lender"))
+    if k == "SWAP":
+        broker = str(ex.get("broker") or (acct or {}).get("broker") or "")
+        name = config.PRIME_BROKERS.get(broker, broker) if broker else ((acct or {}).get("name") or "dealer")
+        return f"{name} (bilateral OTC, ISDA / CSA)"
+    if k == "PRIVATE_LOAN":
+        return str(ex.get("borrower") or "private borrower")
+    if ex.get("desk_forward"):
+        return "FX dealer (simulated)"
+    return CLEARING_OF_KIND.get(k, "exchange-cleared")
+
+
+def owner_sectors(conn: sqlite3.Connection) -> Dict[str, str]:
+    """PORTFOLIO-19: the owner's sector classifications (``instrument.classify``; table made by ``risk.bind``); {} without the table."""
+    try:
+        return {r[0]: r[1] for r in conn.execute(f"SELECT instrument_id, sector FROM {SECTORS_TABLE}").fetchall() if r[1]}
+    except sqlite3.Error:
+        return {}
+
+
+def sector_of(inst, owner: Optional[Dict[str, str]] = None) -> Tuple[Optional[str], Optional[str]]:
+    """``(sector, source)`` of an instrument: the owner's classification ("owner"), else the instrument master's (``spec.sector``,
+    "master"), else ``(None, None)`` - shown as "unclassified"."""
+    if inst is None:
+        return None, None
+    iid = getattr(inst, "instrument_id", None)
+    if owner and iid in owner:
+        return owner[iid], "owner"
+    sec = (getattr(inst, "spec", None) or {}).get("sector")
+    return (str(sec), "master") if sec else (None, None)
+
+
 BUY_SIDES = ("BUY", "BUY_TO_COVER", "BTO", "BTC")
 WORKING = ("WORKING", "PARTIAL", "WAITING_PARENT")
 PERIODS = ("TODAY", "MTD", "YTD", "ITD")
@@ -260,6 +321,46 @@ class PositionView:
     borrow: Optional[dict]
     lots: List[LotView] = field(default_factory=list)
     extra: dict = field(default_factory=dict)
+    asset_class: str = ""                 # PORTFOLIO-04: Equity / ETF / Bond / Option / Future / FX / OTC TRS / IRS / CDX / option / forward ...
+    counterparty: Optional[str] = None    # PORTFOLIO-04: a short's borrow lender (worded), an OTC contract's dealer, a listed name's clearing
+    total_pnl_c: Optional[int] = None     # PORTFOLIO-04: unrealised + realised + income + financing + fees to date (base; None while unpriced)
+    sector: Optional[str] = None          # PORTFOLIO-19: the owner's classification, else the instrument master's; None = unclassified
+    sector_source: Optional[str] = None   # "owner" | "master" | None
+    to_dict = _d
+
+
+@dataclass
+class ClosedPositionView:
+    """PORTFOLIO-03: one closed position - a listed round trip (from a flat quantity back to flat, fills in time order; a fill that
+    crosses zero closes one and opens the next), a terminated / matured OTC contract or a returned stock borrow.  Money in base
+    cents; ``fees_c`` / ``financing_c`` are positive costs; ``total_pnl_c`` = realised + income - financing - fees."""
+    account_id: str
+    instrument_id: str
+    symbol: str
+    name: str
+    kind: str
+    asset_class: str
+    side: str
+    currency: str
+    qty: int
+    open_date: str
+    close_date: str
+    open_ts: int
+    close_ts: int
+    avg_open_px: Optional[Decimal]
+    avg_close_px: Optional[Decimal]
+    realised_c: int
+    fees_c: int
+    income_c: int
+    financing_c: int
+    total_pnl_c: int
+    days_held: int
+    open_fill_ids: List[str]
+    closing_fill_ids: List[str]
+    how: str
+    counterparty: Optional[str]
+    source: str
+    note: str = ""
     to_dict = _d
 
 
@@ -1223,12 +1324,15 @@ class Accounting:
             settle_px[r["instrument_id"]] = Decimal(r["settle_px"])
             fut_last[r["instrument_id"]] = r
         borrows: Dict[str, dict] = {}
-        for r in conn.execute("SELECT borrow_id, instrument_id, qty, qty_returned, fee_rate, rebate_rate, tier, collateral_c FROM borrows WHERE account_id=? AND status='OPEN'", (aid,)).fetchall():
-            b = borrows.setdefault(r["instrument_id"], {"borrow_ids": [], "qty": 0, "collateral_c": 0, "fee_rate": r["fee_rate"], "rebate_rate": r["rebate_rate"], "tier": r["tier"]})
+        for r in conn.execute("SELECT borrow_id, instrument_id, qty, qty_returned, fee_rate, rebate_rate, tier, collateral_c, lender FROM borrows WHERE account_id=? AND status='OPEN'", (aid,)).fetchall():
+            # C16 / 15.7 item 8: the lender as shown ("street lender (assumed terms)"); the stored row is never rewritten
+            b = borrows.setdefault(r["instrument_id"], {"borrow_ids": [], "qty": 0, "collateral_c": 0, "fee_rate": r["fee_rate"], "rebate_rate": r["rebate_rate"], "tier": r["tier"],
+                                                        "lender": lender_label(r["lender"])})
             b["borrow_ids"].append(r["borrow_id"])
             b["qty"] += int(r["qty"]) - int(r["qty_returned"])
             b["collateral_c"] += int(r["collateral_c"])
         prev_pos = (day_base or {}).get("positions", {}) if day_base else {}
+        osec = owner_sectors(conn)
 
         def finish(iid, inst, kind, qty, cost_c, mark_view, mv_c, notional_c, unreal_c, ccy, lots, settle, extra, klass, symbol=None, name=None, avg_px=None):
             gl = glmap.get(iid, {})
@@ -1259,9 +1363,31 @@ class Accounting:
             days = None
             if lots:
                 days = (today - date.fromisoformat(min(l.open_date for l in lots))).days
+            elif kind == "SWAP" and (extra or {}).get("start_date"):
+                try:
+                    # OTC-18: a contract that starts later (a forward or swap dealt for the next FX trade date, a cross-currency swap starting on
+                    # its spot date) has been held 0 days, never a negative count
+                    days = max(0, (today - date.fromisoformat(str(extra["start_date"])[:10])).days)
+                except ValueError:
+                    days = None
+            # PORTFOLIO-04: total P&L to date = unrealised + realised + income - financing - fees (base); None while the row has no price
+            total = None if unreal_base is None else int(unreal_base) + realised + income - financing - fees
+            if kind == "SWAP" and str((extra or {}).get("kind") or "") == "TRS":
+                # PORTFOLIO-19: a TRS carries its underlying's sector (its exposure is the underlying's)
+                sp = (inst.spec or {}) if inst is not None else {}
+                und = ((inst.underlying_id if inst is not None else None) or sp.get("underlying_id") or sp.get("underlying"))
+                sec, src = sector_of(_instrument(conn, self.instruments, und, cache), osec) if und else (None, None)
+            elif kind in ("SWAP", "FX_FORWARD", "PRIVATE_LOAN"):
+                sec, src = None, None
+            else:
+                sec, src = sector_of(inst, osec)
+                if sec is None and kind == "OPTION" and inst is not None and inst.underlying_id:
+                    # a listed option without its own classification carries its underlying's sector (ORCL calls: Information Technology)
+                    sec, src = sector_of(_instrument(conn, self.instruments, inst.underlying_id, cache), osec)
             out.append(PositionView(aid, iid, symbol or (inst.symbol if inst else iid), name or (inst.name if inst else iid), kind, klass, ccy, qty, cost_c, avg, mark_view, mv_c, mv_base,
                                     notional_c, unreal_c, unreal_base, realised, income, -financing, -fees, pending, day, weight, days, settle,
-                                    borrows.get(iid), lots, extra))
+                                    borrows.get(iid), lots, extra, asset_class_of(kind, extra), counterparty_of(kind, acct, extra, borrows.get(iid), qty), total,
+                                    sec, src))
 
         emitted: set = set()
         for r in conn.execute("SELECT instrument_id, qty, cost_c, currency FROM v_positions WHERE account_id=? ORDER BY instrument_id", (aid,)).fetchall():
@@ -1441,8 +1567,19 @@ class Accounting:
                 if o.get("mtm_c") is None:
                     continue
                 mtm = int(o["mtm_c"])
+                # V104R2-BW-09: the mark's time is its spot input's (a stale EURUSD shows its own age), the snapshot's only without one
+                fin = ((o.get("inputs") or {}).get("forward") or {}) if isinstance(o.get("inputs"), dict) else {}
+                spot = fin.get("spot") if isinstance(fin, dict) else None
+                qt = None
+                if isinstance(spot, dict):
+                    for k in ("quote_time", "as_of", "fetched_at"):
+                        if isinstance(spot.get(k), (int, float)) and not isinstance(spot.get(k), bool) and spot.get(k) > 0:
+                            qt = int(spot[k])
+                            break
+                if qt is None and snap is not None:
+                    qt = snap.as_of()
                 view = MarkView(o["deal_id"], from_c(mtm), o.get("quality") or "computed", "FX forward (covered interest parity)", "cip",
-                                snap.as_of() if snap is not None else None, None, "model", o.get("inputs"), False, o.get("note") or "")
+                                qt, None, "model", o.get("inputs"), False, o.get("note") or "")
                 # V104R1-02 / -03: a desk forward is shown by its pair and legs (it has no instrument row), its quantity is the pair's
                 # base amount (+ bought, - sold: fx.forward_mtm's sign) and its notional the USD amount it exchanges - the USD leg when
                 # it has one, else the base amount at its USD rate (None without a rate: never a guessed notional); the MTM stays the
@@ -1619,6 +1756,198 @@ class Accounting:
                             Decimal(l["unit_cost"]), int(l["cost_c"]), l["open_fill_id"], l["lock_until"], l["currency"])
                     for l in conn.execute("SELECT * FROM lots WHERE account_id=? AND instrument_id=? AND qty_remaining > 0 ORDER BY open_ts, lot_id", (account_id, instrument_id)).fetchall()]
 
+    # ---- closed positions (PORTFOLIO-03) ---------------------------------------------------------------------------------
+    CLOSE_HOW = {"EXPIRY": "expired", "EXERCISE": "exercised", "ASSIGNMENT": "assigned", "FUTURES_FINAL": "final settlement", "MATURITY": "matured",
+                 "NEGOTIATED": "sold (negotiated)"}
+
+    def closed_positions(self, scope: str, from_date=None, to_date=None) -> List[ClosedPositionView]:
+        """PORTFOLIO-03 (FINSIM1_PLAN P3 task 4): the closed positions of a scope, newest close first, optionally only those closed in
+        ``from_date`` .. ``to_date`` (ISO dates, inclusive; the close's New York date):
+
+        - listed round trips from the fills in time order per account and instrument: a position opens when the quantity leaves zero
+          and closes when it returns to zero (a fill that crosses zero closes one position and opens the next with the rest).  Per
+          row: open / close dates, the quantity opened, the average open and close prices, realised (the realised lines of the closing
+          fills' entries - lot relief - and, for a future, its variation margin from the open to the close business date), fees (the
+          fee lines of every fill of the position), income and financing (their lines on the instrument dated from the open to the
+          close business date), days held, the opening and closing fill ids and how it closed (sold / covered / expired / exercised /
+          assigned / final settlement / matured);
+        - OTC contracts TERMINATED or MATURED: every line of the contract (realised 4450 incl. the released cost basis, financing
+          4451 / 4453, income 4452, fees);
+        - stock borrows returned: the borrow fees and rebates of the borrow's dates (the financing of the short listed above; not
+          added again in a total).
+        Money in base cents; financing and fees are positive costs; total = realised + income - financing - fees.  Read only."""
+        fd = None if from_date in (None, "") else str(from_date)[:10]
+        td = None if to_date in (None, "") else str(to_date)[:10]
+        with self._conn() as conn:
+            sc = self._scope(conn, scope)
+            ids = [a["account_id"] for a in sc.accounts]
+            accts = {a["account_id"]: a for a in sc.accounts}
+            if not ids:
+                return []
+            q = ",".join("?" for _ in ids)
+            cache: dict = {}
+            pl_gls = tuple(PL_REALISED_GLS) + tuple(PL_INCOME_GLS) + tuple(PL_FINANCING_GLS) + tuple(PL_FEE_GLS)
+            gq = ",".join("?" for _ in pl_gls)
+            lines: Dict[Tuple[str, str], List[tuple]] = {}
+            for r in conn.execute(f"SELECT l.account_id, l.instrument_id, l.gl, l.base_c, e.entry_id, e.business_date FROM journal_lines l"
+                                  f" JOIN journal_entries e ON e.entry_id=l.entry_id WHERE l.account_id IN ({q}) AND COALESCE(l.instrument_id, '') <> ''"
+                                  f" AND l.gl IN ({gq})", ids + list(pl_gls)).fetchall():
+                bucket = pl_bucket(r["gl"])
+                if bucket is None:
+                    continue
+                lines.setdefault((r["account_id"], r["instrument_id"]), []).append(
+                    (int(r["entry_id"]), str(r["business_date"]), bucket, pl_amount(r["gl"], natural(r["gl"], int(r["base_c"] or 0)))))
+            fills = [dict(r) for r in conn.execute(f"SELECT f.fill_id, f.order_id, f.account_id, f.instrument_id, f.side, f.qty, f.price, f.fee_c, f.ts, f.trade_date,"
+                                                   f" f.origin, f.entry_id, e.business_date FROM fills f JOIN journal_entries e ON e.entry_id=f.entry_id"
+                                                   f" WHERE f.account_id IN ({q}) ORDER BY f.ts, f.fill_id", ids).fetchall()]
+            borrows = [dict(r) for r in conn.execute(f"SELECT * FROM borrows WHERE account_id IN ({q}) ORDER BY opened_ts, borrow_id", ids).fetchall()]
+            try:
+                otc_rows = [dict(r) for r in conn.execute(f"SELECT * FROM otc_contracts WHERE account_id IN ({q}) AND status IN ('TERMINATED','MATURED')"
+                                                          " ORDER BY contract_id", ids).fetchall()]
+            except sqlite3.Error:
+                otc_rows = []
+            out: List[ClosedPositionView] = []
+
+            def sums(key, pick) -> Dict[str, int]:
+                s = {"realised": 0, "income": 0, "financing": 0, "fees": 0}
+                for eid, bd, bucket, amt in lines.get(key, []):
+                    if pick(eid, bd, bucket):
+                        s[bucket] += amt
+                return s
+
+            def ny_date(ts) -> str:
+                return ny_of(int(ts)).date().isoformat()
+
+            # ---- listed round trips
+            run: Dict[Tuple[str, str], int] = {}
+            episodes: Dict[Tuple[str, str], dict] = {}
+            done: List[Tuple[Tuple[str, str], dict]] = []
+            for f in fills:
+                key = (f["account_id"], f["instrument_id"])
+                signed = int(f["qty"]) if f["side"] == "BUY" else -int(f["qty"])
+                pos = run.get(key, 0)
+                left = abs(signed)
+                if pos != 0 and (pos > 0) != (signed > 0):
+                    ep = episodes[key]
+                    take = min(left, abs(pos))
+                    ep["closes"].append((take, Decimal(str(f["price"])), f))
+                    left -= take
+                    pos += take if signed > 0 else -take
+                    if pos == 0:
+                        ep["close_ts"] = int(f["ts"])
+                        done.append((key, ep))
+                        episodes.pop(key, None)
+                if left > 0:
+                    if pos == 0:
+                        episodes[key] = {"side": "LONG" if signed > 0 else "SHORT", "open_ts": int(f["ts"]), "opens": [], "closes": []}
+                    episodes[key]["opens"].append((left, Decimal(str(f["price"])), f))
+                    pos += left if signed > 0 else -left
+                run[key] = pos
+            for key, ep in done:
+                aid, iid = key
+                inst = _instrument(conn, self.instruments, iid, cache)
+                kind = inst.kind if inst is not None else "EQUITY"
+                fill_entries = {int(x[2]["entry_id"]) for x in ep["opens"] + ep["closes"]}
+                close_entries = {int(x[2]["entry_id"]) for x in ep["closes"]}
+                open_bd = min(str(x[2]["business_date"]) for x in ep["opens"])
+                close_bd = max(str(x[2]["business_date"]) for x in ep["closes"])
+                if kind == "FUTURE":
+                    s = sums(key, lambda eid, bd, b: (b == "fees" and eid in fill_entries) or (b != "fees" and open_bd <= bd <= close_bd))
+                else:
+                    s = sums(key, lambda eid, bd, b: (b == "realised" and eid in close_entries) or (b == "fees" and eid in fill_entries)
+                             or (b in ("income", "financing") and open_bd <= bd <= close_bd))
+                qty_open = sum(x[0] for x in ep["opens"])
+                qty_close = sum(x[0] for x in ep["closes"])
+                avg_open = qprice((sum(Decimal(x[0]) * x[1] for x in ep["opens"]) / Decimal(qty_open)).quantize(Decimal("0.0001"))) if qty_open else None
+                avg_close = qprice((sum(Decimal(x[0]) * x[1] for x in ep["closes"]) / Decimal(qty_close)).quantize(Decimal("0.0001"))) if qty_close else None
+                hows = []
+                for x in ep["closes"]:
+                    o = str(x[2]["origin"] or "ORDER")
+                    w = self.CLOSE_HOW.get(o) or ("sold" if ep["side"] == "LONG" else "covered")
+                    if w not in hows:
+                        hows.append(w)
+                od, cd = ny_date(ep["open_ts"]), ny_date(ep["close_ts"])
+                if (fd and cd < fd) or (td and cd > td):
+                    continue
+                cp = CLEARING_OF_KIND.get(kind, "exchange-cleared")
+                if ep["side"] == "SHORT":
+                    b = next((b for b in borrows if b["account_id"] == aid and b["instrument_id"] == iid and ep["open_ts"] - 86400 <= int(b["opened_ts"]) <= ep["close_ts"]), None)
+                    if b is not None:
+                        cp = f"stock borrow {b['borrow_id']}: {lender_label(b.get('lender'))}"
+                total = s["realised"] + s["income"] - s["financing"] - s["fees"]
+                out.append(ClosedPositionView(aid, iid, inst.symbol if inst else iid, inst.name if inst else iid, kind, asset_class_of(kind), ep["side"],
+                                              inst.currency if inst else "USD", qty_open, od, cd, ep["open_ts"], ep["close_ts"], avg_open, avg_close,
+                                              s["realised"], s["fees"], s["income"], s["financing"], total, (date.fromisoformat(cd) - date.fromisoformat(od)).days,
+                                              [x[2]["fill_id"] for x in ep["opens"]], [x[2]["fill_id"] for x in ep["closes"]], " / ".join(hows), cp, "fills",
+                                              "futures: realised is the variation margin from the open to the close" if kind == "FUTURE" else ""))
+            # ---- OTC contracts terminated / matured
+            for c in otc_rows:
+                cid = c["contract_id"]
+                key = (c["account_id"], cid)
+                s = sums(key, lambda eid, bd, b: True)
+                try:
+                    terms = json.loads(c.get("terms_json") or "{}")
+                except ValueError:
+                    terms = {}
+                od = str(c.get("trade_date") or c.get("start_date") or "")[:10]
+                cd = ny_date(c["closed_ts"]) if c.get("closed_ts") else str(c.get("maturity_date") or "")[:10]
+                if (fd and cd < fd) or (td and cd > td):
+                    continue
+                inst = _instrument(conn, self.instruments, cid, cache)
+                extra = {"kind": c["kind"], "broker": c.get("broker"), "maturity_date": c.get("maturity_date")}
+                try:
+                    from .risk import contract_label
+                    label = contract_label(inst, extra)
+                except Exception:   # noqa: BLE001 - the label is a convenience
+                    label = cid
+                units = terms.get("units")
+                qty = int(units) if units not in (None, "") else int(c["notional_c"]) // 100
+                side = ("pay" if terms.get("pay_fixed") or terms.get("receiver") is False else "receive") if c["kind"] in ("IRS", "TRS") else str(terms.get("side") or "")
+                try:
+                    days = (date.fromisoformat(cd) - date.fromisoformat(od)).days if od and cd else 0
+                except ValueError:
+                    days = 0
+                total = s["realised"] + s["income"] - s["financing"] - s["fees"]
+                out.append(ClosedPositionView(c["account_id"], cid, cid, label, "SWAP", asset_class_of("SWAP", extra), side, c["currency"], qty, od, cd,
+                                              0, int(c.get("closed_ts") or 0), None, None, s["realised"], s["fees"], s["income"], s["financing"], total, days, [], [],
+                                              str(c["status"]).lower(), counterparty_of("SWAP", accts.get(c["account_id"]), extra), "otc",
+                                              "realised includes the released contract cost basis (premium / upfront)"))
+            # ---- stock borrows returned
+            for b in borrows:
+                if b.get("status") != "CLOSED":
+                    continue
+                key = (b["account_id"], b["instrument_id"])
+                od = str(b.get("opened_date") or ny_date(b["opened_ts"]))[:10]
+                cd = ny_date(b["closed_ts"]) if b.get("closed_ts") else od
+                if (fd and cd < fd) or (td and cd > td):
+                    continue
+                s = {"income": 0, "financing": 0}
+                for eid, bd, bucket, amt in lines.get(key, []):
+                    if od <= bd <= cd and bucket in ("income", "financing"):
+                        s[bucket] += amt
+                inst = _instrument(conn, self.instruments, b["instrument_id"], cache)
+                out.append(ClosedPositionView(b["account_id"], b["instrument_id"], inst.symbol if inst else b["instrument_id"],
+                                              f"stock borrow {b['borrow_id']}", "BORROW", "Financing (stock borrow)", "BORROWED", b.get("currency") or "USD",
+                                              int(b["qty"]), od, cd, int(b["opened_ts"]), int(b.get("closed_ts") or 0), None, None, 0, 0, s["income"], s["financing"],
+                                              s["income"] - s["financing"], (date.fromisoformat(cd) - date.fromisoformat(od)).days, [], [], "returned",
+                                              lender_label(b.get("lender")), "borrow",
+                                              "the financing of the short sale listed with it: its fees and rebates are already in that position's financing"))
+            out.sort(key=lambda r: (-(r.close_ts or 0), r.close_date, r.account_id, r.instrument_id), reverse=False)
+            return out
+
+    def closed_lots(self, account_id: str, instrument_id: str) -> Tuple[List[dict], List[dict]]:
+        """PORTFOLIO-03 / -05: ``(closed lots, reliefs)`` of one position - the lots with nothing remaining and every lot_relief row of the
+        position's lots (closing fill, quantity, cost relieved, proceeds, realised), money in the instrument's currency."""
+        with self._conn() as conn:
+            lots = [dict(r) for r in conn.execute("SELECT * FROM lots WHERE account_id=? AND instrument_id=? AND qty_remaining=0 ORDER BY open_ts, lot_id",
+                                                  (account_id, instrument_id)).fetchall()]
+            reliefs = [dict(r) for r in conn.execute("SELECT r.*, f.ts, f.trade_date, f.price, f.side FROM lot_relief r JOIN lots l ON l.lot_id=r.lot_id"
+                                                     " JOIN fills f ON f.fill_id=r.close_fill_id WHERE l.account_id=? AND l.instrument_id=? ORDER BY f.ts, r.id",
+                                                     (account_id, instrument_id)).fetchall()]
+            for l in lots:
+                l["open_date"] = ny_of(int(l["open_ts"])).date().isoformat()
+            return lots, reliefs
+
     # ---- NAV / balance sheet ------------------------------------------------------------------------------------------
     def _nav_from_calcs(self, sc: Scope, calcs: List[_Calc], as_of: int) -> NavView:
         worst = max((QUALITY_RANK.get(c.quality, 0) for c in calcs), default=0)
@@ -1788,23 +2117,43 @@ class Accounting:
         with self._conn() as conn:
             sc = self._scope(conn, scope)
             now = self._components(conn, sc, snap)
-            rows = self._baseline_rows(conn, sc, period)
-            if rows:
-                b = {k: sum(int(r[k]) for r in rows) for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
-                baseline = {"inception": False, "snap_date": min(r["snap_date"] for r in rows), "ts": min(int(r["ts"]) for r in rows), "nav_c": b["nav_c"],
-                            "restated": restated_label(next((r for r in rows if _rget(r, "restated")), None))}
-                degraded = False
-            else:
-                b = {k: 0 for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
-                baseline = {"inception": True, "snap_date": None, "ts": None, "nav_c": 0}
-                degraded = period != "ITD"
-            flows = (now["capital_c"] - b["capital_cum_c"]) + (now["transfers_c"] - b["transfers_cum_c"])
-            comps = {"realised_c": now["realised_c"] - b["realised_cum_c"], "income_c": now["income_c"] - b["income_cum_c"],
-                     "financing_c": now["financing_c"] - b["financing_cum_c"], "fees_c": now["fees_c"] - b["fees_cum_c"],
-                     "unrealised_c": now["unrealised_c"] - b["unrealised_c"], "fx_result_c": now["fx_result_c"] - b["fx_result_c"]}
-            explained = comps["realised_c"] + comps["income_c"] - comps["financing_c"] - comps["fees_c"] + comps["unrealised_c"] + comps["fx_result_c"]
-            pnl = now["nav_c"] - b["nav_c"] - flows
-            return PnlView(sc.key, period, now["nav_c"], b["nav_c"], flows, pnl, explained, pnl - explained, comps, baseline, degraded, now["quality"], now["partial"])
+            return self._pnl_from(conn, sc, period, now)
+
+    def pnl_periods(self, scope: str, periods=PERIODS, snapshot=None) -> Dict[str, PnlView]:
+        """The P&L of several periods on ONE snapshot (the Dashboard's TODAY / MTD / YTD / ITD, FINSIM1 P1b-R1): the scope's current
+        figures (``_components``: every position's calc) are computed once and each period is measured against its own baseline -
+        exactly what ``pnl`` returns for that period, since both go through ``_pnl_from``.  Keyed by the periods as given; ValueError
+        for a period not in ``PERIODS``, as ``pnl``."""
+        wanted = [(p, (p or "TODAY").upper()) for p in periods]
+        for _p, up in wanted:
+            if up not in PERIODS:
+                raise ValueError(f"period must be one of {PERIODS}")
+        snap = self._snapshot(snapshot)
+        with self._conn() as conn:
+            sc = self._scope(conn, scope)
+            now = self._components(conn, sc, snap)
+            return {p: self._pnl_from(conn, sc, up, now) for p, up in wanted}
+
+    def _pnl_from(self, conn: sqlite3.Connection, sc: Scope, period: str, now: dict) -> PnlView:
+        """One period's ``PnlView`` (§6.5, ``pnl``) from the scope's current figures ``now`` (``_components``) and the period's baseline
+        snapshot rows (the latest restated version where one exists)."""
+        rows = self._baseline_rows(conn, sc, period)
+        if rows:
+            b = {k: sum(int(r[k]) for r in rows) for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
+            baseline = {"inception": False, "snap_date": min(r["snap_date"] for r in rows), "ts": min(int(r["ts"]) for r in rows), "nav_c": b["nav_c"],
+                        "restated": restated_label(next((r for r in rows if _rget(r, "restated")), None))}
+            degraded = False
+        else:
+            b = {k: 0 for k in ("nav_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c", "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c")}
+            baseline = {"inception": True, "snap_date": None, "ts": None, "nav_c": 0}
+            degraded = period != "ITD"
+        flows = (now["capital_c"] - b["capital_cum_c"]) + (now["transfers_c"] - b["transfers_cum_c"])
+        comps = {"realised_c": now["realised_c"] - b["realised_cum_c"], "income_c": now["income_c"] - b["income_cum_c"],
+                 "financing_c": now["financing_c"] - b["financing_cum_c"], "fees_c": now["fees_c"] - b["fees_cum_c"],
+                 "unrealised_c": now["unrealised_c"] - b["unrealised_c"], "fx_result_c": now["fx_result_c"] - b["fx_result_c"]}
+        explained = comps["realised_c"] + comps["income_c"] - comps["financing_c"] - comps["fees_c"] + comps["unrealised_c"] + comps["fx_result_c"]
+        pnl = now["nav_c"] - b["nav_c"] - flows
+        return PnlView(sc.key, period, now["nav_c"], b["nav_c"], flows, pnl, explained, pnl - explained, comps, baseline, degraded, now["quality"], now["partial"])
 
     def flows(self, scope: str, from_ts: int, to_ts: int) -> int:
         """Capital deposits − withdrawals (3000) ± internal transfers into the scope (3100) with entry ts in (from, to], base."""

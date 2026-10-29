@@ -25,10 +25,14 @@ D = Decimal
 
 #: what portfolio.js reads (static/pages/portfolio.js: columns(), classRows(), the footer, the tiles and the by-account table)
 POSITION_KEYS = {"account_id", "account_name", "book_code", "book_name", "instrument_id", "symbol", "name", "kind", "klass", "currency", "qty", "avg_px", "mark",
-                 "mv_base", "notional", "day_pnl", "unrealised_base", "realised_itd", "income_itd", "financing_itd", "weight", "days_held", "extra"}
+                 "mv_base", "notional", "day_pnl", "unrealised_base", "realised_itd", "income_itd", "financing_itd", "weight", "days_held", "extra",
+                 # 1.0.6 (PORTFOLIO-04 / -19): the finer asset class, the counterparty, total P&L, fees, margin / collateral (P6) and the sector
+                 "asset_class", "counterparty", "total_pnl", "fees_itd", "margin", "collateral", "sector_label"}
 CLASS_KEYS = {"klass", "label", "count", "mv", "unrealised", "day_pnl", "cost", "weight", "missing", "day_pnl_missing"}
 FOOTER_KEYS = {"gross_long", "gross_short", "net", "futures_notional_long", "futures_notional_short", "otc_mv_positive", "otc_mv_negative", "unpriced",
-               "fx_missing", "count", "note"}
+               "fx_missing", "count", "note", "otc_exposure", "definitions"}
+SECTOR_KEYS = {"sector", "count", "long", "short", "net", "gross", "pct_nav", "instruments"}
+RETURN_KEYS = {"available", "today_pct", "mtd_pct", "ytd_pct", "itd_twr_pct", "itd_simple_pct", "as_of", "basis", "units", "reasons", "baselines"}
 NAV_KEYS = {"nav", "assets", "liabilities", "unrealised", "fx_result", "quality", "partial", "missing", "mv_long", "mv_short"}
 ACCOUNT_KEYS = {"account_id", "name", "account_name", "nav", "weight", "positions", "pnl_today", "book_code", "book_name"}
 
@@ -122,8 +126,80 @@ class PortfolioContract(unittest.TestCase):
         # the by-account table
         for a in out["by_account"]:
             self.assertTrue(ACCOUNT_KEYS <= set(a), (a.get("account_id"), sorted(ACCOUNT_KEYS - set(a))))
+        # 1.0.6: the asset-class subtotals, the sector block, the returns (PORTFOLIO-07) and the OTC exposure of the footer (PORTFOLIO-17)
+        self.assertEqual({"Equity", "OTC CDX"}, {c["klass"] for c in out["by_asset_class"]})
+        for c in out["by_asset_class"]:
+            self.assertTrue(CLASS_KEYS <= set(c), sorted(CLASS_KEYS - set(c)))
+        for s in out["by_sector"]:
+            self.assertTrue(SECTOR_KEYS <= set(s), sorted(SECTOR_KEYS - set(s)))
+        self.assertTrue(RETURN_KEYS <= set(out["returns"]), sorted(RETURN_KEYS - set(out["returns"])))
+        # the CDX at its notional with its credit sign, never a market value: this fixture's terms name no side, so its signed quantity is
+        # +3,000,000 (the receiving side = protection sold = long credit 3,000,000.00); a bought protection would be short credit
+        self.assertEqual((D("3000000.00"), D("0.00")), (D(f["otc_exposure"]["cdx_long_credit"]), D(f["otc_exposure"]["cdx_short_credit"])))
+        self.assertEqual(("OTC CDX", "Goldman Sachs (bilateral OTC, ISDA / CSA)"), (rows[cid]["asset_class"], rows[cid]["counterparty"]))
+        # total P&L: AAPL unrealised 0.00 - fee 1.00 = -1.00; the CDX -683.56 (no carry yet); MSFT has no price: n/a (None)
+        self.assertEqual((D("-1.00"), D("-683.56"), None), (D(rows["AAPL"]["total_pnl"]), D(rows[cid]["total_pnl"]), rows["MSFT"]["total_pnl"]))
         # the PB header counts its contract as a position (POSTCLOSE-04)
         self.assertEqual(1, self.get(f"/api/accounts/{pb}")["positions_count"])
+
+
+class SectorAndCsv(unittest.TestCase):
+    """P3 acceptance 1 (f): by_sector sums to the gross; the owner's sector through the route; the Positions CSV with every column."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-pfsector-")
+        self.rt = build(self.tmp)
+        rt = self.rt
+        rt.bus.register("test.buy", th._h_test_buy)
+        now = rt.clock.epoch()
+        rt.fp.set("AAPL", last="339.50", quote_time=now - 120, bar=(now - now % 60 - 60, 61900))
+        rt.fp.set("SPY", last="769.32", quote_time=now - 120, bar=(now - now % 60 - 60, 81900))
+        rt.cache.subscribe(["AAPL", "SPY"], 300, "PAGE")
+        rt.worker.tick()
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def call(self, method, path, query=None, body=None):
+        status, out, headers = self.rt.router.handle(method, path, query, body, "127.0.0.1", None)
+        return status, out, headers
+
+    def get(self, path, query=None):
+        status, body, _h = self.call("GET", path, query)
+        self.assertEqual(200, status, f"GET {path} -> {status} {body}")
+        from finsim.terminal.api import encode
+        return json.loads(json.dumps(encode(body), default=str))
+
+    def test_by_sector_sums_to_gross_and_the_owner_classifies(self):
+        rt = self.rt
+        usx = "F1:US_EXCHANGE"
+        self.assertTrue(th.execute(rt, "treasury.transfer", {"from_account": "F1:TREASURY", "to_account": usx, "currency": "USD", "amount_c": 100000000}).ok)
+        self.assertTrue(th.execute(rt, "test.buy", {"account_id": usx, "instrument_id": "AAPL", "qty": 100, "price": "339.50", "fee_c": 0}).ok)   # 33,950.00
+        self.assertTrue(th.execute(rt, "test.buy", {"account_id": usx, "instrument_id": "SPY", "qty": 10, "price": "769.32", "fee_c": 0}).ok)    # 7,693.20
+        out = self.get("/api/portfolio", {"book": "F"})
+        f = out["footer"]
+        # gross long 33,950.00 + 7,693.20 = 41,643.20; by sector: Information Technology 33,950.00, Index 7,693.20 -> the same 41,643.20
+        self.assertEqual(D("41643.20"), D(f["gross_long"]) + D(f["gross_short"]))
+        self.assertEqual([("Information Technology", D("33950.00")), ("Index", D("7693.20"))], [(s["sector"], D(s["gross"])) for s in out["by_sector"]])
+        self.assertEqual(D(f["gross_long"]) + D(f["gross_short"]), sum(D(s["gross"]) for s in out["by_sector"]))
+        # the owner's classification through the route (light command instrument.classify, source "owner")
+        status, body, _h = self.call("POST", "/api/instruments/SPY/sector", None, {"sector": "US index ETF", "request_id": "pfsector:spy-0001"})
+        self.assertEqual(200, status, body)
+        out = self.get("/api/portfolio", {"book": "F"})
+        self.assertEqual({"Information Technology", "US index ETF"}, {s["sector"] for s in out["by_sector"]})
+        spy = next(p for p in out["positions"] if p["instrument_id"] == "SPY")
+        self.assertEqual(("US index ETF", "owner"), (spy["sector_label"], spy["sector_source"]))
+        status, body, _h = self.call("POST", "/api/instruments/NOPE9/sector", None, {"sector": "x", "request_id": "pfsector:nope-0001"})
+        self.assertEqual(404, status, body)
+        # the Positions CSV: the fixture columns by default; columns=all adds the 1.0.6 columns (the Portfolio's download)
+        st, csv_body, _h = self.call("GET", "/api/export/positions.csv", {"book": "F"})
+        self.assertEqual("account_id,instrument_id,qty,cost,mark,quality,mv,unrealised", csv_body.split("\n")[0])
+        st, csv_body, _h = self.call("GET", "/api/export/positions.csv", {"book": "F", "columns": "all"})
+        head = csv_body.split("\n")[0]
+        self.assertEqual("account_id,instrument_id,qty,cost,mark,quality,mv,unrealised,asset_class,sector,counterparty,realised,income,financing,fees,total_pnl,margin,collateral", head)
+        line = next(x for x in csv_body.split("\n") if x.startswith(usx + ",SPY,"))
+        self.assertIn(",ETF,US index ETF,exchange-cleared (NSCC),", line)
 
 
 if __name__ == "__main__":

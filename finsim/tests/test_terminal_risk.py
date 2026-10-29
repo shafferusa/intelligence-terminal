@@ -414,6 +414,8 @@ class RiskReportTests(unittest.TestCase):
         self.assertEqual([("EUR", 10000000, 11238000, D("1.1238"), D("0.0112"))], [(f["currency"], f["native_c"], f["usd_c"], f["rate"], f["pct_nav"]) for f in v.fx_exposure])
         self.assertEqual([("FX (EUR)", 11238000, 0)], [(e["bucket"], e["long_c"], e["short_c"]) for e in v.exposures])
         self.assertEqual(0, v.gross_c)                                               # currency exposure is its own axis, not a position
+        # V104R2-BW-08: the currency bucket is not in the headline gross (the gross tile is 0.00), and the table says so
+        self.assertEqual([False], [e["headline"] for e in v.exposures])
         # USD +5 % vs foreign: -5 % x 112,380 = -5,619.00; USD -5 %: +5,619.00
         self.assertEqual((-561900, 561900), (by_name(v.scenarios, "USD +5 % vs foreign currencies")["pnl_c"], by_name(v.scenarios, "USD -5 % vs foreign currencies")["pnl_c"]))
         self.assertEqual({"EUR": -561900}, by_name(v.scenarios, "USD +5 % vs foreign currencies")["detail"]["by_currency"])
@@ -569,6 +571,166 @@ class RiskReportTests(unittest.TestCase):
 
 
 # ---- compliance ---------------------------------------------------------------------------------------------------------------------
+class Phase2RiskViews(unittest.TestCase):
+    """P3 phase 2: sector exposure, the owner's classification, the OTC exposure definitions shared with the Portfolio footer, the Reg T
+    panel and the margin-calls rows over P6's functions (C16) - each worked by hand."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-risk2-")
+        self.rt = runtime(self.tmp)
+        risk.bind(self.rt)
+        risk.register(self.rt.bus)
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_by_sector_sums_to_the_headline_gross_and_the_owner_classifies(self):
+        rt = self.rt
+        self.assertTrue(fund(rt, US_EXCHANGE, 100000000).ok)
+        self.assertTrue(buy(rt, US_EXCHANGE, "AAPL", 1000, "339.50").ok)           # MV 339,500.00, sector Information Technology (master)
+        self.assertTrue(buy(rt, US_EXCHANGE, "SPY", 500, "769.32").ok)             # MV 384,660.00, sector Index (master)
+        v = risk.report(rt, "ALL")
+        # gross 724,160.00 = 339,500 + 384,660; by sector: Index 384,660 (5.31 % ... of NAV 9,999,992.50 -> 0.0385), IT 339,500 (0.0340)
+        self.assertEqual([("Index", 38466000, D("0.0385")), ("Information Technology", 33950000, D("0.0340"))],
+                         [(s["sector"], s["gross_c"], s["pct_nav"]) for s in v.by_sector])
+        self.assertEqual(v.gross_c, sum(s["gross_c"] for s in v.by_sector))
+        # the owner classifies SPY: one SETTINGS_CHANGED with before / after; the sector view follows; an empty sector removes it again
+        r = execute(rt, "instrument.classify", {"instrument_id": "SPY", "sector": "  US index   ETF "})
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(("SPY", "US index ETF", "owner", None), (r.body["instrument_id"], r.body["sector"], r.body["source"], r.body["before"]))
+        p = rt.accounting.position(US_EXCHANGE, "SPY")
+        self.assertEqual(("US index ETF", "owner"), (p.sector, p.sector_source))
+        self.assertEqual({"US index ETF", "Information Technology"}, {s["sector"] for s in risk.report(rt, "ALL").by_sector})
+        with rt.db.reader() as conn:
+            ev = conn.execute("SELECT payload_json FROM events WHERE type='SETTINGS_CHANGED' AND ref_type='instrument' AND ref_id='SPY'").fetchall()
+        self.assertEqual([{"before": {"sector": None}, "after": {"sector": "US index ETF", "source": "owner"}}], [json.loads(x[0]) for x in ev])
+        self.assertTrue(execute(rt, "instrument.classify", {"instrument_id": "SPY", "sector": ""}).ok)
+        self.assertEqual(("Index", "master"), (rt.accounting.position(US_EXCHANGE, "SPY").sector, rt.accounting.position(US_EXCHANGE, "SPY").sector_source))
+        # refusals: an unknown instrument, a sector too long
+        r = execute(rt, "instrument.classify", {"instrument_id": "NOPE123", "sector": "x"})
+        self.assertEqual((False, "INSTRUMENT_UNKNOWN"), (r.ok, r.body["error"]["code"]))
+        r = execute(rt, "instrument.classify", {"instrument_id": "SPY", "sector": "x" * 61})
+        self.assertEqual((False, "BAD_SECTOR"), (r.ok, r.body["error"]["code"]))
+
+    def test_a_listed_option_carries_its_underlyings_sector(self):
+        """PORTFOLIO-19: an option without its own classification is in its underlying's sector (the owner's ORCL calls were
+        'unclassified' on the Portfolio and in Risk); the owner's classification of the option itself still wins."""
+        rt = self.rt
+        self.assertTrue(fund(rt, US_EXCHANGE, 100000000).ok)
+        c = ensure_option(rt, "AAPL261120C00340000", "AAPL")
+        set_mark(rt, c.instrument_id, "12.00")
+        open_position(rt, US_EXCHANGE, c.instrument_id, "LONG", 10, "12.00")            # premium 10 x 100 x 12.00 = 12,000.00
+        p = rt.accounting.position(US_EXCHANGE, c.instrument_id)
+        self.assertEqual(("Information Technology", "master"), (p.sector, p.sector_source))    # AAPL's sector in the master
+        self.assertEqual([("Information Technology", 1200000)], [(s["sector"], s["gross_c"]) for s in risk.report(rt, "ALL").by_sector
+                                                                  if s["sector"] == "Information Technology"])
+        self.assertTrue(execute(rt, "instrument.classify", {"instrument_id": c.instrument_id, "sector": "AAPL options"}).ok)
+        p = rt.accounting.position(US_EXCHANGE, c.instrument_id)
+        self.assertEqual(("AAPL options", "owner"), (p.sector, p.sector_source))
+
+    def test_otc_exposure_definitions(self):
+        """PORTFOLIO-17: a TRS at its reference units x the underlying price now (signed), a CDX at its notional with its credit sign, an IRS
+        by its DV01 - the definitions the Portfolio footer and Risk share."""
+        pv = lambda kind, qty, notional_c, **ex: types.SimpleNamespace(kind="SWAP", qty=qty, notional_c=notional_c, currency="USD", extra=dict(ex, kind=kind))   # noqa: E731
+        # TRS pay ORCL: 38,700 reference units x 126.06 = 4,878,522.00, short -> -4,878,522.00 (the reset notional 4,997,331.00 is not the exposure)
+        x = risk.otc_exposure(pv("TRS", -4997331, 499733100, units=38700, current="126.06"))
+        self.assertEqual(("TRS", -487852200, None), (x["kind"], x["exposure_c"], x["dv01_c"]))
+        self.assertIn("38,700 reference units x 126.06", x["basis"])
+        # without an underlying price now: the contract notional, said so
+        x = risk.otc_exposure(pv("TRS", -4997331, 499733100, units=38700))
+        self.assertEqual(-499733100, x["exposure_c"])
+        self.assertIn("no underlying price", x["basis"])
+        # CDX IG buy protection 3,000,000: short credit -3,000,000.00
+        self.assertEqual(-300000000, risk.otc_exposure(pv("CDX", -3000000, 300000000))["exposure_c"])
+        # IRS pay fixed: no notional exposure, its DV01 (2,076.23 per +1 bp as booked)
+        x = risk.otc_exposure(pv("IRS", -7500000, 750000000, dv01_c=207623))
+        self.assertEqual((None, 207623), (x["exposure_c"], x["dv01_c"]))
+        for k in ("market_value", "exposure", "trs_exposure", "cdx", "irs", "futures"):
+            self.assertIn(k, risk.DEFINITIONS)
+
+    def test_reg_t_panel_reads_p6_or_says_unavailable(self):
+        rt = self.rt
+        accounts = {US_EXCHANGE: {"kind": "TRADING", "name": "US Exchange"}, TREASURY: {"kind": "TREASURY", "name": "Treasury"},
+                    "T1:DEBT": {"kind": "TRADING", "name": "Debt Instruments"}}
+        names = {k: v["name"] for k, v in accounts.items()}
+        b = risk.reg_t_block(rt, "T1:ALL", accounts, names)
+        self.assertEqual((False, []), (b["available"], b["rows"]))
+        self.assertIn("not in this build", b["reason"])
+
+        def summary(services, scope):
+            # P6's acceptance (c), the excess case: shorts 1,000,000.00 -> requirement 500,000.00; eligible 1,600,000.00 -> excess 1,100,000.00
+            if scope == US_EXCHANGE:
+                return {"margin_required_c": 50000000, "margin_posted_c": 160000000, "margin_excess_c": 110000000, "open_calls": 0, "open_calls_c": 0,
+                        "regt": [{"applies": True, "requirement_c": 50000000, "maintenance_c": 30000000, "eligible_c": 160000000, "excess_c": 110000000,
+                                  "deficit_c": 0, "terms": {"initial_text": "50 %", "maintenance_text": "30 %", "long_loan_value_text": "50 %", "source": "assumed (default)"}}]}
+            if scope == "T1:DEBT":
+                return {"margin_required_c": 0, "regt": [{"applies": False}]}
+            return {"margin_required_c": 50000000, "regt": []}
+        rt.collateral = types.SimpleNamespace(summary=summary)
+        b = risk.reg_t_block(rt, "T1:ALL", accounts, names)
+        # the Treasury is never a Reg T account and Debt has no Reg T: only US Exchange, its figures passed through as P6 states them
+        self.assertEqual((True, ["US Exchange"]), (b["available"], [r["name"] for r in b["rows"]]))
+        r = b["rows"][0]
+        self.assertEqual((50000000, 160000000, 110000000, 0, "50 %"), (r["requirement_c"], r["eligible_c"], r["excess_c"], r["deficit_c"], r["terms"]["initial_text"]))
+        self.assertEqual(0, r["open_calls"])
+        d = risk.jsonable(b)
+        self.assertEqual(("500000.00", "1100000.00"), (d["rows"][0]["requirement"], d["rows"][0]["excess"]))
+
+    def test_reg_t_panel_and_exposure_summary_on_the_reports_snapshot(self):
+        """FINSIM1 P1b-R2 (1.0.6): ``reg_t_block(..., snapshot=)`` hands its snapshot to every ``collateral.summary`` call that takes one
+        (P6's ``summary(services, scope, snapshot=None)``) - each account's and the total - so the Reg T panel is priced on the report's own
+        marks (a summary without that parameter is still called without it: the test above); ``report`` passes its snapshot.  The public
+        ``exposure_summary`` is the report's headline exposure, field by field, on the same snapshot (hand-worked: 1,000 AAPL at 339.50 =
+        339,500.00 long = gross = net, no short; no swap, so no TRS notional and DV01 0)."""
+        rt = self.rt
+        self.assertTrue(fund(rt, US_EXCHANGE, 100000000).ok)
+        self.assertTrue(buy(rt, US_EXCHANGE, "AAPL", 1000, "339.50").ok)
+        accounts = {US_EXCHANGE: {"kind": "TRADING", "name": "US Exchange"}, TREASURY: {"kind": "TREASURY", "name": "Treasury"}}
+        names = {k: v["name"] for k, v in accounts.items()}
+        seen = []
+
+        def summary(services, scope, snapshot=None):
+            seen.append((scope, snapshot))
+            return {"margin_required_c": 0, "regt": [{"applies": True, "requirement_c": 0, "eligible_c": 0, "excess_c": 0, "deficit_c": 0}]}
+        rt.collateral = types.SimpleNamespace(summary=summary)
+        snap = rt.marks.snapshot()
+        b = risk.reg_t_block(rt, "T1:ALL", accounts, names, snapshot=snap)
+        self.assertEqual((True, [(US_EXCHANGE, snap), ("T1:ALL", snap)]), (b["available"], seen))   # the Treasury is never a Reg T account
+        seen.clear()
+        view = risk.report(rt, "T1:ALL", snapshot=snap)
+        self.assertTrue(seen and all(s is snap for _scope, s in seen), seen)
+        self.assertEqual(("T1:ALL", snap), seen[-1])
+        for scope in ("T1:ALL", US_EXCHANGE):
+            v = view if scope == "T1:ALL" else risk.report(rt, scope, snapshot=snap)
+            s = risk.exposure_summary(rt, scope, snapshot=snap)
+            self.assertEqual({k: getattr(v, k) for k in risk.EXPOSURE_KEYS}, {k: s[k] for k in risk.EXPOSURE_KEYS}, scope)
+            self.assertEqual(dict(risk.DEFINITIONS), s["definitions"])
+        s = risk.exposure_summary(rt, "T1:ALL", snapshot=snap)
+        self.assertEqual((33950000, 0, 33950000, 33950000, 0, 0), (s["long_c"], s["short_c"], s["gross_c"], s["net_c"], s["trs_notional_c"], s["dv01_c"]))
+
+    def test_activity_margin_calls_rows(self):
+        from finsim.terminal.api_views import activity_rows, margin_call_rows
+        rt = self.rt
+        self.assertEqual(([], "margin calls are not in this build"), margin_call_rows(rt, lifetime_ids=["T1"]))
+        calls = [{"call_id": "MC-000001", "account_id": US_EXCHANGE, "kind": "REG_T", "kind_label": "Reg T margin deficit", "counterparty": "Goldman Sachs",
+                  "currency": "USD", "amount_c": 10000000, "issued_ts": rt.clock.epoch(), "due_ts": rt.clock.epoch() + 86400, "status": "OPEN",
+                  "status_label": "open - not funded yet", "transfers": [], "detail": {"basis": "deficit 100,000.00", "deficit_c": 10000000}}]
+        rt.collateral = types.SimpleNamespace(margin_calls_rows=lambda services, scope, f, t: list(calls) if scope in ("T1:ALL", US_EXCHANGE) else [])
+        rows, why = margin_call_rows(rt, lifetime_ids=["T1"])
+        self.assertIsNone(why)
+        self.assertEqual(1, len(rows))
+        r = rows[0]
+        self.assertEqual(("margin_calls", "WARN", "MC-000001", "margin call MC-000001"), (r["category"], r["severity"], r["ref_id"], r["ref_text"]))
+        self.assertIn("margin call MC-000001 (Reg T margin deficit) Goldman Sachs: USD 100,000.00 due", r["summary"])
+        self.assertIn("open - not funded yet", r["summary"])
+        # the detail in words: money as text, nested records flattened, never a JSON blob of cents
+        self.assertEqual(("100,000.00", "basis deficit 100,000.00; deficit 100,000.00"), (r["detail"]["amount"], r["detail"]["detail"]))
+        feed = activity_rows(rt, types={"margin_calls"}, lifetime_ids=["T1"])
+        self.assertEqual(["margin_call"], [x["type"] for x in feed])
+        self.assertEqual("US Exchange", feed[0]["account_name"])
+
+
 class FakeLending:
     """WP-06 stand-in for the preview: a full locate."""
 

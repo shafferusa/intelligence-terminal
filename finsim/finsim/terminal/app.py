@@ -1,78 +1,97 @@
-"""FinSim Live Terminal — launcher, CLI and installer (TERMINAL_DESIGN.md §18; TERMINAL_WORKPLAN.md WP-14).
+"""FinSim Terminal (FinSim1) — launcher, CLI and installer (TERMINAL_DESIGN.md §18; TERMINAL_WORKPLAN.md WP-14;
+FINSIM1_PLAN package P7, release 1.0.6).
 
-``python -m finsim <command>`` (run from ``C:\\Users\\logan\\intelligence-terminal\\finsim``) dispatches to ``main`` here;
-``finsim/__main__.py`` is re-pointed and the old ``demo`` / ``phone`` subcommands are not exposed.  Commands and exit
-codes (§18):
+``python -m finsim <command>`` dispatches to ``main`` here, from either folder: ``C:\\Users\\logan\\intelligence-terminal\\finsim``
+(the inner package's ``finsim/finsim/__main__.py``) or the repository root (the outer shim ``finsim/__main__.py``, which
+puts the inner folder first on ``sys.path``; STARTUP-01).  ``FinSim.cmd`` in either folder does the same without a
+command meaning ``open`` (STARTUP-02).  Commands and exit codes (§18):
 
 =========  ================================================================================  ========================
 command    what it does                                                                      exit
 =========  ================================================================================  ========================
-serve      the foreground server (``finsim.terminal.server.serve``).  ``--offline`` is        0 ok; 3 another instance
-           refused on the default home; ``--db`` named ``finsim.db`` is refused (the old      or the port; 4 newer
-           simulation's saves are never the terminal's database); ``--host`` must be loopback  schema; 5 startup error
+(none)     prints a three-line hint: ``serve`` / ``open`` / ``status`` (STARTUP-09)           0
+serve      the foreground server (``finsim.terminal.server.serve``), after one line naming     0 ok; 3 another instance
+           this code tree, VERSION and the database (on the default home: what the FinSim     or the port; 4 newer
+           icon and Windows login start instead when the installed launcher names another      schema; 5 startup error
+           tree).  ``--offline`` is refused on the default home; ``--db`` named ``finsim.db``  or refusal
+           is refused (the old simulation's saves are never the terminal's database);
+           ``--host`` must be loopback
 stop       ``POST /api/shutdown`` (the OLD 0.11.0 engine answers the same route), waits for   0 stopped; 1 nothing
            the port to go quiet and the lock to release, judges the lock-file PID with         running; 2 still alive
            ``OpenProcess`` + ``GetExitCodeProcess == 259`` + the image name; ``--force`` →
            ``taskkill /PID`` only when both hold (never ``os.kill``); prints finsim.db's sha256
-status     served version vs the code on disk ("restart to serve the new code"), the ``app``   0 the terminal answers;
-           marker ("a non-terminal server answers on 8765"), pid, uptime, db, the log tail    1 otherwise
-           when down or unhealthy, lock, workers, providers, integrity, lifecycle, Startup
-           entry, backups, ``sha256(finsim.db)`` against the install baseline
-install    ``install_plan`` in order: sha256 baseline of ``finsim.db`` → stop the old engine   0 the terminal is up at
-           → delete the ``FinSim Server`` task and the old VBS files (backed up first) →        the end; 1 otherwise
-           write ``FinSim Server.vbs`` / ``FinSim Terminal.vbs`` / ``finsim.ico`` → copy the
-           server VBS into the Startup folder (replacing the old entry of that name) →
-           Desktop + Start Menu ``FinSim.lnk`` → start through the VBS, wait for the marker
-           → status → the PowerShell sequence → sha256 again ("unchanged")
+status     what runs (version, pid, uptime, the code tree from the lock's ``code``) vs this     0 the terminal answers;
+           command's tree, the ``app`` marker ("a non-terminal server answers on 8765"), the   1 otherwise
+           log tail when down or unhealthy, lock, workers, providers, integrity, lifecycle,
+           the Startup entry and the tree it starts (VERSION, RELEASE.txt SHA; whether its
+           pythonw and code exist), the FinSim icon, Chrome app shortcuts named "FinSim"
+           (reported, never deleted), backups, ``sha256(finsim.db)`` vs the install baseline
+install    refused from a git working tree unless ``--from-working-tree`` (the owner's flag:   0 the terminal is up at
+           the installed app comes from a release folder).  ``install_plan`` in order: sha256   the end; 1 otherwise or
+           baseline of ``finsim.db`` → stop the old engine → delete the ``FinSim Server``     refused (nothing changed)
+           task and the old VBS files (backed up first) → write ``FinSim Server.vbs`` /
+           ``FinSim Terminal.vbs`` / ``finsim.ico`` → copy the server VBS into the Startup
+           folder (replacing the old entry of that name) → Desktop + Start Menu ``FinSim.lnk``
+           (then the Chrome app shortcuts are reported) → start through the VBS, wait for the
+           marker → status → the PowerShell sequence for this tree → sha256 again ("unchanged")
 open       opens the app window; when the terminal is not answering it starts the server       0 / 1
            through ``FinSim Server.vbs`` first (never a second server: the lock and the
            exclusive bind make a duplicate exit 3, which ``open`` reports with the log tail)
 uninstall  removes the Startup entry, shortcuts, VBS files, icon, window profile; stops the    0
            terminal; ``--purge`` deletes ``terminal.db`` only after the owner types its full
            path (``finsim.db`` can never be named)
-legacy     copies ``<home>/finsim.db`` to ``<home>/legacy/legacy-view.db`` with the sqlite3     0 / 1 (no finsim.db)
-           backup API (once; ``--refresh`` re-copies) and runs the OLD ``finsim.api.server``
-           on the COPY (port 8766): the read-only archive view; ``finsim.db`` is never served
+import     C18: everything after ``import`` goes to ``finsim.terminal.importer.main``          0 done; 1 failed;
+           (imported only then); "not in this build" when the module is missing               2 refused / usage
 =========  ================================================================================  ========================
+
+``legacy`` (the retired game's archive view of ``finsim.db``) left the command line in 1.0.6 (UI-19, owner question Q8);
+nothing was deleted: the old code and ``finsim.db`` stay as they are, and ``legacy`` now only says so (exit 2).
 
 Conventions stated once:
 
 * Everything that decides *what* to do is a pure function tested without the OS: ``launcher_files``,
-  ``shortcut_script``, ``install_plan``, ``uninstall_plan``, ``legacy_plan``, ``status_text``, ``offline_refusal``,
+  ``shortcut_script``, ``install_plan``, ``uninstall_plan``, ``status_text`` (with ``tree_advice``, ``launcher_lines``,
+  ``shortcut_lines``), ``serve_banner``, ``parse_launcher_vbs``, ``lnk_info`` / ``shortcut_kind``, ``offline_refusal``,
   ``db_refusal``, ``host_refusal``, ``purge_confirmed``, ``pythonw_for``, ``process_state`` / ``lock_state`` (with an
   injected process API).  The ``cmd_*`` functions execute those plans with injectable collaborators (``http``,
-  ``api``, ``run``, ``sleep``, ``starter``, ``opener``, ``folders``, ``out``) so the tests never touch the network, the
-  real port, the real Startup folder or ``~/.finsim``.
+  ``api``, ``run``, ``sleep``, ``starter``, ``opener``, ``folders``, ``out``, ``tree_check``, ``loader``) so the tests
+  never touch the network, the real port, the real Startup folder or ``~/.finsim``.
+* Two code trees (STARTUP-04): the installed app runs from a release folder
+  (``%USERPROFILE%\\.finsim\\releases\\<tag>\\intelligence-terminal\\finsim``, made from a commit, its RELEASE.txt naming the
+  SHA), while ``python -m finsim`` typed in the repository runs the working tree.  ``status`` reads ``repo`` / ``py`` of
+  the installed ``FinSim Server.vbs`` and prints ``Startup entry -> <tree> (VERSION, SHA)``; when the running server is
+  another version or tree than this command's, it says "restart" only if ``open`` would start THIS tree, and otherwise
+  gives the two real choices (open the installed app, or ``stop`` then ``serve`` here).
 * The VBS files are ASCII (Windows Script Host reads .vbs as ANSI); quotes inside paths are doubled
   (``winpaths.vb_string``); a path that is not ASCII raises instead of producing a broken launcher (a path is never
-  folded: a folded path names another folder).  The Startup / Desktop / Start Menu folders come from
-  ``winpaths.folders()`` (``SHGetKnownFolderPath`` with the classic fallback).  This module depends on the old
-  ``finsim/app.py`` only for helpers present in its COMMITTED version (``_browser_candidates``, ``_ico_from_png``);
-  ``_ascii`` and the ``Startup`` case of ``_win_special`` exist only in another work stream's uncommitted edits.
+  folded: a folded path names another folder).  Before each ``WScript.Quit 1`` (pythonw or the code missing) a VBS
+  appends one line to ``<home>\\launcher.log`` (STARTUP-07), the file ``open`` also writes when it fails without a
+  console.  The Startup / Desktop / Start Menu folders come from ``winpaths.folders()`` (``SHGetKnownFolderPath`` with
+  the classic fallback).  This module depends on the old ``finsim/app.py`` only for helpers present in its COMMITTED
+  version (``_browser_candidates``, ``_ico_from_png``); ``_ascii`` and the ``Startup`` case of ``_win_special`` exist
+  only in another work stream's uncommitted edits.
 * The served process is ``pythonw.exe -m finsim serve --port 8765`` (the shared-machine capture guard exempts
   ``-m finsim serve … --port 8765``; TERMINAL_DECISIONS §17).  ``--host`` and ``--db`` are accepted so the longer
   documented form also parses.
 * Liveness is never judged with ``os.kill(pid, 0)`` (on Windows it terminates the process).  A PID whose
   ``OpenProcess`` fails is reported as not alive; a live PID whose image name does not contain ``python`` is never
   killed (PID-reuse guard).
-* The lock file ``<home>/terminal.lock`` holds ``{pid, port, started_ts, version}`` written by the server.  When the
-  server's byte-range lock covers the JSON, other processes cannot read it: that is reported as ``held`` with an
-  unknown pid rather than guessed.
-* ``finsim.db`` (the old simulation) is opened by this module only read-only: for ``sha256`` and as the *source*
-  of the sqlite3 backup that ``legacy`` serves.  The copy lives in ``<home>/legacy/`` because the old server rotates
-  ``finsim-*.db`` snapshots in ``<dirname(db)>/backups`` (newest ten), which must never touch ``<home>/backups`` —
-  the folder holding the owner's real ``finsim.db`` snapshots and the ``.bak`` copies ``install`` makes for the
-  rollback.
+* The lock file ``<home>/terminal.lock`` holds ``{pid, port, started_ts, version, home, db, code}`` written by the
+  server.  When the server's byte-range lock covers the JSON, other processes cannot read it: that is reported as
+  ``held`` with an unknown pid rather than guessed.
+* ``finsim.db`` (the old simulation) is opened by this module only read-only, for its ``sha256``.
 * ``install`` takes the sha256 baseline before anything else (§18 step 1).  If a FOREIGN server (the old engine) had to
   be stopped in step 2 and ``finsim.db`` changed meanwhile, that change is the old engine folding its own
   write-ahead log into the file at shutdown; the baseline is re-taken and the re-take is printed, so the final
   "unchanged" verdict speaks only about what the terminal did.  A change after stopping the TERMINAL is never
   explained away.
+* Shortcuts are read as data (``lnk_info``: the MS-SHLLINK layout, no shell or COM) and never moved or deleted.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import json
 import os
 import re
@@ -81,7 +100,6 @@ import subprocess
 import sys
 import time
 import traceback
-import urllib.parse
 import urllib.request
 import webbrowser
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
@@ -97,23 +115,26 @@ SHORTCUT_NAME = "FinSim.lnk"
 OLD_TASK = "FinSim Server"              # the old installer's scheduled task (schtasks)
 OLD_HOME_FILES = ("finsim-server.vbs", "finsim-open.vbs", "make-shortcuts.vbs")   # the old launcher's files in <home>
 WINDOW_PROFILE = "terminal-window-profile"
-LEGACY_DIR = "legacy"
-LEGACY_VIEW_DB = "legacy-view.db"
 BASELINE_NAME = "finsim.db.sha256"
 LAUNCHER_LOG = "launcher.log"
 STILL_ACTIVE = 259                      # GetExitCodeProcess of a live process
 PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 EXIT_OK, EXIT_NOT_RUNNING, EXIT_STILL_ALIVE, EXIT_INSTANCE, EXIT_SCHEMA, EXIT_STARTUP = 0, 1, 2, 3, 4, 5
+EXIT_USAGE = 2                          # refused or a usage error (argparse's code; `import` and `legacy` use it too)
 START_WAIT_S = 60.0
 STOP_WAIT_S = 30.0
 PY = "py -3.12 -m finsim"
+PY_CMD = "python -m finsim"             # the owner's spelling (`python` is 3.12 on this machine); PY pins the interpreter
 
-# ORC-9: the version in the printed sequence is finsim.terminal.VERSION (never a literal that goes stale at the next release)
-POWERSHELL_SEQUENCE = f"""cd C:\\Users\\logan\\intelligence-terminal\\finsim
-py -3.12 -m finsim stop                 # stops the OLD 0.11.0 engine too (same /api/shutdown route); prints the finsim.db sha256
-py -3.12 -m finsim install --no-open    # replaces Startup\\FinSim Server.vbs, removes the "FinSim Server" task, starts {VERSION}
-py -3.12 -m finsim status               # must show finsim-terminal {VERSION}, integrity ok, the Startup entry, finsim.db unchanged
-py -3.12 -m finsim open"""
+def powershell_sequence(tree: str, from_working_tree: bool = False) -> str:
+    """The cut-over sequence ``install`` prints at its end, for the tree it installed (a release folder; STARTUP-04: a
+    working tree needs ``--from-working-tree``).  ORC-9: the version is finsim.terminal.VERSION, never a stale literal."""
+    flag = " --from-working-tree" if from_working_tree else ""
+    return (f"cd {tree}\n"
+            f"py -3.12 -m finsim stop                 # stops the running terminal (an OLD 0.11.0 engine too); prints the finsim.db sha256\n"
+            f"py -3.12 -m finsim install --no-open{flag}    # Startup\\FinSim Server.vbs and the FinSim icon start this tree; starts {VERSION}\n"
+            f"py -3.12 -m finsim status               # must show {APP_ID} {VERSION}, integrity ok, Startup entry -> this tree, finsim.db unchanged\n"
+            f"py -3.12 -m finsim open")
 
 Folders = Tuple[str, str, str]          # (Startup, Desktop, Start Menu Programs)
 
@@ -384,12 +405,13 @@ _SERVER_VBS = """' FinSim Paper Terminal - starts the local server at login. If 
 ' OLD simulation engine answers (no "finsim-terminal" marker) it asks it to shut down first, then starts the terminal.
 ' Written by "python -m finsim install" (finsim.terminal.app.launcher_files). ASCII only: Windows Script Host reads
 ' .vbs files as ANSI. The single-instance lock and the exclusive bind are the guard; this probe is a courtesy.
+' When it cannot start the server it says why in launcher.log in the home folder before it quits.
 Option Explicit
 Dim sh, fso, http, state, py, repo, home, txt
 Set sh = CreateObject("WScript.Shell"): Set fso = CreateObject("Scripting.FileSystemObject")
 py = "{PYTHONW}": repo = "{REPO_FINSIM_DIR}": home = "{FINSIM_HOME}"
-If Not fso.FileExists(py) Then WScript.Quit 1
-If Not fso.FileExists(repo & "\\finsim\\terminal\\__init__.py") Then WScript.Quit 1
+If Not fso.FileExists(py) Then LogLine "not started: Python 3.12 (pythonw.exe) was not found at " & py: WScript.Quit 1
+If Not fso.FileExists(repo & "\\finsim\\terminal\\__init__.py") Then LogLine "not started: the FinSim code was not found in " & repo: WScript.Quit 1
 state = "down"
 On Error Resume Next
 Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0"): http.setTimeouts 1000, 1000, 2000, 2000
@@ -411,6 +433,16 @@ sh.Environment("Process")("PYTHONPATH") = repo
 sh.Environment("Process")("FINSIM_HOME") = home
 sh.CurrentDirectory = repo
 sh.Run \"\"\"\" & py & \"\"\" -m finsim serve --port {PORT}", 0, False
+
+Sub LogLine(msg)
+  Dim f, t
+  On Error Resume Next
+  If Not fso.FolderExists(home) Then fso.CreateFolder home
+  t = Now
+  Set f = fso.OpenTextFile(home & "\\{LAUNCHER_LOG}", 8, True)
+  f.WriteLine Year(t) & "-" & Right("0" & Month(t), 2) & "-" & Right("0" & Day(t), 2) & " " & Right("0" & Hour(t), 2) & ":" & Right("0" & Minute(t), 2) & ":" & Right("0" & Second(t), 2) & " FinSim Server.vbs: " & msg
+  f.Close
+End Sub
 """
 
 _TERMINAL_VBS = """' FinSim Paper Terminal - opens the app window, starting the local server first if it is not running.
@@ -422,10 +454,12 @@ Dim sh, fso, py, repo, home
 Set sh = CreateObject("WScript.Shell"): Set fso = CreateObject("Scripting.FileSystemObject")
 py = "{PYTHONW}": repo = "{REPO_FINSIM_DIR}": home = "{FINSIM_HOME}"
 If Not fso.FileExists(py) Then
+  LogLine "not opened: Python 3.12 (pythonw.exe) was not found at " & py
   MsgBox "Python 3.12 (pythonw.exe) was not found at" & vbCrLf & py, vbExclamation, "FinSim Terminal"
   WScript.Quit 1
 End If
 If Not fso.FileExists(repo & "\\finsim\\terminal\\__init__.py") Then
+  LogLine "not opened: the FinSim code was not found in " & repo
   MsgBox "The finsim package was not found under" & vbCrLf & repo, vbExclamation, "FinSim Terminal"
   WScript.Quit 1
 End If
@@ -433,6 +467,16 @@ sh.Environment("Process")("PYTHONPATH") = repo
 sh.Environment("Process")("FINSIM_HOME") = home
 sh.CurrentDirectory = repo
 sh.Run \"\"\"\" & py & \"\"\" -m finsim open", 0, False
+
+Sub LogLine(msg)
+  Dim f, t
+  On Error Resume Next
+  If Not fso.FolderExists(home) Then fso.CreateFolder home
+  t = Now
+  Set f = fso.OpenTextFile(home & "\\{LAUNCHER_LOG}", 8, True)
+  f.WriteLine Year(t) & "-" & Right("0" & Month(t), 2) & "-" & Right("0" & Day(t), 2) & " " & Right("0" & Hour(t), 2) & ":" & Right("0" & Minute(t), 2) & ":" & Right("0" & Second(t), 2) & " FinSim Terminal.vbs: " & msg
+  f.Close
+End Sub
 """
 
 
@@ -449,7 +493,7 @@ def launcher_files(home: str, pythonw: str, repo: str, port: int, icon_png: Opti
     ``-m finsim serve --port <port>``; ``FinSim Terminal.vbs`` runs ``-m finsim open``; ``finsim.ico`` wraps the PNG.
     The paths must be ASCII (``winpaths.vb_string`` raises ``ValueError`` otherwise; they are never folded)."""
     vb = winpaths.vb_string
-    subs = {"PYTHONW": vb(pythonw), "REPO_FINSIM_DIR": vb(repo), "FINSIM_HOME": vb(home), "PORT": int(port)}
+    subs = {"PYTHONW": vb(pythonw), "REPO_FINSIM_DIR": vb(repo), "FINSIM_HOME": vb(home), "PORT": int(port), "LAUNCHER_LOG": LAUNCHER_LOG}
     if icon_png is None:
         with open(icon_png_path(), "rb") as f:
             icon_png = f.read()
@@ -535,15 +579,6 @@ def uninstall_plan(home: str, startup: str, desktop: str, programs: str, port: i
     return steps
 
 
-def legacy_plan(home: str, port: int, refresh: bool, dst_exists: bool) -> Dict[str, object]:
-    """``legacy``: ``src`` = ``<home>/finsim.db`` (read as the sqlite3 backup source only), ``dst`` = ``serve_db`` =
-    ``<home>/legacy/legacy-view.db``; ``copy`` when the copy is missing or ``--refresh``.  The live path is never served."""
-    src = old_db_path(home)
-    dst = os.path.join(home, LEGACY_DIR, LEGACY_VIEW_DB)
-    return {"src": src, "dst": dst, "serve_db": dst, "copy": bool(refresh or not dst_exists), "port": int(port),
-            "url": url(port)}
-
-
 def offline_refusal(home_arg: Optional[str], env: Dict[str, str]) -> Optional[str]:
     """``serve --offline`` (FakeProvider, fake prices) is refused unless ``--home`` names a folder other than the default
     home and ``FINSIM_TERMINAL_DB`` is unset — fake data must never reach the owner's real book (§16)."""
@@ -562,7 +597,7 @@ def db_refusal(db: Optional[str]) -> Optional[str]:
     <home>\\finsim.db …``) now reaches the terminal, and the old saves are never the terminal's database."""
     if db and os.path.basename(db).lower() == "finsim.db":
         return (f"refusing to serve {db}: finsim.db is the OLD simulation's saves, never the terminal's database "
-                f"(the terminal uses <home>\\terminal.db; the archive view is `{PY} legacy`)")
+                f"(the terminal uses <home>\\terminal.db)")
     return None
 
 
@@ -635,18 +670,70 @@ def provider_state(p: Optional[dict]) -> str:
     return st
 
 
+def tree_advice(served: str, code_version: str, here: Optional[str], running: Optional[str],
+                launcher: Optional[Dict[str, object]]) -> List[str]:
+    """STARTUP-04: what ``status`` says when the running server is not this command's code (another VERSION, or the lock's
+    ``code`` names another tree).  "Restart" helps only when ``open`` would start THIS tree; when the FinSim icon starts
+    another tree (the installed release), restarting serves that tree again, so the two real choices are printed instead:
+    open the installed app, or ``stop`` then ``serve`` here.  Pure."""
+    diff_version = str(served) != str(code_version)
+    diff_tree = bool(running and here and not same_path(running, here))
+    if not (diff_version or diff_tree):
+        return []
+    starts = open_tree(launcher, here) if here else None
+    if here and starts and not same_path(starts, here):
+        where = f" from {running}" if running else ""
+        return [f"  NOTE: the server runs {APP_ID} {served}{where}; this command's code is {code_version} in {here}, and the "
+                f"FinSim icon starts {starts}. Two choices: open the installed app (`{PY} open` or the FinSim icon), or run "
+                f"this tree instead (`{PY} stop`, then `{PY} serve` here)"]
+    if diff_version:
+        return [f"  WARNING: the server serves {served} but the code on disk is {code_version} - "
+                f"restart to serve the new code (`{PY} stop` then `{PY} open`)"]
+    return [f"  NOTE: the server runs from {running}, not from this command's tree {here}; `{PY} stop` then `{PY} open` "
+            f"starts this tree instead"]
+
+
+def launcher_lines(launcher: Optional[Dict[str, object]], home: str) -> List[str]:
+    """STARTUP-04 / STARTUP-07: the tree the Startup entry (Windows login) starts - ``Startup entry -> <tree> (VERSION,
+    RELEASE.txt SHA)`` - whether its pythonw and its code exist, and the FinSim icon's tree when it differs.  Pure."""
+    lines: List[str] = []
+    login = (launcher or {}).get("login") or None
+    icon = (launcher or {}).get("icon") or None
+    if login and login.get("repo"):
+        lines.append(f"Startup entry -> {tree_phrase(login.get('tree'))}")
+        if login.get("py_present"):
+            lines.append(f"  its pythonw: {login['py']} (present)")
+        else:
+            lines.append(f"  its pythonw: {login.get('py') or '?'} - MISSING: the Startup entry quits at login without starting the "
+                         f"server (it says so in {os.path.join(home, LAUNCHER_LOG)}); install Python 3.12 there or run `{PY} install` again")
+        if not (login.get("tree") or {}).get("present"):
+            lines.append(f"  its code: MISSING - the Startup entry quits at login without starting the server; run `{PY} install` "
+                         f"from the release folder to use")
+    elif login:
+        lines.append("Startup entry -> ? (the entry names no code tree)")
+    if icon and icon.get("repo") and not same_path(str(icon["repo"]), str((login or {}).get("repo") or "")):
+        lines.append(f"FinSim icon -> {tree_phrase(icon.get('tree'))}"
+                     + ("" if icon.get("py_present") else f" - its pythonw {icon.get('py') or '?'} is MISSING"))
+    return lines
+
+
 def status_text(health: Optional[dict], *, code_version: str, port: int, home: str, db: str, db_size: Optional[int],
                 log_path: str, log_tail_lines: Sequence[str], lock: Tuple[str, Optional[dict]],
                 startup_entry: Tuple[str, str], backups: int, old_db_sha: Optional[str] = None,
-                baseline_sha: Optional[str] = None) -> Tuple[List[str], int]:
+                baseline_sha: Optional[str] = None, here: Optional[str] = None, launcher: Optional[Dict[str, object]] = None,
+                shortcuts: Sequence[Tuple[str, str, object]] = ()) -> Tuple[List[str], int]:
     """The lines ``status`` prints and its exit code — pure.  ``lock`` is ``lock_state()``'s pair; ``startup_entry`` is
     ``(path, "terminal" | "old" | "missing")``.  Exit 0 only when a server with the marker answers; the log tail is
-    included when nothing runs, when a non-terminal server answers, or when the terminal reports a problem."""
+    included when nothing runs, when a non-terminal server answers, or when the terminal reports a problem.
+    ``here`` is this command's code tree, ``launcher`` is ``installed_launcher()`` and ``shortcuts`` ``find_shortcuts()``
+    (STARTUP-04 / 06 / 07): the running server's tree comes from the lock's ``code``."""
     lines = [f"{APP_NAME} Terminal {code_version} (code on disk) - home {home} - db {db} ({fmt_size(db_size)}) - {url(port)}"]
     code = EXIT_NOT_RUNNING
     show_tail = True
+    running = (lock[1] or {}).get("code") if lock and lock[0] == "held" and lock[1] else None   # the live server's tree
     if health is None:
-        lines.append(f"server: not running ({PY} open starts it)")
+        starts = open_tree(launcher, here) if (here and launcher) else None
+        lines.append(f"server: not running ({PY} open starts it" + (f": the code in {starts})" if starts else ")"))
     elif not is_terminal(health):
         lines.append(f"server: WARNING a non-terminal server answers on {port} (engine {health.get('engine_version', '?')}, "
                      f"up {fmt_uptime(health.get('uptime_s'))}) - the old simulation engine is still serving; "
@@ -656,9 +743,9 @@ def status_text(health: Optional[dict], *, code_version: str, port: int, home: s
         served = str(health.get("version", "?"))
         lines.append(f"server: running {APP_ID} {served}, pid {health.get('pid', '?')}, up {fmt_uptime(health.get('uptime_s'))}, "
                      f"started {health.get('started_ny') or _when(health.get('started_ts'))}, state_version {health.get('state_version', '?')}")
-        if served != code_version:
-            lines.append(f"  WARNING: the server serves {served} but the code on disk is {code_version} - "
-                         f"restart to serve the new code (`{PY} stop` then `{PY} open`)")
+        if running and here:
+            lines.append(f"  code: {running}" + ("" if same_path(running, here) else f" (this command runs from {here})"))
+        lines.extend(tree_advice(served, code_version, here, running, launcher))
         if health.get("db_path") and os.path.normcase(str(health["db_path"])) != os.path.normcase(db):
             lines.append(f"  served db: {health['db_path']} ({fmt_size(health.get('db_size'))}) - not the configured path above")
         if health.get("offline"):
@@ -708,6 +795,8 @@ def status_text(health: Optional[dict], *, code_version: str, port: int, home: s
         lines.append(f"Startup entry: present but OLD - no finsim-terminal marker ({path}); run `{PY} install --no-open`")
     else:
         lines.append(f"Startup entry: missing ({path}); run `{PY} install --no-open`")
+    lines.extend(launcher_lines(launcher, home))
+    lines.extend(shortcut_lines(shortcuts))
     lines.append(f"backups: {backups} .db snapshot(s) in {os.path.join(home, 'backups')}")
     if old_db_sha:
         if baseline_sha:
@@ -748,6 +837,264 @@ def _read_baseline(home: str) -> Optional[str]:
 def _write_baseline(home: str, sha: str, target: str) -> None:
     with open(baseline_path(home), "w", encoding="utf-8") as f:
         f.write(f"{sha}  {target}\n")
+
+
+# ------------------------------------------------------------- code trees, the installed launcher and old shortcuts
+_VBS_ASSIGN = re.compile(r'\b(py|repo|home)\s*=\s*"((?:[^"]|"")*)"', re.IGNORECASE)
+_VBS_PORT = re.compile(r"http://127\.0\.0\.1:(\d+)/api/health")
+_VERSION_LINE = re.compile(r"""^VERSION\s*=\s*["']([^"']+)["']""", re.MULTILINE)
+_RELEASE_SHA = re.compile(r"^(?:source commit|git HEAD|commit|sha)\s*:?\s*([0-9a-fA-F]{7,40})\b", re.MULTILINE | re.IGNORECASE)
+_RELEASE_TAG = re.compile(r"^release\s+(\S+)", re.MULTILINE)
+CHROME_APP_EXE = "chrome_proxy.exe"
+CHROME_APP_NOTE = "a Chrome app shortcut that does not start the server"
+LNK_CLSID = bytes.fromhex("0114020000000000c000000000000046")     # 00021401-0000-0000-C000-000000000046, as stored
+
+
+def same_path(a: Optional[str], b: Optional[str]) -> bool:
+    """Two folders are the same code tree (case-insensitive and normalised on Windows); False when either is unknown."""
+    if not a or not b:
+        return False
+    return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+
+def _read_text(path: str, limit: int = 1 << 20) -> Optional[str]:
+    """A small text file (at most ``limit`` characters), or None when it cannot be read; never raises."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read(limit)
+    except (OSError, ValueError):
+        return None
+
+
+def parse_launcher_vbs(text: Optional[str]) -> Dict[str, object]:
+    """What a launcher VBS that ``install`` wrote says (STARTUP-04): ``py``, ``repo`` and ``home`` from its
+    ``py = "...": repo = "...": home = "..."`` line (doubled quotes undone; the first assignment of each name wins),
+    ``port`` from its health probe and ``marker`` (the ``"finsim-terminal"`` check).  Pure; a value the text does not
+    carry is None (the OLD 0.11.0 entry carries none of them)."""
+    text = text or ""
+    found: Dict[str, object] = {"py": None, "repo": None, "home": None, "port": None, "marker": APP_ID in text}
+    for m in _VBS_ASSIGN.finditer(text):
+        key = m.group(1).lower()
+        if found.get(key) is None:
+            found[key] = m.group(2).replace('""', '"')
+    p = _VBS_PORT.search(text)
+    found["port"] = int(p.group(1)) if p else None
+    return found
+
+
+def read_launcher_vbs(path: str, exists: Callable[[str], bool] = os.path.exists) -> Optional[Dict[str, object]]:
+    """``parse_launcher_vbs`` of the file at ``path`` plus ``path``, ``py_present`` (its pythonw exists) and ``tree``
+    (``describe_tree`` of its ``repo``); None when there is no such file."""
+    text = _read_text(path)
+    if text is None:
+        return None
+    info = parse_launcher_vbs(text)
+    info["path"] = path
+    info["py_present"] = bool(info.get("py")) and exists(str(info["py"]))
+    info["tree"] = describe_tree(str(info["repo"]), exists) if info.get("repo") else None
+    return info
+
+
+def release_info(tree: str) -> Dict[str, Optional[str]]:
+    """The RELEASE.txt of a release folder (``<release>\\RELEASE.txt`` above ``<release>\\intelligence-terminal\\finsim``;
+    also looked for in the tree and its parent): ``{file, sha, tag}``, each None when absent.  The release tooling writes
+    ``release <tag>`` and ``source commit <sha>`` (older copies: ``git HEAD <sha>``)."""
+    parent = os.path.dirname(os.path.abspath(tree))
+    for folder in (tree, parent, os.path.dirname(parent)):
+        path = os.path.join(folder, "RELEASE.txt")
+        text = _read_text(path, 64 << 10)
+        if text is None:
+            continue
+        sha = _RELEASE_SHA.search(text) or re.search(r"\b([0-9a-fA-F]{40})\b", text)
+        tag = _RELEASE_TAG.search(text)
+        return {"file": path, "sha": sha.group(1).lower() if sha else None, "tag": tag.group(1) if tag else None}
+    return {"file": None, "sha": None, "tag": None}
+
+
+def describe_tree(tree: str, exists: Callable[[str], bool] = os.path.exists) -> Dict[str, object]:
+    """A code tree (the folder holding the ``finsim`` package): ``present`` (``finsim\\terminal\\__init__.py`` exists - the
+    file the launcher VBS checks), its ``version`` (``VERSION`` of that file) and, for a release folder, ``sha`` / ``tag``
+    / ``release_file`` of its RELEASE.txt."""
+    init = os.path.join(tree, "finsim", "terminal", "__init__.py")
+    present = exists(init)
+    text = _read_text(init, 64 << 10) if present else None
+    m = _VERSION_LINE.search(text or "")
+    rel = release_info(tree) if present else {"file": None, "sha": None, "tag": None}
+    return {"path": tree, "present": present, "version": m.group(1) if m else None, "sha": rel["sha"], "tag": rel["tag"],
+            "release_file": rel["file"]}
+
+
+def tree_phrase(t: Optional[Dict[str, object]]) -> str:
+    """``<tree> (finsim-terminal <VERSION>, release <tag> commit <sha>)`` - the words ``status`` and ``serve`` use."""
+    if not t:
+        return "?"
+    if not t.get("present"):
+        return f"{t['path']} (MISSING: there is no finsim\\terminal\\__init__.py in that folder)"
+    ver = f"{APP_ID} {t['version']}" if t.get("version") else "VERSION unreadable"
+    if t.get("sha"):
+        rel = (f"release {t['tag']}, " if t.get("tag") else "") + f"commit {t['sha']}"
+    else:
+        rel = "no RELEASE.txt: a working tree, not a release"
+    return f"{t['path']} ({ver}, {rel})"
+
+
+def git_working_tree(tree: str, exists: Callable[[str], bool] = os.path.exists) -> Optional[str]:
+    """The ``.git`` (folder, or the file of a linked worktree) that makes ``tree`` part of a git working tree, or None.
+    The code layout is ``<repository>\\finsim\\finsim\\terminal``, so the tree and its parent are checked; a release
+    folder (``...\\.finsim\\releases\\<tag>\\intelligence-terminal\\finsim``, made from a commit) has none."""
+    for folder in (tree, os.path.dirname(os.path.abspath(tree))):
+        marker = os.path.join(folder, ".git")
+        if exists(marker):
+            return marker
+    return None
+
+
+def install_refusal(tree: str, git_marker: str) -> str:
+    return (f"install refused: {tree} is a git working tree ({git_marker}), where code is still being edited, so the "
+            f"FinSim icon and Windows login would start unreviewed code. The installed app comes from a release folder "
+            f"(%USERPROFILE%\\.finsim\\releases\\<tag>\\intelligence-terminal\\finsim, made from a commit). Nothing was changed. "
+            f"To install this working tree anyway (only on the owner's word): {PY} install --from-working-tree")
+
+
+def is_default_home(home: Optional[str]) -> bool:
+    """``home`` is the owner's real home ``%USERPROFILE%\\.finsim`` (whatever FINSIM_HOME says)."""
+    return same_path(home, os.path.join(os.path.expanduser("~"), ".finsim"))
+
+
+def installed_launcher(home: str, startup: str, exists: Callable[[str], bool] = os.path.exists) -> Dict[str, object]:
+    """The installed launcher as Windows login and the FinSim icon use it: ``login`` = the Startup entry
+    ``<Startup>\\FinSim Server.vbs`` and ``icon`` = ``<home>\\FinSim Server.vbs`` (what ``open`` - so the FinSim icon - starts
+    when the terminal does not answer), each ``read_launcher_vbs`` or None.  ``install`` writes both from one tree."""
+    login = read_launcher_vbs(os.path.join(startup, SERVER_VBS), exists) if startup else None
+    icon = read_launcher_vbs(os.path.join(home, SERVER_VBS), exists)
+    return {"login": login, "icon": icon}
+
+
+def open_tree(launcher: Optional[Dict[str, object]], here: str) -> str:
+    """The code tree ``open`` (and the FinSim icon) starts when nothing runs: the one ``<home>\\FinSim Server.vbs`` names,
+    else this tree (``open`` then starts ``pythonw -m finsim serve`` from here directly)."""
+    icon = (launcher or {}).get("icon") or {}
+    return str(icon.get("repo") or here)
+
+
+def _lnk_strz(buf: bytes, off: int, wide: bool) -> str:
+    """A NUL-terminated string at ``off`` (UTF-16LE when ``wide``, else the ANSI code page)."""
+    if wide:
+        end = off
+        while end + 1 < len(buf) and buf[end:end + 2] != b"\0\0":
+            end += 2
+        return buf[off:end].decode("utf-16-le", "replace")
+    end = buf.find(b"\0", off)
+    raw = buf[off:end if end >= 0 else len(buf)]
+    try:
+        return raw.decode("mbcs", "replace")
+    except LookupError:                     # no ANSI code page off Windows
+        return raw.decode("latin-1")
+
+
+def lnk_info(data: bytes, folder: str = "") -> Optional[Dict[str, str]]:
+    """The ``target``, ``args``, ``workdir`` and ``name`` of a Windows shortcut file (MS-SHLLINK: header, optional
+    item-id list, LinkInfo, string data, extra blocks), read as data - no shell, no COM.  The target is LinkInfo's local
+    path, else the environment-variable block's, else the relative path resolved against ``folder`` (the shortcut's own
+    folder); None when ``data`` is not a shortcut or is cut short."""
+    import struct
+    try:
+        if len(data) < 76 or struct.unpack_from("<I", data, 0)[0] != 0x4C or data[4:20] != LNK_CLSID:
+            return None
+        flags = struct.unpack_from("<I", data, 20)[0]
+        pos = 76
+        target = ""
+        if flags & 0x01:                                            # HasLinkTargetIDList
+            pos += 2 + struct.unpack_from("<H", data, pos)[0]
+        if flags & 0x02:                                            # HasLinkInfo
+            size, hsize, liflags, _vol, lbp, _net, cps = struct.unpack_from("<7I", data, pos)
+            info = data[pos:pos + size]
+            if not flags & 0x100 and liflags & 0x01:                # not ForceNoLinkInfo; VolumeIDAndLocalBasePath
+                if hsize >= 0x24 and struct.unpack_from("<I", info, 28)[0]:
+                    lbpu, cpsu = struct.unpack_from("<2I", info, 28)
+                    target = _lnk_strz(info, lbpu, True) + (_lnk_strz(info, cpsu, True) if cpsu else "")
+                else:
+                    target = _lnk_strz(info, lbp, False) + (_lnk_strz(info, cps, False) if cps else "")
+            pos += size
+        wide = bool(flags & 0x80)                                   # IsUnicode
+        strings: Dict[str, str] = {}
+        for bit, key in ((0x04, "name"), (0x08, "relative"), (0x10, "workdir"), (0x20, "args"), (0x40, "icon")):
+            if flags & bit:
+                n = struct.unpack_from("<H", data, pos)[0]
+                raw = data[pos + 2:pos + 2 + (2 * n if wide else n)]
+                pos += 2 + len(raw)
+                strings[key] = raw.decode("utf-16-le", "replace") if wide else _lnk_strz(raw + b"\0", 0, False)
+        while not target and pos + 8 <= len(data):                  # ExtraData: the EnvironmentVariableDataBlock
+            size, sig = struct.unpack_from("<2I", data, pos)
+            if size < 8:
+                break
+            if sig == 0xA0000001 and size >= 0x314:
+                target = os.path.expandvars(_lnk_strz(data, pos + 8 + 260, True) or _lnk_strz(data, pos + 8, False))
+            pos += size
+        if not target and strings.get("relative"):
+            target = os.path.normpath(os.path.join(folder, strings["relative"]))
+    except (struct.error, IndexError, ValueError):
+        return None
+    return {"target": target, "args": strings.get("args", ""), "workdir": strings.get("workdir", ""), "name": strings.get("name", "")}
+
+
+def shortcut_kind(info: Optional[Dict[str, str]]) -> str:
+    """``chrome_app`` (the target is Chrome's ``chrome_proxy.exe``: an installed web app that only opens a window),
+    ``terminal`` (``wscript`` running ``FinSim Terminal.vbs``: the FinSim icon ``install`` makes) or ``other``."""
+    target = ((info or {}).get("target") or "").replace("/", "\\")
+    base = target.rsplit("\\", 1)[-1].lower()
+    if base == CHROME_APP_EXE:
+        return "chrome_app"
+    if base == "wscript.exe" and TERMINAL_VBS.lower() in ((info or {}).get("args") or "").lower():
+        return "terminal"
+    return "other"
+
+
+def find_shortcuts(folders: Sequence[str]) -> List[Tuple[str, str, Optional[Dict[str, str]]]]:
+    """Every ``FinSim*.lnk`` in the Startup and Desktop folders and in Start Menu Programs with its subfolders (two levels:
+    Chrome puts its apps in ``Programs\\Chrome Apps``), as ``(path, kind, lnk_info)``.  ``folders`` is the launcher's
+    ``(Startup, Desktop, Programs)`` triple (empty = unknown, skipped).  Read only: nothing is ever moved or deleted."""
+    found: List[Tuple[str, str, Optional[Dict[str, str]]]] = []
+    seen = set()
+    for i, top in enumerate(folders):
+        if not top or not os.path.isdir(top):
+            continue
+        depth_max = 2 if i == 2 else 0
+        for root, dirs, files in os.walk(top):
+            rel = os.path.relpath(root, top)
+            depth = 0 if rel == os.curdir else rel.count(os.sep) + 1
+            if depth >= depth_max:
+                dirs[:] = []
+            for name in sorted(files):
+                low = name.lower()
+                if not (low.startswith("finsim") and low.endswith(".lnk")):
+                    continue
+                path = os.path.join(root, name)
+                key = os.path.normcase(os.path.abspath(path))
+                if key in seen:
+                    continue
+                seen.add(key)
+                try:
+                    with open(path, "rb") as f:
+                        info = lnk_info(f.read(1 << 16), root)
+                except OSError:
+                    info = None
+                found.append((path, shortcut_kind(info), info))
+    return found
+
+
+def shortcut_lines(found: Sequence[Tuple[str, str, object]]) -> List[str]:
+    """STARTUP-06 / owner question Q9: the FinSim icon(s), and each Chrome app shortcut named as "a Chrome app shortcut that
+    does not start the server" - reported, never deleted (deleting one is the owner's call)."""
+    lines: List[str] = []
+    icons = [p for p, kind, _ in found if kind == "terminal"]
+    if icons:
+        lines.append("FinSim icon: " + "; ".join(icons))
+    for p, kind, _ in found:
+        if kind == "chrome_app":
+            lines.append(f"  NOTE: {p} is {CHROME_APP_NOTE} (it only opens a window on 127.0.0.1); use the FinSim icon. "
+                         "It was left in place: delete it yourself if you no longer want it")
+    return lines
 
 
 # ------------------------------------------------------------------------------------------------- the window
@@ -791,7 +1138,8 @@ def start_server(home: str, port: int, out: Optional[Callable[..., None]] = None
     vbs = os.path.join(home, SERVER_VBS)
     if sys.platform == "win32" and os.path.exists(vbs):
         subprocess.Popen(["wscript.exe", vbs], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        _say(f"starting through {vbs}", out=out)
+        tree = parse_launcher_vbs(_read_text(vbs)).get("repo")
+        _say(f"starting through {vbs}" + (f" (the code in {tree})" if tree else ""), out=out)
         return "vbs", None
     exe = pythonw_for(sys.executable) if sys.platform == "win32" else sys.executable
     if not os.path.exists(exe):
@@ -830,11 +1178,28 @@ def wait_for_terminal(http: Http, proc: Optional[subprocess.Popen], timeout: flo
 
 
 # ---------------------------------------------------------------------------------------------------- commands
+def serve_banner(here: str, version: str, db: str, launcher: Optional[Dict[str, object]] = None) -> str:
+    """STARTUP-04: the line ``serve`` prints first - this code tree, its VERSION and the database - and, when the installed
+    launcher (``installed_launcher``, read only on the owner's default home) names another tree, what the FinSim icon and
+    Windows login start instead.  Pure."""
+    line = f"{APP_NAME} Terminal {version} - code {here} - db {db}"
+    login = str(((launcher or {}).get("login") or {}).get("repo") or "")
+    icon = str(((launcher or {}).get("icon") or {}).get("repo") or "")
+    if login and icon and same_path(login, icon):
+        return line + ("" if same_path(login, here) else f"; the FinSim icon and Windows login start {login} instead")
+    parts = []
+    if icon and not same_path(icon, here):
+        parts.append(f"the FinSim icon starts {icon}")
+    if login and not same_path(login, here):
+        parts.append(f"Windows login starts {login}")
+    return line + ("; " + " and ".join(parts) + " instead" if parts else "")
+
+
 def cmd_serve(port: int, home: Optional[str], db: Optional[str], offline: bool, log_level: Optional[str],
-              host: Optional[str] = None, out: Optional[Callable[..., None]] = None) -> int:
+              host: Optional[str] = None, out: Optional[Callable[..., None]] = None, folders: Optional[Folders] = None) -> int:
     """Foreground server.  The guards run before the server module is imported; an import-time failure (for example a
     stray ``ZoneInfo`` call under 3.12 without tzdata) is written with its traceback to ``<home>/terminal.log`` and
-    exits 5 so ``status`` can show the tail."""
+    exits 5 so ``status`` can show the tail.  It first prints ``serve_banner`` (skipped under pythonw, where nothing shows)."""
     for msg in (host_refusal(host), offline_refusal(home, dict(os.environ)) if offline else None, db_refusal(db)):
         if msg:
             _say(msg, out=out)
@@ -846,6 +1211,15 @@ def cmd_serve(port: int, home: Optional[str], db: Optional[str], offline: bool, 
     if log_level:
         os.environ["FINSIM_LOG_LEVEL"] = log_level
     eff_home = config.home()
+    if out is not None or sys.stdout is not None:
+        try:
+            launcher = None
+            if is_default_home(eff_home):
+                startup = (folders or (real_folders() if sys.platform == "win32" else ("", "", "")))[0]
+                launcher = installed_launcher(eff_home, startup)
+            _say(serve_banner(repo_dir(), VERSION, config.db_path(), launcher), out=out)
+        except Exception:   # noqa: BLE001 - the banner is information; it never stops a start
+            pass
     try:
         from . import server as _server
     except Exception:   # noqa: BLE001 - an import-time failure must leave a trace
@@ -949,27 +1323,38 @@ def cmd_status(*, http: Optional[Http] = None, api=None, home: Optional[str] = N
         size: Optional[int] = os.path.getsize(db)
     except OSError:
         size = None
-    startup = (folders or (real_folders() if sys.platform == "win32" else (home, "", "")))[0]
-    entry = os.path.join(startup, SERVER_VBS)
+    folders = folders or (real_folders() if sys.platform == "win32" else (home, "", ""))
+    startup = folders[0]
+    entry = os.path.join(startup, SERVER_VBS) if startup else ""     # an unknown folder is never the current folder
     lines, code = status_text(h, code_version=VERSION, port=config.port(), home=home, db=db, db_size=size,
                               log_path=config.log_path(), log_tail_lines=log_tail(config.log_path()),
                               lock=lock_state(home, api or default_process_api()), startup_entry=(entry, startup_entry_kind(entry)),
-                              backups=count_backups(home), old_db_sha=sha256_file(old_db_path(home)), baseline_sha=_read_baseline(home))
+                              backups=count_backups(home), old_db_sha=sha256_file(old_db_path(home)), baseline_sha=_read_baseline(home),
+                              here=repo_dir(), launcher=installed_launcher(home, startup), shortcuts=find_shortcuts(folders))
     for l in lines:
         _say(l, out=out)
     return code
 
 
-def cmd_install(open_after: bool = True, *, http: Optional[Http] = None, api=None, home: Optional[str] = None,
-                run=_run, sleep=time.sleep, out: Optional[Callable[..., None]] = None, folders: Optional[Folders] = None,
-                starter: Callable[..., Tuple[str, Optional[subprocess.Popen]]] = start_server, stamp: Optional[str] = None,
-                opener: Callable[[str, str], str] = open_window, wait_s: float = START_WAIT_S,
-                monotonic: Callable[[], float] = time.monotonic) -> int:
+def cmd_install(open_after: bool = True, *, from_working_tree: bool = False, http: Optional[Http] = None, api=None,
+                home: Optional[str] = None, run=_run, sleep=time.sleep, out: Optional[Callable[..., None]] = None,
+                folders: Optional[Folders] = None, starter: Callable[..., Tuple[str, Optional[subprocess.Popen]]] = start_server,
+                stamp: Optional[str] = None, opener: Callable[[str, str], str] = open_window, wait_s: float = START_WAIT_S,
+                monotonic: Callable[[], float] = time.monotonic,
+                tree_check: Callable[[str], Optional[str]] = git_working_tree) -> int:
     """Execute ``install_plan`` step by step, printing one line per step.  Windows only unless the three folders are
     injected (tests).  Nothing here opens ``finsim.db``; its sha256 is taken before and after and the verdict printed.
-    Exit 0 when the terminal answers with the marker at the end, 1 otherwise (the log tail was printed)."""
+    Exit 0 when the terminal answers with the marker at the end, 1 otherwise (the log tail was printed).
+    STARTUP-04: refused (exit 1, nothing changed) when this code tree is a git working tree (``tree_check``), unless
+    ``from_working_tree`` (``--from-working-tree``, the owner's flag: no deploy without it).  STARTUP-06: the FinSim
+    shortcuts that are Chrome apps are reported after the shortcut step, never deleted."""
     if folders is None and sys.platform != "win32":
         _say("install is Windows-only (Startup folder, VBS, shortcuts); use `serve` directly elsewhere", out=out)
+        return EXIT_NOT_RUNNING
+    here = repo_dir()
+    git_marker = tree_check(here)
+    if git_marker and not from_working_tree:
+        _say(install_refusal(here, git_marker), out=out)
         return EXIT_NOT_RUNNING
     home = home or config.home()
     http = http or Http()
@@ -985,6 +1370,8 @@ def cmd_install(open_after: bool = True, *, http: Optional[Http] = None, api=Non
     files = launcher_files(home, pythonw, repo_dir(), port)
     plan = install_plan(home, startup, desktop, programs, port, stamp or time.strftime("%Y%m%d-%H%M%S"))
     _say(f"{APP_NAME} Terminal {VERSION} install - home {home} - pythonw {pythonw} - repo {repo_dir()}", out=out)
+    if git_marker:
+        _say(f"  installing from the git working tree {here} (--from-working-tree)", out=out)
     if not os.path.exists(pythonw):
         _say(f"  WARNING: {pythonw} does not exist; the VBS files will refuse to run until Python 3.12 is installed there", out=out)
     before = None
@@ -1055,6 +1442,8 @@ def cmd_install(open_after: bool = True, *, http: Optional[Http] = None, api=Non
                 pass
             _say("  shortcuts: " + (", ".join(os.path.join(f, SHORTCUT_NAME) for f in target) if r.returncode == 0   # type: ignore[union-attr]
                                      else f"creation failed ({(r.stderr or r.stdout or '').strip()})"), out=out)
+            for line in shortcut_lines([s for s in find_shortcuts((startup, desktop, programs)) if s[1] == "chrome_app"]):
+                _say(line, out=out)
         elif op == "start":
             h = http.health()
             if is_terminal(h) and str(h.get("version")) == VERSION:
@@ -1072,7 +1461,7 @@ def cmd_install(open_after: bool = True, *, http: Optional[Http] = None, api=Non
             cmd_status(http=http, api=api, home=home, out=out, folders=(startup, desktop, programs))
         elif op == "sequence":
             _say("The final PowerShell sequence (also in docs/TERMINAL_RUNBOOK.md):", out=out)
-            for l in POWERSHELL_SEQUENCE.splitlines():
+            for l in powershell_sequence(here, from_working_tree=bool(git_marker)).splitlines():
                 _say("  " + l, out=out)
         elif op == "sha256_check":
             after = sha256_file(str(target))
@@ -1166,53 +1555,53 @@ def cmd_uninstall(purge: bool = False, *, http: Optional[Http] = None, api=None,
     return EXIT_OK
 
 
-def ro_uri(path: str) -> str:
-    """A ``file:`` URI with ``mode=ro`` for ``sqlite3.connect(uri=True)``: forward slashes, percent-encoded, in the
-    documented ``file:///C:/...`` form on Windows and ``file:/home/...`` elsewhere."""
-    p = os.path.abspath(path).replace("\\", "/")
-    q = urllib.parse.quote(p, safe="/:")
-    return ("file:///" + q if re.match(r"^[A-Za-z]:/", p) else "file:" + q) + "?mode=ro"
-
-
-def cmd_legacy(port: int = config.LEGACY_PORT, refresh: bool = False, *, home: Optional[str] = None,
-               out: Optional[Callable[..., None]] = None, serve_fn: Optional[Callable[..., object]] = None) -> int:
-    """The archive view: the OLD ``finsim.api.server.serve`` on a sqlite3-backup COPY of ``finsim.db`` (never the live
-    file), foreground, on ``--port`` (default 8766).  Edits made in the view live in the copy only."""
-    home = home or config.home()
-    plan = legacy_plan(home, port, refresh, os.path.exists(os.path.join(home, LEGACY_DIR, LEGACY_VIEW_DB)))
-    src, dst = str(plan["src"]), str(plan["dst"])
-    if not os.path.exists(src):
-        _say(f"no {src}: there is no old simulation database to view", out=out)
-        return EXIT_NOT_RUNNING
-    if plan["copy"]:
-        import sqlite3
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        s = sqlite3.connect(ro_uri(src), uri=True)   # read-only: the live file is never written, not even a checkpoint
-        d = sqlite3.connect(dst)
-        try:
-            s.backup(d)
-        finally:
-            d.close()
-            s.close()
-        _say(f"copied {src} -> {dst} (sqlite3 backup API; the original is untouched)", out=out)
-    else:
-        _say(f"serving the existing copy {dst} (pass --refresh to re-copy finsim.db)", out=out)
-    _say(f"LEGACY ARCHIVE VIEW of a copy on {plan['url']} - finsim.db is not opened; anything saved here stays in the copy "
-         f"(delete {os.path.dirname(dst)} at any time; the old server keeps its own backups there)", out=out)
-    if serve_fn is None:
-        from ..api.server import serve as serve_fn   # the OLD server, unchanged
-    try:
-        serve_fn(str(plan["serve_db"]), "127.0.0.1", int(port), name="finsim legacy archive view")
-    except KeyboardInterrupt:
-        pass
-    return EXIT_OK
-
-
 # -------------------------------------------------------------------------------------------------------- CLI
-def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
-    ap = argparse.ArgumentParser(prog="finsim", description=f"FinSim Live Terminal {VERSION} - paper trading on real delayed prices (127.0.0.1 only)")
-    sub = ap.add_subparsers(dest="cmd", required=True)
-    s = sub.add_parser("serve", help="run the terminal server in the foreground (exit 3 another instance / port, 4 newer schema, 5 startup error)")
+#: STARTUP-09: what ``python -m finsim`` with no command prints (three lines, exit 0)
+NO_COMMAND_HINT = (
+    f"{PY_CMD} serve    run the terminal here, in the foreground (Ctrl+C stops it)",
+    f"{PY_CMD} open     open the app window; it starts the server first when the terminal is not running",
+    f"{PY_CMD} status   what runs, from which code tree, and its health (`{PY_CMD} --help` lists every command)",
+)
+#: UI-19 (owner question Q8): the retired game's archive view left FinSim's command line in 1.0.6; its code and finsim.db stay
+LEGACY_REMOVED = ("`legacy` was removed in 1.0.6: the retired simulation game is no longer part of FinSim's command line. "
+                  "Nothing was deleted: its code and %USERPROFILE%\\.finsim\\finsim.db are kept as they were.")
+IMPORTER_MODULE = __package__ + ".importer"
+
+
+def _load_importer():
+    """C18: ``finsim.terminal.importer``, imported only when ``import`` runs (every other command starts without it)."""
+    return importlib.import_module(IMPORTER_MODULE)
+
+
+def cmd_import(argv: Sequence[str], *, out: Optional[Callable[..., None]] = None,
+               loader: Callable[[], object] = _load_importer) -> int:
+    """C18: ``python -m finsim import ...`` hands every argument after ``import`` to ``finsim.terminal.importer.main(argv)``
+    and returns its exit code (0 done, 1 failed, 2 refused or usage; ``import --help`` is 0).  A build without the import
+    tool prints "not in this build" and exits 2; an import tool that is present but cannot load exits 1 with the reason."""
+    try:
+        mod = loader()
+    except ModuleNotFoundError as e:
+        if e.name == IMPORTER_MODULE:
+            _say("import: the historical import tool is not in this build", out=out)
+            return EXIT_USAGE           # the import tool's own code for refused / usage
+        _say(f"import: the historical import tool could not be loaded ({type(e).__name__}: {e})", out=out)
+        return EXIT_NOT_RUNNING
+    except Exception as e:   # noqa: BLE001 - a broken tool is reported, never a traceback on the owner's console
+        _say(f"import: the historical import tool could not be loaded ({type(e).__name__}: {e})", out=out)
+        return EXIT_NOT_RUNNING
+    rc = mod.main(list(argv))      # type: ignore[attr-defined]
+    try:
+        return int(rc or 0)
+    except (TypeError, ValueError):
+        return EXIT_NOT_RUNNING
+
+
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(prog="python -m finsim", description=f"FinSim Terminal {VERSION} - paper trading on real delayed prices "
+                                 "(127.0.0.1 only). Without a command it prints a three-line hint.")
+    sub = ap.add_subparsers(dest="cmd", metavar="command")
+    s = sub.add_parser("serve", help="run the terminal server here, in the foreground; exit 0 stopped, 3 another instance or the port is "
+                       "taken, 4 newer schema, 5 startup error or refusal")
     s.add_argument("--port", type=int, default=config.port())
     s.add_argument("--home", default=None, help="data folder (default %%USERPROFILE%%\\.finsim or FINSIM_HOME)")
     s.add_argument("--db", default=None, help="terminal database (default <home>\\terminal.db); finsim.db is refused")
@@ -1222,20 +1611,45 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     st = sub.add_parser("stop", help="stop the server on the port (the old engine too); exit 0 stopped, 1 nothing running, 2 still alive")
     st.add_argument("--timeout", type=float, default=15.0)
     st.add_argument("--force", action="store_true", help="taskkill the lock holder, only when it is a live python process")
-    sub.add_parser("status", help="served version vs the code on disk, integrity, workers, providers, lock, Startup entry, backups")
-    i = sub.add_parser("install", help="Startup entry + shortcuts for this user; stops the old engine; starts the terminal")
+    sub.add_parser("status", help="what runs and from which code tree, integrity, workers, providers, lock, the Startup entry and "
+                   "the tree it starts, old shortcuts, backups; exit 0 the terminal answers, 1 otherwise")
+    i = sub.add_parser("install", help="Startup entry + FinSim icon for this user, from a release folder; stops an old engine; starts "
+                       "the terminal; exit 0 the terminal is up at the end, 1 otherwise or refused")
     i.add_argument("--no-open", action="store_true", help="do not open the window after installing")
-    sub.add_parser("open", help="open the app window (starts the server first when the terminal does not answer)")
-    u = sub.add_parser("uninstall", help="remove the Startup entry, shortcuts and launcher files; stop the terminal")
+    i.add_argument("--from-working-tree", action="store_true",
+                   help="install even though this code is a git working tree (refused without it: only on the owner's word)")
+    sub.add_parser("open", help="open the app window (starts the server first when the terminal does not answer); exit 0 / 1")
+    u = sub.add_parser("uninstall", help="remove the Startup entry, FinSim icon and launcher files; stop the terminal; exit 0")
     u.add_argument("--purge", action="store_true", help="also delete terminal.db after typing its path (never finsim.db)")
-    lg = sub.add_parser("legacy", help="the OLD simulation on a copy of finsim.db (archive view), default port 8766")
-    lg.add_argument("--port", type=int, default=config.LEGACY_PORT)
-    lg.add_argument("--refresh", action="store_true", help="re-copy finsim.db into the view copy first")
-    return ap.parse_args(argv)
+    # listed for --help only: main() hands everything after `import` to the import tool untouched (C18)
+    sub.add_parser("import", add_help=False, help="the historical import tool: report / dry-run / apply / restore "
+                   "(`import --help` lists its options; 0 done, 1 failed, 2 refused)")
+    return ap
+
+
+def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    """The command line as a namespace.  No command -> ``cmd`` None (the hint); ``import`` -> ``cmd`` "import" with every
+    later argument untouched in ``import_args`` (they belong to the import tool's own parser)."""
+    args = list(sys.argv[1:] if argv is None else argv)
+    if not args:
+        return argparse.Namespace(cmd=None)
+    if args[0] == "import":
+        return argparse.Namespace(cmd="import", import_args=args[1:])
+    return build_parser().parse_args(args)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    args = parse_args(argv)
+    raw = list(sys.argv[1:] if argv is None else argv)
+    if raw and raw[0] == "legacy":
+        _say(LEGACY_REMOVED)
+        return EXIT_USAGE           # as argparse answers any other unknown command
+    args = parse_args(raw)
+    if args.cmd is None:
+        for line in NO_COMMAND_HINT:
+            _say(line)
+        return EXIT_OK
+    if args.cmd == "import":
+        return cmd_import(args.import_args)
     if args.cmd == "serve":
         return cmd_serve(args.port, args.home, args.db, args.offline, args.log_level, host=args.host)
     if args.cmd == "stop":
@@ -1243,13 +1657,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.cmd == "status":
         return cmd_status()
     if args.cmd == "install":
-        return cmd_install(open_after=not args.no_open)
+        return cmd_install(open_after=not args.no_open, from_working_tree=args.from_working_tree)
     if args.cmd == "open":
         return cmd_open()
     if args.cmd == "uninstall":
         return cmd_uninstall(purge=args.purge)
-    if args.cmd == "legacy":
-        return cmd_legacy(args.port, args.refresh)
     return 2   # unreachable: argparse rejects unknown commands
 
 

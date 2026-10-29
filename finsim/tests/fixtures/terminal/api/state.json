@@ -308,8 +308,7 @@
   "ENCUMBRANCE": "Encumbrance = collateral and margin the book has posted and cannot spend: stock-borrow collateral at the lender, futures and option margin, OTC initial and variation margin.",
   "AVAILABLE": "Available = settled cash + receivables due by the order's settlement date \u2212 payables \u2212 cash reserved by working orders (per account, per currency).",
   "TREASURY": "Treasury is the lifetime's own funds: contributed capital plus retained results (its cash interest) minus what it has advanced to the accounts; advances are internal transfers that net to zero across the lifetime.",
-  "PERF": "Performance statistics use daily NAV-to-NAV returns with capital flows removed, annualised by \u221a252, Sharpe and Sortino against SOFR, beta and alpha from a daily regression on SPY's observed closes; they need at least two daily snapshots and are per lifetime.",
-  "NEWS": "Headlines are real and unedited: Yahoo Finance news search, the Federal Reserve press feed and this repository's own newspaper editions; they are shown as text and never interpreted."
+  "PERF": "Performance statistics use daily NAV-to-NAV returns with capital flows removed, annualised by \u221a252, Sharpe and Sortino against SOFR, beta and alpha from a daily regression on SPY's observed closes; they need at least two daily snapshots and are per lifetime."
  },
  "prime_brokers": [
   {

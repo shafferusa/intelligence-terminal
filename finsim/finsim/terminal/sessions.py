@@ -227,6 +227,16 @@ class SessionTable:
                 return s
         return None
 
+    def following_session(self, group: str, at: int) -> Optional[Session]:
+        """FinSim1 OMS-11: the session a NEXT-SESSION order works in - the one after the session open at ``at``, else the next one
+        to open (a CME evening session counts as a session: Tue 11:00 -> Tue 18:00; US equity Tue 11:00 -> Wed 09:30, Tue 20:00 ->
+        Wed 09:30).  None when nothing opens within the 16-day window."""
+        now = int(at)
+        for s in self._window(group, now):
+            if s.open_ts > now:
+                return s
+        return None
+
     def day_order_expiry(self, group: str, at: int) -> int:
         """``closes_at`` of the session the order can first trade in: the current session if open, else the next one."""
         s = self.next_session(group, at)

@@ -23,7 +23,7 @@ from tests import test_terminal_api as ta
 from tests import test_terminal_lifecycle as lc
 from tests import test_terminal_orders as sc
 from tests import test_terminal_shorts as sh
-from finsim.terminal import accounting, collateral, execution, lending, prime, treasury
+from finsim.terminal import accounting, collateral, execution, lending, prime, repo, treasury
 from finsim.terminal.db import next_id
 from finsim.terminal.ledger import Entry, cr, dr
 from finsim.terminal.lifecycle_jobs import with_asof
@@ -638,9 +638,141 @@ class RoutesTests(unittest.TestCase):
         self.assertEqual(404, status)
         status, body, _h = rt.router.handle("GET", "/api/settlements/S-999999", None, None, "127.0.0.1", None)
         self.assertEqual(404, status)
-        # no margin calls and no CSA pledges in 1.0.5 (15.3 E1): their probes stay unbuilt, so the Unsupported page keeps listing them
-        self.assertFalse(callable(getattr(collateral, "margin_calls_rows", None)))
-        self.assertFalse(callable(getattr(collateral, "pledges_view", None)))
+        # 1.0.6 (Part B): the margin calls and the CSA pledges ship with their features (15.3 E1), so their probes are callable and the
+        # Unsupported page no longer lists them; the C16 reads answer on a real runtime
+        self.assertTrue(callable(getattr(collateral, "margin_calls_rows", None)))
+        self.assertTrue(callable(getattr(collateral, "pledges_view", None)))
+        for path in ("/api/collateral/summary?book=T", "/api/collateral/accounts?book=T", "/api/collateral/cash?book=T", "/api/collateral/pledges?book=T",
+                     "/api/collateral/treasury_securities?book=T", "/api/margin/calls?book=T", f"/api/collateral/regt?account_id={US_EXCHANGE}",
+                     f"/api/collateral/requirements?account_id={US_EXCHANGE}", "/api/collateral/custody?book=T"):
+            status, body, _h = rt.router.handle("GET", path, None, None, "127.0.0.1", None)
+            self.assertEqual(200, status, (path, body))
+        status, body, _h = rt.router.handle("GET", "/api/collateral/regt?account_id=T1:NOPE", None, None, "127.0.0.1", None)
+        self.assertEqual(404, status)
+
+    def test_repo_preview_soft_mode(self):
+        """V104R2-BW-05 (the server part, repo.py): a repo preview asked with ``soft`` answers a refusal as 200 ``{blocked, blockers}`` (so a
+        correctly refused preview leaves no failed request in the browser console); without ``soft`` the 4xx with its code is unchanged."""
+        rt = self.rt
+        bad = {"account_id": "T1:CREDIT", "side": "SIDEWAYS", "instrument_id": "UST-NOPE", "face": "1000000"}
+        status, body, _h = rt.router.handle("POST", "/api/credit/repos/preview", None, dict(bad), "127.0.0.1", None)
+        self.assertTrue(400 <= status < 500, (status, body))
+        self.assertEqual("SIDE", body["error"]["code"])
+        for flag in (True, "1", "yes"):
+            status, body, _h = rt.router.handle("POST", "/api/credit/repos/preview", None, dict(bad, soft=flag), "127.0.0.1", None)
+            self.assertEqual(200, status, body)
+            self.assertEqual((False, True, ["SIDE"]), (body["ok"], body["blocked"], [b["code"] for b in body["blockers"]]))
+            self.assertIn("side must be REPO", body["message"])
+        # soft is never a field of the preview itself: a valid-looking request with soft=false still answers the 4xx
+        status, body, _h = rt.router.handle("POST", "/api/credit/repos/preview", None, dict(bad, soft=False), "127.0.0.1", None)
+        self.assertTrue(400 <= status < 500, (status, body))
+
+
+BILL = "UST-TESTBILL27"
+
+
+def _h_bond_buy(ctx, payload):
+    """A test-only bond BUY fill (the bond engine's posting shape, no fee): fills row, ``Dr 1110 gross / Cr 2100 gross``, a LONG lot, a T+1
+    settlement row.  ``{account_id, instrument_id, qty (face), price (per 100)}``."""
+    from finsim.terminal.ledger import open_lot
+    aid, iid, qty, px = payload["account_id"], payload["instrument_id"], int(payload["qty"]), Decimal(str(payload["price"]))
+    inst = ctx.services.instruments.get(iid, ctx.conn)
+    gross = inst.contract_value_c(px, qty)
+    fill_id = next_id(ctx.conn, "fill")
+    trade_date = ctx.clock.today()
+    settle = ctx.cal.settlement_date(trade_date, inst.settle_days)
+    entry_id = ctx.post(Entry("FILL", f"BUY {qty:,} {iid} @ {px}", [dr(aid, "1110", "USD", gross, instrument_id=iid), cr(aid, "2100", "USD", gross)], f"fill:{fill_id}",
+                              ref_type="fill", ref_id=fill_id))
+    ctx.conn.execute("INSERT INTO fills(fill_id, order_id, account_id, instrument_id, side, qty, price, gross_c, fee_c, currency, fx_rate, ts, trade_date, settle_date,"
+                     " origin, price_basis, quote_json, bar_ts, cap_qty, cap_note, entry_id, idem_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                     (fill_id, None, aid, iid, "BUY", qty, str(px), gross, 0, "USD", "1", ctx.ts, trade_date.isoformat(), settle.isoformat(), "ORDER", "model",
+                      "{}", None, None, None, entry_id, f"test:{fill_id}"))
+    open_lot(ctx.tx, aid, iid, "LONG", fill_id, qty, px, gross, "USD")
+    sid = next_id(ctx.conn, "settlement")
+    ctx.conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status) VALUES (?,?,?,?,?,?,?,?,?,'PENDING')",
+                     (sid, fill_id, None, aid, "CASH", "USD", -gross, "2100", settle.isoformat()))
+    ctx.touched_instruments.add((aid, iid))
+    return {"fill_id": fill_id, "gross_c": gross}
+
+
+class PledgeTests(unittest.TestCase):
+    """P6 Part B (1.0.6) acceptance 1 (d) - CSA securities pledges (task 6, PORTFOLIO-09): 1,000,000 face of a Treasury bill at 99.00
+    pledged to Goldman Sachs under its CSA (the GS schedule's assumed bill haircut 2 %) -> market value 1,000,000 x 99.00 / 100 =
+    990,000.00 (a bill accrues nothing), eligible 990,000.00 x (1 - 0.02) = 970,200.00; the pledged face cannot be sold (the bond SELL's
+    C27 check through ``repo.pledged_face``) or pledged again; a pledge moves no GL balance; release frees it."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-pledge-")
+        self.rt = rt = runtime(self.tmp, at=TUE_10)
+        rt.repo = repo
+        rt.bus.register("test.settle_due", sh._h_settle_due)
+        open_pb(self, rt)
+        with rt.db.writer() as tx:
+            rt.instruments._insert(tx.conn, tx.ts, instrument_id=BILL, kind="BOND", symbol="912797ZZ9", name="US Treasury bill 21-Jan-2027 (912797ZZ9)",
+                                   currency="USD", multiplier="0.01", lot=1000, session_group="US_BONDS", settle_days=1, account_kinds=["DEBT", "PB"],
+                                   spec={"type": "BILL", "coupon_pct": "0", "maturity": "2027-01-21", "freq": 0, "zero_coupon": True}, support="FULL")
+        rt.instruments.refresh(BILL)
+        # BUY 1,000,000 face at 99.00, no fee: 1,000,000 x 99.00 x 0.01 = 990,000.00 payable T+1; funded from Treasury and settled
+        rt.bus.register("test.bond_buy", _h_bond_buy)
+        ok(self, execute(rt, "test.bond_buy", {"account_id": DEBT, "instrument_id": BILL, "qty": 1000000, "price": "99.00"}))
+        ok(self, fund(rt, DEBT, 99000000))
+        ok(self, execute(rt, "test.settle_due", {"as_of": "2026-10-21"}, actor="lifecycle"))
+        rt.marks.set(BILL, "99.00", "close")
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def gl_snapshot(self):
+        return sorted((r["account_id"], r["gl"], r["currency"], r["instrument_id"], r["balance_c"]) for r in sc.q(self.rt, "SELECT * FROM gl_balances"))
+
+    def test_d_pledge_eligible_value_encumbrance_and_release(self):
+        rt = self.rt
+        before = self.gl_snapshot()
+        body = ok(self, execute(rt, "collateral.pledge", {"account_id": DEBT, "instrument_id": BILL, "face": "1000000", "pledged_to": PB}))
+        p = body["pledge"]
+        self.assertEqual(("PL-000001", 1000000, "0.02", 99000000, 97020000, "PLEDGED", "BILL"),
+                         (p["pledge_id"], p["face"], p["haircut"], p["market_value_c"], p["eligible_c"], p["status"], p["type"]))
+        self.assertEqual(before, self.gl_snapshot())                                # a pledge moves no GL balance
+        with rt.db.reader() as conn:
+            self.assertEqual(1000000, repo.pledged_face(conn, DEBT, BILL))
+        v = collateral.pledges_view(rt, f"{T1}:ALL")
+        self.assertEqual((1000000, 99000000, 97020000), (v["pledged_face"], v["market_value_c"], v["eligible_c"]))
+        self.assertEqual([("0.02", "0.04", "TREASURIES")], [(t["bill_haircut"], t["bond_haircut"], t["securities"]) for t in v["terms"]])
+        s = collateral.summary(rt, f"{T1}:ALL")
+        self.assertEqual((97020000, 99000000), (s["collateral_posted_c"], s["encumbered_c"]))      # eligible value posted; market value encumbered
+        gs = [g for g in s["by_counterparty"] if g["type"] == "CSA"]
+        self.assertEqual([97020000], [g["securities_posted_c"] for g in gs])
+        req = collateral.position_requirements(rt, DEBT)
+        self.assertEqual((0, 97020000), (req[BILL]["margin_c"], req[BILL]["collateral_c"]))
+        # the pledged face cannot be pledged again ...
+        r = execute(rt, "collateral.pledge", {"account_id": DEBT, "instrument_id": BILL, "face": "1000", "pledged_to": PB})
+        self.assertEqual((False, "COLLATERAL_SHORT"), (r.ok, r.body["error"]["code"]))
+        # ... nor sold: the bond SELL's C27 check counts it (the preview lists the refusal)
+        from finsim.terminal.products import bonds
+        with rt.db.reader() as conn:
+            _t, blocked, _w = bonds.check_trade(rt, {"account_id": DEBT, "instrument_id": BILL, "side": "SELL", "qty": 1000}, conn, rt.clock.epoch(),
+                                                rt.marks.snapshot(), collect=True)
+        self.assertIn("PLEDGED_IN_REPO", [b.code for b in blocked])
+        # refusals: an ineligible instrument, a non-PB account, more than the free face
+        for body, code in (({"account_id": DEBT, "instrument_id": "AAPL", "face": "100", "pledged_to": PB}, "NOT_ELIGIBLE"),
+                           ({"account_id": DEBT, "instrument_id": BILL, "face": "1000", "pledged_to": US_EXCHANGE}, "NOT_PB"),
+                           ({"account_id": DEBT, "instrument_id": BILL, "face": "0", "pledged_to": PB}, "FACE")):
+            r = execute(rt, "collateral.pledge", body)
+            self.assertEqual((False, code), (r.ok, r.body["error"]["code"]), body)
+        # release: the face is free again, nothing moved in the ledger
+        body = ok(self, execute(rt, "collateral.release", {"pledge_id": "PL-000001"}))
+        self.assertEqual("RELEASED", body["pledge"]["status"])
+        with rt.db.reader() as conn:
+            self.assertEqual(0, repo.pledged_face(conn, DEBT, BILL))
+        self.assertEqual(before, self.gl_snapshot())
+        r = execute(rt, "collateral.release", {"pledge_id": "PL-000001"})
+        self.assertEqual((False, "NOT_PLEDGED"), (r.ok, r.body["error"]["code"]))
+        # the bills of the book, as cash equivalents: face 1,000,000, market 990,000.00, accreted straight-line from the 10-20 purchase
+        # (10,000.00 of discount over 93 days to 2027-01-21; 1 day held at the view's accounting day 10-20 -> 0 days: 0.00)
+        tb = collateral.treasury_securities(rt, f"{T1}:ALL")
+        self.assertEqual([(DEBT, 1000000, 99000000, "2027-01-21")], [(r["account_id"], r["face"], r["market_value_c"], r["maturity"]) for r in tb["rows"]])
+        assert_integrity(self, rt)
 
 
 if __name__ == "__main__":

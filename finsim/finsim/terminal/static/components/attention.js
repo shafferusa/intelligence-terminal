@@ -2,11 +2,12 @@
  * (WARN), blue (INFO).  Rows = the open items of GET /api/attention?book=<selected book> (the poller in core.js sends the
  * book) plus the states carried by GET /api/health:
  * integrity failure / INTEGRITY_HOLD (ERROR), a provider with ok=false ("Yahoo unreachable since 14:02 - quotes are
- * stale; executions paused", WARN), a stalled / dead worker (WARN), failing lifecycle jobs (ERROR), news injection
- * flags (INFO, iron rule 2).  Persistent items - integrity, INTEGRITY_HOLD, FUNDING_SHORTFALL, provider pauses - have
+ * stale; executions paused", WARN), a stalled / dead worker (WARN; a worker busy inside a long tick is not stalled: health
+ * counts its progress, V104R2-BW-10), failing lifecycle jobs (ERROR).  Persistent items - integrity, INTEGRITY_HOLD,
+ * FUNDING_SHORTFALL, provider pauses - have
  * no Resolve button (the API answers 409 PERSISTENT anyway); the others resolve through POST /api/attention/{id}/resolve.
- * Provider names are the trader-facing ones (T.providerLabel: 'Yahoo news', not yahoo_news).  Four rows show; '+ N more'
- * (or T.attention.expand(), e.g. the Daily News 'open attention items' tile) opens the whole list, scrolled into view.
+ * Provider names are the trader-facing ones (T.providerLabel: 'Treasury.gov', not treasury).  Four rows show; '+ N more'
+ * (or T.attention.expand(), e.g. the Dashboard's 'open attention items' tile) opens the whole list, scrolled into view.
  */
 (function () {
   'use strict';
@@ -46,7 +47,6 @@
     });
     var lf = h.lifecycle || {};
     (lf.failing || []).forEach(function (j) { rows.push({ severity: 'ERROR', source: 'lifecycle', code: 'JOB_FAILING', message: 'job ' + (j.name || j.job || j) + ' failing' + (j.last_error ? ': ' + j.last_error : '') + (j.failures ? ' (' + j.failures + 'x)' : ''), ts: j.ts, persistent: true }); });
-    if (h.news && h.news.injection_flags) { rows.push({ severity: 'INFO', source: 'news', code: 'INJECTION_FLAGGED', message: h.news.injection_flags + ' fetched headline(s) contained instruction-like text; shown verbatim, ignored (iron rule 2)', persistent: true }); }
     return rows;
   }
   function render() {
@@ -78,7 +78,7 @@
       el.appendChild(T.h('div', { class: 'att INFO' }, T.h('a', { href: '#', onclick: function (e) { e.preventDefault(); expanded = !expanded; render(); } }, expanded ? 'show fewer' : '+ ' + (rows.length - 4) + ' more')));
     }
   }
-  /* open the whole list (SHELL-27: the Daily News tile 'open attention items' lands here) */
+  /* open the whole list (SHELL-27: the Dashboard's 'open attention items' tile lands here) */
   function expand() { expanded = true; render(); var el = T.q('#attention'); if (el) { try { el.scrollTop = 0; el.scrollIntoView({ block: 'nearest' }); } catch (e) { /* ignore */ } } }
   function collapse() { expanded = false; render(); }
   function init() { T.state.on('health', render); T.state.on('attention', render); render(); }

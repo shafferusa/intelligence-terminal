@@ -24,6 +24,9 @@ Conventions
   or pass --port" - never the refused process's own pid.
 - Provider health is restored from ``provider_health`` at start EXCEPT the retired news providers (``attention.retired_provider``:
   yahoo_news, fed, newspaper, news_*): their stored rows stay in the database, inert, and never show (FINSIM1_PLAN 15.7 item 5).
+- The news feature is gone (owner directive 2026-10-27 section 2; 1.0.5 / 1.0.6): no news store, no news fetcher, no ``news``
+  module or health entry.  ``build_runtime(news_enabled=...)`` is still accepted and ignored (removed in 1.0.5), so older callers
+  and tests keep working; the stored ``news_enabled`` setting and ``news_items`` table stay in an older database, inert.
 - Startup order (exit codes): offline guard [5] -> home lock [3] -> database lock [3] -> bind [3] -> log -> DB open /
   migrate [4 newer schema] / seed / first-run lifetimes (``books.ensure_first_run``: P1 / F1 / I1 with their capital,
   idempotent) / ``integrity("ledger")`` recorded (a failure holds that lifetime and opens an ERROR attention; the server
@@ -36,7 +39,7 @@ Conventions
   exception while serving keeps its full traceback (stderr and the log).
 - ``Runtime`` is the ``services`` bundle every handler sees (§2.12): ``db, clock, cal, sessions, instruments, cache,
   chains, providers, worker, marks, accounting, bus, matcher, lifecycle, router, httpd, log, lock, settings,
-  started_ts, news, books, rates, curve, fxstore, previews`` plus one attribute per product module (``orders, options,
+  started_ts, books, rates, curve, fxstore, previews`` plus one attribute per product module (``orders, options,
   futures, fx, credit, lending, hedges, risk, compliance, strategies, performance, prime, lifetimes, swaps, swaps_trs,
   private, private_credit, dividends, bonds, repo``) — ``None`` when that package is not merged, so the API answers
   501 NOT_BUILT instead of inventing anything.  ``rt.modules`` records bound / missing / broken for health.
@@ -47,7 +50,8 @@ Conventions
   their current unit (<= 3 s; a command in flight commits or rolls back) -> ``cache.persist()`` -> ``httpd.shutdown()``
   -> ``server_close()`` -> ``db.close()`` (WAL checkpoint) -> the lock is released and the file removed -> exit 0.
 - ``Supervisor.check()`` every 30 s: a dead worker thread is restarted from its factory and reported as an ERROR
-  attention (``WORKER_DIED``); a worker silent for more than 3 of its cycles is a WARN attention (``WORKER_STALLED``);
+  attention (``WORKER_DIED``); a worker silent for more than 3 of its cycles - no tick ended and, for the quote worker, no progress
+  inside its tick either (``last_progress_ts``, V104R2-BW-10) - is a WARN attention (``WORKER_STALLED``);
   error counters are sampled so health can show ``errors_1h``.  The checks never touch the network.
 """
 from __future__ import annotations
@@ -400,7 +404,7 @@ class Runtime:
 
     def __init__(self):
         for name in ("db", "clock", "cal", "sessions", "instruments", "cache", "chains", "providers", "worker", "marks", "accounting", "bus", "matcher", "lifecycle",
-                     "router", "httpd", "log", "lock", "db_lock", "news", "rates", "curve", "fxstore", "previews", "supervisor", "fp", "port", "home", "db_path"):
+                     "router", "httpd", "log", "lock", "db_lock", "rates", "curve", "fxstore", "previews", "supervisor", "fp", "port", "home", "db_path"):
             setattr(self, name, None)
         for name in OPTIONAL_MODULES:
             setattr(self, name, None)
@@ -524,12 +528,6 @@ class Runtime:
     close = shutdown
 
 
-def _offline_getter(url: str, ua: str, timeout: float, accept: str) -> bytes:
-    """The news fetcher under ``--offline``: no network, ever (the failure is counted like any other fetch failure)."""
-    from .quotes.http import FetchError
-    raise FetchError(f"offline: no network ({url.split('/')[2] if '//' in url else url})", status=None, retryable=False)
-
-
 def _bind_optional(rt: Runtime, bus: CommandBus, log) -> None:
     """Import every optional product module that exists, register its handlers and bind it on the runtime."""
     rt.modules_loaded = {}
@@ -586,7 +584,8 @@ def _bind_optional(rt: Runtime, bus: CommandBus, log) -> None:
 def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, offline: bool = False, fake_provider=None, log=None, books=None,
                   fetch_threads: int = 2, port: Optional[int] = None, news_enabled: Optional[bool] = None, lock: Optional[InstanceLock] = None) -> Runtime:
     """Assemble the services bundle (§16 steps 3-4 and the handler registry).  Nothing is started; ``start_workers``
-    does that.  ``books`` (default ``config.BOOKS``) seeds an empty database; tests pass ``[config.TEST_BOOK]``."""
+    does that.  ``books`` (default ``config.BOOKS``) seeds an empty database; tests pass ``[config.TEST_BOOK]``.
+    ``news_enabled`` is accepted and ignored: the news feature was removed in 1.0.5 (owner directive 2026-10-27 section 2)."""
     from .marks import MarkProvider
     from .quotes.cache import ChainCache, QuoteCache
     from .quotes.providers import FakeProvider, ProviderSet
@@ -604,7 +603,7 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     rt.db = Database(db_path, rt.clock, log)
     rt.db.open(books=books)                                   # backup -> migrate (SchemaTooNew -> exit 4) -> seed
     with rt.db.reader() as conn:
-        rt.settings = {k: get_setting(conn, k) for k in ("participation_rate", "session_overrides", "news_enabled", "pb_otc_threshold_c", "qp_threshold_c")}
+        rt.settings = {k: get_setting(conn, k) for k in ("participation_rate", "session_overrides", "pb_otc_threshold_c", "qp_threshold_c")}
     if rt.settings.get("session_overrides"):
         rt.sessions.set_overrides(rt.settings["session_overrides"])
     rt.instruments = InstrumentMaster(rt.db, log)
@@ -668,18 +667,6 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     rows = [r for r in rows if not retired_provider(r["provider"])]          # 15.7 item 5: the retired news providers stay inert
     if rows and rt.providers.health is not None:
         rt.providers.health.load(rows)
-    # news (WP-22) BEFORE the quote worker: the refresher reads services.news at construction
-    enabled = news_enabled if news_enabled is not None else bool(rt.settings.get("news_enabled", True))
-    try:
-        from .news import NewsStore
-        getter = _offline_getter if offline else None          # --offline: the newspaper index from disk only; Yahoo / Fed fetches refuse
-        paper_url = None if offline else config.NEWS_PAPER_INDEX_URL     # SHELL-09: the published index (hourly), the local file as fallback
-        rt.news = (NewsStore(rt.db, rt.clock, getter=getter, index_path=config.newspaper_index(), log=log, health=rt.providers.health, paper_url=paper_url)
-                   if enabled else None)
-        rt.modules["news"] = "bound" if rt.news is not None else "disabled"
-    except ModuleNotFoundError:
-        rt.news = None
-        rt.modules["news"] = "missing"
     # workers (not started here)
     rt.matcher = Matcher(rt.db, bus, rt.cache, rt.sessions, rt.instruments, rt.clock, log, services=rt, interval_s=15)
     rt.worker = QuoteWorker(rt.cache, rt.chains, rt.instruments, rt.providers, rt.sessions, bus, rt.matcher, rt.clock, log, fetch_threads=int(fetch_threads),
@@ -704,6 +691,12 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
 
 
 # ---- the supervisor ----------------------------------------------------------------------------------------------------------
+def _latest(*ts) -> Optional[int]:
+    """The latest of the given epochs (None ignored; None when all are None)."""
+    vals = [int(t) for t in ts if t is not None]
+    return max(vals) if vals else None
+
+
 class Supervisor:
     """Main-thread watchdog: restarts dead worker threads (ERROR attention ``WORKER_DIED``), flags stalled ones (WARN
     ``WORKER_STALLED``) and samples error counters for ``health.workers.errors_1h``."""
@@ -787,7 +780,7 @@ class Supervisor:
                         rt.log.exception("worker %s could not be restarted", name)
                     self._attention("ERROR", "WORKER_DEAD", f"the {name} worker thread died and could not be restarted: {e}", name)
                 continue
-            last = st.get(tick_key)
+            last = _latest(st.get(tick_key), st.get("last_progress_ts"))      # V104R2-BW-10: progress inside a long tick counts
             cycle = WORKER_CYCLE_S.get(name, 30)
             stalled = bool(alive and last is not None and now - int(last) > 3 * cycle)
             if stalled and not self._stalled.get(name):

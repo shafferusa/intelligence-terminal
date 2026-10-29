@@ -17,8 +17,9 @@ Conventions stated here (each verified from a public source on 2026-10-21 unless
   reference obligations CDX.NA.HY 47", 2026-09-21).  A September series matures on 20 December five years later (ICE rule 1221:
   "Each index series with a Roll Date of September 20 shall have a maturity date of December 20"), a March series on 20 June:
   S47 5Y = 2031-12-20.  The series number after S47 is COUNTED from this roll schedule (S48 from 2027-03-22 ...) - confirm it
-  against the index administrator after each roll.  Version 1 / index factor 1.00 is ASSUMED: a credit event among the names
-  (which would cut the factor) is not tracked in this build (``unsupported``).
+  against the index administrator after each roll.  Version 1 / index factor 1.00 is ASSUMED: real credit events among the names are
+  not tracked (no free source of ISDA Determinations Committee rulings or auction prices); the owner can SIMULATE one (``cdx.credit_event``,
+  module section "the simulated credit event": equal weights, the recovery he enters, the notional and factor reduced).
 - COUPON AND RECOVERY: the standard fixed coupon is 100 bp (IG) or 500 bp (HY) running, with an upfront (Markit, "The CDS Big Bang",
   2009: "The coupon will be either 100 basis points or 500 basis points and upfront payments will be exchanged"); the recovery used
   to turn a spread into an upfront is 40 % for IG (the ISDA standard-model value for senior unsecured) and 30 % for HY (the dealer
@@ -499,11 +500,12 @@ def _blocker(code: str, message: str, **details) -> dict:
     return {"code": code, "message": message, "details": details}
 
 
-def _deal(services, conn, acct: dict, t: dict, now: int, as_of: Optional[dict] = None) -> dict:
+def _deal(services, conn, acct: dict, t: dict, now: int, as_of: Optional[dict] = None, firm_spread_bp=None) -> dict:
     """Everything a CDX preview shows and a booking posts; raises 409 PROXY_UNAVAILABLE / PROXY_STALE / NO_CURVE / SERIES.  ``as_of``
     (C10): the deal of the trade date ``as_of["trade_date"]`` at the payload's dealt spread ``t["dealt_spread_bp"]`` - the proxy on or
     before that date plus the account basis must deal it within 0.01 bp (409 ASOF_BASIS_NOT_CALIBRATED), the curve is that of the
-    trade date; a missing input is 409 ASOF_INPUT_MISSING."""
+    trade date; a missing input is 409 ASOF_INPUT_MISSING.  ``firm_spread_bp`` (C14): the spread of the dealer's quote the owner accepted
+    within its validity, booked as quoted (the mid and the mark stay the model's now)."""
     spec = INDEX[t["index"]]
     cal = services.cal
     today = ny_of(int(now)).date() if as_of is None else as_of["trade_date"]
@@ -546,6 +548,8 @@ def _deal(services, conn, acct: dict, t: dict, now: int, as_of: Optional[dict] =
                                 {"proxy_bp": str(px["spread_bp"]), "basis_bp": str(mine["basis_bp"]), "half_spread_bp": str(hs), "deals_bp": str(deal_bp),
                                  "dealt_bp": str(dealt), "basis_needed_bp": str(need.quantize(BP_Q)), "proxy_as_of": px.get("as_of")})
         deal_bp = dealt.quantize(BP_Q)                  # D10: the owner's dealt spread, booked exactly
+    elif firm_spread_bp not in (None, ""):
+        deal_bp = Decimal(str(firm_spread_bp)).quantize(BP_Q)       # C14: the accepted quote, as quoted
     if deal_bp <= 0:
         raise ConflictError("PROXY_SPREAD", f"the dealt spread {deal_bp} bp is not positive (mid {mid} bp - half-spread {hs} bp)", {})
     periods = coupon_periods(cal, today, otr["maturity"])
@@ -716,7 +720,8 @@ def book(ctx: TxContext, payload: dict) -> dict:
     conn = ctx.conn
     acct = swaps._pb_account(conn, str(payload.get("account_id") or ""))
     t = parse_terms(payload.get("terms") or {})
-    deal = _deal(services, conn, acct, t, ctx.ts)
+    firm = getattr(ctx, "rfq_firm", None) or {}
+    deal = _deal(services, conn, acct, t, ctx.ts, firm_spread_bp=firm.get("dealt_spread_bp"))
     return _book(ctx, services, acct, t, deal)
 
 
@@ -867,7 +872,7 @@ def _valuation(services, row: dict, now: int, valuation_date: Optional[date] = N
             d = _date(valuation_date)
             out.update(vm_outcome=px["code"], note=px["reason"], close_date=b.isoformat(), quiet=not cal.is_business_day(d),
                        quiet_until=epoch_of(cal.next_business_day(b), "12:00"),
-                       waits_for="that day's OAS (FRED publishes a business day's value the next morning; never another day's value)")
+                       waits_for="that day's OAS (never another day's value)")   # the reason already says when FRED publishes (no doubled sentence)
         return None, out
     with _marks.shared_reader(services.db, conn) as c:
         mine = terms_for(c, row["account_id"], spec["key"])
@@ -1182,7 +1187,13 @@ def contract_detail(services, contract, conn=None) -> Optional[dict]:
                   f" {'+' if side == 'BUY_PROTECTION' else '-'} half-spread); upfront {terms.get('upfront_pct')} % (price {terms.get('price')}), accrued rebate"
                   f" {fmt_money(int(terms.get('rebate_c') or 0))}, initial payment {fmt_money(abs(int(terms.get('initial_payment_c') or 0)))}"
                   f" {'received' if int(terms.get('initial_payment_c') or 0) > 0 else 'paid'} {terms.get('settle_date')}")
+    events = credit_events_of(services, [row["contract_id"]], conn).get(row["contract_id"], [])
+    if events:
+        terms_text += (f"; {len(events)} simulated credit event(s): notional {fmt_money(int(terms.get('original_notional_c') or n))} x factor"
+                       f" {terms.get('index_factor')} = {fmt_money(n)}")
     return {"side": side, "side_text": f"{st}: USD {fmt_money(n)} notional{cs_txt}", "index": spec["key"], "index_name": spec["name"], "series": series,
+            "credit_events": events, "index_factor": terms.get("index_factor") or "1.000000", "original_notional_c": int(terms.get("original_notional_c") or n),
+            "names": spec["names"], "weights": WEIGHTS_NOTE,
             "exposure_c": -n if side == "BUY_PROTECTION" else n, "cs01_c": cs, "live": live, "terms_text": terms_text, "summary": terms_text,
             "deal_spread_bp": terms.get("deal_spread_bp"), "upfront_c": terms.get("upfront_c"), "upfront_pct": terms.get("upfront_pct"), "price": terms.get("price"),
             "rebate_c": terms.get("rebate_c"), "initial_payment_c": terms.get("initial_payment_c"), "settle_date": terms.get("settle_date"),
@@ -1359,6 +1370,243 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
                      " the shocked spread; spreads are a proxy (ICE BofA OAS via FRED + an assumed basis), not CDX dealer quotes")}
 
 
+# ---- the simulated credit event (FINSIM1 P4 task 11; directive section 9) ----------------------------------------------------------------
+#: one row per (contract, reference entity): its own table (additive, D2), so a repeat is refused and the figures are kept for the views
+CREDIT_SCHEMA = ["CREATE TABLE IF NOT EXISTS cdx_credit_events (contract_id TEXT NOT NULL, entity_key TEXT NOT NULL, reference_entity TEXT NOT NULL,"
+                 " event_date TEXT NOT NULL, recovery_pct TEXT NOT NULL, names INTEGER NOT NULL, defaulted_c INTEGER NOT NULL, protection_c INTEGER NOT NULL,"
+                 " accrued_c INTEGER NOT NULL, accrued_days INTEGER NOT NULL, net_c INTEGER NOT NULL, settle_date TEXT NOT NULL, settle_id TEXT,"
+                 " notional_before_c INTEGER NOT NULL, notional_after_c INTEGER NOT NULL, cost_released_c INTEGER NOT NULL, im_released_c INTEGER NOT NULL,"
+                 " entry_id INTEGER, command_id INTEGER, ts INTEGER NOT NULL, PRIMARY KEY (contract_id, entity_key))"]
+CREDIT_EVENT_LABEL = "simulated credit event - recovery entered by the owner; no ISDA Determinations Committee ruling or auction in the simulator"
+CREDIT_SETTLE_BD = 1                            # the protection settlement, net of the accrued premium, T+1 business day after the event date
+WEIGHTS_NOTE = "equal weights (assumed): each of the index's names is 1 / names of the original notional"
+
+
+def _parse_recovery(v) -> Decimal:
+    if v is None or isinstance(v, (bool, float)) or (isinstance(v, str) and not v.strip()):
+        raise RejectError("TERMS", "recovery_pct: the recovery you enter, a percent from 0 to 100 (40 = 40 %)", {"field": "recovery_pct"})
+    s = str(v).strip().rstrip("%").strip()
+    try:
+        d = Decimal(s)
+    except (InvalidOperation, ValueError) as e:
+        raise RejectError("TERMS", f"recovery_pct: {v!r} is not a number (40 = 40 %)", {"field": "recovery_pct"}) from e
+    if not d.is_finite() or d < 0 or d > 100 or d != d.quantize(Decimal("0.0001")):
+        raise RejectError("TERMS", f"recovery_pct: a percent from 0 to 100 with at most 4 decimals, got {v!r}", {"field": "recovery_pct"})
+    return d
+
+
+def _ensure_credit_table(services, conn) -> None:
+    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cdx_credit_events'").fetchone() is None:
+        db = getattr(services, "db", None)
+        if db is not None and hasattr(db, "ensure_schema_ext"):
+            db.ensure_schema_ext("swaps_cds", SCHEMA + CREDIT_SCHEMA)
+
+
+def h_credit_event(ctx: TxContext, payload: dict) -> dict:
+    """``cdx.credit_event {contract_id, reference_entity, recovery_pct, event_date}`` (P4 task 11): the owner simulates the default of one
+    constituent of a CDX index at the recovery he enters - "simulated credit event - recovery entered by the owner; no ISDA Determinations
+    Committee ruling or auction in the simulator".  It never fires by itself (no job runs it) and once per contract and name (409
+    DUPLICATE_EVENT).  Equal weights (assumed): the defaulted notional Dn = the original notional / names (IG 125, HY 100).
+    - the premium is accrued first through the event date on the notional before it (as a termination does);
+    - protection Dn x (1 - recovery) to the protection buyer (paid by a seller), realised in the swap result 4450, net of the accrued premium
+      on Dn from the period's accrual start through the event date (inclusive), settling T+1 business day (a settlement row, ``ref_type`` otc);
+      nights after the event date already accrued on Dn (an event entered late) are reversed;
+    - the notional becomes N - Dn (the terms keep the original notional and an index factor): the premium accrual and the IM follow it from the
+      next night (the IM released returns to cash), the cost basis (1335 / 2345) is released pro rata Dn / N into 4450, the model mark NAV
+      carries is scaled to the reduced notional and the next SWAP_VM values the reduced contract."""
+    if str(ctx.actor or "") in ("lifecycle", "matcher", "worker"):
+        raise swaps.Forbidden("CREDIT_EVENT_OWNER_ONLY", "a credit event is entered by the owner; it never fires by itself", {"actor": ctx.actor})
+    services = ctx.services
+    conn = ctx.conn
+    cid = str(payload.get("contract_id") or "")
+    row = swaps._open_contract(conn, cid)
+    if row["kind"] != KIND:
+        raise RejectError("KIND", f"{cid} is a {swaps.KIND_LABELS.get(row['kind'], row['kind'])}: a credit event applies to a CDS index contract",
+                          {"contract_id": cid, "kind": row["kind"]})
+    if row["status"] != "OPEN":
+        raise ConflictError("NOT_OPEN", f"{cid} is {row['status']}; a credit event applies to an OPEN contract", {"contract_id": cid})
+    entity = " ".join(str(payload.get("reference_entity") or "").split())
+    if not entity or len(entity) > 120:
+        raise RejectError("TERMS", "reference_entity: the name of the defaulted constituent (1 to 120 characters)", {"field": "reference_entity"})
+    ekey = entity.upper()
+    rec = _parse_recovery(payload.get("recovery_pct"))
+    try:
+        ed = date.fromisoformat(str(payload.get("event_date") or "").strip()[:10])
+    except ValueError as e:
+        raise RejectError("TERMS", f"event_date: an ISO date (2026-11-02), got {payload.get('event_date')!r}", {"field": "event_date"}) from e
+    today = ny_of(ctx.ts).date()
+    if ed > today:
+        raise RejectError("TERMS", f"event_date {ed.isoformat()} is in the future: a credit event is entered once it happened", {"field": "event_date"})
+    start = _date(row["start_date"])
+    if ed < start:
+        raise RejectError("TERMS", f"event_date {ed.isoformat()} is before the contract's trade date {start.isoformat()}: this contract did not cover it",
+                          {"field": "event_date"})
+    terms = _terms(row)
+    periods = _periods(terms)
+    period = next((p for p in periods if p[0] <= ed < p[1]), None)
+    if period is None:
+        raise RejectError("TERMS", f"event_date {ed.isoformat()} is outside the contract's coupon periods", {"field": "event_date"})
+    s, e, pay_date = period
+    if conn.execute("SELECT 1 FROM otc_resets WHERE contract_id=? AND kind='PAY' AND event_date=?", (cid, pay_date.isoformat())).fetchone() is not None:
+        raise ConflictError("EVENT_PERIOD_SETTLED", f"{cid}: the coupon of the period of {ed.isoformat()} ({s.isoformat()} .. {(e - timedelta(days=1)).isoformat()})"
+                            f" was paid on {pay_date.isoformat()}; enter a credit event of the current period", {"contract_id": cid, "event_date": ed.isoformat()})
+    _ensure_credit_table(services, conn)
+    dup = conn.execute("SELECT event_date FROM cdx_credit_events WHERE contract_id=? AND entity_key=?", (cid, ekey)).fetchone()
+    if dup is not None:
+        raise ConflictError("DUPLICATE_EVENT", f"{cid}: a credit event of {entity} is already recorded (event date {dup['event_date']}); one event per contract"
+                            " and reference entity", {"contract_id": cid, "reference_entity": entity})
+    spec = _index(terms.get("index"))
+    names = int(spec["names"])
+    original = int(terms.get("original_notional_c") or terms.get("notional_c") or row["notional_c"])
+    dn = to_c(from_c(original) / Decimal(names))
+    n_before = int(row["notional_c"])
+    n_after = n_before - dn
+    if n_after <= 0:
+        raise ConflictError("NOTIONAL_EXHAUSTED", f"{cid}: the remaining notional {fmt_money(n_before)} does not cover another defaulted name of"
+                            f" {fmt_money(dn)}", {"contract_id": cid})
+    side = terms.get("side") or "BUY_PROTECTION"
+    buyer = side == "BUY_PROTECTION"
+    coupon_bp = Decimal(str(terms.get("coupon_bp") or spec["coupon_bp"]))
+    recovery = rec / PCT
+    protection = to_c(from_c(dn) * (ONE - recovery))
+    accrued_days = (ed + timedelta(days=1) - s).days
+    accrued = to_c(from_c(dn) * coupon_bp * BP * Decimal(accrued_days) / D360)
+    # 1. the premium through the event date on the notional before it (a late entry's later nights are reversed below)
+    caught = _catch_up(ctx, services, row, ed)
+    row = swaps._open_contract(conn, cid)
+    aid, ccy = row["account_id"], row["currency"]
+    leg = "swappay" if buyer else "swaprcv"
+    st = conn.execute("SELECT segment_start, base_c, rate, accrued_through, cum_c FROM accrual_state WHERE kind=? AND ref_id=?", (leg, cid)).fetchone()
+    through = _date(st["accrued_through"]) if st is not None and st["accrued_through"] else None
+    if through is None or through < ed or through >= e:
+        raise ConflictError("ACCRUALS_PENDING", f"{cid}: the premium is accrued through {through.isoformat() if through else 'nothing'}, not within the period of"
+                            f" the event date {ed.isoformat()}; try again after the next accrual run", {"contract_id": cid})
+    late_nights = (through - ed).days
+    late = to_c(from_c(dn) * coupon_bp * BP * Decimal(late_nights) / D360) if late_nights > 0 else 0
+    cum_new = int(st["cum_c"]) - accrued - late
+    adjust = 0
+    if through == e - timedelta(days=1):           # the period's last night is already trued up: the rest is the coupon on N - Dn, to the cent
+        adjust = coupon_amount_c(n_after, coupon_bp, s, e) - cum_new
+        cum_new += adjust
+    # 2. the protection settlement, the accrued premium on Dn, the cost basis released pro rata
+    net = protection - accrued if buyer else accrued - protection
+    sd = services.cal.add_business_days(ed, CREDIT_SETTLE_BD)
+    acc_gl = "2340" if buyer else "1225"
+    lines = []
+    what = f"accrued premium on the defaulted notional {fmt_money(dn)}, {s.isoformat()} .. {ed.isoformat()} ({accrued_days} days)"
+    if buyer:
+        lines.append(dr(aid, "2340", ccy, accrued + late, instrument_id=cid, memo=what + (f" and {late_nights} later night(s) reversed" if late else "")))
+        if late:
+            lines.append(cr(aid, "4453", ccy, late, instrument_id=cid, memo=f"premium accrued after the event date on the defaulted notional reversed ({late_nights} nights)"))
+        lines.append(cr(aid, "4450", ccy, protection, instrument_id=cid, memo=f"protection received: {fmt_money(dn)} x (1 - {rec} %) (simulated credit event)"))
+    else:
+        lines.append(cr(aid, "1225", ccy, accrued + late, instrument_id=cid, memo=what + (f" and {late_nights} later night(s) reversed" if late else "")))
+        if late:
+            lines.append(dr(aid, "4453", ccy, late, instrument_id=cid, memo=f"premium accrued after the event date on the defaulted notional reversed ({late_nights} nights)"))
+        lines.append(dr(aid, "4450", ccy, protection, instrument_id=cid, memo=f"protection paid: {fmt_money(dn)} x (1 - {rec} %) (simulated credit event)"))
+    if adjust:
+        a_gl, b_gl = ("4453", acc_gl) if buyer else (acc_gl, "4453")
+        if adjust > 0:
+            lines += [dr(aid, a_gl, ccy, adjust, instrument_id=cid, memo="premium true-up to the period coupon on the reduced notional"),
+                      cr(aid, b_gl, ccy, adjust, instrument_id=cid, memo="premium true-up to the period coupon on the reduced notional")]
+        else:
+            lines += [dr(aid, b_gl, ccy, -adjust, instrument_id=cid, memo="premium true-up to the period coupon on the reduced notional"),
+                      cr(aid, a_gl, ccy, -adjust, instrument_id=cid, memo="premium true-up to the period coupon on the reduced notional")]
+    if net > 0:
+        lines.append(dr(aid, "1200", ccy, net, memo=f"credit event settlement receivable {sd.isoformat()}"))
+    elif net < 0:
+        lines.append(cr(aid, "2100", ccy, -net, memo=f"credit event settlement payable {sd.isoformat()}"))
+    cost_paid = balance(conn, aid, "1335", ccy, cid)
+    cost_recv = balance(conn, aid, "2345", ccy, cid)
+    released = 0
+    if cost_recv > 0:
+        rel = to_c(from_c(cost_recv) * Decimal(dn) / Decimal(n_before))
+        if rel:
+            lines += [dr(aid, "2345", ccy, rel, instrument_id=cid, memo="contract cost received released pro rata (defaulted notional)"),
+                      cr(aid, "4450", ccy, rel, instrument_id=cid, memo="contract cost received released pro rata (simulated credit event)")]
+            released = rel
+    elif cost_paid > 0:
+        rel = to_c(from_c(cost_paid) * Decimal(dn) / Decimal(n_before))
+        if rel:
+            lines += [dr(aid, "4450", ccy, rel, instrument_id=cid, memo="contract cost paid released pro rata (simulated credit event)"),
+                      cr(aid, "1335", ccy, rel, instrument_id=cid, memo="contract cost paid released pro rata (defaulted notional)")]
+            released = -rel
+    n_events = int(conn.execute("SELECT COUNT(*) FROM cdx_credit_events WHERE contract_id=?", (cid,)).fetchone()[0] or 0) + 1
+    memo = (f"CDX credit event {cid}: {entity} defaulted on {ed.isoformat()}, recovery {rec} % entered by the owner; {spec['name']} equal weights 1 / {names}:"
+            f" defaulted notional {fmt_money(dn)}; protection {fmt_money(protection)} {'received' if buyer else 'paid'}, accrued premium {fmt_money(accrued)}"
+            f" ({accrued_days} days) {'paid' if buyer else 'received'}, net {fmt_money(abs(net))} {'receivable' if net > 0 else 'payable'} {sd.isoformat()};"
+            f" notional {fmt_money(n_before)} -> {fmt_money(n_after)}" + (f"; contract cost {fmt_money(abs(released))} released" if released else "")
+            + f" ({CREDIT_EVENT_LABEL})")
+    entry_id = ctx.post(Entry("CDX_CREDIT_EVENT", memo, lines, f"otc:{cid}:credit:{n_events}", ref_type="otc", ref_id=cid))
+    settle_id = None
+    if net:
+        settle_id = next_id(conn, "settlement")
+        if swaps.has_columns(conn, "settlements", "ref_type", "ref_id"):
+            conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status, ref_type, ref_id)"
+                         " VALUES (?,?,?,?,?,?,?,?,?,'PENDING','otc',?)", (settle_id, None, None, aid, "CREDIT EVENT", ccy, net, "1200" if net > 0 else "2100",
+                                                                           sd.isoformat(), cid))
+        else:
+            conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status)"
+                         " VALUES (?,?,?,?,?,?,?,?,?,'PENDING')", (settle_id, None, None, aid, "CREDIT EVENT", ccy, net, "1200" if net > 0 else "2100", sd.isoformat()))
+    # 3. the IM follows the reduced notional (the release returns to cash); the notional, the terms' index factor, the accrual base and the mark
+    im_before = int(row["im_c"])
+    try:
+        im_pct = Decimal(str(terms.get("im_pct")))
+        im_after = to_c(from_c(n_after) * im_pct)
+    except (InvalidOperation, ValueError, TypeError):
+        im_after = to_c(from_c(im_before) * Decimal(n_after) / Decimal(n_before))
+    im_rel = max(0, im_before - im_after)
+    im_entry = None
+    if im_rel:
+        im_entry = ctx.post(Entry("OTC_IM", f"OTC IM released {cid}: {fmt_money(im_rel)} - the notional fell to {fmt_money(n_after)} after the simulated credit event"
+                                  f" of {entity}; IM {fmt_money(im_before)} -> {fmt_money(im_after)}",
+                                  [dr(aid, "1010", ccy, im_rel, memo="IM returned (reduced notional)"),
+                                   cr(aid, "1330", ccy, im_rel, instrument_id=cid, memo="OTC initial margin released (credit event)")],
+                                  f"im:{cid}:credit:{n_events}", ref_type="otc", ref_id=cid))
+    terms["original_notional_c"] = original
+    terms["index_factor"] = str((Decimal(n_after) / Decimal(original)).quantize(Decimal("0.000001")))
+    terms["defaulted_names"] = int(terms.get("defaulted_names") or 0) + 1
+    mark_before = int(row["mark_c"] or 0)
+    mark_after = to_c(from_c(mark_before) * Decimal(n_after) / Decimal(n_before))
+    conn.execute("UPDATE otc_contracts SET notional_c=?, im_c=?, mark_c=?, mark_ts=?, terms_json=? WHERE contract_id=?",
+                 (n_after, im_before - im_rel, mark_after, ctx.ts, dumps(terms), cid))
+    conn.execute("UPDATE accrual_state SET base_c=?, cum_c=? WHERE kind=? AND ref_id=?", (n_after, cum_new, leg, cid))
+    conn.execute("INSERT INTO cdx_credit_events(contract_id, entity_key, reference_entity, event_date, recovery_pct, names, defaulted_c, protection_c, accrued_c,"
+                 " accrued_days, net_c, settle_date, settle_id, notional_before_c, notional_after_c, cost_released_c, im_released_c, entry_id, command_id, ts)"
+                 " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 (cid, ekey, entity, ed.isoformat(), str(rec), names, dn, protection, accrued, accrued_days, net, sd.isoformat(), settle_id, n_before, n_after,
+                  released, im_rel, entry_id, ctx.command_id, ctx.ts))
+    ctx.touched_instruments.add((aid, cid))
+    ctx.touched_accounts.add(aid)
+    out = {"contract_id": cid, "reference_entity": entity, "event_date": ed.isoformat(), "recovery_pct": str(rec), "names": names, "defaulted_c": dn,
+           "protection_c": protection, "accrued_c": accrued, "accrued_days": accrued_days, "net_c": net, "value_c": net, "settle_date": sd.isoformat(),
+           "settle_id": settle_id, "notional_before_c": n_before, "notional_after_c": n_after, "cost_released_c": released, "im_released_c": im_rel,
+           "im_after_c": im_before - im_rel, "mark_before_c": mark_before, "mark_after_c": mark_after, "late_nights": late_nights, "reversed_c": late,
+           "true_up_c": adjust, "entry_id": entry_id, "im_entry_id": im_entry, "caught_up": caught, "label": CREDIT_EVENT_LABEL, "weights": WEIGHTS_NOTE,
+           "side": side, "date": sd.isoformat()}
+    ctx.event("CDX_CREDIT_EVENT", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, **{k: v for k, v in out.items() if k != "caught_up"})
+    out["contract"] = swaps.contract_view(services, cid, conn=conn, detail=True, now_ts=ctx.ts)
+    out["entries"] = [c["entry_id"] for c in caught] + [x for x in (entry_id, im_entry) if x is not None]
+    return out
+
+
+def credit_events_of(services, contract_ids, conn=None) -> Dict[str, List[dict]]:
+    """The simulated credit events of these contracts (the Derivatives page and the contract views): ``{contract_id: [event]}``."""
+    ids = [str(c) for c in (contract_ids or []) if c]
+    out: Dict[str, List[dict]] = {}
+    if not ids:
+        return out
+    with _marks.shared_reader(services.db, conn) as conn:
+        if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cdx_credit_events'").fetchone() is None:
+            return out
+        q = ",".join("?" for _ in ids)
+        for r in conn.execute(f"SELECT * FROM cdx_credit_events WHERE contract_id IN ({q}) ORDER BY event_date, ts", ids).fetchall():
+            d = {k: r[k] for k in r.keys()}
+            d["label"] = CREDIT_EVENT_LABEL
+            out.setdefault(d["contract_id"], []).append(d)
+    return out
+
+
 # ---- routes, registry, binding -----------------------------------------------------------------------------------------------------
 def register_routes(router) -> None:
     """C1: ``POST /api/otc/cdx/preview`` {account_id, terms}, ``GET /api/otc/cdx/desk?account_id=``, ``POST /api/otc/cdx/terms`` {account_id,
@@ -1373,7 +1621,21 @@ def register_routes(router) -> None:
         with _marks.shared_reader(rt.db) as conn:
             if account_row(conn, aid) is None:
                 raise _ApiNotFound(f"account {aid} does not exist")
-        return sw.preview(rt, aid, KIND, dict(req.b("terms") or {}))
+        try:
+            return sw.preview(rt, aid, KIND, dict(req.b("terms") or {}))
+        except NotFound:
+            raise
+        except RejectError as e:
+            if e.http not in (400, 409):
+                raise
+            # V104R2-BW-05: a correctly refused preview (no FRED proxy, a stale one, a bad notional) answers 200 with its blocker, never a 4xx
+            return {"refused": True, "bookable": False, "kind": KIND, "account_id": aid, "code": e.code, "message": e.message, "details": e.details or {},
+                    "blockers": [{"code": e.code, "message": e.message, "details": e.details or {}}]}
+
+    def credit_event(req):
+        payload = {k: v for k, v in (req.body or {}).items() if k not in ("request_id", "contract_id")}
+        payload["contract_id"] = req.params[0]
+        return run_command(req, "cdx.credit_event", payload)
 
     def cdx_desk(req):
         aid = str(req.q("account_id") or "")
@@ -1390,14 +1652,16 @@ def register_routes(router) -> None:
     router.add("POST", r"/api/otc/cdx/preview", cdx_preview, mutating=False)
     router.add("GET", r"/api/otc/cdx/desk", cdx_desk)
     router.add("POST", r"/api/otc/cdx/terms", cdx_terms)
+    router.add("POST", r"/api/otc/contracts/([^/]+)/credit-event", credit_event)
 
 
 def unsupported() -> List[dict]:
     return [{"item": "CDX index spreads from a dealer or the clearing house", "state": "LIMITED",
              "wording": "no free CDX quote: the spread is the ICE BofA option-adjusted spread from FRED plus an assumed basis, labelled a proxy",
              "where": "prime-broker OTC tab, Credit"},
-            {"item": "Credit events in CDX names (index factor / version changes, auction settlement)", "state": "NOT_OFFERED",
-             "wording": "defaults among the index names are not tracked: the contract stays at factor 1.00 (version 1)", "where": "prime-broker OTC tab, Credit"},
+            {"item": "CDX credit events", "state": "SIMULATED",
+             "wording": ("SIMULATED on request - the owner can trigger a constituent default at a recovery he enters; no ISDA Determinations Committee"
+                         " rulings or auctions are tracked"), "where": "Derivatives page, OTC contracts (a CDX row)"},
             {"item": "Off-the-run CDX series, other tenors, tranches, single-name CDS and index options", "state": "NOT_OFFERED",
              "wording": "only the on-the-run 5-year CDX.NA.IG and CDX.NA.HY are dealt", "where": "prime-broker OTC tab, Credit"}]
 
@@ -1405,13 +1669,14 @@ def unsupported() -> List[dict]:
 def register(bus, services=None) -> None:
     bus.register("cdx.coupon", h_coupon)
     bus.register("cdx.terms", h_terms, light=True)
+    bus.register("cdx.credit_event", h_credit_event)                # P4 task 11: owner-triggered only (no job runs it)
 
 
 def bind(rt) -> None:
     """C4: the ``cdx_terms`` table; C13: the CDX_COUPON job before SWAP_VM (a coupon date settles before that day's VM)."""
     db = getattr(rt, "db", None)
     if db is not None and hasattr(db, "ensure_schema_ext"):
-        db.ensure_schema_ext("swaps_cds", SCHEMA)
+        db.ensure_schema_ext("swaps_cds", SCHEMA + CREDIT_SCHEMA)
     try:
         from ..lifecycle_eod import ProductJob, add_product_job
         add_product_job(ProductJob(JOB_COUPON, "cdx.coupon", "swaps_cds", "coupon_keys", ("contract_id", "date"), "each CDX coupon date 00:45 ET",
@@ -1420,6 +1685,6 @@ def bind(rt) -> None:
         pass
 
 
-__all__ = ["book_as_of", "INDEX", "KIND", "on_the_run", "accrual_start", "coupon_periods", "hazard", "survival", "df_function", "rpv01", "price", "upfront_c", "value_c", "cs01_from",
+__all__ = ["h_credit_event", "credit_events_of", "CREDIT_SCHEMA", "CREDIT_EVENT_LABEL", "book_as_of", "INDEX", "KIND", "on_the_run", "accrual_start", "coupon_periods", "hazard", "survival", "df_function", "rpv01", "price", "upfront_c", "value_c", "cs01_from",
            "rebate_c", "coupon_amount_c", "proxy", "terms_for", "parse_terms", "preview", "book", "mark", "cs01_c", "dv01_c", "leg_specs", "terminate", "h_coupon",
            "coupon_keys", "next_events", "contract_detail", "desk", "h_terms", "risk_block", "register_routes", "register", "bind", "unsupported", "PROXY_LABEL", "MODEL"]

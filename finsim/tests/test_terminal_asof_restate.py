@@ -235,6 +235,51 @@ class RestatementSplit(_Base):
         self.assertEqual((409, "RESTATE_RANGE"), (res.http, res.code))          # the clock is on D1: its close is not final
 
 
+class NavHistoryView(_Base):
+    """PORTFOLIO-13 (P3 task 9): GET /api/history/nav and GET /api/portfolio?as_of= on the acceptance 1 (a) scenario, read through
+    ``api_views.nav_history`` / ``portfolio_as_of`` (what the routes serve)."""
+
+    def test_nav_history_restated_original_split_and_returns(self):
+        from finsim.terminal.api import encode
+        from finsim.terminal.api_views import nav_history, portfolio_as_of
+        rt = self.rt
+        groups = RestatementSplit._scenario(self)
+        self.assertTrue(_restate(rt, groups).ok)
+        h = json.loads(json.dumps(encode(nav_history(rt, "T1:ALL")), default=str))
+        rows = {r["snap_date"]: r for r in h["rows"]}
+        self.assertEqual([D1, D2, D3], [r["snap_date"] for r in h["rows"]])
+        self.assertEqual([D1, D2, D3], h["restated_dates"])
+        r1, r2, r3 = rows[D1], rows[D2], rows[D3]
+        # D1 restated 10,000,049.00 beside the original 10,000,000.00; the inception return = 10,000,049 / 10,000,000 - 1 = 0.0000049 -> 0.000005
+        self.assertEqual(("10000049.00", "10000000.00", True, False, True, "0.000005"), (r1["nav"], r1["original"]["nav"], r1["restated"], r1["late"], r1["trading_day"], r1["ret"]))
+        self.assertEqual(f"restated on {D4} (batch {BATCH})", r1["restated_text"])
+        # its split: original 10,000,000.00 + import MSFT +49.00 (the transfer to B and the funding net 0 for the lifetime), mark policy 0, residual 0
+        s1 = r1["split"]
+        self.assertEqual(("10000000.00", "0.00", "0.00"), (s1["original_nav"], s1["residual"], s1["interest_effect"]))
+        self.assertEqual([("line-MSFT", "49.00"), ("line-PB", "0.00"), ("funding", "0.00")], [(x["key"], x["amount"]) for x in s1["import_effect"]])
+        # D2: 10,000,103.00 = original + 99.00 + mark policy 4.00 (AAPL 200 x (20.02 - 20.00)); ret 54 / 10,000,049 = 0.0000054 -> 0.000005;
+        # cumulative 10,000,103 / 10,000,000 - 1 = 0.0000103 -> 0.000010
+        self.assertEqual(("10000103.00", 400, "0.000005", "0.000010"), (r2["nav"], r2["split"]["mark_policy_c"], r2["ret"], r2["cum"]))
+        self.assertEqual([("AAPL", "4.00")], [(m["instrument_id"], m["amount"]) for m in r2["split"]["mark_policy"]])
+        # D3 is a Saturday: no trading, Friday's marks carried, P&L 0.00, return 0
+        self.assertEqual((False, "0.00", "0.000000", "0.000010"), (r3["trading_day"], r3["pnl_day"], r3["ret"], r3["cum"]))
+        # the original series (the toggle): 10,000,000.00 every day, returns 0
+        self.assertEqual([("10000000.00", "0.000000", "0.000000")] * 3, [(r["original"]["nav"], r["original"]["ret"], r["original"]["cum"]) for r in h["rows"]])
+        # the from / to range keeps the cumulative of the rows shown
+        h2 = json.loads(json.dumps(encode(nav_history(rt, "T1:ALL", D2, D3)), default=str))
+        self.assertEqual(([D2, D3], "0.000005"), ([r["snap_date"] for r in h2["rows"]], h2["rows"][-1]["cum"]))
+        # the portfolio as of D2: that snapshot's own positions and dated marks, read-only, labelled restated
+        p = json.loads(json.dumps(encode(portfolio_as_of(rt, "T1:ALL", D2)), default=str))
+        pos = {x["instrument_id"]: x for x in p["positions"]}
+        self.assertEqual(("10000103.00", True, "10000000.00"), (p["nav"]["nav"], p["read_only"], p["original_nav"]))
+        self.assertEqual((200, "20.02", "CLOSE", D2), (pos["AAPL"]["qty"], pos["AAPL"]["mark"], pos["AAPL"]["mark_kind"], pos["AAPL"]["mark_date"]))
+        self.assertEqual((100, "11.00"), (pos["MSFT"]["qty"], pos["MSFT"]["mark"]))
+        self.assertEqual(f"restated on {D4} (batch {BATCH})", p["restated"]["text"])
+        from finsim.terminal.api import NotFound
+        with self.assertRaises(NotFound):
+            portfolio_as_of(rt, "T1:ALL", "2026-10-10")
+
+
 class BusinessDatePositions(_Base):
     def test_fill_after_the_cutoff_counts_from_the_next_business_date(self):
         """(h): a fill at 19:58 ET on D carries business date D+1 (the 17:00 ET accounting-day cut-off): it counts in nav_as_of(D+1) and

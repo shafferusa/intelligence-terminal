@@ -9,10 +9,14 @@
  *                     api.py (keybind_scope) uses the same rule.  74 actions (FINSIM1_PLAN C1).
  *   only what works   an action that opens a page names it (`page`: T.pages.<page>); while that page is not in the build
  *                     (T.pages.<page> undefined) the action is hidden from the '?' help and Settings > Keyboard
- *                     (T.keys.available(id); T.keys.groups() lists the available ones only).  The 1.0.5 default map keeps every
- *                     1.0.4 key except F12, which opens the Dashboard (the news page is gone); the actions of the pages of the new
- *                     navigation (Pending / Completed Trades, Accounts, Cash & Collateral, Derivatives) and Trading have no
- *                     default key yet (FINSIM1_PLAN 15.7 item 3).
+ *                     (T.keys.available(id); T.keys.groups() lists the available ones only).
+ *   the default map   1.0.6 (owner directive section 16, FINSIM1_PLAN C1 / Q10): the new navigation's pages are on the keys the
+ *                     account pages used to hold - F8 Pending Trades, Shift+F8 Completed Trades, Shift+F4 Accounts, Shift+F5 Cash &
+ *                     Collateral, Shift+F6 Derivatives (on an account page F8 / Shift+F8 open that account's blotter and Shift+F5
+ *                     its Cash & financing: core.js RUN); Shift+F10 opens the History hub; F12 the Dashboard.  The account pages'
+ *                     Orders / Positions / Cash / Transactions, Activity and Trading keep their actions without a default key
+ *                     (bindable in Settings > Keyboard; the account tab bar and the History hub reach those pages).  The Pages
+ *                     group follows the sidebar's order.
  *   canonical keys    ONE form: Ctrl+Alt+Shift+Key, the modifiers in that order.  Key = F1..F24, A..Z, 0..9, a named key
  *                     (Enter Escape Space Tab Backspace Delete Insert Home End PageUp PageDown ArrowUp ArrowDown ArrowLeft
  *                     ArrowRight) or one ASCII punctuation character; Shift is part of a punctuation or digit character
@@ -215,10 +219,10 @@
   act('nav.foreign_fx', 'Navigation', 'F4', 'Foreign Markets & FX (Markets)');
   act('nav.private', 'Navigation', 'F5', 'Private Markets (a book without it: which book has it)');
   act('nav.prime_broker', 'Navigation', 'F6', 'Prime broker account of the book (again: the next one)');
-  act('nav.orders', 'Navigation', 'F8', 'Orders of the account you are on (elsewhere: US Exchange)');
-  act('nav.positions', 'Navigation', 'Shift+F4', 'Positions of the account you are on (elsewhere: US Exchange)');
-  act('nav.cash', 'Navigation', 'Shift+F5', 'Cash & financing of the account you are on (elsewhere: US Exchange)');
-  act('nav.transactions', 'Navigation', 'Shift+F6', 'Transactions of the account you are on (elsewhere: US Exchange)');
+  act('nav.orders', 'Navigation', null, 'Orders of the account you are on (elsewhere: US Exchange)');
+  act('nav.positions', 'Navigation', null, 'Positions of the account you are on (elsewhere: US Exchange)');
+  act('nav.cash', 'Navigation', null, 'Cash & financing of the account you are on (elsewhere: US Exchange)');
+  act('nav.transactions', 'Navigation', null, 'Transactions of the account you are on (elsewhere: US Exchange)');
   act('nav.markets', 'Navigation', null, 'Markets of the account you are on (elsewhere: US Exchange)');
   for (var n = 1; n <= 9; n++) { act('nav.account_' + n, 'Navigation', null, 'Account ' + n + ' of the selected book (sidebar order)', { family: 'nav.accounts' }); }
   /* Books */
@@ -226,22 +230,22 @@
   act('book.fund', 'Books', 'Shift+F2', 'Select the Fund book', { family: 'book.select' });
   act('book.institutional', 'Books', 'Shift+F3', 'Select the Institutional book', { family: 'book.select' });
   act('book.next', 'Books', null, 'Next book (Personal, Fund, Institutional in turn)');
-  /* Pages (an action naming a `page` is shown only while that page is in the build: T.keys.available) */
+  /* Pages, in the sidebar's order (an action naming a `page` is shown only while that page is in the build: T.keys.available) */
   act('page.dashboard', 'Pages', 'F12', 'Dashboard', { page: 'dashboard' });
   act('page.portfolio', 'Pages', 'F7', 'Portfolio');
+  act('page.trading', 'Pages', null, 'Trading: the last venue you used (else US Exchange)');
+  act('page.watchlists', 'Pages', 'Shift+F9', 'Watchlists');
+  act('page.pending', 'Pages', 'F8', 'Pending Trades (on an account page: that account\'s)', { page: 'pending' });
+  act('page.completed', 'Pages', 'Shift+F8', 'Completed Trades (on an account page: that account\'s)', { page: 'completed' });
+  act('page.accounts', 'Pages', 'Shift+F4', 'Accounts', { page: 'accounts' });
   act('page.treasury', 'Pages', 'F10', 'Treasury');
+  act('page.cash_collateral', 'Pages', 'Shift+F5', 'Cash & Collateral (on an account page: its Cash & financing)', { page: 'cash_collateral' });
+  act('page.derivatives', 'Pages', 'Shift+F6', 'Derivatives', { page: 'derivatives' });
+  act('page.history', 'Pages', 'Shift+F10', 'History: NAV history, transactions, account activity, past lifetimes');
+  act('page.settings', 'Pages', 'Shift+F11', 'Settings');
   act('page.risk', 'Pages', 'F11', 'Risk');
   act('page.accounting', 'Pages', 'Shift+F7', 'Accounting');
-  act('page.activity', 'Pages', 'Shift+F8', 'Activity');
-  act('page.watchlists', 'Pages', 'Shift+F9', 'Watchlists');
-  act('page.history', 'Pages', 'Shift+F10', 'History of the book\'s last past lifetime');
-  act('page.settings', 'Pages', 'Shift+F11', 'Settings');
-  act('page.trading', 'Pages', null, 'Trading: the last venue you used (else US Exchange)');
-  act('page.pending', 'Pages', null, 'Pending Trades (on an account page: that account\'s)', { page: 'pending' });
-  act('page.completed', 'Pages', null, 'Completed Trades (on an account page: that account\'s)', { page: 'completed' });
-  act('page.accounts', 'Pages', null, 'Accounts', { page: 'accounts' });
-  act('page.cash_collateral', 'Pages', null, 'Cash & Collateral (on an account page: its Cash & financing)', { page: 'cash_collateral' });
-  act('page.derivatives', 'Pages', null, 'Derivatives', { page: 'derivatives' });
+  act('page.activity', 'Pages', null, 'Activity (also in History)');
   /* Order ticket: the dock (anywhere) and the keys inside the ticket (their current keys are the defaults) */
   act('dock.toggle', 'Order ticket', 'F9', 'Show / hide the order ticket (on an account page)');
   act('ticket.preview', 'Order ticket', 'Enter', 'Preview the order (in the symbol box: look the symbol up)', { typing: true, files: DESKS });

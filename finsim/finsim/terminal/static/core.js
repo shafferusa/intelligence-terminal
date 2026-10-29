@@ -28,6 +28,10 @@
  *             while that file is not in the build.
  *   T.hasModule(name)  C2: true when GET /api/health .modules[name] is "bound" (the health poll's last answer, fetched once
  *             before the first route renders); a page calls an optional module's routes only when it is true.
+ *   1.0.6 (FINSIM1_PLAN P1b): the keys of the new navigation are on (keys.js: F8 Pending, Shift+F8 Completed, Shift+F4 Accounts,
+ *             Shift+F5 Cash & Collateral, Shift+F6 Derivatives; Shift+F10 the History hub - the last past lifetime's pages while the
+ *             hub is not in the build); #/settings/data (the old Data Status address) opens Settings > Market data; an error is
+ *             said in the server's words without its internal code (V104R2-BW-04: T.api.describe; the code stays in the console).
  *
  * Conventions this file enforces on screen
  * - Nothing is computed here: every figure is a field of an API response; this file formats and routes.
@@ -512,9 +516,14 @@
       T.ui.toast(msg, 'err', 6000);
       return msg;
     },
-    /* one line for an error: "CODE: message (incident api:...)"; a lost submit response says so */
+    /* one line for an error in trader words: the server's message, never its internal code (V104R2-BW-04; the code is in the
+       console line T.api.fail writes); a code that came without a message is said in words (T.codeWords); a 500 keeps its incident
+       id (what to quote when reporting it); a lost submit response says so */
     describe: function (e) {
-      var msg = e && e.name === 'LostResponse' ? ('lost response: ' + e.message) : (e && e.code ? (e.code + ': ' + e.message) : String(e && e.message || e));
+      var msg;
+      if (e && e.name === 'LostResponse') { msg = 'lost response: ' + e.message; }
+      else if (e && e.code && (!e.message || e.message === e.code)) { msg = T.codeWords(e.code); }
+      else { msg = String(e && e.message || e); }
       var inc = e && (e.incident_id || (e.details && e.details.incident_id) || (e.body && e.body.incident_id));
       if (inc) { msg += ' (incident ' + inc + ')'; }
       return msg;
@@ -527,7 +536,7 @@
      'sweep-in'); the same rule as api_views.code_words; anything that is not a code comes back as given */
   var CODE_ACRONYMS = { FX: 1, OTC: 1, CDX: 1, PB: 1, IM: 1, VM: 1, TRS: 1, IRS: 1, XCCY: 1, FIFO: 1, SOFR: 1, NAV: 1, US: 1, USD: 1, ECP: 1, QP: 1, ADV: 1, DV01: 1,
                         CS01: 1, ETF: 1, GC: 1, HTB: 1, CSA: 1, ISDA: 1, PBA: 1, SHO: 1, GTC: 1, AON: 1, MKT: 1, LMT: 1, EUR: 1, GBP: 1, JPY: 1, CHF: 1, CAD: 1,
-                        AUD: 1, OCC: 1, CME: 1, PDT: 1, API: 1 };
+                        AUD: 1, OCC: 1, CME: 1, PDT: 1, API: 1, HTTP: 1 };
   var CODE_WORDS = { ACCT_DAY: 'accounting day', FUT_MARGIN: 'futures margin', OPT_MARGIN: 'option margin', EXCESS_LIQ: 'excess liquidity', BUY_CCY: 'currency bought',
                      SELL_CCY: 'currency sold', PB_ONBOARDED: 'prime broker onboarded', OTC_BOOKED: 'OTC contract booked', FX_DEALT: 'FX deal',
                      FX_FORWARD_DEALT: 'FX forward dealt', SWEEP_IN: 'sweep-in', SWEEP_OUT: 'sweep-out', OTC_IM: 'OTC initial margin', OTC_VM: 'OTC variation margin',
@@ -763,12 +772,11 @@
   };
 
   /* ---------------------------------------------------------------- provider names -------------------------------- */
-  /* trader-facing names of the provider-health keys (GET /api/health .providers, news sources, worker refreshers) */
-  T.PROVIDER_LABEL = { yahoo: 'Yahoo', yahoo_news: 'Yahoo news', cboe: 'Cboe', treasury: 'Treasury.gov', fred: 'FRED', finra: 'FINRA',
-    frankfurter: 'Frankfurter (ECB reference rates)', fed: 'Federal Reserve news', newspaper: 'Daily Newspaper index', fiscaldata: 'Treasury fiscal data',
+  /* trader-facing names of the provider-health keys (GET /api/health .providers, worker refreshers); the market-data sources only */
+  T.PROVIDER_LABEL = { yahoo: 'Yahoo', cboe: 'Cboe', treasury: 'Treasury.gov', fred: 'FRED', finra: 'FINRA',
+    frankfurter: 'Frankfurter (ECB reference rates)', fiscaldata: 'Treasury fiscal data',
     treasurydirect: 'TreasuryDirect', nyfed: 'New York Fed', ecb: 'ECB', mof: 'Japan Ministry of Finance', boe: 'Bank of England', sec: 'SEC EDGAR', edgar: 'SEC EDGAR',
-    debt: 'Debt market data (Treasury list, FedInvest, ECB, MOF)', otc_options: 'OTC option inputs (Yahoo closes, Cboe chains)', news_fed: 'Federal Reserve news',
-    news_yahoo: 'Yahoo news', news_paper: 'Daily Newspaper index' };
+    debt: 'Debt market data (Treasury list, FedInvest, ECB, MOF)', otc_options: 'OTC option inputs (Yahoo closes, Cboe chains)' };
   T.providerLabel = function (name) {
     var k = String(name == null ? '' : name);
     return T.PROVIDER_LABEL[k] || T.PROVIDER_LABEL[k.toLowerCase()] || k.replace(/_/g, ' ');
@@ -1000,6 +1008,8 @@
     return out;
   }
   var DEFAULT_ROUTE = '#/dashboard';
+  /* a page tab that moved: its old address opens the new one (the address bar is corrected, no history entry) */
+  var TAB_ALIASES = { settings: { data: 'market-data' } };
   var ROUTES = [
     [/^#\/dashboard$/, function () { return { page: 'dashboard' }; }],
     /* the removed news page (1.0.4 and earlier): its old address lands on the Dashboard with a one-time toast */
@@ -1100,6 +1110,9 @@
       if (r.unknown) { T.ui.toast('no page ' + r.unknown + ' - showing the Dashboard', '', 3500); replaceHash(DEFAULT_ROUTE); }
       /* C1: the removed news page's address (an old bookmark) lands on the Dashboard, said once */
       if (r.removed) { T.ui.toast('That page was removed - showing the Dashboard', '', 4000); replaceHash(DEFAULT_ROUTE); r.hash = DEFAULT_ROUTE; }
+      /* UI-20: a tab that moved (Settings > Data Status is Settings > Market data since 1.0.6) */
+      var alias = r.tab && TAB_ALIASES[r.page] ? TAB_ALIASES[r.page][r.tab] : null;
+      if (alias) { r.tab = alias; r.hash = r.hash.replace(/\/[^\/?]*$/, '/' + alias); replaceHash(r.hash); }
       /* C1: #/trading is the last venue used (else US Exchange Markets): the address becomes that venue's */
       if (r.page === 'trading') {
         var venue = tradingHash();
@@ -1210,7 +1223,7 @@
      incident id of a 500 and a Retry - instead of leaving 'loading ...' or stale figures without a word; the line goes on
      the poller's next success.  A NETWORK failure is the banner's ('Server unreachable since ...'). */
   var PSTAT_LABEL = { account_detail: 'account', positions: 'positions', orders: 'working orders', quotes: 'quotes', chain: 'option chain',
-                      accounts: 'accounts', books: 'books', attention: 'attention items', clock: 'sessions', health: 'server health' };
+                      accounts: 'accounts', books: 'books', attention: 'attention items', clock: 'sessions', health: 'server health', navcounts: 'trade counts' };
   var ACCOUNT_POLLERS = { account_detail: 1, positions: 1, orders: 1 };
   var _pfail = {};
   function paintPageStatus() {
@@ -1436,7 +1449,9 @@
     var list = accountsOf('PB', book);
     if (!list.length) {
       var e = book.eligibility || {};
-      T.ui.toast(bookName(book) + ' has no prime broker account: ' + (e.can_onboard ? 'open one with "+ Open prime broker account" in the sidebar'
+      /* the onboarding button lives on the Accounts page header (1.0.6); the sidebar keeps it only while that page is not in the build */
+      var where = T.pages.accounts ? 'open one with "Open prime broker account" on the Accounts page' : 'open one with "+ Open prime broker account" in the sidebar';
+      T.ui.toast(bookName(book) + ' has no prime broker account: ' + (e.can_onboard ? where
         : 'new relationships need the PB / OTC threshold' + (e.pb_otc_reason ? ' (' + e.pb_otc_reason + ')' : '')), '', 7000);
       return;
     }
@@ -1465,7 +1480,12 @@
     T.book.set(b.book_code);
     T.ui.toast(bookName(b) + ' selected', 'ok', 1500);
   }
-  /* Shift+F10: the History pages of the book's last past lifetime (#/h/<lifetime>/portfolio) */
+  /* Shift+F10 (1.0.6, C1): the History hub (#/history); while the hub is not in the build, the pages of the book's last past lifetime */
+  function goHistoryHub() {
+    if (historyHub()) { T.router.go('#/history'); return; }
+    goHistory();
+  }
+  /* the History pages of the book's last past lifetime (#/h/<lifetime>/portfolio) */
   function goHistory() {
     var book = needBook(); if (!book) { return; }
     var none = bookName(book) + ' has no past lifetime yet: History shows a lifetime after a reset (Settings > Lifetimes)';
@@ -1520,7 +1540,7 @@
     'page.dashboard': goPage('#/dashboard'),
     'page.portfolio': goPage('#/portfolio'), 'page.treasury': goPage('#/treasury'), 'page.risk': goPage('#/risk'),
     'page.accounting': goPage('#/accounting'), 'page.activity': goPage('#/activity'), 'page.watchlists': goPage('#/watchlists'), 'page.settings': goPage('#/settings'),
-    'page.history': goHistory,
+    'page.history': goHistoryHub,
     'page.trading': goPage('#/trading'),
     /* C1: on an account page, Pending / Completed Trades open filtered to that account and Cash & Collateral opens its Cash & financing */
     'page.pending': function () { var id = routeAccount(); T.router.go(id ? '#/pending?account=' + encodeURIComponent(id) : '#/pending'); },

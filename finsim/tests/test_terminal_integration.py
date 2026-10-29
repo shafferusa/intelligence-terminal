@@ -105,11 +105,15 @@ class TrsXccyIntegrationTests(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def xccy(self):
-        rt = self.rt = st.runtime(self.tmp, st.XCCY_AT)                                     # Wed 2026-05-20 14:00 ET
-        rt.curve.set_fixed_dfs(st.USD401, date(2026, 5, 19))
-        rt.rates.put("ECBDFR", [(date(2026, 5, 19), D("2.49"))], persist=False)
+        rt = self.rt = st.runtime(self.tmp, st.XCCY_AT)                                     # Mon 2026-05-18 14:00 ET (the FX trade date)
+        rt.curve.set_fixed_dfs(st.USD401, date(2026, 5, 15))
+        rt.rates.put("ECBDFR", [(date(2026, 5, 15), D("2.49"))], persist=False)
         r = st.book(rt, dict(st.XCCY_TERMS), "ui:integ-xccy-0001", kind="XCCY")             # receive USD 11,238,000.00 / pay EUR 10,000,000.00 at 1.1238
         self.assertTrue(r.ok, r.body)
+        # P8B-06 (1.0.6 fixer): the swap starts on its spot date, Wed 05-20 - the start exchange runs then (00:45 ET), not at the booking
+        rt.clock.set("2026-05-20T00:50:00-04:00")
+        r = st.event(rt, "2026-05-20", "START")
+        self.assertTrue(r.ok and r.body["status"] == "DONE", r.body)
         return rt
 
     # ---- SWAP_VM of a TRS: the close of its own date, else CAUGHT_UP -----------------------------------------------------------------

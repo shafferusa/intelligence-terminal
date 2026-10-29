@@ -245,8 +245,8 @@
     }, function (e) {
       if (!st || seq !== st.seq) { return; }
       st.preview = null; st.ui.confirm.disabled = true;
-      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'blk' }, T.h('b', null, e.code || 'ERROR'), ' ', e.message || String(e)));
-      setStatus('preview refused: ' + (e.code || '') + ' ' + (e.message || e), 'err');
+      T.clear(st.ui.pv).appendChild(T.h('div', { class: 'blk', title: (e && e.code) || '' }, T.api.describe(e)));   /* V104R2-BW-04: words, the code in the hover */
+      setStatus('preview refused: ' + T.api.describe(e), 'err');
     });
   }
 
@@ -270,7 +270,7 @@
   }
   function paintPreview(p) {
     var pv = T.clear(st.ui.pv);
-    (p.blockers || []).forEach(function (b) { pv.appendChild(T.h('div', { class: 'blk' }, T.h('b', null, b.code), ' ', b.message)); });
+    (p.blockers || []).forEach(function (b) { pv.appendChild(T.h('div', { class: 'blk', title: b.code || '' }, b.message || T.codeWords(b.code))); });   /* V104R2-BW-04 */
     (p.warnings || []).forEach(function (w) { pv.appendChild(T.h('div', { class: 'wrn' }, w)); });
     if (p.buy == null) {
       if (p.forward && p.forward.note) { pv.appendChild(T.h('div', { class: 'hint' }, p.forward.note)); }
@@ -332,8 +332,8 @@
       invalidate(); runPreview(true); loadRecent();
     }, function (e) {
       st.busy = false;
-      setStatus('refused: ' + (e.code || '') + ' ' + (e.message || e), 'err');
-      T.clear(st.ui.result).appendChild(T.h('div', { class: 'blk' }, T.h('b', null, e.code || 'ERROR'), ' ', e.message || String(e)));
+      setStatus('refused: ' + T.api.describe(e), 'err');
+      T.clear(st.ui.result).appendChild(T.h('div', { class: 'blk', title: (e && e.code) || '' }, T.api.describe(e)));
       st.holdUntil = Date.now() + 20000;
       runPreview(true);
     });

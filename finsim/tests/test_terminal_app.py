@@ -1,26 +1,31 @@
-"""WP-14 tests: launcher files, install / uninstall / legacy plans, status text, stop + liveness with a fake OpenProcess,
-the commands with injected collaborators (TERMINAL_DESIGN.md §18, §19.12; TERMINAL_WORKPLAN.md WP-14).
+"""WP-14 tests: launcher files, install / uninstall plans, status text, stop + liveness with a fake OpenProcess, the
+commands with injected collaborators (TERMINAL_DESIGN.md §18, §19.12; TERMINAL_WORKPLAN.md WP-14), and from FINSIM1_PLAN
+P7 (1.0.6): ``legacy`` gone (UI-19), the ``import`` dispatch (C18) and the no-command hint (STARTUP-09).  The launch,
+two-code-tree, shortcut and README tests are in ``test_terminal_launch.py``.
 
 Nothing here touches the network, port 8765, the real Startup folder or ``~/.finsim``: ``FINSIM_HOME`` /
 ``FINSIM_TERMINAL_DB`` point at a temp folder, the loopback calls go through ``FakeHttp``, process liveness through
 ``FakeProcessApi``, external commands through a recording ``run``, and the server is never started (``starter`` fakes).
-The one real socket test binds port 0.  Every expected value is worked by hand in a comment.
+The one real socket test binds port 0.  ``install`` runs here from the repo's git working tree, so its working-tree
+guard is injected (``tree_check``); the guard itself is tested in ``test_terminal_launch.py``.  Every expected value is
+worked by hand in a comment.
 """
 from __future__ import annotations
 
 import contextlib
 import hashlib
 import importlib
+import importlib.util
 import io
 import json
 import os
 import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 import tempfile
 import threading
+import types
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -28,6 +33,7 @@ from finsim.terminal import APP_ID, VERSION, config
 from finsim.terminal import app
 
 SHA_ABC = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"   # sha256(b"abc"), the FIPS 180-2 example
+NO_GIT = lambda tree: None   # install runs here from the repo's git working tree; its STARTUP-04 guard is tested in test_terminal_launch
 OLD_ENGINE = {"status": "ok", "engine_version": "0.11.0", "save_version": 3, "uptime_s": 61.0}   # no "app" key
 CAPTURE_GUARD = re.compile(r"(^|\s)-m\s+finsim\s+serve\s.*--port\s+8765(\s|$)")                 # TERMINAL_DECISIONS §17
 
@@ -276,17 +282,23 @@ class PlanTests(AppTestCase):
         with self.assertRaises(ValueError):
             app.uninstall_plan(home, startup, desktop, programs, 8765, purge=True, db=r"C:\h\finsim.db")
 
-    def test_legacy_plan_serves_the_copy_never_the_live_file(self):
-        plan = app.legacy_plan(r"C:\h", 8766, refresh=False, dst_exists=False)
-        self.assertEqual(r"C:\h\finsim.db", plan["src"])
-        self.assertEqual(r"C:\h\legacy\legacy-view.db", plan["dst"])
-        self.assertEqual(plan["dst"], plan["serve_db"])
-        self.assertNotEqual(plan["src"], plan["serve_db"])
-        self.assertEqual("legacy-view.db", os.path.basename(plan["serve_db"]))
-        self.assertTrue(plan["copy"])
-        self.assertEqual("http://127.0.0.1:8766/", plan["url"])
-        self.assertFalse(app.legacy_plan(r"C:\h", 8766, refresh=False, dst_exists=True)["copy"])   # copied once
-        self.assertTrue(app.legacy_plan(r"C:\h", 8766, refresh=True, dst_exists=True)["copy"])     # --refresh re-copies
+    def test_legacy_is_gone_from_the_cli_and_nothing_is_deleted(self):
+        # UI-19 / owner question Q8: the retired game's archive view left the command line in 1.0.6; its code stays
+        self.assertNotIn("legacy", app.build_parser().format_help())
+        for name in ("cmd_legacy", "legacy_plan", "LEGACY_DIR", "LEGACY_VIEW_DB"):
+            self.assertFalse(hasattr(app, name), name)
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as cm:
+            app.parse_args(["legacy"])                                     # argparse: invalid choice
+        self.assertEqual(2, cm.exception.code)
+        old = self.write(os.path.join(self.home, "finsim.db"), b"abc")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            self.assertEqual(2, app.main(["legacy", "--refresh"]))
+        self.assertIn("`legacy` was removed in 1.0.6", buf.getvalue())
+        self.assertIn("Nothing was deleted", buf.getvalue())
+        self.assertEqual(SHA_ABC, app.sha256_file(old))                    # finsim.db untouched
+        self.assertFalse(os.path.exists(os.path.join(self.home, "legacy")))   # no archive copy is made any more
+        self.assertTrue(importlib.util.find_spec("finsim.api.server"))     # the old code is kept, not deleted
 
 
 # ================================================================================================ refusals + helpers
@@ -368,16 +380,16 @@ class RefusalAndHelperTests(AppTestCase):
         self.assertEqual(("serve", 8765, None, None, False, None), (a.cmd, a.port, a.home, a.db, a.offline, a.host))
         a = app.parse_args(["stop", "--force", "--timeout", "3"])
         self.assertEqual((True, 3.0), (a.force, a.timeout))
-        self.assertEqual(8766, app.parse_args(["legacy"]).port)
-        self.assertTrue(app.parse_args(["legacy", "--refresh"]).refresh)
         self.assertTrue(app.parse_args(["install", "--no-open"]).no_open)
         self.assertTrue(app.parse_args(["uninstall", "--purge"]).purge)
         self.assertEqual("status", app.parse_args(["status"]).cmd)
+        self.assertIsNone(app.parse_args([]).cmd)                          # no command: the three-line hint
+        a = app.parse_args(["import", "--batch", "b.jsonl", "--home", r"C:\h", "--mode", "report", "--help"])
+        self.assertEqual(("import", ["--batch", "b.jsonl", "--home", r"C:\h", "--mode", "report", "--help"]), (a.cmd, a.import_args))
 
     def test_dunder_main_is_repointed_to_the_terminal(self):
         m = importlib.import_module("finsim.__main__")
         self.assertIs(app.main, m.main)
-        self.assertIn("legacy", m.__doc__)
 
 
 # ========================================================================================================= status text
@@ -624,7 +636,7 @@ class CommandTests(AppTestCase):
         cmds, run = self.run_recorder()
         starts = []
         http = FakeHttp(terminal_health())                                  # the new code already serves: nothing to stop or start
-        rc = app.cmd_install(open_after=False, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=lambda s: None,
+        rc = app.cmd_install(tree_check=NO_GIT, open_after=False, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=lambda s: None,
                              out=self.say, folders=(startup, desktop, programs), starter=lambda *a, **k: starts.append(a) or ("vbs", None),
                              stamp="20261020-210000")
         self.assertEqual(0, rc)
@@ -678,7 +690,7 @@ class CommandTests(AppTestCase):
             http.current = terminal_health()
             http.shutdowns = 0                                              # the fresh terminal answers from now on
             return "vbs", None
-        rc = app.cmd_install(open_after=True, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=ft.sleep, out=self.say,
+        rc = app.cmd_install(tree_check=NO_GIT, open_after=True, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=ft.sleep, out=self.say,
                              folders=(startup, desktop, programs), starter=starter, stamp="s", opener=lambda target, home: "fake window",
                              monotonic=ft.monotonic)
         self.assertEqual(0, rc)
@@ -696,7 +708,7 @@ class CommandTests(AppTestCase):
         startup, desktop, programs = self.folders()
         cmds, run = self.run_recorder()
         http, ft = FakeHttp(None), FakeTime()
-        rc = app.cmd_install(open_after=True, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=ft.sleep, out=self.say,
+        rc = app.cmd_install(tree_check=NO_GIT, open_after=True, http=http, api=FakeProcessApi({}), home=self.home, run=run, sleep=ft.sleep, out=self.say,
                              folders=(startup, desktop, programs), starter=lambda *a, **k: ("vbs", None), stamp="s",
                              opener=lambda *a: self.fail("must not open a window when the server is down"), monotonic=ft.monotonic)
         self.assertEqual(1, rc)
@@ -789,48 +801,38 @@ class CommandTests(AppTestCase):
         self.assertIn("a non-terminal server (engine 0.11.0) still answers", why)
         self.assertEqual((True, ""), app.wait_for_terminal(FakeHttp(terminal_health()), None, 1.0, sleep=ft.sleep, monotonic=ft.monotonic))
 
-    def test_cmd_legacy_serves_a_copy_and_never_the_live_file(self):
-        src = os.path.join(self.home, "finsim.db")
+    def test_cmd_import_hands_every_argument_to_the_import_tool(self):
+        # C18: `python -m finsim import ...` = finsim.terminal.importer.main(argv), imported only when `import` runs
+        calls = []
+        tool = types.SimpleNamespace(main=lambda argv: calls.append(list(argv)) or 0)
+        argv = ["--batch", "b.jsonl", "--home", self.home, "--mode", "report"]
+        self.assertEqual(0, app.cmd_import(argv, out=self.say, loader=lambda: tool))
+        self.assertEqual([argv], calls)
+        refused = types.SimpleNamespace(main=lambda argv: 2)                 # the tool's own exit code passes through
+        self.assertEqual(2, app.cmd_import(["--mode", "apply"], out=self.say, loader=lambda: refused))
 
-        def rows(path, *inserts):
-            conn = sqlite3.connect(path)
-            try:
-                for v in inserts:
-                    conn.execute("INSERT INTO t VALUES (?)", (v,))
-                conn.commit()
-                return conn.execute("SELECT COUNT(*) FROM t").fetchall()[0][0]
-            finally:
-                conn.close()                                                # no cursor left open: no shared lock on the copy
-        conn = sqlite3.connect(src)
-        conn.execute("CREATE TABLE t (x INTEGER)")
-        conn.commit()
-        conn.close()
-        self.assertEqual(3, rows(src, 1, 2, 3))
-        before = app.sha256_file(src)
-        served = []
+        def missing():
+            raise ModuleNotFoundError("No module named 'finsim.terminal.importer'", name="finsim.terminal.importer")
+        self.assertEqual(2, app.cmd_import(["--help"], out=self.say, loader=missing))
+        self.assertEqual("import: the historical import tool is not in this build", self.out[-1])
 
-        def serve_fn(db_path, host, port, **kw):
-            served.append((db_path, host, port, kw.get("name")))
-        self.assertTrue(app.ro_uri(src).endswith("?mode=ro"))
-        self.assertNotIn("\\", app.ro_uri(src))
-        rc = app.cmd_legacy(8766, False, home=self.home, out=self.say, serve_fn=serve_fn)
-        self.assertEqual(0, rc)
-        copy = os.path.join(self.home, "legacy", "legacy-view.db")
-        self.assertEqual([(copy, "127.0.0.1", 8766, "finsim legacy archive view")], served)
-        self.assertEqual(3, rows(copy))
-        self.assertEqual(before, app.sha256_file(src))                      # the live file is byte-identical
-        self.assertIn("LEGACY ARCHIVE VIEW of a copy on http://127.0.0.1:8766/", self.text())
-        self.assertEqual(4, rows(src, 4))                                   # the live file moves on
-        self.out.clear()
-        app.cmd_legacy(8766, False, home=self.home, out=self.say, serve_fn=serve_fn)
-        self.assertIn("serving the existing copy", self.text())
-        self.assertEqual(3, rows(copy))                                     # copied once
-        app.cmd_legacy(8766, True, home=self.home, out=self.say, serve_fn=serve_fn)
-        self.assertEqual(4, rows(copy))                                     # --refresh re-copies
-        self.assertEqual(3, len(served))
-        self.assertTrue(all(s[0] == copy for s in served))
-        os.remove(src)
-        self.assertEqual(1, app.cmd_legacy(8766, False, home=self.home, out=self.say, serve_fn=serve_fn))   # no old database
+        def broken():
+            raise ModuleNotFoundError("No module named 'somedep'", name="somedep")   # present, but a dependency is missing
+        self.assertEqual(1, app.cmd_import([], out=self.say, loader=broken))
+        self.assertIn("could not be loaded (ModuleNotFoundError: No module named 'somedep')", self.out[-1])
+        # the real tool through main(): its own --help exits 0 (argparse's SystemExit is caught inside the tool)
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            self.assertEqual(0, app.main(["import", "--help"]))
+        self.assertIn("--mode", buf.getvalue())
+
+    def test_no_command_prints_the_three_line_hint_and_exits_0(self):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            self.assertEqual(0, app.main([]))
+        lines = buf.getvalue().splitlines()
+        self.assertEqual(3, len(lines))
+        self.assertEqual(["python -m finsim serve", "python -m finsim open", "python -m finsim status"], [" ".join(l.split()[:4]) for l in lines])
 
     def test_http_round_trip_on_a_temp_port(self):
         class Handler(BaseHTTPRequestHandler):

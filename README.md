@@ -56,4 +56,4 @@ A personal, automated intelligence terminal. Scheduled Claude Code cloud routine
 system (event-sourced double-entry ledger, simulated multi-asset market, order execution,
 trade lifecycle, DVP settlement and custody, corporate actions, NAV/P&L explain, audit
 trail). It is unrelated to the newspaper routines and never touches real markets.
-See `finsim/README.md` — run with `cd finsim && python3 -m finsim serve`.
+See `finsim/README.md`. FinSim1 starts with `python -m finsim serve` from this folder or from `finsim\` (or `FinSim.cmd`); FinSim2 with `python -m finsim2` from `finsim\`.

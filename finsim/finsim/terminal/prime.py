@@ -68,7 +68,9 @@ Conventions stated here (the §1.3 sentences and the §12.4 / §13.7 rules that 
   account_id)`` serves the IM terms (bp as bp, the ``*_pct`` as fractions) on the caller's reading connection.
 - FIELD_SPECS (C9 / C22): ``{field: {kind, label, unit, min, max, hint[, choices]}}`` in trader words; the unit says how
   the editor shows and reads a value (``pct``: a fraction typed in percent, ``bp``, ``vol``: a fraction typed in vol
-  points, ``usd``, ``usd_per_unit``, ``mult``, ``enum``); ``seed_schedule(broker)`` is the broker's seed incl. the OTC terms.
+  points, ``usd``, ``usd_per_unit``, ``mult``, ``enum``); ``seed_schedule(broker)`` is the broker's seed incl. the OTC terms and
+  (FINSIM1 P6 task 6, 1.0.6) the CSA securities terms ``csa_securities`` / ``csa_bill_haircut`` / ``csa_bond_haircut`` (``CSA_SEEDS``,
+  assumed: which US Treasuries a CSA pledge may use and the haircut each counts at; a schedule stored before 1.0.6 reads the seed).
 - ``account.close`` (§4.1) closes a FLAT prime-broker account only (no balance, order, pending settlement, loan,
   borrow or contract; 409 ``NOT_FLAT`` otherwise); the role id stays taken (a reopen is 409 ``EXISTS``), the history
   stays readable.  Catalogue accounts are never closed here.  ``close_check(conn, account_id)`` is the same test as a
@@ -140,10 +142,18 @@ FIELD_SPECS: Dict[str, dict] = {
     "fx_option_hw_vol": _spec("decimal", D("0"), D("0.20"), "FX options: dealing half-width", "vol",
                               "the premium is priced at the implied vol +/- this many vol points, against you"),
     "forward_hw_bp": _spec("decimal", D("0"), D("1000"), "Forwards: dealing half-width", "bp", "the dealt forward = the model forward +/- this many bp of it, against you"),
+    # FINSIM1 P6 task 6 (1.0.6): the CSA's securities collateral terms (assumed seeds: CSA_SEEDS) - which US Treasuries may be pledged
+    # besides cash and the haircut each counts at (``collateral.pledge`` / ``pledges_view``)
+    "csa_securities": _spec("enum", None, None, "CSA collateral: securities accepted", "enum",
+                            "TREASURIES = US Treasury bills, notes and bonds may be pledged besides cash; CASH_ONLY = cash only", ("TREASURIES", "CASH_ONLY")),
+    "csa_bill_haircut": _spec("decimal", D("0"), D("0.5"), "CSA collateral: Treasury bill haircut", "pct", "a pledged bill counts at its market value x (1 - this)"),
+    "csa_bond_haircut": _spec("decimal", D("0"), D("0.5"), "CSA collateral: Treasury note / bond haircut", "pct",
+                              "a pledged note or bond counts at its market value x (1 - this)"),
 }
 EDITABLE_FIELDS: Tuple[str, ...] = tuple(FIELD_SPECS)
 IM_FIELDS: Tuple[str, ...] = ("irs_im_bp", "trs_im_pct", "xccy_im_pct", "option_im_pct", "forward_im_pct")
 OTC_TERM_FIELDS: Tuple[str, ...] = IM_FIELDS + ("eq_option_hw_vol", "fx_option_hw_vol", "forward_hw_bp")
+CSA_FIELDS: Tuple[str, ...] = ("csa_securities", "csa_bill_haircut", "csa_bond_haircut")
 
 
 def _otc(irs, trs, xccy, opt, fwd, eqv, fxv, fbp) -> Dict[str, Decimal]:
@@ -162,6 +172,19 @@ OTC_SEEDS: Dict[str, Dict[str, Decimal]] = {
     "UBS": _otc("55", "0.12", "0.025", "0.18", "0.08", "0.0125", "0.0035", "2.5"),
     "BNP": _otc("60", "0.15", "0.03", "0.20", "0.10", "0.0150", "0.0040", "3.0"),
     "BOFA": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0100", "0.0030", "2.0"),
+}
+# FINSIM1 P6 task 6 (1.0.6): the CSA securities terms per broker (ASSUMED, editable per account): US Treasuries accepted, bills at a 2 %
+# haircut and notes / bonds at 4 % for the large US dealers, a little more for the others.  A schedule stored before 1.0.6 reads the seed.
+CSA_SEEDS: Dict[str, Dict[str, str]] = {
+    "GS": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"},
+    "JPM": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"},
+    "MS": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.025", "csa_bond_haircut": "0.05"},
+    "DB": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.03", "csa_bond_haircut": "0.06"},
+    "BARC": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.025", "csa_bond_haircut": "0.05"},
+    "CITI": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"},
+    "UBS": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.025", "csa_bond_haircut": "0.05"},
+    "BNP": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.03", "csa_bond_haircut": "0.06"},
+    "BOFA": {"csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"},
 }
 # The money fields under the names the API serves them (the codec strips ``_c`` and sends decimal USD: ``equity_min``
 # "1.00") -> the stored integer-cents field.  ``account.update_schedule`` accepts either name (never both at once).
@@ -216,6 +239,9 @@ class PbSchedule:
     eq_option_hw_vol: Decimal
     fx_option_hw_vol: Decimal
     forward_hw_bp: Decimal
+    csa_securities: str
+    csa_bill_haircut: Decimal
+    csa_bond_haircut: Decimal
     note: str = ""
     updated_ts: int = 0
     source: str = "pb_schedules"
@@ -256,6 +282,8 @@ def seed_schedule(broker: str) -> dict:
     for k, v in seed.items():
         out[k] = str(v) if isinstance(v, Decimal) else v
     for k, v in (OTC_SEEDS.get(key) or OTC_SEEDS["GS"]).items():
+        out.setdefault(k, str(v))
+    for k, v in (CSA_SEEDS.get(key) or CSA_SEEDS["GS"]).items():
         out.setdefault(k, str(v))
     return out
 

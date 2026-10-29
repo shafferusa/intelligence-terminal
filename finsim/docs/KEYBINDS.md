@@ -21,23 +21,45 @@ the app (Settings > Keyboard) and every page follows them.
 | F5 | Private Markets (a book without one: a message naming the book that has it, and its key) |
 | F6 | The book's prime broker account (pressed again on one: the next; none: how to open one) |
 | F7 | Portfolio |
-| F8 | Orders of the account you are on (off an account page: the book's US Exchange) |
+| F8 | Pending Trades - the book's working, partially filled and held orders (on an account page: that account's) |
 | F9 | Show / hide the order ticket (the 1.0.3 `t` rules: on an account page; elsewhere it only hides an open ticket) |
 | F10 | Treasury |
 | F11 | Risk |
-| F12 | Dashboard (the landing page: the selected book's "Requires your attention" tiles) |
+| F12 | Dashboard (the landing page: the selected book's fund figures and its "Requires your attention" tiles) |
 | Shift+F1 / Shift+F2 / Shift+F3 | Select the Personal / Fund / Institutional book |
-| Shift+F4 | Positions of the account you are on (elsewhere: US Exchange) |
-| Shift+F5 | Cash & financing of the account you are on (elsewhere: US Exchange) |
-| Shift+F6 | Transactions of the account you are on (elsewhere: US Exchange) |
+| Shift+F4 | Accounts |
+| Shift+F5 | Cash & Collateral (on an account page: that account's Cash & financing) |
+| Shift+F6 | Derivatives |
 | Shift+F7 | Accounting |
-| Shift+F8 | Activity |
+| Shift+F8 | Completed Trades - executions and their settlement (on an account page: that account's) |
 | Shift+F9 | Watchlists |
-| Shift+F10 | History of the book's last past lifetime (`#/h/<lifetime>/portfolio`; a book with none: a message) |
+| Shift+F10 | History: NAV history, transactions, account activity, past lifetimes |
 | Shift+F11 | Settings |
 | Shift+F12 | Keyboard help |
 
-Release 1.0.5: the registry holds 74 actions. Trading, Pending Trades, Completed Trades, Accounts, Cash & Collateral and Derivatives have no default key yet. The last five appear in the '?' help and in Settings > Keyboard only once their pages are in the build; Trading is listed in Settings > Keyboard without a key. Every other 1.0.4 key is unchanged. The full map of the new navigation follows in 1.0.6.
+Release 1.0.6: the keys follow the sidebar.
+
+| Sidebar section | Pages and keys |
+| --- | --- |
+| Top | Dashboard F12, Portfolio F7 |
+| Trading | US Exchange F1, Debt Instruments F2, Credit Instruments F3, Foreign Markets & FX F4, Private Markets F5, the prime broker account F6, Watchlists Shift+F9 |
+| Fund | Pending Trades F8, Completed Trades Shift+F8, Accounts Shift+F4, Treasury F10, Cash & Collateral Shift+F5, Derivatives Shift+F6, History Shift+F10, Settings Shift+F11 |
+| Book views | Risk F11, Accounting Shift+F7 |
+
+What changed from 1.0.5:
+
+| Key | 1.0.5 | 1.0.6 |
+| --- | --- | --- |
+| F8 | Orders of the account you were on | Pending Trades |
+| Shift+F4 | Positions | Accounts |
+| Shift+F5 | Cash & financing | Cash & Collateral |
+| Shift+F6 | Transactions | Derivatives |
+| Shift+F8 | Activity | Completed Trades |
+| Shift+F10 | The book's last past lifetime | The History hub |
+
+Those earlier pages keep their actions without a key; bind them in Settings > Keyboard. Keys you changed yourself in Settings > Keyboard are kept.
+
+The registry holds 74 actions. A page's key shows in the '?' help and in Settings > Keyboard only once that page is in the build.
 
 ### Single keys (never while you type in a box)
 
@@ -65,15 +87,14 @@ Release 1.0.5: the registry holds 74 actions. Trading, Pending Trades, Completed
 | Key | Action |
 | --- | --- |
 | Up / Down | Move the selection |
-| Enter | Open the selected row (instrument page, detail) |
+| Enter | Open the selected row (Portfolio and account Positions: the position's drawer, whose 'Instrument page' button opens the instrument; elsewhere the instrument page or the row's detail) |
 | B / S | Ticket for the selected row: buy / sell (options: buy to open / sell to open) |
 | X | Cancel the selected order (Orders) |
 | R | Record a reported funding round for the selected company (Private Markets) |
 
 ### Actions without a default key (bind them in Settings > Keyboard)
 
-Markets of the account you are on; Account 1 .. 9 of the selected book (sidebar order: the old Alt+1 .. Alt+9); Next book
-(the old Alt+B). The old `g` sequences opened pages that now have F-keys.
+Trading (the last venue you used, else US Exchange); the Orders, Positions, Cash & financing, Transactions and Markets of the account you are on (elsewhere: US Exchange); Activity (also in History); Account 1 .. 9 of the selected book (sidebar order: the old Alt+1 .. Alt+9); Next book (the old Alt+B). The old `g` sequences opened pages that now have F-keys.
 
 ## How the keys behave
 

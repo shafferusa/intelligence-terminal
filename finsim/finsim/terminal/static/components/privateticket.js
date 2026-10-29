@@ -127,7 +127,7 @@
       T.field('settle (calendar days)', settle, 'T+30 calendar days by default; the cash is pending until then'), T.field('lock-up (months)', lock, 'the lot carries the lock-up; the Sell ticket warns while it runs')]);
     if (opts.docked) {
       root.appendChild(T.h('h2', null, 'Private ticket'));
-      root.appendChild(T.h('div', { class: 'meta' }, 'account ' + (T.accountName ? T.accountName(opts.account_id) : opts.account_id) + ' (' + opts.account_id + ') . negotiated secondaries'));
+      root.appendChild(T.h('div', { class: 'meta', title: opts.account_id }, 'account ' + (T.accountName ? T.accountName(opts.account_id) : opts.account_id) + ' . negotiated secondaries'));
     }
     root.appendChild(form);
     root.appendChild(T.h('div', { class: 'acts' }, previewBtn, submit, clearBtn));
@@ -222,13 +222,13 @@
         var f = p.funding;
         panel.appendChild(T.kv([['funding', f.note || f.source], ['own available at settle', money(f.own_available)], ['Treasury available', money(f.treasury_available)], ['sweep-in from Treasury', money(f.sweep_in)]]));
       }
-      (p.warnings || []).forEach(function (w) { panel.appendChild(T.h('div', { class: 'warn', style: 'color: var(--accent)' }, T.h('b', null, w.code + ' '), w.message)); });
+      (p.warnings || []).forEach(function (w) { panel.appendChild(T.h('div', { class: 'warn', style: 'color: var(--accent)', title: w.code || '' }, w.message || T.codeWords(w.code))); });
       paintRisk(p.risk);
-      (p.blockers || []).forEach(function (b) { panel.appendChild(T.h('div', { class: 'error' }, b.code + ': ' + b.message)); });
+      (p.blockers || []).forEach(function (b) { panel.appendChild(T.h('div', { class: 'error', title: b.code || '' }, b.message || T.codeWords(b.code))); });   /* V104R2-BW-04 */
     }
     function paintRefusal(r) {
       T.clear(panel);
-      var box = T.h('div', { class: 'error' }, r.code + ': ' + r.message);
+      var box = T.h('div', { class: 'error', title: r.code || '' }, r.message || T.codeWords(r.code));
       var link = usLink(r.trade_in, opts.account_id); if (link) { box.appendChild(T.h('span', null, ' . ')); box.appendChild(link); }
       panel.appendChild(box);
     }
@@ -253,7 +253,7 @@
         state.preview = null; submit.disabled = true; T.clear(panel);
         if (e && (e.code === 'COMPANY_LISTED' || e.code === 'COMPANY_ACQUIRED')) { paintRefusal({ code: e.code, message: e.message, trade_in: e.details && e.details.trade_in }); return; }
         if (e && e.code === 'PRICE_REQUIRED') { ask('enter the negotiated price per share'); return; }
-        panel.appendChild(T.h('div', { class: 'error' }, (e && e.code ? e.code + ': ' : '') + (e && e.message || String(e))));
+        panel.appendChild(T.h('div', { class: 'error', title: (e && e.code) || '' }, T.api.describe(e)));
         if (e && e.code === 'NOT_ELIGIBLE_QP') { panel.appendChild(T.h('div', { class: 'hint' }, T.conv('QP'))); }
       });
     }
@@ -275,7 +275,7 @@
           swept ? ['swept from Treasury', swept + (fund.sweep_id ? ' (' + fund.sweep_id + ')' : '')] : (r.side === 'BUY' ? ['funding', 'paid from the account\'s own cash'] : null),
           ['position', T.fmt.qty(r.position_qty)]];
         result.appendChild(T.h('div', { class: 'panel' }, T.h('h2', null, 'done'), T.kv(kv)));
-        (r.warnings || []).forEach(function (w) { result.appendChild(T.h('div', { style: 'color: var(--accent)' }, T.h('b', null, w.code + ' '), w.message)); });
+        (r.warnings || []).forEach(function (w) { result.appendChild(T.h('div', { style: 'color: var(--accent)', title: w.code || '' }, w.message || T.codeWords(w.code))); });
         T.ui.toast('private trade done: ' + (f.fill_id || '') + (swept ? ' (swept ' + swept + ' from Treasury)' : ''), 'ok', 5000);
         T.poll.kick('positions'); T.poll.kick('account_detail'); T.poll.kick('accounts');
         if (T.state && T.state.emit) { T.state.emit('private_trade', r); }

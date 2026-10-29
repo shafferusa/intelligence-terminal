@@ -78,7 +78,7 @@ CSV_CT = "text/csv; charset=utf-8"
 PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP-01", "rates": "WP-01", "orders": "WP-02", "matcher": "WP-02",
             "options": "WP-03", "hedges": "WP-03", "futures": "WP-04", "fx": "WP-05", "credit": "WP-05", "lending": "WP-06", "repo": "WP-06",
             "prime": "WP-07", "lifecycle": "WP-08", "risk": "WP-09", "compliance": "WP-09", "bonds": "WP-10", "swaps": "WP-17", "dividends": "WP-18",
-            "private": "WP-19", "performance": "WP-20", "private_credit": "WP-21", "news": "WP-22", "lifetimes": "WP-23", "strategies": "WP-24",
+            "private": "WP-19", "performance": "WP-20", "private_credit": "WP-21", "lifetimes": "WP-23", "strategies": "WP-24",
             "glossary": "WP-25", "swaps_trs": "WP-26", "otc_options": "B2-P12", "counterparties": "B2-P08", "treasuries": "B2-P07",
             # FINSIM1_PLAN C2: the optional modules of the FinSim1 completion build (a module not in the tree stays "missing")
             "dashboard": "F1-P1", "blotters": "F1-P2", "navhistory": "F1-P3", "collateral": "F1-P6", "importer": "F1-P5"}
@@ -712,7 +712,7 @@ class _ResultError(ApiError):
 
 # ---- light commands owned by the API layer (§4.1 "api.py") ---------------------------------------------------------------
 SETTING_KEYS = {"participation_rate", "sweep_out_time_et", "snapshot_time_et", "treasury_reserve_c", "session_overrides", "sweep_confirm_threshold_c", "theme",
-                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "news_enabled", "build2_bonds",
+                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "build2_bonds",
                 "treasury_reserve_by_book", "futures_margin_overrides", "position_limit_overrides", "keybinds"}
 CENT_SETTINGS = {"treasury_reserve_c", "sweep_confirm_threshold_c", "pb_otc_threshold_c"}
 #: the words a refusal uses for a setting (BM-02: never the internal key)
@@ -720,7 +720,7 @@ SETTING_LABELS = {"participation_rate": "participation rate", "sweep_out_time_et
                   "treasury_reserve_c": "Treasury reserve", "treasury_reserve_by_book": "Treasury reserve", "session_overrides": "session overrides",
                   "sweep_confirm_threshold_c": "sweep confirmation threshold", "theme": "theme", "pb_otc_threshold_c": "PB / OTC eligibility threshold",
                   "qp_threshold_c": "qualified-purchaser threshold", "book_defaults": "book names and starting capitals", "private_defaults": "private markets defaults",
-                  "news_enabled": "news", "build2_bonds": "bond execution", "futures_margin_overrides": "futures margins",
+                  "build2_bonds": "bond execution", "futures_margin_overrides": "futures margins",
                   "position_limit_overrides": "position limits", "keybinds": "keyboard keys"}
 #: the settings ``book.update_settings`` owns (names rename the book at once; SR-07): a Settings save of these goes through it
 BOOK_SETTING_KEYS = ("book_defaults", "pb_otc_threshold", "pb_otc_threshold_c", "qp_threshold", "qp_threshold_c")
@@ -1058,8 +1058,6 @@ def _setting_value(key: str, value):
         if not (Decimal("0.01") <= v <= Decimal(1)):
             _bad(key, value)
         return str(v)
-    if key == "news_enabled":
-        return bool(value)
     if key == "build2_bonds":                                  # WP-10: DEBT execution behind this flag (default off)
         if isinstance(value, bool):
             return value
@@ -1240,10 +1238,16 @@ def thread_alive(th) -> bool:
         return False
 
 
-def _worker_health(th, last_tick_ts, errors, last_error, cycle_s: int, now: int, note: Optional[str] = None) -> dict:
+def _worker_health(th, last_tick_ts, errors, last_error, cycle_s: int, now: int, note: Optional[str] = None, progress_ts=None) -> dict:
+    """One worker's health: alive, its last tick, stalled (no tick ended AND no progress inside a tick - ``progress_ts``, the quote
+    worker's heartbeat, V104R2-BW-10 - for more than 3 cycles), errors in the last hour, the last error."""
     alive = thread_alive(th)
-    stalled = bool(alive and last_tick_ts is not None and now - int(last_tick_ts) > 3 * int(cycle_s))
+    seen = [int(t) for t in (last_tick_ts, progress_ts) if t is not None]
+    last = max(seen) if seen else None
+    stalled = bool(alive and last is not None and now - last > 3 * int(cycle_s))
     d = {"alive": alive, "last_tick_ts": last_tick_ts, "stalled": stalled, "errors_1h": int(errors or 0), "last_error": last_error}
+    if progress_ts is not None:
+        d["last_progress_ts"] = progress_ts
     if note:
         d["note"] = note
     return d
@@ -1271,6 +1275,92 @@ def _db_size(rt) -> int:
 LIFECYCLE_TIMES = (("HOUSEKEEPING", "00:15", False), ("SETTLE_DUE / ACCRUE_DAILY", "00:30", False), ("DIVIDEND / PC_PAY / BOND_COUPON / SWAP_FIX", "00:40", False),
                    ("MARKS_RECORD", "16:20", True), ("SWAP_VM", "17:05", False), ("COLLATERAL_MARK / OPTION_MARGIN_MARK", "17:10", True),
                    ("SWEEP_OUT", "sweep_out_time_et", False), ("SNAPSHOT", "snapshot_time_et", False))
+
+
+def lifecycle_times(rt, now: int) -> Dict[str, int]:
+    """V104R2-OTC-07: the next run time (epoch) of every clock-time job of ``LIFECYCLE_TIMES`` (the next few days, New York time,
+    trading-day jobs on business days only) by job name, plus INTEGRITY_FULL (hourly at :05); the jobs that run on every tick or on
+    an event are not in it."""
+    from datetime import timedelta
+    from .clock import epoch_of, ny_of
+    with rt.db.reader() as conn:
+        settings = {k: get_setting(conn, k) for k in ("sweep_out_time_et", "snapshot_time_et")}
+    today = ny_of(now).date()
+    out: Dict[str, int] = {}
+    for i in range(5):                                     # a long weekend: the trading-day jobs' next run is a few days out
+        d = today + timedelta(days=i)
+        for label, when, trading in LIFECYCLE_TIMES:
+            hhmm = settings.get(when) or {"sweep_out_time_et": config.SWEEP_OUT_TIME_ET, "snapshot_time_et": config.SNAPSHOT_TIME_ET}.get(when, when)
+            if trading and not rt.cal.is_business_day(d):
+                continue
+            ts = epoch_of(d, str(hhmm))
+            if ts <= now:
+                continue
+            for name in label.split(" / "):
+                out.setdefault(name, ts)
+    hour = ny_of(now).replace(minute=5, second=0, microsecond=0)
+    nxt = hour if int(hour.timestamp()) > now else hour + timedelta(hours=1)
+    out.setdefault("INTEGRITY_FULL", int(nxt.timestamp()))
+    return out
+
+
+def _next_due_of(name, conn, now: int):
+    """P8B-15: ``(epoch, ref)`` from the job's product module (``lifecycle_eod.next_due_of``), else None."""
+    try:
+        from .lifecycle_eod import next_due_of
+    except ImportError:
+        return None
+    return next_due_of(str(name or ""), conn, int(now))
+
+
+def jobs_view(rt, now: int) -> dict:
+    """``GET /api/jobs`` (V104R2-OTC-07): the lifecycle scheduler's own view (``LifecycleScheduler.status()``: every job with its kind,
+    its schedule in words (``when``, also as ``schedule``), phase, availability, last run / key / status / note) plus, per job, the
+    failures recorded in ``job_failures`` (``failures``, ``last_error``) and, for the clock-time jobs, ``next_due_ts`` and ``next_due``
+    (epoch, ``lifecycle_times``); a product job without a clock time (OTC_EXPIRY, XCCY_EVENTS, FX_FORWARD_DUE: P8B-15) gets the earliest
+    date its open contracts / deals carry (``next_due_ts`` with ``next_due_ref``, e.g. "OTC-000002 maturity 2027-01-28"), and a job with
+    nothing scheduled keeps ``next_due`` = its schedule in words.  A scheduler without
+    ``status()`` (a stand-in) gets the table-based answer of earlier builds, with the clock times."""
+    lc = need(rt, "lifecycle")
+    with rt.db.reader() as conn:
+        last = {r["job"]: dict(r) for r in conn.execute("SELECT job, MAX(run_ts) AS run_ts, key FROM jobs_done GROUP BY job").fetchall()}
+        fails = {r["job"]: dict(r) for r in conn.execute("SELECT job, COUNT(*) AS n, MAX(last_error) AS last_error FROM job_failures GROUP BY job").fetchall()}
+    try:
+        times = lifecycle_times(rt, now)
+    except Exception:   # noqa: BLE001 - a missing calendar / setting: no clock times; the schedule words still show
+        times = {}
+    status_fn = getattr(lc, "status", None)
+    if callable(status_fn):
+        view = dict(status_fn() or {})
+        rows = []
+        with rt.db.reader() as conn:
+            for j in view.get("jobs") or []:
+                row = dict(j)
+                name = row.get("name")
+                f = fails.get(name)
+                row["failures"] = int(f["n"]) if f else 0
+                row["failing"] = bool(f)
+                row["last_error"] = f["last_error"] if f else None
+                row["schedule"] = row.get("when")
+                row["next_due_ts"] = times.get(name)
+                if row["next_due_ts"] is None:
+                    # P8B-15: a product job with no clock time: the earliest date its open contracts / deals carry (lifecycle_eod.next_due_of)
+                    nd = _next_due_of(name, conn, now)
+                    if nd is not None:
+                        row["next_due_ts"], row["next_due_ref"] = nd
+                if row["next_due_ts"] is not None:
+                    row["next_due"] = row["next_due_ts"]
+                rows.append(row)
+        view["jobs"] = rows
+        view.setdefault("last_tick_ts", getattr(lc, "last_tick_ts", None))
+        return view
+    names = [getattr(j, "name", str(j)) for j in getattr(lc, "jobs", getattr(lc, "registry", []))] or sorted(set(last) | set(fails))
+    out = []
+    for n in names:
+        l, f = last.get(n), fails.get(n)
+        out.append({"name": n, "last_run_ts": l["run_ts"] if l else None, "last_key": l["key"] if l else None, "next_due": times.get(n), "next_due_ts": times.get(n),
+                    "failing": bool(f), "failures": int(f["n"]) if f else 0, "last_error": f["last_error"] if f else None})
+    return {"jobs": out, "last_tick_ts": getattr(lc, "last_tick_ts", None)}
 
 
 def next_lifecycle_job(rt, now: int) -> dict:
@@ -1330,7 +1420,7 @@ def health_view(rt) -> dict:
     lc = getattr(rt, "lifecycle", None)
     workers = {
         "quotes": _worker_health(w, ws.get("last_tick_ts"), errs.get("quotes", ws.get("loop_errors")), ws.get("last_error"), 15, now,
-                                 None if w is not None else "no quote worker in this runtime"),
+                                 None if w is not None else "no quote worker in this runtime", progress_ts=ws.get("last_progress_ts")),
         "matcher": _worker_health(m, getattr(m, "last_tick_ts", None), errs.get("matcher", getattr(m, "errors", 0)), getattr(m, "last_error", None), 15, now),
         "lifecycle": _worker_health(lc, getattr(lc, "last_tick_ts", None), errs.get("lifecycle", getattr(lc, "errors", 0)), getattr(lc, "last_error", None), 30, now,
                                     None if lc is not None else f"NOT_BUILT {PACKAGES['lifecycle']}"),
@@ -1350,7 +1440,6 @@ def health_view(rt) -> dict:
             lifecycle["blocked"] = [{"job": jk[0], "key": jk[1], "retries": b.get("n"), "since": b.get("since"), "cause": b.get("cause")} for jk, b in sorted(busy)]
         except Exception:   # noqa: BLE001 - a scheduler without the busy map: nothing blocked is reported
             lifecycle["blocked"] = []
-    news = getattr(rt, "news", None)
     lock = getattr(rt, "lock", None)
     started = int(getattr(rt, "started_ts", now) or now)
     return {"app": APP_ID, "version": VERSION, "schema": SCHEMA_VERSION, "pid": os.getpid(), "uptime_s": max(0, now - started), "started_ts": started,
@@ -1360,7 +1449,7 @@ def health_view(rt) -> dict:
                       "accounting_day": accounting_day(rt.clock.now()).isoformat(), "epoch": now},
             "integrity": integrity, "providers": providers, "workers": workers, "lifecycle": lifecycle, "attention_open": attention_open,
             "calendar": rt.cal.source(), "lock": {"path": getattr(lock, "path", None), "pid": os.getpid() if lock is not None else None},
-            "news": (news.health() if news is not None else None), "port": getattr(rt, "port", None), "home": getattr(rt, "home", None),
+            "port": getattr(rt, "port", None), "home": getattr(rt, "home", None),
             "modules": dict(getattr(rt, "modules", {})), "refreshers": _refreshers(w)}
 
 
@@ -1462,18 +1551,7 @@ def _register_core(router: Router) -> None:
         return run_command(req, "attention.resolve", {"id": aid})
 
     def jobs(req: Request):
-        lc = need(req.rt, "lifecycle")
-        with req.rt.db.reader() as conn:
-            last = {r["job"]: dict(r) for r in conn.execute("SELECT job, MAX(run_ts) AS run_ts, key FROM jobs_done GROUP BY job").fetchall()}
-            fails = {r["job"]: dict(r) for r in conn.execute("SELECT job, COUNT(*) AS n, MAX(last_error) AS last_error FROM job_failures GROUP BY job").fetchall()}
-        names = [getattr(j, "name", str(j)) for j in getattr(lc, "jobs", getattr(lc, "registry", []))] or sorted(set(last) | set(fails))
-        out = []
-        for n in names:
-            l, f = last.get(n), fails.get(n)
-            out.append({"name": n, "last_run_ts": l["run_ts"] if l else None, "last_key": l["key"] if l else None,
-                        "next_due": getattr(lc, "next_due", {}).get(n) if isinstance(getattr(lc, "next_due", None), dict) else None,
-                        "failing": bool(f), "failures": int(f["n"]) if f else 0, "last_error": f["last_error"] if f else None})
-        return {"jobs": out, "last_tick_ts": getattr(lc, "last_tick_ts", None)}
+        return jobs_view(req.rt, req.now)
 
     def jobs_run(req: Request):
         lc = need(req.rt, "lifecycle")
@@ -1534,18 +1612,6 @@ def _register_core(router: Router) -> None:
         rows = unsupported_rows(req.rt)
         return {"items": rows, "count": len(rows)}
 
-    def legacy(req: Request):
-        """SHELL-20: is the old simulation's archive view up on its port?  A 0.3 s loopback connect (nothing is sent)."""
-        import socket
-        port = config.LEGACY_PORT
-        up = False
-        try:
-            with socket.create_connection((config.HOST, port), timeout=0.3):
-                up = True
-        except OSError:
-            up = False
-        return {"up": up, "url": f"http://{config.HOST}:{port}/", "port": port, "command": "py -3.12 -m finsim legacy"}
-
     def lifetime_view(req: Request):
         """The read model of one lifetime (final figures, accounts, the signed agreements with each dealer - PO-16)."""
         mod = need(req.rt, "lifetimes")
@@ -1573,7 +1639,6 @@ def _register_core(router: Router) -> None:
     r.add("GET", r"/api/settings", settings_get)
     r.add("PATCH", r"/api/settings", settings_patch)
     r.add("GET", r"/api/unsupported", unsupported)
-    r.add("GET", r"/api/legacy", legacy)
     r.add("GET", r"/api/lifetimes/([A-Z]+[0-9]+)", lifetime_view)
     r.add("GET", r"/", static_root)
     r.add("GET", r"/index\.html", static_root)
@@ -1598,5 +1663,5 @@ def get_setting_safe(rt, key: str, default=None):
 
 
 __all__ = ["Router", "Request", "ApiError", "NotFound", "NotBuilt", "encode", "quote_dict", "mark_dict", "error_body", "run_command", "ok_or_raise", "need",
-           "lifetime_for", "register", "health_view", "settings_map", "thread_alive", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
+           "lifetime_for", "register", "health_view", "settings_map", "thread_alive", "jobs_view", "lifecycle_times", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
            "OPEN_ORDER_STATUSES", "PLANNED_STATIC", "PLANNED", "NOT_REJECTIONS", "add_refusal_recorder", "remove_refusal_recorder", "refusal_recorders", "unsupported_rows"]

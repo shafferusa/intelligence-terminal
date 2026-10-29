@@ -17,9 +17,11 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   (default 1), ``tenor_months`` a multiple of it (default 12, at most 120).  The financing spread is the PB schedule's
   ``trs_spread × otc_spread_mult`` — a dealer term, never a client input.  Dates: start = the trade date rolled FOLLOWING;
   reset dates = start + k × reset_months rolled MODIFIED FOLLOWING on the trading calendar; maturity = the last reset date.
-- TRS BOOKING: ``reset_px`` = the underlying's observed mark, executable-fresh (delayed) or a session CLOSE (409
-  QUOTE_STALE / NO_QUOTE otherwise; the preview first asks the quote worker for it at ORDER priority, so a NO_QUOTE says to
-  preview again in a few seconds); notional = ``to_c(units × reset_px)``; IM = ``to_c(trs_im_pct × notional)`` (the PB
+- TRS BOOKING: ``reset_px`` = the underlying's observed mark, executable-fresh (delayed) while its regular session is open (409
+  QUOTE_STALE / NO_QUOTE otherwise; the preview first asks the quote worker for it at ORDER priority and the ticket asks again by
+  itself); outside the session the OFFICIAL close of the last session that closed (the recorded CLOSE, else the print observed at the
+  close - never the last print before 16:00 shown as the close; 409 CLOSE_PENDING with retry_ms until it is recorded: V104R2-OTC-02);
+  an accepted dealer quote (C14, ``ctx.rfq_firm``) books its quoted reset price; notional = ``to_c(units × reset_px)``; IM = ``to_c(trs_im_pct × notional)`` (the PB
   schedule's ``prime.im_params`` once it exists, else 10 %, disclosed) ``Dr 1330 / Cr 1010`` after
   ``swaps.fund_commitment`` (PO-07: against the account's own cash net of its payables and working orders, then one Treasury
   sweep, then PB financing; 409 INSUFFICIENT_FUNDS refuses); ``mark_c`` 0 — the dealer's charge is in the financing spread.
@@ -77,11 +79,18 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   +1 bp on the USD par curve (the risk module's rates scenario; the foreign leg's own-curve DV01 is in the preview).
 - XCCY IM: ``to_c(xccy_im_pct × the USD notional)`` (``prime.im_params``, else 2 %), ``Dr 1330 / Cr 1010`` with
   ``swaps.fund_commitment``.
-- XCCY START (idem ``xccy:{contract}:start``): at booking when the start date is the trade date, else the XCCY_EVENTS START
-  key from 00:45 ET of the start date: lent leg ``Dr 1360 / Cr 1010``, borrowed leg ``Dr 1010 / Cr 2360``, each in its own
-  currency at the deal rate.  The lent currency is funded first: USD by ``swaps.fund_commitment``, a foreign currency by
-  ``fx.fund_ccy`` (own cash, else Treasury's cash in that currency, else 409 INSUFFICIENT_FUNDS_CCY with the Convert hint —
-  never automatic FX); a delayed START that cannot be funded is SKIPPED with an ERROR attention and retried.
+- XCCY DATES (P8B-06 / OTC-03): the trade date is the FX trade date (the FX day rolls at 17:00 ET) and the swap STARTS on the
+  pair's spot date from it (T+2, USD/CAD T+1, ``xccy_dates``) - the initial exchange settles like any FX deal of that trade date,
+  never T+0 nor on the calendar date of an evening booking.  The booking moves only the IM (with its sweep, one business date) and
+  checks the start commitment (``xccy_start_check``: USD lent with the IM against available now, PO-07; a foreign currency from
+  what the account holds or receives by the start date - an FX desk purchase for that value date counts - else 409
+  INSUFFICIENT_FUNDS_CCY with the Convert hint, never automatic FX).  The contract is marked and margined from its trade date
+  (``swaps.vm_first_date``).
+- XCCY START (idem ``xccy:{contract}:start``): the XCCY_EVENTS START key from 00:45 ET of the start date (spot): lent leg
+  ``Dr 1360 / Cr 1010``, borrowed leg ``Dr 1010 / Cr 2360``, each in its own currency at the deal rate, business date the start
+  date.  The lent currency is funded first: USD by ``swaps.fund_commitment``, a foreign currency by ``fx.fund_ccy`` (own cash,
+  else Treasury's cash in that currency, else 409 INSUFFICIENT_FUNDS_CCY with the Convert hint — never automatic FX); a START
+  that cannot be funded is SKIPPED with an ERROR attention and retried.
 - XCCY COUPONS (ACCRUE_DAILY kinds ``swaprcv`` / ``swappay`` → ``swaps.accrue_night`` → ``accrue_night`` here →
   ``swaps.accrue_leg``): each leg in its own currency (base at the command's FX rate), 30/360 or ACT/360 with the period
   true-up; the USD leg of a period after an MTM reset accrues on that reset's notional (FX_RESET_PENDING until it is
@@ -123,12 +132,13 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
 """
 from __future__ import annotations
 
+import contextvars
 import json
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .. import execution, prime
 from .. import fx as fxmod
@@ -160,9 +170,9 @@ USABLE_QUALITIES = ("live", "delayed", "close")
 RATE_Q, DF_Q, GRID_Q, BP, HALF = swaps.RATE_Q, swaps.DF_Q, swaps.GRID_Q, swaps.BP, swaps.HALF
 ONE = Decimal(1)
 CONVENTIONS = ("SWAP_MARK", "SWAP_VM", "SWAP_RESET", "ACCRUAL", "RATE_LAG", "DIVIDEND", "FX_RESULT", "ELIGIBILITY")
-TRS_MODEL = "mark = sign x units x (S - reset_px): the underlying's observed price since the last reset (SWAP_MARK)"
+TRS_MODEL = "mark = sign x units x (S - reset_px): the underlying's observed price since the last reset"
 XCCY_MODEL = ("mark = sum over legs of sign x N x (K - par) x annuity x fx (+ receive, - pay); USD leg on the par curve, foreign leg on a flat"
-              " curve at its policy rate; the notionals are on the balance sheet (1360 / 2360) and are not in the mark (SWAP_MARK)")
+              " curve at its policy rate; the notionals are on the balance sheet (1360 / 2360) and are not in the mark")
 
 Period = Tuple[date, date, date]
 
@@ -324,9 +334,75 @@ def _money_arg(raw_c, raw, name: str) -> Optional[int]:
     return c
 
 
+#: C14 (FINSIM1 P4 task 8, 1.0.6): an accepted quote of a kind the dealer re-prices at booking (XCCY, the OTC options and forwards) books
+#: on the market inputs it was quoted from.  While the RFQ_DEALER job prices a quote, every snapshot handed out by ``_snapshot`` records
+#: the marks it serves (``RecordingMarks``) and the quote keeps them; while the acceptance books, they are served again (``PinnedMarks``,
+#: also as ``ctx.marks``) - so Accept books what was quoted, never a print that arrived in the meantime.  Unset (the default), a snapshot
+#: is the provider's own.
+MARKS_HOOK: "contextvars.ContextVar[Optional[Callable]]" = contextvars.ContextVar("finsim_otc_marks_hook", default=None)
+
+
+def mark_view_of(d: dict) -> MarkView:
+    """A ``MarkView`` back from its ``to_dict()``."""
+    v = d.get("value")
+    return MarkView(str(d.get("instrument_id") or ""), None if v in (None, "") else Decimal(str(v)), str(d.get("quality") or "unavailable"),
+                    str(d.get("source") or ""), str(d.get("method") or ""), d.get("as_of"), d.get("fetched_at"), str(d.get("delay_label") or ""),
+                    d.get("inputs"), bool(d.get("executable")), str(d.get("note") or ""))
+
+
+class RecordingMarks:
+    """A snapshot that remembers every mark and FX view it served (the first one of each): ``store = {"mark": {id: view}, "fx": {ccy:
+    view}}`` (``MarkView.to_dict()``); everything else is the base snapshot's."""
+
+    def __init__(self, base, store: dict):
+        self._base = base
+        self._store = store
+
+    def _keep(self, part: str, key, mv):
+        to_dict = getattr(mv, "to_dict", None)
+        if callable(to_dict):
+            self._store.setdefault(part, {}).setdefault(str(key), to_dict())
+        return mv
+
+    def mark(self, instrument_id):
+        return self._keep("mark", instrument_id, self._base.mark(instrument_id))
+
+    def fx(self, ccy):
+        return self._keep("fx", ccy, self._base.fx(ccy))
+
+    def __getattr__(self, name):
+        return getattr(self._base, name)
+
+
+class PinnedMarks:
+    """A snapshot serving a quote's recorded views (``RecordingMarks``' store) and the base snapshot for everything else."""
+
+    def __init__(self, base, pinned: Optional[dict]):
+        self._base = base
+        self._mark = dict((pinned or {}).get("mark") or {})
+        self._fx = dict((pinned or {}).get("fx") or {})
+
+    def mark(self, instrument_id):
+        d = self._mark.get(str(instrument_id))
+        return mark_view_of(d) if d is not None else self._base.mark(instrument_id)
+
+    def fx(self, ccy):
+        d = self._fx.get(str(ccy))
+        return mark_view_of(d) if d is not None else self._base.fx(ccy)
+
+    def __getattr__(self, name):
+        return getattr(self._base, name)
+
+
 def _snapshot(services, ids: Optional[List[str]] = None):
     """A mark snapshot of ``ids`` only (a TRS underlying, an XCCY pair: cheap), else of everything; the provider itself when it
-    has no snapshot()."""
+    has no snapshot().  Under ``MARKS_HOOK`` (C14) the hook wraps it."""
+    snap = _provider_snapshot(services, ids)
+    hook = MARKS_HOOK.get()
+    return hook(snap) if hook is not None and snap is not None else snap
+
+
+def _provider_snapshot(services, ids: Optional[List[str]] = None):
     m = getattr(services, "marks", None)
     if m is None:
         return None
@@ -721,11 +797,58 @@ def _trs_underlying(services, conn: sqlite3.Connection, uid: str):
     return inst
 
 
-def _trs_deal(services, conn: sqlite3.Connection, marks, acct: dict, terms: TrsTerms, today: date) -> TrsDeal:
+def _official_close_price(services, conn: sqlite3.Connection, marks, inst, now: int) -> Optional[Tuple[Decimal, MarkView]]:
+    """V104R2-OTC-02: outside the underlying's regular session the reset price of a new TRS is the OFFICIAL close of the last session that
+    has closed (the recorded CLOSE, else the print observed at the close - POSTCLOSE-01's rule, never the last print before 16:00 shown as
+    the close); None while the session is open (a fresh print deals).  409 CLOSE_PENDING (retry_ms: the ticket asks again by itself) when
+    that close is not recorded or observed yet."""
+    sessions = getattr(services, "sessions", None)
+    if sessions is None or not hasattr(sessions, "state"):
+        return None
+    try:
+        st = sessions.state(inst.session_group, int(now))
+    except KeyError:
+        return None
+    if getattr(st, "open", True):
+        return None
+    got = last_session_day(services, inst.session_group, ny_of(int(now)).date())
+    if got is not None and got[1] > int(now):                       # before today's open: the session that closed last is an earlier one
+        got = last_session_day(services, inst.session_group, got[0] - timedelta(days=1))
+    if got is None:
+        return None
+    day, close_ts = got
+    px, info = close_on(services, conn, marks, inst, day)
+    if px is None:
+        raise ConflictError("CLOSE_PENDING", f"{inst.instrument_id}: the market is closed and the official close of {day.isoformat()} is not recorded yet"
+                            f" ({info.get('note') or 'no print at the close'}); the reset price is that close, never the last print before it - it is"
+                            " being recorded now", {"close_date": day.isoformat(), "retry_ms": RETRY_MS, "underlying_id": inst.instrument_id})
+    mv = MarkView(inst.instrument_id, px, "close", info.get("source") or "the official close", info.get("method") or "close", info.get("quote_time") or close_ts,
+                  int(now), "close", dict(info, close_date=day.isoformat()), False, f"the official close of {day.isoformat()}")
+    return px, mv
+
+
+def _trs_deal(services, conn: sqlite3.Connection, marks, acct: dict, terms: TrsTerms, today: date, now: Optional[int] = None,
+              firm: Optional[dict] = None) -> TrsDeal:
+    """The TRS deal of ``today``: the reset price is the underlying's fresh print while its session is open, else its official close
+    (V104R2-OTC-02); ``firm`` (C14) = the dealer's accepted quote, whose reset price is booked as quoted."""
     inst = _trs_underlying(services, conn, terms.underlying_id)
-    fetching = _pin(services, [inst.instrument_id])                 # the reset price is fetched at ORDER priority (PO-08)
-    mv = marks.mark(inst.instrument_id) if marks is not None else None
-    reset_px = _usable(mv, f"{inst.instrument_id} (the TRS reset price)", fetching)
+    ts = int(now if now is not None else services.clock.epoch())
+    if firm and firm.get("reset_px") not in (None, ""):
+        reset_px = qprice(Decimal(str(firm["reset_px"])))
+        q = dict(firm.get("quote") or {})
+        rid = firm.get("rfq_id") or "the quote"
+        mv = MarkView(inst.instrument_id, reset_px, q.get("quality") or "close", f"the dealer's quote {rid} ({firm.get('reset_px_source') or 'observed'})",
+                      "rfq_quote", q.get("quote_time") or firm.get("quoted_ts"), ts, q.get("delay_label") or "quoted",
+                      {"rfq_id": firm.get("rfq_id"), "quoted_ts": firm.get("quoted_ts"), "source": firm.get("reset_px_source")}, False,
+                      f"the reset price of the accepted quote {rid}")
+    else:
+        closed = _official_close_price(services, conn, marks, inst, ts)
+        if closed is not None:
+            reset_px, mv = closed
+        else:
+            fetching = _pin(services, [inst.instrument_id])                 # the reset price is fetched at ORDER priority (PO-08)
+            mv = marks.mark(inst.instrument_id) if marks is not None else None
+            reset_px = _usable(mv, f"{inst.instrument_id} (the TRS reset price)", fetching)
     notional = to_c(Decimal(terms.units) * reset_px)
     sched = prime.read_schedule(conn, acct)
     mult = qprice(Decimal(sched.otc_spread_mult))
@@ -841,7 +964,7 @@ def _book_trs(ctx: TxContext, services, acct: dict, terms: TrsTerms, deal: Optio
     conn = ctx.conn
     aid = acct["account_id"]
     if deal is None:
-        deal = _trs_deal(services, conn, ctx.marks, acct, terms, ny_of(ctx.ts).date())
+        deal = _trs_deal(services, conn, ctx.marks, acct, terms, ny_of(ctx.ts).date(), now=ctx.ts, firm=getattr(ctx, "rfq_firm", None))
     broker = prime.broker_of(acct)
     cid = next_id(conn, "swap")
     uid = deal.inst.instrument_id
@@ -872,6 +995,12 @@ def _book_trs(ctx: TxContext, services, acct: dict, terms: TrsTerms, deal: Optio
                  " status, last_reset_date, reset_px, mark_c, mark_ts, vm_balance_c, inputs_json, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',?,?,0,?,0,?,NULL)",
                  (cid, ctx.command_id, aid, broker, "TRS", dumps(t), deal.notional_c, "USD", deal.start.isoformat(), deal.maturity.isoformat(), deal.margin_mode,
                   deal.im_c, deal.start.isoformat(), str(deal.reset_px), ctx.ts, dumps(inputs)))
+    if getattr(deal.quote, "method", None) == "rfq_quote" and not as_of:
+        # C14: an accepted quote books its quoted reset price; when the underlying moved since the quote the contract is worth something at once -
+        # NAV carries that model value from the booking (the dealer honoured its quote), measured on the print now
+        got = mark_trs(services, _rowd(conn.execute("SELECT * FROM otc_contracts WHERE contract_id=?", (cid,)).fetchone()), at=ctx.ts, snapshot=ctx.marks)
+        if isinstance(got, tuple) and got[0] is not None and int(got[0]):
+            conn.execute("UPDATE otc_contracts SET mark_c=?, inputs_json=? WHERE contract_id=?", (int(got[0]), dumps(dict(got[1] or {}, as_of=ctx.ts)), cid))
     ctx.touched_instruments.add((aid, cid))
     ctx.event("OTC_BOOKED", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, kind="TRS", broker=broker, underlying_id=uid, units=terms.units,
               receiver=terms.receiver, reset_px=str(deal.reset_px), notional_c=deal.notional_c, spread=str(deal.spread), im_c=deal.im_c, margin_mode=deal.margin_mode,
@@ -939,7 +1068,10 @@ def flat_dfs(rate, n_periods: int) -> Dict[Decimal, Decimal]:
 
 
 def foreign_curve(services, ccy: str, n_periods: int) -> Tuple[Dict[Decimal, Decimal], dict]:
-    """The flat curve of a foreign leg at its FRED policy rate (409 NO_CURVE when the rate was never observed)."""
+    """The flat curve of a foreign leg at its FRED policy rate (409 NO_CURVE when the rate was never observed, or - P8B-01 / OTC-01 - when
+    its series has stopped updating: a daily print older than 10 days or a monthly average more than 62 days after its month,
+    ``tables.rate_age``; CHF's ended 2024-03).  The curve carries the rate's date and age."""
+    from ..tables import rate_age
     rates = getattr(services, "rates", None)
     got = rates.policy_rate(ccy) if rates is not None and hasattr(rates, "policy_rate") else None
     series = POLICY_INDEX.get(ccy)
@@ -947,10 +1079,21 @@ def foreign_curve(services, ccy: str, n_periods: int) -> Tuple[Dict[Decimal, Dec
         raise ConflictError("NO_CURVE", f"no {ccy} rate (FRED {series}) has been observed: the {ccy} leg cannot be valued; nothing is booked or marked without a"
                             " curve", {"currency": ccy, "series": series})
     obs, pct = got
+    clock = getattr(services, "clock", None)
+    age = rate_age(series, obs, ny_of(int(clock.epoch())).date() if clock is not None else None)
+    if age["stale"]:
+        what = (f"its last value is the {obs.strftime('%B %Y')} average ({pct} %), {age['age_days']} days after that month ended" if age["monthly"]
+                else f"its last print is {pct} % of {obs.isoformat()}, {age['age_days']} days old")
+        raise ConflictError("NO_CURVE", f"no current {ccy} rate: {series} has stopped updating - {what}; a {'monthly average' if age['monthly'] else 'daily rate'}"
+                            f" older than {age['max_age_days']} days is never used, so the {ccy} leg cannot be valued (nothing is booked or marked on it)",
+                            {"currency": ccy, "series": series, "as_of": obs.isoformat(), "value_pct": str(pct), "stale": True, "age_days": age["age_days"],
+                             "max_age_days": age["max_age_days"]})
     dfs = flat_dfs(Decimal(str(pct)) / Decimal(100), n_periods)
+    agetxt = f", {age['text']}" if age.get("age_days") is not None else ""
     return dfs, {"currency": ccy, "series": series, "value_pct": str(pct), "as_of": obs.isoformat(), "monthly_proxy": series in POLICY_INDEX_MONTHLY,
-                 "curve": f"flat at the {ccy} policy rate {pct} % (semi-annual; a disclosed model: no free {ccy} swap curve)", "quality": "close",
-                 "dfs": {str(k): str(v) for k, v in sorted(dfs.items())}}
+                 "age_days": age.get("age_days"), "age": age.get("text"),
+                 "curve": f"flat at the {ccy} policy rate {pct} % ({series}, as of {obs.isoformat()}{agetxt}; semi-annual; a disclosed model: no free {ccy} swap curve)",
+                 "quality": "close", "dfs": {str(k): str(v) for k, v in sorted(dfs.items())}}
 
 
 def leg_curve(services, ccy: str, n_periods: int) -> Tuple[Decimal, Decimal, dict]:
@@ -1017,6 +1160,7 @@ class XccyDeal:
     margin_mode: str
     im_pct: Decimal = XCCY_IM_PCT
     im_source: str = "static (disclosed)"
+    trade_date: Optional[date] = None        # P8B-06: the FX trade date; ``start`` is its spot date
 
     @property
     def foreign(self) -> str:
@@ -1052,7 +1196,15 @@ def _deal_fx(services, marks, foreign: str, today: date) -> Tuple[MarkView, Deci
     return fxv, _usable(fxv, f"{pair} (the deal FX rate)", fetching)
 
 
-def _xccy_deal(services, conn: sqlite3.Connection, marks, acct: dict, p: dict, today: date) -> XccyDeal:
+def xccy_dates(services, foreign: str, now_ts: int) -> Tuple[date, date]:
+    """P8B-06 / OTC-03: ``(trade date, start date)`` of a cross-currency swap dealt at ``now_ts``: the FX trade date (the FX day rolls at
+    17:00 ET, ``fx.fx_trade_date``) and the pair's spot date from it (T+2, USD/CAD T+1, ``fx.spot_date``) - the initial exchange settles
+    on the spot date like any FX deal of that trade date, never on the trade date itself or on the calendar date of an evening booking."""
+    td = fxmod.fx_trade_date(services, int(now_ts))
+    return td, fxmod.spot_date(services, fx_pair_id(foreign), td)
+
+
+def _xccy_deal(services, conn: sqlite3.Connection, marks, acct: dict, p: dict, today: date, now_ts: Optional[int] = None) -> XccyDeal:
     foreign = p["foreign"]
     fxv, deal_rate = _deal_fx(services, marks, foreign, today)
     usd_side = p["usd_side"]
@@ -1071,7 +1223,7 @@ def _xccy_deal(services, conn: sqlite3.Connection, marks, acct: dict, p: dict, t
     mult = qprice(Decimal(sched.otc_spread_mult))
     hw_bp = qprice(Decimal(sched.irs_half_width_bp) * mult)
     hw = (hw_bp * BP).quantize(RATE_Q, rounding=ROUND_HALF_EVEN)
-    start = swaps.effective_date(services.cal, today)
+    trade_date, start = xccy_dates(services, foreign, now_ts if now_ts is not None else int(services.clock.epoch()))
     periods = swaps.period_schedule(services.cal, start, p["months"], XCCY_PERIOD_MONTHS)
     n = len(periods)
     broker = prime.broker_of(acct)
@@ -1099,7 +1251,7 @@ def _xccy_deal(services, conn: sqlite3.Connection, marks, acct: dict, p: dict, t
     im_pct = Decimal(imp["xccy_im_pct"])
     im = to_c(im_pct * from_c(usd_c))
     return XccyDeal(acct, p, recv, pay, deal_rate, fxv, start, periods[-1][1], periods, hw_bp, hw, mult, mark0, dv01, dv01_f, im,
-                    str(sched.swap_margin_mode).upper(), im_pct, imp["source"])
+                    str(sched.swap_margin_mode).upper(), im_pct, imp["source"], trade_date)
 
 
 def _leg_dict(leg: XLeg, deal: XccyDeal) -> dict:
@@ -1140,9 +1292,12 @@ def _xccy_dict(deal: XccyDeal) -> dict:
             "dv01_note": "PV change for +1 bp on the USD par curve (signed); dv01_foreign_c is the foreign leg's on its own curve, in USD",
             "im_c": deal.im_c, "im_pct": swaps.pct_text(deal.im_pct), "im_rule": f"IM = {swaps.pct_text(deal.im_pct)} of the USD notional ({deal.im_source})",
             "margin_mode": deal.margin_mode, "mtm_reset": p["mtm_reset"], "months": p["months"], "tenor_months": p["months"],
-            "start_date": deal.start.isoformat(), "maturity_date": deal.maturity.isoformat(),
+            "trade_date": deal.trade_date.isoformat() if deal.trade_date else None, "start_date": deal.start.isoformat(), "maturity_date": deal.maturity.isoformat(),
+            "pair_label": f"{pair[:3]}/{pair[3:]}",
             "fx_reset_dates": [s.isoformat() for s, _e, _p in deal.periods[1:]] if p["mtm_reset"] else [],
             "start_exchange": {"date": deal.start.isoformat(), "rate": str(deal.deal_rate), "pair": pair,
+                               "when": (f"on the spot date {deal.start.isoformat()} (trade date {deal.trade_date.isoformat() if deal.trade_date else 'n/a'}"
+                                        f" + {(deal.start - deal.trade_date).days if deal.trade_date else 'n/a'} days), from 00:45 ET; nothing accrues before it"),
                                "we_pay": {"currency": lent.currency, "amount_c": lent.notional_c, "gl": "1360", "note": "lent: comes back at maturity"},
                                "we_receive": {"currency": bor.currency, "amount_c": bor.notional_c, "gl": "2360", "note": "borrowed: repaid at maturity"}},
             "schedule": rows, "fees": "none beyond the half-width on each leg (disclosed)",
@@ -1155,11 +1310,46 @@ def _xccy_dict(deal: XccyDeal) -> dict:
             "conventions": list(CONVENTIONS)}
 
 
+def xccy_start_check(services, conn, aid: str, deal: XccyDeal, snapshot=None) -> dict:
+    """P8B-06 / P8B-12: can the account pay the lent notional at the start (the spot date) and the IM now?  USD lent: IM + the USD lent as
+    one commitment now (PO-07, ``swaps.funding_preview``), as when the exchange settled at the booking.  A foreign currency lent: what the
+    account will hold by the start date - its cash, the receivables due by then (an FX desk spot purchase for that value date counts) and
+    Treasury's cash in that currency (``fx.funding_check``) - never an automatic conversion; the IM is checked apart.
+    ``{ok, currency, need_c, note, hint, ...}``."""
+    lent = deal.recv
+    if lent.currency == "USD":
+        f = swaps.funding_preview(services, conn, aid, "USD", lent.notional_c + deal.im_c, snapshot,
+                                  what=f"IM + the USD lent at the start ({deal.start.isoformat()})")
+        f["treasury_settled_c"] = balance(conn, f"{split_account_id(aid)[0]}:TREASURY", "1010", "USD")
+        f["start_date"] = deal.start.isoformat()
+        return f
+    chk = fxmod.funding_check(services, aid, lent.currency, lent.notional_c, deal.start, conn=conn)
+    ccy, need = lent.currency, lent.notional_c
+    hint = f"buy {ccy} {fmt_money(int(chk.get('shortfall_c') or 0))} with Convert (the FX desk, value on or before {deal.start.isoformat()})"
+    note = (f"the start exchange pays {ccy} {fmt_money(need)} on {deal.start.isoformat()}: {chk.get('text')}" +
+            ("" if chk.get("fundable") else f" - {hint}; it is never converted automatically"))
+    return {"currency": ccy, "need_c": need, "ok": bool(chk.get("fundable")), "note": note, "hint": None if chk.get("fundable") else hint,
+            "own_settled_c": balance(conn, aid, "1010", ccy), "available_c": max(0, int(chk.get("own_available_c") or 0) + int(chk.get("forwards_due_c") or 0)),
+            "own_available_c": chk.get("own_available_c"), "receivables_due_c": chk.get("forwards_due_c"), "sweep_c": int(chk.get("from_treasury_c") or 0),
+            "treasury_available_c": chk.get("treasury_available_c"), "shortfall_c": chk.get("shortfall_c"), "start_date": deal.start.isoformat(),
+            "treasury_settled_c": balance(conn, f"{split_account_id(aid)[0]}:TREASURY", "1010", ccy), "check": chk}
+
+
 def _book_xccy(ctx: TxContext, services, acct: dict, p: dict) -> dict:
     conn = ctx.conn
     aid = acct["account_id"]
     today = ny_of(ctx.ts).date()
-    deal = _xccy_deal(services, conn, ctx.marks, acct, p, today)
+    deal = _xccy_deal(services, conn, ctx.marks, acct, p, today, now_ts=ctx.ts)
+    # P8B-06: the start exchange settles on the spot date (the XCCY_EVENTS START key from 00:45 ET), with its own funding sweep on that
+    # business date; at the booking only the IM moves.  The owner commits now to what the start needs: refused, nothing written, when it
+    # could not be paid (P8B-12: a foreign currency counts what arrives by the start date)
+    chk = xccy_start_check(services, conn, aid, deal, ctx.marks)
+    if not chk.get("ok", True):
+        if deal.recv.currency == "USD":
+            raise ConflictError("INSUFFICIENT_FUNDS", chk.get("note") or "the USD lent at the start cannot be funded", {"funding": chk})
+        raise ConflictError("INSUFFICIENT_FUNDS_CCY", chk.get("note") or f"no {deal.recv.currency} for the start exchange",
+                            {"currency": deal.recv.currency, "need_c": deal.recv.notional_c, "shortfall_c": chk.get("shortfall_c"), "hint": chk.get("hint"),
+                             "start_date": deal.start.isoformat()})
     broker = prime.broker_of(acct)
     cid = next_id(conn, "swap")
     idem = f"im:{cid}:open"
@@ -1168,7 +1358,7 @@ def _book_xccy(ctx: TxContext, services, acct: dict, p: dict) -> dict:
     memo = (f"OTC IM {cid}: XCCY receive {recv.currency} {fmt_money(recv.notional_c)} at {_pct(recv.rate)} / pay {pay.currency} {fmt_money(pay.notional_c)} at"
             f" {_pct(pay.rate)} to {deal.maturity.isoformat()} with {broker}; deal rate {_px_text(deal.deal_rate)} ({quote_label(deal.fx_view)}); IM ="
             f" {swaps.pct_text(deal.im_pct)} x USD {fmt_money(deal.usd_leg.notional_c)} = {fmt_money(deal.im_c)} ({deal.im_source}); mark0"
-            f" {fmt_money(deal.mark0_c)} = cost of dealing (SWAP_MARK)")
+            f" {fmt_money(deal.mark0_c)} = cost of dealing")
     entries = [ctx.post(Entry("OTC_IM", memo, [dr(aid, "1330", "USD", deal.im_c, instrument_id=cid, memo="OTC initial margin"),
                                                cr(aid, "1010", "USD", deal.im_c, memo="IM paid")], idem, ref_type="otc", ref_id=cid))]
     name = (f"XCCY receive {recv.currency} {_pct(recv.rate)} / pay {pay.currency} {_pct(pay.rate)}, USD {fmt_money(deal.usd_leg.notional_c)}"
@@ -1182,7 +1372,8 @@ def _book_xccy(ctx: TxContext, services, acct: dict, p: dict) -> dict:
                        "quote": str(leg.quote), "annuity0": str(leg.annuity), "rate_given": leg.rate_given} for leg in (recv, pay)}
     t = {"kind": "XCCY", "pay_ccy": p["pay_ccy"], "recv_ccy": p["recv_ccy"], "foreign_ccy": deal.foreign, "usd_side": p["usd_side"], "legs": legs,
          "deal_rate": str(deal.deal_rate), "deal_pair": fx_pair_id(deal.foreign), "months": p["months"], "tenor_months": p["months"],
-         "period_months": XCCY_PERIOD_MONTHS, "mtm_reset": p["mtm_reset"], "periods": pj, "fixed_periods": pj, "trade_date": today.isoformat(),
+         "period_months": XCCY_PERIOD_MONTHS, "mtm_reset": p["mtm_reset"], "periods": pj, "fixed_periods": pj,
+         "trade_date": (deal.trade_date or today).isoformat(),
          "start_date": deal.start.isoformat(), "maturity_date": deal.maturity.isoformat(), "half_width": str(deal.hw), "half_width_bp": str(deal.hw_bp),
          "otc_spread_mult": str(deal.mult), "mark0_c": deal.mark0_c, "dv01_0_c": deal.dv01_c, "im_pct": str(deal.im_pct), "dealt_ts": ctx.ts, "model": XCCY_MODEL,
          "deal_rate_source": quote_label(deal.fx_view), "deal_rate_quote_time": getattr(deal.fx_view, "quote_time", None)}
@@ -1193,7 +1384,7 @@ def _book_xccy(ctx: TxContext, services, acct: dict, p: dict) -> dict:
                  (cid, ctx.command_id, aid, broker, "XCCY", dumps(t), deal.usd_leg.notional_c, "USD", deal.start.isoformat(), deal.maturity.isoformat(),
                   deal.margin_mode, deal.im_c, deal.start.isoformat(), str(deal.deal_rate), deal.mark0_c, ctx.ts, dumps(inputs)))
     start_res = None
-    if deal.start == today:
+    if deal.start <= today:                  # never with a spot start (P8B-06); kept for a calendar where spot is today
         start_res = _start_exchange(ctx, services, _contract(conn, cid), overdraft=False)
         entries.append(start_res["entry_id"])
     ctx.touched_instruments.add((aid, cid))
@@ -1257,26 +1448,16 @@ def _preview(services, conn: sqlite3.Connection, account_id: str, kind: str, ter
     today = ny_of(ts).date()
     marks = _snapshot(services)
     if kind == "TRS":
-        deal = _trs_deal(services, conn, marks, acct, parse_trs_terms(terms), today)
+        deal = _trs_deal(services, conn, marks, acct, parse_trs_terms(terms), today, now=ts)
         out = _trs_dict(deal)
         out["funding"] = swaps.funding_preview(services, conn, account_id, "USD", deal.im_c, marks, what="IM")         # PO-07
     elif kind == "XCCY":
-        xd = _xccy_deal(services, conn, marks, acct, parse_xccy_terms(terms), today)
+        xd = _xccy_deal(services, conn, marks, acct, parse_xccy_terms(terms), today, now_ts=ts)
         out = _xccy_dict(xd)
-        lent = xd.recv
-        if lent.currency == "USD":
-            # the IM and the USD we lend at the start leave together: one funding line against the account's available USD (PO-07)
-            f = swaps.funding_preview(services, conn, account_id, "USD", lent.notional_c + xd.im_c, marks, what="IM + the USD lent at the start")
-            f["treasury_settled_c"] = balance(conn, f"{split_account_id(account_id)[0]}:TREASURY", "1010", "USD")
-            out["funding"] = f
-        else:
-            own = balance(conn, account_id, "1010", lent.currency)
-            t_cash = balance(conn, f"{split_account_id(account_id)[0]}:TREASURY", "1010", lent.currency)
-            sweep = max(0, lent.notional_c - own)
-            out["funding"] = {"currency": lent.currency, "need_c": lent.notional_c, "own_settled_c": own, "settled_c": own, "available_c": max(0, own), "sweep_c": sweep,
-                              "treasury_settled_c": t_cash, "treasury_available_c": t_cash, "ok": sweep <= t_cash,
-                              "note": (f"the start exchange pays {lent.currency} {fmt_money(lent.notional_c)} from the account's {lent.currency}, then Treasury's"
-                                       f" {lent.currency}; never automatic FX: buy {lent.currency} with Convert if Treasury lacks it")}
+        # P8B-06 / P8B-12: the start exchange is on the spot date; the check is the booking's own (xccy_start_check): USD lent with the IM as one
+        # commitment now; a foreign currency lent from what the account holds or receives by the start date, never an automatic conversion
+        out["funding"] = xccy_start_check(services, conn, account_id, xd, marks)
+        if xd.recv.currency != "USD":
             out["im_funding"] = swaps.funding_preview(services, conn, account_id, "USD", xd.im_c, marks, what="IM")
     else:
         raise RejectError("OTC_KIND", f"{kind} is not a TRS or a cross-currency swap (IRS is products/swaps.py)")
@@ -1337,7 +1518,7 @@ def mark_trs(services, contract, at: Optional[int] = None, valuation_date=None, 
     if price is None:
         mv = snap.mark(uid) if snap is not None else None
         if mv is None or mv.mark is None or mv.quality == "unavailable":
-            note = f"{uid}: no observed price ({getattr(mv, 'note', '') or 'unavailable'}); the last computed mark, labelled stale (SWAP_MARK)"
+            note = f"{uid}: no observed price ({getattr(mv, 'note', '') or 'unavailable'}); the last computed mark, labelled stale"
             return _stale_view(cid, stored, "TRS model (stored mark)", row.get("mark_ts"), now_ts, dict(base, stored_mark_c=stored), note)
         price = qprice(mv.mark)
         info = {"price": str(price), "quality": mv.quality, "source": mv.source, "quote_time": mv.quote_time, "delay_label": mv.delay_label}
@@ -1349,7 +1530,7 @@ def mark_trs(services, contract, at: Optional[int] = None, valuation_date=None, 
                   valuation_date=None if valuation_date is None else _date(valuation_date).isoformat(),
                   formula=f"{'+' if sign > 0 else '-'}{units} x ({price} - {reset_px})")
     if info.get("quality") == "stale":
-        return _stale_view(cid, value, "TRS model", info.get("quote_time"), now_ts, inputs, f"{uid}: the price {price} is stale; the mark at that price (SWAP_MARK)")
+        return _stale_view(cid, value, "TRS model", info.get("quote_time"), now_ts, inputs, f"{uid}: the price {price} is stale; the mark at that price")
     return value, inputs
 
 
@@ -1412,7 +1593,7 @@ def mark_xccy(services, contract, at: Optional[int] = None, valuation_date=None,
     except ConflictError as e:
         stored = int(row.get("mark_c") or 0)
         return _stale_view(cid, stored, "XCCY model (stored mark)", row.get("mark_ts"), now_ts, dict(base, stored_mark_c=stored),
-                           f"{e.message}; the last computed mark, labelled stale (SWAP_MARK)")
+                           f"{e.message}; the last computed mark, labelled stale")
     return to_c(value), dict(base, **inputs)
 
 
@@ -2048,7 +2229,7 @@ def _terminate_xccy(ctx: TxContext, services, row: dict) -> Tuple[dict, int, dic
             entries.append(entry_id)
     ref = _vm_reference(conn, cid)
     memo = (f"XCCY termination {cid}: value {fmt_money(value)} = the current model mark of the coupon legs; VM balance {fmt_money(int(row['vm_balance_c']))} unwound;"
-            " IM released (SWAP_MARK)")
+            " IM released")
     closed = swaps.close_contract(ctx, services, _contract(conn, cid), "TERMINATED", value, ref, f"otc:{cid}:terminate", "OTC_TERMINATE", memo, False, False)
     return closed, value, dict(inputs, exchange=exch, vm_reference_c=ref), entries
 
@@ -2133,6 +2314,45 @@ def event_keys(conn: sqlite3.Connection, now_ts: int) -> List[Tuple[str, str, st
     return out
 
 
+def next_event_due(conn: sqlite3.Connection, now_ts: int) -> Optional[Tuple[int, str]]:
+    """P8B-15: ``(epoch, ref)`` of the next XCCY_EVENTS work - the earliest START / PAY / FX_RESET / END of an OPEN cross-currency swap that
+    is neither recorded nor DONE (00:45 ET; an FX reset 17:05 ET; an overdue one is due now) - or None when no swap is open."""
+    now = int(now_ts)
+    best: Optional[Tuple[int, str]] = None
+    words = {"START": "start exchange", "PAY": "payment", "FX_RESET": "FX reset", "END": "maturity"}
+    for row in _open_contracts(conn, "XCCY"):
+        cid = row["contract_id"]
+        terms = _terms(row)
+        periods = _periods(terms)
+        if not periods:
+            continue
+        done = _jobs(conn, JOB_EVENTS, cid)
+        have = {(r["event_date"], r["kind"]) for r in conn.execute("SELECT event_date, kind FROM otc_resets WHERE contract_id=?", (cid,)).fetchall()}
+        cands = [(periods[0][0], "START", "NOTIONAL_START", EVENT_ET)]
+        for _s, e, p in periods[:-1]:
+            cands.append((p, "PAY", "PAY", EVENT_ET))
+            if terms.get("mtm_reset"):
+                cands.append((e, "FX_RESET", "FX_RESET", FX_RESET_ET))
+        cands.append((periods[-1][2], "END", "NOTIONAL_END", EVENT_ET))
+        for d, ev, kind, hhmm in sorted(cands, key=lambda c: (c[0], EVENT_ORDER[c[1]])):
+            ds = d.isoformat()
+            r = done.get(f"{cid}:{ds}:{ev}")
+            if (ds, kind) in have or (r is not None and r["status"] == "DONE"):
+                continue
+            ts = max(now, epoch_of(d, hhmm))
+            if best is None or ts < best[0]:
+                best = (ts, f"{cid} {words.get(ev, ev.lower())} {ds}")
+            break
+    return best
+
+
+try:   # P8B-15: GET /api/jobs shows when XCCY_EVENTS next has work (the job itself is lifecycle_eod's)
+    from ..lifecycle_eod import add_next_due as _add_next_due
+    _add_next_due(JOB_EVENTS, next_event_due)
+except ImportError:
+    pass
+
+
 # ---- views ------------------------------------------------------------------------------------------------------------------------
 def next_events(services, contract, conn: Optional[sqlite3.Connection] = None, limit: int = 4) -> List[dict]:
     """The next scheduled events (risk §14 and the contracts table): TRS resets / maturity with the accrued legs; XCCY payments
@@ -2162,6 +2382,13 @@ def next_events(services, contract, conn: Optional[sqlite3.Connection] = None, l
         maturity = row["maturity_date"]
         paid = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
         fxr = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='FX_RESET'", (cid,)).fetchall()}
+        if periods and not _has_reset(conn, cid, "NOTIONAL_START"):
+            # P8B-06: the start exchange of a swap that starts on its spot date, until it has run
+            lent, bor = terms["legs"]["receive"], terms["legs"]["pay"]
+            events.append({"date": periods[0][0].isoformat(), "event": "START",
+                           "detail": (f"start exchange: we pay {lent['currency']} {fmt_money(_leg_notional(conn, row, terms, periods, 'receive', 0) or int(lent['notional_c']))}"
+                                      f" (lent) and receive {bor['currency']} {fmt_money(_leg_notional(conn, row, terms, periods, 'pay', 0) or int(bor['notional_c']))}"
+                                      f" (borrowed) at {terms.get('deal_rate')}")})
         for k, (s, e, p) in enumerate(periods):
             ps = p.isoformat()
             if p < today or ps in paid:
@@ -2219,6 +2446,15 @@ def contract_detail(services, contract, conn: Optional[sqlite3.Connection] = Non
             "legs": legs, "fx_resets": fx, "started": _has_reset(conn, cid, "NOTIONAL_START"), "matured_exchange": _has_reset(conn, cid, "NOTIONAL_END")}
 
 
+def unsupported() -> List[dict]:
+    """Settings > Unsupported: what the cross-currency swap of this build does not do (P8B-05: said where the owner looks, never found by
+    refusal)."""
+    return [{"item": "Floating cross-currency legs (SOFR, ESTR, SONIA, TONA ...) and a cross-currency basis", "state": "NOT_OFFERED",
+             "wording": "cross-currency swaps are fixed / fixed in this version: no free non-USD reference fixing is sourced to set and settle a floating"
+                        " leg, so both legs are fixed-rate (semi-annual) at the dealer's quote; one leg is USD",
+             "where": "prime-broker OTC tab, Swaps (cross-currency swap)"}]
+
+
 # ---- registry ---------------------------------------------------------------------------------------------------------------------
 def register(bus, services=None) -> None:
     """Register ``trs.reset``, ``xccy.exchange`` and ``xccy.fx_reset`` (lifecycle); the runtime binds this module as
@@ -2232,4 +2468,5 @@ def register(bus, services=None) -> None:
 __all__ = ["preview", "book", "terminate", "mark_trs", "mark_xccy", "dv01_c", "accrue_night", "pay", "fix", "next_events", "contract_detail", "reset_keys",
            "event_keys", "register", "h_reset", "h_exchange", "h_fx_reset", "parse_trs_terms", "parse_xccy_terms", "TrsTerms", "TrsDeal", "XLeg", "XccyDeal",
            "fin_rate", "flat_dfs", "foreign_curve", "leg_curve", "leg_value", "leg_dv01", "usd_notional", "xccy_leg_spec", "close_on", "fx_close_on",
-           "CONVENTIONS", "TRS_MODEL", "XCCY_MODEL", "TRS_IM_PCT", "XCCY_IM_PCT", "RESET_ET", "EVENT_ET", "FX_RESET_ET", "JOB_RESET", "JOB_EVENTS"]
+           "CONVENTIONS", "TRS_MODEL", "XCCY_MODEL", "TRS_IM_PCT", "XCCY_IM_PCT", "RESET_ET", "EVENT_ET", "FX_RESET_ET", "JOB_RESET", "JOB_EVENTS",
+           "MARKS_HOOK", "RecordingMarks", "PinnedMarks", "mark_view_of", "xccy_dates", "xccy_start_check", "next_event_due", "unsupported"]

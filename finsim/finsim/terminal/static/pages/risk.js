@@ -17,7 +17,12 @@
  *   otc        per prime broker: contracts, notional, signed DV01, IM, VM posted / received; every contract with a readable label
  *   counterparty exposure (banks, repo dealers, agent lenders, prime brokers, private-credit borrowers; assumed terms)
  *   private    the private / illiquid bucket (names without a price per share at cost, as NAV carries them) and the lock-ups
+ *   reg T      FINSIM1_PLAN P3 task 13: per account (US Exchange, the prime brokers) the Reg T requirement, maintenance, eligible
+ *              collateral, excess or deficit, open calls and the assumed terms - P6's figures (collateral.summary) carried in the risk
+ *              answer, "unavailable" with the reason while they are not in the build (no collateral route is called from here)
+ *   sector     PORTFOLIO-19: the headline exposure per sector (a TRS counts in its underlying's sector; unclassified names said so)
  *   warnings and compliance notices.
+ * V104R2-BW-08: the exposure table marks the buckets that add up to the gross tile ("in gross"); the others are shown for their size.
  * ASCII only; no framework.
  */
 (function () {
@@ -73,16 +78,25 @@
       /* leverage */
       var pl = panel('leverage', 'Leverage against NAV', 'gross exposure and gross notional / NAV; per book, and per account against the account\'s own NAV (a prime-broker account = its leverage at the dealer)');
       S.lev = gridIn(pl, { rowKey: function (r) { return r.level + ':' + (r.account_id || r.lifetime_id); }, empty: 'no positions', columns: [
-        { key: 'name', label: 'book / account', cls: 'l', html: function (r) { return (r.level === 'book' ? '<b>' + T.esc(r.name) + '</b> <span class="muted">book</span>' : T.esc(r.name || nameOf(r, names))) + '<span class="sub2">' + T.esc(r.level === 'book' ? (r.lifetime_id || '') : (r.account_id || '')) + '</span>'; }, text: function (r) { return r.name || ''; } },
+        { key: 'name', label: 'book / account', cls: 'l', html: function (r) { return (r.level === 'book' ? '<b>' + T.esc(r.name) + '</b> <span class="muted">book</span>' : T.esc(r.name || nameOf(r, names))) + '<span class="sub2">' + T.esc(r.level === 'book' && r.lifetime_id ? 'lifetime ' + r.lifetime_id : '') + '</span>'; }, text: function (r) { return r.name || ''; } },
         money('nav', 'NAV'), money('long', 'long'), money('short', 'short'), money('gross', 'gross'), money('gross_notional', 'gross notional'),
         xCol('gross_leverage', 'gross / NAV', 'gross exposure / NAV'), xCol('gross_notional_leverage', 'notional / NAV', 'gross notional / NAV'),
         pctCol('long_pct_nav', 'long %'), pctCol('short_pct_nav', 'short %'), pctCol('net_pct_nav', 'net %'), pctCol('trs_pct_nav', 'TRS / NAV', 'TRS underlying notional / NAV')] });
       S.levNote = T.h('div', { class: 'pnote' }); pl.appendChild(S.levNote);
       body.appendChild(pl);
       /* exposure */
-      var pe = panel('exposure', 'Exposure by bucket', 'IRS / cross-currency swaps are shown at notional but are not in the headline gross');
-      S.exp = gridIn(pe, { rowKey: function (r) { return r.bucket; }, empty: 'no exposure', columns: [{ key: 'bucket', label: 'bucket', cls: 'l' }, money('long'), money('short'), money('net'), money('gross'), pctCol('pct_nav', '% NAV')] });
+      var pe = panel('exposure', 'Exposure by bucket', 'the buckets marked "in gross" add up to the gross exposure tile; the others are shown for their size');
+      S.exp = gridIn(pe, { rowKey: function (r) { return r.bucket; }, empty: 'no exposure', columns: [{ key: 'bucket', label: 'bucket', cls: 'l' }, money('long'), money('short'), money('net'), money('gross'), pctCol('pct_nav', '% NAV'),
+        { key: 'headline', label: 'in gross', cls: 'l', html: function (r) { return r.headline ? '<span class="pos">yes</span>' : '<span class="muted" title="IRS / cross-currency swaps and CDX at notional, FX forwards and the currency rows: their measures are DV01, CS01 and the currency exposure">no</span>'; },
+          text: function (r) { return r.headline ? 'yes' : 'no'; } }] });
+      S.expNote = T.h('div', { class: 'pnote' }); pe.appendChild(S.expNote);
       body.appendChild(pe);
+      /* PORTFOLIO-19: the headline exposure per sector */
+      var psec = panel('sector', 'Exposure by sector', 'headline exposure; a TRS counts in its underlying\'s sector; classify a name from its Portfolio row');
+      S.sec = gridIn(psec, { rowKey: function (r) { return r.sector; }, empty: 'no headline exposure', columns: [
+        { key: 'sector', label: 'sector', cls: 'l', html: function (r) { return T.esc(r.sector) + '<span class="sub2" title="' + T.esc((r.instruments || []).join(', ')) + '">' + T.esc((r.instruments || []).slice(0, 6).join(', ') + ((r.instruments || []).length > 6 ? ' ...' : '')) + '</span>'; }, text: function (r) { return r.sector; } },
+        money('long'), money('short'), money('net'), money('gross'), pctCol('pct_nav', '% NAV')] });
+      body.appendChild(psec);
       var three = T.h('div', { class: 'grid3' });
       var pc = panel('by-class', 'By class');
       S.cls = gridIn(pc, { rowKey: function (r) { return r.klass; }, empty: 'none', columns: [{ key: 'klass', label: 'class', cls: 'l' }, money('long'), money('short'), money('gross'), pctCol('pct_nav', '% NAV')] });
@@ -100,7 +114,7 @@
       /* DV01 */
       var pv = panel('dv01', 'DV01', 'P&L for +1 bp in yields (signed: a long bond loses)');
       S.dv = gridIn(pv, { rowKey: function (r) { return r.account_id + ':' + r.instrument_id; }, empty: 'no rates exposure', columns: [
-        { key: 'label', label: 'instrument', cls: 'l', html: function (r) { return T.esc(r.label || r.instrument_id) + '<span class="sub2">' + T.esc(r.account_name || r.account_id || '') + '</span>'; }, text: function (r) { return r.label || r.instrument_id; } },
+        { key: 'label', label: 'instrument', cls: 'l', html: function (r) { return T.esc(r.label || r.instrument_id) + '<span class="sub2">' + T.esc(r.account_id ? nameOf(r, names) : '') + '</span>'; }, text: function (r) { return r.label || r.instrument_id; } },
         { key: 'kind', label: 'kind', cls: 'l' }, { key: 'qty', label: 'qty / face', text: function (r) { return T.fmt.qty(r.qty); } }, { key: 'tenor', label: 'tenor', cls: 'l', text: function (r) { return (r.tenor_years != null ? T.fmt.num(r.tenor_years, 2) + 'y . ' : '') + (r.tenor || ''); } },
         money('dv01', 'DV01'), { key: 'basis', label: 'how', cls: 'l', html: function (r) { return '<span class="sub2" title="' + T.esc(r.basis || '') + '">' + T.esc(r.basis || '') + '</span>'; }, text: function (r) { return r.basis || ''; } }] });
       pv.appendChild(T.h('h3', null, 'by tenor'));
@@ -125,13 +139,26 @@
       S.margin = gridIn(pfin, { rowKey: function (r) { return r.account_id; }, empty: 'no margin in use', columns: [{ key: 'name', label: 'account', cls: 'l', text: function (r) { return nameOf(r, names); } }, money('required', 'required'), money('posted', 'posted'), money('headroom', 'headroom'), { key: 'note', label: 'note', cls: 'l', html: function (r) { return '<span class="sub2" style="max-width:420px" title="' + T.esc(r.note || '') + '">' + T.esc(r.note || '') + '</span>'; }, text: function (r) { return r.note || ''; } }] });
       pfin.appendChild(T.h('h3', null, 'prime brokers'));
       S.pb = gridIn(pfin, { rowKey: function (r) { return r.account_id; }, empty: 'no prime-broker account in this scope', columns: [
-        { key: 'name', label: 'prime broker', cls: 'l', html: function (r) { return T.esc(nameOf(r, names)) + '<span class="sub2">' + T.esc(r.account_id) + '</span>'; }, text: function (r) { return nameOf(r, names); } },
+        { key: 'name', label: 'prime broker', cls: 'l', html: function (r) { return T.esc(nameOf(r, names)); }, text: function (r) { return nameOf(r, names); }, title: function (r) { return r.account_id || ''; } },
         { key: 'pb_financing', label: 'financing', cls: 'l', html: function (r) { return r.pb_financing ? '<span class="pos">on</span>' : '<span class="muted">off</span>'; }, text: function (r) { return r.pb_financing ? 'on' : 'off'; } },
         { key: 'limit', label: 'limit', cls: 'l', text: function (r) { return r.limit_text || T.money(r, 'pb_limit'); } }, money('long_mv', 'long MV'), money('financed', 'financed'),
         { key: 'headroom', label: 'headroom', title: function (r) { return (r.formula || '') + '\nafter what working orders already need: ' + T.money(r, 'headroom_after_committed'); }, html: function (r) { return T.esc(T.money(r, 'headroom')); }, text: function (r) { return T.money(r, 'headroom'); } },
         money('otc_im', 'OTC IM'), money('otc_vm_posted', 'VM posted'), money('otc_vm_received', 'VM received'), money('nav', 'PB NAV'),
         xCol('gross_leverage', 'gross / NAV'), xCol('gross_notional_leverage', 'notional / NAV'), pctCol('trs_pct_nav', 'TRS / NAV')] });
       body.appendChild(pfin);
+      /* FINSIM1_PLAN P3 task 13: Reg T per account (P6's figures, carried in the risk answer) */
+      var preg = panel('regt', 'Reg T margin by account', 'requirement against the eligible collateral on assumed, editable terms; a deficit is reserved on cash and raises a margin call - never a forced sale');
+      S.regWhy = T.h('div', { class: 'pnote' }); preg.appendChild(S.regWhy);
+      S.reg = gridIn(preg, { rowKey: function (r) { return r.account_id; }, empty: 'no account under Reg T', columns: [
+        { key: 'name', label: 'account', cls: 'l', text: function (r) { return nameOf(r, names); } },
+        money('requirement', 'requirement', 'initial requirement: short value beyond the proceeds held x the initial %'), money('maintenance', 'maintenance'),
+        money('eligible', 'eligible collateral', 'fully paid longs at their loan value + free cash'),
+        { key: 'excess', label: 'excess / deficit', html: function (r) { var d = T.num(r, 'deficit'); return d ? '<b class="neg">deficit ' + T.esc(T.money(r, 'deficit')) + '</b>' : '<span class="pos">' + T.esc(T.money(r, 'excess')) + '</span>'; },
+          text: function (r) { return T.num(r, 'deficit') ? '-' + T.money(r, 'deficit') : T.money(r, 'excess'); } },
+        { key: 'open_calls', label: 'open calls', text: function (r) { return r.open_calls == null ? '' : String(r.open_calls) + (r.unmet_calls ? ' (' + r.unmet_calls + ' unmet)' : ''); } },
+        { key: 'terms', label: 'terms (assumed)', cls: 'l', html: function (r) { var t = r.terms || {}; return '<span class="sub2" title="' + T.esc((r.definition || '') + (t.source ? ' . ' + t.source : '')) + '">' + T.esc((t.initial_text ? 'initial ' + t.initial_text : '') + (t.maintenance_text ? ' . maintenance ' + t.maintenance_text : '') + (t.long_loan_value_text ? ' . long loan value ' + t.long_loan_value_text : '') + (t.source ? ' . ' + t.source : '')) + '</span>'; },
+          text: function (r) { var t = r.terms || {}; return [t.initial_text, t.maintenance_text, t.long_loan_value_text].filter(Boolean).join(' / '); } }] });
+      body.appendChild(preg);
       /* OTC per prime broker */
       var po = panel('otc', 'OTC contracts per prime broker', 'VM is collateral, not P&L; DV01 and exposure from the current (post-reset) terms');
       S.otcSum = gridIn(po, { rowKey: function (r) { return r.account_id; }, empty: 'no OTC contracts', columns: [{ key: 'name', label: 'prime broker', cls: 'l', text: function (r) { return nameOf(r, names); } }, { key: 'contracts', label: 'contracts', text: function (r) { return String(r.contracts); } },
@@ -176,7 +203,7 @@
       body.appendChild(pp);
       /* warnings, compliance */
       var pw = panel('warnings', 'Risk warnings', 'amber = warning, blue = information; none blocks');
-      S.warn = gridIn(pw, { empty: 'no risk warnings', columns: [{ key: 'severity', label: 'severity', cls: 'l', html: sevBadge, text: function (w) { return w.severity || ''; } }, { key: 'code', label: 'code', cls: 'l' },
+      S.warn = gridIn(pw, { empty: 'no risk warnings', columns: [{ key: 'severity', label: 'severity', cls: 'l', html: sevBadge, text: function (w) { return w.severity || ''; } }, { key: 'code', label: 'kind', cls: 'l', text: function (w) { return T.codeWords ? T.codeWords(w.code || '') : (w.code || ''); }, title: function (w) { return w.code || ''; } },
         { key: 'message', label: 'message', cls: 'l', html: function (w) { return '<span style="white-space:normal">' + T.esc(w.message || '') + '</span>'; }, text: function (w) { return w.message || ''; } }, { key: 'account', label: 'account', cls: 'l', text: function (w) { return w.account_id ? nameOf(w, names) : ''; } }] });
       body.appendChild(pw);
       var pn = panel('compliance', 'Compliance notices', 'inform only; each names its rule and threshold - verify the current rule text');
@@ -228,6 +255,11 @@
       S.lev.update(levRows, { empty: 'no positions in this scope' });
       S.levNote.textContent = ((r.definitions || {}).gross_notional || '') + ((r.notional_missing || []).length ? ' Without a price (left out of the notional): ' + r.notional_missing.join(', ') + '.' : '');
       S.exp.update(r.exposures || [], { empty: 'no exposure' });
+      S.expNote.textContent = r.headline_note || '';
+      S.sec.update(r.by_sector || [], { empty: 'no headline exposure' });
+      var rg = r.reg_t || {};
+      S.regWhy.textContent = rg.available === false ? 'unavailable: ' + (rg.reason || 'not in this build') : ((rg.note || '') + ((rg.errors || []).length ? ' Could not be measured: ' + rg.errors.join('; ') : ''));
+      S.reg.update(rg.available === false ? [] : (rg.rows || []), { empty: rg.available === false ? 'unavailable: ' + (rg.reason || 'not in this build') : 'no account under Reg T' });
       var cls = r.exposure_by_class || {};
       S.cls.update(Object.keys(cls).map(function (k) { return Object.assign({ klass: k }, cls[k]); }), { empty: 'none' });
       var acc = r.exposure_by_account || {};

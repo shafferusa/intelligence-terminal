@@ -1,22 +1,28 @@
-/* Sidebar (TERMINAL_DESIGN.md s17.1 / s17.2, B16 order; WP-12).  Below the book switcher: Dashboard -> Portfolio ->
- * Treasury (with its NAV and cash) -> the selected book's accounts: US Exchange -> Debt Instruments -> Credit Instruments
- * -> Foreign Markets & FX -> Private Markets (when the lifetime has it; otherwise a dimmed row with ONE short reason, the
- * full sentence on hover) -> each opened prime broker -> "+ Open prime broker account" (driven by the server's
- * can_onboard alone, PO-13: dimmed with its short reason when new relationships are refused) -> Book views (Risk,
- * Accounting, Activity, Watchlists) -> Terminal (Settings; highlighted on History pages too).  No Glossary.
- * Account rows show NAV / available, working orders and attention counts from GET /api/accounts?book= (the server's
- * figures; nothing is computed here).  "avail" is the account's own spendable cash floored at zero; an account that holds
- * other currencies shows each one ('avail USD 0.00 . EUR 40,000.00', available_by_ccy; BM-30); when working orders
- * reserve more than the account holds, a second line says "reserved R (Treasury sweep covers N)" -- the sweep moves
- * exactly that at the fill -- and UNFUNDED / overdrawn amounts are red (T.fmt.liquidity; the definition is the hover
- * text).  Only the selected book's accounts are listed, even while an answer for the previous book is still in flight.
- * Account 1 .. 9 (Settings > Keyboard) follow this order (T.sidebarAccounts); each row shows the key in force of its page or
- * account (keys.js registry: F1 US Exchange ... F12 Dashboard by default; nothing when the action has no key).
- * FINSIM1_PLAN 15.7 item 2 (1.0.5): the Dashboard (the landing page) is the first row; the rest of this order stays until the
- * directive's navigation lands (P1 task 3).  Settings lights up on an archived lifetime's pages (#/h/...) only.
- * The onboarding modal (s13.10; SHELL-16 / PO-15) lists every dealer of /api/state.prime_brokers with its seed fee schedule
- * side by side (modelled assumptions, editable after opening in Settings > Prime brokers), marks the dealers already
- * open, posts /api/books/{code}/onboard {broker} and says 'already open' when the server answers created: false.
+/* Sidebar (owner directive 2026-10-27 section 16; FINSIM1_PLAN P1 task 3, UI-06; TERMINAL_DESIGN.md s17.1 / s17.2).  Below the book
+ * switcher, the directive's navigation in its order, each row with the key in force of its action (keys.js registry; nothing when the
+ * action has no key):
+ *   Dashboard (F12) -> Portfolio (F7) -> TRADING - the group title opens #/trading (the last venue used, else US Exchange) - with the
+ *   selected book's venue accounts: US Exchange (F1) -> Debt Instruments (F2) -> Credit Instruments (F3) -> Foreign Markets & FX (F4)
+ *   -> Private Markets (F5; when the lifetime has it, otherwise a dimmed row with ONE short reason, the full sentence on hover) -> each
+ *   prime broker (F6), each with its NAV / avail / working / settling line, then Watchlists (Shift+F9) -> Pending Trades (F8) ->
+ *   Completed Trades (Shift+F8) -> Accounts (Shift+F4), with Treasury (F10) inside and its NAV and cash -> Cash & Collateral
+ *   (Shift+F5) -> Derivatives (Shift+F6) -> History (Shift+F10; lit on the hub #/history and on an archived lifetime's pages #/h/...;
+ *   Settings no longer lights there, reversing SHELL-23) -> Settings (Shift+F11) -> Book views: Risk (F11), Accounting (Shift+F7).
+ * Badges: Pending Trades = the book's working + partially filled + held orders, Completed Trades = its settling executions, from GET
+ *   /api/dashboard/counts?book= (the trade blotters' counters), asked only while the dashboard module is bound (T.hasModule); without
+ *   those counters there is no badge (never a guessed count).  An account row's red badge = its open attention items.
+ * Transitions while a page of the new navigation is not in the build: "+ Open prime broker account" moved to the Accounts page header
+ *   (FINSIM1_PLAN P6; T.components.sidebar.openPbModal stays exported for it) - the sidebar shows it only while the Accounts page is
+ *   not in the build; Activity is a tab of the History hub - it has its own row (Book views) only while the hub is not in the build.
+ * Account rows show NAV / available, working orders and attention counts from GET /api/accounts?book= (the server's figures; nothing
+ * is computed here).  "avail" is the account's own spendable cash floored at zero; an account that holds other currencies shows each
+ * one ('avail USD 0.00 . EUR 40,000.00', available_by_ccy; BM-30); when working orders reserve more than the account holds, a second
+ * line says "reserved R (Treasury sweep covers N)" -- the sweep moves exactly that at the fill -- and UNFUNDED / overdrawn amounts
+ * are red (T.fmt.liquidity; the definition is the hover text).  Only the selected book's accounts are listed, even while an answer for
+ * the previous book is still in flight.  Account 1 .. 9 (Settings > Keyboard) follow the venue order (T.sidebarAccounts).
+ * The onboarding modal (s13.10; SHELL-16 / PO-15) lists every dealer of /api/state.prime_brokers with its seed fee schedule side by
+ * side (modelled assumptions, editable after opening in Settings > Prime brokers), marks the dealers already open, posts
+ * /api/books/{code}/onboard {broker} and says 'already open' when the server answers created: false.
  */
 (function () {
   'use strict';
@@ -41,15 +47,15 @@
   /* the key in force of a sidebar action (keys.js registry; '' without a key) */
   function keyOf(id) { return T.keys && T.keys.label ? T.keys.label(id) : ''; }
   var ROLE_KEY = { US_EXCHANGE: 'nav.us_exchange', DEBT: 'nav.debt', CREDIT: 'nav.credit', FOREIGN_FX: 'nav.foreign_fx', PRIVATE: 'nav.private' };
-  /* an account row: its role's key (F1 .. F6 by default), else 'Account N' of the sidebar order when the owner gave it one */
+  /* an account row: its role's key (F1 .. F6 by default), else 'Account N' of the venue order when the owner gave it one */
   function accountKey(role, i) { var id = ROLE_KEY[role] || (/^PB_/.test(role) ? 'nav.prime_broker' : null); var k = id ? keyOf(id) : ''; return k || (i < 9 ? keyOf('nav.account_' + (i + 1)) : ''); }
   function item(href, label, opts) {
     opts = opts || {};
     var r = T.router.current;
     var active = r && (opts.isActive ? opts.isActive(r) : (r.hash === href || (opts.prefix && r.hash.indexOf(opts.prefix) === 0)));
-    var a = T.h('a', { href: href, class: 'nav-item' + (active ? ' active' : '') + (opts.dim ? ' dim' : ''), title: opts.title || label }, label);
+    var a = T.h('a', { href: href, class: 'nav-item' + (active ? ' active' : '') + (opts.dim ? ' dim' : '') + (opts.sub ? ' sub' : ''), title: opts.title || label }, label);
     if (opts.key) { a.appendChild(T.h('span', { class: 'k' }, opts.key)); }
-    if (opts.badge) { a.appendChild(T.h('span', { class: 'nav-badge', title: opts.badgeTitle || '' }, String(opts.badge))); }
+    if (opts.badge) { a.appendChild(T.h('span', { class: 'nav-badge' + (opts.badgeCls ? ' ' + opts.badgeCls : ''), title: opts.badgeTitle || '' }, String(opts.badge))); }
     if (opts.dim) { a.addEventListener('click', function (e) { e.preventDefault(); if (opts.why) { T.ui.toast(opts.why, '', 5000); } }); }
     return a;
   }
@@ -63,8 +69,8 @@
     return liq.available;
   }
   /* a figures line under a row: the parts wrap between each other, never inside a figure (no figure is cut off) */
-  function subLine(parts, title) {
-    var el = T.h('span', { class: 'nav-sub wrap', title: title });
+  function subLine(parts, title, cls) {
+    var el = T.h('span', { class: 'nav-sub wrap' + (cls ? ' ' + cls : ''), title: title });
     parts.forEach(function (p, i) { if (i) { el.appendChild(document.createTextNode(' . ')); } el.appendChild(T.h('span', { class: 'nsp' }, p)); });
     return el;
   }
@@ -75,21 +81,36 @@
     return 'unlocks at ' + (thr ? thr + ' NAV' : 'the PB/OTC threshold');
   }
   function shortPrivate(e) { return 'unlocks at ' + (e.qp_threshold != null ? T.fmt.compact(e.qp_threshold) + ' NAV' : 'the qualified-purchaser threshold'); }
+  /* the TRADING group title: a section heading that opens #/trading (the last venue used) */
+  function tradingTitle() {
+    var r = T.router.current;
+    var k = keyOf('page.trading');
+    var a = T.h('a', { href: '#/trading', class: 'nav-section nav-group-link' + (r && r.page === 'trading' ? ' active' : ''), title: 'Trading: opens the last venue you used (else US Exchange)' + (k ? ' (' + k + ')' : '') }, 'Trading');
+    if (k) { a.appendChild(T.h('span', { class: 'k' }, k)); }
+    return a;
+  }
+  /* the trade blotters' counters for the badges (GET /api/dashboard/counts): {pending_badge, completed_badge, counts} or null */
+  var navCounts = null;
+  function badges() {
+    var c = navCounts;
+    if (!c || !c.present) { return { pending: 0, completed: 0, pendingTitle: '', completedTitle: '' }; }
+    var n = c.counts || {};
+    function v(k) { return Number(n[k]) || 0; }
+    return { pending: Number(c.pending_badge) || 0, completed: Number(c.completed_badge) || 0,
+             pendingTitle: 'working ' + v('working') + ' . partially filled ' + v('partial') + ' . held ' + v('held') + (v('queued') ? ' . queued for the next session ' + v('queued') : '') + (v('rfq_open') ? ' . dealer quotes open ' + v('rfq_open') : ''),
+             completedTitle: 'settling ' + v('settling') + (v('failed') ? ' . failed ' + v('failed') : '') };
+  }
+  function historyHubBuilt() { var h = T.pages.history && T.pages.history.hub; return !!(h && (typeof h === 'function' || typeof h.render === 'function')); }
   function render() {
     var nav = T.q('#nav'); if (!nav) { return; }
     T.clear(nav);
     var book = T.book.current(); var e = (book && book.eligibility) || {};
     var accts = tradingAccounts();
+    var b = badges();
     nav.appendChild(item('#/dashboard', 'Dashboard', { key: keyOf('page.dashboard') }));
     nav.appendChild(item('#/portfolio', 'Portfolio', { key: keyOf('page.portfolio'), prefix: '#/portfolio' }));
-    nav.appendChild(item('#/treasury', 'Treasury', { key: keyOf('page.treasury') }));
-    var tre = treasuryRow();
-    if (tre) {
-      var tliq = T.fmt.liquidity(tre, '_usd');
-      nav.appendChild(subLine(['NAV ' + T.money(tre, 'nav')].concat(('cash ' + availText(tre, tliq)).split(' . ')),
-        'Treasury NAV and its own spendable cash (server figures); the sweep draws on it down to the Treasury reserve shown on the Treasury page\n' + tliq.title));
-    }
-    nav.appendChild(T.h('div', { class: 'nav-section' }, 'Accounts'));
+    /* TRADING: the venues (each opens its Markets page with the docked ticket) and Watchlists */
+    nav.appendChild(tradingTitle());
     accts.forEach(function (a, i) {
       var role = roleOf(a);
       var href = T.router.account(a.account_id, 'markets');
@@ -111,21 +132,40 @@
       nav.appendChild(item('#', 'Private Markets', { dim: true, why: pfull, title: pfull }));
       nav.appendChild(T.h('span', { class: 'nav-why', title: pfull }, shortPrivate(e)));
     }
-    /* PO-13: the server's can_onboard alone (relationships that exist stay usable; new ones need the threshold) */
-    var canOnboard = !!e.can_onboard;
-    var pbFull = (e.pb_otc_reason || 'needs ECP status and the PB/OTC threshold') + (T.conv('ELIGIBILITY') ? ' - ' + T.conv('ELIGIBILITY') : '');
-    var pbRow = T.h('a', { href: '#', class: 'nav-item' + (canOnboard ? '' : ' dim'), title: canOnboard ? 'record the ISDA Master + CSA + Prime Brokerage Agreement with a dealer and open the account' : pbFull }, '+ Open prime broker account');
-    pbRow.addEventListener('click', function (ev) { ev.preventDefault(); if (canOnboard) { openPbModal(book); } else { T.ui.toast(pbFull, '', 6000); } });
-    nav.appendChild(pbRow);
-    if (!canOnboard) { nav.appendChild(T.h('span', { class: 'nav-why', title: pbFull }, shortPb(e))); }
+    /* PO-13: the server's can_onboard alone (relationships that exist stay usable; new ones need the threshold); the button lives on
+       the Accounts page header in 1.0.6 - here only while that page is not in the build */
+    if (!T.pages.accounts) {
+      var canOnboard = !!e.can_onboard;
+      var pbFull = (e.pb_otc_reason || 'needs ECP status and the PB/OTC threshold') + (T.conv('ELIGIBILITY') ? ' - ' + T.conv('ELIGIBILITY') : '');
+      var pbRow = T.h('a', { href: '#', class: 'nav-item' + (canOnboard ? '' : ' dim'), title: canOnboard ? 'record the ISDA Master + CSA + Prime Brokerage Agreement with a dealer and open the account' : pbFull }, '+ Open prime broker account');
+      pbRow.addEventListener('click', function (ev) { ev.preventDefault(); if (canOnboard) { openPbModal(book); } else { T.ui.toast(pbFull, '', 6000); } });
+      nav.appendChild(pbRow);
+      if (!canOnboard) { nav.appendChild(T.h('span', { class: 'nav-why', title: pbFull }, shortPb(e))); }
+    }
+    nav.appendChild(item('#/watchlists', 'Watchlists', { key: keyOf('page.watchlists') }));
+    /* the trade blotters, the accounts, cash & collateral, derivatives, history, settings */
+    nav.appendChild(T.h('div', { class: 'nav-section' }, 'Fund'));
+    nav.appendChild(item('#/pending', 'Pending Trades', { key: keyOf('page.pending'), prefix: '#/pending', badge: b.pending, badgeCls: 'count', badgeTitle: b.pendingTitle,
+      title: 'Pending Trades: working, queued, partially filled and held orders of the book' }));
+    nav.appendChild(item('#/completed', 'Completed Trades', { key: keyOf('page.completed'), prefix: '#/completed', badge: b.completed, badgeCls: 'count', badgeTitle: b.completedTitle,
+      title: 'Completed Trades: every execution of the book with its settlement status' }));
+    nav.appendChild(item('#/accounts', 'Accounts', { key: keyOf('page.accounts'), title: 'Accounts: every account of the book (Treasury, the venues, each prime broker)' }));
+    nav.appendChild(item('#/treasury', 'Treasury', { key: keyOf('page.treasury'), sub: true }));
+    var tre = treasuryRow();
+    if (tre) {
+      var tliq = T.fmt.liquidity(tre, '_usd');
+      nav.appendChild(subLine(['NAV ' + T.money(tre, 'nav')].concat(('cash ' + availText(tre, tliq)).split(' . ')),
+        'Treasury NAV and its own spendable cash (server figures); the sweep draws on it down to the Treasury reserve shown on the Treasury page\n' + tliq.title, 'sub'));
+    }
+    nav.appendChild(item('#/cash', 'Cash & Collateral', { key: keyOf('page.cash_collateral'), prefix: '#/cash' }));
+    nav.appendChild(item('#/derivatives', 'Derivatives', { key: keyOf('page.derivatives'), prefix: '#/derivatives' }));
+    nav.appendChild(item('#/history', 'History', { key: keyOf('page.history'), isActive: function (r) { return r.page === 'history'; },
+      title: 'History: NAV history, transactions, account activity and past lifetimes' }));
+    nav.appendChild(item('#/settings', 'Settings', { key: keyOf('page.settings'), isActive: function (r) { return r.page === 'settings'; } }));
     nav.appendChild(T.h('div', { class: 'nav-section' }, 'Book views'));
     nav.appendChild(item('#/risk', 'Risk', { key: keyOf('page.risk'), prefix: '#/risk' }));
     nav.appendChild(item('#/accounting', 'Accounting', { key: keyOf('page.accounting'), prefix: '#/accounting' }));
-    nav.appendChild(item('#/activity', 'Activity', { key: keyOf('page.activity'), prefix: '#/activity' }));
-    nav.appendChild(item('#/watchlists', 'Watchlists', { key: keyOf('page.watchlists') }));
-    nav.appendChild(T.h('div', { class: 'nav-section' }, 'Terminal'));
-    /* History pages are reached from Settings > Lifetimes: Settings stays lit there (SHELL-23) */
-    nav.appendChild(item('#/settings', 'Settings', { key: keyOf('page.settings'), isActive: function (r) { return r.page === 'settings' || (r.page === 'history' && !r.hub); } }));
+    if (!historyHubBuilt()) { nav.appendChild(item('#/activity', 'Activity', { key: keyOf('page.activity'), prefix: '#/activity' })); }
   }
   /* PO-15: the dealers (C10: [{broker, name, schedule, agreements}]); the static names when the server sends none */
   function dealers() {
@@ -215,9 +255,29 @@
     paint();
     return m;
   }
+  /* the badges' counters: asked every 15 s, only while the dashboard module is bound (C2: no request to a route that is not built) */
+  var knownModule = null;
+  function pollCounts() {
+    if (!T.hasModule('dashboard')) {
+      if (navCounts) { navCounts = null; render(); }
+      return Promise.resolve();
+    }
+    var code = T.book.code;
+    return T.api.get('/api/dashboard/counts').then(function (c) {
+      if (code !== T.book.code) { return; }                     /* an answer for the previous book: dropped */
+      var before = JSON.stringify(navCounts);
+      navCounts = c && typeof c === 'object' ? c : null;
+      if (JSON.stringify(navCounts) !== before) { render(); }
+    });
+  }
   function init() {
     ['accounts', 'books', 'book', 'route', 'state', 'server_ok', 'keybinds'].forEach(function (k) { T.state.on(k, render); });   /* keybinds: the keys shown follow Settings > Keyboard */
+    T.state.on('book', function () { navCounts = null; });
+    /* the module list arrives with /api/health: ask for the counters as soon as the dashboard module is known to be bound */
+    T.state.on('health', function () { var m = T.hasModule('dashboard'); if (m !== knownModule) { knownModule = m; T.poll.kick('navcounts'); } });
+    if (T.poll && T.poll.define) { T.poll.define('navcounts', 15000, pollCounts); }
     render();
   }
-  T.components.sidebar = { init: init, render: render, openPbModal: openPbModal, PRIME_BROKERS: PRIME_BROKERS, tradingAccounts: tradingAccounts, dealers: dealers };
+  T.components.sidebar = { init: init, render: render, openPbModal: openPbModal, PRIME_BROKERS: PRIME_BROKERS, tradingAccounts: tradingAccounts, dealers: dealers,
+                           counts: function () { return navCounts; } };
 })();

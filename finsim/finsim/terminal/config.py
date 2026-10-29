@@ -41,11 +41,6 @@ PRIVATE_FEE_PCT = Decimal("0.03")
 PRIVATE_SETTLE_DAYS = 30
 PRIVATE_LOCKUP_MONTHS = 6                                   # defaults, editable on the ticket
 SWAP_IM_BP = 50                                             # OTC initial margin = DV01 × 50 bp (static, disclosed)
-NEWS_YAHOO = "https://query2.finance.yahoo.com/v1/finance/search?q={q}&quotesCount=0&newsCount={n}"   # BROWSER_UA (Yahoo only)
-NEWS_FED_RSS = "https://www.federalreserve.gov/feeds/press_all.xml"                                  # GOV_UA
-NEWS_PAPER_URL = "https://shafferusa.github.io/intelligence-terminal/"
-NEWS_PAPER_INDEX_URL = NEWS_PAPER_URL + "reports/index.json"          # the PUBLISHED index (SHELL-09); read hourly, local file as fallback
-NEWS_INTERVALS = {"YAHOO": 900, "FED": 3600, "PAPER": 300}
 PARTICIPATION_RATE = Decimal("0.10")
 GTC_DAYS = 90
 STALE_GRACE_S = 300
@@ -107,12 +102,9 @@ def package_dir() -> str:
 
 
 def repo_root() -> str:
-    """The folder holding ``data/nyse-holidays.json`` and ``site/reports/index.json`` (three levels above the package)."""
+    """The folder holding ``data/nyse-holidays.json`` (three levels above the package).  (FinSim1 reads nothing of the website
+    folder ``site/`` since the news feature left in 1.0.5 / 1.0.6.)"""
     return os.path.dirname(os.path.dirname(os.path.dirname(package_dir())))
-
-
-def newspaper_index() -> str:
-    return os.path.join(repo_root(), "site", "reports", "index.json")
 
 
 def holidays_path() -> str:

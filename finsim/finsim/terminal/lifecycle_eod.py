@@ -409,8 +409,9 @@ def h_marks_record(ctx: TxContext, payload: dict) -> dict:
     for m in payload.get("missing") or []:
         ref = f"{m['instrument_id']}:{m['mark_date']}"
         if ctx.conn.execute("SELECT 1 FROM attention WHERE code='MARK_MISSING' AND ref_type='mark' AND ref_id=? AND resolved_ts IS NULL", (ref,)).fetchone() is None:
-            ctx.attention("WARN", SOURCE, "MARK_MISSING", f"{m['instrument_id']}: no daily bar for {m['mark_date']} (symbol {m.get('symbol') or '?'} delisted or unlisted?);"
-                          " the close of that date stays unrecorded and accruals / expiries that need it wait", dict(m, ref_type="mark", ref_id=ref, auto_resolve=1))
+            # P8B-14: a missing bar is said as a gap in the free data feed - never a guess that the instrument (a major FX pair) was delisted
+            ctx.attention("WARN", SOURCE, "MARK_MISSING", f"{m['instrument_id']}: the free data feed sent no daily bar for {m['mark_date']} ({m.get('symbol') or '?'});"
+                          " the close of that date stays unrecorded and accruals / expiries that need it wait for it", dict(m, ref_type="mark", ref_id=ref, auto_resolve=1))
             opened += 1
     for r in payload.get("revised") or []:
         ref = f"{r['instrument_id']}:{r['mark_date']}"
@@ -855,6 +856,30 @@ LIGHT_HANDLERS = {"lifecycle.marks_record": h_marks_record, "lifecycle.integrity
 
 #: the names of the jobs product modules added through ``add_product_job`` (the rest of REGISTRY is the core tick order)
 PRODUCT_JOBS: set = set()
+#: P8B-15 (V104R2-OTC-07): per job without a clock time, the function a product module registers (``add_next_due``) that tells when the job
+#: next has work: ``fn(conn, now_ts) -> (epoch, ref) | None`` - the earliest date its open contracts / deals carry (an overdue one = now)
+NEXT_DUE: Dict[str, Callable] = {}
+
+
+def add_next_due(name: str, fn: Callable) -> None:
+    """P8B-15: register the next-work function of the job ``name`` (from the product module's ``bind``); the latest registration wins."""
+    NEXT_DUE[str(name)] = fn
+
+
+def next_due_of(name: str, conn, now_ts: int) -> Optional[Tuple[int, str]]:
+    """``(epoch, ref)`` of the next time the job ``name`` has work, from its product module; None when nothing is scheduled or no function is
+    registered (a failing function is a None, never an error of the view)."""
+    fn = NEXT_DUE.get(str(name))
+    if fn is None:
+        return None
+    try:
+        got = fn(conn, int(now_ts))
+    except Exception:   # noqa: BLE001 - a view: the schedule in words still shows
+        return None
+    if not got:
+        return None
+    ts, ref = got
+    return int(ts), str(ref or "")
 
 
 def add_product_job(job: Job, before: Optional[str] = "SNAPSHOT") -> Job:
@@ -878,5 +903,5 @@ def add_product_job(job: Job, before: Optional[str] = "SNAPSHOT") -> Job:
     return job
 
 __all__ = ["REGISTRY", "LIGHT_HANDLERS", "MarksRecord", "Snapshot", "ExpireOrders", "CollateralMark", "BorrowCleanup", "Housekeeping", "IntegrityFull", "ProductJob",
-           "LoanMature", "add_product_job", "PRODUCT_JOBS",
+           "LoanMature", "add_product_job", "PRODUCT_JOBS", "NEXT_DUE", "add_next_due", "next_due_of",
            "recorded_set", "record_time", "h_marks_record", "h_integrity_full", "BENCHMARK"]

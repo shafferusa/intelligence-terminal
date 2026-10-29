@@ -30,7 +30,9 @@ SEED_GS = {"name": "Goldman Sachs", "equity_per_share": "0.0030", "equity_min_c"
            # SR-10 / C22: the OTC terms of the GS seed (prime.OTC_SEEDS, assumed): IM 50 bp of |DV01| / 10 % / 2 % / 15 % / 6 %, half-widths
            # 1.00 vol point (equity options), 0.30 (FX options), 2 bp (forwards)
            "irs_im_bp": "50", "trs_im_pct": "0.10", "xccy_im_pct": "0.02", "option_im_pct": "0.15", "forward_im_pct": "0.06", "eq_option_hw_vol": "0.0100",
-           "fx_option_hw_vol": "0.0030", "forward_hw_bp": "2.0"}
+           "fx_option_hw_vol": "0.0030", "forward_hw_bp": "2.0",
+           # FINSIM1 P6 task 6 (1.0.6): the CSA securities terms of the GS seed (prime.CSA_SEEDS, assumed): Treasuries, bills 2 %, notes / bonds 4 %
+           "csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"}
 
 
 def _h_fund(ctx, payload):

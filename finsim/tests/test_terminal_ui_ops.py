@@ -49,6 +49,7 @@ COMMITTED_OLDAPP_HELPERS = {"_browser_candidates", "_ico_from_png"}
 HOME = r"C:\Users\logan\.finsim"
 REPO = r"C:\Users\logan\intelligence-terminal\finsim"
 PYW = r"C:\Users\logan\AppData\Local\Programs\Python\Python312\pythonw.exe"
+NO_GIT = lambda tree: None   # install runs here from the repo's git working tree; its STARTUP-04 guard is tested in test_terminal_launch
 PNG = b"\x89PNG\r\n\x1a\n" + b"x" * 10      # 8 + 10 = 18 bytes
 
 
@@ -315,7 +316,7 @@ class InstallFolderTests(unittest.TestCase):
         return subprocess.CompletedProcess(list(cmd), 0, stdout=out, stderr="")
 
     def test_install_refuses_when_the_startup_folder_is_unknown(self):
-        rc = app.cmd_install(open_after=False, http=FakeHttp(None), api=NoProcessApi(), home=self.home, run=self.run_cmd,
+        rc = app.cmd_install(tree_check=NO_GIT, open_after=False, http=FakeHttp(None), api=NoProcessApi(), home=self.home, run=self.run_cmd,
                              sleep=lambda s: None, out=self.out.append, folders=("", "", ""), starter=lambda *a, **k: self.fail("started"),
                              stamp="s")
         self.assertEqual(app.EXIT_NOT_RUNNING, rc)
@@ -327,7 +328,7 @@ class InstallFolderTests(unittest.TestCase):
         startup = os.path.join(self.tmp, "startup")
         programs = os.path.join(self.tmp, "programs")
         desktop = os.path.join(self.tmp, "Jos\u00e9", "Desktop")         # not ASCII: no shortcut script can name it
-        rc = app.cmd_install(open_after=False, http=FakeHttp(terminal_health()), api=NoProcessApi(), home=self.home, run=self.run_cmd,
+        rc = app.cmd_install(tree_check=NO_GIT, open_after=False, http=FakeHttp(terminal_health()), api=NoProcessApi(), home=self.home, run=self.run_cmd,
                              sleep=lambda s: None, out=self.out.append, folders=(startup, desktop, programs),
                              starter=lambda *a, **k: self.fail("the terminal already serves this code"), stamp="s")
         text = "\n".join(self.out)

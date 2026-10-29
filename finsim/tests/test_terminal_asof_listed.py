@@ -138,6 +138,29 @@ class Base(unittest.TestCase):
         self.ok("book.onboard_pb", {"lifetime_id": "F1", "broker": "GS"}, "p2a:onboard-gs-0001", "ui")
 
 
+# ===== the Activity page's fill row in words (the integrator, 1.0.6: a V104R2-BW-01 remnant) ======================================================
+class ActivityFillWords(Base):
+    def test_an_as_of_fill_reads_in_words_on_the_activity_page(self):
+        """The owner's as-of ORCL 140C fill on the Activity page: "F-... BUY 387 ORCL261120C00140000 @ 3.55 (as-of booking price; fill of O-...)" -
+        the stored price basis 'as_of' and origin 'ORDER' in words, in the row and in its dialog; a short sale's side, a final settlement's origin
+        and a stop's trigger print in words too (fill_words)."""
+        from finsim.terminal.api_views import activity_rows, fill_words
+        self.rt.clock.set(NOW)
+        out = self.ok("trade.book_as_of", single("imp:p2a-actw-0001"), "imp:p2a-actw-0001")
+        f, o = out["fill"], out["order"]
+        rows = [r for r in activity_rows(self.rt, types={"orders"}, lifetime_ids=["F1"]) if r.get("type") == "fill" and r["ref_id"] == f["fill_id"]]
+        self.assertEqual(1, len(rows))
+        r = rows[0]
+        self.assertEqual(f"{f['fill_id']} BUY 387 {ORCL_C} @ 3.55 (as-of booking price; fill of {o['order_id']})", r["summary"])
+        self.assertEqual(("BUY", "as-of booking price", f"fill of {o['order_id']}"), (r["detail"]["side"], r["detail"]["price basis"], r["detail"]["origin"]))
+        text = " ".join([r["summary"]] + [str(v) for v in r["detail"].values()])
+        self.assertNotIn("as_of", text)
+        self.assertNotRegex(text.replace(ORCL_C, ""), r"\b[A-Z]+_[A-Z_]+\b|\bORDER\b")
+        self.assertEqual(("sell short", "last trade", "fill of O-000003"), fill_words({"side": "SELL_SHORT", "price_basis": "last", "origin": "ORDER", "order_id": "O-000003"}))
+        self.assertEqual(("SELL", "settle price", "final settlement"), fill_words({"side": "SELL", "price_basis": "settle", "origin": "FUTURES_FINAL", "order_id": None}))
+        self.assertEqual(("buy to cover", "stop trigger print", "exercise"), fill_words({"side": "BUY_TO_COVER", "price_basis": "stop_print", "origin": "EXERCISE", "order_id": None}))
+
+
 # ===== (g) BTO 387 ORCL 140C as of 2026-10-22 =================================================================================================
 class AsOfOptionBooking(Base):
     def test_bto_orcl_books_the_owner_terms_on_the_trade_date(self):

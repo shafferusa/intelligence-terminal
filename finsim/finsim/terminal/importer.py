@@ -81,8 +81,28 @@ Conventions (each one a rule the tests pin)
   ``import_batches`` (owner's words, backup, pack, cutoff, match hash, report) and ``import_lines`` (source_json, source_label - the
   label Completed Trades shows - and created refs); on a failure the batch is PARTIAL and a re-run continues idempotently; ends with
   ``wal_checkpoint(TRUNCATE)`` (no WAL content left).
+- AN APPLIED BATCH RUN AGAIN (1.0.6; the owner's batch was applied on 2026-10-28).  A line the report finds ``already_imported`` is
+  never sent again (1.0.5 re-sent it under its request id, and a later pack's moved Cboe chain row - part of an option booking's
+  payload - turned that replay into a refusal, REQUEST_ID_REUSED).  When EVERY import line is already in the book the run only checks
+  and reports (``verify_only``): S0 and S1 as always; the pack's inputs compared read-only (``inputs_compare``: values the book does
+  not hold yet, such as a FRED value published after the apply, are counted and never recorded - the live system records them and
+  posts its own pending variation margin); S4 compared, never set; no lifecycle job, sweep, transfer, re-accrual, restatement or
+  snapshot; C3's table checked without moving cash (a negative makes the run DONE_WITH_PROBLEMS); C6 integrity and the trial
+  balance.  So a dry run on a copy of the applied book, or a second apply, posts 0 entries, writes no restated version and sends
+  no command at all: the batch's record (its lines, the apply's report, time, go and backup) stays as the apply wrote it, and the
+  run's own report is in its work folder.  A run that does book (a PARTIAL apply resumed) refreshes on a line booked earlier only
+  what its search found (status, match, differences); the line keeps its action, refs, label and time.
+- THE BATCH VIEW (C19, ``GET /api/import/batches/{id}`` ``view``; ``components/imports.js`` shows it as sent): the batch's state and
+  summary, every line in words (product, side, decision, what the run found, what it did, the rows it created with the terminal's
+  ids), the business-date cash table and the funding moves with account NAMES (never raw account ids), the restated NAV of the
+  book with its split (import effect by line naming the booked contract, mark policy by position, dating entries) and by account,
+  the bridge to the workbook and the run's notes - all from the stored run (``import_batches.report_json``), nothing recomputed.
+  ``GET /api/import/batches`` gives each batch its book and state; ``POST /api/import/report`` adds the words of each line's
+  status and differences and the server's time of the check.
+- COMMAND LINE: ``python -m finsim import ...`` (C18) and ``python -m finsim.terminal.importer ...`` take the same arguments.
 - RESTORE (section 7): with no terminal running (locks free), move ``terminal.db`` / ``-wal`` / ``-shm`` into
-  ``<home>/backups/failed-<ts>/``, copy the backup in, verify its sha256 and ``PRAGMA integrity_check``; then start 1.0.5 and confirm.
+  ``<home>/backups/failed-<ts>/``, copy the backup in, verify its sha256 and ``PRAGMA integrity_check``; then start FinSim (1.0.5 or
+  later) and confirm.
 - Nothing here writes ``%USERPROFILE%\\.finsim`` unless that folder is passed as ``--home`` (no default home in any mode).
 """
 from __future__ import annotations
@@ -902,7 +922,7 @@ def report_text(rep: dict) -> List[str]:
         out.append(f"{r['line_no']:>4}  {str(r.get('product') or ''):<9} {inst:<24} {side:<12} {str(r.get('qty') or ''):>14.14} {str(r.get('intended_price') or ''):>12.12}"
                    f" {str(m.get('filled_qty') if m.get('filled_qty') is not None else ''):>9} {str(m.get('vwap') or ''):>12}  {r['status']:<17} {r['decision']}")
         for d in r.get("diffs") or []:
-            out.append(f"{'':>6}diff {d.get('field')}: app {d.get('app', '')} vs workbook {d.get('workbook', '')} {d.get('note', '') or ''}".rstrip())
+            out.append(f"{'':>6}diff {_diff_text(d)}")
     out.append("counts: " + ", ".join(f"{k} {v}" for k, v in sorted(rep["counts"].items())))
     out.append(f"match_hash {rep['match_hash']}; state_version {rep.get('state_version')}; max command id {rep.get('max_command_id')}")
     return out
@@ -1361,10 +1381,23 @@ def h_record_inputs(ctx: TxContext, payload: dict) -> dict:
     """``import.record_inputs {batch_id, marks?, observations?, curves?}`` (light, actor import): INSERT OR IGNORE of the pack's CLOSE marks,
     FRED observations and UST_PAR curve points; a stored value that differs is listed in ``differences`` and never overwritten."""
     _require_import(ctx, "import.record_inputs")
-    conn = ctx.conn
     batch = str(payload.get("batch_id") or "").strip()
     if not batch:
         raise RejectError("BATCH_REQUIRED", "batch_id is required")
+    inserted, present, diffs = _inputs(ctx.conn, payload, ctx.ts, write=True)
+    ctx.event("IMPORT_INPUTS", ref_type="batch", ref_id=batch, inserted=inserted, present=present, differences=len(diffs))
+    return {"batch_id": batch, "inserted": inserted, "present": present, "differences": diffs}
+
+
+def inputs_compare(conn, payload: dict) -> dict:
+    """The pack's inputs against the database, read-only (a fully applied batch run again records nothing): ``absent`` counts the values
+    the book does not hold (the live system records them itself), ``differences`` the stored values that differ."""
+    absent, present, diffs = _inputs(conn, payload, 0, write=False)
+    return {"absent": absent, "present": present, "differences": diffs, "recorded": False}
+
+
+def _inputs(conn, payload: dict, ts: int, write: bool) -> Tuple[dict, dict, List[dict]]:
+    """``import.record_inputs``'s comparison: each value absent (inserted when ``write``), present and equal, or stored and different."""
     inserted = {"marks": 0, "observations": 0, "curve_points": 0}
     present = {"marks": 0, "observations": 0, "curve_points": 0}
     diffs: List[dict] = []
@@ -1377,10 +1410,12 @@ def h_record_inputs(ctx: TxContext, payload: dict) -> dict:
             raise RejectError("MARK_PRICE", f"{r.get('instrument_id')} {r.get('mark_date')}: price {r.get('price')!r} is not a positive number")
         iid, ds = str(r["instrument_id"]), date.fromisoformat(str(r["mark_date"])).isoformat()
         old = conn.execute("SELECT price, quality, source FROM marks WHERE instrument_id=? AND mark_date=? AND kind=?", (iid, ds, kind)).fetchone()
-        if old is None:
+        if old is None and not write:
+            inserted["marks"] += 1
+        elif old is None:
             conn.execute("INSERT INTO marks(instrument_id, mark_date, kind, price, currency, quality, source, method, quote_time, fetched_at, note) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                          (iid, ds, kind, str(px), str(r.get("currency") or "USD"), str(r.get("quality") or "close"), str(r.get("source") or ""),
-                          str(r.get("method") or "daily_close"), None if r.get("quote_time") is None else int(r["quote_time"]), int(r.get("fetched_at") or ctx.ts),
+                          str(r.get("method") or "daily_close"), None if r.get("quote_time") is None else int(r["quote_time"]), int(r.get("fetched_at") or ts),
                           r.get("note")))
             inserted["marks"] += 1
         elif Decimal(str(old["price"])) == px:
@@ -1393,9 +1428,11 @@ def h_record_inputs(ctx: TxContext, payload: dict) -> dict:
         if v is None:
             raise RejectError("OBS_VALUE", f"{sid} {ds}: value {o.get('value')!r} is not a number")
         old = conn.execute("SELECT value, source FROM curve_points WHERE series=? AND as_of=? AND tenor=?", (sid, ds, OBS_TENOR)).fetchone()
-        if old is None:
+        if old is None and not write:
+            inserted["observations"] += 1
+        elif old is None:
             conn.execute("INSERT INTO curve_points(series, as_of, tenor, value, fetched_ts, source) VALUES (?,?,?,?,?,?)",
-                         (sid, ds, OBS_TENOR, str(v), int(o.get("fetched_ts") or ctx.ts), str(o.get("source") or "FRED")))
+                         (sid, ds, OBS_TENOR, str(v), int(o.get("fetched_ts") or ts), str(o.get("source") or "FRED")))
             inserted["observations"] += 1
         elif Decimal(str(old["value"])) == v:
             present["observations"] += 1
@@ -1409,17 +1446,18 @@ def h_record_inputs(ctx: TxContext, payload: dict) -> dict:
             if v is None:
                 raise RejectError("CURVE_VALUE", f"{CURVE_SERIES} {ds} {tenor}: {val!r} is not a number")
             old = conn.execute("SELECT value, source FROM curve_points WHERE series=? AND as_of=? AND tenor=?", (CURVE_SERIES, ds, str(tenor))).fetchone()
-            if old is None:
+            if old is None and not write:
+                inserted["curve_points"] += 1
+            elif old is None:
                 conn.execute("INSERT INTO curve_points(series, as_of, tenor, value, fetched_ts, source) VALUES (?,?,?,?,?,?)",
-                             (CURVE_SERIES, ds, str(tenor), str(v), int(c.get("fetched_ts") or ctx.ts), str(c.get("source") or "treasury.gov daily par yield curve")))
+                             (CURVE_SERIES, ds, str(tenor), str(v), int(c.get("fetched_ts") or ts), str(c.get("source") or "treasury.gov daily par yield curve")))
                 inserted["curve_points"] += 1
             elif Decimal(str(old["value"])) == v:
                 present["curve_points"] += 1
             else:
                 diffs.append({"what": "curve point", "series": CURVE_SERIES, "date": ds, "tenor": str(tenor), "stored": str(old["value"]), "pack": str(v),
                               "note": "kept the stored value (never overwritten)"})
-    ctx.event("IMPORT_INPUTS", ref_type="batch", ref_id=batch, inserted=inserted, present=present, differences=len(diffs))
-    return {"batch_id": batch, "inserted": inserted, "present": present, "differences": diffs}
+    return inserted, present, diffs
 
 
 def h_batch_record(ctx: TxContext, payload: dict) -> dict:
@@ -1514,18 +1552,30 @@ def register_routes(r) -> None:
         out = []
         with rt.db.reader() as conn:
             stored = {x["batch_id"]: x for x in (_rows(conn, "SELECT batch_id, created_ts, status, mode_last, pack_sha256, window_from, window_through, applied_ts,"
-                                                           " match_hash, owner_go FROM import_batches ORDER BY created_ts") if _table_exists(conn, "import_batches") else [])}
+                                                           " match_hash, owner_go, source_json FROM import_batches ORDER BY created_ts")
+                                                     if _table_exists(conn, "import_batches") else [])}
+            books = {x["lifetime_id"]: x for x in _rows(conn, "SELECT l.lifetime_id, l.book_code, b.name FROM lifetimes l LEFT JOIN books b"
+                                                              " ON b.book_code = l.book_code")} if _table_exists(conn, "lifetimes") else {}
         files = sorted(f[:-6] for f in os.listdir(data_dir()) if f.endswith(".jsonl")) if os.path.isdir(data_dir()) else []
         for bid in sorted(set(files) | set(stored)):
             row = dict(stored.get(bid) or {"batch_id": bid, "status": "NOT_RUN"})
-            path = batch_file(bid)
+            path = batch_file(bid) or _recorded_batch_path(row.pop("source_json", None))
+            row.pop("source_json", None)
             if path:
                 try:
                     b = load_batch(path)
+                    if b.batch_id != bid:
+                        raise ImportRefused("BATCH_ID", f"the file recorded for {bid} holds batch {b.batch_id}")
                     row.update(lines=len(b.lines), decisions={d: len((b.header.get("decisions") or {}).get(d) or []) for d in DECISIONS},
-                               content_sha256=b.content_sha256, deadline=b.deadline.isoformat(), window_from=row.get("window_from") or b.window_from.isoformat())
+                               content_sha256=b.content_sha256, deadline=b.deadline.isoformat(), window_from=row.get("window_from") or b.window_from.isoformat(),
+                               lifetime_id=b.lifetime)
+                    bk = books.get(b.lifetime) or {}
+                    row.update(book_code=bk.get("book_code"), book_name=bk.get("name"))
                 except ImportRefused as e:
                     row.update(problem=e.message)
+            applied = _et_of(row.get("applied_ts"))
+            row["state"] = (f"applied {applied}" if applied else "dry run done (not applied to this book)"
+                            if row.get("mode_last") == "dry-run" and row.get("status") == "DONE" else RUN_WORDS.get(str(row.get("status")), str(row.get("status"))))
             out.append(row)
         return {"batches": out}
 
@@ -1539,6 +1589,7 @@ def register_routes(r) -> None:
         if not row and not path:
             raise NotFound(f"import batch {bid} does not exist")
         out = {"batch_id": bid, "status": (row[0]["status"] if row else "NOT_RUN"), "batch": row[0] if row else None, "lines": lines}
+        rep = None
         if row and row[0].get("report_json"):
             try:
                 rep = json.loads(row[0]["report_json"])
@@ -1546,10 +1597,23 @@ def register_routes(r) -> None:
             except ValueError:
                 out["report"] = None
             out["batch"] = {k: v for k, v in row[0].items() if k != "report_json"}
-        if path and not lines:
-            b = load_batch(path)
+        b = None
+        if not path and row:
+            # a batch run from outside the release's data folder: the file its run recorded, when it is still there and is this batch
+            path = _recorded_batch_path(row[0].get("source_json"))
+        if path:
+            try:
+                b = load_batch(path)
+            except ImportRefused:
+                b = None
+            if b is not None and b.batch_id != bid:
+                b = None
+        if b is not None and not lines:
             out["planned"] = [{"line_no": n, "product": ln.get("product"), "instrument_id": ln.get("instrument_id"), "side": ln.get("side"), "qty": ln.get("qty"),
                                "decision": ln.get("decision"), "status": ln.get("match_status"), "product_label": ln.get("product_label")} for n, ln in sorted(b.lines.items())]
+        with rt.db.reader() as conn:
+            names = {x["account_id"]: x["name"] for x in _rows(conn, "SELECT account_id, name FROM accounts")}
+        out["view"] = batch_view(bid, row[0] if row else None, lines, rep, b, names)
         return out
 
     def report_route(req):
@@ -1568,11 +1632,277 @@ def register_routes(r) -> None:
         finally:
             conn.close()
         rep["mode"] = "report"
+        clock = getattr(rt, "clock", None)
+        rep["checked_et"] = clock.ny().strftime("%Y-%m-%d %H:%M:%S ET") if clock is not None else None
+        for ln in rep.get("lines") or []:              # the words the import panel shows beside the stored record
+            ln["status_text"] = STATUS_WORDS.get(str(ln.get("status")), str(ln.get("status")))
+            ln["status_short"] = STATUS_SHORT.get(str(ln.get("status")), str(ln.get("status")))
+            ln["differences"] = [_diff_text(d) for d in ln.get("diffs") or [] if isinstance(d, dict)]
         return rep
 
     r.add("GET", r"/api/import/batches", batches)
     r.add("GET", r"/api/import/batches/([^/]+)", batch_one)
     r.add("POST", r"/api/import/report", report_route, mutating=False)
+
+
+# ---- the batch view (C19; components/imports.js shows it as sent) ------------------------------------------------------------------
+PRODUCT_WORDS = {"EQUITY": "Equity", "REIT": "REIT", "ETF": "ETF", "ADR": "ADR", "PREFERRED": "Preferred", "FUTURE": "Future", "OPTION": "Listed option",
+                 "BOND": "Bond / bill", "OTC_TRS": "Total return swap", "OTC_CDX": "CDS index", "OTC_IRS": "Interest-rate swap", "CASH": "Cash"}
+DECISION_WORDS = {"preserve": "preserve the existing execution", "import": "import as of its trade date", "declined": "declined by the owner",
+                  "unresolved": "unresolved (not a transaction)"}
+STATUS_WORDS = {"present_match": "in the book, matches the workbook", "present_differs": "in the book, differs from the workbook (reported, never corrected)",
+                "missing_import": "missing from the book", "already_imported": "imported", "declined": "declined", "unresolved": "unresolved"}
+ACTION_WORDS = {"booked": "booked as of its trade date", "already_imported": "already in the book (nothing booked again)"}
+TRANSFER_WORDS = {"SWEEP_IN": "sweep in (from Treasury)", "SWEEP_OUT": "sweep out (to Treasury)", "TRANSFER": "internal transfer",
+                  "DEPOSIT": "deposit", "WITHDRAW": "withdrawal", "PB_DRAW": "prime-broker draw", "PB_REPAY": "prime-broker repayment"}
+RUN_WORDS = {"DONE": "done", "DONE_WITH_PROBLEMS": "done with problems", "PARTIAL": "partial (a re-run with the same pack continues it)",
+             "REFUSED": "refused (nothing written)", "RUNNING": "running", "NOT_RUN": "not run in this book"}
+
+
+def _recorded_batch_path(source_json) -> Optional[str]:
+    """The batch file a run recorded (``import_batches.source_json.path``), when it still exists."""
+    src = str((_json_of(source_json, {}) or {}).get("path") or "")
+    return src if src and os.path.isfile(src) else None
+
+
+def _json_of(v, default):
+    if v is None or v == "":
+        return default
+    if not isinstance(v, str):
+        return v
+    try:
+        return json.loads(v)
+    except ValueError:
+        return default
+
+
+def _et_of(ts) -> Optional[str]:
+    try:
+        return ny_of(int(ts)).strftime("%Y-%m-%d %H:%M ET") if ts else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _price_short(price) -> str:
+    """The price cell: the batch's price without its remark ('1 (workbook placeholder)' is no price: 'n/a')."""
+    t = "" if price is None or str(price) == "None" else str(price)
+    if "placeholder" in t:
+        return "n/a"
+    return t.split(" (")[0]
+
+
+def _short_et(ts) -> Optional[str]:
+    try:
+        return ny_of(int(ts)).strftime("%m-%d %H:%M") if ts else None
+    except (TypeError, ValueError, OverflowError):
+        return None
+
+
+def _created_words(refs: dict) -> str:
+    """The rows a line created, in the ids the terminal shows (contract / order / fill / settlement / transfer) and a count of entries."""
+    parts = []
+    for key, word in (("contract_ids", "contract"), ("order_ids", "order"), ("fill_ids", "fill"), ("settle_ids", "settlement"), ("transfer_ids", "transfer")):
+        ids = [str(x) for x in refs.get(key) or [] if x]
+        if ids:
+            parts.append(f"{word}{'s' if len(ids) > 1 else ''} {', '.join(ids)}")
+    n = len(refs.get("entry_ids") or [])
+    if n:
+        parts.append(f"{n} journal entr{'ies' if n > 1 else 'y'}")
+    return "; ".join(parts)
+
+
+SIDE_CODES = (("SELL_PROTECTION", "sell protection"), ("BUY_PROTECTION", "buy protection"), ("SELL_SHORT", "sell short"), ("PAY_FIXED", "pay fixed"),
+              ("RECEIVE_FIXED", "receive fixed"), ("BTO", "buy to open"), ("STO", "sell to open"), ("BTC", "buy to close"), ("STC", "sell to close"),
+              ("BUY", "buy"), ("SELL", "sell"), ("SHORT", "short"), ("LONG", "long"))
+
+
+def _side_words(side) -> str:
+    """A batch side in words: its leading code (BUY, SELL_SHORT, BTO, BUY_PROTECTION, PAY_FIXED ...) spelled out, the rest kept."""
+    t = str(side or "").strip()
+    for code, words in SIDE_CODES:
+        if t == code or t.startswith(code + " "):
+            return words + t[len(code):]
+    return t
+
+
+def _instrument_words(src: Optional[dict], ln: dict, refs: dict) -> Tuple[str, str]:
+    """(shown, full): the batch's instrument with the contract id it was booked as; a long description cut at its first clause."""
+    full = str((src or {}).get("instrument_id") or ln.get("instrument_id") or "")
+    cids = [str(x) for x in refs.get("contract_ids") or [] if x]
+    if "(new contract id at booking)" in full:
+        full = full.replace("(new contract id at booking)", f"({', '.join(cids)})" if cids else "(contract id given at booking)")
+    shown = full
+    if len(shown) > 40:
+        cut = min([i for i in (shown.find(" ("), shown.find(" - ")) if i > 0] or [40])
+        shown = shown[:cut]
+    return shown, full
+
+
+def _qty_words(qty) -> str:
+    """A batch quantity with thousands separators, its unit words kept ('3000000 notional' -> '3,000,000 notional')."""
+    q = str(qty or "").strip()
+    head, _sp, tail = q.partition(" ")
+    d = _dec(head)
+    if d is None or str(d) != head:
+        return q
+    num = f"{d:,.{len(head.split('.')[1])}f}" if "." in head else f"{int(d):,}"
+    return f"{num} {tail}".strip()
+
+
+PRODUCT_SHORT = {"EQUITY": "Equity", "REIT": "REIT", "ETF": "ETF", "ADR": "ADR", "PREFERRED": "Preferred", "FUTURE": "Future", "OPTION": "Option",
+                 "BOND": "Bill / bond", "OTC_TRS": "TRS", "OTC_CDX": "CDX", "OTC_IRS": "IRS", "CASH": "Cash"}
+STATUS_SHORT = {"present_match": "matches", "present_differs": "differs", "missing_import": "missing", "already_imported": "imported",
+                "declined": "declined", "unresolved": "unresolved"}
+ACTION_SHORT = {"preserved (untouched)": "untouched", "declined (never booked)": "not booked", "unresolved (not a transaction)": "not a transaction",
+                "already_imported": "already in the book"}
+
+
+def _short(text: str) -> str:
+    t = str(text or "")
+    cut = min([i for i in (t.find(" ("), t.find(" / ")) if i > 0] or [len(t)])
+    return t[:cut]
+
+
+def batch_view(bid: str, row: Optional[dict], lines: List[dict], rep: Optional[dict], b: Optional[Batch], names: Dict[str, str]) -> dict:
+    """``GET /api/import/batches/{id}``'s ``view``: the batch, its lines, the business-date cash table, the funding moves, the restated
+    NAV with its split and the bridge to the workbook, in the words and ids the terminal shows (account names, never raw codes).  Every
+    figure is the stored run's (``import_batches.report_json``); nothing is recomputed here."""
+    rep = rep or {}
+    name = lambda a: names.get(a) or (str(a).split(":", 1)[-1].replace("_", " ").title() if a else "")    # noqa: E731
+    status = (row or {}).get("status") or "NOT_RUN"
+    applied = _et_of((row or {}).get("applied_ts"))
+    if applied:
+        state = f"applied {applied}"
+    elif (row or {}).get("mode_last") == "dry-run" and status == "DONE":
+        state = "dry run done (not applied to this book)"
+    else:
+        state = RUN_WORDS.get(status, status.lower().replace("_", " "))
+    c6 = rep.get("C6") or {}
+    integ = (c6.get("integrity") or {})
+    tb = (c6.get("trial_balance") or {})
+    pack = rep.get("pack") or {}
+    summary = [["Status", state],
+               ["Last run", f"{rep.get('mode') or (row or {}).get('mode_last') or 'n/a'}: {RUN_WORDS.get(str(rep.get('status')), rep.get('status') or 'n/a')}"
+                            + (f" ({rep.get('started_et')} .. {rep.get('finished_et')})" if rep.get("started_et") else "")],
+               ["Window", f"{(row or {}).get('window_from') or (b.window_from.isoformat() if b else 'n/a')} .. {(row or {}).get('window_through') or 'n/a'}"],
+               ["Inputs fetched", pack.get("fetched_et") or "n/a", "the data pack the run used (prices, FRED observations, curves)"],
+               ["Owner's go", (row or {}).get("owner_go") or "n/a"],
+               ["Pre-import backup", os.path.basename(str((row or {}).get("backup_path") or "")) or "n/a", str((row or {}).get("backup_path") or "")],
+               ["Integrity", ("ok" if integ.get("ok") else "FAILED: " + ", ".join(integ.get("failing") or [])) if integ else "n/a"],
+               ["Trial balance", ("balanced" if tb.get("balanced") else "NOT balanced") if tb else "n/a"],
+               ["Entries posted by the last run", rep.get("entries_posted") if rep.get("entries_posted") is not None else "n/a"]]
+    if b is not None:
+        summary.insert(2, ["Lines", ", ".join(f"{len((b.header.get('decisions') or {}).get(d) or [])} {DECISION_WORDS[d].split(' (')[0]}" for d in DECISIONS)])
+        summary.append(["Deadline", f"applied no later than {b.deadline.isoformat()}, before 16:00 ET"])
+    vlines = []
+    for ln in lines:
+        refs = _json_of(ln.get("created_refs_json"), {}) or {}
+        diffs = _json_of(ln.get("diff_json"), []) or []
+        src = b.lines.get(int(ln["line_no"])) if b is not None else None
+        prod = str(ln.get("product") or "")
+        price = (src or {}).get("intended_price") if src else ln.get("price")
+        action = str(ln.get("action") or "")
+        shown, full = _instrument_words(src, ln, refs)
+        vlines.append({"line_no": ln["line_no"], "product": str((src or {}).get("product_label") or PRODUCT_WORDS.get(prod, prod.title())),
+                       "instrument": shown, "instrument_full": full,
+                       "side": _side_words((src or {}).get("side") or ln.get("side")), "qty": _qty_words(ln.get("qty")),
+                       "price": "" if str(price or "") == "None" else str(price or ""),
+                       "trade_date": ln.get("trade_date") or "", "account": name(ln.get("account_id")), "counterparty": ln.get("counterparty") or "",
+                       "decision": DECISION_WORDS.get(str(ln.get("decision") or (src or {}).get("decision") or ""), ln.get("decision") or ""),
+                       "status": STATUS_WORDS.get(str(ln.get("status") or ""), str(ln.get("status") or "")),
+                       "product_short": PRODUCT_SHORT.get(prod, prod.title()), "side_short": _short(_side_words((src or {}).get("side") or ln.get("side"))),
+                       "qty_short": _qty_words(ln.get("qty")).split(" ")[0], "price_short": _price_short(price),
+                       "date_short": str(ln.get("trade_date") or "")[5:],
+                       "decision_short": str(ln.get("decision") or (src or {}).get("decision") or ""),
+                       "status_short": STATUS_SHORT.get(str(ln.get("status") or ""), str(ln.get("status") or "")),
+                       "action_short": (("booked " + (_short_et(ln.get("applied_ts")) or "in a dry run")) if action == "booked" else ACTION_SHORT.get(action, action)),
+                       "action": ACTION_WORDS.get(action, action), "applied_et": _et_of(ln.get("applied_ts")), "created": _created_words(refs),
+                       "source": ln.get("source_label") or "", "asof": ln.get("booking") == "AS_OF", "historical_model": bool(ln.get("historical_model")),
+                       "differences": [_diff_text(d) for d in diffs if isinstance(d, dict)], "note": ln.get("note") or ""})
+    ct = rep.get("cash_table") or {}
+    after = ct.get("after") or {}
+    dates = sorted(next(iter(after.values()))) if after else []
+    stage_words = (("before", "before the import"), ("before_sweeps", "after the bookings, before the as-of sweeps"), ("after", "after the import"))
+    cash_rows = []
+    for aid in sorted(after, key=lambda a: (a != f"{(b.lifetime if b else 'F1')}:TREASURY", name(a))):
+        if not any((ct.get(k) or {}).get(aid, {}).get(d) for k, _w in stage_words for d in dates):
+            continue                                   # an account the import never touched and that held no cash: left out
+        for key, words in stage_words:
+            vals = (ct.get(key) or {}).get(aid)
+            if vals is not None:
+                cash_rows.append({"account": name(aid), "stage": words, "values_c": {d: vals.get(d) for d in dates},
+                                  "below_zero": any((vals.get(d) or 0) < 0 for d in dates)})
+    funding = [{"transfer_id": f.get("transfer_id"), "kind": TRANSFER_WORDS.get(str(f.get("kind")), str(f.get("kind") or "").lower().replace("_", " ")),
+                "from": name(f.get("from_account")), "to": name(f.get("to_account")), "amount_c": f.get("amount_c"), "business_date": f.get("business_date"),
+                "for": _funding_for(f)} for f in rep.get("funding_moves") or []]
+    br = rep.get("bridge") or {}
+    cids_by_line = {int(x["line_no"]): [str(c) for c in ((_json_of(x.get("created_refs_json"), {}) or {}).get("contract_ids") or []) if c] for x in lines}
+
+    def line_what(e: dict) -> str:
+        """A split line's label without its 'line N: ' prefix (the table numbers it) and with the contract it was booked as."""
+        t = str(e.get("label") or "")
+        n = e.get("line_no")
+        if n is not None and t.startswith(f"line {n}: "):
+            t = t[len(f"line {n}: "):]
+        if "(new contract id at booking)" in t:
+            cids = cids_by_line.get(int(n)) if n is not None else None
+            t = t.replace("(new contract id at booking)", f"({', '.join(cids)})" if cids else "(contract id given at booking)")
+        return t
+    restated = []
+    for v in br.get("dates") or []:
+        restated.append({"date": v.get("date"), "original_c": v.get("original_nav_c"), "import_c": v.get("import_total_c"), "interest_c": v.get("interest_effect_c"),
+                         "mark_policy_c": v.get("mark_policy_c"), "dating_c": v.get("dating_c"), "restated_c": v.get("restated_nav_c"),
+                         "residual_c": v.get("residual_c"), "added": bool(v.get("added")),
+                         "by_line": [{"line_no": e.get("line_no"), "what": line_what(e), "amount_c": e.get("amount_c")} for e in v.get("import_effect") or []
+                                     if e.get("amount_c")],
+                         "mark_policy": [{"instrument": m.get("instrument_id"), "original_mark": m.get("original_mark"), "dated_mark": m.get("dated_mark"),
+                                          "amount_c": m.get("amount_c")} for m in v.get("mark_policy") or [] if isinstance(m, dict)],
+                         "dating": [f"entry {x.get('entry_id')} ({T_WORDS.get(str(x.get('kind')), str(x.get('kind') or '').lower().replace('_', ' '))}):"
+                                    f" {x.get('why')}" for x in v.get("dating") or [] if isinstance(x, dict)]})
+    accounts = {}
+    for v in rep.get("restated") or []:
+        a = v.get("account_id")
+        if not a or a.endswith(":ALL"):
+            continue
+        cur = accounts.setdefault(a, {})
+        if v.get("snap_date") not in cur or v.get("version", 0) > cur[v["snap_date"]]["version"]:
+            cur[v["snap_date"]] = {"version": v.get("version", 0), "original_c": v.get("original_nav_c"), "restated_c": v.get("nav_c"),
+                                   "added": bool(v.get("added"))}
+    acc_rows = [{"account": name(a), "dates": {d: {k: x[k] for k in ("original_c", "restated_c", "added")} for d, x in sorted(rows.items())}}
+                for a, rows in sorted(accounts.items(), key=lambda kv: name(kv[0]))
+                if any(x["original_c"] or x["restated_c"] for x in rows.values())]
+    tw = br.get("to_workbook")
+    bridge_v = None
+    if tw:
+        bridge_v = {"date": tw.get("date"), "workbook_c": tw.get("workbook_nav_c"), "restated_c": tw.get("restated_nav_c"), "difference_c": tw.get("difference_c"),
+                    "lines": [{"what": x.get("what"), "amount_c": x.get("amount_c"), "source": x.get("source"),
+                               "source_short": "reconciliation estimate" if str(x.get("source") or "").startswith("the reconciliation") else x.get("source")}
+                              for x in tw.get("lines") or []],
+                    "unexplained_c": tw.get("unexplained_c"), "unexplained_what": tw.get("unexplained_what"), "note": tw.get("note")}
+    notes = [str(n) for n in rep.get("notes") or []]
+    return {"batch_id": bid, "lifetime_id": b.lifetime if b is not None else None, "state": state, "summary": summary, "lines": vlines, "cash": {"dates": dates, "rows": cash_rows},
+            "funding": funding, "restated": {"book": restated, "accounts": acc_rows}, "bridge": bridge_v, "notes": notes,
+            "verify_only": bool(rep.get("verify_only"))}
+
+
+T_WORDS = {"SETTLE": "settlement", "COLLATERAL": "collateral mark", "SWEEP_IN": "sweep in", "SWEEP_OUT": "sweep out", "DIVIDEND": "dividend", "VM": "variation margin",
+           "ACCRUAL": "accrual", "ASOF_FUNDING": "as-of funding"}
+
+
+def _funding_for(f: dict) -> str:
+    """What a funding move paid for, from its link: an OTC contract's initial margin, an as-of sweep, an as-of transfer."""
+    lt, li = str(f.get("linked_type") or ""), str(f.get("linked_id") or "")
+    if lt == "otc" and li.startswith("im:"):
+        return f"initial margin of {li.split(':')[1]}"
+    if lt == "asof_funding":
+        return "as-of funding of the import"
+    if str(f.get("idem_key") or "").startswith("asofsweep:"):
+        return "as-of sweep of the import's cash"
+    if lt == "otc":
+        return f"OTC contract {li.split(':')[1] if ':' in li else li}"
+    if lt in ("settlement", "settle"):
+        return f"settlement {li}"
+    return li.replace("_", " ") if li else ""
 
 
 # ---- locks, clock rules, cutoff ---------------------------------------------------------------------------------------------------
@@ -1677,6 +2007,7 @@ class Run:
         self.bid, self.lid = batch.batch_id, batch.lifetime
         self.steps: List[dict] = []
         self.notes: List[str] = []
+        self.booked: Dict[int, dict] = {}       # the lines' bookings so far (kept when a later step refuses)
 
     def say(self, msg: str) -> None:
         if self.log is not None:
@@ -1844,8 +2175,9 @@ def _chain_row(pack: Pack, occ: str) -> dict:
     return row
 
 
-def calibrate_cdx(run: Run) -> List[dict]:
-    """S4: the CDX basis on the PB account derived from the pack: dealt - half-spread x the PB's OTC spread multiplier - proxy (buy protection)."""
+def calibrate_cdx(run: Run, write: bool = True) -> List[dict]:
+    """S4: the CDX basis on the PB account derived from the pack: dealt - half-spread x the PB's OTC spread multiplier - proxy (buy protection).
+    ``write`` False (an applied batch run again): the stored basis is kept and compared, never changed."""
     from . import prime
     from .books import account_row
     from .products import swaps_cds as cds
@@ -1868,6 +2200,9 @@ def calibrate_cdx(run: Run) -> List[dict]:
                "dealt_bp": str(t["dealt"]), "basis_bp": str(basis), "stored_basis_bp": str(mine["basis_bp"])}
         if Decimal(str(mine["basis_bp"])) == basis:
             rec["action"] = "skipped: the stored basis already equals the derived one"
+        elif not write:
+            rec["action"] = (f"skipped: the batch is already applied, so the stored basis {mine['basis_bp']} bp is kept (this pack would derive {basis} bp;"
+                             " reported, never changed)")
         else:
             res = run.cmd(f"S4:{idx}", "cdx.terms", {"account_id": acct_id, "index": idx, "basis_bp": str(basis)}, f"impset:{run.bid}:S4:{idx}",
                           ok_codes=("NOTHING_TO_UPDATE",), rerun_suffix=True)
@@ -1931,9 +2266,30 @@ def _book(run: Run, step: str, kind: str, payload: dict, rid: str, line_key: str
                         .get("details") if isinstance(res.body, dict) else None}, step=step)
 
 
+def _already(run: Run, n: int, ln: dict, request_id: str, package_id: Optional[str] = None) -> dict:
+    """A line the report found already imported (its ``import_key`` is on an order, fill or contract): nothing is sent again.  Re-sending
+    would not be a replay once the pack differs (an option's chain row is part of its payload: a dry run on a copy that holds the applied
+    import, with a later pack, was refused REQUEST_ID_REUSED at line 29), and the line is in the book whatever the pack says."""
+    rec = {"action": "already_imported", "refs": _refs_by_import_key(run, str(ln["idem_key"])), "command_id": None, "request_id": request_id}
+    rows = run.q("SELECT id FROM commands WHERE request_id=?", (request_id,))
+    if rows:
+        rec["command_id"] = rows[0]["id"]
+    if package_id:
+        rec["package_id"] = package_id
+    return rec
+
+
+def _package_id_of(run: Run, package_key: str) -> Optional[str]:
+    try:
+        rows = run.q("SELECT h.package_id FROM hedge_packages h JOIN commands c ON c.id = h.command_id WHERE c.request_id=?", (package_key,))
+    except sqlite3.Error:
+        rows = []
+    return rows[0]["package_id"] if rows else None
+
+
 def book_lines(run: Run, statuses: Dict[int, str], which: str = "all") -> Dict[int, dict]:
     """The import lines' bookings (``which`` = ``otc``: the OTC contracts; ``listed``: the listed lines and the package; ``all``): each its own
-    command (request id = the idem key; the package its key)."""
+    command (request id = the idem key; the package its key).  A line the report found ``already_imported`` is not sent again (``_already``)."""
     out: Dict[int, dict] = {}
     batch = run.batch
     for ln in _import_lines(batch):
@@ -1942,6 +2298,9 @@ def book_lines(run: Run, statuses: Dict[int, str], which: str = "all") -> Dict[i
             continue
         cmd = ln["command"]
         if which == "otc" and cmd["kind"] != "otc.book_as_of" or which == "listed" and cmd["kind"] == "otc.book_as_of":
+            continue
+        if statuses.get(n) == "already_imported":
+            out[n] = _already(run, n, ln, cmd["request_id"])
             continue
         payload = copy.deepcopy(cmd["payload"])
         if cmd["kind"] == "trade.book_as_of" and isinstance(payload.get("instrument_spec"), dict):
@@ -1959,7 +2318,12 @@ def book_lines(run: Run, statuses: Dict[int, str], which: str = "all") -> Dict[i
                 refs = {"order_ids": [(body.get("order") or {}).get("order_id")], "fill_ids": [(body.get("fill") or {}).get("fill_id")]}
         out[n] = {"action": action, "refs": refs, "command_id": res.command_id, "request_id": cmd["request_id"]}
     pk = batch.package
-    if pk is not None and which in ("all", "listed"):
+    pk_lines = [int(x) for x in (pk or {}).get("lines") or []]
+    if pk is not None and which in ("all", "listed") and pk_lines and all(statuses.get(n) == "already_imported" for n in pk_lines):
+        pid = _package_id_of(run, str(pk["package_key"]))
+        for n in pk_lines:
+            out[n] = _already(run, n, batch.lines[n], str(pk["package_key"]), pid)
+    elif pk is not None and which in ("all", "listed"):
         payload = copy.deepcopy(pk["command"]["payload"])
         for leg in payload.get("legs") or []:
             if isinstance(leg.get("instrument_spec"), dict):
@@ -2185,6 +2549,54 @@ def restate(run: Run, recorded: List[Tuple[str, str]], groups: List[dict]) -> Op
     return {"through_date": through, "written": body.get("written"), "unchanged": body.get("unchanged"), "replayed": res.replayed}
 
 
+def funding_status(run: Run, through: date) -> dict:
+    """C3 without moving anything (an applied batch run again): every business-date close of the window and every current balance."""
+    from .ledger import balance
+    table = cash_table(run, through)
+    neg = [{"account_id": aid, "date": d, "settled_c": v} for aid, row in sorted(table.items()) for d, v in sorted(row.items()) if v < 0]
+    with run.rt.db.reader() as conn:
+        short = [{"account_id": a["account_id"], "settled_c": balance(conn, a["account_id"], "1010", "USD")} for a in _accounts(run)]
+    return {"negatives": neg, "current_short": [x for x in short if x["settled_c"] < 0], "moves": []}
+
+
+VERIFY_WHY = ("every import line is already in the book (the batch was applied), so this run only checks and reports: it records no input, sets no"
+              " basis, runs no lifecycle job, sweeps, moves or re-accrues no cash and writes no restatement or snapshot - the server runs the book's"
+              " own lifecycle from here")
+
+
+def verify_applied(run: Run, result: dict, statuses: Dict[int, str], rows: List[dict], mnotes: List[str], obs: List[dict], curves: List[dict],
+                   through: date) -> Dict[int, dict]:
+    """An applied batch run again (a dry run on a copy of the book after the apply, or a second apply): nothing is written to the book.
+    Without this, a later pack's newer FRED values would be recorded and the catch-up would post the live scheduler's own pending variation
+    margin as the import's; the import's lines, sweeps, re-accruals and restatement are already in the book."""
+    rt = run.rt
+    with rt.db.reader() as conn:
+        result["S2"] = {"rows": len(rows), "notes": mnotes, "result": inputs_compare(conn, {"marks": rows})}
+        result["S2b"] = {"observations": len(obs), "curves": len(curves), "result": inputs_compare(conn, {"observations": obs, "curves": curves})}
+    result["S3"] = {occ: bool((run.pack.option(occ).get("chain_row") or {}).get("option")) for occ in sorted(_option_specs(run.batch))}
+    result["S4"] = calibrate_cdx(run, write=False)
+    booked = book_lines(run, statuses, "all")
+    result["C1"] = {"rounds": [], "by_job": {}, "failed": [], "skipped": [], "not_run": VERIFY_WHY}
+    result["C2"] = []
+    result["C3"] = funding_status(run, through)
+    result["C4"] = []
+    result["C5"] = None
+    result["C5b"] = {"ran": [], "not_run": VERIFY_WHY}
+    absent_m = result["S2"]["result"]["absent"]
+    absent_o = result["S2b"]["result"]["absent"]
+    run.notes.append("the batch is already applied: " + VERIFY_WHY)
+    if absent_m.get("marks") or absent_o.get("observations") or absent_o.get("curve_points"):
+        run.notes.append(f"the pack holds {absent_m.get('marks', 0)} mark(s), {absent_o.get('observations', 0)} observation(s) and"
+                         f" {absent_o.get('curve_points', 0)} curve point(s) the book does not hold yet (published after the apply); not recorded here")
+    c3 = result["C3"]
+    for x in c3["negatives"]:
+        run.notes.append(f"{x['account_id']} closes {x['date']} at {_money(x['settled_c'])} (business-date cash below zero)")
+    for x in c3["current_short"]:
+        run.notes.append(f"{x['account_id']} current settled cash {_money(x['settled_c'])} (below zero)")
+    run.say(f"applied batch: {len(booked)} line(s) already in the book; nothing written")
+    return booked
+
+
 def _trial_balance(conn, lid: str) -> dict:
     ids = [r[0] for r in conn.execute("SELECT account_id FROM accounts WHERE lifetime_id=?", (lid,)).fetchall()]
     q = ",".join("?" for _ in ids)
@@ -2260,7 +2672,7 @@ def _line_money(run: Run, line: dict, refs: dict) -> dict:
         out = {"contract_id": cid, "kind": c["kind"], "notional_c": c["notional_c"], "im_c": c["im_c"], "start_date": c["start_date"],
                "maturity_date": c["maturity_date"], "reset_px": c.get("reset_px"), "booking": c.get("booking"), "import_key": c.get("import_key"),
                "trade_date": c.get("trade_date"), "value_date": c.get("value_date"), "confirm_status": c.get("confirm_status"),
-               "vm_balance_c": c.get("vm_balance_c"), "terms": {k: t.get(k) for k in ("deal_spread_bp", "upfront_c", "rebate_c", "initial_payment_c", "mark0_c",
+               "vm_balance_c": c.get("vm_balance_c"), "contract_status": c.get("status"), "terms": {k: t.get(k) for k in ("deal_spread_bp", "upfront_c", "rebate_c", "initial_payment_c", "mark0_c",
                                                                                      "fixed_rate", "curve_spread_bp", "par_rate", "dv01_0_c", "units",
                                                                                      "receiver", "index", "side") if k in t},
                "vm": [{"date": r["vm_date"], "delta_c": r["delta_c"], "mark_c": r["mark_c"]} for r in
@@ -2321,14 +2733,18 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
     cash_before = cash_table(run, through_check)
     result["preflight"] = preflight(run, rep, cutoff)
     run.say(f"S0 ok: L {result['preflight']['L']}, {len(result['preflight']['notes'])} note(s)")
+    pending = sorted(int(ln["line_no"]) for ln in _import_lines(batch) if statuses.get(int(ln["line_no"])) != "already_imported")
+    verify = not pending
+    result["verify_only"] = verify
     batch_row = {"batch_id": batch.batch_id, "status": "RUNNING", "mode_last": mode, "pack_path": pack.path, "pack_sha256": pack.sha256,
                  "source_json": {"path": batch.path, "sha256": batch.sha256, "content_sha256": batch.content_sha256, "lines": len(batch.lines)},
                  "window_from": batch.window_from.isoformat(), "window_through": pack.through.isoformat(), "cutoff_json": cutoff, "match_hash": rep["match_hash"]}
     for k in ("owner_go", "backup_path", "backup_sha256"):
-        if extra.get(k):
+        if extra.get(k) and not verify:          # an applied batch keeps the apply's go and backup on its row; this run's are in its report
             batch_row[k] = extra[k]
     run_tag = clock.ny().strftime("%Y%m%dT%H%M%S")
-    run.cmd("begin", "import.batch_record", batch_row, f"impbk:{batch.batch_id}:{mode}:{run_tag}:begin", rerun_suffix=True)
+    if not verify:                     # an applied batch run again writes no row at all: the apply's record stays whole
+        run.cmd("begin", "import.batch_record", batch_row, f"impbk:{batch.batch_id}:{mode}:{run_tag}:begin", rerun_suffix=True)
     booked: Dict[int, dict] = {}
     try:
         with rt.db.reader() as conn:
@@ -2340,59 +2756,83 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
         if not all(schema.values()):
             raise ImportRefused("SCHEMA", "S1: the schema is not complete: " + ", ".join(k for k, v in schema.items() if not v), schema, step="S1")
         rows, mnotes = mark_rows(pack, batch, rt.cal)
-        res = run.cmd("S2", "import.record_inputs", {"batch_id": batch.batch_id, "marks": rows}, f"impset:{batch.batch_id}:S2", rerun_suffix=True)
-        result["S2"] = {"rows": len(rows), "result": res.body, "notes": mnotes}
-        obs, curves = input_rows(pack, batch)
-        res = run.cmd("S2b", "import.record_inputs", {"batch_id": batch.batch_id, "observations": obs, "curves": curves}, f"impset:{batch.batch_id}:S2b",
-                      rerun_suffix=True)
-        result["S2b"] = {"observations": len(obs), "curves": len(curves), "result": res.body,
-                         "reloaded": {"rates": rt.rates.load_persisted() if rt.rates is not None else None,
-                                      "curve": rt.curve.load_persisted() if rt.curve is not None else None}}
-        result["S3"] = {occ: bool((pack.option(occ).get("chain_row") or {}).get("option")) for occ in sorted(_option_specs(batch))}
-        result["S4"] = calibrate_cdx(run)
-        run.say("S1-S4 done")
-        # the OTC contracts first, then their lifecycle, the as-of sweeps and the business-date funding, so the listed bookings of a later
-        # date are funded on that date's real Treasury cash (the CDX initial payments and the variation margin received are swept first)
-        booked = book_lines(run, statuses, "otc")
-        if booked:
-            result["C1a"] = catch_up(run, "C1a")
-        # the business-date table after the contracts' bookings and their lifecycle, before any as-of sweep (the overdraft C2 resolves)
-        cash_mid = cash_table(run, through_check)
-        if booked:
-            result["C2a"] = asof_sweeps(run, line_groups(batch, booked), "C2a")
-            result["C3a"] = funding_check(run, through_check, "C3a")
-        booked.update(book_lines(run, statuses, "listed"))
-        run.say(f"bookings: {sum(1 for b in booked.values() if b['action'] == 'booked')} booked, "
-                f"{sum(1 for b in booked.values() if b['action'] != 'booked')} already imported")
-        groups = line_groups(batch, booked)
-        result["C1"] = catch_up(run)
-        run.say(f"C1 done in {len(result['C1']['rounds'])} round(s), {len(result['C1']['skipped'])} key(s) waiting")
-        result["C2"] = asof_sweeps(run, groups)
-        result["C3"] = funding_check(run, through_check)
-        cash_after = cash_table(run, through_check)
-        result["C4"] = reaccrue(run, cash_before, cash_after)
-        all_groups = groups + [funding_group(run)]
-        cgroup = catch_up_group(run, all_groups)
-        if cgroup is not None:
-            all_groups.append(cgroup)
-            run.notes.append(f"the catch-up posted {len(cgroup['refs']['entry_ids'])} entr(y/ies) for preserved positions; shown as their own group")
-        result["groups"] = [{"key": g["key"], "label": g["label"], "refs": g["refs"]} for g in all_groups]
-        result["C5"] = restate(run, recorded, all_groups)
-        from .lifecycle import run_now
-        snap = run_now(rt, "SNAPSHOT")
-        result["C5b"] = {"ran": [{k: x.get(k) for k in ("key", "status", "note")} for x in snap.get("ran") or []]}
+        if verify:
+            obs, curves = input_rows(pack, batch)
+            booked = verify_applied(run, result, statuses, rows, mnotes, obs, curves, through_check)
+            cash_mid = cash_before
+            problems = bool(result["C3"]["negatives"] or result["C3"]["current_short"])
+        else:
+            booked, cash_mid = _import_steps(run, result, statuses, rows, mnotes, recorded, cash_before, through_check)
+            problems = False
         integ = rt.accounting.integrity("full", lifetime_id=batch.lifetime)
         with rt.db.reader() as conn:
             tb = _trial_balance(conn, batch.lifetime)
         result["C6"] = {"integrity": {"ok": integ.ok, "failing": list(integ.failing),
                                       "warnings": [p.to_dict() for p in integ.problems if p.severity != "ERROR"][:20]}, "trial_balance": tb}
-        result["status"] = "DONE" if integ.ok and tb["balanced"] else "DONE_WITH_PROBLEMS"
+        result["status"] = "DONE" if integ.ok and tb["balanced"] and not problems else "DONE_WITH_PROBLEMS"
         result["cash_table"] = {"before": cash_before, "before_sweeps": cash_mid, "after": cash_table(run, through_check)}
         result["cash_table_what"] = {"before": "before the import", "before_sweeps": "after the contracts' bookings and their lifecycle (C1a), before the"
                                      " as-of sweeps (C2)", "after": "at the end of the run"}
     except ImportRefused as e:
         result["status"] = "PARTIAL" if mode == "apply" else "REFUSED"
         result["refused"] = e.to_dict()
+    return _finish(run, result, rep, booked, max_entry0, transfers0, run_tag, verify)
+
+
+def _import_steps(run: Run, result: dict, statuses: Dict[int, str], rows: List[dict], mnotes: List[str], recorded: List[Tuple[str, str]],
+                  cash_before: Dict[str, Dict[str, int]], through_check: date) -> Tuple[Dict[int, dict], Dict[str, Dict[str, int]]]:
+    """S2 .. C5b of a batch with lines still to import (module docstring DRY RUN); returns the bookings and the mid cash table.  A refusal
+    propagates (ImportRefused); the bookings made before it are recorded through ``run.booked``."""
+    rt, batch, pack = run.rt, run.batch, run.pack
+    booked = run.booked
+    res = run.cmd("S2", "import.record_inputs", {"batch_id": batch.batch_id, "marks": rows}, f"impset:{batch.batch_id}:S2", rerun_suffix=True)
+    result["S2"] = {"rows": len(rows), "result": res.body, "notes": mnotes}
+    obs, curves = input_rows(pack, batch)
+    res = run.cmd("S2b", "import.record_inputs", {"batch_id": batch.batch_id, "observations": obs, "curves": curves}, f"impset:{batch.batch_id}:S2b",
+                  rerun_suffix=True)
+    result["S2b"] = {"observations": len(obs), "curves": len(curves), "result": res.body,
+                     "reloaded": {"rates": rt.rates.load_persisted() if rt.rates is not None else None,
+                                  "curve": rt.curve.load_persisted() if rt.curve is not None else None}}
+    result["S3"] = {occ: bool((pack.option(occ).get("chain_row") or {}).get("option")) for occ in sorted(_option_specs(batch))}
+    result["S4"] = calibrate_cdx(run)
+    run.say("S1-S4 done")
+    # the OTC contracts first, then their lifecycle, the as-of sweeps and the business-date funding, so the listed bookings of a later
+    # date are funded on that date's real Treasury cash (the CDX initial payments and the variation margin received are swept first)
+    booked.update(book_lines(run, statuses, "otc"))
+    if booked:
+        result["C1a"] = catch_up(run, "C1a")
+    # the business-date table after the contracts' bookings and their lifecycle, before any as-of sweep (the overdraft C2 resolves)
+    cash_mid = cash_table(run, through_check)
+    if booked:
+        result["C2a"] = asof_sweeps(run, line_groups(batch, booked), "C2a")
+        result["C3a"] = funding_check(run, through_check, "C3a")
+    booked.update(book_lines(run, statuses, "listed"))
+    run.say(f"bookings: {sum(1 for b in booked.values() if b['action'] == 'booked')} booked, "
+            f"{sum(1 for b in booked.values() if b['action'] != 'booked')} already imported")
+    groups = line_groups(batch, booked)
+    result["C1"] = catch_up(run)
+    run.say(f"C1 done in {len(result['C1']['rounds'])} round(s), {len(result['C1']['skipped'])} key(s) waiting")
+    result["C2"] = asof_sweeps(run, groups)
+    result["C3"] = funding_check(run, through_check)
+    cash_after = cash_table(run, through_check)
+    result["C4"] = reaccrue(run, cash_before, cash_after)
+    all_groups = groups + [funding_group(run)]
+    cgroup = catch_up_group(run, all_groups)
+    if cgroup is not None:
+        all_groups.append(cgroup)
+        run.notes.append(f"the catch-up posted {len(cgroup['refs']['entry_ids'])} entr(y/ies) for preserved positions; shown as their own group")
+    result["groups"] = [{"key": g["key"], "label": g["label"], "refs": g["refs"]} for g in all_groups]
+    result["C5"] = restate(run, recorded, all_groups)
+    from .lifecycle import run_now
+    snap = run_now(rt, "SNAPSHOT")
+    result["C5b"] = {"ran": [{k: x.get(k) for k in ("key", "status", "note")} for x in snap.get("ran") or []]}
+    return booked, cash_mid
+
+
+def _finish(run: Run, result: dict, rep: dict, booked: Dict[int, dict], max_entry0: int, transfers0: set, run_tag: str, verify: bool) -> dict:
+    """The line records, the report's figures and the batch row, after the steps (or after a refusal)."""
+    rt, batch, clock, mode = run.rt, run.batch, run.clock, run.mode
+    booked = booked or run.booked
     result["finished_et"] = clock.ny().strftime("%Y-%m-%d %H:%M:%S ET")
     lines_out, vs = [], []
     for ln in batch.ordered():
@@ -2404,7 +2844,9 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
                                      "unresolved": "unresolved (not a transaction)"}.get(ln.get("decision"), "not booked")
         created = _created_refs(run, refs) if refs else {}
         money = _line_money(run, ln, refs) if refs else {}
-        vs += _vs_expected(ln, money) if money else []
+        # the batch's booking estimates are checked on the lines this run booked; an already-imported line shows its contract or fill as it
+        # stands now (a contract the owner terminated since reads IM 0), which is no booking figure to compare
+        vs += _vs_expected(ln, money) if money and action == "booked" else []
         label = _source_label(run, ln, refs) if refs else str(ln.get("source_label") or "")
         lines_out.append({"line_no": n, "idem_key": ln.get("idem_key"), "product": ln.get("product"), "instrument_id": ln.get("instrument_id"),
                           "decision": ln.get("decision"), "status": r.get("status"), "action": action, "refs": created, "money": money, "source_label": label,
@@ -2421,6 +2863,13 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
                    "note": ln.get("note") or ln.get("decision_reason")}
         if payload["idem_key"] is None:
             payload.pop("idem_key")
+        if payload["applied_ts"] is None:
+            payload.pop("applied_ts")            # never blanks the time an earlier apply booked the line
+        if verify:
+            continue                         # the lines keep the apply's record; this run's view of them is in its report
+        if action != "booked" and _booked_before(run, n):
+            # the run that booked the line keeps its record (action, refs, label, time); this run refreshes only what its search found
+            payload = {k: payload[k] for k in ("batch_id", "line_no", "status", "match_json", "diff_json") if k in payload}
         try:
             run.cmd(f"record line {n}", "import.line_record", payload, f"impbk:{batch.batch_id}:{mode}:{run_tag}:L{n}", rerun_suffix=True)
         except ImportRefused as e:
@@ -2447,6 +2896,10 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
         result["balances"] = [{"account_id": a["account_id"], "settled_c": balance(conn, a["account_id"], "1010", "USD"),
                                "im_posted_c": balance(conn, a["account_id"], "1330", "USD"), "restricted_c": _restricted(conn, a["account_id"], None)} for a in accts]
     result["bridge"] = bridge(batch, result.get("restated") or [])
+    if verify:
+        run.notes.append("the batch's own record (its lines, the apply's report, the owner's go and the backup) is kept as the apply wrote it;"
+                         " this run's report is in its work folder")
+        return result
     final = {"batch_id": batch.batch_id, "status": result["status"], "mode_last": mode, "report_json": _compact(result)}
     if mode == "apply" and result["status"] in ("DONE", "DONE_WITH_PROBLEMS"):
         final["applied_ts"] = int(clock.epoch())
@@ -2455,6 +2908,14 @@ def run_import(rt, batch: Batch, pack: Pack, mode: str, clock, log, out, rep: di
     except ImportRefused as e:
         run.notes.append(f"the batch row was not updated: {e.message}")
     return result
+
+
+def _booked_before(run: Run, n: int) -> bool:
+    try:
+        rows = run.q("SELECT action FROM import_lines WHERE batch_id=? AND line_no=?", (run.bid, n))
+    except sqlite3.Error:
+        return False
+    return bool(rows) and rows[0]["action"] == "booked"
 
 
 def _compact(result: dict) -> dict:
@@ -2535,12 +2996,26 @@ def _signed(c: Optional[int]) -> str:
 
 
 def _diff_text(d: dict) -> str:
+    """One difference in words: what the book holds against the workbook (or the reconciliation), never 'None'."""
     f = str(d.get("field") or "")
+    app = d.get("app")
+    if isinstance(app, (list, tuple)):
+        app = ", ".join(str(x) for x in app)
     if f == "price":
-        return f"price: app {d.get('app')} vs workbook {d.get('workbook')} ({d.get('delta_per_unit')} per unit)"
-    if d.get("note"):
-        return f"{f.replace('_', ' ')}: app {d.get('app')} vs workbook {d.get('workbook')} ({d.get('note')})"
-    return f"{f.replace('_', ' ')}: app {d.get('app')} vs workbook {d.get('workbook')}"
+        return f"price: app {app} vs workbook {d.get('workbook')} ({d.get('delta_per_unit')} per unit)"
+    if f == "drift":
+        return (f"fills: the book holds {app} where the reconciliation matched {d.get('batch')} (fills added or changed since; reported, never"
+                " corrected)")
+    what = DIFF_WORDS.get(f, f.replace("_", " "))
+    if d.get("workbook") is None:
+        body = f"{what}: {app}" if app not in (None, "") else what
+    else:
+        body = f"{what}: app {app} vs workbook {d.get('workbook')}"
+    return f"{body} ({d.get('note')})" if d.get("note") else body
+
+
+DIFF_WORDS = {"qty": "quantity", "trade_date": "trade date", "trade_date_convention": "trade date convention", "existing_contract": "existing contract",
+              "existing_fills": "existing fills", "execution": "execution"}
 
 
 def report_lines(result: dict) -> List[str]:
@@ -2559,7 +3034,8 @@ def report_lines(result: dict) -> List[str]:
         m = ln.get("money") or {}
         extra = ""
         if m.get("contract_id"):
-            extra = f" {m['contract_id']} IM {_money(m.get('im_c'))} VM balance {_money(m.get('vm_balance_c'))}"
+            now = f" ({str(m['contract_status']).lower()} since)" if m.get("contract_status") not in (None, "OPEN") else ""
+            extra = f" {m['contract_id']}{now} IM {_money(m.get('im_c'))} VM balance {_money(m.get('vm_balance_c'))}"
         elif m.get("fill_id"):
             extra = (f" {m['fill_id']} {m.get('side')} {m.get('qty')} @ {m.get('price')} premium {_money(m.get('gross_c'))} fee {_money(m.get('fee_c'))}"
                      f" settles {m.get('settle_date')}")
@@ -2857,8 +3333,8 @@ def restore_procedure(home: str, batch_id: str, backup: Optional[str] = None) ->
             f"2. Move terminal.db, terminal.db-wal and terminal.db-shm into {os.path.join(home, 'backups', 'failed-<ts>')} (kept as evidence); a leftover WAL must"
             " never be replayed onto the restored file.",
             f"3. Copy {b} to {os.path.join(home, 'terminal.db')} and verify its sha256 against {b}.sha256.",
-            "4. Run PRAGMA integrity_check (must be ok), start 1.0.5 and confirm the app's integrity check.",
-            "5. After an apply this backup, with the 1.0.5 release, is the only rollback: 1.0.4 / 1.0.3.1 cannot read the imported rows.",
+            "4. Run PRAGMA integrity_check (must be ok), start FinSim (python -m finsim open; 1.0.5 or later) and confirm the app's integrity check.",
+            "5. After an apply this backup, with a 1.0.5 or later release, is the only rollback: 1.0.4 / 1.0.3.1 cannot read the imported rows.",
             f"(python -m finsim.terminal.importer --mode restore --home {home} --backup {b} runs steps 2-4 with the locks held.)"]
 
 
@@ -2896,7 +3372,7 @@ def restore(home: str, backup: str, clock=None, out: Optional[Callable[[str], No
         finally:
             chk.close()
         res = {"restored": db, "from": backup, "sha256": after, "integrity_check": ok, "moved_aside": moved, "failed_folder": failed,
-               "next": "start 1.0.5 (python -m finsim open) and confirm the app's integrity check"}
+               "next": "start FinSim (python -m finsim open; 1.0.5 or later) and confirm the app's integrity check"}
         if out is not None:
             out(f"restored {db} from {backup} (sha256 {after}, integrity_check {ok}); the previous files are in {failed}")
             out(res["next"])
@@ -2909,10 +3385,11 @@ def restore(home: str, backup: str, clock=None, out: Optional[Callable[[str], No
 
 # ---- CLI ----------------------------------------------------------------------------------------------------------------------------
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="python -m finsim.terminal.importer", description=(
-        "FinSim historical import (FINSIM1_PLAN section 7). Modes: report (read-only, any time), dry-run (a copy; before 16:00 ET), apply (the live "
-        "file, after a clean dry run with the same pack; before 16:00 ET), restore (put the pre-import backup back). --fetch-data-pack fetches the "
-        "inputs (network, read-only) on the apply day. --home is required: there is no default home."),
+    p = argparse.ArgumentParser(prog="python -m finsim import", description=(
+        "FinSim historical import (also python -m finsim.terminal.importer). Modes: report (read-only, any time), dry-run (a copy; before 16:00 ET), "
+        "apply (the live file, after a clean dry run with the same pack; before 16:00 ET; a batch already applied is checked and nothing is written), "
+        "restore (put the pre-import backup back). --fetch-data-pack fetches the inputs (network, read-only) on the apply day. --home is required: "
+        "there is no default home."),
         epilog="Restore: " + " ".join(restore_procedure("<home>", "<batch>")))
     p.add_argument("--batch", help="the batch file (JSONL), e.g. finsim/terminal/data/imports/IMP-F1-20261027-A.jsonl")
     p.add_argument("--home", required=True, help="the FinSim home folder (the owner's procedure passes %%USERPROFILE%%\\.finsim explicitly)")

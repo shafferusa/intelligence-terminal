@@ -13,7 +13,9 @@
  *     h.unmount();
  *
  * Previews POST /api/otc/preview   {account_id, kind: EQ_OPTION | FX_OPTION | EQ_FORWARD | FX_FORWARD, terms}
- * Books    POST /api/otc/contracts {account_id, kind, terms}  (one request_id per click through T.api)
+ * Quotes   POST /api/otc/rfqs {account_id, kind, terms}  (C14, 1.0.6: "Request quote"; the simulated dealer answers on the next lifecycle tick and
+ *          the quote is accepted or declined under Quote requests, above the contracts table; an option or forward is re-priced at the
+ *          acceptance and refused there - QUOTE_MOVED - when its price moved since the quote)
  *
  * Conventions shown on the form
  * - Every number is the server's: the price, the vol and where it came from (the Cboe chain, a CurrencyShares ETF proxy or the pair's
@@ -36,6 +38,9 @@
     forwards: [{ key: 'EQ_FORWARD', label: 'Equity forward' }, { key: 'FX_FORWARD', label: 'FX forward' }]
   };
   var TENORS = ['1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y'];
+  /* P8B-03: an FX forward's tenors are the FX desk's (value dates from the spot date: ON = spot-next) - the server's list
+     (desk.fx_forward_tenors), so every tenor offered is one the dealer prices */
+  var FX_FWD_TENORS = ['ON', '1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y'];
   var DEFAULTS = {
     EQ_OPTION: { underlying_id: 'AAPL', side: 'BUY', right: 'PUT', style: 'EUROPEAN', strike_mode: 'pct', strike: '95', tenor: '3M', expiry: '', units: '1,000' },
     FX_OPTION: { pair: 'EURUSD', side: 'BUY', right: 'CALL', strike_mode: 'atm', strike: '', tenor: '1M', expiry: '', notional: '1,000,000.00' },
@@ -128,7 +133,7 @@
        Book is enabled (a fresh preview without blockers) - the deal is booked only from that dialog; the preview key is on
        every box of the form (bind below) */
     root.addEventListener('keydown', function (ev) {
-      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onBook(); } }
+      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onRequest(); } }
     });
 
     function kind() { return state.product[state.mode]; }
@@ -142,7 +147,7 @@
       ui.products = T.h('div'); root.appendChild(ui.products);
       ui.form = T.h('div', { class: 'ot-form' }); root.appendChild(ui.form);
       ui.previewBtn = T.h('button', { class: 'btn primary', onclick: function () { onPreview(0); } }, 'Preview');
-      ui.bookBtn = T.h('button', { class: 'btn', onclick: onBook, disabled: true }, 'Book');
+      ui.bookBtn = T.h('button', { class: 'btn', onclick: function () { onRequest(); }, disabled: true }, 'Request quote');
       ui.resetBtn = T.h('button', { class: 'btn small', title: 'put this form back to its defaults', onclick: function () {
         state.values[kind()] = copy(DEFAULTS[kind()]); state.previews[kind()] = null; state.error = null; state.errorField = null;
         renderForm(); renderPreview(); } }, 'Reset terms');
@@ -197,17 +202,45 @@
     }
     function select(name, options) {
       var s = T.h('select');
-      options.forEach(function (o) { s.appendChild(T.h('option', { value: o[0] }, o[1])); });
+      options.forEach(function (o) {
+        var op = T.h('option', { value: o[0] }, o[1]);
+        if (o[2]) { op.disabled = true; op.title = o[3] || ''; }               /* P8B-04: listed, not dealable, with the reason */
+        s.appendChild(op);
+      });
       return bind(name, s);
+    }
+    function tenorsFor(k) {
+      var d = state.desk || {};
+      return k === 'FX_FORWARD' ? (d.fx_forward_tenors || FX_FWD_TENORS) : (d.tenors || TENORS);
     }
     function pairs() {
       var list = (state.desk && state.desk.pairs) || ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD', 'AUDUSD', 'NZDUSD', 'EURJPY', 'EURGBP', 'EURCHF', 'GBPJPY'];
       var src = (state.desk && state.desk.vol_source) || {};
-      return list.map(function (p) { return [p, p + (state.mode === 'options' && src[p] ? '  (' + (String(src[p]).indexOf('proxy') === 0 ? 'proxy vol' : 'realised vol') + ')' : '')]; });
+      var off = (state.desk && state.desk.spot_only) || {};
+      /* P8B-04: a pair one of whose currencies has no current rate is spot only - listed disabled with the reason, never offered as dealable */
+      return list.map(function (p) {
+        if (off[p]) { return [p, p + '  (spot only - no forward price)', true, off[p]]; }
+        return [p, p + (state.mode === 'options' && src[p] ? '  (' + (String(src[p]).indexOf('proxy') === 0 ? 'proxy vol' : 'realised vol') + ')' : '')];
+      });
+    }
+    function spotOnlyNote() {
+      /* one line per reason (the four CHF pairs share one), the reason cut to its first clause; the full text is each option's hover */
+      var off = (state.desk && state.desk.spot_only) || {};
+      var groups = {}, order = [];
+      Object.keys(off).forEach(function (p) {
+        var why = String(off[p]).replace(/^spot only: /, '').split(';')[0].replace(/: no forward price.*$/, '');
+        if (!groups[why]) { groups[why] = []; order.push(why); }
+        groups[why].push(p);
+      });
+      if (!order.length) { return null; }
+      return T.h('div', { class: 'hint' }, 'Spot only - no forward price, so no forward or FX option: ' +
+        order.map(function (w) { return groups[w].join(', ') + ' (' + w + ')'; }).join(' . '));
     }
     function expiryField(label) {
-      return T.field(label, T.h('span', { class: 'ot-row' }, select('tenor', TENORS.map(function (t) { return [t, t]; })), T.h('span', { class: 'muted' }, 'or a date'),
-        text('expiry', 'YYYY-MM-DD', 110)), 'a tenor from today (months modified following on the trading calendar); a date overrides it');
+      var fwd = kind() === 'FX_FORWARD';
+      return T.field(label, T.h('span', { class: 'ot-row' }, select('tenor', tenorsFor(kind()).map(function (t) { return [t, t]; })), T.h('span', { class: 'muted' }, 'or a date'),
+        text('expiry', 'YYYY-MM-DD', 110)), fwd ? 'a tenor from the spot date (ON = spot-next; weeks following, months modified following); a date overrides it'
+        : 'a tenor from today (months modified following on the trading calendar); a date overrides it');
     }
     function renderForm() {
       var k = kind();
@@ -246,6 +279,7 @@
         rows.push(T.field('notional (' + String(v.pair || 'EURUSD').slice(0, 3) + ')', text('notional', '1,000,000.00', 140), 'in the base currency of the pair; at least 1,000.00'));
       }
       T.clear(ui.form).appendChild(T.form(rows));
+      if (k === 'FX_FORWARD' || k === 'FX_OPTION') { var so = spotOnlyNote(); if (so) { ui.form.appendChild(so); } }
       ui.form.appendChild(T.h('div', { class: 'hint' }, k === 'FX_FORWARD' ? 'Delivered on the value date: you receive one currency and pay the other at the dealt rate (an FX deal settled in both currencies; the sold currency must be in this account or Treasury by then).'
         : (k === 'EQ_FORWARD' ? 'Cash-settled: shares x (the observed close on the maturity date - the dealt forward).' : 'The premium settles ' + (k === 'EQ_OPTION' ? 'T+1' : 'T+2 (the pair\'s spot date)') + '; daily variation margin on the model value under the CSA; cash-settled at expiry.')));
       ui.previewBtn.disabled = !!state.blocked || state.busy;
@@ -271,8 +305,15 @@
             setTimeout(function () { if (!state.dead && kind() === k) { onPreview(attempt + 1); } }, Number(pv.retry_ms) || 2000);
           } else {
             setStatus('');
-            setError((b0.code ? b0.code + ': ' : '') + (b0.message || 'the inputs are still being fetched') + ' - try Preview again in a moment', null);
+            setError((b0.message || 'the inputs are still being fetched') + ' - try Preview again in a moment', null);
           }
+          return;
+        }
+        if (pv && pv.refused) {                   /* V104R2-BW-05: a refused preview answers 200 with its reason; said in words, never a code */
+          setStatus('');
+          setError(pv.message || 'the dealer cannot price these terms', pv.details && pv.details.field);
+          state.previews[k] = null;
+          renderPreview();
           return;
         }
         state.previews[k] = { pv: pv, sig: sig(r.terms), terms: r.terms, stale: false };
@@ -321,7 +362,12 @@
       if (i.rate) { out.push(row('USD rate', (i.rate.label || i.rate.value_pct + ' %') + (i.r ? ', continuous ' + (Number(i.r) * 100).toFixed(4) + ' %' : ''), 'SOFR (NY Fed / FRED), else the Treasury bill yield')); }
       if (i.r_base && i.r_quote) { out.push(row('rates', (i.r_base.label || i.r_base.ccy + ' ' + i.r_base.value_pct + ' %') + ' / ' + (i.r_quote.label || i.r_quote.ccy + ' ' + i.r_quote.value_pct + ' %'))); }
       if (i.dividend) { out.push(row('dividend yield', (i.dividend.pct || '') + ' (' + (i.dividend.method || '') + ')')); }
-      if (i.financing_spread) { out.push(row('financing', 'SOFR ' + i.sofr_pct + ' % + PB spread ' + pctText(i.financing_spread) + ' (continuous ' + (Number(i.r_financing) * 100).toFixed(4) + ' %)')); }
+      if (i.carry_side) {                         /* P8B-02: the mark carries at SOFR; the dealer deals on its carry for your side */
+        out.push(row('mid carry', 'SOFR ' + i.sofr_pct + ' % (continuous ' + (Number(i.r_mid) * 100).toFixed(4) + ' %): the mid forward and the mark', ''));
+        out.push(row('dealer\'s carry', i.carry_pct + ' % - ' + i.carry_side + ' ' + pctText(i.financing_spread) + ' (continuous ' + (Number(i.r_financing) * 100).toFixed(4) + ' %)',
+          'the PB financing spread is charged once, against you, on the side you deal'));
+        if (i.deal_formula) { out.push(row('dealt', i.deal_formula)); }
+      } else if (i.financing_spread) { out.push(row('financing', 'SOFR ' + i.sofr_pct + ' % + PB spread ' + pctText(i.financing_spread) + ' (continuous ' + (Number(i.r_financing) * 100).toFixed(4) + ' %)')); }
       if (i.days != null) { out.push(row('time', i.days + ' days (T = ' + i.T + ')')); }
       if (i.days_to_expiry != null) { out.push(row('time', i.days_to_expiry + ' days to expiry, ' + i.days_to_delivery + ' days to delivery (T = ' + i.T + ')')); }
       out.push(row('model', pv.model || i.model || ''));
@@ -349,7 +395,12 @@
         if (pv.kind === 'FX_OPTION') { out.push(['forward / strike', 'F ' + pv.F + ' . K ' + pv.strike + ' . delivery ' + pv.delivery_date]); }
         else { out.push(['strike', 'K ' + pv.strike + ' (' + (pv.terms && pv.terms.strike_pct ? pv.terms.strike_pct + ' % of ' + pv.S : 'as typed') + ')']); }
       } else {
-        out.push(['forward', 'model ' + pv.forward + ' . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you)', pv.price_rule]);
+        if (pv.kind === 'EQ_FORWARD' && pv.forward_deal) {
+          out.push(['forward', 'mid ' + pv.forward + ' (SOFR carry) . dealer\'s ' + pv.forward_deal + ' (SOFR ' + (pv.side === 'BUY' ? '+' : '-') + ' PB spread ' +
+            pctText(pv.financing_spread) + ') . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you)', pv.price_rule]);
+        } else {
+          out.push(['forward', 'model ' + pv.forward + ' . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you)', pv.price_rule]);
+        }
         if (pv.delivery) { out.push(['delivery', 'receive ' + pv.delivery.receive.ccy + ' ' + T.fmt.money(pv.delivery.receive.amount) + ' . pay ' + pv.delivery.pay.ccy + ' ' + T.fmt.money(pv.delivery.pay.amount) + ' on ' + pv.value_date]); }
         if (pv.delivery_check && pv.delivery_check.fundable === false) { out.push(['warning', T.h('span', { class: 'ot-stale' }, pv.delivery_check.note || 'the sold currency is not there for the value date yet')]); }
       }
@@ -368,55 +419,39 @@
       T.clear(ui.preview);
       var p = state.previews[kind()];
       ui.bookBtn.disabled = true;
-      if (!p) { ui.preview.appendChild(T.h('div', { class: 'hint' }, 'Preview prices the deal from the observed inputs - nothing is booked until you confirm.')); return; }
+      if (!p) { ui.preview.appendChild(T.h('div', { class: 'hint' }, 'Preview prices the deal from the observed inputs; Request quote then asks the dealer - nothing is' +
+        ' booked before you accept its quote.')); return; }
       var pv = p.pv;
       var blockers = pv.blockers || [];
-      if (p.stale) { ui.preview.appendChild(T.h('div', { class: 'conv ot-stale' }, 'the terms changed since this preview: preview again before booking')); }
-      blockers.forEach(function (b) { ui.preview.appendChild(T.h('div', { class: 'error' }, b.code + ': ' + b.message)); });
+      if (p.stale) { ui.preview.appendChild(T.h('div', { class: 'conv ot-stale' }, 'the terms changed since this preview: preview again before requesting a quote')); }
+      blockers.forEach(function (b) { ui.preview.appendChild(T.h('div', { class: 'error', title: b.code || '' }, b.message || T.codeWords(b.code))); });
       ui.preview.appendChild(T.h('div', { class: 'ot-head' }, (pv.kind_label || pv.kind) + ' . ' + pv.side_text));
       ui.preview.appendChild(headline(pv));
       var g = greeksBlock(pv);
       if (g) { ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'greeks', T.h('small', null, 'computed at the mid vol')), g)); }
       ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'inputs', T.h('small', null, 'every number is computed from these')), inputsBlock(pv)));
       ui.bookBtn.disabled = !!state.blocked || p.stale || !pv.bookable || !!blockers.length;
-      ui.bookBtn.title = ui.bookBtn.disabled ? (state.blocked || (p.stale ? 'preview again' : (blockers[0] ? blockers[0].message : ''))) : 'book with a confirmation' + (T.keys.paren ? T.keys.paren('ticket.submit') : '');
+      ui.bookBtn.title = ui.bookBtn.disabled ? (state.blocked || (p.stale ? 'preview again' : (blockers[0] ? blockers[0].message : ''))) :
+        'asks the simulated dealer of the prime broker for a quote (about 30 s; good for 120 s; re-priced at acceptance)' + (T.keys.paren ? T.keys.paren('ticket.submit') : '');
     }
 
-    /* ---- book ---- */
-    function onBook() {
+    /* ---- the quote request (C14): the previewed terms go to the simulated dealer; its quote is accepted under Quote requests (an option or
+       forward is re-priced at the acceptance: when the price moved it is refused and a new quote is asked) ---- */
+    function onRequest() {
       var k = kind();
       var p = state.previews[k];
       if (!p || p.stale || state.blocked) { return; }
-      var pv = p.pv;
-      var lines = [['deal', pv.side_text], ['counterparty', pv.broker + ' (ISDA Master / CSA / PBA)']];
-      if (k === 'EQ_OPTION' || k === 'FX_OPTION') {
-        lines.push(['premium', 'USD ' + money(pv, 'premium') + ' ' + (pv.side === 'BUY' ? 'paid' : 'received') + ' on ' + pv.premium_date]);
-        lines.push(['dealt vol', pv.deal_sigma_pct + ' (mid ' + pv.sigma_pct + ')']);
-      } else {
-        lines.push(['dealt forward', pv.strike + ' (model ' + pv.forward + ')']);
-      }
-      lines.push(['initial margin', 'USD ' + money(pv, 'im')]);
-      lines.push(['cost of dealing', 'USD ' + money(pv, 'cost_of_dealing')]);
-      if (pv.funding) { lines.push(['funding', pv.funding.note]); }
-      var err = T.h('div', { class: 'error', hidden: true });
-      T.ui.modal({
-        title: 'Book ' + (pv.kind_label || k), sticky: true,
-        body: T.h('div', null, T.h('div', { class: 'hint' }, 'The prime broker re-prices on the observed inputs at booking; if they moved, the booking is refused and you preview again.'), T.kv(lines), err),
-        actions: [{ label: 'Cancel' }, { label: 'Book', cls: 'primary', onClick: function (m, btn) {
-          btn.disabled = true; err.hidden = true;
-          T.api.post('/api/otc/contracts', { account_id: account, kind: k, terms: p.terms }).then(function (r) {
-            m.close();
-            var prem = r.premium && r.premium.amount && Number(r.premium.amount) ? ' . premium USD ' + T.fmt.money(r.premium.amount) + ' ' + r.premium.direction + ' on ' + r.premium.settle_date : '';
-            var im = r.im_transfer && r.im_transfer.amount && Number(r.im_transfer.amount) ? ' . IM USD ' + T.fmt.money(r.im_transfer.amount) + ' posted' : '';
-            var text = 'Booked ' + r.contract_id + ' . ' + pv.side_text + prem + im;
-            state.previews[k] = null; renderPreview();
-            ui.result.textContent = text; ui.result.hidden = false;
-            T.ui.toast(text, 'ok', 8000);
-            ['accounts', 'positions', 'account_detail', 'books', 'attention'].forEach(function (n) { if (T.poll && T.poll.kick) { T.poll.kick(n); } });
-            if (opts.onBooked) { try { opts.onBooked(r); } catch (e) { console.error('otcticket onBooked', e); } }
-          }, function (e) { btn.disabled = false; err.textContent = describe(e); err.hidden = false; });
-        } }]
-      });
+      var sw = T.components.swapticket;
+      if (!sw || typeof sw.rfqRequest !== 'function') { setError('the quote requests are not available in this build (components/swapticket.js)', null); return; }
+      ui.bookBtn.disabled = true;
+      sw.rfqRequest(account, k, p.terms).then(function (r) {
+        ui.bookBtn.disabled = false;
+        var text = 'Quote requested (' + (r.rfq_id || '') + '): ' + p.pv.side_text + ' - the simulated dealer answers within about 30 s; accept or decline it under' +
+          ' Quote requests';
+        ui.result.textContent = text; ui.result.hidden = false;
+        T.ui.toast(text, 'ok', 6000);
+        if (opts.onBooked) { try { opts.onBooked(r); } catch (e) { console.error('otcticket onBooked', e); } }
+      }, function (e) { ui.bookBtn.disabled = false; setError(describe(e), e && e.details && e.details.field); });
     }
 
     function setBlocked(reason) {

@@ -1,5 +1,5 @@
 /* Settings -> Prime brokers: one prime broker's editable schedule and the relationship (TERMINAL_DESIGN.md s12.4, s17.1; WP-07;
- * Build 2 P12: PO-16, PO-19, SHELL-28, SR-10).
+ * Build 2 P12: PO-16, PO-19, SHELL-28, SR-10; FINSIM1 P6 task 6: the CSA collateral terms - securities accepted, the Treasury haircuts).
  *
  * Mounted by pages/settings.js once per PB account:
  *
@@ -61,9 +61,13 @@
     ['trs_im_pct', 'TRS initial margin', 'decimal', 'of the TRS notional', 'pct', 'Initial margin'],
     ['xccy_im_pct', 'cross-currency swap initial margin', 'decimal', 'of the USD notional', 'pct', 'Initial margin'],
     ['option_im_pct', 'sold OTC options: initial margin', 'decimal', 'of the underlying notional of an option you sell (a bought option posts none)', 'pct', 'Initial margin'],
-    ['forward_im_pct', 'OTC forwards: initial margin', 'decimal', 'of the forward\'s USD notional, either side', 'pct', 'Initial margin']
+    ['forward_im_pct', 'OTC forwards: initial margin', 'decimal', 'of the forward\'s USD notional, either side', 'pct', 'Initial margin'],
+    /* FINSIM1 P6 task 6 (1.0.6): the CSA's securities collateral terms (Cash & Collateral: pledge / release) */
+    ['csa_securities', 'CSA collateral: securities accepted', 'enum', 'TREASURIES = US Treasury bills, notes and bonds may be pledged besides cash; CASH_ONLY = cash only', 'enum', 'CSA collateral'],
+    ['csa_bill_haircut', 'CSA collateral: Treasury bill haircut', 'decimal', 'a pledged bill counts at its market value x (1 - this)', 'pct', 'CSA collateral'],
+    ['csa_bond_haircut', 'CSA collateral: Treasury note / bond haircut', 'decimal', 'a pledged note or bond counts at its market value x (1 - this)', 'pct', 'CSA collateral']
   ];
-  var ENUMS = { swap_margin_mode: ['CTM', 'STM'] };
+  var ENUMS = { swap_margin_mode: ['CTM', 'STM'], csa_securities: ['TREASURIES', 'CASH_ONLY'] };
   var UNIT = { pct: '%', bp: 'bp', vol: 'vol pts', usd: 'USD', usd_per_unit: 'USD', mult: 'x', enum: '' };
   var DECIMAL_RE = /^\d+(\.\d{1,8})?$/;
   var MONEY_RE = /^\d+(\.\d{0,2})?$/;
@@ -125,9 +129,9 @@
   }
   /* the stored form of a typed value, or {error}: "1.25 %" / "1.25" / "125 bp" for a % field -> "0.0125"; "1 vol" -> "0.01";
      "2.5 bp" -> "2.5"; money -> "1234.50"; an enum upper-cased */
-  function normalise(kind, raw, unit) {
+  function normalise(kind, raw, unit, key) {
     var s = String(raw == null ? '' : raw).trim();
-    if (kind === 'enum') { s = s.toUpperCase(); return ENUMS.swap_margin_mode.indexOf(s) >= 0 ? { value: s } : { error: 'one of ' + ENUMS.swap_margin_mode.join(', ') }; }
+    if (kind === 'enum') { var ch = ENUMS[key] || ENUMS.swap_margin_mode; s = s.toUpperCase(); return ch.indexOf(s) >= 0 ? { value: s } : { error: 'one of ' + ch.join(', ') }; }
     if (kind === 'money') { var c = toCents(s); return c == null ? { error: 'a USD amount at or above 0.00 with at most 2 decimals' } : { value: fromCents(c) }; }
     s = s.replace(/,/g, '').replace(/^\$\s*/, '');
     var m = TYPED_RE.exec(s);
@@ -325,7 +329,7 @@
         inp.input.classList.remove('bad');
         if (raw === inp.initial) { return; }                                  /* not edited: never sent */
         if (inp.current == null && raw.trim() === '') { return; }             /* not served and still empty: nothing to send */
-        var n = normalise(inp.kind, raw, inp.unit);
+        var n = normalise(inp.kind, raw, inp.unit, key);
         if (!n.error && inp.kind !== 'enum' && inp.kind !== 'money' && !within(inp.range, n.value, inp.unit)) { n = { error: 'outside the allowed ' + inp.range.text }; }
         if (n.error) { out.errors.push(inp.label + ': ' + n.error); inp.input.classList.add('bad'); return; }
         if (same(inp.kind, n.value, inp.current)) { return; }                 /* edited back to the served value */

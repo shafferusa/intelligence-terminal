@@ -101,6 +101,82 @@ class ChartSyncTests(unittest.TestCase):
         finally:
             db2.close()
 
+    def test_open_widens_a_103_otc_contracts_table_keeping_rows_children_and_indexes(self):
+        """SUITES-R2-01 (1.0.4 leftover): the first open by this release rebuilds a 1.0.3-shape ``otc_contracts`` (kind CHECK IRS / TRS /
+        XCCY) once with the wider CHECK (db.OTC_KINDS, CDX included): the stored contract row, its ``otc_vm`` and ``otc_resets`` children
+        and its index stay exactly as they were, the foreign keys still check clean, SCHEMA_VERSION does not move, a CDX row is accepted
+        afterwards and a second open is a no-op."""
+        from finsim.terminal.db import OTC_KINDS
+        raw = sqlite3.connect(self.path)
+        raw.execute("PRAGMA foreign_keys=ON")
+        self.assertIn("CHECK (kind IN ('IRS','TRS','XCCY'))", raw.execute("SELECT sql FROM sqlite_master WHERE name='otc_contracts'").fetchone()[0])
+        self._parents(raw)
+        raw.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date, maturity_date,"
+                    " margin_mode, im_c, status, mark_c, vm_balance_c) VALUES ('SWP-000001',1,'F1:US_EXCHANGE','GS','IRS','{\"fixed_rate\": \"0.0472\"}',750000000,'USD',"
+                    "'2026-10-21','2029-10-22','CTM',10366800,'OPEN',-207336,-207336)")
+        raw.execute("INSERT INTO otc_vm(contract_id, vm_date, mark_c, delta_c, mode, entry_id, inputs_json) VALUES ('SWP-000001','2026-10-21',-207336,-207336,'CTM',1,'{}')")
+        raw.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES ('SWP-000001','2026-10-21','FIX',0,'{}',1)")
+        raw.execute("CREATE INDEX ix_test_otc_account ON otc_contracts(account_id)")
+        raw.commit()
+        rows_before = {t: raw.execute(f"SELECT * FROM {t} ORDER BY 1").fetchall() for t in ("otc_contracts", "otc_vm", "otc_resets")}
+        cols_before = [r[1] for r in raw.execute("PRAGMA table_info(otc_contracts)").fetchall()]
+        raw.close()
+        db = Database(self.path, FakeClock("2026-10-28T10:00:00-04:00"), None)
+        db.open(books=list(config.BOOKS))
+        try:
+            with db.reader() as conn:
+                sql = conn.execute("SELECT sql FROM sqlite_master WHERE name='otc_contracts'").fetchone()[0]
+                for k in OTC_KINDS:
+                    self.assertIn(f"'{k}'", sql, k)
+                for t, rows in rows_before.items():
+                    self.assertEqual([tuple(r) for r in rows], [tuple(r) for r in conn.execute(f"SELECT * FROM {t} ORDER BY 1").fetchall()], t)
+                self.assertEqual(cols_before, [r[1] for r in conn.execute("PRAGMA table_info(otc_contracts)").fetchall()])
+                self.assertIsNotNone(conn.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name='ix_test_otc_account'").fetchone())
+                self.assertEqual([], conn.execute("PRAGMA foreign_key_check").fetchall())
+                self.assertEqual(str(SCHEMA_VERSION), get_meta(conn, "schema_version"))
+            with db.writer() as tx:                                                   # the wider CHECK takes a CDX now (foreign keys on)
+                tx.conn.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date,"
+                                " maturity_date, margin_mode) VALUES ('CDX-000001',1,'F1:US_EXCHANGE','GS','CDX','{}',300000000,'USD','2026-10-21','2031-12-20','CTM')")
+            self.assertFalse(db._widen_otc_kinds())                                   # nothing left to widen: a no-op
+        finally:
+            db.close()
+        db2 = Database(self.path, FakeClock("2026-10-28T10:05:00-04:00"), None)       # the next start: no second rebuild, the rows stay
+        db2.open(books=list(config.BOOKS))
+        try:
+            with db2.reader() as conn:
+                self.assertEqual(2, conn.execute("SELECT COUNT(*) FROM otc_contracts").fetchone()[0])
+                self.assertEqual(1, conn.execute("SELECT COUNT(*) FROM otc_vm").fetchone()[0])
+        finally:
+            db2.close()
+
+    def test_news_storage_left_inert_on_an_older_file_and_absent_on_a_new_one(self):
+        """UI-16 / UI-15: this release creates no ``news_items`` table and no ``news_enabled`` setting; an older file keeps both, untouched
+        (no destructive migration - dropping the table needs the owner's OK)."""
+        raw = sqlite3.connect(self.path)
+        self.assertIsNotNone(raw.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='news_items'").fetchone())   # the 1.0.3.1 schema has it
+        raw.execute("INSERT INTO news_items(source, title, publisher, link, time_ts, fetched_ts) VALUES ('yahoo','a headline','x','https://example.com/1',1,1)")
+        raw.execute("INSERT INTO settings(key, value_json) VALUES ('news_enabled','true')")
+        raw.commit()
+        raw.close()
+        db = Database(self.path, FakeClock("2026-10-28T10:00:00-04:00"), None)
+        db.open(books=list(config.BOOKS))
+        try:
+            with db.reader() as conn:
+                self.assertEqual([("yahoo", "a headline")], [tuple(r) for r in conn.execute("SELECT source, title FROM news_items").fetchall()])
+                self.assertEqual(True, get_setting(conn, "news_enabled"))
+        finally:
+            db.close()
+        self.assertNotIn("news_items", TABLES)
+        path = os.path.join(self.tmp, "fresh", "terminal.db")
+        db = Database(path, FakeClock("2026-10-28T10:00:00-04:00"), None)
+        db.open(books=[config.TEST_BOOK])
+        try:
+            with db.reader() as conn:
+                self.assertIsNone(conn.execute("SELECT 1 FROM sqlite_master WHERE name IN ('news_items','ix_news_time')").fetchone())
+                self.assertIsNone(get_setting(conn, "news_enabled"))
+        finally:
+            db.close()
+
     def test_new_file_seeds_the_chart_once(self):
         """A brand-new file still gets the whole chart from the seed (and the sync after it adds nothing)."""
         path = os.path.join(self.tmp, "fresh", "terminal.db")
@@ -292,6 +368,27 @@ class CoreTests(unittest.TestCase):
             self.assertEqual(1, len([b for b in backups if b.startswith("terminal-") and b.endswith(".db")]))
         finally:
             db2.close()
+
+    def test_backup_rotates_only_its_own_dated_copies(self):
+        """FINSIM1 P7-R3 (1.0.6): ``Database.backup`` keeps the newest ``keep`` (10) of ITS dated per-start copies
+        (``terminal-YYYYmmdd-HHMMSS[-n].db``) and never deletes, nor counts, any other ``terminal-*.db`` in the folder - the installer's
+        ``terminal-pre-<version>-<stamp>.db``.  Before, those sorted after the dated names and filled the kept slots, so once ten of them
+        existed each new per-start copy was deleted right after it was written.  Here: 12 older dated copies + 2 installer copies, then one
+        backup -> the 2 installer copies, and the 10 newest dated names (the new one among them; the 3 oldest gone)."""
+        dest = os.path.join(self.tmp, "rot")
+        os.makedirs(dest)
+        older = [f"terminal-202610{d:02d}-120000.db" for d in range(1, 13)]
+        pre = ["terminal-pre-1.0.4-20261027-165400.db", "terminal-pre-1.0.5-20261028-024440.db"]
+        for name in older + pre:
+            with open(os.path.join(dest, name), "wb") as f:
+                f.write(b"x")
+        made = self.rt.db.backup(dest, keep=10)
+        left = sorted(os.listdir(dest))
+        self.assertIn(os.path.basename(made), left)
+        self.assertTrue(set(pre) <= set(left), left)                                     # never rotated out
+        dated = [f for f in left if f not in pre]
+        self.assertEqual(10, len(dated), dated)                                          # 12 + 1 new - the 3 oldest
+        self.assertEqual(sorted(older[3:] + [os.path.basename(made)]), dated)
 
     def test_newer_schema_refused(self):
         self.rt.db.close()

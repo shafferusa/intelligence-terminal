@@ -13,6 +13,10 @@
  * - Ratios arrive as floats (4 dp); percentages are shown at 2 dp with the 4-dp value in the hover; NAVs and flows
  *   arrive as cents (`*_c`) or, through the API layer, as decimal strings -- both are accepted (money()).
  * - A failed request renders the error text in the tab (never a blank, never a stale table).
+ * - PORTFOLIO-15: the returns are TRADING-DAY returns (a weekend or holiday snapshot is folded into the next trading day; the first
+ *   return is the inception day's).  The annualised ratios (return, volatility, Sharpe, Sortino, beta, alpha) show from the 20th
+ *   trading-day return (``ratios_status``, ``needed_returns``); before that their cells read "insufficient history" while the
+ *   cumulative time-weighted return (``cum_twr``), drawdown, hit rate and the dated daily series (``daily``) are always shown.
  * - No dependencies: plain DOM, window.fetch, Intl.  The file is ASCII.
  */
 (function () {
@@ -72,15 +76,20 @@
   }
 
   function statsTable(v) {
+    /* PORTFOLIO-15: the annualised ratios wait for 20 trading-day returns; the server says so (ratios_status / needed_returns) */
+    var gated = v.ratios_status === 'insufficient history' && v.needed_returns;
+    function g(html) { return gated ? '<span class="na" title="the annualised ratios show from the ' + esc(v.needed_returns) + 'th trading-day return">insufficient history (' + esc(v.n_returns) + ' of ' + esc(v.needed_returns) + ')</span>' : html; }
+    var days = v.trading_days ? ' trading-day' : ' daily';
     var rows = [
-      ['Annualised return', pct(v.ann_ret), 'mean daily return \u00d7 252'],
-      ['Volatility', pct(v.vol), 'stdev of daily returns \u00d7 \u221a252'],
-      ['Sharpe', ratio(v.sharpe), 'vs ' + sofrText(v) + ', \u00d7 \u221a252'],
-      ['Sortino', ratio(v.sortino), 'downside deviation over all days, vs ' + sofrText(v)],
-      ['Beta (' + esc(v.benchmark) + ')', ratio(v.beta), v.pairs_used + ' daily pairs on observed closes' + (v.pairs_skipped ? ', ' + v.pairs_skipped + ' skipped' : '')],
-      ['Alpha (annualised)', pct(v.alpha), 'intercept of the daily regression \u00d7 252'],
+      ['Cumulative return (time-weighted)', pct(v.cum_twr), 'the' + days + ' returns chained: product of (1 + r) - 1' + (v.first_date ? ', from ' + esc(v.first_date) : '')],
+      ['Annualised return', g(pct(v.ann_ret)), 'mean' + days + ' return \u00d7 252'],
+      ['Volatility', g(pct(v.vol)), 'stdev of' + days + ' returns \u00d7 \u221a252'],
+      ['Sharpe', g(ratio(v.sharpe)), 'vs ' + sofrText(v) + ', \u00d7 \u221a252'],
+      ['Sortino', g(ratio(v.sortino)), 'downside deviation over all days, vs ' + sofrText(v)],
+      ['Beta (' + esc(v.benchmark) + ')', g(ratio(v.beta)), v.pairs_used + days + ' pairs on observed closes' + (v.pairs_skipped ? ', ' + v.pairs_skipped + ' skipped' : '')],
+      ['Alpha (annualised)', g(pct(v.alpha)), 'intercept of the' + days + ' regression \u00d7 252'],
       ['Max drawdown', pct(v.max_dd), 'on the flow-adjusted index'],
-      ['Hit rate', pct(v.hit_rate), v.n_returns + ' daily returns' + (v.returns_skipped ? ', ' + v.returns_skipped + ' skipped' : '')]
+      ['Hit rate', pct(v.hit_rate), v.n_returns + days + ' returns' + (v.returns_skipped ? ', ' + v.returns_skipped + ' skipped' : '')]
     ];
     var h = '<table class="perf-table grid"><thead><tr><th>statistic</th><th class="num">value</th><th>basis</th></tr></thead><tbody>';
     for (var i = 0; i < rows.length; i++) {
@@ -100,6 +109,21 @@
            '<td class="num">' + money(r, 'nav_start') + '</td><td class="num">' + money(r, 'flows') + '</td>' +
            '<td class="num">' + money(r, 'nav_end') + '</td><td class="num">' + pct(r.ret) + '</td>' +
            '<td class="num">' + esc(r.n_snapshots) + '</td></tr>';
+    }
+    return h + '</tbody></table>';
+  }
+
+  /* PORTFOLIO-15: the dated daily series (the server's records: date, the folded weekend / holiday dates, NAV, flows, return, cumulative) */
+  function dailyTable(v) {
+    var d = v.daily || [];
+    var h = '<table class="perf-table grid daily"><thead><tr><th>date</th><th>folded in</th><th class="num">NAV</th><th class="num">flows</th>' +
+            '<th class="num">return</th><th class="num">cumulative</th></tr></thead><tbody>';
+    if (!d.length) { h += '<tr><td colspan="6" class="muted">no return yet</td></tr>'; }
+    for (var i = d.length - 1; i >= 0; i--) {
+      var r = d[i];
+      h += '<tr><td title="' + (r.from_date ? 'from ' + esc(r.from_date) : 'inception: NAV over the capital received') + '">' + esc(r.date) + (r.from_date ? '' : ' <span class="muted">(inception)</span>') + '</td>' +
+           '<td class="muted">' + esc((r.folded || []).join(', ')) + '</td><td class="num">' + money(r, 'nav') + '</td><td class="num">' + money(r, 'flows') + '</td>' +
+           '<td class="num">' + pct(r.ret) + '</td><td class="num">' + pct(r.cum) + '</td></tr>';
     }
     return h + '</tbody></table>';
   }
@@ -129,6 +153,7 @@
     } else {
       h += statsTable(v);
       h += '<h4 class="perf-sub">Monthly (NAV to NAV, flows excluded)</h4>' + monthlyTable(v);
+      h += '<h4 class="perf-sub">' + (v.trading_days ? 'Trading-day returns (weekend and holiday snapshots folded into the next trading day)' : 'Daily returns') + '</h4>' + dailyTable(v);
       h += notes(v);
     }
     h += '<p class="perf-sentence conv">' + esc(v.sentence || '') + '</p></div>';

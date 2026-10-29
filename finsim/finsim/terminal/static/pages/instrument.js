@@ -136,8 +136,15 @@
       }
     }
     T.watchQuotes([id]);
+    /* V104R2-BW-02 (d): the session's market and phase in words, never the internal group code (it stays in the hover) */
+    var GROUP_WORDS = { US_EQUITY: 'US equities', US_EQUITY_OPTIONS: 'US equity options', US_INDEX_OPTIONS: 'US index options', US_BONDS: 'US bonds',
+                        CME_EQUITY_INDEX: 'CME equity index', CME_RATES: 'CME rates', NYMEX_ENERGY: 'NYMEX energy', COMEX_METALS: 'COMEX metals', CBOT_GRAINS: 'CBOT grains',
+                        CME_FX: 'CME FX', FX_SPOT: 'FX spot', PRIVATE_MARKETS: 'private markets' };
+    function groupWords(g) { var k = String(g || ''); return GROUP_WORDS[k] || (k.indexOf('FOREIGN') === 0 ? 'the venue' : k.replace(/_/g, ' ').toLowerCase()); }
     function sessionChip(s) {
-      return T.h('span', { class: 'chip ' + (s.phase || (s.open ? 'OPEN' : 'CLOSED')) }, s.group + ' . ' + (s.phase || (s.open ? 'OPEN' : 'CLOSED')) + (s.closes_at && s.open ? ' . closes ' + T.fmt.hm(s.closes_at) : (s.next_open && !s.open ? ' . opens ' + T.fmt.dow(s.next_open) + ' ' + T.fmt.hm(s.next_open) : '')));
+      var phase = String(s.phase || (s.open ? 'OPEN' : 'CLOSED'));
+      return T.h('span', { class: 'chip ' + phase, title: (s.group || '') + (s.note ? ' . ' + s.note : '') }, groupWords(s.group) + ' . ' + phase.replace(/_/g, ' ').toLowerCase() +
+        (s.closes_at && s.open ? ' . closes ' + T.fmt.hm(s.closes_at) : (s.next_open && !s.open ? ' . opens ' + T.fmt.dow(s.next_open) + ' ' + T.fmt.hm(s.next_open) : '')));
     }
     function paintHead() {
       var d = inst || {}; var i = I(); var kind = i.kind; var val = !!VALUATION[kind];

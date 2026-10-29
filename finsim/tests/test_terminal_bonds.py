@@ -43,11 +43,17 @@ FIX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "term
 NOTE10 = "UST-91282CRF0"                                         # US Treasury 4.625 % 15-Aug-2036, the 10-year note of the snapshot
 
 
+def fixture_bytes(name: str) -> bytes:
+    """A debt fixture's bytes, the file closed on return (TEST-09: no ResourceWarning for an unclosed fixture file)."""
+    with open(os.path.join(FIX, name), "rb") as f:
+        return f.read()
+
+
 def snapshot_rows(today=date(2026, 10, 21)):
     """The real master of 2026-10-21 (fiscaldata MSPD 2026-09-30 + auctions + FedInvest of the day) and the FedInvest prices."""
-    rd, secs = parse_mspd(open(os.path.join(FIX, "mspd_market_20260930.json"), "rb").read())
-    auctions = parse_auctions(open(os.path.join(FIX, "auctions_20261021.json"), "rb").read())
-    fdate, fi = parse_fedinvest(open(os.path.join(FIX, "fedinvest_20261021.html"), "rb").read())
+    rd, secs = parse_mspd(fixture_bytes("mspd_market_20260930.json"))
+    auctions = parse_auctions(fixture_bytes("auctions_20261021.json"))
+    fdate, fi = parse_fedinvest(fixture_bytes("fedinvest_20261021.html"))
     return treasuries.treasury_rows(rd, secs, auctions, fi, fdate, today), fdate, fi
 
 
@@ -450,7 +456,10 @@ class BondTests(unittest.TestCase):
         rt.repo = types.SimpleNamespace(pledged_face=lambda conn, account, iid: 700000)            # C27: 700,000 of the 1,000,000 pledged in an open repo
         r = self.trade("SELL", 400000)
         self.assertEqual(("PLEDGED_IN_REPO", 409), (r.code, r.http))                              # only 300,000 is free: release the repo first
-        self.assertIn("release the repo first", r.message)
+        # FINSIM1 P6-R1 (1.0.6, on purpose): the pledged face may be an open repo or a CSA pledge (repo.pledged_face counts both), so
+        # the refusal names both ways out
+        self.assertIn("700,000 face is pledged (an open repo or a CSA pledge to the prime broker) and only 300,000 is free", r.message)
+        self.assertIn("close the repo or release the pledge (Cash & Collateral) first", r.message)
         rt.repo = None
         n0 = self.n_entries()
         r = self.trade("SELL", 400000)

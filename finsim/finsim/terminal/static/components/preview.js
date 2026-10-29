@@ -20,6 +20,11 @@
  * funding.fx_conversion plan (pair, deal rate, USD amount, value date, spread cost, executable or why not) that the ticket's
  * 'convert USD -> GBP as shown' box accepts (OA-12); NO_QUOTE reads 'no quote yet - fetching' (USX-08).
  *
+ * FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 5 and 7): the header shows the time in force in words (DAY / GTC / GTD + date / next session);
+ * the execution block shows when a next-session order starts working; the session chip names the market in words ("US equities .
+ * closed", never the internal group code - 1.0.4 leftover V104R2-BW-02 (d)); an amend / replace preview says what it changes and the
+ * reservation it releases; a short sale that keeps its borrow says so instead of a new locate.
+ *
  * Conventions this file keeps
  * - Nothing is computed here: every figure is a field of the server's preview / result; the panel formats and labels.
  *   Cents fields (`*_c`, integers) are shown through T.fmt.cents, decimal strings through T.fmt.money.
@@ -183,9 +188,15 @@
     });
     return box;
   }
+  /* V104R2-BW-02 (d): the session's market in words, never the internal group code */
+  var GROUP_WORDS = { US_EQUITY: 'US equities', US_EQUITY_OPTIONS: 'US equity options', US_INDEX_OPTIONS: 'US index options', US_BONDS: 'US bonds',
+                      CME_EQUITY_INDEX: 'CME equity index', CME_RATES: 'CME rates', NYMEX_ENERGY: 'NYMEX energy', COMEX_METALS: 'COMEX metals', CBOT_GRAINS: 'CBOT grains',
+                      CME_FX: 'CME FX', FX_SPOT: 'FX spot', FOREIGN: 'the venue', PRIVATE_MARKETS: 'private markets' };
+  function groupWords(g) { var k = String(g || ''); return GROUP_WORDS[k] || (k.indexOf('FOREIGN') === 0 ? 'the venue' : k.replace(/_/g, ' ').toLowerCase()); }
   function sessionLine(ex) {
     var s = ex.session || {};
-    var chip = T.h('span', { class: 'chip ' + (s.phase || (s.open ? 'OPEN' : 'CLOSED')) }, (s.group || '') + ' . ' + (s.phase || (s.open ? 'OPEN' : 'CLOSED')) + (s.open && s.closes_at ? ' . closes ' + T.fmt.hm(s.closes_at) : ''));
+    var phase = String(s.phase || (s.open ? 'OPEN' : 'CLOSED'));
+    var chip = T.h('span', { class: 'chip ' + phase, title: s.note || '' }, groupWords(s.group) + ' . ' + phase.toLowerCase() + (s.open && s.closes_at ? ' . closes ' + T.fmt.hm(s.closes_at) : ''));
     return chip;
   }
   function whenText(epoch) { if (!epoch) { return ''; } return T.fmt.dow(epoch) + ' ' + T.fmt.date(epoch) + ' ' + T.fmt.hm(epoch) + ' ET'; }
@@ -201,7 +212,7 @@
     head.appendChild(T.h('span', { class: 'side-' + T.esc(pv.side || (req && req.side) || '') + ' pv-side' }, sideLabel(pv.side || (req && req.side))));
     head.appendChild(T.h('span', { class: 'mono' }, ' ' + T.fmt.qty(pv.qty != null ? pv.qty : (req && req.qty)) + ' '));
     head.appendChild(T.h('b', { class: 'mono' }, inst.symbol || inst.id || (req && req.instrument_id) || '?'));
-    head.appendChild(T.h('span', { class: 'muted' }, ' ' + typeLabel(pv, req) + ' ' + (pv.tif || (req && req.tif) || '')));
+    head.appendChild(T.h('span', { class: 'muted' }, ' ' + typeLabel(pv, req) + ' ' + (pv.tif_label || pv.tif || (req && req.tif) || '')));
     if (inst.support && inst.support !== 'FULL') { head.appendChild(T.stateTag(inst.support)); }
     el.appendChild(head);
     if (inst.name) { el.appendChild(T.h('div', { class: 'hint' }, (inst.name || '') + ' . ' + (inst.kind || '') + ' . ' + (inst.currency || '') + (inst.multiplier && inst.multiplier !== '1' ? ' . x' + inst.multiplier : '') + (inst.lot && inst.lot !== 1 ? ' . lot ' + T.fmt.qty(inst.lot) : '') + (inst.expiry ? ' . expires ' + inst.expiry : ''))); }
@@ -227,7 +238,9 @@
       leg.appendChild(T.h('div', { class: 'row' }, T.h('span', { class: 'muted' }, 'expected '), priceEl, T.h('span', { class: 'muted' }, ' basis ' + basis)));
       var fillTxt = ex.fill_now ? ('fills now: ' + T.fmt.qty(ex.fill_qty_now) + ' of ' + T.fmt.qty(pv.qty)) : ('no fill now (' + (ex.decision || 'rests') + ')');
       var exKv = [['fill estimate', fillTxt], ['cap', ex.cap_note || 'n/a'], ['session', sessionLine(ex)]];
-      if (ex.rests_until) { exKv.push(['rests until', whenText(ex.rests_until)]); }
+      if (ex.activates_at) { exKv.push(['queued until', whenText(ex.activates_at) + ' (the next session; it works that session only)']); }
+      else if (ex.rests_until) { exKv.push(['rests until', whenText(ex.rests_until)]); }
+      if (pv.tif_label) { exKv.push(['time in force', pv.tif_label]); }
       if (ex.expires_at) { exKv.push(['expires', whenText(ex.expires_at)]); }
       if (ex.participation != null) { exKv.push(['participation', T.fmt.pct(ex.participation, 0)]); }
       leg.appendChild(T.kv(exKv));
@@ -235,6 +248,12 @@
     } else if (!(pv.blockers && pv.blockers.length)) { leg.appendChild(T.h('div', { class: 'hint' }, 'execution block unavailable')); }
     el.appendChild(sec('Leg', leg));
     if (opts.hedgeLegs) { el.appendChild(sec('Hedge legs', opts.hedgeLegs)); }
+    var am = pv.amend;
+    if (am && am.order_id) {
+      el.appendChild(sec(am.mode === 'amend' ? 'Amend' : 'Replace', T.h('div', null, T.kv([['order', am.order_id + ' (' + String(am.status || '').toLowerCase() + ')'],
+        ['filled so far', T.fmt.qty(am.filled_qty)], [am.mode === 'amend' ? 'new total' : 'new order', T.fmt.qty(am.total_qty)], ['still to fill', T.fmt.qty(am.remaining_qty)],
+        ['reservation released', money(am.released_reservation)]]), T.h('div', { class: 'hint' }, am.note || ''))));
+    }
     if (pv.trail) {
       var tr = pv.trail;
       var tkv = [['trail', tr.trail_amt != null ? T.fmt.px(tr.trail_amt) + ' (price units)' : T.fmt.num(tr.trail_pct, 2) + ' %'],
@@ -279,7 +298,9 @@
       el.appendChild(sec('Funding plan', fbox, f.ok === false && !f.queued ? 'pv-blocked' : ''));
     }
     var b = pv.borrow;
-    if (b && (b.needed || b.qty != null)) {
+    if (b && b.carried) {
+      el.appendChild(sec('Borrow (short sale)', T.h('div', null, T.kv([['borrow', (b.borrow_id || '') + ' . covers ' + T.fmt.qty(b.qty) + ' more']]), T.h('div', { class: 'hint' }, b.note || ''))));
+    } else if (b && (b.needed || b.qty != null)) {
       el.appendChild(sec('Borrow (short sale)', T.h('div', null, T.kv([['availability', T.fmt.qty(b.qty_available) + ' of ' + T.fmt.qty(b.qty) + (b.available === false ? ' (NOT available)' : '')], ['tier', b.tier || 'n/a'], ['fee', b.fee_rate != null ? T.fmt.rate(b.fee_rate) : 'n/a'],
         ['rebate', b.rebate_rate != null ? T.fmt.rate(b.rebate_rate) : 'n/a'], ['collateral (102 %)', money(b.collateral) + ' . posted at each fill: the sale proceeds first, the 2 % excess + fee from cash'], ['lender', b.lender || 'n/a'], ['valid until', b.valid_until ? T.fmt.time(b.valid_until) : 'n/a']]),
         b.basis ? T.h('div', { class: 'hint' }, b.basis) : null)));

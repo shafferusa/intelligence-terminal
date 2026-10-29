@@ -10,7 +10,8 @@
  *
  * Reads    GET  /api/otc/cdx/desk?account_id=     (series, maturity, coupon, recovery, the FRED proxy with its date, the assumptions)
  * Previews POST /api/otc/cdx/preview {account_id, terms: {index, side, notional}}
- * Books    POST /api/otc/contracts {account_id, kind: 'CDX', terms}            (one request_id per click through T.api)
+ * Quotes   POST /api/otc/rfqs {account_id, kind: 'CDX', terms}   (C14, 1.0.6: "Request quote" - the simulated dealer answers on the next
+ *          lifecycle tick; the quote is accepted or declined under Quote requests, the block above the contracts table)
  * Edits    POST /api/otc/cdx/terms {account_id, index, basis_bp, half_spread_bp, im_pct}   (assumed, editable; recorded with before / after)
  *
  * Every number is the server's: the proxy spread (ICE BofA OAS via FRED - not a CDX dealer quote - with its date), the basis, the
@@ -90,10 +91,10 @@
     var root = T.h('div', { class: 'cdsticket' });
     T.clear(el).appendChild(root);
     var ui = {};
-    /* the registry's keys (keys.js; Settings > Keyboard): 'Submit the order' (Ctrl+Enter) opens the booking confirmation when
-       Book is enabled - the trade is booked only from that dialog; the preview key is on every box of the form */
+    /* the registry's keys (keys.js; Settings > Keyboard): 'Submit the order' (Ctrl+Enter) requests a quote when Request quote is enabled;
+       the deal is booked only by accepting the dealer's quote; the preview key is on every box of the form */
     root.addEventListener('keydown', function (ev) {
-      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onBook(); } }
+      if (T.keys.is(ev, 'ticket.submit')) { ev.preventDefault(); ev.stopPropagation(); if (ui.bookBtn && !ui.bookBtn.disabled) { onRequest(); } }
     });
 
     function vals() { return state.values[state.index]; }
@@ -108,7 +109,7 @@
       ui.index = T.h('div', { class: 'cd-proxy' }); root.appendChild(ui.index);
       ui.form = T.h('div'); root.appendChild(ui.form);
       ui.previewBtn = T.h('button', { class: 'btn primary', onclick: onPreview }, 'Preview');
-      ui.bookBtn = T.h('button', { class: 'btn', onclick: onBook, disabled: true }, 'Book');
+      ui.bookBtn = T.h('button', { class: 'btn', onclick: function () { onRequest(); }, disabled: true }, 'Request quote');
       ui.assumeBtn = T.h('button', { class: 'btn small', title: 'the basis, the dealer half-spread and the IM used for this index (assumed, editable)', onclick: function () {
         state.assumeOpen = !state.assumeOpen; renderAssume(); } }, 'Assumptions');
       ui.resetBtn = T.h('button', { class: 'btn small', title: 'put this form back to its defaults', onclick: function () {
@@ -245,6 +246,12 @@
         if (state.dead || seq !== state.seq) { return; }
         state.busy = false; ui.previewBtn.disabled = !!state.blocked;
         setStatus('');
+        if (pv && pv.refused) {                   /* V104R2-BW-05: a refused preview answers 200 with its reason; said in words, never a code */
+          setError(pv.message || 'the dealer cannot price these terms', pv.details && pv.details.field);
+          state.previews[k] = null;
+          renderPreview();
+          return;
+        }
         state.previews[k] = { pv: pv, sig: JSON.stringify(r.terms), terms: r.terms, stale: false };
         renderPreview();
       }, function (e) {
@@ -306,53 +313,38 @@
       T.clear(ui.preview);
       var p = state.previews[state.index];
       ui.bookBtn.disabled = true;
-      if (!p) { ui.preview.appendChild(T.h('div', { class: 'hint' }, 'Preview prices the deal from the proxy spread and the USD curve - nothing is booked until you confirm.')); return; }
+      if (!p) { ui.preview.appendChild(T.h('div', { class: 'hint' }, 'Preview prices the deal from the proxy spread and the USD curve; Request quote then asks the dealer -' +
+        ' nothing is booked before you accept its quote.')); return; }
       var pv = p.pv;
       var blockers = pv.blockers || [];
-      if (p.stale) { ui.preview.appendChild(T.h('div', { class: 'conv cd-warn' }, 'the terms changed since this preview: preview again before booking')); }
-      blockers.forEach(function (b) { ui.preview.appendChild(T.h('div', { class: 'error' }, b.code + ': ' + b.message)); });
+      if (p.stale) { ui.preview.appendChild(T.h('div', { class: 'conv cd-warn' }, 'the terms changed since this preview: preview again before requesting a quote')); }
+      blockers.forEach(function (b) { ui.preview.appendChild(T.h('div', { class: 'error', title: b.code || '' }, b.message || T.codeWords(b.code))); });   /* V104R2-BW-04: words, the code in the hover */
       ui.preview.appendChild(T.h('div', { class: 'cd-head' }, (pv.kind_label || 'CDS index') + ' . ' + pv.side_text));
       ui.preview.appendChild(T.h('div', { class: 'cd-plain' }, pv.plain || ''));
       ui.preview.appendChild(headline(pv));
       var sch = scheduleTable(pv);
       if (sch) { ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'coupon schedule', T.h('small', null, 'ACT/360 on the notional; the last period includes the maturity date')), sch)); }
       ui.bookBtn.disabled = !!state.blocked || p.stale || !pv.bookable || !!blockers.length;
-      ui.bookBtn.title = ui.bookBtn.disabled ? (state.blocked || (p.stale ? 'preview again' : (blockers[0] ? blockers[0].message : ''))) : 'book with a confirmation' + (T.keys.paren ? T.keys.paren('ticket.submit') : '');
+      ui.bookBtn.title = ui.bookBtn.disabled ? (state.blocked || (p.stale ? 'preview again' : (blockers[0] ? blockers[0].message : ''))) :
+        'asks the simulated dealer of the prime broker for a quote (about 30 s; good for 120 s)' + (T.keys.paren ? T.keys.paren('ticket.submit') : '');
     }
 
-    /* ---- book ---- */
-    function onBook() {
+    /* ---- the quote request (C14): the previewed terms go to the simulated dealer; its quote is accepted under Quote requests ---- */
+    function onRequest() {
       var k = state.index;
       var p = state.previews[k];
       if (!p || p.stale || state.blocked) { return; }
-      var pv = p.pv;
-      var ip = pv.initial_payment || {};
-      var lines = [['deal', pv.side_text + ' . USD ' + money(pv, 'notional')], ['counterparty', pv.broker + ' (ISDA Master / CSA / PBA)'],
-        ['dealt spread', bp(pv.deal_spread_bp) + ' (mid ' + bp(pv.mid_spread_bp) + ', proxy as of ' + (pv.proxy || {}).as_of + ')'],
-        ['upfront', pv.upfront_direction + ' (' + pv.upfront_pct + ' %, price ' + pv.price + ')'],
-        ['initial payment', 'USD ' + absMoney(ip, 'amount') + ' ' + (ip.direction || '') + ' on ' + ip.settle_date + ' (incl. the accrued rebate ' + money(pv.accrued_rebate || {}, 'amount') + ')'],
-        ['initial margin', 'USD ' + money(pv, 'im')], ['cost of dealing', 'USD ' + money(pv, 'cost_of_dealing')], ['CS01', signed(pv, 'cs01') + ' per bp']];
-      if (pv.funding) { lines.push(['funding', pv.funding.note]); }
-      var err = T.h('div', { class: 'error', hidden: true });
-      T.ui.modal({
-        title: 'Book ' + pv.index_name + ' S' + pv.series + ' 5Y', sticky: true,
-        body: T.h('div', null, T.h('div', { class: 'hint' }, 'The prime broker re-prices on the inputs available at booking; if they moved, the numbers booked are the new ones (shown in the result).'),
-          T.kv(lines), err),
-        actions: [{ label: 'Cancel' }, { label: 'Book', cls: 'primary', onClick: function (m, btn) {
-          btn.disabled = true; err.hidden = true;
-          T.api.post('/api/otc/contracts', { account_id: account, kind: 'CDX', terms: p.terms }).then(function (r) {
-            m.close();
-            var ipr = r.initial_payment || {};
-            var text = 'Booked ' + r.contract_id + ' . ' + pv.side_text + ' USD ' + money(pv, 'notional') + ' . initial payment USD ' + absMoney(ipr, 'amount') +
-              ' ' + (ipr.direction || '') + ' on ' + ipr.settle_date + ' . IM USD ' + money(r.im_transfer || {}, 'amount') + ' posted';
-            state.previews[k] = null; renderPreview();
-            ui.result.textContent = text; ui.result.hidden = false;
-            T.ui.toast(text, 'ok', 8000);
-            ['accounts', 'positions', 'account_detail', 'books', 'attention'].forEach(function (n) { if (T.poll && T.poll.kick) { T.poll.kick(n); } });
-            if (opts.onBooked) { try { opts.onBooked(r); } catch (e) { console.error('cdsticket onBooked', e); } }
-          }, function (e) { btn.disabled = false; err.textContent = describe(e); err.hidden = false; });
-        } }]
-      });
+      var sw = T.components.swapticket;
+      if (!sw || typeof sw.rfqRequest !== 'function') { setError('the quote requests are not available in this build (components/swapticket.js)', null); return; }
+      ui.bookBtn.disabled = true;
+      sw.rfqRequest(account, 'CDX', p.terms).then(function (r) {
+        ui.bookBtn.disabled = false;
+        var text = 'Quote requested (' + (r.rfq_id || '') + '): ' + p.pv.side_text + ' USD ' + money(p.pv, 'notional') + ' - the simulated dealer answers within about 30 s;' +
+          ' accept or decline it under Quote requests';
+        ui.result.textContent = text; ui.result.hidden = false;
+        T.ui.toast(text, 'ok', 6000);
+        if (opts.onBooked) { try { opts.onBooked(r); } catch (e) { console.error('cdsticket onBooked', e); } }
+      }, function (e) { ui.bookBtn.disabled = false; setError(describe(e), e && e.details && e.details.field); });
     }
 
     /* ---- the desk: at once and every 60 s in place ---- */

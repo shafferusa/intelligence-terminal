@@ -1687,6 +1687,17 @@ Treasury curve):
    - The settlement actions in the Completed Trades drawer (P2), the Activity margin calls and the Risk Reg T panel (P3) read P6's
      commands and functions; P8 walks them on the integrated build.
 
+#### As built (1.0.6)
+
+**Task 4.** The C9b adjuster "margin requirement (Reg T)" holds back the account's own free cash that the requirement needs after the longs' loan value: min(free cash, max(0, requirement - loan value)). The plan said only the deficit. Reason: under 'only a deficit is reserved', the cash the owner moves in to meet a Reg T call becomes excess the moment the call is met. SWEEP_OUT would then return it to Treasury at 17:30 and the call would reopen the next evening. The acceptance figures do not change: (c) holds back 0.00; (c') holds back 100,000.00 and raises a 100,000.00 call. Only fully paid longs count, so the loan value is net of PB financing (GL 2700). Free cash is settled plus receivables, minus payables, restricted cash and the short-option reservation, floored at 0.
+
+**Task 5.** The MARGIN_CALL job records calls and never moves cash. A first version funded Reg T deficits with a Treasury transfer, which broke P8's whole-fund reconciliation test.
+- Variation-margin calls (futures, OTC CSA) and borrow-collateral top-ups are MET by their own payment: own cash, one linked Treasury sweep, or PB financing. They stay OPEN, with an ERROR attention, only while that payment's FUNDING_SHORTFALL is open.
+- An OTC IM shortfall and a Reg T deficit stay OPEN until they are cured by transfers into the account (linked). They become UNMET after the due time (next business day 10:00 ET) and are cured later when covered.
+- Calls start forward: collateral_state.margin_call_start_ts is written at the first bind, and no call is issued for a business day whose 17:20 ET came before it.
+
+**Task 8.** The custodian map also covers: Debt 'custodian bank, DVP'; Credit 'bank'; Foreign & FX 'global custodian'; Private 'issuer register'; listed options 'OCC via the clearing broker'; futures 'CME Clearing (via the futures commission merchant)'; a PB account '\<broker\>: bilateral ISDA / CSA'.
+
 ### P5 - Historical import and reconciliation
 
 **Owns**
@@ -3385,3 +3396,43 @@ recompute by hand. These items are now part of phase 1 because the import makes 
 | POSTCLOSE-04 | minor | GET /api/accounts/F1:PB_GS positions_count counts v_positions only: the PB header says 0 positions while it holds 5 OTC contracts. | P3 Part A if trivial (api_views.account_detail), else phase 2 |
 | POSTCLOSE-05 | minor | Cash page sweep "for" column reads "swapvm swapvm (SWP-000003 2026-10-27)" and links to Transactions; CDX- contracts never get the OTC-tab link; the stored memo is raw. | phase 2 (P6 Part B cash.js) unless trivial |
 | POSTCLOSE-08 | minor | Wording: "unchanged vs the last VM" with no VM yet; "the mark at the last variation margin" on never-margined contracts; "reset every 1 m"; the VM memo ends with the job code "(SWAP_VM; ...)". | P4 Part A if trivial, else phase 2 |
+
+### 15.14 Phase-2 timing: no midnight wait (orchestrator, 2026-10-28 10:10 EDT; binding for P8, its re-verify rounds and the fixers)
+
+The owner's import was APPLIED to his live database on 2026-10-28 09:57 ET (BUILD_LOG). On 1.0.6 the real batch is therefore a no-op, and
+rule 7's 00:00-16:00 ET window must not idle the build:
+- P8 task 5 and every phase-2 re-verify check the real batch with the importer's REPORT mode (read-only, allowed at any time) on a fresh
+  post-import copy of the live database: lines 1-23 preserved, lines 24-33 already_imported, 34 declined, 35 unresolved, nothing posted,
+  integrity ok. That is the 1.0.6 acceptance of task 5.
+- A real-batch DRY RUN is run in addition only if the builder reaches it before 16:00 ET; never wait for the 00:00 window.
+- Everything else of 15.9 stands (the item 7 comparison of the owner's 33 positions, restated NAV versions and ledger between 1.0.5 and 1.0.6
+  on a post-import copy; the fix-forward rule; new jobs start forward).
+
+### 15.15 Owner report: the OTC forwards and cross-currency swaps are bad (orchestrator, 2026-10-28 17:35 EDT; binding for P8, its re-verify rounds and the fixers)
+
+The owner, using the live 1.0.5 prime-broker OTC tab, verbatim: "OTC market is bad for forwards and cross currecny stuff". Phase 2 treats this
+as an acceptance area of its own:
+- P8 walks, in a real browser on a fresh post-import owner-DB copy served with REAL delayed data (not --offline), every forward and
+  cross-currency flow of the PB OTC tab as the owner would use them, in 1.0.6: OTC FX forwards (every quoted currency against USD and the
+  crosses, tenors ON..1Y and a broken date), OTC equity forwards, and cross-currency swaps (each currency the desk offers, both notionals,
+  fixed / floating legs, the deal FX rate): the ticket's fields and defaults, the preview (deal rate or rate vs spot and forward points by
+  covered interest parity with each rate's source and date; the XCCY legs, notional exchanges, basis, accruals), the RFQ quote / accept,
+  the booking, the contracts table and drawer, the positions, Risk and the 17:05 jobs where they can be checked now.
+- Every problem is a defect in P8's list (critical = a trade impossible or money wrong; major = a feature broken, missing, misleading or
+  unusable; minor = polish), with evidence and screenshots; the fixer fixes them in 1.0.6. A price that cannot be produced from free data is
+  shown as unavailable with its reason, never invented.
+
+#### 15.15b The orchestrator's OTC audit (2026-10-28 18:20 EDT) and who fixes what
+
+An independent auditor walked the PB OTC forwards and cross-currency swaps on copies of the owner's database with real data, in 1.0.5 and in the
+1.0.6 tree: 23 findings (4 critical, 14 major, 5 minor), complete with evidence in `docs\OTC_FX_XCCY_AUDIT_2026-10-28.json` (read it in full).
+- The 1.0.6 fixers fix the LOCAL ones now, each with a test: OTC-01 (refuse to price a forward or XCCY leg off a rate older than a few business
+  days - CHF is on a 2024-03-01 rate - and show each rate's age on the ticket), OTC-02 (open OTC FX forwards count in currency exposure and the
+  FX scenarios until delivery), OTC-03 (the XCCY start / initial exchange is on the spot date, never T+0 or the previous business day after the
+  17:00 roll; no false overdraft), OTC-07 (no 2W in the tenor list unless the server prices it), OTC-18 (positions and the drawer show a forward's
+  direction and both legs), OTC-23 (the RFQ row and Accept dialog state the notional, the bought / sold currencies and the value date).
+- The product redesign belongs to the FX / cross-currency build right after 1.0.6 (`docs\FX_CCS_PLAN.md`, release 1.0.6.1 / 1.0.7): OTC-04 and
+  OTC-05 (per-currency term curves and basis instead of one flat overnight rate), OTC-06 (per-currency settlement calendars), OTC-08 (the PB spread
+  by tenor and size), OTC-09 (two-currency rate risk), OTC-10 / OTC-11 (exposure and IM treatment of forwards), OTC-12 / OTC-13 (equity forward
+  financing and discrete dividends), OTC-14 / OTC-15 / OTC-16 / OTC-19 (float / float XCCY, conventions, FX-move VM on the notionals), OTC-17,
+  OTC-20, OTC-21, OTC-22. 1.0.6 must not start that redesign (it would be redone).

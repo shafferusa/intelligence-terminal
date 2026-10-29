@@ -197,16 +197,27 @@ class QuoteCache:
         return {"open_ts": rec.provider_session[0], "close_ts": rec.provider_session[1]}
 
     def session_for(self, rec: QuoteRecord, now: int, memo: Optional[dict] = None):
+        """The session state of a record's group at ``now``.  ``memo`` (one call of ``get_many`` / ``snapshot``, one ``now``) keeps each
+        state once: by group, and - P8B-09 - by (group, the provider's session window) for a record that carries one (almost every Yahoo
+        record does: the 770 US equities of the owner's cache share one window).  ``sessions.state`` depends only on those and ``now``, so
+        the answer is the same; without the window in the key every record recomputed its group's window (about 0.3 ms each through the
+        tz fallback), which made one Dashboard mark snapshot cost ~240 ms."""
         if self.sessions is None:
             return None
-        key = rec.session_group
-        if memo is not None and key in memo and rec.provider_session is None:
+        group = rec.session_group
+        ps = rec.provider_session
+        try:
+            key = group if ps is None else (group, ps[0], ps[1])
+            hash(key)
+        except (TypeError, IndexError):            # an unreadable provider window: computed, never memoised
+            key = None
+        if memo is not None and key is not None and key in memo:
             return memo[key]
         try:
-            st = self.sessions.state(key, now, foreign=self._foreign(rec))
+            st = self.sessions.state(group, now, foreign=self._foreign(rec))
         except KeyError:
             st = None
-        if memo is not None and rec.provider_session is None:
+        if memo is not None and key is not None:
             memo[key] = st
         return st
 

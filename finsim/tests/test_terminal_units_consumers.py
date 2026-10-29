@@ -114,16 +114,16 @@ class PerformanceSofrFraction(Base):
         self.seed_p1()
         status, v = self.call("GET", "/api/portfolio/performance", query={"book": "P"})
         self.assertEqual(200, status, v)                                                # was 400 "SOFR must be a decimal fraction ... got 3.87"
-        self.assertEqual(("ok", "P1", 5, 4, 4, 0), (v["status"], v["lifetime_id"], v["n_snapshots"], v["n_returns"], v["pairs_used"], v["pairs_skipped"]))
+        # PORTFOLIO-15 (1.0.6): trading-day returns from inception - Mon 10-12 .. Fri 10-16, the inception return 1,000,000 / 1,000,000 - 1 = 0
+        # first: [0, 0.01, -0.01, 0.02, 0.00] -> 5 returns; the inception day has no previous SPY close, so 4 pairs
+        self.assertEqual(("ok", "P1", 5, 5, 4, 0), (v["status"], v["lifetime_id"], v["n_snapshots"], v["n_returns"], v["pairs_used"], v["pairs_skipped"]))
         self.assertEqual(("0.0387", "2026-10-19"), (v["sofr"], v["sofr_as_of"]))
         # rf = SOFR / 360 per day (ACT/360, sentence RATE_LAG): 0.0387 / 360 = 0.0001075 (with the percent it would be 3.87 / 360 = 0.01075)
         self.assertAlmostEqual(0.0001075, v["rf_daily"], places=12)
-        # mean(r) = 0.02 / 4 = 0.005; var(r, ddof=1) = (0.005^2 + 0.015^2 + 0.015^2 + 0.005^2) / 3 = 0.0005 / 3 -> stdev 0.01290994
-        # sharpe = (0.005 - 0.0001075) / 0.01290994 x sqrt(252) = 0.378971 x 15.874508 = 6.0160
-        self.assertAlmostEqual(6.0160, v["sharpe"], places=4)
-        # ann_ret = 0.005 x 252 = 1.26 (needs no rate); beta: m = [0.02, -0.01, 0.00, 0.01] -> cov / var = 0.4
-        self.assertAlmostEqual(1.26, v["ann_ret"], places=9)
-        self.assertAlmostEqual(0.4, v["beta"], places=4)
+        # 5 < 20 trading-day returns: Sharpe, the annualised return and beta wait for the 20th (PORTFOLIO-15) - none is shown on a guess
+        self.assertEqual(("insufficient history", None, None, None), (v["ratios_status"], v["sharpe"], v["ann_ret"], v["beta"]))
+        # the cumulative time-weighted return is always shown: 1 x 1.01 x 0.99 x 1.02 x 1 - 1 = 0.019898
+        self.assertAlmostEqual(0.019898, v["cum_twr"], places=6)
         self.assertNotIn("SOFR unavailable: Sharpe, Sortino and alpha are n/a", v["notes"])
 
     def test_no_sofr_is_said_not_assumed(self):
@@ -133,7 +133,9 @@ class PerformanceSofrFraction(Base):
         v = self.ok("GET", "/api/portfolio/performance", query={"book": "P"})
         self.assertEqual((None, None, None), (v["sofr"], v["rf_daily"], v["sharpe"]))
         self.assertIn("SOFR unavailable: Sharpe, Sortino and alpha are n/a", v["notes"])
-        self.assertAlmostEqual(1.26, v["ann_ret"], places=9)
+        # PORTFOLIO-15: no annualised return before 20 trading days; the cumulative return needs no rate (0.019898, as above)
+        self.assertIsNone(v["ann_ret"])
+        self.assertAlmostEqual(0.019898, v["cum_twr"], places=6)
 
 
 # ===== 3. the PB schedule: the served names, only the changed fields, no silent zero ==================================================

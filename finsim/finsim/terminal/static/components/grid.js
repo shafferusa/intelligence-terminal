@@ -7,7 +7,12 @@
  *     columns: [{key, label, cls: 'num'|'l', html(row), text(row), sort(row), title(row), csv(row)}],
  *     rows: [], rowKey(row), rowClass(row), onEnter(row), onKey(key, row) -> bool, onClick(row, event), filter: true,
  *     tools: true, csv: 'file.csv', groupBy(row) -> label, subtotal(rows, label) -> {colKey: html},
- *     footer(rows) -> {colKey: html}, empty: 'no rows', focus: true, restore: otherGrid.state() });
+ *     footer(rows) -> {colKey: html}, empty: 'no rows', focus: true, restore: otherGrid.state(),
+ *     csvColumns: [{key, label, text(row), csv(row)}], narrowBelow: px });
+ *   csvColumns (P8R1-04): what Copy and CSV export - one column per field - when the table on screen stacks several fields in one cell;
+ *   narrowBelow (P8R1-04): while the table's box is narrower than that (the ticket dock open, a narrow window) the grid carries the class
+ *   grid-narrow: columns whose cls has wide-only are hidden and the narrow-only lines inside the other cells show what they held
+ *   (terminal.css), so the table fits instead of hiding columns behind a scroll.
  *   g.update(rows[, {empty: 'no transactions'}]); g.empty(text); g.selected(); g.select(i); g.rows(); g.state(); g.restore(state); g.destroy();
  *   A page mounts with empty: 'loading ...' and passes the real empty text with the first answer (BM-17), so a table that
  *   received 0 rows says 'no transactions' instead of 'loading ...' forever.
@@ -67,7 +72,7 @@
       tools.appendChild(count);
       tools.appendChild(T.h('span', { class: 'spacer' }));
       tools.appendChild(T.h('button', { class: 'btn small', title: 'copy the visible rows (tab-separated)', onclick: function () { T.copy(tsv()); } }, 'Copy'));
-      tools.appendChild(T.h('button', { class: 'btn small', title: 'download the visible rows as CSV', onclick: function () { T.csv(spec.csv || 'grid.csv', cols, visible()); } }, 'CSV'));
+      tools.appendChild(T.h('button', { class: 'btn small', title: 'download the visible rows as CSV', onclick: function () { T.csv(spec.csv || 'grid.csv', spec.csvColumns || cols, visible()); } }, 'CSV'));
       root.appendChild(tools);
     }
     var scroll = T.h('div', { class: 'scroll', tabindex: '0', role: 'grid' });
@@ -128,8 +133,9 @@
       return rows;
     }
     function tsv() {
-      var lines = [cols.map(function (c) { return c.label || c.key; }).join('\t')];
-      visibleRows.forEach(function (r) { lines.push(cols.map(function (c) { return cellText(c, r); }).join('\t')); });
+      var out = spec.csvColumns || cols;
+      var lines = [out.map(function (c) { return c.label || c.key; }).join('\t')];
+      visibleRows.forEach(function (r) { lines.push(out.map(function (c) { return cellText(c, r); }).join('\t')); });
       return lines.join('\n');
     }
     function head() {
@@ -316,8 +322,31 @@
       } catch (e) { /* focus is a convenience */ }
       return handle;
     };
-    handle.destroy = function () { dead = true; clearTimeout(pressTimer); if (pressed === self) { pressed = null; } if (T.keys.grid === handle) { T.keys.grid = null; } T.clear(el); };
+    /* P8R1-04: the narrow layout follows the box's WIDTH (the dock opening or closing, the window resizing); the class is switched in the
+       next frame, outside the observer's own delivery, and only when the width changed - its effect on the height never loops back */
+    var resizeObs = null, lastW = -1;
+    function applyNarrow() { var w = root.clientWidth || 0; root.classList.toggle('grid-narrow', w > 0 && w < spec.narrowBelow); }
+    if (spec.narrowBelow) {
+      if (typeof ResizeObserver === 'function') {
+        resizeObs = new ResizeObserver(function () {
+          if (dead || !root.isConnected) { if (resizeObs) { resizeObs.disconnect(); resizeObs = null; } return; }   /* the page was left */
+          var w = root.clientWidth || 0;
+          if (w === lastW) { return; }
+          lastW = w;
+          var later = function () { if (!dead) { applyNarrow(); } };
+          if (window.requestAnimationFrame) { window.requestAnimationFrame(later); } else { setTimeout(later, 0); }
+        });
+        resizeObs.observe(root);
+      }
+      else { window.addEventListener('resize', applyNarrow); }
+    }
+    handle.destroy = function () {
+      dead = true; clearTimeout(pressTimer); if (pressed === self) { pressed = null; } if (T.keys.grid === handle) { T.keys.grid = null; }
+      if (resizeObs) { resizeObs.disconnect(); resizeObs = null; } else if (spec.narrowBelow) { window.removeEventListener('resize', applyNarrow); }
+      T.clear(el);
+    };
     render();
+    if (spec.narrowBelow) { applyNarrow(); }
     if (spec.restore) { handle.restore(spec.restore); }
     if (spec.focus) { T.keys.grid = handle; }
     return handle;

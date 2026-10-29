@@ -13,7 +13,10 @@ Conventions
   ``_sync_chart``) inside that same migration transaction - not only on a new file - so a GL a later release adds can post on
   a database an older release created (``journal_lines.gl`` is a foreign key to ``chart``).  Existing rows are never changed.
 - Later packages cannot edit this file: the complete §3 schema lives here, including the swap / private /
-  dividend / news tables and the trailing-stop / fill_mode / lock_until / NEGOTIATED / PRIVATE / SWAP columns.
+  dividend tables and the trailing-stop / fill_mode / lock_until / NEGOTIATED / PRIVATE / SWAP columns.
+- The news feature is gone (owner directive 2026-10-27 section 2; UI-16): a new database has no ``news_items`` table and no
+  ``news_enabled`` setting; an older database keeps both untouched and inert (no destructive migration: the table is dropped only
+  in a backed-up migration with the owner's OK).  1.0.3.x / 1.0.4 create the table again with CREATE IF NOT EXISTS on a rollback.
 - Build 2 hooks (BUILD2_PLAN C4, 2026-10-21): ``ensure_schema_ext(owner, statements)`` lets a product module add its own
   tables / indexes / columns from its ``bind(rt)`` (idempotent, additive only, logged once); ``open()`` widens the
   ``otc_contracts.kind`` CHECK to ``OTC_KINDS`` (a one-time table rebuild, only when the stored DDL lacks a kind; the file
@@ -270,10 +273,6 @@ CREATE TABLE IF NOT EXISTS private_loans (
 );
 CREATE TABLE IF NOT EXISTS dividends (instrument_id TEXT NOT NULL, ex_date TEXT NOT NULL, amount TEXT NOT NULL, pay_date TEXT, source TEXT NOT NULL,
   fetched_ts INTEGER NOT NULL, PRIMARY KEY (instrument_id, ex_date));
-CREATE TABLE IF NOT EXISTS news_items (id INTEGER PRIMARY KEY, source TEXT NOT NULL CHECK (source IN ('yahoo','fed','newspaper')), title TEXT NOT NULL,
-  publisher TEXT NOT NULL, link TEXT NOT NULL, time_ts INTEGER NOT NULL, tickers_json TEXT NOT NULL DEFAULT '[]', category TEXT,
-  fetched_ts INTEGER NOT NULL, UNIQUE (source, link));
-CREATE INDEX IF NOT EXISTS ix_news_time ON news_items(time_ts);
 CREATE TABLE IF NOT EXISTS marks (
   instrument_id TEXT NOT NULL, mark_date TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('CLOSE','SETTLE','CURVE')),
   price TEXT NOT NULL, currency TEXT NOT NULL, quality TEXT NOT NULL, source TEXT NOT NULL, method TEXT NOT NULL,
@@ -303,7 +302,7 @@ TABLES = ("meta", "commands", "events", "jobs_done", "job_failures", "attention"
           "journal_entries", "journal_lines", "gl_balances", "transfers", "orders", "order_events", "order_rejections", "fills",
           "lots", "lot_relief", "settlements", "borrows", "loans", "repos", "fx_deals", "futures_settle", "margin_state",
           "accrual_state", "hedge_packages", "otc_contracts", "otc_vm", "otc_resets", "private_companies", "private_rounds",
-          "private_loans", "dividends", "news_items", "marks", "nav_snapshots", "quote_cache", "curve_points", "finra_short",
+          "private_loans", "dividends", "marks", "nav_snapshots", "quote_cache", "curve_points", "finra_short",
           "watchlists")
 
 # Seed settings (§3.1); book_defaults is filled from the seeded books.
@@ -318,7 +317,6 @@ DEFAULT_SETTINGS = {
     "pb_otc_threshold_c": 2500000000,
     "qp_threshold_c": {"INDIVIDUAL": 500000000, "FUND": 2500000000, "INSTITUTION": 0},
     "private_defaults": {"fee_pct": "0.03", "settle_days": 30, "lockup_months": 6},
-    "news_enabled": True,
 }
 
 # Id sequences (§3: "order ids O-000001, fill ids F-000001, ...")
@@ -447,6 +445,10 @@ def get_meta(conn: sqlite3.Connection, key: str, default: Optional[str] = None) 
 
 def set_meta(conn: sqlite3.Connection, key: str, value: str) -> None:
     conn.execute("INSERT INTO meta(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, str(value)))
+
+
+#: the per-start copies ``Database.backup`` writes and rotates: ``terminal-YYYYmmdd-HHMMSS.db`` (``-n`` when that second is taken)
+_DATED_BACKUP = re.compile(r"terminal-\d{8}-\d{6}(-\d+)?\.db")
 
 
 class Database:
@@ -786,7 +788,10 @@ class Database:
 
     # ---- misc -----------------------------------------------------------------------------------------------------
     def backup(self, dest_dir: str, keep: int = 10) -> Optional[str]:
-        """sqlite3 backup API copy ``terminal-YYYYmmdd-HHMMSS.db``; newest ``keep`` kept."""
+        """sqlite3 backup API copy ``terminal-YYYYmmdd-HHMMSS.db``; the newest ``keep`` of these dated per-start copies are kept.  Only
+        they rotate (FINSIM1 P7-R3): any other ``terminal-*.db`` in the folder - the installer's ``terminal-pre-<version>-<stamp>.db`` -
+        is never deleted here and takes none of the ``keep`` slots (sorting after the dated names, it used to fill them, so each new
+        per-start copy was deleted right after it was written once ten of them existed)."""
         if not os.path.exists(self.path) or os.path.getsize(self.path) == 0:
             return None
         os.makedirs(dest_dir, exist_ok=True)
@@ -805,7 +810,7 @@ class Database:
                 dst.close()
         finally:
             src.close()
-        files = sorted(f for f in os.listdir(dest_dir) if f.startswith("terminal-") and f.endswith(".db"))
+        files = sorted(f for f in os.listdir(dest_dir) if _DATED_BACKUP.fullmatch(f))
         for old in files[:-keep] if len(files) > keep else []:
             try:
                 os.remove(os.path.join(dest_dir, old))

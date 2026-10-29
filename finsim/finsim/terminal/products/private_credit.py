@@ -253,12 +253,14 @@ def index_for_night(services, loan, night: date) -> Tuple[date, Decimal]:
     rates = getattr(services, "rates", None)
     series = str(loan["index_name"])
     if rates is None or not hasattr(rates, "as_of_le"):
-        raise RejectError("RATE_STORE_MISSING", f"no rate store is bound (services.rates): {series} is unknown and is never defaulted",
+        raise RejectError("RATE_STORE_MISSING", f"no interest-rate data is loaded: {series} is unknown and a rate is never assumed",
                           {"series": series, "night": night.isoformat()})
     got = rates.as_of_le(series, night)
     if got is None or (night - got[0]).days > RATE_LAG_MAX_DAYS:
-        raise RejectError("RATE_UNAVAILABLE", f"no {series} observation within {RATE_LAG_MAX_DAYS} days on or before {night.isoformat()}: the night waits for FRED"
-                          " (RATE_LAG; never defaulted)", {"series": series, "night": night.isoformat(), "loan_id": loan["loan_id"]})
+        # V104R2-BW-02 (e) class (a 1.0.4 leftover in a file no builder owned; the integrator, 1.0.6): the reason in trader words, no code
+        raise RejectError("RATE_UNAVAILABLE", f"no {series} print within {RATE_LAG_MAX_DAYS} days on or before {night.isoformat()}: the night waits for FRED"
+                          f" (it publishes {series} a business day late; a rate is never assumed)",
+                          {"series": series, "night": night.isoformat(), "loan_id": loan["loan_id"]})
     return got[0], qprice(got[1])
 
 

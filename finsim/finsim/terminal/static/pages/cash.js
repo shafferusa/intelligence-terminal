@@ -12,7 +12,9 @@
  *   D9 / C21, the CashView's C9b adjustments): the counterparties' collateral inside settled cash - variation margin received
  *   under the CSA net of VM posted (floored at 0) plus cash collateral received for shares lent - which available, buying
  *   power and the sweep exclude.  With the collateral module bound (T.hasModule('collateral')) the margin panel shows its
- *   parts (GET /api/collateral/restricted); else no request goes out and the panel shows the CashView total only.  `available` is the account's own spendable cash FLOORED AT ZERO
+ *   parts (GET /api/collateral/restricted); else no request goes out and the panel shows the CashView total only.  1.0.6 (FINSIM1
+ *   P6 task 4): beside it, the "margin requirement (Reg T)" adjustment when the account has one - its own cash the Reg T
+ *   requirement needs beyond the longs' loan value, kept out of available and the sweep - with a link to Cash & Collateral.  `available` is the account's own spendable cash FLOORED AT ZERO
  *   (accounting.AVAILABLE_TEXT); what working orders and payables need beyond it is "reserved R (Treasury sweep covers N)",
  *   UNFUNDED / overdrawn flagged (T.fmt.liquidity(r, '')); the definition is the hover text.
  * - margin & collateral: futures required / posted, short-option margin (a reservation), OTC IM, VM posted, VM received
@@ -126,6 +128,7 @@
       cols.push({ key: 'beyond_own_cash', label: 'beyond own cash', cls: 'l', html: function (r) { var l = liquidity(r); return l.extra ? '<span class="' + (l.warn ? 'neg' : '') + '">' + T.esc(l.extra) + '</span>' : ''; }, text: function (r) { return liquidity(r).extra; }, title: function (r) { return liquidity(r).title; } });
       S.cash = gridIn(pc, { columns: cols, rowKey: function (r) { return r.currency; }, empty: 'no cash balances' }, 'cash-grid');
       S.restricted = T.h('div', { class: 'line', id: 'cash-restricted', title: RESTRICTED_TEXT }); pc.appendChild(S.restricted);
+      S.marginLine = T.h('div', { class: 'line', id: 'cash-regt', hidden: true }); pc.appendChild(S.marginLine);
       pc.appendChild(T.convNote(['AVAILABLE', 'SWEEP']));
       root.appendChild(pc);
       /* ---- settlements ladder + margin & collateral */
@@ -245,6 +248,18 @@
       S.restricted.appendChild(T.h('span', null, held.map(function (r) { return r.currency + ' ' + restrictedText(r) + ' of settled ' + T.money(r, 'settled'); }).join(' . ') +
         ' - the counterparties\' collateral: not available, never swept, earns no credit interest'));
     }
+    /* 1.0.6: the Reg T margin cash an account keeps (the C9b adjustment "margin"): shown only when it holds some */
+    function paintMargin(cash) {
+      var usd = (cash || {}).USD;
+      var a = usd && Array.isArray(usd.adjustments) ? usd.adjustments.filter(function (x) { return x && x.key === 'margin'; })[0] : null;
+      T.clear(S.marginLine);
+      S.marginLine.hidden = !(a && T.num(a, 'amount'));
+      if (S.marginLine.hidden) { return; }
+      S.marginLine.appendChild(T.h('b', null, 'Reg T margin cash kept: '));
+      S.marginLine.appendChild(T.h('span', { title: 'the account\'s own cash the Reg T requirement needs beyond the loan value of its longs: not available, never swept' },
+        'USD ' + T.money(a, 'amount') + ' - needed for the Reg T requirement of the physical shorts; '));
+      S.marginLine.appendChild(T.h('a', { href: '#/cash?account=' + encodeURIComponent(acct) }, 'requirement and terms on Cash & Collateral'));
+    }
     /* the margin panel's rows: the total, and its parts from the collateral module when it is bound */
     function restrictedRows(cashUsd) {
       var p = restricted;
@@ -263,6 +278,7 @@
       var cash = d.cash || {};
       S.cash.update(Object.keys(cash).map(function (c) { return Object.assign({ currency: c }, cash[c]); }), { empty: 'no cash balances' });
       paintRestricted(cash);
+      paintMargin(cash);
       S.ladder.update(d.ladder || d.settlements || [], { empty: 'nothing pending' });
       /* margin & collateral (BM-12): VM posted and received from the served names */
       var m = d.margin || {}; var coll = d.collateral || {};

@@ -87,6 +87,10 @@ class SettlementFailTests(unittest.TestCase):
         self.assertEqual("FAILED", body["state"]["stage"])
         self.assertIn("no cash moves until resolved", body["state"]["label"])
         self.assertEqual(1, len(open_items(rt, "SETTLEMENT_FAILED", sid)))
+        # P8B-13 (1.0.6 fixer): the attention item names the account by its name, never by its id (rule 4)
+        msg = open_items(rt, "SETTLEMENT_FAILED", sid)[0]["message"]
+        self.assertTrue(msg.startswith(f"US Exchange: settlement {sid} (pay USD 33,951.00, due 2026-10-21) - simulated counterparty fail"), msg)
+        self.assertNotIn(US_EXCHANGE, msg)
         self.assertEqual((409, "ALREADY_FAILED"), (execute(rt, "settlement.fail", {"settle_id": sid}).http, execute(rt, "settlement.fail", {"settle_id": sid}).code))
         # Wed 00:35: SETTLE_DUE skips the failed row - nothing moves: settled cash 500,000.00, the payable 33,951.00 still open
         out = lc.tick(rt, "2026-10-21T00:35:00-04:00", only="SETTLE_DUE")
@@ -109,6 +113,36 @@ class SettlementFailTests(unittest.TestCase):
         self.assertEqual((409, "NOT_FAILED"), (execute(rt, "settlement.resolve", {"settle_id": sid, "action": "retry"}).http,
                                                execute(rt, "settlement.resolve", {"settle_id": sid, "action": "retry"}).code))
         self.assertEqual((409, "NOT_PENDING"), (execute(rt, "settlement.fail", {"settle_id": sid}).http, execute(rt, "settlement.fail", {"settle_id": sid}).code))
+        assert_integrity(self, rt, "full")
+
+    def test_a_retry_before_the_due_date_closes_the_resolve_it_item(self):
+        """P8R1-06: once the owner asks for a retry, the attention item that told him to resolve the fail closes - it asks nothing more of
+        him - while the settlement itself still reads "retry requested" until the settlement run of its due date settles it."""
+        rt = self.rt
+        ok(self, fund(rt, US_EXCHANGE, 50000000))
+        aapl(rt)
+        sid = self._buy(100)                                        # Tue 10:00: payable 33,951.00 (100 x 339.50 + fee 1.00) due Wed 10-21
+        ok(self, execute(rt, "settlement.fail", {"settle_id": sid, "reason": "the seller did not deliver"}))
+        item = open_items(rt, "SETTLEMENT_FAILED", sid)
+        self.assertEqual(1, len(item))
+        self.assertIn("no cash moves until you resolve it (retry, cash compensation or buy-in)", item[0]["message"])
+        rt.clock.set("2026-10-20T10:05:00-04:00")
+        body = ok(self, execute(rt, "settlement.resolve", {"settle_id": sid, "action": "retry"}))
+        self.assertEqual([], open_items(rt, "SETTLEMENT_FAILED", sid))                   # closed at the retry, not at the settlement
+        self.assertEqual(rt.clock.epoch(), sc.one(rt, "SELECT resolved_ts FROM attention WHERE id=?", (item[0]["id"],))["resolved_ts"])
+        s = srow(rt, sid)
+        self.assertEqual(("FAILED", "RETRY", "PENDING"), (s["fail_state"], s["resolution"], s["status"]))
+        self.assertIn("retry requested: it settles at the next settlement run", body["state"]["label"])
+        # Tue: not due yet, nothing moves; Wed 00:35: settled 33,951.00 and RESOLVED (RETRY), no new item
+        self.assertEqual([], lc.tick(rt, "2026-10-20T10:06:00-04:00", only="SETTLE_DUE")["ran"])
+        self.assertEqual((50000000, 3395100), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "2100")))
+        out = lc.tick(rt, "2026-10-21T00:35:00-04:00", only="SETTLE_DUE")
+        self.assertEqual([(sid, "DONE")], [(i["key"], i["status"]) for i in out["ran"]])
+        s = srow(rt, sid)
+        self.assertEqual(("SETTLED", "RESOLVED", "RETRY"), (s["status"], s["fail_state"], s["resolution"]))
+        self.assertEqual((50000000 - 3395100, 0), (bal(rt, US_EXCHANGE, "1010"), bal(rt, US_EXCHANGE, "2100")))
+        self.assertEqual(1, len(sc.q(rt, "SELECT 1 FROM attention WHERE code='SETTLEMENT_FAILED' AND ref_id=?", (sid,))))
+        self.assertEqual([], open_items(rt, "SETTLEMENT_FAILED"))
         assert_integrity(self, rt, "full")
 
     def test_a_cash_compensation_and_buy_in_postings(self):

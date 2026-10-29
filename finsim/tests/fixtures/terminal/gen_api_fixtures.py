@@ -113,14 +113,16 @@ SESSIONS = {
     "FX_SPOT": {"group": "FX_SPOT", "open": True, "phase": "OPEN", "opened_at": "$NOW-60000", "closes_at": "$NOW+7200", "next_open": None, "trade_date": TODAY, "early_close": False, "note": ""},
 }
 PROVIDERS_OK = {p: {"ok": True, "last_ok_ts": "$NOW-%d" % s, "last_error": None, "consecutive_errors": 0, "down_until_ts": None, "requests_today": n}
-                for p, s, n in [("yahoo", 20, 1412), ("cboe", 95, 38), ("treasury", 25000, 1), ("fred", 21000, 4), ("finra", 30000, 1), ("frankfurter", 3500, 6), ("fed", 1800, 3), ("newspaper", 240, 12)]}
+                for p, s, n in [("yahoo", 20, 1412), ("cboe", 95, 38), ("treasury", 25000, 1), ("fred", 21000, 4), ("finra", 30000, 1), ("frankfurter", 3500, 6)]}
 WORKERS = {w: {"alive": True, "last_tick_ts": "$NOW-%d" % s, "stalled": False, "errors_1h": 0, "last_error": None} for w, s in [("quotes", 4), ("lifecycle", 12), ("matcher", 6), ("supervisor", 9)]}
 INTEGRITY = {"ok": True, "hold": False, "checked_at": "$NOW-600", "problems": []}
 CLOCK = {"utc": NOW, "ny": "$NY", "trading_day": TODAY, "accounting_day": TODAY}
 HEALTH = {"app": "finsim-terminal", "version": "1.0.0", "schema": 1, "pid": 4242, "uptime_s": 5400, "started_ts": "$NOW-5400", "db_path": "C:\\Users\\logan\\.finsim\\terminal.db",
           "db_size": 3145728, "state_version": 42, "offline": False, "clock": CLOCK, "integrity": INTEGRITY, "providers": PROVIDERS_OK, "workers": WORKERS,
           "lifecycle": {"due": 0, "failing": []}, "attention_open": 2, "calendar": {"file": "data/nyse-holidays.json", "fallback_years": [2027, 2028]},
-          "lock": {"path": "C:\\Users\\logan\\.finsim\\terminal.lock", "pid": 4242}, "news": {"injection_flags": 0, "fetched": {"yahoo": "$NOW-300", "fed": "$NOW-1800", "newspaper": "$NOW-240"}}}
+          "lock": {"path": "C:\\Users\\logan\\.finsim\\terminal.lock", "pid": 4242},
+          # 1.0.6: no news key and no news provider (the feature is gone); the module list the UI gates optional routes on (C2)
+          "modules": {"orders": "bound", "risk": "bound", "compliance": "bound", "performance": "bound", "lifecycle": "bound", "dashboard": "bound"}}
 write("health", HEALTH)
 hd = json.loads(json.dumps(HEALTH))
 hd["providers"]["yahoo"] = {"ok": False, "last_ok_ts": "$NOW-900", "last_err_ts": "$NOW-120", "last_error": "HTTP 503 Service Unavailable", "consecutive_errors": 5, "down_until_ts": "$NOW+120", "requests_today": 1412}
@@ -504,4 +506,81 @@ write("unsupported", {"items": [
     {"item": "Phone / LAN access, access keys", "state": "NOT_IN_THIS_BUILD", "wording": "loopback only", "where": "-"}]})
 write("watchlists", {"lists": [{"name": "core", "account_id": ACCT, "items": [{"instrument_id": "AAPL", "symbol": "AAPL", "name": "Apple Inc.", "position": 500, "quote": Q["AAPL"]}, {"instrument_id": "MSFT", "symbol": "MSFT", "name": "Microsoft Corp.", "position": 0, "quote": Q["MSFT"]}, {"instrument_id": "NVDA", "symbol": "NVDA", "name": "NVIDIA Corp.", "position": 0, "quote": Q["NVDA"]}, {"instrument_id": "SPY", "symbol": "SPY", "name": "SPDR S&P 500 ETF", "position": -100, "quote": Q["SPY"]}]},
                                {"name": "fx", "account_id": "P2:FOREIGN_FX", "items": [{"instrument_id": "EURUSD", "symbol": "EUR/USD", "name": "Euro / US dollar", "position": 0, "quote": Q["EURUSD"]}]}]})
+# GET /api/dashboard?book= (FINSIM1_PLAN P1 task 4, 1.0.6): the same P2 world, gathered as dashboard.py answers it.
+#   NAV 1,002,429.50 and the P&L tiles are the Portfolio's (PORTFOLIO above); the ITD explain rows are pnl_out's:
+#     realised -120.00 + income 12.50 - financing 0.00 - fees 16.00 + unrealised 2,555.00 + FX -2.00 = 2,429.50 (= ITD P&L, residual 0)
+#   returns (6-dp fractions, half-even): TODAY 2,081.50 / 1,000,348.00 = 0.002081 (MTD the same baseline); YTD = ITD (no flows, no
+#     snapshot before the lifetime) = 1,002,429.50 / 1,000,000.00 - 1 = 0.0024295 -> 0.002430, simple ITD the same
+#   exposure = the Risk fixture: gross 1,072,167.50 / NAV = 1.0696, long 995,305.50 -> 0.9929, short 76,862.00 -> 0.0767,
+#     net 918,443.50 -> 0.9162; gross notional = gross (no OTC) -> 1.0696; no TRS (the Risk page's position rows, not its whole report)
+#   the risk warnings 3 and compliance notices 4 of the attention summary as counted in the background 20 s before ("kept")
+#   cash (USD) = the accounts' own figures: settled 435,000.00 + 281,405.11 + 5,245.00 + 0.00 + 50,000.00 + 100,000.00 = 871,650.11;
+#     available 435,000.00 + 183,830.36 + 5,245.00 + 0.00 + 38,760.00 + 100,000.00 = 762,835.36; payables 174,505.75 + 11,240.00 =
+#     185,745.75; receivables 76,931.00 USD + EUR 10,000.00 at the 1.1238 mid = 11,238.00 -> 88,169.00; nothing reserved or restricted
+#   accounts: NAV by account (sum 1,002,429.50) and its share of the book (435,012.50 / 1,002,429.50 = 0.4340 ...)
+#   counters: working 2 (o:5 LIMIT MSFT, o:6 trailing AAPL), settling 5 (US Exchange 3 + Foreign & FX 2), 1 rejection today
+def _explain(pv):
+    rows = []
+    for key, label, sign, note in (("realised", "realised", 1, ""), ("income", "income", 1, ""), ("financing", "financing", -1, "a financing cost reduces P&L"),
+                                   ("fees", "fees", -1, "fees reduce P&L"), ("unrealised", "unrealised", 1, ""), ("fx_result", "FX result", 1, "")):
+        b = Decimal(pv["components"][key])
+        rows.append({"key": key, "label": label, "booked": str(b), "effect": str(sign * b), "note": note})
+    return rows
+
+
+_RET = {"TODAY": {"pct": "0.002081", "reason": None}, "MTD": {"pct": "0.002081", "reason": None}, "YTD": {"pct": "0.002430", "reason": None},
+        "ITD": {"pct": "0.002430", "reason": None, "simple_pct": "0.002430", "simple_reason": None}}
+_DPNL = {}
+for _p in ("TODAY", "MTD", "YTD", "ITD"):
+    _DPNL[_p] = dict(PORTFOLIO["pnl"][_p], explain=_explain(PORTFOLIO["pnl"][_p]), explain_ties=True, **{"return": _RET[_p]})
+_W = {"P2:TREASURY": "0.4340", ACCT: "0.4014", "P2:DEBT": "0.0150", "P2:CREDIT": "0.0000", "P2:FOREIGN_FX": "0.0499", "P2:PB_GS": "0.0998"}
+_CASH = {"P2:TREASURY": ("435000.00", "435000.00", "0.00", "0.00"), ACCT: ("281405.11", "183830.36", "76931.00", "174505.75"), "P2:DEBT": ("5245.00", "5245.00", "0.00", "0.00"),
+         "P2:CREDIT": ("0.00", "0.00", "0.00", "0.00"), "P2:FOREIGN_FX": ("50000.00", "38760.00", "0.00", "11240.00"), "P2:PB_GS": ("100000.00", "100000.00", "0.00", "0.00")}
+_DACCOUNTS = []
+for _a in ACCOUNTS:
+    _c = _CASH[_a["account_id"]]
+    _DACCOUNTS.append({"account_id": _a["account_id"], "name": _a["name"], "kind": _a["kind"], "role": _a["role"], "broker": _a["broker"], "status": _a["status"],
+                       "nav": _a["nav"], "weight": _W[_a["account_id"]], "settled": _c[0], "available": _c[1], "reserved": "0.00", "restricted": "0.00",
+                       "receivable": _c[2], "payable": _c[3], "working_orders": _a["working_orders"], "pending_settlements": _a["pending_settlements"],
+                       "attention_count": _a["attention_count"], "currencies": ["EUR", "USD"] if _a["role"] == "FOREIGN_FX" else ["USD"]})
+_COUNTS = {"working": 2, "partial": 0, "held": 0, "queued": 0, "waiting_parent": 0, "rfq_open": 0, "rejected_today": 1, "settling": 5, "failed": 0}
+_SUMMARY = json.loads(open(os.path.join(OUT, "attention_summary.json"), encoding="ascii").read())
+write("dashboard", {
+    "scope": "P2:ALL", "lifetime_ids": ["P2"], "book_code": "P", "book_name": "Personal Book", "as_of": NOW,
+    "capital": {"starting": "1000000.00", "book_default": "1000000.00", "contributed": "1000000.00", "lifetime_id": "P2", "started_ts": "$NOW-432000",
+                "note": "starting capital = the capital the lifetime opened with; contributed = deposits less withdrawals since (internal transfers net to zero)"},
+    "nav": PORTFOLIO["nav"], "pnl": _DPNL,
+    "returns": {"scope": "P2:ALL", "today_pct": "0.002081", "mtd_pct": "0.002081", "ytd_pct": "0.002430", "itd_twr_pct": "0.002430", "itd_simple_pct": "0.002430",
+                "as_of": NOW, "basis": "time-weighted: the daily NAV snapshots chained with capital flows removed", "reasons": {}},
+    "explain": _explain(PORTFOLIO["pnl"]["ITD"]),
+    "exposure": {"present": True, "long": "995305.50", "short": "76862.00", "gross": "1072167.50", "net": "918443.50", "long_pct_nav": "0.9929", "short_pct_nav": "0.0767",
+                 "net_pct_nav": "0.9162", "gross_pct_nav": "1.0696", "leverage": "1.0696", "gross_notional": "1072167.50", "gross_notional_leverage": "1.0696",
+                 "trs_notional": "0.00", "trs_pct_nav": "0.0000", "dv01": "8.90", "excess_liquidity": "662835.36", "encumbrance": "93470.64", "quality": "stale",
+                 "partial": True, "notional_missing": ["XYZ"],
+                 "definitions": {"gross_exposure": "Gross exposure / NAV: long + short headline exposure divided by NAV.", "net": "Net / NAV: long minus short headline exposure divided by NAV (signed)."}},
+    "cash": {"present": True, "currency": "USD", "settled": "871650.11", "available": "762835.36", "reserved": "0.00", "restricted": "0.00", "receivable": "88169.00",
+             "payable": "185745.75",
+             "by_currency": [{"currency": "USD", "settled": "871650.11", "available": "762835.36", "reserved": "0.00", "restricted": "0.00", "receivable": "76931.00",
+                              "payable": "185745.75", "usd_rate": "1"},
+                             {"currency": "EUR", "settled": "0.00", "available": "0.00", "reserved": "0.00", "restricted": "0.00", "receivable": "10000.00", "payable": "0.00",
+                              "usd_rate": "1.1238"}],
+             "other_adjustments": [], "fx_missing": [],
+             "note": "available = each account's own spendable cash, floored at zero; other currencies in USD at this answer's rates"},
+    "margin": {"present": False, "reason": "margin and collateral figures are not in this build: the collateral summary is not available"},
+    "collateral": {"present": False, "reason": "margin and collateral figures are not in this build: the collateral summary is not available"},
+    "accounts": _DACCOUNTS, "counters": dict(_COUNTS, present=True, reason=None), "attention": _SUMMARY,
+    "sources": {"marks": {"source": "one mark snapshot for the whole answer", "as_of": NOW, "ms": 28.0}, "nav": {"source": "the ledger", "as_of": NOW, "quality": "stale", "ms": 19.0},
+                "pnl": {"source": "the ledger against the last daily snapshot before each period", "as_of": NOW, "quality": "stale", "ms": 61.0},
+                "exposure": {"source": "the Risk page's per-position exposure rows and totals on the same marks", "as_of": NOW, "quality": "stale", "ms": 21.0},
+                "cash": {"source": "each account's cash in the ledger", "as_of": NOW, "ms": 4.0},
+                "attention": {"source": "the attention items, counted now; the risk warnings and compliance notices as last counted for this book", "as_of": NOW, "ms": 2.0,
+                              "counts": {"warnings": 3, "compliance": 4, "state_version": 412, "counted_at": "$NOW-20", "marks_as_of": "$NOW-20", "ms": 61.0, "error": None,
+                                         "notes": [], "how": "kept", "counted_ms": 0.0, "max_age_s": 60}},
+                "returns": {"source": "the daily NAV snapshots, chained day by day", "as_of": NOW, "ms": 2.0, "present": True},
+                "margin": {"source": "margin and collateral figures are not in this build", "ms": 0.0, "present": False},
+                "collateral": {"source": "margin and collateral figures are not in this build", "ms": 0.0, "present": False},
+                "counters": {"source": "the trade blotters (orders by stage, settlements by state)", "ms": 3.0, "present": True}},
+    "timing": {"own_ms": 135.0, "providers_ms": {"returns": 2.0, "collateral": 0.0, "counters": 3.0}, "total_ms": 140.0, "budget_ms": 300, "within_budget": True,
+               "counts": "kept", "counts_ms": 0.0}})
+write("dashboard_counts", {"scope": "P2:ALL", "present": True, "reason": None, "counts": _COUNTS, "pending_badge": 2, "completed_badge": 5, "ms": 3.0})
 print("wrote", len(os.listdir(OUT)), "files to", OUT)

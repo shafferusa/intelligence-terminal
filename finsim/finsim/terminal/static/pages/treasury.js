@@ -1,7 +1,9 @@
 /* Treasury (TERMINAL_DESIGN.md s17.1 / s6.7 #/treasury; WP-12; Build 2 P03): the selected book's Treasury - capital (Add
  * funds / Withdraw: one small dialog each, then a confirmation naming the amount and the book -> POST /api/treasury/deposit |
- * withdraw), cash by currency, the advances to the accounts (click -> the account), cash interest, the sweep log (each
- * sweep-in says what it paid for and links to it), a manual transfer (POST /api/transfers; From = Treasury, To = the first
+ * withdraw), cash by currency, the advances to the accounts (click -> the account), cash interest, the Treasury securities line
+ * (FINSIM1 P6 task 6, PORTFOLIO-09: the bills held in any account of the book as cash equivalents - GET
+ * /api/collateral/treasury_securities, only when the collateral module is bound; "Treasury securities: none" when there are none),
+ * the sweep log (each sweep-in says what it paid for and links to it), a manual transfer (POST /api/transfers; From = Treasury, To = the first
  * trading account or the one open in the header), the book's reserve (PATCH /api/settings {treasury_reserve, book}).
  * GET /api/treasury = TreasuryView + advances + capital history + sweep log + the shown figures (advances_view,
  * available_view); the identity is the server's.  Nothing is computed here.
@@ -53,9 +55,35 @@
       T.h('button', { class: 'btn', onclick: function () { fundsModal('withdraw'); } }, 'Withdraw'),
       T.h('button', { class: 'btn', onclick: transferModal }, 'Transfer')]);
     el.appendChild(body);
+    var bills = null, billsErr = null;
+    function loadBills() {
+      if (!(T.hasModule && T.hasModule('collateral'))) { return Promise.resolve(); }
+      return T.api.get('/api/collateral/treasury_securities').then(function (b) { bills = b || null; billsErr = null; }, function (e) { billsErr = T.api.describe(e); });
+    }
     function load() {
       if (dead) { return Promise.resolve(); }
-      return T.api.get('/api/treasury').then(function (d) { if (!dead) { data = d; paint(); } }, function (e) { if (!data) { T.clear(body); T.errorBox(body, e, 'treasury'); } throw e; });
+      return T.api.get('/api/treasury').then(function (d) { return loadBills().then(function () { if (!dead) { data = d; paint(); } }); },
+        function (e) { if (!data) { T.clear(body); T.errorBox(body, e, 'treasury'); } throw e; });
+    }
+    /* PORTFOLIO-09: the book's Treasury bills as cash equivalents (at market, maturity, the purchase discount accreted) */
+    function securitiesPanel() {
+      var p = T.h('div', { class: 'panel', id: 'treasury-securities' }, T.h('h2', null, 'Treasury securities', T.h('small', null, 'cash equivalents: the bills held in any account of the book')));
+      if (!(T.hasModule && T.hasModule('collateral'))) { p.appendChild(T.h('div', { class: 'hint' }, 'Treasury securities: unavailable - they are listed by the collateral module, which is not in this build')); return p; }
+      if (billsErr) { p.appendChild(T.h('div', { class: 'hint' }, 'Treasury securities: unavailable (' + billsErr + ')')); return p; }
+      if (!bills) { p.appendChild(T.h('div', { class: 'hint' }, 'loading ...')); return p; }
+      p.appendChild(T.h('div', { class: 'hint', title: bills.definition || '' }, bills.line || 'Treasury securities: none'));
+      if ((bills.rows || []).length) {
+        var g = T.h('div'); p.appendChild(g);
+        T.components.grid.mount(g, { tools: false, rows: bills.rows, empty: 'none', rowKey: function (r) { return r.account_id + ':' + r.instrument_id; }, columns: [
+          { key: 'symbol', label: 'bill', cls: 'l', text: function (r) { return r.symbol + ' . ' + (r.account_name || T.accountName(r.account_id)); }, title: function (r) { return r.name || ''; } },
+          { key: 'face', label: 'face', text: function (r) { return T.fmt.qty(r.face); } },
+          { key: 'market_value', label: 'market value', text: function (r) { return T.money(r, 'market_value'); }, title: function (r) { return r.price_basis || r.price_note || ''; } },
+          { key: 'maturity', label: 'maturity', cls: 'l', text: function (r) { return (r.maturity || 'n/a') + (r.days_to_maturity != null ? ' (' + r.days_to_maturity + ' days)' : ''); } },
+          { key: 'accreted_discount', label: 'discount accreted', text: function (r) { return T.money(r, 'accreted_discount'); },
+            title: function () { return 'the purchase discount accreted straight-line to today (display only: the ledger carries the bill at cost)'; } },
+          { key: 'pledged_face', label: 'pledged', text: function (r) { return r.pledged_face ? T.fmt.qty(r.pledged_face) : ''; } }] });
+      }
+      return p;
     }
     function reasonHtml(r) {
       var l = r.link;
@@ -97,6 +125,7 @@
       var ag = T.h('div'); advP.appendChild(ag);
       T.components.grid.mount(ag, { tools: false, rows: arows, empty: 'nothing advanced', rowKey: function (r) { return r.account_id; }, columns: [{ key: 'account_id', label: 'account', cls: 'l', text: function (r) { return r.name || T.accountName(r.account_id); } }, { key: 'amount', label: 'advanced', text: function (r) { return T.money(r, 'amount'); } }], onEnter: function (r) { T.router.go(T.router.account(r.account_id, 'cash')); }, onClick: function (r) { T.router.go(T.router.account(r.account_id, 'cash')); } });
       two.appendChild(advP);
+      body.appendChild(securitiesPanel());
       var hist = T.h('div', { class: 'panel' }, T.h('h2', null, 'capital history', T.h('small', null, 'initial capital, deposits and withdrawals with their memo')));
       var hg = T.h('div'); hist.appendChild(hg);
       T.components.grid.mount(hg, { tools: false, rows: data.capital_history || [], empty: 'no capital movements', rowKey: function (r) { return r.transfer_id; }, columns: [

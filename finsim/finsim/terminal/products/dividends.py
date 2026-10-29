@@ -484,10 +484,18 @@ def row_note(cal, row, qty: Optional[int] = None, state: Optional[str] = None) -
 
 def position_notes(conn: sqlite3.Connection, cal, account_id: str, instrument_id: str, today: date) -> List[str]:
     """The position row's dividend notes (module docstring POSITION ROW): one per ``dividends`` row of the name within
-    −60 / +120 days of ``today`` with its state from ``jobs_done`` / the ledger, plus open split notices."""
+    −60 / +120 days of ``today`` with its state from ``jobs_done`` / the ledger, plus open split notices.  PORTFOLIO-05: an
+    ex-date on or before the first day the position was held (the oldest open lot's New York date; entitlement goes to the holder
+    at the prior close) carries no entitlement and reads "not held on the ex-date" (the STT note: ex 10-01, short since 10-21),
+    unless the ledger shows an ex-date entry for it."""
     lo, hi = (today - timedelta(days=NOTE_LOOKBACK_DAYS)).isoformat(), (today + timedelta(days=NOTE_AHEAD_DAYS)).isoformat()
     pos = conn.execute("SELECT qty FROM v_positions WHERE account_id=? AND instrument_id=?", (account_id, instrument_id)).fetchone()
     qty_now = int(pos["qty"] or 0) if pos is not None else 0
+    first = conn.execute("SELECT MIN(open_ts) FROM lots WHERE account_id=? AND instrument_id=? AND qty_remaining > 0", (account_id, instrument_id)).fetchone()
+    held_from = None
+    if first is not None and first[0] is not None:
+        from ..clock import ny_of
+        held_from = ny_of(int(first[0])).date().isoformat()
     out: List[str] = []
     for r in conn.execute("SELECT instrument_id, ex_date, amount, pay_date, source FROM dividends WHERE instrument_id=? AND ex_date BETWEEN ? AND ? ORDER BY ex_date",
                           (instrument_id, lo, hi)).fetchall():
@@ -500,6 +508,8 @@ def position_notes(conn: sqlite3.Connection, cal, account_id: str, instrument_id
         elif acc is not None and acc["side"]:
             qty = 1 if acc["side"] == "LONG" else -1
             state = f"accrued {fmt_money(acc['amount_c'])} {'receivable' if acc['side'] == 'LONG' else 'payable'}"
+        elif held_from is None or r["ex_date"] <= held_from:
+            qty, state = 0, "not held on the ex-date" + (f" (held since {held_from})" if held_from else "")
         elif ex_done is not None and ex_done["status"] == "DONE":
             qty, state = qty_now, "no entitlement (nothing held at the prior close)"
         else:

@@ -15,11 +15,11 @@ import unittest
 from datetime import date
 from decimal import Decimal
 
-from finsim.terminal.accounting import Accounting, ScopeError
-from finsim.terminal.performance import (NEEDED, STATUS_INSUFFICIENT, STATUS_OK, Snap, max_drawdown, monthly_table, perf_view, sofr_input,
-                                         statistics)
+from finsim.terminal.accounting import Accounting, ScopeError  # noqa: F401 - Accounting.insert_snapshot below
+from finsim.terminal.performance import (MIN_RATIO_RETURNS, NEEDED, STATUS_INSUFFICIENT, STATUS_OK, Snap, fold_returns, max_drawdown, monthly_table, perf_view,
+                                         returns_summary, sofr_input, statistics, trading_day_fn)
 from finsim.terminal.tables import CONVENTIONS
-from tests.terminal_helpers import deposit, make_runtime, snapshot
+from tests.terminal_helpers import TREASURY, deposit, make_runtime, post_entry, snapshot
 
 D = Decimal
 SOFR = D("0.0387")                      # 3.87 % as a decimal fraction -> rf = 0.0387 / 360 = 0.0001075 per day
@@ -254,16 +254,30 @@ class LoaderTests(unittest.TestCase):
         rt.accounting.selected_book = "P"
         v = perf_view(rt)                                       # scope None -> "ALL" -> the selected book's open lifetime
         self.assertEqual(("P1", STATUS_OK, 5, 4, 0, "0.0387", "2026-10-19"), (v.lifetime_id, v.status, v.n_snapshots, v.pairs_used, v.pairs_skipped, v.sofr, v.sofr_as_of))
-        self.assertAlmostEqual(6.0160, v.sharpe, places=4)
-        self.assertAlmostEqual(0.4, v.beta, places=9)
+        # PORTFOLIO-15 (1.0.6, an intended change of this loader test): the page's statistics are TRADING-DAY returns from inception -
+        # 10-12 .. 10-16 are Monday .. Friday, so nothing folds; the inception return 1,000,000 / 1,000,000 (its own capital) - 1 = 0
+        # comes first: [0, 0.01, -0.01, 0.02, 0.00] -> 5 returns, 4 of them paired with SPY (the inception day has no previous close)
+        self.assertEqual((True, 5, 20, "insufficient history"), (v.trading_days, v.n_returns, v.needed_returns, v.ratios_status))
+        for want, got in zip([0.0, 0.01, -0.01, 0.02, 0.0], v.returns):
+            self.assertAlmostEqual(want, got, places=9)
+        # 5 < 20 trading-day returns: the annualised ratios and the regression are not shown yet ("insufficient history")
+        self.assertEqual((None, None, None, None, None, None), (v.ann_ret, v.vol, v.sharpe, v.sortino, v.beta, v.alpha))
+        # always shown: cumulative TWR = 1 x 1.01 x 0.99 x 1.02 x 1 - 1 = 1.019898 - 1 = 0.019898; drawdown (1.01 - 0.9999) / 1.01 = 0.01;
+        # hit rate 2 of 5 = 0.4; the monthly table is unchanged (19,898 / 1,000,000 = 0.019898)
+        self.assertAlmostEqual(0.019898, v.cum_twr, places=9)
+        self.assertAlmostEqual(0.01, v.max_dd, places=9)
+        self.assertEqual(0.4, v.hit_rate)
         self.assertAlmostEqual(0.019898, v.monthly[0].ret, places=9)
+        self.assertEqual(["2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16"], [x["date"] for x in v.daily])
         self.assertEqual(v.to_dict(), perf_view(rt, "P1").to_dict())
         self.assertEqual(v.to_dict(), perf_view(rt, "P1:ALL").to_dict())
         self.assertEqual(v.to_dict(), perf_view(rt, "P1:US_EXCHANGE").to_dict())   # an account id -> its lifetime
         f = perf_view(rt, "F1")
-        # F1 sees only its two rows: r = 25,250,000/25,000,000 - 1 = 0.01; one pair (10-12 -> 10-13) with m = 0.02
-        self.assertEqual(("F1", STATUS_OK, 2, 1, 1, 0), (f.lifetime_id, f.status, f.n_snapshots, f.n_returns, f.pairs_used, f.pairs_skipped))
-        self.assertAlmostEqual(0.01, f.returns[0], places=9)
+        # F1 sees only its two rows: the inception return 25,000,000 / 25,000,000 - 1 = 0, then 25,250,000 / 25,000,000 - 1 = 0.01;
+        # one pair (10-12 -> 10-13) with m = 0.02
+        self.assertEqual(("F1", STATUS_OK, 2, 2, 1, 0), (f.lifetime_id, f.status, f.n_snapshots, f.n_returns, f.pairs_used, f.pairs_skipped))
+        self.assertAlmostEqual(0.0, f.returns[0], places=9)
+        self.assertAlmostEqual(0.01, f.returns[1], places=9)
         self.assertEqual((2_500_000_000, 2_525_000_000, 0), (f.monthly[0].nav_start_c, f.monthly[0].nav_end_c, f.monthly[0].flows_c))
         i = perf_view(rt, "I1")                                 # no snapshots yet
         self.assertEqual(("I1", STATUS_INSUFFICIENT, 0, ["insufficient history (0 of 2 snapshots)"], "0.0387"), (i.lifetime_id, i.status, i.n_snapshots, i.notes, i.sofr))
@@ -291,10 +305,12 @@ class LoaderTests(unittest.TestCase):
         row = snapshot(rt, "ALL", date(2026, 10, 20))
         self.assertEqual((1_010_000_000, 10_000_000), (row["nav_c"], row["flows_day_c"]))
         v = perf_view(rt)
-        # r = (10,100,000 - 100,000) / 10,000,000 - 1 = 0: the deposit is not a gain
-        self.assertEqual((STATUS_OK, 2, 1), (v.status, v.n_snapshots, v.n_returns))
-        self.assertEqual(0.0, v.returns[0])
-        self.assertEqual((0.0, 0.0, 0.0), (v.ann_ret, v.max_dd, v.hit_rate))
+        # PORTFOLIO-15 (1.0.6): trading-day returns from inception - 10-19 (Monday) is inception: 10,000,000 / its capital 10,000,000 - 1 = 0;
+        # 10-20: (10,100,000 - 100,000) / 10,000,000 - 1 = 0: the deposit is not a gain
+        self.assertEqual((STATUS_OK, 2, 2), (v.status, v.n_snapshots, v.n_returns))
+        self.assertEqual([0.0, 0.0], v.returns)
+        # 2 < 20 returns: no annualised return yet; drawdown 0, hit rate 0 of 2, cumulative 0
+        self.assertEqual((None, 0.0, 0.0, 0.0, "insufficient history"), (v.ann_ret, v.max_dd, v.hit_rate, v.cum_twr, v.ratios_status))
         # no SPY marks recorded and no SOFR: both disclosed, nothing invented
         self.assertEqual((0, 1, ["2026-10-19", "2026-10-20"], None, None), (v.pairs_used, v.pairs_skipped, v.skipped_dates, v.sharpe, v.sofr))
         self.assertIn("SOFR unavailable: Sharpe, Sortino and alpha are n/a", v.notes)
@@ -302,6 +318,96 @@ class LoaderTests(unittest.TestCase):
         m = v.monthly[0]
         self.assertEqual(("2026-10", 1_000_000_000, 1_010_000_000, 10_000_000, 0.0), (m.month, m.nav_start_c, m.nav_end_c, m.flows_c, m.ret))
         json.dumps(v.to_dict())
+
+
+class TradingDayReturns(unittest.TestCase):
+    """PORTFOLIO-15 (P3 acceptance 1 (e)): returns on trading days only; the annualised ratios from the 20th trading-day return."""
+
+    def test_five_snapshots_with_a_weekend_give_three_trading_day_returns(self):
+        rt = make_runtime(tempfile.mkdtemp(prefix="fst-perf-td-"))
+        try:
+            is_td = trading_day_fn(rt)
+            # Thu 10-22 (inception: NAV 1,000,000.00 = its capital), Fri 10-23 1,010,000.00, Sat 10-24 1,010,100.00 (a night of interest),
+            # Sun 10-25 1,010,200.00, Mon 10-26 1,020,302.00
+            snaps = [Snap("2026-10-22", 100_000_000, 100_000_000), Snap("2026-10-23", 101_000_000, 0), Snap("2026-10-24", 101_010_000, 0),
+                     Snap("2026-10-25", 101_020_000, 0), Snap("2026-10-26", 102_030_200, 0)]
+            self.assertEqual([True, True, False, False, True], [is_td(s.snap_date) for s in snaps])
+            v = statistics(snaps, {}, SOFR, lifetime_id="T1", trading_day=is_td, min_returns=MIN_RATIO_RETURNS)
+            # 3 trading-day returns: Thu (inception) 1,000,000 / 1,000,000 - 1 = 0; Fri 1,010,000 / 1,000,000 - 1 = 0.01;
+            # Mon with Sat and Sun folded in: 1,020,302 / 1,010,000 - 1 = 10,302 / 1,010,000 = 0.0102
+            self.assertEqual((STATUS_OK, 5, 3), (v.status, v.n_snapshots, v.n_returns))
+            for want, got in zip([0.0, 0.01, 0.0102], v.returns):
+                self.assertAlmostEqual(want, got, places=12)
+            self.assertEqual([[], [], ["2026-10-24", "2026-10-25"]], [x["folded"] for x in v.daily])
+            self.assertEqual([None, "2026-10-22", "2026-10-23"], [x["from_date"] for x in v.daily])
+            # annualised = "insufficient history" (3 of 20 trading-day returns): every annualised ratio is None
+            self.assertEqual(("insufficient history", 20), (v.ratios_status, v.needed_returns))
+            self.assertEqual((None, None, None, None, None, None), (v.ann_ret, v.vol, v.sharpe, v.sortino, v.beta, v.alpha))
+            # always shown: cumulative TWR = 1.01 x 1.0102 - 1 = 0.020302; drawdown 0 (no fall); hit rate 2 of 3
+            self.assertAlmostEqual(0.020302, v.cum_twr, places=12)
+            self.assertEqual(0.0, v.max_dd)
+            self.assertAlmostEqual(2 / 3, v.hit_rate, places=12)
+            d = v.to_dict()
+            self.assertEqual((0.020302, "insufficient history", 3), (d["cum_twr"], d["ratios_status"], len(d["daily"])))
+            # a series ending on a weekend: Sat / Sun wait for Monday (pending), they never make a return of their own
+            v2 = statistics(snaps[:4], {}, SOFR, trading_day=is_td, min_returns=MIN_RATIO_RETURNS)
+            self.assertEqual((2, ["2026-10-24", "2026-10-25"]), (v2.n_returns, v2.pending_tail))
+            # fold_returns with tail=True closes one folded return at the last snapshot (what a chain to today needs)
+            recs, pending = fold_returns(snaps[:4], is_td, tail=True)
+            self.assertEqual((["2026-10-22", "2026-10-23", "2026-10-25"], True), ([r["date"] for r in recs], recs[-1]["tail"]))
+            self.assertAlmostEqual(101_020_000 / 101_000_000 - 1, recs[-1]["ret"], places=12)
+        finally:
+            rt.close()
+
+
+def _snaprow(key: str, d: str, nav_c: int, flows_c: int, capital_c: int) -> dict:
+    row = _row(key, d, nav_c, flows_c)
+    row["capital_cum_c"] = capital_c
+    return row
+
+
+class ReturnsSummary(unittest.TestCase):
+    """C9e ``performance.returns_summary``: TODAY against the P&L baseline, the time-weighted chain, simple ITD - by hand."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-perf-ret-")
+        self.rt = make_runtime(self.tmp, at="2026-10-21T10:00:00-04:00")     # T1 with USD 10,000,000.00; Wednesday
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_today_mtd_itd_time_weighted_and_simple(self):
+        rt = self.rt
+        with rt.db.writer() as tx:
+            # Mon 10-19 inception 10,000,000.00 (its own capital), Tue 10-20 10,100,000.00 (+1 %); capital 10,000,000.00 on both
+            Accounting.insert_snapshot(tx.conn, _snaprow("T1:ALL", "2026-10-19", 1_000_000_000, 1_000_000_000, 1_000_000_000))
+            Accounting.insert_snapshot(tx.conn, _snaprow("T1:ALL", "2026-10-20", 1_010_000_000, 0, 1_000_000_000))
+        # today: a 1,000,000.00 deposit (a flow, not a gain) and 202,000.00 of income -> NAV now 11,202,000.00
+        self.assertTrue(deposit(rt, 100_000_000).ok)
+        # (the income on 4500, an income GL kept per account, not per instrument)
+        self.assertTrue(post_entry(rt, [[TREASURY, "1010", "USD", 20_200_000], [TREASURY, "4500", "USD", -20_200_000]], "test:income:1", kind="INTEREST").ok)
+        v = returns_summary(rt, "T1:ALL")
+        # TODAY = (11,202,000 - 10,100,000 - 1,000,000) / 10,100,000 = 102,000 / 10,100,000 = 0.010099 (6 dp)
+        self.assertEqual(("0.010099", "2026-10-20"), (v["today_pct"], v["baselines"]["today"]))
+        # ITD time-weighted = (1 + 0) x (1 + 0.01) x (1 + 102,000 / 10,100,000) - 1 = 10,202,000 / 10,000,000 - 1 = 0.0202
+        self.assertEqual("0.020200", v["itd_twr_pct"])
+        # simple ITD = (11,202,000 - 11,000,000 contributed) / 11,000,000 = 0.018364 (the deposit lowers it: it earned nothing yet)
+        self.assertEqual("0.018364", v["itd_simple_pct"])
+        # MTD / YTD: no snapshot before October 1 -> from inception (10-19): the same chain
+        self.assertEqual(("0.020200", "0.020200", "inception (2026-10-19)"), (v["mtd_pct"], v["ytd_pct"], v["baselines"]["mtd"]))
+        self.assertEqual({}, v["reasons"])
+        self.assertIn("time-weighted", v["basis"])
+        # ALL_BOOKS has no single chain: every figure None with the reason, nothing guessed
+        a = returns_summary(rt, "ALL_BOOKS")
+        self.assertEqual((None, None), (a["today_pct"], a["itd_twr_pct"]))
+        self.assertIn("per book", a["reasons"]["itd_twr_pct"])
+
+    def test_no_snapshot_yet(self):
+        v = returns_summary(self.rt, "T1:ALL")
+        # nothing closed yet: TODAY has no baseline; ITD from inception = NAV over capital = 0 (no P&L yet)
+        self.assertEqual((None, "0.000000", "0.000000"), (v["today_pct"], v["itd_twr_pct"], v["itd_simple_pct"]))
+        self.assertIn("no daily snapshot", v["reasons"]["today_pct"])
 
 
 class ComponentSourceTests(unittest.TestCase):

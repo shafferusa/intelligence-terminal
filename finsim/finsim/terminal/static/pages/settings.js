@@ -8,8 +8,11 @@
  * /api/settings, which renames books through book.update_settings), Lifetimes (components/lifetimes.js), Calendar (NYSE
  * holidays / early closes for this year and next, the session hours per group, the session overrides form), Margins &
  * limits (the static futures margin table and position limits with editable overrides - assumed values), Private
- * defaults, Data Status (GET /api/health: providers, refreshers, workers, the next lifecycle job, news per source, the
- * database file + WAL) and Unsupported (GET /api/unsupported, four wrapped columns).
+ * defaults, Market data (UI-20, 1.0.6; it was Data Status - #/settings/data still opens it: GET /api/health status first - each
+ * market-data provider with what it supplies and its delay, the background refreshers, the workers, the next lifecycle job - then
+ * the market-data and execution-simulation preferences, linked where they are edited (participation rate: General; session
+ * overrides: Calendar; futures margins: Margins & limits), then the server and database file + WAL) and Unsupported (GET
+ * /api/unsupported, four wrapped columns).  No news: the news feature and its sources are gone (owner directive section 2).
  *
  * Every section reads what it shows from the server BEFORE it paints (SHELL-08: correct on a direct load and after F5) and
  * repaints when the pollers bring a change (T.state.on, unsubscribed on unmount) - except while a form on it has unsaved
@@ -19,14 +22,13 @@
   'use strict';
   var T = window.T;
   var SECTIONS = [['general', 'General'], ['keyboard', 'Keyboard'], ['accounts', 'Accounts'], ['pb', 'Prime brokers'], ['books', 'Books'], ['lifetimes', 'Lifetimes'], ['calendar', 'Calendar'],
-    ['margins', 'Margins & limits'], ['private', 'Private defaults'], ['data', 'Data Status'], ['unsupported', 'Unsupported']];
+    ['margins', 'Margins & limits'], ['private', 'Private defaults'], ['market-data', 'Market data'], ['unsupported', 'Unsupported']];
   var GROUP_LABEL = { US_EQUITY: 'US equities & ETFs', US_EQUITY_OPTIONS: 'US equity options', US_INDEX_OPTIONS: 'US index options', US_BONDS: 'US bonds',
     CME_EQUITY_INDEX: 'CME equity index futures', CME_RATES: 'CME rates futures', NYMEX_ENERGY: 'NYMEX energy futures', COMEX_METALS: 'COMEX metals futures',
     CBOT_GRAINS: 'CBOT grains futures', CME_FX: 'CME FX futures', FX_SPOT: 'FX spot', FOREIGN: 'Foreign listings', PRIVATE_MARKETS: 'Private markets', '*': 'every group' };
   var PROVIDER_WHAT = { yahoo: 'last trade, up to 15 min delayed (equities / ETFs / futures / FX / indices; 1-minute bars)', cboe: 'option chains and NBBO, about 15 min delayed',
     treasury: 'daily par yield curve (cached for the day)', fred: 'daily rates and credit spreads (published the next morning)', finra: 'daily short volume (borrow estimate)',
-    frankfurter: 'ECB reference rates (fallback FX)', yahoo_news: 'Yahoo Finance news search (market and your names)', fed: 'Federal Reserve press releases (hourly)',
-    newspaper: 'the newspaper index (published site, hourly; the local copy as fallback)', fiscaldata: 'Treasury auctions and outstanding securities',
+    frankfurter: 'ECB reference rates (fallback FX)', fiscaldata: 'Treasury auctions and outstanding securities',
     treasurydirect: 'FedInvest Treasury prices (daily)', nyfed: 'SOFR fallback (daily)', ecb: 'ECB deposit rate and euro-area AAA curve (daily)', mof: 'JGB yields (daily)',
     debt: 'debt refresher (every 30 min): the Treasury list, FedInvest prices, ECB and MOF yields', otc_options: 'OTC option inputs: daily closes and chains (every 15 s while contracts are open)' };
   function plabel(p) { return T.providerLabel ? T.providerLabel(p) : String(p || '').replace(/_/g, ' '); }
@@ -50,10 +52,9 @@
   }
 
   function render(el, route) {
-    var section = route.tab || 'general';
+    var section = route.tab === 'data' ? 'market-data' : (route.tab || 'general');      /* the old Data Status address */
     if (!SECTIONS.some(function (s) { return s[0] === section; })) { section = 'general'; }
-    var legacy = T.h('span', { class: 'muted', style: 'font-size:11px' });
-    T.pageHead(el, 'Settings', '', [legacy]);
+    T.pageHead(el, 'Settings', '');
     var nav = T.h('div', { class: 'settings-nav' });
     SECTIONS.forEach(function (s) { nav.appendChild(T.h('button', { class: 'tab' + (s[0] === section ? ' active' : ''), onclick: function () { T.router.go('#/settings/' + s[0]); } }, s[1])); });
     el.appendChild(nav);
@@ -63,13 +64,6 @@
     var dirty = false, dead = false, sig = '', handles = [];
     body.addEventListener('input', function () { dirty = true; });
     body.addEventListener('change', function () { dirty = true; });
-
-    /* SHELL-20: the old simulation's archive view, linked only when something answers on its port */
-    T.api.get('/api/legacy', null, { nobook: true }).then(function (r) {
-      T.clear(legacy);
-      if (r && r.up) { legacy.appendChild(T.h('a', { class: 'legacy', href: r.url, target: '_blank', rel: 'noopener' }, 'legacy FinSim archive view (old simulation)')); }
-      else if (r && r.command) { legacy.appendChild(T.h('span', { title: 'the old simulation\'s archive view is not running' }, 'legacy FinSim archive view: run ' + r.command)); }
-    }, function () { /* the header chip stays empty; the route answers on every build of this file */ });
 
     function bookCode() { return T.book && T.book.code; }
     function signature() {
@@ -380,7 +374,8 @@
       var pbs = (D.accounts || []).filter(function (a) { return a.kind === 'PB'; });
       var ag = agreementsLine(((D.extra.lifetime || {}).agreements) || []);
       if (!pbs.length) {
-        p.appendChild(T.h('div', { class: 'empty' }, 'no prime-broker account in this lifetime' + (e.can_onboard ? ': open one with "+ Open prime broker account" in the sidebar' : (e.pb_otc_reason ? ' (' + e.pb_otc_reason + ')' : ''))));
+        var where = T.pages.accounts ? ': open one with "Open prime broker account" on the Accounts page' : ': open one with "+ Open prime broker account" in the sidebar';
+        p.appendChild(T.h('div', { class: 'empty' }, 'no prime-broker account in this lifetime' + (e.can_onboard ? where : (e.pb_otc_reason ? ' (' + e.pb_otc_reason + ')' : ''))));
       }
       pbs.forEach(function (a) {
         var g = ag[a.broker] || null;
@@ -539,17 +534,17 @@
       body.appendChild(T.h('div', { class: 'panel' }, T.h('h2', null, 'private markets defaults', T.h('small', null, 'the ticket starts from these; each trade may override them')), T.form([T.field('placement fee (fraction)', fee, '0.03 = 3 %'), T.field('settlement lag (calendar days)', lag), T.field('lock-up (months)', lock), ['', T.h('button', { class: 'btn', onclick: function () { patch({ private_defaults: { fee_pct: fee.value.trim(), settle_days: lag.value.trim(), lockup_months: lock.value.trim() } }, 'private defaults'); } }, 'Save')]]), T.convNote(['PRIVATE_TRADE', 'PRIVATE_MARK', 'QP'])));
     }
 
-    /* ---------------------------------------------------------------- Data Status (SHELL-14) ------------------- */
+    /* ---------------------------------------------------------------- Market data (SHELL-14; UI-20) -------------- */
     function stateCell(s) {
       if (s && s.ok === false) { return ['bad', 'DOWN']; }
       if (s && s.ok) { return ['ok', 'OK']; }
       if (s && (s.last_ok_ts || s.last_err_ts)) { return ['na', '?']; }
       return ['na', 'not used yet'];
     }
-    function data() {
+    function marketData() {
       var h = T.state.health || {};
       var down = T.state.server_ok === false;
-      var p = T.h('div', { class: 'panel' + (down ? ' dim' : '') }, T.h('h2', null, 'Data Status', T.h('small', null, down ? 'server unreachable - as of ' + T.fmt.hm(h.clock && h.clock.epoch) + ' (the last answer)' : 'each provider\'s status and delay; nothing is hidden')));
+      var p = T.h('div', { class: 'panel' + (down ? ' dim' : '') }, T.h('h2', null, 'Market data', T.h('small', null, down ? 'server unreachable - as of ' + T.fmt.hm(h.clock && h.clock.epoch) + ' (the last answer)' : 'each provider\'s status and delay; nothing is hidden')));
       var ps = h.providers || {};
       if (!Object.keys(ps).length) { p.appendChild(T.h('div', { class: 'empty' }, 'no provider has reported yet')); }
       Object.keys(ps).sort().forEach(function (k) {
@@ -579,22 +574,14 @@
       p.appendChild(T.h('h2', null, 'scheduled jobs'));
       p.appendChild(T.h('div', { class: 'ds-row', style: 'grid-template-columns:170px 90px 1fr auto' }, T.h('span', null, 'lifecycle'), T.h('span', { class: 'st ' + (failing.length ? 'bad' : 'ok') }, failing.length ? 'FAILING' : 'ok'),
         T.h('span', { style: 'white-space:normal' }, (nd.job ? 'next: ' + nd.job + ' at ' + T.fmt.hm(nd.at_ts) + ' ET' + (nd.at_ts && T.fmt.date(nd.at_ts) !== T.fmt.date(T.clock.nowInt()) ? ' (' + T.fmt.date(nd.at_ts) + ')' : '') : (lf.note || 'next job unknown')) + (failing.length ? ' . failing: ' + failing.map(function (j) { return j.name || j.job || j; }).join(', ') : '')), T.h('span')));
-      /* FINSIM1_PLAN 15.7 item 5: the news feature is gone (/api/health sends news null): no block at all - only an older server
-         that still reports one shows it */
-      var nw = h.news || null;
-      if (nw) {
-        p.appendChild(T.h('h2', null, 'news'));
-        var srcs = nw.sources || {};
-        ['yahoo', 'fed', 'newspaper'].forEach(function (k) {
-          var s = srcs[k] || {}; var st = s.ok === false ? ['bad', 'DOWN'] : (s.ok ? ['ok', 'OK'] : ['na', 'never']);
-          var bits = [];
-          if (s.last_ok_ts) { bits.push('last fetched ' + T.fmt.hm(s.last_ok_ts)); } else { bits.push('never fetched'); }
-          if (s.ok === false && s.last_error) { bits.push(s.last_error); }
-          if (k === 'newspaper' && nw.paper && nw.paper.origin) { bits.push((nw.paper.origin === 'published' ? 'published index' : 'local copy') + (nw.paper.newest ? ', newest edition ' + nw.paper.newest : '') + (nw.paper.remote_error ? ' (published index: ' + nw.paper.remote_error + ')' : '')); }
-          p.appendChild(T.h('div', { class: 'ds-row', style: 'grid-template-columns:170px 90px 1fr auto' }, T.h('span', null, plabel(k === 'yahoo' ? 'yahoo_news' : k)), T.h('span', { class: 'st ' + st[0] }, st[1]), T.h('span', { style: 'white-space:normal' }, bits.join(' . ')), T.h('span')));
-        });
-        if (nw.injection_flags) { p.appendChild(T.h('div', { class: 'hint' }, nw.injection_flags + ' headline(s) contain instruction-like text: shown verbatim, ignored')); }
-      }
+      /* UI-20: the market-data and execution-simulation preferences, where each one is edited (status above, settings below) */
+      p.appendChild(T.h('h2', null, 'market-data and execution preferences'));
+      var prefs = [['participation rate', T.h('span', null, (get('participation_rate', null) != null ? T.fmt.pct(get('participation_rate', null), 0) + ' of each new 1-minute bar\'s volume' : 'n/a') + ' . ',
+                      T.h('a', { href: '#/settings/general' }, 'change it in General')), 'the share of a bar\'s volume an order may take'],
+                   ['session overrides', T.h('span', null, (Object.keys(get('session_overrides', {}) || {}).length ? Object.keys(get('session_overrides', {})).length + ' day(s) overridden' : 'none') + ' . ',
+                      T.h('a', { href: '#/settings/calendar' }, 'edit them in Calendar')), 'an early close or a closed day the NYSE file lacks'],
+                   ['futures margins & limits', T.h('a', { href: '#/settings/margins' }, 'Margins & limits'), 'the static margin table and position limits (assumed values) and your overrides']];
+      p.appendChild(T.kv(prefs));
       p.appendChild(T.h('h2', null, 'server'));
       var dbf = h.db_files || {};
       var cal = h.calendar || {};
@@ -626,7 +613,7 @@
       kbStop();                                                /* a listening "Test a key" box never outlives its page */
       T.clear(body);
       if (D.error) { body.appendChild(T.h('div', { class: 'error' }, D.error, ' ', T.h('button', { class: 'btn small', onclick: load }, 'Retry'))); }
-      var fn = { general: general, keyboard: keyboard, accounts: accounts, pb: pb, books: books, lifetimes: lifetimes, calendar: calendar, margins: margins, private: priv, data: data, unsupported: unsupported }[section] || general;
+      var fn = { general: general, keyboard: keyboard, accounts: accounts, pb: pb, books: books, lifetimes: lifetimes, calendar: calendar, margins: margins, private: priv, 'market-data': marketData, unsupported: unsupported }[section] || general;
       try { fn(); } catch (e) { console.error('settings', section, e); body.appendChild(T.h('div', { class: 'error' }, 'settings ' + section + ' failed: ' + (e.message || e))); }
       sig = signature();
     }
@@ -640,8 +627,8 @@
       }));
     });
     offs.push(T.state.on('book', function () { if (!dead) { dirty = false; load(); } }));
-    offs.push(T.state.on('health', function () { if (!dead && section === 'data') { paint(); } }));
-    offs.push(T.state.on('server_ok', function () { if (!dead && section === 'data') { paint(); } }));
+    offs.push(T.state.on('health', function () { if (!dead && section === 'market-data') { paint(); } }));
+    offs.push(T.state.on('server_ok', function () { if (!dead && section === 'market-data') { paint(); } }));
     /* the keys in force changed (a save, another window, a file that now reads the registry): the key lists follow */
     offs.push(T.state.on('keybinds', function () { if (!dead && (section === 'keyboard' || section === 'general') && D.settings && !(T.keys.capturing && T.keys.capturing())) { paint(); } }));
     T.pages.settings.unmount = function () {

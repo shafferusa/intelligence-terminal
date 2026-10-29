@@ -30,6 +30,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import shutil
 import sqlite3
 import tempfile
@@ -889,7 +890,10 @@ class DryRunTests(E2E):
         self.assertEqual("DONE", r2["status"], r2.get("refused"))
         self.assertEqual(0, r2["entries_posted"])
         self.assertEqual({3, 4, 5, 6, 9}, {ln["line_no"] for ln in r2["lines"] if ln["status"] == "already_imported"})
-        self.assertTrue(all(s["replayed"] for s in r2["steps"] if s["kind"] in ("otc.book_as_of", "trade.book_as_of")))
+        # 1.0.6 (on purpose, AppliedAgainTests): a line already in the book is not sent again at all (1.0.5 replayed it under its request
+        # id, which a later pack's moved chain row turned into a refusal); so no booking command is in the second run's steps
+        self.assertEqual([], [s["request_id"] for s in r2["steps"] if s["kind"] in ("otc.book_as_of", "trade.book_as_of", "trade.book_as_of_package")])
+        self.assertTrue(r2["verify_only"])
         self.assertTrue(all(x["action"].startswith("skipped") for x in r2["S4"]))
         self.assertEqual(counts(os.path.join(self.tmp, "dry1", "terminal.db"))["nav_snapshot_versions"],
                          counts(os.path.join(self.tmp, "dry2", "terminal.db"))["nav_snapshot_versions"])
@@ -1143,6 +1147,202 @@ class MondayTests(E2E):
             c.close()
         base = dict(base) if base is not None else {}
         self.assertEqual(("2026-10-25", all_["2026-10-25"]["nav_c"]), (base.get("snap_date"), base.get("nav_c")))
+
+
+# ---- phase 2 (1.0.6): the applied batch run again, the batch view, the C18 path, the import panel (FINSIM1_PLAN 15.5, 15.9 item 8, 15.14) --------
+class AppliedAgainTests(E2E):
+    """The owner's batch was applied on 2026-10-28; 1.0.6 runs report mode and, before 16:00 ET, a dry run on copies of that book.  A dry run
+    with a LATER pack (the Cboe chain rows moved, a FRED value published after the apply) used to be refused at the first option line
+    (REQUEST_ID_REUSED: the chain row is part of the booking's payload), and its catch-up would have posted the live scheduler's own
+    pending variation margin as the import's.  An applied batch run again only checks and reports: nothing is written to the book, and
+    the apply's own record (the lines it booked and when, the owner's go, the backup) is kept."""
+
+    def test_a_dry_run_on_the_applied_book_with_a_later_pack_writes_nothing(self):
+        # the apply's pack: the IG OAS of L (10-26) not published yet, so the IG contract's 10-26 VM waits (CLOSE_PENDING)
+        first = write_pack_for(os.path.join(self.tmp, "pack-first.json"), drop={"fred": {"BAMLC0A0CM": ["2026-10-26"]}})
+        self.assertEqual("DONE", self.dry(pack=first)["status"])
+        r1 = self.apply(pack=first)
+        self.assertEqual("DONE", r1["status"], r1.get("refused"))
+
+        def later(p):                                   # the chain quotes moved since; the 10-26 IG OAS is published now
+            for o in p["options"].values():
+                if o.get("chain_row"):
+                    o["chain_row"]["bid"] = "9.99"
+                    o["chain_row"]["volume"] = "12345"
+        second = write_pack_for(os.path.join(self.tmp, "pack-later.json"), edit=later)
+        before = dict(counts(self.db), curve_points=db_q(self.db, "SELECT COUNT(*) n FROM curve_points")[0]["n"])
+        batch1 = db_q(self.db, "SELECT applied_ts, owner_go, backup_path, backup_sha256 FROM import_batches")[0]
+        lines1 = {x["line_no"]: (x["action"], x["applied_ts"]) for x in db_q(self.db, "SELECT line_no, action, applied_ts FROM import_lines")}
+        r2 = self.dry(name="dry-later", pack=second)
+        self.assertEqual("DONE", r2["status"], r2.get("refused"))
+        self.assertTrue(r2["verify_only"])
+        self.assertEqual(0, r2["entries_posted"])
+        work = os.path.join(self.tmp, "dry-later", "terminal.db")
+        self.assertEqual(before, dict(counts(work), curve_points=db_q(work, "SELECT COUNT(*) n FROM curve_points")[0]["n"]))
+        self.assertEqual({3, 4, 5, 6, 9}, {ln["line_no"] for ln in r2["lines"] if ln["status"] == "already_imported"})
+        self.assertEqual({3, 4, 5, 6, 9}, {ln["line_no"] for ln in r2["lines"] if ln["action"] == "already_imported"})
+        writes = ("otc.book_as_of", "trade.book_as_of", "trade.book_as_of_package", "cdx.terms", "import.record_inputs", "cash.asof_sweep",
+                  "cash.asof_transfer", "cash.reaccrue", "nav.restate")
+        self.assertEqual([], [s_["kind"] for s_ in r2["steps"] if s_["kind"] in writes])
+        # the newer FRED value is reported, not recorded (the live system records it and posts its own VM)
+        self.assertEqual(1, r2["S2b"]["result"]["absent"]["observations"])
+        self.assertIn("1 observation(s)", " ".join(r2["notes"]))
+        self.assertEqual([], r2["vs_expected"])          # nothing booked: no booking figure to compare
+        # the apply's record stays whole: the lines it booked and when, its report, the owner's go and the backup; the run sent no command
+        self.assertEqual(lines1, {x["line_no"]: (x["action"], x["applied_ts"]) for x in db_q(work, "SELECT line_no, action, applied_ts FROM import_lines")})
+        self.assertEqual("booked", lines1[3][0])
+        self.assertIsNotNone(lines1[3][1])
+        self.assertEqual(batch1, db_q(work, "SELECT applied_ts, owner_go, backup_path, backup_sha256 FROM import_batches")[0])
+        self.assertEqual(db_q(self.db, "SELECT * FROM import_lines ORDER BY line_no"), db_q(work, "SELECT * FROM import_lines ORDER BY line_no"))
+        self.assertEqual(db_q(self.db, "SELECT * FROM import_batches"), db_q(work, "SELECT * FROM import_batches"))
+        src_max = db_q(self.db, "SELECT MAX(id) m FROM commands")[0]["m"]
+        self.assertEqual([], db_q(work, "SELECT request_id FROM commands WHERE id > ? AND actor = 'import'", (src_max,)))
+
+    def test_a_second_apply_writes_nothing_and_keeps_the_first_applys_record(self):
+        self.assertEqual("DONE", self.dry()["status"])
+        self.assertEqual("DONE", self.apply()["status"])
+        batch1 = db_q(self.db, "SELECT applied_ts, owner_go, backup_path, backup_sha256 FROM import_batches")[0]
+        lines1 = {x["line_no"]: (x["action"], x["applied_ts"], x["created_refs_json"]) for x in db_q(self.db, "SELECT * FROM import_lines")}
+        before = counts(self.db)
+        self.clock.set("2026-10-27T11:00:00-04:00")       # an hour later: a second apply would stamp a new time
+        self.assertEqual("DONE", self.dry(name="dry2")["status"])
+        r2 = self.apply(dry="dry2", owner_go="test: a second go")
+        self.assertEqual(("DONE", True, 0), (r2["status"], r2["verify_only"], r2["entries_posted"]))
+        self.assertEqual(before, counts(self.db))
+        self.assertEqual(batch1, db_q(self.db, "SELECT applied_ts, owner_go, backup_path, backup_sha256 FROM import_batches")[0])
+        self.assertEqual(lines1, {x["line_no"]: (x["action"], x["applied_ts"], x["created_refs_json"]) for x in db_q(self.db, "SELECT * FROM import_lines")})
+        self.assertEqual(("DONE", "apply"), tuple(db_q(self.db, "SELECT status, mode_last FROM import_batches")[0].values()))
+        # the second run took its own backup first (in its report), and the batch row keeps the apply's
+        self.assertNotEqual(batch1["backup_path"], r2["backup_path"])
+        self.assertTrue(os.path.isfile(r2["backup_path"]))
+        self.assertEqual(0, r2["wal_bytes"])
+
+
+class BatchViewTests(E2E):
+    def test_the_batch_view_in_trader_words(self):
+        """C19 ``view``: the panel's words and figures, every account by name (never a raw account id), the run's own figures."""
+        self.assertEqual("DONE", self.dry()["status"])
+        rt = build(os.path.join(self.tmp, "dry1"), APPLY_AT)
+        try:
+            status, out, _h = rt.router.handle("GET", "/api/import/batches", None, None, "127.0.0.1", None)
+            self.assertEqual(200, status, out)
+            rows = {b["batch_id"]: b for b in out["batches"]}
+            self.assertEqual(("F", "dry run done (not applied to this book)"), (rows["IMP-TEST-MINI-A"]["book_code"], rows["IMP-TEST-MINI-A"]["state"]))
+            self.assertEqual(("F", "not run in this book"), (rows["IMP-F1-20261027-A"]["book_code"], rows["IMP-F1-20261027-A"]["state"]))
+            status, out, _h = rt.router.handle("GET", "/api/import/batches/IMP-TEST-MINI-A", None, None, "127.0.0.1", None)
+            self.assertEqual(200, status, out)
+            v = out["view"]
+            summary = {p_[0]: p_[1] for p_ in v["summary"]}
+            self.assertEqual(("dry run done (not applied to this book)", "ok", "balanced"), (summary["Status"], summary["Integrity"], summary["Trial balance"]))
+            self.assertEqual("2026-10-21 .. 2026-10-26", summary["Window"])
+            ln = {x["line_no"]: x for x in v["lines"]}
+            self.assertEqual(("Option", "buy to open", "import", "missing", "booked in a dry run", "10"),
+                             (ln[3]["product_short"], ln[3]["side_short"], ln[3]["decision_short"], ln[3]["status_short"], ln[3]["action_short"], ln[3]["qty_short"]))
+            self.assertEqual(("TRS", "CDX", "IRS"), (ln[4]["product_short"], ln[5]["product_short"], ln[6]["product_short"]))
+            self.assertRegex(ln[3]["created"], r"^order O-\d{6}; fill F-\d{6}; settlement S-\d{6}")
+            self.assertTrue(ln[3]["asof"])
+            self.assertTrue(ln[9]["historical_model"])
+            self.assertEqual("Historical model (not an independent execution)", ln[9]["source"])
+            self.assertRegex(ln[4]["instrument"], r"^TRS ORCL \(SWP-\d{6}\)$")
+            self.assertEqual("Goldman Sachs (PB)", ln[4]["account"])
+            self.assertEqual(("differs", "preserve"), (ln[2]["status_short"], ln[2]["decision_short"]))
+            self.assertTrue(ln[2]["differences"] and all("None" not in d for d in ln[2]["differences"]))
+            self.assertEqual(("declined", "unresolved"), (ln[8]["status_short"], ln[7]["status_short"]))
+            # the business-date cash table: Treasury first, named accounts, every close >= 0 after the import
+            accts = [r_["account"] for r_ in v["cash"]["rows"]]
+            self.assertEqual("Treasury", accts[0])
+            self.assertTrue(all(":" not in a for a in accts), accts)
+            self.assertEqual(["2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-26"], v["cash"]["dates"])
+            self.assertFalse(any(r_["below_zero"] for r_ in v["cash"]["rows"] if r_["stage"] == "after the import"))
+            # the funding moves: the PB's 10-22 as-of sweep of 6,300.17 (hand-worked in the docstring) in words
+            sweep = [f for f in v["funding"] if f["business_date"] == "2026-10-22" and f["amount"] == "6300.17"]
+            self.assertEqual(1, len(sweep), v["funding"])
+            self.assertEqual(("sweep out (to Treasury)", "Goldman Sachs (PB)", "Treasury", "as-of sweep of the import's cash"),
+                             (sweep[0]["kind"], sweep[0]["from"], sweep[0]["to"], sweep[0]["for"]))
+            # the restated NAV of the whole book with its split, residual 0; the PB's 10-21 row added by the restatement
+            book = {r_["date"]: r_ for r_ in v["restated"]["book"]}
+            # (the API shape: the view's cents arrive as decimal strings, `amount_c` -> `amount`; hand-worked: 25,000,000.00 - 504.30)
+            self.assertEqual(["0.00"], sorted({r_["residual"] for r_ in book.values()}))
+            self.assertEqual(("25000000.00", "-504.30", "24999495.70"), (book["2026-10-21"]["original"], book["2026-10-21"]["import"],
+                                                                         book["2026-10-21"]["restated"]))
+            from decimal import Decimal as D
+            self.assertEqual(D("-504.30"), sum(D(x["amount"]) for x in book["2026-10-21"]["by_line"]))
+            self.assertTrue(all(not x["what"].startswith("line ") and "new contract id" not in x["what"] for x in book["2026-10-21"]["by_line"]),
+                            book["2026-10-21"]["by_line"])
+            pb = [a for a in v["restated"]["accounts"] if a["account"] == "Goldman Sachs (PB)"][0]
+            self.assertEqual(("0.00", True), (pb["dates"]["2026-10-21"]["original"], pb["dates"]["2026-10-21"]["added"]))
+            # no raw account id in what the panel shows
+            shown = json.dumps({k: v[k] for k in ("lines", "cash", "funding", "restated")})
+            self.assertNotIn('"F1:', shown)
+            # the read-only check of the owner's batch against this book carries its words too
+            status, out, _h = rt.router.handle("POST", "/api/import/report", None, {"batch_id": "IMP-F1-20261027-A"}, "127.0.0.1", None)
+            self.assertEqual(200, status, out)
+            self.assertTrue(all(x["status_short"] and x["status_text"] and isinstance(x["differences"], list) for x in out["lines"]))
+            self.assertEqual("2026-10-27 10:00:00 ET", out["checked_et"])
+        finally:
+            rt.close()
+
+    def test_difference_wording(self):
+        self.assertEqual("fills: the book holds 3 where the reconciliation matched 2 (fills added or changed since; reported, never corrected)",
+                         im._diff_text({"field": "drift", "batch": 2, "app": 3, "note": "the fills differ"}))
+        self.assertEqual("existing contract: SWP-000001 (a contract with these key terms already exists)",
+                         im._diff_text({"field": "existing_contract", "app": ["SWP-000001"], "note": "a contract with these key terms already exists"}))
+        self.assertEqual("quantity: app 6000 vs workbook 4790", im._diff_text({"field": "qty", "app": "6000", "workbook": "4790"}))
+        self.assertEqual("execution (the batch expects an existing execution and none was found)",
+                         im._diff_text({"field": "execution", "note": "the batch expects an existing execution and none was found"}))
+
+
+class C18Tests(_Home):
+    def test_python_m_finsim_import_runs_the_mini_batch(self):
+        """C18: ``python -m finsim import ...`` hands its arguments to the import tool: the help exits 0, report mode and a dry run of the
+        mini batch run through it (the dry run with the clock pinned to the apply day: the command line takes the real clock)."""
+        from finsim.terminal import app
+        out = io.StringIO()
+        with redirect_stdout(out), redirect_stderr_quiet():
+            self.assertEqual(0, app.main(["import", "--help"]))
+        self.assertIn("usage: python -m finsim import", out.getvalue())
+        self.assertNotIn("FINSIM1_PLAN", out.getvalue())
+        self.assertIn("1.0.5 or later", out.getvalue())                 # the restore procedure names no single release
+        jpath = os.path.join(self.tmp, "report.json")
+        with redirect_stdout(io.StringIO()), redirect_stderr_quiet():
+            self.assertEqual(0, app.main(["import", "--batch", MINI_BATCH, "--home", self.home, "--mode", "report", "--json", jpath]))
+        rep = json.loads(Path(jpath).read_text(encoding="utf-8"))
+        self.assertEqual(9, len(rep["lines"]))
+        e2e = os.path.join(self.tmp, "e2e")
+        clone(seeded("base"), e2e)
+        pack = write_pack_for(os.path.join(self.tmp, "pack.json"))
+        wd = os.path.join(self.tmp, "c18-dry")
+        real = im.RealClock
+        im.RealClock = lambda: FakeClock(APPLY_AT)
+        try:
+            with redirect_stdout(io.StringIO()), redirect_stderr_quiet():
+                rc = app.main(["import", "--batch", MINI_BATCH, "--home", e2e, "--mode", "dry-run", "--pack", pack, "--work-dir", wd])
+        finally:
+            im.RealClock = real
+        self.assertEqual(0, rc)
+        r = json.loads(Path(wd, "report.json").read_text(encoding="utf-8"))
+        self.assertEqual(("DONE", 0), (r["status"], r["wal_bytes"]))
+        self.assertEqual({3, 4, 5, 6, 9}, {ln["line_no"] for ln in r["lines"] if ln["action"] == "booked"})
+
+
+class PanelStaticTests(unittest.TestCase):
+    def test_the_import_panel_file(self):
+        """components/imports.js: ASCII, the C19 routes only, gated on the importer module, no plan or internal codes outside its header."""
+        path = os.path.join(config.package_dir(), "static", "components", "imports.js")
+        raw = Path(path).read_bytes()
+        self.assertTrue(all(b < 128 for b in raw))
+        self.assertNotIn(b"\r", raw)
+        text = raw.decode("ascii")
+        self.assertIn("T.components.imports = { render: render };", text)
+        self.assertIn("T.hasModule('importer')", text)
+        self.assertEqual({"/api/import/batches", "/api/import/batches/", "/api/import/report"}, set(re.findall(r"'(/api/[^']*)'", text)))
+        body = text.split("*/", 1)[1]
+        for word in ("FINSIM1_PLAN", "C19", "idem", "impcu", "impset", "imp:", "F1:", "console.log", "http://", "https://"):
+            self.assertNotIn(word, body, word)
+        # the History hub mounts it with render(el, {book}) and unmounts the handle it returns
+        hist = Path(config.package_dir(), "static", "pages", "history.js").read_text(encoding="utf-8")
+        self.assertIn("comp.render(ip, { book: T.book.code })", hist)
+        self.assertIn("return { unmount: function () { dead = true; drop(); } };", text)
 
 
 class ZzDefaultHomeTests(unittest.TestCase):

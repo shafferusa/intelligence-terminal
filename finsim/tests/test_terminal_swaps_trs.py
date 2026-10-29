@@ -37,7 +37,7 @@ import unittest
 from datetime import date, timedelta
 from decimal import Decimal
 
-from tests.terminal_helpers import assert_integrity, bal, deposit, execute, make_runtime, snapshot
+from tests.terminal_helpers import assert_integrity, bal, deposit, execute, fund, make_runtime, snapshot
 from finsim.terminal import lifecycle, prime, risk
 from finsim.terminal.clock import epoch_of
 from finsim.terminal.commands import ConflictError, RejectError
@@ -50,7 +50,7 @@ D = Decimal
 PB = "F1:PB_GS"
 SWP1 = "SWP-000001"
 TRS_AT = "2026-11-02T14:00:00-05:00"
-XCCY_AT = "2026-05-20T14:00:00-04:00"
+XCCY_AT = "2026-05-18T14:00:00-04:00"              # P8B-06: Mon 05-18 (FX trade date) -> the spot-date start Wed 05-20 (s19.16)
 SOFR_PRINTS = [(date(2026, 5, 15) + timedelta(days=7 * i), D("3.87")) for i in range(30)]   # every Friday 2026-05-15 .. 2026-12-04: 3.87 %
 USD401 = {"0.5": "0.98034410", "1.0": "0.96107456", "1.5": "0.94218377", "2.0": "0.92366430"}
 USD399 = {"0.5": "0.98044022", "1.0": "0.96126302", "1.5": "0.94246092", "2.0": "0.92402659"}
@@ -608,6 +608,12 @@ class TrsTests(unittest.TestCase):
 
 
 class XccyTests(unittest.TestCase):
+    """P8B-06 / OTC-03 (1.0.6 fixer): a cross-currency swap starts on the spot date of its FX trade date.  The s19.16 deal is therefore
+    dealt on Mon 2026-05-18 14:00 ET (FX trade date 05-18) and starts on its spot date Wed 2026-05-20 - the start the design's figures use -
+    so every coupon, accrual and payment below is the s19.16 one; what moved is WHEN the start exchange happens: the XCCY_EVENTS START key
+    from 00:45 ET of 05-20 (business date 05-20, its own Treasury sweep), not at the booking, which moves only the IM.  The contract is marked
+    and margined from its trade date (VM of 05-18).  The rates are observed Fri 05-15 (the RATE_LAG / P8B-01 age rule needs them current)."""
+
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="fst-swaps-xccy-")
         self.rt = None
@@ -619,12 +625,19 @@ class XccyTests(unittest.TestCase):
 
     def start(self, usd_dfs=USD401, ecb="2.49"):
         rt = self.rt = runtime(self.tmp, XCCY_AT)
-        rt.curve.set_fixed_dfs(usd_dfs, date(2026, 5, 19))
-        rt.rates.put("ECBDFR", [(date(2026, 5, 19), D(ecb))], persist=False)
+        rt.curve.set_fixed_dfs(usd_dfs, date(2026, 5, 15))
+        rt.rates.put("ECBDFR", [(date(2026, 5, 15), D(ecb))], persist=False)
         return rt
 
     def book(self, terms=None, request_id="ui:xccy-book-0001"):
         return book(self.rt, dict(XCCY_TERMS, **(terms or {})), request_id, kind="XCCY")
+
+    def start_exchange(self, ds="2026-05-20"):
+        """The XCCY_EVENTS tick at 00:50 ET of the start date: the START key runs (the spot-date start exchange)."""
+        rt = self.rt
+        rt.clock.set(f"{ds}T00:50:00-04:00")
+        out = rt.lifecycle.tick(only="XCCY_EVENTS")
+        self.assertEqual([(f"{SWP1}:{ds}:START", "DONE")], ran(out, "XCCY_EVENTS"))
 
     # ---- s19.16 XCCY: quotes, booking, the start exchange, coupons, VM ----------------------------------------------------------------
     def test_xccy_19_16_quotes_booking_start_exchange_coupons_vm(self):
@@ -633,6 +646,8 @@ class XccyTests(unittest.TestCase):
         p = swaps.preview(rt, PB, "XCCY", XCCY_TERMS)
         self.assertEqual(("XCCY", "1.1238", "EURUSD", 1123800000, 1000000000, "RECEIVE_USD_PAY_EUR"),
                          (p["kind"], p["deal_rate"], p["deal_pair"], p["usd_notional_c"], p["foreign_notional_c"], p["side"]))
+        # P8B-06: traded Mon 05-18 (the FX trade date), starting on its spot date Wed 05-20 (T+2), the start exchange then; "EUR/USD" by the market pair
+        self.assertEqual(("2026-05-18", "2026-05-20", "2026-05-20", "EUR/USD"), (p["trade_date"], p["start_date"], p["start_exchange"]["date"], p["pair_label"]))
         lr, lp = p["legs"]["receive"], p["legs"]["pay"]
         # the quotes (module docstring of this file): USD par 0.04010 - 0.00010 = 0.04000; EUR par 0.02490 + 0.00010 = 0.02500
         self.assertEqual(("0.04010", "0.04000", "0.04000", "1.9036333650", False), (lr["par_rate"], lr["quote"], lr["rate"], lr["annuity"], lr["rate_given"]))
@@ -642,14 +657,14 @@ class XccyTests(unittest.TestCase):
         # DV01 (USD par curve, a received fixed leg loses): -11,238,000 x 0.0001 x 1.903633365 = -2,139.30; the EUR leg on its own curve (paid
         # fixed gains): +10,000,000 x 0.0001 x 1.9392669142 x 1.1238 = +2,179.35; IM = 2 % x 11,238,000.00 = 224,760.00
         self.assertEqual((-431865, 431865, -213930, 217935, 22476000), (p["mark0_c"], p["cost_of_dealing_c"], p["dv01_c"], p["dv01_foreign_c"], p["im_c"]))
-        # semi-annual from Wed 2026-05-20: Fri 2026-11-20, Thu 2027-05-20, 2027-11-20 is a Saturday -> Mon 2027-11-22, 2028-05-20 a Saturday -> Mon 2028-05-22;
-        # the first coupons (30/360, 180 days): USD 11,238,000 x 0.04 x 180/360 = 224,760.00, EUR 10,000,000 x 0.025 x 180/360 = 125,000.00
+        # semi-annual from the start Wed 2026-05-20: Fri 2026-11-20, Thu 2027-05-20, 2027-11-20 is a Saturday -> Mon 2027-11-22, 2028-05-20 a Saturday
+        # -> Mon 2028-05-22; the first coupons (30/360, 180 days): USD 11,238,000 x 0.04 x 180/360 = 224,760.00, EUR 10,000,000 x 0.025 x 180/360 = 125,000.00
         self.assertEqual(["2026-11-20", "2027-05-20", "2027-11-22", "2028-05-22"], [r["date"] for r in p["schedule"]])
         self.assertEqual((22476000, "USD", 12500000, "EUR", False), (p["schedule"][0]["receive_c"], p["schedule"][0]["receive_ccy"], p["schedule"][0]["pay_c"],
                                                                      p["schedule"][0]["pay_ccy"], p["schedule"][0]["indicative"]))
         self.assertEqual((["2026-11-20", "2027-05-20", "2027-11-22"], "2028-05-22"), (p["fx_reset_dates"], p["maturity_date"]))
-        # the start exchange pays USD 11,238,000.00 (lent: the receive leg) and receives EUR 10,000,000.00 (borrowed); funding USD 11,238,000 + IM
-        # 224,760 = 11,462,760.00 against 0 settled -> a sweep within Treasury's 25,000,000.00
+        # the start exchange pays USD 11,238,000.00 (lent: the receive leg) and receives EUR 10,000,000.00 (borrowed); the owner commits now to the USD
+        # lent with the IM: 11,238,000 + 224,760 = 11,462,760.00 against 0 settled -> a sweep within Treasury's 25,000,000.00 (PO-07)
         se = p["start_exchange"]
         self.assertEqual((("USD", 1123800000, "1360"), ("EUR", 1000000000, "2360")), ((se["we_pay"]["currency"], se["we_pay"]["amount_c"], se["we_pay"]["gl"]),
                                                                                        (se["we_receive"]["currency"], se["we_receive"]["amount_c"], se["we_receive"]["gl"])))
@@ -682,42 +697,56 @@ class XccyTests(unittest.TestCase):
         r = self.book(request_id="ui:xccy-book-stale")
         self.assertEqual((409, "QUOTE_STALE"), (r.http, r.code))
         rt.marks.set("EURUSD", "1.1238", "delayed", rt.clock.epoch())
-        # booking at the quotes (rates blank)
+        # booking at the quotes (rates blank): only the IM moves now (Dr 1330 / Cr 1010 after a 224,760.00 sweep); no exchange at the booking
         r = self.book()
         self.assertTrue(r.ok, r.body)
+        self.assertIsNone(r.body["start_exchange"])
         self.assertEqual([("1330", "USD", SWP1, 22476000), ("1010", "USD", None, -22476000)], lines_by_idem(rt, f"im:{SWP1}:open"))
-        # the start exchange, each leg balanced in its own currency, the EUR lines posted at the deal rate (base 10,000,000 x 1.1238 = 11,238,000.00):
-        # we LEND USD (Dr 1360:USD / Cr 1010:USD 11,238,000.00) and BORROW EUR (Dr 1010:EUR / Cr 2360:EUR 10,000,000.00) - L1: base sums to 0
+        self.assertIsNone(entry_by_idem(rt, f"xccy:{SWP1}:start"))
+        self.assertEqual([("USD", 22476000, "otc", f"im:{SWP1}:open")], sweeps(rt))
+        c = contract(rt)
+        self.assertEqual(("XCCY", 1123800000, "USD", -431865, "1.1238", "2026-05-20", "2028-05-22", 22476000, "2026-05-18"),
+                         (c["kind"], c["notional_c"], c["currency"], c["mark_c"], c["reset_px"], c["start_date"], c["maturity_date"], c["im_c"],
+                          json.loads(c["terms_json"])["trade_date"]))
+        # NAV(F1:PB_GS) = the IM 224,760.00 (swept in) - 4,318.65 (the mark) = 220,441.35; NAV(F1:ALL) = 25,000,000.00 - 4,318.65 = 24,995,681.35
+        self.assertEqual((22044135, 2499568135), (rt.accounting.nav(PB).nav_c, rt.accounting.nav("F1:ALL").nav_c))
+        mark_c, inputs = swaps.mark(rt, SWP1)
+        self.assertEqual((-431865, 4, "1.1238"), (mark_c, inputs["remaining_periods"], inputs["fx"]["usd_per_unit"]))
+        self.assertEqual(-213930, swaps.dv01_c(rt, SWP1))
+        # nothing is due before the start (00:45 ET of 05-20) and no VM before 17:05 of the trade date
+        with rt.db.reader() as conn:
+            self.assertEqual(([], []), (swaps_trs.event_keys(conn, rt.clock.epoch()), swaps.vm_keys(conn, rt.clock.epoch())))
+        # VM of the TRADE date (17:05 ET of 05-18) at the pair's 17:00 ET close 1.1238 (LC-3: the 14:00 print is not a close): the mark -4,318.65
+        # against the reference 0 -> VM posted Dr 1320 / Cr 1010 4,318.65 after a sweep of exactly that
+        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 18), "17:00"))
+        rt.clock.set("2026-05-18T17:10:00-04:00")
+        with rt.db.reader() as conn:
+            self.assertEqual([(SWP1, "2026-05-18")], swaps.vm_keys(conn, rt.clock.epoch()))
+        r = vm(rt, "2026-05-18")
+        self.assertEqual(("DONE", -431865, -431865), (r.body["status"], r.body["mark_c"], r.body["delta_c"]))
+        self.assertEqual(("1.1238", "2026-05-18"), (r.body["inputs"]["fx"]["usd_per_unit"], r.body["inputs"]["valuation_date"]))
+        self.assertEqual([("1320", "USD", SWP1, 431865), ("1010", "USD", None, -431865)], lines_by_idem(rt, f"swapvm:{SWP1}:2026-05-18"))
+        # the start exchange on the spot date (00:45 ET of Wed 05-20), each leg balanced in its own currency, the EUR lines posted at the deal
+        # rate (base 10,000,000 x 1.1238 = 11,238,000.00): we LEND USD (Dr 1360:USD / Cr 1010:USD 11,238,000.00) and BORROW EUR (Dr 1010:EUR /
+        # Cr 2360:EUR 10,000,000.00) - L1: base sums to 0; business date 05-20; the USD lent swept from Treasury in the same command
+        self.start_exchange()
         start = lines_by_idem(rt, f"xccy:{SWP1}:start", base=True)
         self.assertEqual([("1360", "USD", SWP1, 1123800000, 1123800000), ("1010", "USD", None, -1123800000, -1123800000),
                           ("1010", "EUR", None, 1000000000, 1123800000), ("2360", "EUR", SWP1, -1000000000, -1123800000)], start)
         self.assertEqual(0, sum(x[4] for x in start))
-        self.assertEqual([("USD", 22476000, "otc", f"im:{SWP1}:open"), ("USD", 1123800000, "xccy", f"xccy:{SWP1}:start")], sweeps(rt))
-        c = contract(rt)
-        self.assertEqual(("XCCY", 1123800000, "USD", -431865, "1.1238", "2026-05-20", "2028-05-22", 22476000),
-                         (c["kind"], c["notional_c"], c["currency"], c["mark_c"], c["reset_px"], c["start_date"], c["maturity_date"], c["im_c"]))
+        self.assertEqual("2026-05-20", entry_by_idem(rt, f"xccy:{SWP1}:start")["business_date"])
+        self.assertEqual([("USD", 22476000, "otc", f"im:{SWP1}:open"), ("USD", 431865, "swapvm", f"swapvm:{SWP1}:2026-05-18"),
+                          ("USD", 1123800000, "xccy", f"xccy:{SWP1}:start")], sweeps(rt))
         ns = one(rt, "SELECT * FROM otc_resets WHERE contract_id=? AND kind='NOTIONAL_START'", (SWP1,))
         self.assertEqual(("2026-05-20", 1123800000), (ns["event_date"], ns["amount_c"]))
         self.assertEqual((0, 1000000000, 1123800000, 1000000000), (bal(rt, PB, "1010"), bal(rt, PB, "1010", "EUR"), bal(rt, PB, "1360", "USD", SWP1),
                                                                   bal(rt, PB, "2360", "EUR", SWP1)))
-        # NAV(F1:PB_GS) = 224,760.00 + 11,238,000.00 (transferred in) - 4,318.65 (the mark) = 11,458,441.35: the exchange itself is worth 0 at the deal
-        # rate (EUR 10,000,000 cash = EUR 10,000,000 payable); NAV(F1:ALL) = 25,000,000.00 - 4,318.65
-        self.assertEqual((1145844135, 2499568135), (rt.accounting.nav(PB).nav_c, rt.accounting.nav("F1:ALL").nav_c))
-        mark_c, inputs = swaps.mark(rt, SWP1)
-        self.assertEqual((-431865, 4, "1.1238"), (mark_c, inputs["remaining_periods"], inputs["fx"]["usd_per_unit"]))
-        self.assertEqual(-213930, swaps.dv01_c(rt, SWP1))
-        # VM day 1 (17:05) at the pair's 17:00 ET close 1.1238 (LC-3: the 14:00 print is not a close): the mark -4,318.65 against the reference 0 ->
-        # VM posted Dr 1320 / Cr 1010 4,318.65 after a sweep of exactly that
-        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 20), "17:00"))
-        rt.clock.set("2026-05-20T17:10:00-04:00")
-        r = vm(rt, "2026-05-20")
-        self.assertEqual(("DONE", -431865, -431865), (r.body["status"], r.body["mark_c"], r.body["delta_c"]))
-        self.assertEqual(("1.1238", "2026-05-20"), (r.body["inputs"]["fx"]["usd_per_unit"], r.body["inputs"]["valuation_date"]))
-        self.assertEqual([("1320", "USD", SWP1, 431865), ("1010", "USD", None, -431865)], lines_by_idem(rt, f"swapvm:{SWP1}:2026-05-20"))
-        # night 1 through the scheduler (ACCRUE_DAILY -> swaps.accrue_night -> this module): USD receive 11,238,000 x 0.04 / 360 = 1,248.6667 -> 1,248.67
-        # Dr 1225:USD / Cr 4453; EUR pay 10,000,000 x 0.025 / 360 = 694.4444 -> 694.44 Dr 4453:EUR / Cr 2340:EUR, base at this command's rate (4453 =
-        # swap coupons, a financing GL - FINSIM1 C11)
-        # 694.44 x 1.1238 = 780.4117 -> 780.41
+        # NAV(F1:PB_GS) = IM 224,760.00 + VM posted 4,318.65 + USD lent 11,238,000.00 + EUR cash 11,238,000.00 - EUR borrowed 11,238,000.00 - the mark
+        # 4,318.65 = 11,462,760.00 (all swept in); NAV(F1:ALL) still 24,995,681.35 - the VM and the exchange are collateral and an exchange at the deal rate
+        self.assertEqual((1146276000, 2499568135), (rt.accounting.nav(PB).nav_c, rt.accounting.nav("F1:ALL").nav_c))
+        # night 1 (the start date) through the scheduler (ACCRUE_DAILY -> swaps.accrue_night -> this module): USD receive 11,238,000 x 0.04 / 360 =
+        # 1,248.6667 -> 1,248.67 Dr 1225:USD / Cr 4453; EUR pay 10,000,000 x 0.025 / 360 = 694.4444 -> 694.44 Dr 4453:EUR / Cr 2340:EUR, base at this
+        # command's rate (4453 = swap coupons, a financing GL - FINSIM1 C11): 694.44 x 1.1238 = 780.4117 -> 780.41
         out = rt.lifecycle.tick(at="2026-05-21T00:40:00-04:00", only="ACCRUE_DAILY")
         self.assertEqual([(f"swappay:{SWP1}:2026-05-20", "DONE"), (f"swaprcv:{SWP1}:2026-05-20", "DONE")],
                          sorted(x for x in ran(out, "ACCRUE_DAILY") if x[0].startswith("swap")))
@@ -735,21 +764,57 @@ class XccyTests(unittest.TestCase):
         self.assertEqual([("2026-11-20", "PAY"), ("2026-11-20", "FX_RESET"), ("2027-05-20", "PAY"), ("2027-05-20", "FX_RESET")], [(e["date"], e["event"]) for e in ev])
         self.assertEqual([("receive", "USD", 22476000), ("pay", "EUR", 12500000)], [(l["side"], l["currency"], l["amount_c"]) for l in ev[0]["legs"]])
         self.assertEqual([None, 12500000], [l["amount_c"] for l in ev[2]["legs"]])
-        # nothing else is due now (the start exchange happened at booking); swap.fix answers a no-op
+        # nothing else is due now (the start exchange ran on 05-20); swap.fix answers a no-op
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.event_keys(conn, rt.clock.epoch()))
         r = execute(rt, "swap.fix", {"contract_id": SWP1, "date": "2026-05-20", "key": f"{SWP1}:2026-05-20"}, "test:swap.fix:xccy", actor="lifecycle")
         self.assertEqual(("DONE", "NO_FIXING"), (r.body["status"], r.body["code"]))
         assert_integrity(self, rt, "full")
 
+    # ---- P8B-06 / OTC-03: an XCCY booked after the 17:00 ET roll starts on the spot date of the NEXT FX trade date; no false overdraft -----
+    def test_xccy_booked_after_the_fx_roll_starts_on_its_spot_date_and_margins_without_overdraft(self):
+        rt = self.start()
+        # Wed 2026-05-20 17:30 ET: the FX day has rolled, so the trade date is Thu 05-21; spot T+2 US business days skips the weekend and Memorial
+        # Day (Mon 05-25): Fri 05-22 is T+1, Tue 05-26 is T+2 -> the start (and the start exchange) is Tue 2026-05-26
+        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 20), "17:29"))
+        rt.clock.set("2026-05-20T17:30:00-04:00")
+        r = self.book()
+        self.assertTrue(r.ok, r.body)
+        c = contract(rt)
+        self.assertEqual(("2026-05-21", "2026-05-26", None), (json.loads(c["terms_json"])["trade_date"], c["start_date"], r.body["start_exchange"]))
+        # the IM and its Treasury sweep share ONE business date - the booking's accounting day, 05-21 (after the 17:00 ET cut-off) - and no exchange
+        # posts at the booking, so nothing is left on another business date
+        im = entry_by_idem(rt, f"im:{SWP1}:open")
+        sw = one(rt, "SELECT business_date FROM transfers WHERE linked_id=?", (f"im:{SWP1}:open",))
+        self.assertEqual(("2026-05-21", "2026-05-21"), (im["business_date"], sw["business_date"]))
+        self.assertIsNone(entry_by_idem(rt, f"xccy:{SWP1}:start"))
+        # the VM runs from the trade date (05-21), never for 05-20, and is funded without an overdraft: 17:05 ET of 05-21 at the 17:00 close 1.1238 ->
+        # the mark -4,318.65 (24 months, 4 periods: the same annuities) posted Dr 1320 / Cr 1010 after a 4,318.65 sweep
+        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 21), "17:00"))
+        rt.clock.set("2026-05-21T17:10:00-04:00")
+        with rt.db.reader() as conn:
+            self.assertEqual([(SWP1, "2026-05-21")], swaps.vm_keys(conn, rt.clock.epoch()))
+        out = rt.lifecycle.tick(only="SWAP_VM")
+        self.assertEqual([(f"{SWP1}:2026-05-21", "DONE")], ran(out, "SWAP_VM"))
+        self.assertEqual([("1320", "USD", SWP1, 431865), ("1010", "USD", None, -431865)], lines_by_idem(rt, f"swapvm:{SWP1}:2026-05-21"))
+        self.assertEqual([], q(rt, "SELECT code FROM attention WHERE code IN ('FUNDING_SHORTFALL','SETTLEMENT_UNFUNDED') AND resolved_ts IS NULL"))
+        self.assertEqual(0, bal(rt, PB, "1010"))
+        # Tue 05-26 00:50 ET: the start exchange, business date 05-26, its USD 11,238,000.00 swept the same day
+        self.start_exchange("2026-05-26")
+        self.assertEqual("2026-05-26", entry_by_idem(rt, f"xccy:{SWP1}:start")["business_date"])
+        self.assertEqual("2026-05-26", one(rt, "SELECT business_date FROM transfers WHERE linked_id=?", (f"xccy:{SWP1}:start",))["business_date"])
+        self.assertEqual((0, 1000000000), (bal(rt, PB, "1010"), bal(rt, PB, "1010", "EUR")))
+        assert_integrity(self, rt, "full")
+
     # ---- s19.16 XCCY: coupons paid, the MTM FX reset (neutral), maturity --------------------------------------------------------------
     def test_xccy_19_16_payment_fx_reset_neutral_and_maturity(self):
         rt = self.start()
         # 12 months (two periods) so the whole life runs: mark0 = USD -11,238,000 x 0.0001 x 0.97070933 = -1,090.8831 + EUR -1,000 x 0.9816302516 x 1.1238
-        # = -1,103.1561 -> -2,194.04; DV01 -11,238,000 x 0.0001 x 0.97070933 = -1,090.88
+        # = -1,103.1561 -> -2,194.04; DV01 -11,238,000 x 0.0001 x 0.97070933 = -1,090.88; start 05-20 (spot) -> maturity Thu 2027-05-20
         r = self.book({"months": 12})
         self.assertTrue(r.ok, r.body)
         self.assertEqual((-219404, -109088, "2027-05-20"), (r.body["preview"]["mark0_c"], r.body["preview"]["dv01_c"], contract(rt)["maturity_date"]))
+        self.start_exchange()
         # the first period's 184 nights (05-20 .. 11-19): each leg trues up to its 30/360 coupon on the last night - USD cumulative after 183 nights
         # to_c(449,520 x 183 / 360) = 228,506.00 -> -3,746.00 to land on 224,760.00 (Dr 4453 / Cr 1225); EUR to_c(250,000 x 183 / 360) = 127,083.33
         # -> -2,083.33 to land on 125,000.00 (Dr 2340 / Cr 4453)
@@ -770,6 +835,8 @@ class XccyTests(unittest.TestCase):
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.event_keys(conn, rt.clock.epoch()))        # PAY recorded; the FX reset is due from 17:05
         snapshot(rt, PB, date(2026, 11, 20))
+        # the EUR rate is observed again after the snapshot (P8B-01: a daily rate older than 10 days is never used to mark) - unchanged at 2.49 %
+        rt.rates.put("ECBDFR", [(date(2026, 11, 19), D("2.49"))], persist=False)
         # the FX close 1.1300 (17:00 ET): the USD notional -> 10,000,000 x 1.13 = 11,300,000.00; we lent USD, so the difference 62,000.00 is PAID
         # (Dr 1360:USD / Cr 1010:USD), from the 224,760.00 coupon cash (no sweep); NAV does not move with the reset itself
         rt.marks.set("EURUSD", "1.13", "delayed", epoch_of(date(2026, 11, 20), "17:00"))
@@ -834,11 +901,11 @@ class XccyTests(unittest.TestCase):
     def test_xccy_receive_eur_pay_usd_design_lines_and_eur_funding(self):
         rt = self.start(usd_dfs=USD399, ecb="2.51")
         terms = {"pay_ccy": "USD", "recv_ccy": "EUR", "pay_notional_c": None, "recv_notional_c": 1000000000, "months": 12}
-        # the EUR leg is lent: with no EUR anywhere the start exchange is refused 409 INSUFFICIENT_FUNDS_CCY with the Convert hint (never automatic
-        # FX) and nothing is booked
+        # the EUR leg is lent: with no EUR anywhere by the start date (05-20) the booking is refused 409 INSUFFICIENT_FUNDS_CCY with the Convert hint
+        # and the value date to buy it for (P8B-12; never automatic FX) and nothing is booked
         r = self.book(terms, request_id="ui:xccy-book-noeur")
         self.assertEqual((409, "INSUFFICIENT_FUNDS_CCY"), (r.http, r.code))
-        self.assertEqual("buy EUR 10,000,000.00 with Convert", r.body["error"]["details"]["hint"])
+        self.assertEqual("buy EUR 10,000,000.00 with Convert (the FX desk, value on or before 2026-05-20)", r.body["error"]["details"]["hint"])
         self.assertEqual(([], []), (q(rt, "SELECT 1 FROM otc_contracts"), q(rt, "SELECT 1 FROM journal_entries WHERE idem_key LIKE 'im:%'")))
         # F1:TREASURY holds EUR 10,000,000.00 (a EUR capital deposit, base 10,000,000 x 1.1238 = 11,238,000.00)
         self.assertTrue(deposit(rt, 1000000000, "EUR", lifetime="F1", request_id="ui:eur-deposit-0002").ok)
@@ -849,7 +916,9 @@ class XccyTests(unittest.TestCase):
         pv = r.body["preview"]
         self.assertEqual(("0.02500", "0.04000", -219404, 109104, -110299, "RECEIVE_EUR_PAY_USD"),
                          (pv["legs"]["receive"]["rate"], pv["legs"]["pay"]["rate"], pv["mark0_c"], pv["dv01_c"], pv["dv01_foreign_c"], pv["side"]))
-        # s19.16's start lines: Dr 1360:EUR 10,000,000.00 / Cr 1010:EUR (EUR swept in from Treasury's EUR) and Dr 1010:USD 11,238,000.00 / Cr 2360:USD
+        # s19.16's start lines on the spot date: Dr 1360:EUR 10,000,000.00 / Cr 1010:EUR (EUR swept in from Treasury's EUR) and Dr 1010:USD
+        # 11,238,000.00 / Cr 2360:USD
+        self.start_exchange()
         self.assertEqual([("1360", "EUR", SWP1, 1000000000, 1123800000), ("1010", "EUR", None, -1000000000, -1123800000),
                           ("1010", "USD", None, 1123800000, 1123800000), ("2360", "USD", SWP1, -1123800000, -1123800000)],
                          lines_by_idem(rt, f"xccy:{SWP1}:start", base=True))
@@ -877,40 +946,45 @@ class XccyTests(unittest.TestCase):
         self.assertEqual((400, "KEY_INVALID"), (r.http, r.code))
         assert_integrity(self, rt, "full")
 
-    # ---- a delayed start exchange (weekend booking) that first cannot be funded --------------------------------------------------------
+    # ---- a start exchange whose currency left before the start date: it waits, never converts ---------------------------------------------
     def test_xccy_delayed_start_waits_for_funding_never_converts(self):
         rt = self.start(usd_dfs=USD399, ecb="2.51")
-        # booked Saturday 2026-05-23: the start rolls FOLLOWING past Sunday and Memorial Day (Mon 05-25) to Tue 2026-05-26; only the IM moves now
+        # booked Saturday 2026-05-23: the next FX trade date is Mon 05-25 (FX trades on Memorial Day), its spot T+2 US business days Wed 2026-05-27;
+        # Treasury holds the EUR 10,000,000.00 to lend, so the booking's start check passes; only the IM moves now
+        self.assertTrue(deposit(rt, 1000000000, "EUR", lifetime="F1", request_id="ui:eur-deposit-0004").ok)
         rt.clock.set("2026-05-23T10:00:00-04:00")
         terms = {"pay_ccy": "USD", "recv_ccy": "EUR", "pay_notional_c": None, "recv_notional_c": 1000000000, "months": 12}
         r = self.book(terms)
         self.assertTrue(r.ok, r.body)
-        self.assertEqual(("2026-05-26", None), (contract(rt)["start_date"], r.body["start_exchange"]))
+        self.assertEqual(("2026-05-27", None), (contract(rt)["start_date"], r.body["start_exchange"]))
         self.assertEqual([("USD", 22476000, "otc", f"im:{SWP1}:open")], sweeps(rt))
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.event_keys(conn, rt.clock.epoch()))
-        # Tue 00:50: START is due; the lent EUR 10,000,000.00 is nowhere -> SKIPPED INSUFFICIENT_FUNDS_CCY with an ERROR attention, nothing posted
-        rt.clock.set("2026-05-26T00:50:00-04:00")
+        # the EUR leaves Treasury before the start (moved to the Foreign Markets & FX account): Wed 00:50 START is due, the lent EUR is neither in the
+        # account nor in Treasury -> SKIPPED INSUFFICIENT_FUNDS_CCY with an ERROR attention, nothing posted (never an automatic conversion)
+        self.assertTrue(fund(rt, "F1:FOREIGN_FX", 1000000000, "EUR").ok)
+        rt.clock.set("2026-05-27T00:50:00-04:00")
         with rt.db.reader() as conn:
-            self.assertEqual([(SWP1, "2026-05-26", "START")], swaps_trs.event_keys(conn, rt.clock.epoch()))
+            self.assertEqual([(SWP1, "2026-05-27", "START")], swaps_trs.event_keys(conn, rt.clock.epoch()))
         out = rt.lifecycle.tick(only="XCCY_EVENTS")
-        self.assertEqual([(f"{SWP1}:2026-05-26:START", "SKIPPED")], ran(out, "XCCY_EVENTS"))
-        att = q(rt, "SELECT severity, code FROM attention WHERE ref_id=? AND resolved_ts IS NULL", (f"{SWP1}:2026-05-26:START",))
+        self.assertEqual([(f"{SWP1}:2026-05-27:START", "SKIPPED")], ran(out, "XCCY_EVENTS"))
+        att = q(rt, "SELECT severity, code FROM attention WHERE ref_id=? AND resolved_ts IS NULL", (f"{SWP1}:2026-05-27:START",))
         self.assertEqual([{"severity": "ERROR", "code": "INSUFFICIENT_FUNDS_CCY"}], att)
         self.assertIsNone(entry_by_idem(rt, f"xccy:{SWP1}:start"))
-        # nothing accrues before the start exchange: the night of 05-26 is SKIPPED START_PENDING
-        rt.clock.set("2026-05-27T00:40:00-04:00")
-        r = accrue(rt, "swaprcv", "2026-05-26")
+        # nothing accrues before the start exchange: the night of 05-27 is SKIPPED START_PENDING
+        rt.clock.set("2026-05-28T00:40:00-04:00")
+        r = accrue(rt, "swaprcv", "2026-05-27")
         self.assertEqual(("SKIPPED", "START_PENDING"), (r.body["status"], r.body["code"]))
-        # a EUR capital deposit funds it (never an automatic conversion): the retry posts s19.16's start lines, business date the start date
-        self.assertTrue(deposit(rt, 1000000000, "EUR", lifetime="F1", request_id="ui:eur-deposit-0004").ok)
-        r = event(rt, "2026-05-26", "START")
+        # the EUR goes back to Treasury: the retry posts s19.16's start lines, business date the start date
+        r = execute(rt, "treasury.transfer", {"from_account": "F1:FOREIGN_FX", "to_account": "F1:TREASURY", "currency": "EUR", "amount_c": 1000000000})
+        self.assertTrue(r.ok, r.body)
+        r = event(rt, "2026-05-27", "START")
         self.assertTrue(r.ok and r.body["status"] == "DONE", r.body)
         e = entry_by_idem(rt, f"xccy:{SWP1}:start")
         self.assertEqual(([("1360", "EUR", SWP1, 1000000000), ("1010", "EUR", None, -1000000000), ("1010", "USD", None, 1123800000), ("2360", "USD", SWP1, -1123800000)],
-                          "2026-05-26"), (lines_of(rt, e["entry_id"]), e["business_date"]))
+                          "2026-05-27"), (lines_of(rt, e["entry_id"]), e["business_date"]))
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='INSUFFICIENT_FUNDS_CCY' AND resolved_ts IS NULL"))
-        self.assertEqual(69444, accrue(rt, "swaprcv", "2026-05-26", suffix=":r1").body["amount_c"])
+        self.assertEqual(69444, accrue(rt, "swaprcv", "2026-05-27", suffix=":r1").body["amount_c"])
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.event_keys(conn, rt.clock.epoch()))
         assert_integrity(self, rt, "full")
@@ -919,9 +993,10 @@ class XccyTests(unittest.TestCase):
     def test_xccy_terminate_settles_accrued_and_re_exchanges_notionals(self):
         rt = self.start()
         self.assertTrue(self.book().ok)
-        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 20), "17:00"))      # the 17:00 ET close (LC-3)
-        rt.clock.set("2026-05-20T17:10:00-04:00")
-        self.assertEqual(-431865, vm(rt, "2026-05-20").body["delta_c"])
+        rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 18), "17:00"))      # the 17:00 ET close of the trade date (LC-3)
+        rt.clock.set("2026-05-18T17:10:00-04:00")
+        self.assertEqual(-431865, vm(rt, "2026-05-18").body["delta_c"])
+        self.start_exchange()
         rt.clock.set("2026-05-23T00:40:00-04:00")
         accrue_nights(self, rt, date(2026, 5, 20), 3, ("swaprcv", "swappay"))
         # Saturday 05-23: the value is the model mark on unchanged inputs, -4,318.65 (4 periods remain); the termination repays EUR 10,000,000.00 plus the

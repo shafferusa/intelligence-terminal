@@ -36,7 +36,8 @@ from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
 from . import books as _books, config, tables
-from .accounting import AVAILABLE_TEXT, ScopeError
+from .accounting import (AVAILABLE_TEXT, UNCLASSIFIED, ScopeError, asset_class_of, has_versions, original_at, restated_label, snapshot_at,
+                         snapshot_chain)
 from .api import (ApiError, NotBuilt, NotFound, PACKAGES, Request, encode, mark_dict, need, ok_or_raise, quote_dict, run_command, OPEN_ORDER_STATUSES)
 from .clock import accounting_day, ny_of
 from .instruments import EQUITY_KINDS
@@ -208,7 +209,8 @@ def treasury_interest(rt, tv) -> dict:
            "note": tables.CONVENTIONS.get("CASH_INT", "")}
     if got is None:
         out.update(index_pct=None, as_of=None, rate=None, rate_pct=None,
-                   status="SOFR has not been loaded from FRED yet: no rate is shown and no night accrues until it is (RATE_LAG; never defaulted)")
+                   status="SOFR has not been loaded from FRED yet: no rate is shown and no night accrues until it is (FRED publishes SOFR a business day "
+                          "late; a rate is never assumed)")
         return out
     rate = treasury_cash_rate(got[1])
     out.update(index_pct=str(got[1]), as_of=got[0].isoformat(), rate=str(rate), rate_pct=str(fraction_to_pct(rate)), status="ok")
@@ -408,6 +410,91 @@ def fill_rows(rt, conn, where: str, params: list, now: int, limit: int = 500) ->
     return out
 
 
+# ---- PORTFOLIO-05: the drill-down's entry groups, net cash per entry and the fills' settlement state ----------------------------------
+ENTRY_GROUP_ORDER = ["fills", "settlements", "borrow", "accruals", "margin", "dividends", "otc", "other"]
+ENTRY_GROUP_LABELS = {"fills": "fills", "settlements": "settlements", "borrow": "borrow and collateral", "accruals": "accruals (fees, rebates, financing)",
+                      "margin": "margin (initial / variation)", "dividends": "dividends", "otc": "OTC contract (booking, upfront, payments)", "other": "other"}
+
+
+def entry_group(kind: Optional[str], ref_type: Optional[str]) -> str:
+    """The drawer group of a journal entry: fills, settlements, borrow (stock-borrow collateral and recalls), accruals, margin (futures / OTC
+    initial and variation margin), dividends, otc (booking, upfront, payments, termination), other."""
+    k, r = str(kind or "").upper(), str(ref_type or "")
+    if k == "FILL":
+        return "fills"
+    if k in ("SETTLE", "SETTLEMENT") or r == "settlement":
+        return "settlements"
+    if k.startswith("ACCRU"):
+        return "accruals"
+    if k == "COLLATERAL" or r in ("borrow", "sec_loan"):
+        return "borrow"
+    if k in ("VM", "FUT_MARGIN", "OTC_IM", "OTC_VM", "OPT_MARGIN") or r == "vm":
+        return "margin"
+    if k.startswith("DIV") or r == "dividend":
+        return "dividends"
+    if k.startswith(("OTC", "CDX", "TRS", "IRS", "SWAP")) or r == "otc":
+        return "otc"
+    return "other"
+
+
+def entry_net_cash(conn, account_id: str, entry_ids: List[int]) -> Dict[int, Dict[str, int]]:
+    """{entry_id: {currency: cents}}: what each entry moved in the account's settled cash (GL 1010; + in, - out)."""
+    out: Dict[int, Dict[str, int]] = {}
+    for i in range(0, len(entry_ids), 500):
+        chunk = entry_ids[i:i + 500]
+        if not chunk:
+            continue
+        q = ",".join("?" for _ in chunk)
+        for r in conn.execute(f"SELECT entry_id, currency, SUM(amount_c) a FROM journal_lines WHERE account_id=? AND gl='1010' AND entry_id IN ({q})"
+                              " GROUP BY entry_id, currency", [account_id] + chunk).fetchall():
+            out.setdefault(int(r[0]), {})[r[1]] = int(r[2] or 0)
+    for eid in entry_ids:
+        out.setdefault(int(eid), {})
+    return out
+
+
+def position_settlements(conn, fill_ids: List[str]) -> Dict[str, dict]:
+    """{fill_id: {settle_id, status, due_date, settled_ts, stage, label, fail_state, fail_reason}} - the settlement of each fill with its
+    state in words (C15: P6's ``collateral.settlement_state`` when present; "failed (simulated)" / "failed - retried" / "resolved")."""
+    out: Dict[str, dict] = {}
+    if not fill_ids:
+        return out
+    try:
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(settlements)").fetchall()}
+    except Exception:   # noqa: BLE001
+        cols = set()
+    extra = "".join(f", {c}" for c in ("fail_state", "fail_reason", "fail_kind", "resolution", "resolved_ts") if c in cols)
+    state_fn = None
+    try:
+        from . import collateral as _coll                      # optional module: imported where needed
+        state_fn = getattr(_coll, "settlement_state", None)
+    except Exception:   # noqa: BLE001 - the plain words below
+        state_fn = None
+    for i in range(0, len(fill_ids), 500):
+        chunk = fill_ids[i:i + 500]
+        q = ",".join("?" for _ in chunk)
+        for r in conn.execute(f"SELECT settle_id, fill_id, status, due_date, settled_ts, amount_c, currency{extra} FROM settlements WHERE fill_id IN ({q})"
+                              " ORDER BY settle_id", chunk).fetchall():
+            s = dict(r)
+            st = None
+            if callable(state_fn):
+                try:
+                    st = dict(state_fn(s) or {})
+                except Exception:   # noqa: BLE001
+                    st = None
+            if not st:
+                fs = s.get("fail_state")
+                if fs == "FAILED":
+                    st = {"stage": "failed", "label": "failed" + (f": {s.get('fail_reason')}" if s.get("fail_reason") else "")}
+                elif s.get("status") == "SETTLED":
+                    st = {"stage": "settled", "label": "settled" + (" (resolved)" if fs == "RESOLVED" else "")}
+                else:
+                    st = {"stage": "settling", "label": f"settling, due {s.get('due_date')}"}
+            s.update({"stage": st.get("stage"), "label": st.get("label")})
+            out.setdefault(s["fill_id"], s)
+    return out
+
+
 _FUT_IM_RE = re.compile(r"initial margin [+-]?[0-9][0-9,]*\.[0-9]{2} \(([^)]*)\)")
 
 # ---- V104R1-04 (1.0.4 fixer): trader wording for the link ids, account ids, codes and convention keys inside the texts a page shows ----
@@ -423,15 +510,49 @@ CODE_ACRONYMS = {"FX", "OTC", "CDX", "PB", "IM", "VM", "TRS", "IRS", "XCCY", "FI
 CODE_WORDS = {"ACCT_DAY": "accounting day", "FUT_MARGIN": "futures margin", "OPT_MARGIN": "option margin", "EXCESS_LIQ": "excess liquidity",
               "BUY_CCY": "currency bought", "SELL_CCY": "currency sold", "PB_ONBOARDED": "prime broker onboarded", "OTC_BOOKED": "OTC contract booked",
               "FX_DEALT": "FX deal", "FX_FORWARD_DEALT": "FX forward dealt", "SWEEP_IN": "sweep-in", "SWEEP_OUT": "sweep-out", "OTC_IM": "OTC initial margin",
-              "OTC_VM": "OTC variation margin", "OTC_TERMINATE": "OTC termination"}
+              "OTC_VM": "OTC variation margin", "OTC_TERMINATE": "OTC termination", "ASOF_SWEEP": "as-of sweep", "ASOF_TRANSFER": "as-of transfer",
+              "ASOF_FUNDING": "as-of funding", "REACCRUE": "re-accrual (import)", "REACCRUED": "re-accrued", "NAV_RESTATED": "NAV restated",
+              "OTC_BOOKED_AS_OF": "OTC contract booked as of its value date", "IMPORT_INPUTS": "import inputs recorded", "JOB_SKIPPED": "job skipped",
+              "COMPOUND_ARREARS": "compounded in arrears"}
+#: the nightly accrual kinds of the ACCRUED / REACCRUED events in words
+ACCRUAL_KIND_WORDS = {"cashint": "Treasury cash interest", "pbcredit": "PB credit interest", "pb": "PB financing interest", "swappay": "swap leg accrual",
+                      "borrow": "borrow fee and rebate", "loan": "loan interest", "repo": "repo interest", "pc": "private-credit coupon"}
 _CODE_RE = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$")
 _ACCT_IN_TEXT = re.compile(r"\b[A-Z]{1,3}[0-9]+:[A-Z][A-Z0-9_]*[A-Z0-9]\b")
 _LINK_TOKEN = re.compile(r"[A-Z]{1,3}[0-9]+:[A-Z][A-Z0-9_]*[A-Z0-9]|[^:]+")
 _LINK_PHRASE = re.compile(r"\bfor ([a-z][a-z_]*) ([A-Za-z0-9][A-Za-z0-9_.:\-]*[A-Za-z0-9])")
 _CONV_GROUP = re.compile(r"( ?)\(([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*(?:, ?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)*)\)")
+_SIDE_CODE = re.compile(r"\b(SELL_SHORT|BUY_TO_COVER)\b")
+_LEAD_CODE = re.compile(r"^([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+): ")
+_LENDER_MODEL = re.compile(r"lender \(modell?ed\)")
+_TAIL_CODE = re.compile(r"; ([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\)")      # '(2 -> 19 contracts x 2,600.00; FUT_MARGIN)': a convention key at the end
+_ACCRUAL_TOKEN = re.compile(r"\b(cashint|pbcredit|swappay)\b")      # the accrual kinds that are never English words ('re-accrual ... pbcredit ...')
 #: section names of a module's docstring some memos cite beside the conventions ('(EXECUTION, ACCRUED, COST_BASIS)' of a bond fill): not
 #: shown on any page, so a page drops them and keeps the conventions it can show
 DOC_KEYS = frozenset({"EXECUTION", "ACCRUED", "FILL"})
+
+
+#: V104R2-BW-01 remnant (the integrator, 1.0.6): a fill's stored price basis / origin in words on the Activity page (row and dialog)
+FILL_BASIS_WORDS = {"last": "last trade", "ask": "ask", "bid": "bid", "limit": "limit price", "stop_print": "stop trigger print", "strike": "strike",
+                    "zero": "zero", "settle": "settle price", "par": "par", "negotiated": "negotiated price", "as_of": "as-of booking price",
+                    "close": "closing price", "mid": "mid"}
+FILL_ORIGIN_WORDS = {"EXERCISE": "exercise", "ASSIGNMENT": "assignment", "EXPIRY": "expiry", "FUTURES_FINAL": "final settlement",
+                     "NEGOTIATED": "negotiated trade"}
+
+
+def fill_words(r) -> Tuple[str, str, str]:
+    """``(side, price basis, origin)`` of a ``fills`` row in words: 'SELL_SHORT' -> 'sell short' (BUY / SELL stay as the memos write them),
+    'as_of' -> 'as-of booking price', origin ORDER -> 'fill of O-000027', 'FUTURES_FINAL' -> 'final settlement'."""
+    side = str(r["side"] or "")
+    side_txt = code_words(side) if "_" in side else side
+    basis = str(r["price_basis"] or "")
+    basis_txt = FILL_BASIS_WORDS.get(basis, basis.replace("_", " ")) or "price basis not recorded"
+    origin = str(r["origin"] or "")
+    if origin == "ORDER":
+        origin_txt = f"fill of {r['order_id']}" if r["order_id"] else "order fill"
+    else:
+        origin_txt = FILL_ORIGIN_WORDS.get(origin) or code_words(origin)
+    return side_txt, basis_txt, origin_txt
 
 
 def code_words(code) -> str:
@@ -493,11 +614,25 @@ def readable(text, names: Optional[Dict[str, str]] = None) -> str:
     def _conv(m):
         keys = [k.strip() for k in m.group(2).split(",")]
         if not all(k in tables.CONVENTIONS or k in DOC_KEYS for k in keys):
-            return m.group(0)
+            # a group mixing convention keys with other codes ('(ACCRUAL, RATE_LAG, COMPOUND_ARREARS)'): the others in words; a group
+            # with no convention key at all ('(GS)', a counterparty) stays as written
+            if not any(k in tables.CONVENTIONS for k in keys):
+                return m.group(0)
+            shown = [conv_title(k) if k in tables.CONVENTIONS else code_words(k) for k in keys if k not in DOC_KEYS]
+            return m.group(1) + "(see " + ", ".join(shown) + ")"
         shown = [conv_title(k) for k in keys if k in tables.CONVENTIONS]
         return m.group(1) + "(see " + ", ".join(shown) + ")" if shown else ""
+
+    def _tail(m):
+        k = m.group(1)
+        return ("; see " + conv_title(k) + ")") if k in tables.CONVENTIONS else m.group(0)
     s = _LINK_PHRASE.sub(_link, s)
     s = _ACCT_IN_TEXT.sub(lambda m: names.get(m.group(0), m.group(0)), s)
+    s = _SIDE_CODE.sub(lambda m: code_words(m.group(1)), s)                 # V104R2-BW-02: 'SELL_SHORT 8,500 DLR' -> 'sell short 8,500 DLR'
+    s = _LEAD_CODE.sub(lambda m: code_words(m.group(1)) + ": ", s)           # a leading 'CLOSE_PENDING: ...' -> 'close pending: ...'
+    s = _LENDER_MODEL.sub("lender (assumed terms)", s)                       # C16: a stored 'street lender (modelled)' reads as everywhere else
+    s = _TAIL_CODE.sub(_tail, s)                                             # '...; FUT_MARGIN)' -> '...; see Futures margin)'
+    s = _ACCRUAL_TOKEN.sub(lambda m: ACCRUAL_KIND_WORDS[m.group(1)], s)       # 'pbcredit' -> 'PB credit interest'
     return _CONV_GROUP.sub(_conv, s)
 
 
@@ -597,6 +732,8 @@ def txn_rows(rt, scope: str, *, from_date=None, to_date=None, kinds=None, instru
             l["credit_c"] = -amt if amt < 0 else None
             l.setdefault("gl_name", CHART[l["gl"]].name if l.get("gl") in CHART else l.get("gl"))
             l["account_name"] = names.get(l.get("account_id"), l.get("account_id"))
+            if l.get("memo"):
+                l["memo"] = readable(l["memo"], names)                        # a line's memo in words too ('static table; FUT_MARGIN')
             lines.append(l)
         d["lines"] = lines
         entry_accounts = sorted({l.get("account_id") for l in lines if l.get("account_id")})
@@ -614,7 +751,8 @@ def txn_rows(rt, scope: str, *, from_date=None, to_date=None, kinds=None, instru
             im = sum(int(l.get("amount_c") or 0) for l in lines if l.get("gl") == "1300")
             if im or str(t.kind) == "FUT_MARGIN":
                 m = _FUT_IM_RE.search(t.memo or "")
-                d["memo"] = f"initial margin {'+' if im >= 0 else '-'}{fmt_money(abs(im))}" + (f" ({m.group(1)})" if m else "") + f" for fill {t.ref_id}"
+                d["memo"] = readable(f"initial margin {'+' if im >= 0 else '-'}{fmt_money(abs(im))}" + (f" ({m.group(1)})" if m else "") + f" for fill {t.ref_id}", names)
+                d["memo_stored"] = t.memo                                        # V104R2-BW-02 (a): '...; FUT_MARGIN)' in words, the stored text kept
         party = parties.get((t.ref_type, t.ref_id))
         other = [a for a in entry_accounts if a != own] if own else []
         if party and party.get("transfer"):
@@ -657,13 +795,202 @@ def transactions_csv(rows: List[dict]) -> str:
     return _csv(body, header)
 
 
-def positions_csv(positions) -> str:
+def positions_csv(positions, extra: Optional[Dict[tuple, dict]] = None, extended: bool = False) -> str:
+    """The Positions CSV: the fixture columns first (account_id, instrument_id, qty, cost, mark, quality, mv, unrealised), then
+    (PORTFOLIO-04) asset class, sector, counterparty, realised / income / financing / fees to date, total P&L, and margin / collateral
+    (``extra`` = {(account, instrument): {margin_c, collateral_c}} from ``attach_requirements``; blank when not in this build)."""
     body = []
+    extra = extra or {}
     for p in positions:
         m = p.mark
-        body.append([p.account_id, p.instrument_id, p.qty, str(from_c(p.cost_c)), None if m is None or m.mark is None else str(m.mark), m.quality if m else "unavailable",
-                     None if p.mv_c is None else str(from_c(p.mv_c)), None if p.unrealised_c is None else str(from_c(p.unrealised_c))])
-    return _csv(body, ["account_id", "instrument_id", "qty", "cost", "mark", "quality", "mv", "unrealised"])
+        x = extra.get((p.account_id, p.instrument_id)) or {}
+        row = [p.account_id, p.instrument_id, p.qty, str(from_c(p.cost_c)), None if m is None or m.mark is None else str(m.mark), m.quality if m else "unavailable",
+               None if p.mv_c is None else str(from_c(p.mv_c)), None if p.unrealised_c is None else str(from_c(p.unrealised_c))]
+        if not extended:
+            body.append(row)
+            continue
+        body.append(row + [
+                     p.asset_class, p.sector or UNCLASSIFIED, p.counterparty, str(from_c(p.realised_itd_c)), str(from_c(p.income_itd_c)),
+                     str(from_c(p.financing_itd_c)), str(from_c(p.fees_itd_c)), None if p.total_pnl_c is None else str(from_c(p.total_pnl_c)),
+                     None if x.get("margin_c") is None else str(from_c(x["margin_c"])), None if x.get("collateral_c") is None else str(from_c(x["collateral_c"]))])
+    head = ["account_id", "instrument_id", "qty", "cost", "mark", "quality", "mv", "unrealised"]
+    return _csv(body, head + (["asset_class", "sector", "counterparty", "realised", "income", "financing", "fees", "total_pnl", "margin", "collateral"] if extended else []))
+
+
+def requirements_map(rt, positions) -> Dict[tuple, dict]:
+    """{(account, instrument): {margin_c, collateral_c}} of position views for the CSV (``attach_requirements`` on light rows)."""
+    rows = [{"account_id": p.account_id, "instrument_id": p.instrument_id} for p in positions]
+    attach_requirements(rt, rows)
+    return {(r["account_id"], r["instrument_id"]): r for r in rows}
+
+
+# ---- PORTFOLIO-03: closed positions ---------------------------------------------------------------------------------------------------
+CLOSED_COLUMNS = ["account_id", "instrument_id", "symbol", "asset_class", "side", "qty", "open_date", "close_date", "days_held", "avg_open_px", "avg_close_px",
+                  "realised", "fees", "income", "financing", "total_pnl", "how", "counterparty", "open_fill_ids", "closing_fill_ids", "source"]
+
+
+def closed_view(rt, scope: str, from_date=None, to_date=None) -> dict:
+    """``GET /api/portfolio/closed`` (PORTFOLIO-03): ``Accounting.closed_positions`` with the account / book names and the totals of the
+    position rows (a returned stock borrow is the financing of a short already listed: shown, never added to a total)."""
+    names, books = name_maps(rt)
+    rows = []
+    tot = {"realised_c": 0, "fees_c": 0, "income_c": 0, "financing_c": 0, "total_pnl_c": 0}
+    for c in rt.accounting.closed_positions(scope, from_date, to_date):
+        d = c.to_dict()
+        d["account_name"] = names.get(c.account_id, c.account_id)
+        d.update(book_fields(c.account_id, books))
+        rows.append(d)
+        if c.source != "borrow":
+            for k in tot:
+                tot[k] += int(getattr(c, k))
+    return {"scope": scope, "from": from_date, "to": to_date, "rows": rows, "count": len(rows), "totals": tot,
+            "note": ("a listed position closes when its quantity returns to zero (fills in time order); realised from the closing fills' lot relief "
+                     "(a future: its variation margin), fees of every fill, income and financing of the holding dates; OTC contracts terminated or "
+                     "matured; returned stock borrows are the financing of the shorts above (not added to the totals)")}
+
+
+def closed_csv(view: dict) -> str:
+    body = []
+    for r in view.get("rows") or []:
+        body.append([r.get("account_id"), r.get("instrument_id"), r.get("symbol"), r.get("asset_class"), r.get("side"), r.get("qty"), r.get("open_date"),
+                     r.get("close_date"), r.get("days_held"), r.get("avg_open_px"), r.get("avg_close_px")]
+                    + [str(from_c(int(r.get(k) or 0))) for k in ("realised_c", "fees_c", "income_c", "financing_c", "total_pnl_c")]
+                    + [r.get("how"), r.get("counterparty"), " ".join(r.get("open_fill_ids") or []), " ".join(r.get("closing_fill_ids") or []), r.get("source")])
+    return _csv(body, CLOSED_COLUMNS)
+
+
+# ---- PORTFOLIO-13: NAV history and the portfolio as of a date -----------------------------------------------------------------------
+def _late(row: Optional[dict]) -> bool:
+    """An original snapshot taken after its own date's evening (the 10-22 row taken on 10-23 08:04): computed late."""
+    if not row or not row.get("ts"):
+        return False
+    return ny_of(int(row["ts"])).date().isoformat() > str(row.get("snap_date"))
+
+
+def _jl(raw) -> list:
+    try:
+        v = json.loads(raw or "[]")
+    except (TypeError, ValueError):
+        return []
+    return v if isinstance(v, list) else []
+
+
+def nav_history(rt, scope: str, from_date=None, to_date=None) -> dict:
+    """``GET /api/history/nav?scope=&from=&to=`` (PORTFOLIO-13, FINSIM1_PLAN P3 task 9): the scope's daily snapshot rows - per date the
+    LATEST restated version, else the original (C9d) - with the daily return (pnl_day / the previous row's NAV = (NAV - flows) /
+    previous NAV - 1; the first row of a lifetime: NAV over the capital it received - 1), the cumulative time-weighted return over the
+    range, quality, the trading-day flag, ``late`` (the original was computed after its date's evening), the restated label and, for a
+    restated date, its split (original NAV, import effect by group, interest, mark policy by position, the dating line, residual).
+    Every row also carries its ``original`` (the stored ``nav_snapshots`` row, never altered; None for a date the restatement added),
+    so the page toggles between the restated and the original series."""
+    from .performance import trading_day_fn
+    with rt.db.reader() as conn:
+        sc = rt.accounting._scope(conn, scope)
+        key = sc.snapshot_key
+        if key is None:
+            raise ApiError(400, "SCOPE", "NAV history is per book or per account: choose one book (not all books)")
+        chain = snapshot_chain(conn, key)
+        originals = {r["snap_date"]: dict(r) for r in conn.execute("SELECT * FROM nav_snapshots WHERE account_id=?", (key,)).fetchall()}
+        versions: Dict[str, int] = {}
+        if has_versions(conn):
+            for r in conn.execute("SELECT snap_date, COUNT(*) n FROM nav_snapshot_versions WHERE account_id=? GROUP BY snap_date", (key,)).fetchall():
+                versions[r[0]] = int(r[1])
+    is_td = trading_day_fn(rt)
+    fd = None if not from_date else str(from_date)[:10]
+    td = None if not to_date else str(to_date)[:10]
+    rows: List[dict] = []
+    prev_nav: Optional[int] = None
+    prev_orig: Optional[int] = None
+    cum = Decimal(1)
+    cum_o = Decimal(1)
+    for r in chain:
+        ds = str(r["snap_date"])
+        nav_c, flows = int(r["nav_c"]), int(r["flows_day_c"])
+        if prev_nav is None:
+            ret = (Decimal(nav_c) / Decimal(flows) - 1) if flows > 0 else None
+        else:
+            ret = (Decimal(nav_c - flows) / Decimal(prev_nav) - 1) if prev_nav > 0 else None
+        o = originals.get(ds)
+        if o is not None:
+            if prev_orig is None:
+                ret_o = (Decimal(int(o["nav_c"])) / Decimal(int(o["flows_day_c"])) - 1) if int(o["flows_day_c"]) > 0 else None
+            else:
+                ret_o = (Decimal(int(o["nav_c"]) - int(o["flows_day_c"])) / Decimal(prev_orig) - 1) if prev_orig > 0 else None
+        else:
+            ret_o = None
+        prev_nav = nav_c
+        prev_orig = int(o["nav_c"]) if o is not None else prev_orig
+        if (fd and ds < fd) or (td and ds > td):
+            continue
+        if ret is not None:
+            cum *= 1 + ret
+        if ret_o is not None:
+            cum_o *= 1 + ret_o
+        lab = restated_label(r)
+        row = {"snap_date": ds, "nav_c": nav_c, "flows_day_c": flows, "pnl_day_c": int(r["pnl_day_c"]), "settled_c": int(r["settled_c"]),
+               "unrealised_c": int(r["unrealised_c"]), "realised_cum_c": int(r["realised_cum_c"]), "quality": r["quality"], "partial": bool(r["partial"]),
+               "trading_day": bool(is_td(ds)), "ret": None if ret is None else str(ret.quantize(Decimal("0.000001"))), "cum": str((cum - 1).quantize(Decimal("0.000001"))),
+               "restated": bool(r.get("restated")), "restated_text": lab["text"] if lab else None, "version": r.get("version") or 0, "versions": versions.get(ds, 0),
+               "batch_id": r.get("batch_id"), "reason": r.get("reason"), "late": _late(o),
+               "original": None if o is None else {"nav_c": int(o["nav_c"]), "flows_day_c": int(o["flows_day_c"]), "pnl_day_c": int(o["pnl_day_c"]),
+                                                   "quality": o["quality"], "partial": bool(o["partial"]), "ts": int(o["ts"]),
+                                                   "ret": None if ret_o is None else str(ret_o.quantize(Decimal("0.000001"))),
+                                                   "cum": str((cum_o - 1).quantize(Decimal("0.000001")))}}
+        if r.get("restated"):
+            row["added"] = bool(r.get("added"))
+            row["split"] = {"original_nav_c": int(r.get("original_nav_c") or 0), "import_effect": _jl(r.get("import_effect_json")),
+                            "interest_effect_c": int(r.get("interest_effect_c") or 0), "mark_policy_c": int(r.get("mark_policy_c") or 0),
+                            "mark_policy": _jl(r.get("mark_policy_json")), "dating_c": int(r.get("dating_c") or 0), "dating": _jl(r.get("dating_json")),
+                            "residual_c": int(r.get("residual_c") or 0)}
+        rows.append(row)
+    return {"scope": scope, "key": key, "from": fd, "to": td, "rows": rows, "count": len(rows), "restated_dates": [x["snap_date"] for x in rows if x["restated"]],
+            "note": ("one row per daily snapshot (every calendar day; weekends carry the previous trading day's marks); a restated date shows its latest "
+                     "version, labelled, with its split; the original snapshot is kept unchanged beside it (the toggle)")}
+
+
+def portfolio_as_of(rt, scope: str, d: str) -> dict:
+    """``GET /api/portfolio?as_of=YYYY-MM-DD`` (PORTFOLIO-13): the positions and marks of that day's snapshot of the scope (the latest
+    restated version, else the original) - every figure from its stored detail, nothing re-marked; read-only."""
+    try:
+        day = date.fromisoformat(str(d)[:10])
+    except ValueError:
+        raise ApiError(400, "BAD_DATE", "as_of must be an ISO date (YYYY-MM-DD)")
+    names, books = name_maps(rt)
+    with rt.db.reader() as conn:
+        sc = rt.accounting._scope(conn, scope)
+        key = sc.snapshot_key
+        if key is None:
+            raise ApiError(400, "SCOPE", "a portfolio as of a date is per book or per account: choose one book")
+        row = snapshot_at(conn, key, day)
+        if row is None:
+            raise NotFound(f"no daily snapshot of {day.isoformat()} for this scope")
+        orig = original_at(conn, key, day) if row.get("restated") else None
+    try:
+        det = json.loads(row.get("detail_json") or "{}")
+    except ValueError:
+        det = {}
+    positions = []
+    for iid, p in sorted(((det.get("positions") or {}).items())):
+        if not isinstance(p, dict):
+            continue
+        inst = rt.instruments.get(iid)
+        aid = p.get("account_id") or ""
+        kind = inst.kind if inst is not None else ("SWAP" if p.get("mark_kind") == "OVERLAY" else "")
+        positions.append({"account_id": aid, "account_name": names.get(aid, aid), **book_fields(aid, books), "instrument_id": iid,
+                          "symbol": inst.symbol if inst is not None else iid, "name": inst.name if inst is not None else iid, "kind": kind,
+                          "asset_class": asset_class_of(kind, {"kind": (inst.spec or {}).get("otc_kind")} if inst is not None else None),
+                          "qty": p.get("qty"), "cost_c": p.get("cost_c"), "mv_c": p.get("mv_c"), "mv_base_c": p.get("mv_base_c"),
+                          "unrealised_c": p.get("unrealised_c"), "pl_cum_c": p.get("pl_cum_c"), "mark": p.get("mark"), "quality": p.get("quality"),
+                          "mark_as_of": p.get("as_of"), "mark_kind": p.get("mark_kind"), "mark_source": p.get("mark_source"), "mark_date": p.get("mark_date")})
+    lab = restated_label(row)
+    nav = {k[:-2] if k.endswith("_c") else k: (str(from_c(int(row[k]))) if k.endswith("_c") else row[k])
+           for k in ("nav_c", "settled_c", "pending_c", "mv_long_c", "mv_short_c", "unrealised_c", "fx_result_c", "realised_cum_c", "income_cum_c",
+                     "financing_cum_c", "fees_cum_c", "capital_cum_c", "transfers_cum_c", "flows_day_c", "pnl_day_c", "quality") if k in row}
+    return {"scope": scope, "as_of_date": day.isoformat(), "read_only": True, "nav": nav, "positions": positions, "count": len(positions),
+            "by_account": money_map(det.get("by_account") or {}), "missing": det.get("missing") or [], "fx": det.get("fx") or {},
+            "restated": lab, "original_nav_c": None if orig is None else int(orig["nav_c"]), "snapshot_ts": int(row.get("ts") or 0),
+            "late": _late(orig if orig is not None else (None if row.get("restated") else row)),
+            "note": "the stored snapshot of that date: positions and marks as recorded (dated closes / settles, OTC VM marks), nothing re-marked"}
 
 
 #: BM-14: the explain rows in the order of the identity explained = realised + income - financing - fees + unrealised + FX,
@@ -702,11 +1029,16 @@ def pnl_out(view) -> dict:
     return d
 
 
-def pnl_block(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD")) -> dict:
+def pnl_block(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"), keep: Optional[dict] = None) -> dict:
+    """The P&L tiles of a scope per period (``pnl_out``); ``keep`` (a dict) receives the ``PnlView`` objects by period, so a caller
+    reuses them (the returns of PORTFOLIO-07 against the same TODAY baseline)."""
     out = {}
     for p in periods:
         try:
-            out[p] = pnl_out(rt.accounting.pnl(scope, p, snapshot=snap))
+            view = rt.accounting.pnl(scope, p, snapshot=snap)
+            if keep is not None:
+                keep[p] = view
+            out[p] = pnl_out(view)
         except ScopeError:
             raise
         except Exception as e:   # noqa: BLE001 — one period's failure must not hide the others; it is reported in place
@@ -725,6 +1057,7 @@ def position_row(p, names: Dict[str, str], books: Dict[str, str], nav_c: Optiona
     d["mark"] = mark_dict(p.mark)
     d["account_name"] = names.get(p.account_id, p.account_id)
     d.update(book_fields(p.account_id, books))
+    d["sector_label"] = p.sector or UNCLASSIFIED                     # PORTFOLIO-19
     if nav_c is not None:
         d["weight_account"] = d.get("weight")
         d["weight"] = share(p.mv_base_c, nav_c)
@@ -741,7 +1074,113 @@ def positions_view(rt, scope: str, snap, kind: Optional[str] = None) -> List[dic
         if kind and p.kind != kind:
             continue
         out.append(position_row(p, names, books))
+    attach_requirements(rt, out)
     return out
+
+
+# ---- PORTFOLIO-04 / C16: margin and collateral by position (P6's collateral functions, imported through the bound module) ------------
+REQ_NOT_BUILT = "n/a: margin and collateral by position are not in this build"
+
+
+def collateral_fn(rt, name: str):
+    """A C16 function of the bound collateral module (``summary``, ``position_requirements``, ``margin_calls_rows`` ...) or None."""
+    mod = getattr(rt, "collateral", None)
+    fn = getattr(mod, name, None) if mod is not None else None
+    return fn if callable(fn) else None
+
+
+def attach_requirements(rt, rows: List[dict]) -> None:
+    """PORTFOLIO-04 (C16): ``margin_c`` / ``collateral_c`` / ``margin_basis`` on every position row from
+    ``collateral.position_requirements(services, account_id)`` (one call per account; ``{instrument_id: {margin_c, collateral_c,
+    basis}}``).  A row the answer does not name requires nothing (0.00, "none").  Until the function is in the build (or when it
+    fails) both are None with ``margin_note`` saying why - never a guessed figure."""
+    fn = collateral_fn(rt, "position_requirements")
+    got: Dict[str, dict] = {}
+    for d in rows:
+        if fn is None:
+            d["margin_c"], d["collateral_c"], d["margin_note"] = None, None, REQ_NOT_BUILT
+            continue
+        aid = str(d.get("account_id") or "")
+        if aid not in got:
+            try:
+                ans = fn(rt, aid)
+                got[aid] = dict(ans) if isinstance(ans, dict) else {}
+            except Exception as e:   # noqa: BLE001 - said on the row, never a 500 of the Portfolio
+                got[aid] = {"__error__": f"{type(e).__name__}: {e}"[:160]}
+        ans = got[aid]
+        if "__error__" in ans:
+            d["margin_c"], d["collateral_c"], d["margin_note"] = None, None, "n/a: " + ans["__error__"]
+            continue
+        r = ans.get(d.get("instrument_id"))
+        if not isinstance(r, dict):
+            d["margin_c"], d["collateral_c"], d["margin_basis"] = 0, 0, "none required"
+            continue
+        m, c = r.get("margin_c"), r.get("collateral_c")
+        d["margin_c"] = None if m is None else int(m)
+        d["collateral_c"] = None if c is None else int(c)
+        d["margin_basis"] = str(r.get("basis") or "")
+
+
+def by_asset_class(positions, nav_c: Optional[int] = None) -> List[dict]:
+    """PORTFOLIO-04: the subtotals by the finer asset class (Equity, ETF, Option, Future, OTC TRS / IRS / CDX ...), the same row shape
+    as ``by_class`` (``klass`` = the asset class)."""
+    acc: Dict[str, dict] = {}
+    order: List[str] = []
+    for p in positions:
+        k = p.asset_class or asset_class_of(p.kind, p.extra)
+        b = acc.get(k)
+        if b is None:
+            b = acc[k] = {"klass": k, "label": k, "count": 0, "mv_c": 0, "unrealised_c": 0, "day_pnl_c": 0, "cost_c": 0, "total_pnl_c": 0, "fees_c": 0,
+                          "missing": 0, "day_pnl_missing": 0}
+            order.append(k)
+        b["count"] += 1
+        b["cost_c"] += int(p.cost_c or 0)
+        b["fees_c"] += int(p.fees_itd_c or 0)
+        if p.mv_base_c is None:
+            b["missing"] += 1
+        else:
+            b["mv_c"] += int(p.mv_base_c)
+        if p.unrealised_base_c is not None:
+            b["unrealised_c"] += int(p.unrealised_base_c)
+        if p.total_pnl_c is not None:
+            b["total_pnl_c"] += int(p.total_pnl_c)
+        if p.day_pnl_c is None:
+            b["day_pnl_missing"] += 1
+        else:
+            b["day_pnl_c"] += int(p.day_pnl_c)
+    for b in acc.values():
+        b["weight"] = share(b["mv_c"], nav_c)
+    return [acc[k] for k in order]
+
+
+def _in_gross(p) -> bool:
+    """The rows the footer's gross long / gross short count: priced securities, options, bonds and private positions at market value
+    (futures carry none; OTC contracts and FX forwards are beside it)."""
+    return p.kind not in ("FUTURE", "SWAP", "FX_FORWARD") and p.mv_base_c is not None
+
+
+def by_sector(positions, nav_c: Optional[int] = None) -> List[dict]:
+    """PORTFOLIO-19: market value long / short / net / gross per sector over the rows of the footer's gross long / short (``_in_gross``),
+    % of NAV (gross / NAV); "unclassified" when neither the owner nor the instrument master gives a sector.  The gross of the rows sums
+    to the footer's gross long + gross short.  Largest gross first, unclassified last."""
+    acc: Dict[str, dict] = {}
+    for p in positions:
+        if not _in_gross(p):
+            continue
+        k = p.sector or UNCLASSIFIED
+        b = acc.setdefault(k, {"sector": k, "count": 0, "long_c": 0, "short_c": 0, "net_c": 0, "gross_c": 0, "instruments": [],
+                               "source": p.sector_source if p.sector else None})
+        v = int(p.mv_base_c)
+        b["count"] += 1
+        b["long_c" if v >= 0 else "short_c"] += abs(v)
+        b["net_c"] += v
+        b["gross_c"] += abs(v)
+        if p.symbol not in b["instruments"]:
+            b["instruments"].append(p.symbol)
+    rows = sorted(acc.values(), key=lambda b: (b["sector"] == UNCLASSIFIED, -b["gross_c"], b["sector"]))
+    for b in rows:
+        b["pct_nav"] = share(b["gross_c"], nav_c)
+    return rows
 
 
 def by_class(positions, nav_c: Optional[int] = None) -> List[dict]:
@@ -812,10 +1251,40 @@ def portfolio_footer(rt, positions, snap) -> dict:
             long_c += int(p.mv_base_c)
         else:
             short_c += -int(p.mv_base_c)
+    # PORTFOLIO-17: the OTC exposure beside the futures notional, with the definitions Risk uses (risk.otc_exposure / DEFINITIONS): a TRS at
+    # its reference units x the underlying price (signed: paying the total return is short), a CDX at its notional with its credit sign
+    # (protection bought = short credit), an IRS by its DV01 (never its notional)
+    exp = {"trs_long_c": 0, "trs_short_c": 0, "cdx_long_credit_c": 0, "cdx_short_credit_c": 0, "irs_dv01_c": 0, "other_notional_c": 0, "missing": [], "basis": {}}
+    definitions: Dict[str, str] = {}
+    try:
+        from .risk import DEFINITIONS, otc_exposure
+        definitions = {k: DEFINITIONS[k] for k in ("market_value", "exposure", "trs", "cdx", "irs", "futures") if k in DEFINITIONS}
+        for p in positions:
+            if p.kind != "SWAP":
+                continue
+            x = otc_exposure(p, fx_rate(rt, snap, p.currency))
+            k = x.get("kind")
+            if k == "TRS" and x.get("exposure_c") is not None:
+                exp["trs_long_c" if x["exposure_c"] >= 0 else "trs_short_c"] += abs(int(x["exposure_c"]))
+            elif k == "CDX" and x.get("exposure_c") is not None:
+                exp["cdx_long_credit_c" if x["exposure_c"] >= 0 else "cdx_short_credit_c"] += abs(int(x["exposure_c"]))
+            elif k in ("IRS", "XCCY") and x.get("dv01_c") is not None:
+                exp["irs_dv01_c"] += int(x["dv01_c"])
+            elif x.get("exposure_c") is not None:
+                exp["other_notional_c"] += abs(int(x["exposure_c"]))
+            else:
+                exp["missing"].append(p.instrument_id)
+            if x.get("basis"):
+                exp["basis"][p.instrument_id] = x["basis"]
+    except Exception as e:   # noqa: BLE001 - the footer stays; the exposure line says it could not be measured
+        exp["error"] = f"{type(e).__name__}: {e}"[:160]
     return {"gross_long_c": long_c, "gross_short_c": short_c, "net_c": long_c - short_c, "futures_notional_long_c": fl_c, "futures_notional_short_c": fs_c,
             "otc_mv_positive_c": otc_pos, "otc_mv_negative_c": otc_neg, "unpriced": unpriced, "fx_missing": sorted(set(fx_missing)), "count": len(positions),
-            "note": ("gross long / short = market value of the long / short securities and option rows in USD (the NAV block's long / short market value);"
-                     " OTC contracts and FX forwards at their market value beside it; futures at notional (contracts x multiplier x mark), they carry no market value")}
+            "otc_exposure": exp, "definitions": definitions,
+            "note": ("market value: gross long / short = the long / short securities and option rows in USD (the NAV block's long / short market value);"
+                     " OTC contracts and FX forwards at their market value (the contract value NAV carries) beside it. exposure (never a market value):"
+                     " futures at notional (contracts x multiplier x mark); a TRS at its reference units x the underlying price; a CDX at its notional"
+                     " (protection bought = short credit); an IRS by its DV01 - the definitions Risk uses")}
 
 
 def portfolio_view(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"), with_day: bool = True) -> dict:
@@ -830,6 +1299,7 @@ def portfolio_view(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"),
     kind = "ALL_BOOKS" if scope == "ALL_BOOKS" else scope_kind(scope)
     basis = "share of the lifetime's final NAV" if nav.archived else WEIGHT_BASIS[kind]
     pv = [position_row(p, names, books, nav.nav_c, basis) for p in positions]
+    attach_requirements(rt, pv)
     counts: Dict[str, int] = {}
     for p in positions:
         counts[p.account_id] = counts.get(p.account_id, 0) + 1
@@ -847,9 +1317,32 @@ def portfolio_view(rt, scope: str, snap, periods=("TODAY", "MTD", "YTD", "ITD"),
                 row["pnl_today_c"] = None
                 row["pnl_today_error"] = f"{type(e).__name__}: {e}"
         accounts.append(row)
-    return {"scope": scope, "nav": nav_out(nav), "pnl": pnl_block(rt, scope, snap, periods), "by_account": accounts, "by_class": by_class(positions, nav.nav_c),
-            "footer": portfolio_footer(rt, positions, snap), "positions": pv, "weight_basis": basis, "marks_partial": nav.partial, "missing_marks": nav.missing,
-            "as_of": nav.as_of, "lifetime_ids": nav.lifetime_ids, "read_only": nav.archived}
+    kept: dict = {}
+    pnl = pnl_block(rt, scope, snap, periods, keep=kept)
+    out = {"scope": scope, "nav": nav_out(nav), "pnl": pnl, "by_account": accounts, "by_class": by_class(positions, nav.nav_c),
+           "by_asset_class": by_asset_class(positions, nav.nav_c), "by_sector": by_sector(positions, nav.nav_c),
+           "footer": portfolio_footer(rt, positions, snap), "positions": pv, "weight_basis": basis, "marks_partial": nav.partial, "missing_marks": nav.missing,
+           "as_of": nav.as_of, "lifetime_ids": nav.lifetime_ids, "read_only": nav.archived}
+    if with_day and not nav.archived:
+        out["returns"] = returns_block(rt, scope, snap, nav, kept.get("TODAY"))
+    return out
+
+
+def returns_block(rt, scope: str, snap, nav=None, today=None) -> dict:
+    """PORTFOLIO-07: the Portfolio's return tiles - ``performance.returns_summary`` (C9e) of the scope, or ``available: false`` with
+    the reason (the performance module not bound, ALL_BOOKS, a failure) - never a guessed return."""
+    mod = getattr(rt, "performance", None)
+    fn = getattr(mod, "returns_summary", None) if mod is not None else None
+    if not callable(fn):
+        return {"available": False, "reason": "the performance statistics are not in this build"}
+    try:
+        out = dict(fn(rt, scope, snapshot=snap, nav=nav, today=today))
+    except Exception as e:   # noqa: BLE001 - said in the tiles, the Portfolio still renders
+        if rt.log:
+            rt.log.exception("returns_summary %s failed", scope)
+        return {"available": False, "reason": f"{type(e).__name__}: {e}"[:200]}
+    out["available"] = True
+    return out
 
 
 def trial_balance(rt, scope: str) -> dict:
@@ -934,9 +1427,10 @@ def integrity_view(report, lifetime_id: Optional[str] = None) -> dict:
 #: BM-07 / BM-25: what the Activity filter offers (``?type=``); a row's ``category`` is one of these; ``system`` rows (job runs,
 #: housekeeping, data-feed and whole-database items no book owns) are shown only when asked for.  The raw row types of the first
 #: API (event / fill / transfer / job / attention) still filter by ``type``.
-ACTIVITY_CATEGORIES = ("orders", "settlements", "transfers", "financing", "otc", "attention", "other", "system")
+ACTIVITY_CATEGORIES = ("orders", "settlements", "transfers", "financing", "otc", "margin_calls", "attention", "other", "system")
 ACTIVITY_ALIASES = {"order": "orders", "fills": "orders", "trades": "orders", "settlement": "settlements", "transfer": "transfers", "capital": "transfers",
-                    "sweeps": "transfers", "loans": "financing", "swaps": "otc", "jobs": "system", "job": "system"}
+                    "sweeps": "transfers", "loans": "financing", "swaps": "otc", "jobs": "system", "job": "system", "margin": "margin_calls",
+                    "calls": "margin_calls", "margin_call": "margin_calls", "margin-calls": "margin_calls"}
 ACTIVITY_RAW_TYPES = ("event", "fill", "transfer", "job", "attention")
 
 
@@ -954,6 +1448,8 @@ def _activity_wants(tokens: set):
 
 
 def _event_category(etype: str, ref_type: Optional[str]) -> str:
+    if ref_type in ("job", "housekeeping") or etype in ("JOB_SKIPPED", "HOUSEKEEPING"):
+        return "system"                                   # a lifecycle job's own note (a skipped run, housekeeping): under "system"
     if etype in ("FX_DEALT", "FX_FORWARD_DEALT", "PRIVATE_TRADE") or ref_type in ("order", "fill", "package", "option"):
         return "orders"
     if ref_type in ("settlement", "pay", "dividend", "fx_deal") or etype in ("SETTLED", "COUPON_PAID", "PAID", "DIVIDEND_PAID", "DIVIDEND_ACCRUED"):
@@ -981,19 +1477,136 @@ def _event_lifetime(account_id, ref_type, ref_id, pl: dict) -> Optional[str]:
     return None
 
 
-def _detail_of(pl: dict) -> dict:
-    """An event payload for the detail table: cents as money text ('amount' 1,000,000.00), never a minor-unit integer."""
+_RATE_KEY = re.compile(r"(^|_)(rate|spread|floor)$")
+
+
+def _detail_value(k: str, v, names: Optional[Dict[str, str]] = None):
+    """One detail value in trader wording (V104R2-BW-03): cents keys as money text, fractions of rate / spread / floor keys as a percent
+    (the UNITS convention: they are fractions), internal codes in words, account ids by name, a nested record as 'key value; ...' with
+    the same rules (nulls left out), a list joined; never a JSON blob or a minor-unit integer."""
+    if v is None:
+        return None
+    if isinstance(v, bool):
+        return "yes" if v else "no"
+    if k.endswith("_c") and isinstance(v, int):
+        return fmt_money(v)
+    if isinstance(v, dict):
+        parts = []
+        for kk, vv in v.items():
+            t = _detail_value(str(kk), vv, names)
+            if t is None or t == "":
+                continue
+            parts.append(f"{(str(kk)[:-2] if str(kk).endswith('_c') else str(kk)).replace('_', ' ')} {t}")
+        return "; ".join(parts)[:300] or None
+    if isinstance(v, (list, tuple)):
+        items = [str(_detail_value(k, x, names)) for x in v if x is not None]
+        return ", ".join(items)[:300] or None
+    if _RATE_KEY.search(k) and isinstance(v, (str, int, float, Decimal)):
+        try:
+            x = Decimal(str(v))
+            if abs(x) < 1:
+                return f"{(x * 100).normalize():f} %"
+        except Exception:   # noqa: BLE001 - not a number: as given
+            pass
+    if k == "lender":
+        return lender_text(v)                             # C16: "street lender (assumed terms)"
+    if isinstance(v, str):
+        if _CODE_RE.match(v):
+            return code_words(v)
+        return readable(v, names)
+    return v
+
+
+def _detail_of(pl: dict, names: Optional[Dict[str, str]] = None) -> dict:
+    """An event payload for the detail table, in trader wording (V104R2-BW-03): keys in words ('settle date', 'im entry id'), cents as
+    money text ('amount' 1,000,000.00), nested records flattened in words, codes in words, nulls left out - never a JSON blob of cents."""
     out = {}
+    accrual = isinstance(pl, dict) and bool(pl.get("night"))      # a nightly accrual / re-accrual: its kind ('cashint') in words
     for k, v in (pl or {}).items():
-        if k.endswith("_c") and isinstance(v, int) and not isinstance(v, bool):
-            out[k[:-2]] = fmt_money(v)
-        elif isinstance(v, (dict, list)):
-            out[k] = json.dumps(v, default=str)[:300]
-        elif k == "lender":
-            out[k] = lender_text(v)                       # C16: "street lender (assumed terms)"
-        else:
-            out[k] = v
+        t = ACCRUAL_KIND_WORDS[v] if accrual and k == "kind" and isinstance(v, str) and v in ACCRUAL_KIND_WORDS else _detail_value(str(k), v, names)
+        if t is None or t == "":
+            continue
+        key = str(k)[:-2] if str(k).endswith("_c") else str(k)
+        out[key.replace("_", " ")] = t
     return out
+
+
+def ref_words(ref_type: Optional[str], ref_id: Optional[str], names: Optional[Dict[str, str]] = None, own: Optional[str] = None) -> str:
+    """A row's reference in words (V104R2-OTC-03 / BW-01): ('vm', 'F1:US_EXCHANGE:ZNZ26:2026-10-27') -> 'variation margin ZNZ26 2026-10-27'
+    on that account's row, ('snapshot', 'F1:PB_GS:2026-10-26') -> 'snapshot 2026-10-26', ('account', 'F1:PB_GS') -> its name (nothing on
+    its own row), ('otc', 'CDX-000001') -> 'contract CDX-000001'; account ids by name, the row's own account left out."""
+    if not ref_id:
+        return ""
+    t = str(ref_type or "")
+    names = names or {}
+    rid = str(ref_id)
+    if t == "account":
+        return "" if rid == own else names.get(rid, rid)
+    if t == "treasury":
+        return "Treasury" + (f" ({rid})" if rid and not _LIFETIME_RE.match(rid) else "")
+    if t == "lifetime":
+        return f"lifetime {rid}"
+    word = REF_WORDS.get(t) or LINK_WORDS.get(t) or t.replace("_", " ")
+    parts = []
+    for tok in _LINK_TOKEN.findall(rid):
+        if _ACCT_IN_TEXT.fullmatch(tok):
+            if tok != own:
+                parts.append(names.get(tok, tok))
+        elif tok.lower() == t.lower():
+            continue
+        else:
+            parts.append(code_words(tok) if _CODE_RE.match(tok) and "_" in tok else tok)
+    return (word + " " + " ".join(parts)).strip()
+
+
+def margin_call_rows(rt, *, account: Optional[str] = None, lifetime_ids: Optional[List[str]] = None, since: Optional[int] = None,
+                     limit: int = 100) -> Tuple[List[dict], Optional[str]]:
+    """FINSIM1_PLAN P3 task 13: the Activity rows of type "margin calls" from P6's ``collateral.margin_calls_rows(services, scope, from,
+    to)`` (C16) - issued, counterparty, amount, due, MET / OPEN / UNMET and the funding transfers - as ``(rows, unavailable reason)``.
+    Until that function is in the build: no rows and the reason; no collateral route is called by the page."""
+    fn = collateral_fn(rt, "margin_calls_rows")
+    if fn is None:
+        return [], "margin calls are not in this build"
+    names, _bk = name_maps(rt)
+    scopes = [account] if account else ([f"{lid}:ALL" for lid in lifetime_ids] if lifetime_ids else ["ALL"])
+    out: List[dict] = []
+    for sc in scopes:
+        try:
+            got = list(fn(rt, sc, None, None) or [])
+        except Exception as e:   # noqa: BLE001 - said in the page, never a 500 of the Activity feed
+            return out, f"margin calls unavailable: {type(e).__name__}: {e}"[:200]
+        for m in got:
+            m = dict(m) if isinstance(m, dict) else {}
+            ts = m.get("issued_ts") or m.get("ts") or m.get("created_ts") or 0
+            try:
+                ts = int(ts)
+            except (TypeError, ValueError):
+                ts = 0
+            if since and ts < since:
+                continue
+            cid = m.get("call_id") or m.get("id") or m.get("margin_call_id")
+            aid = m.get("account_id")
+            status = str(m.get("status") or "")
+            amt = m.get("amount_c")
+            ccy = m.get("currency") or "USD"
+            due = m.get("due_ts")
+            due_txt = ny_of(int(due)).strftime("%Y-%m-%d %H:%M") if isinstance(due, int) and due > 0 else (m.get("due") or m.get("due_date") or "")
+            cp = m.get("counterparty_name") or m.get("counterparty") or ""
+            what = m.get("kind_label") or m.get("kind") or m.get("call_kind") or m.get("reason") or ""
+            tr = m.get("transfers") or m.get("funding_transfers") or m.get("funded_by") or []
+            if isinstance(tr, (list, tuple)):
+                tr = [str(x.get("transfer_id") if isinstance(x, dict) else x) for x in tr if x]
+            else:
+                tr = [str(tr)]
+            amt_txt = f"{ccy} {fmt_money(int(amt))}" if isinstance(amt, int) and not isinstance(amt, bool) else ""
+            summary = (f"margin call {cid or ''}" + (f" ({code_words(what) if _CODE_RE.match(str(what)) else what})" if what else "")
+                       + (f" {cp}" if cp else "") + (f": {amt_txt}" if amt_txt else "") + (f" due {due_txt}" if due_txt else "")
+                       + (f" - {m.get('status_label') or status}" if status else "") + (f"; funded by {', '.join(tr)}" if tr else "")).replace("  ", " ")
+            out.append({"ts": ts, "type": "margin_call", "category": "margin_calls", "severity": "ERROR" if status == "UNMET" else ("WARN" if status == "OPEN" else "INFO"),
+                        "account_id": aid, "instrument_id": m.get("instrument_id"), "summary": summary, "ref_type": "margin_call", "ref_id": cid,
+                        "ref_text": f"margin call {cid}" if cid else "margin call", "status": status, "detail": _detail_of(m, names)})
+    out.sort(key=lambda x: -int(x["ts"] or 0))
+    return out[:limit], None
 
 
 def link_reason(rt, conn, linked_type: Optional[str], linked_id: Optional[str]) -> Tuple[str, Optional[dict]]:
@@ -1085,8 +1698,8 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
                    "summary": f"{words} {r['currency']} {fmt_money(int(r['amount_c']))} {names.get(src, src) if src else 'from outside the book'} -> "
                               f"{names.get(dst, dst) if dst else 'outside the book'}" + (f" {reason}" if reason else ""),
                    "ref_type": "transfer", "ref_id": r["transfer_id"], "entry_id": r["entry_id"], "events": [], "link": link,
-                   "detail": {"kind": words, "from": f"{names.get(src, src)} ({src})" if src else "outside the book",
-                              "to": f"{names.get(dst, dst)} ({dst})" if dst else "outside the book", "currency": r["currency"], "amount": fmt_money(int(r["amount_c"])),
+                   "detail": {"kind": words, "from": names.get(src, src) if src else "outside the book",           # names, never the ids (BW-03)
+                              "to": names.get(dst, dst) if dst else "outside the book", "currency": r["currency"], "amount": fmt_money(int(r["amount_c"])),
                               "paid for": reason or None, "shortfall": None if r["shortfall_c"] is None else fmt_money(int(r["shortfall_c"])),
                               "business date": r["business_date"]}}
             transfers_by_id[r["transfer_id"]] = row
@@ -1111,8 +1724,22 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
             if r["account_id"] is None and not owned(lid):
                 if lid is not None or not want_system:
                     continue
-            system = r["account_id"] is None and lid is None
+            system = (r["account_id"] is None and lid is None) or _event_category(r["type"], r["ref_type"]) == "system"
             bits = [f"{k} {code_words(pl[k]) if k == 'side' else pl[k]}" for k in ("side", "qty", "price") if pl.get(k) is not None]
+            # what a lifecycle or correction row did, in words (a re-accrual's correction, the night it belongs to, a skipped job's reason)
+            if isinstance(pl.get("kind"), str) and r["type"] in ("ACCRUED", "REACCRUED"):
+                bits.insert(0, ACCRUAL_KIND_WORDS.get(pl["kind"], code_words(pl["kind"])))
+            if pl.get("night"):
+                bits.append(f"night {pl['night']}")
+            if isinstance(pl.get("correction_c"), int) and not isinstance(pl.get("correction_c"), bool):
+                bits.append(f"correction {pl.get('currency') + ' ' if pl.get('currency') else ''}{fmt_money(int(pl['correction_c']))}")
+            if r["type"] == "JOB_SKIPPED" and pl.get("job"):
+                # a lifecycle job that skipped a run: which job, on what, and why (system rows)
+                key_txt = ref_words("job", pl.get("key") or r["ref_id"], names, r["account_id"]).replace("job ", "", 1) if (pl.get("key") or r["ref_id"]) else ""
+                why = pl.get("note") or pl.get("message")               # the lifecycle writes "message" (SWAP_VM ...), older rows "note"
+                if why and r["instrument_id"] and str(why).startswith(f"{r['instrument_id']}: "):
+                    why = str(why)[len(r["instrument_id"]) + 2:]         # the contract is already named by the key
+                bits = [f"{code_words(pl['job'])} skipped" + (f" for {key_txt}" if key_txt else "") + (f": {readable(why, names)}" if why else "")]
             amt = pl.get("amount_c")
             if isinstance(amt, int) and not isinstance(amt, bool):
                 bits.append(f"amount {pl['currency'] + ' ' if pl.get('currency') else ''}{fmt_money(amt)}")     # cents -> money text, never "amount_c 100000000"
@@ -1120,31 +1747,38 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
                 bits.append(f"currency {pl['currency']}")
             if pl.get("reason") is not None:
                 bits.append(f"reason {readable(pl['reason'], names)}")
-            ref_txt = f"{REF_WORDS.get(r['ref_type'], str(r['ref_type'] or '').replace('_', ' '))} {r['ref_id'] or ''}".strip() if r["ref_id"] else ""
+            # V104R2-OTC-03 / BW-01: the reference in words (account ids by name, the row's own account left out, keys split into words)
+            ref_txt = ref_words(r["ref_type"], r["ref_id"], names, r["account_id"])
+            summary = (", ".join(bits) if r["type"] == "JOB_SKIPPED" and bits else
+                       code_words(r["type"]) + (f" - {ref_txt}" if ref_txt else "") + (": " + ", ".join(bits) if bits else ""))
             rows.append({"ts": int(r["ts"]), "type": "event", "event": r["type"], "category": "system" if system else _event_category(r["type"], r["ref_type"]),
                          "system": system, "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"], "lifetime_id": lid,
-                         "summary": code_words(r["type"]) + (f" - {ref_txt}" if ref_txt else "") + (": " + ", ".join(bits) if bits else ""),
-                         "ref_type": r["ref_type"], "ref_id": r["ref_id"], "id": int(r["id"]), "detail": _detail_of(pl)})
+                         "summary": summary,
+                         "ref_type": r["ref_type"], "ref_id": r["ref_id"], "ref_text": ref_txt, "id": int(r["id"]), "detail": _detail_of(pl, names)})
         # ---- fills (15.7 item 7: each with its booking and source label - "Simulated fill", or the as-of label with the AS-OF badge)
         wf, pf = acct_clause("account_id")
         src_cache: dict = {}
         for r in conn.execute(f"SELECT * FROM fills WHERE {wf} AND (? IS NULL OR ts >= ?) ORDER BY ts DESC, fill_id DESC LIMIT ?", pf + [since, since, lim]).fetchall():
             sym = _symbol(rt, r["instrument_id"])
             src = source_of(conn, "fill", r, src_cache)
+            side_txt, basis_txt, origin_txt = fill_words(r)
             rows.append({"ts": int(r["ts"]), "type": "fill", "category": "orders", "severity": "INFO", "account_id": r["account_id"], "instrument_id": r["instrument_id"],
-                         "summary": f"{r['fill_id']} {r['side']} {int(r['qty']):,} {sym} @ {r['price']} ({r['price_basis']}, {r['origin']})",
+                         "summary": f"{r['fill_id']} {side_txt} {int(r['qty']):,} {sym} @ {r['price']} ({basis_txt}; {origin_txt})",
                          "ref_type": "fill", "ref_id": r["fill_id"], "entry_id": r["entry_id"], "order_id": r["order_id"],
                          **source_fields(src), "entered_ts": src.get("entered_ts"),
-                         "detail": {"fill": r["fill_id"], "order": r["order_id"], "side": r["side"], "quantity": f"{int(r['qty']):,}", "instrument": sym,
-                                    "price": r["price"], "price basis": r["price_basis"], "origin": r["origin"], "gross": f"{r['currency']} {fmt_money(int(r['gross_c']))}",
+                         "detail": {"fill": r["fill_id"], "order": r["order_id"], "side": side_txt, "quantity": f"{int(r['qty']):,}", "instrument": sym,
+                                    "price": r["price"], "price basis": basis_txt, "origin": origin_txt, "gross": f"{r['currency']} {fmt_money(int(r['gross_c']))}",
                                     "fee": f"{r['currency']} {fmt_money(int(r['fee_c'] or 0))}", "trade date": r["trade_date"], "settles": r["settle_date"],
                                     "source": src.get("label")}})
         # ---- job results: system rows (no book owns them)
         if want_system and not account:
             for r in conn.execute("SELECT job, key, run_ts, status, note FROM jobs_done WHERE (? IS NULL OR run_ts >= ?) ORDER BY run_ts DESC LIMIT ?", (since, since, lim)).fetchall():
+                key_txt = ref_words("job", r["key"], names).replace("job ", "", 1)
                 rows.append({"ts": int(r["run_ts"]), "type": "job", "category": "system", "system": True, "severity": "INFO" if r["status"] == "DONE" else "WARN",
-                             "account_id": None, "instrument_id": None, "summary": f"{r['job']} {r['key']}: {r['status']}" + (f" - {r['note']}" if r["note"] else ""),
-                             "ref_type": "job", "ref_id": f"{r['job']}:{r['key']}", "detail": {"job": r["job"], "key": r["key"], "status": r["status"], "note": r["note"]}})
+                             "account_id": None, "instrument_id": None,
+                             "summary": f"{code_words(r['job'])} {key_txt}: {code_words(r['status'])}" + (f" - {readable(r['note'], names)}" if r["note"] else ""),
+                             "ref_type": "job", "ref_id": f"{r['job']}:{r['key']}", "ref_text": f"job {code_words(r['job'])} {key_txt}".strip(),
+                             "detail": {"job": code_words(r["job"]), "key": key_txt, "status": code_words(r["status"]), "note": readable(r["note"], names) if r["note"] else None}})
         # ---- attention: the accounts' items and the lifetimes' own; the rows no book owns are system
         wa, pa = acct_clause("account_id")
         for r in conn.execute(f"SELECT id, ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts FROM attention"
@@ -1159,8 +1793,13 @@ def activity_rows(rt, *, limit: int = 100, account: Optional[str] = None, types:
             rows.append({"ts": int(r["ts"]), "type": "attention", "category": "system" if system else "attention", "system": system, "severity": r["severity"],
                          "account_id": r["account_id"], "instrument_id": None, "lifetime_id": lid, "summary": f"{code_words(r['code'])}: {readable(r['message'], names)}", "ref_type": "attention",
                          "ref_id": str(r["id"]), "resolved_ts": r["resolved_ts"], "source": r["source"],
-                         "detail": {"code": r["code"], "source": r["source"], "severity": r["severity"], "message": r["message"],
+                         # V104R2-BW-03 remnant (the integrator, 1.0.6): the code and the message in words, as the summary says them
+                         "detail": {"code": code_words(r["code"]), "source": r["source"], "severity": r["severity"], "message": readable(r["message"], names),
                                     "resolved": ny_of(int(r["resolved_ts"])).strftime("%Y-%m-%d %H:%M:%S") if r["resolved_ts"] else "open"}})
+    # FINSIM1_PLAN P3 task 13: the margin calls of P6 (C16), when that function is in the build
+    if "margin_calls" in cats:
+        mc, _why = margin_call_rows(rt, account=account, lifetime_ids=lids or None, since=since, limit=lim)
+        rows.extend(mc)
     out = []
     for x in rows:
         x.setdefault("system", False)
@@ -1356,6 +1995,12 @@ def register_routes(r) -> None:
         return positions_view(rt, aid, rt.marks.snapshot(), req.q("kind"))
 
     def position_detail(req: Request):
+        """PORTFOLIO-05 (FINSIM1_PLAN P3 task 6): one position's drill-down - the row, its lots (open and closed, with every relief:
+        the closing fill, quantity, cost relieved, proceeds, realised), EVERY fill that created or changed it (``fills_limit``, all by
+        default) each with its order and its settlement state (C15: failed / resolved with the reason), the journal entries on the
+        instrument paged (``entries_limit`` 100 / ``entries_offset``; ``entries_total``) each with the account's net cash and its
+        group (fills, settlements, borrow and collateral, accruals, margin, dividends, OTC contract, other; ``entry_groups`` counts
+        them), the borrows (lender worded), the mark history and the dividend notes of the holding period."""
         rt, aid, iid = req.rt, req.params[0], req.params[1].upper()
         _account_or_404(rt, aid)
         snap = rt.marks.snapshot()
@@ -1363,25 +2008,46 @@ def register_routes(r) -> None:
         inst = rt.instruments.get(iid)
         if pos is None and inst is None:
             raise NotFound(f"{aid} has no position in {iid}")
+        f_limit = req.q_int("fills_limit", 5000, 1, 20000)
+        e_limit, e_offset = req.q_int("entries_limit", 100, 1, 2000), req.q_int("entries_offset", 0, 0, 1_000_000)
         with rt.db.reader() as conn:
-            fills = fill_rows(rt, conn, "account_id=? AND instrument_id=?", [aid, iid], req.now, 200)
+            fills = fill_rows(rt, conn, "account_id=? AND instrument_id=?", [aid, iid], req.now, f_limit)
+            fills_total = int(conn.execute("SELECT COUNT(*) FROM fills WHERE account_id=? AND instrument_id=?", (aid, iid)).fetchone()[0])
+            settle_of = position_settlements(conn, [f["fill_id"] for f in fills])
+            for f in fills:
+                f["settlement"] = settle_of.get(f["fill_id"])
+            entries_total = int(conn.execute("SELECT COUNT(DISTINCT l.entry_id) FROM journal_lines l WHERE l.account_id=? AND l.instrument_id=?", (aid, iid)).fetchone()[0])
             entries = [dict(e) for e in conn.execute("SELECT DISTINCT e.entry_id, e.ts, e.kind, e.memo, e.ref_type, e.ref_id, e.business_date FROM journal_entries e"
-                                                     " JOIN journal_lines l ON l.entry_id=e.entry_id WHERE l.account_id=? AND l.instrument_id=? ORDER BY e.entry_id DESC LIMIT 100",
-                                                     (aid, iid)).fetchall()]
+                                                     " JOIN journal_lines l ON l.entry_id=e.entry_id WHERE l.account_id=? AND l.instrument_id=?"
+                                                     " ORDER BY e.entry_id DESC LIMIT ? OFFSET ?", (aid, iid, e_limit, e_offset)).fetchall()]
+            net = entry_net_cash(conn, aid, [int(e["entry_id"]) for e in entries])
+            groups_all = {}
+            for r in conn.execute("SELECT DISTINCT e.entry_id, e.kind, e.ref_type FROM journal_entries e JOIN journal_lines l ON l.entry_id=e.entry_id"
+                                  " WHERE l.account_id=? AND l.instrument_id=?", (aid, iid)).fetchall():
+                g = entry_group(r["kind"], r["ref_type"])
+                groups_all[g] = groups_all.get(g, 0) + 1
             borrows = borrows_shown([dict(b) for b in conn.execute("SELECT * FROM borrows WHERE account_id=? AND instrument_id=? ORDER BY opened_ts DESC", (aid, iid)).fetchall()])
             marks = [dict(m) for m in conn.execute("SELECT * FROM marks WHERE instrument_id=? ORDER BY mark_date DESC, kind LIMIT 60", (iid,)).fetchall()]
-            # WP-18: the dividend rows of the name with their state and the DIVIDEND convention (ex-date income / in lieu, pay date)
+            # WP-18: the dividend rows of the name with their state and the DIVIDEND convention (ex-date income / in lieu, pay date); only the
+            # ex-dates of the holding period carry an entitlement (an earlier one reads "not held on the ex-date")
             div = getattr(rt, "dividends", None)
             notes = (div.position_notes(conn, rt.cal, aid, iid, rt.clock.today())
                      if div is not None and hasattr(div, "position_notes") and inst is not None and inst.kind in EQUITY_KINDS else [])
         d = pos.to_dict() if pos is not None else None
         if d is not None:
             d["mark"] = mark_dict(pos.mark)
+            d["sector_label"] = pos.sector or UNCLASSIFIED
+            attach_requirements(rt, [d])
         names, _bk = name_maps(rt)
         for e in entries:                                                  # V104R1-04: the drawer's cash flows in words (the stored memo kept)
             e["memo_stored"], e["memo"] = e.get("memo"), readable(clean_memo(e.get("memo")), names)
             e["kind_label"] = code_words(e.get("kind"))
-        return {"position": d, "instrument": inst.to_dict() if inst else None, "lots": rt.accounting.lots(aid, iid), "fills": fills, "entries": entries,
+            e["net_cash"] = money_map(net.get(int(e["entry_id"]), {}))
+            e["group"] = entry_group(e.get("kind"), e.get("ref_type"))
+        closed_lots, reliefs = rt.accounting.closed_lots(aid, iid)
+        return {"position": d, "instrument": inst.to_dict() if inst else None, "lots": rt.accounting.lots(aid, iid), "closed_lots": closed_lots, "reliefs": reliefs,
+                "fills": fills, "fills_total": fills_total, "entries": entries, "entries_total": entries_total, "entries_offset": e_offset, "entries_limit": e_limit,
+                "entry_groups": [{"group": g, "label": ENTRY_GROUP_LABELS.get(g, g), "count": n} for g, n in sorted(groups_all.items(), key=lambda kv: ENTRY_GROUP_ORDER.index(kv[0]) if kv[0] in ENTRY_GROUP_ORDER else 99)],
                 "borrow": borrows[0] if borrows and borrows[0].get("status") == "OPEN" else None, "borrows": borrows, "marks_history": marks,
                 "mark": mark_dict(snap.mark(iid)) if inst else None, "dividend_notes": notes}
 
@@ -1472,10 +2138,31 @@ def register_routes(r) -> None:
     def portfolio(req: Request):
         rt = req.rt
         scope = req.scope("ALL")
+        if req.q("as_of"):
+            return portfolio_as_of(rt, scope, req.q("as_of"))          # PORTFOLIO-13: read-only, from that day's snapshot
         snap = rt.marks.snapshot()
         out = portfolio_view(rt, scope, snap)
         out["liquidity"] = liquidity_out(rt.accounting.liquidity(scope, snapshot=snap))
         return out
+
+    def portfolio_closed(req: Request):
+        view = closed_view(req.rt, req.scope("ALL"), req.q("from"), req.q("to"))
+        if (req.q("format") or "json").lower() == "csv":
+            return 200, closed_csv(view), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": 'attachment; filename="closed-positions.csv"'}
+        return view
+
+    def history_nav(req: Request):
+        return nav_history(req.rt, req.scope("ALL"), req.q("from"), req.q("to"))
+
+    def instrument_sector(req: Request):
+        """PORTFOLIO-19: the owner classifies an instrument's sector (light command ``instrument.classify``, source "owner")."""
+        need(req.rt, "risk")
+        iid = req.params[0].upper()
+        if req.rt.instruments.get(iid) is None:
+            raise NotFound(f"instrument {iid} is not in the instrument master")
+        res = run_command(req, "instrument.classify", {"instrument_id": iid, "sector": req.b("sector")})
+        body = ok_or_raise(res)
+        return 200, body, ({"X-Replayed": "1"} if res.replayed else {})
 
     def treasury(req: Request):
         rt = req.rt
@@ -1599,6 +2286,9 @@ def register_routes(r) -> None:
         out = {"rows": activity_rows(rt, limit=req.q_int("limit", 100, 1, 500), account=account, types=tokens, since=since, lifetime_ids=lids),
                "scope": account or scope, "lifetime_ids": lids or [], "types": sorted(tokens), "categories": list(ACTIVITY_CATEGORIES)}
         out.update(activity_extras(rt, tokens, account=account, lifetime_ids=lids))
+        cats, _raw, _sys = _activity_wants(tokens)
+        if "margin_calls" in cats and collateral_fn(rt, "margin_calls_rows") is None:
+            out["margin_calls_unavailable"] = "margin calls are not in this build"      # said on the page; no collateral route is called
         return out
 
     def books(req: Request):
@@ -1639,8 +2329,14 @@ def register_routes(r) -> None:
         return 200, transactions_csv(rows), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": 'attachment; filename="transactions.csv"'}
 
     def export_positions(req: Request):
+        """The Positions CSV: the fixture columns (account_id, instrument_id, qty, cost, mark, quality, mv, unrealised); ``columns=all``
+        (the Portfolio's download) adds PORTFOLIO-04's asset class, sector, counterparty, P&L to date, total P&L, margin and collateral."""
         positions = req.rt.accounting.positions(req.scope("ALL"), snapshot=req.rt.marks.snapshot())
-        return 200, positions_csv(positions), {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": 'attachment; filename="positions.csv"'}
+        if (req.q("columns") or "").lower() == "all":
+            body = positions_csv(positions, requirements_map(req.rt, positions), extended=True)
+        else:
+            body = positions_csv(positions)
+        return 200, body, {"Content-Type": "text/csv; charset=utf-8", "Content-Disposition": 'attachment; filename="positions.csv"'}
 
     def watchlists_get(req: Request):
         return watchlists_view(req)
@@ -1670,6 +2366,8 @@ def register_routes(r) -> None:
     r.add("GET", r"/api/accounts/([^/]+)/cash", account_cash)
     r.add("GET", r"/api/accounts/([^/]+)/markets", account_markets)
     r.add("GET", r"/api/portfolio", portfolio)
+    r.add("GET", r"/api/portfolio/closed", portfolio_closed)
+    r.add("POST", r"/api/instruments/([^/]+)/sector", instrument_sector)
     r.add("GET", r"/api/treasury", treasury)
     r.add("POST", r"/api/treasury/deposit", lambda req: treasury_move(req, "treasury.deposit"))
     r.add("POST", r"/api/treasury/withdraw", lambda req: treasury_move(req, "treasury.withdraw"))
@@ -1687,6 +2385,7 @@ def register_routes(r) -> None:
     r.add("GET", r"/api/books/([^/]+)/lifetimes", book_lifetimes)
     r.add("POST", r"/api/books/([^/]+)/reset", book_reset)
     r.add("POST", r"/api/books/([^/]+)/onboard", book_onboard)
+    r.add("GET", r"/api/history/nav", history_nav)
     r.add("GET", r"/api/history/([^/]+)/(.+)", history)
     r.add("GET", r"/api/export/transactions\.csv", export_transactions)
     r.add("GET", r"/api/export/positions\.csv", export_positions)
@@ -1887,7 +2586,20 @@ def journal_entry_view(rt, entry_id: str) -> dict:
                 linked["quote"] = json.loads(linked.pop("quote_json") or "null")
             except ValueError:
                 linked["quote"] = None
-    return {"entry": dict(e), "lines": lines, "command": dict(cmd) if cmd else None, "linked": linked, "ref_type": e["ref_type"], "ref_id": e["ref_id"]}
+    # V104R2-BW-02 (a): the entry dialog in words - the memo (the stored text kept as memo_stored), the line memos, the kind, the reference
+    names, _bk = name_maps(rt)
+    ent = dict(e)
+    shown = readable(clean_memo(ent.get("memo")), names)
+    if shown != (ent.get("memo") or ""):
+        ent["memo_stored"] = ent.get("memo")
+    ent["memo"] = shown
+    ent["kind_label"] = code_words(ent.get("kind"))
+    ent["ref_text"] = ref_words(ent.get("ref_type"), ent.get("ref_id"), names)
+    for d in lines:
+        if d.get("memo"):
+            d["memo"] = readable(d["memo"], names)
+        d["account_name"] = names.get(d.get("account_id"), d.get("account_id"))
+    return {"entry": ent, "lines": lines, "command": dict(cmd) if cmd else None, "linked": linked, "ref_type": e["ref_type"], "ref_id": e["ref_id"]}
 
 
 def history_view(req: Request, lid: str, rest: str):

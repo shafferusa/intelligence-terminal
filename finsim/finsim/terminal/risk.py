@@ -44,6 +44,22 @@ Conventions
 - Warnings (ticket preview, Risk page, Attention strip) never block: concentration > 25 % of NAV, gross > 2 × NAV,
   option margin > 50 % of the account's NAV, stale or unpriced marks, currency loans > 50 % of Treasury capital, a
   futures maintenance shortfall, OTC VM posted > 10 % of the PB account's NAV, private / illiquid > 30 % of NAV.
+- PORTFOLIO-17 (FINSIM1_PLAN P3 task 11): ``otc_exposure`` is THE definition of an OTC contract's exposure, shared with the Portfolio
+  footer: a TRS at its reference units x the underlying price now (signed: paying the total return is short; at the contract
+  notional when no underlying price is observed, said so), a CDX at its notional with its credit sign (protection bought = short
+  credit), an IRS / cross-currency swap by its DV01 (its notional is never an exposure).  ``DEFINITIONS`` words market value vs
+  exposure for both pages.
+- PORTFOLIO-19: ``by_sector`` = the headline exposure per sector (the owner's classification, else the instrument master's, else
+  "unclassified"; a TRS carries its underlying's sector); its gross sums to the headline gross.  The owner classifies a name with
+  the light command ``instrument.classify {instrument_id, sector}`` (table ``instrument_sectors``, made by ``bind``; one
+  SETTINGS_CHANGED event with before / after; an empty sector removes the owner's classification).
+- Reg T (FINSIM1_PLAN P3 task 13): ``reg_t`` per account from P6's ``collateral.summary`` (C16) when that function is in the build -
+  requirement, posted / eligible collateral, excess or deficit, open calls and the assumed terms as P6 states them - else
+  ``available: false`` with the reason; nothing here computes a requirement of its own.
+- V104R2-BW-08: an exposure bucket's ``headline`` is True exactly when its rows are in the headline long / short / gross (the FX
+  currency buckets, IRS / cross-currency swaps, CDX and FX forwards are not).  P8B-08: that includes the prime broker's OTC FX
+  forwards: their USD notional sits in 'FX forwards (notional)' with the FX desk's, and their two legs count in the currency
+  exposure and the FX scenarios until delivery; OTC equity forwards stay in the headline (equity delta).
 - JSON (``to_dict``): cents fields become decimal strings under the name without ``_c``; fractions (``pct_nav``,
   the leverage multiples) are 4-dp decimal strings; nothing is a float.  The preview hook is ``pretrade``
   (``orders.preview`` and ``private.preview`` call ``services.risk.pretrade``); ``warnings_for_preview`` is the same
@@ -51,6 +67,8 @@ Conventions
 """
 from __future__ import annotations
 
+import inspect
+import json
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date
@@ -116,7 +134,18 @@ DEFINITIONS = {
     "delta": "Equity delta in USD: stocks and ETFs at market value, equity-index futures at notional, TRS at the underlying notional and listed options at "
              "delta x underlying price; other futures (rates, energy, metals, grains, FX) are shown apart at notional.",
     "dv01": "DV01: the P&L for a 1 bp rise in yields (signed: a long bond loses) - bonds by a full reprice, rates futures from an assumed duration table, "
-            "swaps as booked."}
+            "swaps as booked.",
+    # PORTFOLIO-17: market value vs exposure, the same words on the Portfolio footer and here
+    "market_value": "Market value: what a position is worth in NAV - securities, bonds and options at price x quantity, an OTC contract at its contract "
+                    "value (the model mark), a future at 0 (its gains and losses are paid daily as variation margin).",
+    "exposure": "Exposure: the size of the market risk, never a value - futures at notional (contracts x multiplier x price), a TRS at its reference units "
+                "x the underlying price, a CDX at its notional with its credit sign, an IRS by its DV01.",
+    "trs_exposure": "TRS exposure: reference units x the underlying price now, signed (receiving the total return is long, paying it short); at the "
+                    "contract notional (units x reset price) only when no underlying price is observed, said so.",
+    "cdx": "CDX exposure: the credit notional with its sign - protection bought is short credit (negative), protection sold long credit; its risk "
+           "measure is CS01 (the credit block).",
+    "irs": "IRS / cross-currency swaps: measured by DV01 (the P&L for +1 bp of the swap curve), never by notional.",
+    "futures": "Futures: notional exposure = contracts x multiplier x price; their market value is 0 (daily variation margin)."}
 
 
 # ---- serialisation --------------------------------------------------------------------------------------------------------
@@ -216,6 +245,7 @@ class PosRisk:
     delta_c: Optional[int] = None
     cost_base_c: Optional[int] = None
     at_cost: bool = False
+    sector: Optional[str] = None            # PORTFOLIO-19 (accounting.PositionView.sector; a TRS its underlying's)
     _p0: Optional[Decimal] = field(default=None, repr=False)
 
     def to_dict(self) -> dict:
@@ -362,6 +392,48 @@ def contract_label(inst, extra: Optional[dict] = None) -> str:
     return f"{label} {what}" if what else (name[:60] if name else label)
 
 
+def otc_exposure(p, rate: Optional[Decimal] = None) -> dict:
+    """PORTFOLIO-17: ``{kind, exposure_c, dv01_c, basis}`` of an OTC position row (``accounting.PositionView`` of kind SWAP) in base cents
+    (``rate`` = USD per unit of the contract's currency; USD needs none): a TRS at its reference units x the underlying price now,
+    signed by the row (a negative quantity = paying the total return = short), else at the contract notional when no underlying price is
+    observed (``basis`` says which); a CDX at its notional with its credit sign (protection bought = short credit, negative); an IRS /
+    cross-currency swap by its DV01 (``exposure_c`` None); an OTC option / forward at its signed notional.  Worked: TRS pay ORCL
+    38,700 reference units with ORCL at 126.06 -> -4,878,522.00 (38,700 x 126.06)."""
+    ex = dict(p.extra or {})
+    kind = str(ex.get("kind") or "")
+    if rate is None:
+        rate = Decimal(1) if p.currency == "USD" else None
+    sign = -1 if int(p.qty or 0) < 0 else 1
+
+    def base(c):
+        return None if c is None or rate is None else fx_c(int(c), rate)
+    if kind == "TRS":
+        units, s = ex.get("units"), ex.get("current")
+        if units not in (None, "") and s not in (None, ""):
+            try:
+                v = base(to_c(Decimal(abs(int(units))) * Decimal(str(s))))
+                if v is not None:
+                    return {"kind": "TRS", "exposure_c": sign * abs(v), "dv01_c": None,
+                            "basis": f"{abs(int(units)):,} reference units x {s} (the underlying price now)"}
+            except Exception:   # noqa: BLE001 - an unreadable input falls back to the contract notional, said so
+                pass
+        v = base(p.notional_c)
+        return {"kind": "TRS", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None,
+                "basis": "the contract notional (reference units x the reset price): no underlying price observed now"}
+    if kind == "CDX":
+        v = base(p.notional_c)
+        return {"kind": "CDX", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None,
+                "basis": "credit notional: protection bought = short credit (negative), sold = long credit"}
+    if kind in ("IRS", "XCCY"):
+        dv = ex.get("dv01_c")
+        if dv is None:
+            dv = (ex.get("position_fields") or {}).get("extra", {}).get("dv01_c") if isinstance(ex.get("position_fields"), dict) else None
+        return {"kind": kind, "exposure_c": None, "dv01_c": None if dv is None else int(dv),
+                "basis": "DV01: the P&L for +1 bp of the swap curve (its notional is not an exposure)"}
+    v = base(p.notional_c)
+    return {"kind": kind or "OTC", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None, "basis": "the contract's signed notional"}
+
+
 def _pos_risk(services, snap, p, now: int) -> PosRisk:
     inst = services.instruments.get(p.instrument_id)
     rate = _rate_of(snap, p.currency)
@@ -377,6 +449,7 @@ def _pos_risk(services, snap, p, now: int) -> PosRisk:
                 inst.underlying_id if inst else None, None, mult, scale, group, extra=extra,
                 lots=[{"lot_id": l.lot_id, "qty_remaining": l.qty_remaining, "open_date": l.open_date, "lock_until": l.lock_until} for l in (p.lots or [])])
     r.label = p.symbol
+    r.sector = getattr(p, "sector", None)
     r.lock_until = extra.get("lock_until") or (max((l.lock_until or "") for l in (p.lots or [])) or None if p.lots else None)
     if rate is not None and p.cost_c is not None:
         r.cost_base_c = fx_c(int(p.cost_c), rate)
@@ -449,8 +522,11 @@ def _pos_risk(services, snap, p, now: int) -> PosRisk:
         r.tenor_years = _years_to(extra.get("maturity_date"), today)
         r.gross_notional_c = None if r.notional_base_c is None else abs(r.notional_base_c)
         if swap_kind == "TRS":
-            r.bucket, r.exposure_c, r.exposure_basis = "TRS (underlying exposure)", (None if r.notional_base_c is None else sign * abs(r.notional_base_c)), "notional (underlying)"
+            # PORTFOLIO-17: the same definition as the Portfolio footer (reference units x the underlying price now; else the notional)
+            x = otc_exposure(p, rate)
+            r.bucket, r.exposure_c, r.exposure_basis = "TRS (underlying exposure)", x["exposure_c"], x["basis"]
             r.delta_c = r.exposure_c
+            r.gross_notional_c = None if r.exposure_c is None else abs(r.exposure_c)
         elif swap_kind == "CDX":
             r.bucket, r.headline = "Credit derivatives (CDX notional)", False
             r.exposure_c = None if r.notional_base_c is None else sign * abs(r.notional_base_c)
@@ -458,9 +534,15 @@ def _pos_risk(services, snap, p, now: int) -> PosRisk:
         else:
             r.bucket, r.headline = "OTC swaps (notional)", False
             r.exposure_c, r.exposure_basis = (None if r.notional_base_c is None else sign * abs(r.notional_base_c)), "notional (not in the headline exposure)"
-        if swap_kind in ("EQ_FORWARD", "FX_FORWARD"):           # a forward: its signed notional, in the headline (P12)
+        if swap_kind == "EQ_FORWARD":                           # an equity forward: its signed notional, in the headline (P12): equity delta
             r.bucket, r.headline = "OTC options and forwards", True
             r.exposure_c, r.exposure_basis = (None if r.notional_base_c is None else sign * abs(r.notional_base_c)), "forward notional"
+        elif swap_kind == "FX_FORWARD":
+            # P8B-08 / OTC-02: a PB OTC FX forward is treated like an FX-desk forward (V104R1-02): its USD notional in 'FX forwards (notional)',
+            # outside the headline long / short; its risk is the currency exposure, where _currency_balances carries its two legs until delivery
+            r.bucket, r.headline = "FX forwards (notional)", False
+            r.exposure_c = None if r.notional_base_c is None else sign * abs(r.notional_base_c)
+            r.exposure_basis = "forward notional in USD (not in the headline exposure: its risk is the currency exposure of its two legs)"
         elif swap_kind in ("EQ_OPTION", "FX_OPTION"):           # an OTC option: its value (no delta from a chain)
             r.bucket, r.headline = "OTC options and forwards", True
             r.exposure_c, r.exposure_basis = p.mv_base_c, "OTC option value"
@@ -759,6 +841,9 @@ class RiskView:
     account_names: Dict[str, str] = field(default_factory=dict)
     definitions: Dict[str, str] = field(default_factory=dict)
     credit_derivatives: Optional[dict] = None
+    by_sector: List[dict] = field(default_factory=list)          # PORTFOLIO-19: the headline exposure per sector (sums to the headline gross)
+    reg_t: dict = field(default_factory=dict)                    # task 13: per account from collateral.summary (C16), or why it is unavailable
+    headline_note: str = ""                                      # V104R2-BW-08: which buckets add up to the gross tile
 
     def to_dict(self) -> dict:
         d = dict(self.__dict__)
@@ -806,6 +891,20 @@ def _currency_balances(services, ids: List[str]) -> Dict[str, int]:
                     out[f["sell_ccy"]] = out.get(f["sell_ccy"], 0) - int(f["sell_c"] or 0)
         except sqlite3.Error:      # a database without the FX deals table: cash and positions only
             pass
+        # P8B-08 / OTC-02: an OPEN PB OTC FX forward carries its two legs (the amounts it delivers at K) until its value date, exactly as an
+        # FX-desk forward does above; at delivery it becomes an FX deal posted at once (entry_id set), so nothing is counted twice
+        try:
+            for c in conn.execute(f"SELECT terms_json FROM otc_contracts WHERE kind='FX_FORWARD' AND status='OPEN' AND account_id IN ({q})", list(ids)).fetchall():
+                try:
+                    t = json.loads(c["terms_json"] or "{}")
+                except ValueError:
+                    continue
+                if t.get("buy_ccy") and t["buy_ccy"] != "USD":
+                    out[t["buy_ccy"]] = out.get(t["buy_ccy"], 0) + int(t.get("buy_c") or 0)
+                if t.get("sell_ccy") and t["sell_ccy"] != "USD":
+                    out[t["sell_ccy"]] = out.get(t["sell_ccy"], 0) - int(t.get("sell_c") or 0)
+        except sqlite3.Error:      # a database without the OTC contracts table
+            pass
     return out
 
 
@@ -830,6 +929,47 @@ def _sum_rows(rows: List[PosRisk]) -> dict:
     notional = sum(r.gross_notional_c for r in rows if r.gross_notional_c is not None)
     trs = sum(r.exposure_c for r in rows if r.kind == "SWAP" and r.extra.get("kind") == "TRS" and r.exposure_c is not None)
     return {"long_c": head["long_c"], "short_c": head["short_c"], "gross_c": head["gross_c"], "net_c": head["net_c"], "gross_notional_c": notional, "trs_notional_c": trs}
+
+
+#: the keys of ``exposure_summary`` (and of the RiskView attributes ``report`` takes from it)
+EXPOSURE_KEYS = ("long_c", "short_c", "gross_c", "net_c", "gross_leverage", "gross_notional_c", "gross_notional_leverage", "long_pct_nav", "short_pct_nav",
+                 "net_pct_nav", "trs_notional_c", "trs_pct_nav", "dv01_c", "excess_liquidity_c", "encumbrance_c", "quality", "partial", "notional_missing")
+
+
+def _exposure_fields(rows: List[PosRisk], nav, liq) -> dict:
+    """The headline exposure of a scope from its per-position risk rows (``_pos_risk``), its NAV view and its liquidity view: long /
+    short / gross / net of the headline rows (``_sum_rows``), the leverage multiples against the scope's NAV (``_ratios``), the TRS
+    notional (signed, % NAV), the DV01 sum (``dv01_c`` its size, ``dv01_signed_c`` its sign), excess liquidity, encumbrance, the NAV's
+    quality and the positions without a notional.  ``report`` and ``exposure_summary`` both build their figures here, so the Risk page
+    and the Dashboard can never differ."""
+    nav_c = int(nav.nav_c)
+    totals = _sum_rows(rows)
+    ratios = _ratios(totals["long_c"], totals["short_c"], totals["gross_c"], totals["net_c"], totals["gross_notional_c"], nav_c)
+    dv01_signed = sum(int(r.dv01_c) for r in rows if r.dv01_c is not None)
+    return {"long_c": totals["long_c"], "short_c": totals["short_c"], "gross_c": totals["gross_c"], "net_c": totals["net_c"],
+            "gross_leverage": ratios["gross_leverage"], "gross_notional_c": totals["gross_notional_c"], "gross_notional_leverage": ratios["gross_notional_leverage"],
+            "long_pct_nav": ratios["long_pct_nav"], "short_pct_nav": ratios["short_pct_nav"], "net_pct_nav": ratios["net_pct_nav"],
+            "trs_notional_c": totals["trs_notional_c"], "trs_pct_nav": _pct_signed(totals["trs_notional_c"], nav_c), "dv01_c": abs(dv01_signed),
+            "dv01_signed_c": dv01_signed, "excess_liquidity_c": int(liq.excess_liquidity_c), "encumbrance_c": int(liq.encumbrance_c), "quality": nav.quality,
+            "partial": bool(nav.partial), "notional_missing": [r.instrument_id for r in rows if r.gross_notional_c is None]}
+
+
+def exposure_summary(services, scope: str, snapshot=None, now: Optional[int] = None) -> dict:
+    """The Risk page's headline exposure of ``scope`` without the rest of its report (FINSIM1 P1b-R2; the Dashboard's Exposure section):
+    ``long_c``, ``short_c``, ``gross_c``, ``net_c``, ``gross_leverage``, ``gross_notional_c``, ``gross_notional_leverage``,
+    ``long_pct_nav``, ``short_pct_nav``, ``net_pct_nav``, ``trs_notional_c``, ``trs_pct_nav``, ``dv01_c`` (the size of the signed DV01
+    sum), ``excess_liquidity_c``, ``encumbrance_c``, ``quality``, ``partial``, ``notional_missing`` and ``definitions`` (DEFINITIONS) -
+    computed exactly as ``report`` computes them (``Accounting.positions`` -> ``_pos_risk`` rows -> ``_exposure_fields``, plus
+    ``Accounting.liquidity`` and the NAV's quality) on ONE mark snapshot, without the scenarios, financing, Reg T or warnings."""
+    acc = services.accounting
+    snap = snapshot if snapshot is not None else services.marks.snapshot()
+    as_of = int(now if now is not None else snap.as_of())
+    nav = acc.nav(scope, snapshot=snap)
+    liq = acc.liquidity(scope, snapshot=snap)
+    rows = [_pos_risk(services, snap, p, as_of) for p in acc.positions(scope, snapshot=snap)]
+    out = _exposure_fields(rows, nav, liq)
+    out["definitions"] = dict(DEFINITIONS)
+    return out
 
 
 def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = None) -> RiskView:
@@ -866,7 +1006,7 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
         b["nav_c"] = int(nav.by_account.get(aid, 0))
         b["pct_nav"] = _pct(b["gross_c"], base_c)
         b["name"] = names.get(aid, aid)
-    totals = _sum_rows(rows)
+    ex = _exposure_fields(rows, nav, liq)                         # P1b-R2: the figures exposure_summary serves (the Dashboard), computed once
     # currency exposure: non-USD cash & receivables at cost + positions at market, in USD at the snapshot's rate
     native = _currency_balances(services, account_ids)
     for r in rows:
@@ -885,19 +1025,20 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
             b["net_c"] += usd
             b["gross_c"] += abs(usd)
     exposures = []
+    head_buckets = {r.bucket for r in rows if r.headline and r.exposure_c is not None}
     for bucket in BUCKET_ORDER + sorted(k for k in by_bucket if k not in BUCKET_ORDER):
         b = by_bucket.get(bucket)
         if b is None:
             continue
+        # V104R2-BW-08: a bucket is in the headline gross exactly when its rows are (the FX currency buckets, IRS / XCCY, CDX and FX forwards are not)
         exposures.append({"bucket": bucket, "long_c": b["long_c"], "short_c": b["short_c"], "net_c": b["net_c"], "gross_c": b["gross_c"], "pct_nav": _pct(b["gross_c"], base_c),
-                          "headline": not bucket.startswith(("OTC swaps", "Credit derivatives", "FX forwards"))})
+                          "headline": bucket in head_buckets})
     # greeks, delta and DV01
     gk = _greeks_total(rows, lambda c: _rate_of(snap, c))
     delta, delta_rows = _delta(rows, gk["rows"])
     dv01_rows = [{"instrument_id": r.instrument_id, "label": r.label, "account_id": r.account_id, "account_name": names.get(r.account_id, r.account_id), "kind": r.kind,
                   "qty": r.qty, "dv01_c": r.dv01_c, "basis": r.dv01_basis, "tenor_years": r.tenor_years, "tenor": _tenor_bucket(r.tenor_years)}
                  for r in rows if r.dv01_c is not None or r.dv01_basis]
-    dv01_signed = sum(r.dv01_c for r in rows if r.dv01_c is not None)
     tenors: Dict[str, dict] = {}
     for d in dv01_rows:
         if d["dv01_c"] is None:
@@ -935,8 +1076,7 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     fin, margin, otc, warnings = _financing(services, acc, snap, rows, accounts, nav, liq, names)
     private = _private(rows, base_c)
     # leverage against NAV (owner 2026-10-21 18:29): the scope, every account, every book
-    ratios = _ratios(totals["long_c"], totals["short_c"], totals["gross_c"], totals["net_c"], totals["gross_notional_c"], nav_c)
-    lev = None if nav_c <= 0 else (Decimal(totals["gross_c"]) / Decimal(nav_c)).quantize(PCT4)
+    lev = None if nav_c <= 0 else (Decimal(ex["gross_c"]) / Decimal(nav_c)).quantize(PCT4)
     lev_accounts = _leverage_by_account(rows, accounts, nav, names)
     for row in lev_accounts:
         b = by_account.get(row["account_id"])
@@ -964,20 +1104,145 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     if private["pct_nav"] is not None and private["pct_nav"] > THRESHOLDS["PRIVATE_ILLIQUID"]:
         warnings.append(_w("PRIVATE_ILLIQUID", f"private / illiquid positions are {_pct_text(private['pct_nav'])} of NAV (limit 30 %)", None, None, str(private["pct_nav"]), "0.30"))
     warnings.sort(key=lambda w: (0 if w["severity"] == SEVERITY_WARN else 1, w["code"]))
-    view = RiskView(scope, as_of, nav_c, nav.quality, nav.partial, list(nav.missing), totals["long_c"], totals["short_c"], totals["gross_c"], totals["net_c"], abs(dv01_signed),
-                    dv01_signed, dv01_rows, exposures, {k: dict(v) for k, v in by_class.items()}, by_account, by_ccy, fx_rows, gk["total"], gk["rows"], scenarios, concentration,
-                    fin, margin, private, otc, warnings, rows, int(liq.excess_liquidity_c), int(liq.encumbrance_c), lev)
+    view = RiskView(scope, as_of, nav_c, nav.quality, nav.partial, list(nav.missing), ex["long_c"], ex["short_c"], ex["gross_c"], ex["net_c"], ex["dv01_c"],
+                    ex["dv01_signed_c"], dv01_rows, exposures, {k: dict(v) for k, v in by_class.items()}, by_account, by_ccy, fx_rows, gk["total"], gk["rows"], scenarios,
+                    concentration, fin, margin, private, otc, warnings, rows, ex["excess_liquidity_c"], ex["encumbrance_c"], lev)
     view.book_nav_c, view.pct_basis = book_nav_c, pct_basis
-    view.gross_leverage, view.gross_notional_c, view.gross_notional_leverage = ratios["gross_leverage"], totals["gross_notional_c"], ratios["gross_notional_leverage"]
-    view.long_pct_nav, view.short_pct_nav, view.net_pct_nav = ratios["long_pct_nav"], ratios["short_pct_nav"], ratios["net_pct_nav"]
-    view.trs_notional_c, view.trs_pct_nav = totals["trs_notional_c"], _pct_signed(totals["trs_notional_c"], nav_c)
-    view.notional_missing = [r.instrument_id for r in rows if r.gross_notional_c is None]
+    view.gross_leverage, view.gross_notional_c, view.gross_notional_leverage = ex["gross_leverage"], ex["gross_notional_c"], ex["gross_notional_leverage"]
+    view.long_pct_nav, view.short_pct_nav, view.net_pct_nav = ex["long_pct_nav"], ex["short_pct_nav"], ex["net_pct_nav"]
+    view.trs_notional_c, view.trs_pct_nav = ex["trs_notional_c"], ex["trs_pct_nav"]
+    view.notional_missing = ex["notional_missing"]
     view.leverage_by_account, view.by_book = lev_accounts, by_book
     view.delta, view.delta_by_underlying, view.dv01_by_tenor = delta, delta_rows, dv01_by_tenor
     view.scenario_notes = [dict(n) for n in SCENARIO_NOTES]
     view.counterparties, view.account_names, view.definitions = counterparties, names, dict(DEFINITIONS)
     view.credit_derivatives = credit
+    view.by_sector = _by_sector(head, base_c)
+    view.reg_t = reg_t_block(services, scope, accounts, names, snapshot=snap)     # P1b-R2: the Reg T panel on this report's marks
+    view.headline_note = ("the buckets marked 'in gross' add up to the gross exposure tile (long + short headline exposure); the others - IRS / "
+                          "cross-currency swaps and CDX at notional, FX forwards and the currency (FX) rows - are shown for their size but are not in it: "
+                          "their measures are DV01, CS01 and the currency exposure")
     return view
+
+
+def _by_sector(head: List[PosRisk], base_c: int) -> List[dict]:
+    """PORTFOLIO-19: long / short / net / gross headline exposure per sector, % of NAV; "unclassified" without a sector.  The gross
+    sums to the headline gross (the same rows)."""
+    agg = _agg(head, lambda r: r.sector or "unclassified")
+    names: Dict[str, List[str]] = {}
+    for r in head:
+        if r.exposure_c is not None:
+            names.setdefault(r.sector or "unclassified", [])
+            if (r.label or r.symbol) not in names[r.sector or "unclassified"]:
+                names[r.sector or "unclassified"].append(r.label or r.symbol)
+    out = [dict(b, sector=k, pct_nav=_pct(b["gross_c"], base_c), instruments=names.get(k, [])) for k, b in agg.items()]
+    out.sort(key=lambda b: (b["sector"] == "unclassified", -b["gross_c"], b["sector"]))
+    return out
+
+
+REG_T_KEYS = ("margin_required_c", "margin_posted_c", "margin_excess_c", "collateral_posted_c", "collateral_received_c", "restricted_c", "encumbered_c")
+
+
+def _takes_kw(fn, name: str) -> bool:
+    """True when ``fn`` accepts the keyword ``name`` (a parameter of that name, or ``**kwargs``)."""
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return False
+    return name in params or any(p.kind is inspect.Parameter.VAR_KEYWORD for p in params.values())
+
+
+def reg_t_block(services, scope: str, accounts: Dict[str, dict], names: Dict[str, str], snapshot=None) -> dict:
+    """FINSIM1_PLAN P3 task 13: the Risk page's Reg T panel - per account (Treasury excluded) P6's ``collateral.summary(services,
+    account_id)`` (C16): requirement, posted / eligible collateral, excess (negative = deficit), restricted, open calls and the
+    assumed terms as P6 states them; plus the scope's total.  ``available: false`` with the reason while that function is not in the
+    build; one account's failure is listed in ``errors``, never hidden and never replaced by a figure of our own.  ``snapshot`` (P1b-R2):
+    every account's summary and the total are priced on these marks (the report's own) when ``collateral.summary`` takes one, instead
+    of each call taking a snapshot of its own."""
+    mod = getattr(services, "collateral", None)
+    summ = getattr(mod, "summary", None) if mod is not None else None
+    if not callable(summ):
+        return {"available": False, "reason": "margin requirements by account (Reg T) are not in this build", "rows": []}
+    kw = {"snapshot": snapshot} if snapshot is not None and _takes_kw(summ, "snapshot") else {}
+    rows, errors = [], []
+    for aid in sorted(accounts):
+        a = accounts[aid]
+        if a.get("kind") == "TREASURY":
+            continue
+        try:
+            s = summ(services, aid, **kw)
+            s = dict(s) if isinstance(s, dict) else {}
+        except Exception as e:   # noqa: BLE001 - named in the panel
+            errors.append(f"{names.get(aid, aid)}: {type(e).__name__}: {e}"[:200])
+            continue
+        row = {"account_id": aid, "name": names.get(aid, aid), "kind": a.get("kind")}
+        for k in REG_T_KEYS + ("open_calls", "unmet_calls", "failed_settlements"):
+            if k in s:
+                row[k] = s.get(k)
+        if s.get("open_calls_c") is not None:
+            row["open_calls_amount_c"] = s.get("open_calls_c")
+        regt = s.get("regt") if isinstance(s.get("regt"), list) else []
+        r0 = regt[0] if regt and isinstance(regt[0], dict) else None
+        if r0 is None or not r0.get("applies", True):
+            continue                                       # Reg T applies to the accounts holding US equities (US Exchange, the PBs)
+        for k in ("requirement_c", "maintenance_c", "eligible_c", "excess_c", "deficit_c", "margin_cash_c", "short_mv_c", "long_mv_c", "long_loan_value_c",
+                  "below_maintenance", "terms", "notes", "definition"):
+            if k in r0:
+                row[k] = r0.get(k)
+        rows.append(row)
+    total = None
+    try:
+        total = summ(services, scope, **kw)
+        total = dict(total) if isinstance(total, dict) else None
+    except Exception as e:   # noqa: BLE001
+        errors.append(f"scope total: {type(e).__name__}: {e}"[:200])
+    return {"available": True, "rows": rows, "total": total, "errors": errors,
+            "note": "Reg T on assumed, editable terms (P6's margin terms): requirement against the eligible collateral; a deficit is reserved on cash "
+                    "and raises a margin call - positions are never sold for you"}
+
+
+# ---- PORTFOLIO-19: the owner's sector classification (light command) -----------------------------------------------------------------
+SECTOR_SCHEMA = ["CREATE TABLE IF NOT EXISTS instrument_sectors (instrument_id TEXT PRIMARY KEY, sector TEXT NOT NULL, source TEXT NOT NULL,"
+                 " ts INTEGER NOT NULL, command_id INTEGER)"]
+SECTOR_MAX = 60
+
+
+def h_classify(ctx, payload: dict) -> dict:
+    """``instrument.classify {instrument_id, sector}`` (light; source "owner"): stores the owner's sector of an instrument (it overrides the
+    instrument master's), one SETTINGS_CHANGED event with before / after; an empty sector (or "unclassified") removes the owner's
+    classification, so the master's (or "unclassified") shows again.  Refused: an unknown instrument, a sector over 60 characters or
+    with control characters."""
+    from .commands import RejectError
+    iid = str(payload.get("instrument_id") or "").strip().upper()
+    if not iid or ctx.conn.execute("SELECT 1 FROM instruments WHERE instrument_id=?", (iid,)).fetchone() is None:
+        raise RejectError("INSTRUMENT_UNKNOWN", f"instrument {iid or '(none)'} is not in the instrument master")
+    sector = " ".join(str(payload.get("sector") or "").split())
+    if len(sector) > SECTOR_MAX or any(ord(ch) < 32 for ch in sector):
+        raise RejectError("BAD_SECTOR", f"a sector is plain text of at most {SECTOR_MAX} characters", {"sector": payload.get("sector")})
+    if ctx.conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='instrument_sectors'").fetchone() is None:
+        raise RejectError("NOT_IN_THIS_BUILD", "the sector table is missing (the risk module did not bind)")
+    row = ctx.conn.execute("SELECT sector FROM instrument_sectors WHERE instrument_id=?", (iid,)).fetchone()
+    before = row[0] if row else None
+    if sector.lower() in ("", "unclassified"):
+        ctx.conn.execute("DELETE FROM instrument_sectors WHERE instrument_id=?", (iid,))
+        after = None
+    else:
+        ctx.conn.execute("INSERT OR REPLACE INTO instrument_sectors(instrument_id, sector, source, ts, command_id) VALUES (?,?,?,?,?)",
+                         (iid, sector, "owner", ctx.ts, ctx.command_id))
+        after = sector
+    ctx.event("SETTINGS_CHANGED", instrument_id=iid, ref_type="instrument", ref_id=iid, before={"sector": before}, after={"sector": after, "source": "owner"})
+    return {"instrument_id": iid, "sector": after, "source": "owner" if after else None, "before": before}
+
+
+def bind(services) -> None:
+    """``instrument_sectors`` (additive, idempotent)."""
+    db = getattr(services, "db", None)
+    if db is not None and callable(getattr(db, "ensure_schema_ext", None)):
+        db.ensure_schema_ext("risk", SECTOR_SCHEMA)
+
+
+def register(bus, services=None) -> None:
+    bus.register("instrument.classify", h_classify, light=True)
 
 
 def _credit_derivatives(services, rows: List[PosRisk], base_c: int) -> Optional[dict]:

@@ -35,8 +35,16 @@
             { key: 'instrument_id', label: 'instrument', cls: 'l', text: function (l) { return l.instrument_id || ''; } },
             { key: 'memo', label: 'memo', cls: 'l', text: function (l) { return l.memo || ''; } }];
   }
-  /* a linked record (fill / transfer) as key / value: times as New York time, money as money, ids and words as they are */
+  /* a linked record (fill / transfer) as key / value: times as New York time, money as money, ids as they are; an account id by its name
+     and an internal code in words (V104R2-BW-03 remnant, the 1.0.6 integrator: 'account id F1:US_EXCHANGE', 'kind SWEEP_IN' showed raw) */
   var MONEY_KEYS = { amount: 1, gross: 1, fee: 1, shortfall: 1, principal: 1, collateral: 1, net: 1 };
+  var ACCT_TOKEN = /\b[A-Z]{1,3}[0-9]+:[A-Z][A-Z0-9_]*[A-Z0-9]\b/g;
+  function kvWords(text) {
+    var t = String(text);
+    if (/^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/.test(t)) { return T.codeWords(t); }          /* SWEEP_IN -> sweep-in, AS_OF -> as of */
+    if (/^[a-z]+(?:_[a-z]+)+$/.test(t)) { return t.replace(/_/g, ' '); }                 /* as_of -> as of */
+    return t.replace(ACCT_TOKEN, function (a) { return T.accountName ? T.accountName(a) : a; });
+  }
   function kvRows(obj, skip) {
     var out = [];
     Object.keys(obj || {}).forEach(function (k) {
@@ -45,14 +53,15 @@
       var text = String(v);
       if (k === 'ts' || /_ts$/.test(k)) { text = obj[k.replace(/ts$/, 'ny')] || (k === 'ts' && obj.ts_ny) || T.fmt.dt(v); }
       else if (MONEY_KEYS[k]) { text = T.fmt.money(v); }
+      else { text = kvWords(text); }
       out.push([k === 'ts' ? 'time' : k.replace(/_/g, ' '), text]);
     });
     return out;
   }
   function entryBody(b, d, extra) {
     var e = d.entry || d;
-    var pairs = [['entry', String(e.entry_id == null ? '' : e.entry_id)], ['kind', e.kind || ''], ['time', e.ts_ny || T.fmt.dt(e.ts)], ['business date', e.business_date || ''],
-                 ['memo', e.memo || ''], ['reference', e.ref_type ? e.ref_type + ' ' + (e.ref_id || '') : '']];
+    var pairs = [['entry', String(e.entry_id == null ? '' : e.entry_id)], ['kind', e.kind_label || T.codeWords(e.kind || '')], ['time', e.ts_ny || T.fmt.dt(e.ts)], ['business date', e.business_date || ''],
+                 ['memo', e.memo || ''], ['reference', e.ref_text || (e.ref_type ? e.ref_type + ' ' + (e.ref_id || '') : '')]];
     if (d.command) { pairs.push(['command', d.command.kind + ' #' + d.command.id + (d.command.actor ? ' by ' + d.command.actor : '')]); pairs.push(['request', d.command.request_id || '']); }
     (extra || []).forEach(function (p) { pairs.push(p); });
     b.appendChild(T.kv(pairs.filter(function (p) { return p[1] != null && p[1] !== ''; })));
@@ -76,6 +85,83 @@
         function (e) { T.clear(slot); slot.appendChild(T.h('div', { class: 'error' }, T.api.describe(e))); });
     } });
     return h;
+  }
+
+  function section(title, sub, rows, cols, empty, extra) {
+    var p = T.h('div', { class: 'panel' }, T.h('h2', null, title, sub ? T.h('small', null, sub) : null));
+    var g = T.h('div'); p.appendChild(g);
+    T.components.grid.mount(g, Object.assign({ tools: rows.length > 12, rows: rows, columns: cols, empty: empty, maxHeight: '360px' }, extra || {}));
+    return p;
+  }
+  function acctCol(all) {
+    return { key: 'account_id', label: 'account', cls: 'l', text: function (r) { return (r.account_name || T.accountName(r.account_id)) + (all && r.book_name ? ' . ' + r.book_name : ''); } };
+  }
+  function reasonHtml(r) {
+    var l = r.link;
+    if (l && l.account_id && (l.kind === 'fill' || l.kind === 'fx_deal' || l.kind === 'settlement')) {
+      return '<a href="' + T.esc(T.router.account(l.account_id, l.kind === 'fill' ? 'orders' : (l.kind === 'settlement' ? 'cash' : 'transactions'))) + '" title="open ' + T.esc(T.accountName(l.account_id)) + '">' + T.esc(r.reason || '') + '</a>';
+    }
+    return T.esc(r.reason || '');
+  }
+  function goLink(l) { if (l && l.account_id) { T.router.go(T.router.account(l.account_id, l.kind === 'fill' ? 'orders' : (l.kind === 'settlement' ? 'cash' : 'transactions'))); } }
+
+  /* the Cash & financing figures of one GET /api/accounting/cash answer (BM-13), painted into el: tiles, cash by account and currency
+     (with the restricted collateral of C21 and the reserved split), the settlement ladder, sweeps, loans, margin, borrows, repos and
+     securities lent; all = the scope is ALL_BOOKS (rows then name their book) */
+  function cashBody(el, d, all) {
+      var tot = d.totals || [];
+      el.appendChild(T.tiles(tot.slice(0, 4).map(function (t) { return { k: t.currency + ' settled', v: T.money(t, 'settled'), s: 'available ' + T.money(t, 'available') + ' . receivable ' + T.money(t, 'receivable') + ' . payable ' + T.money(t, 'payable') }; })
+        .concat((d.treasury || []).map(function (t) { var n = T.num(t, 'available_signed'); return { k: 'Treasury' + (all || (d.treasury || []).length > 1 ? ' . ' + (t.book_name || t.lifetime_id) : '') + ' can sweep', v: T.money(t, 'available'), cls: n < 0 ? 'neg' : (n > 0 ? 'pos' : ''), s: 'reserve ' + T.money(t, 'reserve') + (n < 0 ? ' is above the sweepable cash (' + T.money(t, 'available_signed') + ')' : ''), href: all ? null : '#/treasury' }; }))));
+      el.appendChild(section('cash by account and currency', 'own available is floored at zero; what working orders and payables need beyond it is reserved', d.cash || [], [acctCol(all),
+        { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('settled', 'settled', { plain: true }), moneyCol('receivable', 'receivable', { plain: true }), moneyCol('payable', 'payable', { plain: true }),
+        moneyCol('reserved', 'reserved', { plain: true }), moneyCol('available', 'available', { plain: true }), moneyCol('margin', 'margin', { plain: true })], 'no cash',
+        { rowKey: function (r) { return r.account_id + '|' + r.currency; }, onEnter: function (r) { T.router.go(T.router.account(r.account_id, 'cash')); } }));
+      el.appendChild(section('settlement ladder', 'pending settlements by due date', d.ladder || [], [{ key: 'due_date', label: 'due', cls: 'l' }, acctCol(all),
+        { key: 'what', label: 'for', cls: 'l', text: function (r) { return r.what || r.leg || ''; } }, { key: 'direction', label: 'pay / receive', cls: 'l' },
+        { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('amount')], 'no pending settlements', { rowKey: function (r) { return r.settle_id; } }));
+      el.appendChild(section('sweeps', 'Treasury sweep-ins (what each paid for) and sweep-outs of idle cash; the newest 100', d.sweeps || [], [
+        { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } }, acctCol(all),
+        { key: 'direction', label: 'direction', cls: 'l', text: function (r) { return r.direction === 'SWEEP_IN' ? 'sweep-in' : 'sweep-out'; } }, { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('amount', 'amount', { plain: true }),
+        { key: 'reason', label: 'reason (what the sweep paid for)', cls: 'l', html: function (r) { return reasonHtml(r); }, text: function (r) { return r.reason || ''; } }], 'no sweeps',
+        { rowKey: function (r) { return r.transfer_id; }, onEnter: function (r) { goLink(r.link); } }));
+      el.appendChild(section('loans', 'currency loans and prime-broker financing', d.loans || [], [acctCol(all), { key: 'kind', label: 'kind', cls: 'l', text: function (r) { return r.kind === 'PB_MARGIN' ? 'PB financing' : 'currency loan'; } },
+        { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('principal', 'principal', { plain: true }), { key: 'lender', label: 'lender', cls: 'l', text: function (r) { return r.counterparty_name || r.lender || ''; } },
+        { key: 'index_name', label: 'rate', cls: 'l', text: function (r) { return (r.index_name || '') + (r.spread != null ? ' + ' + T.fmt.rate(r.spread) : ''); } },
+        { key: 'maturity_date', label: 'matures', cls: 'l', text: function (r) { return r.maturity_date || 'open'; } }], 'no open loans', { rowKey: function (r) { return r.loan_id; } }));
+      el.appendChild(section('margin', 'futures initial margin, option margin reserved on cash, OTC margin; collateral held at lenders', d.margin || [], [acctCol(all),
+        moneyCol('futures_required', 'futures req.', { plain: true }), moneyCol('futures_posted', 'futures posted', { plain: true }), moneyCol('options_reserved', 'options reserved', { plain: true }),
+        moneyCol('otc_im', 'OTC IM', { plain: true }), moneyCol('otc_vm_posted', 'OTC VM posted', { plain: true }), moneyCol('collateral_held_at_lender', 'collateral', { plain: true })], 'no margin or collateral', { rowKey: function (r) { return r.account_id; } }));
+      var fin = T.h('div', { class: 'grid2' }); el.appendChild(fin);
+      fin.appendChild(section('stock borrows', 'shorts borrowed: lender, fee, cash collateral', d.borrows || [], [acctCol(all), { key: 'symbol', label: 'instrument', cls: 'l', text: function (r) { return r.symbol || r.instrument_id || ''; } },
+        { key: 'qty', label: 'qty', text: function (r) { return T.fmt.qty(Number(r.qty || 0) - Number(r.qty_returned || 0)); } }, { key: 'lender', label: 'lender', cls: 'l' },
+        { key: 'fee_rate', label: 'fee', text: function (r) { return r.fee_rate == null ? '' : T.fmt.rate(r.fee_rate); } }, moneyCol('collateral', 'collateral', { plain: true })], 'no open borrows', { rowKey: function (r) { return r.borrow_id; } }));
+      fin.appendChild(section('repo and securities lent', 'open repos / reverse repos and shares lent out', (d.repos || []).map(function (r) { return Object.assign({ what: (r.side === 'REVERSE' ? 'reverse repo ' : 'repo ') + (r.symbol || r.instrument_id || '') + ' face ' + T.fmt.qty(r.face), party: r.counterparty_name || '', amt: r.principal, amt_c: r.principal_c }, r); })
+        .concat((d.lent || []).map(function (r) { return Object.assign({ what: 'lent ' + T.fmt.qty(Number(r.qty || 0) - Number(r.qty_recalled || 0)) + ' ' + (r.symbol || r.instrument_id || ''), party: r.counterparty_name || '', amt: r.collateral, amt_c: r.collateral_c }, r); })),
+        [acctCol(all), { key: 'what', label: 'what', cls: 'l' }, { key: 'party', label: 'counterparty', cls: 'l' }, moneyCol('amt', 'cash', { plain: true }), { key: 'maturity_date', label: 'matures', cls: 'l', text: function (r) { return r.maturity_date || ''; } }],
+        'no repos and no securities lent', { rowKey: function (r) { return (r.repo_id || r.loan_id || ''); } }));
+      el.appendChild(T.convNote(['SWEEP', 'TREASURY', 'ENCUMBRANCE']));
+  }
+
+  /* C9f (FINSIM1_PLAN): the Cash & financing tab as a component - renderCashTab(el, {book, account, scope, base}) fetches
+     GET /api/accounting/cash for the account (else the scope; else the book's lifetime 'ALL') of the given book (else the selected
+     one) and paints the same figures as Accounting > Cash & financing.  Returns {refresh() -> promise, ready (the first load),
+     unmount()}; a refresh after unmount paints nothing. */
+  function renderCashTab(el, opts) {
+    opts = opts || {};
+    var scope = opts.account || opts.scope || 'ALL';
+    var params = { scope: scope };
+    if (opts.book) { params.book = opts.book; }
+    var dead = false;
+    function refresh() {
+      return T.api.get(opts.base || '/api/accounting/cash', params).then(function (d) {
+        if (dead) { return d; }
+        T.clear(el); cashBody(el, d || {}, scope === 'ALL_BOOKS');
+        return d;
+      }, function (err) { if (dead) { return null; } T.clear(el); T.errorBox(el, err, 'cash & financing'); return null; });
+    }
+    T.clear(el); el.appendChild(T.h('div', { class: 'spin' }));
+    var first = refresh();
+    return { refresh: refresh, ready: first, unmount: function () { dead = true; } };
   }
 
   function render(el, route, opts) {
@@ -180,7 +266,7 @@
     var TX_COLS = [
       { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } },
       { key: 'entry_id', label: 'entry', cls: 'l', text: function (r) { return String(r.entry_id); }, sort: function (r) { return r.entry_id; } },
-      { key: 'kind', label: 'kind', cls: 'l' },
+      { key: 'kind', label: 'kind', cls: 'l', text: function (r) { return r.kind_label || T.codeWords(r.kind); }, title: function (r) { return r.kind || ''; } },
       { key: 'accounts', label: 'account', cls: 'l', html: function (r) { var n = r.account_names || {}; return wrapHtml((r.entry_accounts || r.accounts || []).map(function (a) { return acctName(a, n); }).join(', '), 150); },
         text: function (r) { var n = r.account_names || {}; return (r.entry_accounts || r.accounts || []).map(function (a) { return acctName(a, n); }).join(', '); } },
       { key: 'memo', label: 'memo', cls: 'l', html: function (r) { return wrapHtml(r.memo || '', 300, r.memo_stored || r.memo || ''); }, text: function (r) { return r.memo || ''; } },
@@ -192,7 +278,7 @@
       { key: 'net_cash', label: 'net cash', html: function (r) { var n = r.net_cash || {}; return Object.keys(n).map(function (c) { return '<span class="' + T.sign(n, c) + '">' + T.esc(c + ' ' + T.money(n, c)) + '</span>'; }).join(' '); }, text: netCash },
       { key: 'other_side', label: 'other side', cls: 'l', html: function (r) { return wrapHtml(r.other_side || '', 170); }, text: function (r) { return r.other_side || ''; } }];
     function showTxn(r) {
-      entryModal(r, { title: 'entry ' + r.entry_id + ' . ' + (r.kind || '') + ' . ' + (r.ts_ny || T.fmt.dt(r.ts)),
+      entryModal(r, { title: 'entry ' + r.entry_id + ' . ' + (r.kind_label || T.codeWords(r.kind || '')) + ' . ' + (r.ts_ny || T.fmt.dt(r.ts)),
         extra: [['other side', r.other_side || ''], ['net cash', netCash(r)], ['request', r.request_id || ''], ['command', r.command_id == null ? '' : String(r.command_id)]] });
     }
     function transactions() {
@@ -223,61 +309,13 @@
       return fetchRows();
     }
 
-    /* ---- Cash & financing of the scope (BM-13) ---- */
-    function section(title, sub, rows, cols, empty, extra) {
-      var p = T.h('div', { class: 'panel' }, T.h('h2', null, title, sub ? T.h('small', null, sub) : null));
-      var g = T.h('div'); p.appendChild(g);
-      T.components.grid.mount(g, Object.assign({ tools: rows.length > 12, rows: rows, columns: cols, empty: empty, maxHeight: '360px' }, extra || {}));
-      return p;
-    }
-    function acctCol(all) {
-      return { key: 'account_id', label: 'account', cls: 'l', text: function (r) { return (r.account_name || T.accountName(r.account_id)) + (all && r.book_name ? ' . ' + r.book_name : ''); } };
-    }
+    /* ---- Cash & financing of the scope (BM-13): cashBody paints the figures (shared with renderCashTab, C9f) ---- */
     function cash() {
       return T.api.get(base + 'cash', { scope: scope }).then(function (d) {
         T.clear(body);
-        var all = scope === 'ALL_BOOKS';
-        var tot = d.totals || [];
-        body.appendChild(T.tiles(tot.slice(0, 4).map(function (t) { return { k: t.currency + ' settled', v: T.money(t, 'settled'), s: 'available ' + T.money(t, 'available') + ' . receivable ' + T.money(t, 'receivable') + ' . payable ' + T.money(t, 'payable') }; })
-          .concat((d.treasury || []).map(function (t) { var n = T.num(t, 'available_signed'); return { k: 'Treasury' + (all || (d.treasury || []).length > 1 ? ' . ' + (t.book_name || t.lifetime_id) : '') + ' can sweep', v: T.money(t, 'available'), cls: n < 0 ? 'neg' : (n > 0 ? 'pos' : ''), s: 'reserve ' + T.money(t, 'reserve') + (n < 0 ? ' is above the sweepable cash (' + T.money(t, 'available_signed') + ')' : ''), href: all ? null : '#/treasury' }; }))));
-        body.appendChild(section('cash by account and currency', 'own available is floored at zero; what working orders and payables need beyond it is reserved', d.cash || [], [acctCol(all),
-          { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('settled', 'settled', { plain: true }), moneyCol('receivable', 'receivable', { plain: true }), moneyCol('payable', 'payable', { plain: true }),
-          moneyCol('reserved', 'reserved', { plain: true }), moneyCol('available', 'available', { plain: true }), moneyCol('margin', 'margin', { plain: true })], 'no cash',
-          { rowKey: function (r) { return r.account_id + '|' + r.currency; }, onEnter: function (r) { T.router.go(T.router.account(r.account_id, 'cash')); } }));
-        body.appendChild(section('settlement ladder', 'pending settlements by due date', d.ladder || [], [{ key: 'due_date', label: 'due', cls: 'l' }, acctCol(all),
-          { key: 'what', label: 'for', cls: 'l', text: function (r) { return r.what || r.leg || ''; } }, { key: 'direction', label: 'pay / receive', cls: 'l' },
-          { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('amount')], 'no pending settlements', { rowKey: function (r) { return r.settle_id; } }));
-        body.appendChild(section('sweeps', 'Treasury sweep-ins (what each paid for) and sweep-outs of idle cash; the newest 100', d.sweeps || [], [
-          { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } }, acctCol(all),
-          { key: 'direction', label: 'direction', cls: 'l', text: function (r) { return r.direction === 'SWEEP_IN' ? 'sweep-in' : 'sweep-out'; } }, { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('amount', 'amount', { plain: true }),
-          { key: 'reason', label: 'reason (what the sweep paid for)', cls: 'l', html: function (r) { return reasonHtml(r); }, text: function (r) { return r.reason || ''; } }], 'no sweeps',
-          { rowKey: function (r) { return r.transfer_id; }, onEnter: function (r) { goLink(r.link); } }));
-        body.appendChild(section('loans', 'currency loans and prime-broker financing', d.loans || [], [acctCol(all), { key: 'kind', label: 'kind', cls: 'l', text: function (r) { return r.kind === 'PB_MARGIN' ? 'PB financing' : 'currency loan'; } },
-          { key: 'currency', label: 'ccy', cls: 'l' }, moneyCol('principal', 'principal', { plain: true }), { key: 'lender', label: 'lender', cls: 'l', text: function (r) { return r.counterparty_name || r.lender || ''; } },
-          { key: 'index_name', label: 'rate', cls: 'l', text: function (r) { return (r.index_name || '') + (r.spread != null ? ' + ' + T.fmt.rate(r.spread) : ''); } },
-          { key: 'maturity_date', label: 'matures', cls: 'l', text: function (r) { return r.maturity_date || 'open'; } }], 'no open loans', { rowKey: function (r) { return r.loan_id; } }));
-        body.appendChild(section('margin', 'futures initial margin, option margin reserved on cash, OTC margin; collateral held at lenders', d.margin || [], [acctCol(all),
-          moneyCol('futures_required', 'futures req.', { plain: true }), moneyCol('futures_posted', 'futures posted', { plain: true }), moneyCol('options_reserved', 'options reserved', { plain: true }),
-          moneyCol('otc_im', 'OTC IM', { plain: true }), moneyCol('otc_vm_posted', 'OTC VM posted', { plain: true }), moneyCol('collateral_held_at_lender', 'collateral', { plain: true })], 'no margin or collateral', { rowKey: function (r) { return r.account_id; } }));
-        var fin = T.h('div', { class: 'grid2' }); body.appendChild(fin);
-        fin.appendChild(section('stock borrows', 'shorts borrowed: lender, fee, cash collateral', d.borrows || [], [acctCol(all), { key: 'symbol', label: 'instrument', cls: 'l', text: function (r) { return r.symbol || r.instrument_id || ''; } },
-          { key: 'qty', label: 'qty', text: function (r) { return T.fmt.qty(Number(r.qty || 0) - Number(r.qty_returned || 0)); } }, { key: 'lender', label: 'lender', cls: 'l' },
-          { key: 'fee_rate', label: 'fee', text: function (r) { return r.fee_rate == null ? '' : T.fmt.rate(r.fee_rate); } }, moneyCol('collateral', 'collateral', { plain: true })], 'no open borrows', { rowKey: function (r) { return r.borrow_id; } }));
-        fin.appendChild(section('repo and securities lent', 'open repos / reverse repos and shares lent out', (d.repos || []).map(function (r) { return Object.assign({ what: (r.side === 'REVERSE' ? 'reverse repo ' : 'repo ') + (r.symbol || r.instrument_id || '') + ' face ' + T.fmt.qty(r.face), party: r.counterparty_name || '', amt: r.principal, amt_c: r.principal_c }, r); })
-          .concat((d.lent || []).map(function (r) { return Object.assign({ what: 'lent ' + T.fmt.qty(Number(r.qty || 0) - Number(r.qty_recalled || 0)) + ' ' + (r.symbol || r.instrument_id || ''), party: r.counterparty_name || '', amt: r.collateral, amt_c: r.collateral_c }, r); })),
-          [acctCol(all), { key: 'what', label: 'what', cls: 'l' }, { key: 'party', label: 'counterparty', cls: 'l' }, moneyCol('amt', 'cash', { plain: true }), { key: 'maturity_date', label: 'matures', cls: 'l', text: function (r) { return r.maturity_date || ''; } }],
-          'no repos and no securities lent', { rowKey: function (r) { return (r.repo_id || r.loan_id || ''); } }));
-        body.appendChild(T.convNote(['SWEEP', 'TREASURY', 'ENCUMBRANCE']));
+        cashBody(body, d, scope === 'ALL_BOOKS');
       }, function (e) { T.clear(body); T.errorBox(body, e, 'cash & financing'); });
     }
-    function reasonHtml(r) {
-      var l = r.link;
-      if (l && l.account_id && (l.kind === 'fill' || l.kind === 'fx_deal' || l.kind === 'settlement')) {
-        return '<a href="' + T.esc(T.router.account(l.account_id, l.kind === 'fill' ? 'orders' : (l.kind === 'settlement' ? 'cash' : 'transactions'))) + '" title="open ' + T.esc(T.accountName(l.account_id)) + '">' + T.esc(r.reason || '') + '</a>';
-      }
-      return T.esc(r.reason || '');
-    }
-    function goLink(l) { if (l && l.account_id) { T.router.go(T.router.account(l.account_id, l.kind === 'fill' ? 'orders' : (l.kind === 'settlement' ? 'cash' : 'transactions'))); } }
 
     /* ---- Ledger ---- */
     function ledger() {
@@ -286,7 +324,7 @@
       var gEl = T.h('div');
       var grid = null;
       function openEntry(r) {
-        entryModal(T.api.get(base + 'journal/' + encodeURIComponent(r.entry_id)), { title: 'entry ' + r.entry_id + ' . ' + (r.kind || '') });
+        entryModal(T.api.get(base + 'journal/' + encodeURIComponent(r.entry_id)), { title: 'entry ' + r.entry_id + ' . ' + (r.kind_label || T.codeWords(r.kind || '')) });
       }
       function fetchEntries() {
         return T.api.get(base + 'journal', { scope: scope, gl: gl.value.trim() || null, instrument: inst.value.trim() || null, from: from.value || null, to: to.value || null, limit: 300 }).then(function (j) {
@@ -294,8 +332,8 @@
           if (!grid) {
             T.clear(gEl);
             grid = T.components.grid.mount(gEl, { rows: [], csv: 'journal.csv', empty: 'loading ...', sortKey: 'ts', sortAsc: false, focus: true, columns: [
-              { key: 'entry_id', label: 'entry', cls: 'l', text: function (r) { return String(r.entry_id); }, sort: function (r) { return r.entry_id; } }, { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } }, { key: 'business_date', label: 'bdate', cls: 'l' }, { key: 'kind', label: 'kind', cls: 'l' }, { key: 'memo', label: 'memo', cls: 'l' },
-              { key: 'lines', label: 'lines (Dr / Cr)', cls: 'l', html: function (r) { return (r.lines || []).map(function (l) { return '<div>' + T.esc((l.account_name || l.account_id || '') + ' ' + (l.gl || '') + ' ' + (l.currency || '') + ' ' + (l.debit != null || l.debit_c != null ? 'Dr ' + T.money(l, 'debit') : '') + (l.credit != null || l.credit_c != null ? 'Cr ' + T.money(l, 'credit') : '') + (l.instrument_id ? ' ' + l.instrument_id : '')) + '</div>'; }).join(''); }, text: function (r) { return (r.lines || []).length + ' lines'; } },
+              { key: 'entry_id', label: 'entry', cls: 'l', text: function (r) { return String(r.entry_id); }, sort: function (r) { return r.entry_id; } }, { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } }, { key: 'business_date', label: 'bdate', cls: 'l' }, { key: 'kind', label: 'kind', cls: 'l', text: function (r) { return r.kind_label || T.codeWords(r.kind); }, title: function (r) { return r.kind || ''; } }, { key: 'memo', label: 'memo', cls: 'l', html: function (r) { return wrapHtml(r.memo || '', 280, r.memo_stored || r.memo || ''); }, text: function (r) { return r.memo || ''; } },
+              { key: 'lines', label: 'lines (Dr / Cr)', cls: 'l', html: function (r) { return (r.lines || []).map(function (l) { return '<div style="white-space:normal;max-width:460px">' + T.esc((l.account_name || l.account_id || '') + ' ' + (l.gl || '') + ' ' + (l.currency || '') + ' ' + (l.debit != null || l.debit_c != null ? 'Dr ' + T.money(l, 'debit') : '') + (l.credit != null || l.credit_c != null ? 'Cr ' + T.money(l, 'credit') : '') + (l.instrument_id ? ' ' + l.instrument_id : '')) + '</div>'; }).join(''); }, text: function (r) { return (r.lines || []).length + ' lines'; } },
               { key: 'command_id', label: 'command', cls: 'l', text: function (r) { return r.command_id == null ? '' : String(r.command_id); } }],
               onEnter: openEntry });
           }
@@ -350,5 +388,5 @@
     var off = T.state.on('accounts', function () { if (!opts.scope) { fillScopes(); } });
     T.pages.accounting.unmount = function () { dead = true; off(); T.pages.accounting.unmount = null; };
   }
-  T.pages.accounting = { render: render, unmount: null, TABS: TABS, entryModal: entryModal, entryBody: entryBody };
+  T.pages.accounting = { render: render, unmount: null, TABS: TABS, entryModal: entryModal, entryBody: entryBody, renderCashTab: renderCashTab, cashBody: cashBody };
 })();

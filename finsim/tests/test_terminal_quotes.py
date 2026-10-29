@@ -9,6 +9,7 @@ import json
 import os
 import shutil
 import tempfile
+import types
 import unittest
 from datetime import date
 from decimal import Decimal
@@ -24,7 +25,7 @@ from finsim.terminal.quotes.providers import (CboeChain, FakeProvider, FinraShor
                                               YahooChart, chart_result, parse_chain, parse_daily, parse_events, parse_finra, parse_frankfurter, parse_fred_csv,
                                               parse_intraday, parse_treasury_xml)
 from finsim.terminal.quotes.rates import CurveStore, FRED_SERIES, FxStore, RateStore
-from finsim.terminal.quotes.worker import QuoteWorker, register_all
+from finsim.terminal.quotes.worker import QuoteWorker, RatesRefresher, register_all
 from finsim.terminal.sessions import SessionState
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -431,6 +432,42 @@ class CacheWorkerTests(unittest.TestCase):
             names = {r[0] for r in conn.execute("SELECT provider FROM provider_health").fetchall()}
             self.assertTrue({"yahoo", "cboe", "treasury", "fred", "finra", "frankfurter"} <= names, names)
             self.assertTrue(names <= set(_PROVIDERS) | set(self.worker.refreshers()), names)
+
+    def test_progress_heartbeat_inside_a_long_tick(self):
+        """V104R2-BW-10: a first tick after a start runs every startup slot one after another; on the owner's book that is about a minute
+        of network work, and the worker was reported stalled (last tick 16:39) while it was busy.  Now every unit of work inside a tick
+        moves ``last_progress_ts`` (here: three slots of 40 s each = 120 s, more than 3 x 15 s), ``last_tick_ts`` still moves only when
+        the tick ends (at its start time), and health calls the worker stalled only when neither moved for more than 3 cycles."""
+        from finsim.terminal.api import _worker_health
+        rt = self.rt
+        start = int(rt.clock.epoch())
+        seen = []
+
+        def slow(name):
+            def fn():
+                rt.clock.advance(40)                                            # each slot takes 40 s of the (fake) clock
+                st = self.worker.stats()
+                seen.append((name, st["last_progress_ts"], st["last_tick_ts"]))
+            return fn
+        self.worker.refresher.slots = []                                        # only the three slow slots (startup slots run at the first tick)
+        for n in ("a", "b", "c"):
+            self.worker.add_slot(n, slow(n), interval_s=3600)
+        self.assertIsNone(self.worker.stats()["last_progress_ts"])
+        self.worker.tick()
+        # inside the tick: the progress moved after the pin scan (start) and after each slot (start + 40, start + 80); no tick ended yet
+        self.assertEqual([("a", start, None), ("b", start + 40, None), ("c", start + 80, None)], seen)
+        st = self.worker.stats()
+        self.assertEqual((start + 120, start), (st["last_progress_ts"], st["last_tick_ts"]))   # the tick's time is its start
+        alive = types.SimpleNamespace(is_alive=lambda: True)
+        now = start + 125
+        # 125 s after the tick began: stalled by the tick alone (the old rule), not with the progress 5 s ago
+        self.assertTrue(_worker_health(alive, st["last_tick_ts"], 0, None, 15, now)["stalled"])
+        h = _worker_health(alive, st["last_tick_ts"], 0, None, 15, now, progress_ts=st["last_progress_ts"])
+        self.assertEqual((False, start + 120), (h["stalled"], h["last_progress_ts"]))
+        # a worker that made no progress for more than 3 cycles is still stalled
+        self.assertTrue(_worker_health(alive, st["last_tick_ts"], 0, None, 15, start + 120 + 46, progress_ts=st["last_progress_ts"])["stalled"])
+        # a refresher on its own (no worker) has no heartbeat and runs as before
+        self.assertIsNone(RatesRefresher(self.providers, self.cache, self.curve, self.rates, self.fxs, rt.instruments, rt.db, rt.bus, rt.clock).beat)
 
     def test_persist_and_load_round_trip_returns_close_or_stale_never_delayed(self):
         rt = self.rt

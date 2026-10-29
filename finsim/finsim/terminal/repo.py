@@ -157,10 +157,21 @@ def _has_col(conn, col: str) -> bool:
 
 # ---- C27: pledged face ---------------------------------------------------------------------------------------------------------------
 def pledged_face(conn, account_id: str, instrument_id: str) -> int:
-    """C27: face of ``instrument_id`` held in ``account_id`` that OPEN repos have pledged (P07's bond SELL refuses it)."""
-    if not _has_col(conn, "collateral_account"):
+    """C27: face of ``instrument_id`` held in ``account_id`` that is pledged - by OPEN repos and (FINSIM1 P6 task 6, 1.0.6) under a prime
+    broker's CSA (``collateral.csa_pledged_face``): P07's bond SELL refuses it, and neither a repo nor a CSA pledge can take it again."""
+    repo_face = 0
+    if _has_col(conn, "collateral_account"):
+        row = conn.execute("SELECT COALESCE(SUM(face), 0) FROM repos WHERE side='REPO' AND status='OPEN' AND collateral_account=? AND instrument_id=?",
+                           (account_id, instrument_id)).fetchone()
+        repo_face = int(row[0] or 0)
+    return repo_face + csa_pledged_face(conn, account_id, instrument_id)
+
+
+def csa_pledged_face(conn, account_id: str, instrument_id: str) -> int:
+    """Face pledged under a CSA (``collateral_pledges`` PLEDGED rows; 0 on a database without the table)."""
+    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='collateral_pledges'").fetchone() is None:
         return 0
-    row = conn.execute("SELECT COALESCE(SUM(face), 0) FROM repos WHERE side='REPO' AND status='OPEN' AND collateral_account=? AND instrument_id=?",
+    row = conn.execute("SELECT COALESCE(SUM(face), 0) FROM collateral_pledges WHERE account_id=? AND instrument_id=? AND status='PLEDGED'",
                        (account_id, instrument_id)).fetchone()
     return int(row[0] or 0)
 
@@ -437,7 +448,7 @@ def preview(services, payload: dict, conn=None, now: Optional[int] = None, snaps
                     why += (f"; purchases of {pending:,} face settle {due}" + (" - none of the position has settled yet" if pending >= held
                                                                                   else f" - {held - pending:,} of it has settled"))
                 if pledged:
-                    why += f"; {pledged:,} already pledged in open repos"
+                    why += f"; {pledged:,} already pledged (open repos or a CSA)"
                 raise ConflictError("COLLATERAL_SHORT", f"{why}: at most {max(free, 0):,} can be pledged now", {"held": held, "pending": pending, "pledged": pledged, "free": max(free, 0)})
         col = collateral(services, inst, face, snap, on)
         haircut = dealer["haircuts"].get(col.type)
@@ -939,9 +950,16 @@ def register_routes(r) -> None:
 
     def repo_preview(req):
         body = {k: v for k, v in (req.body or {}).items() if k != "request_id"}
+        # V104R2-BW-05: a caller that asks for it (``soft``) gets a refused preview as 200 {blocked, blockers} instead of a 4xx, so a
+        # correctly refused preview (e.g. a purchase still settling) leaves no failed request in the browser console; without ``soft``
+        # the answer is unchanged (the 4xx with its code)
+        soft = str(body.pop("soft", "") or req.q("soft") or "").lower() in ("1", "true", "yes", "on")
         try:
             return preview(req.rt, body)
         except RejectError as e:
+            if soft:
+                return {"ok": False, "blocked": True, "side": str(body.get("side") or "").upper() or None,
+                        "blockers": [{"code": e.code, "message": e.message, "details": e.details or {}}], "message": e.message}
             raise ApiError(int(getattr(e, "http", 400) or 400), e.code, e.message, e.details)
 
     def repo_post(req):

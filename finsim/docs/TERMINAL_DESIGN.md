@@ -223,7 +223,7 @@ finsim/finsim/terminal/
   compliance.py        inform-only rule notices (pre-trade + holdings)
   api.py               Router: routes → services/bus; JSON codec; error mapping
   server.py            TerminalServer (exclusive bind), Runtime, single-instance lock, supervisor, shutdown
-  app.py               CLI: serve/stop/status/install/open/uninstall/legacy; Windows VBS + shortcuts
+  app.py               CLI: serve/stop/status/install/open/uninstall/import; Windows VBS + shortcuts; two-tree status
   smoke.py             manual network smoke test (`python -m finsim.terminal.smoke`), never run by tests
   static/              index.html, terminal.css, core.js, glossary-data.js, components/*.js, pages/*.js (§17)
 ```
@@ -2619,16 +2619,23 @@ components/chain.js         option chain (calls | strike | puts; bid/ask/size/iv
 components/chart.js         canvas 1-minute line + volume from bars_tail / bars (no library)
 pages/markets.js            account Markets tab (product tabs; row Enter -> instrument workspace; b/s -> ticket prefill; add symbol = resolve)
 pages/instrument.js         workspace: quote header with freshness, chart, chain (if optionable), position & lots in this account, working orders, ticket docked
-pages/positions.js          account positions (+ Close / Hedge / Exercise / Return borrow actions)
+pages/positions.js          account positions (+ Close / Hedge / Exercise / Return borrow actions); one click (or Enter) opens the position drawer
+                            (T.pages.positions.openDrawer, shared with the Portfolio): every fill with its order and settlement state, cash flows and
+                            entries paged with net cash and grouped, open and closed lots with reliefs, the borrow, marks, dividends, "Sector ..."
 pages/orders.js             working + history (incl. rejections) with reasons; cancel with x; fills with the quote used
 pages/cash.js               Cash & financing: cash by ccy (settled / pending / available / held at lender), settlements ladder, loans, borrows & collateral,
                             futures and option margin, sweeps today, FX convert form (preview -> confirm), loan form, per-account sweep switch
 pages/transactions.js       per-account ledger-derived transactions (filters, CSV)
 pages/treasury.js           capital (Add funds), cash by ccy, advances by account (click -> account), interest, sweep log, manual transfer, reserve
-pages/portfolio.js          consolidated positions / P&L by account and class (B16 columns, §17.5); NAV + TODAY/MTD/YTD/ITD tiles; Performance tab (mounts components/performance.js)
-pages/accounting.js         tabs: P&L (explain + residual), Balance sheet (scope incl. ALL), Ledger browser, Trial balance, Integrity (last report, "run now")
-pages/risk.js               exposures, greeks, DV01, scenarios, concentration, warnings, compliance notices ("warnings only")
-pages/activity.js           merged feed with filters
+pages/portfolio.js          Portfolio (#/portfolio[/positions|closed|performance]): NAV, P&L and return tiles; positions grouped by asset class, class,
+                            sector or account with the server's subtotals; total P&L, fees, margin / collateral, counterparty, sector; footer: market
+                            value vs exposure (futures notional, TRS units x price, CDX notional with its credit sign, IRS DV01); a row opens the
+                            position drawer; Closed tab (GET /api/portfolio/closed); Performance tab (components/performance.js)
+pages/accounting.js         tabs: P&L (explain + residual), Balance sheet, Transactions, Ledger, Trial balance, Integrity, Cash; kinds and memos in words;
+                            T.pages.accounting.renderCashTab(el, opts) (C9f) is reused by the Cash & Collateral page
+pages/risk.js               exposures (each bucket says whether it is in the gross), greeks, DV01, scenarios, concentration, sector exposure, the Reg T
+                            panel per account (collateral.summary, C16), financing, warnings, compliance notices ("warnings only")
+pages/activity.js           merged feed with filters, incl. "margin calls" (collateral.margin_calls_rows, C16); rows and their detail in words
 pages/watchlists.js         lists with live prices; add by symbol (resolve)
 pages/settings.js           hotkeys, defaults, per-account sweep switches/buffers, PB financing, participation rate, session overrides, theme, Data Status panel, legacy link (8766);
                             sections: Books (names, starting capitals for new lifetimes, thresholds), Lifetimes (Reset lifetime + past lifetimes; mounts components/lifetimes.js),
@@ -2636,9 +2643,13 @@ pages/settings.js           hotkeys, defaults, per-account sweep switches/buffer
 pages/glossary.js           renders glossary-data.js: every convention sentence (§1.3) and every term used on screen; see-also as arrays (§17.8)
 pages/news.js               Daily News (first in the sidebar): "Requires your attention" strip + headlines by source (§17.9)
 pages/private_markets.js    Private Markets account page: companies grid (last round, source, as-of, mark), Record a reported round / Add a private company dialogs; mounts components/privateticket.js
-pages/history.js            read-only pages of an archived lifetime (#/h/{lifetime}/portfolio | accounting | activity) with the "read-only, frozen at <date>" banner
+pages/history.js            the History hub (#/history[/nav|transactions|activity|performance|closed|imports|lifetimes]): NAV history table and chart
+                            with the restated / original toggle, a restated date's split and the portfolio as of that date; and the read-only pages
+                            of a past lifetime (#/h/{lifetime}/portfolio | accounting | activity)
 components/bookswitcher.js  compact three-entry switcher at the top of the sidebar (name, NAV, eligibility dot); Alt+B cycles; the selected book is remembered in localStorage
-components/performance.js   Portfolio -> Performance tab (statistics table, monthly table, data window, the sentence PERF)
+components/performance.js   Portfolio -> Performance: trading-day returns (weekend and holiday snapshots folded into the next trading day), the
+                            cumulative time-weighted return and the dated daily series; annualised ratios after 20 trading-day returns
+                            ("insufficient history (n of 20)" before); monthly table; the sentence PERF
 components/lifetimes.js     Reset lifetime dialog (typed "RESET", starting capital) and the past-lifetimes table with History links
 components/pbschedule.js    per-PB editable fee schedule form (fields of §12.4) with before/after confirmation
 components/swapticket.js    OTC booking form (IRS / TRS / XCCY terms) -> /api/otc/preview -> confirm; contracts table with VM/reset history (PB page OTC tab; eligible lifetimes only)
@@ -2709,19 +2720,22 @@ lost response never produces a duplicate order**; `X-Replayed: 1` is shown as "a
   session, freshness, support / limitation text), 1-minute chart, position & lots for this account, working orders on
   it, option chain (if optionable; expiry selector; click bid/ask → ticket leg), no invented content; the ticket is
   docked right with the hedge panel already populated for the default side/qty.
-- `#/a/{account}/positions` — positions grid; actions Close (ticket prefilled opposite side, full qty), Hedge (ticket
-  with hedge panel open), Exercise (options), Return borrow; detail drawer: fills, settlement, cash flows, mark
-  history, linked hedge, linked borrow.
+- `#/a/{account}/positions` - positions grid; actions Close, Hedge, Exercise (options), Return borrow; one click (or Enter) opens the
+  position drawer above the grid: every fill with its order and settlement state, cash flows and entries (paged, net cash, grouped),
+  open and closed lots with reliefs, the borrow, mark history, dividends; "Sector ..." records the owner's sector.
 - `#/a/{account}/orders` — working (cancel `x`), history with reasons, rejections, fills with the quote used.
 - `#/a/{account}/cash` — §17.1 cash page.
 - `#/a/{account}/transactions` — every ledger entry of the account (filters, CSV).
-- `#/news` (Daily News, §17.9), `#/treasury`, `#/portfolio` (tabs Positions | Performance), `#/accounting`, `#/risk`,
-  `#/activity`, `#/watchlists`, `#/settings`, `#/glossary`, `#/h/{lifetime}/portfolio | accounting | activity` (History).
-- **Portfolio columns (B16):** account, instrument, class, signed quantity (footer: gross long, gross short), average
-  cost, mark (with freshness), market value, today's P&L, unrealised, realised to date, income to date, financing to
-  date, % of NAV, days held; grouped by class (securities, futures, listed options, OTC derivatives, FX, financing,
-  private / illiquid, private credit) with subtotals; filters (account, class, text); Copy and CSV. Every figure from
-  `accounting.positions` / `nav` / `pnl` (B12) — the page computes nothing.
+- `#/news` (Daily News, §17.9), `#/treasury`, `#/accounting`, `#/risk`, `#/activity`, `#/watchlists`, `#/settings`,
+  `#/glossary`.
+- `#/portfolio[/positions|closed|performance]`; `#/history[/nav|transactions|activity|performance|closed|imports|lifetimes]` (the History
+  hub, Shift+F10) and `#/h/{lifetime}/portfolio | accounting | activity` (a past lifetime, read-only).
+- **Portfolio columns (1.0.6):** account (its counterparty beneath), instrument (name, sector), signed quantity (an OTC contract in its
+  own units), cost / mark (an OTC contract: dealt and current price, spread or rate), market value (a future's notional beneath), today /
+  unrealised, realised / fees, income / financing, total P&L, margin / collateral (P6), % of NAV / days held; grouped by asset class
+  (default), class, sector or account with the server's subtotals; footer: market value (gross long / short / net) and exposure (futures
+  notional, TRS units x price, CDX notional with its credit sign, IRS DV01) - the definitions Risk uses; filters (account, class, text);
+  Copy, CSV and the server's Positions CSV with every column. A row (click or Enter) opens its drawer. The page computes nothing.
 - "+ Open prime broker account" → one small modal (pick broker, see schedule, the three agreements it records, Open).
   "Add funds" → one small modal (amount, memo, Add). "Reset lifetime" → one small dialog (starting capital, typed
   RESET). No multi-step forms. The PB page's OTC tab mounts `components/swapticket.js` (eligible lifetimes) or shows
@@ -2814,18 +2828,22 @@ THIS BUILD** row state and cannot be ticketed; `LIMITED` products show the limit
 
 ## 18. Launcher / CLI (`terminal/app.py`) and `finsim/finsim/__main__.py`
 
-`python -m finsim <cmd>` (from `C:\Users\logan\intelligence-terminal\finsim`) dispatches to `finsim.terminal.app.main`
-(`__main__.py` is re-pointed; the old `demo`/`phone` subcommands are not exposed; `legacy` keeps the old app reachable).
+`python -m finsim <cmd>` dispatches to `finsim.terminal.app.main` from `C:\Users\logan\intelligence-terminal\finsim`
+(the inner `finsim/finsim/__main__.py`) and from the repository root (the outer shim `finsim/__main__.py`, 1.0.6: the
+outer folder is not a package, so from the root it was a namespace package without `__main__`). `FinSim.cmd` in either
+folder does the same, no command meaning `open`. No command prints a three-line hint (exit 0). The old
+`demo` / `phone` subcommands are not exposed; `legacy` left the command line in 1.0.6 (owner question Q8; nothing
+deleted).
 
 | command | behaviour | exit |
 |---|---|---|
 | `serve [--port 8765] [--home DIR] [--db FILE] [--offline] [--log-level INFO]` | foreground server (§16); prints `ready http://127.0.0.1:8765/ (finsim-terminal 1.0.0, db …)` | 0 ok; 3 another instance / port; 4 newer schema; 5 startup error (traceback in the log) |
 | `stop [--timeout 15] [--force]` | `POST /api/shutdown`; waits for `/api/health` to stop answering and the lock to release; then reads the lock file's PID and checks liveness with `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION) + GetExitCodeProcess == 259` and the image name (`QueryFullProcessImageNameW` contains `python`); `--force` → `taskkill /PID` only when both hold (never blindly; never `os.kill`) | 0 stopped; 1 nothing running; 2 still alive |
-| `status` | served version from `/api/health` vs the code version on disk (**warns "restart to serve the new code"** when they differ), `app` marker (warns "a non-terminal server answers on 8765" when `finsim-terminal` is absent), pid, uptime, db path/size, log path and tail (last 15 lines when not running or unhealthy), lock state, workers/providers, integrity, last lifecycle tick, Startup entry present, backups count | 0 running; 1 not running |
-| `install [--no-open]` | (1) records `sha256(finsim.db)` into `<home>/finsim.db.sha256` (baseline for the byte-identical check); (2) stops any server answering on 8765 whose health lacks `"app":"finsim-terminal"` (the old 0.11.0 engine) via its own loopback `/api/shutdown` and waits for exit; (3) deletes the old scheduled task `FinSim Server` (`schtasks /Delete /F /TN "FinSim Server"`), the old `<home>/finsim-server.vbs`, `finsim-open.vbs`, `make-shortcuts.vbs`; (4) writes `<home>/FinSim Server.vbs`, `<home>/FinSim Terminal.vbs`, `<home>/finsim.ico`; copies the server VBS into the Startup folder as **`FinSim Server.vbs`** (replacing the old entry of that name); creates Desktop (via `_known_desktop`) + Start Menu `FinSim.lnk` → `wscript "FinSim Terminal.vbs"`; (5) starts the terminal through the VBS, waits for health with the marker, prints the final state and the PowerShell sequence; (6) prints `sha256(finsim.db)` again and "unchanged" | 0 |
+| `status` | served version from `/api/health` vs the code version on disk (when they differ, or the lock's `code` names another tree: "restart" only when `open` would start this tree, else the two real choices - open the installed app, or `stop` then `serve` here), `Startup entry -> <tree> (VERSION, RELEASE.txt SHA)` with whether its pythonw and code exist, Chrome app shortcuts named FinSim (reported, never deleted), `app` marker (warns "a non-terminal server answers on 8765" when `finsim-terminal` is absent), pid, uptime, db path/size, log path and tail (last 15 lines when not running or unhealthy), lock state, workers/providers, integrity, last lifecycle tick, Startup entry present, backups count | 0 running; 1 not running |
+| `install [--no-open]` | refused (exit 1, nothing changed) from a git working tree unless `--from-working-tree`; (1) records `sha256(finsim.db)` into `<home>/finsim.db.sha256` (baseline for the byte-identical check); (2) stops any server answering on 8765 whose health lacks `"app":"finsim-terminal"` (the old 0.11.0 engine) via its own loopback `/api/shutdown` and waits for exit; (3) deletes the old scheduled task `FinSim Server` (`schtasks /Delete /F /TN "FinSim Server"`), the old `<home>/finsim-server.vbs`, `finsim-open.vbs`, `make-shortcuts.vbs`; (4) writes `<home>/FinSim Server.vbs`, `<home>/FinSim Terminal.vbs`, `<home>/finsim.ico`; copies the server VBS into the Startup folder as **`FinSim Server.vbs`** (replacing the old entry of that name); creates Desktop (via `_known_desktop`) + Start Menu `FinSim.lnk` → `wscript "FinSim Terminal.vbs"`; (5) starts the terminal through the VBS, waits for health with the marker, prints the final state and the PowerShell sequence; (6) prints `sha256(finsim.db)` again and "unchanged" | 0 the terminal is up; 1 otherwise or refused |
 | `open` | if health answers with the marker → open the window; else start through `FinSim Server.vbs`, wait ≤ 60 s (a child that exits is reported with the log tail), then `finsim.app.open_window` (Chrome/Edge/Brave `--app` with profile `<home>/terminal-window-profile`; fallback default browser). Never spawns a second server (the lock and the exclusive bind make a duplicate exit 3, which `open` reports) | 0 / 1 |
 | `uninstall [--purge]` | removes the Startup entry, shortcuts, VBS files, window profile; stops the server; `--purge` deletes `terminal.db` only after the owner types its path (never `finsim.db`) | 0 |
-| `legacy [--port 8766] [--refresh]` | copies `<home>/finsim.db` to `<home>/legacy-view.db` with the sqlite3 backup API (once; `--refresh` re-copies) and runs the OLD `finsim.api.server.serve(db=legacy-view.db, port=8766)` on the **copy**, so `finsim.db` is never opened; prints the URL; documented as the read-only archive view | 0 |
+| `import ...` | C18: everything after `import` goes to `finsim.terminal.importer.main(argv)`, imported only then; "not in this build" when the module is missing | 0 done; 1 failed; 2 refused / usage |
 
 Python resolution at install: `py -3.12 -c "import sys;print(sys.executable)"` → `pythonw.exe` next to it (fallback
 `%LOCALAPPDATA%\Programs\Python\Python312\pythonw.exe`); the absolute path is written into the VBS.
@@ -3456,7 +3474,7 @@ corrupted `gl_balances` row (§19.12) → `integrity.ok False`, `failing: ["L3"]
 | Private valuations invented | the master is web-sourced at build time with a URL and as-of per number, nulls otherwise (test-guarded); owner-recorded rounds require a source URL; marks are `private`, never aged, never executable (§13.13) |
 | A reset deletes history | reset closes accounts (ledger refuses CLOSED), stores the final figures and integrity report, keeps every row; History pages read the archived scope (§13.10, L23) |
 | Integrity inside the transaction could stall the writer | §6.8: the scoped set is indexed on touched keys (O(touched)); the whole-DB set runs on a reader; §19.12 health < 50 ms while the lock is held 2 s |
-| Operational violations: `legacy` on the live finsim.db, `wmic`, VBS deferring to any 200 | §18: `legacy` serves a backup copy; `stop` uses `OpenProcess` + image name (no wmic, no `os.kill`); the VBS checks the `finsim-terminal` marker and shuts the old engine down first; `install` records the finsim.db sha256 before and after |
+| Operational violations: `legacy` on the live finsim.db, `wmic`, VBS deferring to any 200 | §18: `legacy` is gone (1.0.6); `stop` uses `OpenProcess` + image name (no wmic, no `os.kill`); the VBS checks the `finsim-terminal` marker and shuts the old engine down first; `install` records the finsim.db sha256 before and after |
 | Memory: two SPX parses at once | §8.5 single-flight `ChainCache.request` shared by the chain page and the hedge panel; fetches serialised |
 | Option freshness has no provider timestamp | §8.1: chain records take the underlying's `last_trade_time`; per-contract executable only when `bid > 0 and ask ≥ bid` |
 | Observed-close capture timing (16:02 may miss the closing print) | §11.4: capture at 16:20 (16:35 index options); `CLOSE_REVISED` INFO when the next day's prev_close differs |

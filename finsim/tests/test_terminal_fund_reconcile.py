@@ -1,5 +1,5 @@
-"""FINSIM1 P8-lite, TEST-04: the whole-fund reconciliation (docs/FINSIM1_PLAN.md P8 task 4 as section 15.6 item 2 scopes it for
-1.0.5; the owner's directive sections 7-14 and 18 #12-#23).  Every expected number is worked by hand in a comment from the inputs
+"""FINSIM1 P8, TEST-04: the whole-fund reconciliation (docs/FINSIM1_PLAN.md P8 task 4; 1.0.5's P8-lite scope of section 15.6 item 2
+plus the phase-2 T-bill pledge leg of section 15.9 item 5; the owner's directive sections 7-14 and 18 #12-#23).  Every expected number is worked by hand in a comment from the inputs
 and the documented rules; nothing is pasted from the code's output.
 
 ONE database, the REAL runtime (``server.build_runtime``: every module bound exactly as ``serve`` binds it, the Router, the
@@ -33,6 +33,14 @@ observed 2026-10-19; the Treasury curve of 10-19 = the flat 4.00 % semi-annual f
   NAV: 25,000,000.00 - 5.00 - 5.00 - 4.50 - 6.75 - 76.50 - 76.50 + 0.00 - 685.34 - 4,491.29 = 24,994,649.12.
   Treasury: 25,000,000.00 - (339,505.00 + 24,004.50 + 7,806.75 + 17,646.50 + 129,130.00 + 60,000.00 + 224,564.50 = 802,657.25)
   = 24,197,342.75.
+  F1:DEBT (phase 2, the T-bill; the debt refresher listed it from the FedInvest list of 10-20, a test input: BUY 99.005000 / SELL
+  98.995000, so the mark is their mid 99.000000)
+  - BUY 1,000,000 face of the US Treasury bill 21-Jan-2027 (912797TM9) at the mark + the assumed bill half-spread 0.005 = 99.005000:
+    clean 1,000,000 x 99.005 / 100 = 990,050.00, accrued 0.00 (a bill), fee 0.02 per 100 face = 200.00 -> 990,250.00 payable 10-21,
+    swept from Treasury at the fill (Treasury 24,197,342.75 - 990,250.00 = 23,207,092.75).  MV 1,000,000 x 99.000000 / 100 =
+    990,000.00, so NAV - 250.00 (the half-spread 50.00 and the fee 200.00) -> 24,994,399.12.  The mark stays 99.000000 through 10-22
+    (no later FedInvest list in this book), so every later NAV below carries the same -250.00, and Treasury's interest is earned on
+    990,250.00 less from night 10-20 on (the two nights' figures are worked below).
 
 TWO DAYS OF LIFECYCLE JOBS (``LifecycleScheduler.tick(at=...)``; the inputs arrive as they would: closes at 16:00, futures prints at
 or before the settle time, the next day's FRED prints and the Treasury curve the next morning):
@@ -110,8 +118,22 @@ AFTER EVERY STEP ``reconcile()`` asserts, for F1:ALL and each F1 account (the P8
   - futures VM ties to the cash ledger: the 4400 lines of the VM entries are exactly their 1010 lines, per contract equal to the
     hand-worked daily VM, and the 4400 balance is their sum.
 
-Phase 2 (1.0.6, plan 15.6 item 2 / 15.9 item 5) adds the T-bill pledged under the CSA and the T-bill half of "collateral transfers
-change no P&L" (P6 Part B ``collateral.pledge`` / ``pledges_view``): not in this file yet, on purpose.
+THE T-BILL PLEDGED UNDER THE CSA (phase 2, 1.0.6; P6 Part B ``collateral.pledge`` / ``collateral.release`` / ``pledges_view`` /
+``summary``):
+  - night 10-20: the bill's purchase settles (-990,250.00 from F1:DEBT, business date 10-21); a bill accrues nothing.
+  - Wed 10-21 10:00, F1:DEBT pledges its 1,000,000 face to Goldman Sachs (F1:PB_GS) under the GS CSA (the schedule's assumed bill
+    haircut 2 %): market value 1,000,000 x 99.000000 / 100 = 990,000.00, eligible 990,000.00 x (1 - 0.02) = 970,200.00.  No journal
+    entry and no GL balance moves, NAV is unchanged, the bill stays the fund's position (its P&L is the fund's); the book's collateral
+    posted rises by 970,200.00 and its encumbered securities by 990,000.00; the pledged face cannot be sold (the bond SELL preview is
+    blocked PLEDGED_IN_REPO) or pledged again (409 COLLATERAL_SHORT).  The 10-21 evening and night jobs then run with the bill pledged.
+  - Thu 10-22 09:30, the pledge is released: again no entry, no GL move, NAV unchanged; collateral posted and encumbered fall back by
+    the same 970,200.00 / 990,000.00 and the face is free again.
+  - Treasury interest with the bill bought: night 10-20 on 23,207,092.75 x 3.37 % / 360 = 2,172.44 (2,265.14 without it: -92.70);
+    night 10-21 on 24,185,546.01 - 990,250.00 = 23,195,296.01 x 3.38 % / 360 = 2,177.78 (2,270.75 without it: -92.97).
+  So every NAV of the walk-through above is lower by 250.00 from the bill's purchase, by 250.00 + 92.70 = 342.70 from night 10-20 and
+  by 342.70 + 92.97 = 435.67 from night 10-21 (``BILL_DEAL``, ``INT_N1``, ``INT_N2``); the pledge and the release change none of them.
+  This is the T-bill half of "collateral transfers change no P&L"; ``reconcile`` also checks after every step that no journal entry
+  refers to a pledge and that a pledged face is still held by the account that pledged it.
 
 ``test_evening_jobs_post_on_their_own_business_date`` (POSTCLOSE-06, FINSIM1_PLAN 15.13: "A lifecycle job of business date D stamps
 its entries and its funding sweeps with D") runs the same book with the lent AAPL closing above its lend price, so the securities-
@@ -148,7 +170,7 @@ NO_MODULES = "the swap / CDX / collateral modules are not in this build"
 D = Decimal
 F1 = "F1"
 ALL = "F1:ALL"
-TRE, USX, PB = "F1:TREASURY", "F1:US_EXCHANGE", "F1:PB_GS"
+TRE, USX, PB, DEBT = "F1:TREASURY", "F1:US_EXCHANGE", "F1:PB_GS", "F1:DEBT"
 TRS_ID, CDX_ID, IRS_ID = "SWP-000001", "CDX-000001", "SWP-000002"
 P700 = occ_symbol("QQQ", date(2026, 11, 20), "P", D("700"))       # QQQ261120P00700000
 P675 = occ_symbol("QQQ", date(2026, 11, 20), "P", D("675"))       # QQQ261120P00675000
@@ -162,6 +184,15 @@ IRS_5Y = {"notional": "10000000.00", "currency": "USD", "pay_fixed": True, "teno
 TRS_TERMS = {"underlying_id": "ORCL", "units": 10000, "receiver": False, "reset_months": 1, "tenor_months": 12}
 CDX_TERMS = {"index": "IG", "side": "BUY_PROTECTION", "notional": "3000000.00"}
 NOTIONAL_C = {TRS_ID: 129130000, CDX_ID: 300000000, IRS_ID: 1000000000}     # 10,000 x 129.13; 3,000,000.00; 10,000,000.00
+#: the T-bill (phase 2): the US Treasury bill 21-Jan-2027, listed by the debt refresher from the FedInvest list of 10-20 (a test input;
+#: the real list of 10-21 priced this bill 98.961167 / 98.959889); its mark is the mid of BUY and SELL = 99.000000
+BILL_CUSIP = "912797TM9"
+BILL = "UST-" + BILL_CUSIP
+FEDINVEST_1020 = {BILL_CUSIP: {"cusip": BILL_CUSIP, "type": "BILL", "rate_pct": D("0"), "maturity": date(2027, 1, 21), "call": None,
+                               "buy": D("99.005000"), "sell": D("98.995000"), "eod": None}}
+BILL_DEAL = -25000          # the bill's purchase: half-spread 1,000,000 x 0.005 / 100 = 50.00 + fee 200.00 (its mark stays 99.000000)
+INT_N1 = 217244 - 226514    # Treasury interest of night 10-20 with the bill bought: 2,172.44 - 2,265.14 = -92.70
+INT_N2 = 217778 - 227075    # night 10-21: 2,177.78 - 2,270.75 = -92.97
 PNL_KINDS = ("INCOME", "EXPENSE")
 #: entries that only move collateral, margin or cash between accounts / counterparties: never a P&L line
 COLLATERAL_ENTRY_KINDS = ("OTC_IM", "COLLATERAL", "FUT_MARGIN", "SECLEND", "SWEEP_IN", "SWEEP_OUT", "TRANSFER", "SETTLE")
@@ -275,8 +306,12 @@ class FundBook:
                 tx.conn.execute("INSERT OR REPLACE INTO finra_short(symbol, day, short_volume, total_volume) VALUES (?,?,?,?)", (symbol, d, 30000, 100000))
 
     # ---- API and jobs -------------------------------------------------------------------------------------------------------------
-    def ok(self, method: str, path: str, body=None) -> dict:
+    def call(self, method: str, path: str, body=None):
         status, out, _ = self.rt.router.handle(method, path, None, body, "127.0.0.1", None)
+        return status, out
+
+    def ok(self, method: str, path: str, body=None) -> dict:
+        status, out = self.call(method, path, body)
         self.tc.assertEqual(200, status, f"{method} {path} -> {status} {out}")
         return out
 
@@ -319,7 +354,12 @@ class FundBook:
 
     # ---- the book, step by step ---------------------------------------------------------------------------------------------------
     def open_market(self) -> None:
-        """Tue 2026-10-20 14:00 ET: curve of 10-19, SOFR / IG OAS of 10-19, FINRA files, the 13:58 prints and the QQQ chain."""
+        """Tue 2026-10-20 14:00 ET: curve of 10-19, SOFR / IG OAS of 10-19, FINRA files, the debt sources (no fiscaldata record row, no
+        auction, the FedInvest list of 10-20 with the bill: the worker's debt refresher lists and prices it on its first tick), the
+        13:58 prints and the QQQ chain."""
+        self.fp.set_mspd(record_date="2026-09-30", securities=[])
+        self.fp.set_auctions(rows=[])
+        self.fp.set_fedinvest(price_date="2026-10-20", rows=FEDINVEST_1020)
         self.curve(DFS_400, "2026-10-19")
         self.rates([("2026-10-19", "3.87")], [("2026-10-19", "0.88")])
         self.finra("MSFT", ("2026-10-15", "2026-10-16", "2026-10-19"))
@@ -429,6 +469,14 @@ class FundReconcileTests(unittest.TestCase):
         if fut_vm is not None:
             self.assertEqual(fut_vm, {k: g["1010"] for k, g in by_entry.items()}, f"{where}: hand-worked futures VM")
         self.assertEqual(sum(g["1010"] for g in by_entry.values()), sum(f.bal(a, "4400") for a in accounts), f"{where}: 4400 (natural) = the cash the VM moved")
+        # -- a securities pledge under a CSA moves nothing in the ledger and the pledged face stays the pledging account's position
+        pledges = f.q("SELECT * FROM collateral_pledges") if f.q("SELECT name FROM sqlite_master WHERE type='table' AND name='collateral_pledges'") else []
+        for p in pledges:
+            self.assertEqual([], f.q("SELECT entry_id FROM journal_entries WHERE idem_key LIKE ? OR memo LIKE ?", (f"%{p['pledge_id']}%", f"%{p['pledge_id']}%")),
+                             f"{where}: a journal entry for the securities pledge {p['pledge_id']}")
+            if p["status"] == "PLEDGED":
+                held = {q.instrument_id: q.qty for q in acc.positions(p["account_id"], snapshot=snap)}
+                self.assertGreaterEqual(held.get(p["instrument_id"], 0), int(p["face"]), f"{where}: the pledged face left {p['account_id']}")
         return navs
 
     # ---- small readers ----------------------------------------------------------------------------------------------------------------
@@ -442,6 +490,18 @@ class FundReconcileTests(unittest.TestCase):
 
     def last_rowid(self, table: str) -> int:
         return int(self.f.q(f"SELECT COALESCE(MAX(rowid), 0) n FROM {table}")[0]["n"])
+
+    def gl_rows(self) -> list:
+        """Every GL balance row: a securities pledge or release must leave them all as they were."""
+        return sorted((r["account_id"], r["gl"], r["currency"], r["instrument_id"], r["balance_c"], r["base_c"]) for r in self.f.q("SELECT * FROM gl_balances"))
+
+    def n_entries(self) -> int:
+        return int(self.f.q("SELECT COUNT(*) n FROM journal_entries")[0]["n"])
+
+    @staticmethod
+    def c(money: str) -> int:
+        """A money string of an API answer ("970200.00") in cents."""
+        return int((D(str(money)) * 100).to_integral_value())
 
     # ==== TEST-04 ===================================================================================================================
     def test_mixed_fund_two_days_of_lifecycle_reconciles_after_every_step(self):
@@ -504,6 +564,16 @@ class FundReconcileTests(unittest.TestCase):
         self.assertEqual((IRS_ID, "224564.50"), (out["contract_id"], out["im_transfer"]["amount"]))
         navs = self.reconcile("pay-fixed IRS 10,000,000", nav=2499464912, marks={TRS_ID: 0, CDX_ID: -1637098, IRS_ID: -449129})
         self.assertEqual((2419734275, 0, 41369450), (navs[TRE], f.bal(PB, "1010"), f.bal(PB, "1330")))   # IM at GS 129,130.00 + 60,000.00 + 224,564.50
+        # the T-bill in F1:DEBT (phase 2): 990,050.00 + fee 200.00 payable 10-21, swept from Treasury at the fill; NAV - 250.00
+        self.assertEqual(("BILL", "99.000000"), (f.rt.instruments.get(BILL).spec["type"], f.ok("POST", "/api/bonds/preview", {
+            "account_id": DEBT, "instrument_id": BILL, "side": "BUY", "qty": 1000000})["mark"]["inputs"]["fedinvest"]["price"]))
+        out = f.ok("POST", "/api/bonds/trade", {"request_id": "ui:fund-bill", "account_id": DEBT, "instrument_id": BILL, "side": "BUY", "qty": 1000000})
+        self.assertEqual((D("99.005"), D("0.005"), 99005000, 0, "200.00", -99025000, "2026-10-21", "sweep", "990250.00"),
+                         (D(out["fill"]["price"]), D(out["fill"]["half_spread"]), out["economics"]["clean_c"], out["economics"]["accrued_c"], out["fill"]["fee"],
+                          out["economics"]["net_cash_c"], out["fill"]["settle_date"], out["funding"]["source"], out["funding"]["sweep"]))
+        self.assertEqual({(DEBT, "1110"): 99005000, (DEBT, "5000"): 20000, (DEBT, "2100"): -99025000}, f.posted(f"fill:{out['fill']['fill_id']}"))
+        navs = self.reconcile("BUY 1,000,000 T-bill", nav=2499464912 + BILL_DEAL, marks={TRS_ID: 0, CDX_ID: -1637098, IRS_ID: -449129})
+        self.assertEqual((2419734275 - 99025000, 99025000 + BILL_DEAL), (navs[TRE], navs[DEBT]))      # Treasury 23,207,092.75; Debt 990,000.00
 
         # ---- Tue 10-20 evening -------------------------------------------------------------------------------------------------------
         f.rt.clock.set(ny("2026-10-20", "14:36"))
@@ -513,7 +583,7 @@ class FundReconcileTests(unittest.TestCase):
         ran = f.tick(ny("2026-10-20", "14:36"))
         self.assertEqual("DONE", ran[("FUTURES_VM", f"{USX}:GCZ26:2026-10-20")])
         gc1 = {f"vm:{USX}:GCZ26:2026-10-20": 200000}                            # 2 x (4,150 - 4,140) x 100
-        self.reconcile("GC settle 10-20", nav=2499664912, fut_vm=gc1)
+        self.reconcile("GC settle 10-20", nav=2499664912 + BILL_DEAL, fut_vm=gc1)
         f.rt.clock.set(ny("2026-10-20", "16:21"))
         f.prints("2026-10-20", {"16:00": {"AAPL": "340.00", "MSFT": "495.00", "ORCL": "127.13", "QQQ": "688.00", "SPY": "770.00"},
                                 "15:59:30": {"ZNZ26": "112.250000"}})
@@ -522,36 +592,42 @@ class FundReconcileTests(unittest.TestCase):
         self.assertEqual("DONE", ran[("FUTURES_VM", f"{USX}:ZNZ26:2026-10-20")])
         fut_d1 = dict(gc1, **{f"vm:{USX}:ZNZ26:2026-10-20": 75000})              # -3 x (112.25 - 112.50) x 1,000
         marks_d1 = {TRS_ID: 2000000, CDX_ID: -1637098, IRS_ID: -449129}         # TRS model, intraday: -10,000 x (127.13 - 129.13)
-        self.reconcile("closes 10-20", nav=2502314912, marks=marks_d1, fut_vm=fut_d1)
+        self.reconcile("closes 10-20", nav=2502314912 + BILL_DEAL, marks=marks_d1, fut_vm=fut_d1)
         ran = f.tick(ny("2026-10-20", "17:06"))
         self.assertEqual(("DONE", "DONE"), (ran[("SWAP_VM", f"{TRS_ID}:2026-10-20")], ran[("SWAP_VM", f"{IRS_ID}:2026-10-20")]))
         self.assertEqual({(PB, "1010"): 2000000, (PB, "2330"): -2000000}, f.posted(f"swapvm:{TRS_ID}:2026-10-20"))
         self.assertEqual({(PB, "1320"): 449129, (PB, "1010"): -449129}, f.posted(f"swapvm:{IRS_ID}:2026-10-20"))
         self.assertEqual({}, f.posted(f"swapvm:{CDX_ID}:2026-10-20"))           # the IG OAS of 10-20 is published on 10-21: pending, nothing posted
-        self.reconcile("SWAP_VM 10-20", nav=2502314912, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
+        self.reconcile("SWAP_VM 10-20", nav=2502314912 + BILL_DEAL, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
         f.tick(ny("2026-10-20", "17:11"))
         self.assertEqual({(USX, "1010"): 510000, (USX, "1400"): -510000}, f.posted("cmark:B-000001:2026-10-20"))   # 510,000.00 - 504,900.00
-        self.reconcile("collateral marks 10-20", nav=2502314912, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
+        self.reconcile("collateral marks 10-20", nav=2502314912 + BILL_DEAL, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
         x0 = self.last_rowid("transfers")
         f.tick(ny("2026-10-20", "17:31"))
         self.assertEqual([], self.transfers(x0))                                 # nothing idle: GS's 15,508.71 stays in the PB
-        self.reconcile("SWEEP_OUT 10-20", nav=2502314912, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
+        self.reconcile("SWEEP_OUT 10-20", nav=2502314912 + BILL_DEAL, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
         f.tick(ny("2026-10-20", "17:46"))
         snaps = {r["account_id"]: int(r["nav_c"]) for r in f.q("SELECT account_id, nav_c FROM nav_snapshots WHERE snap_date='2026-10-20'")}
-        self.assertEqual({ALL: 2502314912, TRE: 2419734275, USX: 39728850, PB: 42851787}, {k: v for k, v in snaps.items() if v})
-        self.reconcile("SNAPSHOT 10-20", nav=2502314912, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
+        # the bill: Treasury 24,197,342.75 - 990,250.00 = 23,207,092.75; Debt 990,000.00 (its 990,250.00 advance less the 250.00)
+        self.assertEqual({ALL: 2502314912 + BILL_DEAL, TRE: 2419734275 - 99025000, USX: 39728850, PB: 42851787, DEBT: 99000000},
+                         {k: v for k, v in snaps.items() if v})
+        self.reconcile("SNAPSHOT 10-20", nav=2502314912 + BILL_DEAL, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
 
         # ---- night 10-20 (Wed 00:36): settlements and the night's accruals -------------------------------------------------------------
         f.tick(ny("2026-10-21", "00:36"))
-        self.assertEqual(["S-000001", "S-000003", "S-000004", "S-000005"],
+        self.assertEqual(["S-000001", "S-000003", "S-000004", "S-000005", "S-000006"],                     # S-000006: the bill, -990,250.00
                          [r["settle_id"] for r in f.q("SELECT settle_id FROM settlements WHERE status='SETTLED' AND amount_c<>0 ORDER BY settle_id")])
-        night1 = {"accr:bfee:B-000001:2026-10-20": -412, "accr:rebate:B-000001:2026-10-20": 4726, "accr:cashint:F1:USD:2026-10-20": 226514,
+        self.assertEqual({(DEBT, "2100"): 99025000, (DEBT, "1010"): -99025000}, f.posted("settle:S-000006"))
+        self.assertEqual("2026-10-21", f.entry("settle:S-000006")["business_date"])
+        self.assertEqual([], f.q("SELECT idem_key FROM journal_entries WHERE idem_key LIKE ?", (f"%{BILL}%",)))                     # a bill accrues nothing
+        # Treasury interest on 23,207,092.75 (the bill's 990,250.00 left Treasury at the fill) x 3.37 % / 360 = 2,172.44
+        night1 = {"accr:bfee:B-000001:2026-10-20": -412, "accr:rebate:B-000001:2026-10-20": 4726, "accr:cashint:F1:USD:2026-10-20": 217244,
                   f"accr:swaprcv:{IRS_ID}:2026-10-20": 107500, f"accr:swappay:{IRS_ID}:2026-10-20": -111389, f"accr:trsfin:{TRS_ID}:2026-10-20": 11729}
         self.assertEqual(night1, {k: self.pl(k) for k in night1})
         self.assertEqual([], f.q("SELECT idem_key FROM journal_entries WHERE idem_key LIKE ?", (f"accr:%{CDX_ID}:2026-10-20",)))   # in the rebate
         self.assertEqual(({(PB, "4453"): 111389, (PB, "2340"): -111389}, {(PB, "1225"): 11729, (PB, "4451"): -11729}),
                          (f.posted(f"accr:swappay:{IRS_ID}:2026-10-20"), f.posted(f"accr:trsfin:{TRS_ID}:2026-10-20")))   # PORTFOLIO-08: 4453 / 4451
-        self.reconcile("night 10-20", nav=2502553580, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
+        self.reconcile("night 10-20", nav=2502553580 + BILL_DEAL + INT_N1, marks=marks_d1, restricted={PB: 1550871}, fut_vm=fut_d1)
 
         # ---- Wed 10-21 ------------------------------------------------------------------------------------------------------------------
         f.rt.clock.set(ny("2026-10-21", "09:00"))
@@ -565,34 +641,55 @@ class FundReconcileTests(unittest.TestCase):
         # C20 / D8: the PB's own cash at the close of 10-20 (15,508.71: GS's collateral may pay GS) + one as-of sweep dated 10-20 of the rest
         self.assertEqual([("SWEEP_IN", TRE, PB, 1179674, "2026-10-20")], self.transfers(x0))
         marks_d2 = {TRS_ID: 2000000, CDX_ID: -2730545, IRS_ID: 4031609}        # IRS on the 10-20 curve: 10,000,000 x 0.0009 x 4.479565725
-        self.reconcile("FRED / curve 10-20, CDX VM 10-20", nav=2505940871, marks=marks_d2, restricted={}, fut_vm=fut_d1)
+        self.reconcile("FRED / curve 10-20, CDX VM 10-20", nav=2505940871 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={}, fut_vm=fut_d1)
         f.rt.clock.set(ny("2026-10-21", "10:00"))
         f.prints("2026-10-21", {"09:58": {"AAPL": "341.00", "MSFT": "497.00", "ORCL": "128.00", "QQQ": "690.00", "SPY": "771.00", "GCZ26": "4135.00",
                                           "ZNZ26": "112.375000"}})
         f.chain("2026-10-21", "09:58", "690.00", ("17.40", "17.60"), ("10.20", "10.40"))
         marks_d2 = dict(marks_d2, **{TRS_ID: 1130000})                          # -10,000 x (128.00 - 129.13)
-        self.reconcile("prints 10-21 10:00", nav=2504603371, marks=marks_d2, restricted={}, fut_vm=fut_d1)
+        self.reconcile("prints 10-21 10:00", nav=2504603371 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={}, fut_vm=fut_d1)
+        # the T-bill pledged to Goldman Sachs under its CSA: eligible 990,000.00 x (1 - 2 %) = 970,200.00; nothing moves in the ledger
+        gl0, n0 = self.gl_rows(), self.n_entries()
+        s0 = f.ok("GET", "/api/collateral/summary?scope=F1:ALL")
+        p = f.ok("POST", "/api/collateral/pledges", {"request_id": "ui:fund-pledge-bill", "account_id": DEBT, "instrument_id": BILL, "face": "1000000",
+                                                    "pledged_to": PB})["pledge"]
+        self.assertEqual(("PL-000001", 1000000, "BILL", "0.02", "990000.00", "970200.00", "PLEDGED", PB, "GS"),
+                         (p["pledge_id"], p["face"], p["type"], p["haircut"], p["market_value"], p["eligible"], p["status"], p["pledged_to"], p["counterparty"]))
+        self.assertEqual((gl0, n0), (self.gl_rows(), self.n_entries()), "the pledge moved a GL balance or wrote an entry")
+        s1 = f.ok("GET", "/api/collateral/summary?scope=F1:ALL")
+        self.assertEqual((97020000, 99000000, "990000.00"), (self.c(s1["collateral_posted"]) - self.c(s0["collateral_posted"]),
+                                                             self.c(s1["encumbered"]) - self.c(s0["encumbered"]), s1["encumbered_parts"]["csa_pledged"]))
+        v = f.ok("GET", "/api/collateral/pledges?scope=F1:ALL")
+        self.assertEqual((1000000, "990000.00", "970200.00", [(DEBT, BILL, 1000000, 1000000, 0)]),
+                         (v["pledged_face"], v["market_value"], v["eligible"],
+                          [(h["account_id"], h["instrument_id"], h["face"], h["pledged"], h["free"]) for h in v["eligible_holdings"]]))
+        st, out = f.call("POST", "/api/collateral/pledges", {"request_id": "ui:fund-pledge-again", "account_id": DEBT, "instrument_id": BILL, "face": "1000",
+                                                             "pledged_to": PB})
+        self.assertEqual((409, "COLLATERAL_SHORT"), (st, out["error"]["code"]))       # pledged face cannot be pledged again ...
+        pv = f.ok("POST", "/api/bonds/preview", {"account_id": DEBT, "instrument_id": BILL, "side": "SELL", "qty": 1000})
+        self.assertEqual((False, ["PLEDGED_IN_REPO"]), (pv["ok"], [b["code"] for b in pv["blockers"]]))   # ... nor sold
+        self.reconcile("pledge the T-bill to GS under the CSA", nav=2504603371 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={}, fut_vm=fut_d1)
         f.finra("AAPL", ("2026-10-20",))
         out = f.ok("POST", "/api/credit/lending", {"request_id": "ui:fund-lend-aapl", "account_id": USX, "instrument_id": "AAPL", "qty": 200, "counterparty_id": "AGENT_BNY"})
         pv = out["preview"]
         self.assertEqual(("GC", D("0.00255"), D("0.0338"), "69564.00"), (pv["tier"], D(pv["own_fee_rate"]), D(pv["rebate_rate"]), pv["collateral"]))
         self.assertEqual({(USX, "1010"): 6956400, (USX, "2520"): -6956400}, f.posted("seclend:SL-000001:open"))   # 1.02 x 200 x 341.00
-        self.reconcile("lend 200 AAPL", nav=2504603371, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d1)
+        self.reconcile("lend 200 AAPL", nav=2504603371 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d1)
         f.rt.clock.set(ny("2026-10-21", "11:00"))                              # a live feed: every name printed again, fresh (C13 reads fresh inputs only)
         f.prints("2026-10-21", {"10:58": {"AAPL": "341.00", "MSFT": "497.00", "ORCL": "128.00", "QQQ": "690.00", "SPY": "771.00", "GCZ26": "4135.00",
                                           "ZNZ26": "112.375000"}})
         f.chain("2026-10-21", "10:58", "690.00", ("17.40", "17.60"), ("10.20", "10.40"))
         out = f.order("aapl-sell", instrument_id="AAPL", side="SELL", qty=400, order_type="MARKET")
         self.assertEqual([("136400.00", "2.00", "2026-10-22")], [(x["gross"], x["fee"], x["settle_date"]) for x in out["fills"]])
-        self.assertEqual(60000, self.pl("fill:F-000007") + 200)                 # realised (341.00 - 339.50) x 400 = 600.00, the fee 2.00 apart
-        self.reconcile("SELL 400 AAPL", nav=2504603171, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d1)
+        self.assertEqual(60000, self.pl(f"fill:{out['fills'][0]['fill_id']}") + 200)   # realised (341.00 - 339.50) x 400 = 600.00, the fee 2.00 apart
+        self.reconcile("SELL 400 AAPL", nav=2504603171 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d1)
         f.rt.clock.set(ny("2026-10-21", "14:36"))
         f.prints("2026-10-21", {"14:29:30": {"GCZ26": "4130.00"}, "14:34": {"AAPL": "341.00", "MSFT": "497.00", "ORCL": "128.00", "QQQ": "690.00", "SPY": "771.00",
                                                                         "ZNZ26": "112.375000"}})
         f.chain("2026-10-21", "14:34", "690.00", ("17.40", "17.60"), ("10.20", "10.40"))
         f.tick(ny("2026-10-21", "14:36"))
         fut_d2 = dict(fut_d1, **{f"vm:{USX}:GCZ26:2026-10-21": -400000})         # 2 x (4,130 - 4,150) x 100
-        self.reconcile("GC settle 10-21", nav=2504503171, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d2)
+        self.reconcile("GC settle 10-21", nav=2504503171 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d2)
         f.rt.clock.set(ny("2026-10-21", "16:21"))
         f.prints("2026-10-21", {"16:00": {"AAPL": "341.00", "MSFT": "498.00", "ORCL": "128.13", "QQQ": "692.00", "SPY": "772.00"},
                                 "15:59:30": {"ZNZ26": "112.406250"}})
@@ -600,7 +697,7 @@ class FundReconcileTests(unittest.TestCase):
         f.tick(ny("2026-10-21", "16:21"))
         fut_d2[f"vm:{USX}:ZNZ26:2026-10-21"] = -46875                           # -3 x (112.40625 - 112.25) x 1,000
         marks_d2 = dict(marks_d2, **{TRS_ID: 1000000})                          # -10,000 x (128.13 - 129.13)
-        self.reconcile("closes 10-21", nav=2504263796, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d2)
+        self.reconcile("closes 10-21", nav=2504263796 + BILL_DEAL + INT_N1, marks=marks_d2, restricted={USX: 6956400}, fut_vm=fut_d2)
         ran = f.tick(ny("2026-10-21", "17:06"))
         self.assertEqual(("DONE", "DONE"), (ran[("SWAP_VM", f"{TRS_ID}:2026-10-21")], ran[("SWAP_VM", f"{IRS_ID}:2026-10-21")]))
         self.assertEqual({(PB, "2330"): 1000000, (PB, "1010"): -1000000}, f.posted(f"swapvm:{TRS_ID}:2026-10-21"))
@@ -608,30 +705,33 @@ class FundReconcileTests(unittest.TestCase):
         self.assertEqual({(PB, "1010"): 4480738, (PB, "1320"): -449129, (PB, "2330"): -4031609}, f.posted(f"swapvm:{IRS_ID}:2026-10-21"))
         self.assertEqual({}, f.posted(f"swapvm:{CDX_ID}:2026-10-21"))
         restricted_d2 = {PB: 2301064, USX: 6956400}                             # (20,000.00 - 10,000.00 + 40,316.09) - 27,305.45
-        self.reconcile("SWAP_VM 10-21", nav=2504263796, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
+        self.reconcile("SWAP_VM 10-21", nav=2504263796 + BILL_DEAL + INT_N1, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
         f.tick(ny("2026-10-21", "17:11"))
         self.assertEqual({(USX, "1400"): 306000, (USX, "1010"): -306000}, f.posted("cmark:B-000001:2026-10-21"))   # 507,960.00 - 504,900.00
         self.assertEqual([], f.q("SELECT idem_key FROM journal_entries WHERE idem_key LIKE 'slmark:%'"))         # the lent AAPL closed at 341.00
-        self.reconcile("collateral marks 10-21", nav=2504263796, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
+        self.reconcile("collateral marks 10-21", nav=2504263796 + BILL_DEAL + INT_N1, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
         x0 = self.last_rowid("transfers")
         f.tick(ny("2026-10-21", "17:31"))
         self.assertEqual([("SWEEP_OUT", PB, TRE, 1998238)], [t[:4] for t in self.transfers(x0)])   # 52,993.02 - restricted 23,010.64 - buffer 10,000.00
         self.assertEqual(3301064, f.bal(PB, "1010"))                            # GS's 23,010.64 and the buffer stay
-        self.reconcile("SWEEP_OUT 10-21", nav=2504263796, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
+        self.reconcile("SWEEP_OUT 10-21", nav=2504263796 + BILL_DEAL + INT_N1, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
         f.tick(ny("2026-10-21", "17:46"))
         snaps = {r["account_id"]: int(r["nav_c"]) for r in f.q("SELECT account_id, nav_c FROM nav_snapshots WHERE snap_date='2026-10-21'")}
-        self.assertEqual({ALL: 2504263796, TRE: 2420779353, USX: 39056089, PB: 44428354}, {k: v for k, v in snaps.items() if v})
-        self.reconcile("SNAPSHOT 10-21", nav=2504263796, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
+        # Treasury: cash 24,205,528.39 - 990,250.00 = 23,215,278.39 + accrued 2,172.44 = 23,217,450.83; Debt 990,000.00
+        self.assertEqual({ALL: 2504263796 + BILL_DEAL + INT_N1, TRE: 2321745083, USX: 39056089, PB: 44428354, DEBT: 99000000},
+                         {k: v for k, v in snaps.items() if v})
+        self.reconcile("SNAPSHOT 10-21", nav=2504263796 + BILL_DEAL + INT_N1, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
 
         # ---- night 10-21 (Thu 00:36) ------------------------------------------------------------------------------------------------------
         f.tick(ny("2026-10-22", "00:36"))
-        night2 = {"accr:bfee:B-000001:2026-10-21": -415, "accr:rebate:B-000001:2026-10-21": 4769, "accr:cashint:F1:USD:2026-10-21": 227075,
+        # Treasury interest on its business-date cash at the close of 10-21, 24,185,546.01 - 990,250.00 = 23,195,296.01 x 3.38 % / 360 = 2,177.78
+        night2 = {"accr:bfee:B-000001:2026-10-21": -415, "accr:rebate:B-000001:2026-10-21": 4769, "accr:cashint:F1:USD:2026-10-21": 217778,
                   "accr:pbcredit:F1:PB_GS:2026-10-21": 261, f"accr:swaprcv:{IRS_ID}:2026-10-21": 107500, f"accr:swappay:{IRS_ID}:2026-10-21": -111389,
                   f"accr:swappay:{CDX_ID}:2026-10-21": -8333, f"accr:trsfin:{TRS_ID}:2026-10-21": 11765}
         self.assertEqual(night2, {k: self.pl(k) for k in night2})
         sl = {r["idem_key"]: self.pl(r["idem_key"]) for r in f.q("SELECT idem_key FROM journal_entries WHERE idem_key LIKE 'accr:sl%:SL-000001:2026-10-21'")}
         self.assertEqual(48 - 653, sum(sl.values()), sl)                        # fee 0.48 earned, rebate 6.53 paid to the borrower
-        self.reconcile("night 10-21", nav=2504494424, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
+        self.reconcile("night 10-21", nav=2504494424 + BILL_DEAL + INT_N1 + INT_N2, marks=marks_d2, restricted=restricted_d2, fut_vm=fut_d2)
 
         # ---- Thu 10-22 09:00: FRED 10-21, the CDX VM of 10-21 ---------------------------------------------------------------------------
         f.rt.clock.set(ny("2026-10-22", "09:00"))
@@ -640,14 +740,32 @@ class FundReconcileTests(unittest.TestCase):
         self.assertEqual("DONE", ran[("SWAP_VM", f"{CDX_ID}:2026-10-21")])
         self.assertEqual({(PB, "1010"): 550697, (PB, "1320"): -550697}, f.posted(f"swapvm:{CDX_ID}:2026-10-21"))   # -21,798.48 - (-27,305.45)
         marks_d3 = dict(marks_d2, **{CDX_ID: -2179848})
-        self.reconcile("CDX VM 10-21", nav=2505045121, marks=marks_d3, restricted={PB: 2851761, USX: 6956400}, fut_vm=fut_d2)
+        self.reconcile("CDX VM 10-21", nav=2505045121 + BILL_DEAL + INT_N1 + INT_N2, marks=marks_d3, restricted={PB: 2851761, USX: 6956400}, fut_vm=fut_d2)
         # the business-date cash table, hand-worked (C9h): Treasury 25,000,000.00 - 802,657.25 - 11,796.74 (the as-of sweep of 10-20); the PB
         # at exactly 0.00 on 10-20; 10-21 + 18,185.64 - 10,000.00 + 44,807.38 + 5,506.97; 10-22 - the 19,982.38 sweep-out of 17:31 (dated 10-22)
+        # with the bill: Treasury 990,250.00 lower on every date; Debt holds the swept 990,250.00 at the close of 10-20 and pays it on 10-21
         with f.rt.db.reader() as conn:
-            table = {(a, d): cash_view_at(conn, a, "USD", d)["settled_c"] for a in (TRE, USX, PB) for d in ("2026-10-20", "2026-10-21", "2026-10-22")}
-        self.assertEqual({(TRE, "2026-10-20"): 2418554601, (TRE, "2026-10-21"): 2418554601, (TRE, "2026-10-22"): 2420552839,
+            table = {(a, d): cash_view_at(conn, a, "USD", d)["settled_c"] for a in (TRE, USX, PB, DEBT) for d in ("2026-10-20", "2026-10-21", "2026-10-22")}
+        self.assertEqual({(TRE, "2026-10-20"): 2418554601 - 99025000, (TRE, "2026-10-21"): 2418554601 - 99025000, (TRE, "2026-10-22"): 2420552839 - 99025000,
                           (USX, "2026-10-20"): 35499650, (USX, "2026-10-21"): 7012375, (USX, "2026-10-22"): 20652175,
-                          (PB, "2026-10-20"): 0, (PB, "2026-10-21"): 5849999, (PB, "2026-10-22"): 3851761}, table)
+                          (PB, "2026-10-20"): 0, (PB, "2026-10-21"): 5849999, (PB, "2026-10-22"): 3851761,
+                          (DEBT, "2026-10-20"): 99025000, (DEBT, "2026-10-21"): 0, (DEBT, "2026-10-22"): 0}, table)
+
+        # ---- Thu 10-22 09:30: the pledge released - no entry, no GL move, NAV unchanged; the face is free again ---------------------------------
+        f.rt.clock.set(ny("2026-10-22", "09:30"))
+        gl0, n0 = self.gl_rows(), self.n_entries()
+        s0 = f.ok("GET", "/api/collateral/summary?scope=F1:ALL")
+        p = f.ok("POST", "/api/collateral/pledges/PL-000001/release", {"request_id": "ui:fund-release-bill"})["pledge"]
+        self.assertEqual(("PL-000001", "RELEASED"), (p["pledge_id"], p["status"]))
+        self.assertEqual((gl0, n0), (self.gl_rows(), self.n_entries()), "the release moved a GL balance or wrote an entry")
+        s1 = f.ok("GET", "/api/collateral/summary?scope=F1:ALL")
+        self.assertEqual((-97020000, -99000000, "0.00"), (self.c(s1["collateral_posted"]) - self.c(s0["collateral_posted"]),
+                                                          self.c(s1["encumbered"]) - self.c(s0["encumbered"]), s1["encumbered_parts"]["csa_pledged"]))
+        v = f.ok("GET", "/api/collateral/pledges?scope=F1:ALL")
+        self.assertEqual((0, [(DEBT, BILL, 1000000, 0, 1000000)]),
+                         (v["pledged_face"], [(h["account_id"], h["instrument_id"], h["face"], h["pledged"], h["free"]) for h in v["eligible_holdings"]]))
+        self.reconcile("release the T-bill pledge", nav=2505045121 + BILL_DEAL + INT_N1 + INT_N2, marks=marks_d3, restricted={PB: 2851761, USX: 6956400},
+                       fut_vm=fut_d2)
 
     # ==== POSTCLOSE-06: an evening job of business date D posts on D ===================================================================
     def test_evening_jobs_post_on_their_own_business_date(self):

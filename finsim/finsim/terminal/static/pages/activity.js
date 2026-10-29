@@ -7,17 +7,22 @@
  * journal entry with Dr / Cr lines when it has one).  Rows are shown as the server sends them.  Also rendered read-only by
  * the History pages (opts.base / opts.readOnly / opts.journalBase).  A fill booked as of an earlier date (the owner's import)
  * carries the AS-OF badge with its label - the server's source fields (15.7 item 7).
+ * FINSIM1_PLAN P3 task 13: the type "margin calls" lists the calls P6 records (issued, counterparty, amount, due, open / met / unmet,
+ * the funding transfers); the server reads them, so this page calls no collateral route, and says so when they are not in the build.
+ * V104R2-OTC-03 / BW-01 / BW-03: the reference column and the row dialog show the server's words (ref_text, detail) - names, never
+ * account ids or keys.
  */
 (function () {
   'use strict';
   var T = window.T;
   var CATS = [['', 'all activity'], ['orders', 'orders and fills'], ['settlements', 'settlements'], ['transfers', 'transfers and sweeps'], ['financing', 'financing'],
-              ['otc', 'OTC contracts'], ['attention', 'attention'], ['other', 'other'], ['system', 'system (jobs, feeds)']];
-  var BADGE = { orders: 'blue', settlements: 'purple', transfers: 'green', financing: 'amber', otc: 'purple', attention: 'amber' };
+              ['otc', 'OTC contracts'], ['margin_calls', 'margin calls'], ['attention', 'attention'], ['other', 'other'], ['system', 'system (jobs, feeds)']];
+  var BADGE = { orders: 'blue', settlements: 'purple', transfers: 'green', financing: 'amber', otc: 'purple', attention: 'amber', margin_calls: 'red' };
+  var CAT_LABEL = { margin_calls: 'margin call' };
   function shortBook(n) { return String(n || '').replace(/ Book$/, ''); }
   /* V104R1-04: a reference in words ('otc SWP-000001' -> 'contract SWP-000001', 'fx_deal D-000001' -> 'FX deal D-000001') */
   var REF_WORDS = { otc: 'contract', fx_deal: 'FX deal', sec_loan: 'securities loan', private_loan: 'private loan', borrow: 'borrow', attention: 'item' };
-  function refText(r) { return r.ref_type ? (REF_WORDS[r.ref_type] || String(r.ref_type).replace(/_/g, ' ')) + ' ' + (r.ref_id || '') : (r.ref || ''); }
+  function refText(r) { if (r.ref_text != null) { return r.ref_text; } return r.ref_type ? (REF_WORDS[r.ref_type] || String(r.ref_type).replace(/_/g, ' ')) + ' ' + (r.ref_id || '') : (r.ref || ''); }
   /* 15.7 item 7: an as-of (or historical-model) fill shows its badge; the label (entered time, batch) is its title */
   function sourceBadge(r) {
     var b = r && r.badge;
@@ -25,18 +30,19 @@
     return '<span class="' + (b === 'MODEL' ? 'badge-model' : 'badge-asof') + '" title="' + T.esc(r.source_label || '') + '">' + T.esc(b) + '</span> ';
   }
   /* a long text cell wraps inside a fixed width instead of pushing the figures off the screen (tables fit 1440 px) */
-  function wrapHtml(text, px, title) { return '<span style="display:inline-block; max-width:' + px + 'px; white-space:normal; overflow-wrap:anywhere; line-height:1.25"' + (title ? ' title="' + T.esc(title) + '"' : '') + '>' + T.esc(text == null ? '' : text) + '</span>'; }
+  /* leadHtml (a badge) leads INSIDE the block: before it, in the no-wrap cell, it pushed the block past the cell's edge (1.0.6 walk at 1100 px) */
+  function wrapHtml(text, px, title, leadHtml) { return '<span style="display:inline-block; max-width:' + px + 'px; white-space:normal; overflow-wrap:anywhere; line-height:1.25"' + (title ? ' title="' + T.esc(title) + '"' : '') + '>' + (leadHtml || '') + T.esc(text == null ? '' : text) + '</span>'; }
   function columns(allBooks) {
     var cols = [
       { key: 'ts', label: 'time', cls: 'l', text: function (r) { return r.ts_ny || T.fmt.dt(r.ts); }, sort: function (r) { return r.ts; } },
       { key: 'category', label: 'type', cls: 'l', html: function (r) {
         var cls = r.severity === 'ERROR' ? 'red' : (r.severity === 'WARN' ? 'amber' : (BADGE[r.category] || ''));
-        return '<span class="badge ' + cls + '" title="' + T.esc((r.type || '') + (r.event ? ' ' + T.codeWords(r.event) : '')) + '">' + T.esc(r.category || r.type || '') + '</span>';
-      }, text: function (r) { return r.category || r.type || ''; } }];
+        return '<span class="badge ' + cls + '" title="' + T.esc((r.type || '') + (r.event ? ' ' + T.codeWords(r.event) : '')) + '">' + T.esc(CAT_LABEL[r.category] || r.category || r.type || '') + '</span>';
+      }, text: function (r) { return CAT_LABEL[r.category] || r.category || r.type || ''; } }];
     if (allBooks) { cols.push({ key: 'book_name', label: 'book', cls: 'l', text: function (r) { return shortBook(r.book_name) || (r.system ? 'system' : ''); } }); }
     cols.push({ key: 'account_id', label: 'account', cls: 'l', text: function (r) { return r.account_name || (r.account_id ? T.accountName(r.account_id) : (r.system ? 'system' : (r.lifetime_id ? 'lifetime ' + r.lifetime_id : ''))); }, title: function (r) { return r.account_id || ''; } });
     cols.push({ key: 'symbol', label: 'instrument', cls: 'l', text: function (r) { return r.symbol || r.instrument_id || ''; } });
-    cols.push({ key: 'summary', label: 'what happened', cls: 'l', html: function (r) { return sourceBadge(r) + wrapHtml(r.summary || r.message || '', 560, r.badge ? r.source_label : ''); },
+    cols.push({ key: 'summary', label: 'what happened', cls: 'l', html: function (r) { return wrapHtml(r.summary || r.message || '', 560, r.badge ? r.source_label : '', sourceBadge(r)); },
                 text: function (r) { return (r.badge ? r.badge + ' ' : '') + (r.summary || r.message || ''); } });
     cols.push({ key: 'ref', label: 'ref', cls: 'l', text: refText });
     return cols;
@@ -44,8 +50,8 @@
   /* the row as a table (BM-25): its fields, the server's detail (money already as text), the journal entry when it has one */
   function showRow(r, opts) {
     opts = opts || {};
-    var pairs = [['time', r.ts_ny || T.fmt.dt(r.ts)], ['type', (r.category || '') + ' . ' + (r.type || '') + (r.event ? ' ' + T.codeWords(r.event) : '')],
-                 ['book', r.book_name || ''], ['account', r.account_id ? (r.account_name || T.accountName(r.account_id)) + ' (' + r.account_id + ')' : (r.system ? 'system (no book owns it)' : '')],
+    var pairs = [['time', r.ts_ny || T.fmt.dt(r.ts)], ['type', (CAT_LABEL[r.category] || r.category || '') + (r.event ? ' . ' + T.codeWords(r.event) : '')],
+                 ['book', r.book_name || ''], ['account', r.account_id ? (r.account_name || T.accountName(r.account_id)) : (r.system ? 'system (no book owns it)' : '')],
                  ['instrument', r.symbol || r.instrument_id || ''], ['what happened', r.summary || ''], ['reference', r.ref_type ? refText(r) : ''],
                  ['folded in', (r.events || []).map(T.codeWords).join(', ')]];
     Object.keys(r.detail || {}).forEach(function (k) { var v = r.detail[k]; if (v != null && v !== '') { pairs.push([k, String(v)]); } });
@@ -96,9 +102,11 @@
         onEnter: function (r) { showRow(r, { readOnly: readOnly, journalBase: opts.journalBase }); } });          /* the grid maps a double click to onEnter */
     }
     remount();
+    var mcWhy = null;
     function emptyText() {
       var c = catSel.value;
       if (c === 'system') { return 'no system rows'; }
+      if (c === 'margin_calls') { return mcWhy ? mcWhy : 'no margin call: none was issued (calls are made after the day\'s variation margin and collateral marks)'; }
       return c ? 'no ' + (CATS.filter(function (x) { return x[0] === c; })[0] || ['', c])[1] + ' yet' : 'no activity yet';
     }
     function paintExtras(r) {
@@ -135,6 +143,7 @@
       return T.api.get(opts.base || '/api/activity', params()).then(function (r) {
         if (dead || g !== grid) { return; }
         var rows = Array.isArray(r) ? r : (r.rows || r.items || []);
+        mcWhy = (r && r.margin_calls_unavailable) || null;
         grid.update(rows, { empty: emptyText() });
         paintExtras(r || {});
         note.textContent = rows.length + ' rows' + (rows.length >= 300 ? ' (the newest 300)' : '') + (catSel.value === 'system' ? '' : ' . system rows (job runs, feeds) are under the "system" type');

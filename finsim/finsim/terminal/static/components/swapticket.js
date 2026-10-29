@@ -16,8 +16,12 @@
  *
  * Reads    GET  /api/otc/contracts?account_id=..&detail=1  -> [ContractView] (live model mark, signed DV01, IM, VM balance,
  *                                                            accrued legs, kind_label, side_text, next_events, history)
- * Previews POST /api/otc/preview   {account_id, kind: IRS|TRS|XCCY, terms}  -> the deal, the funding line, the conventions
- * Books    POST /api/otc/contracts {account_id, kind, terms}  (request_id per click via T.api) -> {contract, im_transfer, entries}
+ * Previews POST /api/otc/preview   {account_id, kind: IRS|TRS|XCCY, terms}  -> the deal, the funding line, the conventions (a refused
+ *                                  preview answers 200 {refused, code, message, blockers}: its reason is shown, never a 4xx - V104R2-BW-05)
+ * Quotes   POST /api/otc/rfqs {account_id, kind, terms} -> {rfq}   (C14, 1.0.6: the preview's "Request quote"; the simulated dealer answers
+ *          GET  /api/otc/rfqs?account_id=&status=all            on the next lifecycle tick with a quote good for 120 s)
+ *          POST /api/otc/rfqs/{id}/accept | /decline           -> books at the quoted terms (the contract starts PENDING CONFIRMATION) / closes it
+ * Timeline GET  /api/otc/contracts/{id}/timeline               -> requested, quoted, accepted, booked, IM, confirmed, each VM, resets ... (drawer)
  * Closes   POST /api/otc/contracts/{id}/terminate {}          -> {termination_value, accrued_pay, accrued_receive, cash, entries}
  * Entries  GET  /api/accounting/journal/{entry_id}            -> the journal entry behind a VM, a payment or a termination
  *
@@ -27,11 +31,13 @@
  * - The terms typed on each tab are kept per kind (state.values[kind]) through every preview, error, refresh and tab switch;
  *   only the preview block and the contracts block re-render.  A refused input stays as typed, marked, for correction.  A
  *   preview whose terms were edited afterwards is marked out of date and cannot be booked until it is previewed again.
- * - The only quote is the model par rate +/- the PB's disclosed half-width (SWAP_MARK): the preview shows it, the cost of
+ * - The dealer's price is the model par rate +/- the PB's disclosed half-width (SWAP_MARK): the preview shows it, the cost of
  *   dealing (mark0), the signed DV01, the initial margin and how it is funded (the account's own cash net of what its payables
  *   and working orders already need, then one Treasury sweep, then PB financing), the schedule and the fixing BEFORE anything
- *   is booked; booking needs a confirmation that repeats those numbers.  A cross-currency preview and its confirmation show the
- *   deal FX rate with its source and time.
+ *   is requested.  1.0.6 (C14): "Request quote" asks the simulated dealer; its quote ("indicative model quote, simulated dealer")
+ *   appears under Quote requests with a countdown and Accept / Decline; accepting books at the quoted terms after a confirmation
+ *   that repeats them.  The same block serves the CDX and options / forwards tickets (T.components.swapticket.mountRfqs).  A
+ *   cross-currency preview and its confirmation show the deal FX rate with its source and time.
  * - FINSIM1 (P4): a contract booked as of its trade date (the owner's Goldman contracts) carries an AS-OF badge with its source label
  *   ("As-of booking - simulated OTC trade with ..., value date ..., entered ... by the operator at the owner's instruction (batch ...)")
  *   and the chip CONFIRMED (as-of booking at the owner's instruction; no electronic confirmation in the simulator); every mark is
@@ -53,6 +59,9 @@
   var PCT_RE = /^\d+(\.\d{1,3})?$/;             /* percent with at most 3 decimals = the 0.001 % dealing precision */
   var TENORS = [6, 12, 24, 36, 60, 84, 120, 240, 360];
   var KINDS = [{ key: 'IRS', label: 'Interest-rate swap' }, { key: 'TRS', label: 'Total return swap' }, { key: 'XCCY', label: 'Cross-currency swap' }];
+  /* P8B-12: what a cross-currency swap takes - USD on one leg, one of these on the other (the currencies with a free policy-rate series) */
+  var XCCY_CCYS = [['USD', 'US dollar'], ['EUR', 'euro'], ['GBP', 'pound sterling'], ['JPY', 'yen'], ['CHF', 'Swiss franc'], ['CAD', 'Canadian dollar'],
+    ['AUD', 'Australian dollar']];
   var FIXING_LABEL = {
     TERM: 'TERM - SOFR fixed at each reset (latest print on or before the reset date)',
     COMPOUND_ARREARS: 'SOFR compounded daily in arrears (each night at its own print)'
@@ -69,7 +78,7 @@
   var REFRESH_MS = 30000;
   var RETRY_MS = [2000, 4000, 8000, 16000, 30000];
   var KICKS = ['accounts', 'positions', 'account_detail', 'books', 'attention'];
-  var COLS = 9;
+  var COLS = 7;                               /* the contracts table (P8R1-05: notional over maturity, VM balance over IM - it fits with the dock open) */
   var live = [];                                /* the mounted tickets (prefill / terminate reach the visible one) */
   var pending = null;                           /* {account_id, kind, terms}: a prefill waiting for its ticket to mount */
   var memo = {};                                /* account_id -> {kind, values}: what was typed survives a re-render of the page */
@@ -156,11 +165,20 @@
   function kick() { if (T.poll && T.poll.kick) { KICKS.forEach(function (k) { T.poll.kick(k); }); } }
   function nyTime(epoch) { return epoch == null ? '' : (T.fmt && T.fmt.time ? T.fmt.time(epoch) : String(epoch)); }
 
-  /* next_events -> one line: "PAY 2027-04-20 (pay fixed 200,500.00, receive float 195,650.00) . MATURITY 2028-10-20" */
+  /* P8B-10: a contract event in trader words, never its internal code (next events, the fixings / exchanges table, the schedules) */
+  var EVENT_WORDS = { PAY: 'payment', RESET: 'reset', FIX: 'fixing', MATURITY: 'maturity', FX_RESET: 'FX reset', START: 'start exchange',
+    NOTIONAL_START: 'start exchange', NOTIONAL_END: 'maturity exchange', END: 'maturity exchange', EXPIRY: 'expiry', DELIVERY: 'delivery',
+    PREMIUM: 'premium settlement', COUPON: 'coupon', CREDIT_EVENT: 'credit event', UPFRONT: 'initial payment', LAST_TRADE: 'last trading day',
+    ROLL_BY: 'roll or close by', UNAVAILABLE: 'unavailable' };
+  function eventWords(code) {
+    var c = String(code == null ? '' : code);
+    return EVENT_WORDS[c] || (T.codeWords ? T.codeWords(c) : c.replace(/_/g, ' ').toLowerCase());
+  }
+  /* next_events -> one line: "payment 2027-04-20 (pay fixed 200,500.00, receive float 195,650.00) . maturity 2028-10-20" */
   function eventsText(list) {
     if (!list || !list.length) { return ''; }
     return list.map(function (e) {
-      var s = (e.event || '') + ' ' + (e.date || '');
+      var s = eventWords(e.event) + ' ' + (e.date || '');
       if (e.legs && e.legs.length) {
         s += ' (' + e.legs.map(function (l) {
           var v = l.amount == null && l.amount_c == null ? (l.known === false ? 'not known yet' : 'n/a') : money(l, 'amount');
@@ -181,8 +199,11 @@
   }
   /* a contract's or a preview's side as a sentence (PO-23); the server's side_text wins, any other kind is humanised (C21) */
   function sideText(side, row) {
-    if (row && row.side_text) { return row.side_text; }
     var s = String(side || '');
+    /* a CDX row's side_text is a whole sentence (side, notional, CS01) for the Portfolio; a table row shows the side only - the notional
+       and the CS01 have their own columns */
+    if (row && row.kind === 'CDX') { return (s || row.side) === 'SELL_PROTECTION' ? 'sell protection (long credit)' : 'buy protection (short credit)'; }
+    if (row && row.side_text) { return row.side_text; }
     var uid = row && ((row.detail && row.detail.underlying_id) || row.underlying_id);
     if (s === 'PAY_FIXED') { return 'pay fixed / receive SOFR'; }
     if (s === 'RECEIVE_FIXED') { return 'receive fixed / pay SOFR'; }
@@ -197,7 +218,14 @@
     var d = c.detail || {}, t = c.terms || {};
     if (c.kind === 'IRS') { var m = parseInt(c.tenor_months || t.tenor_months, 10); return 'IRS ' + (isFinite(m) ? (m % 12 === 0 ? (m / 12) + 'y' : m + 'm') : ''); }
     if (c.kind === 'TRS') { return 'TRS ' + (d.underlying_id || t.underlying_id || ''); }
-    if (c.kind === 'XCCY') { return 'XCCY ' + (d.recv_ccy || t.recv_ccy || '') + '/' + (d.pay_ccy || t.pay_ccy || ''); }
+    if (c.kind === 'XCCY') {                      /* P8B-12: the market pair (EUR/USD, USD/JPY) whichever way the legs go; the side column says who pays what */
+      var pr = String(t.deal_pair || d.deal_pair || '');
+      if (/^[A-Z]{6}$/.test(pr)) { return 'XCCY ' + pr.slice(0, 3) + '/' + pr.slice(3); }
+      return 'XCCY ' + (d.recv_ccy || t.recv_ccy || '') + '/' + (d.pay_ccy || t.pay_ccy || '');
+    }
+    if (c.kind === 'CDX' && (d.index_name || d.index || t.index)) {      /* CDX NA.IG S47 */
+      return String(d.index_name || ('CDX.NA.' + (d.index || t.index))).replace(/^CDX\./, 'CDX ') + (d.series || t.series ? ' S' + (d.series || t.series) : '');
+    }
     return c.kind_label || c.kind || '';
   }
   /* the dealt terms of a contract (drawer) */
@@ -211,7 +239,9 @@
       return 'receive ' + (r.currency || '') + ' ' + fmtPct(r.rate) + ' / pay ' + (p.currency || '') + ' ' + fmtPct(p.rate) + ' . deal FX ' + px(d.deal_rate);
     }
     if (c.kind === 'IRS') { return (c.fixed_rate_pct || fmtPct(c.fixed_rate)) + ' fixed' + (c.par_rate_dealt ? ' (model par ' + fmtPct(c.par_rate_dealt) + ' at dealing)' : ''); }
-    return (d.terms_text || d.summary || '') || 'see the details below';
+    /* OTC-18: an OTC option / forward reads as the deal it is (buy EUR 1,000,000.00 vs USD at 1.120032, value ...), with the forward at the deal */
+    if (d.side_text) { return d.side_text + (d.forward_at_deal ? ' . model forward at the deal ' + d.forward_at_deal : ''); }
+    return (d.terms_text || d.summary || '') || 'n/a';
   }
   /* FINSIM1 (P4): the as-of badge of a contract booked at the owner's instruction (its source label as the title) */
   function asofBadge(c) {
@@ -311,8 +341,10 @@
         tenor_months: parseInt(v.tenor_months, 10) } };
     }
     var payCcy = String(v.pay_ccy || '').trim().toUpperCase(), recvCcy = String(v.recv_ccy || '').trim().toUpperCase();
-    if (!/^[A-Z]{3}$/.test(payCcy)) { return { error: 'pay currency: a three-letter code (EUR, GBP, JPY ...)', field: 'pay_ccy' }; }
-    if (!/^[A-Z]{3}$/.test(recvCcy)) { return { error: 'receive currency: a three-letter code', field: 'recv_ccy' }; }
+    if (!/^[A-Z]{3}$/.test(payCcy)) { return { error: 'pay currency: pick one (USD on one leg; EUR, GBP, JPY, CHF, CAD or AUD on the other)', field: 'pay_ccy' }; }
+    if (!/^[A-Z]{3}$/.test(recvCcy)) { return { error: 'receive currency: pick one', field: 'recv_ccy' }; }
+    if (payCcy === recvCcy) { return { error: 'pay and receive currency must differ (USD on one leg)', field: 'recv_ccy' }; }
+    if (payCcy !== 'USD' && recvCcy !== 'USD') { return { error: 'one leg must be USD (pay or receive)', field: 'recv_ccy' }; }
     var pnText = String(v.pay_notional || '').trim(), rnText = String(v.recv_notional || '').trim();
     var pn = pnText ? toCents(pnText) : null, rn = rnText ? toCents(rnText) : null;
     if (pnText && (pn == null || pn <= 0)) { return { error: 'pay notional: a positive amount with at most 2 decimals', field: 'pay_notional' }; }
@@ -349,7 +381,10 @@
       '.swapticket .st-wrap { overflow-x: auto; max-width: 100%; }' +
       '.swapticket .st-wrap > table { width: auto; min-width: 100%; }' +
       '.swapticket table.st-contracts th, .swapticket table.st-contracts td { padding: 0 5px; }' +
-      '.swapticket table.st-contracts td.st-side { white-space: normal; min-width: 140px; max-width: 190px; line-height: 1.3; padding-top: 3px; padding-bottom: 3px; text-align: left; }' +
+      '.swapticket table.st-contracts td.st-side { white-space: normal; min-width: 120px; max-width: 170px; line-height: 1.3; padding-top: 3px; padding-bottom: 3px; text-align: left; }' +
+      '.swapticket table.st-contracts td.stack { padding-top: 3px; padding-bottom: 3px; }' +
+      '.swapticket table.st-contracts td .cl2 { color: var(--fg3); font-size: 10.5px; line-height: 1.25; }' +
+      '.swapticket table.st-contracts td .st-act { margin-top: 2px; }' +
       '.swapticket table.st-contracts tr.detail > td { white-space: normal; text-align: left; padding: 8px 10px; background: rgba(255,255,255,.015); }' +
       '.swapticket .st-drawer { max-width: 760px; }' +
       '.swapticket .st-drawer .kv div:nth-child(even) { text-align: left; white-space: normal; }' +
@@ -360,7 +395,14 @@
       '.swapticket .st-result { font-family: var(--mono); font-size: 11.5px; border-left: 3px solid var(--accent); padding: 4px 8px; margin: 8px 0; }' +
       '.swapticket input.bad, .swapticket select.bad { border-color: var(--down); outline: 1px solid var(--down); }' +
       '.swapticket .preview .kv div:nth-child(even) { white-space: normal; }' +
-      '.swapticket .st-dock .kv div:nth-child(even) { white-space: normal; }';
+      '.swapticket .st-dock .kv div:nth-child(even) { white-space: normal; }' +
+      '.st-rfqs { margin: 4px 0 12px; }' +
+      '.st-rfqs h3, .swapticket .section h3 { font-size: 11px; margin: 10px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }' +
+      '.st-rfqs h3 small, .swapticket .section h3 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text-transform: none; letter-spacing: 0; }' +
+      '.st-rfqs table.st-rfq-table td.st-side { white-space: normal; min-width: 130px; max-width: 230px; line-height: 1.3; }' +
+      '.st-rfqs table.st-rfq-table td[data-valid] { white-space: normal; min-width: 80px; max-width: 120px; line-height: 1.3; }' +
+      '.st-rfqs table.st-rfq-table td:last-child { white-space: nowrap; }' +
+      '.st-rfqs .st-why { font-size: 10.5px; white-space: normal; max-width: 260px; }';
     document.head.appendChild(s);
   }
 
@@ -433,6 +475,191 @@
     });
   }
 
+  /* the contract timeline as a small table: date, time, step, what happened, amount, journal entry */
+  var STEP_WORDS = { REQUESTED: 'quote requested', QUOTED: 'quoted', ACCEPTED: 'accepted', BOOKED: 'booked', IM: 'initial margin', CONFIRMED: 'confirmed',
+    CONFIRM_PENDING: 'confirmation due', UPFRONT: 'initial payment', FIX: 'fixing', VM: 'variation margin', PAY: 'payment', RESET: 'reset', EXCHANGE: 'exchange',
+    CREDIT_EVENT: 'credit event', TERMINATED: 'terminated', MATURED: 'matured' };
+  /* P8B-11 / P8R1-03: every row has one shape - the date column a date, the time column a clock time - and the two never make an instant
+     that did not happen (the server sets them, swaps.contract_timeline):
+     - a step recorded on its own day shows its New York date and clock time; one that posts entries dated the NEXT business day (recorded
+       after the 17:00 ET cut-off) says that business date in its words;
+     - a step recorded on a later day than the business date it belongs to (the as-of booking and its lifecycle entered at the import, a
+       variation margin caught up the next morning) shows that business date "as of", with the time it was recorded in its words. */
+  function stepTime(r) {
+    if (r.asof) { return 'as of'; }                 /* the as-of booking's words say when it was entered; a later record's say when it was recorded */
+    if (!r.ts) { return ''; }
+    return nyTime(r.ts);
+  }
+  function stepWords(r) {
+    var w = r.words || '';
+    if (r.asof && r.recorded_ts) { return w + ' (recorded ' + (T.fmt && T.fmt.date ? T.fmt.date(r.recorded_ts) + ' ' : '') + nyTime(r.recorded_ts) + ' ET)'; }
+    if (r.after_cutoff && r.business_date) { return w + ' (business date ' + r.business_date + ': posted after the 17:00 ET cut-off)'; }
+    return w;
+  }
+  function timelineTable(rows) {
+    ensureCss();
+    if (!rows || !rows.length) { return T.h('div', { class: 'empty' }, 'nothing recorded yet'); }
+    var tbl = T.h('table', { class: 'grid small' }, T.h('thead', null, T.h('tr', null, T.h('th', null, 'date'), T.h('th', null, 'time (ET)'), T.h('th', null, 'step'),
+      T.h('th', { class: 'l' }, 'what happened'), T.h('th', { class: 'num' }, 'amount'), T.h('th', null, 'entry'))));
+    var body = T.h('tbody');
+    rows.forEach(function (r) {
+      body.appendChild(T.h('tr', { class: r.pending ? 'dim' : '' }, T.h('td', null, r.date || ''), T.h('td', null, stepTime(r)),
+        T.h('td', null, STEP_WORDS[r.step] || String(r.step || '').toLowerCase()), T.h('td', { class: 'l', style: 'white-space:normal' }, stepWords(r)),
+        T.h('td', { class: 'num' }, r.amount == null && r.amount_c == null ? '' : money(r, 'amount')), T.h('td', null, entryLink(r.entry_id))));
+    });
+    tbl.appendChild(body);
+    return T.h('div', { class: 'st-wrap' }, tbl);
+  }
+
+  /* ---- C14 (FINSIM1 P4 task 8): OTC quote requests - shared by the swap, CDX and options / forwards tickets and the Derivatives page ---- */
+  var RFQ_POLL_MS = 2000;                       /* while a request is open: the dealer answers on the next lifecycle tick (about 30 s) */
+  var RFQ_IDLE_MS = 30000;
+  var RFQ_RECENT_S = 180;                       /* a request closed in the last 3 minutes stays listed, so its outcome is seen */
+  var QUOTE_SOURCE = 'indicative model quote, simulated dealer: a model price from observed inputs, never a real dealer\'s quote';
+  var RFQ_STAGE = { REQUESTED: ['queued', 'AWAITING QUOTE'], QUOTED: ['working', 'QUOTED'], ACCEPTED: ['filled', 'BOOKED'], DECLINED: ['cancelled', 'DECLINED'],
+    EXPIRED: ['expired', 'EXPIRED'] };
+  function rfqRequest(account, kind, terms) {
+    return T.api.post('/api/otc/rfqs', { account_id: account, kind: kind, terms: terms });
+  }
+  function nowSec() { return T.clock && T.clock.nowInt ? T.clock.nowInt() : Math.floor(Date.now() / 1000); }
+  function validText(r) {
+    if (r.status !== 'QUOTED' || r.expires_ts == null) { return ''; }
+    var left = Number(r.expires_ts) - nowSec();
+    return left > 0 ? left + ' s left (until ' + nyTime(r.expires_ts) + ' ET)' : 'lapsed at ' + nyTime(r.expires_ts) + ' ET';
+  }
+  /* the acceptance: the quote and what booking it posts (the IM, its funding, the cost of dealing), then Accept and book */
+  function acceptDialog(r, after) {
+    T.api.get('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id)).then(function (d) {
+      var pv = d.quote_preview || {};
+      var f = pv.funding || {};
+      var rows = [['contract', (d.label || '') + ' with ' + (d.dealer || 'the dealer')], ['side', d.side_words || ''], ['quote', T.h('b', null, d.quote_words || '')],
+        ['source', QUOTE_SOURCE], ['valid', validText(d) || 'lapsed'], ['initial margin', money(pv, 'im') + (pv.im_rule ? ' (' + pv.im_rule + ')' : '')],
+        ['funding', f.note || 'n/a'], ['cost of dealing', pv.cost_of_dealing == null && pv.cost_of_dealing_c == null ? 'none' : money(pv, 'cost_of_dealing')],
+        ['dates', (pv.start_date || pv.trade_date || '') + ' to ' + (pv.maturity_date || pv.expiry || '')]];
+      if (pv.curve_note) { rows.push(['curve', pv.curve_note]); }
+      var err = T.h('div', { class: 'error', hidden: true });
+      T.ui.modal({
+        title: 'Accept ' + d.rfq_id, sticky: true,
+        body: T.h('div', null, T.h('div', { class: 'hint' }, 'Booking at the quoted terms while the quote is valid; the contract then waits for the simulated confirmation at 17:05 ET.'),
+          T.kv(rows), err),
+        actions: [{ label: 'Cancel' }, { label: 'Accept and book', cls: 'primary', onClick: function (m, btn) {
+          btn.disabled = true; err.hidden = true;
+          T.api.post('/api/otc/rfqs/' + encodeURIComponent(d.rfq_id) + '/accept', {}).then(function (res) {
+            m.close();
+            var c = res.contract || {};
+            var t = res.im_transfer || {};
+            var text = 'Booked ' + (res.contract_id || '') + ' at the quote (' + (d.quote_words || '') + ') . IM ' + money(t, 'amount') + ' . ' +
+              (c.confirm_label || 'awaiting the simulated confirmation at 17:05 ET');
+            T.ui.toast(text, 'ok', 8000);
+            kick();
+            if (after) { after(res, text); }
+          }, function (e) { btn.disabled = false; err.textContent = describe(e); err.title = (e && e.code) || ''; err.hidden = false; if (after) { after(null, null); } });
+        } }]
+      });
+    }, function (e) { T.ui.toast(d0(r) + ': ' + describe(e), 'err', 6000); });
+  }
+  function d0(r) { return (r && r.rfq_id) || 'the quote request'; }
+  function declineRfq(r, after) {
+    T.api.post('/api/otc/rfqs/' + encodeURIComponent(r.rfq_id) + '/decline', {}).then(function () { T.ui.toast(r.rfq_id + ' declined', 'ok', 3000); if (after) { after(); } },
+      function (e) { T.ui.toast(r.rfq_id + ': ' + describe(e), 'err', 6000); if (after) { after(); } });
+  }
+  /* the quote requests of an account (opts.account_id) or of the selected book, open ones first, with Accept / Decline and a countdown;
+     polled every 2 s while one is open.  opts: {account_id, showAccount, hideEmpty, onBooked} -> {refresh, unmount} */
+  function mountRfqs(host, opts) {
+    opts = opts || {};
+    ensureCss();                                /* P8R1-05: its table wraps the quote words wherever it is mounted (the Derivatives page too) */
+    var st = { rows: null, dead: false, timer: null, tick: null, error: null };
+    var box = T.h('div', { class: 'st-rfqs' });
+    T.clear(host).appendChild(box);
+    function alive() { return !st.dead && connected(box); }
+    function schedule(ms) {
+      if (st.timer) { clearTimeout(st.timer); }
+      st.timer = setTimeout(function () { st.timer = null; if (alive()) { load(); } else { stop(); } }, ms);
+    }
+    function stop() {
+      st.dead = true;
+      if (st.timer) { clearTimeout(st.timer); st.timer = null; }
+      if (st.tick) { clearInterval(st.tick); st.tick = null; }
+    }
+    function load() {
+      var q = { status: 'all', limit: 20 };
+      if (opts.account_id) { q.account_id = opts.account_id; }
+      return T.api.get('/api/otc/rfqs', q).then(function (rows) {
+        if (!alive()) { return; }
+        var now = nowSec();
+        st.error = null;
+        st.rows = (Array.isArray(rows) ? rows : []).filter(function (r) { return r.status === 'REQUESTED' || r.status === 'QUOTED' || (r.closed_ts && now - Number(r.closed_ts) < RFQ_RECENT_S); });
+        render();
+        var open = st.rows.some(function (r) { return r.status === 'REQUESTED' || r.status === 'QUOTED'; });
+        schedule(open ? RFQ_POLL_MS : RFQ_IDLE_MS);
+      }, function (e) {
+        if (!alive()) { return; }
+        st.error = describe(e);
+        render();
+        schedule(RFQ_IDLE_MS);
+      });
+    }
+    function after(res) { load(); if (res && opts.onBooked) { try { opts.onBooked(res); } catch (x) { console.error('rfq onBooked', x); } } }
+    function action(r) {
+      var cell = T.h('span');
+      if (r.status === 'QUOTED' && r.actions && r.actions.accept && Number(r.expires_ts) > nowSec()) {
+        cell.appendChild(T.h('button', { class: 'btn small primary', title: 'book at the quoted terms', onclick: function () { acceptDialog(r, after); } }, 'Accept ...'));
+        cell.appendChild(document.createTextNode(' '));
+      }
+      if (r.status === 'REQUESTED' || r.status === 'QUOTED') {
+        cell.appendChild(T.h('button', { class: 'btn small', title: 'close this request; nothing is booked', onclick: function () { declineRfq(r, after); } }, 'Decline'));
+      } else if (r.status === 'EXPIRED' && r.terms) {
+        cell.appendChild(T.h('button', { class: 'btn small', title: 'ask the dealer again with the same terms', onclick: function () {
+          rfqRequest(r.account_id, r.kind, r.terms).then(function (x) { T.ui.toast('Quote requested again (' + x.rfq_id + ')', 'ok', 4000); load(); },
+            function (e) { T.ui.toast(describe(e), 'err', 6000); });
+        } }, 'Request again'));
+      } else if (r.status === 'ACCEPTED' && r.contract_id) {
+        cell.appendChild(T.h('span', { class: 'muted' }, 'booked ' + r.contract_id));
+      }
+      return cell;
+    }
+    function render() {
+      T.clear(box);
+      var rows = st.rows || [];
+      if (st.tick) { clearInterval(st.tick); st.tick = null; }
+      if (!rows.length && !st.error) {
+        box.hidden = !!opts.hideEmpty;
+        if (!opts.hideEmpty) { box.appendChild(T.h('div', { class: 'empty' }, st.rows == null ? 'loading quote requests ...' : 'no open quote requests')); }
+        return;
+      }
+      box.hidden = false;
+      box.appendChild(T.h('h3', null, 'Quote requests', T.h('small', null, ' simulated dealer; a quote is good for 120 s')));
+      if (st.error) { box.appendChild(T.h('div', { class: 'st-meta warn' }, 'quote requests could not be loaded - retrying: ' + st.error)); }
+      var head = [T.h('th', { class: 'l' }, 'request'), T.h('th', { class: 'l' }, 'contract')];
+      if (opts.showAccount) { head.push(T.h('th', { class: 'l' }, 'account')); }
+      head.push(T.h('th', { class: 'l' }, 'side'), T.h('th', { class: 'l' }, 'status'), T.h('th', { class: 'l' }, 'quote'), T.h('th', { class: 'l' }, 'valid'), T.h('th', { class: 'l' }, ''));
+      var tbl = T.h('table', { class: 'grid small st-rfq-table' }, T.h('thead', null, T.h('tr', null, head)));
+      var body = T.h('tbody');
+      rows.forEach(function (r) {
+        var sg = RFQ_STAGE[r.status] || ['queued', r.status];
+        var cells = [T.h('td', { class: 'l', title: 'requested ' + nyTime(r.requested_ts) + ' ET' }, r.rfq_id), T.h('td', { class: 'l st-side' }, r.label || r.kind_label || r.kind)];
+        if (opts.showAccount) { cells.push(T.h('td', { class: 'l' }, T.accountName ? T.accountName(r.account_id) : r.account_id)); }
+        var why = r.status === 'EXPIRED' || r.status === 'DECLINED' ? (r.reason || '') : (r.status_words || '');
+        cells.push(T.h('td', { class: 'l' }, r.side_words || ''), T.h('td', { class: 'l', title: why }, T.stageChip(sg[0], sg[1], r.status_words || ''),
+          r.status === 'EXPIRED' && r.reason ? T.h('div', { class: 'muted st-why' }, r.reason) : null),
+          T.h('td', { class: 'l st-side', title: QUOTE_SOURCE }, r.quote_words || (r.status === 'REQUESTED' ? 'awaiting the dealer' : '')),
+          T.h('td', { class: 'l', 'data-valid': r.rfq_id }, validText(r)), T.h('td', { class: 'l' }, action(r)));
+        body.appendChild(T.h('tr', null, cells));
+      });
+      tbl.appendChild(body);
+      box.appendChild(T.h('div', { class: 'st-wrap' }, tbl));
+      if (rows.some(function (r) { return r.status === 'QUOTED'; })) {        /* the countdown, in place */
+        st.tick = setInterval(function () {
+          if (!alive()) { stop(); return; }
+          rows.forEach(function (r) { var c = box.querySelector('[data-valid="' + r.rfq_id + '"]'); if (c) { c.textContent = validText(r); } });
+        }, 1000);
+      }
+    }
+    render();
+    load();
+    return { refresh: load, unmount: function () { stop(); T.clear(host); } };
+  }
+
   /* ---- the ticket ----------------------------------------------------------------------------------------------------- */
   function mount(el, opts) {
     opts = opts || {};
@@ -441,7 +668,8 @@
     var showNotes = opts.notes !== false;
     var kept = account ? memo[account] : null;
     var state = { kind: kept ? kept.kind : 'IRS', values: kept ? kept.values : {}, previews: {}, error: null, errorField: null, contracts: null, loadError: null,
-      loadedAt: null, retry: 0, retryAt: null, timer: null, dead: false, open: {}, loading: false, blocked: opts.blocked || null, result: null, seq: 0 };
+      loadedAt: null, retry: 0, retryAt: null, timer: null, dead: false, open: {}, loading: false, blocked: opts.blocked || null, result: null, seq: 0,
+      timelines: {}, rfqH: null };
     KINDS.forEach(function (k) { if (!state.values[k.key]) { state.values[k.key] = copy(DEFAULTS[k.key]); } });
     if (account) { memo[account] = { kind: state.kind, values: state.values }; }
     var root = T.h('div', { class: 'swapticket' });
@@ -457,7 +685,7 @@
         ev.preventDefault(); ev.stopPropagation();
         var cur = state.previews[state.kind], p = (cur && cur.p) || {}, f = p.funding || {};
         var fundable = f.ok !== false && !(p.im_funding && p.im_funding.ok === false);
-        if (cur && !cur.stale && !state.blocked && fundable) { onBook(cur); }
+        if (cur && !cur.stale && !state.blocked && fundable) { onRequest(cur); }
         return;
       }
       if (ui.form && ui.form.contains(ev.target) && T.keys.is(ev, 'ticket.preview')) { ev.preventDefault(); ev.stopPropagation(); if (!state.blocked) { onPreview(); } return; }
@@ -473,6 +701,7 @@
     function stop() {
       state.dead = true;
       if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+      if (state.rfqH) { try { state.rfqH.unmount(); } catch (e) { console.error('rfqs unmount', e); } state.rfqH = null; }
       var i = live.indexOf(handle); if (i >= 0) { live.splice(i, 1); }
     }
 
@@ -496,9 +725,13 @@
       ui.error = T.h('div', { class: 'error', hidden: true }); root.appendChild(ui.error);
       ui.preview = T.h('div'); root.appendChild(ui.preview);
       ui.result = T.h('div', { class: 'st-result', hidden: true }); root.appendChild(ui.result);
+      /* the quote requests and the contracts table stay visible under every sub-tab of the OTC desk (they are the .contracts block) */
       ui.contracts = T.h('div', { class: 'section contracts' }); root.appendChild(ui.contracts);
+      ui.rfqBox = T.h('div'); ui.contracts.appendChild(ui.rfqBox);
+      ui.contractsInner = T.h('div'); ui.contracts.appendChild(ui.contractsInner);
       if (showNotes && T.convNote) { root.appendChild(T.convNote(NOTE_KEYS)); }
       renderTabs(); renderForm(); renderError(); renderPreview(); renderContracts();
+      if (account) { state.rfqH = mountRfqs(ui.rfqBox, { account_id: account, hideEmpty: true, onBooked: function () { load(); } }); }
     }
     function renderTabs() {
       T.clear(ui.tabs).appendChild(T.tabs(KINDS, state.kind, function (k) {
@@ -573,9 +806,33 @@
         T.field('reset', select('reset_months', [['1', '1 month'], ['3', '3 months'], ['6', '6 months'], ['12', '12 months']]), 'return, dividends and financing settle in cash at each reset; the notional is re-struck at the close'),
         T.field('tenor', select('tenor_months', [['3', '3 months'], ['6', '6 months'], ['12', '12 months'], ['24', '24 months'], ['36', '36 months'], ['60', '60 months']]), 'a multiple of the reset period')]);
     }
+    /* P8B-12: the currencies a cross-currency swap takes (one leg USD), picked from a list - never found out by refusal; a currency whose
+       rate is not current (the desk's rates: CHF's free series stopped in 2024) is listed disabled with the reason */
+    function ccySelect(name) {
+      var s = T.h('select');
+      XCCY_CCYS.forEach(function (c) {
+        var r = (state.ccyRates || {})[c[0]];
+        var off = !!(r && r.ok === false);
+        var o = opt(c[0], c[0] + ' - ' + c[1] + (off ? ' (no current rate)' : ''));
+        if (off) { o.disabled = true; o.title = r.note || 'no current rate'; }
+        s.appendChild(o);
+      });
+      return bind(name, s);
+    }
+    function loadCcyRates() {
+      if (state.ccyRates !== undefined || !account) { return; }
+      if (typeof T.hasModule === 'function' && !T.hasModule('otc_options')) { state.ccyRates = {}; return; }   /* rule 5: no route of a module not bound */
+      state.ccyRates = null;
+      T.api.get('/api/otc/options/desk', { account_id: account }).then(function (d) {
+        if (!alive()) { return; }
+        state.ccyRates = (d && d.rates) || {};
+        if (state.kind === 'XCCY') { renderForm(); }
+      }, function () { state.ccyRates = {}; });
+    }
     function xccyForm() {
-      return T.form([T.field('pay currency', text('pay_ccy', 80), 'we BORROW this currency: its notional is received at the start and repaid at maturity; we pay its coupons'),
-        T.field('receive currency', text('recv_ccy', 80), 'we LEND this currency: its notional is paid at the start and comes back at maturity; we receive its coupons'),
+      loadCcyRates();
+      return T.form([T.field('pay currency', ccySelect('pay_ccy'), 'we BORROW this currency: its notional is received at the start and repaid at maturity; we pay its coupons'),
+        T.field('receive currency', ccySelect('recv_ccy'), 'we LEND this currency: its notional is paid at the start (the spot date) and comes back at maturity; we receive its coupons'),
         T.field('pay notional', text('pay_notional', 160, 'blank = at the deal FX rate'), 'give one notional; the other is struck at the observed deal FX rate'),
         T.field('receive notional', text('recv_notional', 160, 'blank = at the deal FX rate')),
         T.field('pay rate (%)', text('pay_rate', 130, 'blank = quote'), 'blank = the dealer quote (model par + half-width); a lower rate is refused'),
@@ -583,7 +840,9 @@
         T.field('pay leg basis', basis('pay_basis')), T.field('receive leg basis', basis('recv_basis')),
         T.field('tenor', select('months', [['12', '12 months'], ['24', '24 months'], ['36', '36 months'], ['60', '60 months']]), 'a multiple of 6 months: semi-annual coupons on both legs'),
         T.field('notional reset', select('mtm_reset', [['true', 'mark-to-market (USD notional reset)'], ['false', 'fixed notionals']]),
-          'mark-to-market: the USD notional is re-struck at each period start at the 17:00 ET FX close, the difference settled in cash')]);
+          'mark-to-market: the USD notional is re-struck at each period start at the 17:00 ET FX close, the difference settled in cash'),
+        T.field('legs', T.h('span', { class: 'muted' }, 'fixed / fixed: both legs pay a fixed rate'),
+          'floating legs (SOFR, ESTR, SONIA ...) and a cross-currency basis are not offered in this version: no free non-USD reference fixing is sourced to set and settle them')]);
     }
     function renderForm() {
       var form = state.kind === 'IRS' ? irsForm() : (state.kind === 'TRS' ? trsForm() : xccyForm());
@@ -630,6 +889,16 @@
           if (kind === state.kind) { state.error = (b0.message || 'the price is still being fetched') + ' - try Preview again in a moment'; renderError(); renderPreview(); }
           return;
         }
+        if (p && p.refused) {                     /* V104R2-BW-05: a refused preview answers 200 with its reason (no 4xx, no console error) */
+          done(); state.previews[kind] = null;
+          if (kind !== state.kind) { return; }
+          state.error = p.message || 'the dealer cannot price these terms';
+          ui.error.title = p.code || '';
+          state.errorField = fieldOfError(kind, { code: p.code, details: p.details || {} }, vals());
+          renderError(); renderPreview();
+          if (state.errorField) { renderForm(); focusField(state.errorField); }
+          return;
+        }
         done();
         state.previews[kind] = { p: p, kind: kind, terms: r.terms, sig: sig(r.terms), stale: false };
         if (kind === state.kind) { renderPreview(); }
@@ -657,10 +926,22 @@
       if (pv.stale) { box.insertBefore(T.h('div', { class: 'st-stale' }, 'The terms were changed after this preview: preview again before booking.'), box.firstChild.nextSibling); }
       var f = p.funding || {};
       var fundable = f.ok !== false && !(p.im_funding && p.im_funding.ok === false);
-      box.appendChild(T.h('div', { class: 'hint' }, 'Fees: ' + (p.fees || 'none beyond the half-width (disclosed)') + '. Nothing is booked until you confirm.'));
-      var why = state.blocked ? state.blocked : (pv.stale ? 'preview again first' : (!fundable ? 'the initial margin cannot be funded' : ''));
-      box.appendChild(T.h('div', { class: 'actions' }, T.h('button', { class: 'btn primary', disabled: !!why, title: why || ('opens the booking confirmation' + (T.keys.paren ? T.keys.paren('ticket.submit') : '')), onclick: function () { onBook(pv); } }, 'Book this swap ...'),
-        why ? T.h('span', { class: 'hint' }, ' ' + why) : null));
+      box.appendChild(T.h('div', { class: 'hint' }, 'Fees: ' + (p.fees || 'none beyond the half-width (disclosed)') + '. This preview is indicative: ask the dealer for a quote,' +
+        ' then accept or decline it - nothing is booked before you accept.'));
+      /* P8B-12: name what cannot be funded - the start exchange of a cross-currency swap (with how to fund it) or the initial margin */
+      var unfunded = '';
+      if (!fundable) {
+        if (k === 'XCCY' && f.ok === false && f.currency && f.currency !== 'USD') {
+          unfunded = 'the start exchange cannot be funded: ' + (f.hint || (f.currency + ' ' + money(f, 'need') + ' needed by ' + (f.start_date || p.start_date || 'the start date')));
+        } else if (k === 'XCCY' && f.ok === false) {
+          unfunded = 'the initial margin and the USD lent at the start cannot be funded (USD ' + money(f, 'need') + ' needed)';
+        } else if (p.im_funding && p.im_funding.ok === false) { unfunded = 'the initial margin cannot be funded'; }
+        else { unfunded = k === 'XCCY' ? 'the initial margin and the USD lent at the start cannot be funded' : 'the initial margin cannot be funded'; }
+      }
+      var why = state.blocked ? state.blocked : (pv.stale ? 'preview again first' : unfunded);
+      ui.requestBtn = T.h('button', { class: 'btn primary', disabled: !!why, title: why || ('asks the prime broker\'s simulated dealer for a quote (it answers within about 30 s; the quote is good for 120 s)' +
+        (T.keys.paren ? T.keys.paren('ticket.submit') : '')), onclick: function () { onRequest(pv); } }, 'Request quote');
+      box.appendChild(T.h('div', { class: 'actions' }, ui.requestBtn, why ? T.h('span', { class: 'hint' }, ' ' + why) : null));
       ui.preview.appendChild(box);
     }
     function vmText(p) {
@@ -692,7 +973,7 @@
           T.h('th', { class: 'num' }, 'financing (indicative)'))));
         var body = T.h('tbody');
         rows.forEach(function (r) {
-          body.appendChild(T.h('tr', null, T.h('td', null, r.date), T.h('td', null, r.event || ''), T.h('td', { class: 'num' }, r.nights == null ? '' : String(r.nights)),
+          body.appendChild(T.h('tr', null, T.h('td', null, r.date), T.h('td', null, eventWords(r.event)), T.h('td', { class: 'num' }, r.nights == null ? '' : String(r.nights)),
             T.h('td', { class: 'num' }, r.financing == null && r.financing_c == null ? 'n/a' : money(r, 'financing'))));
         });
         tbl.appendChild(body);
@@ -718,8 +999,8 @@
         ['deal FX rate (observed)', dealRate(p), 'the pair\'s fresh or closing print; the start exchange is booked at this rate'],
         ['deal rate source', p.deal_rate_source || ((p.inputs && p.inputs.fx_label) || 'n/a'), 'where the deal rate comes from and when it was observed'],
         ['notionals', 'USD ' + money(p, 'usd_notional') + ' . ' + (p.foreign_ccy || '') + ' ' + money(p, 'foreign_notional')],
-        ['start exchange', (se.date || p.start_date || '') + ': we pay ' + (wp.currency || '') + ' ' + money(wp, 'amount') + ' (lent) and receive ' + (wr.currency || '') + ' ' +
-          money(wr, 'amount') + ' (borrowed)', 'reversed at maturity at the same notionals'],
+        ['start exchange', (se.date || p.start_date || '') + ' (the spot date): we pay ' + (wp.currency || '') + ' ' + money(wp, 'amount') + ' (lent) and receive ' +
+          (wr.currency || '') + ' ' + money(wr, 'amount') + ' (borrowed)', (se.when ? se.when + '; ' : '') + 'reversed at maturity at the same notionals'],
         ['notional reset', p.mtm_reset ? 'mark-to-market: USD notional re-struck on ' + (p.fx_reset_dates || []).join(', ') : 'none (fixed notionals)'],
         ['cost of dealing (mark0)', money(p, 'mark0'), 'the legs dealt at the dealer quotes vs the model par rates'],
         ['DV01 (USD curve, +1 bp)', money(p, 'dv01') + ' . foreign leg ' + money(p, 'dv01_foreign'), p.dv01_note || ''],
@@ -727,7 +1008,8 @@
         ['start funding', fundingText(p.funding), (p.funding && ((p.funding.note || '') + '. ' + (p.funding.rule || ''))) || ''],
         p.im_funding ? ['IM funding', fundingText(p.im_funding), p.im_funding.note || ''] : null,
         ['variation margin', vmText(p)],
-        ['dates', (p.start_date || '') + ' to ' + (p.maturity_date || '') + ' . half-width ' + (p.half_width_bp || '') + ' bp per leg']
+        ['dates', (p.trade_date ? 'traded ' + p.trade_date + ' . ' : '') + 'start ' + (p.start_date || '') + ' to ' + (p.maturity_date || '') + ' . half-width ' +
+          (p.half_width_bp || '') + ' bp per leg']
       ]));
       var legs = p.legs || {};
       var lt = T.h('table', { class: 'grid small' }, T.h('thead', null, T.h('tr', null, T.h('th', null, 'leg'), T.h('th', null, 'ccy'), T.h('th', { class: 'num' }, 'notional'),
@@ -743,7 +1025,7 @@
           T.h('th', { class: 'num' }, 'pay'), T.h('th', null, 'note'))));
         var body = T.h('tbody');
         rows.forEach(function (r) {
-          body.appendChild(T.h('tr', null, T.h('td', null, r.date), T.h('td', null, r.event || ''), T.h('td', { class: 'num' }, (r.receive_ccy || '') + ' ' + money(r, 'receive')),
+          body.appendChild(T.h('tr', null, T.h('td', null, r.date), T.h('td', null, eventWords(r.event)), T.h('td', { class: 'num' }, (r.receive_ccy || '') + ' ' + money(r, 'receive')),
             T.h('td', { class: 'num' }, (r.pay_ccy || '') + ' ' + money(r, 'pay')), T.h('td', { class: 'l' }, r.indicative ? 'USD leg indicative until the FX reset of ' + (r.fx_reset || '') : '')));
         });
         tbl.appendChild(body);
@@ -771,6 +1053,7 @@
         kv.push([p.fixing.indicative ? 'SOFR now (indicative only)' : 'first fixing', 'SOFR ' + (p.fixing.sofr || '') + ' % (' + (p.fixing.obs_date || '') + ') -> ' + (p.fixing.rate_pct || fmtPct(p.fixing.rate)), p.fixing.method || '']);
       }
       if (p.inputs) { kv.push(['inputs', 'curve as of ' + (p.inputs.curve_as_of || 'n/a') + (p.inputs.curve_source ? ' (' + p.inputs.curve_source + ')' : '') + '; SOFR ' + (p.inputs.sofr || 'n/a') + (p.inputs.sofr_obs_date ? ' (' + p.inputs.sofr_obs_date + ')' : ''), p.inputs.model || '']); }
+      if (p.curve_note) { kv.push(['curve', p.curve_note]); }       /* V104R2-OTC-06: the Treasury par curve stands in for the SOFR swap curve - disclosed */
       box.appendChild(T.kv(kv));
       if (p.schedule && p.schedule.length) {
         var tbl = T.h('table', { class: 'grid small' }, T.h('thead', null, T.h('tr', null, T.h('th', null, 'payment date'), T.h('th', { class: 'num' }, 'fixed leg'), T.h('th', { class: 'num' }, 'floating leg'), T.h('th', null, 'note'))));
@@ -786,57 +1069,28 @@
       return box;
     }
 
-    /* ---- booking ---- */
-    function onBook(pv) {
+    /* ---- the quote request (C14): the preview's terms go to the prime broker's simulated dealer; its quote is accepted or declined in
+       the Quote requests block above the contracts (it answers on the next lifecycle tick, about 30 s; a quote is good for 120 s) ---- */
+    function onRequest(pv) {
       if (!pv || pv.stale || state.blocked) { return; }
       var p = pv.p || {};
       var kind = p.kind || pv.kind;
-      var rows;
-      if (kind === 'TRS') {
-        rows = [['side', sideText(p.side, p)], ['underlying', (p.underlying_id || '') + ' x ' + (p.units == null ? '' : T.fmt.qty(p.units)) + ' at the reset price ' + px(p.reset_px)],
-          ['reset price source', p.reset_px_source || ''], ['notional', money(p, 'notional') + ' USD'],
-          ['financing', ((p.financing || {}).rate_pct || 'n/a') + ' ' + ((p.financing || {}).direction || '')],
-          ['initial margin', money(p, 'im') + (p.im_pct ? ' (' + p.im_pct + ')' : '')], ['IM funding', fundingText(p.funding)], ['VM', p.margin_mode || 'CTM'],
-          ['dates', (p.start_date || '') + ' to ' + (p.maturity_date || '')]];
-      } else if (kind === 'XCCY') {
-        var lg = p.legs || {}, rl = lg.receive || {}, pl = lg.pay || {};
-        rows = [['side', sideText(p.side, p)], ['deal FX rate', px(p.deal_rate) + ' USD per ' + (p.foreign_ccy || '') + ' (exact ' + (p.deal_rate || '') + ')'],
-          ['deal rate source', p.deal_rate_source || 'n/a'],
-          ['receive leg', (rl.currency || '') + ' ' + money(rl, 'notional') + ' at ' + (rl.rate_pct || fmtPct(rl.rate))],
-          ['pay leg', (pl.currency || '') + ' ' + money(pl, 'notional') + ' at ' + (pl.rate_pct || fmtPct(pl.rate))],
-          ['cost of dealing', money(p, 'mark0')], ['initial margin', money(p, 'im') + (p.im_pct ? ' (' + p.im_pct + ' of USD)' : '')],
-          ['start exchange', ((p.start_exchange || {}).date || p.start_date || '')], ['start funding', fundingText(p.funding)],
-          p.im_funding ? ['IM funding', fundingText(p.im_funding)] : null, ['VM', p.margin_mode || 'CTM'], ['dates', (p.start_date || '') + ' to ' + (p.maturity_date || '')]];
-      } else {
-        rows = [['side', sideText(p.side, p)], ['notional', money(p, 'notional')], ['dealt rate', p.dealt_rate_pct || fmtPct(p.dealt_rate)], ['cost of dealing', money(p, 'mark0')],
-          ['DV01 (+1 bp)', money(p, 'dv01')], ['initial margin', money(p, 'im')], ['IM funding', fundingText(p.funding)], ['VM', p.margin_mode || 'CTM'],
-          ['SOFR leg', FIXING_LABEL[p.fixing_method] || p.fixing_method || ''], ['dates', (p.start_date || '') + ' to ' + (p.maturity_date || '')]];
-      }
-      var err = T.h('div', { class: 'error', hidden: true });
-      var body = T.h('div', null, T.h('div', { class: 'hint' }, 'Booking with ' + (p.broker || 'the prime broker') + ' in ' + (T.accountName ? T.accountName(account) : account) + '. ' +
-        (kind === 'IRS' ? 'The dealt rate is a model rate; ' : (kind === 'TRS' ? 'The reset price is the observed print; ' : 'The deal FX rate is the observed print shown; ')) +
-        'the initial margin leaves the account now (any Treasury sweep shown above moves first).'), T.kv(rows), err);
-      T.ui.modal({
-        title: 'Confirm swap booking', body: body, sticky: true,
-        actions: [{ label: 'Cancel' }, { label: 'Book', cls: 'primary', onClick: function (m, btn) {
-          btn.disabled = true; err.hidden = true;
-          T.api.post('/api/otc/contracts', { account_id: account, kind: kind, terms: pv.terms }).then(function (r) {
-            m.close();
-            var c = r && r.contract ? r.contract : {};
-            var cid = c.contract_id || r.contract_id || '';
-            var t = r.im_transfer || {};
-            var f = t.funding || {};
-            var text = 'Booked ' + cid + ' (' + kindShort(c) + ', ' + sideText(c.side, c) + ') . IM ' + money(t, 'amount') +
-              ((num(f, 'sweep') || 0) > 0 ? ' (Treasury sweep ' + money(f, 'sweep') + ')' : '') + (kind === 'XCCY' ? ' . deal rate ' + px(p.deal_rate) : '');
-            T.ui.toast(text, 'ok', 6000);
-            if (state.dead) { kick(); return; }
-            state.previews[kind] = null;
-            state.result = { text: text, entries: r.entries || [] };
-            renderPreview(); renderResult();
-            load();
-            kick();
-          }, function (e) { btn.disabled = false; err.textContent = describe(e); err.title = (e && e.code) || ''; err.hidden = false; });
-        } }]
+      if (ui.requestBtn) { ui.requestBtn.disabled = true; ui.requestBtn.textContent = 'Requesting ...'; }
+      rfqRequest(account, kind, pv.terms).then(function (r) {
+        if (ui.requestBtn) { ui.requestBtn.disabled = false; ui.requestBtn.textContent = 'Request quote'; }
+        var text = 'Quote requested from ' + (p.broker || 'the prime broker') + ' (' + (r.rfq_id || '') + '): the simulated dealer answers within about 30 s - accept or' +
+          ' decline it under Quote requests';
+        T.ui.toast(text, 'ok', 6000);
+        if (state.dead) { return; }
+        state.result = { text: text, entries: [] };
+        renderResult();
+        if (state.rfqH) { state.rfqH.refresh(); }
+      }, function (e) {
+        if (ui.requestBtn) { ui.requestBtn.disabled = false; ui.requestBtn.textContent = 'Request quote'; }
+        if (state.dead) { return; }
+        state.error = describe(e); ui.error.title = (e && e.code) || '';
+        state.errorField = fieldOfError(kind, e, vals());
+        renderError();
       });
     }
     function renderResult() {
@@ -862,26 +1116,36 @@
         ' . refreshed every 30 s . VM, accruals and payments are in the ledger');
     }
     function renderContracts() {
-      if (!ui.contracts) { return; }
-      var oldWrap = ui.contracts.querySelector('.st-wrap');
+      if (!ui.contractsInner) { return; }
+      var oldWrap = ui.contractsInner.querySelector('.st-wrap');
       var scroll = oldWrap ? oldWrap.scrollLeft : 0;
-      T.clear(ui.contracts);
-      ui.contracts.appendChild(T.h('h2', null, 'Contracts', T.h('small', null, 'model mark = computed clean PV now; click a contract for its terms and history')));
-      ui.contracts.appendChild(metaLine());
+      T.clear(ui.contractsInner);
+      ui.contractsInner.appendChild(T.h('h2', null, 'Contracts', T.h('small', null, 'model mark = computed clean PV now; click a contract for its terms and history')));
+      ui.contractsInner.appendChild(metaLine());
       var rows = state.contracts;
-      if (rows == null) { ui.contracts.appendChild(T.h('div', { class: 'empty' }, state.loadError ? 'no contracts shown yet' : 'loading contracts ...')); return; }
-      if (!rows.length) { ui.contracts.appendChild(T.h('div', { class: 'empty' }, 'no OTC contracts in ' + (T.accountName ? T.accountName(account) : account) + ' yet')); return; }
+      if (rows == null) { ui.contractsInner.appendChild(T.h('div', { class: 'empty' }, state.loadError ? 'no contracts shown yet' : 'loading contracts ...')); return; }
+      if (!rows.length) { ui.contractsInner.appendChild(T.h('div', { class: 'empty' }, 'no OTC contracts in ' + (T.accountName ? T.accountName(account) : account) + ' yet')); return; }
       var tbl = T.h('table', { class: 'grid st-contracts' }, T.h('thead', null, T.h('tr', null, T.h('th', { class: 'l', title: 'an open contract can be terminated' }, 'status'),
-        T.h('th', { class: 'l' }, 'contract'), T.h('th', { class: 'l' }, 'kind / side'), T.h('th', { class: 'num' }, 'notional'), T.h('th', { class: 'l' }, 'maturity'),
+        T.h('th', { class: 'l' }, 'contract'), T.h('th', { class: 'l' }, 'kind / side'), T.h('th', { class: 'num', title: 'the notional; the maturity (or value date) below' }, 'notional / maturity'),
         T.h('th', { class: 'num', title: 'computed clean PV now (hover a value for its inputs)' }, 'model mark'),
-        T.h('th', { class: 'num', title: '+ received from the PB / - posted to the PB' }, 'VM balance'), T.h('th', { class: 'num' }, 'IM'),
+        T.h('th', { class: 'num', title: 'VM: + received from the PB / - posted to the PB; the initial margin posted below' }, 'VM balance / IM'),
         T.h('th', { class: 'num', title: 'PV change for +1 bp' }, 'DV01'))));
       var body = T.h('tbody');
       rows.forEach(function (c) { appendRow(body, c); });
       tbl.appendChild(body);
       var wrap = T.h('div', { class: 'st-wrap' }, tbl);
-      ui.contracts.appendChild(wrap);
+      ui.contractsInner.appendChild(wrap);
       wrap.scrollLeft = scroll;
+    }
+    /* P8R1-07: an FX forward's notional - the base amount, then its USD value at the base currency's USD rate WHEN DEALT (the IM's base),
+       said as such: it is not what the deal delivers (the delivery line gives the amounts at the dealt forward) */
+    function fxNotionalText(c, d) {
+      var base = String(d.pair || '').slice(0, 3);
+      var text = base + ' ' + money(d, 'notional_base');
+      if (base === 'USD') { return text + ' (the IM base)'; }
+      var at = d.im_base_rate ? (String(d.pair).slice(3) === 'USD' ? 'the spot rate ' + d.im_base_rate : (d.im_base_pair || base + '/USD') + ' ' + d.im_base_rate)
+        : 'the spot rate';
+      return text + ' (USD ' + money(c, 'notional') + ' at ' + at + ' when dealt: the IM base)';
     }
     function appendRow(body, c) {
       var mark = c.mark || {};
@@ -890,22 +1154,33 @@
       var markTitle = (mark.quality || '') + (mark.as_of ? ' as of ' + nyTime(mark.as_of) + ' ET' : '') + (mark.note ? ' . ' + mark.note : '') +
         (pf ? ' . in NAV ' + money(pf, 'mv') + ' (' + (pf.mark_label || '') + ')' : ' . the mark at the last VM ' + money(c, 'mark'));
       var notional = c.notional == null && c.notional_c == null ? 'n/a' : (T.fmt.compact ? T.fmt.compact(c.notional != null ? c.notional : (c.notional_c / 100)) : money(c, 'notional'));
-      var statusCell = T.h('td', { class: 'l' });
-      if (c.confirm_status) { statusCell.appendChild(T.stageChip('filled', c.confirm_status, c.confirm_label || '')); statusCell.appendChild(document.createTextNode(' ')); }
-      statusCell.appendChild(c.status === 'OPEN' ? T.h('button', { class: 'btn small', title: 'OPEN - terminate at the current model mark', onclick: function () { onTerminate(c); } }, 'Terminate')
-        : (T.stateTag ? T.stateTag(c.status) : T.h('span', null, c.status || '')));
+      var ntCcy = c.notional_ccy || c.currency || '';
+      var fxd = c.kind === 'FX_FORWARD' ? (c.detail || {}) : null;       /* OTC-18: an FX forward's notional in its base currency (EUR 1m), the USD beside it */
+      var fxBase = fxd ? T.num(fxd, 'notional_base') : null;               /* the wire carries notional_base (decimal string) or notional_base_c */
+      if (fxd && fxBase != null && fxd.pair) {
+        notional = T.fmt.compact ? T.fmt.compact(fxBase) : T.money(fxd, 'notional_base');
+        ntCcy = String(fxd.pair).slice(0, 3);
+      }
+      var statusCell = T.h('td', { class: 'l stack' });
+      if (c.confirm_status) {                     /* C14: CONFIRMED (as-of, or the simulated 17:05 ET confirmation) or PENDING CONFIRMATION */
+        var pend = c.confirm_status === 'PENDING_CONFIRM';
+        statusCell.appendChild(T.h('div', null, T.stageChip(pend ? 'queued' : 'filled', pend ? 'PENDING CONFIRMATION' : 'CONFIRMED', c.confirm_label || '')));
+      }
+      /* P8R1-05: the action under the confirmation (one column, not two side by side) */
+      statusCell.appendChild(T.h('div', { class: 'st-act' }, c.status === 'OPEN' ? T.h('button', { class: 'btn small', title: 'OPEN - terminate at the current model mark', onclick: function () { onTerminate(c); } }, 'Terminate')
+        : (T.stateTag ? T.stateTag(c.status) : T.h('span', null, c.status || ''))));
       var badge = asofBadge(c);
       var tr = T.h('tr', { class: c.status === 'OPEN' ? '' : 'dim', 'data-contract': c.contract_id },
         statusCell,
         T.h('td', { class: 'l' }, T.h('a', { href: '#', title: (open ? 'hide' : 'show') + ' the terms and history', onclick: function (e) { e.preventDefault(); state.open[c.contract_id] = !state.open[c.contract_id]; renderContracts(); } },
           (open ? '- ' : '+ ') + c.contract_id), badge ? ' ' : '', badge),
         T.h('td', { class: 'st-side' }, T.h('b', null, kindShort(c)), ' ', sideText(c.side, c) + (c.fixing_method === 'COMPOUND_ARREARS' ? ' (compounded)' : '')),
-        T.h('td', { class: 'num', title: money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '') }, notional + ' ' + (c.notional_ccy || c.currency || '')),
-        T.h('td', { class: 'l' }, c.maturity_date || ''),
+        T.h('td', { class: 'num stack', title: fxd && fxd.pair && fxBase != null ? fxNotionalText(c, fxd) : money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '') },
+          T.h('div', null, notional + ' ' + ntCcy), T.h('div', { class: 'cl2', title: 'maturity' + (c.kind === 'FX_FORWARD' ? ' (the value date)' : '') }, c.maturity_date || '')),
         T.h('td', { class: 'num ' + (T.signCls ? T.signCls(mark.value) : ''), title: markTitle }, amt(mark.value) + (mark.quality && mark.quality !== 'computed' ? ' ' + mark.quality : ''),
           ' ', modelBadge()),
-        T.h('td', { class: 'num', title: (c.margin_mode || '') + ': + received from the PB / - posted to the PB' }, money(c, 'vm_balance')),
-        T.h('td', { class: 'num' }, money(c, 'im_balance')),
+        T.h('td', { class: 'num stack', title: (c.margin_mode || '') + ': + received from the PB / - posted to the PB; the initial margin posted below' },
+          T.h('div', null, money(c, 'vm_balance')), T.h('div', { class: 'cl2' }, 'IM ' + money(c, 'im_balance'))),
         T.h('td', { class: 'num' }, c.dv01 == null && c.dv01_c == null ? 'n/a' : money(c, 'dv01')));
       body.appendChild(tr);
       if (open) { body.appendChild(T.h('tr', { class: 'detail' }, T.h('td', { colspan: String(COLS) }, drawer(c)))); }
@@ -920,10 +1195,17 @@
       var kv = [];
       if (c.source_label) { kv.push(['source', T.h('span', null, asofBadge(c), asofBadge(c) ? ' ' : '', c.source_label)]); }
       if (c.confirm_status) { kv.push(['confirmation', c.confirm_label || c.confirm_status]); }
+      else if (c.confirm_note) { kv.push(['confirmation', c.confirm_note]); }
       kv.push(['dealt', dealtText(c)]);
       kv.push(['side', sideText(c.side, c)]);
-      kv.push(['notional', money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '')]);
-      kv.push(['dates', (c.trade_date ? 'traded ' + c.trade_date + ' . ' : '') + (c.start_date || '') + ' to ' + (c.maturity_date || '') + ' . ' + (c.margin_mode || 'CTM') +
+      var fwdOpt = /^(EQ|FX)_(OPTION|FORWARD)$/.test(String(c.kind || ''));
+      if (c.kind === 'FX_FORWARD' && T.num(d, 'notional_base') != null && d.pair) {
+        kv.push(['notional', fxNotionalText(c, d)]);
+      } else {
+        kv.push(['notional', money(c, 'notional') + ' ' + (c.notional_ccy || c.currency || '')]);
+      }
+      kv.push(['dates', (c.trade_date ? 'traded ' + c.trade_date + ' . ' : '') + (fwdOpt ? (c.kind === 'FX_FORWARD' ? 'value date ' : (c.kind === 'EQ_FORWARD' ? 'maturity ' : 'expiry ')) +
+        (c.maturity_date || '') : (c.start_date || '') + ' to ' + (c.maturity_date || '')) + ' . ' + (c.margin_mode || 'CTM') +
         ' variation margin' + (c.asof && c.entered_ts ? ' . entered ' + nyTime(c.entered_ts) + ' ET' : '')]);
       if (c.curve_spread_text) { kv.push(['curve spread', c.curve_spread_text]); }
       var now = nowText(c);
@@ -936,7 +1218,12 @@
       }
       kv.push(['last VM mark', money(c, 'mark') + (vmCount ? ' (the mark at the last variation margin; 0 after a settled-to-market settlement)'
         : ' (no variation margin yet: the mark at booking)')]);
-      kv.push(['accrued', accruedText(c)]);
+      var optFwd = /^(EQ|FX)_(OPTION|FORWARD)$/.test(String(c.kind || ''));      /* OTC-18: no swap-only rows (accruals, periods) on an option / forward */
+      if (!optFwd) { kv.push(['accrued', accruedText(c)]); }
+      if (optFwd && d.delivery && d.delivery.receive) {
+        kv.push(['delivery', 'receive ' + (d.delivery.receive[0] || '') + ' ' + T.fmt.cents(Number(d.delivery.receive[1]) || 0) + ' . pay ' + (d.delivery.pay[0] || '') + ' ' +
+          T.fmt.cents(Number(d.delivery.pay[1]) || 0) + ' on ' + (d.expiry || c.maturity_date || '')]);
+      }
       if (c.kind === 'TRS') {
         var fn = d.financing_now || null;
         kv.push(['financing now', fn ? (fmtPct(fn.rate) + ' (SOFR ' + fn.sofr + ' % ' + fn.obs_date + ', spread ' + fmtPct(d.spread) + ')') : 'no SOFR print within 10 days (waits; never defaulted)']);
@@ -956,10 +1243,13 @@
       if (c.detail_error) { kv.push(['detail', c.detail_error]); }
       kv.push(['next events', eventsText(c.next_events) || 'none']);
       kv.push(['DV01', c.dv01 == null && c.dv01_c == null ? 'n/a' : money(c, 'dv01') + ' (PV change for +1 bp)']);
-      kv.push(['swap result', money(c, 'result') + ' realised' + ((T.num(c, 'financing') || 0) !== 0 ? ' . financing ' + money(c, 'financing') : '') +
-        ((T.num(c, 'coupons') || 0) !== 0 ? ' . coupons / premium ' + money(c, 'coupons') : '') + ((T.num(c, 'dividends') || 0) !== 0 ? ' . dividend equivalents ' +
-        money(c, 'dividends') : '') + ' (financing and coupons: + paid / - received)']);
-      kv.push(['remaining periods', String(c.remaining_periods == null ? '' : c.remaining_periods)]);
+      if (optFwd) { kv.push(['result', money(c, 'result') + ' realised (at expiry, maturity or termination)']); }
+      else {
+        kv.push(['swap result', money(c, 'result') + ' realised' + ((T.num(c, 'financing') || 0) !== 0 ? ' . financing ' + money(c, 'financing') : '') +
+          ((T.num(c, 'coupons') || 0) !== 0 ? ' . coupons / premium ' + money(c, 'coupons') : '') + ((T.num(c, 'dividends') || 0) !== 0 ? ' . dividend equivalents ' +
+          money(c, 'dividends') : '') + ' (financing and coupons: + paid / - received)']);
+      }
+      if (!optFwd) { kv.push(['remaining periods', String(c.remaining_periods == null ? '' : c.remaining_periods)]); }
       box.appendChild(T.kv(kv));
       var vm = h.vm || [];
       var vmBox = T.h('div', { class: 'section' }, T.h('h3', null, 'Variation margin (' + vm.length + ')'));
@@ -982,13 +1272,30 @@
         var b2 = T.h('tbody');
         rs.forEach(function (r) {
           var dd = r.detail || {};
-          b2.appendChild(T.h('tr', null, T.h('td', null, r.event_date), T.h('td', null, r.kind), T.h('td', { class: 'num' }, r.kind === 'FIX' ? '' : money(r, 'amount')),
+          b2.appendChild(T.h('tr', null, T.h('td', null, r.event_date), T.h('td', { title: r.kind || '' }, eventWords(r.kind)), T.h('td', { class: 'num' }, r.kind === 'FIX' ? '' : money(r, 'amount')),
             T.h('td', { class: 'l', style: 'white-space:normal' }, resetText(r.kind, dd)), T.h('td', null, entryLink(r.entry_id))));
         });
         t2.appendChild(b2); rsBox.appendChild(T.h('div', { class: 'st-wrap' }, t2));
       }
       box.appendChild(rsBox);
+      box.appendChild(timelineBox(c.contract_id));
       return box;
+    }
+    /* OMS-10: the contract's life in time order (quote requested, quoted, accepted, booked, IM, confirmation, each VM, fixings, payments,
+       resets, a credit event, the termination) - loaded once per drawer opening, kept for 30 s */
+    function timelineBox(cid) {
+      var host = T.h('div', { class: 'section' }, T.h('h3', null, 'Timeline'));
+      var slot = T.h('div', { class: 'empty' }, 'loading ...');
+      host.appendChild(slot);
+      var cached = state.timelines[cid];
+      function paint(rows) { host.replaceChild(timelineTable(rows), slot); }
+      if (cached && Date.now() - cached.at < 30000) { paint(cached.rows); return host; }
+      T.api.get('/api/otc/contracts/' + encodeURIComponent(cid) + '/timeline').then(function (r) {
+        var rows = (r && r.timeline) || [];
+        state.timelines[cid] = { rows: rows, at: Date.now() };
+        if (connected(slot)) { paint(rows); }
+      }, function (e) { if (connected(slot)) { slot.textContent = 'the timeline could not be loaded: ' + describe(e); } });
+      return host;
     }
     /* one line per otc_resets row: IRS fixings and payments, TRS resets, XCCY exchanges / coupons / FX resets */
     function resetText(kind, d) {
@@ -1069,7 +1376,7 @@
       });
     }
 
-    handle.refresh = function () { return load(); };
+    handle.refresh = function () { if (state.rfqH) { state.rfqH.refresh(); } return load(); };
     handle.unmount = function () { stop(); T.clear(root); };
     handle.readTerms = function () { return readTerms(state.kind, vals()); };
     handle.prefill = prefill;
@@ -1149,6 +1456,9 @@
   T.ticketKinds.SWAP = { open: dockOpen };
 
   T.components.swapticket = { mount: mount, prefill: prefill, terminate: terminate, toCents: toCents, pctToFraction: pctToFraction, fractionToPct: fractionToPct,
-    fmtPct: fmtPct, eventsText: eventsText, fixingText: fixingText, sideText: sideText, readTerms: readTerms, formValues: formValues };
+    fmtPct: fmtPct, eventsText: eventsText, fixingText: fixingText, sideText: sideText, readTerms: readTerms, formValues: formValues,
+    /* C14 / UI-11: the quote requests and the contract timeline, for the CDX and options tickets and the Derivatives page */
+    rfqRequest: rfqRequest, mountRfqs: mountRfqs, acceptDialog: acceptDialog, timelineTable: timelineTable, kindShort: kindShort, nowText: nowText,
+    dealtText: dealtText, accruedText: accruedText, asofBadge: asofBadge, modelBadge: modelBadge, QUOTE_SOURCE: QUOTE_SOURCE };
   if (T.keys && typeof T.keys.uses === 'function') { T.keys.uses('components/swapticket.js'); }   /* its keys follow Settings > Keyboard */
 })();

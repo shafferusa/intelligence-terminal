@@ -58,7 +58,7 @@
     if (st && st.timer) { clearInterval(st.timer); }
     st = { body: body, account_id: account_id, instrument_id: null, inst: null, side: 'BUY', seq: 0, preview: null, previewAt: 0, deb: null, busy: false, ui: {}, timer: null };
     var root = T.h('div', { class: 'bt', tabindex: '-1' });
-    var acct = T.h('div', { class: 'meta' }, 'account ' + (T.accountName ? T.accountName(account_id) : account_id) + ' (' + account_id + ')');
+    var acct = T.h('div', { class: 'meta', title: account_id }, 'account ' + (T.accountName ? T.accountName(account_id) : account_id));   /* V104R2-BW-02 (f): the name; the id in the hover */
     var inst = T.h('input', { type: 'text', id: 'ticket-instrument', placeholder: 'CUSIP, coupon or maturity (e.g. 912810 or 2035)', autocomplete: 'off', 'aria-label': 'bond' });
     var dd = T.h('div', { class: 'dd', hidden: true });
     var ta = T.h('div', { class: 'ta' }, inst, dd);
@@ -186,14 +186,14 @@
     }, function (e) {
       if (!st || seq !== st.seq) { return; }
       st.preview = null; st.ui.submit.disabled = true;
-      setStatus('preview failed: ' + (e.code || '') + ' ' + (e.message || e), 'err');
+      setStatus('preview failed: ' + T.api.describe(e), 'err');
     });
   }
   function setStatus(text, cls) { st.ui.status.textContent = text; st.ui.status.className = 'st' + (cls ? ' ' + cls : ''); }
 
   function paintPreview(p) {
     var pv = T.clear(st.ui.pv);
-    (p.blockers || []).forEach(function (b) { pv.appendChild(T.h('div', { class: 'blk' }, T.h('b', null, b.code), ' ', b.message)); });
+    (p.blockers || []).forEach(function (b) { pv.appendChild(T.h('div', { class: 'blk', title: b.code || '' }, b.message || T.codeWords(b.code))); });   /* V104R2-BW-04 */
     (p.warnings || []).forEach(function (w) { pv.appendChild(T.h('div', { class: 'wrn' }, w)); });
     if (p.price == null) { if (p.mark) { pv.appendChild(T.h('div', null, 'mark ', T.px(p.mark))); } return; }
     var ccy = p.currency || 'USD';
@@ -215,10 +215,20 @@
       ['position', T.fmt.qty(p.position_before) + ' -> ' + T.fmt.qty(p.position_after), 'face held in this account'],
       ['DV01 change', p.dv01_change != null ? 'USD ' + money(p.dv01_change) + ' per +1 bp' : 'n/a', 'P&L of this trade\'s face for +1 bp (a purchase adds a negative DV01)']
     ];
-    if (fund.note) { kv.push(['funding', fund.note, JSON.stringify(fund)]); }
+    if (fund.note) { kv.push(['funding', fund.note, fundTitle(fund)]); }
     pv.appendChild(T.kv(kv));
     if (p.arithmetic) { pv.appendChild(T.h('div', { class: 'hint' }, p.arithmetic)); }
   }
+
+  /* the funding detail for the hover, in words (never the raw JSON: amounts as money, keys as words) */
+  function fundTitle(f) {
+    return Object.keys(f || {}).filter(function (k) { return k !== 'note' && f[k] != null && f[k] !== '' && typeof f[k] !== 'object'; }).map(function (k) {
+      var v = f[k];
+      return k.replace(/_/g, ' ') + ': ' + (typeof v === 'string' && /^-?\d+\.\d{2}$/.test(v) ? money(v) : (typeof v === 'boolean' ? (v ? 'yes' : 'no') : String(v)));
+    }).join('\n');
+  }
+  /* V104R2-BW-02 (c): the fill line without the internal conventions group the stored memo ends with ('(EXECUTION, ACCRUED, COST_BASIS)') */
+  function memoWords(m) { return String(m || '').replace(/\s*\((?:[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)(?:,\s*[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)*\)\s*$/, ''); }
 
   function doSubmit() {
     if (!st || st.busy) { return; }
@@ -232,14 +242,14 @@
       var eco = (r && r.economics) || {};
       setStatus((r && r.replayed ? 'already submitted: ' : 'filled: ') + fill.side + ' ' + T.fmt.qty(fill.qty) + ' ' + (st.ui.inst.value || '') + ' @ ' + fill.price, 'ok');
       st.holdUntil = Date.now() + 20000;
-      T.clear(st.ui.result).appendChild(T.h('div', { class: 'wrn', style: 'border-left-color:var(--up)' }, (fill.memo || '') + ' . net ' + (eco.currency || '') + ' ' + money(eco.net_cash) + ' . fill ' + (fill.fill_id || '')));
+      T.clear(st.ui.result).appendChild(T.h('div', { class: 'wrn', style: 'border-left-color:var(--up)', title: fill.memo || '' }, memoWords(fill.memo) + ' . net ' + (eco.currency || '') + ' ' + money(eco.net_cash) + ' . fill ' + (fill.fill_id || '')));
       T.ui.toast('bond ' + fill.side + ' ' + T.fmt.qty(fill.qty) + ' @ ' + fill.price + ' booked', 'ok');
       ['positions', 'account_detail', 'accounts', 'orders'].forEach(function (n) { T.poll.kick(n); });
       T.poll.kickAll();
       invalidate(); runPreview(true);
     }, function (e) {
       st.busy = false;
-      setStatus('refused: ' + (e.code || '') + ' ' + (e.message || e), 'err');
+      setStatus('refused: ' + T.api.describe(e), 'err');
       st.holdUntil = Date.now() + 20000;
       runPreview(true);
     });
@@ -295,7 +305,7 @@
             onKey: function (k, r) { if (k === 'b' || k === 's') { act(r, k === 'b' ? 'BUY' : 'SELL'); return true; } return false; },
             onClick: function (r, e) { var b = e.target.closest('button[data-act]'); if (b) { act(r, b.dataset.act === 'b' ? 'BUY' : 'SELL'); } } });
         } else { grid.update(rows(d)); }
-      }, function (e) { if (dead) { return; } err.hidden = false; err.textContent = 'foreign bonds: ' + (e.code || '') + ' ' + (e.message || e); });
+      }, function (e) { if (dead) { return; } err.hidden = false; err.textContent = 'foreign bonds: ' + T.api.describe(e); });
     }
     load();
     timer = setInterval(function () { if (!document.hidden && document.body.contains(root)) { load(); } }, 60000);

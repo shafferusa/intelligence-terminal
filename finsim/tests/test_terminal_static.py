@@ -5,9 +5,10 @@
 - every `:root` token of finsim/finsim/static/style.css (and the light theme) is present in terminal.css with the SAME
   value, plus the s17.2 aliases;
 - index.html carries the mount roots the scripts expect (#bookswitcher, #history, ...) and no #news root (news was removed in 1.0.5);
-- the shell of FINSIM1_PLAN C1 / 15.7: the routes (the Dashboard is the default and the fallback, #/news redirects, the new pages),
-  the 74-action key registry with the 1.0.5 default map and its hiding rule, the optional pages listed in index.html, api.py and the
-  fixture server alike, the sidebar's first row, the meta description;
+- the shell of FINSIM1_PLAN C1 / 15.7 / P1b: the routes (the Dashboard is the default and the fallback, #/news redirects, the new
+  pages, the old Settings > Data Status address), the 74-action key registry with the 1.0.6 default map (Q10) and its hiding rule,
+  the optional pages listed in index.html, api.py and the fixture server alike, the sidebar in the directive's order with its keys,
+  the meta description, no news string left in the shell's files;
 - the fixture server serves every s15 route with its fixture (WP-13's fixtures may be absent -> reported as skipped),
   substitutes the time placeholders, honours scenarios, serves the static UI with no-store and stubs optional files;
 - no glossary (owner amendment 18:28); every page / component registers itself; brackets balance in every JS file
@@ -273,26 +274,33 @@ class StaticFilesTest(unittest.TestCase):
         acts.update({"ticket.hedge_%d" % n: str(n) for n in range(1, 6)})
         self.assertEqual(74, len(acts))                                         # FINSIM1_PLAN C1: 68 - page.news + 7 page actions
         self.assertNotIn("page.news", acts)
-        # the 1.0.5 default map (FINSIM1_PLAN 15.7 item 3): every 1.0.4 key except F12, which opens the Dashboard
+        # the 1.0.6 default map (FINSIM1_PLAN C1 / Q10): the new navigation's pages on the keys the account pages held, F12 the Dashboard
         owner = {"F1": "nav.us_exchange", "F2": "nav.debt", "F3": "nav.credit", "F4": "nav.foreign_fx", "F5": "nav.private", "F6": "nav.prime_broker",
-                 "F7": "page.portfolio", "F8": "nav.orders", "F9": "dock.toggle", "F10": "page.treasury", "F11": "page.risk", "F12": "page.dashboard",
-                 "Shift+F1": "book.personal", "Shift+F2": "book.fund", "Shift+F3": "book.institutional", "Shift+F4": "nav.positions", "Shift+F5": "nav.cash",
-                 "Shift+F6": "nav.transactions", "Shift+F7": "page.accounting", "Shift+F8": "page.activity", "Shift+F9": "page.watchlists",
+                 "F7": "page.portfolio", "F8": "page.pending", "F9": "dock.toggle", "F10": "page.treasury", "F11": "page.risk", "F12": "page.dashboard",
+                 "Shift+F1": "book.personal", "Shift+F2": "book.fund", "Shift+F3": "book.institutional", "Shift+F4": "page.accounts", "Shift+F5": "page.cash_collateral",
+                 "Shift+F6": "page.derivatives", "Shift+F7": "page.accounting", "Shift+F8": "page.completed", "Shift+F9": "page.watchlists",
                  "Shift+F10": "page.history", "Shift+F11": "page.settings", "Shift+F12": "app.help_2", "/": "app.search", "?": "app.help", "Escape": "dialog.close"}
         for key, aid in owner.items():
             self.assertEqual(key, acts.get(aid), aid)
         fkeys = {k: a for a, k in acts.items() if k and re.fullmatch(r"(Shift\+)?F([1-9]|1[0-2])", k)}
         self.assertEqual({k: v for k, v in owner.items() if re.fullmatch(r"(Shift\+)?F([1-9]|1[0-2])", k)}, fkeys)   # exactly the 24 F-key slots above
-        # the new page actions have no default key in 1.0.5 and name the page that must be loaded for them to show (the hiding rule)
-        new_pages = {"page.pending": "pending", "page.completed": "completed", "page.accounts": "accounts", "page.cash_collateral": "cash_collateral",
-                     "page.derivatives": "derivatives"}
-        for aid in list(new_pages) + ["page.trading"]:
+        # the new page actions carry their Q10 key and name the page that must be loaded for them to show (the hiding rule); the
+        # account pages' tabs, Activity and Trading keep their actions without a default key (bindable in Settings > Keyboard)
+        new_pages = {"page.pending": ("pending", "F8"), "page.completed": ("completed", "Shift+F8"), "page.accounts": ("accounts", "Shift+F4"),
+                     "page.cash_collateral": ("cash_collateral", "Shift+F5"), "page.derivatives": ("derivatives", "Shift+F6")}
+        for aid in ("page.trading", "page.activity", "nav.orders", "nav.positions", "nav.cash", "nav.transactions", "nav.markets"):
             self.assertIn(aid, acts)
             self.assertIsNone(acts[aid], aid)
-        for aid, page in new_pages.items():                                   # a label may hold an escaped quote (that account\'s)
-            self.assertRegex(src, r"act\('%s', 'Pages', null, '(?:[^'\\]|\\.)*', \{ page: '%s' \}\);" % (re.escape(aid), page))
+        for aid, (page, key) in new_pages.items():                            # a label may hold an escaped quote (that account\'s)
+            self.assertEqual(key, acts[aid], aid)
+            self.assertRegex(src, r"act\('%s', 'Pages', '%s', '(?:[^'\\]|\\.)*', \{ page: '%s' \}\);" % (re.escape(aid), re.escape(key), page))
         self.assertRegex(src, r"act\('page\.dashboard', 'Pages', 'F12', 'Dashboard', \{ page: 'dashboard' \}\);")
         self.assertRegex(src, r"act\('page\.trading', 'Pages', null, '[^']*'\);")                       # Trading is always available
+        self.assertRegex(src, r"act\('page\.history', 'Pages', 'Shift\+F10', 'History: [^']*'\);")       # the hub (core.js: goHistoryHub)
+        # the Pages group follows the sidebar's order
+        order = [m.group(1) for m in re.finditer(r"act\('(page\.[a-z_]+)', 'Pages'", src)]
+        self.assertEqual(["page.dashboard", "page.portfolio", "page.trading", "page.watchlists", "page.pending", "page.completed", "page.accounts", "page.treasury",
+                          "page.cash_collateral", "page.derivatives", "page.history", "page.settings", "page.risk", "page.accounting", "page.activity"], order)
         # the help ('?') and Settings > Keyboard list only actions that work: T.keys.groups() keeps the available ones
         self.assertIn("return !a.page || !!(T.pages && T.pages[a.page]);", src)
         self.assertIn("return a.group === g && available(a.id);", src)
@@ -361,11 +369,23 @@ class ShellTests(unittest.TestCase):
         self.assertIn("T.ui.toast('That page was removed - showing the Dashboard', '', 4000); replaceHash(DEFAULT_ROUTE);", core)
         self.assertIn("if (!location.hash) { replaceHash(DEFAULT_ROUTE); }", core)
         self.assertNotIn("#news", core)
-        # the provider names of the retired news sources stay in T.PROVIDER_LABEL until the rest of the news code goes (P1b); they are
-        # inert (no such provider is ever loaded or reported), so only the rest of core.js is searched
+        # P1b (UI-15): the retired news sources have no provider label any more; no news string is left in core.js
         start = core.index("T.PROVIDER_LABEL = {")
-        rest = core[:start] + core[core.index("};", start):]
-        self.assertNotIn("Daily News", rest)
+        labels = core[start:core.index("};", start)]
+        for gone in ("yahoo_news", "newspaper", "news_fed", "news_yahoo", "news_paper"):
+            self.assertNotIn(gone, labels, gone)
+        self.assertIsNone(re.search(r"(?<![a-z_])fed:", labels))                       # 'fed' (news) gone; 'nyfed' (SOFR fallback) stays
+        for s in NEWS_STRINGS:
+            self.assertNotIn(s.lower(), core.lower(), s)
+        # UI-20: the old Settings > Data Status address opens Settings > Market data (the address bar is corrected)
+        self.assertIn("var TAB_ALIASES = { settings: { data: 'market-data' } };", core)
+        self.assertIn(r"if (alias) { r.tab = alias; r.hash = r.hash.replace(/\/[^\/?]*$/, '/' + alias); replaceHash(r.hash); }", core)
+        # C1 / P1b: Shift+F10 opens the History hub (the last past lifetime's pages only while the hub is not in the build)
+        self.assertIn("'page.history': goHistoryHub,", core)
+        self.assertIn("if (historyHub()) { T.router.go('#/history'); return; }", core)
+        # V104R2-BW-04: an error is said in the server's words, never led by its internal code
+        self.assertNotIn("(e.code + ': ' + e.message)", core)
+        self.assertIn("else if (e && e.code && (!e.message || e.message === e.code)) { msg = T.codeWords(e.code); }", core)
         # #/trading: the last venue used (remembered on a Markets / instrument page), else US Exchange Markets
         self.assertIn("T.store.get('last_venue', null)", core)
         self.assertIn("T.store.set('last_venue', r.account)", core)
@@ -411,21 +431,61 @@ class ShellTests(unittest.TestCase):
         m = re.search(r'<meta name="description" content="([^"]+)">', html)
         self.assertEqual("Ledger-backed paper-trading simulator: real delayed market data, simulated executions, fictional capital.", m.group(1))
         self.assertNotIn("no simulation", html)
+        # P8R1-01: the page declares its own (empty, inline) icon in <head>, so the browser never asks the server for /favicon.ico - the
+        # server has none, and that 404 is a console error on the owner's first page load (rule 5: 0 console errors)
+        head = html.split("</head>")[0]
+        self.assertIn('<link rel="icon" href="data:,">', head)
+        self.assertNotIn("favicon.ico", html)
 
-    def test_sidebar_first_row_and_no_news_strings(self):
+    def test_sidebar_order_keys_and_no_news_strings(self):
+        """P1 task 3 (UI-06): the sidebar in the directive's order, each row with its key action; Treasury inside Accounts; History lit
+        on the hub and on an archived lifetime's pages (Settings no longer is); the badges only from the trade blotters' counters; the PB
+        onboarding row and the Activity row only as fallbacks while the Accounts page / the History hub are not in the build."""
         side = read(os.path.join(STATIC, "components", "sidebar.js"))
-        first = re.search(r"nav\.appendChild\(item\('([^']+)', '([^']+)', \{ key: keyOf\('([a-z_.]+)'\)", side)
-        self.assertEqual(("#/dashboard", "Dashboard", "page.dashboard"), first.groups())    # 15.7 item 2: the Dashboard row (F12) at the top
+        rows = [m.groups() for m in re.finditer(r"nav\.appendChild\(item\('(#/[^']+)', '([^']+)', \{ key: keyOf\('([a-z_.]+)'\)", side)]
+        self.assertEqual([("#/dashboard", "Dashboard", "page.dashboard"), ("#/portfolio", "Portfolio", "page.portfolio"), ("#/watchlists", "Watchlists", "page.watchlists"),
+                          ("#/pending", "Pending Trades", "page.pending"), ("#/completed", "Completed Trades", "page.completed"), ("#/accounts", "Accounts", "page.accounts"),
+                          ("#/treasury", "Treasury", "page.treasury"), ("#/cash", "Cash & Collateral", "page.cash_collateral"),
+                          ("#/derivatives", "Derivatives", "page.derivatives"), ("#/history", "History", "page.history"), ("#/settings", "Settings", "page.settings"),
+                          ("#/risk", "Risk", "page.risk"), ("#/accounting", "Accounting", "page.accounting"), ("#/activity", "Activity", "page.activity")], rows)
+        body = side[side.index("function render()"):side.index("/* PO-15: the dealers")]
+        # TRADING: the group title (#/trading) comes after Portfolio, the venue rows after it, Watchlists closes the group
+        self.assertLess(body.index("item('#/portfolio'"), body.index("nav.appendChild(tradingTitle());"))
+        self.assertLess(body.index("nav.appendChild(tradingTitle());"), body.index("accts.forEach(function (a, i) {"))
+        self.assertLess(body.index("accts.forEach(function (a, i) {"), body.index("item('#/watchlists'"))
+        self.assertIn("T.h('a', { href: '#/trading', class: 'nav-section nav-group-link'", side)
+        # Treasury is a sub-row of Accounts; History is lit on the hub and on #/h/... (r.page === 'history'); Settings only on its own pages
+        self.assertIn("item('#/treasury', 'Treasury', { key: keyOf('page.treasury'), sub: true })", side)
+        self.assertIn("isActive: function (r) { return r.page === 'history'; }", side)
+        self.assertIn("item('#/settings', 'Settings', { key: keyOf('page.settings'), isActive: function (r) { return r.page === 'settings'; } })", side)
+        # the badges: GET /api/dashboard/counts only while the dashboard module is bound (C2), never a guessed count
+        self.assertIn("if (!T.hasModule('dashboard')) {", side)
+        self.assertIn("T.api.get('/api/dashboard/counts')", side)
+        self.assertIn("if (!c || !c.present) { return { pending: 0, completed: 0, pendingTitle: '', completedTitle: '' }; }", side)
+        # the fallbacks: the PB onboarding row while the Accounts page is not built, Activity while the History hub is not built
+        self.assertIn("if (!T.pages.accounts) {", side)
+        self.assertIn("if (!historyHubBuilt()) { nav.appendChild(item('#/activity'", side)
+        self.assertIn("openPbModal: openPbModal", side)                               # P6's Accounts page header opens it
         for name, path in (("sidebar.js", os.path.join(STATIC, "components", "sidebar.js")), ("dashboard.js", os.path.join(STATIC, "pages", "dashboard.js")),
-                           ("index.html", INDEX)):
+                           ("index.html", INDEX), ("settings.js", os.path.join(STATIC, "pages", "settings.js")), ("keys.js", os.path.join(STATIC, "keys.js")),
+                           ("attention.js", os.path.join(STATIC, "components", "attention.js")), ("core.js", os.path.join(STATIC, "core.js"))):
             src = read(path)
             for s in NEWS_STRINGS:
                 self.assertNotIn(s.lower(), src.lower(), "%s still says %r" % (name, s))
-        self.assertNotIn("Daily News", read(os.path.join(STATIC, "keys.js")))
-        # Settings > Data Status shows its news block only when a server still reports one (15.7 item 5)
+        # UI-15 / UI-20: Settings > Market data (status first, the preferences linked) with no news block, no news provider texts and no
+        # link to the retired game's archive (its command left the CLI); attention.js shows no news row
         settings = read(os.path.join(STATIC, "pages", "settings.js"))
-        self.assertIn("var nw = h.news || null;\n      if (nw) {\n        p.appendChild(T.h('h2', null, 'news'));", settings)
-        self.assertNotIn("news is off in this runtime", settings)
+        self.assertIn("['market-data', 'Market data']", settings)
+        self.assertNotIn("['data', 'Data Status']", settings)
+        for gone in ("h.news", "yahoo_news", "newspaper:", "/api/legacy", "injection_flags"):
+            self.assertNotIn(gone, settings, gone)
+        self.assertIsNone(re.search(r"(?<![a-z_])fed: '", settings))                    # the Federal Reserve news feed's row; 'nyfed' stays
+        self.assertIn("p.appendChild(T.h('h2', null, 'market-data and execution preferences'));", settings)
+        for link in ("#/settings/general", "#/settings/calendar", "#/settings/margins"):
+            self.assertIn(link, settings)
+        att = read(os.path.join(STATIC, "components", "attention.js"))
+        self.assertNotIn("INJECTION_FLAGGED", att)
+        self.assertNotIn("h.news", att)
 
     def test_c4_shell_classes(self):
         css = read(NEW_CSS)
@@ -460,6 +520,33 @@ class FixtureServerTest(unittest.TestCase):
         hdrs = {k.lower(): v for k, v in r.getheaders()}
         c.close()
         return r.status, raw, hdrs
+
+    def test_refusals_lead_with_words_never_an_internal_code(self):
+        """1.0.4 leftovers V104R2-BW-04 / BW-02 / BW-05 / OTC-02 and FINSIM1 P1b-R3 / P6-R2 / P4-R3 (the integrator, 1.0.6): no ticket, desk
+        or page leads a refusal, blocker or warning with its internal code (the message is shown, the code only in the hover; an error goes
+        through ``T.api.describe``); the bond and private ticket heads name the account without its id; the bond fill line drops the stored
+        memo's conventions group and its funding hover is words, not JSON; the instrument page's session chip is in words; the repo desk
+        asks for the soft preview (a refusal answers 200, no failed request); a price chip reads CLOSE only at or after its session's end;
+        the Completed Trades drawer shows an OTC contract's timeline."""
+        lead = re.compile(r"T\.h\('b', null, (?:b|w|e)\.code|(?:b|w|r|e|x)\.code \+ ': '|\((?:e|err)\.code \|\| 'ERROR'\) \+ ': '"
+                          r"|\((?:e|err)\.code \|\| ''\) \+ ' ' \+|e\.code \+ ': ' : ''")
+        hits = []
+        for folder in ("components", "pages"):
+            for name in sorted(os.listdir(os.path.join(STATIC, folder))):
+                if name.endswith(".js"):
+                    for i, line in enumerate(read(os.path.join(STATIC, folder, name)).splitlines(), 1):
+                        if lead.search(line):
+                            hits.append(f"{folder}/{name}:{i}: {line.strip()[:120]}")
+        self.assertEqual([], hits)
+        bond, priv = read(os.path.join(STATIC, "components", "bondticket.js")), read(os.path.join(STATIC, "components", "privateticket.js"))
+        self.assertNotIn("' (' + account_id + ')'", bond)
+        self.assertNotIn("' (' + opts.account_id + ')", priv)
+        self.assertIn("memoWords(fill.memo)", bond)
+        self.assertNotIn("JSON.stringify(fund)", bond)
+        self.assertIn("groupWords(s.group)", read(os.path.join(STATIC, "pages", "instrument.js")))
+        self.assertIn("Object.assign({ soft: true }, b)", read(os.path.join(STATIC, "components", "creditdesk.js")))
+        self.assertIn("beforeSessionEnd(rec, qt) ? 'LAST ' : 'CLOSE '", read(os.path.join(STATIC, "components", "freshness.js")))
+        self.assertIn("T.components.swapticket.timelineTable(d.timeline)", read(os.path.join(STATIC, "pages", "completed.js")))
 
     def test_every_route_is_served(self):
         missing, served = [], 0

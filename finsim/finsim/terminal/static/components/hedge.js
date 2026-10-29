@@ -183,7 +183,7 @@
         return list;
       }, function (e) {
         if (!isLive(gen) || e.code === 'SUPERSEDED') { return null; }
-        st.status = 'error'; st.note = (e.code || 'ERROR') + ': ' + (e.message || e); paint();
+        st.status = 'error'; st.note = T.api.describe(e); paint();
         return null;
       });
     }
@@ -244,7 +244,7 @@
         paint();
       }, function (e) {
         if (gen !== st.pos.gen || e.code === 'SUPERSEDED') { return; }
-        st.pos.spec = null; st.pos.status = 'error'; st.pos.note = (e.code || 'ERROR') + ': ' + (e.message || e); paint();
+        st.pos.spec = null; st.pos.status = 'error'; st.pos.note = T.api.describe(e); paint();
       });
     }
     function mainAction(c) {
@@ -306,7 +306,7 @@
       pollReady('/api/hedges', q, gen, function () { return root.isConnected; }).then(function (r) {
         if (!isLive(gen)) { return; }
         setCands((r && r.candidates) || [], r || {}); st.candsKey = k;
-      }, function (err) { if (isLive(gen) && err.code !== 'SUPERSEDED') { st.status = 'error'; st.note = (err.code || 'ERROR') + ': ' + (err.message || err); paint(); } });
+      }, function (err) { if (isLive(gen) && err.code !== 'SUPERSEDED') { st.status = 'error'; st.note = T.api.describe(err); paint(); } });
     }
     function positionLine() {
       var p = st.position || {};
@@ -403,7 +403,7 @@
         if (r && r.pending) { throw new T.ApiError(202, 'PENDING', 'catalogue pending'); }
         catalogue[k] = r; catalogueKeys.push(k); while (catalogueKeys.length > 8) { delete catalogue[catalogueKeys.shift()]; }
         st.strat.list = r; st.strat.status = 'idle'; paint();
-      }, function (e) { st.strat.status = 'error'; st.strat.note = (e.code || 'ERROR') + ': ' + (e.message || e); paint(); });
+      }, function (e) { st.strat.status = 'error'; st.strat.note = T.api.describe(e); paint(); });
     }
     function stratByKey(k) { var l = (st.strat.list && st.strat.list.strategies) || []; for (var i = 0; i < l.length; i++) { if (l[i].key === k) { return l[i]; } } return null; }
     function defaultParams(s) {
@@ -426,7 +426,7 @@
         paint();
       }, function (e) {
         if (gen !== st.strat.gen || e.code === 'SUPERSEDED') { return; }
-        st.strat.spec = null; st.strat.status = 'error'; st.strat.note = (e.code || 'ERROR') + ': ' + (e.message || e); paint();
+        st.strat.spec = null; st.strat.status = 'error'; st.strat.note = T.api.describe(e); paint();
       });
     }
     function schedulePreview() { clearTimeout(st.strat.timer); st.strat.timer = setTimeout(previewStrategy, 400); }

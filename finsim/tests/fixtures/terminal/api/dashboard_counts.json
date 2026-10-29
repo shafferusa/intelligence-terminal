@@ -1,0 +1,19 @@
+{
+ "scope": "P2:ALL",
+ "present": true,
+ "reason": null,
+ "counts": {
+  "working": 2,
+  "partial": 0,
+  "held": 0,
+  "queued": 0,
+  "waiting_parent": 0,
+  "rfq_open": 0,
+  "rejected_today": 1,
+  "settling": 5,
+  "failed": 0
+ },
+ "pending_badge": 2,
+ "completed_badge": 5,
+ "ms": 3.0
+}

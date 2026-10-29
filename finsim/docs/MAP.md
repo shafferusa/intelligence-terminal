@@ -14,14 +14,15 @@ Final at the WP-15 integration (2026-10-21): every package of the workplan is me
 | `instruments.py`, `books.py`, `treasury.py` | the instrument master (universe seed, foreign-listing repair, futures listings, `otc_reference_ids`); books, lifetimes, eligibility (ECP floor, PB/OTC threshold, QP); capital, transfers, sweep-in / sweep-out |
 | `quotes/` (`http`, `providers`, `parsers`, `cache`, `rates`, `worker`), `marks.py` | Yahoo / Cboe / Treasury.gov / FRED / Frankfurter / FINRA fetchers and the `FakeProvider`; the quote and chain caches (freshness, pins); curve / rate / FX stores; the quote worker thread and its refresher slots; `MarkProvider` (per-kind dispatch: options, bonds, private, private credit, swaps) |
 | `orders.py`, `orders_rules.py`, `orders_preview.py`, `execution.py`, `matcher.py` | order validation, preview, submit / cancel / resume, trailing stops, AON packages; fills, `fund()` (own cash → one linked Treasury sweep → PB financing → refuse or the §11.6 overdraft rule); the matcher thread |
-| `products/options.py`, `products/futures.py`, `fx.py`, `credit.py`, `lending.py`, `lending_accruals.py`, `repo.py` | listed options (margin, exercise, expiry), futures (IM, daily VM, final), FX spot and currency loans, securities lending (borrow, 102 % collateral, nightly fee / rebate), repo (NOT_IN_THIS_BUILD stub) |
+| `products/options.py`, `products/futures.py`, `fx.py`, `credit.py`, `lending.py`, `lending_accruals.py`, `repo.py` | listed options (margin, exercise, expiry), futures (IM, daily VM, final), FX spot and currency loans, securities lending (borrow, 102 % collateral, nightly fee / rebate), repo and reverse repo against Treasuries (`repo.pledged_face` counts open repos and CSA pledges) |
 | `prime.py`, `lifetimes.py` | prime-broker accounts, editable schedules, financing / credit interest / monthly minimum, the PB headroom hook; Reset lifetime with history, onboarding (ISDA Master + CSA + PBA), book defaults |
+| `collateral.py` | cash, settlement, collateral and margin (FINSIM1 P6): settlement fail / resolve and the settlement states; restricted cash net per CSA (C9b adjuster "restricted (collateral received)"); the as-of sweeps and transfers and `cash.reaccrue` (C15 / C17); Reg T per account (`regt_view`, C9b adjuster "margin requirement (Reg T)", the light command `margin.terms`); margin calls (`margin_calls`, the MARGIN_CALL job at 17:20 ET - records only, never moves cash - `margin_calls_rows`); CSA pledges of Treasuries (`collateral_pledges`, `collateral.pledge` / `collateral.release`, `pledges_view`); the C16 reads (`summary`, `position_requirements`, `custodian_of`, `custody_statement`) and the Accounts / Cash & Collateral page reads (`accounts_view`, `cash_collateral_view`) |
 | `products/swaps.py`, `products/swaps_trs.py` | PB OTC swaps: IRS (dealing at model par ± the PB half-width, OFF_MARKET refusal, IM, signed DV01, daily VM CTM / STM, TERM or compounded SOFR, payments, termination, contract views); TRS and cross-currency (resets, financing and dividend accrual, notional exchanges, MTM FX resets) through the hooks WP-17 calls |
 | `products/private.py`, `products/private_credit.py`, `products/dividends.py`, `products/bonds.py` + `bonds_jobs.py` | Private Markets (sourced master, listings / acquisitions, negotiated secondaries, lock-ups); private credit loans; dividends and payments in lieu; bonds (Build 2: accrual, coupons, maturity, monthly model benchmarks; execution behind `build2_bonds`) |
 | `risk.py`, `compliance.py`, `hedges.py`, `strategies.py` + `strategies_catalogue.py`, `performance.py`, `news.py` | risk report (inform only), compliance notices, hedge candidates, the 60 strategy templates, performance statistics, Daily News |
 | `lifecycle.py`, `lifecycle_jobs.py`, `lifecycle_eod.py` | the lifecycle scheduler thread (30 s tick, catch-up by state, passes, backoff), the money jobs and `accrue_segment`, the end-of-day / product jobs and the REGISTRY |
 | `api.py`, `api_views.py`, `api_products.py`, `server.py`, `app.py`, `winpaths.py`, `smoke.py` | the Router and JSON codec (cents → decimal strings), the routes, the runtime (binds every optional module), the single-instance lock, the supervisor, `serve`; the launcher / installer; Windows known folders; the network probe |
-| `static/` | the UI: `core.js`, `terminal.css`, `index.html`, 17 components (ticket, preview, hedge, swapticket, privateticket, privatecredit, pbschedule, lifetimes, performance, grid, freshness, chart, chain, header, sidebar, bookswitcher, attention) and 16 pages |
+| `static/` | the UI: `core.js`, `terminal.css`, `index.html`, 17 components (ticket, preview, hedge, swapticket, privateticket, privatecredit, pbschedule, lifetimes, performance, grid, freshness, chart, chain, header, sidebar, bookswitcher, attention) and 16 pages, plus `pages/accounts.js` (Accounts, #/accounts) and `pages/cash_collateral.js` (Cash & Collateral, #/cash) |
 
 ## Data flow
 
@@ -33,7 +34,7 @@ quote worker thread (Yahoo / Cboe / Treasury.gov / FRED / FINRA / Frankfurter; F
       →  scoped integrity (L1–L25 on the touched keys) before COMMIT  →  on_commit listeners
       →  accounting.py read models (ledger at cost + one mark snapshot)  →  api*.py JSON  →  the UI (polls small snapshots)
 lifecycle thread (real clock, idempotent keys)  →  the same bus: settlements, accruals, VM, fixings, payments, resets,
-      expiries, collateral marks, sweeps, marks recorded at the close, snapshots, housekeeping, integrity
+      expiries, collateral marks, margin calls (17:20 ET, records only), sweeps, marks recorded at the close, snapshots, housekeeping, integrity
 ```
 
 Everything that changes money or positions is a command: one SQLite transaction, one `request_id` (replayed on retry, 409
@@ -86,6 +87,12 @@ shortfalls`; `encumbrance = Σ (1400 + 1300 + 1310 + 1320 + 1330)` (`Accounting.
 | pending settlements, borrows, loans, margin, collateral, OTC | `obligations(account_id)` |
 | excess liquidity, encumbrance | `liquidity(scope)` |
 | integrity L1–L25 (error, hold) and M1–M5 (warn) per lifetime | `integrity(mode, touched, snapshot, lifetime_id)`; `is_held(lifetime_id)` |
+| Reg T requirement, eligible collateral, excess / deficit, the margin cash held back | `collateral.regt_view(conn, account_id)`; the adjuster `collateral.margin_adjuster` |
+| margin required / posted / excess, collateral posted / received / encumbered, open calls, by counterparty and by account | `collateral.summary(services, scope)` |
+| a position's margin and collateral | `collateral.position_requirements(services, account_id)` |
+| margin calls | `collateral.margin_calls_rows(services, scope, from, to)` |
+| CSA pledges; Treasury securities as cash equivalents | `collateral.pledges_view(services, scope)`; `collateral.treasury_securities(services, scope)` |
+| custodian of an account; positions by custodian | `collateral.custodian_of(account_row)`; `collateral.custody_statement(services, scope)` |
 
 NAV identity used throughout (pinned per lifetime and per account by `tests/test_terminal_reconcile.py`): per account and
 currency, `S` = assets − liabilities at cost, `B` = their base at posting rates, `U` = Σ (market value − cost) incl. futures
@@ -122,3 +129,49 @@ VM date; CAUGHT_UP when only a later price exists) and the views; `swaps_trs` ow
 accruals, resets and exchanges.  The VM reference after a reset is ordered by command (`swaps._reference_mark_c`, one
 definition).  The names OTC contracts observe without holding them (`instruments.otc_reference_ids`: TRS underlyings, XCCY
 FX pairs) are pinned by the quote worker at HELD, recorded by MARKS_RECORD and, for a TRS, checked for dividends.
+
+## Added in 1.0.6: routes, commands, jobs and tables
+
+Release 1.0.6 (FINSIM1_PLAN packages P2, P3 and P4). P6's `collateral.py` is in the module and figure tables above.
+
+### Orders and the two trade blotters (P2)
+
+- `GET /api/blotter/pending?scope=&book=&account=&asset_class=&status=open|filled|cancelled|expired|rejected|ended|all&instrument=&limit=&offset=` (`blotters.pending_rows`; stages `ORDER_STAGES`)
+- `GET /api/blotter/counts?book=` -> `{working, partial, held, queued, waiting_parent, rfq_open, rejected_today, settling, failed}` (`blotters.counts`)
+- `GET /api/blotter/executions?...&record=fill|fx_deal|otc|financing` (1.0.5 route; record filter added)
+- `GET /api/executions/{id}` (`blotters.execution_detail`; stages `EXECUTION_STAGES`)
+- `GET /api/orders/{id}[?review=1]` (`blotters.order_detail`; takes over the order route)
+- `PATCH /api/orders/{id}` `{request_id, qty?, limit_px?, stop_px?, trail_amt?|trail_pct?, tif?, gtd_date?, preview_id?, confirm_large?}` -> command `order.amend`
+- `POST /api/orders/{id}/replace` `{request_id, order_type?, qty?, limit_px?, stop_px?, trail_amt?|trail_pct?, tif?, gtd_date?, preview_id?, confirm_large?}` -> command `order.replace`
+- `POST /api/orders/preview` also takes `amend_of` / `replace_of` and tif `DAY` | `GTC` | `GTD` (+ `gtd_date`) | `NEXT_SESSION`. GTD is stored as GTC + `gtd_date`; NEXT_SESSION is stored as DAY + `activate_ts`.
+- C5 recorder `orders.record_ticket_refusal` (registered by `orders.bind`) for `bonds.trade`, `fx.spot`, `fx.forward`, `otc.book`, `otc.terminate`, `otc.rfq.request`, `otc.rfq.accept`, `otc.rfq.decline` and `private.trade`.
+
+### Portfolio, history and performance (P3)
+
+- `GET /api/portfolio/closed?scope=&from=&to=[&format=csv]` (closed positions)
+- `GET /api/history/nav?scope=&from=&to=` (NAV history: the latest version, the original, daily and cumulative returns, the split of a restated date)
+- `GET /api/portfolio?as_of=YYYY-MM-DD` (read-only portfolio from that day's snapshot)
+- `POST /api/instruments/{id}/sector` (light command `instrument.classify`, `SETTINGS_CHANGED`)
+- `GET /api/export/positions.csv?columns=all` (every column)
+- `GET /api/activity?type=margin_calls`
+- `performance.returns_summary` (C9e) feeds the return tiles and the Dashboard; `risk.DEFINITIONS` / `risk.otc_exposure` are the exposure definitions shared with the Portfolio footer; `risk.reg_t_block` reads `collateral.summary` (C16); table `instrument_sectors` (schema ext 'risk') holds the owner's sectors.
+
+### Derivatives and the OTC lifecycle (P4)
+
+Routes:
+- `POST /api/otc/rfqs` `{account_id, kind, terms}`: creates a request (REQUESTED).
+- `GET /api/otc/rfqs?status=open|all&account_id=&book=&limit=`
+- `GET /api/otc/rfqs/{id}`: one request, with `quote_preview`.
+- `POST /api/otc/rfqs/{id}/accept` and `POST /api/otc/rfqs/{id}/decline`
+- `GET /api/otc/contracts/{id}/timeline`
+- `POST /api/otc/contracts/{id}/credit-event` `{reference_entity, recovery_pct, event_date}`
+- `GET /api/derivatives?tab=otc|options|futures|servicing&book=`
+- `POST /api/otc/preview` and `/api/otc/cdx/preview` answer a refused preview with 200 `{refused: true, bookable: false, code, message, details, blockers}`, or 202 with `retry_ms` while an input is being fetched.
+
+Commands: `otc.rfq.request`, `otc.rfq.accept` and `otc.rfq.decline` (owner); `otc.rfq.dealer` and `otc.confirm` (lifecycle); `cdx.credit_event` (owner only; 403 for scheduler actors).
+
+Lifecycle jobs (registered from `swaps.bind`, before SNAPSHOT):
+- RFQ_DEALER: every tick. It has due keys only while a request is REQUESTED, or QUOTED and past its 120 s validity, so it is quiet when idle.
+- OTC_CONFIRM: 17:05 ET, for PENDING_CONFIRM contracts of the accounting day; contracts booked before 1.0.6 are never touched.
+
+Tables: `rfqs` (C14) and `cdx_credit_events` (one row per contract and defaulted name).

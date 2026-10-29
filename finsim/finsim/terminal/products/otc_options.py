@@ -16,7 +16,7 @@ Conventions stated here
   observed price (Yahoo, delayed, or the session close after hours); K = a price, or a percentage of S rounded to the cent; T =
   calendar days to expiry / 365; r = SOFR (``fx.rate_for``: NY Fed / FRED, else the Treasury bill yield) as the continuous rate
   ln(1 + r x d/360) / (d/365); q = the dividend yield (the trailing 12 months of Yahoo dividend events when a year is recorded, else
-  the instrument master's trailing yield, else 0 - said); sigma = the Cboe implied vol at K (the strike, linear between the two
+  the instrument master's trailing yield, else unknown: 409 NO_DIVIDEND_DATA, never 0); sigma = the Cboe implied vol at K (the strike, linear between the two
   listed strikes around it, else the nearest) of each listed expiry, interpolated in total variance (sigma^2 x t linear in t) between
   the two listed expiries around the expiry, flat before the first / beyond the last listed expiry.  A chain is usable for a deal
   when it is fresh (in the option session: within its delay + 5 min and fetched within 5 min) or, after hours, from the last
@@ -28,8 +28,11 @@ Conventions stated here
   CurrencyShares ETF of the foreign currency on Cboe (FXE EUR, FXB GBP, FXY JPY, FXF CHF, FXC CAD, FXA AUD) labelled PROXY (an
   ETF's option vol, not an FX dealer's quote; flat across strikes), else the pair's 30-day realised vol from Yahoo daily closes
   labelled "realised - no free implied vol" (crosses and the other currencies always).  The FX market must be open (a fresh print).
-- EQ_FORWARD: F = S x e^((r_f - q) T), r_f = SOFR + the PB's financing spread (the dealer's cost of carrying the hedge), q as
-  above; cash-settled: sign x units x (S_T - K) at the underlying's observed close of the maturity date.
+- EQ_FORWARD: the mid (the mark) F = S x e^((SOFR - q) T), q as above; P8B-02: dealt on the dealer's carry for the side dealt -
+  SOFR + the PB's financing spread when you buy (the dealer funds its long hedge), SOFR - the spread when you sell (its short hedge
+  earns less than SOFR) - plus or minus the half-width, so K - F is the whole cost of dealing (a termination deals the opposite side
+  the same way); cash-settled: sign x units x (S_T - K) at the underlying's observed close of the maturity date.  P8B-07: a name with
+  no dividend data (no Yahoo events over a year and no yield in the instrument master) is not priced - q is never assumed 0.
 - FX_FORWARD: the CIP outright of the value date (``fx.forward_rate``, C17); DELIVERABLE: at the value date the account receives
   one currency and pays the other at K through a linked FX deal that SETTLE_DUE settles in both currencies (the sold currency
   must be there by then - the preview warns as the FX desk does).  Its value meanwhile: sign x A x (F - K) x DF_quote in USD.
@@ -114,7 +117,8 @@ USABLE = ("live", "delayed", "close")
 STEPS_NOTE = "CRR 60-step tree"
 MODELS = {"EQ_OPTION": "Black-Scholes-Merton (European) / CRR 60-step tree (American) on S, K, T = days / 365, r (SOFR, continuous), q, sigma (Cboe implied vol)",
           "FX_OPTION": "Garman-Kohlhagen: Black on the CIP forward of the delivery date, discounted at the quote currency's rate",
-          "EQ_FORWARD": "F = S x e^((SOFR + PB financing spread - q) x T); value = sign x units x (F - K) x e^(-SOFR x T)",
+          "EQ_FORWARD": ("mid F = S x e^((SOFR - q) x T); dealt at the dealer's forward for the side (SOFR + the PB financing spread when you buy, SOFR -"
+                         " it when you sell) +/- the half-width; value = sign x units x (F - K) x e^(-SOFR x T)"),
           "FX_FORWARD": "F = CIP outright of the value date (fx.forward_rate); value = sign x A x (F - K) x DF_quote at the quote currency's USD rate"}
 CONVENTIONS = ("OTC_OPTION", "OTC_FORWARD", "OTC_VM", "ELIGIBILITY")
 
@@ -122,9 +126,11 @@ tables.add_conventions({
     "OTC_OPTION": ("OTC options with the prime broker are priced from observed inputs - the underlying's price, the Cboe implied vol (FX: a"
                    " CurrencyShares ETF's at-the-money vol as a proxy, else the pair's 30-day realised vol) and SOFR - at the dealer's half-width"
                    " in vol points against you; the premium settles T+1 (equity) / T+2 (FX) and expiry is cash-settled at the observed close."),
-    "OTC_FORWARD": ("OTC forwards are dealt at the model forward plus or minus the dealer's half-width against you: equity F = S x e^((SOFR +"
-                    " the PB financing spread - dividend yield) x T), cash-settled at the observed close; FX the covered-interest-parity"
-                    " outright, delivered in both currencies on the value date."),
+    "OTC_FORWARD": ("OTC forwards are dealt at the model forward plus or minus the dealer's half-width against you: equity F = S x e^((SOFR -"
+                    " dividend yield) x T) at mid, dealt on the dealer's carry for the side (SOFR + the PB financing spread when you buy, SOFR - it"
+                    " when you sell), cash-settled at the observed close; FX the covered-interest-parity outright, delivered in both currencies on"
+                    " the value date. A forward needs a current rate for each currency and the underlying's dividend data; without them it is not"
+                    " priced."),
     "OTC_VM": ("OTC options and forwards carry daily variation margin under the CSA like swaps: the change in the model value at the day's"
                " close moves in cash - a bought option receives collateral equal to its value from the dealer, a sold one posts it."),
 })
@@ -388,6 +394,12 @@ def _pair(t: dict) -> str:
     return p
 
 
+def tenors_for(kind: str) -> Tuple[str, ...]:
+    """The tenors a kind takes: an FX forward the FX desk's table (value dates from the spot date), the others ``TENORS`` (expiries /
+    maturities from the trade date)."""
+    return tuple(_fx.TENORS) if kind == "FX_FORWARD" else TENORS
+
+
 def parse_terms(kind: str, terms: dict) -> dict:
     """Validate and normalise the term dictionary of one kind (400 TERMS naming ``details.field``).
 
@@ -426,8 +438,11 @@ def parse_terms(kind: str, terms: dict) -> dict:
     tenor = str(t.get("tenor") or "").strip().upper()
     when = t.get("expiry") or t.get("value_date") or t.get("maturity_date")
     if tenor:
-        if tenor not in TENORS:
-            raise RejectError("TERMS", f"tenor must be one of {', '.join(TENORS)} (or give a date), got {t.get('tenor')!r}", {"field": "tenor"})
+        # P8B-03: an FX forward takes the FX desk's tenor table (value dates from the spot date, fx.tenor_date: ON, 1W, 2W, 1M .. 1Y) - the
+        # same list the desk offers (desk()["fx_forward_tenors"]), so a tenor the ticket offers is one the pricer prices
+        allowed = tenors_for(kind)
+        if tenor not in allowed:
+            raise RejectError("TERMS", f"tenor must be one of {', '.join(allowed)} (or give a date), got {t.get('tenor')!r}", {"field": "tenor", "tenors": list(allowed)})
         out["tenor"] = tenor
     elif when:
         try:
@@ -495,7 +510,7 @@ def _quote_info(mv) -> dict:
 def _observed(mv, what: str, fetching: bool, need_usable: bool = True) -> Decimal:
     """The observed price of an input: it must exist and (to deal) be a fresh print or the session close (409 otherwise)."""
     if mv is None or mv.mark is None or mv.quality == "unavailable":
-        again = "; it is being fetched now - preview again in a few seconds" if fetching else ""
+        again = "; it is being fetched now - the ticket asks again by itself" if fetching else ""
         raise ConflictError("NO_QUOTE", f"{what}: no observed price yet ({getattr(mv, 'note', '') or 'unavailable'}){again}; nothing is priced without one",
                             {"retry_ms": RETRY_MS if fetching else None, "quality": getattr(mv, "quality", "unavailable")})
     if need_usable and mv.quality not in USABLE:
@@ -551,7 +566,7 @@ def _chain(services, snap, uid: str, now: int, under=None, request: bool = False
         if hasattr(chains, "keep_on_screen"):
             chains.keep_on_screen(uid)
         chains.request(uid)
-        raise ConflictError("CHAIN_FETCHING", f"the {uid} option chain (Cboe, delayed) is being fetched for its implied vol - preview again in a few seconds",
+        raise ConflictError("CHAIN_FETCHING", f"the {uid} option chain (Cboe, delayed) is being fetched for its implied vol - the ticket asks again by itself",
                             {"underlying_id": uid, "retry_ms": RETRY_MS, "status": "fetching"})
     quality, reason = _chain_ok(services, chain, now, under)
     if quality == "stale" and request and chains is not None:
@@ -587,9 +602,11 @@ def _universe_as_of() -> Optional[str]:
     return _UNIVERSE_AS_OF["v"]
 
 
-def dividend_yield(conn, inst, S: Decimal, today: date) -> Tuple[Decimal, dict]:
+def dividend_yield(conn, inst, S: Decimal, today: date) -> Tuple[Optional[Decimal], dict]:
     """q (module docstring EQ_OPTION): the trailing 12 months of recorded Yahoo dividend events / S when the record covers about a
-    year, else the instrument master's trailing yield, else 0 - each said."""
+    year, else the instrument master's trailing yield (0 for a name the universe data lists without a dividend) - each said.
+    P8B-07: with neither (a name looked up outside the universe data, e.g. VMRK) the yield is UNKNOWN: ``(None, {note})`` - never an
+    assumed 0, which would overstate the forward of a dividend payer; the deal refuses (``_need_q``) and a mark is labelled stale."""
     rows = conn.execute("SELECT ex_date, amount FROM dividends WHERE instrument_id=? AND ex_date > ? AND ex_date <= ? ORDER BY ex_date",
                         (inst.instrument_id, (today - timedelta(days=365)).isoformat(), today.isoformat())).fetchall()
     if rows and (today - _date(rows[0]["ex_date"])).days >= 270 and S > 0:
@@ -603,7 +620,20 @@ def dividend_yield(conn, inst, S: Decimal, today: date) -> Tuple[Decimal, dict]:
         as_of = _universe_as_of()
         return q, {"value": str(q), "pct": _pct(q), "method": f"trailing dividend yield of the instrument master (universe data{' as of ' + as_of if as_of else ''});"
                                                               f" {len(rows)} Yahoo dividend event(s) recorded in the last year"}
-    return Decimal(0), {"value": "0", "pct": "0.00 %", "method": f"no dividend data for {inst.instrument_id}: q = 0"}
+    seen = (f"only {len(rows)} Yahoo dividend event(s) recorded since {rows[0]['ex_date']} (less than a year)" if rows
+            else "no Yahoo dividend event recorded in the last year")
+    return None, {"value": None, "pct": None, "unknown": True,
+                  "method": f"dividend yield unavailable for {inst.instrument_id}: {seen} and no yield in the instrument master (universe data)",
+                  "note": (f"no dividend data for {inst.instrument_id} ({seen}, no yield in the instrument master): its dividend yield is unknown and is never"
+                           " assumed to be 0, so it cannot be priced")}
+
+
+def _need_q(q: Optional[Decimal], qinfo: dict, inst) -> Decimal:
+    """The deal's dividend yield, or 409 NO_DIVIDEND_DATA with the reason (P8B-07: an unknown yield is never priced as 0)."""
+    if q is None:
+        raise ConflictError("NO_DIVIDEND_DATA", qinfo.get("note") or f"no dividend data for {inst.instrument_id}", {"underlying_id": inst.instrument_id,
+                                                                                                                       "field": "underlying_id"})
+    return q
 
 
 def _fx_ids(pair: str) -> List[str]:
@@ -646,8 +676,8 @@ def _rv(services, pair: str, upto: date, request: bool) -> Tuple[Optional[float]
             if got is not None and got.get("error") and now - int(got.get("fetched_at") or 0) < 60:
                 raise ConflictError("VOL_UNAVAILABLE", f"{pair}: no free implied vol and the Yahoo daily closes of {sym} failed ({got['error']}); nothing is priced"
                                     " without a vol", {"pair": pair, "symbol": sym})
-            raise ConflictError("VOL_FETCHING", f"{pair}: the daily closes of {sym} (Yahoo) are being fetched for the realised vol - preview again in a few"
-                                " seconds", {"pair": pair, "symbol": sym, "retry_ms": RETRY_MS + 1000, "status": "fetching"})
+            raise ConflictError("VOL_FETCHING", f"{pair}: the daily closes of {sym} (Yahoo) are being fetched for the realised vol - the ticket asks again"
+                                " by itself", {"pair": pair, "symbol": sym, "retry_ms": RETRY_MS + 1000, "status": "fetching"})
         return None, {"note": f"no Yahoo daily closes of {sym} cached"}
     if request and now - int(got.get("fetched_at") or 0) > RV_TTL_S:
         st.want(sym)
@@ -687,8 +717,8 @@ def _fx_vol(services, snap, pair: str, expiry: date, val_date: date, now: int, r
                 if hasattr(chains, "keep_on_screen"):
                     chains.keep_on_screen(etf)
                 chains.request(etf)
-                raise ConflictError("CHAIN_FETCHING", f"the {etf} option chain (Cboe, the {foreign} proxy) is being fetched for its implied vol - preview again in"
-                                    " a few seconds", {"underlying_id": etf, "retry_ms": RETRY_MS, "status": "fetching"})
+                raise ConflictError("CHAIN_FETCHING", f"the {etf} option chain (Cboe, the {foreign} proxy) is being fetched for its implied vol - the ticket asks"
+                                    " again by itself", {"underlying_id": etf, "retry_ms": RETRY_MS, "status": "fetching"})
             if chain is not None:
                 quality, reason = _chain_ok(services, chain, now, inst)
                 observed_day = ny_of(int(chain.quote_time or chain.fetched_at)).date()
@@ -757,6 +787,7 @@ def _eq_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
         raise ConflictError("NO_VOL", f"{uid}: {vinfo.get('note')}: no implied vol to price from", {"underlying_id": uid})
     r, r_pct, rinfo = _usd_rate(services, days)
     q, qinfo = dividend_yield(conn, inst, S, today)
+    q = _need_q(q, qinfo, inst)
     mult = Decimal(sched.otc_spread_mult)
     hw = (Decimal(sched.eq_option_hw_vol) * mult).quantize(SIG_Q)
     sign = _sign(t["side"])
@@ -773,7 +804,7 @@ def _eq_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
     im_c = to_c(from_c(notional_c) * im_pct) if sign < 0 else 0
     blockers = []
     if cq == "stale":
-        blockers.append(_blocker("VOL_STALE", f"{uid}: {creason or 'the chain is stale'} - a refresh is queued; preview again in a few seconds", retry_ms=RETRY_MS))
+        blockers.append(_blocker("VOL_STALE", f"{uid}: {creason or 'the chain is stale'} - a refresh is queued; the ticket asks again by itself", retry_ms=RETRY_MS))
     model = "Black-Scholes-Merton (European)" if t["style"] == "EUROPEAN" or (t["right"] == "C" and q <= 0) else f"CRR 60-step tree (American)"
     pos = {"delta_shares": _f(g["delta"]) * units * sign, "delta_usd_c": to_c(Decimal(repr(g["delta"])) * units * sign * S),
            "gamma_shares_per_usd": _f(g["gamma"]) * units * sign, "vega_usd_c": to_c(Decimal(repr(g["vega"])) * units * sign),
@@ -795,7 +826,7 @@ def _fx_spot(services, snap, pair: str, now: int, request: bool) -> Tuple[Decima
     if request:
         _pin(services, _fx_ids(pair))
     if pm["mid"] is None:
-        raise ConflictError("NO_QUOTE", f"{pair}: no observed rate yet ({pm.get('note') or 'unavailable'}) - it is being fetched; preview again in a few seconds",
+        raise ConflictError("NO_QUOTE", f"{pair}: no observed rate yet ({pm.get('note') or 'unavailable'}) - it is being fetched; the ticket asks again by itself",
                             {"pair": pair, "retry_ms": RETRY_MS})
     return qprice(pm["mid"]), pm
 
@@ -813,7 +844,7 @@ def _fx_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
     vd = _fx.spot_date(services, pair, expiry)
     F, fin = _fx.forward_rate(services, pair, vd, snap)
     if F is None:
-        raise ConflictError("FORWARD_UNAVAILABLE", f"{pair}: no forward to the delivery date {vd.isoformat()} - {fin.get('note')}", fin)
+        raise ConflictError("FORWARD_UNAVAILABLE", f"{pair}: no forward to the delivery date {vd.isoformat()} - {fin.get('note')}", dict(fin, field="pair"))
     days_d = int(fin["days"])
     rq, rb = fin["r_quote"], fin["r_base"]
     df_q = fx_df(rq["value_pct"], int(rq["basis"]), days_d)
@@ -853,7 +884,7 @@ def _fx_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
         blockers.append(_blocker("QUOTE_STALE", f"{pair}: {str(pm.get('reason') or 'not executable').lower().replace('_', ' ')} - FX options are dealt in the FX"
                                  " session on a fresh print", reason=pm.get("reason")))
     if vinfo.get("quality") == "stale":
-        blockers.append(_blocker("VOL_STALE", f"{pair}: the proxy chain is stale - a refresh is queued; preview again in a few seconds", retry_ms=RETRY_MS))
+        blockers.append(_blocker("VOL_STALE", f"{pair}: the proxy chain is stale - a refresh is queued; the ticket asks again by itself", retry_ms=RETRY_MS))
     inputs = {"S": str(S), "F": str(F), "K": str(K), "days_to_delivery": days_d, "days_to_expiry": t_vol_days, "T": f"{T:.6f}", "df_quote": f"{df_q:.10f}",
               "sigma": f"{sigma:.6f}", "sigma_method": vinfo.get("method"), "sigma_kind": vinfo.get("kind"), "right": t["right"], "notional_c": int(t["notional_c"]),
               "sign": sign, "pair": pair, "usd_per_quote": str(usd_q), "usd_per_base": str(usd_b), "valuation_date": td.isoformat(), "delivery_date": vd.isoformat(),
@@ -891,6 +922,20 @@ def _fx_greeks(right: str, S: Decimal, K: Decimal, rb: dict, rq: dict, days_d: i
     return {"price": p0, "delta": delta, "gamma": gamma, "vega": vega, "theta": theta, "rho": rho}
 
 
+def eq_forward_px(S: Decimal, carry_pct, q, days: int) -> Tuple[Decimal, float]:
+    """``(F, r)``: F = S x e^((r - q) x T) at 4 dp, r = the continuous equivalent of the ACT/360 money-market rate ``carry_pct``
+    (percent) over ``days``, T = days / 365."""
+    r = _cont(carry_pct, max(1, int(days)), 360)
+    return (S * Decimal(repr(math.exp((r - float(q)) * (int(days) / 365.0))))).quantize(PX4, rounding=ROUND_HALF_EVEN), r
+
+
+def eq_forward_carry(sofr_pct, spread, sign: int) -> Decimal:
+    """P8B-02: the dealer's carry for a client deal (percent): SOFR + the PB financing spread when the client BUYS the forward (the dealer
+    funds its long hedge at its debit rate), SOFR - the spread when he SELLS it (the dealer's short hedge earns less than SOFR).  The
+    mid, the contract's mark, carries at SOFR alone; the spread is charged once, against the client, on the side dealt."""
+    return Decimal(_px(Decimal(str(sofr_pct)) + (1 if sign > 0 else -1) * Decimal(str(spread)) * 100, Decimal("0.0001")))
+
+
 def _eq_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, request: bool) -> dict:
     sched = _schedule(conn, acct)
     today = ny_of(now).date()
@@ -902,15 +947,19 @@ def _eq_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
         raise RejectError("TERMS", "a forward needs at least two days to maturity", {"field": "tenor"})
     r_csa, sofr_pct, rinfo = _usd_rate(services, days)
     spread = Decimal(sched.financing_spread)
-    r_fin = _cont(sofr_pct + spread * 100, days, 360)
     q, qinfo = dividend_yield(conn, inst, S, today)
+    q = _need_q(q, qinfo, inst)
     T = days / 365.0
-    F = (S * Decimal(repr(math.exp((r_fin - float(q)) * T)))).quantize(PX4, rounding=ROUND_HALF_EVEN)
+    sign = _sign(t["side"])
+    # P8B-02: F (the mid and the mark) carries at SOFR - the funding-neutral forward; the dealer deals on its own carry for the side,
+    # SOFR + spread for a purchase and SOFR - spread for a sale, then adds the half-width against you: K - F is the whole cost of dealing
+    F, r_mid = eq_forward_px(S, sofr_pct, q, days)
+    carry_pct = eq_forward_carry(sofr_pct, spread, sign)
+    F_deal, r_fin = eq_forward_px(S, carry_pct, q, days)
     mult = Decimal(sched.otc_spread_mult)
     hw_bp = (Decimal(sched.forward_hw_bp) * mult).quantize(Decimal("0.0001"))
-    hw_px = (F * hw_bp / Decimal(10000)).quantize(PX4, rounding=ROUND_HALF_EVEN)
-    sign = _sign(t["side"])
-    K = F + hw_px if sign > 0 else F - hw_px
+    hw_px = (F_deal * hw_bp / Decimal(10000)).quantize(PX4, rounding=ROUND_HALF_EVEN)
+    K = F_deal + hw_px if sign > 0 else F_deal - hw_px
     units = int(t["units"])
     df = math.exp(-r_csa * T)
     mark0_c = to_c(Decimal(units) * (F - K) * Decimal(repr(df))) * sign
@@ -920,14 +969,18 @@ def _eq_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
     im_c = to_c(from_c(notional_c) * im_pct)
     dv01_c = to_c(Decimal(units) * sign * (F - K) * Decimal(repr(math.exp(-(r_csa + 0.0001) * T) - df))) + \
         to_c(Decimal(units) * sign * F * Decimal(repr(math.exp(0.0001 * T) - 1.0)) * Decimal(repr(df)))
-    inputs = {"S": str(S), "F": str(F), "K": str(K), "days": days, "T": f"{T:.6f}", "r_csa": f"{r_csa:.6f}", "sofr_pct": str(sofr_pct),
-              "financing_spread": str(spread), "r_financing": f"{r_fin:.6f}", "q": str(q), "df": f"{df:.10f}", "units": units, "sign": sign,
+    side_words = "you buy: SOFR + the PB financing spread" if sign > 0 else "you sell: SOFR - the PB financing spread"
+    inputs = {"S": str(S), "F": str(F), "F_deal": str(F_deal), "K": str(K), "days": days, "T": f"{T:.6f}", "r_csa": f"{r_csa:.6f}", "sofr_pct": str(sofr_pct),
+              "financing_spread": str(spread), "carry_pct": str(carry_pct), "carry_side": side_words, "r_mid": f"{r_mid:.6f}", "r_financing": f"{r_fin:.6f}",
+              "q": str(q), "df": f"{df:.10f}", "units": units, "sign": sign,
               "valuation_date": today.isoformat(), "underlying": dict(_quote_info(mv), instrument_id=uid), "rate": rinfo, "dividend": qinfo,
-              "formula": f"F = {S} x e^(({r_fin:.6f} - {q}) x {T:.6f}) = {F}"}
-    return {"kind": "EQ_FORWARD", "sched": sched, "today": today, "trade_date": today, "expiry": maturity, "tenor": tenor, "S": S, "F": F, "K": K, "hw_bp": hw_bp,
-            "hw_px": hw_px, "mult": mult, "units": units, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c, "im_c": im_c,
-            "im_pct": im_pct, "im_source": imp.get("source"), "premium_c": 0, "inputs": inputs, "blockers": [], "underlying_id": uid, "inst": inst, "quote": mv,
-            "dv01_c": dv01_c, "margin_mode": str(sched.swap_margin_mode).upper()}
+              "formula": f"mid F = {S} x e^(({r_mid:.6f} - {q}) x {T:.6f}) = {F} (SOFR carry)",
+              "deal_formula": (f"dealer's forward = {S} x e^(({r_fin:.6f} - {q}) x {T:.6f}) = {F_deal} (carry {carry_pct} %: {side_words}); K = {F_deal}"
+                               f" {'+' if sign > 0 else '-'} {hw_px} ({hw_bp} bp half-width) = {K}")}
+    return {"kind": "EQ_FORWARD", "sched": sched, "today": today, "trade_date": today, "expiry": maturity, "tenor": tenor, "S": S, "F": F, "F_deal": F_deal, "K": K,
+            "hw_bp": hw_bp, "hw_px": hw_px, "mult": mult, "units": units, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c,
+            "im_c": im_c, "im_pct": im_pct, "im_source": imp.get("source"), "premium_c": 0, "inputs": inputs, "blockers": [], "underlying_id": uid, "inst": inst,
+            "quote": mv, "dv01_c": dv01_c, "margin_mode": str(sched.swap_margin_mode).upper(), "spread": spread, "carry_pct": carry_pct}
 
 
 def _fx_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, request: bool) -> dict:
@@ -939,10 +992,11 @@ def _fx_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
     vd, tenor = _expiry(services, t, td, True, pair)
     sd = _fx.spot_date(services, pair, td)
     if vd <= sd:
-        raise RejectError("TERMS", f"the value date {vd.isoformat()} must be after the spot date {sd.isoformat()} (a spot deal is the FX desk's)", {"field": "tenor"})
+        raise RejectError("TERMS", f"the value date {vd.isoformat()} must be after the spot date {sd.isoformat()} (a spot deal is the FX desk's)",
+                          {"field": "tenor" if t.get("tenor") else "expiry"})
     F, fin = _fx.forward_rate(services, pair, vd, snap)
     if F is None:
-        raise ConflictError("FORWARD_UNAVAILABLE", f"{pair} {tenor}: no forward price - {fin.get('note')}", fin)
+        raise ConflictError("FORWARD_UNAVAILABLE", f"{pair} {tenor}: no forward price - {fin.get('note')}", dict(fin, field="pair"))
     mult = Decimal(sched.otc_spread_mult)
     hw_bp = (Decimal(sched.forward_hw_bp) * mult).quantize(Decimal("0.0001"))
     Kq = PX6 if "JPY" not in pair else PX4
@@ -1034,7 +1088,9 @@ def _store_terms(deal: dict, t: dict) -> dict:
     else:
         out.update(strike=str(deal["K"]), F0=str(deal["F"]), hw_bp=str(deal["hw_bp"]), S0=str(deal["S"]))
         if kind == "EQ_FORWARD":
-            out.update(financing_spread=deal["inputs"]["financing_spread"])
+            # P8B-02: F0 is the mid (SOFR carry); the dealer's forward of the side dealt and its carry are kept beside it
+            out.update(financing_spread=deal["inputs"]["financing_spread"], F_deal0=str(deal["F_deal"]), carry_pct=str(deal["carry_pct"]),
+                       carry_side=deal["inputs"]["carry_side"], mark_carry="SOFR")
         else:
             out.update(buy_ccy=deal["buy_ccy"], sell_ccy=deal["sell_ccy"], buy_c=deal["buy_c"], sell_c=deal["sell_c"], value_date=deal["expiry"].isoformat(),
                        ledger_rate=deal["ledger_rate"])
@@ -1077,7 +1133,14 @@ def _preview_dict(services, conn, acct: dict, deal: dict, t: dict, now: int) -> 
                    price_rule=f"model forward {deal['F']} {'+' if sign > 0 else '-'} {deal['hw_px']} ({deal['hw_bp']} bp, against you) = {deal['K']}",
                    im_rule=f"{_pct(deal['im_pct'])} of the USD notional {fmt_money(deal['notional_c'])} = {fmt_money(deal['im_c'])} ({deal['im_source']})", premium_c=0)
         if kind == "EQ_FORWARD":
-            out.update(underlying_id=deal["underlying_id"], units=deal["units"], quote=_quote_info(deal["quote"]),
+            # P8B-02: the mid is the SOFR-carry forward; the dealt price carries the PB financing spread on the side dealt plus the half-width,
+            # both against you, so the cost of dealing shows the whole charge
+            sp = _pct(deal["spread"])
+            out.update(underlying_id=deal["underlying_id"], units=deal["units"], quote=_quote_info(deal["quote"]), forward_deal=str(deal["F_deal"]),
+                       carry_pct=str(deal["carry_pct"]), financing_spread=str(deal["spread"]),
+                       price_rule=(f"mid forward {deal['F']} at SOFR {deal['inputs']['sofr_pct']} %; the dealer's forward {deal['F_deal']} at SOFR"
+                                   f" {'+' if sign > 0 else '-'} {sp} (its financing spread, against you) {'+' if sign > 0 else '-'} {deal['hw_px']}"
+                                   f" ({deal['hw_bp']} bp half-width) = {deal['K']}"),
                        settlement="cash: sign x units x (the underlying's observed close on the maturity date - K)")
         else:
             out.update(pair=deal["pair"], notional_base_c=int(t["notional_c"]), base_ccy=deal["pair"][:3], quote_ccy=deal["pair"][3:], value_date=deal["expiry"].isoformat(),
@@ -1086,7 +1149,11 @@ def _preview_dict(services, conn, acct: dict, deal: dict, t: dict, now: int) -> 
                                    f" {fmt_money(deal['sell_c'])} (an FX deal settled by SETTLE_DUE; the sold currency must be in the account or Treasury by then)"))
             try:
                 chk = _fx.funding_check(services, acct["account_id"], deal["sell_ccy"], int(deal["sell_c"]), deal["expiry"], conn=conn)
-                out["delivery_check"] = {"fundable": bool(chk.get("fundable")), "note": chk.get("note") or ""}
+                # funding_check says it in ``text`` (+ its ``fixes``); the warning reads it (an empty note showed a generic line on every sale)
+                note = chk.get("note") or chk.get("text") or ""
+                if not chk.get("fundable") and chk.get("fixes"):
+                    note += " - " + "; ".join(chk["fixes"])
+                out["delivery_check"] = {"fundable": bool(chk.get("fundable")), "note": note}
             except Exception as e:   # noqa: BLE001 - a warning only
                 out["delivery_check"] = {"fundable": None, "note": str(e)[:160]}
     return out
@@ -1297,10 +1364,11 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
             day = ny_of(now).date()
         days = max(0, (expiry - day).days)
         r_csa, sofr_pct, rinfo = _usd_rate(services, max(1, days))
-        if bump.get("r_bp"):                       # a parallel move of SOFR: the discount rate and (forwards) the financing rate
+        if bump.get("r_bp"):                       # a parallel move of SOFR: the discount rate and (forwards) the carry
             r_csa += bump["r_bp"] / 10000.0
             sofr_pct += Decimal(repr(float(bump["r_bp"]) / 100.0))
         q, qinfo = dividend_yield(conn, inst, S, day)
+        q = _need_q(q, qinfo, inst)                # P8B-07: an unknown yield is no mark (the stored one, labelled stale) - never q = 0
         units = int(terms["units"])
         if kind == "EQ_OPTION":
             sigma, smethod, squality = None, None, "computed"
@@ -1328,14 +1396,14 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
                           formula=f"{'+' if sign > 0 else '-'}{units:,} x {px:.4f} ({'call' if terms['right'] == 'C' else 'put'} {K}, {days} days, vol {sigma * 100:.2f} %)")
             return value_c, inputs
         spread = Decimal(str(terms.get("financing_spread") or "0"))
-        r_fin = _cont(sofr_pct + spread * 100, max(1, days), 360)
         T = days / 365.0
-        F = S * Decimal(repr(math.exp((r_fin - float(q)) * T)))
+        # P8B-02: the mark carries at SOFR (the funding-neutral mid); the PB financing spread was charged once, at the deal, on the side dealt
+        F = S * Decimal(repr(math.exp((r_csa - float(q)) * T)))
         df = math.exp(-r_csa * T)
         value_c = sign * to_c(Decimal(units) * (F - K) * Decimal(repr(df)))
-        inputs = dict(base_inputs, S=str(S), F=str(F.quantize(PX4)), days=days, T=f"{T:.6f}", r_csa=f"{r_csa:.6f}", r_financing=f"{r_fin:.6f}", q=str(q),
-                      df=f"{df:.10f}", units=units, valuation_date=day.isoformat(), underlying=uinfo, rate=rinfo, dividend=qinfo,
-                      formula=f"{'+' if sign > 0 else '-'}{units:,} x (F {F.quantize(PX4)} - K {K}) x DF {df:.6f}")
+        inputs = dict(base_inputs, S=str(S), F=str(F.quantize(PX4)), days=days, T=f"{T:.6f}", r_csa=f"{r_csa:.6f}", r_mid=f"{r_csa:.6f}", q=str(q),
+                      sofr_pct=str(sofr_pct), financing_spread=str(spread), df=f"{df:.10f}", units=units, valuation_date=day.isoformat(), underlying=uinfo,
+                      rate=rinfo, dividend=qinfo, formula=f"{'+' if sign > 0 else '-'}{units:,} x (F {F.quantize(PX4)} - K {K}) x DF {df:.6f} (F at the SOFR carry)")
         return value_c, inputs
     # FX kinds
     pair = terms["pair"]
@@ -1483,10 +1551,20 @@ def terminate(ctx: TxContext, payload: dict) -> dict:
         F = Decimal(str(inputs["F"]))
         hw_px = F * hw_bp / Decimal(10000)
         if kind == "EQ_FORWARD":
-            value_c = mid_c - to_c(Decimal(int(terms["units"])) * hw_px * Decimal(inputs["df"]))
+            # P8B-02: the close-out deals the opposite side on the dealer's carry for it (a long is sold back at SOFR - spread, a short bought
+            # back at SOFR + spread) and its half-width, as a new deal would: value = sign x units x (K_close - K) x DF
+            close = -sign
+            spread = Decimal(sched.financing_spread)
+            carry = eq_forward_carry(inputs["sofr_pct"], spread, close)
+            F_close, _r = eq_forward_px(Decimal(str(inputs["S"])), carry, Decimal(str(inputs["q"])), int(inputs["days"]))
+            hw_close = (F_close * hw_bp / Decimal(10000)).quantize(PX4, rounding=ROUND_HALF_EVEN)
+            K_close = F_close + close * hw_close
+            value_c = sign * to_c(Decimal(int(terms["units"])) * (K_close - Decimal(str(terms["strike"]))) * Decimal(inputs["df"]))
+            rule = (f"closed at {K_close}: the dealer's forward {F_close} at SOFR {'+' if close > 0 else '-'} {_pct(spread)} (its financing spread, against you)"
+                    f" {'+' if close > 0 else '-'} {hw_close} ({hw_bp} bp half-width), against K {terms['strike']}")
         else:
             value_c = mid_c - to_c(from_c(int(terms["notional_c"])) * hw_px * Decimal(inputs["df_quote"]) * Decimal(inputs["usd_per_quote"]))
-        rule = f"model forward {inputs['F']} {'-' if sign > 0 else '+'} {hw_bp} bp (the dealer's half-width, against you)"
+            rule = f"model forward {inputs['F']} {'-' if sign > 0 else '+'} {hw_bp} bp (the dealer's half-width, against you)"
     ref_c = swaps._reference_mark_c(conn, cid)
     pending = conn.execute("SELECT settle_id, due_date, amount_c FROM settlements WHERE account_id=? AND status='PENDING' AND settle_id=?",
                            (row["account_id"], terms.get("premium_settle_id") or "")).fetchone()
@@ -1635,6 +1713,27 @@ def _deliver(ctx: TxContext, services, row: dict, terms: dict) -> dict:
             "sell_ccy": terms["sell_ccy"], "sell_c": int(terms["sell_c"]), "rate_quoted": str(K)}
 
 
+def next_expiry_due(conn, now_ts: int) -> Optional[Tuple[int, str]]:
+    """P8B-15: ``(epoch, ref)`` of the next OTC_EXPIRY work - the earliest expiry / maturity / delivery of an OPEN option or forward not yet
+    DONE (equity from 16:20 ET, FX from 17:05 ET; an overdue one is due now) - or None when no such contract is open."""
+    now = int(now_ts)
+    best: Optional[Tuple[int, str]] = None
+    rows = conn.execute("SELECT c.contract_id, c.kind, c.maturity_date FROM otc_contracts c JOIN accounts a ON a.account_id=c.account_id JOIN lifetimes l"
+                        " ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN' AND a.status='OPEN' AND l.status='OPEN'"
+                        f" AND c.kind IN ({','.join('?' for _ in KINDS)}) ORDER BY c.maturity_date, c.contract_id", KINDS).fetchall()
+    for r in rows:
+        key = f"{r['contract_id']}:{r['maturity_date']}"
+        done = conn.execute("SELECT status FROM jobs_done WHERE job=? AND key=?", (JOB_EXPIRY, key)).fetchone()
+        if done is not None and done["status"] == "DONE":
+            continue
+        fx = r["kind"] in FX_KINDS
+        ts = max(now, epoch_of(date.fromisoformat(r["maturity_date"]), EXPIRY_ET["FX" if fx else "EQ"]))
+        what = {"FX_FORWARD": "delivery", "EQ_FORWARD": "maturity"}.get(r["kind"], "expiry")
+        if best is None or ts < best[0]:
+            best = (ts, f"{r['contract_id']} {what} {r['maturity_date']}")
+    return best
+
+
 def expiry_keys(conn, now_ts: int) -> List[Tuple[str, str]]:
     """``(contract_id, date)`` of every OPEN option / forward of an OPEN account and lifetime whose expiry / maturity is today or
     earlier and whose settlement time has passed (equity 16:20 ET, FX 17:05 ET), not DONE in ``jobs_done``."""
@@ -1710,7 +1809,26 @@ def contract_detail(services, contract, conn=None) -> Optional[dict]:
         out.update(forward_at_deal=terms.get("F0"), half_width=f"{terms.get('hw_bp')} bp", delivery={"receive": [terms.get("buy_ccy"), terms.get("buy_c")],
                                                                                                      "pay": [terms.get("sell_ccy"), terms.get("sell_c")]}
                    if kind == "FX_FORWARD" else None)
+        if kind == "FX_FORWARD":
+            out.update(fx_im_base(row, terms))
     return out
+
+
+def fx_im_base(row, terms: dict) -> dict:
+    """P8R1-07: what the USD notional of an FX forward is - the base notional at the USD rate of the base currency WHEN DEALT (the spot
+    mid of a USD pair, EUR/USD 1.1141; a cross's base against USD), the IM's base; never the dealt forward the deal delivers at.  The rate
+    is the stored USD notional over the stored base notional (the booking computed one from the other: exact to the cent), so a contract
+    booked before this field existed reads the same.  ``{im_base_rate, im_base_pair}``; empty when either notional is missing."""
+    try:
+        base_c, usd_c = int(terms.get("notional_c") or 0), int(row.get("notional_c") or 0)
+    except (TypeError, ValueError):
+        return {}
+    pair = str(terms.get("pair") or "")
+    if base_c <= 0 or usd_c <= 0 or len(pair) != 6:
+        return {}
+    rate = (Decimal(usd_c) / Decimal(base_c)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_EVEN)
+    text = f"{rate:.6f}".rstrip("0").rstrip(".")
+    return {"im_base_rate": text, "im_base_pair": f"{pair[:3]}/USD"}
 
 
 # ---- the desk (GET /api/otc/options/desk) and the inputs refresher -------------------------------------------------------------------
@@ -1739,11 +1857,28 @@ def desk(services, account_id: str) -> dict:
         foreign = quote if base == "USD" else (base if quote == "USD" else None)
         etf = FX_PROXY.get(foreign) if foreign else None
         vol_source[p] = f"proxy: {etf} at-the-money implied vol" if etf else "realised: 30-day vol of the pair (no free implied vol)"
+    # P8B-04 / P8B-01: a pair is offered for forwards (and FX options, which price off the forward) only while both of its currencies have a
+    # usable rate (fx.rate_for: a series that exists and is still updating); the others are spot only, each with its reason
+    rates_of: Dict[str, Tuple[Optional[Decimal], dict]] = {}
+    spot_only: Dict[str, str] = {}
+    for p in pairs:
+        for c in (p[:3], p[3:]):
+            if c not in rates_of:
+                rates_of[c] = _fx.rate_for(services, c)
+            pct, info = rates_of[c]
+            if pct is None:
+                spot_only[p] = f"spot only: {info.get('note') or 'no ' + c + ' rate'}"
+                break
+    rates = {c: {"ok": pct is not None, "label": info.get("label") if pct is not None else None, "note": info.get("note") if pct is None else None,
+                 "as_of": info.get("as_of"), "age_days": (info.get("age") or {}).get("age_days"), "series": info.get("series")}
+             for c, (pct, info) in sorted(rates_of.items())}
     blocked = None
     if not (elig.get("pb_otc") and elig.get("ecp")):
         blocked = elig.get("pb_otc_reason") or "this book is not eligible for OTC bookings"
     return {"account_id": account_id, "broker": rel["broker"], "name": rel["name"], "relationship": rel, "eligibility": elig, "blocked": blocked,
-            "terms": terms, "labels": {k: prime.FIELD_SPECS[k]["label"] for k in prime.OTC_TERM_FIELDS}, "tenors": list(TENORS), "pairs": pairs,
+            "terms": terms, "labels": {k: prime.FIELD_SPECS[k]["label"] for k in prime.OTC_TERM_FIELDS}, "tenors": list(TENORS),
+            "fx_forward_tenors": list(tenors_for("FX_FORWARD")), "pairs": pairs, "forward_pairs": [p for p in pairs if p not in spot_only],
+            "spot_only": spot_only, "rates": rates,
             "vol_source": vol_source, "kinds": [{"kind": k, "label": swaps.KIND_LABELS.get(k, k)} for k in KINDS],
             "conventions": {k: tables.CONVENTIONS.get(k, "") for k in CONVENTIONS + ("SWAP_VM",)}}
 
@@ -1858,7 +1993,14 @@ def unsupported() -> List[dict]:
              "wording": "priced on the pair's 30-day realised volatility from Yahoo daily closes (no free implied FX volatility), said on the ticket",
              "where": "prime-broker OTC tab, Options"},
             {"item": "American-style FX options; barrier, digital and other exotic options", "state": "NOT_OFFERED",
-             "wording": "FX options are European (Garman-Kohlhagen); exotics need inputs that are not free", "where": "prime-broker OTC tab"}]
+             "wording": "FX options are European (Garman-Kohlhagen); exotics need inputs that are not free", "where": "prime-broker OTC tab"},
+            {"item": "Forwards, FX options and cross-currency legs in a currency whose rate has stopped updating (CHF)", "state": "LIMITED",
+             "wording": ("a daily rate older than 10 days, or a monthly average more than 62 days after its month, is never used: the price is refused with"
+                         " the rate's date and age, and the pair is listed spot only (CHF's free series stopped in 2024-03)"),
+             "where": "prime-broker OTC tab, FX desk forwards"},
+            {"item": "OTC equity forwards and options on a name without dividend data", "state": "LIMITED",
+             "wording": ("a name with no Yahoo dividend events over a year and no yield in the instrument master is not priced: its dividend yield is"
+                         " unknown and never assumed to be 0"), "where": "prime-broker OTC tab, Options and Forwards"}]
 
 
 def register(bus, services=None) -> None:
@@ -1875,6 +2017,11 @@ def bind(rt) -> None:
     except ImportError:
         pass
     try:
+        from ..lifecycle_eod import add_next_due
+        add_next_due(JOB_EXPIRY, next_expiry_due)              # P8B-15: GET /api/jobs shows when it next has work
+    except ImportError:
+        pass
+    try:
         from ..quotes.worker import register_refresher
         register_refresher("otc_options", 15, refresh, label="OTC option inputs (Yahoo daily closes, Cboe chains)")
     except ImportError:
@@ -1883,4 +2030,4 @@ def bind(rt) -> None:
 
 __all__ = ["KINDS", "preview", "book", "terminate", "mark", "dv01_c", "next_events", "contract_detail", "expiry_keys", "h_expire", "register", "bind",
            "register_routes", "unsupported", "desk", "reference_ids", "refresh", "parse_terms", "chain_vol", "realised_vol", "eq_price", "black_df", "cip_forward",
-           "dividend_yield", "JOB_EXPIRY", "MODELS", "CONVENTIONS", "FX_PROXY"]
+           "dividend_yield", "JOB_EXPIRY", "MODELS", "CONVENTIONS", "FX_PROXY", "tenors_for", "eq_forward_px", "eq_forward_carry", "next_expiry_due"]

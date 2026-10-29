@@ -174,11 +174,11 @@ def sofr_for_night(services, d: date) -> Tuple[date, Decimal]:
     """``(observation date, percent)`` for night ``d`` (RATE_LAG, ≤ 10 days old); raises RejectError otherwise."""
     rates = getattr(services, "rates", None)
     if rates is None or not hasattr(rates, "as_of_le"):
-        raise RejectError("RATE_STORE_MISSING", "no rate store is bound (services.rates): SOFR is unknown and is never defaulted")
+        raise RejectError("RATE_STORE_MISSING", "no interest-rate data is loaded: SOFR is unknown and a rate is never assumed")
     got = rates.as_of_le("SOFR", d)
     if got is None or (d - got[0]).days > RATE_LAG_MAX_DAYS:
-        raise RejectError("RATE_UNAVAILABLE", f"no SOFR observation within {RATE_LAG_MAX_DAYS} days on or before {d.isoformat()}: the night waits for FRED"
-                          " (RATE_LAG; never defaulted)", {"series": "SOFR", "night": d.isoformat()})
+        raise RejectError("RATE_UNAVAILABLE", f"no SOFR print within {RATE_LAG_MAX_DAYS} days on or before {d.isoformat()}: the night waits for FRED"
+                          " (it publishes SOFR a business day late; a rate is never assumed)", {"series": "SOFR", "night": d.isoformat()})
     return got[0], qprice(got[1])
 
 

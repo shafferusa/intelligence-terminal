@@ -204,8 +204,13 @@
       if (!b.instrument_id) { pvBox.appendChild(T.h('div', { class: 'error' }, 'pick the collateral Treasury')); return; }
       if (!/^\d+$/.test(b.face)) { pvBox.appendChild(T.h('div', { class: 'error' }, 'face must be a whole amount (multiples of 1,000)')); return; }
       pvBtn.disabled = true;
-      T.api.post('/api/credit/repos/preview', b).then(function (p) {
-        pvBtn.disabled = false; last = b; var c = p.collateral || {};
+      T.api.post('/api/credit/repos/preview', Object.assign({ soft: true }, b)).then(function (p) {
+        pvBtn.disabled = false;
+        if (p && p.blocked) {   /* V104R2-BW-05: a refused preview answers 200 {blocked, blockers} (repo.py soft mode): no failed request, no console error */
+          (p.blockers || []).forEach(function (x) { pvBox.appendChild(T.h('div', { class: 'error', title: x.code || '' }, x.message || T.codeWords(x.code))); });
+          return;   /* Book stays disabled */
+        }
+        last = b; var c = p.collateral || {};
         pvBox.appendChild(T.h('div', { class: 'pv' }, T.kv([['side', p.side_text], ['dealer', p.dealer], ['collateral', c.symbol + ' ' + T.fmt.qty(c.face) + ' face at ' + c.clean + ' + ' + c.accrued + ' accrued = ' + c.dirty, (c.source || '') + (c.note ? ' . ' + c.note : '')],
           ['collateral value', m(c.value)], ['haircut', p.haircut_pct], [p.side === 'REPO' ? 'cash you receive' : 'cash you lend', T.h('b', null, m(p.cash))], ['rate', p.rate_text],
           ['term', p.term + (p.maturity_date ? ' to ' + p.maturity_date + ' (' + p.nights + ' night' + (p.nights === 1 ? '' : 's') + ')' : ' (open)')],

@@ -3,6 +3,137 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.6 (built 2026-10-29)
+
+- Your imported positions, your restated NAV history and your ledger are unchanged by this release.
+
+**Navigation and keys**
+
+- The F-keys follow the new sidebar:
+  - top: Dashboard F12, Portfolio F7;
+  - Trading: US Exchange F1, Debt Instruments F2, Credit Instruments F3, Foreign Markets & FX F4, Private Markets F5, the prime broker account F6, Watchlists Shift+F9;
+  - Fund: Pending Trades F8, Completed Trades Shift+F8, Accounts Shift+F4, Treasury F10, Cash & Collateral Shift+F5, Derivatives Shift+F6, History Shift+F10, Settings Shift+F11;
+  - book views: Risk F11, Accounting Shift+F7.
+- Six keys changed from 1.0.5: F8 opens Pending Trades (before: the Orders of the account you were on), Shift+F4 Accounts (before: Positions), Shift+F5 Cash & Collateral (before: Cash & financing), Shift+F6 Derivatives (before: Transactions), Shift+F8 Completed Trades (before: Activity) and Shift+F10 the History hub (before: the book's last past lifetime).
+- On an account page, F8 and Shift+F8 open that account's pending and completed trades, and Shift+F5 its Cash & financing.
+- F12 opens the Dashboard, the landing page: the selected book's fund figures and its "Requires your attention" tiles.
+- These have no default key; bind them in Settings > Keyboard: Trading (the last venue you used, else US Exchange); the Orders, Positions, Cash & financing, Transactions and Markets of the account you are on (elsewhere: US Exchange); Activity (also a tab of History); Account 1 .. 9 of the selected book; Next book. Keys you changed yourself in Settings > Keyboard are kept.
+
+**Pending Trades and Completed Trades**
+
+- New: Pending Trades (F8) lists every working, partly filled, held, queued (next-session) and waiting order, plus the open OTC quote requests. Filters: open / filled / cancelled / expired / rejected / all (the order history), account, class, instrument, all books. Each row shows the market from the quote cache with its freshness, the distance to the limit / stop, the expiry in words, the counterparty, the cash the order reserves and its stage. Row actions: cancel, resume, modify, replace and review ("would fill N at P now" or why not; nothing is written). The order drawer shows the timeline, the fills with the quote used and their settlement, the journal entries, sweeps, borrow, package and the original preview. Package legs stay one row each, with the package's state derived from its legs.
+- New: Completed Trades (Shift+F8) lists every execution, one row each: fills, FX deals, OTC bookings / terminations / maturities and financing trades. Filters: date, instrument, account, class, counterparty, status, source and import batch, with load more and the server CSV of every column. The execution drawer has Trade, Cash movements, Accounting, Position and Audit tabs, and offers the simulated counterparty fail you trigger yourself and its resolution (retry, cash compensation, buy-in).
+- New: amend a working order (price, total quantity, time in force) or replace it in one step; a short sale keeps its borrow, and waiting hedge legs follow the new order.
+- New: good-till-date (GTD) and next-session orders. The ticket says extended hours are not simulated.
+- Refused submissions from the bond, FX, OTC, OTC quote and private-trade tickets are recorded and listed under Rejected.
+- The account Orders page has load more, so every fill is reachable (US Exchange showed only the first 200).
+
+**Portfolio, history and performance**
+
+- New: the History hub (Shift+F10). Your NAV history as a table and a chart, each restated day beside its original (a toggle shows the original snapshots), and for a restated day its split - original NAV, the effect of each imported line, interest, marks at the official close and dating - with a residual of zero. "Portfolio as of" shows that day's positions and marks, read-only. Transactions, account activity, performance, closed positions, imports and past lifetimes are tabs of the same page.
+- New: closed positions, on the Portfolio and in the History hub: open and close dates, quantity, average open and close prices, realised P&L, fees, income, financing, days held and how each one closed; CSV.
+- New: a click (or Enter) on a Portfolio row, or one click on an account's Positions row, opens the position's drawer: every fill with its order and settlement state, every entry with the cash it moved (paged), open and closed lots, the borrow, marks and dividends. The instrument page is one click away in the drawer.
+- New: return tiles on the Portfolio: today, month to date, year to date and since inception (time-weighted and simple).
+- Position rows show total P&L (unrealised + realised + income + financing + fees), fees to date, the counterparty (the stock lender of a short, Goldman for an OTC contract, the clearing house for a listed name), the asset class and the sector; margin and collateral come from the collateral module.
+- Sectors: the Portfolio groups by sector with long, short, net and % of NAV, and Risk shows the same; options and TRS count in their underlying's sector. You can set a name's sector yourself ("Sector ..." in the drawer); VMRK reads "unclassified" until you do.
+- Market value and exposure are told apart: the Portfolio footer shows futures notional, TRS reference shares x today's price, CDX notional with its credit sign and the IRS DV01 - the same definitions as Risk. Risk's TRS exposure is now reference shares x the price now (before: the contract notional).
+- Performance counts trading days only: weekend and holiday interest is folded into the next trading day; annualised ratios appear after 20 trading days ("insufficient history" before); the cumulative time-weighted return and the daily series are always shown.
+- Risk: a Reg T panel per account (requirement, eligible collateral, excess or deficit, the assumed terms), and each exposure bucket says whether it is in the gross. Activity: a "margin calls" filter.
+- Wording: Activity rows and their details read in words (accounts by name, money as amounts, rates as percents); the Accounting transactions, ledger and entry dialog show kinds and memos in words; STT's dividend note says "not held on the ex-date (held since 2026-10-22)"; the Treasury page offline says SOFR is not loaded yet, without convention codes; a stale FX forward mark shows its real age.
+- The Portfolio and account Positions tables fit a 1440-pixel screen with the ticket open; on narrower screens they scroll, never clip.
+
+**OTC dealing and derivatives**
+
+- New: OTC deals now go through a request for quote. On a prime broker's OTC tab, Preview is followed by Request quote instead of Book. The simulated dealer answers on the next lifecycle tick (about 30 s) with a model quote labelled "indicative model quote, simulated dealer", good for 120 seconds. Accept books it at the quoted terms while it is valid; after that it expires and acceptance is refused. Decline closes it. Nothing is booked before you accept. Open requests show on the desk, on the Derivatives page and in Pending Trades.
+- An accepted quote is honoured. Swaps, TRS and CDX book at the quoted rate, reset price or spread. OTC options, forwards and cross-currency swaps book on the market prices the quote was made from. If something else moved in between (a volatility, a curve, the dealer's schedule), the acceptance is refused and nothing is booked.
+- New contracts start PENDING CONFIRMATION and are confirmed at 17:05 ET ("CONFIRMED - simulated confirmation"). Your as-of contracts keep their as-of confirmation. The two TRS you booked on 1.0.5 say "no confirmation record: booked before confirmations were simulated".
+- New: the Derivatives page (Shift+F6). OTC contracts: the whole book, with open quote requests on top, Terminate, and each contract's terms, credit events and timeline (requested, quoted, accepted, booked, initial margin, confirmation, every variation margin, fixing, payment and reset). Listed options: greeks and strategies (your QQQ bear put spread). Futures: initial margin, daily variation margin, open trade equity and the delivery warning (GC and ZN Dec 26 are physically delivered: first notice about 2026-11-30, roll or close before about 2026-11-27). Servicing: the resets, payments, coupons and expiries coming up.
+- New: a simulated CDX credit event, only when you ask for it. On a CDX row, "Simulate credit event" takes the defaulted name, the recovery and the date. The defaulted notional is the original notional / 125 names for IG or / 100 for HY (equal weights, assumed). It settles protection x (1 - recovery) the next business day, net of the premium accrued on it. The notional, the premium, the initial margin and the contract cost then follow the smaller notional. Real credit events and auctions are not tracked (Unsupported list: "CDX credit events: SIMULATED on request").
+- Fixed: a TRS booked after the close deals at the official closing print (the ticket waits for it by itself), never at the last delayed print before 16:00.
+- Fixed: the IRS preview now says its par rate comes from the Treasury par curve, used as a proxy for the SOFR swap curve. No SOFR swap rate is sourced, and dealers' SOFR swap rates usually sit below Treasury par.
+- Fixed: model marks no longer end in an internal code. A refused OTC or CDX preview explains why inside the ticket. The options and forwards tickets no longer ask you to preview again while they retry by themselves.
+
+**Cash, collateral and margin**
+
+- New: the Accounts page (Shift+F4) lists every account of the book (Treasury, US Exchange, Debt Instruments, Credit Instruments, Foreign Markets & FX, Private Markets and each prime-broker account). For each it shows NAV, settled cash, available, reserved, restricted, margin required and its excess, working orders, settling trades, attention items and the custodian. A row opens that account; Treasury opens the Treasury page. "Open prime broker account" starts the usual onboarding, and nothing is ever opened for you. Below the table are the margin calls to act on and your positions grouped by custodian:
+  - US Exchange: PB custody, DVP;
+  - listed options: OCC via the clearing broker;
+  - futures: CME Clearing via the futures commission merchant;
+  - OTC contracts: bilateral with Goldman Sachs under the ISDA / CSA;
+  - cash: the bank.
+- New: the Cash & Collateral page (Shift+F5) shows:
+  - cash by account and currency, split into available, restricted, Reg T margin cash and reserved;
+  - settlement states;
+  - short-sale proceeds against the cash collateral the stock lender holds, with your own cash between them;
+  - interest and financing by type, for today, the month and since inception;
+  - collateral by counterparty: posted and received, net per CSA, cash and securities, initial and variation margin, requirement against eligible;
+  - margin per account with the Reg T terms;
+  - margin calls, CSA pledges and Treasury bills;
+  - an assumptions editor for each account's Reg T percentages and the CSA reuse flag.
+- New: Reg T margin on US Exchange and the prime-broker accounts. The terms are assumed and you can edit them:
+  - 50 % initial and 30 % maintenance of the short value;
+  - fully paid longs count at 50 % of their value;
+  - free cash counts in full.
+- If the longs' loan value does not cover the Reg T requirement, the account's own cash that the requirement needs is held back from available cash, buying power and the evening sweep ("margin requirement (Reg T)"), and a shortfall raises a margin call. On your book today the requirement is covered by your longs, so nothing is held back.
+- New: margin calls, recorded every business day at 17:20 ET from the first evening after the update. They are never backdated. They cover futures variation margin, OTC variation and initial margin under the Goldman CSA, stock-borrow collateral top-ups and Reg T shortfalls. Each call shows its counterparty, amount and due time (the next business day 10:00 ET).
+  - A variation-margin call is met by its own payment: your cash, a Treasury sweep or PB financing.
+  - A Reg T call is met by cash you move into the account.
+  - An unpaid call stays open with an error item and is marked unmet after its due time.
+- A margin call moves nothing by itself, and positions are never sold for you. Calls also show on the Activity page, and the Dashboard and Risk pages show the margin figures.
+- New: Treasury bills, notes and bonds can be pledged to Goldman Sachs under its CSA as securities collateral. The assumed haircuts are 2 % for bills and 4 % for notes and bonds; you can edit them in the prime-broker schedule. A pledge moves no cash and no ledger balance, and the pledged face cannot be sold or pledged again until you release it. The Treasury page lists your Treasury securities as cash equivalents (market value, maturity, accrued discount), or "Treasury securities: none".
+- A refused transfer now names what holds the cash back, for example "settled cash 100,000.00, less margin requirement (Reg T) 100,000.00". A night that waits for SOFR says so in plain words.
+
+**The historical import**
+
+- New: History > Imports shows each import batch of the book. For IMP-F1-20261027-A that is its state ("applied 2026-10-28 09:57 ET"), every line's decision, what was found and what was done (with the order, fill, contract, settlement and transfer ids it created), the business-date cash table, the funding moves, the restated NAV with its split (import effect by line, mark policy by position, dating) and the bridge to the workbook's 25,770,700.86. "Check against the book now" compares every line with the book as it stands, read-only.
+- `python -m finsim import ...` runs the historical import tool, with the same options as `python -m finsim.terminal.importer`.
+- A batch that is already applied, run again (a dry run on a copy of the book or a second apply), only checks and reports: it records no input, sends no command, posts nothing and leaves the batch's record as the apply wrote it. In 1.0.5 such a dry run with a later data pack was refused at the first option line.
+- Report wording: differences are spelled out, and the restore procedure applies to 1.0.5 or later.
+
+**Starting FinSim**
+
+- `python -m finsim` now works from the repository root as well as from its `finsim` folder (`cd C:\Users\logan\intelligence-terminal`, then `python -m finsim serve`). The root's `finsim` folder carries a small `__main__.py` that runs the real package; before, Python stopped with "No module named finsim.__main__". Nothing is pip-installed and FinSim2 is untouched.
+- `FinSim.cmd` (the same file in the repository root and in its `finsim` folder) starts FinSim from any folder. With no command it opens the app; `FinSim.cmd serve` (in PowerShell, `.\FinSim.cmd serve`) and every other command pass through with their exit codes. It uses Python 3.12 when the py launcher has it, else `python`.
+- `python -m finsim` with no command prints a three-line hint (serve / open / status) instead of an error.
+- `serve` first prints the code folder, version and database it runs. On your real home it also says which folder the FinSim icon and Windows login start when that is another one.
+- `status` names the folder the server runs from and the folder the Startup entry starts: `Startup entry -> <folder> (finsim-terminal <version>, release <tag>, commit <SHA>)`. It also checks that the entry's Python and code exist. When the running server is not this folder's code, it no longer says "restart" if a restart would only start the installed release again; it gives the two real choices: open the installed app, or stop and serve here.
+- `install` is refused from a git working tree, such as the repository, unless you pass `--from-working-tree`: the installed app comes from a release folder made from a commit. The sequence it prints is for the folder it installed.
+- `status` and `install` point out the two old Chrome app shortcuts named FinSim, which only open a window and cannot start the server. They are left in place for you to delete.
+- The Startup entry and the FinSim icon write why they did not start (Python or the code missing) to `%USERPROFILE%\.finsim\launcher.log`.
+- `python -m finsim legacy` (the retired game's archive view) is removed. Nothing was deleted: its code and `finsim.db` are kept.
+- The README describes FinSim1 as it is now: no news, the new navigation, the start commands with their exit codes, the installed app, data and backups, the market-data sources, the limits and the tests. FinSim2's section is byte-for-byte unchanged.
+
+**Tests**
+
+- Three new acceptance tests:
+  - a browser smoke test opens every main page in headless Edge through FinSim1's own standard-library DevTools client (`tests\terminal_cdp.py`) and checks for no console errors, no failed requests and no news strings;
+  - a directive test map (`tests\test_terminal_directive_map.py`) maps the 25 areas of your directive's section 18 to 96 tests, and fails when a mapped test disappears, is renamed or would be skipped;
+  - the whole-fund reconciliation now includes a Treasury bill pledged under the Goldman CSA and released again, with no P&L, no ledger movement and no NAV change.
+- The 1.0.3.1 short-sale proof (22 checks) now runs as a regression test. Hand-worked tests cover Reg T with an excess and with a shortfall, margin calls met and unmet, and a CSA pledge: 1,000,000 face of a bill at 99.00 with a 2 % haircut is eligible for 970,200.00.
+- New startup tests (`test_terminal_launch.py`) start the real server as a child process from both folders and check its marker, the "already running" refusal of a second start, the shutdown with no lock files left, a database in the 1.0.3.1 layout (migrated, chart synced, backed up, integrity ok), and `FinSim.cmd` run from another folder.
+- `python tests\run_terminal_suite.py` runs FinSim1's suite from any folder and ends with "RAN n FAIL n ERR n SKIP n FILES n" and "ResourceWarnings n". `py -3.14 tests\run_terminal_suite.py` runs it on Python 3.14.
+- The bond tests close their fixture files (no more ResourceWarnings).
+- 832 tests on Python 3.12 and 3.14, none failing.
+
+**Fixes from the acceptance walk**
+
+- FX forwards, FX options and cross-currency legs are never priced on a rate that has stopped updating. A daily rate (SOFR, the ECB deposit rate, SONIA) may be at most 10 days old, and a monthly OECD average at most 62 days past the month it averages. CHF, whose free series ended in March 2024, is now spot only, with the reason. Every rate on a ticket shows its date and age.
+- OTC equity forwards are marked at the SOFR-carry mid. The prime broker's financing spread is charged on the side you deal: SOFR + spread when you buy, SOFR - spread when you sell, so a sale is no longer dealt above the funding-neutral forward. A name with no dividend data is not priced; its dividend yield is never assumed to be 0.
+- FX forward tenors are ON, 1W, 2W, 1M .. 1Y on both desks. Pairs without a usable rate are listed spot only, with the reason.
+- A cross-currency swap now starts on the spot date of its FX trade date: the initial exchange settles then, with its own funding, and the booking moves only the initial margin. It is margined from its trade date. The ticket picks currencies from a list, says how to fund a currency you lend, and names swaps by the market pair (XCCY EUR/USD). Legs remain fixed / fixed in this version.
+- Risk: OTC FX forwards count in the currency exposure and the FX scenarios, outside the headline gross.
+- Dashboard: its mark snapshot takes about 3 ms instead of about 240 ms, and the answer is within its 300 ms budget again.
+- Wording: contract events and timeline rows are in words with one shape; a settlement-fail item names the account; a missing daily bar is said as a data gap; the jobs list (`GET /api/jobs`) gives the product jobs' next run; dealer quotes spell out the deal; forwards on Positions show their legs and value date.
+- The page declares its own empty icon, so the browser no longer asks the server for /favicon.ico (that 404 was a console error on the first page load).
+- An OTC contract booked after the 17:00 ET cut-off gets its first variation margin on its own business day (the next day, the day of its initial margin), never on a day that had already closed.
+- The OTC contract timeline shows each step at the date and clock time it was recorded, or "as of" its business date when it was recorded later (the import, a catch-up), with the recording time in words. A step posted after the 17:00 ET cut-off names its business date in words. The rows read in order.
+- Pending Trades and Completed Trades fit 1440 px with the ticket dock closed or open: related fields share a cell, and with the dock open the secondary columns fold into the cells beside them. Copy and CSV still give one column per field.
+- Derivatives > OTC contracts (9 columns) and the prime broker's OTC contracts table (7 columns, fits with the dock open) stack related figures, so every mark is on screen. The quote-request block wraps its quote on every page.
+- After "Resolve -> retry" on a simulated settlement fail, the attention item that asked you to resolve it closes. The settlement says "retry requested" until it settles.
+- An FX forward's notional reads "EUR 1,000,000.00 (USD 1,114,100.00 at the spot rate 1.1141 when dealt: the IM base)". The USD figure is the initial-margin base, not the amount delivered.
+
+**Coming next:** 1.0.6.1 - the Goldman FX trades (the EUR/USD cross-currency swap and the EUR/GBP 2-year forward), with prime-broker forwards out to 2 years on real curves; 1.0.7 - single-name CDS; 1.0.8 - the Institutional book pack: a stress engine, the fund book and a SOFR swap curve.
+
 ## 1.0.5 (built 2026-10-28; your Goldman trades and options, as of 2026-10-21)
 
 **Your Goldman trades and options**

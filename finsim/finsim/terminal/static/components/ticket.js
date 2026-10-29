@@ -57,6 +57,14 @@
  *   offers 'convert USD -> GBP as shown' (sent as fx_convert: true; OA-12); the preview header echoes the typed limit (USX-34);
  *   the hedge candidates load by themselves while the panel is open and the order has a side and a quantity (USX-36).
  *
+ * FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 5 and 7):
+ * - TIF: DAY / GTC (90 days) / GTD with a date picker (the order works until that day's close, at most 90 days) / Next session (queued
+ *   until the next regular session opens; it works that session only).  One line says extended hours are not simulated: an order
+ *   entered outside the regular session rests until the regular open.
+ * - AMEND / REPLACE modes: open({order_mode: 'amend' | 'replace', order: <a Pending row>}) prefills the order; the instrument, the
+ *   account and the side are fixed (an amend also keeps the order type; its quantity is the new TOTAL, at least what has filled).
+ *   The preview carries amend_of / replace_of, so the server validates the new terms with the order's own reservation released;
+ *   Submit (Ctrl+Enter) sends PATCH /api/orders/{id} (amend) or POST /api/orders/{id}/replace.  Clear / Esc leaves the mode.
  * Keys inside the ticket (focus inside the dock; typing fields take only the box actions preview / submit / clear) are the
  * registry's ticket actions (keys.js, Settings > Keyboard; defaults = the 1.0.3 keys): b s x c sides, m l k j r types,
  * = + - _ qty by lot (the numpad + / - one lot, Shift ten), h hedge panel, 1..5 pick a candidate / 0 none, Enter preview,
@@ -210,7 +218,7 @@
     return { account_id: account_id || T.state.active_account, instrument_id: '', inst: null, side: 'BUY', side_req: null, close_req: null, side_err: null,
              hedge_pos: null, hedge_for: null, fx_convert: false,
              qty: 0, order_type: 'MARKET', limit_px: '', stop_px: '',
-             trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', hedge: null, hedge_cand: null, hedgeOpen: false,
+             trail_mode: 'amt', trail_amt: '', trail_pct: '', tif: 'DAY', gtd_date: '', mode: null, mode_order: null, mode_tif0: null, hedge: null, hedge_cand: null, hedgeOpen: false,
              preview: null, preview_body: null, previewing: false, pseq: 0, dirty: false, preview_err: null, submit_err: null, stale: null,
              submitting: false, result: null, result_kind: null, last_rid: null, timer: null, reprev: null, taTimer: null, tick: null, resolving: false };
   }
@@ -248,7 +256,9 @@
     ui.stop = T.h('input', { type: 'text', inputmode: 'decimal', placeholder: 'stop price', 'aria-label': 'stop price', id: 'ticket-stop' });
     ui.trailMode = T.h('select', { 'aria-label': 'trail mode', id: 'ticket-trail-mode' }, T.h('option', { value: 'amt' }, 'amount'), T.h('option', { value: 'pct' }, '%'));
     ui.trail = T.h('input', { type: 'text', inputmode: 'decimal', placeholder: 'trail', 'aria-label': 'trail', id: 'ticket-trail' });
-    ui.tif = T.h('select', { 'aria-label': 'time in force', id: 'ticket-tif' }, T.h('option', { value: 'DAY' }, 'DAY'), T.h('option', { value: 'GTC' }, 'GTC (90 d)'));
+    ui.tif = T.h('select', { 'aria-label': 'time in force', id: 'ticket-tif' }, T.h('option', { value: 'DAY' }, 'DAY'), T.h('option', { value: 'GTC' }, 'GTC (90 days)'),
+                 T.h('option', { value: 'GTD' }, 'GTD (date)'), T.h('option', { value: 'NEXT_SESSION' }, 'Next session'));
+    ui.gtd = T.h('input', { type: 'date', 'aria-label': 'good till date', id: 'ticket-gtd' });
     ui.borrow = T.h('input', { type: 'checkbox', checked: true, disabled: true, 'aria-label': 'borrow' });
     ui.hedgeBtn = T.h('button', { class: 'btn small', id: 'ticket-hedge-btn', title: 'hedge panel (h)' }, 'Hedges (h)');
     ui.hedgeSum = T.h('span', { class: 'muted mono', id: 'ticket-hedge-sum' });
@@ -265,16 +275,19 @@
       row('limit', 'limit', ui.limit, 'on the tick grid; a marketable limit fills at the observed price on its first look'),
       row('stop', 'stop', ui.stop, 'triggers on the observed last trade'),
       row('trail', 'trail', T.h('div', { class: 'qty-row' }, ui.trailMode, ui.trail), 'exactly one of amount (price units) or percent'),
-      row('tif', 'TIF', ui.tif),
+      row('tif', 'TIF', ui.tif, 'DAY: until the close of the session it trades in; GTC: up to 90 days; GTD: until the close of the date you pick; Next session: queued until the next regular session opens'),
+      row('gtd', 'GTD date', ui.gtd, 'the order works until the close of this date (at most 90 days ahead)'),
       row('borrow', 'borrow', T.h('span', null, ui.borrow, ' ', T.h('span', { class: 'muted' }, 'implied: a locate and a borrow come first')), 'SELL SHORT opens the borrow in the same transaction (102 % collateral)'),
       row('fxconv', 'FX', T.h('span', null, ui.fxConv, ' ', ui.fxConvLabel), 'the order\'s currency is short in this account and Treasury: tick to buy it with USD at the fill, at the plan shown in the preview'),
       row('hedge', 'hedge', T.h('span', { class: 'row' }, ui.hedgeBtn, ui.hedgeSum))
     ]);
     ui.modeBox = T.h('div', { class: 'blue-box', id: 'ticket-mode', hidden: true });
+    ui.extHours = T.h('div', { class: 'hint', id: 'ticket-ext-hours' }, 'Extended hours: not simulated - an order entered outside the regular session rests until the regular open');
     root.appendChild(ui.modeBox);
     ui.form = form;
     root.appendChild(form);
     root.appendChild(ui.instMeta);
+    root.appendChild(ui.extHours);
     ui.quoteLine = T.h('div', { class: 'row', id: 'ticket-quote' }); root.appendChild(ui.quoteLine);
     ui.previewBtn = T.h('button', { class: 'btn', id: 'ticket-preview-btn', title: 'preview now (Enter)' }, 'Preview');
     ui.submitBtn = T.h('button', { class: 'btn primary', id: 'ticket-submit-btn', disabled: true, title: 'submit (Ctrl+Enter)' }, 'Submit');
@@ -327,6 +340,9 @@
     var id = f.instrument_id ? String(f.instrument_id).trim() : '';
     var newInst = !!(id && id !== st.instrument_id);
     if (f.leg && id && !instCache[id]) { cacheInst(id, legMeta(f.leg, id)); }          /* USX-35: the chain leg's own meta, no look-up */
+    /* 0a. amend / replace a working order (OMS-03): the order's own terms, prefilled */
+    if ((f.order_mode === 'amend' || f.order_mode === 'replace') && f.order && f.order.order_id) { enterOrderMode(f.order_mode, f.order); return; }
+    if (st.mode && (id || f.side || f.close || f.qty != null)) { leaveOrderMode(); }
     /* 0. hedge this position (USX-12): no primary order at all; anything else leaves that mode */
     if (f.hedge === 'position' && id) { enterPositionMode(id, f); return; }
     if (st.hedge_pos && (id || f.side || f.close || f.qty != null)) { leavePositionMode(); }
@@ -353,6 +369,7 @@
     if (f.limit_px != null) { st.limit_px = String(f.limit_px); }
     if (f.stop_px != null) { st.stop_px = String(f.stop_px); }
     if (f.tif) { st.tif = f.tif; }
+    if (f.gtd_date) { st.gtd_date = String(f.gtd_date).slice(0, 10); }
     if (f.hedge) { st.hedgeOpen = true; }
     /* 3. the side for the instrument's kind (a Close takes the closing side; an unaccepted side is never replaced) */
     settleSide();
@@ -365,7 +382,8 @@
      preview (the sequence is bumped, so a late answer for the previous order is ignored) */
   function resetOrder() {
     clearTimeout(st.timer); clearTimeout(st.reprev);
-    st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY';
+    st.qty = 0; st.order_type = 'MARKET'; st.limit_px = ''; st.stop_px = ''; st.trail_mode = 'amt'; st.trail_amt = ''; st.trail_pct = ''; st.tif = 'DAY'; st.gtd_date = '';
+    st.mode = null; st.mode_order = null; st.mode_tif0 = null;
     st.side_req = null; st.close_req = null; st.side_err = null; st.fx_convert = false;
     st.preview = null; st.preview_body = null; st.preview_err = null; st.submit_err = null; st.stale = null; st.previewing = false; st.pseq++;
     st.hedge = null; st.hedge_cand = null; st.package_spec = null;
@@ -391,6 +409,27 @@
     if (hedge) { hedge.update({ mode: 'order', position: null }); }
     paintFields();
   }
+  /* ---- amend / replace a working order (OMS-03): the order's terms prefilled; instrument / side fixed ---- */
+  function tifOf(o) { return o.gtd_date ? 'GTD' : (o.activate_ts != null ? 'NEXT_SESSION' : (o.tif || 'DAY')); }
+  function enterOrderMode(mode, o) {
+    var id = String(o.instrument_id || '');
+    if (st.hedge_pos) { leavePositionMode(); }
+    if (id !== st.instrument_id) { setInstrument(id, o.kind && !instCache[id] ? { kind: String(o.kind) } : null, true); } else { resetOrder(); }
+    st.result = null; T.clear(ui.result);
+    st.mode = mode; st.mode_order = o; st.hedgeOpen = false; st.hedge_for = null;
+    st.side = o.side; st.side_req = o.side; st.close_req = null;
+    var filled = Number(o.filled_qty || 0);
+    st.qty = mode === 'amend' ? Number(o.qty) : Math.max(0, Number(o.qty) - filled);
+    st.order_type = o.order_type || 'MARKET';
+    st.limit_px = o.limit_px != null ? String(o.limit_px) : ''; st.stop_px = o.stop_px != null ? String(o.stop_px) : '';
+    st.trail_mode = o.trail_pct != null ? 'pct' : 'amt'; st.trail_amt = o.trail_amt != null ? String(o.trail_amt) : ''; st.trail_pct = o.trail_pct != null ? String(o.trail_pct) : '';
+    st.tif = tifOf(o); st.mode_tif0 = st.tif; st.gtd_date = o.gtd_date ? String(o.gtd_date).slice(0, 10) : '';
+    settleSide(); paintFields(); paintInstMeta(); stateTicket(); watchIds();
+    paintStatus((mode === 'amend' ? 'amend ' : 'replace ') + o.order_id + ': change the fields, preview, then submit');
+    fieldChanged();
+  }
+  /* leaving the mode for another order empties the fields first (a new order never inherits the amended one's terms) */
+  function leaveOrderMode() { if (!st.mode) { return; } resetOrder(); paintFields(); }
   /* a one-leg hedge of the position becomes an ordinary order on this ticket (the panel's 'Trade this leg') */
   function onTradeLeg(fields, cand) {
     var pos = st.hedge_pos;
@@ -444,7 +483,7 @@
         paintFields(); paintInstMeta(); paintQuote(); stateTicket();
         if (hedge) { hedge.update({ inst: m, side: st.side, qty: st.qty }); }
         if (before !== instKind() || sideBefore !== st.side) { fieldChanged(); }
-      }, function (e) { if (st.instrument_id === id) { paintStatus('instrument ' + id + ': ' + (e.code || '') + ' ' + (e.message || ''), 'err'); } });
+      }, function (e) { if (st.instrument_id === id) { paintStatus('instrument ' + id + ': ' + T.api.describe(e), 'err'); } });
     }
   }
   function resolveTyped() {
@@ -469,8 +508,8 @@
         var hit = list.filter(function (r) { return String(r.symbol || '').toUpperCase() === txt || String(r.instrument_id || '').toUpperCase() === txt || String(r.instrument_id || '').toUpperCase().indexOf(txt) >= 0; })[0];
         if (hit && handOff(hit.instrument_id, hit)) { return; }
         if (hit) { cacheInst(hit.instrument_id, hit); setInstrument(hit.instrument_id, hit); runPreview(true); return; }
-        paintStatus('resolve ' + txt + ': ' + (e.code || '') + ' ' + (e.message || ''), 'err');
-      }, function () { paintStatus('resolve ' + txt + ': ' + (e.code || '') + ' ' + (e.message || ''), 'err'); });
+        paintStatus('resolve ' + txt + ': ' + T.api.describe(e), 'err');
+      }, function () { paintStatus('resolve ' + txt + ': ' + T.api.describe(e), 'err'); });
     });
   }
   function typeahead() {
@@ -514,7 +553,8 @@
     ui.stop.addEventListener('input', function () { st.stop_px = ui.stop.value.trim(); fieldChanged(); });
     ui.trailMode.addEventListener('change', function () { st.trail_mode = ui.trailMode.value; fieldChanged(); });
     ui.trail.addEventListener('input', function () { if (st.trail_mode === 'pct') { st.trail_pct = ui.trail.value.trim(); } else { st.trail_amt = ui.trail.value.trim(); } fieldChanged(); });
-    ui.tif.addEventListener('change', function () { st.tif = ui.tif.value; fieldChanged(); });
+    ui.tif.addEventListener('change', function () { st.tif = ui.tif.value; paintFields(); fieldChanged(); });
+    ui.gtd.addEventListener('change', function () { st.gtd_date = ui.gtd.value; fieldChanged(); });
     ui.fxConv.addEventListener('change', function () { st.fx_convert = !!ui.fxConv.checked; fieldChanged(); });
     ui.hedgeBtn.addEventListener('click', function () { toggleHedge(); });
     ui.previewBtn.addEventListener('click', function () { runPreview(true); });
@@ -525,9 +565,10 @@
   function stepQty(n) { var l = lot(); st.qty = Math.max(0, (st.qty || 0) + n * l); st.qty = Math.round(st.qty / l) * l; paintFields(); fieldChanged(); }
   function paintMode() {
     var pos = st.hedge_pos;
-    T.clear(ui.modeBox); ui.modeBox.hidden = !pos && !st.hedge_for;
+    T.clear(ui.modeBox); ui.modeBox.hidden = !pos && !st.hedge_for && !st.mode;
     var hide = !!pos;
-    ['side', 'qty', 'type', 'limit', 'stop', 'trail', 'tif', 'borrow', 'fxconv', 'hedge'].forEach(function (k) { if (hide && ui.rows[k]) { ui.rows[k].forEach(function (el) { el.hidden = true; }); } });
+    ['side', 'qty', 'type', 'limit', 'stop', 'trail', 'tif', 'gtd', 'borrow', 'fxconv', 'hedge'].forEach(function (k) { if (hide && ui.rows[k]) { ui.rows[k].forEach(function (el) { el.hidden = true; }); } });
+    if (st.mode && ui.rows.hedge) { ui.rows.hedge.forEach(function (el) { el.hidden = true; }); }
     ui.previewBtn.hidden = hide; ui.submitBtn.hidden = hide; ui.freshEl.hidden = hide;
     if (pos) {
       var q = pos.qty; var what = q != null && isFinite(q) && q !== 0 ? (q > 0 ? 'long ' : 'short ') + T.fmt.qty(Math.abs(q)) + ' ' + pos.instrument_id : 'the ' + pos.instrument_id + ' position';
@@ -538,6 +579,15 @@
       var hp = st.hedge_for.position || {}; var hq = Number(hp.qty);
       ui.modeBox.appendChild(T.h('div', null, T.h('b', null, 'Hedge leg: '), (st.hedge_for.label || '') + (isFinite(hq) && hq ? ' - for your ' + (hq > 0 ? 'long ' : 'short ') + T.fmt.qty(Math.abs(hq)) + ' ' + (hp.instrument_id || hp.symbol || '') : '')));
       ui.modeBox.appendChild(T.h('div', { class: 'hint' }, 'its own order: preview, then submit; nothing else is ordered'));
+    } else if (st.mode && st.mode_order) {
+      var o = st.mode_order;
+      ui.modeBox.appendChild(T.h('div', null, T.h('b', null, (st.mode === 'amend' ? 'Amend ' : 'Replace ') + o.order_id + ': '),
+        (o.side_words || String(o.side || '').replace(/_/g, ' ')) + ' ' + T.fmt.qty(o.qty) + ' ' + (o.symbol || o.instrument_id || '') + ' ' + (o.type_words || o.order_type || '') +
+        ' . ' + T.fmt.qty(o.filled_qty || 0) + ' filled'));
+      ui.modeBox.appendChild(T.h('div', { class: 'hint' }, st.mode === 'amend'
+        ? 'change the price, the total quantity (at least what has filled) or the time in force; the new terms are checked on what is still to fill'
+        : 'the order is cancelled and this new order takes its place in one step (what has filled stays filled; a short sale keeps its borrow)'));
+      ui.modeBox.appendChild(T.h('button', { class: 'btn small', id: 'ticket-leave-mode', onclick: function () { clear(); } }, st.mode === 'amend' ? 'Stop amending' : 'Stop replacing'));
     }
   }
   function paintFields() {
@@ -563,6 +613,11 @@
     ui.limit.value = st.limit_px; ui.stop.value = st.stop_px; ui.trailMode.value = st.trail_mode; ui.trail.value = st.trail_mode === 'pct' ? st.trail_pct : st.trail_amt;
     ui.trail.placeholder = st.trail_mode === 'pct' ? 'percent (2 dp)' : 'price units';
     ui.tif.value = st.tif;
+    show('gtd', st.tif === 'GTD');
+    if (ui.gtd.value !== st.gtd_date) { ui.gtd.value = st.gtd_date || ''; }
+    /* OMS-03: an amend / replace keeps the instrument, the side (and for an amend the type) of the order */
+    ui.inst.disabled = !!st.mode; ui.side.disabled = !!st.mode; ui.type.disabled = st.mode === 'amend';
+    if (ui.rows.qty && ui.rows.qty[0] && st.mode === 'amend') { ui.rows.qty[0].textContent = 'qty (total)'; }
     ui.hedgeWrap.hidden = !st.hedgeOpen;
     ui.hedgeBtn.classList.toggle('primary', !!st.hedgeOpen);
     ui.hedgeSum.textContent = st.hedge ? (st.hedge.candidate_id + (st.hedge.ratio ? ' x' + st.hedge.ratio : '') + (st.hedge.edits && Object.keys(st.hedge.edits).length ? ' (edited)' : '')) : (st.hedgeOpen ? 'none picked' : '');
@@ -621,6 +676,8 @@
     if (!st.side || sidesFor().indexOf(st.side) < 0) { return 'choose the side (' + sidesFor().map(function (s) { return SIDE_LABEL[s] || s; }).join(' / ') + ')'; }
     if (!(st.qty > 0)) { return 'enter a quantity'; }
     if (st.qty % lot() !== 0) { return 'quantity must be a multiple of the lot (' + T.fmt.qty(lot()) + ')'; }
+    if (st.mode === 'amend' && st.mode_order && st.qty <= Number(st.mode_order.filled_qty || 0)) { return 'the total quantity must be above what has filled (' + T.fmt.qty(st.mode_order.filled_qty) + ')'; }
+    if (st.tif === 'GTD' && !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(st.gtd_date || ''))) { return 'pick the GTD date'; }
     var t = st.order_type;
     if ((t === 'LIMIT' || t === 'STOP_LIMIT') && num(st.limit_px) == null) { return 'enter a limit price'; }
     if ((t === 'STOP' || t === 'STOP_LIMIT') && num(st.stop_px) == null) { return 'enter a stop price'; }
@@ -640,7 +697,20 @@
     if (st.side === 'SELL_SHORT') { b.borrow = true; }
     if (st.hedge) { b.hedge = { candidate_id: st.hedge.candidate_id, ratio: st.hedge.ratio, edits: st.hedge.edits || {} }; }
     if (st.fx_convert) { b.fx_convert = true; }
+    if (st.tif === 'GTD') { b.gtd_date = st.gtd_date; }
+    if (st.mode === 'amend' && st.mode_order) { b.amend_of = st.mode_order.order_id; delete b.hedge; }
+    if (st.mode === 'replace' && st.mode_order) { b.replace_of = st.mode_order.order_id; delete b.hedge; }
     return b;
+  }
+  /* OMS-03: the body of PATCH /api/orders/{id} (amend) / POST /api/orders/{id}/replace from the previewed fields; an amend that keeps
+     the time in force does not send it (the order keeps its own expiry) */
+  function modeBody() {
+    var b = previewBody();
+    var out = { qty: b.qty };
+    ['limit_px', 'stop_px', 'trail_amt', 'trail_pct'].forEach(function (k) { if (b[k] != null && b[k] !== '') { out[k] = b[k]; } });
+    if (st.mode === 'replace') { out.order_type = b.order_type; out.tif = b.tif; if (b.gtd_date) { out.gtd_date = b.gtd_date; } }
+    else if (st.tif !== st.mode_tif0 || st.tif === 'GTD') { out.tif = b.tif; if (b.gtd_date) { out.gtd_date = b.gtd_date; } }
+    return out;
   }
   function fieldChanged() {
     st.dirty = true; st.submit_err = null; st.stale = null; st.preview_err = null;
@@ -677,7 +747,7 @@
       if (seq !== st.pseq) { return; }
       st.previewing = false; st.preview = null; st.preview_err = e;
       paintPreview(); paintSubmit();
-      paintStatus('preview failed: ' + (e.code || '') + ' ' + (e.message || ''), 'err');
+      paintStatus('preview failed: ' + T.api.describe(e), 'err');                 /* V104R2-BW-04: words; the code stays in the console */
       if (e.status === 409 || e.status === 503 || e.code === 'NETWORK') { scheduleReprev(); }
     });
   }
@@ -750,10 +820,10 @@
     opts = opts || {};
     if (!opts.force && !canSubmit()) { paintSubmit(); return; }
     var rid = opts.rid || T.uuid();
-    var body = previewBody();
+    var body = st.mode ? modeBody() : previewBody();
     body.preview_id = opts.preview_id || (st.preview && st.preview.preview_id) || null;
     body.confirm_large = !!opts.confirm_large;
-    send(body, rid, 'single');
+    send(body, rid, st.mode || 'single');
   }
   function submitPackage(body, spec) {
     if (st.submitting) { return; }
@@ -766,10 +836,18 @@
     st.submitting = true; st.last_rid = rid; st.submit_err = null; st.stale = null;
     clearTimeout(st.reprev);
     paintSubmit(); paintStatus('submitting (request ' + rid.slice(0, 8) + ') ...');
-    T.api.post('/api/orders', body, { request_id: rid, reconcile: st.account_id }).then(function (res) {
+    var oidm = (kind === 'amend' || kind === 'replace') && st.mode_order ? st.mode_order.order_id : null;
+    var call = kind === 'amend' ? T.api.patch('/api/orders/' + encodeURIComponent(oidm), body, { request_id: rid })
+      : (kind === 'replace' ? T.api.post('/api/orders/' + encodeURIComponent(oidm) + '/replace', body, { request_id: rid })
+        : T.api.post('/api/orders', body, { request_id: rid, reconcile: st.account_id }));
+    call.then(function (res) {
+      /* an amend / replace is done: the fields go back to an empty order of this instrument (a second Submit never repeats it) */
+      if (kind === 'amend' || kind === 'replace') { resetOrder(); paintFields(); }
       st.submitting = false; st.result = res; st.result_kind = kind; st.preview = null; st.stale = null;
       paintResult(); paintPreview(); paintSubmit();
       paintStatus((res.replayed ? 'already submitted . ' : (res.recovered ? 'recovered after a lost response . ' : '')) + 'order ' + ((res.order && res.order.order_id) || (res.package && res.package.package_id) || '') + ' ' + ((res.order && res.order.status) || (res.package && res.package.status) || ''), 'ok');
+      if (kind === 'amend') { paintStatus('amended ' + ((res.order && res.order.order_id) || '') + ': ' + String(res.event || '').replace(/^AMENDED /, ''), 'ok'); }
+      if (kind === 'replace') { paintStatus('replaced ' + ((res.replaced && res.replaced.order_id) || '') + ' by ' + ((res.order && res.order.order_id) || '') + ' (' + String((res.order && res.order.status) || '').toLowerCase() + ')', 'ok'); }
       if (kind === 'single' && st.hedge) { st.hedge = null; st.hedge_cand = null; if (hedge) { hedge.none(); } paintFields(); }
       if (kind === 'package' && st.hedge_pos) { paintStatus('hedge package ' + ((res.package && res.package.package_id) || '') + ' ' + ((res.package && res.package.status) || '') + ': only the hedge legs were ordered', 'ok'); }
       ['orders', 'positions', 'account_detail', 'accounts', 'attention'].forEach(function (p) { T.poll.kick(p); });
@@ -805,7 +883,7 @@
         return;
       }
       st.submit_err = e; paintPreview(); paintSubmit();
-      paintStatus('refused: ' + (e.code || '') + ' ' + (e.message || ''), 'err');
+      paintStatus('refused: ' + T.api.describe(e), 'err');
       if (e.status === 409 && (e.code === 'QUOTE_STALE' || e.code === 'INSUFFICIENT_FUNDS')) { scheduleReprev(); }
     });
   }
@@ -846,8 +924,8 @@
     var group = kindGroup(instKind()); var sk = SIDE_KEYS[group] || SIDE_KEYS.CASH;
     var step = QTY_STEP[id];
     if (step) { stepQty(e.location === 3 ? (e.shiftKey ? 10 : 1) * (step > 0 ? 1 : -1) : step); }   /* the numpad + / - step one lot (Shift: ten), as in 1.0.3 */
-    else if (k && sk[k] && sidesFor().indexOf(sk[k]) >= 0) { st.side = sk[k]; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); }
-    else if (k && TYPE_KEYS[k]) { st.order_type = TYPE_KEYS[k]; paintFields(); fieldChanged(); }
+    else if (k && sk[k] && sidesFor().indexOf(sk[k]) >= 0) { if (st.mode) { return; } st.side = sk[k]; st.side_req = null; st.close_req = null; st.side_err = null; paintFields(); fieldChanged(); }
+    else if (k && TYPE_KEYS[k]) { if (st.mode === 'amend') { return; } st.order_type = TYPE_KEYS[k]; paintFields(); fieldChanged(); }
     else if (id === 'ticket.hedge') { toggleHedge(); }
     else if (/^ticket\.hedge_[1-5]$/.test(id)) { if (hedge) { if (!st.hedgeOpen) { toggleHedge(); } hedge.pick(Number(k)); } }
     else if (id === 'ticket.hedge_none') { if (hedge) { hedge.none(); } }

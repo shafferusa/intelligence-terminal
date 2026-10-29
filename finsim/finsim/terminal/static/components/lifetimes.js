@@ -201,8 +201,8 @@
         }, function (e) {
           btn.disabled = false;
           err.hidden = false;
-          err.textContent = (e && e.code ? e.code + ': ' : '') + (e && e.message ? e.message : String(e));
-          if (e && e.body && e.body.incident_id) { err.textContent += ' (incident ' + e.body.incident_id + ')'; }
+          err.textContent = T.api.describe(e);                 /* V104R2-BW-04: words (with the incident id of a 500), the code in the hover */
+          err.title = (e && e.code) || '';
           console.error('reset lifetime', e);
         });
       }

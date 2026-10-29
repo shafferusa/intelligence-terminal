@@ -69,22 +69,6 @@
    "consecutive_errors": 0,
    "down_until_ts": null,
    "requests_today": 6
-  },
-  "fed": {
-   "ok": true,
-   "last_ok_ts": "$NOW-1800",
-   "last_error": null,
-   "consecutive_errors": 0,
-   "down_until_ts": null,
-   "requests_today": 3
-  },
-  "newspaper": {
-   "ok": true,
-   "last_ok_ts": "$NOW-240",
-   "last_error": null,
-   "consecutive_errors": 0,
-   "down_until_ts": null,
-   "requests_today": 12
   }
  },
  "workers": {
@@ -133,12 +117,12 @@
   "path": "C:\\Users\\logan\\.finsim\\terminal.lock",
   "pid": 4242
  },
- "news": {
-  "injection_flags": 0,
-  "fetched": {
-   "yahoo": "$NOW-300",
-   "fed": "$NOW-1800",
-   "newspaper": "$NOW-240"
-  }
+ "modules": {
+  "orders": "bound",
+  "risk": "bound",
+  "compliance": "bound",
+  "performance": "bound",
+  "lifecycle": "bound",
+  "dashboard": "bound"
  }
 }

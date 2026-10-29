@@ -1,10 +1,11 @@
-"""``python -m finsim`` — the FinSim Live Terminal CLI (TERMINAL_DESIGN.md §18; WP-14).
+"""``python -m finsim`` - the FinSim Terminal (FinSim1) CLI (TERMINAL_DESIGN.md §18; WP-14; FINSIM1_PLAN P7).
 
 Re-pointed on 2026-10-20 from the old simulation's CLI to ``finsim.terminal.app.main``: ``serve``, ``stop``, ``status``,
-``install``, ``open`` and ``uninstall`` now mean the terminal (``%USERPROFILE%\\.finsim\\terminal.db``, port 8765).  The
-old engine stays reachable as ``python -m finsim legacy [--port 8766] [--refresh]`` — the archive view, which runs the
-unchanged ``finsim.api.server.serve`` on a sqlite3-backup COPY of ``finsim.db`` so the live file is never opened.
-The old ``demo`` and ``phone`` subcommands are not exposed; ``finsim.app`` and ``finsim.api`` are not edited.
+``install``, ``open``, ``uninstall`` and ``import`` mean the terminal (``%USERPROFILE%\\.finsim\\terminal.db``, port 8765).
+From the repository root the outer shim ``finsim/__main__.py`` (1.0.6) runs this same entry point.  The old engine's
+``legacy`` archive view left the command line in 1.0.6 (owner question Q8; nothing deleted: ``finsim.api``,
+``finsim.engines`` and ``finsim.db`` stay as they are); the old ``demo`` / ``phone`` subcommands are not exposed;
+``finsim.app`` and ``finsim.api`` are not edited.
 """
 from __future__ import annotations
 

@@ -27,7 +27,7 @@ import shutil
 import tempfile
 import types
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from tests.terminal_helpers import T1, assert_integrity, bal, deposit, execute, fund, make_runtime, pb, snapshot
@@ -903,6 +903,71 @@ class SwapTests(unittest.TestCase):
         with rt.db.reader() as conn:
             self.assertEqual([(SWP1, "2026-11-02")], swaps.vm_keys(conn, rt.clock.epoch()))
         assert_integrity(self, rt, "full")
+
+    def test_booking_after_the_cut_off_margins_from_its_business_day(self):
+        """P8R1-02: a live contract booked after the 17:00 ET cut-off of Tue 10-20 belongs to Wed 10-21: its IM is dated 10-21 and so is its
+        first variation margin - never a VM of 10-20 posted after that day closed (the old first VM date was the start, the calendar date)."""
+        rt = self.start()
+        self.scenario()
+        rt.clock.set("2026-10-20T21:08:00-04:00")                                     # Tue 21:08 ET: after the cut-off (and after the 17:05 VM time)
+        r = book(rt)
+        self.assertTrue(r.ok, r.body)
+        c = contract(rt)
+        # the contract still starts on its calendar date (the schedule is unchanged); its IM 95,193.00 (|DV01| 1,903.86 x 50 bp) carries business
+        # date 10-21, the booking's accounting day, paid from the account's own 100,000.00 (no sweep)
+        self.assertEqual(("2026-10-20", "2026-10-20"), (c["start_date"], json.loads(c["terms_json"])["trade_date"]))
+        im = entry_by_idem(rt, f"im:{SWP1}:open")
+        self.assertEqual(("2026-10-21", [("1330", SWP1, 9519300), ("1010", None, -9519300)]), (im["business_date"], lines_of(rt, im["entry_id"])))
+        self.assertEqual(date(2026, 10, 21), swaps.vm_first_date(c))
+        self.assertEqual(date(2026, 10, 21), swaps.booked_business_day(c))
+        # at 21:09 nothing is due (the old rule listed (SWP-000001, 2026-10-20) and posted the -1,903.86 day-one mark dated the closed 10-20);
+        # a VM asked for 10-20 is refused, nothing is written
+        rt.clock.set("2026-10-20T21:09:00-04:00")
+        with rt.db.reader() as conn:
+            self.assertEqual([], swaps.vm_keys(conn, rt.clock.epoch()))
+        self.assertEqual([], ran(rt.lifecycle.tick(only="SWAP_VM"), "SWAP_VM"))
+        bad = vm(rt, "2026-10-20")
+        self.assertEqual((400, "KEY_INVALID"), (bad.http, bad.code))
+        self.assertEqual([], q(rt, "SELECT 1 FROM otc_vm"))
+        self.assertIsNone(entry_by_idem(rt, f"swapvm:{SWP1}:2026-10-20"))
+        # Wed 10-21 17:10: the first VM, on the curve available (the 10-19 one, within C12's 3 business days): par 0.04000 vs dealt 0.04010 ->
+        # mark = 10,000,000 x (0.04000 - 0.04010) x 1.90386435 = -1,903.86, reference 0 -> Dr 1320 1,903.86 / Cr 1010 1,903.86, business date
+        # 10-21 = the IM's: one booking, one business date
+        rt.clock.set("2026-10-21T17:10:00-04:00")
+        with rt.db.reader() as conn:
+            self.assertEqual([(SWP1, "2026-10-21")], swaps.vm_keys(conn, rt.clock.epoch()))
+        out = rt.lifecycle.tick(only="SWAP_VM")
+        self.assertEqual([(f"{SWP1}:2026-10-21", "DONE")], ran(out, "SWAP_VM"))
+        e = entry_by_idem(rt, f"swapvm:{SWP1}:2026-10-21")
+        self.assertEqual(("2026-10-21", [("1320", SWP1, 190386), ("1010", None, -190386)]), (e["business_date"], lines_of(rt, e["entry_id"])))
+        self.assertEqual([("2026-10-21", -190386, -190386)], [(r["vm_date"], r["mark_c"], r["delta_c"]) for r in q(rt, "SELECT * FROM otc_vm")])
+        # cash: 100,000.00 - 95,193.00 IM - 1,903.86 VM = 2,903.14
+        self.assertEqual(290314, bal(rt, PB_GS, "1010"))
+        assert_integrity(self, rt, "full")
+
+    def test_vm_first_date_rule(self):
+        """P8R1-02: the first VM date of each kind of row - a live booking's accounting day when it is later than the start; an as-of
+        booking's value date whenever it was entered (D7); an XCCY's trade date (P8B-06); a row without a booking time keeps its start."""
+        def row(kind="TRS", start="2026-10-28", booking=None, entered=None, terms=None):
+            return {"kind": kind, "start_date": start, "booking": booking, "entered_ts": entered, "terms_json": json.dumps(terms or {})}
+        ts = lambda s: int(datetime.fromisoformat(s).timestamp())                                                         # noqa: E731
+        self.assertEqual(date(2026, 10, 28), swaps.vm_first_date(row(entered=ts("2026-10-28T16:59:59-04:00"))))          # before the cut-off: the start
+        self.assertEqual(date(2026, 10, 28), swaps.vm_first_date(row(entered=ts("2026-10-28T17:00:00-04:00"))))          # 17:00:00 is still day D
+        self.assertEqual(date(2026, 10, 29), swaps.vm_first_date(row(entered=ts("2026-10-28T17:05:51-04:00"))))          # SWP-000006's booking time
+        self.assertEqual(date(2026, 10, 29), swaps.vm_first_date(row(terms={"dealt_ts": ts("2026-10-28T21:08:45-04:00")})))   # 1.0.5 rows: dealt_ts
+        self.assertEqual(date(2026, 10, 28), swaps.vm_first_date(row()))                                                    # no booking time recorded
+        # Fri 10-30 18:00 ET: the accounting day is Sat 10-31 (the IM's business date); Saturday's VM measures nothing new
+        self.assertEqual(date(2026, 10, 31), swaps.vm_first_date(row(start="2026-10-30", entered=ts("2026-10-30T18:00:00-04:00"))))
+        # a Saturday booking starts Monday (following) and margins from Monday
+        self.assertEqual(date(2026, 11, 2), swaps.vm_first_date(row(start="2026-11-02", entered=ts("2026-10-31T11:00:00-04:00"))))
+        # an as-of booking keeps its value date: the owner's TRS, dealt 10-21 19:45 ET (accounting day 10-22) and entered 10-28 09:57 ET
+        asof = row(start="2026-10-21", booking="AS_OF", entered=ts("2026-10-28T09:57:39-04:00"), terms={"dealt_ts": ts("2026-10-21T19:45:00-04:00")})
+        self.assertEqual(date(2026, 10, 21), swaps.vm_first_date(asof))
+        self.assertIsNone(swaps.booked_business_day(asof))
+        self.assertEqual(date(2026, 10, 21), swaps.vm_first_date(dict(asof, booking="HISTORICAL_MODEL")))
+        # an XCCY dealt after the FX roll: trade date 10-29, spot start 11-02 -> margined from 10-29 (the booking's accounting day too)
+        x = row(kind="XCCY", start="2026-11-02", entered=ts("2026-10-28T21:09:15-04:00"), terms={"trade_date": "2026-10-29"})
+        self.assertEqual(date(2026, 10, 29), swaps.vm_first_date(x))
 
     # ---- eligibility and tradeability (books="real": P1 / F1) -------------------------------------------------------------------------
     def test_not_eligible_in_p1_not_tradeable_outside_pb_and_other_kinds(self):

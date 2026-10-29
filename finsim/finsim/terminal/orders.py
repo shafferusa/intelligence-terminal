@@ -66,6 +66,23 @@ Conventions stated here (the §1.3 sentences that bite in this module)
   stored on the order's preview passes to the fill.
 - Rejection audit (TX-7): every refused submission is recorded once per attempt (``rej:<request_id>:<sha8(code+message)>``);
   a failed audit write is logged.
+
+FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 5, 7 and 8):
+- AMEND (OMS-03, ``order.amend``): a WORKING / PARTIAL / SUSPENDED order takes a new limit / stop / trail, a new total quantity (above
+  what has filled) and a new TIF / expiry; the new terms are re-validated on the remaining quantity through ``orders_preview.validate``
+  with the order's own reservation released (funding, tick, STOP_SIDE ...); ``first_eval_done`` and ``limit_rested`` reset (EXEC-5:
+  the next look is a first look), ``amend_count`` + 1, one event "AMENDED limit 50.00 -> 51.00".  Account, instrument, side and type
+  never change (a replace changes the type).  A held order stays held (the automatic resume re-checks it).
+- REPLACE (OMS-03, ``order.replace``), ONE transaction: the new order is validated like a new one (the old one left out), inserted with
+  ``replaces_order_id``; the old one is CANCELLED "replaced by O-x" with ``replaced_by_order_id``; a short sale's borrow moves to the
+  new order (``borrows.order_id`` follows it; ``lending.release_for_cancel`` is never called); the WAITING_PARENT hedge legs and the
+  package follow the new primary.  A later cancel of a replacement releases the borrow only when the whole chain filled nothing (the
+  unused part of a borrow that backs a short goes back through BORROW_CLEANUP, as after any partial fill).
+- TIF (OMS-11): GTD is GTC + ``gtd_date`` (expires at that day's session close, "GTD date reached"); NEXT_SESSION is DAY + ``activate_ts``
+  (queued until the next session opens; ``orders_rules.evaluate`` holds it).  ``gtd_supported(services)`` is the C6 probe.
+- REJECTIONS from every ticket (OMS-15): ``record_ticket_refusal`` is the C5 refusal recorder of the bond ticket, FX spot / forward,
+  OTC book / terminate, the OTC quote request / accept / decline and the private trade: each refusal becomes an ``order_rejections`` row
+  (``ticket_kind`` in its payload) that the Pending blotter's Rejected filter lists.
 """
 from __future__ import annotations
 
@@ -82,12 +99,12 @@ from .db import dumps, next_id
 from .clock import ny_of
 from .instruments import Instrument
 from .matcher import Matcher                                                                        # noqa: F401 (re-export)
-from .orders_preview import (PreviewStore, ValidatedOrder, _as_dict, _jsonable, _s, bar_usage, funding_fit, preview, preview_store, quote_of,   # noqa: F401
-                             resting_need, session_for, validate, with_nbbo)
+from .orders_preview import (AMENDABLE_STATUSES, PreviewStore, ValidatedOrder, _as_dict, _jsonable, _s, bar_usage, funding_fit, order_context,   # noqa: F401
+                             preview, preview_store, quote_of, resting_need, session_for, tif_choice, tif_label, validate, with_nbbo)
 from .orders_rules import (AUTO_RESUME_NOTE, BUY_SIDES, CASH_SIDES, FUNDS_CODES, FUNDS_WAIT, FUNDS_WAIT_ITEM, FUTURES_SIDES, LIVE_STATUSES,   # noqa: F401
                            NEEDS_QUOTE_TYPES, OPEN_STATUSES, OPENING_SIDES, OPTION_SIDES, ORDER_TYPES, SELL_SIDES, STOP_TYPES, TIFS, Decision, LegDecision,
                            OrderRow, PackageDecision, evaluate, evaluate_package, exec_price, fill_cap, funds_wait_from_error, funds_wait_reason, is_funds_wait,
-                           match_idem, on_tick, trail_amount, trail_stop)
+                           match_idem, on_tick, px_words, queued_until_text, review, trail_amount, trail_stop)
 from .quotes import QuoteRecord
 from .units import fmt_money, qprice, to_c
 
@@ -122,10 +139,50 @@ BOOKING_HISTORICAL_MODEL = "HISTORICAL_MODEL"
 
 
 def bind(rt) -> None:
-    """Called by the server when it binds the orders module: the additive schema of SCHEMA_EXT (idempotent)."""
+    """Called by the server when it binds the orders module: the additive schema of SCHEMA_EXT (idempotent) and the C5 refusal
+    recorder of the other tickets (OMS-15; registering it again is a no-op)."""
     fn = getattr(getattr(rt, "db", None), "ensure_schema_ext", None)
     if callable(fn):
         fn("orders", SCHEMA_EXT)
+    try:
+        from .api import add_refusal_recorder
+        add_refusal_recorder(TICKET_KINDS, record_ticket_refusal)
+    except Exception as e:   # noqa: BLE001 - the recorder is an audit aid; a failure to register is logged, never a failed bind
+        log = getattr(rt, "log", None)
+        if log is not None:
+            log.warning("orders: the ticket refusal recorder was not registered: %s: %s", type(e).__name__, e)
+
+
+def gtd_supported(services) -> bool:
+    """C6 / C7 probe (OMS-11): good-till-date and next-session orders are built in this release."""
+    return True
+
+
+def _order_cols(conn) -> set:
+    try:
+        return {r[1] for r in conn.execute("PRAGMA table_info(orders)").fetchall()}
+    except Exception:   # noqa: BLE001
+        return set()
+
+
+def _row_get(row, key: str, default=None):
+    """``row[key]`` of a sqlite3.Row / dict; ``default`` when the column is absent (a database ``bind`` has not extended) or NULL."""
+    try:
+        v = row[key]
+    except (KeyError, IndexError):
+        return default
+    return default if v is None else v
+
+
+def _set_tif_columns(conn, order_id: str, gtd_date: Optional[str], activate_ts: Optional[int]) -> None:
+    """OMS-11: ``gtd_date`` / ``activate_ts`` of an order (the 1.0.6 columns of ``bind``); a database without them refuses a GTD or
+    next-session order instead of writing half of it."""
+    if gtd_date is None and activate_ts is None:
+        return
+    cols = _order_cols(conn)
+    if "gtd_date" not in cols or "activate_ts" not in cols:
+        raise RejectError("NOT_READY", "good-till-date and next-session orders need the order book's 1.0.6 columns: restart the terminal so it can add them")
+    conn.execute("UPDATE orders SET gtd_date=?, activate_ts=? WHERE order_id=?", (gtd_date, activate_ts, order_id))
 
 
 def _trigger_text(orow: OrderRow, rec: Optional[QuoteRecord]) -> str:
@@ -207,13 +264,23 @@ def _insert_order(ctx: TxContext, vo: ValidatedOrder, request_id: str, status: s
         (oid, request_id, vo.account_id, vo.inst.instrument_id, vo.side, vo.qty, vo.order_type, _s(vo.limit_px), _s(vo.stop_px), _s(vo.trail_amt), _s(vo.trail_pct),
          _s(vo.trail_ref_px), fill_mode, vo.tif, status, vo.inst.session_group, ctx.ts, ctx.ts, vo.expires_ts, str(vo.participation), package_id, parent_order_id,
          None if ratio is None else str(ratio), reason, dumps(vo.preview)))
+    _set_tif_columns(ctx.conn, oid, getattr(vo, "gtd_date", None), getattr(vo, "activate_ts", None))     # OMS-11
     return oid
+
+
+def _tif_words(vo: ValidatedOrder) -> str:
+    choice = getattr(vo, "tif_choice", None) or vo.tif
+    if choice == "GTD":
+        return f"GTD {vo.gtd_date}"
+    if choice == "NEXT_SESSION":
+        return "DAY, next session"
+    return vo.tif
 
 
 def _summary(vo: ValidatedOrder) -> str:
     px = f" @ {vo.limit_px}" if vo.limit_px is not None else ""
     st = f" stop {vo.stop_px}" if vo.stop_px is not None else ""
-    return f"{vo.side} {vo.qty:,} {vo.inst.symbol} {vo.order_type}{px}{st} {vo.tif}"
+    return f"{vo.side} {vo.qty:,} {vo.inst.symbol} {vo.order_type}{px}{st} {_tif_words(vo)}"
 
 
 # ---- the shared fill path (§10.7) --------------------------------------------------------------------------------------------
@@ -476,9 +543,12 @@ def _submit_single(ctx: TxContext, services, payload: dict, vo: ValidatedOrder, 
                     " (cancel it to drop it)", {"code": wait["code"], "details": _jsonable(wait["details"])})
         return {"order": order_view(ctx.conn, order_id), "fills": [], "sweeps": [], "borrow": borrow, "hedge_package": package_id, "warnings": vo.warnings,
                 "decision": {"action": "NONE", "reason": "FUNDS_WAIT", "note": wait["reason"]}, "preview": vo.preview, "queued": True}
-    _order_event(ctx.conn, order_id, ctx.ts, None, "WORKING", f"submitted: {_summary(vo)}; {vo.exec_reason if not vo.executable else 'quote executable'}", vo.rec)
+    queued = f"; queued for the next session ({queued_until_text(vo.activate_ts)})" if getattr(vo, "activate_ts", None) else ""
+    _order_event(ctx.conn, order_id, ctx.ts, None, "WORKING", f"submitted: {_summary(vo)}; {vo.exec_reason if not vo.executable else 'quote executable'}{queued}",
+                 vo.rec)
     ctx.event("ORDER_SUBMITTED", account_id=vo.account_id, instrument_id=vo.inst.instrument_id, ref_type="order", ref_id=order_id, side=vo.side, qty=vo.qty,
-              order_type=vo.order_type, tif=vo.tif, expires_ts=vo.expires_ts, package_id=package_id, limit_px=_s(vo.limit_px), stop_px=_s(vo.stop_px))
+              order_type=vo.order_type, tif=vo.tif, expires_ts=vo.expires_ts, package_id=package_id, limit_px=_s(vo.limit_px), stop_px=_s(vo.stop_px),
+              **({"gtd_date": vo.gtd_date} if getattr(vo, "gtd_date", None) else {}), **({"activate_ts": vo.activate_ts} if getattr(vo, "activate_ts", None) else {}))
     orow = load_order(services, ctx.conn, order_id)
     dec = evaluate(orow, vo.rec, vo.session, ctx.ts, orow.participation, vo.inst, bar_used=bar_usage(ctx.conn))
     fr = _act(ctx, services, orow, vo.rec, dec, new_order=True)
@@ -687,13 +757,28 @@ def _close_order(ctx: TxContext, services, raw, to_status: str, reason: str, eve
     _order_event(conn, oid, ctx.ts, raw["status"], to_status, reason)
     ctx.event(event_type, account_id=raw["account_id"], instrument_id=raw["instrument_id"], ref_type="order", ref_id=oid, reason=reason, filled_qty=int(raw["filled_qty"]))
     _resolve_funds_items(ctx, oid)                       # a cancelled / expired order waits for nothing any more
-    if raw["borrow_id"] and int(raw["filled_qty"]) == 0:
+    if raw["borrow_id"] and _chain_filled(conn, raw) == 0:
+        # OMS-03: a replacement's borrow may back what the order it replaced filled - released whole only when the chain filled nothing
         lending = getattr(services, "lending", None)
         if lending is not None and hasattr(lending, "release_for_cancel"):
             lending.release_for_cancel(ctx, services, raw["borrow_id"], oid, reason)
     if raw["parent_order_id"] is None and raw["package_id"] and raw["fill_mode"] != "AON":
         execution.resize_hedge_children(ctx, oid, int(raw["filled_qty"]), primary_ended=True)
     return {"order_id": oid, "status": to_status, "filled_qty": int(raw["filled_qty"])}
+
+
+def _chain_filled(conn, raw) -> int:
+    """OMS-03: what an order and the orders it replaced (``replaces_order_id``, back to the first) have filled."""
+    total = int(raw["filled_qty"] or 0)
+    prev, seen = _row_get(raw, "replaces_order_id"), set()
+    while prev and prev not in seen:
+        seen.add(prev)
+        r = _order_raw(conn, prev)
+        if r is None:
+            break
+        total += int(r["filled_qty"] or 0)
+        prev = _row_get(r, "replaces_order_id")
+    return total
 
 
 def _close_package(ctx: TxContext, services, package_id: str, to_status: str, reason: str, event_type: str) -> List[dict]:
@@ -753,7 +838,13 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
         due = ctx.ts > int(r["expires_ts"])
         if oid and not due and not payload.get("force"):
             raise ConflictError("NOT_EXPIRED", f"order {r['order_id']} expires at {ny_of(int(r['expires_ts'])).strftime('%Y-%m-%d %H:%M ET')}", {"expires_ts": int(r["expires_ts"])})
-        why = "DAY order: session closed" if r["tif"] == "DAY" else "GTC order: 90 days or the instrument's expiry reached"
+        gtd = _row_get(r, "gtd_date")
+        if gtd:                                          # OMS-11: a good-till-date order
+            why = f"GTD date reached (good till {gtd})"
+        elif _row_get(r, "activate_ts") is not None:
+            why = "DAY order (next session): session closed"
+        else:
+            why = "DAY order: session closed" if r["tif"] == "DAY" else "GTC order: 90 days or the instrument's expiry reached"
         if r["package_id"] and r["fill_mode"] == "AON":
             out.extend(_close_package(ctx, services, r["package_id"], "EXPIRED", why, "ORDER_EXPIRED"))
         else:
@@ -929,6 +1020,293 @@ def record_rejection(services, request_id: str, req: dict, code: str, message: s
         if log is not None:
             log.warning("the rejection audit of %s (%s) was not recorded: %s %s", request_id, code, res.code, res.message)
     return res
+
+
+# ---- rejections from every ticket (FINSIM1_PLAN P2 task 8, OMS-15; C5) ------------------------------------------------------------
+#: the commands of the other tickets whose refusals are recorded through the C5 hook (``order.submit`` records its own in the API)
+TICKET_KINDS = ("bonds.trade", "fx.spot", "fx.forward", "otc.book", "otc.terminate", "otc.rfq.request", "otc.rfq.accept", "otc.rfq.decline", "private.trade")
+#: a ticket's name in trader words (the Rejected filter's "ticket" column)
+TICKET_WORDS = {"order.submit": "order ticket", "bonds.trade": "bond ticket", "fx.spot": "FX spot", "fx.forward": "FX forward", "otc.book": "OTC booking",
+                "otc.terminate": "OTC termination", "otc.rfq.request": "OTC quote request", "otc.rfq.accept": "OTC quote acceptance",
+                "otc.rfq.decline": "OTC quote decline", "private.trade": "private trade"}
+_OTC_SIDE = (("pay_fixed", "PAY FIXED", "RECEIVE FIXED"), ("receiver", "RECEIVE TOTAL RETURN", "PAY TOTAL RETURN"))
+
+
+def _one(conn, sql: str, params) -> Optional[dict]:
+    try:
+        r = conn.execute(sql, params).fetchone()
+    except Exception:   # noqa: BLE001 - an absent table (an RFQ before C14 ships) names nothing
+        return None
+    return dict(r) if r is not None else None
+
+
+def ticket_request(conn, kind: str, payload: dict) -> dict:
+    """The ``order_rejections`` fields of a refused ticket command: account, instrument (an FX pair as BASEQUOTE, an OTC request's
+    underlying / index or kind, the contract / quote id of a terminate / accept / decline), side in words, quantity (shares / face /
+    units when the ticket names a whole number), ``ticket_kind`` and the payload as sent."""
+    p = dict(payload or {})
+    acct, iid, side, qty = p.get("account_id"), p.get("instrument_id") or p.get("company_id"), p.get("side"), p.get("qty")
+    if qty is None:
+        qty = p.get("face")
+    if kind.startswith("fx."):
+        b, s = str(p.get("buy_ccy") or "").upper(), str(p.get("sell_ccy") or "").upper()
+        iid = f"{b}{s}" if b and s else iid
+        side = f"BUY {b} / SELL {s}" if b and s else side
+    elif kind in ("otc.book", "otc.rfq.request"):
+        terms = p.get("terms") if isinstance(p.get("terms"), dict) else {}
+        iid = terms.get("underlying_id") or terms.get("index_name") or terms.get("index") or terms.get("pair") or p.get("kind")
+        side = terms.get("side") or side
+        for key, yes, no in _OTC_SIDE:
+            if side is None and key in terms:
+                side = yes if terms.get(key) else no
+        qty = terms.get("units") if isinstance(terms.get("units"), int) else None
+    elif kind == "otc.terminate":
+        iid = p.get("contract_id")
+        row = _one(conn, "SELECT account_id FROM otc_contracts WHERE contract_id=?", (str(iid or ""),))
+        acct = acct or (row or {}).get("account_id")
+        side = "TERMINATE"
+    elif kind in ("otc.rfq.accept", "otc.rfq.decline"):
+        iid = p.get("rfq_id")
+        row = _one(conn, "SELECT account_id FROM rfqs WHERE rfq_id=?", (str(iid or ""),))
+        acct = acct or (row or {}).get("account_id")
+        side = "ACCEPT" if kind.endswith("accept") else "DECLINE"
+    if isinstance(side, str):
+        side = side.replace("_", " ").upper()
+    return {"account_id": acct, "instrument_id": iid, "side": side, "qty": qty if isinstance(qty, int) and not isinstance(qty, bool) else None,
+            "order_type": None, "ticket_kind": kind, "ticket": TICKET_WORDS.get(kind, kind), "payload": p}
+
+
+def record_ticket_refusal(req, kind: str, payload: dict, res) -> None:
+    """C5 recorder (OMS-15): a refused bond / FX / OTC / RFQ / private ticket becomes an ``order_rejections`` row through
+    ``record_rejection`` (one per attempt; ``ticket_kind`` in its payload).  Never raises over the refusal (api logs a failure)."""
+    rt = req.rt
+    body = res.body if isinstance(getattr(res, "body", None), dict) else {}
+    err = body.get("error") if isinstance(body.get("error"), dict) else {}
+    code = str(err.get("code") or getattr(res, "code", None) or "REJECTED")
+    message = str(err.get("message") or getattr(res, "message", None) or code)
+    with rt.db.reader() as conn:
+        r = ticket_request(conn, kind, payload)
+    record_rejection(rt, req.request_id or "", r, code, message)
+
+
+# ---- amend and replace (FINSIM1_PLAN P2 task 5, OMS-03) ------------------------------------------------------------------------------
+AMEND_FIELDS = ("qty", "limit_px", "stop_px", "trail_amt", "trail_pct", "tif", "gtd_date")
+REPLACE_FIELDS = ("order_type", "qty", "limit_px", "stop_px", "trail_amt", "trail_pct", "tif", "gtd_date")
+_PRICE_FIELDS = {"LIMIT": ("limit_px",), "STOP": ("stop_px",), "STOP_LIMIT": ("limit_px", "stop_px"), "TRAILING_STOP": ("trail_amt", "trail_pct"), "MARKET": ()}
+
+
+def tif_of_row(raw) -> str:
+    """The TIF choice an order was placed with: GTD (GTC + gtd_date), NEXT_SESSION (DAY + activate_ts), else its stored tif."""
+    if _row_get(raw, "gtd_date"):
+        return "GTD"
+    if _row_get(raw, "activate_ts") is not None:
+        return "NEXT_SESSION"
+    return str(raw["tif"])
+
+
+def _qty_of(v, default: int) -> int:
+    """A quantity field of an amend / replace: the payload's whole number, else ``default``; 400 QTY_INVALID when not a whole number."""
+    if v in (None, ""):
+        return int(default)
+    if isinstance(v, bool):
+        raise RejectError("QTY_INVALID", f"qty must be a whole number, got {v!r}")
+    try:
+        d = Decimal(str(v).replace(",", "").strip())
+    except Exception as e:   # noqa: BLE001
+        raise RejectError("QTY_INVALID", f"qty must be a whole number, got {v!r}") from e
+    if not d.is_finite() or d != d.to_integral_value():
+        raise RejectError("QTY_INVALID", f"qty must be a whole number, got {v!r}")
+    return int(d)
+
+
+def _px_text(v) -> str:
+    return px_words(v)
+
+
+def _same_px(a, b) -> bool:
+    if a in (None, "") or b in (None, ""):
+        return a in (None, "") and b in (None, "")
+    try:
+        return Decimal(str(a)) == Decimal(str(b))
+    except Exception:   # noqa: BLE001
+        return str(a) == str(b)
+
+
+def h_amend(ctx: TxContext, payload: dict) -> dict:
+    """``order.amend {order_id, qty?, limit_px?, stop_px?, trail_amt? | trail_pct?, tif?, gtd_date?, preview_id?, confirm_large?}`` (OMS-03;
+    module docstring AMEND).  Worked (P2 acceptance b): a resting LIMIT BUY 100 @ 50.00 reserves 100 x 50.00 + fee 1.00 = 5,001.00; amended to
+    51.00 it reserves 100 x 51.00 + 1.00 = 5,101.00 (the 5,001.00 it held is released into the check), event "AMENDED limit 50.00 -> 51.00"."""
+    services = _services(ctx)
+    conn = ctx.conn
+    oid = str(payload.get("order_id") or "")
+    if conn.execute("SELECT 1 FROM orders WHERE order_id=?", (oid,)).fetchone() is None:
+        raise RejectError("NOT_FOUND", f"order {oid} does not exist")
+    context = order_context(services, conn, oid, "amend", ctx.marks)
+    raw = _order_raw(conn, oid)
+    otype = raw["order_type"]
+    if "order_type" in payload and str(payload.get("order_type") or "").upper() not in ("", otype):
+        raise RejectError("AMEND_FIELDS", f"an amend keeps the order type ({otype}): replace the order to change it", {"order_type": otype})
+    allowed = _PRICE_FIELDS.get(otype, ())
+    for k in ("limit_px", "stop_px", "trail_amt", "trail_pct"):
+        if payload.get(k) not in (None, "") and k not in allowed:
+            raise RejectError("AMEND_FIELDS", f"a {otype.replace('_', ' ').lower()} order has no {k.replace('_px', ' price').replace('_', ' ')}", {"field": k})
+    if raw["parent_order_id"] and _qty_of(payload.get("qty"), int(raw["qty"])) != int(raw["qty"]):
+        raise RejectError("AMEND_FIELDS", f"{oid} is a hedge leg of {raw['parent_order_id']}: its size follows the primary; amend its price instead", {"field": "qty"})
+    if otype == "STOP_LIMIT" and context["triggered"] and payload.get("stop_px") not in (None, "") and not _same_px(payload["stop_px"], raw["stop_px"]):
+        raise RejectError("AMEND_FIELDS", f"{oid}'s stop has triggered: it now rests as a limit at {raw['limit_px']}; amend the limit", {"field": "stop_px"})
+    old_choice = tif_of_row(raw)
+    new_choice = tif_choice(payload.get("tif")) if payload.get("tif") not in (None, "") else old_choice
+    tif_changed = new_choice != old_choice or (new_choice == "GTD" and payload.get("gtd_date") not in (None, "")
+                                                and str(payload["gtd_date"])[:10] != str(_row_get(raw, "gtd_date") or ""))
+    req = {"account_id": raw["account_id"], "instrument_id": raw["instrument_id"], "side": raw["side"], "order_type": otype,
+           "qty": _qty_of(payload.get("qty"), int(raw["qty"])),
+           "limit_px": raw["limit_px"], "stop_px": raw["stop_px"], "trail_amt": raw["trail_amt"], "trail_pct": raw["trail_pct"],
+           "tif": new_choice, "gtd_date": payload.get("gtd_date") or _row_get(raw, "gtd_date"),
+           "preview_id": payload.get("preview_id"), "confirm_large": payload.get("confirm_large")}
+    for k in ("limit_px", "stop_px"):
+        if payload.get(k) not in (None, ""):
+            req[k] = payload[k]
+    if otype == "TRAILING_STOP" and (payload.get("trail_amt") not in (None, "") or payload.get("trail_pct") not in (None, "")):
+        req["trail_amt"] = payload.get("trail_amt") if payload.get("trail_amt") not in (None, "") else None
+        req["trail_pct"] = payload.get("trail_pct") if payload.get("trail_pct") not in (None, "") else None
+    vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, rest_ok=True, queue_unfunded=context["status"] == "SUSPENDED", context=context)
+    _check_preview_and_confirm(ctx, services, vo, payload)
+    new_qty = int(vo.total_qty if vo.total_qty is not None else int(raw["qty"]))
+    new = {"qty": new_qty, "limit_px": _s(vo.limit_px), "stop_px": _s(vo.stop_px), "trail_amt": _s(vo.trail_amt), "trail_pct": _s(vo.trail_pct)}
+    changes = []
+    if new_qty != int(raw["qty"]):
+        changes.append(("qty", f"{int(raw['qty']):,}", f"{new_qty:,}"))
+    for k, word in (("limit_px", "limit"), ("stop_px", "stop"), ("trail_amt", "trail"), ("trail_pct", "trail %")):
+        if not _same_px(raw[k], new[k]) and not (otype == "TRAILING_STOP" and k == "stop_px"):
+            changes.append((word, _px_text(raw[k]), _px_text(new[k])))
+    expires, gtd, act, tif_store = int(raw["expires_ts"]), _row_get(raw, "gtd_date"), _row_get(raw, "activate_ts"), raw["tif"]
+    if tif_changed:
+        expires, gtd, act, tif_store = int(vo.expires_ts), vo.gtd_date, vo.activate_ts, vo.tif
+        changes.append(("tif", tif_label(old_choice, _date_or_none(_row_get(raw, "gtd_date")), _row_get(raw, "activate_ts")),
+                        tif_label(new_choice, _date_or_none(gtd), act)))
+    if not changes:
+        raise RejectError("NOTHING_TO_AMEND", f"{oid}: the new terms are the order's own; nothing to amend")
+    cols = _order_cols(conn)
+    sets = ["qty=?", "limit_px=?", "stop_px=?", "trail_amt=?", "trail_pct=?", "tif=?", "expires_ts=?", "first_eval_done=0", "updated_ts=?"]
+    vals = [new_qty, new["limit_px"], new["stop_px"], new["trail_amt"], new["trail_pct"], tif_store, expires, ctx.ts]
+    if otype == "TRAILING_STOP":
+        sets.append("trail_ref_px=?")
+        vals.append(_s(vo.trail_ref_px))
+    if "limit_rested" in cols:
+        sets.append("limit_rested=NULL")                   # EXEC-5: the next look is a first look
+    if "amend_count" in cols:
+        sets.append("amend_count=COALESCE(amend_count, 0) + 1")
+    if tif_changed:
+        if "gtd_date" not in cols or "activate_ts" not in cols:
+            raise RejectError("NOT_READY", "good-till-date and next-session orders need the order book's 1.0.6 columns: restart the terminal so it can add them")
+        sets += ["gtd_date=?", "activate_ts=?"]
+        vals += [gtd, act]
+    conn.execute(f"UPDATE orders SET {', '.join(sets)} WHERE order_id=?", (*vals, oid))
+    count = int(_row_get(_order_raw(conn, oid), "amend_count", 0) or 0)
+    text = "AMENDED " + "; ".join(f"{w} {a} -> {b}" for w, a, b in changes)
+    _order_event(conn, oid, ctx.ts, raw["status"], raw["status"], text, vo.rec)
+    ctx.event("ORDER_AMENDED", account_id=raw["account_id"], instrument_id=raw["instrument_id"], ref_type="order", ref_id=oid, amend_count=count,
+              changes=[{"field": w, "from": a, "to": b} for w, a, b in changes], expires_ts=expires)
+    fills, sweeps, dec = [], [], None
+    if raw["status"] in ("WORKING", "PARTIAL"):
+        orow = load_order(services, conn, oid)
+        # the amended order takes its (first) look now, as the matcher would on its next pass
+        d = evaluate(orow, vo.rec, vo.session, ctx.ts, orow.participation, vo.inst, bar_used=bar_usage(conn))
+        fr = _act(ctx, services, orow, vo.rec, d, new_order=False)
+        dec = d.to_dict()
+        if fr is not None:
+            fills, sweeps = [fr.to_dict()], _sweeps_for(conn, [fr.fill_id])
+    return {"order": order_view(conn, oid), "changes": [{"field": w, "from": a, "to": b} for w, a, b in changes], "amend_count": count, "event": text,
+            "decision": dec, "fills": fills, "sweeps": sweeps, "warnings": vo.warnings, "preview": vo.preview}
+
+
+def _date_or_none(v):
+    from datetime import date as _date
+    try:
+        return _date.fromisoformat(str(v)[:10]) if v else None
+    except ValueError:
+        return None
+
+
+def h_replace(ctx: TxContext, payload: dict) -> dict:
+    """``order.replace {order_id, order_type?, qty?, limit_px?, stop_px?, trail_amt? | trail_pct?, tif?, gtd_date?, preview_id?, confirm_large?}``
+    (OMS-03; module docstring REPLACE), in ONE transaction.  The new order's quantity defaults to the old one's remainder.  Worked (P2
+    acceptance c): a working SELL_SHORT 300 ORCL (borrow B-1) replaced by a LIMIT 300 @ 131.00 -> O-old CANCELLED "replaced by O-new"
+    (``replaced_by_order_id`` O-new), O-new ``replaces_order_id`` O-old and ``borrow_id`` B-1, the borrow's ``order_id`` O-new, no borrow
+    returned."""
+    services = _services(ctx)
+    conn = ctx.conn
+    oid = str(payload.get("order_id") or "")
+    if conn.execute("SELECT 1 FROM orders WHERE order_id=?", (oid,)).fetchone() is None:
+        raise RejectError("NOT_FOUND", f"order {oid} does not exist")
+    context = order_context(services, conn, oid, "replace", ctx.marks)
+    old = _order_raw(conn, oid)
+    otype = str(payload.get("order_type") or old["order_type"]).upper()
+    req = {"account_id": old["account_id"], "instrument_id": old["instrument_id"], "side": old["side"], "order_type": otype,
+           "qty": _qty_of(payload.get("qty"), int(context["remaining"])),
+           "tif": payload.get("tif") or tif_of_row(old), "gtd_date": payload.get("gtd_date") or _row_get(old, "gtd_date"),
+           "preview_id": payload.get("preview_id"), "confirm_large": payload.get("confirm_large")}
+    keep = otype == old["order_type"]
+    for k in _PRICE_FIELDS.get(otype, ()):
+        v = payload.get(k)
+        if v in (None, "") and keep and k not in ("trail_amt", "trail_pct"):
+            v = old[k]
+        if v not in (None, ""):
+            req[k] = v
+    if otype == "TRAILING_STOP" and req.get("trail_amt") in (None, "") and req.get("trail_pct") in (None, "") and keep:
+        req["trail_amt"], req["trail_pct"] = old["trail_amt"], old["trail_pct"]
+    if str(req["tif"]).upper() == "NEXT_SESSION" and payload.get("tif") in (None, "") and _row_get(old, "activate_ts") is not None \
+            and int(_row_get(old, "activate_ts")) <= ctx.ts:
+        req["tif"] = "DAY"                                 # the old next-session order is working its session: the replacement is a DAY order of it
+    vo = validate(services, req, snapshot=ctx.marks, conn=conn, now=ctx.ts, queue_unfunded=context["status"] == "SUSPENDED", context=context)
+    _check_preview_and_confirm(ctx, services, vo, payload)
+    wait = vo.funds_wait
+    status = "SUSPENDED" if wait else "WORKING"
+    new_id = _insert_order(ctx, vo, ctx.request_id, status=status, fill_mode=old["fill_mode"], package_id=old["package_id"],
+                           reason=wait["reason"] if wait else None)
+    cols = _order_cols(conn)
+    if "replaces_order_id" not in cols or "replaced_by_order_id" not in cols:
+        raise RejectError("NOT_READY", "replacing an order needs the order book's 1.0.6 columns: restart the terminal so it can add them")
+    conn.execute("UPDATE orders SET replaces_order_id=?, borrow_id=? WHERE order_id=?", (oid, old["borrow_id"], new_id))
+    if old["borrow_id"]:
+        conn.execute("UPDATE borrows SET order_id=? WHERE borrow_id=?", (new_id, old["borrow_id"]))     # the borrow follows the order it backs
+    moved = [r["order_id"] for r in conn.execute("SELECT order_id FROM orders WHERE parent_order_id=? AND status='WAITING_PARENT' ORDER BY order_id", (oid,)).fetchall()]
+    if moved:
+        conn.execute("UPDATE orders SET parent_order_id=?, updated_ts=? WHERE parent_order_id=? AND status='WAITING_PARENT'", (new_id, ctx.ts, oid))
+        for c in moved:
+            _order_event(conn, c, ctx.ts, "WAITING_PARENT", "WAITING_PARENT", f"its primary {oid} was replaced by {new_id}: it now waits for {new_id}")
+    if old["package_id"]:
+        conn.execute("UPDATE hedge_packages SET primary_order_id=? WHERE package_id=? AND primary_order_id=?", (new_id, old["package_id"], oid))
+    reason = f"replaced by {new_id}"
+    conn.execute("UPDATE orders SET status='CANCELLED', reason=?, replaced_by_order_id=?, updated_ts=? WHERE order_id=?", (reason, new_id, ctx.ts, oid))
+    _order_event(conn, oid, ctx.ts, old["status"], "CANCELLED", reason + (f"; the borrow {old['borrow_id']} moves to {new_id}" if old["borrow_id"] else ""))
+    ctx.event("ORDER_CANCELLED", account_id=old["account_id"], instrument_id=old["instrument_id"], ref_type="order", ref_id=oid, reason=reason,
+              filled_qty=int(old["filled_qty"]), replaced_by=new_id)
+    _resolve_funds_items(ctx, oid)
+    note = f"submitted: {_summary(vo)}; replaces {oid}" + (f" ({int(old['filled_qty']):,} of it filled)" if int(old["filled_qty"]) else "")
+    ev = dict(account_id=vo.account_id, instrument_id=vo.inst.instrument_id, ref_type="order", ref_id=new_id, side=vo.side, qty=vo.qty, order_type=vo.order_type,
+              tif=vo.tif, expires_ts=vo.expires_ts, package_id=old["package_id"], limit_px=_s(vo.limit_px), stop_px=_s(vo.stop_px), replaces_order_id=oid)
+    out = {"replaced": None, "fills": [], "sweeps": [], "decision": None, "preview": vo.preview, "warnings": vo.warnings, "borrow_id": old["borrow_id"],
+           "hedge_legs_moved": moved}
+    if wait:
+        _order_event(conn, new_id, ctx.ts, None, "SUSPENDED", f"{note}; queued, {wait['reason']}: it executes automatically when cash frees up", vo.rec)
+        ctx.event("ORDER_SUBMITTED", status="SUSPENDED", reason=wait["reason"], **ev)
+        _funds_item(ctx, vo.account_id, new_id, "INFO", f"{new_id} {_summary(vo)} queued: {wait['reason']}; it executes automatically when cash frees up"
+                    " (cancel it to drop it)", {"code": wait["code"], "details": _jsonable(wait["details"])})
+        out["decision"] = {"action": "NONE", "reason": "FUNDS_WAIT", "note": wait["reason"]}
+    else:
+        queued = f"; queued for the next session ({queued_until_text(vo.activate_ts)})" if vo.activate_ts else ""
+        _order_event(conn, new_id, ctx.ts, None, "WORKING", f"{note}; {vo.exec_reason if not vo.executable else 'quote executable'}{queued}", vo.rec)
+        ctx.event("ORDER_SUBMITTED", **ev)
+        orow = load_order(services, conn, new_id)
+        dec = evaluate(orow, vo.rec, vo.session, ctx.ts, orow.participation, vo.inst, bar_used=bar_usage(conn))
+        fr = _act(ctx, services, orow, vo.rec, dec, new_order=True)
+        out["decision"] = dec.to_dict()
+        if fr is not None:
+            out["fills"], out["sweeps"] = [fr.to_dict()], _sweeps_for(conn, [fr.fill_id])
+    out["order"] = order_view(conn, new_id)
+    out["replaced"] = order_view(conn, oid)
+    return out
 
 
 # ---- as-of listed booking (FINSIM1_PLAN C8; D1, D3, D7, D10) ---------------------------------------------------------------------------
@@ -1313,6 +1691,9 @@ def register(bus) -> None:
     bus.register("order.resume", h_resume)
     bus.register("order.resume_funded", h_resume_funded)
     bus.register("order.record_rejection", h_record_rejection, light=True)
+    # FINSIM1_PLAN P2 task 5 (OMS-03): amend a working order in place; replace it with a new one in one transaction
+    bus.register("order.amend", h_amend)
+    bus.register("order.replace", h_replace)
     # FINSIM1_PLAN C8: the as-of listed bookings of the historical import (actor import; the UI is refused)
     bus.register("trade.book_as_of", h_book_as_of)
     bus.register("trade.book_as_of_package", h_book_as_of_package)

@@ -50,7 +50,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 
 from tests.terminal_helpers import assert_integrity, bal, execute, make_runtime
-from finsim.terminal import lifecycle, prime
+from finsim.terminal import lifecycle, lifecycle_eod, prime
 from finsim.terminal.clock import epoch_of
 from finsim.terminal.products import swaps, swaps_cds as cds, swaps_trs
 from finsim.terminal.quotes.providers import ParCurve, TENOR_YEARS
@@ -527,11 +527,15 @@ class IntradayMarkTests(_Base):
 class OfficialCloseTests(unittest.TestCase):
     """POSTCLOSE-01: a TRS VM and reset read the OFFICIAL close - the recorded CLOSE, else a print stamped at or after the session close, never a
     print before it.  On 10-27 the 15:59:59 print was 130.55 and the official close 130.53: a short 38,700 ORCL TRS dealt at 130.55 receives
-    -38,700 x (130.53 - 130.55) = +774.00 for 10-27 (the old rule took the 15:59:59 print for the close and posted NO_CHANGE)."""
+    -38,700 x (130.53 - 130.55) = +774.00 for 10-27 (the old rule took the 15:59:59 print for the close and posted NO_CHANGE).
+
+    1.0.6 (V104R2-OTC-02, a deliberate change): a TRS booked AFTER 16:00 deals at the official close, never the 15:59:59 print, so the contract
+    of these tests is now dealt at 15:59:59 while the session is open (the 1.0.5 setUp booked it at 16:06 on that print - the defect);
+    ``test_a_trs_booked_after_the_close_deals_at_the_official_close`` pins the new rule."""
 
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="fst-otc-close-")
-        self.rt = runtime(self.tmp, at="2026-10-27T16:06:00-04:00")
+        self.rt = runtime(self.tmp, at="2026-10-27T15:59:59-04:00")
         self.rt.marks.set("ORCL", "130.55", "delayed", epoch_of(date(2026, 10, 27), "15:59") + 59)
         terms = {"underlying_id": "ORCL", "units": 38700, "receiver": False, "reset_months": 1, "tenor_months": 12}
         r = execute(self.rt, "otc.book", {"account_id": PB, "kind": "TRS", "terms": terms}, "ui:trs-1027-0001")
@@ -566,6 +570,33 @@ class OfficialCloseTests(unittest.TestCase):
         self.assertEqual(("DONE", 77400), (r.body["status"], r.body["delta_c"]))
         self.assertEqual("the observed print at the session close", r.body["inputs"]["underlying"]["basis"])
 
+    def test_a_trs_booked_after_the_close_deals_at_the_official_close(self):
+        """V104R2-OTC-02: at 16:06 ET the only ORCL print is the 15:59:59 130.55 (shown "close" by the quote cache once the session closed): a TRS
+        booked now is refused 409 CLOSE_PENDING (with retry_ms - the ticket asks again by itself) until the official close is known; with the
+        16:00:00 print of 130.53 it deals at 130.53, labelled the official close - notional 38,700 x 130.53 = 5,051,511.00, IM 10 % = 505,151.10.
+        The same holds before the next open (a pre-market booking deals at the last official close)."""
+        rt = self.rt
+        rt.clock.set("2026-10-27T16:06:00-04:00")
+        terms = {"underlying_id": "ORCL", "units": 38700, "receiver": False, "reset_months": 1, "tenor_months": 12}
+        r = execute(rt, "otc.book", {"account_id": PB, "kind": "TRS", "terms": terms}, "ui:trs-1606-0001")
+        self.assertEqual((409, "CLOSE_PENDING", 2000), (r.http, r.code, r.body["error"]["details"]["retry_ms"]))
+        self.assertIn("the official close of 2026-10-27 is not recorded yet", r.body["error"]["message"])
+        rt.marks.set("ORCL", "130.53", "close", epoch_of(date(2026, 10, 27), "16:00"))
+        p = swaps.preview(rt, PB, "TRS", terms)
+        self.assertEqual(("130.53", 505151100, 50515110), (p["reset_px"], p["notional_c"], p["im_c"]))
+        self.assertIn("close", p["reset_px_source"])
+        r = execute(rt, "otc.book", {"account_id": PB, "kind": "TRS", "terms": terms}, "ui:trs-1606-0002")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual("130.53", one(rt, "SELECT reset_px FROM otc_contracts WHERE contract_id=?", (r.body["contract_id"],))["reset_px"])
+        # Wed 10-28 08:30 ET (before the open): the last official close is 10-27's - recorded now by MARKS_RECORD
+        with rt.db.writer() as tx:
+            tx.conn.execute("INSERT INTO marks(instrument_id, mark_date, kind, price, currency, quality, source, method, quote_time, fetched_at, note)"
+                            " VALUES ('ORCL','2026-10-27','CLOSE','130.53','USD','close','Yahoo regularMarketPrice (official close)','official_close',?,?,NULL)",
+                            (epoch_of(date(2026, 10, 27), "16:00"), epoch_of(date(2026, 10, 27), "16:20")))
+        rt.clock.set("2026-10-28T08:30:00-04:00")
+        rt.marks.set("ORCL", "131.40", "delayed", epoch_of(date(2026, 10, 28), "08:29"))     # a pre-market print is never the reset price
+        self.assertEqual("130.53", swaps.preview(rt, PB, "TRS", terms)["reset_px"])
+
 
 class PendingProxyTests(unittest.TestCase):
     """POSTCLOSE-03: a CDX VM waiting for FRED's OAS of its date stays quiet through the evening (no warning from the second attempt of the same
@@ -592,6 +623,9 @@ class PendingProxyTests(unittest.TestCase):
             self.assertEqual(("SKIPPED", "CLOSE_PENDING", None), (r.body["status"], r.body["code"], r.body["attention_id"]))
         self.assertIn("ICE BofA IG OAS for 2026-10-27 not published yet", r.body["message"])
         self.assertNotIn("BAMLC0A0CM", r.body["message"])
+        # the integrator, 1.0.6: when FRED publishes is said once (the reason), not again after "waits for" (it was doubled on the live strip)
+        self.assertEqual(1, r.body["message"].count("next morning"), r.body["message"])
+        self.assertTrue(r.body["message"].endswith("the variation margin of 2026-10-27 waits for that day's OAS (never another day's value)"), r.body["message"])
         self.assertEqual([], q(rt, "SELECT 1 FROM attention WHERE code='CLOSE_PENDING'"))
         with rt.db.reader() as conn:
             self.assertEqual([], swaps.vm_keys(conn, epoch_of(date(2026, 10, 27), "23:00")))         # not every 5 minutes all night
@@ -628,6 +662,144 @@ class WordingTests(_Base):
                                                      " by the operator at the owner's instruction (batch IMP-F1-20261027-A)"), v["source_label"])
         for word in ("modeled", "modelled", "hypothetical", "estimated"):
             self.assertNotIn(word, json.dumps(v).lower(), word)
+
+
+class CreditEventTests(_Base):
+    """P4 task 11 (acceptance 1, the credit event block; directive section 9): CDX HY 4,000,000.00 buy protection (coupon 500 bp, accrual start
+    2026-09-21, upfront received 241,622.83 in 2345, IM 6 % = 240,000.00); one constituent defaults on Mon 2026-11-02 at the recovery the owner
+    enters, 40 %.  Equal weights (assumed): 1 of the HY index's 100 names.
+    - defaulted notional Dn = 4,000,000 / 100 = 40,000.00; protection 40,000 x (1 - 0.40) = 24,000.00 received by the buyer (4450);
+    - accrued premium on Dn from 09-21 through the event date 11-02 inclusive = 10 + 31 + 2 = 43 days: 40,000 x 5 % x 43 / 360 = 238.888 ->
+      238.89, paid by the buyer; net 24,000.00 - 238.89 = 23,761.11 settling T+1 business day = Tue 2026-11-03;
+    - the premium accrued through the night of 11-02 on 4,000,000: to_c(4,000,000 x 5 % x 43 / 360) = 23,888.89 in 2340; less 238.89 =
+      23,650.00 = to_c(3,960,000 x 5 % x 43 / 360) exactly, so the next night (11-03, the 44th) accrues to_c(3,960,000 x 5 % x 44 / 360) -
+      23,650.00 = 24,200.00 - 23,650.00 = 550.00 on the reduced notional;
+    - notional 4,000,000 - 40,000 = 3,960,000.00 (index factor 0.990000); 2345 released pro rata 241,622.83 x 40,000 / 4,000,000 = 2,416.2283
+      -> 2,416.23 into 4450 (4450 then holds 24,000.00 + 2,416.23 = 26,416.23 received); IM 6 % x 3,960,000 = 237,600.00, 2,400.00 back to cash;
+    - the overlay mark scaled to the reduced notional: the booking's mark0 -245,053.51 x 0.99 = -242,602.9749 -> -242,602.97;
+    - a second event of the same name is 409 DUPLICATE_EVENT; nothing happens without the owner's command (no job runs it)."""
+
+    def test_hy_constituent_default_at_40_percent_recovery(self):
+        rt = self.rt
+        cid = self.booked("CDX_HY")["contract_id"]
+        self.assertEqual((24162283, 24000000), (bal(rt, PB, "2345", inst=cid), one(rt, "SELECT im_c FROM otc_contracts WHERE contract_id=?", (cid,))["im_c"]))
+        mark0 = one(rt, "SELECT mark_c FROM otc_contracts WHERE contract_id=?", (cid,))["mark_c"]
+        self.assertEqual(-24505351, mark0)
+        rt.clock.set("2026-11-02T16:30:00-05:00")
+        # the owner's command only: no lifecycle job carries it, and the scheduler's own actor is refused
+        self.assertNotIn("cdx.credit_event", [j.kind for j in lifecycle_eod.REGISTRY])
+        body = {"contract_id": cid, "reference_entity": "Acme Retail Corp", "recovery_pct": "40", "event_date": "2026-11-02"}
+        r = execute(rt, "cdx.credit_event", body, "job:not-allowed", actor="lifecycle")
+        self.assertEqual((403, "CREDIT_EVENT_OWNER_ONLY"), (r.http, r.code))
+        r = execute(rt, "cdx.credit_event", body, "ui:cdx-credit-0001")
+        self.assertTrue(r.ok, r.body)
+        b = r.body
+        self.assertEqual((4000000, 2400000, 23889, 43, 2376111, "2026-11-03", 400000000, 396000000, 241623, 240000),
+                         (b["defaulted_c"], b["protection_c"], b["accrued_c"], b["accrued_days"], b["net_c"], b["settle_date"], b["notional_before_c"],
+                          b["notional_after_c"], b["cost_released_c"], b["im_released_c"]))
+        self.assertEqual((100, "40", -24505351, -24260297), (b["names"], b["recovery_pct"], b["mark_before_c"], b["mark_after_c"]))
+        self.assertTrue(b["label"].startswith("simulated credit event - recovery entered by the owner"))
+        # the premium caught up through the night of 11-02 on the old notional (12 nights 10-22 .. 11-02), then the defaulted share removed
+        self.assertEqual(12, len(b["caught_up"]))
+        self.assertEqual([("2340", 23889), ("4450", -2400000), ("1200", 2376111), ("2345", 241623), ("4450", -241623)], lines(rt, f"otc:{cid}:credit:1"))
+        self.assertEqual([("1010", 240000), ("1330", -240000)], lines(rt, f"im:{cid}:credit:1"))
+        self.assertEqual((2365000, 23920660, 2641623, 23760000), (bal(rt, PB, "2340", inst=cid), bal(rt, PB, "2345", inst=cid), bal(rt, PB, "4450", inst=cid),
+                                                                  bal(rt, PB, "1330", inst=cid)))
+        st = one(rt, "SELECT amount_c, due_date, status, ref_type, ref_id FROM settlements WHERE leg='CREDIT EVENT'")
+        self.assertEqual((2376111, "2026-11-03", "PENDING", "otc", cid), (st["amount_c"], st["due_date"], st["status"], st["ref_type"], st["ref_id"]))
+        row = one(rt, "SELECT * FROM otc_contracts WHERE contract_id=?", (cid,))
+        terms = json.loads(row["terms_json"])
+        self.assertEqual((396000000, 23760000, -24260297, 400000000, 400000000, "0.990000", 1),
+                         (row["notional_c"], row["im_c"], row["mark_c"], terms["notional_c"], terms["original_notional_c"], terms["index_factor"],
+                          terms["defaulted_names"]))
+        acc = one(rt, "SELECT base_c, cum_c, accrued_through FROM accrual_state WHERE kind='swappay' AND ref_id=?", (cid,))
+        self.assertEqual((396000000, 2365000, "2026-11-02"), (acc["base_c"], acc["cum_c"], acc["accrued_through"]))
+        # the next night accrues on 3,960,000.00: 550.00
+        r = accrue(rt, "swappay", cid, "2026-11-03")
+        self.assertTrue(r.ok and r.body["status"] == "DONE", r.body)
+        self.assertEqual([("4453", 55000), ("2340", -55000)], lines(rt, f"accr:swappay:{cid}:2026-11-03"))
+        # one event per contract and name (any case / spacing): 409 DUPLICATE_EVENT, nothing written
+        n = self.counts()
+        r = execute(rt, "cdx.credit_event", dict(body, reference_entity="  acme   retail corp "), "ui:cdx-credit-0002")
+        self.assertEqual((409, "DUPLICATE_EVENT"), (r.http, r.code))
+        self.assertEqual(n, self.counts())
+        # the event is a "credit event" of the contract: its event row (Completed Trades), its timeline step, the Unsupported wording
+        ev = one(rt, "SELECT type, payload_json FROM events WHERE type='CDX_CREDIT_EVENT'")
+        p = json.loads(ev["payload_json"])
+        self.assertEqual((2376111, 2376111, "2026-11-02", "Acme Retail Corp"), (p["net_c"], p["value_c"], p["event_date"], p["reference_entity"]))
+        self.assertIn("CREDIT_EVENT", [x["step"] for x in swaps.contract_timeline(rt, cid)])
+        det = swaps.contract_view(rt, cid)["detail"]
+        self.assertEqual(("0.990000", 400000000, 1), (det["index_factor"], det["original_notional_c"], len(det["credit_events"])))
+        urow = next(x for x in cds.unsupported() if x["item"] == "CDX credit events")
+        self.assertEqual(("SIMULATED", "SIMULATED on request - the owner can trigger a constituent default at a recovery he enters; no ISDA Determinations"
+                                       " Committee rulings or auctions are tracked"), (urow["state"], urow["wording"]))
+        # the settlement is due Tue 11-03: SETTLE_DUE receives it (the 10-22 initial payment settles in the same tick)
+        rt.lifecycle.tick(at="2026-11-03T00:35:00-05:00", only="SETTLE_DUE")
+        self.assertEqual("SETTLED", one(rt, "SELECT status FROM settlements WHERE leg='CREDIT EVENT'")["status"])
+        assert_integrity(self, rt)
+
+    def test_the_credit_event_is_a_completed_trades_execution_with_the_contract_timeline(self):
+        """FINSIM1 P4-R1 / P4-R2 / P4-R3 (integrator, 1.0.6): the simulated credit event above is ONE execution of the HY contract in
+        Completed Trades - id ``<contract>:credit:<event id>``, side CREDIT EVENT, quantity the defaulted notional 40,000.00, gross the net
+        settlement +23,761.11 (protection 24,000.00 received - accrued premium 238.89 paid), trade date the event date 11-02, settling 11-03
+        (its CREDIT EVENT settlement row), status "credit event (simulated)", source the simulated credit-event label, parent the owner's
+        command ``T-<id>`` - next to the contract's booking row, never merged with it; and the execution drawer of an OTC row carries the
+        contract's timeline (booked, IM, the credit event).  The Completed Trades drawer renders it with the ticket's timeline table."""
+        import os
+        from finsim.terminal import blotters
+        rt = self.rt
+        cid = self.booked("CDX_HY")["contract_id"]
+        rt.clock.set("2026-11-02T16:30:00-05:00")
+        r = execute(rt, "cdx.credit_event", {"contract_id": cid, "reference_entity": "Acme Retail Corp", "recovery_pct": "40", "event_date": "2026-11-02"},
+                    "ui:cdx-credit-0101")
+        self.assertTrue(r.ok, r.body)
+        ev_id = one(rt, "SELECT id FROM events WHERE type='CDX_CREDIT_EVENT'")["id"]
+        settle_id = one(rt, "SELECT settle_id FROM settlements WHERE leg='CREDIT EVENT'")["settle_id"]
+        with rt.db.reader() as conn:
+            rows = [x for x in blotters.execution_rows(rt, conn, account_id=PB) if x["instrument_id"] == cid]
+        self.assertEqual(sorted([cid, f"{cid}:credit:{ev_id}"]), sorted(x["execution_id"] for x in rows))      # the booking and the event, one row each
+        x = next(x for x in rows if x["execution_id"] == f"{cid}:credit:{ev_id}")
+        self.assertEqual(("otc", "OTC", "CREDIT EVENT", "CREDIT EVENT (BUY PROTECTION)", 4000000, 2376111, "2026-11-02", "2026-11-03", settle_id),
+                         (x["kind"], x["asset_class"], x["side"], x["side_words"], x["notional_c"], x["gross_c"], x["trade_date"], x["settle_date"], x["settle_id"]))
+        self.assertEqual(("credit event", "credit event (simulated)", "simulated", "40"), (x["status"], x["status_label"], x["source"], x["price"]))
+        self.assertTrue(x["source_label"].startswith("simulated credit event - recovery entered by the owner"), x["source_label"])
+        self.assertTrue(x["parent_id"].startswith("T-"), x["parent_id"])
+        self.assertEqual("Acme Retail Corp at 40 % recovery: defaulted 40000.00 / protection 24000.00 / accrued premium 238.89; notional 4000000.00 -> 3960000.00",
+                         x["note"])
+        self.assertIn("credit event", blotters.STATUS_WORDS)
+        self.assertEqual([x["execution_id"]], [y["execution_id"] for y in blotters.filter_rows(rows, status="credit event")])
+        # P4-R2: the execution drawer of the event (and of the booking) carries the contract's timeline, the credit event among its steps
+        d = blotters.execution_detail(rt, x["execution_id"])
+        steps = [s["step"] for s in d["timeline"]]
+        self.assertIn("CREDIT_EVENT", steps)
+        self.assertEqual(steps, [s["step"] for s in swaps.contract_timeline(rt, cid)])
+        self.assertIn(settle_id, [s["settle_id"] for s in d["settlements"]])
+        self.assertEqual(steps, [s["step"] for s in blotters.execution_detail(rt, cid)["timeline"]])
+        # P4-R3: the Completed Trades drawer renders it with the ticket's timeline table
+        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(blotters.__file__))), "terminal", "static", "pages", "completed.js"),
+                  encoding="ascii") as f:
+            js = f.read()
+        self.assertIn("T.components.swapticket.timelineTable(d.timeline)", js)
+        # the settlements due by 11-03 settle (the 10-22 initial payment, the event's 11-03 receipt); the event row stays one execution
+        rt.lifecycle.tick(at="2026-11-03T00:35:00-05:00", only="SETTLE_DUE")
+        self.assertEqual("SETTLED", one(rt, "SELECT status FROM settlements WHERE settle_id=?", (settle_id,))["status"])
+        with rt.db.reader() as conn:
+            self.assertEqual(2, len([y for y in blotters.execution_rows(rt, conn, account_id=PB) if y["instrument_id"] == cid]))
+        assert_integrity(self, rt)
+
+    def test_refusals(self):
+        rt = self.rt
+        ig = self.booked("CDX_IG")["contract_id"]
+        trs = self.booked("TRS_ORCL")["contract_id"]
+        rt.clock.set("2026-11-02T16:30:00-05:00")
+        n = self.counts()
+        cases = [({"contract_id": trs}, 400, "KIND"), ({"event_date": "2026-11-05"}, 400, "TERMS"), ({"event_date": "2026-10-20"}, 400, "TERMS"),
+                 ({"recovery_pct": "140"}, 400, "TERMS"), ({"reference_entity": ""}, 400, "TERMS"), ({"contract_id": "CDX-999999"}, 404, "NOT_FOUND")]
+        for i, (over, http, code) in enumerate(cases):
+            body = dict({"contract_id": ig, "reference_entity": "Beta Utilities", "recovery_pct": "35", "event_date": "2026-11-02"}, **over)
+            r = execute(rt, "cdx.credit_event", body, f"ui:cdx-credit-bad-{i}")
+            self.assertEqual((http, code), (r.http, r.code), over)
+        self.assertEqual(n, self.counts())
 
 
 class DatedCurveTests(unittest.TestCase):

@@ -85,10 +85,40 @@ POLICY_INDEX = {"USD": "SOFR", "EUR": "ECBDFR", "GBP": "IUDSOIA", "JPY": "IRSTCI
 POLICY_INDEX_MONTHLY = ("IRSTCI01JPM156N", "IRSTCI01CHM156N", "IRSTCI01CAM156N", "IRSTCI01AUM156N")   # labelled "monthly proxy"
 DAYCOUNT_CASH = {"GBP": 365, "*": 360}
 LOAN_SPREAD = D("0.0075")
+#: P8B-01 / OTC-01 (1.0.6): how old a rate a forward, an FX option or a cross-currency leg may still be priced on.  A DAILY series (SOFR, the
+#: ECB deposit rate, SONIA) at most RATE_MAX_AGE_DAILY_DAYS calendar days after its observation date - the RATE_LAG rule of the accruals;
+#: a MONTHLY OECD average (the JPY / CHF / CAD / AUD proxies) at most RATE_MAX_AGE_MONTHLY_DAYS after the END of the month it averages
+#: (FRED carries each month about three weeks after it ends, so the latest or the previous release qualifies).  An older input refuses the
+#: price with its date and age - CHF's series stopped at 2024-03 - never a rate that no longer holds.
+RATE_MAX_AGE_DAILY_DAYS = 10
+RATE_MAX_AGE_MONTHLY_DAYS = 62
 
 
 def daycount(ccy: str) -> int:
     return DAYCOUNT_CASH.get(ccy, DAYCOUNT_CASH["*"])
+
+
+def _month_end(d):
+    from datetime import date as _date, timedelta as _td
+    nxt = _date(d.year + (d.month == 12), 1 if d.month == 12 else d.month + 1, 1)
+    return nxt - _td(days=1)
+
+
+def rate_age(series_id: Optional[str], obs_date, today) -> dict:
+    """P8B-01: the age of a rate observation against ``today`` (pure).  ``{monthly, period_end, age_days, max_age_days, stale, text}``:
+    a monthly OECD average is aged from the last day of the month it averages, a daily print from its own date; ``stale`` when the age
+    is above the series' limit (RATE_MAX_AGE_DAILY_DAYS / RATE_MAX_AGE_MONTHLY_DAYS).  ``today`` None (no clock): age unknown, not stale."""
+    monthly = series_id in POLICY_INDEX_MONTHLY
+    end = _month_end(obs_date) if monthly else obs_date
+    limit = RATE_MAX_AGE_MONTHLY_DAYS if monthly else RATE_MAX_AGE_DAILY_DAYS
+    if today is None:
+        return {"monthly": monthly, "period_end": end.isoformat(), "age_days": None, "max_age_days": limit, "stale": False, "text": "age unknown"}
+    age = max(0, (today - end).days)
+    if monthly:
+        text = f"the {obs_date.strftime('%B %Y')} average, {age} day{'s' if age != 1 else ''} after that month ended (at most {limit})"
+    else:
+        text = f"{age} day{'s' if age != 1 else ''} old (at most {limit})"
+    return {"monthly": monthly, "period_end": end.isoformat(), "age_days": age, "max_age_days": limit, "stale": age > limit, "text": text}
 
 
 # Borrow availability tiers (heuristic from observable data; convention BORROW_AVAIL)
@@ -248,7 +278,6 @@ CONVENTIONS: Dict[str, str] = {
     "AVAILABLE": "Available = max(0, settled cash + receivables due by the order's settlement date − payables − cash reserved by working orders), per account and per currency: the account's own spendable cash, never shown below zero; what working orders and payables need beyond it is shown apart as 'reserved (Treasury sweep covers N)' — exactly that shortfall moves from Treasury when the order fills or the payable settles, and a part Treasury cannot cover is flagged unfunded.",
     "TREASURY": "Treasury is the lifetime's own funds: contributed capital plus retained results (its cash interest) minus what it has advanced to the accounts; advances are internal transfers that net to zero across the lifetime.",
     "PERF": "Performance statistics use daily NAV-to-NAV returns with capital flows removed, annualised by √252, Sharpe and Sortino against SOFR, beta and alpha from a daily regression on SPY's observed closes; they need at least two daily snapshots and are per lifetime.",
-    "NEWS": "Headlines are real and unedited: Yahoo Finance news search, the Federal Reserve press feed and this repository's own newspaper editions; they are shown as text and never interpreted.",
 }
 
 

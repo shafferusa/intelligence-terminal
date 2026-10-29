@@ -134,6 +134,9 @@ ROUTES = [
     ("GET", r"/api/activity$", "activity", "/api/activity?limit=50", None),
     ("GET", r"/api/attention$", "attention", "/api/attention", None),
     ("GET", r"/api/attention/summary$", "attention_summary", "/api/attention/summary?book=P", None),
+    # FINSIM1_PLAN P1 task 4 (1.0.6): the Dashboard's one answer and the sidebar's badge counters (dashboard.py)
+    ("GET", r"/api/dashboard$", "dashboard", "/api/dashboard?book=P", None),
+    ("GET", r"/api/dashboard/counts$", "dashboard_counts", "/api/dashboard/counts?book=P", None),
     ("POST", r"/api/attention/[^/]+/resolve$", "attention_resolve", "/api/attention/2/resolve", {}),
     ("GET", r"/api/jobs$", "jobs", "/api/jobs", None),
     ("POST", r"/api/jobs/run$", "jobs_run", "/api/jobs/run", {"job": "SETTLE_DUE"}),

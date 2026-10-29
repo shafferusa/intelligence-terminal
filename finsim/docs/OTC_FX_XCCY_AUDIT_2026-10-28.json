@@ -1,0 +1,335 @@
+{
+ "summary": "Scope and method. I audited the Goldman Sachs PB OTC tab twice, each time on its own read-only sqlite3 backup of terminal.db with live delayed data, on Wed 2026-10-28 between 17:37 and 18:07 ET. The FX session was open; US equities were priced off the 16:00 close.\n- 1.0.5 (what the owner runs): release 2026-10-28-r105, served on port 9300.\n- 1.0.6 (repo tree, in progress): served on port 9301. It still reports VERSION 1.0.5 but uses the Request quote then Accept flow.\n\nWhat I exercised:\n- FX forwards: all 24 desk pairs (the 7 USD pairs and 17 crosses), tenors 1W to 1Y, broken dates, both sides, notionals from 999.99 to 100bn.\n- Equity forwards: SPY, AAPL, VZ, MO, T, XOM, KO, PFE, JNJ.\n- Cross-currency swaps (XCCY) in EUR, GBP, JPY, CHF, CAD and AUD: both directions, both notionals, 18M to 30Y, fixed and floating requests, OFF_MARKET rates.\n- On each copy I booked 5 to 6 contracts (3 to 4 FX forwards, 1 SPY forward, 1 EUR/USD XCCY), then checked the contracts table and drawers, Positions, Risk, margin, variation margin (VM), the journal and termination.\n\nVerdict. The pricing and risk code for these products is the same in 1.0.5 and 1.0.6. Apart from the 1.0.6-only finding (OTC-23), every problem shows in both, and almost all were reproduced on both copies with the same numbers. 1.0.6 adds the request-for-quote (RFQ) step and better refusal wording; it changes no prices.\n\nThe four worst problems:\n1. CHF is priced off a rate dated 2024-03-01. The 1Y USDCHF forward is about 108 pips off and can still be booked.\n2. OTC FX forwards do not show up in currency exposure or in the FX scenarios on the Risk page.\n3. Booking an XCCY after 17:00 ET dates its start exchange to the previous business day. The next VM then sweeps all Treasury cash and raises false overdraft errors.\n4. XCCY rates come from flat overnight curves (the 30Y CAD rate equals the overnight rate). The app's own XCCY curves imply a 1Y EUR/USD forward 58 pips away from its FX forward ticket.\n\nNext in importance:\n- No term structure or cross-currency basis in FX forward points.\n- Value dates use the NYSE calendar only: 6M lands on 2027-05-03, a UK and Japan bank holiday.\n- 2W is offered in the tenor list but always refused.\n- The PB forward spread is 10x the FX desk's at 1W.\n- Rate risk (DV01) is in the wrong currency and, for USD-base pairs, has the wrong sign.\n- Initial margin is a flat 6% with no netting.\n- Equity forwards carry SOFR + 1.25% on both sides and use a continuous trailing dividend yield.\n- XCCY is fixed/fixed only and its VM ignores the exchange-rate move on the notionals.\n- FX forward delivery is held up until a 17:00 ET FX close has been recorded.\n- Positions shows the wrong side (1.0.5) or n/a (1.0.6) for forwards.\n\nWhat a desk would expect that is missing:\n- FX tenors: ON, TN, SN, 3W, 4M, 5M, 18M, 2Y to 5Y, IMM dates.\n- FX products: FX swaps (near and far legs), non-deliverable forwards (CNH, KRW, INR, TWD, IDR, BRL, CLP, COP), window forwards, historic-rate rollovers, early take-up.\n- FX ticket: dealing in either currency of the pair; two-way prices with forward points.\n- FX currencies: forwards in NZD, SEK, NOK, DKK, PLN, CZK, HUF, MXN, ZAR, HKD, SGD, CNH, ILS and TRY (spot already exists), and CHF once a current rate is sourced.\n- Equity forwards: index forwards, non-US and quanto underlyings, physical settlement, a discrete dividend schedule, entry by USD notional, and pricing that includes the borrow cost on sales.\n- XCCY: float/float basis swaps (SOFR against \u20acSTR, SONIA, TONA, SARON, CORRA, AONIA), fixed/float, non-USD pairs, more currencies, a choice of initial and final exchange, each currency's own conventions, 6M and 7Y to 30Y in the UI, and a basis curve.\n- Not audited: FX options.\n\nWhere the evidence is:\n- Screenshots: C:\\Users\\logan\\AppData\\Local\\Temp\\claude\\C--Users-logan-intelligence-terminal\\5e0edd51-72c4-438a-89eb-77c644650257\\scratchpad\\sweep\\otcaudit\\r105\\ and ...\\otcaudit\\r106\\\n- JSON and scripts (fxsweep105, crosses106, risk105_pb, risk106_book, contracts105, positions105, rfq106, the XCCY previews, Yahoo dividends): C:\\Users\\logan\\AppData\\Local\\Temp\\claude\\C--Users-logan-intelligence-terminal\\5e0edd51-72c4-438a-89eb-77c644650257\\scratchpad\\checks\\otcaudit-1738\\\n\nCleanup. Both servers were stopped with POST /api/shutdown, and their PIDs (25988 and 11452) were confirmed gone. Both database copies (about 99 MB) were deleted. No file in the repo or the release folder changed. Of the live app I only read terminal.db once per copy, opened mode=ro; ports 8765 and 8865 were never used.",
+ "findings": [
+  {
+   "id": "OTC-01",
+   "severity": "critical",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "CHF forwards and the CHF leg of a cross-currency swap are priced off a CHF rate last observed on 2024-03-01, 31 months old. They can still be booked. The rate is the OECD monthly series IRSTCI01CHM156N, and fx.rate_for applies no age limit, so every USDCHF, EURCHF, CHFJPY and GBPCHF forward and every CHF XCCY leg uses 1.34%. The only signal is the word LIMITED.",
+   "evidence": "USDCHF 1Y buy 1m on 1.0.5: the preview shows 'F = 0.8279 x (1 + 1.34 % x 365/360) / (1 + 3.95 % x 365/360) = 0.806835' (-210.65 points), with bookable true and no blockers; the rates line reads 'IRSTCI01CHM156N 1.34 % (monthly proxy, LIMITED, as of 2024-03-01)'. With CHF overnight near 0% (the SNB rate has been 0% since June 2025, as far as I know) the outright would be 0.795924 (-318.8 points): about 108 pips off, against a 1.6-pip half-width. The CHF 2Y XCCY leg par is 1.3400%, 'flat at the CHF policy rate 1.34 % ... 2024-03-01'. Same on 1.0.6 (1Y F 0.806738). Screenshot r105-06-fx-USDCHF-1Y-stale-chf-rate.png; fxsweep105.json; crosses106.txt.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\tables.py:83-86 (POLICY_INDEX, POLICY_INDEX_MONTHLY)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:683-717 (rate_for)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1063 (foreign_curve)"
+   ],
+   "fix": "Source a current daily overnight rate for each currency: SARON for CHF, and likewise TONA, CORRA, AONIA, the NZD OCR, and \u20acSTR instead of the ECB deposit rate. Refuse to price (FORWARD_UNAVAILABLE / NO_CURVE) when the newest observation is more than a few business days old, and show the rate's age on the ticket."
+  },
+  {
+   "id": "OTC-02",
+   "severity": "critical",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "OTC FX forwards are left out of currency exposure and of the 'USD +/-5 % vs foreign currencies' scenario on the Risk page. risk._currency_balances reads only non-USD ledger balances and FX-desk fx_deals rows (FORWARD, PENDING). An OTC FX forward has neither until _deliver runs on its value date, so its currency risk never appears.",
+   "evidence": "Booked on the 1.0.5 copy: OTC-000001 (buy EUR 1m 3M), OTC-000002 (sell EUR 1m 3M) and OTC-000003 (buy USD 1m / sell JPY 153,321,793 1Y). /api/risk?scope=F1:PB_GS then returns exposure_by_currency {EUR: native 0.00, usd 0.00} with no JPY row, and the scenario 'USD +5 % vs foreign currencies' shows pnl 0.00; the true figure is roughly +$50k on the short-JPY leg. Same on 1.0.6 (/api/risk?scope=F1:ALL, risk106_book.json). Screenshot r105-24-risk-1-by_currency.png shows 'BY CURRENCY (FX EXPOSURE) EUR 0.00' and no JPY row.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\risk.py:863 (_currency_balances)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:1150 (book), :1609 (_deliver)"
+   ],
+   "fix": "Until delivery, add each open OTC FX forward's two legs (terms buy_ccy/buy_c and sell_ccy/sell_c) to currency exposure and to the FX shocks, exactly as FX-desk forwards are counted."
+  },
+  {
+   "id": "OTC-03",
+   "severity": "critical",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The XCCY start date is the New York calendar date, so the swap starts the same day (T+0) instead of on the spot date. After the 17:00 ET roll this goes wrong: the start exchange is posted on business date D, while its Treasury sweep and the initial margin are dated D+1. The 17:05 VM for D then sees the PB account overdrawn by the whole USD notional. It sweeps all Treasury cash and opens false FUNDING_SHORTFALL errors.",
+   "evidence": "1.0.5 copy, XCCY SWP-000007 (receive USD 1m / pay EUR 896,217.96) booked at 17:49 ET:\n- Journal: entry 916 SWEEP_IN 1,000,000 is dated 2026-10-29; entry 917 XCCY_EXCHANGE is dated 2026-10-28.\n- The 2026-10-28 VM swept 841,753.36, all of Treasury's cash, and raised: 'F1:PB_GS: USD 158,401.47 for swapvm swapvm:OTC-000004:2026-10-28 could not be funded (own available -1,000,000.00, Treasury swept 841,753.36, PB financing 0.00); the obligation is posted and settled cash is overdrawn'. A second error followed for SWP-000007.\n- Treasury cash went to 0.00; the PB account's settled USD at the close of 2026-10-28 is -158,784.46.\n- Reproduced identically on 1.0.6. Its timeline shows EXCHANGE on 2026-10-28 and IM on 2026-10-29, and later XCCY previews read 'Treasury available 0.00 . NOT FUNDABLE'.\nScreenshots r105-23-positions-otc-rows.png and r106-39-xccy-JPY-5Y.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1196 (start = swaps.effective_date(services.cal, today)), :1280-1360 (_book_xccy, _start_exchange), :1376 (_preview: today = ny_of(ts).date())",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps.py:271 (effective_date)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\execution.py (fund, as-of own-cash path)"
+   ],
+   "fix": "Start an XCCY on the pair's spot date, taken from the FX trade date (fx.spot_date(fx.fx_trade_date)). Post the exchange, its sweep and the IM on the same accounting day. Add a regression test that books an XCCY at 17:30 ET and then runs the VM."
+  },
+  {
+   "id": "OTC-04",
+   "severity": "critical",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "XCCY leg rates do not come from swap curves.\n- The foreign leg is priced on a flat curve at that currency's overnight or policy rate for every tenor from 2Y to 30Y: the ECB deposit rate for EUR, monthly OECD call rates for JPY, CAD and AUD, and the stale CHF rate.\n- The USD leg uses the Treasury par curve with no SOFR swap spread.\n- There is no cross-currency basis.\nThe fixed rates are therefore not swap rates, and the FX forwards they imply disagree with the app's own FX forward ticket.",
+   "evidence": "- CAD/USD 30Y: pay CAD 2.2480%, which is the CAD overnight rate 2.23802% (as of 2026-09-01) plus 1 bp, against receive USD 5.3600% (Treasury par).\n- JPY 5Y leg: 1.0530%, the JPY call rate 1.043% (2026-09-01) plus 1 bp.\n- EUR 2Y leg: par 2.5000%, equal to the ECB deposit rate.\n- The app's own XCCY discount factors (USD 1Y 0.9567394267, EUR 1Y 0.9754610578) imply a 1Y EURUSD forward of 1.137634, while the FX forward ticket prices 1Y at 1.131798: 58 pips apart for the same exchange.\n- The imported IRS SWP-000003 carries a -18 bp SOFR-swap-vs-Treasury spread, but the XCCY USD leg uses raw Treasury par.\nSame on 1.0.6. Files xccy_eur_24m.json and xccy106_default.json; screenshots r105-14, r105-15, r105-16.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1051-1090 (flat_dfs, foreign_curve, leg_curve)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps.py (dfs_for, par_annuity)"
+   ],
+   "fix": "Build one overnight-index-swap curve per currency. Free sources include the ECB \u20acSTR and yield-curve data, the BoE SONIA curve, and Treasury plus the calibrated SOFR swap spread for USD. Add a cross-currency basis by tenor for each pair (calibrated, or at least a disclosed input). Quote XCCY as a basis over float/float and derive the fixed legs from it. Price FX forwards off the same curves so the two products agree."
+  },
+  {
+   "id": "OTC-05",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "FX forward points use one overnight rate per currency for every tenor from 1W to 1Y and include no cross-currency basis. rate_for(services, ccy, days) ignores days except in the Treasury fallback. The USD rate is overnight SOFR, while the app's own Treasury curve (used for IRS and XCCY) is 40-55 bp higher at 1Y.",
+   "evidence": "Every tenor uses r_quote SOFR 3.95% (2026-10-27) and r_base ECBDFR 2.5%. EURUSD 1Y: 'F = 1.1158 x (1 + 3.95 % x 365/360) / (1 + 2.5 % x 365/360) = 1.131798' (159.98 points). The app's own Treasury par curve has 1M at 4.10% and 1Y at 4.50%; 4.50% would give 1.137867, 60.7 pips higher, against a 2.26-pip half-width. The ticket has no basis input. Same on 1.0.6.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:683-757 (rate_for, forward_rate)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:933 (_fx_forward_deal)"
+   ],
+   "fix": "Interpolate each currency's overnight-index-swap curve to the value date (at minimum use the USD curve the app already has) and add a basis for each pair. Show both inputs on the ticket."
+  },
+  {
+   "id": "OTC-06",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Spot and value dates use only the NYSE calendar; each currency's own bank holidays are ignored (fx.tenor_date says so). Standard tenors land on non-settlement days, and broken dates on bank holidays are accepted and can be booked.",
+   "evidence": "- The 6M value date for GBPUSD, USDJPY and EURJPY is 2027-05-03: the UK Early May bank holiday and Japan's Constitution Day.\n- Accepted with HTTP 200 and no blockers:\n  - EURUSD 2026-11-11: Veterans Day, US banks closed.\n  - USDJPY 2026-11-03 and 2026-11-23: Tokyo holidays.\n  - GBPUSD 2026-12-28: UK bank holiday.\n  - EURUSD 2027-03-29: Easter Monday, TARGET2 closed.\n  - USDCAD 2026-11-11: both Canadian and US holiday.\n- Only NYSE closures are refused, for example Thanksgiving: 'is not a business day (trading calendar)'.\nScreenshots r105-05-fx-USDJPY-6M-goldenweek.png, r105-07-fx-GBPUSD-ukholiday.png, r106-33-fx-GBPUSD-6M-ukholiday-0503.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:241-263 (spot_date, tenor_date)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:442-462 (_expiry)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\calendar.py"
+   ],
+   "fix": "Add a settlement calendar per currency: the US Fedwire calendar for USD, TARGET2, London, Tokyo, Zurich, Toronto and Sydney. Spot = T+2 good days in both currencies. Roll tenor dates modified-following on the joint calendar with the end-end rule. Refuse a broken date that is a holiday in either currency."
+  },
+  {
+   "id": "OTC-07",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The FX forward tenor dropdown offers 2W, but the server refuses 2W on every pair. ON, TN and SN are missing. The OTC ticket's tenor list and the FX module's list differ.",
+   "evidence": "Ticket tenor options are [1W, 2W, 1M, 2M, 3M, 6M, 9M, 1Y]. Previewing 2W returns 400 'TENOR: tenor '2W': use one of ON, 1W, 1M, 2M, 3M, 6M, 9M, 1Y or a value date'. No field is highlighted, and the message offers ON, which this ticket does not have. 1.0.6 gives the same text as a 200 refusal. Screenshots r105-03-fx-EURUSD-2W-refused.png and r106-31-fx-EURUSD-2W-refused.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\otcticket.js:40 (TENORS)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:98 (TENORS), :442 (_expiry calls fx.tenor_date)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:88 (TENORS), :245 (tenor_date)"
+   ],
+   "fix": "Use one tenor table for both FX desks, with a general week/month parser (ON, TN, SN, 1W-3W, 1M-12M, 15M, 18M, 2Y). Make refusals carry details.field so the ticket highlights the right input."
+  },
+  {
+   "id": "OTC-08",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The PB dealer charges a flat 2 bp of the outright for every tenor and size. From the same mid, that is about 10x the FX desk's spread at 1W and 4.5x at 3M. The ticket shows a one-way price only: no spot date, no forward points, no bid/offer.",
+   "evidence": "- Both desks use the same covered-interest-parity mid.\n- EURUSD on the OTC tab: 1W dealt 1.116337 vs mid 1.116114 (2.23 pips, cost $222.83 per EUR 1m); 3M 2.24 pips; 1Y 2.26 pips ($217.30).\n- FX desk grid (/api/fx/forwards): 1W 0.22 pip, 3M 0.50 pip, 1Y 1.40 pips.\n- Round trip on EUR 1m 3M via the OTC tab: $443.52 with an offsetting contract, or $245.46 to terminate (1.0.6). On the FX desk it would be about $100.\n- The ticket shows only 'model F . dealt K'; the points are computed but not shown.\n- The 1.0.6 quote is one-way: 'forward 1.116822 (model forward 1.117045)'.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\prime.py:166 (OTC_SEEDS GS forward_hw_bp 2.0)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:947 (_fx_forward_deal half-width)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:276 (forward_spread_pips)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\otcticket.js:352 (headline)"
+   ],
+   "fix": "Price as a spot spread plus a forward-points spread that grows with tenor, with size tiers, consistent with the FX desk. Show spot, points bid/ask, outright bid/ask, spot date, value date and days from spot."
+  },
+  {
+   "id": "OTC-09",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Rate risk of FX forwards and XCCY counts one currency only. The forward's DV01 bumps only the quote currency's rate, yet the Risk page labels and shocks it as USD swap-curve DV01. For USD-base pairs the true USD-rate risk has the opposite sign. EUR-rate risk of EURUSD forwards and the foreign leg of an XCCY appear nowhere on the Risk page.",
+   "evidence": "- OTC-000003 (long USD 1m vs JPY, 1Y) shows DV01 +96.47, which is the JPY-rate bump.\n- Risk dv01_rows: 'FX forward USDJPY 96.47 | PV change for +1 bp of the swap curve, as booked'; the rates +100 bp scenario adds +9,647.\n- Its USD-rate DV01 is about -93.7 per bp: opposite sign.\n- EURUSD forwards show only the USD-rate DV01 (+/-28.71).\n- XCCY SWP-000007 shows only the USD leg on Risk (-189.09); the EUR leg (+193.90) appears only in the preview.\nSame on 1.0.6.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:1272-1390 (_value r_bp bump on the quote rate only), :1435 (dv01_c)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\risk.py:742 (_scenario_rates) and dv01_rows",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py (dv01_c USD leg only)"
+   ],
+   "fix": "Compute DV01 per currency by bumping each currency's curve. Show interest-rate risk by currency, and shock each currency's curve in its own scenario."
+  },
+  {
+   "id": "OTC-10",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "OTC FX and equity forwards count in the headline long/short/gross exposure as signed notional, as if they were stock. FX-desk forwards of the same kind are kept out of the headline. Buying USD forward shows as a 'long'.",
+   "evidence": "Risk bucket 'OTC options and forwards', headline true: long 2,115,800.00 (EURUSD buy 1,115,800 plus the USDJPY 'long' 1,000,000, which is buying USD) and short 1,920,818.60 (EURUSD sell plus the SPY forward). This feeds the PB account's gross of 15.95m and the warning 'gross exposure is 5.6264x NAV (limit 2x)'. FX-desk forwards sit in 'FX forwards (notional)', outside the headline ('its risk is the currency exposure'). Same on 1.0.6.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\risk.py:434-560 (_pos_risk: EQ_FORWARD/FX_FORWARD headline=True at :534)"
+   ],
+   "fix": "Treat OTC FX forwards like FX-desk forwards: outside the headline, with their risk carried by the currency legs. Keep equity forwards in equity delta."
+  },
+  {
+   "id": "OTC-11",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Initial margin for OTC forwards is a flat 6% of USD notional for every pair and tenor, with no netting of offsetting trades. The same 6% applies to equity forwards, while the economically equivalent TRS posts 10%. XCCY posts a flat 2% at any tenor, less than a 1W FX forward.",
+   "evidence": "- EURUSD 3M buy and 3M sell for the same value date each posted 66,948.00: 133,896 IM on a flat position, and the two would be delivered separately.\n- 1W and 1Y both 6%.\n- EURJPY EUR 250m 1Y needs IM of 16,738,500.\n- SPY 1Y equity forward: 6% (483,011 on 10,000 shares) vs TRS 10% in the same GS schedule.\n- 2Y and 30Y XCCY: 2% (20,000 per USD 1m), while IRS IM is 50 bp x DV01.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\prime.py:166 (OTC_SEEDS forward_im_pct 0.06, xccy_im_pct 0.02, trs 0.10)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:894-994 (IM in _eq_forward_deal, _fx_forward_deal)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py (XCCY IM)"
+   ],
+   "fix": "Use risk-based IM: FX delta by currency group plus interest-rate delta by tenor. Set equity forward IM in line with TRS. Net offsetting contracts with the same pair and value date, and let an offsetting trade close the first."
+  },
+  {
+   "id": "OTC-12",
+   "severity": "major",
+   "area": "equity_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The equity forward mid carries at SOFR + 1.25% (the PB's debit financing spread) for both buys and sells. Client sales are therefore paid about 1.2%/yr above a SOFR-carry forward. A real dealer hedging a client sale shorts the stock and earns SOFR minus the borrow fee.",
+   "evidence": "SPY 1Y (close 772.31, q 0.99%): 'financing SOFR 3.95 % + PB spread 1.25 % (continuous 5.1379 %)', F 805.0186. The client SELL strike 804.8576 implies 5.12% carry. A SOFR-carry mid would be 795.33, so the sale pays 9.53 per share (1.20%, $95k on 10,000 shares) too much. That is a riskless gain against buying SPY with idle cash earning SOFR - 0.50%. Same on 1.0.6. Screenshot r105-11-eq-SPY-1Y-sell.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:894-931 (_eq_forward_deal r_fin), :1331 (_value)"
+   ],
+   "fix": "Put the mid at the funding/OIS rate. Client buys at mid plus a funding spread; client sells at mid minus that spread and minus the borrow fee (HTB tier) for the dealer's short hedge."
+  },
+  {
+   "id": "OTC-13",
+   "severity": "major",
+   "area": "equity_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Equity forwards treat dividends as a continuous trailing yield from the universe file (as of 2026-09-18), not as projected ex-dates. A forward that does not span an ex-date still has a full year's yield taken off pro rata. The app's dividend table is almost empty.",
+   "evidence": "- VZ 1M (to 2026-11-30): q 5.808%, labelled 'trailing dividend yield of the instrument master (universe data as of 2026-09-18); 0 Yahoo dividend event(s)', giving F 43.1586.\n- Yahoo VZ ex-dates: 2026-10-09 (0.708), next about 2027-01-11, so none in the window.\n- The SOFR-carry forward is 43.3336: 0.175 per share off (0.41%, 20x the 0.0086 half-width; $17.5k on 100,000 shares).\n- MO 1M has the same problem (last ex-date 2026-09-15, next about 2026-12-26).\n- The dividends table holds 15 rows for 14 names.\nScreenshot r105-12-eq-VZ-1M-buy.png; yahoo\\VZ_div.json and yahoo\\MO_div.json.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:590 (dividend_yield), :894 (_eq_forward_deal)"
+   ],
+   "fix": "Project discrete dividends (amounts and ex-dates from the regular schedule or Yahoo events). Price F = (S - PV of dividends before maturity) x growth, and show the dividends used."
+  },
+  {
+   "id": "OTC-14",
+   "severity": "major",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Cross-currency swaps are fixed/fixed only: no floating legs, no basis, no choice of notional exchanges. The initial exchange is always booked at the trade, so the default ticket cannot be booked by the Fund book, and the refusal blames the initial margin instead.",
+   "evidence": "- recv_index 'SOFR' or pay_index 'ESTR' returns 400 NOT_IN_THIS_BUILD: 'floating cross-currency legs are not in this build ... no non-USD reference fixing is sourced'. SONIA and the ECB rate are already fetched daily.\n- The default ticket (pay EUR 10m / receive USD) needs USD 11,382,180 now: 'NOT FUNDABLE: Treasury available 2,103,950.48'.\n- The button says 'the initial margin cannot be funded'; the real blocker is the notional exchange.\n- On 1.0.6 it reads 'Request quote the initial margin cannot be funded'.\nScreenshot r105-14-xccy-default-preview.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1006 (parse_xccy_terms), :1280-1360 (_book_xccy, _start_exchange)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\swapticket.js:775 (xccyForm), :871 (unfundable wording)"
+   ],
+   "fix": "Offer float/float (SOFR against \u20acSTR, SONIA, TONA, SARON, CORRA or AONIA, compounded in arrears) with a basis spread, plus fixed/float. Add initial and final exchange flags. Make the refusal name what cannot be funded."
+  },
+  {
+   "id": "OTC-15",
+   "severity": "major",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The XCCY deal rate is shown as USD per foreign unit rather than market convention, and the UI rounds it to 6 decimals. JPY amounts carry two decimal places although the yen has no minor unit.",
+   "evidence": "- XCCY JPY 5Y shows 'deal FX rate (observed) 0.006338 USD per JPY' (exact 0.00633802; only 4 significant digits visible). CHF shows '1.208167 USD per CHF' and CAD '0.71469411'.\n- JPY notional 1,577,819,642.59 and coupons JPY 8,307,220.42.\n- FX forward delivery: 'pay JPY 155,538,653.69'.\nSame on 1.0.6. Screenshots r105-15-xccy-JPY-5Y.png and r106-39-xccy-JPY-5Y.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\swapticket.js:920 (dealRate)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1159 (_deal_fx) and _xccy_dict",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\units.py"
+   ],
+   "fix": "Show the deal rate in market convention at the pair's precision (USDJPY 157.78, USDCHF 0.8277). Round JPY and other zero-decimal currencies to whole units."
+  },
+  {
+   "id": "OTC-16",
+   "severity": "major",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "XCCY variation margin moves only on the coupon legs. The exchange-rate move on the exchanged notionals is never collateralised. NAV picks it up through the 1360/2360 balances, but cash collateral under the CSA (the margin agreement) and the counterparty-exposure numbers do not.",
+   "evidence": "The model text says 'the notionals are on the balance sheet (1360 / 2360) and are not in the mark'. SWP-000007's VM of -382.99 covers the coupon legs only. A 5% EURUSD move on the EUR 896,218 fixed notional changes the swap's value by about $50k with no collateral moving; mark-to-market reset happens only every 6 months.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:1478-1530 (_xccy_value, mark_xccy)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps.py:1344 (h_vm)"
+   ],
+   "fix": "Base CSA variation margin on the swap's full PV, including the PV of the notional exchange(s) at today's FX rate. For mark-to-market reset swaps, settle the notional difference at each reset."
+  },
+  {
+   "id": "OTC-17",
+   "severity": "major",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "A deliverable FX forward is delivered only at 17:05 ET on its value date, and only if a 17:00 ET FX close has been recorded. The delivered amounts are fixed at the strike and need no price. FX-desk forwards post from 00:30 ET on the value date.",
+   "evidence": "EXPIRY_ET FX is '17:05'. h_expire calls _close_px for FX_FORWARD and skips with CLOSE_PENDING when no close is recorded, although value_c is 0 and delivery is at K. Both copies raised 'EURUSD: no daily bar for 2026-10-23 (symbol EURUSD=X delisted or unlisted?)' and the same for JPY=X, so missing FX closes do happen; such a gap would hold a delivery back.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:95 (EXPIRY_ET), :1551-1606 (h_expire), :1609 (_deliver)"
+   ],
+   "fix": "Deliver at the start of the value date, as FX_FORWARD_DUE does, with no price input. Let only the final VM wait for the close."
+  },
+  {
+   "id": "OTC-18",
+   "severity": "major",
+   "area": "other",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Positions and the contract drawer show forwards wrongly. 1.0.5 shows the wrong direction. 1.0.6 shows only the USD notional, n/a for dealt and current rates, and negative days. The drawer shows swap-only fields and no dealt terms.",
+   "evidence": "- 1.0.5 Positions: OTC-000001 (buy EUR 1m / sell USD) reads 'receive USD 1,115,800.00'; OTC-000002 (sell EUR) reads 'pay USD 1,115,800.00'; the short SPY forward reads 'pay USD 805,018.60'. The EUR amount appears nowhere.\n- 1.0.6 Positions: '1,115,800 USD notional', COST / MARK 'n/a / n/a', DAYS '-1d'.\n- Drawer, both versions: 'dealt: see the details below' with no details below, plus swap-only fields ('accrued USD receive 0.00 / pay 0.00', 'remaining periods 0', swap result 'financing and coupons').\n- Contracts table: notional '1.12m USD' for a EUR 1m forward, and 'dates traded 2026-10-29 . 2026-10-29 to 2027-02-02' (trade date, not spot date).\nScreenshots r105-23-positions-otc-rows.png, r106-40-positions-otc-rows.png, r105-20-contracts-drawers.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\pages\\positions.js:47 (swapSide)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\swapticket.js:216 (dealtText)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps.py:2767 (position_fields)"
+   ],
+   "fix": "Show FX forwards as 'buy EUR 1,000,000 / sell USD 1,120,132 value 2027-02-02' with the dealt rate against the current forward and days to value. Show equity forwards as e.g. 'short 1,000 SPY fwd @ 804.86'. Drop swap-only fields for forwards."
+  },
+  {
+   "id": "OTC-19",
+   "severity": "minor",
+   "area": "xccy",
+   "in_105": true,
+   "in_106": true,
+   "problem": "XCCY conventions and limits fall short of market practice: semi-annual coupons on both legs only, 30/360 or ACT/360 only, UI tenors 12-60 months, one leg must be USD, six currencies, free-text currency fields, coupon dates on the NYSE calendar.",
+   "evidence": "- GBP ACT/365 refused: 'pay_basis must be one of 30/360, ACT/360'.\n- 3M refused: 'months must be between 6 and 360'.\n- UI tenor options are only 12/24/36/60 months, although the API books up to 360.\n- EUR/GBP refused: 'one leg must be USD in this build'. NZD refused: 'NZD is not supported'.\n- Pay and receive currency are plain text inputs.\nScreenshot r105-13-xccy-form-default.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps_trs.py:156-157 (XCCY_PERIOD_MONTHS, XCCY_BASES), :1006 (parse_xccy_terms)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\swapticket.js:775 (xccyForm)"
+   ],
+   "fix": "Use each currency's own leg conventions: EUR annual 30/360; GBP, JPY, AUD and CAD ACT/365F; USD annual ACT/360 for SOFR legs or semi-annual 30/360. Offer tenors to 30Y in the UI, currency pickers, joint calendars and non-USD pairs."
+  },
+  {
+   "id": "OTC-20",
+   "severity": "minor",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "The desk lists 24 pairs, but 6 of them cannot be priced for any forward. Crosses derived from the two USD pairs show spot with 8 decimals.",
+   "evidence": "NZDUSD, NZDJPY, AUDNZD, EURNZD, EURSEK and EURNOK all return FORWARD_UNAVAILABLE: 'no free policy-rate series for NZD/SEK/NOK in this terminal: no forward price (spot only)'. Derived cross spots on 1.0.6: GBPJPY 210.31219375, EURGBP 0.83717266, EURJPY 176.05978269. Screenshot r105-10-fx-NZDUSD-unpriced.png; crosses106.txt.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:1717 (desk pairs), :106 (FX_PAIRS)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\instruments.py (FX_CROSSES)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\tables.py:83"
+   ],
+   "fix": "List only pairs that can be priced, or source the RBNZ, Riksbank and Norges Bank rates. Round spot to each pair's quoting precision."
+  },
+  {
+   "id": "OTC-21",
+   "severity": "minor",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "JPY, CAD and AUD interest is counted on a 360-day year; the market convention for those currencies is 365.",
+   "evidence": "DAYCOUNT_CASH = {GBP: 365, *: 360}, and the previews show basis 360 for JPY, CAD and AUD. 1Y errors: USDJPY +2.2 pips (153.3165 vs 153.2945), AUDUSD -4.1 pips, USDCAD +4.2 pips. Half-widths are 3.1, 1.4 and 2.8 pips respectively.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\tables.py:86 (DAYCOUNT_CASH)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:720 (forward_rate)"
+   ],
+   "fix": "Use ACT/365F for GBP, JPY, AUD, NZD and CAD (and HKD, SGD, etc.); ACT/360 for USD, EUR and CHF."
+  },
+  {
+   "id": "OTC-22",
+   "severity": "minor",
+   "area": "fx_forward",
+   "in_105": true,
+   "in_106": true,
+   "problem": "Gaps and wording problems in the FX forward ticket.",
+   "evidence": "- The notional can be entered only in the base currency ('notional (EUR) ... in the base currency of the pair').\n- 'the value date 2026-10-30 must be after the spot date' highlights the tenor field instead of the typed date (bad_fields ['tenor']).\n- The preview says '2027-02-02 (96 days, 3M)', while the forward calculation uses 92 days from spot.\n- More than 400 days is refused with '(the chains and the curve inputs go to about a year)', which refers to option chains in an FX forward.\n- Every forward sale warns 'the sold currency is not there for the value date yet' (the server sends an empty note).\n- FX swaps and NDFs are NOT_OFFERED (fx.unsupported).\nScreenshot r105-08-fx-EURUSD-before-spot.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\otcticket.js:83 (readTerms) and renderForm",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\otc_options.py:391 (parse_terms), :442 (_expiry)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\fx.py:1657 (unsupported)"
+   ],
+   "fix": "Add a dealt-currency selector and highlight the right field on refusals. Show spot date and days from spot. Use wording that fits forwards. Add FX swap (near/far legs) and NDF tickets."
+  },
+  {
+   "id": "OTC-23",
+   "severity": "minor",
+   "area": "fx_forward",
+   "in_105": false,
+   "in_106": true,
+   "problem": "New in 1.0.6: the quote-request row and the Accept dialog do not state the notional, which currency is bought or sold, or the value date. The quote is one-way.",
+   "evidence": "- Quote row: 'RFQ-000006 EURUSD OTC forward SELL QUOTED forward 1.116822 (model forward 1.117045) 44 s left'.\n- Accept dialog: contract 'EURUSD OTC forward with Goldman Sachs', side 'SELL', quote 'forward 1.116822 ...', dates '2026-10-29 to 2026-12-02'. No EUR 1,000,000 or USD amount appears.\n- XCCY quote: 'deal FX 1.1158; receive USD 4.6600 % / pay EUR 2.5100 %', with no notionals.\n- The quote arrived about 14 s after the request and was valid for 120 s.\nScreenshots r106-36-fx-quoted.png and r106-37-fx-accept-dialog.png.",
+   "files": [
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\products\\swaps.py:2917 (rfq_describe)",
+    "C:\\Users\\logan\\intelligence-terminal\\finsim\\finsim\\terminal\\static\\components\\swapticket.js:498 (acceptDialog)"
+   ],
+   "fix": "Spell the deal out in the row and the dialog, e.g. 'You sell EUR 1,000,000.00 / buy USD 1,116,822.00, value 2026-12-02, at 1.116822'. For XCCY show both notionals, the dates and the deal rate in market convention."
+  }
+ ]
+}

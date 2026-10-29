@@ -222,7 +222,10 @@ class RateUnits(Base):
         self.rt.rates = RateStore()                                                  # FRED not loaded yet
         i = self.ok("GET", "/api/treasury?book=P")["interest"]
         self.assertEqual((None, None, None), (i["index_pct"], i["rate"], i["as_of"]))
-        self.assertIn("never defaulted", i["status"])
+        # V104R2-BW-02 (e): the reason in trader words, no convention code (was "(RATE_LAG; never defaulted)"); still never a default rate
+        self.assertIn("no rate is shown and no night accrues until it is", i["status"])
+        self.assertIn("a rate is never assumed", i["status"])
+        self.assertNotIn("RATE_LAG", i["status"])
 
     def test_93_61_one_night_of_treasury_cash_interest(self):
         rt = self.rt
@@ -401,6 +404,94 @@ class NewOrderFundability(Base):
         self.assertEqual((["FILLED", "FILLED", "SUSPENDED", "SUSPENDED"], [33100, 33100], 0), (sorted(st.values()), sweeps, suspended))
         self.assertEqual({"USD": "0.00"}, self.ok("GET", "/api/treasury?book=P")["treasury"]["cash_by_ccy"])
         self.assertTrue(self.rt.accounting.integrity("ledger").ok)
+
+
+class ActivityInWords(Base):
+    """1.0.4 leftovers V104R2-OTC-03 / BW-01 / BW-03 (P3): the Activity rows the owner's lifecycle writes - futures VM, the nightly accruals
+    and re-accruals, NAV snapshots, a skipped job - read in words (accounts by name, keys split, money as text), never the raw ids
+    'F1:US_EXCHANGE:ZNZ26:2026-10-27' or a payload of cents.  The events are the owner's own shapes (owner copy 2026-10-28 10:04)."""
+
+    EVENTS = [
+        ("FUTURES_VM", "F1:US_EXCHANGE", "ZNZ26", "vm", "F1:US_EXCHANGE:ZNZ26:2026-10-27",
+         {"date": "2026-10-27", "entry_id": 738, "funded": True, "method": "observed print at/before the settle time", "qty_after": -19, "qty_prev": -19,
+          "settle_px": "106.078125", "vm_c": 89062}),
+        ("ACCRUED", "F1:TREASURY", None, "treasury", "F1",
+         {"amount_c": 47151, "base_c": 494877057, "entry_id": 757, "kind": "cashint", "night": "2026-10-27", "obs_date": "2026-10-26", "rate": "0.0343", "sofr": "3.93"}),
+        ("NAV_SNAPSHOT", "F1:US_EXCHANGE", None, "snapshot", "F1:US_EXCHANGE:2026-10-26",
+         {"flows_day_c": 0, "late": False, "nav_c": 0, "partial": 0, "pnl_day_c": 0, "scope": "F1:US_EXCHANGE", "snap_date": "2026-10-26"}),
+        ("REACCRUED", "F1:US_EXCHANGE", None, "account", "F1:US_EXCHANGE",
+         {"base_c": 1000000, "batch_id": "IMP-F1-20261027-A", "business_date": "2026-10-28", "correction_c": 88, "entry_id": 863, "kind": "pbcredit",
+          "night": "2026-10-27", "posted_c": 0, "rate": "0.0318", "restated_c": 88}),
+        ("JOB_SKIPPED", "F1:US_EXCHANGE", "GCZ26", "job", "GCZ26:2026-10-26",
+         {"code": "CLOSE_PENDING", "job": "FUTURES_VM", "message": "GCZ26: no settle price for 2026-10-26 yet; the variation margin waits for it"}),
+    ]
+
+    def test_lifecycle_rows_read_in_words(self):
+        import json
+        from finsim.terminal.api_views import activity_rows
+        rt = self.rt
+        with rt.db.writer() as tx:
+            cid = tx.conn.execute("SELECT MIN(id) FROM commands").fetchone()[0]
+            for i, (typ, acct, iid, rtype, rid, pl) in enumerate(self.EVENTS):
+                tx.conn.execute("INSERT INTO events(command_id, ts, type, account_id, instrument_id, ref_type, ref_id, payload_json) VALUES (?,?,?,?,?,?,?,?)",
+                                (cid, rt.clock.epoch() + i, typ, acct, iid, rtype, rid, json.dumps(pl)))
+        rows = {r["event"]: r for r in activity_rows(rt, types={"financing", "other", "system"}, lifetime_ids=["F1"]) if r.get("type") == "event"
+                and r["event"] in {e[0] for e in self.EVENTS}}
+        self.assertEqual({e[0] for e in self.EVENTS}, set(rows))
+        vm, acc, snap, reacc, skip = (rows[k] for k in ("FUTURES_VM", "ACCRUED", "NAV_SNAPSHOT", "REACCRUED", "JOB_SKIPPED"))
+        # the reference in words: the row's own account left out, the key split ('vm F1:US_EXCHANGE:ZNZ26:2026-10-27' before)
+        self.assertEqual(("futures VM - variation margin ZNZ26 2026-10-27", "variation margin ZNZ26 2026-10-27"), (vm["summary"], vm["ref_text"]))
+        self.assertEqual(("financing", "890.62"), (vm["category"], vm["detail"]["vm"]))          # vm_c 89,062 cents -> 890.62
+        # Treasury cash interest: 4,948,770.57 x 0.0343 / 360 = 471.5079 -> 471.51 (amount_c 47,151); the rate a percent, never 0.0343
+        self.assertEqual("accrued - Treasury: Treasury cash interest, night 2026-10-27, amount 471.51", acc["summary"])
+        self.assertEqual(("4,948,770.57", "3.43 %", "Treasury cash interest"), (acc["detail"]["base"], acc["detail"]["rate"], acc["detail"]["kind"]))
+        self.assertEqual("PB credit interest", reacc["detail"]["kind"])                       # 'pbcredit' in words in the row dialog too
+        self.assertEqual(("NAV snapshot - snapshot 2026-10-26", "US Exchange"), (snap["summary"], snap["detail"]["scope"]))
+        # a re-accrual of the restatement: the correction 0.88 (88 cents), its night, the kind in words
+        self.assertEqual("re-accrued: PB credit interest, night 2026-10-27, correction 0.88", reacc["summary"])
+        # a skipped job: which job, on what and why, under "system"
+        self.assertEqual(("system", "futures VM skipped for GCZ26 2026-10-26: no settle price for 2026-10-26 yet; the variation margin waits for it"),
+                         (skip["category"], skip["summary"]))
+        for r in rows.values():
+            text = " ".join([r["summary"], r.get("ref_text") or ""] + [str(v) for v in r["detail"].values()])
+            self.assertNotIn("F1:", text, r["summary"])
+            self.assertNotRegex(text, r"\b[A-Z]+_[A-Z_]+\b", r["summary"])                   # no internal code (US_EXCHANGE, CLOSE_PENDING)
+            self.assertFalse([k for k in r["detail"] if k.endswith("_c") or "_" in k], r["detail"])  # keys in words, no cents keys
+
+    def test_attention_row_dialog_in_words(self):
+        """V104R2-BW-03 remnant (the integrator, 1.0.6): an attention item's row dialog said "code CLOSE_PENDING" and showed the stored message
+        with raw account ids; the code and the message now read as the row's summary does (the stored item is unchanged)."""
+        from finsim.terminal.api_views import activity_rows
+        rt = self.rt
+        msg = "CDX-000001: the variation margin of 2026-10-27 waits for that day's OAS; F1:TREASURY sweeps it when it posts"
+        with rt.db.writer() as tx:
+            tx.conn.execute("INSERT INTO attention(ts, severity, source, code, message, details_json, account_id, ref_type, ref_id, resolved_ts, auto_resolve)"
+                            " VALUES (?,?,?,?,?,?,?,?,?,NULL,1)", (rt.clock.epoch(), "WARN", "swaps", "CLOSE_PENDING", msg, "{}", "F1:US_EXCHANGE", "otc", "k1"))
+        rows = [r for r in activity_rows(rt, types={"attention"}, lifetime_ids=["F1"]) if r.get("type") == "attention" and r["detail"].get("source") == "swaps"]
+        self.assertEqual(1, len(rows))
+        d = rows[0]["detail"]
+        self.assertEqual(("close pending", "CDX-000001: the variation margin of 2026-10-27 waits for that day's OAS; Treasury sweeps it when it posts"),
+                         (d["code"], d["message"]))
+        self.assertEqual(f"close pending: {d['message']}", rows[0]["summary"])
+        with rt.db.reader() as conn:                                                   # the stored item keeps its code and text
+            self.assertEqual(("CLOSE_PENDING", msg), tuple(conn.execute("SELECT code, message FROM attention WHERE ref_id='k1'").fetchone()))
+
+    def test_ledger_memos_in_words(self):
+        """V104R2-BW-02 (a): the Accounting Transactions / Ledger memos the owner's entries carry (owner copy 2026-10-28), shown in
+        words; the stored memo is unchanged (it stays the tooltip).  A group with no convention key - a dealer code '(GS)' - stays."""
+        from finsim.terminal.api_views import readable
+        self.assertEqual("SELL 17 ZNZ26 @ 105.3125, fee 38.25; initial margin +44,200.00 (2 -> 19 contracts x 2,600.00; see Futures margin)",
+                         readable("SELL 17 ZNZ26 @ 105.3125, fee 38.25; initial margin +44,200.00 (2 -> 19 contracts x 2,600.00; FUT_MARGIN)"))
+        self.assertEqual("period 2026-10-21..2027-10-21 (see Accrual, Rate lag, compounded in arrears)",
+                         readable("period 2026-10-21..2027-10-21 (ACCRUAL, RATE_LAG, COMPOUND_ARREARS)"))
+        self.assertEqual("initial margin +44,200.00 (2 -> 19 contracts x 2,600.00; see Futures margin) for fill F-000006",
+                         readable("initial margin +44,200.00 (2 -> 19 contracts x 2,600.00; FUT_MARGIN) for fill F-000006"))   # the fill's margin row
+        self.assertEqual("initial margin posted (static table; see Futures margin)", readable("initial margin posted (static table; FUT_MARGIN)"))   # a line memo
+        self.assertEqual("sell short 8,500 DLR @ 175.205", readable("SELL_SHORT 8,500 DLR @ 175.205"))
+        # the import's re-accrual memo: the accrual kind and the account in words (the owner's entry 863)
+        self.assertEqual("re-accrual PB credit interest Goldman Sachs (PB) night of 2026-10-27",
+                         readable("re-accrual pbcredit F1:PB_GS night of 2026-10-27", {"F1:PB_GS": "Goldman Sachs (PB)"}))
+        self.assertEqual("IRS pay fixed 4.8100 % 7,500,000.00 USD (GS)", readable("IRS pay fixed 4.8100 % 7,500,000.00 USD (GS)"))
 
 
 class BuyingPowerSplit(unittest.TestCase):

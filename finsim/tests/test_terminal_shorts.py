@@ -577,5 +577,148 @@ class ShortSaleTests(unittest.TestCase):
         assert_integrity(self, rt, "full")
 
 
+class ProveShortRegressionTests(unittest.TestCase):
+    """TEST-10 (FINSIM1 P6 task 10): the 1.0.3.1 hotfix proof ``prove_short.py`` (its 22 checks), kept as a regression test.  The owner's
+    Fund-book short of 8,880 STT at 168.95 in F1:PB_GS with 23.5M of long orders queued and only 1,467,580.80 left in Treasury: the
+    preview needs 30,032.16 (2 % excess + fee), the fill posts 1,530,281.52 of collateral (the sale's own proceeds first), a +10 % mark
+    calls 153,073.44, a -5 % mark returns 84,145.10, the cover realises -67,576.80 and returns 1,599,209.86.  The real runtime as the
+    tests build it: FakeClock, FixedMarks, the real order / lending / credit / prime handlers, the real lifecycle SETTLE_DUE job and the
+    real matcher for the open.  Every number is worked in the comment beside its check (numbered as in the script)."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-proveshort-")
+        self.rt = None
+
+    def tearDown(self):
+        if self.rt is not None:
+            self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def test_prove_short_regression(self):
+        import types
+        from tests.terminal_helpers import make_runtime
+        from finsim.terminal import credit, lifecycle, orders, prime
+        from finsim.terminal.api_views import trial_balance
+        from finsim.terminal.clock import epoch_of
+        PB = "F1:PB_GS"
+        rt = self.rt = make_runtime(self.tmp, at="2026-10-22T08:00:00-04:00", books="real")
+        orders.register(rt.bus)
+        lending.register(rt.bus)
+        lending.bind(rt)
+        credit.register(rt.bus)
+        rt.credit = credit
+        prime.register(rt.bus)
+        prime.bind(rt)
+        repo.register(rt.bus)
+        rt.rates = RateStore()
+        rt.rates.put("SOFR", [(date(2026, 10, 21), Decimal("3.87")), (date(2026, 10, 26), Decimal("3.87"))], persist=False)
+        rt.providers = types.SimpleNamespace(yahoo=rt.fp)
+        lifecycle.register(rt.bus, rt)
+        rt.lifecycle = lifecycle.LifecycleScheduler(rt.bus, rt.db, rt, rt.clock, rt.log)
+
+        def quote_at(iid, last, qt, vol):
+            rt.marks.set_quote(sc.rec(iid, last, qt, rt.clock.epoch(), bar=(qt - 60, vol)))
+            rt.marks.set(iid, last)
+
+        # Thu 10-22 08:00 (pre-open): open F1:PB_GS, queue the longs, leave exactly 1,467,580.80 for new orders in Treasury
+        r = execute(rt, "account.open_pb", {"lifetime_id": "F1", "broker": "GS"})
+        self.assertTrue(r.ok, r.body)
+        wed_close = epoch_of(date(2026, 10, 21), "16:00")
+        quote_at("AAPL", "339.50", wed_close - 60, 1_000_000)
+        quote_at("STT", "168.95", wed_close - 60, 100_000)
+        finra(rt, "STT", [("2026-10-19", 30000, 100000), ("2026-10-20", 30000, 100000), ("2026-10-21", 30000, 100000)])   # ratio 0.30 -> GC
+        r = sc.submit(rt, account_id=PB, instrument_id="AAPL", side="BUY", qty=67000, order_type="MARKET", tif="DAY", confirm_large=True)
+        self.assertTrue(r.ok and r.body["order"]["status"] == "WORKING", r.body)
+        bp = rt.accounting.buying_power(PB, "USD")
+        self.assertTrue(execute(rt, "treasury.withdraw", {"lifetime_id": "F1", "amount_c": int(bp.treasury_available_c) - 146758080, "currency": "USD"}).ok)
+        # the preview of SELL_SHORT 8,880 STT MARKET DAY at the last 168.95: gross 8,880 x 168.95 = 1,500,276.00, GS fee 8,880 x 0.0030 = 26.64
+        req = {"account_id": PB, "instrument_id": "STT", "side": "SELL_SHORT", "qty": 8880, "order_type": "MARKET", "tif": "DAY"}
+        pv = orders.preview(rt, req)
+        f = pv.get("funding") or {}
+        self.assertIs(True, pv.get("ok"), pv.get("blockers"))                                                       # check 1
+        # need = collateral to_c(1.02 x 1,500,276.00) = 1,530,281.52 - (1,500,276.00 - 26.64 = 1,500,249.36) = 30,032.16 (2 % 30,005.52 + fee)
+        self.assertEqual("30032.16", f.get("need"))                                                                  # check 2
+        r = sc.submit(rt, **req)
+        self.assertTrue(r.ok and r.body["order"]["status"] == "WORKING" and r.body["borrow"]["borrow_id"] == "B-000001", r.body)   # check 3
+        oid_short = r.body["order"]["order_id"]
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual((8880, "GC", 0, lending.REASON_PENDING, []),
+                         (b["qty"], b["tier"], b["collateral_c"], b["reason"], lines_of(rt, "collat:B-000001:open")))   # check 4
+        # the working short reserves only its cash need at the reservation's default fee: 1,530,281.52 - (1,500,276.00 - 44.40) = 30,049.92
+        self.assertEqual(2320176500 + 3004992, rt.accounting.cash(PB)["USD"].reserved_c)                            # check 5 (+ AAPL 23,201,765.00)
+        # Thu 09:32 the open: the matcher fills the queued orders from fresh prints
+        rt.clock.set("2026-10-22T09:32:00-04:00")
+        now = rt.clock.epoch()
+        cache = sc.FakeCache({"AAPL": sc.rec("AAPL", "339.50", now - 60, now, bar=(now - 120, 1_000_000)),
+                              "STT": sc.rec("STT", "168.95", now - 60, now, bar=(now - 120, 100_000))})
+        rt.marks.set("AAPL", "339.50")
+        rt.marks.set("STT", "168.95")
+        sc.matcher_for(rt, cache).sweep()
+        o = sc.order_row(rt, oid_short)
+        fs = sc.one(rt, "SELECT * FROM fills WHERE order_id=?", (oid_short,))
+        self.assertTrue(o["status"] == "FILLED" and fs is not None and (fs["qty"], fs["price"]) == (8880, "168.95"))   # check 6
+        fid = fs["fill_id"]
+        # collateral 1,530,281.52 at the fill: 1,500,249.36 (= 1,500,276.00 - fee 26.64) from the proceeds, 30,032.16 from cash
+        self.assertEqual([("1400", 153028152, "STT"), ("1200", -150024936, None), ("1010", -3003216, None)],
+                         lines_of(rt, f"collat:B-000001:fill:{fid}"))                                                  # check 7
+        st = sc.one(rt, "SELECT * FROM settlements WHERE fill_id=?", (fid,))
+        ce = sc.one(rt, "SELECT entry_id FROM journal_entries WHERE idem_key=?", (f"collat:B-000001:fill:{fid}",))["entry_id"]
+        self.assertEqual((0, "SETTLED", ce, "2026-10-23"), (st["amount_c"], st["status"], st["entry_id"], st["due_date"]))   # check 8
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual((153028152, 153028152, None), (b["collateral_c"], bal(rt, PB, "1400", "USD", "STT"), b["reason"]))   # check 9
+        self.assertEqual(0, bal(rt, PB, "1200"))                                                                    # check 10: proceeds at the lender
+        self.assertTrue(rt.accounting.integrity("full").ok)                                                        # check 11
+        # Thu 17:10 mark on the recorded CLOSE 168.95: 102 % x 8,880 x 168.95 = 1,530,281.52 -> no movement
+        rt.clock.set("2026-10-22T17:10:00-04:00")
+        close_mark(rt, "STT", "2026-10-22", "168.95")
+        r = execute(rt, "credit.collateral_mark", {"borrow_id": "B-000001", "mark_date": "2026-10-22"}, request_id="job:cmark:B-000001:2026-10-22",
+                    actor="lifecycle")
+        self.assertTrue(r.ok and r.body["delta_c"] == 0, r.body)                                                     # check 12
+        # Fri 10-23 00:35 T+1: the real SETTLE_DUE settles the AAPL payable only; the short's row carries 0 and is never settled again
+        out = rt.lifecycle.tick(at="2026-10-23T00:35:00-04:00", only="SETTLE_DUE")
+        ran = [i["key"] for i in out["ran"]]
+        settled_entries = [e["idem_key"] for e in sc.q(rt, "SELECT idem_key FROM journal_entries WHERE idem_key LIKE 'settle:%'")]
+        self.assertTrue(st["settle_id"] not in ran and f"settle:{st['settle_id']}" not in settled_entries and bal(rt, PB, "1200") == 0,
+                        settled_entries)                                                                             # check 13
+        accrue_due(rt, "2026-10-22")
+        # Fri 17:10 +10 %: CLOSE 185.85 (168.95 x 1.10 = 185.845): to_c(1.02 x 8,880 x 185.85) = 1,683,354.96 -> call 153,073.44 (Dr 1400 / Cr 1010)
+        rt.clock.set("2026-10-23T17:10:00-04:00")
+        close_mark(rt, "STT", "2026-10-23", "185.85")
+        r = execute(rt, "credit.collateral_mark", {"borrow_id": "B-000001", "mark_date": "2026-10-23"}, request_id="job:cmark:B-000001:2026-10-23",
+                    actor="lifecycle")
+        self.assertTrue(r.ok and (r.body["delta_c"], r.body["required_c"]) == (15307344, 168335496), r.body)
+        self.assertEqual([("1400", 15307344, "STT"), ("1010", -15307344, None)], lines_of(rt, "cmark:B-000001:2026-10-23"))   # check 14
+        rt.clock.set("2026-10-26T00:35:00-04:00")
+        accrue_due(rt, "2026-10-25")
+        # Mon 10-26 17:10 -5 %: CLOSE 176.56 (185.85 x 0.95 = 176.5575): to_c(1.02 x 8,880 x 176.56) = 1,599,209.86 -> 84,145.10 back (Dr 1010 / Cr 1400)
+        rt.clock.set("2026-10-26T17:10:00-04:00")
+        close_mark(rt, "STT", "2026-10-26", "176.56")
+        r = execute(rt, "credit.collateral_mark", {"borrow_id": "B-000001", "mark_date": "2026-10-26"}, request_id="job:cmark:B-000001:2026-10-26",
+                    actor="lifecycle")
+        self.assertTrue(r.ok and (r.body["delta_c"], r.body["required_c"]) == (-8414510, 159920986), r.body)
+        self.assertEqual([("1010", 8414510, None), ("1400", -8414510, "STT")], lines_of(rt, "cmark:B-000001:2026-10-26"))       # check 15
+        rt.clock.set("2026-10-27T00:35:00-04:00")
+        accrue_due(rt, "2026-10-26")
+        self.assertTrue(rt.accounting.integrity("full").ok)                                                        # check 16
+        # Tue 10-27 10:00 BUY_TO_COVER 8,880 STT MARKET at 176.56: realised 1,500,276.00 - 8,880 x 176.56 (1,567,852.80) = -67,576.80; the borrow
+        # returns in the fill's command with all its collateral, 1,599,209.86
+        rt.clock.set("2026-10-27T10:00:00-04:00")
+        now = rt.clock.epoch()
+        quote_at("STT", "176.56", now - 60, 100_000)
+        r = sc.submit(rt, account_id=PB, instrument_id="STT", side="BUY_TO_COVER", qty=8880, order_type="MARKET", tif="DAY")
+        self.assertTrue(r.ok, r.body)
+        fc = r.body["fills"][0]
+        self.assertEqual(-6757680, fc["realised_c"])                                                                # check 17
+        b = borrow_row(rt, "B-000001")
+        self.assertEqual([("1010", 159920986, None), ("1400", -159920986, "STT")], lines_of(rt, f"collat:B-000001:return:{fc['fill_id']}"))
+        self.assertEqual(("CLOSED", 0, 8880), (b["status"], b["collateral_c"], b["qty_returned"]))
+        self.assertEqual((0, 0, 0), (bal(rt, PB, "1400", "USD", "STT"), bal(rt, PB, "2310", "USD", "STT"), bal(rt, PB, "1410", "USD", "STT")))   # check 18
+        rt.lifecycle.tick(at="2026-10-28T00:35:00-04:00", only="SETTLE_DUE")
+        self.assertTrue(rt.accounting.integrity("full").ok)                                                        # check 19
+        for scope in ("ALL", "F1:ALL"):                                                                             # checks 20, 21
+            self.assertTrue(trial_balance(rt, scope)["balanced"], scope)
+        self.assertEqual([], sc.q(rt, "SELECT settle_id FROM settlements WHERE status='PENDING'"))                 # check 22
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,6 +27,14 @@ FUNDS_WAIT (hotfix 1.0.3.1, 2026-10-21, ported to 1.0.4): an order whose only bl
 reason that starts with ``FUNDS_WAIT`` ("waiting for funds: needs X, available Y"); it holds no reservation and is resumed
 automatically (``orders.plan_funds_resume``).  The pure helpers live here (``funds_wait_reason``, ``funds_wait_from_error``,
 ``is_funds_wait``).
+
+FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 6-7):
+- NEXT SESSION (OMS-11): an order with ``activate_ts`` in the future (the next-session instruction) is QUEUED: ``evaluate`` answers
+  NONE ``AWAITING_SESSION`` ("queued for the next session") until that open, so the matcher never fills it earlier; a good-till-date
+  order is a GTC order with ``gtd_date`` (its ``expires_ts`` is that day's session close) and needs no rule here.
+- REVIEW (OMS-08): ``review(order, rec, session, now, inst, bar_used)`` runs ``evaluate`` - pure, nothing written - and says what the
+  order would do now: "would fill N at P now (basis)" or the reason it would not (STOP_NOT_REACHED, NOT_MARKETABLE, AWAITING_SESSION,
+  STALE, BAR_CAP_USED ...) with the distance from the observed price to the limit / stop.
 """
 from __future__ import annotations
 
@@ -124,6 +132,8 @@ class OrderRow:
     limit_rested: Optional[bool] = None      # the limit was NOT marketable at its previous executable look (None: unknown / not stored)
     rested_col: bool = False                 # the database has the orders.limit_rested column (so a change can be persisted)
     expiry: Optional[str] = None             # the instrument's expiry (options: the 15:30 ET opening cut-off, EXEC-9)
+    activate_ts: Optional[int] = None        # FinSim1 OMS-11: a next-session order works from this open (QUEUED before it)
+    gtd_date: Optional[str] = None           # FinSim1 OMS-11: a good-till-date order (tif GTC) expires at this day's session close
 
     @property
     def remaining(self) -> int:
@@ -152,6 +162,10 @@ class OrderRow:
         if "limit_rested" in keys:
             o.rested_col = True
             o.limit_rested = None if r["limit_rested"] is None else bool(r["limit_rested"])
+        if "activate_ts" in keys and r["activate_ts"] is not None:
+            o.activate_ts = int(r["activate_ts"])
+        if "gtd_date" in keys and r["gtd_date"]:
+            o.gtd_date = str(r["gtd_date"])
         if inst is not None:
             o.kind, o.lot, o.tick, o.multiplier, o.price_scale = inst.kind, int(inst.lot), inst.tick, inst.multiplier, inst.price_scale
             o.expiry = inst.expiry
@@ -395,6 +409,9 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
         return Decision("NONE", None, 0, "NOT_OPEN", None)
     if now > int(order.expires_ts):
         return Decision("NONE", None, 0, "EXPIRED_PENDING", None, note="past expires_ts: the lifecycle expires it; never fills after expiry")
+    if order.activate_ts is not None and now < int(order.activate_ts):
+        # OMS-11: a next-session order is queued until that session opens, whatever the current session or quote say
+        return Decision("NONE", None, 0, "AWAITING_SESSION", None, note=f"queued for the next session: it works from {queued_until_text(order.activate_ts)}")
     if session is None or not session.open:
         return Decision("NONE", None, 0, "AWAITING_SESSION", None, note=getattr(session, "phase", "CLOSED"))
     if opening_cutoff_passed(order, now, getattr(inst, "expiry", None) if inst is not None else None):
@@ -517,6 +534,95 @@ def evaluate_package(pkg, legs: List[OrderRow], recs: Dict[str, Optional[QuoteRe
     if len(times) != 1:
         return PackageDecision("NONE", "AON_OBSERVATION", None, note=f"legs come from {len(times)} different chain observations")
     return PackageDecision("FILL", "AON_OK", times.pop(), out)
+
+
+def queued_until_text(ts) -> str:
+    """'Thu 2026-10-29 09:30 ET' - when a next-session order starts working."""
+    return ny_of(int(ts)).strftime("%a %Y-%m-%d %H:%M ET")
+
+
+def px_words(v) -> str:
+    """A price in words with at least two decimals ('50' -> '50.00', '339.5' -> '339.50', '105.3141' as is); 'none' when absent."""
+    if v is None or v == "":
+        return "none"
+    try:
+        d = Decimal(str(v))
+    except Exception:   # noqa: BLE001 - not a number: shown as stored
+        return str(v)
+    if not d.is_finite():
+        return str(v)
+    s = format(d.normalize(), "f")
+    whole, _dot, frac = s.partition(".")
+    return f"{whole}.{(frac + '00')[:max(2, len(frac))]}"
+
+
+#: OMS-08: why an order would not fill now, in trader words (the review answer and the Pending blotter's working line)
+REVIEW_WORDS = {
+    "STOP_NOT_REACHED": "the stop is not reached", "NOT_MARKETABLE": "the limit is not marketable at the observed price",
+    "AWAITING_SESSION": "the session is not open", "STALE": "the last observed print is too old to execute against",
+    "BAR_CAP_USED": "this 1-minute bar's participation cap is used up by other fills", "NO_NEW_BAR": "no new 1-minute bar since the last fill",
+    "NO_VOLUME_THIS_BAR": "the last completed 1-minute bar traded no volume", "SAME_OBSERVATION": "no newer observation since the last fill",
+    "NO_SIZE": "no displayed size on the executable side", "NO_QUOTE": "no quote has been observed yet", "NO_NBBO": "no usable Cboe bid / ask",
+    "QUOTE_FROM_PREVIOUS_SESSION": "the last print is from the previous session", "PROVIDER_SESSION_ENDED": "the venue's session has ended",
+    "COMPUTED_NOT_EXECUTABLE": "a computed mark never executes", "SESSION_CLOSED": "the session is closed", "LAST_SESSION": "no opening trade after 15:30 ET on the expiry day",
+    "EXPIRED_PENDING": "it is past its expiry and waits for the expiry job", "NOT_OPEN": "it is not working",
+}
+
+
+def reference_price(order) -> Tuple[Optional[Decimal], Optional[str]]:
+    """``(price, kind)``: the order's own price the market is measured against - an untriggered stop (STOP, STOP_LIMIT, TRAILING_STOP)
+    -> its stop; a LIMIT or a triggered STOP_LIMIT -> its limit; a MARKET order -> ``(None, None)``."""
+    otype = getattr(order, "order_type", None)
+    if otype in ("STOP", "TRAILING_STOP") or (otype == "STOP_LIMIT" and not getattr(order, "triggered", False)):
+        stop = getattr(order, "stop_px", None)
+        return (None, None) if stop is None else (Decimal(str(stop)), "stop")
+    if otype in ("LIMIT", "STOP_LIMIT"):
+        lim = getattr(order, "limit_px", None)
+        return (None, None) if lim is None else (Decimal(str(lim)), "limit")
+    return None, None
+
+
+def distance(order, rec: Optional[QuoteRecord]) -> Optional[dict]:
+    """``{ref, ref_kind, price, basis, pct, words}``: how far the order's limit / stop is from the observed price it is judged on
+    (``trigger_price``: an option's executable bid / ask, else the last), in % of that price, signed (ref - price); None without
+    both prices.  Worked: a BUY LIMIT 50.00 with the last at 51.00 -> (50.00 - 51.00) / 51.00 = -1.96 %, "limit 50.00 is 1.96 % below
+    the observed last 51.00"."""
+    ref, kind = reference_price(order)
+    if ref is None or rec is None:
+        return None
+    px, basis = trigger_price(order, rec)
+    if px is None or px == 0:
+        return None
+    pct = ((ref - px) / px * 100).quantize(Decimal("0.01"), rounding=ROUND_HALF_EVEN)
+    if pct == 0:
+        words = f"{kind} {px_words(ref)} is at the observed {basis} {px_words(px)}"
+    else:
+        words = f"{kind} {px_words(ref)} is {abs(pct)} % {'above' if pct > 0 else 'below'} the observed {basis} {px_words(px)}"
+    return {"ref": str(ref), "ref_kind": kind, "price": str(px), "basis": basis, "pct": str(pct), "words": words}
+
+
+def review(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, inst: Optional[Instrument] = None, bar_used: BarUsed = None,
+           participation: Optional[Decimal] = None) -> dict:
+    """OMS-08 (pure, nothing written): ``evaluate`` on the cached observation and the session now, said in words.  ``{action,
+    reason, words, text, qty, price, price_basis, note, cap_note, distance, quote_time, evaluated_at}`` - "would fill 100 at 339.50
+    now (last)", or "would not fill now: the stop is not reached (stop 330.00 is 2.80 % below the observed last 339.50)"."""
+    dec = evaluate(order, rec, session, now, participation, inst, bar_used=bar_used)
+    dist = distance(order, rec)
+    why = REVIEW_WORDS.get(dec.reason, str(dec.reason or "").replace("_", " ").lower())
+    if dec.action == "FILL":
+        text = f"would fill {int(dec.qty):,} at {px_words(dec.price)} now ({dec.price_basis})"
+    elif dec.action == "TRIGGER":
+        text = f"the stop triggers now; nothing fills on this observation ({why})"
+    elif dec.action == "RATCHET":
+        text = f"the trailing stop would move to {px_words(dec.stop_px)} (reference {px_words(dec.trail_ref_px)}); no fill now"
+    else:
+        text = f"would not fill now: {why}"
+    extra = [x for x in ((dist or {}).get("words"), dec.note) if x]
+    if extra and dec.action != "FILL":
+        text += " (" + "; ".join(extra) + ")"
+    return {"action": dec.action, "reason": dec.reason, "words": why, "text": text, "qty": int(dec.qty or 0), "price": None if dec.price is None else str(dec.price),
+            "price_basis": dec.price_basis, "note": dec.note, "cap_note": dec.cap_note, "distance": dist, "evaluated_at": int(now),
+            "quote_time": None if rec is None else rec.quote_time, "pure": True}
 
 
 def match_idem(order_id: str, quote_time: Optional[int], bar_ts: Optional[int]) -> str:

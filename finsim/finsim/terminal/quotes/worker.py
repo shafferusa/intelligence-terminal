@@ -18,8 +18,14 @@ Conventions
   ``unavailable`` with the error (never priced off the front).
 - ``RatesRefresher`` slots (registered callables, each with its own interval or "daily after HH:MM ET" rule and a run
   at startup): the Treasury par curve (daily after 18:00 ET), FRED (every 6 h), FINRA short volume (after 18:00 ET),
-  Frankfurter (daily), dividend / split events for held names and TRS underlyings (daily after 18:00 ET; ``dividends.upsert``), the
-  Daily News fetchers when ``services.news`` exists, and the 60 s persist of the quote cache and provider health.
+  Frankfurter (daily), dividend / split events for held names and TRS underlyings (daily after 18:00 ET; ``dividends.upsert``) and
+  the 60 s persist of the quote cache and provider health.  (The news fetchers left with the news feature in 1.0.5 / 1.0.6: no news
+  slot exists.)
+- Progress heartbeat (V104R2-BW-10): ``stats()["last_progress_ts"]`` moves after every unit of work inside a tick - the pin scan,
+  each fetch result, the chain fetch, each refresher slot and each name / series inside the long slots (dividend events, FRED) - while
+  ``last_tick_ts`` moves only when a whole tick ends.  A first tick after a start runs every startup slot one after another (on the
+  owner's book about a minute of network work); health and the supervisor call the worker stalled only when it has made NO progress
+  for more than 3 cycles (``max(last_tick_ts, last_progress_ts)``), so a busy worker is never reported as stalled, a stuck one still is.
   The persist slot (TX-6): ``keep_ids()`` (held / working / borrowed / watch-listed names, the inputs of open positions'
   marks) -> ``cache.prune(keep)`` (records nobody pinned or kept for 1 h leave memory and ``quote_cache``) ->
   ``cache.persist()`` (only the changed records, straight into ``quote_cache``, never into the command journal) ->
@@ -51,7 +57,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from ..clock import ny_of, ny_str
 from ..commands import Command, RejectError
-from ..config import NEWS_INTERVALS, QUOTE_INTERVALS
+from ..config import QUOTE_INTERVALS
 from ..db import canonical_json
 from ..instruments import ADV_DAYS, EQUITY_KINDS, Instrument, adv_from_daily, fx_pair_id, needs_adv, otc_reference_ids, parse_futures_id
 from . import cache as _cache_mod, rates as _rates_mod
@@ -346,11 +352,13 @@ class Slot:
 
 
 class RatesRefresher:
-    """The slots that are not quotes: curve, FRED, FINRA, Frankfurter, dividend events, news, persistence."""
+    """The slots that are not quotes: curve, FRED, FINRA, Frankfurter, dividend events, persistence."""
 
-    def __init__(self, providers: ProviderSet, cache: QuoteCache, curve, rates, fxstore, instruments, db, bus, clock, cal=None, services=None, log=None):
+    def __init__(self, providers: ProviderSet, cache: QuoteCache, curve, rates, fxstore, instruments, db, bus, clock, cal=None, services=None, log=None,
+                 beat: Optional[Callable[[], None]] = None):
         self.providers, self.cache, self.curve, self.rates, self.fxstore = providers, cache, curve, rates, fxstore
         self.instruments, self.db, self.bus, self.clock, self.cal, self.services, self.log = instruments, db, bus, clock, cal, services, log
+        self.beat = beat                     # the worker's progress heartbeat (V104R2-BW-10); None for a stand-alone refresher
         self.slots: List[Slot] = []
         self._lock = threading.Lock()
         self._health_sent: Optional[Tuple[str, int]] = None      # (status signature, ts) of the last provider_health.update
@@ -359,10 +367,6 @@ class RatesRefresher:
         self.add_slot("finra", self._slot_finra, after_et="18:00")
         self.add_slot("frankfurter", self._slot_frankfurter, interval_s=86400)
         self.add_slot("dividends", self._slot_dividends, after_et="18:00")
-        news = getattr(services, "news", None) if services is not None else None
-        if news is not None and hasattr(news, "refresh"):
-            for which, every in NEWS_INTERVALS.items():
-                self.add_slot(f"news_{which.lower()}", (lambda w=which.lower(): news.refresh(w)), interval_s=int(every))
         self.add_slot("persist", self._slot_persist, interval_s=PERSIST_S, startup=False)
 
     def add_slot(self, name: str, fn: Callable[[], object], interval_s: Optional[int] = None, after_et: Optional[str] = None, startup: bool = True) -> Slot:
@@ -397,10 +401,15 @@ class RatesRefresher:
             slot.retry_at = now + SLOT_RETRY_S
         return True
 
+    def _beat(self) -> None:
+        if self.beat is not None:
+            self.beat()
+
     def run_due(self, now: int) -> List[str]:
         ran = []
         for s in self.due(now):
             self.run_slot(s, now)
+            self._beat()
             ran.append(s.name)
         return ran
 
@@ -428,9 +437,11 @@ class RatesRefresher:
                 obs = self.providers.fred.latest(sid, 60)
             except FetchError as e:
                 errors.append(f"{sid}: {e}")
+                self._beat()
                 continue
             if obs:
                 self.rates.put(sid, obs, "FRED")
+            self._beat()
         if errors and len(errors) == len(FRED_SERIES):
             raise FetchError("FRED: " + "; ".join(errors)[:160])
 
@@ -503,7 +514,9 @@ class RatesRefresher:
                 ev = self.providers.yahoo.events(inst.yahoo_symbol)
             except FetchError as e:
                 errors.append(f"{iid}: {e}")
+                self._beat()
                 continue
+            self._beat()
             if not ev.dividends and not ev.splits:
                 continue
             payload = {"instrument_id": iid, "source": "Yahoo chart events", "dividends": [[d.ex_date.isoformat(), str(d.amount)] for d in ev.dividends],
@@ -593,10 +606,10 @@ class QuoteWorker(threading.Thread):
         self._adv_errors: Dict[str, str] = {}
         self._last_pin_scan: Optional[int] = None
         self._scanned: Dict[str, set] = {}
-        self.refresher = RatesRefresher(providers, cache, curve, rates, fxstore, instruments, self.db, bus, clock, cal, services, log)
-        self.stats_ = {"ticks": 0, "last_tick_ts": None, "fetches": 0, "fetch_errors": 0, "changed": 0, "chains": 0, "chain_errors": 0, "loop_errors": 0,
-                       "last_error": None, "matcher_calls": 0, "resolved": 0, "refresher_runs": 0, "refresher_errors": 0, "bars_fetches": 0, "bars_errors": 0,
-                       "adv_set": 0}
+        self.refresher = RatesRefresher(providers, cache, curve, rates, fxstore, instruments, self.db, bus, clock, cal, services, log, beat=self._beat)
+        self.stats_ = {"ticks": 0, "last_tick_ts": None, "last_progress_ts": None, "fetches": 0, "fetch_errors": 0, "changed": 0, "chains": 0, "chain_errors": 0,
+                       "loop_errors": 0, "last_error": None, "matcher_calls": 0, "resolved": 0, "refresher_runs": 0, "refresher_errors": 0, "bars_fetches": 0,
+                       "bars_errors": 0, "adv_set": 0}
         # C14: registered product refreshers and the chart's full-session bars (request_bars)
         self._refreshers: Dict[str, Refresher] = {}
         self._bars: "OrderedDict[str, dict]" = OrderedDict()
@@ -608,6 +621,15 @@ class QuoteWorker(threading.Thread):
             self._install_refresher(name, interval_s, fn, after_et)
 
     # ---- public ------------------------------------------------------------------------------------------------------
+    def _beat(self) -> None:
+        """V104R2-BW-10: one unit of work inside a tick is done (``last_progress_ts``, the clock's time now)."""
+        try:
+            ts = int(self.clock.epoch())
+        except Exception:   # noqa: BLE001 - a heartbeat never breaks the work it reports on
+            return
+        with self._lock:
+            self.stats_["last_progress_ts"] = ts
+
     def set_matcher(self, matcher) -> None:
         self.matcher = matcher
 
@@ -771,6 +793,7 @@ class QuoteWorker(threading.Thread):
         if self._last_pin_scan is None or now - self._last_pin_scan >= PIN_SCAN_S:
             self._scan_pins(now)
             self._last_pin_scan = now
+            self._beat()
         jobs = []
         chain_requests: List[str] = []
         for iid, _prio in self.cache.due(now):
@@ -794,9 +817,11 @@ class QuoteWorker(threading.Thread):
         uid = self.chains.take_pending()
         if uid is not None:
             report["chain"] = self._fetch_chain(uid, now)
+            self._beat()
         report["bars"] = self._serve_bars()
         self._run_resolves(report)
         self._run_adv(report)
+        self._beat()
         report["slots"] = self.refresher.run_due(now)
         report["refreshers"] = self._run_refreshers(now)
         changed = self._drain_changed()
@@ -880,6 +905,7 @@ class QuoteWorker(threading.Thread):
             with self._lock:
                 self.stats_["fetch_errors"] += 1
             report["errors"].append((inst.instrument_id, err))
+        self._beat()
 
     def _run_fetches(self, jobs: List[Instrument], now: int, report: dict) -> None:
         if not jobs:

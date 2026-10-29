@@ -248,7 +248,9 @@ class RoundTrip(ApiBase):
         status, csv_text, _ = self.handle("GET", "/api/export/positions.csv?scope=ALL&book=T")
         self.assertEqual(200, status)
         lines = csv_text.strip().split("\n")
-        self.assertEqual("account_id,instrument_id,qty,cost,mark,quality,mv,unrealised", lines[0])
+        # the fixture columns come first; 1.0.6 (P3, PORTFOLIO-04) appends asset class, sector, counterparty, the to-date figures, total P&L,
+        # margin and collateral after them (their values are P3's tests)
+        self.assertEqual("account_id,instrument_id,qty,cost,mark,quality,mv,unrealised", ",".join(lines[0].strip().split(",")[:8]))
         prow = next(csv.DictReader(io.StringIO(csv_text)))
         self.assertEqual(("T1:US_EXCHANGE", "AAPL", "100", "33950.00", Decimal("339.50"), "delayed", "33950.00", "0.00"),
                          (prow["account_id"], prow["instrument_id"], prow["qty"], prow["cost"], Decimal(prow["mark"]), prow["quality"], prow["mv"], prow["unrealised"]))
@@ -509,23 +511,34 @@ class Lights(ApiBase):
         self.assertEqual("dividend", row["kind"])
 
     def test_news_is_gone(self):
-        """UI-03 (directive section 2): the news module is deleted, /api/news answers 404 NOT_FOUND like any unknown route (never a 501
-        that promises it), no news job runs and nothing reports a news state; the attention summary it carried has its own route."""
+        """UI-02 / UI-03 / UI-15 (directive section 2): the news module is deleted, /api/news answers 404 NOT_FOUND like any unknown route
+        (never a 501 that promises it), no news job runs, nothing reports a news state (no runtime attribute, no module entry, no health
+        key, no package id), the news setting is gone (a PATCH answers 400 and stores nothing) and the old simulation's archive link
+        left with the legacy command; the attention summary the news page carried has its own route."""
         import importlib
         with self.assertRaises(ModuleNotFoundError):
             importlib.import_module("finsim.terminal.news")
-        for path in ("/api/news", "/api/news?limit=10&book=T"):
+        for path in ("/api/news", "/api/news?limit=10&book=T", "/api/legacy"):
             status, body, _ = self.get(path)
             self.assertEqual((404, "NOT_FOUND"), (status, body["error"]["code"]), path)
-        self.assertIsNone(self.rt.news)
+        self.assertFalse(hasattr(self.rt, "news"))                                 # 1.0.6: the runtime has no news attribute
         h, _ = self.ok("GET", "/api/health")
-        self.assertIsNone(h.get("news"))                                           # 1.0.5: null; the key itself leaves with the rest of the news code
-        self.assertEqual("missing", h["modules"].get("news"))
+        self.assertNotIn("news", h)                                                # 1.0.6: the key left with the rest of the news code
+        self.assertNotIn("news", h["modules"])
+        self.assertNotIn("news", _api.PACKAGES)
+        self.assertNotIn("news_enabled", _api.SETTING_KEYS)
         self.assertFalse({"yahoo_news", "fed", "newspaper"} & set(h["providers"]))
         self.assertFalse([n for n in self.rt.worker.refresher.stats() if str(n).startswith("news_")])   # no news slot on the quote worker
+        status, body, _ = self.handle("PATCH", "/api/settings", {"request_id": "ui:api-news-0001", "news_enabled": False})
+        self.assertEqual((400, "SETTING_UNKNOWN"), (status, body["error"]["code"]))
+        with self.rt.db.reader() as conn:                                          # nothing was journaled for it
+            self.assertIsNone(conn.execute("SELECT 1 FROM events WHERE type='SETTINGS_CHANGED' AND ref_id LIKE '%news_enabled%'").fetchone())
         s, _ = self.ok("GET", "/api/attention/summary?book=T")
         self.assertEqual("T1:ALL", s["scope"])
         self.assertNotIn("news", s)
+        st, _ = self.ok("GET", "/api/state")
+        self.assertNotIn("NEWS", st["conventions"])                                # tables.CONVENTIONS lost its NEWS sentence
+        self.assertNotIn("news_enabled", st["settings"])                           # a new database never stores the news setting
 
     def test_retired_news_providers_skipped_on_load(self):
         """15.7 item 5: the provider_health rows an older release stored for yahoo_news / fed / newspaper / news_* stay in the database,
@@ -649,7 +662,7 @@ class Lights(ApiBase):
             self.assertIn(rel, _api.PLANNED_STATIC)
             status, body, headers = self.get("/static/" + rel)
             self.assertEqual(200, status, rel)
-            self.assertTrue(headers["Content-Type"].startswith("application/javascript"), rel)
+            self.assertTrue(headers["Content-Type"].startswith(("application/javascript", "text/javascript")), rel)   # the stub / the real file (mimetypes)
             if not os.path.isfile(os.path.join(static, *rel.split("/"))):
                 self.assertIn(b"not built yet", body)
         self.assertNotIn("pages/dashboard.js", _api.PLANNED_STATIC)
@@ -658,6 +671,37 @@ class Lights(ApiBase):
         self.assertIn(b"T.pages.dashboard = ", body)
         status, body, _ = self.get("/static/pages/news.js")
         self.assertEqual(404, status)
+
+    def test_jobs_view_names_every_schedule(self):
+        """V104R2-OTC-07: GET /api/jobs is the lifecycle scheduler's own view (status()): every job with its kind, its schedule in words
+        and its phase; the clock-time jobs carry their next run time.  At Tuesday 2026-10-20 14:00 ET: MARKS_RECORD at 16:20, SWAP_VM at
+        17:05, COLLATERAL_MARK at 17:10, SNAPSHOT at 17:45 (the setting) the same day, SETTLE_DUE / ACCRUE_DAILY at 00:30 and HOUSEKEEPING
+        at 00:15 the next day, INTEGRITY_FULL at 14:05; a job's recorded failures are counted with the last error."""
+        from finsim.terminal.clock import epoch_of
+        from datetime import date as _date
+        if self.rt.lifecycle is None:
+            self.skipTest("no lifecycle scheduler in this tree")
+        with self.rt.db.writer() as tx:
+            tx.x("INSERT INTO job_failures(job, key, failures, last_error, last_ts) VALUES ('SETTLE_DUE', '2026-10-20', 2, 'busy (test)', ?)", (self.rt.clock.epoch(),))
+        j, _ = self.ok("GET", "/api/jobs")
+        rows = {r["name"]: r for r in j["jobs"]}
+        self.assertGreaterEqual(len(rows), 10)
+        for name, r in rows.items():
+            self.assertTrue(r.get("when"), name)                                      # the schedule in words, every job
+            self.assertEqual(r["when"], r["schedule"], name)
+            self.assertIn("phase", r, name)
+        d0, d1 = _date(2026, 10, 20), _date(2026, 10, 21)
+        expect = {"MARKS_RECORD": epoch_of(d0, "16:20"), "SWAP_VM": epoch_of(d0, "17:05"), "COLLATERAL_MARK": epoch_of(d0, "17:10"),
+                  "SNAPSHOT": epoch_of(d0, "17:45"), "SETTLE_DUE": epoch_of(d1, "00:30"), "ACCRUE_DAILY": epoch_of(d1, "00:30"),
+                  "HOUSEKEEPING": epoch_of(d1, "00:15"), "INTEGRITY_FULL": epoch_of(d0, "14:05")}
+        for name, ts in expect.items():
+            if name in rows:
+                self.assertEqual((ts, ts), (rows[name]["next_due_ts"], rows[name]["next_due"]), name)
+        self.assertEqual((True, 1, "busy (test)"), (rows["SETTLE_DUE"]["failing"], rows["SETTLE_DUE"]["failures"], rows["SETTLE_DUE"]["last_error"]))
+        self.assertEqual((False, 0, None), (rows["SNAPSHOT"]["failing"], rows["SNAPSHOT"]["failures"], rows["SNAPSHOT"]["last_error"]))
+        no_clock = [n for n, r in rows.items() if r["next_due_ts"] is None]
+        for n in no_clock:                                                            # a job without a clock time keeps its words
+            self.assertEqual(rows[n]["when"], rows[n]["next_due"], n)
 
     def test_performance_and_risk_routes(self):
         p, _ = self.ok("GET", "/api/portfolio/performance?scope=ALL&book=T")

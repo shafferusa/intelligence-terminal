@@ -146,6 +146,14 @@ h1 small, h2 small { color: var(--fg3); font-weight: 400; margin-left: 8px; text
 /* one short reason under a dimmed row, indented like .nav-sub (SHELL-17 / PO-22 / BM-32: it was inline and wrapped to x=0) */
 .nav-why { display: block; padding: 0 12px 6px 14px; color: var(--fg3); font-size: 10px; font-family: var(--mono); line-height: 1.3; white-space: normal; }
 .nav-badge { display: inline-block; min-width: 14px; padding: 0 4px; border-radius: 8px; background: var(--down); color: #fff; font-size: 9.5px; text-align: center; margin-left: 4px; }
+/* 1.0.6 navigation (FINSIM1_PLAN P1 task 3): a count badge (Pending / Completed Trades) is neutral - red stays for attention items;
+   a sub-row (Treasury inside Accounts) and its figures line are indented; the TRADING group title is a link (#/trading) */
+.nav-badge.count { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+.nav-item.sub { padding-left: 24px; }
+.nav-sub.sub { padding-left: 26px; }
+a.nav-section.nav-group-link { display: block; color: var(--fg3); text-decoration: none; cursor: pointer; }
+a.nav-section.nav-group-link:hover, a.nav-section.nav-group-link.active { color: var(--accent); }
+a.nav-section.nav-group-link .k { float: right; color: var(--fg3); font-size: 9.5px; letter-spacing: 0; text-transform: none; }
 
 /* ---- freshness (s17.3): nothing shows a bare number ------------------------------------------------------------- */
 .pxw { display: inline-flex; flex-direction: column; align-items: flex-end; line-height: 1.1; vertical-align: middle; }
@@ -265,6 +273,17 @@ tr.nib td { color: var(--fg3); font-style: italic; }
 .kv-grid > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 2px 0; border-bottom: 1px dotted var(--line); min-width: 0; }
 .kv-grid > div > span:first-child { color: var(--fg3); white-space: nowrap; }
 .kv-grid > div > span:last-child { text-align: right; overflow-wrap: anywhere; min-width: 0; }
+/* P8R1-04 / P8R1-05 (rule 5: new tables fit 1440 px with the ticket dock open): dense blotters stack related fields in one cell -
+   .cl2 a muted second line, .clw text that wraps inside its cell, .btns a cell of small buttons that wraps; a grid mounted with
+   narrowBelow carries .grid-narrow while its box is narrower than that (the dock open, a narrow window): its .wide-only columns hide
+   and the .narrow-only lines inside the other cells show what they held, so nothing moves behind a scroll and nothing is clipped */
+td .cl2 { color: var(--fg3); font-size: 10.5px; line-height: 1.25; }
+td .clw { white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+td.stack { padding-top: 3px; padding-bottom: 3px; }
+td .btns { display: flex; flex-wrap: wrap; gap: 2px; }
+td .btns .act { margin-left: 0; }
+.grid.grid-narrow th.wide-only, .grid.grid-narrow td.wide-only { display: none; }
+.grid:not(.grid-narrow) .narrow-only { display: none; }
 
 /* ---- tables / grid ---------------------------------------------------------------------------------------------- */
 table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11.5px; }
@@ -338,7 +357,6 @@ table.pb-sched tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--accent); 
 .settings-nav { display: flex; gap: 2px; flex-wrap: wrap; margin-bottom: 10px; }
 .ds-row { display: grid; grid-template-columns: 110px 60px 1fr auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 11.5px; }
 .ds-row .st { font-weight: 600; } .ds-row .st.ok { color: var(--up); } .ds-row .st.bad { color: var(--down); } .ds-row .st.na { color: var(--fg3); }
-.legacy { color: var(--fg3); font-size: 11px; font-family: var(--mono); }
 /* Settings > Keyboard (the owner's keys, 2026-10-21) and the key map captions: an action with no key reads 'no key' */
 .kb-none { color: var(--fg3); font-family: var(--mono); font-size: 10.5px; }
 .keymap .keys-table caption .kw { text-transform: none; letter-spacing: 0; color: var(--fg3); }

@@ -36,9 +36,11 @@ Conventions stated here (the §1.3 sentences that bite in this module)
   labelled computed with every input (spot print, each currency's rate series, value and as-of).  Rates: USD = SOFR (FRED,
   or the NY Fed while FRED is in maintenance; the Treasury par-curve bill yield when no SOFR is observed), every other
   currency its ``tables.POLICY_INDEX`` series (JPY / CHF / CAD / AUD: monthly OECD proxies, labelled LIMITED with their
-  month); a currency without a series, or a series never observed, gives NO forward price (never a default).  Tenors ON
-  (spot-next), 1W, 1M, 2M, 3M, 6M, 9M, 1Y (months modified-following from the spot date, end-of-month rule) and any broken
-  business day after spot up to the 1Y date.  No cash until the value date: the deal is an ``fx_deals`` row (kind FORWARD,
+  month); a currency without a series, a series never observed, or a series that has stopped updating (P8B-01: a daily print
+  older than 10 days, a monthly average more than 62 days after its month - ``tables.rate_age``; CHF's ended 2024-03) gives NO
+  forward price (never a default); each rate used shows its age.  Tenors ON (spot-next), 1W, 2W (spot + 14 days, following;
+  P8B-03: the PB OTC desk offers it too), 1M, 2M, 3M, 6M, 9M, 1Y (months modified-following from the spot date, end-of-month
+  rule) and any broken business day after spot up to the 1Y date.  No cash until the value date: the deal is an ``fx_deals`` row (kind FORWARD,
   ``entry_id`` 0); its mark-to-market ``(F_now - K) x amount x DF`` is computed with its inputs (``forward_mtm``, shown on
   the desk and in Currency positions; ``forward_overlays`` is the NAV overlay hook).  On the value date (from 00:30 ET)
   the job FX_FORWARD_DUE posts the deal entry at K and its two settlement rows; SETTLE_DUE settles them the same tick (the
@@ -85,9 +87,10 @@ STALE_CODES = {"STALE": "QUOTE_STALE", "NO_QUOTE": "QUOTE_UNAVAILABLE", "SESSION
                "COMPUTED_NOT_EXECUTABLE": "QUOTE_NOT_EXECUTABLE", "NO_NBBO": "QUOTE_NOT_EXECUTABLE"}
 STEP = Decimal("0.00000001")                 # one step of an 8-dp ledger rate
 MIN_DEAL_C = 100                             # the smallest deal: 1.00 of the typed currency
-TENORS = ("ON", "1W", "1M", "2M", "3M", "6M", "9M", "1Y")
+TENORS = ("ON", "1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y")
 TENOR_MONTHS = {"1M": 1, "2M": 2, "3M": 3, "6M": 6, "9M": 9, "1Y": 12}
-TENOR_LABEL = {"ON": "ON (spot-next)", "1W": "1 week", "1M": "1 month", "2M": "2 months", "3M": "3 months", "6M": "6 months", "9M": "9 months", "1Y": "1 year"}
+TENOR_WEEKS = {"1W": 1, "2W": 2}
+TENOR_LABEL = {"ON": "ON (spot-next)", "1W": "1 week", "2W": "2 weeks", "1M": "1 month", "2M": "2 months", "3M": "3 months", "6M": "6 months", "9M": "9 months", "1Y": "1 year"}
 #: the forward deal spread (assumed, disclosed): the spot 0.2 pip plus 0.1 pip per month of tenor, against the user
 FWD_SPREAD_PIPS_PER_MONTH = Decimal("0.1")
 FWD_SPREAD_TEXT = "forward spread (assumed): 0.2 pip + 0.1 pip per month of tenor, against you"
@@ -243,7 +246,7 @@ def spot_date(services, pair: str, trade_date: date) -> date:
 
 
 def tenor_date(services, pair: str, tenor: str, trade_date: date) -> date:
-    """A tenor's value date from the spot date: ON = spot + 1 business day (spot-next); 1W = spot + 7 days, following;
+    """A tenor's value date from the spot date: ON = spot + 1 business day (spot-next); 1W / 2W = spot + 7 / 14 days, following;
     months = spot + n months, modified following, end-of-month rule (spot on its month's last business day -> the last
     business day of the target month).  US business days (NYSE calendar; the currencies' own holidays are not modelled)."""
     tenor = str(tenor or "").upper()
@@ -251,11 +254,11 @@ def tenor_date(services, pair: str, tenor: str, trade_date: date) -> date:
     sd = spot_date(services, pair, trade_date)
     if tenor == "ON":
         return cal.add_business_days(sd, 1)
-    if tenor == "1W":
-        return cal.roll_following(sd + timedelta(days=7))
+    if tenor in TENOR_WEEKS:
+        return cal.roll_following(sd + timedelta(days=7 * TENOR_WEEKS[tenor]))
     months = TENOR_MONTHS.get(tenor)
     if months is None:
-        raise RejectError("TENOR", f"tenor {tenor!r}: use one of {', '.join(TENORS)} or a value date")
+        raise RejectError("TENOR", f"tenor {tenor!r}: use one of {', '.join(TENORS)} or a value date", {"field": "tenor", "tenors": list(TENORS)})
     target = _add_months(sd, months)
     if sd == cal.month_end(sd):
         return cal.month_end(target)
@@ -266,8 +269,8 @@ def tenor_date(services, pair: str, tenor: str, trade_date: date) -> date:
 def tenor_months(tenor: Optional[str], days: int) -> Decimal:
     if tenor in TENOR_MONTHS:
         return Decimal(TENOR_MONTHS[tenor])
-    if tenor == "1W":
-        return Decimal("0.25")
+    if tenor in TENOR_WEEKS:
+        return Decimal("0.25") * TENOR_WEEKS[tenor]
     if tenor == "ON":
         return Decimal(0)
     return (Decimal(max(0, int(days))) / Decimal("30.4375")).quantize(Decimal("0.01"))
@@ -680,9 +683,19 @@ def _forward_value_date(services, pair: str, tenor, value_date, now: int) -> Tup
 
 
 # ---- forward rates (C17 forward_rate) ----------------------------------------------------------------------------------------
+def _today_of(services) -> Optional[date]:
+    clock = getattr(services, "clock", None)
+    try:
+        return ny_of(int(clock.epoch())).date() if clock is not None else None
+    except Exception:   # noqa: BLE001 - a stand-in clock: the age is unknown
+        return None
+
+
 def rate_for(services, ccy: str, days: int = 90) -> Tuple[Optional[Decimal], dict]:
     """``(percent, info)`` of the rate a currency's forward leg uses (module docstring FORWARDS); ``(None, info)`` with the
-    reason when no observation exists - never a default."""
+    reason when no observation exists - never a default.  P8B-01 / OTC-01: an observation older than its series allows
+    (``tables.rate_age``: a daily print at most 10 days, a monthly OECD average at most 62 days after its month) is refused the
+    same way, with its date and age - CHF's series ended 2024-03 - and every usable rate carries its age in ``age`` / ``label``."""
     ccy = _ccy(ccy)
     rates = getattr(services, "rates", None)
     sid = tables.POLICY_INDEX.get(ccy)
@@ -694,7 +707,13 @@ def rate_for(services, ccy: str, days: int = 90) -> Tuple[Optional[Decimal], dic
         fred = {}
     if sid is None:
         return None, dict(info, note=f"no free policy-rate series for {ccy} in this terminal: no forward price (spot only)")
+    today = _today_of(services)
     got = rates.latest(sid) if rates is not None else None
+    stale = None
+    if got is not None:
+        age = tables.rate_age(sid, got[0], today)
+        if age["stale"]:
+            stale, got = (got, age), None
     if got is None and ccy == "USD":
         curve = getattr(services, "curve", None)
         y = None
@@ -702,19 +721,31 @@ def rate_for(services, ccy: str, days: int = 90) -> Tuple[Optional[Decimal], dic
             y = curve.par_yield(Decimal(max(1, int(days))) / Decimal(365)) if curve is not None else None
         except Exception:   # noqa: BLE001
             y = None
-        if y is not None:
-            as_of = curve.as_of()
+        as_of = curve.as_of() if y is not None else None
+        cage = tables.rate_age("UST_PAR", as_of, today) if as_of is not None else None
+        if y is not None and not (cage or {}).get("stale"):
+            why = (f"SOFR's last print {stale[0][0].isoformat()} is {stale[1]['age_days']} days old" if stale else "SOFR not observed")
             return qprice(y), dict(info, series="UST_PAR", value_pct=str(qprice(y)), as_of=as_of.isoformat() if as_of else None,
-                                   source="US Treasury par curve (bill yield at the tenor; SOFR not observed)", limited=False,
-                                   label=f"US Treasury bill yield {qprice(y)} % (par curve {as_of.isoformat() if as_of else 'n/a'})")
+                                   source=f"US Treasury par curve (bill yield at the tenor; {why})", limited=False, age=cage,
+                                   label=f"US Treasury bill yield {qprice(y)} % (par curve {as_of.isoformat() if as_of else 'n/a'}"
+                                         + (f", {cage['text']}" if cage and cage.get("age_days") is not None else "") + ")")
+    if stale is not None:
+        (d0, v0), age = stale
+        what = (f"its last value is the {d0.strftime('%B %Y')} average ({qprice(v0)} %), {age['age_days']} days after that month ended"
+                if age["monthly"] else f"its last print is {qprice(v0)} % of {d0.isoformat()}, {age['age_days']} days old")
+        return None, dict(info, stale=True, value_pct=str(qprice(v0)), as_of=d0.isoformat(), age=age,
+                          note=(f"no current {ccy} rate: {sid} has stopped updating - {what}; a {'monthly average' if age['monthly'] else 'daily rate'} older than"
+                                f" {age['max_age_days']} days is never used, so there is no forward price for {ccy} (spot only)"))
     if got is None:
         why = "FRED unavailable (maintenance)" if fred.get("maintenance") else "not observed yet"
         return None, dict(info, note=f"{sid} ({ccy}) {why}: no forward price")
     d, v = got
     monthly = sid in tables.POLICY_INDEX_MONTHLY
     src = (rates.source(sid) if hasattr(rates, "source") else None) or "FRED"
-    return qprice(v), dict(info, value_pct=str(qprice(v)), as_of=d.isoformat(), source=src, limited=monthly,
-                           label=f"{sid} {qprice(v)} % ({'monthly proxy, LIMITED' if monthly else 'daily'}, as of {d.isoformat()})")
+    age = tables.rate_age(sid, d, today)
+    agetxt = f", {age['text']}" if age.get("age_days") is not None else ""
+    return qprice(v), dict(info, value_pct=str(qprice(v)), as_of=d.isoformat(), source=src, limited=monthly, age=age,
+                           label=f"{sid} {qprice(v)} % ({'monthly proxy, LIMITED' if monthly else 'daily'}, as of {d.isoformat()}{agetxt})")
 
 
 def forward_rate(services, pair: str, value_date, snapshot=None) -> Tuple[Optional[Decimal], dict]:
@@ -1012,6 +1043,17 @@ def forward_due_keys(conn, now: int) -> List[str]:
                         " WHERE d.kind='FORWARD' AND d.status='PENDING' AND d.entry_id=0 AND d.value_date<=? AND a.status='OPEN' AND l.status='OPEN'"
                         " ORDER BY d.value_date, d.deal_id", (cutoff.isoformat(),)).fetchall()
     return [r["deal_id"] for r in rows]
+
+
+def next_forward_due(conn, now_ts: int) -> Optional[Tuple[int, str]]:
+    """P8B-15: ``(epoch, ref)`` of the next FX_FORWARD_DUE work - 00:30 ET of the earliest value date of an FX-desk forward still unposted
+    (an overdue one is due now) - or None when none is pending (the prime broker's OTC FX forwards deliver through OTC_EXPIRY)."""
+    r = conn.execute("SELECT d.deal_id, d.value_date FROM fx_deals d JOIN accounts a ON a.account_id=d.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id"
+                     " WHERE d.kind='FORWARD' AND d.status='PENDING' AND d.entry_id=0 AND a.status='OPEN' AND l.status='OPEN'"
+                     " ORDER BY d.value_date, d.deal_id LIMIT 1").fetchone()
+    if r is None:
+        return None
+    return max(int(now_ts), epoch_of(date.fromisoformat(r["value_date"]), FWD_DUE_ET)), f"{r['deal_id']} value {r['value_date']}"
 
 
 def _forward_job(job_base):
@@ -1420,6 +1462,13 @@ def pairs_view(services, account_id: Optional[str] = None) -> dict:
     now = int(services.clock.epoch())
     snap = services.marks.snapshot()
     session = _session(services, now)
+    fwd_ok: Dict[str, bool] = {}
+
+    def has_rate(c: str) -> bool:
+        """P8B-01 / P8B-04: forwards in ``c`` need a rate that exists AND is current (``rate_for``), not only a series name."""
+        if c not in fwd_ok:
+            fwd_ok[c] = rate_for(services, c)[0] is not None
+        return fwd_ok[c]
     pos = {}
     if account_id:
         try:
@@ -1448,14 +1497,14 @@ def pairs_view(services, account_id: Optional[str] = None) -> dict:
                      "mid_quality": pm["quality"], "mid_quote_time": pm["quote_time"], "mid_source": pm["source"], "executable": pm["executable"],
                      "reason": pm["reason"], "bid": None if pm["mid"] is None else str(dealt_rate(pm["mid"], p, False)),
                      "ask": None if pm["mid"] is None else str(dealt_rate(pm["mid"], p, True)), "spot_date": spot_date(services, p, td).isoformat(),
-                     "position_ccy": pos_ccy, "position_c": prow.get("net_c"), "forwards": all(tables.POLICY_INDEX.get(c) for c in (base, quote_ccy))})
+                     "position_ccy": pos_ccy, "position_c": prow.get("net_c"), "forwards": all(has_rate(c) for c in (base, quote_ccy))})
     ccys = ["USD"] + sorted({c for i in insts for c in (i.instrument_id[:3], i.instrument_id[3:]) if c != "USD"} | {c for c in CCY_NAMES if c != "USD"},
                             key=lambda c: (CCY_ORDER.index(c) if c in CCY_ORDER else 99, c))
     currencies = []
     for c in ccys:
         leg = usd_leg(services, snap, c, session, now)
         currencies.append({"ccy": c, "name": CCY_NAMES.get(c, c), "pair": leg["pair"], "usd_rate": None if leg["rate"] is None else str(leg["rate"]),
-                           "quality": leg["quality"], "forwards": bool(tables.POLICY_INDEX.get(c)), "rate_series": tables.POLICY_INDEX.get(c),
+                           "quality": leg["quality"], "forwards": has_rate(c), "rate_series": tables.POLICY_INDEX.get(c),
                            "monthly_proxy": tables.POLICY_INDEX.get(c) in tables.POLICY_INDEX_MONTHLY})
     return {"pairs": rows, "currencies": currencies, "trade_date": td.isoformat(),
             "session": {"group": SESSION_GROUP, "open": session.open, "phase": session.phase, "next_open": session.next_open, "closes_at": session.closes_at,
@@ -1684,10 +1733,15 @@ def bind(rt) -> None:
     except ImportError:
         return
     add_product_job(_forward_job(Job), before="SETTLE_DUE")
+    try:
+        from .lifecycle_eod import add_next_due
+        add_next_due("FX_FORWARD_DUE", next_forward_due)          # P8B-15: GET /api/jobs shows when it next has work
+    except ImportError:
+        pass
 
 
 __all__ = ["spot_preview", "forward_preview", "quote", "pair_for", "pair_info", "pip_of", "deal_rate", "dealt_rate", "deal_amounts", "mid_usd_per_unit",
            "fit_base", "cross_ledger", "settle_deal", "due_deals", "fund_ccy", "conversion_plan", "convert_for", "forward_rate", "forward_grid", "forward_mtm",
            "forward_overlays", "post_forward", "venue_fee_c", "venue_fee_table", "positions_view", "pairs_view", "deals_view", "listings_view", "funding_check",
            "instrument_extra", "register_routes", "unsupported", "h_spot", "h_settle", "h_forward", "h_forward_due", "register", "bind",
-           "SESSION_GROUP", "SETTLE_DAYS", "TENORS", "tenor_date", "spot_date", "fx_trade_date", "rate_for", "usd_leg", "pair_mid"]
+           "SESSION_GROUP", "SETTLE_DAYS", "TENORS", "tenor_date", "spot_date", "fx_trade_date", "rate_for", "usd_leg", "pair_mid", "next_forward_due"]

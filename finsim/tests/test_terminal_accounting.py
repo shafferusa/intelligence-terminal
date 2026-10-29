@@ -319,5 +319,29 @@ class AccountingTests(unittest.TestCase):
         self.assertEqual(("T1:ALL", 1250000000, 1250000000, 0, 1250000000, 0, 0), (row["account_id"], row["nav_c"], row["capital_cum_c"], row["transfers_cum_c"], row["flows_day_c"], row["pnl_day_c"], row["partial"]))
 
 
+class FxForwardMarkTime(unittest.TestCase):
+    """1.0.4 leftover V104R2-BW-09 (P3): an FX-desk forward's mark carries the time of its EURUSD spot input, so a stale input shows its
+    own age; before, it carried the valuation snapshot's time and the chip read 'STALE 0s'."""
+
+    def test_the_forward_mark_time_is_its_spot_inputs(self):
+        from tests.terminal_helpers import FOREIGN_FX
+        from tests.test_terminal_fx import runtime as fx_runtime
+        tmp = tempfile.mkdtemp(prefix="fst-bw09-")
+        rt = fx_runtime(tmp)
+        try:
+            self.assertTrue(fund(rt, FOREIGN_FX, 200000000).ok)
+            r = execute(rt, "fx.forward", {"account_id": FOREIGN_FX, "buy_ccy": "EUR", "sell_ccy": "USD", "amount_c": 100000000, "amount_ccy": "EUR", "tenor": "3M"})
+            self.assertTrue(r.ok, r.body)
+            now = rt.clock.epoch()
+            rt.marks.set("EURUSD", "1.1238", "stale", quote_time=now - 3600)      # EURUSD's last print is an hour old; the valuation is now
+            p = [x for x in rt.accounting.positions(FOREIGN_FX) if x.kind == "FX_FORWARD"][0]
+            # the mark: (1.129143 - 1.129193) x 1,000,000 x DF 0.98999609 = -49.50 (test_terminal_fx), stale, dated by its input (now - 3,600 s)
+            self.assertEqual((-4950, "stale", now - 3600), (p.mv_c, p.mark.quality, p.mark.quote_time))
+            self.assertEqual(now, rt.marks.snapshot().as_of())                         # the snapshot's time is not the mark's
+        finally:
+            rt.close()
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     unittest.main()

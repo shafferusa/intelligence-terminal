@@ -11,6 +11,7 @@ import shutil
 import tempfile
 import threading
 import time
+import types
 import unittest
 
 from tests.terminal_helpers import _Log
@@ -284,6 +285,30 @@ class ServerTests(unittest.TestCase):
             rt.matcher.last_tick_ts = rt.clock.epoch()
             self.assertEqual(["matcher"], rt.supervisor.check()["recovered"])
         finally:
+            rt.close()
+
+    def test_supervisor_counts_the_quote_worker_progress_inside_a_long_tick(self):
+        """V104R2-BW-10: the quote worker's first tick after a start runs every startup slot (about a minute on the owner's book); its
+        last tick is then 100 s old while it is busy.  The supervisor and health count its progress inside the tick (last_progress_ts,
+        5 s ago here): not stalled.  With no progress for 50 s (more than 3 x 15 s) it is stalled - one WARN, as before."""
+        rt = build(self.tmp)
+        real = rt.worker
+        try:
+            now = int(rt.clock.epoch())
+            st = {"last_tick_ts": now - 100, "last_progress_ts": now - 5, "loop_errors": 0}
+            rt.worker = types.SimpleNamespace(ident=1, is_alive=lambda: True, stats=lambda: dict(st))
+            self.assertEqual([], rt.supervisor.check(now)["stalled"])
+            status, h, _ = rt.router.handle("GET", "/api/health")
+            self.assertEqual((200, False, now - 5), (status, h["workers"]["quotes"]["stalled"], h["workers"]["quotes"]["last_progress_ts"]))
+            st["last_progress_ts"] = now - 50
+            self.assertEqual(["quotes"], rt.supervisor.check(now)["stalled"])
+            with rt.db.reader() as conn:
+                rows = conn.execute("SELECT severity, code FROM attention WHERE code='WORKER_STALLED'").fetchall()
+            self.assertEqual([("WARN", "WORKER_STALLED")], [tuple(r) for r in rows])
+            status, h, _ = rt.router.handle("GET", "/api/health")
+            self.assertTrue(h["workers"]["quotes"]["stalled"])
+        finally:
+            rt.worker = real
             rt.close()
 
     # ---- offline guard --------------------------------------------------------------------------------------------------------

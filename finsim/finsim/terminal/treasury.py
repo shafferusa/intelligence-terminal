@@ -309,7 +309,13 @@ def check_transfer(ctx: TxContext, src: str, ccy: str, amount_c: int) -> int:
     # every pending receivable is cash that has not settled yet (a sale due tomorrow counts in 'available' after 17:00, never in settled cash)
     later = ctx.conn.execute("SELECT COALESCE(SUM(amount_c),0) AS n, MIN(due_date) AS d FROM settlements WHERE account_id=? AND currency=? AND status='PENDING'"
                              " AND amount_c > 0", (src, ccy)).fetchone()
-    parts = [f"settled cash {fmt_money(settled)}"]
+    # FINSIM1 P6 (C9b): ``settled`` above is net of the cash the accounting adjusters hold back (the counterparties' collateral, the Reg T
+    # margin cash): the sentence names the ledger's settled cash and each of them, so the refusal adds up
+    from .accounting import cash_adjustments
+    held = [a for a in cash_adjustments(ctx.conn, src, ccy, ctx.marks, master) if int(a.get("amount_c") or 0) > 0]
+    parts = [f"settled cash {fmt_money(settled + sum(int(a['amount_c']) for a in held))}"]
+    for a in held:
+        parts.append(f"less {a['label']} {fmt_money(int(a['amount_c']))}")
     if pay:
         parts.append(f"less payables {fmt_money(pay)}")
     if reserved:

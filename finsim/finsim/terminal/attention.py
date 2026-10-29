@@ -14,9 +14,15 @@ Conventions (unchanged)
   computes nothing.  "Today" is the accounting day (D-1 17:00 ET, D 17:00 ET], so a 17:10 collateral call still shows
   the next morning.  A missing optional module answers ``None`` (unavailable) with a note, never 0.
 - Served by ``GET /api/attention/summary?book=`` (api.py); the global strip keeps ``GET /api/attention``.
+- The Dashboard (``dashboard.py``, 1.0.6) passes its own mark snapshot (``snapshot=``), a risk report it already has
+  (``risk_report=``) or counts it already has (``counts={"warnings": n | None, "compliance": n | None, "notes": [...]}``), so one
+  answer reads one set of marks and never computes a report twice.  ``slow_counts`` counts the two figures that read the whole book
+  (risk warnings: the whole risk report; compliance notices: every rule of the book) exactly as the summary does; the Dashboard keeps
+  them per book and recounts them in the background.  A count given as None is unavailable (with its note), never 0.
 """
 from __future__ import annotations
 
+import inspect
 import json
 import re
 from datetime import timedelta
@@ -97,7 +103,7 @@ def _count(conn, sql: str, params=()) -> int:
     return int(conn.execute(sql, params).fetchone()[0])
 
 
-def attention_summary(services, scope: str = "ALL", check: bool = False) -> dict:
+def attention_summary(services, scope: str = "ALL", check: bool = False, *, snapshot=None, risk_report=None, counts: Optional[dict] = None) -> dict:
     """The "Requires your attention" strip (§17.9): integrity (ok / the failing checks, from the last recorded report —
     ``check=True`` runs the ledger-level set first), INTEGRITY_HOLD, open attention items by severity (+ the newest
     rows), risk warnings and compliance notices (``services.risk`` / ``services.compliance`` when loaded, else None),
@@ -105,7 +111,10 @@ def attention_summary(services, scope: str = "ALL", check: bool = False) -> dict
     ``otc_vm.delta_c < 0`` posted in the accounting day whose business date ``vm_date`` is the last business day before it or
     later - an as-of VM of an older business date posted today is not today's call, P8L-01), recall notices, working orders,
     pending settlements, provider pauses (the retired news providers never count).  Every number is a row count or a recorded
-    report; nothing here touches a mark."""
+    report; nothing here touches a mark itself.  ``snapshot`` (a mark snapshot) is handed to the risk report and the compliance
+    notices when their functions take one; ``risk_report`` (a ``risk.report`` result for this scope, the Dashboard's) gives the
+    warnings count without computing the report again; ``counts`` gives the ``warnings`` / ``compliance`` counts outright (a key that
+    is present is used as given; None = unavailable, with the caller's ``counts["notes"]`` saying why)."""
     acc = services.accounting
     db = services.db
     clock = services.clock
@@ -176,8 +185,16 @@ def attention_summary(services, scope: str = "ALL", check: bool = False) -> dict
     holds = acc.hold_state()
     held = [lid for lid in lids if lid in holds]
     hold = {"held": bool(held), "lifetimes": held, "since": {lid: holds[lid].get("since") for lid in held}, "failing": {lid: holds[lid].get("failing") for lid in held}}
-    warnings = _optional_count(services, "risk", ("warnings", "report"), scope, notes, "warnings")
-    compliance = _optional_count(services, "compliance", ("notices", "holdings"), scope, notes, "notices")
+    given = dict(counts or {})
+    notes.extend(str(n) for n in (given.get("notes") or []))
+    if "warnings" in given:
+        warnings = given["warnings"]
+    else:
+        warnings = _optional_count(services, "risk", ("warnings", "report"), scope, notes, "warnings", snapshot=snapshot, precomputed=risk_report)
+    if "compliance" in given:
+        compliance = given["compliance"]
+    else:
+        compliance = _optional_count(services, "compliance", ("notices", "holdings"), scope, notes, "notices", snapshot=snapshot)
     return {"scope": scope, "scope_kind": sc.kind, "lifetimes": lids, "accounts": accounts, "as_of": now, "accounting_day": aday.isoformat(), "window_start": day_start,
             "integrity": integrity, "hold": hold, "open": open_by, "attention_open": sum(open_by.values()), "items": items,
             "warnings": warnings, "compliance": compliance,
@@ -186,9 +203,32 @@ def attention_summary(services, scope: str = "ALL", check: bool = False) -> dict
             "providers": providers, "notes": notes}
 
 
-def _optional_count(services, module_attr: str, fn_names: Tuple[str, ...], scope: str, notes: List[str], list_attr: str) -> Optional[int]:
+def slow_counts(services, scope: str, snapshot=None) -> dict:
+    """The strip's two counts that read the whole book - risk warnings (``risk.warnings`` / ``risk.report``) and compliance notices
+    (``compliance.notices`` / ``compliance.holdings``) - counted exactly as ``attention_summary`` counts them, on ``snapshot`` when given:
+    ``{"warnings": n | None, "compliance": n | None, "notes": [...]}`` (None = unavailable, the note says why)."""
+    notes: List[str] = []
+    warnings = _optional_count(services, "risk", ("warnings", "report"), scope, notes, "warnings", snapshot=snapshot)
+    compliance = _optional_count(services, "compliance", ("notices", "holdings"), scope, notes, "notices", snapshot=snapshot)
+    return {"warnings": warnings, "compliance": compliance, "notes": notes}
+
+
+def _takes_snapshot(fn) -> bool:
+    """True when ``fn`` accepts a ``snapshot`` keyword (``risk.report``, ``compliance.holdings``); a stand-in without one is
+    called as before."""
+    try:
+        params = inspect.signature(fn).parameters
+    except (TypeError, ValueError):
+        return False
+    return "snapshot" in params or any(p.kind is inspect.Parameter.VAR_KEYWORD for p in params.values())
+
+
+def _optional_count(services, module_attr: str, fn_names: Tuple[str, ...], scope: str, notes: List[str], list_attr: str, snapshot=None,
+                    precomputed=None) -> Optional[int]:
     """Count from an optional module: ``risk.warnings(services, scope)`` / ``risk.report(services, scope).warnings`` or
-    ``compliance.notices(...)`` / ``compliance.holdings(...)``.  Absent module → None + a note (unavailable, never 0)."""
+    ``compliance.notices(...)`` / ``compliance.holdings(...)``.  Absent module → None + a note (unavailable, never 0).
+    ``snapshot`` is passed to a function that takes one; ``precomputed`` (that function's result, computed by the caller) is
+    counted instead of calling it again."""
     mod = getattr(services, module_attr, None)
     if mod is None:
         notes.append(f"{module_attr} module not loaded")
@@ -197,11 +237,14 @@ def _optional_count(services, module_attr: str, fn_names: Tuple[str, ...], scope
         fn = getattr(mod, name, None)
         if fn is None:
             continue
-        try:
-            res = fn(services, scope)
-        except Exception as e:   # noqa: BLE001 — the strip must still answer; the failure is named
-            notes.append(f"{module_attr}.{name} failed: {type(e).__name__}")
-            return None
+        if precomputed is not None:
+            res = precomputed
+        else:
+            try:
+                res = fn(services, scope, snapshot=snapshot) if snapshot is not None and _takes_snapshot(fn) else fn(services, scope)
+            except Exception as e:   # noqa: BLE001 — the strip must still answer; the failure is named
+                notes.append(f"{module_attr}.{name} failed: {type(e).__name__}")
+                return None
         if isinstance(res, (list, tuple)):
             if module_attr == "compliance":
                 # SHELL-11: only notices count (info / notice / warn / breach); 'ok' and 'n/a' rows ("no short positions") never do
@@ -242,5 +285,5 @@ def _provider_pauses(services, conn, now: int) -> dict:
     return {"down": down, "refused_ua": refused, "paused": len(down)}
 
 
-__all__ = ["attention_summary", "attention_lifetime", "attention_book", "attention_in_books", "retired_provider", "RETIRED_PROVIDERS",
+__all__ = ["attention_summary", "slow_counts", "attention_lifetime", "attention_book", "attention_in_books", "retired_provider", "RETIRED_PROVIDERS",
            "OPEN_ORDER_STATUSES", "COMPLIANCE_QUIET", "SEVERITIES", "ATTENTION_ITEMS", "PROBLEMS_SHOWN"]

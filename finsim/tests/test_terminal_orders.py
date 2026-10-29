@@ -364,6 +364,11 @@ class OrdersScenarioTests(unittest.TestCase):
                                    decision_note="")
         frozen["funding"].update(confirm_rules=[], fx_conversion=None, fx_convert=False, hedge_legs=None, order_need="1697525.00", threshold=None)
         frozen["quote"]["note"] = ""
+        # FinSim1 1.0.6 (OMS-11), on purpose: the TIF choice in words (DAY / GTC / GTD + date / next session) and the extended-hours
+        # disclosure (C6); a DAY order has no GTD date and no next-session activation
+        frozen.update(tif_choice="DAY", gtd_date=None, tif_label="DAY")
+        frozen["execution"].update(tif_choice="DAY", activates_at=None, gtd_date=None,
+                                   extended_hours="not simulated - an order entered outside the regular session rests until the regular open")
         self.assertEqual(frozen, got)
         # gross 5,000 x 339.50 = 1,697,500.00; fee 5,000 x 0.005 = 25.00; need 1,697,525.00; available 1,000,000.00 -> shortfall / sweep 697,525.00
         self.assertEqual(("1697500.00", "25.00", "697525.00", "697525.00"), (pv["economics"]["gross"], pv["economics"]["fee"], pv["funding"]["shortfall"], pv["funding"]["sweep_in"]))
