@@ -449,6 +449,15 @@
       "error_source": "Shell positional-parameter expansion ate '$11' when the meta/index text passed through a double-quoted shell string (same failure as 2026-10-21 am)",
       "conclusions_changed": false,
       "note": "Surfaced in the 2026-10-28 pm colophon; index.json am entry summary/headline repaired (page left as published; page body was correct)."
+    },
+    {
+      "found": "2026-10-29",
+      "report": "reports/2026/10/2026-10-28-pm.html",
+      "original": "Tomorrow table: '8:15 AM ECB decision; Lagarde 8:45 AM'",
+      "corrected": "ECB decision 9:15 AM ET, press conference 9:45 AM ET (14:15 CET; Europe left DST Oct 25, US leaves Nov 1)",
+      "error_source": "Applied the usual 6-hour CET-ET offset during the one-week DST mismatch",
+      "conclusions_changed": false,
+      "note": "Surfaced in the 2026-10-29 am colophon and Brief."
     }
   ]
 }

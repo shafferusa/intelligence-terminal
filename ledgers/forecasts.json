@@ -6100,6 +6100,46 @@
    "probability": "80-92%",
    "basis": "After-hours ~$294.5 (-9%) at 4:40 PM on EPS miss and negative FCF; overnight reversals of that size are uncommon",
    "status": "open"
+  },
+  {
+   "id": "2026-10-29-am-1",
+   "date": "2026-10-29",
+   "slot": "am",
+   "forecast": "Nasdaq Composite closes Oct 29 below its Oct 28 close of 26,549.85",
+   "horizon": "2026-10-29",
+   "probability": "60-75%",
+   "basis": "NQ futures ~-1% at 06:35 ET; GOOGL indicated ~-10%, NOW ~-19%; offset risk from GDP/PCE and pre-Amazon positioning",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-29-am-2",
+   "date": "2026-10-29",
+   "slot": "am",
+   "forecast": "BEA September core PCE price index rises 0.3% or more m/m (rounded, as published Oct 29)",
+   "horizon": "2026-10-29",
+   "probability": "55-70%",
+   "basis": "Consensus +0.3%; Sept core CPI +0.33% m/m (FRED)",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-29-am-3",
+   "date": "2026-10-29",
+   "slot": "am",
+   "forecast": "The $44B 7-year note auction on Oct 29 tails (high yield above the 1 PM when-issued yield)",
+   "horizon": "2026-10-29",
+   "probability": "45-60%",
+   "basis": "Sept 7-year cleared 5.085% with 2.42 bid-to-cover (weak); long-end selloff this week; offset by yields near cycle highs",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-29-am-4",
+   "date": "2026-10-29",
+   "slot": "am",
+   "forecast": "The ECB leaves its deposit facility rate at 2.50% on Oct 29",
+   "horizon": "2026-10-29",
+   "probability": "85-95%",
+   "basis": "Unanimous previews (Reuters, FXStreet) expect a hold after two hikes since June",
+   "status": "open"
   }
  ]
 }

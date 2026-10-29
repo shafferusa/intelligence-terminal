@@ -1,12 +1,132 @@
 {
  "stories": [
   {
-   "id": "doj-california-ballots",
-   "headline": "Judge Carter signals rejection of DOJ bid to set aside ~20k CA mail ballots; special master; written order pending",
+   "id": "pgh-unearned-income-tax",
+   "headline": "Pittsburgh Councilwoman Warwick proposes 2% unearned-income tax (~$51M/yr); mayor questions legality; introduced only",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Local",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "alaska-senate-spoiler",
+   "headline": "NYT reports Peltola/DSCC-backed project recruited spoiler candidates incl. a second 'Dan Sullivan'; allegations, no charge",
+   "status": "New",
+   "verification": "Single-reliable-source",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "US elections",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "spain-train-crash",
+   "headline": "High-speed train collision near Urda, Toledo: at least 64 dead (68 in later reports)",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "World: disaster",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "vertiv-ai-suppliers",
+   "headline": "Vertiv +16.5% Oct 28 on orders >2x, 2026 sales guide raised $650M; Samsung OP KRW 107.4T, shares -4.1%",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "AI supply chain",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ecb-boj-week",
+   "headline": "ECB 9:15 AM ET Oct 29 (hold 2.50% exp); BoJ Oct 30; yen ~158; Australia Sept CPI 4.3%",
    "status": "Developing",
    "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Global central banks",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "oil-iran-vance-letter",
+   "headline": "Dec Brent ~$114 (-1%) after WSJ report of Vance letter offering Iran direct talks; Dec Brent expires Oct 30; OPEC+ Nov 1; Shell record refining, $5B buyback",
+   "status": "Materially changed",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Energy/geopolitics",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "caterpillar-q3-2026",
+   "headline": "Caterpillar Q3 rev $20.7B +17%, adj EPS $7.20 beat; shares indicated ~-9% premarket with no reported reason",
+   "status": "New",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Corporate: industrial bellwether; move unexplained",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "software-outlooks-now-ftnt",
+   "headline": "ServiceNow ~-19% (cRPO guide 18.5% cc) and Fortinet ~-25% (gross margin) premarket; Marvell in talks for Lumentum (Bloomberg)",
+   "status": "New",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Corporate: software guidance; M&A single-reported",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "gdp-pce-oct29",
+   "headline": "Q3 GDP advance (3.2% exp) and Sept PCE (3.6% y/y, core +0.3% m/m) at 8:30 AM Oct 29",
+   "status": "Developing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Macro: first data since FOMC",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "ai-capex-funding-split",
+   "headline": "Alphabet ~-10% premarket (FCF -$9.1B, capex $51.4B) vs Microsoft ~+3% (Azure +48%, guide 49-50%); market rewarding self-funded AI spend",
+   "status": "Materially changed",
+   "verification": "Confirmed-primary",
+   "first_seen": "2026-10-29-am",
+   "last_updated": "2026-10-29-am",
+   "one_line": null,
+   "sources": [],
+   "score_rationale": "Markets: megacap AI funding; lead",
+   "keep_on_watchlist": true
+  },
+  {
+   "id": "doj-california-ballots",
+   "headline": "Judge Carter denied DOJ TRO to segregate ~20k CA mail ballots (Oct 28 written order); DOJ noticed appeal to Ninth Circuit",
+   "status": "Materially changed",
+   "verification": "Confirmed-multiple",
    "first_seen": "2026-10-28-pm",
-   "last_updated": "2026-10-28-pm",
+   "last_updated": "2026-10-29-am",
    "one_line": null,
    "sources": [],
    "score_rationale": "US elections",
@@ -599,144 +719,7 @@
    "sources": [],
    "score_rationale": "Top Story / section item 2026-10-20 am",
    "keep_on_watchlist": true
-  },
-  {
-   "id": "ge-q3-2026",
-   "headline": "GE Aerospace Q3 (8-K): orders 19.0B +49%, adj EPS 2.25 vs ~2.00; FY adj EPS guide 8.00-8.10 from 7.65-7.85; op profit 10.9-11.0B; FCF 9.1-9.4B",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-20-am",
-   "last_updated": "2026-10-20-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story / section item 2026-10-20 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "yields-20y-auction-oct21",
-   "headline": "20Y reopening $13B at 5.469%, BTC 2.73 (TreasuryDirect); ~0.9bp tail, indirects 58.2% (investingLive); 10Y par 5.13 (+1), 20Y 5.47 unch",
-   "status": "Materially changed",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-20-am",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "france-unrest-oat",
-   "headline": "France riots: ~500k marchers, ~2,400 arrests (Interior Min via FP); curfews from Mon; OAT worst day in ~a month, 10Y OAT ~4.84% (single); Stoxx 600 -0.8% Mon, -0.6% Tue am",
-   "status": "New",
-   "verification": "Confirmed-multiple (unrest); single (OAT level)",
-   "first_seen": "2026-10-20-am",
-   "last_updated": "2026-10-20-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story / section item 2026-10-20 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "anthropic-public-benefit-fund",
-   "headline": "Anthropic 5% of shares to Public Benefit Fund (LLC; needs stockholder approval; up to ~20%); IPO as soon as Nov; FTC CIDs (Axios, single)",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-20-am",
-   "last_updated": "2026-10-20-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story / section item 2026-10-20 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "chip-rebound-oct19",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "Materially changed",
-   "headline": "SMH +1.6% ends 9-day slide; Nasdaq +1.11%, S&P +0.41%, RSP -0.32%; AMZN +5% (MS top pick), INTC +2.4% (JPM upgrade); CRWV faded to -0.4%",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": [
-    "Yahoo",
-    "Twelve Data",
-    "CNBC",
-    "Reuters"
-   ],
-   "score_rationale": "Lead: market-moving, follow-up to AI-credit selloff",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "yields-515-oct19",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "10Y par 5.15% (+6bp), 30Y 5.48%, 2Y 4.77%; bear steepening, utilities -2.0%; bills 13w 4.095% btc 2.77, 26w 4.220% btc 2.84; 20Y reopening Wed",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": [
-    "Treasury",
-    "TreasuryDirect"
-   ],
-   "score_rationale": "Rates are the macro thread",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "nahb-oct-29",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "NAHB HMI Oct 29 (from 32, cons 31), lowest since Jun 2012; 43% cutting prices",
-   "one_line": null,
-   "verification": "Confirmed-multiple",
-   "sources": [
-    "NAHB via RISMedia/Inman"
-   ],
-   "score_rationale": "Housing transmission of rates",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "clf-q3-steel",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "CLF +16.3% (adj EPS 0.28, EBITDA $612M, Q4 guide ~$715M, WFC upgrade); STLD AMC EPS 5.26 vs ~5.48 miss",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": [
-    "CLF 8-K",
-    "STLD release"
-   ],
-   "score_rationale": "Earnings with big move",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "regional-banks-oct19",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "ZION 1.78 (NCO 0.02%), WAL 2.45, BOKF 2.64, WRB op 1.17; big banks -1.6 to -2.6% despite clean credit",
-   "one_line": null,
-   "verification": "Confirmed-primary",
-   "sources": [
-    "8-Ks"
-   ],
-   "score_rationale": "Bank earnings season",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "putin-trilateral-summit",
-   "first_seen": "2026-10-19-pm",
-   "last_updated": "2026-10-19-pm",
-   "status": "New",
-   "headline": "WSJ: Putin proposes Trump-Putin-Xi Ukraine summit (APEC Shenzhen Nov 18-19) without Zelensky; Trump hasn't agreed",
-   "one_line": null,
-   "verification": "Single-reliable-source",
-   "sources": [
-    "WSJ via CNBC"
-   ],
-   "score_rationale": "Diplomacy",
-   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-10-28T20:46:47Z"
+ "updated": "2026-10-29T10:49:29Z"
 }
