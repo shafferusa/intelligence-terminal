@@ -1,0 +1,27 @@
+{
+"taxonomy": "us-gaap",
+"tag": "Assets",
+"ccp": "CY2026Q2I",
+"uom": "USD",
+"label": "Assets",
+"description": "synthetic fixture (Assets)",
+"pts": 2,
+"data": [
+{
+"accn": "0000320193-26-000077",
+"cik": 320193,
+"entityName": "Apple Inc.",
+"loc": "US-NY",
+"end": "2026-06-27",
+"val": 331495000000
+},
+{
+"accn": "0001045609-26-000080",
+"cik": 1045609,
+"entityName": "Prologis, Inc.",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 95000000000
+}
+]
+}

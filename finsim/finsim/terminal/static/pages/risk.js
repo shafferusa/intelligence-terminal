@@ -225,6 +225,8 @@
       S.cdxScen = gridIn(S.cdx, { rowKey: function (r) { return r.name; }, empty: 'none', columns: [{ key: 'name', label: 'spread scenario', cls: 'l' }, money('pnl', 'P&L')] });
       S.cdxNote = T.h('div', { class: 'pnote' }); S.cdx.appendChild(S.cdxNote);
       body.appendChild(S.cdx);
+      S.cdsn = T.components.cdsnames && T.components.cdsnames.riskPanel ? T.components.cdsnames.riskPanel(body, { panel: panel, gridIn: gridIn, money: money, pct: pct,
+        nameOf: function (r) { return nameOf(r, names); } }) : null;              /* CDS-107: the single-name CDS block (risk.report single_name_cds) */
       /* counterparties */
       var pcp = panel('counterparties', 'Exposure by counterparty', 'per book; institutions on assumed, editable terms');
       S.cp = gridIn(pcp, { rowKey: function (r) { return (r.lifetime_id || '') + ':' + (r.counterparty_id || r.name); }, empty: 'no counterparty exposure', columns: [
@@ -337,6 +339,7 @@
         S.cdxScen.update(cd.scenarios || [], { empty: 'none' });
         S.cdxNote.textContent = cd.note || '';
       }
+      if (S.cdsn && S.cdsn.update) { S.cdsn.update(r.single_name_cds || null, names); }   /* CDS-107: hidden when the book holds none */
       var cp = r.counterparties || {};
       S.cpTotals = cp.totals || null;
       S.cp.update(cp.rows || [], { empty: cp.available === false ? (cp.note || 'the counterparty directory is not loaded') : 'no counterparty exposure' });

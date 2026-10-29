@@ -80,6 +80,8 @@ PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP
             "prime": "WP-07", "lifecycle": "WP-08", "risk": "WP-09", "compliance": "WP-09", "bonds": "WP-10", "swaps": "WP-17", "dividends": "WP-18",
             "private": "WP-19", "performance": "WP-20", "private_credit": "WP-21", "lifetimes": "WP-23", "strategies": "WP-24",
             "glossary": "WP-25", "swaps_trs": "WP-26", "otc_options": "B2-P12", "counterparties": "B2-P08", "treasuries": "B2-P07",
+            # CDS-107 (CDS_SINGLE_NAME_PLAN, release 1.0.7): the single-name CDS modules
+            "credit_entities": "CDS-B2", "cds_model": "CDS-B3", "swaps_cds_names": "CDS-B1",
             # FINSIM1_PLAN C2: the optional modules of the FinSim1 completion build (a module not in the tree stays "missing")
             "dashboard": "F1-P1", "blotters": "F1-P2", "navhistory": "F1-P3", "collateral": "F1-P6", "importer": "F1-P5"}
 
@@ -88,6 +90,7 @@ PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP
 PLANNED_STATIC = ("pages/markets_debt.js", "components/bondticket.js", "pages/markets_fx.js", "components/fxdesk.js", "pages/markets_credit.js",
                   "components/creditdesk.js", "pages/markets_otc.js", "components/otcticket.js",
                   "components/cdsticket.js",
+                  "components/cdsnames.js",                    # CDS-107: the single-name CDS desk (stubbed with a 200 until it lands)
                   # FINSIM1_PLAN C1: the pages of the new navigation (Pending / Completed Trades, Accounts, Cash & Collateral,
                   # Derivatives) and the import panel; each route shows NOT YET BUILT until its file lands
                   "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",

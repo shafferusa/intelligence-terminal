@@ -1,0 +1,27 @@
+{
+"taxonomy": "us-gaap",
+"tag": "LongTermDebt",
+"ccp": "CY2026Q3I",
+"uom": "USD",
+"label": "LongTermDebt",
+"description": "synthetic fixture (LongTermDebt)",
+"pts": 2,
+"data": [
+{
+"accn": "0000900005-26-000013",
+"cik": 900005,
+"entityName": "TEXAS LISTED CO",
+"loc": "US-NY",
+"end": "2026-09-30",
+"val": 250000000
+},
+{
+"accn": "0000900015-26-000031",
+"cik": 900015,
+"entityName": "PITCO",
+"loc": "US-NY",
+"end": "2026-09-30",
+"val": 650000000
+}
+]
+}

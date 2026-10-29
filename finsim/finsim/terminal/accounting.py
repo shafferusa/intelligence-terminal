@@ -93,7 +93,8 @@ CLASS_OF_KIND = {"EQUITY": "securities", "ETF": "securities", "ADR": "securities
 ASSET_CLASS_OF_KIND = {"EQUITY": "Equity", "ADR": "Equity", "REIT": "Equity", "PREFERRED": "Equity", "ETF": "ETF", "BOND": "Bond", "OPTION": "Option",
                        "FUTURE": "Future", "FX": "FX", "FX_FORWARD": "FX forward", "PRIVATE": "Private equity", "PRIVATE_LOAN": "Private credit"}
 OTC_ASSET_CLASS = {"TRS": "OTC TRS", "IRS": "OTC IRS", "CDX": "OTC CDX", "XCCY": "OTC cross-currency swap", "EQ_OPTION": "OTC option", "FX_OPTION": "OTC option",
-                   "EQ_FORWARD": "OTC forward", "FX_FORWARD": "OTC forward"}
+                   "EQ_FORWARD": "OTC forward", "FX_FORWARD": "OTC forward",
+                   "CDS": "OTC CDS"}                                     # CDS-107: single-name CDS
 #: PORTFOLIO-04: who stands on the other side of a listed position (simulated executions; the clearing house is named, never a real fill)
 CLEARING_OF_KIND = {"OPTION": "exchange-cleared (OCC)", "FUTURE": "exchange-cleared (CME)", "EQUITY": "exchange-cleared (NSCC)", "ADR": "exchange-cleared (NSCC)",
                     "REIT": "exchange-cleared (NSCC)", "PREFERRED": "exchange-cleared (NSCC)", "ETF": "exchange-cleared (NSCC)", "BOND": "dealer market (simulated dealer)",

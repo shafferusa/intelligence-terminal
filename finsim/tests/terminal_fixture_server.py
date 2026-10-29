@@ -65,6 +65,7 @@ OPTIONAL_STATIC = {"components/ticket.js", "components/preview.js", "components/
                    "pages/markets_credit.js", "components/creditdesk.js",        # P08 Credit Instruments
                    "pages/markets_otc.js", "components/otcticket.js",            # P12 PB OTC options / forwards
                    "components/cdsticket.js",                                    # CDX (CDS index) ticket
+                   "components/cdsnames.js",                                     # single-name CDS desk (CDS-107)
                    # FINSIM1_PLAN C1: the pages of the new navigation and the import panel (NOT YET BUILT until their packages land)
                    "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
                    "components/imports.js"}

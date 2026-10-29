@@ -122,7 +122,8 @@ FINANCING_EVENTS = {"BORROW_OPENED": ("BORROW", None), "BORROW_RETURNED": ("RETU
                     "REPO_CLOSED": ("CLOSE", "closed"), "LOAN_DRAWN": ("DRAW", None), "LOAN_REPAID": ("REPAY", "repaid"),
                     "PC_COMMITTED": ("COMMIT AND FUND", None), "PC_REPAID": ("REPAYMENT", "repaid"), "PC_PAID": ("REPAYMENT AT MATURITY", "repaid")}
 OPENING_EVENTS = ("BORROW_OPENED", "SECURITIES_LENT", "REPO_OPENED", "LOAN_DRAWN", "PC_COMMITTED")
-OTC_EVENTS = {"OTC_TERMINATED": "terminated", "SWAP_MATURED": "matured", "OTC_EXPIRED": "matured", "CDX_CREDIT_EVENT": "credit event"}
+OTC_EVENTS = {"OTC_TERMINATED": "terminated", "SWAP_MATURED": "matured", "OTC_EXPIRED": "matured", "CDX_CREDIT_EVENT": "credit event",
+              "CDS_CREDIT_EVENT": "credit event"}                   # CDS-107: a single-name credit event (the contract closes)
 #: the CSV columns, in order: (header, row key, how) - how: "c" money cents, "ts" New York time, else the value as is
 CSV_COLUMNS = (("execution_id", "execution_id", ""), ("parent", "parent_id", ""), ("account_id", "account_id", ""), ("account", "account_name", ""),
                ("book", "book", ""), ("instrument_id", "instrument_id", ""), ("instrument", "symbol", ""), ("asset_class", "asset_class", ""),
@@ -628,6 +629,14 @@ def _otc_describe(kind: str, terms: dict, row) -> Tuple[str, str, Optional[int],
         side = str(terms.get("side") or ("SELL_PROTECTION" if terms.get("receiver") else "BUY_PROTECTION")).upper()
         spread = terms.get("dealt_spread_bp") or terms.get("deal_spread_bp")
         return (f"{name}{' S' + str(series) if series else ''} {tenor}", side.replace("_", " "), None, None if spread is None else str(spread), "spread bp")
+    if k == "CDS":                                   # CDS-107: "ORCL 5Y CDS", BUY PROTECTION, the dealt spread in bp
+        ticker = terms.get("ticker") or terms.get("underlying_id") or "CDS"
+        tenor = terms.get("tenor_years")
+        side = str(terms.get("side") or ("SELL_PROTECTION" if terms.get("receiver") else "BUY_PROTECTION")).upper()
+        spread = terms.get("deal_spread_bp")
+        if spread is None and isinstance(terms.get("quoted"), dict):
+            spread = terms["quoted"].get("dealt_spread_bp")
+        return (f"{ticker} {tenor if tenor is not None else '?'}Y CDS", side.replace("_", " "), None, None if spread is None else str(spread), "spread bp")
     if k == "IRS":
         pay = bool(terms.get("pay_fixed"))
         tenor = terms.get("tenor_months")
@@ -698,7 +707,7 @@ def _otc_rows(services, conn: sqlite3.Connection, accts: Dict[str, dict], cache:
                     "note": f"initial margin {from_c(int(r['im_c'] or 0))}; matures {r['maturity_date']}"})
         out.append(row)
     for e in conn.execute(f"SELECT e.id, e.command_id, e.ts, e.type, e.account_id, e.ref_id, e.payload_json, c.actor FROM events e"
-                          f" LEFT JOIN commands c ON c.id=e.command_id WHERE e.type IN ('OTC_TERMINATED','SWAP_MATURED','OTC_EXPIRED','CDX_CREDIT_EVENT')"
+                          f" LEFT JOIN commands c ON c.id=e.command_id WHERE e.type IN ('OTC_TERMINATED','SWAP_MATURED','OTC_EXPIRED','CDX_CREDIT_EVENT','CDS_CREDIT_EVENT')"   # CDS-107
                           f" AND e.ref_type='otc'"
                           f" AND e.account_id IN ({q}) ORDER BY e.id", ids).fetchall():
         r = contracts.get(e["ref_id"])

@@ -1,0 +1,139 @@
+{
+"cik": 19617,
+"entityName": "JPMORGAN CHASE & CO",
+"facts": {
+"dei": {
+"EntityCommonStockSharesOutstanding": {
+"label": "EntityCommonStockSharesOutstanding",
+"description": "synthetic fixture",
+"units": {
+"shares": [
+{
+"end": "2026-07-25",
+"val": 2750000000,
+"accn": "0000019617-26-000140",
+"fy": 2026,
+"fp": "Q2",
+"form": "10-Q",
+"filed": "2026-08-02"
+},
+{
+"end": "2026-10-24",
+"val": 2735000000,
+"accn": "0000019617-26-000190",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+}
+},
+"us-gaap": {
+"LongTermDebt": {
+"label": "LongTermDebt",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2014-12-31",
+"val": 276836000000,
+"accn": "0000019617-15-000272",
+"fy": 2014,
+"fp": "FY",
+"form": "10-K",
+"filed": "2015-02-24"
+}
+]
+}
+},
+"LongTermDebtNoncurrent": {
+"label": "LongTermDebtNoncurrent",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2026-06-30",
+"val": 420000000000,
+"accn": "0000019617-26-000140",
+"fy": 2026,
+"fp": "Q2",
+"form": "10-Q",
+"filed": "2026-08-02"
+},
+{
+"end": "2026-09-30",
+"val": 431000000000,
+"accn": "0000019617-26-000190",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+},
+"ShortTermBorrowings": {
+"label": "ShortTermBorrowings",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2026-09-30",
+"val": 52000000000,
+"accn": "0000019617-26-000190",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+},
+{
+"end": "2026-09-30",
+"val": 51000000000,
+"accn": "0000019617-26-000201",
+"fy": 2026,
+"fp": "Q3",
+"form": "8-K",
+"filed": "2026-10-29"
+}
+]
+}
+},
+"Deposits": {
+"label": "Deposits",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2026-09-30",
+"val": 2450000000000,
+"accn": "0000019617-26-000190",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+},
+"Liabilities": {
+"label": "Liabilities",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2026-09-30",
+"val": 3950000000000,
+"accn": "0000019617-26-000190",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+}
+}
+}
+}

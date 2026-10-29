@@ -3,6 +3,90 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.7 (built 2026-10-29; single-name CDS on every prime broker)
+
+**Single-name CDS**
+
+- New on every prime broker's OTC tab: single-name credit default swaps on US-listed companies (contracts CDS-000001 ...). You buy or sell protection on one company's senior unsecured debt (bankruptcy and failure to pay; no restructuring) for 1, 2, 3, 4, 5, 7 or 10 years on the standard semi-annual roll. The coupon is 100 or 500 bp, with an upfront and the accrued rebate settling three business days later. Coupons are quarterly, variation margin is daily, and you can terminate at any time.
+- Every single-name spread is a MODEL (the equity-implied CreditGrades spread plus the ICE BofA AAA OAS floor) and has not been validated against traded levels. A first deal on a name in a prime-broker account needs one of two things: your negotiated mid, which is kept as a basis to the model so the mark keeps moving with the model's inputs, or your confirmation to deal at the MODEL. Without one, the preview shows every number but cannot be booked. A name the model shows as distressed needs a negotiated mid.
+- Before you save a dealing level or clear it, the dialog shows what the change does to every open contract on that name in the account, and the change is recorded.
+- The dealer deals at the mid plus or minus a half-spread of 2 to 40 bp, set by the rating-like bucket of the mid and multiplied by the prime broker's OTC spread multiplier. The initial margin is 4 % to 30 % of the notional by the same tier and broker; both are assumed and editable on the desk. An accepted quote keeps its spread, coupon, maturity and tier.
+- A credit event is simulated only when you enter one (bankruptcy or failure to pay, at the recovery you enter). The protection, less the accrued premium, settles the next business day and the contract closes.
+- Risk shows CS01 and jump to default per contract and per company, a warning when one company's default would cost more than 10 % of NAV, spread scenarios, and share-price scenarios through the model.
+- Settings > Unsupported lists what single-name CDS do not cover: dealer quotes, traded prints, reference obligations, restructuring clauses and real credit events. The CDX line no longer mentions single-name CDS.
+
+**The desk**
+
+- New sub-tab Single-name CDS on every prime broker's OTC tab, beside Credit (CDX). Its header says the spread is a MODEL (equity-implied CreditGrades plus the ICE BofA AAA OAS floor, not a dealer quote). It shows:
+  - the FRED rating ladder with its date and the floor's age;
+  - how many reference entities SEC EDGAR offers and when the list was refreshed (the first run says it is loading, about 2-3 minutes);
+  - the broker's IM % and dealer half-spread for each spread tier.
+- Search by ticker or company name, or browse the offered companies 50 a page, sorted by ticker, name or debt. Filters: non-financial, financial, REIT or your contracts. Each row shows:
+  - the reported debt (the exact amount and its parts in the hover);
+  - the balance-sheet date (amber when 6 to 15 months old);
+  - the financial / REIT flag and where it comes from (filing tags until the SIC code is checked, 'known so far');
+  - the 5-year MODEL spread once computed in this session;
+  - why a name is not offered, in words.
+- The ticket: tenor 1, 2, 3, 4, 5, 7 or 10 years with its maturity date, buy or sell protection, notional, and the coupon (100 or 500 bp). By default the coupon follows the MODEL spread's bucket, and your negotiated mid never moves it. The first preview of a name fetches its SEC filings and 1,000 daily closes and asks again by itself.
+- The preview starts with one plain sentence of what the trade does. It then shows:
+  - the MODEL spread as raw CreditGrades plus the AAA floor, with every input, its date and source (the model's intermediates behind 'show the model');
+  - your dealing level, the negotiated basis, the mid and the dealt spread;
+  - the upfront in USD and % with the price, the accrued rebate, the initial payment and its T+3 date, and the coupon schedule;
+  - value at mid, cost of dealing, CS01, rates DV01, jump to default, credit exposure, IM, funding, variation margin and the assumed terms.
+- No deal on the bare model. Until you set your negotiated mid (Negotiated mid ...) or confirm dealing at the MODEL (Deal at the MODEL ...) for a company in that account, the preview shows every number but Request quote stays off and says why. A distressed company needs your negotiated mid.
+- Both level dialogs show, before you save:
+  - every open contract on the company with its value now, its value at the new mid and the change, and the total;
+  - the tier, IM % and half-spread before and after.
+- Request quote asks the prime broker's simulated dealer for a firm quote (spread, coupon, maturity and tier fixed when it quotes); accept or decline it under Quote requests.
+- Assumptions edits each tier's IM % and half-spread (assumed); later quotes use them, and past postings stay.
+
+
+- Derivatives: a single-name CDS row shows its dealt spread against the MODEL mid now and its CS01.
+  - Simulate credit event ... closes the contract: bankruptcy or failure to pay, at the recovery you enter, only when you enter it.
+  - The drawer shows the company, the MODEL now with its inputs, CS01, jump to default and the credit-event record.
+- Risk: a Single-name CDS panel, shown when the book holds one:
+  - each contract's mid, bucket, CS01, jump to default and value;
+  - per company the gross and net, jump to default and its share of NAV, CS01, your dealing level and the -30 / +30 / +50 % equity shocks;
+  - spread and equity scenarios and the default of the largest jump-to-default name.
+- Portfolio footer: single-name CDS credit long / short. Positions: buy protection / sell protection. Cash: CDS coupon, and a CDS- contract opens the OTC tab.
+- Nothing changes for your CDX contracts or any other position.
+
+**The spread model (MODEL, not validated)**
+
+- Single-name CDS spreads are a MODEL, labelled as one everywhere, and not validated against traded levels. The model is the equity-implied CreditGrades spread (RiskMetrics 2002: L-bar 0.5, lambda 0.3, recovery 40 %) on the share price, the 1000-day realised volatility of Yahoo daily closes and SEC-reported debt per share, plus the ICE BofA AAA corporate OAS from FRED as a floor. A rating-like bucket comes from the FRED ladder of the same date; it is not a credit rating.
+- Distressed names (model survival now under 95 %, or over 2,000 bp) are computed by the integral form of the same spread (Simpson's rule, 2,000 steps). The closed form, which overflows or cancels near the barrier, is never used there. Every refusal says why in words.
+- Volatility rows and split events are stored per session, so a variation margin of a past date uses that date's inputs, also after a restart. A live price needs this session's split check; a missing input is fetched in the background and the ticket retries by itself.
+- New route GET /api/otc/cds/model: a name's MODEL spread with every input, its date and source (202 while its inputs are fetched). New background jobs 'Single-name CDS inputs': the on-demand fetch queue every 5 s, and the open contracts' equities from 16:45 ET.
+
+**Reference entities**
+
+- Single-name CDS reference entities from SEC EDGAR (credit_entities.py). The list covers every company listed on NYSE, Nasdaq, Cboe or the Texas Stock Exchange in the SEC's company_tickers_exchange.json; OTC rows, rows with no exchange and any other exchange string are left out, and an unknown string is counted and logged. Each company has one primary ticker: the instrument master's, else the first common-stock-looking one. Its debt comes from SEC XBRL: the latest balance sheet that carries a debt tag, recipes R1-R6 with the parts rule, rejected when above total liabilities. Its share count comes from the cover page, else the balance sheet, else the diluted weighted average. Each balance sheet records the day the terminal first knew it, so a variation margin of a past date uses what was known then.
+- Each name says in words whether a single-name CDS is offered, and if not, why: foreign private issuer; no debt reported (or only in the company's own tags); debt above total liabilities; no share count; a balance sheet or share count over 15 months old; debt under USD 100,000,000 (assumed); no longer listed. A balance sheet 6-15 months old is offered with its age in amber. Banks, insurers and finance companies are flagged financial (offered LIMITED), and REITs are flagged REIT; the flag comes from the filing tags until the SIC code is checked.
+- The list refreshes itself (refresher cds_fundamentals). It runs in full on the first run and on Mondays: the tickers file and five quarters of XBRL frames, about 201 SEC requests and about a minute. On other days it runs after 06:30 ET with two quarters, about 80 requests, and never twice a day. A name's SIC code and newest 10-Q / 10-K are checked when it is first previewed: SEC submissions, plus companyfacts when a newer filing exists; a file over 16 MB is never read. SEC is called at 4 requests a second at most with the terminal's own user agent and shows as SEC EDGAR in Data Status.
+- GET /api/otc/cds/entities searches by ticker, any of the company's tickers, CIK or name. Filters: all, non-financial, financial, REIT, my contracts ("known so far"). It sorts by ticker, name or debt, 50 a page, and returns the universe line and, per row, the 5-year MODEL spread computed this session.
+- Single-name CDS in the platform views:
+  - Risk: the bucket "Credit derivatives (single-name CDS notional)", outside the headline (protection bought is short credit), with the single-name CDS block and its jump-to-default concentration warnings.
+  - Portfolio: the footer's single-name CDS credit long / short and the asset class "OTC CDS".
+  - Labels such as "ORCL 5Y CDS buy protection".
+  - Completed Trades: rows for a CDS booking (its dealt spread in bp) and a CDS credit event.
+  - The words "CDS coupon".
+  - The reference equity of an open CDS is watched and its close recorded.
+- Reference entities: a company whose only symbols in the SEC's exchange file are preferred shares, warrants, units or rights is listed but not offered ('no common stock listed'), because the spread model needs the share price of listed common stock. The live check of 2026-10-29 had offered 9 such names on a preferred's price (CMS-PB, SCE-PG, SNUS-PH, TRTN-PA, AHL-PD, ANG-PD, CDR-PB, CFTR-PA, PHXE-P).
+- Reference entities: a joint filing's figures stay with its parent. The SEC's XBRL API lists the consolidated figures of a parent-and-subsidiaries 10-Q under one co-registrant's CIK. A figure filed by another listed registrant under that registrant's own name is no longer taken as this company's, both in the daily frames and in the on-demand company-facts check. Entergy Arkansas (EAI) had shown Entergy Corp's USD 34.6B; it now says 'no debt reported'.
+- SEC requests: the 4-a-second pacer now uses the high-resolution clock and spaces each request from the previous actual start. Live, 280 requests kept a smallest gap of 0.250 s and never more than 4 in any second; before the fix there were 5 inside one second 23 times on Windows' 15.6 ms clock.
+- Reference entities on 2026-10-29 (live): 1,994 offered of 6,064 listed, 1,139 of them with debt of USD 1B or more. That is above the plan's 1,650-1,800 estimate and reconciled with it. The plan's own measurement gives 1,663 on the same data. 206 more are multi-class issuers whose share count is the diluted weighted average (step 3 of the plan's share chain, which that measurement did not model). 117 have their newest balance sheet in another quarter, 17 come from other rules, and 9 are left out. 47 of the 1,994 are foreign private issuers that their first preview's SEC check refuses, as designed.
+
+**Tests**
+
+- Verified 2026-10-29 (P8-style, plan 9.3). Suites: 1176 tests green on py-3.12 and py-3.14, on the repo tree and on a full rehearsal copy. CDX non-regression A/B on two copies of one read-only backup of the live database (base 1.0.6.1 code against 1.0.7, same FakeClock) is identical in marks, VM after the next FRED print, accruals, the 2026-12-21 coupons (7,583.33 and 50,555.56), positions, NAV and ledger, apart from the listed intended differences. Real-data walk on a copy: 1,996 reference entities offered of 6,064 listed; ORCL 5Y MODEL 114.99 bp (raw 73.99 + AAA 41.00), BBB-like; the dealing-level guard refuses the bare model in words (409 on Request quote). A test negotiated mid of 300 bp booked through RFQ at 315 bp with USD 2,184,003.20 upfront paid. Lifecycle rehearsal of nights, first VM, termination and credit event matches hand-worked lines, with integrity ok after every step. UI: 0 console errors and 0 HTTP >= 400 at 1440 and 1100.
+
+**Known issues, fixed in the next release** (display only; no money effect; no CDS contract exists yet)
+
+- A quote and the booking toast call your negotiated mid a 'MODEL mid'; it is your level (model + your basis).
+- In the Risk single-name rows, VALUE uses the current mid while JUMP TO DEFAULT uses the last VM mark; the BUCKET shown is the model's, not the mid's.
+- When a contract cannot be valued, the Risk single-name block shows 0.00 for CS01, jump-to-default and the spread scenarios instead of 'unavailable'.
+- Two rows of the spread model's input report (Ford, AAL) are misleading; the app itself refuses Ford (no debt).
+
 ## 1.0.6.1 (built 2026-10-29; your Goldman FX trades: prime-broker FX forwards to 2 years and the EUR/USD cross-currency swap)
 
 **Prime-broker FX forwards out to 2 years**

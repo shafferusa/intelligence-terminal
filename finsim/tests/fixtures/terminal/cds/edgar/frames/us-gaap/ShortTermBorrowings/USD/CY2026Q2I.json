@@ -1,0 +1,43 @@
+{
+"taxonomy": "us-gaap",
+"tag": "ShortTermBorrowings",
+"ccp": "CY2026Q2I",
+"uom": "USD",
+"label": "ShortTermBorrowings",
+"description": "synthetic fixture (ShortTermBorrowings)",
+"pts": 4,
+"data": [
+{
+"accn": "0000077476-26-000061",
+"cik": 77476,
+"entityName": "PEPSICO INC",
+"loc": "US-NY",
+"end": "2026-06-13",
+"val": 10602000000
+},
+{
+"accn": "0001571949-26-000033",
+"cik": 1571949,
+"entityName": "Intercontinental Exchange, Inc.",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 1218000000
+},
+{
+"accn": "0000019617-26-000140",
+"cik": 19617,
+"entityName": "JPMORGAN CHASE & CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 50000000000
+},
+{
+"accn": "0000900012-26-000017",
+"cik": 900012,
+"entityName": "CPBIGCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 500000000
+}
+]
+}

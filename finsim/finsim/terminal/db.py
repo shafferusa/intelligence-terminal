@@ -245,7 +245,7 @@ CREATE TABLE IF NOT EXISTS hedge_packages (package_id TEXT PRIMARY KEY, command_
 CREATE TABLE IF NOT EXISTS otc_contracts (
   contract_id TEXT PRIMARY KEY,
   command_id INTEGER NOT NULL, account_id TEXT NOT NULL REFERENCES accounts(account_id), broker TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('IRS','TRS','XCCY','EQ_OPTION','FX_OPTION','EQ_FORWARD','FX_FORWARD','CDX')), terms_json TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('IRS','TRS','XCCY','EQ_OPTION','FX_OPTION','EQ_FORWARD','FX_FORWARD','CDX','CDS')), terms_json TEXT NOT NULL,
   notional_c INTEGER NOT NULL, currency TEXT NOT NULL, start_date TEXT NOT NULL, maturity_date TEXT NOT NULL,
   margin_mode TEXT NOT NULL CHECK (margin_mode IN ('CTM','STM')), im_c INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN','TERMINATED','MATURED')),
@@ -325,7 +325,7 @@ PREFIXES = {"order": "O-", "fill": "F-", "transfer": "X-", "settlement": "S-", "
 
 
 #: the OTC contract kinds otc_contracts.kind accepts (C4): swaps (P09) and the PB OTC options / forwards (P12)
-OTC_KINDS = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX")
+OTC_KINDS = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX", "CDS")
 _OTC_KIND_CHECK_RE = re.compile(r"kind\s+TEXT\s+NOT\s+NULL\s+CHECK\s*\(\s*kind\s+IN\s*\(([^)]*)\)\s*\)", re.IGNORECASE)
 _EXT_ADD_COLUMN_RE = re.compile(r'^\s*ALTER\s+TABLE\s+"?([A-Za-z_][A-Za-z0-9_]*)"?\s+ADD\s+(?:COLUMN\s+)?"?([A-Za-z_][A-Za-z0-9_]*)"?\s', re.IGNORECASE)
 _EXT_CREATE_RE = re.compile(r'^\s*CREATE\s+(?:UNIQUE\s+)?(?:TABLE|INDEX|VIEW|TRIGGER)\s+IF\s+NOT\s+EXISTS\s+"?([A-Za-z_][A-Za-z0-9_]*)"?', re.IGNORECASE)

@@ -1,0 +1,19 @@
+{
+"taxonomy": "us-gaap",
+"tag": "LongTermDebt",
+"ccp": "CY2025Q4I",
+"uom": "USD",
+"label": "LongTermDebt",
+"description": "synthetic fixture (LongTermDebt)",
+"pts": 1,
+"data": [
+{
+"accn": "0000900002-25-000020",
+"cik": 900002,
+"entityName": "OLDBOOKS CORP",
+"loc": "US-NY",
+"end": "2025-10-31",
+"val": 500000000
+}
+]
+}

@@ -50,6 +50,7 @@
     if (k === 'IRS') { return q < 0 ? 'pay fixed' : 'receive fixed'; }
     if (k === 'TRS') { return q < 0 ? 'pay total return' : 'receive total return'; }
     if (k === 'CDX') { return q < 0 ? 'buy protection' : 'sell protection'; }
+    if (k === 'CDS') { return T.components.cdsnames && T.components.cdsnames.swapSide ? T.components.cdsnames.swapSide(r) : (q < 0 ? 'buy protection' : 'sell protection'); }   /* CDS-107 */
     if (k === 'XCCY') { return 'cross-currency'; }
     /* OTC-18: a forward / option reads as what it is (buy EUR / sell USD, short AAPL forward, bought put) - never receive / pay */
     if (k === 'FX_FORWARD' || k === 'EQ_FORWARD' || k === 'EQ_OPTION' || k === 'FX_OPTION') {

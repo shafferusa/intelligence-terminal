@@ -8,6 +8,8 @@ or deployed.
 
 > ORCHESTRATOR NOTE (2026-10-28 20:53 ET): R-D (the TRS stale-listing guard, 409 STALE_LISTING) is built in release 1.0.6.1 by its package P-C as one small helper; package V-X of 1.0.8 reuses that helper instead of building its own. Everything else in 6.1 stands as this revision says (R-A / R-B on the FX plan's 1.0.6.2 list, R-C as V-R in 1.0.8, R-E dropped). The script's own stale-listing check (5.3 item 7) stays until the app's guard is live.
 
+> ORCHESTRATOR NOTE (2026-10-29 14:45 EDT): the FX spot print-age rule of 5.4.8 / 5.5 ('FX spot within 120 s') is 300 s, as FX_CCS_PLAN 10.2 after V1061-01: Yahoo's FX prints arrive 159-226 s after their stamp, so 120 s can never be met; the owner's own Goldman FX trades were booked under 300 s. The tool (aa20d85b) enforces 300 s and requires the print to be executable when quoted.
+
 **Governing documents, read in full**
 - `docs\OWNER_INSTITUTIONAL_V3_2026-10-28.md`: the owner's V3 directive (supersedes V2), with his 18:30 ET decisions ("Use VMRK instead";
   DTCC "Yes, if the terms allow"), the orchestrator's 18:35 ET DTCC terms finding (DTCC is NOT used), **his 19:40 ET answers to this plan**

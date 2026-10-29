@@ -1,0 +1,20 @@
+{
+"taxonomy": "us-gaap",
+"tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+"ccp": "CY2026Q2",
+"uom": "shares",
+"label": "WeightedAverageNumberOfDilutedSharesOutstanding",
+"description": "synthetic fixture (WeightedAverageNumberOfDilutedSharesOutstanding)",
+"pts": 1,
+"data": [
+{
+"accn": "0000900014-26-000019",
+"cik": 900014,
+"entityName": "WAONLY CO",
+"loc": "US-NY",
+"start": "2026-04-01",
+"end": "2026-06-30",
+"val": 90000000
+}
+]
+}

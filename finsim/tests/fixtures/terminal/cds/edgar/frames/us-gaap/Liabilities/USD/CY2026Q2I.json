@@ -1,0 +1,59 @@
+{
+"taxonomy": "us-gaap",
+"tag": "Liabilities",
+"ccp": "CY2026Q2I",
+"uom": "USD",
+"label": "Liabilities",
+"description": "synthetic fixture (Liabilities)",
+"pts": 6,
+"data": [
+{
+"accn": "0000320193-26-000077",
+"cik": 320193,
+"entityName": "Apple Inc.",
+"loc": "US-NY",
+"end": "2026-06-27",
+"val": 265665000000
+},
+{
+"accn": "0000019617-26-000140",
+"cik": 19617,
+"entityName": "JPMORGAN CHASE & CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 3900000000000
+},
+{
+"accn": "0000037996-26-000090",
+"cik": 37996,
+"entityName": "FORD MOTOR CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 250000000000
+},
+{
+"accn": "0000086312-26-000071",
+"cik": 86312,
+"entityName": "TRAVELERS COMPANIES, INC.",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 100000000000
+},
+{
+"accn": "0000900003-26-000011",
+"cik": 900003,
+"entityName": "BIGLIAB CORP",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 800000000
+},
+{
+"accn": "0000900010-26-000015",
+"cik": 900010,
+"entityName": "BANKCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 100000000000
+}
+]
+}

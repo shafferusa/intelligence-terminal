@@ -113,6 +113,8 @@ OPTIONAL_MODULES = {"orders": "orders", "options": "products.options", "futures"
                     # a module that is not in the tree stays "missing" (tolerated), its routes answer 501 / are simply absent
                     "otc_options": "products.otc_options", "counterparties": "counterparties", "treasuries": "products.treasuries",
                     "swaps_cds": "products.swaps_cds",
+                    # CDS_SINGLE_NAME_PLAN 1.0.7 (CDS-107): the single-name CDS - SEC reference entities (B2), the MODEL spread (B3), the engine (B1)
+                    "credit_entities": "credit_entities", "cds_model": "products.cds_model", "swaps_cds_names": "products.swaps_cds_names",
                     # FINSIM1_PLAN C2: the FinSim1 completion build - the Dashboard (P1), the two trade blotters (P2), NAV history and
                     # restatements (P3), cash / settlement / collateral (P6), the historical import (P5); each stays "missing" until it lands
                     "dashboard": "dashboard", "blotters": "blotters", "navhistory": "navhistory", "collateral": "collateral", "importer": "importer",

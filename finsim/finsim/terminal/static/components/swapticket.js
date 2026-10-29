@@ -225,6 +225,7 @@
     var s = String(side || '');
     /* a CDX row's side_text is a whole sentence (side, notional, CS01) for the Portfolio; a table row shows the side only - the notional
        and the CS01 have their own columns */
+    if (row && row.kind === 'CDS' && T.components.cdsnames) { return T.components.cdsnames.sideText(s, row); }   /* CDS-107 */
     if (row && row.kind === 'CDX') { return (s || row.side) === 'SELL_PROTECTION' ? 'sell protection (long credit)' : 'buy protection (short credit)'; }
     if (row && row.side_text) { return row.side_text; }
     var uid = row && ((row.detail && row.detail.underlying_id) || row.underlying_id);
@@ -246,6 +247,7 @@
       if (/^[A-Z]{6}$/.test(pr)) { return 'XCCY ' + pr.slice(0, 3) + '/' + pr.slice(3) + (isFloat(c) ? ' float' : ''); }
       return 'XCCY ' + (d.recv_ccy || t.recv_ccy || '') + '/' + (d.pay_ccy || t.pay_ccy || '');
     }
+    if (c.kind === 'CDS' && T.components.cdsnames) { return T.components.cdsnames.kindShort(c); }   /* CDS-107: 'ORCL 5Y CDS' */
     if (c.kind === 'CDX' && (d.index_name || d.index || t.index)) {      /* CDX NA.IG S47 */
       return String(d.index_name || ('CDX.NA.' + (d.index || t.index))).replace(/^CDX\./, 'CDX ') + (d.series || t.series ? ' S' + (d.series || t.series) : '');
     }
@@ -338,6 +340,7 @@
       return (x.underlying_id || '') + ' ' + (f.current == null ? 'not observed now' : px(f.current)) + ' vs reset ' + px(f.entry) + ' on ' +
         (f.units == null ? '' : T.fmt.qty(f.units)) + ' reference shares';
     }
+    if (c.kind === 'CDS' && T.components.cdsnames) { return T.components.cdsnames.nowText(c); }   /* CDS-107 */
     if (c.kind === 'CDX') {
       return 'spread now ' + (f.current || 'not observed') + ' vs dealt ' + (f.entry || '') + ' . coupon ' + (x.coupon_bp || '') + ' bp' +
         (x.upfront ? ' . upfront ' + x.upfront + ' ' + money(x, 'upfront').replace('-', '') : '');

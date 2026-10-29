@@ -1,0 +1,61 @@
+{
+"cik": 37996,
+"entityName": "FORD MOTOR CO",
+"facts": {
+"dei": {
+"EntityCommonStockSharesOutstanding": {
+"label": "EntityCommonStockSharesOutstanding",
+"description": "synthetic fixture",
+"units": {
+"shares": [
+{
+"end": "2026-10-20",
+"val": 3980000000,
+"accn": "0000037996-26-000150",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+}
+},
+"us-gaap": {
+"LongTermDebtNoncurrent": {
+"label": "LongTermDebtNoncurrent",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2020-12-31",
+"val": 291000000,
+"accn": "0000037996-21-000012",
+"fy": 2020,
+"fp": "FY",
+"form": "10-K",
+"filed": "2021-02-05"
+}
+]
+}
+},
+"Liabilities": {
+"label": "Liabilities",
+"description": "synthetic fixture",
+"units": {
+"USD": [
+{
+"end": "2026-09-30",
+"val": 255000000000,
+"accn": "0000037996-26-000150",
+"fy": 2026,
+"fp": "Q3",
+"form": "10-Q",
+"filed": "2026-10-28"
+}
+]
+}
+}
+}
+}
+}

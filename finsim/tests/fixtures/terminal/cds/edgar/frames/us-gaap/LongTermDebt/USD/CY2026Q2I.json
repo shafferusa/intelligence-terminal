@@ -1,0 +1,147 @@
+{
+"taxonomy": "us-gaap",
+"tag": "LongTermDebt",
+"ccp": "CY2026Q2I",
+"uom": "USD",
+"label": "LongTermDebt",
+"description": "synthetic fixture (LongTermDebt)",
+"pts": 17,
+"data": [
+{
+"accn": "0000320193-26-000077",
+"cik": 320193,
+"entityName": "Apple Inc.",
+"loc": "US-NY",
+"end": "2026-06-27",
+"val": 82300000000
+},
+{
+"accn": "0000077476-26-000061",
+"cik": 77476,
+"entityName": "PEPSICO INC",
+"loc": "US-NY",
+"end": "2026-06-13",
+"val": 37000000000
+},
+{
+"accn": "0001571949-26-000033",
+"cik": 1571949,
+"entityName": "Intercontinental Exchange, Inc.",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 18000000000
+},
+{
+"accn": "0000086312-26-000071",
+"cik": 86312,
+"entityName": "TRAVELERS COMPANIES, INC.",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 8000000000
+},
+{
+"accn": "0000900001-26-000010",
+"cik": 900001,
+"entityName": "SMALLCO INC",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 30000000
+},
+{
+"accn": "0000900003-26-000011",
+"cik": 900003,
+"entityName": "BIGLIAB CORP",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 900000000
+},
+{
+"accn": "0000900004-26-000012",
+"cik": 900004,
+"entityName": "NOSHARE HOLDINGS",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 400000000
+},
+{
+"accn": "0000900009-26-000014",
+"cik": 900009,
+"entityName": "WARRANT FIRST CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 150000000
+},
+{
+"accn": "0000900010-26-000015",
+"cik": 900010,
+"entityName": "BANKCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 5000000000
+},
+{
+"accn": "0000900012-26-000017",
+"cik": 900012,
+"entityName": "CPBIGCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 2000000000
+},
+{
+"accn": "0000900013-26-000018",
+"cik": 900013,
+"entityName": "MULTICLASS CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 1000000000
+},
+{
+"accn": "0000900014-26-000019",
+"cik": 900014,
+"entityName": "WAONLY CO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 700000000
+},
+{
+"accn": "0000900015-26-000020",
+"cik": 900015,
+"entityName": "PITCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 600000000
+},
+{
+"accn": "0000900016-26-000021",
+"cik": 900016,
+"entityName": "AMENDCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 1000000000
+},
+{
+"accn": "0000900016-26-000029",
+"cik": 900016,
+"entityName": "AMENDCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 1100000000
+},
+{
+"accn": "0000900017-26-000022",
+"cik": 900017,
+"entityName": "UTILITY PREFCO",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 5000000000
+},
+{
+"accn": "0000900018-26-000033",
+"cik": 900019,
+"entityName": "PARENTCO ENERGY CORPORATION",
+"loc": "US-NY",
+"end": "2026-06-30",
+"val": 29500000000
+}
+]
+}

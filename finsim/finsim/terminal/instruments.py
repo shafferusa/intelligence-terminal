@@ -422,7 +422,7 @@ def _open_reference_rows(conn: sqlite3.Connection) -> list:
     td = "c.trade_date" if "trade_date" in cols else "NULL"
     return conn.execute(f"SELECT c.contract_id, c.account_id, c.kind, c.terms_json, c.start_date, {td} AS trade_date FROM otc_contracts c"
                         " JOIN accounts a ON a.account_id=c.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN'"
-                        " AND a.status='OPEN' AND l.status='OPEN' AND c.kind IN ('TRS','XCCY','EQ_OPTION','EQ_FORWARD','FX_OPTION','FX_FORWARD')"
+                        " AND a.status='OPEN' AND l.status='OPEN' AND c.kind IN ('TRS','XCCY','EQ_OPTION','EQ_FORWARD','FX_OPTION','FX_FORWARD','CDS')"   # CDS-107: a CDS observes its reference equity
                         " ORDER BY c.contract_id").fetchall()
 
 
@@ -436,7 +436,7 @@ def _reference_ids(kind: str, terms_json) -> List[str]:
     if not isinstance(terms, dict):
         return []
     ids: List[str] = []
-    if kind in ("TRS", "EQ_OPTION", "EQ_FORWARD") and terms.get("underlying_id"):
+    if kind in ("TRS", "EQ_OPTION", "EQ_FORWARD", "CDS") and terms.get("underlying_id"):      # CDS-107: terms.underlying_id = the reference equity
         ids.append(str(terms["underlying_id"]).upper())
     elif kind == "XCCY" and terms.get("foreign_ccy"):
         ids.append(fx_pair_id(str(terms["foreign_ccy"])))

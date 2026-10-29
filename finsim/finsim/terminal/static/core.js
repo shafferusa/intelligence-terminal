@@ -534,7 +534,7 @@
   T.conv = function (key) { var c = T.state.conventions || {}; return c[key] || ''; };
   /* V104R1-04: trader wording for an internal code ('OTC_IM' -> 'OTC initial margin', 'BUY_CCY' -> 'currency bought', 'SWEEP_IN' ->
      'sweep-in'); the same rule as api_views.code_words; anything that is not a code comes back as given */
-  var CODE_ACRONYMS = { FX: 1, OTC: 1, CDX: 1, PB: 1, IM: 1, VM: 1, TRS: 1, IRS: 1, XCCY: 1, FIFO: 1, SOFR: 1, NAV: 1, US: 1, USD: 1, ECP: 1, QP: 1, ADV: 1, DV01: 1,
+  var CODE_ACRONYMS = { FX: 1, OTC: 1, CDX: 1, CDS: 1, JTD: 1, /* CDS-107 */ PB: 1, IM: 1, VM: 1, TRS: 1, IRS: 1, XCCY: 1, FIFO: 1, SOFR: 1, NAV: 1, US: 1, USD: 1, ECP: 1, QP: 1, ADV: 1, DV01: 1,
                         CS01: 1, ETF: 1, GC: 1, HTB: 1, CSA: 1, ISDA: 1, PBA: 1, SHO: 1, GTC: 1, AON: 1, MKT: 1, LMT: 1, EUR: 1, GBP: 1, JPY: 1, CHF: 1, CAD: 1,
                         AUD: 1, OCC: 1, CME: 1, PDT: 1, API: 1, HTTP: 1 };
   var CODE_WORDS = { ACCT_DAY: 'accounting day', FUT_MARGIN: 'futures margin', OPT_MARGIN: 'option margin', EXCESS_LIQ: 'excess liquidity', BUY_CCY: 'currency bought',

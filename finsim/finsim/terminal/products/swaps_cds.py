@@ -1662,7 +1662,7 @@ def unsupported() -> List[dict]:
             {"item": "CDX credit events", "state": "SIMULATED",
              "wording": ("SIMULATED on request - the owner can trigger a constituent default at a recovery he enters; no ISDA Determinations Committee"
                          " rulings or auctions are tracked"), "where": "Derivatives page, OTC contracts (a CDX row)"},
-            {"item": "Off-the-run CDX series, other tenors, tranches, single-name CDS and index options", "state": "NOT_OFFERED",
+            {"item": "Off-the-run CDX series, other CDX tenors, tranches and index options", "state": "NOT_OFFERED",
              "wording": "only the on-the-run 5-year CDX.NA.IG and CDX.NA.HY are dealt", "where": "prime-broker OTC tab, Credit"}]
 
 

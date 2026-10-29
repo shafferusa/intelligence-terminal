@@ -375,7 +375,9 @@ class FakeTerminal:
 
 
 def serve_fake(fake):
-    """The fake on a free port of this package's range (9530-9539), else any free port on 127.0.0.1."""
+    """The fake on a free port the OS chooses on 127.0.0.1 (port 0).  B2-R2 (CDS-107 integration): the fixed range 9530-9539 was a gate
+    hazard - ThreadingHTTPServer sets SO_REUSEADDR, which on Windows lets a second process bind a port another process already holds, so
+    two suites running at once could answer each other's otcplan runners ('ALREADY_BOOKED' on a fresh fake)."""
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a):
             return None
@@ -403,7 +405,7 @@ def serve_fake(fake):
             self._go("POST")
 
     srv = None
-    for port in list(range(9530, 9540)) + [0]:
+    for port in (0,):
         try:
             srv = ThreadingHTTPServer(("127.0.0.1", port), H)
             break

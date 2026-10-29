@@ -217,8 +217,10 @@ OTC_MODULE = "otc_options"                                                  # C2
 OTC_OPTION_KINDS = ("EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD")
 CDS_MODULE = "swaps_cds"                                                   # the CDS index delegate kind (products/swaps_cds.py)
 CDS_KINDS = ("CDX",)
+SINGLE_CDS_KIND = "CDS"                                                    # CDS-107: the single-name CDS delegate kind
+SINGLE_CDS_MODULE = "swaps_cds_names"                                      # CDS-107: products/swaps_cds_names.py (services.swaps_cds_names)
 KIND_LABELS = {"IRS": "interest-rate swap", "TRS": "total return swap", "XCCY": "cross-currency swap", "EQ_OPTION": "OTC equity option",
-               "FX_OPTION": "OTC FX option", "EQ_FORWARD": "equity forward", "FX_FORWARD": "FX forward", "CDX": "CDS index (CDX)"}
+               "FX_OPTION": "OTC FX option", "EQ_FORWARD": "equity forward", "FX_FORWARD": "FX forward", "CDX": "CDS index (CDX)", "CDS": "single-name CDS"}
 # SR-10 / C22: the static IM the PB schedule replaces once prime.im_params exists (IRS |DV01| x bp; the others a fraction of the notional)
 IM_DEFAULTS = {"irs_im_bp": Decimal(SWAP_IM_BP), "trs_im_pct": Decimal("0.10"), "xccy_im_pct": Decimal("0.02"), "option_im_pct": None,
                "forward_im_pct": None}
@@ -605,6 +607,8 @@ def _module_for(services, kind: Optional[str] = None):
     """C21: the module that carries a contract kind's hooks - the OTC options / forwards (EQ_OPTION, FX_OPTION, EQ_FORWARD,
     FX_FORWARD) ``services.otc_options``, TRS / XCCY (and no kind) ``services.swaps_trs``; None while it is not bound."""
     k = str(kind or "").upper()
+    if k == SINGLE_CDS_KIND:                     # CDS-107: the single-name CDS hooks live in services.swaps_cds_names
+        return getattr(services, SINGLE_CDS_MODULE, None)
     if k in CDS_KINDS:
         return getattr(services, CDS_MODULE, None)
     return getattr(services, OTC_MODULE if k in OTC_OPTION_KINDS else TRS_MODULE, None)
@@ -2249,7 +2253,7 @@ def vm_keys(conn: sqlite3.Connection, now_ts: int) -> List[Tuple[str, str]]:
             ds = d.isoformat()
             r = done.get(f"{cid}:{ds}")
             if not _terminal(r):
-                if (row["kind"] in CDS_KINDS and r is not None and r["status"] == "SKIPPED" and str(r["note"] or "").startswith("CLOSE_PENDING")
+                if (row["kind"] in CDS_KINDS + (SINGLE_CDS_KIND,) and r is not None and r["status"] == "SKIPPED" and str(r["note"] or "").startswith("CLOSE_PENDING")
                         and now < proxy_retry_ts(d)):
                     break                       # the OAS of that date is not published before the next business morning (later dates wait too)
                 out.append((cid, ds))
@@ -2887,6 +2891,12 @@ def _display_fields(services, row: dict, terms: dict, inputs: dict, conn: sqlite
         out.update(units=units, unit_label=f"{uid} reference shares", entry=row.get("reset_px"), current=None if cur is None else str(cur),
                    extra={"underlying_id": uid, "reset_px": row.get("reset_px"), "underlying_px": None if cur is None else str(cur), "side": "receive" if terms.get("receiver") else "pay",
                           "entry_label": "reset price", "current_label": f"{uid} price"})
+    elif kind == SINGLE_CDS_KIND:                # CDS-107: the single-name CDS reads its own fields (swaps_cds_names.display_fields)
+        fn = getattr(getattr(services, SINGLE_CDS_MODULE, None), "display_fields", None)
+        if callable(fn):
+            out.update(fn(row, terms, inputs))
+        else:
+            out.update(units=n // 100, unit_label="USD notional")
     elif kind in CDS_KINDS:
         up = terms.get("upfront_c")
         out.update(units=n // 100, unit_label="USD notional", entry=None if terms.get("deal_spread_bp") is None else f"{terms.get('deal_spread_bp')} bp",
@@ -3071,7 +3081,7 @@ RFQ_STATUSES = ("REQUESTED", "QUOTED", "ACCEPTED", "DECLINED", "EXPIRED")
 RFQ_WORDS = {"REQUESTED": "awaiting the dealer's quote", "QUOTED": "quoted - awaiting your acceptance", "ACCEPTED": "accepted and booked",
              "DECLINED": "declined", "EXPIRED": "expired"}
 QUOTE_LABEL = "indicative model quote, simulated dealer"
-FIRM_KINDS = ("IRS", "TRS", "CDX")     # an accepted quote books at its quoted price; the other kinds re-price and must match it (QUOTE_MOVED)
+FIRM_KINDS = ("IRS", "TRS", "CDX", "CDS")     # an accepted quote books at its quoted price; the other kinds re-price and must match it (QUOTE_MOVED)
 PENDING_CONFIRM = "PENDING_CONFIRM"
 CONFIRM_ET = "17:05"
 SIM_CONFIRM_LABEL = "CONFIRMED - simulated confirmation"
@@ -3215,6 +3225,15 @@ def rfq_describe(kind: str, terms: dict, pv: Optional[dict] = None) -> Tuple[str
         side = str(t.get("side") or pv.get("side") or "BUY_PROTECTION").upper().replace(" ", "_")
         side = {"BUY": "BUY_PROTECTION", "SELL": "SELL_PROTECTION"}.get(side, side)
         return f"{name}{' S' + str(series) if series else ''} 5Y", side.replace("_", " "), None, _notional_of(t) or pv.get("notional_c")
+    if k == SINGLE_CDS_KIND:                     # CDS-107: "ORCL 5Y CDS (Oracle Corp)", "BUY PROTECTION"
+        try:
+            from . import swaps_cds_names as _cdsn
+        except ImportError:
+            _cdsn = None
+        if _cdsn is not None and callable(getattr(_cdsn, "rfq_describe", None)):
+            return _cdsn.rfq_describe(t, pv)
+        side = str(t.get("side") or pv.get("side") or "").upper().replace("_", " ")
+        return "single-name CDS", side or "TRADE", None, _notional_of(t) or pv.get("notional_c")
     if k == "XCCY":
         r, p = str(t.get("recv_ccy") or "?").upper(), str(t.get("pay_ccy") or "?").upper()
         # P8B-12: named by the market pair (EUR/USD, USD/JPY), whichever way round the legs go; the side says who pays what
@@ -3295,6 +3314,11 @@ def _quote_terms(kind: str, pv: dict) -> Tuple[Optional[dict], dict, str]:
                  f" {spread_words['receive']}; {f} {_money_words(pv.get('foreign_notional_c'))} / USD {_money_words(pv.get('usd_notional_c'))};"
                  f" {pv.get('start_date')} to {pv.get('maturity_date')}")
         return None, cmp, words
+    if k == SINGLE_CDS_KIND:                     # CDS-107: firm on the spread, the coupon, the maturity and the tier - all fixed when the dealer quotes
+        bp = pv.get("deal_spread_bp")
+        firm = {"dealt_spread_bp": bp, "coupon_bp": pv.get("coupon_bp"), "maturity_date": pv.get("maturity_date"), "tier": pv.get("tier")}
+        words = f"{pv.get('entity_label')} {bp} bp (MODEL mid {pv.get('mid_spread_bp')} bp); {pv.get('upfront_direction')} upfront"
+        return firm, {"deal_spread_bp": bp, "coupon_bp": pv.get("coupon_bp"), "maturity_date": pv.get("maturity_date")}, words
     if k == "XCCY":
         legs = pv.get("legs") or {}
         rl, pl = legs.get("receive") or {}, legs.get("pay") or {}
@@ -3474,6 +3498,11 @@ def _quote_moved(conn: sqlite3.Connection, kind: str, quote: dict, cid: str, out
         chk("reset_px", firm.get("reset_px"), row["reset_px"] if row is not None else None)
     elif k == "CDX":
         chk("deal_spread_bp", firm.get("dealt_spread_bp"), terms.get("deal_spread_bp"))
+    elif k == SINGLE_CDS_KIND:                   # CDS-107: the booking uses the firm spread, coupon and maturity (equal by construction)
+        chk("deal_spread_bp", firm.get("dealt_spread_bp"), terms.get("deal_spread_bp"))
+        chk("coupon_bp", firm.get("coupon_bp"), terms.get("coupon_bp"))
+        if firm.get("maturity_date") not in (None, "") and str(firm.get("maturity_date")) != str(terms.get("maturity_date")):
+            diffs.append({"term": "maturity_date", "quoted": str(firm.get("maturity_date")), "booked": terms.get("maturity_date")})
     else:
         pv = out.get("preview") or {}
         if k == "XCCY":
@@ -3764,9 +3793,17 @@ def contract_timeline(services, contract, conn: Optional[sqlite3.Connection] = N
             words = f"{what}: net {fmt_money(int(r['amount_c']))}" + (" (CDX coupon)" if det.get("kind") == "CDX coupon" else "")
         add(ts, r["business_date"] or r["event_date"], step, words, amount_c=int(r["amount_c"] or 0) if r["kind"] != "FIX" else None, entry_id=r["entry_id"],
             asof=at_booking and asof_contract)
-    for e in conn.execute("SELECT ts, type, payload_json FROM events WHERE ref_type='otc' AND ref_id=? AND type IN ('CDX_CREDIT_EVENT','OTC_TERMINATED',"
+    for e in conn.execute("SELECT ts, type, payload_json FROM events WHERE ref_type='otc' AND ref_id=? AND type IN ('CDX_CREDIT_EVENT','CDS_CREDIT_EVENT','OTC_TERMINATED',"
                           "'SWAP_MATURED','OTC_EXPIRED') ORDER BY id", (cid,)).fetchall():
         p = _jloads(e["payload_json"], {}) or {}
+        if e["type"] == "CDS_CREDIT_EVENT":       # CDS-107: a single-name credit event closes the contract (no OTC_TERMINATED event)
+            ce = conn.execute("SELECT business_date FROM journal_entries WHERE entry_id=?", (p.get("entry_id"),)).fetchone() if p.get("entry_id") else None
+            net = int(p.get("net_c") or 0)
+            add(e["ts"], ce["business_date"] if ce is not None else None, "CREDIT_EVENT",
+                f"simulated credit event ({p.get('event_words') or 'bankruptcy / failure to pay'}) of {p.get('reference_entity')} on {p.get('event_date')}"
+                f" at {p.get('recovery_pct')} % recovery - net {fmt_money(abs(net))} {'receivable' if net >= 0 else 'payable'} settling"
+                f" {p.get('settle_date')}; the contract closed", amount_c=p.get("net_c"), entry_id=p.get("entry_id"))
+            continue
         if e["type"] == "CDX_CREDIT_EVENT":
             ce = conn.execute("SELECT business_date FROM journal_entries WHERE entry_id=?", (p.get("entry_id"),)).fetchone() if p.get("entry_id") else None
             add(e["ts"], ce["business_date"] if ce is not None else None, "CREDIT_EVENT",
@@ -3825,10 +3862,18 @@ def _deriv_otc(services, lifetime_id: str) -> dict:
             credit = fn(services, [c["contract_id"] for c in rows if c.get("kind") == "CDX"]) or {}
         except Exception as e:   # noqa: BLE001 - shown unavailable, never a failed page
             credit = {"error": f"{type(e).__name__}: {e}"}
+    sn = getattr(services, SINGLE_CDS_MODULE, None)       # CDS-107: the single-name credit events beside the CDX ones (an error kept by name)
+    sfn = getattr(sn, "credit_events_of", None) if sn is not None else None
+    if callable(sfn):
+        try:
+            credit.update(sfn(services, [c["contract_id"] for c in rows if c.get("kind") == SINGLE_CDS_KIND]) or {})
+        except Exception as e:   # noqa: BLE001 - shown unavailable, never a failed page
+            credit["error_cds"] = f"{type(e).__name__}: {e}"
     open_rfqs = rfq_rows(services, scope)
     recent = [r for r in rfq_rows(services, scope, status="all", limit=20) if r["status"] not in RFQ_OPEN]
     return {"tab": "otc", "lifetime_id": lifetime_id, "contracts": rows, "rfqs": open_rfqs, "recent_rfqs": recent, "credit_events": credit,
             "credit_event_offered": callable(getattr(cds, "h_credit_event", None)) if cds is not None else False,
+            "credit_event_offered_cds": callable(getattr(getattr(services, SINGLE_CDS_MODULE, None), "h_credit_event", None)),   # CDS-107
             "note": "OTC values are MODEL numbers from observed inputs, never dealer-confirmed prices; dealing stays on the prime broker's OTC tab"}
 
 
@@ -4011,7 +4056,7 @@ def register_routes(router) -> None:
     def otc_preview(req):
         sw = need(req.rt, "swaps")
         kind = str(req.b("kind") or "").upper()
-        allowed = ("IRS", "TRS", "XCCY", "CDX") + (OTC_OPTION_KINDS if getattr(req.rt, "otc_options", None) is not None else ())
+        allowed = ("IRS", "TRS", "XCCY", "CDX", "CDS") + (OTC_OPTION_KINDS if getattr(req.rt, "otc_options", None) is not None else ())
         if kind not in allowed:
             raise ApiError(400, "NOT_IN_THIS_BUILD" if kind else "BAD_REQUEST", f"OTC kind {kind!r}: the prime brokers here deal {', '.join(allowed)}")
         aid = str(req.b("account_id") or "")

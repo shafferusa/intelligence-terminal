@@ -1,0 +1,27 @@
+{
+"taxonomy": "dei",
+"tag": "EntityCommonStockSharesOutstanding",
+"ccp": "CY2026Q2I",
+"uom": "shares",
+"label": "EntityCommonStockSharesOutstanding",
+"description": "synthetic fixture (EntityCommonStockSharesOutstanding)",
+"pts": 2,
+"data": [
+{
+"accn": "0001341439-26-000031",
+"cik": 1341439,
+"entityName": "ORACLE CORP",
+"loc": "US-NY",
+"end": "2026-06-16",
+"val": 3010000000
+},
+{
+"accn": "0000900018-26-000010",
+"cik": 900018,
+"entityName": "PARENTCO ENERGY CORP /DE/",
+"loc": "US-NY",
+"end": "2026-04-24",
+"val": 300000000
+}
+]
+}

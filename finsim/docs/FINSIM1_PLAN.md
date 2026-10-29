@@ -3439,10 +3439,10 @@ An independent auditor walked the PB OTC forwards and cross-currency swaps on co
 
 #### 15.15c The OTC audit after the FX / cross-currency design (amends 15.15b; FX_CCS_PLAN rev 2 section 1.5)
 
-Release 1.0.6.1 (`docs\FX_CCS_PLAN.md` rev 2, plus `docs\INSTITUTIONAL_V3_PLAN.md` 6.1 R-A..R-E) fixes, for the USD / EUR / GBP pairs and the
+Release 1.0.6.1 (`docs\FX_CCS_PLAN.md` rev 2, plus the TRS stale-listing guard, `docs\INSTITUTIONAL_V3_PLAN.md` 6.1 R-D) fixes, for the USD / EUR / GBP pairs and the
 EUR/USD ESTR / SOFR float / float swap: OTC-01 (curve and overnight-print age limits), OTC-02 (forwards counted once in currency exposure),
 OTC-03 (float / float on spot dates), OTC-04 / OTC-05 (one term curve per currency, basis levels), OTC-06 (TARGET2, New York, London and SIFMA
-calendars; Tokyo via R-A), OTC-07 (2W priced), OTC-08 in part (the ticket shows spot, spot date, points and the outright), OTC-09 (rate risk per
+calendars), OTC-07 (2W priced), OTC-08 in part (the ticket shows spot, spot date, points and the outright), OTC-09 (rate risk per
 currency), OTC-10 (PB OTC FX forwards leave the headline), OTC-14 (EUR / USD float / float), OTC-15 in part (EURUSD shown in market convention),
 OTC-16 (VM on the CSA exposure), OTC-17 (delivery at 00:30 ET on the value date), OTC-19 in part, OTC-20 in part and OTC-22 in part.
 
@@ -3455,5 +3455,7 @@ Deferred to 1.0.6.2, each with the reason the owner reads in his FX report (FX_C
 - OTC-14 / OTC-19: GBP SONIA legs, JPY / CHF / CAD / AUD legs, fixed / float, per-currency fixed-leg conventions, non-USD pairs, 7Y-30Y in the UI;
 - OTC-15: other pairs' display and whole-unit JPY; OTC-20: pruning the pair list and NZD / SEK / NOK rates; OTC-21: ACT/365 for JPY / CAD /
   AUD (it moves the legacy prices of three products); OTC-22: the dealt-currency selector, FX swaps and NDFs.
-- Pairs with a currency outside USD / EUR / GBP (and JPY once R-A lands) keep the pre-1.0.6.1 method on the PB desk, labelled "LEGACY METHOD -
+- Pairs with a currency outside USD / EUR / GBP keep the pre-1.0.6.1 method on the PB desk, labelled "LEGACY METHOD -
   LIMITED", up to 1 year, under 1.0.6's rate-age limit.
+- Correction (orchestrator, 2026-10-29 11:15 ET): this section first said 1.0.6.1 brings a Tokyo calendar 'via R-A' and moves JPY once R-A lands. R-A / R-B (TONA, the Tokyo calendar, USDJPY on the term curves) were NOT built in 1.0.6.1 (the orchestrator's revised decision of 2026-10-28 20:53, BUILD_LOG); they are on the 1.0.6.2 list. Until then JPY pairs keep the legacy PB method, labelled LIMITED.
+

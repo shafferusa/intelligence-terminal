@@ -1,0 +1,27 @@
+{
+"taxonomy": "us-gaap",
+"tag": "LongTermDebt",
+"ccp": "CY2026Q1I",
+"uom": "USD",
+"label": "LongTermDebt",
+"description": "synthetic fixture (LongTermDebt)",
+"pts": 2,
+"data": [
+{
+"accn": "0000320193-26-000041",
+"cik": 320193,
+"entityName": "Apple Inc.",
+"loc": "US-NY",
+"end": "2026-03-28",
+"val": 85000000000
+},
+{
+"accn": "0000900018-26-000010",
+"cik": 900018,
+"entityName": "PARENTCO ENERGY CORP /DE/",
+"loc": "US-NY",
+"end": "2026-03-31",
+"val": 28000000000
+}
+]
+}

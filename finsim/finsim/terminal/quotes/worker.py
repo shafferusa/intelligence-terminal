@@ -264,7 +264,9 @@ def register_refresher(name: str, interval_s: Optional[int], fn: Callable, run_a
     - Outcome: an exception is an error (``FetchError.status`` kept) recorded in provider health under ``name`` (``/api/health``
       providers, Data Status; three in a row raise the provider attention) and retried with a back-off (1, 2, 5, 15, 30 min, then
       hourly); a normal return records ok; returning ``"retry"`` (published data not out yet) records ok and runs again in an hour.
-    - ``label`` names the source in the attention text (default: the name).  Registering a name again replaces it (idempotent)."""
+    - ``label`` names the source in the attention text (default: the name).  Registering a name again replaces it (idempotent).
+    - ``fn.count_idle_runs = False`` (an attribute of the function; default True): a run returning None made no request and is not
+      counted in the provider's "requests today" (it still records ok)."""
     if not isinstance(name, str) or not REFRESHER_NAME_RE.match(name):
         raise ValueError(f"register_refresher: name {name!r} must match {REFRESHER_NAME_RE.pattern}")
     if not callable(fn):
@@ -1322,7 +1324,10 @@ class QuoteWorker(threading.Thread):
         with self._lock:
             self.stats_["refresher_runs"] += 1
         if health is not None:
-            health.record(ref.name, True, 200)
+            # B3-R2 (CDS-107 integration): a refresher function that sets ``count_idle_runs = False`` (the single-name CDS input queue, every
+            # 5 s) counts a request only for a run that returns a result: an idle run made no request (Data Status "requests today").  Every
+            # other refresher counts each run, as before.
+            health.record(ref.name, True, 200, count=result is not None or getattr(ref.fn, "count_idle_runs", True) is not False)
         return True
 
     def _serve_bars(self) -> List[str]:

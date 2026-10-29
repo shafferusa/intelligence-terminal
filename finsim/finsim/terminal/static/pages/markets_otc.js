@@ -22,8 +22,10 @@
   T.marketPlugins = T.marketPlugins || {};
   T.components = T.components || {};
 
-  var SUBTABS = [{ key: 'swaps', label: 'Swaps' }, { key: 'options', label: 'Options' }, { key: 'forwards', label: 'Forwards' }, { key: 'credit', label: 'Credit (CDX)' }];
-  var NOTES = ['SWAP_MARK', 'SWAP_VM', 'SWAP_RESET', 'OTC_OPTION', 'OTC_FORWARD', 'OTC_VM', 'CDX_PROXY', 'CDX_DEAL', 'CDX_COUPON', 'ELIGIBILITY'];
+  var SUBTABS = [{ key: 'swaps', label: 'Swaps' }, { key: 'options', label: 'Options' }, { key: 'forwards', label: 'Forwards' }, { key: 'credit', label: 'Credit (CDX)' },
+                 { key: 'cds', label: 'Single-name CDS' }];                    /* CDS-107: components/cdsnames.js */
+  var NOTES = ['SWAP_MARK', 'SWAP_VM', 'SWAP_RESET', 'OTC_OPTION', 'OTC_FORWARD', 'OTC_VM', 'CDX_PROXY', 'CDX_DEAL', 'CDX_COUPON',
+               'CDS_MODEL', 'CDS_DEAL', 'CDS_COUPON', 'CDS_CREDIT', 'ELIGIBILITY'];   /* CDS-107: the single-name CDS notes */
   var DESK_MS = 60000;
   var sub = {};                                     /* account -> the sub-tab last used */
   var desks = [];                                   /* the mounted desks (a swap prefill brings its account's desk to Swaps) */
@@ -51,7 +53,7 @@
     var s = document.createElement('style');
     s.id = 'markets-otc-css';
     /* under Options / Forwards the swap ticket shows only its contracts table (the one table of every OTC kind) */
-    s.textContent = '.otc-desk.sub-options .otc-swaps .swapticket > :not(.contracts), .otc-desk.sub-forwards .otc-swaps .swapticket > :not(.contracts), .otc-desk.sub-credit .otc-swaps .swapticket > :not(.contracts) { display: none; }' +
+    s.textContent = '.otc-desk.sub-options .otc-swaps .swapticket > :not(.contracts), .otc-desk.sub-forwards .otc-swaps .swapticket > :not(.contracts), .otc-desk.sub-credit .otc-swaps .swapticket > :not(.contracts), .otc-desk.sub-cds .otc-swaps .swapticket > :not(.contracts) { display: none; } /* CDS-107 */' +
       '.otc-desk .otc-head { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; margin: 4px 0 8px; }' +
       '.otc-desk .otc-head .rel { font-weight: 600; }' +
       '.otc-desk .otc-blocked { border-left: 3px solid var(--down, #c55); margin: 6px 0; }' +
@@ -76,8 +78,9 @@
     var ticketBox = T.h('div', { class: 'otc-ticket', hidden: true });
     var swapBox = T.h('div', { class: 'otc-swaps' });
     var cdsBox = T.h('div', { class: 'otc-cds', hidden: true });
+    var cdsnBox = T.h('div', { class: 'otc-cdsn', hidden: true });              /* CDS-107: the single-name CDS desk's own box */
     var notes = T.h('div');
-    root.appendChild(head); root.appendChild(blockedBox); root.appendChild(tabsBox); root.appendChild(ticketBox); root.appendChild(cdsBox); root.appendChild(swapBox); root.appendChild(notes);
+    root.appendChild(head); root.appendChild(blockedBox); root.appendChild(tabsBox); root.appendChild(ticketBox); root.appendChild(cdsBox); root.appendChild(cdsnBox); /* CDS-107 */ root.appendChild(swapBox); root.appendChild(notes);
 
     /* the eligibility the shell already knows, before the desk answers (PO-14: the reason up front) */
     var e0 = ((T.book && T.book.current && T.book.current()) || {}).eligibility || {};
@@ -87,6 +90,7 @@
     var swapH = T.mountOptional('swapticket', swapBox, { account_id: acct, notes: false, blocked: state.blocked }, 'the swap ticket and the OTC contracts table');
     var otcH = null;
     var cdsH = null;
+    var cdsnH = null;                                                           /* CDS-107: the single-name CDS desk handle */
     var me = { account_id: acct, showSwaps: function () { if (state.sub !== 'swaps') { state.sub = 'swaps'; sub[acct] = 'swaps'; paintSub(); } } };
     desks.push(me);
 
@@ -116,6 +120,7 @@
       if (swapH && swapH.setBlocked) { swapH.setBlocked(state.blocked); }
       if (otcH && otcH.setBlocked) { otcH.setBlocked(state.blocked); }
       if (cdsH && cdsH.setBlocked) { cdsH.setBlocked(state.blocked); }
+      if (cdsnH && cdsnH.setBlocked) { cdsnH.setBlocked(state.blocked); }       /* CDS-107 */
     }
     function paintTabs() {
       T.clear(tabsBox).appendChild(T.tabs(SUBTABS, state.sub, function (k) {
@@ -127,6 +132,15 @@
     function paintSub() {
       root.className = 'otc-desk sub-' + state.sub;
       paintTabs();
+      cdsnBox.hidden = state.sub !== 'cds';                                     /* CDS-107: the single-name CDS desk */
+      if (state.sub === 'cds') {
+        ticketBox.hidden = true; cdsBox.hidden = true;
+        if (!cdsnH) {
+          cdsnH = T.mountOptional('cdsnames', cdsnBox, { account_id: acct, blocked: state.blocked, note: false,
+            onBooked: function () { if (swapH && swapH.refresh) { swapH.refresh(); } } }, 'the single-name CDS desk');
+        } else if (cdsnH.refresh) { cdsnH.refresh(); }
+        return;
+      }
       cdsBox.hidden = state.sub !== 'credit';
       if (state.sub === 'credit') {
         ticketBox.hidden = true;
@@ -168,6 +182,7 @@
         if (swapH && swapH.unmount) { try { swapH.unmount(); } catch (e) { console.error('swapticket unmount', e); } }
         if (otcH && otcH.unmount) { try { otcH.unmount(); } catch (e) { console.error('otcticket unmount', e); } }
         if (cdsH && cdsH.unmount) { try { cdsH.unmount(); } catch (e) { console.error('cdsticket unmount', e); } }
+        if (cdsnH && cdsnH.unmount) { try { cdsnH.unmount(); } catch (e) { console.error('cdsnames unmount', e); } }   /* CDS-107 */
       }
     };
   }

@@ -96,10 +96,12 @@
     var fx = sw() && sw().fmtPct ? sw().fmtPct : function (x) { return String(x); };
     if (c.kind === 'TRS') { return 'reset ' + (f.entry == null ? 'n/a' : T.fmt.px(f.entry)) + ' / now ' + (f.current == null ? 'not observed' : T.fmt.px(f.current)); }
     if (c.kind === 'IRS') { return 'fixed ' + (f.entry == null ? 'n/a' : fx(f.entry)) + ' / par now ' + (f.current == null ? 'n/a' : fx(f.current)); }
+    if (c.kind === 'CDS' && T.components.cdsnames) { return T.components.cdsnames.dealtNow(c); }   /* CDS-107 */
     if (c.kind === 'CDX') { return 'dealt ' + (f.entry || 'n/a') + ' / now ' + (f.current || 'not observed'); }
     return '';
   }
   function sensitivity(c) {
+    if (c.kind === 'CDS' && T.components.cdsnames) { return T.components.cdsnames.sensitivity(c); }   /* CDS-107: CS01 */
     if (c.kind === 'CDX') { var d = c.detail || {}; return d.cs01 == null && d.cs01_c == null ? 'CS01 n/a' : 'CS01 ' + money(d, 'cs01'); }
     return c.dv01 == null && c.dv01_c == null ? 'n/a' : 'DV01 ' + money(c, 'dv01');
   }
@@ -124,6 +126,9 @@
     if (c.status === 'OPEN') {
       actions.appendChild(T.h('button', { class: 'btn small', title: 'terminate at the current model value with the dealer', onclick: function () {
         if (s && s.terminate) { s.terminate(c.contract_id, { account_id: c.account_id }); } } }, 'Terminate ...'));
+      if (c.kind === 'CDS' && st.data && st.data.credit_event_offered_cds && T.components.cdsnames) {   /* CDS-107: owner-triggered only */
+        actions.appendChild(T.components.cdsnames.creditButton(st, c, function () { load(st); }));
+      }
       if (c.kind === 'CDX' && st.data && st.data.credit_event_offered) {
         actions.appendChild(T.h('button', { class: 'btn small', title: 'Simulate credit event: ' + CREDIT_LABEL, onclick: function () { creditDialog(st, c); } }, 'Credit event ...'));
       }
@@ -175,6 +180,7 @@
     if (c.kind === 'FX_FORWARD' && s && s.recordRows) { s.recordRows(d.pricing_record).forEach(function (r) { kv.push(r); }); }
     if (s && s.confRows) { s.confRows(c.confirmation || d.confirmation).forEach(function (r) { kv.push(r); }); }
     box.appendChild(T.kvGrid(kv));
+    if (c.kind === 'CDS' && T.components.cdsnames) { box.appendChild(T.components.cdsnames.creditSection(c, st)); }   /* CDS-107 */
     if (c.kind === 'CDX') {
       var ev = d.credit_events || [];
       var cb = T.h('div', { class: 'section' }, T.h('h3', null, 'Credit events', T.h('small', null, ' index factor ' + (d.index_factor || '1.000000') + ' of ' +

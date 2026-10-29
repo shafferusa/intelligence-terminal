@@ -204,7 +204,7 @@
 
     var LINK_WORDS = { fill: 'fill', otc_im: 'OTC initial margin', otc: 'OTC margin', otc_vm: 'OTC variation margin', swap_vm: 'swap variation margin', fx_deal: 'FX deal',
                        settlement: 'settlement', loan: 'loan', pb: 'PB financing', futures_vm: 'futures variation margin', vm: 'variation margin', borrow: 'stock borrow',
-                       repo: 'repo', private: 'private trade', swapvm: 'swap variation margin', cdxcpn: 'CDX coupon', asof_sweep: 'as-of sweep, batch',
+                       repo: 'repo', private: 'private trade', swapvm: 'swap variation margin', cdxcpn: 'CDX coupon', cdscpn: 'CDS coupon', /* CDS-107 */ asof_sweep: 'as-of sweep, batch',
                        asof_funding: 'as-of funding, line' };
     function linkedHtml(r) {
       if (!r.linked_id) { return '<span class="muted">' + T.esc(r.kind === 'SWEEP_OUT' ? 'idle cash after the close' : '') + '</span>'; }
@@ -216,7 +216,7 @@
       var core = parts.shift();
       var tail = parts.map(function (x) { return x === 'open' ? 'at booking' : x; }).join(' ');
       var what = word + ' ' + core + (tail ? ' (' + tail + ')' : '');
-      var href = /^(SWP|OTC|CDX)-/.test(core) ? T.router.account(acct, 'markets/otc') : T.router.account(acct, 'transactions');
+      var href = /^(SWP|OTC|CDX|CDS)-/.test(core) ? T.router.account(acct, 'markets/otc') : T.router.account(acct, 'transactions');   /* CDS-107 */
       return '<a href="' + T.esc(href) + '" title="what this sweep funded">' + T.esc(what) + '</a>';
     }
     /* FINSIM1 C21 / C9b: the restricted part of a currency row = its "restricted" adjustment (0.00 when none; n/a from a server

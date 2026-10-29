@@ -115,7 +115,7 @@ THRESHOLDS = {"CONCENTRATION": Decimal("0.25"), "LEVERAGE": Decimal("2"), "OPTIO
 FUTURES_BUCKET = {"CME_EQUITY_INDEX": "Index futures (notional)", "CME_RATES": "Rates futures (notional)", "NYMEX_ENERGY": "Energy futures (notional)",
                   "COMEX_METALS": "Metals futures (notional)", "CBOT_GRAINS": "Grain futures (notional)", "CME_FX": "FX futures (notional)"}
 BUCKET_ORDER = ["US equities", "Bonds", "Index futures (notional)", "Rates futures (notional)", "Energy futures (notional)", "Metals futures (notional)",
-                "Grain futures (notional)", "FX futures (notional)", "Listed options (delta USD)", "TRS (underlying exposure)", "Credit derivatives (CDX notional)", "OTC swaps (notional)",
+                "Grain futures (notional)", "FX futures (notional)", "Listed options (delta USD)", "TRS (underlying exposure)", "Credit derivatives (CDX notional)", "Credit derivatives (single-name CDS notional)", "OTC swaps (notional)",   # CDS-107
                 "OTC options and forwards", "FX forwards (notional)", "Private / illiquid", "Private credit"]
 COST_GLS = ("1100", "1110", "1120", "1130", "1700", "2600", "2900")
 NOTE = "warnings only - this page informs; funding, borrow and recall mechanics still apply"
@@ -127,7 +127,7 @@ SEVERITY_INFO = "INFO"
 FUT_TENOR = {"ZT": Decimal(2), "ZF": Decimal(5), "ZN": Decimal(10), "TN": Decimal(10), "ZB": Decimal(30), "UB": Decimal(30)}
 TENOR_BUCKETS = (("0-2y", Decimal(2)), ("2-5y", Decimal(5)), ("5-10y", Decimal(10)), ("10-30y", Decimal(30)), ("30y+", None))
 OTC_KIND_LABEL = {"IRS": "IRS", "TRS": "TRS", "XCCY": "XCCY", "EQ_OPTION": "OTC equity option", "FX_OPTION": "OTC FX option", "EQ_FORWARD": "Equity forward",
-                  "FX_FORWARD": "FX forward", "CDX": "CDX"}
+                  "FX_FORWARD": "FX forward", "CDX": "CDX", "CDS": "single-name CDS"}   # CDS-107
 #: one plain sentence per scenario group (BM-28): shown once under the scenarios table, never repeated per row
 SCENARIO_NOTES = [
     {"group": "equities", "title": "Equity moves",
@@ -163,6 +163,11 @@ DEFINITIONS = {
                     "contract notional (units x reset price) only when no underlying price is observed, said so.",
     "cdx": "CDX exposure: the credit notional with its sign - protection bought is short credit (negative), protection sold long credit; its risk "
            "measure is CS01 (the credit block).",
+    # CDS-107: the single-name CDS words (the single-name block and the Portfolio footer)
+    "cds": "Single-name CDS exposure: the credit notional with its sign - protection bought is short credit (negative), protection sold long "
+           "credit; its risk measures are CS01 and jump to default (the single-name CDS block).",
+    "jtd": "Jump to default: what the contract would gain or lose if the company defaulted now at 40 % recovery = +/- (1 - 40 %) x notional less "
+           "the contract's value now (+ for protection bought, - for protection sold).",
     "irs": "IRS / cross-currency swaps: measured by DV01 (the P&L for +1 bp of the swap curve), never by notional.",
     "futures": "Futures: notional exposure = contracts x multiplier x price; their market value is 0 (daily variation margin)."}
 
@@ -403,6 +408,8 @@ def contract_label(inst, extra: Optional[dict] = None) -> str:
         return f"IRS{side}{rate}" + (f" to {mat}" if mat else "")
     if kind == "XCCY":
         return name.split(",")[0] if name.startswith("XCCY") else "XCCY"
+    if kind == "CDS":                                   # CDS-107: "ORCL 5Y CDS buy protection"
+        return f"{spec.get('ticker') or und or 'CDS'} {spec.get('tenor_years') or '?'}Y CDS {'sell' if spec.get('receiver') else 'buy'} protection"
     if kind == "CDX":
         return f"{spec.get('index') or 'CDX'} S{spec.get('series') or '?'} 5Y {'sell' if spec.get('receiver') else 'buy'} protection"
     label = OTC_KIND_LABEL.get(kind, kind or "OTC")
@@ -439,6 +446,10 @@ def otc_exposure(p, rate: Optional[Decimal] = None) -> dict:
         v = base(p.notional_c)
         return {"kind": "TRS", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None,
                 "basis": "the contract notional (reference units x the reset price): no underlying price observed now"}
+    if kind == "CDS":                                   # CDS-107
+        v = base(p.notional_c)
+        return {"kind": "CDS", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None,
+                "basis": "single-name credit notional: protection bought = short credit (negative), sold = long credit"}
     if kind == "CDX":
         v = base(p.notional_c)
         return {"kind": "CDX", "exposure_c": None if v is None else sign * abs(v), "dv01_c": None,
@@ -546,6 +557,11 @@ def _pos_risk(services, snap, p, now: int) -> PosRisk:
             r.bucket, r.exposure_c, r.exposure_basis = "TRS (underlying exposure)", x["exposure_c"], x["basis"]
             r.delta_c = r.exposure_c
             r.gross_notional_c = None if r.exposure_c is None else abs(r.exposure_c)
+        elif swap_kind == "CDS":                          # CDS-107: single-name credit notional, outside the headline
+            r.bucket, r.headline = "Credit derivatives (single-name CDS notional)", False
+            r.exposure_c = None if r.notional_base_c is None else sign * abs(r.notional_base_c)
+            r.exposure_basis = ("single-name credit notional: bought protection = short credit (not in the headline exposure; CS01 and jump to"
+                                " default in the single-name CDS block)")
         elif swap_kind == "CDX":
             r.bucket, r.headline = "Credit derivatives (CDX notional)", False
             r.exposure_c = None if r.notional_base_c is None else sign * abs(r.notional_base_c)
@@ -867,6 +883,7 @@ class RiskView:
     account_names: Dict[str, str] = field(default_factory=dict)
     definitions: Dict[str, str] = field(default_factory=dict)
     credit_derivatives: Optional[dict] = None
+    single_name_cds: Optional[dict] = None                       # CDS-107: the single-name CDS block (swaps_cds_names.risk_block)
     by_sector: List[dict] = field(default_factory=list)          # PORTFOLIO-19: the headline exposure per sector (sums to the headline gross)
     reg_t: dict = field(default_factory=dict)                    # task 13: per account from collateral.summary (C16), or why it is unavailable
     headline_note: str = ""                                      # V104R2-BW-08: which buckets add up to the gross tile
@@ -1152,6 +1169,11 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     by_book = _by_book(services, rows, accounts, nav)
     counterparties = _counterparties(services, list(nav.lifetime_ids), snap)
     credit = _credit_derivatives(services, rows, base_c)
+    single = _single_name_cds(services, rows, base_c)               # CDS-107: CS01, jump to default, by-name concentration, scenarios
+    for sw in ((single or {}).get("warnings") or []):
+        if isinstance(sw, dict) and sw.get("code"):
+            warnings.append(_w(str(sw["code"]), str(sw.get("message") or ""), sw.get("account_id"), sw.get("instrument_id"), sw.get("value"),
+                               sw.get("threshold"), str(sw.get("severity") or SEVERITY_WARN)))
     # warnings
     for r in conc:
         pct = _pct(r.exposure_c, base_c)
@@ -1184,6 +1206,7 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     view.scenario_notes = [dict(n) for n in SCENARIO_NOTES]
     view.counterparties, view.account_names, view.definitions = counterparties, names, dict(DEFINITIONS)
     view.credit_derivatives = credit
+    view.single_name_cds = single                                    # CDS-107
     view.by_sector = _by_sector(head, base_c)
     view.reg_t = reg_t_block(services, scope, accounts, names, snapshot=snap)     # P1b-R2: the Reg T panel on this report's marks
     view.headline_note = ("the buckets marked 'in gross' add up to the gross exposure tile (long + short headline exposure); the others - IRS / "
@@ -1569,6 +1592,23 @@ def _credit_derivatives(services, rows: List[PosRisk], base_c: int) -> Optional[
         return fn(services, rows, base_c)
     except Exception as e:   # noqa: BLE001 - named on the page, never a guessed number
         return {"error": f"{type(e).__name__}: {e}"[:200], "rows": []}
+
+
+def _single_name_cds(services, rows: List[PosRisk], base_c: int) -> Optional[dict]:
+    """CDS-107: the single-name CDS block of the Risk page (``services.swaps_cds_names.risk_block``: CS01, jump to default, the by-name
+    concentration, spread and equity scenarios, the CDS_JTD_CONCENTRATION warnings) from the SWAP rows of kind CDS; None without such rows
+    or without the module; a failure is named, never a guessed number."""
+    mine = [r for r in rows if getattr(r, "kind", None) == "SWAP" and (getattr(r, "extra", None) or {}).get("kind") == "CDS"]
+    if not mine:
+        return None
+    mod = getattr(services, "swaps_cds_names", None)
+    fn = getattr(mod, "risk_block", None) if mod is not None else None
+    if not callable(fn):
+        return None
+    try:
+        return fn(services, mine, base_c)
+    except Exception as e:   # noqa: BLE001 - named on the page, never a guessed number
+        return {"error": f"{type(e).__name__}: {e}"[:200], "rows": [], "warnings": []}
 
 
 def _unpriced_warning(r: PosRisk) -> dict:

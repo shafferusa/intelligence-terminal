@@ -96,8 +96,8 @@ SWEEP_LOOKBACK_DAYS = 14
 
 # accrual kinds whose line functions live in later packages: kind -> (services attribute, table, id column, contract kinds)
 ACCRUAL_PRODUCT: Dict[str, Tuple[str, str, str, Tuple[str, ...]]] = {
-    "swaprcv": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX")),
-    "swappay": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX")),
+    "swaprcv": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX", "CDS")),
+    "swappay": ("swaps", "otc_contracts", "contract_id", ("IRS", "XCCY", "CDX", "CDS")),
     "trsfin": ("swaps_trs", "otc_contracts", "contract_id", ("TRS",)),
     "pccpn": ("private_credit", "private_loans", "loan_id", ()),
     "pcoid": ("private_credit", "private_loans", "loan_id", ()),

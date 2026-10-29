@@ -499,13 +499,13 @@ _FUT_IM_RE = re.compile(r"initial margin [+-]?[0-9][0-9,]*\.[0-9]{2} \(([^)]*)\)
 
 # ---- V104R1-04 (1.0.4 fixer): trader wording for the link ids, account ids, codes and convention keys inside the texts a page shows ----
 LINK_WORDS = {"fill": "fill", "otc": "OTC contract", "swapvm": "swap variation margin", "vm": "variation margin", "swappay": "swap payment",
-              "cdxcpn": "CDX coupon", "trsreset": "TRS reset", "trsdiv": "TRS dividend", "xccy": "cross-currency swap", "xccypay": "cross-currency swap payment",
+              "cdxcpn": "CDX coupon", "cdscpn": "CDS coupon", "trsreset": "TRS reset", "trsdiv": "TRS dividend", "xccy": "cross-currency swap", "xccypay": "cross-currency swap payment",
               "xccyfx": "cross-currency swap FX reset", "pay": "monthly charge", "pbmin": "prime-broker monthly minimum", "pb": "PB interest",
               "borrow": "stock borrow", "sec_loan": "securities loan", "repo": "repo", "settlement": "settlement", "loan": "loan", "private_loan": "private loan",
               "fx_deal": "FX deal", "coupon": "coupon", "div": "dividend", "divpay": "dividend payment", "expiry": "expiry", "final": "final settlement"}
 LINK_STEPS = {"open": "at booking", "terminate": "termination", "start": "start", "end": "maturity", "close": "close"}
 REF_WORDS = {"otc": "contract", "fx_deal": "deal", "sec_loan": "securities loan", "private_loan": "private loan", "borrow": "borrow"}
-CODE_ACRONYMS = {"FX", "OTC", "CDX", "PB", "IM", "VM", "TRS", "IRS", "XCCY", "FIFO", "SOFR", "NAV", "US", "USD", "ECP", "QP", "ADV", "DV01", "CS01", "ETF",
+CODE_ACRONYMS = {"FX", "OTC", "CDX", "CDS", "JTD", "PB", "IM", "VM", "TRS", "IRS", "XCCY", "FIFO", "SOFR", "NAV", "US", "USD", "ECP", "QP", "ADV", "DV01", "CS01", "ETF",
                  "GC", "HTB", "CSA", "ISDA", "PBA", "SHO", "GTC", "AON", "MKT", "LMT", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "OCC", "CME", "PDT", "API"}
 CODE_WORDS = {"ACCT_DAY": "accounting day", "FUT_MARGIN": "futures margin", "OPT_MARGIN": "option margin", "EXCESS_LIQ": "excess liquidity",
               "BUY_CCY": "currency bought", "SELL_CCY": "currency sold", "PB_ONBOARDED": "prime broker onboarded", "OTC_BOOKED": "OTC contract booked",
@@ -1254,11 +1254,12 @@ def portfolio_footer(rt, positions, snap) -> dict:
     # PORTFOLIO-17: the OTC exposure beside the futures notional, with the definitions Risk uses (risk.otc_exposure / DEFINITIONS): a TRS at
     # its reference units x the underlying price (signed: paying the total return is short), a CDX at its notional with its credit sign
     # (protection bought = short credit), an IRS by its DV01 (never its notional)
-    exp = {"trs_long_c": 0, "trs_short_c": 0, "cdx_long_credit_c": 0, "cdx_short_credit_c": 0, "irs_dv01_c": 0, "other_notional_c": 0, "missing": [], "basis": {}}
+    exp = {"trs_long_c": 0, "trs_short_c": 0, "cdx_long_credit_c": 0, "cdx_short_credit_c": 0, "irs_dv01_c": 0, "other_notional_c": 0, "missing": [], "basis": {},
+           "cds_long_credit_c": 0, "cds_short_credit_c": 0}       # CDS-107: single-name CDS credit long / short
     definitions: Dict[str, str] = {}
     try:
         from .risk import DEFINITIONS, otc_exposure
-        definitions = {k: DEFINITIONS[k] for k in ("market_value", "exposure", "trs", "cdx", "irs", "futures") if k in DEFINITIONS}
+        definitions = {k: DEFINITIONS[k] for k in ("market_value", "exposure", "trs", "cdx", "cds", "jtd", "irs", "futures") if k in DEFINITIONS}   # CDS-107
         for p in positions:
             if p.kind != "SWAP":
                 continue
@@ -1266,6 +1267,8 @@ def portfolio_footer(rt, positions, snap) -> dict:
             k = x.get("kind")
             if k == "TRS" and x.get("exposure_c") is not None:
                 exp["trs_long_c" if x["exposure_c"] >= 0 else "trs_short_c"] += abs(int(x["exposure_c"]))
+            elif k == "CDS" and x.get("exposure_c") is not None:      # CDS-107
+                exp["cds_long_credit_c" if x["exposure_c"] >= 0 else "cds_short_credit_c"] += abs(int(x["exposure_c"]))
             elif k == "CDX" and x.get("exposure_c") is not None:
                 exp["cdx_long_credit_c" if x["exposure_c"] >= 0 else "cdx_short_credit_c"] += abs(int(x["exposure_c"]))
             elif k in ("IRS", "XCCY") and x.get("dv01_c") is not None:

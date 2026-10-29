@@ -229,10 +229,10 @@ _MONEY_RE = re.compile(r"^[0-9]+(\.[0-9]{1,2})?$")           # decimal USD, at m
 FIELDS_NOTE = ("Commissions, financing, stock-borrow fees, the OTC dealing half-widths and the initial-margin terms of this prime broker;"
                " modelled assumptions - real PB schedules are negotiated.")
 
-OTC_LIVE = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX")
+OTC_LIVE = ("IRS", "TRS", "XCCY", "EQ_OPTION", "FX_OPTION", "EQ_FORWARD", "FX_FORWARD", "CDX", "CDS")
 OTC_LABELS = {"IRS": "interest-rate swap", "TRS": "total return swap", "XCCY": "cross-currency swap", "EQ_OPTION": "OTC equity option",
               "FX_OPTION": "OTC FX option", "EQ_FORWARD": "equity forward", "FX_FORWARD": "FX forward",
-              "CDX": "CDS index (CDX.NA.IG / CDX.NA.HY 5Y)"}
+              "CDX": "CDS index (CDX.NA.IG / CDX.NA.HY 5Y)", "CDS": "single-name CDS (US reference entities)"}
 #: OTC products that are not offered (400 NOT_IN_THIS_BUILD) - and the two generic names, which are not products: an OTC option is
 #: booked as EQ_OPTION or FX_OPTION, a forward as EQ_FORWARD or FX_FORWARD
 OTC_NOT_BUILT = {"SWAPTION": "swaptions", "FRA": "forward rate agreements", "CAP": "interest-rate caps", "FLOOR": "interest-rate floors"}

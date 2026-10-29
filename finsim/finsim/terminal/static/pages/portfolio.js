@@ -205,6 +205,7 @@
       if (fut) { ex.push('<span title="' + T.esc(def.futures || 'contracts x multiplier x mark') + '">futures notional long / short ' + T.esc(fut) + '</span>'); }
       if (T.num(x, 'trs_long') || T.num(x, 'trs_short')) { ex.push('<span title="' + T.esc(def.trs_exposure || def.trs || '') + '">TRS long / short ' + T.esc(T.money(x, 'trs_long') + ' / ' + T.money(x, 'trs_short')) + '</span>'); }
       if (T.num(x, 'cdx_long_credit') || T.num(x, 'cdx_short_credit')) { ex.push('<span title="' + T.esc(def.cdx || '') + '">CDX credit long / short ' + T.esc(T.money(x, 'cdx_long_credit') + ' / ' + T.money(x, 'cdx_short_credit')) + '</span>'); }
+      if (T.components.cdsnames && T.components.cdsnames.footer) { var cf = T.components.cdsnames.footer(x, def); if (cf) { ex.push(cf); } }   /* CDS-107 */
       if (T.num(x, 'irs_dv01')) { ex.push('<span title="' + T.esc(def.irs || '') + '">IRS DV01 ' + T.esc(T.money(x, 'irs_dv01')) + ' per +1 bp</span>'); }
       return { account_id: T.esc(acctSel.value || classSel.value ? 'totals (all rows)' : 'totals'),
                symbol: '<div style="white-space:normal;min-width:200px;max-width:300px;line-height:1.3">' +
