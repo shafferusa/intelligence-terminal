@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1920, Two Scientists Fit a Near-Perfect Curve to America&rsquo;s Growth and Capped It at 197 Million. The Country Blew Past It by 1967. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "In 1920, Two Scientists Fit a Near-Perfect Curve to America’s Growth and Capped It at 197 Million. The Country Blew Past It by 1967.",
+    "path": "reports/2026/10/2026-10-29-learn.html",
+    "summary": "Day 7 of the Connected Path: growth capped by a ceiling traces a predictable S-shaped (logistic) curve, but the data cannot pin down where that ceiling actually sits until growth has already passed its fastest point — the trap that caught two demographers who fit America's population 120 years deep and still missed its real ceiling by over 130 million people.",
+    "headlines": [
+      "Day 7 of 293 · Mathematics: bounded growth traces an S-curve, dN/dt = rN(1−N/K), but early data can't fix the ceiling K",
+      "Pearl and Reed's 1920 fit to 120 years of census data capped the US at 197 million; the real count passed 200 million by 1967 and hit 331 million in 2020",
+      "Watch or Read: Growth, ch. 1, ‘Trajectories’ (about 30 min)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-10-29T04:58:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>In 1920, Two Scientists Fit a Near-Perfect Curve to America&rsquo;s Growth and Capped It at 197 Million. The Country Blew Past It by 1967.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        Growth that runs up against a ceiling traces a predictable S-shaped curve &mdash; but the
+        curve&rsquo;s shape and the location of its ceiling are two different questions, and the data
+        cannot answer the second one until growth has already passed its fastest point.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 7 of 293 &middot; Mathematics 7 of 24 &middot; Logistic growth and S-curves</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A near-perfect fit to 120 years of census data</h3>
+      <p>
+        In June 1920, two scientists at Johns Hopkins &mdash; the biologist Raymond Pearl and the
+        statistician Lowell Reed &mdash; published a short paper in the <em>Proceedings of the
+        National Academy of Sciences</em>. They had taken every US census count from 1790 to 1910 and
+        fit it to a curve the Belgian mathematician Pierre-Fran&ccedil;ois Verhulst had proposed for
+        populations back in 1838, then largely forgotten for decades: the logistic. The fit was
+        remarkable &mdash; smooth, close, and consistent across 120 years of a young, fast-growing
+        country. Pearl and Reed&rsquo;s curve said American growth had already passed its fastest point,
+        around 1914, and from there would bend over and level off at a ceiling of about 197,273,000
+        people.
+      </p>
+      <p>
+        Pearl did not stop at the census. Convinced he had found something closer to a law of nature
+        than a convenient fit, he went on to grow fruit flies in bottles and yeast in flasks, and found
+        the same S-shaped curve there too. If one equation could describe flies, yeast and the
+        population of the United States, Pearl argued, it deserved to be taken seriously as a general
+        law of growth.
+      </p>
+      <p>
+        On November 20, 1967, a population clock in the Commerce Department&rsquo;s lobby in
+        Washington ticked past 200 million &mdash; already more than two million above Pearl and
+        Reed&rsquo;s supposed ceiling, with the country still growing. By the 2020 Census the count
+        stood at roughly 331 million, nearly 134 million above the number two careful scientists had
+        fit to twelve decades of real data. If the curve matched the past so well, how could its own
+        ceiling be off by more than a hundred million people?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        When a growing quantity is limited by some ceiling, it tends to trace a specific S-shaped
+        curve &mdash; slow at first, then sharply faster, then slower again as it closes in on the
+        limit &mdash; and that shape is a real, recurring pattern in bounded growth, not a coincidence.
+        But the curve&rsquo;s shape and the <em>height</em> of its ceiling are two separate facts, and
+        fitting the shape well does not automatically tell you the height.
+      </p>
+      <p>
+        Specifically: while a population, a market or a disease outbreak is still on the accelerating
+        part of the curve, the data in hand can be fit almost equally well by curves heading toward
+        very different ceilings. Only once growth has visibly passed its fastest point and begun to
+        bend over does the data start to pin the ceiling down with any confidence. Pearl and Reed had
+        excellent data and did the arithmetic honestly &mdash; their mistake was trusting a ceiling
+        their own data had not yet earned the right to reveal.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start from Day 2&rsquo;s exponential growth: a quantity that grows by a constant percentage of
+        itself per period, compounding without limit. Real growth is rarely that generous forever.
+        Logistic growth keeps the same instinct &mdash; the rate of change still depends on how much
+        currently exists &mdash; but adds a second factor: how much room is left beneath a ceiling. Day
+        6 wrote a differential equation as a rule connecting a quantity to its own rate of change; the
+        logistic equation is exactly that kind of rule, with a braking term added: dN/dt = rN(1 &minus;
+        N/K). Here N is the size of the population (or market, or outbreak) at time t, r is the
+        unconstrained growth rate it would have with no ceiling at all, and K is the ceiling itself,
+        the <strong>carrying capacity</strong>.
+      </p>
+      <p>
+        Read the braking term on its own: (1 &minus; N/K). When N is small compared with K, that term
+        sits close to 1, so dN/dt &asymp; rN &mdash; this is Day 2&rsquo;s unconstrained exponential
+        growth again, because when the ceiling is far away it barely matters. As N climbs toward K, N/K
+        climbs toward 1, so (1 &minus; N/K) shrinks toward zero, and the growth rate shrinks with it
+        &mdash; not because anything is being actively suppressed, but because there is simply less
+        room left to grow into. That single multiplicative term is the whole mechanism: the same
+        exponential impulse, discounted by how much of the ceiling has already been used up.
+      </p>
+      <p>
+        Solved, the equation gives the logistic function itself: N(t) = K / (1 + e<sup>&minus;r(t &minus;
+        t<sub>0</sub>)</sup>), an S-shaped curve that starts near zero, rises, and flattens toward K as
+        t grows large. The constant t<sub>0</sub> marks the curve&rsquo;s midpoint in time &mdash; and
+        that midpoint is not arbitrary. Treat the growth rate itself, R(N) = rN(1 &minus; N/K) = rN
+        &minus; rN&sup2;/K, as a function of N rather than of time, and ask where it is largest. Its
+        derivative with respect to N is dR/dN = r &minus; 2rN/K; setting that to zero and solving gives
+        N = K/2. The growth rate is highest exactly when the quantity has reached half its ultimate
+        ceiling &mdash; the <strong>inflection point</strong>. Before that point the curve is
+        accelerating (concave up, looking almost exponential); after it, the curve is decelerating
+        (concave down, bending toward the ceiling) even though N is still rising.
+      </p>
+      <p>
+        That inflection point is also where the trouble starts for anyone trying to fit the curve to
+        real data in real time. Before a growth process has passed its inflection, the observed data
+        looks almost indistinguishable from several different logistic curves with quite different
+        values of K: a curve heading toward a ceiling of 200 million and a curve heading toward a
+        ceiling of 400 million can produce nearly the same numbers for the first several decades,
+        because both are still in their early, near-exponential phase, where the braking term
+        (1 &minus; N/K) has barely begun to bite. Statisticians call this a problem of
+        <strong>identifiability</strong>: the data, as given, simply does not contain enough
+        information to distinguish between those competing ceilings, no matter how well any one of
+        them happens to fit. Only once growth has visibly bent over &mdash; once you can see the
+        deceleration with your own eyes in the data &mdash; does the arithmetic start to narrow K down
+        with real confidence.
+      </p>
+      <p>
+        Pearl and Reed&rsquo;s own fitted curve placed the United States&rsquo; inflection point around
+        1914, just six years before they published. Their 1790&ndash;1910 data had barely begun to show
+        the bend their model assumed was already underway, which meant the ceiling their fit produced
+        was far closer to an extrapolation of an assumed shape than a conclusion the data had actually
+        delivered. And the real world did not hold still to let the extrapolation stand: large-scale
+        immigration before restrictive 1920s quota laws, the postwar Baby Boom, rising life expectancy,
+        and twentieth-century gains in agricultural productivity all moved the country&rsquo;s real
+        capacity for population in ways no curve fit to 1790&ndash;1910 data could have anticipated. Pearl&rsquo;s
+        further move &mdash; generalizing from fruit flies and yeast to a universal &ldquo;law of
+        population growth&rdquo; &mdash; compounded the error: a flask of yeast has a fixed, physically
+        enforced ceiling (the sugar it can ferment before the alcohol it produces kills it), while a
+        national population&rsquo;s ceiling is not fixed by anything remotely so simple, and later
+        demographers did not accept Pearl&rsquo;s claim to have found a general law.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        That is the answer to the puzzle. The S-shape itself was not wrong &mdash; bounded growth
+        genuinely does tend to look logistic, and Pearl and Reed&rsquo;s equation fit 120 years of real
+        census counts about as well as a simple model ever fits history. What failed was the leap from
+        a good fit on the accelerating half of the curve to a confident number for where the curve would
+        eventually flatten. In 1920 the US was still too close to its own inflection point for the data
+        to have earned that number, and the following decades changed the real constraints on American
+        population growth in ways a backward-looking curve could not see coming. The curve described the
+        shape of the past faithfully; it was never equipped to measure a ceiling the future itself had
+        not yet fixed.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Logistic growth</dt>
+        <dd>Growth whose rate depends on both how much of a quantity already exists and how much room
+        remains beneath a ceiling; the exponential growth of Day 2, discounted as that room runs out.</dd>
+        <dt>Carrying capacity (K)</dt>
+        <dd>The ceiling a logistic quantity approaches but, in the idealized model, never exceeds &mdash;
+        an assumption built into the model, not something early data can measure directly.</dd>
+        <dt>Inflection point</dt>
+        <dd>The point, at N = K/2, where the growth rate itself is largest; growth accelerates before it
+        and decelerates after it, even while still rising.</dd>
+        <dt>S-curve</dt>
+        <dd>The sigmoid shape traced by logistic growth: slow, then fast, then slow again as the ceiling
+        nears.</dd>
+        <dt>Identifiability</dt>
+        <dd>Whether a given set of data actually contains enough information to pin down a model&rsquo;s
+        parameters; logistic curves are poorly identified &mdash; many different ceilings fit almost
+        equally well &mdash; before the inflection point.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Reading Where a Technology Sits on Its S</h3>
+      <p>
+        Technology adoption inside a population traces the same shape, which is how to read the
+        adoption link of Logan&rsquo;s car chain for any technology, not just the automobile. Diego
+        Comin and Bart Hobijn&rsquo;s cross-country dataset (&ldquo;An Exploration of Technology
+        Diffusion,&rdquo; <em>American Economic Review</em>, 2010) traces adoption curves for
+        technologies from electricity to the internet across dozens of countries and finds adoption
+        lags between countries that stretch across decades &mdash; some countries hit their own
+        inflection point for a given technology generations after others. The practical trick for
+        reading where any single technology sits on its S, without knowing the final ceiling in advance,
+        is to track the <em>annual point gain</em> rather than the level itself: that gain rises while
+        the technology is still on the accelerating half of its curve, peaks near the inflection, and
+        shrinks as the ceiling approaches &mdash; the same arithmetic that made Pearl and Reed&rsquo;s
+        growth rate fastest at N = K/2.
+      </p>
+      <div class="worked">
+        <p><strong>1. Read the early, accelerating phase.</strong> Pew Research Center&rsquo;s surveys
+        put US adult smartphone ownership at 35% in 2011 and 56% in 2013 &mdash; a gain of about 21
+        points in two years, roughly 10&ndash;11 points a year: the steep early rise of an S-curve still
+        well below any plausible ceiling.</p>
+        <p><strong>2. Watch the annual gain, not just the level.</strong> By 2016 ownership reached 77%
+        &mdash; past the halfway mark between 0% and a near-100% ceiling, with the pace of gain already
+        smaller than the 2011&ndash;2013 stretch, consistent with having crossed the inflection.</p>
+        <p><strong>3. Watch it slow further.</strong> By 2024&ndash;2025, ownership had reached 91% and
+        sat flat there across both years &mdash; a gain of only about 14 points over the eight years
+        since 2016, versus 42 points in the five years before it: the deceleration that marks the
+        curve&rsquo;s upper bend.</p>
+        <p><strong>4. Guess the ceiling, cautiously.</strong> A plateau at 91% rather than 100% suggests
+        the real ceiling for smartphone ownership sits below full saturation &mdash; some adults, by
+        choice, cost or access, may never adopt one.</p>
+        <p><strong>5. Apply the Story&rsquo;s caution to the guess itself.</strong> That ceiling read
+        from two flat years is still an inference, not a measurement with the error bars of a physical
+        constant &mdash; exactly the gap that caught Pearl and Reed, just with a much shorter and much
+        more recent run of data.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">dN/dt = rN(1 &minus; N/K) &nbsp;&rArr;&nbsp; N(t) = K / (1 + e<sup>&minus;r(t &minus; t<sub>0</sub>)</sup>)</p>
+        <p class="expr-spoken visually-hidden">The rate of change of N with respect to t equals r times N times the quantity 1 minus N over K. This implies N of t equals K divided by the quantity 1 plus e to the negative r times the quantity t minus t-naught.</p>
+        <dl>
+          <dt>N</dt>
+          <dd>the size of the growing quantity (a population, an adopting market, an outbreak) at time t</dd>
+          <dt>r</dt>
+          <dd>the unconstrained growth rate &mdash; how fast N would grow with no ceiling at all</dd>
+          <dt>K</dt>
+          <dd>the carrying capacity: the ceiling N approaches but, in the idealized model, never exceeds</dd>
+          <dt>t<sub>0</sub></dt>
+          <dd>the time at which N reaches the inflection point, K/2, where growth is fastest</dd>
+        </dl>
+      </div>
+      <p>The decisive step is finding where the growth rate itself peaks, treating it as a function of N:</p>
+      <div class="formula">
+        <p class="expr">R(N) = rN &minus; rN&sup2;/K &nbsp;&rArr;&nbsp; dR/dN = r &minus; 2rN/K = 0 &nbsp;&rArr;&nbsp; N = K/2</p>
+        <p class="expr-spoken visually-hidden">The growth rate R of N equals r N minus r N squared over K. Its derivative with respect to N equals r minus 2 r N over K. Setting that to zero and solving gives N equals K over 2.</p>
+        <dl>
+          <dt>R(N)</dt>
+          <dd>the instantaneous growth rate, dN/dt, written as a function of the current size N rather
+          than of time</dd>
+          <dt>N = K/2</dt>
+          <dd>the inflection point: the one value of N at which the growth rate is at its maximum</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can recognize the logistic S-curve, you gain something sharper than &ldquo;growth
+        eventually slows down&rdquo; &mdash; you gain a specific reason to distrust any forecast of
+        where a still-accelerating process will level off, no matter how beautifully its curve fits the
+        past. That caution applies far beyond population counts: it applies to a company projecting a
+        market&rsquo;s saturation point from its first few years of sales, a public-health forecast of
+        how large an outbreak will ultimately get while cases are still climbing, or an energy analyst
+        projecting how much of the grid a new technology will eventually capture. The shape being right
+        is not the same claim as the ceiling being known, and the gap between those two claims is widest
+        exactly when a forecast is most tempting to make.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 6&rsquo;s differential equation, dN/dt = &minus;kN, is a decay rule with no
+        braking term at all; today&rsquo;s equation adds exactly one, (1 &minus; N/K), which slows
+        growth as the ceiling nears rather than letting it run forever. And the logistic&rsquo;s early
+        phase, while N is still small relative to K, is Day 2&rsquo;s exponential growth outright &mdash;
+        which is why an S-curve looks exponential right up until the point it visibly doesn&rsquo;t, and
+        why a logarithmic plot of the data shows the coming bend before a plain plot does.
+      </p>
+      <p>
+        <b>Across.</b> William Kermack and Anderson McKendrick&rsquo;s 1927 epidemic model, a foundation
+        of mathematical epidemiology, produces its own S-shaped cumulative-case curve &mdash; but its
+        ceiling, the epidemic&rsquo;s final size, is not fixed by the size of the population the way K is
+        a free parameter in Pearl and Reed&rsquo;s fit. It is an output of the mechanism itself:
+        transmissibility and the fraction of people who become immune, through the model&rsquo;s own
+        final-size relation connecting the reproduction number to how many people are ultimately
+        infected. An epidemic can burn out and stop while most of the population is still susceptible,
+        which is the opposite lesson from Pearl and Reed&rsquo;s: there, the ceiling was an unmeasured
+        assumption fed into the curve; here, the ceiling falls out of the biology once you know the
+        mechanism driving it.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Growth: From Microorganisms to Megacities, Chapter 1, &ldquo;Trajectories: or Common Patterns
+        of Growth&rdquo; &mdash; Vaclav Smil (MIT Press, 2019) &middot; Reading &middot; about 30
+        minutes</p>
+        <p>Smil, the energy scientist the later Energy block draws on, opens the book by surveying the
+        common shapes of growth &mdash; linear, exponential and bounded curves like today&rsquo;s
+        logistic &mdash; across organisms, machines and societies, with far more real S-curves than one
+        lesson can hold.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Logistic growth, dN/dt = rN(1 &minus; N/K), is exponential growth discounted by how much room
+        remains beneath a ceiling K.</li>
+        <li>The growth rate itself peaks at the inflection point, N = K/2 &mdash; the curve accelerates
+        before it and decelerates after, even while still climbing.</li>
+        <li>Before the inflection, the data cannot reliably reveal K: very different ceilings fit the
+        same early numbers almost equally well.</li>
+        <li>Pearl and Reed&rsquo;s 1920 fit to 120 years of US census data was excellent on shape and
+        wrong by over 130 million people on the ceiling, because American growth in 1920 had barely
+        begun to bend.</li>
+        <li>A good fit to the past is a claim about shape; a ceiling is a separate claim the data has to
+        earn by actually showing the bend.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Why can you trust the ceiling of the S-curve traced by yeast fermenting in a sealed flask of
+        sugar water &mdash; which levels off once the sugar runs out and the alcohol it produces builds
+        up &mdash; far more than you can trust Pearl and Reed&rsquo;s ceiling for the United States?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> R. Pearl and L. J. Reed, &ldquo;On the Rate of Growth of the
+      Population of the United States since 1790 and Its Mathematical Representation,&rdquo; <em>PNAS</em>
+      6 (June 1920): 275&ndash;288; the Census Bureau&rsquo;s November 20, 1967 two-hundred-million
+      milestone and the 2020 Census count; P.-F. Verhulst&rsquo;s 1838 logistic paper; Diego Comin and
+      Bart Hobijn, &ldquo;An Exploration of Technology Diffusion,&rdquo; <em>American Economic Review</em>
+      100 (2010): 2031&ndash;2059; Kermack and McKendrick (1927) and its final-size relation; Pew Research
+      Center&rsquo;s smartphone-ownership surveys, 2011&ndash;2025; Vaclav Smil, <em>Growth: From
+      Microorganisms to Megacities</em> (MIT Press, 2019), ch. 1. All checked via web search this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list; its chapter title was confirmed via web
+      search this run. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-28-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
