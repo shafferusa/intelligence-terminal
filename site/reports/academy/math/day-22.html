@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Amgen Tried to Reproduce 53 Landmark Cancer Findings. Six Held Up. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Amgen Tried to Reproduce 53 Landmark Cancer Findings. Six Held Up.",
+    "path": "reports/academy/math/day-22.html",
+    "summary": "Day 22 of the Connected Path: a statistically significant result can still be a fluke or an exaggeration once publication bias, low power and flexible analysis have acted on it, so a finding counts only after it replicates, as Amgen’s 6 confirmed findings out of 53 and a meta-analysis of the lead-crime literature show.",
+    "headlines": [
+      "Day 22 of 293 · Mathematics: significant results that pass the publication filter are often inflated or false, so a finding counts once it replicates",
+      "Amgen confirmed 6 of 53 landmark cancer papers; 97% of 100 psychology originals were significant but only about 36% of replications were",
+      "Watch or Read: Is Most Published Research Wrong? (about 12 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:34:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Amgen Tried to Reproduce 53 Landmark Cancer Findings. Six Held Up.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A p-value below 0.05 vouches for one honestly run test, not for the papers that reach print, and when journals favour striking results and studies are small, a published literature can end up full of flukes and exaggerations &mdash; which is why a finding counts only once it survives replication.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 22 of 293 &middot; Mathematics 22 of 24 &middot; How We Know VIII: Replication and publication bias</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>53 landmark papers in an Amgen lab</h3>
+      <p>
+        In March 2012 the journal <em>Nature</em> ran a short commentary under the plain title &ldquo;Raise standards for preclinical cancer research.&rdquo; Its authors were C. Glenn Begley, who had led cancer research at the biotech company Amgen for about a decade, and Lee Ellis of the MD Anderson Cancer Center in Houston. Their number is hard to unhear. Amgen&rsquo;s scientists had tried to reproduce the key results of 53 &ldquo;landmark&rdquo; studies in cancer biology: papers from respected labs and top journals, the kind that point drug developers at a new target and on which drug programmes get built. The findings were confirmed in six.
+      </p>
+      <p>
+        Begley later described one case to a Reuters reporter. By his account, his team had repeated a published experiment 50 times without once getting the published result. When he put this to the paper&rsquo;s lead scientist, the scientist said that his lab had run the experiment six times, seen the result once, and published it because it made the best story. In 2011 scientists at the German drug company Bayer had reported a milder version of the same finding: in only about a fifth to a quarter of 67 of their own drug-target projects had the published data fully matched their in-house results.
+      </p>
+      <p>
+        Papers like these reach top journals on the strength of statistically significant results, and by convention &ldquo;significant&rdquo; means p &lt; 0.05: if nothing real were going on, data this extreme would turn up about one time in twenty (Day 17). So here is the puzzle. If a 5 percent fluke rate is the price of admission, how can nearly nine in ten of these landmark results fail to hold up?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A statistically significant result in print is not yet a reliable result. When journals and researchers favour striking findings and studies are small, the published record overstates effects: some findings are flukes, many more are real but exaggerated, and a finding therefore counts only once it survives replication.
+      </p>
+      <p>
+        The reason is that the usual significance threshold is a guarantee about one test, run once, as planned. It says nothing about which tests get published, how many were tried to find it, how small the study was, or how plausible the idea was before anyone looked. Each of those four steps tilts the published record the same way, toward results that look bigger and surer than they are.
+      </p>
+      <p>
+        So the unit of evidence is not a paper but a pattern: an independent repeat that reaches a similar result and, for a whole field, a count of what is missing from the shelf as well as what is on it. The rest of the lesson shows how each tilt works and what repairs it.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start from what Day 17 gave you. A p-value is the probability of data at least this extreme if chance alone were at work, so a test of an effect that does not exist still crosses p &lt; 0.05 about one time in twenty. That is a statement about a single, honestly reported test. Between that test and the literature you read, four things happen.
+      </p>
+      <p>
+        <strong>1. The filter: publication bias.</strong> Journals like positive, novel results, and authors know it, so a null result is harder to place and less rewarded. In 1979 Robert Rosenthal named the consequence the <em>file-drawer problem</em>: for every study on the shelf there may be others in a drawer, and the shelf is not a random sample of what was done. The size of the effect can be measured. Erick Turner and colleagues compared 74 antidepressant trials registered with the US Food and Drug Administration against what reached journals (<em>New England Journal of Medicine</em>, 2008). Of the trials that reached journals, 94 percent looked positive; in the FDA&rsquo;s own review of all 74, 51 percent were. Almost every trial the FDA judged negative or questionable was either never published or published in a way that read as positive, and the published effect sizes ran about a third larger than the full set of trials supported.
+      </p>
+      <p>
+        <strong>2. The squeeze: low power and the winner&rsquo;s curse.</strong> A study&rsquo;s <em>power</em> is the chance that it reaches significance when the effect is real and of a stated size; the usual target is 80 percent, and many small studies fall far short. Low power alone means real effects are often missed, and it also lowers the share of significant results that are real (the Equation section below shows how). The inflation comes from combining it with the filter. Suppose the true effect is 0.2 standard deviations and each study, with 50 people per group, measures it with a standard error (Day 16) of about 0.2. To cross p &lt; 0.05 an estimate must exceed about 0.39 (1.96 &times; 0.2), nearly twice the truth, and only about 17 percent of such studies manage it. Those lucky few, the ones that get written up, average about 0.5: two and a half times the true effect. Nobody has cheated. The studies that cross the line are, on average, the ones that drew lucky random error. This is the <em>winner&rsquo;s curse</em>, and it is Day 19&rsquo;s regression to the mean seen from the other side: select cases because a noisy measurement cleared a bar, and the next measurement, with fresh luck, falls back. An exact repeat of the same design would average the true 0.2, a 60 percent drop from 0.5, with nothing dishonest anywhere.
+      </p>
+      <p>
+        <strong>3. The detour: flexible analysis.</strong> Data can be cut many ways: which outcome to count, which participants to exclude, when to stop collecting, which subgroup to report. Each choice made after seeing the data is another ticket in the lottery. If an experiment measures 20 independent outcomes and nothing real is going on, the chance that at least one reaches p &lt; 0.05 is 1 &minus; 0.95<sup>20</sup>, about 64 percent. In 2011 Joseph Simmons, Leif Nelson and Uri Simonsohn showed in <em>Psychological Science</em> that ordinary, undeclared flexibility of this kind can make almost anything look significant, and called it <em>researcher degrees of freedom</em>; searching until something crosses the line is <em>p-hacking</em>. It needs no dishonesty, only choices made after the data are in and a write-up that reads as if they were planned in advance.
+      </p>
+      <p>
+        <strong>4. The long odds: low prior probability.</strong> Preclinical cancer biology hunts for the rare real vulnerability among many bold ideas, so many, perhaps most, of the hypotheses tested are wrong before the experiment begins. This is Day 15&rsquo;s base rate again: a test with a 5 percent false-positive rate, run mostly on false hypotheses, produces mostly false positives. The Equation section below puts numbers on it.
+      </p>
+      <p>
+        <strong>The repairs</strong> attack each tilt in turn. <strong>Replication</strong> is an independent repeat of a study, ideally with a larger sample and by people with no stake in the answer. It draws fresh luck, so neither the winner&rsquo;s curse nor the detours repeat. One caution: a replication that misses the line is one more noisy estimate and can itself be underpowered, which is why serious replication projects compare effect sizes, not only verdicts. <strong>Preregistration</strong> means writing down the hypothesis, the outcomes, the sample size and the analysis in a time-stamped public record before the data exist, the same outcome-fixing discipline Day 20 listed among a good trial&rsquo;s protections. In 2015 Robert Kaplan and Veronica Irvin compared large trials funded by the US National Heart, Lung, and Blood Institute before and after 2000, the year the public registry ClinicalTrials.gov opened. Of 30 trials published before 2000, 17 (57 percent) reported a significant benefit on their primary outcome; of 25 published after, 2 (8 percent) did. That is consistent with preregistration closing detours, though other things changed over those years too. <strong>Registered reports</strong> go further: a journal reviews the question and the method before results exist and agrees in principle to publish whatever is found, provided the plan is followed, which removes the filter itself.
+      </p>
+      <p>
+        <strong>Meta-analysis and funnel plots</strong> check a whole literature instead of one study. A <em>meta-analysis</em> pools the estimates from many studies of one question, weighting precise studies more. A <em>funnel plot</em> then graphs each study&rsquo;s estimate (horizontal) against its precision (vertical, with large studies higher). With no bias, small noisy studies scatter widely at the bottom on both sides of the truth while large ones cluster tightly at the top: an upside-down funnel. If small studies with disappointing results are missing from the shelf, one lower corner is empty, the funnel leans, and the pooled average is pulled away from the truth. Egger&rsquo;s regression test turns the lean into a number. A lean is a warning, not a verdict, because small studies can differ from large ones for honest reasons, and a meta-analysis of biased studies gives a precise answer to the wrong question. The strongest check on a literature remains new, large, preregistered studies.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Now the puzzle resolves. p &lt; 0.05 is a threshold for each test, not a guarantee about what gets published. Positive results get written up and accepted while negative ones go into the drawer; small experiments that clear the bar do so partly by luck, so their effects are inflated; flexible analyses can find significance somewhere; and novel drug targets start with long odds. Stacked together, these can leave a literature of significant results mostly unreliable, which is why replication, not a single paper, is the unit of evidence. Even the lab that saw its result once in six tries fits the pattern: if there were no real effect and each try were judged at the 5 percent threshold, at least one of six tries would still show a hit by luck about 26 percent of the time (1 &minus; 0.95<sup>6</sup>), and the hit is the one that went into the paper. That is Begley&rsquo;s account of a conversation with an unnamed scientist, so treat it as an illustration, not a finding.
+      </p>
+      <p>
+        Two fairness points. Amgen did not publish the list of its 53 papers, so its count could not be audited paper by paper. The Reproducibility Project: Cancer Biology, which had its replication protocols peer reviewed and published before running the experiments and reported in <em>eLife</em> in 2021, did name its targets. It found that replication effects were on average about 85 percent smaller than the originals: the same direction as Amgen, though a different measurement from a count of confirmed and unconfirmed papers.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Publication bias (file-drawer problem)</dt>
+        <dd>Whether a result is published depends on what it found, so the published studies are not a fair sample of the studies done.</dd>
+        <dt>Statistical power</dt>
+        <dd>The probability that a study reaches significance when a real effect of a stated size exists (1 &minus; &beta;); low power means real effects are often missed.</dd>
+        <dt>Winner&rsquo;s curse (effect inflation)</dt>
+        <dd>Among small studies, the ones that cross the significance bar tend to have overestimated the effect, because crossing it takes a lucky draw of random error.</dd>
+        <dt>p-hacking</dt>
+        <dd>Trying outcomes, exclusions, stopping points or subgroups after seeing the data until something reaches p &lt; 0.05, then reporting it as though planned.</dd>
+        <dt>Preregistration and registered reports</dt>
+        <dd>Fixing the hypothesis and analysis in a public record before the data exist; in a registered report the journal also commits to publish before the results are known.</dd>
+        <dt>Funnel plot and meta-analysis</dt>
+        <dd>Pooling many studies&rsquo; estimates, and plotting estimate against precision so that a lopsided funnel flags missing studies.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Weighing the Lead&ndash;Crime Literature</h3>
+      <p>
+        Does childhood exposure to lead, of which leaded gasoline was a major source, raise crime in adulthood? Many studies in many places and decades have tried to answer, which makes the question a good test of these tools. In your car chain lead sits at the consequences link, and Day 49 takes up the full case. In 2022 Anthony Higney, Nick Hanley and Mirko Moro pooled more than 500 estimates from 24 studies in a meta-analysis (<em>Regional Science and Urban Economics</em>). They concluded that publication bias had overstated lead&rsquo;s effect in the literature, but not that the effect was zero: in their analysis lead does raise crime, by less than the literature taken at face value suggests. <span class="chip chip--warn">Debated</span> Other researchers maintain that lead contributed meaningfully to the crime decline, and the size of its role remains disputed.
+      </p>
+      <div class="worked">
+        <b>Worked: reading a meta-analysis</b>
+        <ol>
+          <li><strong>Pool.</strong> Collect every estimate of the lead&ndash;crime link that the 24 studies report: more than 500 in all.</li>
+          <li><strong>Check the shelf.</strong> Look for the footprint of missing studies, small and imprecise studies reporting larger effects than big ones, which is what a funnel plot shows. The authors concluded that the literature overstates the effect because of publication bias.</li>
+          <li><strong>Read the size.</strong> Their mean estimate was an elasticity of about 0.09. An elasticity is the percentage change in crime per percentage change in exposure, so a 10 percent change in lead exposure goes with about a 0.9 percent change in crime (0.09 &times; 10 = 0.9).</li>
+          <li><strong>Scale it to the decline.</strong> On their calculation, the abatement of lead may account for roughly 7 to 28 percent of the fall in US homicide: a real contribution, but a minority one.</li>
+          <li><strong>Keep the doubt.</strong> That range is wide, and a bias-corrected number is still a model-dependent estimate built from the very literature whose flaws it tries to repair.</li>
+        </ol>
+      </div>
+
+      <h3>Equation / Model: Why a Significant Finding Can Still Be Probably False</h3>
+      <div class="formula">
+        <p class="expr">PPV = (1 &minus; &beta;)R / [(1 &minus; &beta;)R + &alpha;]</p>
+        <p class="expr-spoken visually-hidden">The positive predictive value equals one minus beta, times R, divided by the quantity one minus beta, times R, plus alpha.</p>
+        <dl>
+          <dt>PPV</dt>
+          <dd>positive predictive value: the probability that a statistically significant finding reflects a real effect</dd>
+          <dt>R</dt>
+          <dd>the prior odds that a hypothesis being tested is true, true to false; one true for every ten false is R = 1:10 = 0.1</dd>
+          <dt>1 &minus; &beta;</dt>
+          <dd>power: the probability that a study detects an effect that is real</dd>
+          <dt>&alpha;</dt>
+          <dd>the significance threshold, here 0.05: the chance that a false hypothesis crosses it</dd>
+        </dl>
+      </div>
+      <p>The decisive step is counting. For every false hypothesis tested there are R true ones; power lets (1 &minus; &beta;)R of them through as true positives, while the threshold passes &alpha; false positives:</p>
+      <div class="formula">
+        <p class="expr">PPV = true positives / (true positives + false positives) = (1 &minus; &beta;)R / [(1 &minus; &beta;)R + &alpha;]</p>
+        <p class="expr-spoken visually-hidden">The positive predictive value is the true positives divided by the sum of the true positives and the false positives, which equals one minus beta, times R, divided by the quantity one minus beta, times R, plus alpha.</p>
+        <dl>
+          <dt>true positives</dt>
+          <dd>real effects that reach significance, (1 &minus; &beta;)R for each false hypothesis tested</dd>
+          <dt>false positives</dt>
+          <dd>non-effects that reach significance by chance, &alpha; for each false hypothesis tested</dd>
+        </dl>
+      </div>
+      <p>
+        John Ioannidis derived this formula in his 2005 <em>PLoS Medicine</em> paper. Try one true hypothesis for every ten false, power 0.2 (close to the 17 percent of the toy example above) and &alpha; = 0.05. In 1,100 hypotheses tested, 100 are true and 1,000 false. Power lets 20 of the true ones through and &alpha; lets 50 of the false ones through, so PPV = 20 / (20 + 50) = 0.29, or 0.02 / (0.02 + 0.05) from the formula. Fewer than three in ten significant results are real, before any bias at all. With power 0.8 the same prior gives 0.08 / (0.08 + 0.05) = 0.62; with R = 1:1 and power 0.8 it is 0.94. This is Day 15&rsquo;s mammogram with new labels: prevalence becomes the prior odds, sensitivity becomes power, and the false-positive rate becomes &alpha;. Ioannidis&rsquo;s full model adds a term for bias, which pushes the number lower still.
+      </p>
+      <p>
+        The conclusion, though, depends on the inputs you assume, and R and power differ enormously between fields. <span class="chip chip--warn">Debated</span> Steven Goodman and Sander Greenland criticized the model&rsquo;s assumptions in 2007, and a 2014 attempt by Leah Jager and Jeffrey Leek to estimate the false-discovery rate in medical journals arrived at a figure far below &ldquo;most,&rdquo; though that estimate was itself disputed. How bad the problem is in a given field is an empirical question, not a theorem.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        This changes what you do when you meet a striking finding. Before the result, ask four questions. How large was the sample? Was the analysis planned before the data existed? Has anyone independent repeated it? And how plausible was the idea before the test? A single small, surprising, unreplicated study is a hypothesis; a replicated effect, or a meta-analysis that checked for missing studies, is a result. The incentive behind all of this, careers that reward novel significant papers, is an instance of the pattern Day 23 names, Goodhart&rsquo;s law. And a caution that applies to your own project: the connections that make the best chapter openings, the surprising and vivid ones, are exactly what the filter selects for. A book should lean on replications and pooled evidence, and say so when it cannot.
+      </p>
+      <p><b>Settled.</b> Publication bias, low power and flexible analysis inflate published effects; this is documented across many fields, including medicine and psychology.</p>
+      <p><b>Debated.</b> How much of the literature in a given field is false or inflated, what counts as a successful replication, and how large lead&rsquo;s contribution to the fall in crime was.</p>
+      <p><b>Value judgment.</b> How much evidence to demand before acting, whether banning a chemical or funding a drug programme, is a judgment about which error is worse; statistics can price the errors but cannot choose between them.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 17, Significance, p-values and systematic error: a p-value measures surprise under random error alone, and today adds a failure that sits outside any single test, the selection of which p-values reach print. Day 15, Bayes&rsquo; theorem and base rates: the positive predictive value above is the mammogram calculation with the labels changed, with the prior odds standing where the prevalence stood.
+      </p>
+      <p>
+        <b>Across.</b> Psychology. The Open Science Collaboration&rsquo;s &ldquo;Estimating the reproducibility of psychological science&rdquo; (<em>Science</em>, 2015) repeated 100 studies from three leading psychology journals. Of the originals, 97 percent had significant results; only about 36 percent of the replications did, and the replicated effects averaged about half the original size. It shows the same pattern as the cancer-biology replications: originals that nearly all reached significance, repeats that mostly did not, and effects that shrank on repeat. A significance filter acting on small studies would produce that pattern, though the project itself does not prove that cause, and psychology&rsquo;s experiments are cheap enough to repeat at scale. Each attempt is still one more noisy estimate, which is why the project reported effect sizes alongside the verdicts.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Is Most Published Research Wrong? &mdash; Veritasium (Derek Muller), 2016 &middot; Video &middot; about 12 minutes</p>
+        <p>Shows, with real cases, how significance thresholds, p-hacking and the file drawer let false findings into print, and how preregistration and replication push back. It makes the mechanism easy to remember.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>p &lt; 0.05 vouches for one honestly run test, not for the papers that reach print.</li>
+        <li>Publication bias, low power and flexible analysis all push published effects upward, so significant findings are often exaggerated and sometimes false.</li>
+        <li>The chance that a significant finding is real is PPV = (1 &minus; &beta;)R / [(1 &minus; &beta;)R + &alpha;], which is only about 29 percent when R = 1:10 and power is 0.2.</li>
+        <li>Amgen confirmed 6 of 53 landmark cancer papers, and in the Reproducibility Project: Cancer Biology replication effects averaged about 85 percent smaller than the originals.</li>
+        <li>Replication, preregistration, registered reports and funnel-plot checks of whole literatures are the repairs.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Ego depletion, the idea that exerting self-control draws down a limited resource, was supported by roughly 200 published tests and a 2010 meta-analysis reporting a medium-to-large effect, yet a preregistered replication across 23 laboratories with more than 2,000 participants (Hagger et al., 2016) found an effect near zero, so which mechanisms from today could let both results be reported honestly?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Begley and Ellis, <em>Nature</em>, 2012; Reuters, 28 March 2012; Prinz et al., 2011; Errington et al., <em>eLife</em>, 2021; Rosenthal, 1979; Ioannidis, 2005; Open Science Collaboration, 2015; Higney, Hanley and Moro, 2022; Turner et al., 2008; Simmons et al., 2011; Kaplan and Irvin, 2015; Hagger et al., 2010 and 2016. Figures come from the Connected Path&rsquo;s research notes and the papers&rsquo; summaries, not full texts; least firmly confirmed are the Turner and Kaplan&ndash;Irvin figures, the Higney&ndash;Hanley&ndash;Moro elasticity and 7-to-28-percent range, and the Goodman&ndash;Greenland and Jager&ndash;Leek attributions.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource from the Connected Path&rsquo;s curated list, cited without a link because its exact address was not confirmed. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-21.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-23.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

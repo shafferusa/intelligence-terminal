@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Andrew Wiles Announced a Proof of Fermat&rsquo;s Last Theorem in June 1993. Within Months, a Referee Had Found a Hole. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Andrew Wiles Announced a Proof of Fermat’s Last Theorem in June 1993. Within Months, a Referee Had Found a Hole.",
+    "path": "reports/academy/math/day-10.html",
+    "summary": "Day 10 of the Connected Path: a mathematical proof deduces a claim from axioms and earlier theorems, settling every case at once with a certainty no number of examples can give, but only if every step is valid, as Wiles's 1993 gap and the formal verification that followed the Pentium division bug both show.",
+    "headlines": [
+      "Day 10 of 293 · Mathematics: a proof deduces a claim from axioms and settles every case at once, but only if every step is valid",
+      "A gap leaves a claim unsupported, not false; after the 1994 Pentium division bug, chipmakers invested heavily in proving designs correct",
+      "Watch or Read: Fermat's Last Theorem (US title: Fermat's Enigma), ch. 1, ‘I Think I’ll Stop Here’ (about 30-40 min)"
+    ],
+    "reading_minutes": 16,
+    "generated_at": "2026-10-29T05:14:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Andrew Wiles Announced a Proof of Fermat&rsquo;s Last Theorem in June 1993. Within Months, a Referee Had Found a Hole.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 16 min read
+      </p>
+      <p class="paper-standfirst">
+        A proof is a chain of steps that settles a claim in every case at once &mdash; which is why
+        computers checking exponent after exponent could not replace one, and why a single bad step
+        could put seven years of work in doubt.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 10 of 293 &middot; Mathematics 10 of 24 &middot; Proof: how mathematics knows</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>&lsquo;I think I&rsquo;ll stop here&rsquo;</h3>
+      <p>
+        On Wednesday, 23 June 1993, at the Isaac Newton Institute in Cambridge, England, Andrew Wiles
+        gave the last of three lectures under a title that gave nothing away: &ldquo;Modular forms,
+        elliptic curves and Galois representations.&rdquo; In that final lecture he assembled an
+        argument he had worked on in near-secrecy for seven years. Then he wrote Fermat&rsquo;s Last
+        Theorem on the board as a corollary of what he had shown &mdash; a consequence that follows
+        almost at once &mdash; and said, &ldquo;I think I&rsquo;ll stop here.&rdquo;
+      </p>
+      <p>
+        The claim was old. Traditionally dated to about 1637, it began as a note Pierre de Fermat
+        scribbled in the margin of his copy of Diophantus&rsquo;s <em>Arithmetica</em>: the equation
+        x<sup>n</sup> + y<sup>n</sup> = z<sup>n</sup> has no solution in positive whole numbers when
+        n is greater than 2, and he had &ldquo;a truly marvelous proof&rdquo; that the margin was too
+        narrow to contain. No such proof was ever found. In the three and a half centuries since, the
+        best mathematicians had picked at the problem. Euler handled n = 3. Sophie Germain, who as a
+        young woman wrote to Gauss under a man&rsquo;s name, proved a result that covered part of the
+        problem for a whole family of exponents. By 1993 computers had ruled out solutions for every exponent up to roughly
+        four million. Not one of these was a proof for all exponents.
+      </p>
+      <p>
+        Then came the trouble. While referees went through the long manuscript, one of
+        them, Nick Katz of Princeton, raised a question about a single step, and it proved to be a
+        real gap. In December 1993 Wiles
+        acknowledged publicly that a problem remained. On 19 September 1994, after months of attempts
+        to repair it, many of them with his former student Richard Taylor, he saw how to get around it,
+        and the corrected proof appeared in the <em>Annals of Mathematics</em> in May 1995.
+      </p>
+      <p>
+        So here is the puzzle. If computers had already confirmed the theorem for millions of
+        exponents, why did the world need Wiles&rsquo;s proof &mdash; and how could one gap in one
+        step put seven years of work in doubt?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A mathematical proof derives a claim, step by step, from axioms and from results already
+        proved, so that the claim holds in every case at once &mdash; with a certainty that no number
+        of examples, and no experiment, can give. That certainty has a condition: it holds only if
+        every single step is valid.
+      </p>
+      <p>
+        Evidence from cases works by accumulation. Each confirming example makes a claim more
+        believable, and nothing ever makes it certain, because the next case might break it.
+        Deduction works differently. It does not look at cases at all. It shows that if the starting
+        assumptions are accepted, the conclusion cannot be otherwise &mdash; which is how you know the
+        angles of any flat triangle add up to 180 degrees without measuring every triangle.
+      </p>
+      <p>
+        The price of that certainty is twofold. The claim is certain only relative to its starting
+        points, and the argument is trustworthy only while no step in it is broken. The second
+        condition is what made the autumn of 1993 so tense, and it is also why a repaired proof is as
+        good as one that was never broken.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with what a proof is not. A pile of confirming examples is evidence, sometimes very good
+        evidence, but it is a different kind of thing. Take the polynomial n<sup>2</sup> + n + 41,
+        known since Euler to produce primes. Try n = 0, 1, 2, and so on up to 39 and you get a prime
+        every time: forty cases in a row, no exceptions. Then n = 40 gives 40<sup>2</sup> + 40 + 41 =
+        1,681, which is 41 &times; 41. Forty successes, and then a <strong>counterexample</strong>: a
+        single case that breaks a general claim. One counterexample is enough to refute a claim; no
+        number of confirmations is enough to prove one. Even a conjecture of Euler&rsquo;s fell this way. In 1769 he
+        conjectured that it takes at least n whole numbers, each raised to the nth power, to add up to
+        another nth power. It stood for nearly two centuries, until a computer search by Lander and
+        Parkin in 1966 found 27<sup>5</sup> + 84<sup>5</sup> + 110<sup>5</sup> + 133<sup>5</sup> =
+        144<sup>5</sup>, both sides equal to 61,917,364,224: four fifth powers where the conjecture
+        said at least five were needed.
+      </p>
+      <p>
+        A proof goes the other way round. It begins from <strong>axioms</strong>, statements accepted
+        without proof as the agreed rules of the game: Euclid&rsquo;s postulates for plane geometry,
+        the Peano axioms for whole numbers, the Zermelo&ndash;Fraenkel axioms of set theory for most
+        of modern mathematics. It then moves by steps that logic forces: if A is established, and A
+        implies B, then B is established. What comes out is a <strong>theorem</strong>. Its certainty
+        is conditional but total: if the axioms hold, the theorem holds in every case at once, with
+        nothing left to check. The condition matters. In the early nineteenth century Lobachevsky and
+        Bolyai, working separately, replaced Euclid&rsquo;s parallel postulate with a rival and built a
+        geometry with different theorems, one in which the angles of a triangle add up to less than
+        180 degrees. Deduction guarantees what follows from the axioms; it does not by itself say
+        which axioms describe the physical world.
+      </p>
+      <p>
+        One of the most powerful moves is <strong>proof by contradiction</strong>: assume the opposite
+        of what you want, deduce something impossible, and conclude that the assumption was false.
+        Euclid&rsquo;s proof that there are infinitely many primes, in Book IX of the
+        <em>Elements</em>, is usually told this way. Suppose the primes were finite, listed as
+        p<sub>1</sub>, p<sub>2</sub>, &hellip;, p<sub>k</sub>. Form N = p<sub>1</sub> &times;
+        p<sub>2</sub> &times; &hellip; &times; p<sub>k</sub> + 1. N has some prime factor q. If q were
+        on the list, it would divide the product and divide N, so it would divide their difference,
+        which is 1 &mdash; impossible. So q is a prime missing from the list, contradicting the
+        assumption that the list was complete. The argument does not claim that N itself is prime:
+        with the first six primes, 2 &times; 3 &times; 5 &times; 7 &times; 11 &times; 13 + 1 = 30,031
+        = 59 &times; 509. All it needs is a prime factor outside the list.
+      </p>
+      <p>
+        Large proofs are built from smaller ones. A <strong>lemma</strong> is a result proved on the
+        way to something bigger; a theorem is a result worth stating in its own right; a
+        <strong>corollary</strong> is a consequence that follows almost immediately from a theorem.
+        The stack matters because it is how anyone can trust a proof too long for one mind: each piece
+        has been checked, often by other people, and later work stands on it. Partial progress on
+        Fermat shows the pattern. Sophie Germain proved that if p and 2p + 1 are both prime &mdash; as
+        with p = 3, 5, 11, 23, 29, 41, 53, 83 and 89 below a hundred &mdash; then
+        x<sup>p</sup> + y<sup>p</sup> = z<sup>p</sup> has no whole-number solution in which none of
+        x, y, z is divisible by p. In the early 1800s she had written to Gauss as &ldquo;Monsieur Le
+        Blanc,&rdquo; and in 1823 Adrien-Marie Legendre published her result with credit to her. It
+        is a real theorem about a real family of exponents, yet it covers only part of the problem
+        for each of them, far short of Fermat&rsquo;s claim for every exponent.
+      </p>
+      <p>
+        Wiles&rsquo;s proof has this same layered shape, and its outer layer is a proof by
+        contradiction. Suppose Fermat&rsquo;s equation did have a solution. In the mid-1980s Gerhard
+        Frey noticed that a solution would let you write down an unusual curve, a particular kind of
+        <em>elliptic curve</em>, and in 1986 Kenneth Ribet proved that such a curve could not be
+        &ldquo;modular,&rdquo; a technical property of an elliptic curve&rsquo;s arithmetic. Wiles,
+        with Taylor, proved that curves of that type must be modular. Both cannot be true, so no
+        solution exists. The Equation section below sets the chain out step by step. What matters
+        here is its logical shape: at no point does the argument search for solutions.
+      </p>
+      <p>
+        Now the second half of the puzzle. A proof is a chain, and a chain is only as strong as its
+        weakest link. If every step is valid, the conclusion is established; if one step is not, the
+        conclusion has not been established, even when every other step is flawless. That is not the
+        same as being false: a gap means the proof fails, not that the theorem does. Katz&rsquo;s gap
+        sat in one step of a very long chain, and the rest of the architecture &mdash; Frey&rsquo;s
+        curve, Ribet&rsquo;s theorem, the plan to prove modularity &mdash; was untouched. Once Wiles
+        and Taylor found a valid route around that one step, the whole chain was restored. Checking is
+        part of the method, and it can fail in public: Alfred Kempe published a proof of the
+        four-colour theorem in 1879, and Percy Heawood found a flaw in it eleven years later.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Now the puzzle resolves. The computer checks, however long their list, settled exponents one
+        at a time, so infinitely many exponents stayed untouched, and nothing about the exponents up to
+        roughly four million says what the next one holds &mdash; just as forty primes in a row from Euler&rsquo;s
+        polynomial said nothing about n = 40. Wiles&rsquo;s proof settled every exponent at once, by
+        deduction from earlier theorems, which is why the world needed it. And because it was a chain,
+        a single invalid step was enough to leave the whole claim unestablished, while one valid
+        repair, found with Taylor, was enough to restore it.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Axiom</dt>
+        <dd>A statement accepted without proof as a starting point of a mathematical theory, such as
+        Euclid&rsquo;s postulates or the Peano axioms for whole numbers. A proof&rsquo;s certainty is
+        always relative to its axioms.</dd>
+        <dt>Deduction versus induction</dt>
+        <dd>Deduction (proof) reasons from premises so that the conclusion must follow. Induction, in
+        the everyday sense used here, generalises from observed cases and can make a claim probable
+        but never certain. Beware the name: &ldquo;mathematical induction,&rdquo; a technique for
+        proving statements about all whole numbers, is deduction despite the word.</dd>
+        <dt>Lemma, theorem, corollary</dt>
+        <dd>A lemma is a result proved as a stepping-stone; a theorem is a result proved in its own
+        right; a corollary is a consequence that follows almost immediately from a theorem.</dd>
+        <dt>Proof by contradiction</dt>
+        <dd>Assume the claim is false, deduce something impossible, and conclude the claim is true
+        (<em>reductio ad absurdum</em>).</dd>
+        <dt>Counterexample</dt>
+        <dd>A single case that violates a general claim and so refutes it, like n = 40 for the
+        prime-producing polynomial.</dd>
+        <dt>Formal verification</dt>
+        <dd>Using a theorem-proving program to check, step by step, a proof that a design or program
+        meets its specification. It is only as strong as the specification and the assumptions
+        behind it.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The Pentium That Divided Wrongly</h3>
+      <p>
+        In October 1994 Thomas Nicely, a mathematician at Lynchburg College in Virginia, found that
+        his Pentium computer sometimes divided wrongly: five entries were missing from a lookup table
+        inside the chip&rsquo;s division hardware. A division whose answer should have been
+        1.33382045 (4,195,835 &divide; 3,145,727) came out as 1.33373907 on a flawed chip, wrong from
+        the fifth significant digit. Intel first called the error too rare to matter &mdash; roughly
+        one division in nine billion on random inputs, by its estimate &mdash; then offered
+        replacements, and in January 1995 took a $475 million charge. A flaw this rare is hard
+        for testing to find, because testing samples, and a sample is evidence from cases.
+      </p>
+      <div class="worked">
+        <p><strong>1. Count the inputs.</strong> Fix the exponent and look only at the 52 stored
+        fraction bits of an ordinary double-precision number: 2<sup>52</sup> possible fractions. A
+        division takes two, so 2<sup>52</sup> &times; 2<sup>52</sup> = 2<sup>104</sup> &asymp;
+        2.0 &times; 10<sup>31</sup> pairs. Signs and exponents only add more.</p>
+        <p><strong>2. Time to try them all.</strong> At a generous 10<sup>9</sup> divisions per
+        second: 2.0 &times; 10<sup>31</sup> &divide; 10<sup>9</sup> = 2.0 &times; 10<sup>22</sup>
+        seconds.</p>
+        <p><strong>3. Convert.</strong> 2.0 &times; 10<sup>22</sup> &divide; 3.16 &times; 10<sup>7</sup>
+        seconds per year &asymp; 6.4 &times; 10<sup>14</sup> years &mdash; more than forty thousand
+        times the universe&rsquo;s 13.8 billion.</p>
+        <p><strong>4. Sampling does not rescue you.</strong> At one error per 9 billion random
+        divisions, a billion random tests expect 10<sup>9</sup> &divide; (9 &times; 10<sup>9</sup>)
+        &asymp; 0.11 hits &mdash; about a 10% chance of seeing the bug at all.</p>
+        <p><strong>5. Proof reasons about structure.</strong> The divider&rsquo;s correctness turns on
+        a table of about a thousand non-empty entries. A proof checks each entry against the condition
+        the algorithm needs and argues that the rest follows for every input: on the order of a
+        thousand cases, not 10<sup>31</sup>.</p>
+      </div>
+      <p>
+        Chipmakers drew the lesson that no test suite can try every input, so they invested heavily
+        in proving designs correct. <strong>Formal verification</strong> states the specification as mathematics
+        &mdash; for division, that the result is the correctly rounded quotient for every pair of
+        inputs &mdash; and then has a theorem prover check a proof that the design meets it. The
+        floating-point division program of AMD&rsquo;s K5 was proved correct this way in the
+        mid-1990s with the ACL2 prover, and Intel built formal-verification teams of its own. This is
+        proof applied to hardware.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">x<sup>n</sup> + y<sup>n</sup> = z<sup>n</sup> has no solution in positive whole numbers x, y, z when n &gt; 2</p>
+        <p class="expr-spoken visually-hidden">x to the n plus y to the n equals z to the n has no solution in positive whole numbers x, y and z whenever n is greater than 2.</p>
+        <dl>
+          <dt>x, y, z</dt>
+          <dd>the unknowns: positive whole numbers</dd>
+          <dt>n</dt>
+          <dd>the exponent: a whole number greater than 2</dd>
+        </dl>
+      </div>
+      <p>
+        It is enough to prove this for n = 4 and for odd prime exponents. Any n above 2 is divisible
+        by 4 or by an odd prime p, and a solution for n would give one for that divisor. Fermat
+        himself proved n = 4 and Euler n = 3, so Wiles needed primes p of 5 or more. His proof is by
+        contradiction, and its decisive step is a single displayed chain:
+      </p>
+      <div class="formula">
+        <p class="expr">a<sup>p</sup> + b<sup>p</sup> = c<sup>p</sup> &nbsp;&rArr;&nbsp; E: y<sup>2</sup> = x(x &minus; a<sup>p</sup>)(x + b<sup>p</sup>) &nbsp;&rArr;&nbsp; E is not modular (Ribet) and E is modular (Wiles, Taylor) &nbsp;&rArr;&nbsp; contradiction</p>
+        <p class="expr-spoken visually-hidden">Suppose a to the p plus b to the p equals c to the p. Then the curve E, y squared equals x times the quantity x minus a to the p times the quantity x plus b to the p, would exist. Ribet showed E cannot be modular. Wiles, with Taylor, showed E must be modular. That is a contradiction, so no such a, b and c exist.</p>
+        <dl>
+          <dt>p</dt>
+          <dd>an odd prime exponent, 5 or more</dd>
+          <dt>a, b, c</dt>
+          <dd>a hypothetical solution: positive whole numbers with no common factor, which can be assumed</dd>
+          <dt>E</dt>
+          <dd>Frey&rsquo;s elliptic curve built from that hypothetical solution; its x and y are the curve&rsquo;s own coordinates, not the x and y of Fermat&rsquo;s equation</dd>
+          <dt>elliptic curve</dt>
+          <dd>a curve of the form y<sup>2</sup> = a cubic polynomial in x</dd>
+          <dt>modular</dt>
+          <dd>an elliptic curve is modular when the counts of its points modulo each prime are matched by the coefficients of a modular form, a function with a very high degree of symmetry</dd>
+          <dt>&rArr;</dt>
+          <dd>&ldquo;implies&rdquo;: each arrow is a proved theorem or a valid step</dd>
+        </dl>
+      </div>
+      <p>
+        The step Wiles and Taylor proved is that every <em>semistable</em> elliptic curve over the
+        rational numbers is modular; semistable is a technical condition on how a curve behaves modulo
+        each prime, and Frey&rsquo;s curve satisfies it. Every arrow is a result someone else can
+        check, and the contradiction at the end is purely logical.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Understanding proof lets you ask three questions of any confident claim. Is this a deduction
+        or a pile of cases? From which starting points, and does the real thing actually satisfy them?
+        And who or what checked each step? Outside mathematics proof in this sense is rare and evidence is the norm,
+        so the useful habit is noticing which one you are being offered. It also separates two
+        failures that look alike, a refuted claim and an unsupported one: Wiles&rsquo;s gap left his
+        theorem unsupported, not false, and that difference decides whether work is thrown away or
+        repaired. For engineers it relocates the risk: a verified system is no longer exposed to the bugs
+        its proof rules out, but to everything the proof assumed. And a challenge for the book: the word
+        &ldquo;proven&rdquo; belongs to deduction. An empirical claim, however strong, is supported,
+        and calling it proven borrows a certainty it has not earned. When proof is unavailable, Day 15
+        (Bayes&rsquo; theorem and base rates) begins the toolkit for weighing evidence.
+      </p>
+      <p><b>Settled.</b> A valid proof, correctly checked, settles its claim in every case, given its axioms; Wiles&rsquo;s proof was refereed, published and accepted.</p>
+      <p><b>Debated.</b> Mathematicians and philosophers disagree about what certainty means for proofs too long to survey or that lean on computers, such as the 1976 four-colour theorem or Thomas Hales&rsquo;s proof of the Kepler conjecture, formally completed in 2014.</p>
+      <p><b>Value judgment.</b> How much proof to demand before trusting a system, when verification costs years and an error may cost lives or liberty, is a judgment about acceptable risk and who bears it; mathematics can price the proof but not the risk.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 2, Exponential growth and logarithms, opened with Gordon Moore&rsquo;s 1965
+        straight line through a handful of points, extended a decade ahead: a pattern read off cases
+        and stretched. Day 7, Logistic growth and S-curves, showed Pearl and Reed&rsquo;s curve fitting
+        120 years of census data and still missing the ceiling by more than 130 million people. Both
+        illustrate what today states in general: agreement with every case seen so far does not prove
+        the next one. A proof is the tool that needs no extrapolation.
+      </p>
+      <p>
+        <b>Across.</b> Law has its own standard of proof, and comparing it with mathematics shows where
+        each one&rsquo;s certainty comes from. In <em>In re Winship</em> (1970), a New York juvenile
+        case, the US Supreme Court held that due process requires proof beyond a reasonable doubt of
+        every fact necessary to constitute a crime. That standard is a threshold of confidence reached
+        from evidence &mdash; witnesses, documents, exhibits &mdash; with no axioms to deduce from.
+        Justice Harlan&rsquo;s concurrence rested it on &ldquo;a fundamental value determination of
+        our society that it is far worse to convict an innocent man than to let a guilty man go
+        free.&rdquo; <span class="chip chip--info">Value judgment</span> Both fields set a rule for
+        when a claim counts as established, but the analogy breaks exactly where mathematics claims
+        certainty: a verdict can be wrong though every juror was honest and every rule followed, while
+        a valid proof cannot be wrong about what follows from its axioms.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Fermat's Last Theorem (US title: Fermat's Enigma), Chapter 1 ('I Think I'll Stop Here') &mdash; Simon Singh (Fourth Estate, 1997) &middot; Reading &middot; one chapter, about 30-40 minutes</p>
+        <p>The best-known popular account of the 1993 lecture and the 350-year history behind it,
+        written with Wiles&rsquo;s cooperation. Its opening chapter sets the scene and explains why
+        mathematicians demand proof rather than evidence.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Examples are evidence and a proof is deduction: n<sup>2</sup> + n + 41 gives primes for n = 0 through 39 and fails at n = 40.</li>
+        <li>A proof starts from axioms and takes only valid steps, so it settles every case at once, but only if every step is valid and only relative to its axioms.</li>
+        <li>Proof by contradiction assumes the opposite and derives an impossibility; Wiles&rsquo;s proof of Fermat&rsquo;s Last Theorem has that shape.</li>
+        <li>One bad step leaves a conclusion unsupported without making it false, and one valid repair restores the whole chain.</li>
+        <li>Formal verification proves a design meets its specification, so it is only as good as the specification and the assumptions behind it.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Even granting that the proof is flawless, and using what today&rsquo;s lesson says about what
+        a proof does and does not cover, what could still go wrong in a drone that runs seL4, an
+        operating-system kernel whose code comes with a machine-checked proof that it implements its
+        specification and which has been used in defence research drones, including an autonomous
+        helicopter?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> A. Wiles, <em>Annals of Mathematics</em> 141 (1995), with the
+      companion paper by R. Taylor and A. Wiles; Simon Singh, <em>Fermat&rsquo;s Last Theorem</em>
+      (1997); the Abel Prize 2016 citation for Wiles; Euclid&rsquo;s <em>Elements</em>; <em>In re
+      Winship</em> (1970); the Connected Path&rsquo;s research notes on the Pentium and seL4. Web
+      search was unavailable, so none of it was re-checked against live sources. Worth confirming
+      before you quote it: the month of Katz&rsquo;s question, the four-million bound, the flawed
+      chip&rsquo;s output, Intel&rsquo;s one-in-nine-billion figure, seL4&rsquo;s use in defence
+      research and Harlan&rsquo;s exact words.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list; its chapter title could not be re-confirmed.
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-09.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-11.html">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Milgram Mailed Folders to Strangers, Mostly in Nebraska. The 64 That Reached a Boston Stockbroker Took About Six Hand-Offs. The Other 232 Never Arrived. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Milgram Mailed Folders to Strangers, Mostly in Nebraska. The 64 That Reached a Boston Stockbroker Took About Six Hand-Offs. The Other 232 Never Arrived.",
+    "path": "reports/academy/math/day-13.html",
+    "summary": "Day 13 of the Connected Path: a network's structure (how many links each node has, whether a few hubs hold most of them, how clustered neighbourhoods are and whether a few shortcuts bridge them) decides how fast things spread and how failures cascade, from Milgram's folders to the 2003 blackout.",
+    "headlines": [
+      "Day 13 of 293 · Mathematics: a few long-range shortcuts make a clustered network small, and hubs make it fast to spread across and fragile to fail",
+      "Milgram's 64 finished chains took about six hand-offs, but 232 of 296 folders never arrived: a short path existing is not the same as its being found",
+      "Watch or Read: The Science of Six Degrees of Separation (about 10 minutes, length not confirmed)"
+    ],
+    "reading_minutes": 16,
+    "generated_at": "2026-10-29T05:14:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Milgram Mailed Folders to Strangers, Mostly in Nebraska. The 64 That Reached a Boston Stockbroker Took About Six Hand-Offs. The Other 232 Never Arrived.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 16 min read
+      </p>
+      <p class="paper-standfirst">
+        A few long-range shortcuts turn a clustered world into a small one, which is why Milgram&rsquo;s finished chains
+        were short; most of his folders still never arrived, because a short path that exists is not one anyone can find;
+        and the links that carry things fast also carry faults, as a fault in Ohio showed in 2003 by cutting power to
+        50 million people.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 13 of 293 &middot; Mathematics 13 of 24 &middot; Networks: nodes, links, hubs and small worlds</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Folders from Nebraska for a Boston stockbroker</h3>
+      <p>
+        In the 1960s the Harvard social psychologist Stanley Milgram mailed folders to 296 people, 196 in Nebraska
+        and 100 in the Boston area. Each folder named a stranger: a stockbroker who worked in Boston and lived in Sharon,
+        Massachusetts. The task was to get the folder to him, under one rule. You could hand it only to someone you knew
+        on a first-name basis, and that person had to do the same; nobody could post it straight to him. The experiment
+        asked a simple question: how many hand-offs does it take?
+      </p>
+      <p>
+        Milgram and his co-author Jeffrey Travers reported the results in the journal <em>Sociometry</em> in 1969.
+        Sixty-four of the 296 folders reached the stockbroker. The finished chains averaged 5.2 intermediaries, which is about six hand-offs from
+        starter to target. That average is the seed of the phrase &ldquo;six degrees of separation&rdquo;, a phrase that
+        came later and owes its fame to John Guare&rsquo;s 1990 play of that name. The chains were also funnelled: nearly
+        half of the finished ones, 48 percent, ran through the same three people just before the stockbroker.
+      </p>
+      <p>
+        Two things make this odd. Social worlds are clustered: your friends mostly know one another, because they share a
+        street, a workplace or a family, so each person&rsquo;s circle largely overlaps with the circle next door. How can
+        a Nebraskan more than a thousand miles from Boston reach a stranger in about six hand-offs through a world like
+        that? And if the world is that small, why did 232 of the 296 folders, nearly four in five, never arrive?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A network&rsquo;s structure decides how fast things spread across it and how failures cascade through it. Four
+        features do most of the work: how many links each node has, whether a few hubs hold most of the links, how
+        clustered each neighbourhood is, and whether a few shortcuts bridge distant clusters.
+      </p>
+      <p>
+        A network is nothing more than things and the connections between them: people and friendships, airports and
+        flights, substations and power lines, neurons and synapses. The same structural features appear whichever kind of
+        thing the nodes are, which is why a result about mailed folders can help explain a blackout.
+      </p>
+      <p>
+        Two results carry the lesson. A clustered world with only local ties is enormous, but a few long-range shortcuts
+        make it small, which is how strangers end up about six hand-offs apart. And when some nodes have far more links
+        than the rest, those hubs make spreading faster and failure more concentrated. The catch runs through both:
+        whatever carries a rumour, a virus or an idea quickly also carries a fault quickly, and a short path that exists is
+        not necessarily one anyone can find.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A network has two ingredients: <strong>nodes</strong> (the things) and <strong>links</strong>, also called edges
+        (the connections between them). The simplest fact about a node is its <strong>degree</strong>, the number of links
+        it has; your degree in a friendship network is your number of friends. The <strong>degree distribution</strong>
+        says how many nodes have each degree and, as in Day 12, its shape matters more than its average. Everything below
+        is about what the pattern of links, not the nature of the nodes, does to the traffic.
+      </p>
+      <p>
+        Start with the friendliest case: no structure, each person knows about <em>k</em> others chosen at random. You
+        have <em>k</em> acquaintances one step away. Each of them knows <em>k</em> others, so about <em>k</em>&sup2;
+        people lie two steps away, <em>k</em>&sup3; at three, and reach multiplies by <em>k</em> at every step. With
+        <em>k</em> = 100 the counts run 100; 10,000; a million; 100 million; and at the fifth step 10 billion, more than
+        the roughly 8 billion people alive. Five steps are enough. This is Day 2&rsquo;s exponential growth read backwards:
+        because reach grows exponentially, the number of steps needed grows only as the logarithm of the population, and
+        at <em>k</em> = 100 each hundredfold increase in population adds just one step. On this arithmetic alone &ldquo;six degrees&rdquo; is
+        unremarkable.
+      </p>
+      <p>
+        But acquaintances are not random. The <strong>clustering coefficient</strong> measures how far they are: take a
+        node, look at every pair of its neighbours, and ask what fraction of those pairs are linked to each other. If you
+        have four friends there are six possible pairs, and if three of those pairs are friends with each other, your
+        clustering is 3/6 = 0.5. In a clustered world most of your friend&rsquo;s friends are already your friends, so the
+        &ldquo;<em>k</em>&sup2; people at two steps&rdquo; count is a large overcount and reach grows far more slowly.
+        Push this to the extreme: put 1,000 people on a ring, each linked only to the 10 nearest. Clustering is high (0.67,
+        exactly two thirds), but to cross the ring a message must be passed along a few seats at a time, and the average path is about
+        50 steps. In general it grows in proportion to <em>N</em>/(2<em>k</em>), the population divided by twice the number
+        of neighbours; for 8 billion people with 100 neighbours each, that is about 40 million steps. Clustering without
+        shortcuts gives a vast world.
+      </p>
+      <p>
+        In 1998 Duncan Watts and Steven Strogatz, both then at Cornell, asked what lies between the two extremes. Take the
+        ring and, for each link, with some small probability <em>p</em> detach one end and reattach it to a node chosen at
+        random anywhere on the ring. A rewired link is a <strong>shortcut</strong>: it joins two people who may sit on
+        opposite sides. In simulations of the ring of 1,000 with 10 links each, the setup Watts and Strogatz studied,
+        rewiring nothing leaves the average path at about 50 steps and clustering at 0.67. Rewiring just 1 percent of the
+        links, about 50 of the 5,000, drops the average path to about 9 steps while clustering barely moves, to about 0.65.
+        Rewire everything and you reach the random network: paths of about 3.3 steps, but clustering of 0.01. A shortcut is
+        that powerful because it joins not two individuals but two whole neighbourhoods; everyone near one end becomes
+        close to everyone near the other. Path length is a global property that a few bridges transform, while clustering
+        is a local one that a few bridges leave nearly intact. Watts and Strogatz called a network with high clustering and
+        short paths a <strong>small-world network</strong> and found the pattern in three real ones, among them a
+        collaboration graph of about 225,000 film actors. Sociologists already had a name for such ties: in 1973 Mark
+        Granovetter called them &ldquo;weak ties&rdquo;, the acquaintances who often belong to circles other than
+        yours.
+      </p>
+      <p>
+        So far every node has about the same number of links. Many real networks do not. Most airports have a handful of
+        routes while a few have hundreds; most web pages are linked from almost nowhere while a few are linked from
+        millions. This is the fat-tailed distribution of Day 12, and the few nodes far out in its tail are
+        <strong>hubs</strong>. In 1999 Albert-L&aacute;szl&oacute; Barab&aacute;si and R&eacute;ka Albert showed that a
+        simple growth rule produces them. If each newcomer links preferentially to nodes that already have many links
+        (<strong>preferential attachment</strong>, the rich-get-richer rule), the degree distribution becomes a power law,
+        in their model with the chance of a node having <em>k</em> links falling as 1/<em>k</em>&sup3;: the straight line
+        on a log-log plot that Day 3 introduced.
+      </p>
+      <p>
+        Hubs do three things. They shorten paths: route through a hub and a trip from a small town to the far side of the
+        world takes a few legs. They speed spreading: in 2001 Romualdo Pastor-Satorras and Alessandro Vespignani showed
+        that in an idealized, endlessly large network with such hubs, an infection needs no minimum transmissibility to
+        persist (the epidemic threshold vanishes), because infected hubs seed so many others. And they concentrate risk: in
+        2000 R&eacute;ka Albert, Hawoong Jeong and Barab&aacute;si simulated deleting nodes and found that a hub-dominated
+        network barely notices random failures, since most nodes are minor, but breaks apart when the hubs are removed on
+        purpose. How common such networks are is itself disputed
+        <span class="chip chip--warn">Debated</span>: in 2019 Anna Broido and Aaron Clauset tested nearly 1,000 real
+        networks and concluded that strict power laws are rare, a finding that Barab&aacute;si and other defenders of the
+        &ldquo;scale-free&rdquo; picture (the name for power-law networks) dispute. What survives either way is the qualitative point: where degrees are heavy-tailed,
+        hubs are both highways and single points of failure.
+      </p>
+      <p>
+        Last, failure. Most real networks have capacity: a power line carries only so much current and a runway handles
+        only so many flights. When a node fails, its load shifts to its neighbours, and if they cannot absorb it they fail
+        too and pass it on. That is a <strong>cascading failure</strong>. Whether it stops at one node or sweeps the system
+        depends on the structure, meaning how many alternative routes the neighbours offer, and on how close to capacity
+        everything was running. The links that carry a rumour fast carry a failure fast. The Example works one through.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Two puzzles, two answers. Why so short? The logarithm does the same work for a country as for the world: roughly
+        200 million Americans, each with a few dozen usable acquaintances, gives about five to six steps, close to
+        Milgram&rsquo;s six hand-offs. A clustered world can reach that only through shortcuts, such as the old roommate in
+        another state or the business contact in the next city. The three people who funnelled nearly half the finished
+        chains were hubs in miniature, standing right beside the target.
+      </p>
+      <p>
+        Why did most folders never arrive? A path that exists is not a path that gets found. Nobody in Nebraska could see
+        the map. Each person saw only their own links, had to guess which acquaintance stood closest to a stranger in
+        Sharon, and had to bother to pass the folder on. Chances multiply: if each person forwards with probability three in
+        four (an illustration, not Milgram&rsquo;s measured rate), a chain of six hand-offs survives with probability
+        0.75<sup>6</sup> &asymp; 0.18, and a chain of ten with only 0.75<sup>10</sup> &asymp; 0.06. Long chains die first,
+        so the 5.2 describes the survivors, which are biased toward the short ones. In 2000 Jon Kleinberg proved that, in
+        his model of a lattice with shortcuts, a searcher who sees only local links can find short routes only if the
+        long-range ties are spread in a particular way. Short paths exist; whether people can find them is a separate
+        question.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Node and link (edge)</dt>
+        <dd>A node is one thing in the network (a person, airport, substation or neuron); a link is a connection between
+        two nodes. Everything else is built from these two.</dd>
+        <dt>Degree and degree distribution</dt>
+        <dd>A node&rsquo;s degree is its number of links. The degree distribution counts how many nodes have each degree;
+        whether it is bell-shaped or fat-tailed decides whether hubs exist.</dd>
+        <dt>Hub</dt>
+        <dd>A node whose degree is far above the typical node&rsquo;s, found in the fat tail of the degree distribution.
+        Hubs shorten paths and speed spreading, and their loss does disproportionate damage.</dd>
+        <dt>Clustering coefficient</dt>
+        <dd>For one node, the fraction of pairs among its neighbours that are themselves linked. High clustering means
+        &ldquo;my friends know each other&rdquo;.</dd>
+        <dt>Path length and shortcuts (small world)</dt>
+        <dd>Path length is the number of links on the shortest route between two nodes, averaged over all pairs for the
+        network. A shortcut is a long-range link joining distant clusters; a small-world network keeps high clustering and
+        still has short paths.</dd>
+        <dt>Cascading failure</dt>
+        <dd>A chain reaction in which one node&rsquo;s failure shifts load onto neighbours that then fail in turn.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The 2003 Northeast Blackout</h3>
+      <p>
+        The power grid, a recurring system in this course, sits at the physical-constraint and
+        engineering links of the chain: electricity must be moved the instant it is made, over lines that carry only so
+        much. The US&ndash;Canada Power System Outage Task Force&rsquo;s final report (April 2004) reconstructs 14 August
+        2003. At about 2:15 p.m. the alarm software in FirstEnergy&rsquo;s Ohio control room failed, leaving operators unaware
+        of their system&rsquo;s state. Between about 3 and 4 p.m. several 345-kilovolt lines in northern Ohio sagged into
+        overgrown trees and tripped, each trip pushing power onto neighbouring lines. At about 4:06 p.m. another
+        overloaded line tripped and the cascade ran, cutting power within minutes to about 50 million people in eight US
+        states and Ontario.
+      </p>
+      <p>
+        The 1998 Watts&ndash;Strogatz paper had analysed a grid too: the western US network of 4,941 generators,
+        transformers and substations, with about 2.7 links each. Its clustering was about 0.08, sixteen times the 0.005 of
+        a random network of the same size and density, and its average path was about 19 steps against about 12: a small
+        world. But its degrees have an exponential tail with no dominant hubs, and the 2003 outage struck the eastern
+        grid, a different network, so the blackout illustrates the cascade half of the lesson, not the hub half. Why does
+        a fault sometimes stop and sometimes sweep? Toy numbers show the logic (not 2003 data; real flows divide by
+        each line&rsquo;s impedance, not equally).
+      </p>
+      <div class="worked">
+        <p><strong>1. Set up.</strong> A corridor of three parallel lines, each rated for 100 MW (megawatts) and each
+        carrying 70 MW, delivers 210 MW.</p>
+        <p><strong>2. One trips.</strong> Its 70 MW splits between the two survivors: +35 MW each, so 105 MW on lines rated
+        for 100.</p>
+        <p><strong>3. It spreads.</strong> Both survivors are now overloaded. If they trip, all 210 MW is pushed onto the
+        next corridor: a fault in one line has become a fault in the corridor.</p>
+        <p><strong>4. Add one more path.</strong> Share the same 210 MW over four lines: 52.5 MW each. If one trips, its
+        52.5 MW splits three ways: +17.5 MW each, so 70 MW, well under the rating. The system absorbs the fault.</p>
+        <p><strong>5. Or add margin.</strong> Keep three lines but run each at 60 MW: the survivors take +30 MW, so 90 MW,
+        and also hold. Structure and loading both decide how far a fault travels.</p>
+      </div>
+      <p>
+        Real lines trip with a delay and operators can shed load, but the mechanism holds. The Task Force traced the
+        initiating failures mainly to FirstEnergy: its alarm software, its tree-trimming and its grasp of its own system.
+        Network structure did not start the cascade; with the lines&rsquo; loading, it helped set how far the
+        cascade ran.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <p>
+        The reach argument fits in one line, and the decisive step is taking the logarithm of both sides.
+      </p>
+      <div class="formula">
+        <p class="expr">k<sup>L</sup> &asymp; N &nbsp;&rArr;&nbsp; L &middot; ln k &asymp; ln N &nbsp;&rArr;&nbsp; L &asymp; ln N &frasl; ln k</p>
+        <p class="expr-spoken visually-hidden">k to the power L is approximately N, so L times the natural logarithm of k is approximately the natural logarithm of N, so L is approximately the natural logarithm of N divided by the natural logarithm of k.</p>
+        <dl>
+          <dt>L</dt>
+          <dd>the typical number of steps between two nodes (the path length)</dd>
+          <dt>N</dt>
+          <dd>the number of nodes in the network</dd>
+          <dt>k</dt>
+          <dd>the typical number of links per node, assuming they lead to different people</dd>
+          <dt>ln</dt>
+          <dd>the natural logarithm, the inverse of the exponential function (Day 2)</dd>
+        </dl>
+      </div>
+      <p>
+        For <em>N</em> = 8 &times; 10<sup>9</sup> and <em>k</em> = 100: ln <em>N</em> = ln 8 + 9 ln 10 &asymp; 2.08 + 20.72
+        = 22.80, and ln 100 &asymp; 4.61, so <em>L</em> &asymp; 22.80 &divide; 4.61 &asymp; 4.95, about five steps. The
+        answer barely depends on <em>k</em>: <em>k</em> = 50 gives 5.8 and <em>k</em> = 1,000 gives 3.3. This is the
+        benchmark for a network with no clustering. Clustering lengthens real paths, and the Watts&ndash;Strogatz result is
+        that a few shortcuts bring them most of the way back down.
+      </p>
+      <div class="formula">
+        <p class="expr">C<sub>i</sub> = 2e<sub>i</sub> &frasl; [k<sub>i</sub>(k<sub>i</sub> &minus; 1)]</p>
+        <p class="expr-spoken visually-hidden">The clustering coefficient of node i equals twice e sub i, divided by k sub i times k sub i minus one.</p>
+        <dl>
+          <dt>C<sub>i</sub></dt>
+          <dd>the clustering coefficient of node <em>i</em>, between 0 (no two neighbours linked) and 1 (all linked)</dd>
+          <dt>k<sub>i</sub></dt>
+          <dd>the degree of node <em>i</em>, so k<sub>i</sub>(k<sub>i</sub> &minus; 1)/2 is the number of possible pairs of its neighbours</dd>
+          <dt>e<sub>i</sub></dt>
+          <dd>the number of links that actually exist among node <em>i</em>&rsquo;s neighbours</dd>
+        </dl>
+      </div>
+      <p>
+        The four-friend example gives 2 &times; 3 &divide; (4 &times; 3) = 0.5. For the ring of 10 neighbours, the
+        clustering works out to exactly two thirds (the 0.67 above).
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now put four questions to any system where something spreads or breaks. How many links does a typical node
+        have, and is the distribution fat-tailed, so that hubs exist? How clustered is it? Are there shortcuts between the
+        clusters? How close to capacity is everything running? Rumours, ideas, infections and faults travel by the same
+        structure, so one answer predicts both the benefit and the risk: the shortcut that carries a job lead across a city
+        carries an infection with it, and the hub that makes an airline network efficient is the node whose loss strands
+        travellers everywhere.
+      </p>
+      <p>
+        It also challenges a tempting picture. &ldquo;Everything is connected within a few steps&rdquo; sounds profound, but
+        short paths are what you get almost automatically once a few long-range links exist, so the claim is cheap
+        evidence. For a book about how fields connect, the test is not whether a short path exists between two fields (it
+        nearly always does) but whether the link carries something, a shared mathematics, a prerequisite or a causal path,
+        the way a power line carries current.
+      </p>
+      <p><b>Settled.</b> The mathematics of reach, clustering and shortcuts, and that a local fault can cascade through a grid.</p>
+      <p><b>Debated.</b> How small the world really is. Milgram&rsquo;s starters were not a random sample and most chains
+      failed (Judith Kleinfeld, 2002), though an email replication (Dodds, Muhamad and Watts, 2003) and Facebook&rsquo;s
+      whole-network count (Backstrom and colleagues, 2012: an average of 4.74 steps among about 721 million users, which
+      shows paths exist, not that anyone could find them) also found short paths. Also debated: how common power-law
+      networks are.</p>
+      <p><b>Value judgment.</b> How much slack to buy against rare cascades, and who pays: ratepayers and shareholders bear
+      its cost, while the public bears the cost of its absence.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 12, Distributions: the bell curve and fat tails: degree distributions come in the same two shapes.
+        In a thin-tailed network nearly every node is typical; in a fat-tailed one a few hubs sit far out in the tail, so
+        the average degree is a poor summary. Day 2, Exponential growth and logarithms: reach multiplies by <em>k</em> at
+        each step, which is exponential growth, and the number of steps is a logarithm, its inverse.
+      </p>
+      <p>
+        <b>Across.</b> Biology, Medicine &amp; Health: the roundworm <em>Caenorhabditis elegans</em> has 302 neurons, and
+        John White, Sydney Brenner and colleagues mapped the connections among them from electron micrographs
+        (<em>Philosophical Transactions of the Royal Society B</em>, 1986). In the same 1998 <em>Nature</em> paper that
+        analysed the power grid, Watts and Strogatz showed that a version of this wiring diagram, with about 280 neurons,
+        is a small world: clustering of about 0.28 against about 0.05 for a random network of the same size and density, yet
+        an average path of 2.65 steps against 2.25. The same clustering-plus-shortcuts mathematics describes a
+        social network and a nervous system; it does not say why the wiring takes this form.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Science of Six Degrees of Separation &mdash; Veritasium (Derek Muller), 2015 &middot; Video &middot; about
+        10 minutes (length not confirmed)</p>
+        <p>A short, visual tour of Milgram&rsquo;s experiment and the network explanation of why short paths exist, with
+        modern online measurements. It shows the clustering-plus-shortcuts picture that the lesson can only describe.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A network&rsquo;s structure (degree distribution, clustering, shortcuts) decides how things spread through it
+        and how failures cascade.</li>
+        <li>With random links the typical path is ln <em>N</em> &divide; ln <em>k</em>: about five steps for 8 billion people
+        with 100 acquaintances each.</li>
+        <li>Clustering alone makes a vast world; about 1 percent of links rewired as shortcuts makes it small and leaves
+        clustering nearly intact.</li>
+        <li>Fat-tailed degrees create hubs, which are fast highways and single points of failure.</li>
+        <li>A short path existing is not the same as its being found: Milgram&rsquo;s finished chains took about six
+        hand-offs, yet 232 of 296 folders never arrived.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        In April 2010 ash from Iceland&rsquo;s Eyjafjallaj&ouml;kull volcano closed much of northern Europe&rsquo;s airspace
+        for about six days and cancelled roughly 100,000 flights; treating airports as nodes and flights as links,
+        and using degree, hubs and path length, why were travellers stranded on routes between cities nowhere near the
+        ash?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Travers and Milgram (<em>Sociometry</em>, 1969); Watts and Strogatz (<em>Nature</em>,
+      1998); Barab&aacute;si and Albert (1999); Albert, Jeong and Barab&aacute;si (2000); Pastor-Satorras and Vespignani
+      (2001); Kleinberg (2000); Broido and Clauset (2019); Kleinfeld (2002); Dodds, Muhamad and Watts (2003); Backstrom
+      and colleagues (2012); White and colleagues (1986); 2004 US&ndash;Canada Task Force report. Checked via web
+      search: the Milgram figures, the Watts&ndash;Strogatz datasets and the video&rsquo;s title. The blackout&rsquo;s
+      clock times, the Watts&ndash;Strogatz table values and other figures are as the sources report them, not
+      re-confirmed; ring values are simulated.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource from the
+      Connected Path&rsquo;s curated list; its address and length could not be confirmed, so it is cited without a link.
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-12.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-14.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

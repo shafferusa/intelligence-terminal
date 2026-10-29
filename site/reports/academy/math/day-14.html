@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Program That Could Never Beat a Single Opponent Won the Tournament. Twice. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "The Program That Could Never Beat a Single Opponent Won the Tournament. Twice.",
+    "path": "reports/academy/math/day-14.html",
+    "summary": "Day 14 of the Connected Path: when payoffs depend on what others choose, the stable outcome can leave everyone worse off (the prisoner’s dilemma) unless the game repeats often enough for reciprocity to pay, which is how TIT FOR TAT won Axelrod’s tournaments without ever outscoring a partner.",
+    "headlines": [
+      "Day 14 of 293 · Mathematics: in the prisoner’s dilemma the equilibrium leaves everyone worse off, until repetition makes reciprocity pay",
+      "TIT FOR TAT never outscored a partner in a match, yet won Axelrod’s first tournament on total points, then won again in a field of 62 entries",
+      "Watch or Read: The Evolution of Trust (about 30 minutes, interactive)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T16:45:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Program That Could Never Beat a Single Opponent Won the Tournament. Twice.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        In Robert Axelrod’s two computer tournaments, reported in 1980, a strategy that could never outscore any partner won on total points, twice, because in a game where both sides can gain, beating the other player is the wrong target.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 14 of 293 &middot; Mathematics 14 of 24 &middot; Game theory: strategy when others choose too</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A tournament won by one of the simplest programs</h3>
+      <p>
+        In 1980 Robert Axelrod, a political scientist at the University of Michigan, published the
+        results of a contest among computer programs. He had invited game theorists from economics,
+        psychology, sociology, political science and mathematics to write a program that would play the
+        same simple game against every other entry, 200 moves per match. On each move a program chose
+        to cooperate or to defect, and the points followed a fixed table. If both cooperated, each
+        scored 3. If both defected, each scored 1. If one defected on a cooperator, the defector took
+        5 and the cooperator got nothing. Fourteen programs arrived, and Axelrod added a fifteenth
+        that chose at random.
+      </p>
+      <p>
+        The winner was among the simplest of the fourteen. Called TIT FOR TAT, it was submitted by Anatol
+        Rapoport of the University of Toronto, and it did only two things: cooperate on the first move,
+        then copy whatever the other program did on the move before.
+      </p>
+      <p>
+        That simplicity hides something strange. Because it only ever copies, TIT FOR TAT can never
+        score more than the program it is playing. Against a program that cooperates on every move it
+        ties, 600 points each. Against one that defects on every move it loses, 199 to 204. At best it
+        ties, and it never wins a match.
+      </p>
+      <p>
+        Axelrod then ran a second round and let every entrant study the first round&rsquo;s results
+        before writing a program. Sixty-two entries came in from six countries. Rapoport sent TIT FOR
+        TAT again, unchanged. It won again.
+      </p>
+      <p>
+        A program that cannot outscore a single partner beat a field built by people who had read how
+        it won. How can a program that never wins a match win the whole tournament?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        When your payoff depends on what others choose as well as on what you choose, the stable
+        outcome is an equilibrium: a set of choices in which no one gains by changing course alone. In
+        the prisoner&rsquo;s dilemma that equilibrium leaves everyone worse off, unless the game
+        repeats often enough for reciprocity to pay.
+      </p>
+      <p>
+        Game theory is the mathematics of that situation: two or more decision-makers, each with
+        options, each caring about an outcome that all of them together determine. Ordinary
+        optimization treats the world as fixed terrain. Here the terrain is other people&rsquo;s
+        choices, and they are reading yours.
+      </p>
+      <p>
+        The prisoner&rsquo;s dilemma is the sharpest case. Each player does better by defecting
+        whatever the other does, yet two players who both reason this way do worse than two who both
+        cooperate. What rescues cooperation is not kindness but repetition. If you will meet again,
+        today&rsquo;s defection can be answered tomorrow, and the prospect of that answer can make
+        cooperating the better bet.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A game, in the mathematician&rsquo;s sense, has three parts: the players, the choices open to
+        each, and a payoff to each player for every combination of choices. With two players and two
+        choices you can write all of it as a <strong>payoff matrix</strong>. This one is
+        Axelrod&rsquo;s, with the choices called cooperate and defect.
+      </p>
+      <div class="table-wrap">
+        <table class="data-table" style="min-width:0">
+          <caption>One round: your points, then the other player&rsquo;s.</caption>
+          <thead><tr><th></th><th>They cooperate</th><th>They defect</th></tr></thead>
+          <tbody>
+            <tr><td class="txt"><b>You cooperate</b></td><td>3, 3</td><td>0, 5</td></tr>
+            <tr><td class="txt"><b>You defect</b></td><td>5, 0</td><td>1, 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Now play one round against someone you will never meet again, and reason by cases. If the other
+        player cooperates, you score 3 by cooperating and 5 by defecting, so defecting is better. If
+        the other player defects, you score 0 by cooperating and 1 by defecting, so defecting is
+        better again. There are no other cases, so defecting is better whatever the other player does.
+        A choice that wins in every case is a <strong>dominant strategy</strong>. This is a small proof
+        in the sense of Day 10: not a sample of cases but all of them, and there are only two. The other
+        player faces the same table and the same argument. Both defect, both score 1, and the 3 each
+        that mutual cooperation would have paid is left on the table. Each player&rsquo;s reasoning is
+        flawless, and the result is worse for both.
+      </p>
+      <p>
+        That outcome has a name. A <strong>Nash equilibrium</strong> is a set of choices in which no
+        player can do better by changing only their own choice while the others stay put. Mutual
+        defection is one: if you switch to cooperating while the other defects, you drop from 1 to 0.
+        Mutual cooperation is not one: while the other cooperates, you gain by switching to defection,
+        from 3 to 5. John Nash defined the idea in a short paper in 1950. The dilemma itself was
+        devised the same year, as an experiment on his equilibrium, by Merrill Flood and Melvin Dresher
+        at the RAND Corporation. Note what an equilibrium claims: stability, not goodness.
+      </p>
+      <p>
+        Everything changes if the same two players meet again. Suppose that after each round there is a
+        probability <em>w</em> that another round follows. Axelrod&rsquo;s phrase for how much tomorrow
+        weighs against today is the <strong>shadow of the future</strong>. A move now is also a message
+        about the next one: a player can punish a defection or reward a cooperation, and can let
+        its choice depend on the whole history. What a later round is worth today is an expected value
+        in Day 11&rsquo;s sense, its payoff times the chance that it is played. Cooperating on every
+        round is therefore worth 3 + 3<em>w</em> + 3<em>w</em>&sup2; + &hellip; = 3/(1 &minus;
+        <em>w</em>) points. With <em>w</em> = 0.9 the game lasts ten rounds on average, and that
+        stream of cooperation is worth 30.
+      </p>
+      <p>
+        <strong>TIT FOR TAT</strong> is a strategy built for this setting: cooperate first, then copy
+        the other player&rsquo;s last move. Try to profit from it at <em>w</em> = 0.9. Defecting every
+        round earns 5 once, then 1 per round: 14 in all, against 30. Defecting once and then
+        cooperating again earns 29.3, still short of 30, because the 2 extra points you took in the
+        first round cost you 3 in the next, and that 3 is worth 2.7 today. Defection stops paying once
+        the future is heavy enough. The exact condition is in the Equation / Model section; for these
+        payoffs TIT FOR TAT holds against every challenger only if <em>w</em> is at least 2/3, a game
+        that lasts three rounds on average.
+      </p>
+      <p>
+        Axelrod credited its success to four traits. It is <em>nice</em>: it is never the first to
+        defect. It is <em>retaliatory</em>: it answers a defection at once. It is <em>forgiving</em>:
+        it returns to cooperation as soon as the other player does, because it remembers only one move.
+        And it is <em>clear</em>: the other side can see what it is doing and learn that cooperating
+        pays. The high scorers in the first round were mostly nice programs. A program that defects
+        first and keeps defecting collects 5 once and then, against any retaliator, about 1 a move, while a pair that
+        settles into cooperation earns 3 a move.
+      </p>
+      <p>
+        TIT FOR TAT is not the best strategy everywhere, and the reason lies in how it works. It
+        answers every defection with a defection, so one mistake echoes. Suppose each move has some
+        chance of going wrong, so that an intended cooperation comes out as a defection or the reverse. Two TIT FOR TATs fall out of
+        step: one accidental defection is answered, the answer is answered back, and they trade
+        defections until another error changes the pattern. Work through the four states a pair can be in and,
+        however rare the errors, they spend a quarter of their time in each, so in the long run they
+        average (3 + 0 + 5 + 1) &divide; 4 = 2.25 points a move instead of 3. A version that forgives a
+        defection one time in three, called generous TIT FOR TAT, does far better: with errors on 5% of
+        moves, two of them average about 2.86. Nowak and Sigmund&rsquo;s simulations (<em>Nature</em>,
+        1993) found that another rule, win-stay, lose-shift, which repeats its move after a good payoff
+        and switches after a bad one, beats TIT FOR TAT in a noisy population. Wu and Axelrod (1995),
+        testing strategies in a noisy tournament, found that generosity and contrition both help TIT FOR
+        TAT cope; a contrite player accepts the other side&rsquo;s retaliation for its own mistaken
+        defection instead of answering it.
+      </p>
+      <p>
+        Forgiveness has a price too. In the second round TIT FOR TWO TATS, which waits for two
+        defections before retaliating, did worse than TIT FOR TAT because other programs exploited its
+        patience. How much to forgive depends on who else is playing and how noisy the world is. Even
+        the tournament result is less general than it sounds: a 2015 re-analysis by Amnon Rapoport, Darryl Seale and
+        Andrew Colman argues that TIT FOR TAT&rsquo;s success depends on the design of the tournament, the
+        criterion for success and the payoff values chosen. <span class="chip chip--warn">Debated</span>
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Here is the answer to the opening puzzle. The tournament counted total points, not matches won,
+        and the game is not zero-sum: one player&rsquo;s gain is not the other&rsquo;s loss, so both
+        can score 3 a move. Because TIT FOR TAT copies, the gap between it and its partner is only ever
+        0 or 5 points. A partner that defects first leads by 5 until it next cooperates, when TIT
+        FOR TAT&rsquo;s copied defection hands the 5 back. So TIT FOR TAT never finishes a match ahead,
+        but it earns the full 600 against a partner that cooperates throughout and trails by at most 5
+        points against any partner that does not.
+        Programs built to win matches had to get ahead by defecting on a partner that cooperated, and
+        against a retaliator that drags both players toward 1 a move. TIT FOR TAT did not beat its partners. It collected the
+        cooperative payoff from every partner that would allow it, and that was enough to win.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Payoff matrix</dt>
+        <dd>A table of what each player scores for every combination of choices; in a two-player game
+        the rows are one player&rsquo;s options and the columns the other&rsquo;s.</dd>
+        <dt>Dominant strategy</dt>
+        <dd>A choice that pays more than any alternative whatever the other players do. In the
+        one-round prisoner&rsquo;s dilemma, defecting.</dd>
+        <dt>Nash equilibrium</dt>
+        <dd>A set of choices in which no player can gain by changing only their own. It is a test of
+        stability, not of whether the outcome is good.</dd>
+        <dt>Prisoner&rsquo;s dilemma</dt>
+        <dd>A game in which each player gains by defecting whatever the other does, yet both do better
+        if both cooperate.</dd>
+        <dt>Repeated game and the shadow of the future</dt>
+        <dd>The same game played again, each time with probability <em>w</em> of another round. The
+        larger <em>w</em> is, the more tomorrow weighs and the more cooperation can be sustained.</dd>
+        <dt>TIT FOR TAT (reciprocity)</dt>
+        <dd>Cooperate on the first move, then copy the partner&rsquo;s last move: cooperation is
+        answered with cooperation and defection with defection.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The SUV Arms Race</h3>
+      <p>
+        The same structure shows up in the cars people buy. In &ldquo;The &lsquo;Arms Race&rsquo; on American
+        Roads&rdquo; (<em>Journal of Law and Economics</em>, 2004), Michelle J. White used US crash
+        data and found that SUVs and pickups protect their own occupants but raise
+        the risk to everyone they hit. For each fatal crash avoided by the occupants of an SUV or
+        pickup, she estimated, at least 4.3 more fatal crashes involving other people occur. That is
+        one study&rsquo;s estimate, not a consensus number. In your car chain this is the
+        consequences link, produced by choices made at the adoption link: millions of households each
+        buying the vehicle that is safest for them.
+      </p>
+      <div class="worked">
+        <b>Worked example: the vehicle choice as a payoff matrix</b>
+        <ol>
+          <li><strong>Set the scale.</strong> Take White&rsquo;s ratio, rounded down to 1 to 4, as a
+          stylized scale, and assume effects simply add. Let Heavy stand for an SUV or pickup and Light for
+          a car. Choosing Heavy instead of Light makes your household
+          +1 safer and the other household 4 less safe.</li>
+          <li><strong>Both Light:</strong> 0 for each.</li>
+          <li><strong>You Heavy, they Light:</strong> you +1, they &minus;4. <strong>Both
+          Heavy:</strong> each gets +1 &minus; 4 = &minus;3.</li>
+          <li><strong>Test for dominance.</strong> If they go Light, Heavy gives you +1 against 0. If
+          they go Heavy, Heavy gives you &minus;3 against &minus;4. Heavy wins in both cases.</li>
+          <li><strong>Read the result.</strong> Both choose Heavy and each ends at &minus;3, while
+          (0, 0) was available. The payoffs, in Axelrod&rsquo;s order, are T = +1, R = 0, P = &minus;3
+          and S = &minus;4: it is a prisoner&rsquo;s dilemma.</li>
+        </ol>
+      </div>
+      <p>
+        The analogy bends in two places. Buyers also want space, towing power or a high seat, so safety
+        is not their only payoff. And the game is not repeated in the way that rescues cooperation:
+        millions of strangers cannot answer one buyer&rsquo;s choice with a choice of their own, so
+        there is no shadow of the future. When there is none, the remedy is more likely to come from
+        outside the game, as a rule or charge that changes the payoffs. In the chain, that is the
+        regulation link.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">T &gt; R &gt; P &gt; S &nbsp;and&nbsp; 2R &gt; T + S</p>
+        <p class="expr-spoken visually-hidden">T is greater than R, which is greater than P, which is greater than S; and twice R is greater than T plus S.</p>
+        <dl>
+          <dt>T</dt>
+          <dd>temptation: what you score for defecting on a cooperator (5)</dd>
+          <dt>R</dt>
+          <dd>reward: what each scores when both cooperate (3)</dd>
+          <dt>P</dt>
+          <dd>punishment: what each scores when both defect (1)</dd>
+          <dt>S</dt>
+          <dd>sucker&rsquo;s payoff: what you score for cooperating with a defector (0)</dd>
+        </dl>
+      </div>
+      <p>
+        The first chain makes defecting dominant in one round: T &gt; R beats a cooperator, and P &gt; S
+        beats a defector. The second keeps mutual cooperation better than taking turns exploiting each
+        other, since (T + S)/2 = 2.5 is less than R = 3. In a repeated game, let <em>w</em> be the
+        chance of another round. The decisive step is to compare what each challenger earns against
+        TIT FOR TAT with what TIT FOR TAT earns against itself:
+      </p>
+      <div class="formula">
+        <p class="expr">R/(1 &minus; w) &ge; T + wP/(1 &minus; w) &nbsp;&rArr;&nbsp; w &ge; (T &minus; R)/(T &minus; P)</p>
+        <p class="expr-spoken visually-hidden">R over 1 minus w is at least T plus w P over 1 minus w, which gives w at least T minus R over T minus P.</p>
+        <p class="expr">R/(1 &minus; w) &ge; (T + wS)/(1 &minus; w&sup2;) &nbsp;&rArr;&nbsp; w &ge; (T &minus; R)/(R &minus; S)</p>
+        <p class="expr-spoken visually-hidden">R over 1 minus w is at least T plus w S over 1 minus w squared, which gives w at least T minus R over R minus S.</p>
+        <dl>
+          <dt>w</dt>
+          <dd>the probability that another round follows, so the game lasts 1/(1 &minus; <em>w</em>) rounds on average</dd>
+          <dt>R/(1 &minus; w)</dt>
+          <dd>what TIT FOR TAT earns against itself: R + wR + w&sup2;R + &hellip;, a geometric sum</dd>
+          <dt>T + wP/(1 &minus; w)</dt>
+          <dd>what a player who defects on every round earns against TIT FOR TAT: T once, then P thereafter</dd>
+          <dt>(T + wS)/(1 &minus; w&sup2;)</dt>
+          <dd>what a player who alternates defect, cooperate earns against it: T, then S, repeating every two rounds</dd>
+        </dl>
+      </div>
+      <p>
+        The first line comes from multiplying through by (1 &minus; <em>w</em>), which leaves R &ge;
+        T(1 &minus; <em>w</em>) + <em>w</em>P. The second comes from cancelling (1 &minus; <em>w</em>),
+        which leaves R(1 + <em>w</em>) &ge; T + <em>w</em>S. With T = 5, R = 3, P = 1 and S = 0 the
+        thresholds are 2/4 = 0.5 and 2/3. TIT FOR TAT must clear both, so the larger one binds:
+        <em>w</em> &ge; 2/3. No other challenger raises the bar, which is Axelrod&rsquo;s result that
+        no challenger beats TIT FOR TAT&rsquo;s score against itself exactly when <em>w</em> is large enough. The alternating
+        challenger binds because it gives up only half a point a round (2.5 against 3) in exchange
+        for a head start of 2 points, so it takes a longer future for the loss to outweigh the gain.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        When a group is stuck in an outcome nobody likes, you can now ask whether it is a dilemma, a
+        game where each member gains by defecting whatever the others do, and then ask what the
+        mathematics says can change it. Three things can: lengthen the shadow of the future so the same
+        parties expect to meet again, change the payoffs so that defecting costs more or cooperating
+        pays more, or make behavior visible so that a defection can be answered. None of these asks anyone to
+        become more generous; each changes what defecting costs or what cooperating returns. The popular summary
+        that nice guys finish first overreaches. TIT FOR TAT finishes first only among enough
+        reciprocators, with a long enough shadow, and it never finishes ahead of anyone it plays.
+      </p>
+      <p><b>Settled.</b> The one-round equilibrium and the conditions for cooperation in repeated play
+      are mathematical results once the payoffs are fixed, and the tournament scores are published
+      records.</p>
+      <p><b>Debated.</b> How far the tournaments generalize: whether noise, payoff values and the mix
+      of rivals favor TIT FOR TAT or a more forgiving rival, and how much real-world cooperation the
+      model explains. The SUV ratio is one study&rsquo;s estimate.</p>
+      <p><b>Value judgment.</b> Whether the cooperation a model sustains is good depends on who sits
+      outside the game. The mathematics explains why cooperation lasts, not whether it deserves to.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 11, Probability and expected value: a repeated game&rsquo;s worth is an
+        expected value, with each later round weighted by the probability <em>w</em> that it is played,
+        so the 3/(1 &minus; <em>w</em>) above is a probability-weighted sum. Day 8, Optimization: there
+        one chooser found the best point on a fixed trade-off, and here each player&rsquo;s best choice
+        is made against the other&rsquo;s choice, so separate individual optima can combine into an
+        outcome worse for everyone.
+      </p>
+      <p>
+        <b>Across.</b> History. In Tony Ashworth&rsquo;s <em>Trench Warfare 1914&ndash;1918: The Live
+        and Let Live System</em> (1980), drawn from soldiers&rsquo; diaries, letters and unit records, opposing
+        infantry on quiet sectors of the Western Front held back their fire. Axelrod analyzed it as a
+        repeated prisoner&rsquo;s dilemma in chapter 4 of <em>The Evolution of Cooperation</em> (1984).
+        The mechanism is this lesson&rsquo;s: the same small units faced each other for long stretches,
+        a long shadow of the future, and a breach could be answered. The system was fragile, and
+        Axelrod follows Ashworth in tracing its end to raids ordered from above. It is a model fitted
+        to a historical record, so it shows the mechanism at work rather than proving how the soldiers
+        reasoned.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Evolution of Trust &mdash; Nicky Case (2017) &middot; Reading &middot; about 30 minutes
+        (interactive)</p>
+        <p>An interactive explainer built on Axelrod&rsquo;s tournaments. You play the repeated
+        prisoner&rsquo;s dilemma yourself and watch how repetition, payoffs and mistakes change which
+        strategy wins, which a written lesson can only describe.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>In a one-round prisoner&rsquo;s dilemma defecting is dominant, so mutual defection is the
+        only equilibrium even though mutual cooperation pays both more.</li>
+        <li>An equilibrium means no one gains by changing course alone; it says nothing about whether
+        the outcome is good.</li>
+        <li>With Axelrod&rsquo;s payoffs, TIT FOR TAT resists every challenger only if the chance of
+        another round is at least 2/3.</li>
+        <li>TIT FOR TAT never outscored a partner yet won both tournaments, because the game is not
+        zero-sum and the score was total points.</li>
+        <li>It is not best everywhere: noise makes mistakes echo, and how much to forgive depends on
+        who else is playing.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Each member of a cartel like OPEC would earn more by quietly pumping above its quota while the
+        other members hold back, so what could keep such a cartel, whose members all depend on a
+        high price, from collapsing into everyone overproducing?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Robert Axelrod, &ldquo;Effective Choice in the Prisoner&rsquo;s Dilemma&rdquo; and &ldquo;More Effective Choice in the Prisoner&rsquo;s Dilemma&rdquo; (<em>Journal of Conflict Resolution</em>, 1980) and <em>The Evolution of Cooperation</em> (1984); John Nash (1950); Stanford Encyclopedia of Philosophy, prisoner&rsquo;s dilemma; Nowak and Sigmund (<em>Nature</em>, 1993); Wu and Axelrod (1995); Rapoport, Seale and Colman (2015); Tony Ashworth (1980); Michelle J. White (2004). Checked via web search. White&rsquo;s ratio comes from summaries of her abstract, and the entrants&rsquo; disciplines are as Axelrod reports them; neither was checked against the original text.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource from the Connected Path&rsquo;s curated list, cited without a link because its address could not be confirmed. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-13.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-15.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

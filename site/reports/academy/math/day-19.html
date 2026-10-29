@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>On Average, Tall Parents Had Shorter Children and Short Parents Taller Ones. So Why Didn’t Everyone End Up Average? — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "On Average, Tall Parents Had Shorter Children and Short Parents Taller Ones. So Why Didn’t Everyone End Up Average?",
+    "path": "reports/academy/math/day-19.html",
+    "summary": "Regression to the mean: when two measurements are imperfectly correlated, cases picked as extreme on one are on average less extreme on the other, yet a population's spread holds steady, so an improvement after picking the worst cases, like speed cameras sited after crash clusters, can come from statistics alone.",
+    "headlines": [
+      "Day 19 of 293 · Mathematics: cases picked as extreme on one measurement are, on average, less extreme on the next (regression to the mean)",
+      "Speed cameras sited after crash clusters and schools picked for low scores tend to improve partly on their own; only a comparison group shows what the action added",
+      "Watch or Read: Thinking, Fast and Slow, ch. 17, ‘Regression to the Mean’ (about 20 min)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>On Average, Tall Parents Had Shorter Children and Short Parents Taller Ones. So Why Didn&rsquo;t Everyone End Up Average?</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        When two measurements are only partly linked, the cases that stand out on one will, on average,
+        stand out less on the other &mdash; an effect of pure arithmetic that Galton found in the heights of
+        928 grown children, and that quietly fools anyone who judges a program by picking the worst cases
+        and measuring them again.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 19 of 293 &middot; Mathematics 19 of 24 &middot; How We Know V: Regression and regression to the mean</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Galton&rsquo;s table of 928 grown children</h3>
+      <p>
+        In 1886 Francis Galton published a paper with a title that sounds like an insult: &ldquo;Regression
+        towards Mediocrity in Hereditary Stature.&rdquo; Galton was Charles Darwin&rsquo;s half-cousin, a
+        pioneer of weather maps and fingerprint classification, and the man who had coined the word
+        <em>eugenics</em> three years earlier (his term for improving the human stock by selective breeding,
+        a program this lesson returns to at the end). His paper, in the <em>Journal of the Anthropological
+        Institute</em>, rested on family records he had gathered partly by offering cash prizes for the
+        best-kept ones: the heights of 928 grown children born to 205 couples.
+      </p>
+      <p>
+        The raw numbers needed tidying first. Men are taller than women on average, so Galton multiplied
+        every woman&rsquo;s height, mothers and daughters alike, by 1.08 to put everyone on the men&rsquo;s
+        scale. He then averaged each couple&rsquo;s two heights into one figure, the
+        <strong>mid-parent</strong> height, and tabulated the children against it.
+      </p>
+      <p>
+        The pattern was unmistakable. Tall mid-parents had tall children and
+        short mid-parents had short ones &mdash; but the children were not as tall, or as short, as their
+        parents. On average a child stood only about two-thirds as far from the average height as the
+        mid-parent did. Couples 3 inches above average had children averaging about 2 inches above it;
+        couples 3 inches below, children averaging about 2 inches below.
+      </p>
+      <p>
+        Taken at face value, the table says that each generation&rsquo;s extremes are pulled back toward the
+        middle. Yet heights in the children&rsquo;s generation were about as spread out as in their
+        parents&rsquo;: tall people and short people kept turning up. If the children of the tall and the
+        short are pulled toward the average, why doesn&rsquo;t everyone end up average?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        When two measurements are imperfectly related, the cases that are extreme on one are, on average,
+        less extreme on the other. This is <strong>regression to the mean</strong>, and it is a fact about
+        arithmetic, not a force of nature, a law of heredity or the cause of anything.
+      </p>
+      <p>
+        Any measurement is partly something durable and partly luck. A very tall couple are tall partly
+        for reasons their children will share, such as many of the same genes, and partly for reasons that
+        will not pass on: how well they were fed and how healthy they were as children, and the chance combination of genes each of them happened to receive, which is reshuffled in the next generation. Their children get a new draw of the chance elements and
+        an upbringing of their own. So the children of the extreme are, on average, closer to the middle.
+      </p>
+      <p>
+        Run the same logic backward and it exposes the trap. Pick out the very tall children, and their
+        parents were, on average, less tall than they are. Nobody believes children pull their parents
+        toward the middle. What both directions share is selection: when you pick cases because one
+        measurement was extreme, you have also picked, in part, for luck, and luck does not repeat.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with two numbers measured on every case: a mid-parent&rsquo;s height and a child&rsquo;s, a
+        road site&rsquo;s crash count in one period and the next, a student&rsquo;s scores on two tests.
+        Day 18 introduced the <strong>correlation coefficient</strong>, <em>r</em>, a number from &minus;1
+        to +1 that says how tightly the pairs hug a straight line. At +1 the first measurement predicts the
+        second perfectly; at 0 it predicts nothing; real pairs sit in between. Galton&rsquo;s heights are
+        clearly positively correlated, but well short of 1.
+      </p>
+      <p>
+        To compare measurements on different scales, convert each to <strong>standard units</strong>: how
+        many standard deviations a value sits above or below the average. The standard deviation is the
+        typical distance of a case from the average, the width of the bell curve of Day 12, so a height 2
+        standard deviations above average is unusually tall in inches or centimeters alike. In standard
+        units the middle of the cloud of points sits at (0, 0), and the spread of each measurement is 1.
+      </p>
+      <p>
+        Now ask the prediction question: given a case&rsquo;s first measurement, what is the best guess
+        for its second? Plot every pair as a point. The <strong>regression line</strong> is the straight
+        line through the cloud that makes the squared prediction errors smallest overall, the &ldquo;least
+        squares&rdquo; line, found with Day 8&rsquo;s trick of setting the slope of the total error to zero
+        at its minimum. It passes through the point of averages, and in standard units its slope is exactly
+        <em>r</em>: predicted second measurement = <em>r</em> &times; first measurement. With
+        <em>r</em> = 0.5, a case 2 standard deviations above average on the first measurement is predicted
+        to be 1 above on the second; a case 1 below is predicted to be half a standard deviation below.
+      </p>
+      <p>
+        Why is the prediction pulled in? Think of each first measurement as a durable part plus a dose of
+        luck. Cases at the extreme are there, on average, partly because their luck happened to run
+        high: the very top of any group is crowded with the lucky. On the second measurement the
+        durable part comes along, but the luck is redrawn at random and averages zero. So the expected
+        second measurement keeps only the durable share of the extreme. In the simplest case, two
+        measurements of the same durable quantity with independent luck, that share is <em>r</em>, and a
+        fraction 1 &minus; <em>r</em> of the extreme is expected to evaporate. When <em>r</em> = 1 nothing
+        is luck and nothing regresses. When <em>r</em> = 0 everything was luck, and the best guess for
+        every case is simply the average.
+      </p>
+      <p>
+        Nothing in this argument involves time or cause. The line for predicting parents from children
+        also has slope <em>r</em> in standard units, so the parents of very tall children are predicted to
+        be less tall than their children. A force acting through time could not run backward from children
+        to parents. The pattern appears because we selected cases on one measurement and then looked at
+        another.
+      </p>
+      <p>
+        There is a second half to the argument, and it answers Galton&rsquo;s puzzle. The line gives only
+        the <em>average</em> second measurement for each first measurement; individual cases scatter around
+        it. In standard units the predictions are the first measurement shrunk by the factor <em>r</em>,
+        so their spread is <em>r</em> and their variance, the average squared distance from the average,
+        is <em>r</em>&sup2;. The scatter around the line has variance 1 &minus; <em>r</em>&sup2;. Because
+        the scatter is uncorrelated with the predictions, the variances add, and the shrinkage and the
+        scatter exactly make up the whole: <em>r</em>&sup2; + (1 &minus; <em>r</em>&sup2;) = 1. The second
+        measurement is as spread out as the first. With <em>r</em> = 0.5, the line accounts for a quarter
+        of the variance and the scatter for three quarters.
+      </p>
+      <p>
+        In that stylized model, with the two measurements jointly bell-shaped, a case 2 standard deviations above average has a second measurement
+        predicted at only 1 above, yet about one in eight such cases still lands at least as high as 2,
+        because the scatter is wide. And the traffic runs the other way too: among cases that end up 2 or
+        more standard deviations above average, about four in five started below 2, because far more
+        cases begin near the middle, and a few of them scatter outward into the tail.
+      </p>
+      <p>
+        The practical danger comes from a common pattern: pick the worst cases (the most dangerous
+        junctions, the lowest-scoring schools, the sickest patients, last month&rsquo;s worst performer),
+        do something, and measure again. The first measurement selected on an extreme, and the second is
+        partly luck redrawn, so the cases are expected to improve even if the something did nothing at all.
+        Mistaking that drift for the effect of the intervention is called the <strong>regression
+        fallacy</strong>. The remedy is a <strong>comparison group</strong>: a similar set of cases, picked
+        by the same extreme rule, that did not get the treatment. On average it drifts toward the mean by
+        as much as the treated group does, so the difference between the two estimates what the treatment added.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        So Galton&rsquo;s two facts do not conflict. Height is only partly predictable from the parents&rsquo;
+        heights, with a correlation well below 1, so the children of very tall couples average closer to
+        the middle: that is the regression. The same imperfection leaves a wide scatter of children around
+        each prediction, and the many children of ordinary couples scatter out into the tails and fill
+        them. The pull inward and the scatter outward offset exactly, which is why the spread of heights
+        stays put. Regression was never a force squeezing the population; it is what a shrunken prediction
+        looks like when you pick cases from the top of the first measurement. Statistics took two lasting
+        tools from Galton&rsquo;s work on heights: the regression line, and, as he worked out in 1888, a measure of
+        the strength of the link that he called co-relation and that Karl Pearson&rsquo;s formula of the
+        1890s made into the correlation coefficient <em>r</em>.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Standard units</dt>
+        <dd>A value measured as the number of standard deviations (typical distances from the average) it
+        sits above or below the average, so measurements on different scales can be compared.</dd>
+        <dt>Correlation coefficient (<em>r</em>)</dt>
+        <dd>A number from &minus;1 to +1 for how closely paired measurements follow a straight line: +1 is
+        a perfect rise together, 0 is no straight-line tendency. It says nothing about cause.</dd>
+        <dt>Regression line</dt>
+        <dd>The straight line that predicts the second measurement from the first with the smallest
+        squared errors. In standard units its slope is <em>r</em>.</dd>
+        <dt>Regression to the mean</dt>
+        <dd>The tendency of cases picked as extreme on one measurement to be less extreme on another,
+        imperfectly correlated one. For positively correlated measurements, the fraction expected to fade, in standard units, is 1 &minus; <em>r</em>.</dd>
+        <dt>Selection on an extreme</dt>
+        <dd>Choosing cases because their measurement was unusually high or low, such as the worst
+        junctions or the lowest-scoring schools. It builds in regression to the mean; mistaking the result for an effect is the regression fallacy.</dd>
+        <dt>Comparison group</dt>
+        <dd>A similar set of cases, chosen by the same rule, that did not receive the treatment. It shows
+        how far the numbers move on their own.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Speed cameras and the crash cluster</h3>
+      <p>
+        Speed cameras sit at the regulation link of your car chain, at the enforcement end: a rule
+        needs someone to decide where to enforce it. Britain placed its fixed cameras at sites chosen largely for their recent record of serious crashes. That selection on an extreme means some improvement is to be expected even from a camera that did nothing.
+      </p>
+      <p>
+        The four-year national evaluation of the camera program, published by the Department for Transport in 2005, reported a 42% fall in people killed or seriously injured at camera sites. Researchers who
+        re-examined camera sites with methods that adjust more fully for regression to the mean, among them Mountain,
+        Hirst and Maher in 2004&ndash;05 and later a review for the RAC Foundation by Richard Allsop,
+        reported real but smaller reductions than the national evaluation&rsquo;s headline figures. The standard repair in road-safety research, the empirical Bayes method associated with Ezra
+        Hauer, puts this lesson&rsquo;s idea to work: it estimates a site&rsquo;s underlying danger as a
+        blend of its own record and the average for similar sites. How large the true camera effect is remains argued <span class="chip chip--warn">Debated</span>; that the sites were picked at an extreme is not.
+      </p>
+      <div class="worked">
+        <p><strong>A stylized calculation (invented numbers, to show the arithmetic).</strong></p>
+        <p><strong>1. Set the scene.</strong> Comparable road sites average 4 serious casualties per three
+        years. Suppose a site&rsquo;s count in one three-year period has a correlation of <em>r</em> = 0.5
+        with its count in the next, across such sites, with the same average and spread in both.</p>
+        <p><strong>2. Select on an extreme.</strong> A site is flagged for a camera after logging 10 &mdash;
+        6 above average.</p>
+        <p><strong>3. Predict without a camera.</strong> Expected next count = 4 + 0.5 &times; (10 &minus; 4)
+        = 7. A fall from 10 to 7, or 30%, is expected from regression alone.</p>
+        <p><strong>4. The naive reading.</strong> The camera goes in and the site logs 5: a fall of
+        (10 &minus; 5)/10 = 50%, all credited to the camera.</p>
+        <p><strong>5. The fair comparison.</strong> Against the expected 7, the fall is (7 &minus; 5)/7
+        &approx; 29%. Of the 5-casualty drop, in expectation 3 were regression and 2 the camera. One site&rsquo;s count is
+        itself noisy, which is why real evaluations pool hundreds of sites.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">(&#375; &minus; ȳ) / s<sub>y</sub> = <em>r</em> &times; (x &minus; x̄) / s<sub>x</sub></p>
+        <p class="expr-spoken visually-hidden">The predicted y minus the average of y, divided by the standard deviation of y, equals r times the quantity x minus the average of x, divided by the standard deviation of x.</p>
+        <dl>
+          <dt>x</dt>
+          <dd>a case&rsquo;s first measurement, such as a mid-parent&rsquo;s height or a site&rsquo;s earlier crash count</dd>
+          <dt>&#375;</dt>
+          <dd>the predicted second measurement for that case, such as the child&rsquo;s height</dd>
+          <dt>x̄, ȳ</dt>
+          <dd>the averages of the first and second measurements across all cases</dd>
+          <dt>s<sub>x</sub>, s<sub>y</sub></dt>
+          <dd>the standard deviations of the first and second measurements</dd>
+          <dt><em>r</em></dt>
+          <dd>the correlation coefficient between the two measurements, from &minus;1 to +1</dd>
+        </dl>
+      </div>
+      <p>
+        Read it in standard units: the prediction sits <em>r</em> times as many standard deviations from
+        average as the case does. In raw units the same line has slope <em>b</em> = <em>r</em> &times;
+        s<sub>y</sub>/s<sub>x</sub>. Galton&rsquo;s two-thirds was a raw-units slope of this kind, not
+        <em>r</em> itself. His mid-parents were less spread out than single adults, since averaging two heights smooths out extremes, so, with <em>x</em> the mid-parent and <em>y</em> the child, s<sub>y</sub>/s<sub>x</sub> was above 1 and
+        <em>r</em> = <em>b</em> &times; s<sub>x</sub>/s<sub>y</sub> came out below two-thirds, at roughly
+        one-half in later recomputations of his table. The decisive step, which explains why the
+        population does not shrink, is that the shrunken predictions and the scatter around them add back
+        up to the full spread:
+      </p>
+      <div class="formula">
+        <p class="expr">s<sub>y</sub>&sup2; = <em>r</em>&sup2; s<sub>y</sub>&sup2; + (1 &minus; <em>r</em>&sup2;) s<sub>y</sub>&sup2;</p>
+        <p class="expr-spoken visually-hidden">The variance of y equals r squared times the variance of y, plus one minus r squared times the variance of y.</p>
+        <dl>
+          <dt>s<sub>y</sub>&sup2;</dt>
+          <dd>the variance of the second measurement: its total spread, squared</dd>
+          <dt><em>r</em>&sup2; s<sub>y</sub>&sup2;</dt>
+          <dd>the variance of the predictions: the part of the spread that the line accounts for</dd>
+          <dt>(1 &minus; <em>r</em>&sup2;) s<sub>y</sub>&sup2;</dt>
+          <dd>the variance of the scatter around the line: the part it leaves unexplained</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Regression to the mean lets you take any story of the form &ldquo;we picked the worst, we acted,
+        and it improved&rdquo; and ask the question that matters: how much of that improvement was owed
+        anyway? The manager who scolds last week&rsquo;s worst performer, the city that rebuilds its worst
+        junctions and the patient who tries a remedy at the height of a flare-up will all tend to credit
+        the action for what arithmetic would have delivered. With the idea in hand, you know to ask for a
+        comparison group chosen by the same rule.
+      </p>
+      <p>
+        It also challenges the chain you set out for the car: need, invention, regulation, consequences.
+        Regulation often follows a bad run, a crash spike or a scandal, so the consequences measured
+        right afterward start with a head start that has nothing to do with the rule. A book that argues a
+        regulation worked has to show that the improvement beat what the comparison group got without it.
+        Day 20 turns to the cleanest way to build that group, randomization.
+      </p>
+      <p><b>Settled.</b> Regression to the mean follows arithmetically from imperfect correlation and
+      needs no cause; selecting on an extreme builds it in.</p>
+      <p><b>Debated.</b> How much of the camera effect survives adjustment; estimates differ with the
+      method, the years of history used and how sites were chosen.</p>
+      <p><b>Value judgment.</b> Galton built these tools partly in the service of eugenics, whose coercive
+      forms, compulsory sterilization above all, nearly everyone now judges a grave wrong; that is a moral
+      verdict, not a statistical one, and the mathematics stands apart from his aims.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 18, Correlation, confounding and Simpson&rsquo;s paradox, gave you the correlation
+        coefficient that this lesson turns into a prediction line, and regression to the mean is kin to a confounder: another explanation for a change besides the treatment, this one arising
+        from how the cases were chosen. Day 12, Distributions, supplied the bell curve; when two
+        measurements are jointly bell-shaped, as Galton&rsquo;s heights roughly were, the average second
+        measurement for each first one falls exactly on the regression line.
+      </p>
+      <p>
+        <b>Across.</b> In Psychology, Daniel Kahneman (Nobel Memorial Prize in Economic Sciences, 2002)
+        tells in <em>Thinking, Fast and Slow</em> (2011), chapter 17, of Israeli Air Force flight
+        instructors who said that praising a cadet for an excellent maneuver was followed by a worse one,
+        while shouting at a cadet after a poor one was followed by improvement, so punishment must work
+        better than praise. Kahneman recognized regression to the mean: an exceptional maneuver is partly
+        luck, the next is likely to be nearer the cadet&rsquo;s usual level, and the instructors had mistaken that drift for the effect of their praise and scolding. It is the speed-camera mechanism in a human setting: select an extreme,
+        act, measure again.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Thinking, Fast and Slow, chapter 17, &ldquo;Regression to the Mean&rdquo; &mdash; Daniel Kahneman
+        (Farrar, Straus and Giroux, 2011) &middot; Reading &middot; about 20 minutes (one short chapter)</p>
+        <p>Kahneman&rsquo;s own account of how regression to the mean fools experts, told through the
+        flight-instructor story and everyday examples; the next chapter, &ldquo;Taming Intuitive
+        Predictions,&rdquo; shows how to correct for it.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>When two measurements are imperfectly correlated, cases extreme on one are, on average, less extreme on the other; in standard units, the fraction 1 &minus; <em>r</em> fades.</li>
+        <li>In standard units the regression line has slope <em>r</em>: at <em>r</em> = 0.5, a case 2 standard deviations above average is predicted to be 1 above.</li>
+        <li>Regression is not a force and needs no passage of time; it runs backward too.</li>
+        <li>The spread of a population holds because predictions shrink by <em>r</em> while scatter restores the rest: <em>r</em>&sup2; + (1 &minus; <em>r</em>&sup2;) = 1.</li>
+        <li>Cases picked as extreme tend to change on re-measurement anyway; only a comparison group chosen by the same rule shows what an action added.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Starting in 2010, the federal School Improvement Grants program funded turnaround efforts at each state&rsquo;s lowest-achieving schools, chosen largely for their low reading and math test performance; if those schools&rsquo; scores rose over the following years, what comparison would you need before crediting
+        the grants rather than regression to the mean?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Galton, &ldquo;Regression towards Mediocrity in Hereditary Stature&rdquo;
+      (<em>Journal of the Anthropological Institute</em>, 1886) and &ldquo;Co-relations and their
+      measurement&rdquo; (1888); Stigler, <em>The History of Statistics</em> (1986); Kahneman,
+      <em>Thinking, Fast and Slow</em> (2011); the Department for Transport&rsquo;s 2005 camera evaluation;
+      Mountain, Hirst and Maher (2004&ndash;05); Allsop for the RAC Foundation. Not confirmed against a source: the 42% figure, the camera studies&rsquo; details, the &ldquo;roughly one-half&rdquo; correlation for Galton&rsquo;s table,
+      and the chapter number and title of the reading.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-18.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-20.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

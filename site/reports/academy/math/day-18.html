@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Berkeley’s Graduate Programs Admitted 44% of Men and 35% of Women in 1973. In Four of Its Six Biggest Departments, Women Were Admitted More Often. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Berkeley’s Graduate Programs Admitted 44% of Men and 35% of Women in 1973. In Four of Its Six Biggest Departments, Women Were Admitted More Often.",
+    "path": "reports/academy/math/day-18.html",
+    "summary": "Day 18 of the Connected Path: a third variable can create, hide or reverse an association, as in Berkeley’s 1973 graduate admissions, where women were admitted less often overall but more often in four of the six biggest departments, and the data alone cannot say whether to trust the pooled or the split table.",
+    "headlines": [
+      "Day 18 of 293 · Mathematics: a hidden third variable can reverse a trend (Simpson’s paradox)",
+      "Berkeley 1973 graduate admissions: women admitted less often overall, but more often in four of the six biggest departments",
+      "Watch or Read: The Book of Why, ch. 6, ‘Paradoxes Galore!’ (about 30-40 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:18:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Berkeley&rsquo;s Graduate Programs Admitted 44% of Men and 35% of Women in 1973. In Four of Its Six Biggest Departments, Women Were Admitted More Often.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A pattern in combined data can be created, hidden or even reversed by a third variable, and
+        the numbers alone cannot say whether to trust the combined table or the split one &mdash; that
+        takes a story about what causes what.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 18 of 293 &middot; Mathematics 18 of 24 &middot; How We Know IV: Correlation, confounding and Simpson&rsquo;s paradox</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Autumn 1973: Berkeley counts who got in</h3>
+      <p>
+        In the fall of 1973 the University of California, Berkeley, tallied who had been admitted to
+        its graduate programs, and one table was hard to look at. Of 8,442 men who applied, 3,738 were
+        admitted: 44 percent. Of 4,321 women, 1,494: 35 percent. Treat each group as a random draw and
+        apply the standard-error arithmetic of Day 16: a gap that size sits more than ten standard
+        errors from zero, far too big to be luck.
+      </p>
+      <p>
+        Eugene Hammel, an anthropologist who was then associate dean of the Graduate Division, worried
+        that the gap looked like discrimination. So with the statistician Peter Bickel and a colleague,
+        J. W. O&rsquo;Connell, he broke the figures down by department. That was the natural place to look: admission decisions
+        were made by the departments themselves, so any discrimination would have to be happening
+        inside particular departments.
+      </p>
+      <p>
+        The six largest departments took 2,691 male and 1,835 female applicants between them. Pooled,
+        the gap there was even wider: 44.5 percent of the men admitted, 30.4 percent of the women. Then
+        the team read the departments one at a time. In four of the six, women were admitted at the
+        higher rate. Their paper, &ldquo;Sex Bias in Graduate Admissions: Data from Berkeley,&rdquo;
+        appeared in <em>Science</em> in February 1975, and its conclusion was not what the first table
+        suggested: if anything, a small bias in women&rsquo;s favor.
+      </p>
+      <p>
+        Both readings came from the same admissions records. How can women be admitted less often
+        overall and yet more often in four of the six biggest departments?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A relationship in combined data can be manufactured, hidden or even turned upside down by a
+        third variable that is tangled up with both things you are comparing. When the reversal is
+        complete, so that a comparison points one way in the combined data and the other way inside the
+        subgroups, it is called <strong>Simpson&rsquo;s paradox</strong>.
+      </p>
+      <p>
+        Start with what correlation does and does not say. Two variables are correlated when they tend
+        to move together. That describes a pattern; it does not explain it, and one common explanation
+        is a third variable that pushes on both. Compare two groups that differ in that third variable
+        and part of the gap you measure belongs to it rather than to what you meant to study. The
+        remedy is to compare like with like: split the data by the third variable and compare within
+        each slice. Sometimes the gap shrinks, sometimes it vanishes, sometimes it flips sign.
+      </p>
+      <p>
+        The flip is not a trick or a mistake. A combined rate is an average of the subgroup rates, and
+        an average depends on how much weight each subgroup gets. The harder lesson is that the numbers
+        cannot tell you whether to trust the combined table or the split one. That takes a causal
+        story, a claim about what influences what &mdash; and sometimes the combined table is the
+        honest one.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Begin with the plainest case. Taller people tend to weigh more: the two measurements are
+        <strong>correlated</strong>, meaning they tend to rise and fall together. The correlation
+        coefficient, written <i>r</i>, puts a number on this, from +1 (a perfect straight-line rise
+        together) through 0 (no straight-line tendency) to &minus;1 (a perfect opposite movement). It
+        measures how tight a pattern is. It says nothing about where the pattern comes from.
+      </p>
+      <p>
+        When X and Y are correlated, there are four basic explanations: X influences Y; Y influences X;
+        chance, the subject of Day 17; or a third variable Z that influences both. The fourth is
+        <strong>confounding</strong>, and Z is a <strong>confounder</strong> (many introductory texts also
+        say <em>lurking variable</em>). Unlike chance, it does not fade as data accumulate. Like the
+        sampling bias of Day 16, confounding does not shrink as the sample grows; a bigger sample just
+        measures the wrong thing more precisely. The reason is that groups defined by X differ in more
+        than X. If the people given treatment A are not the same sort of people as those given
+        treatment B, the gap in outcomes mixes the treatment&rsquo;s effect with the difference between
+        the people.
+      </p>
+      <p>
+        The standard remedy is <strong>stratification</strong>: split the data into strata that are
+        alike on Z, and compare within each. To report one summary number you then combine the strata
+        using the same weights for both groups, a method called <strong>direct standardization</strong>;
+        it is how an &ldquo;age-adjusted&rdquo; death rate is made. Both are ways of comparing like
+        with like.
+      </p>
+      <p>
+        Now the paradox. A group&rsquo;s overall rate is a weighted average of its rates in each
+        subgroup, where each weight is the share of the group&rsquo;s cases that fall in that subgroup.
+        That is Day 11&rsquo;s expected value: the probability of landing in a subgroup times the rate
+        there, added up. If two groups have different weights, their overall rates can differ even when
+        their subgroup rates are equal, and if the weights differ enough the order can reverse. Here
+        are Berkeley&rsquo;s six largest departments (the published teaching data sets label them A to F):
+      </p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Berkeley graduate admissions, fall 1973, six largest departments. Parentheses: each sex&rsquo;s share of its own applications. Department letters are anonymized labels.</caption>
+          <thead><tr><th>Dept.</th><th>Men applied</th><th>Men admitted</th><th>Women applied</th><th>Women admitted</th></tr></thead>
+          <tbody>
+            <tr><td>A</td><td>825 (30.7%)</td><td>62.1%</td><td>108 (5.9%)</td><td>82.4%</td></tr>
+            <tr><td>B</td><td>560 (20.8%)</td><td>63.0%</td><td>25 (1.4%)</td><td>68.0%</td></tr>
+            <tr><td>C</td><td>325 (12.1%)</td><td>36.9%</td><td>593 (32.3%)</td><td>34.1%</td></tr>
+            <tr><td>D</td><td>417 (15.5%)</td><td>33.1%</td><td>375 (20.4%)</td><td>34.9%</td></tr>
+            <tr><td>E</td><td>191 (7.1%)</td><td>27.7%</td><td>393 (21.4%)</td><td>23.9%</td></tr>
+            <tr><td>F</td><td>373 (13.9%)</td><td>5.9%</td><td>341 (18.6%)</td><td>7.0%</td></tr>
+            <tr><td>All six</td><td>2,691</td><td>44.5%</td><td>1,835</td><td>30.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Read the shares first. Departments A and B admitted about 64 percent of everyone who applied,
+        and they received 51 percent of the men&rsquo;s applications but only 7 percent of the
+        women&rsquo;s. Departments C to F admitted about 26 percent, and received 93 percent of the
+        women&rsquo;s applications against 49 percent of the men&rsquo;s. Women did not meet a harder
+        committee inside each department; more of them applied to departments where most applicants of
+        either sex were turned away. To see the weights at work, re-weight the women&rsquo;s department
+        rates by the men&rsquo;s shares of applications, so that the only thing that changes is where
+        the applications go: 0.307&times;82.4 + 0.208&times;68.0 + 0.121&times;34.1 + 0.155&times;34.9 +
+        0.071&times;23.9 + 0.139&times;7.0 &asymp; 25.3 + 14.1 + 4.1 + 5.4 + 1.7 + 1.0 = 51.6 percent.
+        Had women applied the way men did, and each department&rsquo;s rates held, their overall rate
+        would have been 51.6 percent, above the men&rsquo;s 44.5.
+      </p>
+      <p>
+        So which table do you believe? Neither is wrong; they answer different questions, and which
+        question you are asking depends on a causal story. Draw the Berkeley story as a
+        <strong>causal diagram</strong>, a picture with an arrow from each cause to each thing it
+        influences: sex &rarr; department applied to &rarr; admission, and possibly sex &rarr; admission
+        directly, which is what the university feared. Department sits on the path between sex and the
+        outcome, so in the sharper vocabulary of causal diagrams it is a <strong>mediator</strong>
+        rather than a confounder (a confounder is a common cause of the group and the outcome). The
+        everyday statistical shorthand calls it a confounder or lurking variable because sex and
+        department are tangled together in the data. If your question is &ldquo;did departments treat
+        comparable applicants differently?&rdquo;, hold department fixed and read the split table. If
+        it is &ldquo;do women end up admitted less often?&rdquo;, the combined number is simply true,
+        and the explanation lies in the arrow from sex to department.
+      </p>
+      <p>
+        Compare a case where the split table is the one to trust: the kidney-stone comparison in
+        Connections below, where stone size comes before the choice of operation and influences both
+        that choice and the result. And compare Judea Pearl&rsquo;s standard illustration of the
+        opposite case: a drug that works by lowering blood pressure. Split patients by blood pressure
+        measured <em>after</em> treatment and the drug can look useless, or even harmful, inside each group, because you
+        have conditioned away the very path by which it works. The table of numbers can be identical to
+        one where the splitting variable is a true confounder, and the right answer is the opposite. In
+        1981 Lindley and Novick argued that the table alone cannot tell you which case you are in.
+        Pearl&rsquo;s answer, in a 2014 article in <em>The American Statistician</em>, is that a causal
+        diagram does.
+        <span class="chip chip--warn">Debated</span> Not every statistician accepts that this settles
+        the matter: Timothy Armistead published a critique of Pearl&rsquo;s analysis in the same
+        volume of that journal.
+      </p>
+
+      <h3>Back to Berkeley</h3>
+      <p>
+        Women were not admitted less often inside most departments. They applied more heavily to
+        departments that turned away most applicants of either sex: C to F took 93 percent of the
+        women&rsquo;s applications and admitted about 26 percent, while A and B, which admitted about 64
+        percent, took 51 percent of the men&rsquo;s. The combined gap of about 14 points in the six departments
+        was a difference in weights, not in treatment. The authors drew the conclusion the split table
+        supports &mdash; if anything, a small bias in women&rsquo;s favor &mdash; and then pushed the
+        question upstream. Their data could show where the gap arose, not why women were applying where
+        they did. They argued that the answer lay earlier, in what schooling and socialization had
+        steered women toward: fields that were more crowded and less well funded. Removing one
+        explanation had opened another.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Correlation</dt>
+        <dd>A measure of how closely two variables move together (r runs from &minus;1 to +1); silent on why.</dd>
+        <dt>Confounder</dt>
+        <dd>A third variable that influences both the supposed cause and the outcome, so that comparing
+        groups mixes its effect with the cause&rsquo;s. Also called a lurking variable.</dd>
+        <dt>Stratification</dt>
+        <dd>Splitting data into groups alike on a confounder and comparing within each; combining the
+        groups with common weights is direct standardization.</dd>
+        <dt>Simpson&rsquo;s paradox</dt>
+        <dd>A comparison that points one way in combined data and the other way within the subgroups.
+        Udny Yule described the effect in 1903 and Edward Simpson in 1951; Colin Blyth gave it
+        Simpson&rsquo;s name in 1972.</dd>
+        <dt>Mediator</dt>
+        <dd>A variable on the causal path from cause to outcome; holding it fixed removes the part of
+        the effect that flows through it.</dd>
+        <dt>Causal diagram</dt>
+        <dd>A picture of arrows running from causes to effects, used to tell confounders from mediators
+        and so to decide which table answers your question.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Driver Death Rates by Car Model</h3>
+      <p>
+        The Insurance Institute for Highway Safety (IIHS), a research group funded by auto insurers,
+        publishes driver deaths per million registered vehicle years for each make and model (one
+        registered vehicle year is one vehicle registered for one year). In its report of July 30, 2026,
+        covering 2023 models and earlier models of the same design, with deaths counted from 2021
+        through 2024, the Kia Rio had the highest rate, 170, followed by the Nissan Versa at 164. The
+        all-vehicle average was 37, and eighteen of the twenty lowest-rate models were SUVs. In your
+        car chain this is the consequences link: what the technology does once it is on the road.
+      </p>
+      <p>
+        Does the table measure the cars? Partly: a small, light car fares badly against a heavy pickup,
+        and that is physics. But IIHS says differences in driver behavior most likely explain why rates
+        are lower for ordinary cars than for sports and muscle cars, and who drives which model is not
+        random. Driver age and sex are textbook confounders here: each plausibly influences both the
+        model someone drives and how risky their driving is. IIHS says it adjusts its published rates
+        for both. Adjustment can hold fixed only what is measured, though, and how far, how fast and
+        where people drive is not fully captured, so some <strong>residual confounding</strong>
+        remains: the rate belongs to a bundle of car, driver and road.
+      </p>
+      <div class="worked">
+        <b>A toy version &mdash; invented round numbers</b>
+        <p><strong>1. Two equally safe cars.</strong> In either car, drivers under 25 die at 100 per
+        million registered vehicle years and drivers 25 and over at 20.</p>
+        <p><strong>2. Different drivers.</strong> A muscle coupe&rsquo;s registered vehicle years are 60%
+        under-25 drivers and 40% older; a minivan&rsquo;s are 10% and 90%.</p>
+        <p><strong>3. Raw rates.</strong> Coupe: 0.6&times;100 + 0.4&times;20 = 68. Minivan:
+        0.1&times;100 + 0.9&times;20 = 28. The coupe looks 2.4 times as deadly (68/28), though the cars
+        are identical by construction.</p>
+        <p><strong>4. Standardize.</strong> Give both the same mix, 25% young and 75% older:
+        0.25&times;100 + 0.75&times;20 = 40 for each. The gap vanishes. In real data the within-group
+        rates differ, and whatever difference survives is the car plus whatever the adjustment did not
+        hold fixed.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <p>An overall rate is a weighted average of subgroup rates:</p>
+      <div class="formula">
+        <p class="expr">p = &Sigma; w<sub>i</sub> p<sub>i</sub></p>
+        <p class="expr-spoken visually-hidden">p equals the sum, over every subgroup i, of w sub i times p sub i.</p>
+        <dl>
+          <dt>p</dt>
+          <dd>a group&rsquo;s overall rate, such as the share of its applicants admitted</dd>
+          <dt>i</dt>
+          <dd>labels the subgroups, here the departments A to F</dd>
+          <dt>w<sub>i</sub></dt>
+          <dd>subgroup i&rsquo;s share of the group&rsquo;s cases: a weight between 0 and 1, the weights summing to 1</dd>
+          <dt>p<sub>i</sub></dt>
+          <dd>the rate within subgroup i</dd>
+        </dl>
+      </div>
+      <p>
+        A full Simpson reversal needs only that p<sub>W,i</sub> &ge; p<sub>M,i</sub> in every subgroup
+        while p<sub>W</sub> &lt; p<sub>M</sub> overall, which is possible whenever the weights differ
+        enough. (Berkeley is a milder case: women ahead in four of six.) To see how much of a gap is
+        weights and how much is rates, start from p<sub>W</sub> &minus; p<sub>M</sub> = &Sigma;
+        w<sub>W,i</sub>p<sub>W,i</sub> &minus; &Sigma; w<sub>M,i</sub>p<sub>M,i</sub>, add and subtract
+        &Sigma; w<sub>W,i</sub>p<sub>M,i</sub>, and regroup:
+      </p>
+      <div class="formula">
+        <p class="expr">p<sub>W</sub> &minus; p<sub>M</sub> = &Sigma; w<sub>W,i</sub>(p<sub>W,i</sub> &minus; p<sub>M,i</sub>) + &Sigma; (w<sub>W,i</sub> &minus; w<sub>M,i</sub>) p<sub>M,i</sub></p>
+        <p class="expr-spoken visually-hidden">The women's overall rate minus the men's overall rate equals the sum, over departments, of the women's weight times the difference between the women's and men's rates in that department, plus the sum, over departments, of the difference between the women's and men's weights times the men's rate in that department.</p>
+        <dl>
+          <dt>p<sub>W</sub>, p<sub>M</sub></dt>
+          <dd>the women&rsquo;s and men&rsquo;s overall rates; p<sub>W,i</sub> and p<sub>M,i</sub> are their rates in department i</dd>
+          <dt>w<sub>W,i</sub>, w<sub>M,i</sub></dt>
+          <dd>the share of women&rsquo;s and of men&rsquo;s applications that went to department i</dd>
+          <dt>first sum</dt>
+          <dd>the rate effect: differences in rates inside departments, weighted by the women&rsquo;s mix</dd>
+          <dt>second sum</dt>
+          <dd>the mix effect: how differently the two groups&rsquo; applications are spread across departments, valued at the men&rsquo;s rates</dd>
+        </dl>
+      </div>
+      <p>
+        For the six departments, from the unrounded rates: &minus;14.2 points = +0.1 (rate effect) &minus; 14.3 (mix effect).
+        Nearly all the gap is mix. The split depends on the mix you hold fixed: with the men&rsquo;s mix
+        instead, the within-department difference is +7.1 points (51.6% against 44.5%). The causal
+        diagrams behind the two readings:
+      </p>
+      <div class="formula">
+        <p class="expr">X &larr; Z &rarr; Y &nbsp; versus &nbsp; X &rarr; M &rarr; Y</p>
+        <p class="expr-spoken visually-hidden">X with an arrow into it from Z, and an arrow from Z into Y, versus X with an arrow into M, and an arrow from M into Y.</p>
+        <dl>
+          <dt>X</dt>
+          <dd>the group or treatment being compared (sex, the operation, the car model)</dd>
+          <dt>Y</dt>
+          <dd>the outcome (admission, success, a driver&rsquo;s death)</dd>
+          <dt>Z</dt>
+          <dd>a confounder, a common cause of X and Y: split by it (stone size; driver age)</dd>
+          <dt>M</dt>
+          <dd>a mediator, on the path from X to Y: splitting by it removes the part of X&rsquo;s effect that runs through it (department, in the question &ldquo;do women end up admitted less often?&rdquo;)</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now put a standing question to any comparison of rates between groups, in a news story,
+        a study or your own book: are these groups alike in everything else that bears on the outcome,
+        and if not, what is the mix? A hospital with a worse survival rate may simply admit sicker
+        patients; a car model with a high driver death rate may attract riskier drivers; a country&rsquo;s
+        overall fatality rate can mislead when the ages of its cases differ. Hold the opposite trap just
+        as firmly: &ldquo;control for everything&rdquo; is not a safe default. Adjusting for a mediator,
+        or for something that is itself an effect of what you study, can hide a real effect or fake
+        one, so every adjustment is a causal claim. A remedy that works even for confounders you never
+        measured is Day 20&rsquo;s randomized trial: assigning treatment by chance makes the groups
+        alike on average in every respect, measured or not.
+      </p>
+      <p>
+        <b>Settled.</b> The arithmetic of Simpson&rsquo;s paradox, and the Berkeley counts.
+      </p>
+      <p>
+        <b>Debated.</b> How completely causal diagrams settle which table to trust, and whether the
+        departmental pattern at Berkeley reflected earlier steering of women, a question the 1975
+        authors raised and their data could not answer.
+      </p>
+      <p>
+        <b>Value judgment.</b> Whether fairness is judged at the admissions decision or along the whole
+        path that leads to it is a moral question, which no table can settle.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 11, Probability and expected value: a group&rsquo;s overall rate is an expected
+        value, each subgroup&rsquo;s rate times the probability that a case lands there, added up, and
+        Simpson&rsquo;s paradox is what happens when those probabilities differ between the groups.
+        Day 15, Bayes&rsquo; theorem and base rates, asks for the same care about what you condition on:
+        P(admit | woman) and P(admit | woman, department) are different conditional probabilities, and
+        the department mix moves the overall answer the way a base rate moves a screening test&rsquo;s.
+      </p>
+      <p>
+        <b>Across.</b> Biology, Medicine &amp; Health: in a 1986 <em>BMJ</em> study Charig and colleagues
+        compared treatments for kidney stones. Two groups, 350 patients each, had open surgery or
+        percutaneous nephrolithotomy (removal through a small cut in the back). Open surgery succeeded
+        in 273 (78%), the other operation in 289 (83%). Julious and Mullee used the data in a 1994
+        <em>BMJ</em> article, &ldquo;Confounding and Simpson&rsquo;s paradox&rdquo;: split by stone size,
+        open surgery did better for stones under 2 cm (93%, 81 of 87, against 87%, 234 of 270) and for
+        stones of 2 cm or more (73%, 192 of 263, against 69%, 55 of 80). Same weighted average: three in four
+        open-surgery patients had large stones, against fewer than one in four for the other operation
+        (80 of 350). Unlike Berkeley, stone size comes before the choice of operation and affects the
+        result, a true confounder, so the split table is the better guide.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Book of Why: The New Science of Cause and Effect, chapter 6, 'Paradoxes Galore!' &mdash;
+        Judea Pearl &amp; Dana Mackenzie (Basic Books, 2018) &middot; Reading &middot; about 30-40
+        minutes (one chapter)</p>
+        <p>Pearl uses causal diagrams to show when to split data and when to pool it. That is the step
+        beyond today&rsquo;s lesson, and you will need it to judge causal claims in your book.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A correlation says two variables move together, not why; a third variable that affects both can create, hide or reverse it.</li>
+        <li>A combined rate is a weighted average of subgroup rates, so unequal weights can make the combined comparison point against the subgroups.</li>
+        <li>Berkeley&rsquo;s graduate programs admitted 44% of men and 35% of women, yet women led in four of the six biggest departments, because more applied where most applicants were turned away.</li>
+        <li>Comparing like with like removes a confounder, but the data cannot say whether to pool or split; that takes a causal story.</li>
+        <li>Adjusting for what you can measure leaves what you cannot: even IIHS&rsquo;s adjusted death rates still mix car, driver and road.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Early in the COVID-19 pandemic Italy&rsquo;s overall case-fatality rate (deaths divided by
+        confirmed cases) was higher than China&rsquo;s even though, as von K&uuml;gelgen, Gresele and
+        Sch&ouml;lkopf (2021) reported, it was lower within age groups, so what would have to differ
+        between the two countries&rsquo; confirmed cases to produce that reversal?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Bickel, Hammel and O&rsquo;Connell, &ldquo;Sex Bias in Graduate
+      Admissions: Data from Berkeley,&rdquo; <em>Science</em> 187 (1975): 398&ndash;404, and the standard
+      six-department data set; Charig et al. (<em>BMJ</em>, 1986); Julious and Mullee (<em>BMJ</em>, 1994);
+      Lindley and Novick (1981); Pearl and Armistead in <em>The American Statistician</em> 68 (2014);
+      Pearl and Mackenzie, <em>The Book of Why</em> (2018); IIHS driver death rates, July 30, 2026.
+      Checked via web search; the IIHS report and its figures, the Italy&ndash;China comparison in Apply It,
+      and the Lindley&ndash;Novick and Armistead papers were not read at source.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource: from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-17.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-19.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

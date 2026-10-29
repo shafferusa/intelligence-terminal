@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Fukushima Daiichi’s Design Tsunami Was 5.7 Meters. The Wave That Hit It Was More Than Twice as High. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Fukushima Daiichi’s Design Tsunami Was 5.7 Meters. The Wave That Hit It Was More Than Twice as High.",
+    "path": "reports/academy/math/day-12.html",
+    "summary": "Day 12 of the Connected Path: a distribution’s shape decides what ‘extreme’ can mean, so in a thin-tailed bell-curve world a wave more than twice the design value is all but impossible, while in a fat-tailed world (earthquake sizes follow a power law) the biggest event on record is a poor guide to the next, and a ‘100-year’ flood is a yearly 1-in-100 chance, not a schedule.",
+    "headlines": [
+      "Day 12 of 293 · Mathematics: a distribution’s tail decides what ‘extreme’ means, and fat tails make the worst on record a poor guide",
+      "Fukushima’s design tsunami was 5.7 m and the wave was roughly 13 to 15 m; a ‘100-year’ flood has a 26% chance within 30 years",
+      "Watch or Read: The Black Swan, ch. 15, ‘The Bell Curve, That Great Intellectual Fraud’ (one chapter, about 30-40 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Fukushima Daiichi&rsquo;s Design Tsunami Was 5.7 Meters. The Wave That Hit It Was More Than Twice as High.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A distribution&rsquo;s shape decides what &ldquo;extreme&rdquo; can mean: in a bell-curve world a
+        wave more than twice the design value is all but impossible, but where the largest events dominate, the
+        biggest one on record is a poor guide to the next.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 12 of 293 &middot; Mathematics 12 of 24 &middot; Distributions: the bell curve and fat tails</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A design number of 5.7 meters, and a wave that was never told</h3>
+      <p>
+        Fukushima Daiichi stands on Japan&rsquo;s Pacific coast. When its first reactors were designed in
+        the 1960s, the tsunami they had to survive was set at 3.1 meters, a figure based on an assessment
+        of the 1960 Chile tsunami. The main buildings of units 1&ndash;4 sat on a platform about 10 meters
+        above sea level; the seawater pumps that carried heat away from the reactors stood near the shore,
+        at about 4 meters. In 2002 the Japan Society of Civil Engineers published a new method for estimating the
+        largest tsunami a coast should plan for. The plant&rsquo;s operator, the Tokyo Electric Power
+        Company (TEPCO), applied it and raised the design figure to 5.7 meters.
+      </p>
+      <p>
+        In 2008 TEPCO ran a trial calculation of a harsher case. A 2002 government assessment had held that
+        an earthquake like the Meiji-Sanriku tsunami earthquake of 1896 could strike along the Japan Trench
+        off Fukushima, not only farther north where it had been recorded. TEPCO placed such an earthquake
+        there and computed the wave at its plant: up to about 15.7 meters at part of the site. The company
+        treated the result as a trial figure needing further study, not a forecast, and by the spring of
+        2011 it had not acted on it.
+      </p>
+      <p>
+        At 2:46 p.m. on March 11, 2011, a magnitude 9.0 earthquake (the USGS now lists it as 9.1)
+        struck off the T&omacr;hoku coast. Within the hour the tsunami reached the plant. TEPCO&rsquo;s
+        surveys afterward put the water at roughly 13 to 15 meters on the plant&rsquo;s own datum &mdash;
+        more than twice the design figure, and several meters above the platform the main buildings stood
+        on. It flooded the basements that held the emergency diesel generators and electrical switchgear.
+        Without power for cooling, the cores of units 1, 2 and 3 melted.
+      </p>
+      <p>
+        The designers had planned for the largest tsunami they judged credible, and had raised that number
+        as their methods improved. How could the real wave be more than twice as high &mdash; and was it a
+        once-in-a-millennium freak, or a predictable kind of surprise?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        The shape of the full map of possible outcomes decides what &ldquo;typical&rdquo; and
+        &ldquo;extreme&rdquo; mean. Where extremes are vanishingly rare, the average tells you almost
+        everything and the biggest event on record is close to the biggest possible. Where the largest
+        events dominate, the biggest one on record is a poor guide to the next.
+      </p>
+      <p>
+        That map is a <em>distribution</em>: every value a quantity can take, with how likely each is. Draw
+        it for adult heights and you get the familiar bell &mdash; a hump at the average and tails that die
+        away so fast that nobody is ten times the average. Draw it for earthquake energies or city
+        populations and you get a spike with a long, slow-fading tail, where a few enormous members dwarf
+        the rest. Two quantities can share the same average. What differs is how the far end behaves, and
+        the far end is where the risk lives.
+      </p>
+      <p>
+        So before asking &ldquo;how big could it get?&rdquo;, ask which kind of world you are in. Where the
+        tail is thin, planning for the largest event seen so far is close to enough. Where it is fat, it
+        can fall far short.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Day 11 gave probabilities as weights on a complete list of outcomes. A <strong>probability
+        distribution</strong> is that list extended to every value a quantity can take, usually drawn as a
+        curve: the higher the curve, the likelier the value, and the area under any stretch of it is the
+        probability of landing in that stretch. Two numbers summarize a distribution before you know its
+        shape: the mean (Day 11&rsquo;s expected value, the curve&rsquo;s balance point) and the
+        <strong>standard deviation</strong>, written &sigma;, the typical distance of a value from the mean.
+        The shape does the rest.
+      </p>
+      <p>
+        The most famous shape is the <strong>normal distribution</strong>, the bell curve. It appears when a
+        quantity is the sum of many small, independent nudges &mdash; the reason, the central limit theorem,
+        is Day 16&rsquo;s subject. Its signature is how fast the tails fall. About 68% of values land within
+        one &sigma; of the mean, 95% within two, 99.7% within three. Beyond that the odds collapse. The
+        chance of landing more than 3&sigma; above the mean is about 1 in 740; more than 4&sigma;, about 1 in
+        31,600; more than 5&sigma;, about 1 in 3.5 million; more than 6&sigma;, about 1 in a billion. The
+        curve&rsquo;s height shrinks like e<sup>&minus;k&sup2;/2</sup>, with the distance k <em>squared</em>
+        in the exponent, so each extra &sigma; makes the event rarer by more than the last one did. Double
+        the threshold from 3&sigma; to 6&sigma; and the event becomes about 1.4 million times rarer.
+      </p>
+      <p>
+        Two things follow in a bell-curve world. Extremes are bounded in practice: the biggest of a million
+        draws lands, on average, about 4.9&sigma; out, and the biggest of eight billion &mdash; roughly the
+        world&rsquo;s population &mdash; about 6.4&sigma;. Multiplying the data 8,000-fold moves the record
+        out by only about 1.5 standard deviations. And averages rule: no single observation moves the mean of
+        a large sample much, so the mean is a trustworthy summary of the whole.
+      </p>
+      <p>
+        A <strong>fat tail</strong> (also called a heavy tail) falls off far more slowly. The cleanest case
+        is the <strong>power law</strong>: the chance of exceeding size x is proportional to x raised to a
+        negative power, P(X &gt; x) &prop; x<sup>&minus;&alpha;</sup>. Day 3 met power laws as straight lines
+        on log-log plots, and this is the same mathematics put to a different use. There the line related
+        two measured quantities, such as metabolic rate and body mass; here it relates a size to how often events at
+        least that large occur, and its slope is &minus;&alpha;. Now double the threshold. The odds do not
+        fall a million-fold; they fall by a factor of 2<sup>&alpha;</sup>, which is 2 when &alpha; = 1 and
+        about 2.8 when &alpha; = 1.5. The tail is a gentle slope instead of a cliff.
+      </p>
+      <p>
+        Three consequences follow. <strong>The largest events dominate.</strong> The Gutenberg&ndash;Richter
+        law, the 1944 finding of Beno Gutenberg and Charles Richter, says each step up of one magnitude
+        brings roughly ten times fewer earthquakes. But each step releases about 32 times more energy
+        (10<sup>1.5</sup>, or 31.6), so the energy summed over each magnitude class grows about 3.2-fold per
+        step: the rare giants dominate a catalog&rsquo;s energy. <strong>Records are poor guides.</strong>
+        With a power-law tail, the largest of n observations typically grows in proportion to
+        n<sup>1/&alpha;</sup>, so when &alpha; = 1 a record ten times longer holds an event about ten times
+        bigger, until a physical limit intervenes. In a bell-curve world the record barely moves.
+        <strong>Averages are unreliable.</strong> Where the tail is fat enough, a handful of extreme values
+        set the mean, so a sample&rsquo;s average depends on whether it happened to catch one. For a pure
+        power law with &alpha; at or below 1 the mean is not even finite; real systems are rescued only by
+        physical limits, such as the finite length of a fault, and where that limit sits is exactly what a
+        short record cannot show.
+      </p>
+      <p>
+        <strong>Reading a return period.</strong> Engineers and insurers express extremes as a
+        <strong>return period</strong>: a &ldquo;100-year flood&rdquo; is one with a 1-in-100 chance, in any
+        single year, of being equaled or beaten &mdash; its <strong>annual exceedance probability</strong>,
+        1%. It is a rate, not a schedule. Years do not take turns, so two 100-year floods can arrive in
+        consecutive years with nothing wrong. The useful question is the chance of at least one over a span
+        that matters. The chance of none in n years is (1 &minus; 1/T)<sup>n</sup>, so the chance of at least
+        one is 1 &minus; (1 &minus; 1/T)<sup>n</sup>; for T = 100 and a 30-year mortgage, that is 26%. The
+        deeper catch is that instrument records rarely span more than a century, so a 1-in-1,000 level is
+        extrapolated from a few decades of data by fitting a curve and extending its tail. A bell curve and a
+        power law can agree about the middle of the same record and disagree wildly about the 1,000-year
+        value. A return period is only as good as the assumed shape of the tail.
+      </p>
+      <p>
+        Every return-period calculation also assumes <strong>stationarity</strong>: that the distribution
+        generating the data is itself fixed, so the past is a fair sample of the future. If rainfall
+        patterns shift or paving replaces soil, the distribution moves and the old record understates the
+        present. In 2008 Milly and six colleagues titled a paper in <em>Science</em> &ldquo;Stationarity Is
+        Dead: Whither Water Management?&rdquo;, arguing that it should no longer be the default assumption in water-resource planning.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Fukushima&rsquo;s wave looks like a freak only on a bell curve, where a wave more than twice the
+        design value would be effectively impossible. But the tsunami was the child of a
+        magnitude 9.0 earthquake, and earthquake sizes follow the Gutenberg&ndash;Richter power law: giants
+        are rarer, but not nearly rare enough to rule out. Instrumental seismology had a little over a
+        century of records, shorter than the spacing of several centuries to about a thousand years that
+        geologists estimated between giant tsunamis on the Sendai plain to the north, where sand sheets left by the 869 J&omacr;gan
+        tsunami lay kilometers inland. Many seismologists had also judged a magnitude 9 unlikely on that
+        stretch of the Japan Trench, partly on a 1980 analysis (Ruff and Kanamori) correlating the largest
+        known quakes with plate age and convergence speed; newer data, and T&omacr;hoku itself, undid that
+        correlation. So the surprise
+        was predictable in kind &mdash; a fat tail makes the biggest event on record a sample, not a limit
+        &mdash; though not in date or size. Whether the engineers could have foreseen this particular wave is
+        a separate and contested question, taken up in the Evidence check below.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Probability distribution</dt>
+        <dd>The complete map of a quantity&rsquo;s possible values and how likely each is: Day 11&rsquo;s list of
+        outcomes and probabilities, extended to every value on a continuous scale.</dd>
+        <dt>Normal (bell) curve and standard deviation</dt>
+        <dd>The symmetric bell shape that arises from many small independent influences. The standard
+        deviation (&sigma;) is the typical distance from the mean; about 68%, 95% and 99.7% of values fall
+        within 1, 2 and 3 &sigma;.</dd>
+        <dt>Fat (heavy) tail and power law</dt>
+        <dd>A tail that fades far more slowly than a bell curve&rsquo;s. In a power law the chance of
+        exceeding x falls as x<sup>&minus;&alpha;</sup>, so doubling the threshold only divides the odds by
+        2<sup>&alpha;</sup>.</dd>
+        <dt>Return period and annual exceedance probability</dt>
+        <dd>A T-year event has a 1/T chance of being equaled or exceeded in any given year: an average rate,
+        not a schedule, and not a guarantee of a gap between events.</dd>
+        <dt>Stationarity</dt>
+        <dd>The assumption that the distribution is not changing, so past data fairly samples the future.
+        Return periods rest on it.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Houston&rsquo;s three &ldquo;500-year&rdquo; floods</h3>
+      <p>
+        Houston shows return periods under strain, at the regulation and feedback links of your chain from need to consequence:
+        floodplain maps decide what may be built and who must insure, and each flood feeds back into the
+        maps. Local officials and news reports called the Memorial Day flood of May 2015, the Tax Day flood
+        of April 2016 and Hurricane Harvey in August 2017 &ldquo;500-year&rdquo; floods in parts of the
+        region &mdash; three in three years.
+      </p>
+      <div class="worked">
+        <p><strong>1. Annual odds.</strong> A true 500-year flood has a 1-in-500 chance each year:
+        1/500 = 0.2%.</p>
+        <p><strong>2. Three in a row at one spot.</strong> If years are independent, three in three specific
+        years is 0.002 &times; 0.002 &times; 0.002 = 8 &times; 10<sup>&minus;9</sup>, about 1 in 125 million.
+        As luck at a single location, that is not credible.</p>
+        <p><strong>3. So what gives?</strong> Three suspects: the labels were applied to different places,
+        rainfall durations and measures, so they were not one event counted thrice; the distribution moved,
+        with paving and a warming climate (stationarity); or the tails were fatter than the estimates
+        assumed.</p>
+        <p><strong>4. The mortgage view.</strong> Over a 30-year mortgage, a &ldquo;100-year&rdquo; flood has a
+        1 &minus; 0.99<sup>30</sup> = 26% chance of occurring at least once; a &ldquo;500-year&rdquo; flood, 1
+        &minus; 0.998<sup>30</sup> = 5.8%.</p>
+        <p><strong>5. The estimates moved too.</strong> NOAA&rsquo;s 2018 rainfall update for Texas (Atlas 14,
+        Volume 11, using data through 2017, Harvey included) raised the Houston-area &ldquo;100-year&rdquo;
+        24-hour rainfall by roughly a third.</p>
+      </div>
+      <p>
+        How much of the run reflects climate change, urban development or loose labelling is disputed
+        <span class="chip chip--warn">Debated</span>. One attribution study found that global warming made
+        Harvey&rsquo;s rainfall about 15% heavier (range 8&ndash;19%) and roughly three times as likely (range
+        1.5&ndash;5), a finding about that storm, not the other two. In December 2017 Harris County extended
+        its flood rules from the 100-year floodplain to the 500-year.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">P(X &gt; &mu; + k&sigma;) &asymp; e<sup>&minus;k&sup2;/2</sup> / (k&radic;2&pi;) &nbsp;&nbsp;versus&nbsp;&nbsp; P(X &gt; x) = (x<sub>m</sub> / x)<sup>&alpha;</sup></p>
+        <p class="expr-spoken visually-hidden">For a normal distribution, the probability that X exceeds its mean plus k standard deviations is approximately e to the power of minus k squared over two, divided by k times the square root of two pi, for large k. For a power law, the probability that X exceeds x equals x-m over x, raised to the power alpha.</p>
+        <dl>
+          <dt>X</dt>
+          <dd>the random quantity: a wave height, an earthquake&rsquo;s energy, a city&rsquo;s population</dd>
+          <dt>&mu;, &sigma;</dt>
+          <dd>the mean and standard deviation of the normal distribution</dd>
+          <dt>k</dt>
+          <dd>how many standard deviations above the mean the threshold sits</dd>
+          <dt>x, x<sub>m</sub></dt>
+          <dd>the threshold size, and the smallest size from which the power law applies</dd>
+          <dt>&alpha;</dt>
+          <dd>the tail exponent: the smaller it is, the fatter the tail</dd>
+        </dl>
+      </div>
+      <p>
+        In the first formula k is squared inside an exponential; in the second, x is raised to a fixed power.
+        That is the whole difference between a cliff and a slope. The Gutenberg&ndash;Richter law turns out
+        to be a power law in disguise, and the decisive step is to rewrite magnitude as energy:
+      </p>
+      <div class="formula">
+        <p class="expr">log<sub>10</sub> N(&ge;M) = a &minus; bM, &nbsp; E &prop; 10<sup>1.5M</sup> &nbsp;&rArr;&nbsp; log<sub>10</sub> N(&ge;E) = a &minus; (b/1.5) log<sub>10</sub> E</p>
+        <p class="expr-spoken visually-hidden">The base-ten logarithm of the number of earthquakes of magnitude at least M equals a minus b times M, and energy E is proportional to ten to the power of one point five M. Substituting M equals log-ten of E over one point five, with the leftover constant absorbed into a, gives the logarithm of the number of earthquakes with energy at least E equal to a minus b over one point five times log-ten of E.</p>
+        <dl>
+          <dt>N(&ge;M)</dt>
+          <dd>the number of earthquakes per year, in a region, of magnitude M or larger</dd>
+          <dt>a</dt>
+          <dd>a constant setting how active the region is overall</dd>
+          <dt>b</dt>
+          <dd>the Gutenberg&ndash;Richter slope, about 1 in many regions: each magnitude step brings about ten times fewer quakes</dd>
+          <dt>M, E</dt>
+          <dd>magnitude, and the energy released</dd>
+          <dt>b/1.5</dt>
+          <dd>the power-law exponent &alpha; for energy, about 2/3 when b = 1 &mdash; below 1, so the largest quakes dominate the total</dd>
+        </dl>
+      </div>
+      <p>The last model is the return-period rule for the chance of at least one event across a span:</p>
+      <div class="formula">
+        <p class="expr">P(at least one in n years) = 1 &minus; (1 &minus; 1/T)<sup>n</sup></p>
+        <p class="expr-spoken visually-hidden">The probability of at least one event in n years equals one minus the quantity one minus one over T, raised to the power n.</p>
+        <dl>
+          <dt>T</dt>
+          <dd>the return period in years; 1/T is the annual exceedance probability</dd>
+          <dt>n</dt>
+          <dd>the span of years you care about</dd>
+          <dt>(1 &minus; 1/T)<sup>n</sup></dt>
+          <dd>the chance of no event in n years, assuming each year is independent</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You now have a question to put to any claim about extremes &mdash; a design flood, a stress test, a
+        &ldquo;worst case&rdquo; &mdash; before accepting it: is the tail thin or fat, and how do we know?
+        If thin, the worst case on record is close to the worst case possible and the average is a safe guide.
+        If fat, the record&rsquo;s worst case is a sample, the average is hostage to rare events, and a margin
+        of &ldquo;twice the record&rdquo; is a guess. It also shows where the numbers are soft: any return
+        period longer than the record is an extrapolation resting on an assumed tail and on stationarity.
+        Day 13, Networks, returns to heavy tails in the number of links per node.
+      </p>
+      <p>
+        And it complicates the tidy chain of your car example. &ldquo;Physical constraints, then
+        engineering&rdquo; hides a step: choosing a design basis is choosing a probability you will live
+        with, which no equation settles.
+      </p>
+      <p><b>Settled.</b> The mathematics of distributions and return periods, and earthquake sizes&rsquo; heavy tail.</p>
+      <p><b>Debated.</b> Whether Fukushima&rsquo;s tsunami was foreseeable. TEPCO&rsquo;s 2008 calculation and
+      the 869 deposits are cited on one side; TEPCO called that figure a trial result. Japanese courts split: a
+      2022 civil ruling held former executives liable (it was appealed), while the criminal courts
+      acquitted them (2019, 2023). Also debated: how much of Houston&rsquo;s run reflects climate, development or labelling.</p>
+      <p><b>Value judgment.</b> How safe is safe enough, and who decides: cost-benefit analysts accept some
+      residual risk; precautionary approaches weight irreversible catastrophe more; residents near the plant
+      bore the risk without choosing the margin.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 11, Probability and expected value: a distribution extends its list of outcomes to
+        every value, and today shows when the average is a safe summary (thin tails) and when rare extremes
+        dominate it (fat tails). Day 3, Scaling and power laws: the tail P(X &gt; x) &prop; x<sup>&minus;&alpha;</sup>
+        is the same straight log-log line, with frequency plotted against size.
+      </p>
+      <p>
+        <b>Across.</b> Sociology, which studies cities, meets a fat tail of its own in city sizes. George Kingsley Zipf&rsquo;s 1949 book
+        popularized the rank-size rule, that the n-th largest city is about 1/n the size of the largest: a power law with &alpha; = 1. The
+        2020 Census roughly fits: New York City 8.80 million; Los Angeles 3.90 million (44% of New York&rsquo;s);
+        Chicago 2.75 million (31%); Houston 2.30 million (26%) &mdash; against 50%, 33% and 25%. Xavier
+        Gabaix (1999) showed that if cities grow at the same average percentage rate, and with the same
+        variability, whatever their size, with a floor on size, a power law with exponent 1 results. How far it holds is disputed
+        <span class="chip chip--warn">Debated</span>: Jan Eeckhout (2004) argued the whole size distribution is
+        lognormal, and later tests found the largest cities depart from that.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Black Swan: The Impact of the Highly Improbable, Chapter 15 (&ldquo;The Bell Curve, That Great
+        Intellectual Fraud&rdquo;) &mdash; Nassim Nicholas Taleb (Random House, 2007; 2nd ed. 2010) &middot;
+        Reading &middot; one chapter, about 30-40 minutes</p>
+        <p>The most influential argument that bell-curve thinking misleads wherever extremes dominate, framed
+        as his &ldquo;Mediocristan&rdquo; versus &ldquo;Extremistan.&rdquo; Read it as a named perspective: a
+        polemic, sharper than the evidence in places, whose sweep statisticians dispute but whose core point
+        about fat tails is standard.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>In a bell curve each extra standard deviation makes an event vastly rarer (6&sigma; is about 1 in a
+        billion); in a power law, doubling the size only divides the odds by 2<sup>&alpha;</sup>.</li>
+        <li>In a fat-tailed world the largest events dominate the totals, and the biggest on record is a
+        sample, not a limit.</li>
+        <li>A &ldquo;T-year&rdquo; event is a 1-in-T annual chance, not a schedule: a 100-year flood has a 26%
+        chance of occurring at least once in 30 years.</li>
+        <li>Return periods longer than the record are extrapolations that assume stationarity.</li>
+        <li>Fukushima&rsquo;s wave, more than twice the design figure, was a surprise of a predictable kind.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        The Thames Barrier was designed to hold back a surge tide with about a 1-in-1,000 chance in any year,
+        with 2030 as its design horizon: what would have to be true of the tail of North Sea storm-surge
+        heights, and of sea level over the barrier&rsquo;s life, for that number to stay trustworthy?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Fukushima: TEPCO tsunami-survey releases (2011&ndash;12), a Japan Atomic
+      Energy Commission briefing, the Carnegie Endowment&rsquo;s 2012 exchange with TEPCO, and press reports of
+      the 2008 calculation and the court rulings (2019&ndash;2023). Gutenberg and Richter, <em>Bulletin of the
+      Seismological Society of America</em> 34 (1944); USGS on magnitude and energy; Harris County Flood Control
+      District; NOAA Atlas 14, Volume 11; van Oldenborgh et al. (2017); Milly et al., <em>Science</em> 319
+      (2008); 2020 Census counts; Gabaix (1999); Eeckhout (2004); Taleb (2007). Checked via web search; the
+      Ruff&ndash;Kanamori argument and the Thames Barrier standard rest on secondary accounts.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list.
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-11.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-13.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

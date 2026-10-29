@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In the 1730s a Calculation Said the Bees Were Off by Two Minutes of Arc. The Calculation Was Wrong — and a Miss That Small Would Have Cost Almost No Wax Anyway. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "In the 1730s a Calculation Said the Bees Were Off by Two Minutes of Arc. The Calculation Was Wrong — and a Miss That Small Would Have Cost Almost No Wax Anyway.",
+    "path": "reports/academy/math/day-08.html",
+    "summary": "Day 8 of the Connected Path: at the best point of a smooth trade-off the derivative is zero and the curve is flat, so the cost of a small miss grows only as its square — which shows why a two-minute-of-arc error in the honeybee cell’s angle would waste under one part in a million of its wax, and why a speed cap saves fuel mainly from drivers far from the best speed.",
+    "headlines": [
+      "Day 8 of 293 · Mathematics: at the best point of a smooth trade-off the curve is flat, so a small miss costs almost nothing",
+      "The same zero-slope rule gives the honeycomb’s 109°28′ angle, roughly how blood vessels branch, and why speed caps save fuel mainly from drivers far from the best speed",
+      "Watch or Read: Infinite Powers, ch. 4, ‘The Dawn of Differential Calculus’ (about 30–40 min)"
+    ],
+    "reading_minutes": 16,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>In the 1730s a Calculation Said the Bees Were Off by Two Minutes of Arc. The Calculation Was Wrong &mdash; and a Miss That Small Would Have Cost Almost No Wax Anyway.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 16 min read
+      </p>
+      <p class="paper-standfirst">
+        At the best point of a smooth trade-off the curve is flat, so a small miss costs almost nothing &mdash; which is why two minutes of arc could not matter to the bees, and why a speed limit saves fuel mainly from the drivers farthest from the best speed.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 8 of 293 &middot; Mathematics 8 of 24 &middot; Optimization: why the best point is flat</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Two minutes of arc between the bees and a mathematician</h3>
+      <p>
+        In 1712 Giacomo Filippo Maraldi, an astronomer at the Paris Observatory, reported on honeybees to the Royal Academy of Sciences in Paris. A honeybee cell is a six-sided tube, and its closed end is not a flat floor but a small pointed cap made of three rhombus-shaped faces (a rhombus is a four-sided diamond with equal sides) meeting at a tip. Maraldi gave the diamonds&rsquo; angles as about 109&deg;28&prime; and 70&deg;32&prime;. A minute of arc, written &prime;, is a sixtieth of a degree, and a second of arc, written &Prime;, is a sixtieth of a minute. Whether he measured those angles to the minute or reasoned partly from the cap&rsquo;s symmetry is unclear.
+      </p>
+      <p>
+        A generation later the naturalist Ren&eacute;-Antoine Ferchault de R&eacute;aumur posed a question to a young mathematician, Samuel K&ouml;nig: of all caps of this form that hold the same honey, which angles use the least wax? K&ouml;nig attacked it with the calculus and, around 1739, answered 109&deg;26&prime; and 70&deg;34&prime;. By his arithmetic the bees were wrong by two minutes of arc, one thirtieth of a degree.
+      </p>
+      <p>
+        In 1743 the Scottish mathematician Colin Maclaurin published the correction: the bees&rsquo; angles were the true optimum, and K&ouml;nig&rsquo;s calculation had erred. Later tradition blames a faulty table of logarithms; that is not established. Then, in 1964, the Hungarian mathematician L&aacute;szl&oacute; Fejes T&oacute;th found a different cap, built from two hexagons and two rhombi, that with the walls idealized as paper-thin uses less wax than the bees&rsquo;. By his own estimate it saves less than 0.35 percent of the area of the cell&rsquo;s opening.
+      </p>
+      <p>
+        So the bees had the angle right, and a mathematician still found a cheaper cell on paper. Two questions follow, and you cannot yet answer either. If the bees had really been two minutes off, how much wax would they have wasted? And why would the answer depend so little on getting the angle exactly right?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        At the best point of a smooth trade-off the curve is flat, so a small miss costs almost nothing, because the loss grows only as the square of the miss.
+      </p>
+      <p>
+        Take any quantity you want as small as possible (wax, fuel, cost) as it depends on one choice you control (an angle, a speed, a radius). Often the cost falls as you move the choice one way and then rises, because two effects pull in opposite directions. At the very bottom of that valley the curve is level, tilting neither up nor down. Step away from the bottom by a small distance and the cost does not rise in proportion to your step. It rises in proportion to the square of your step: miss by half as much and you pay a quarter; miss by a tenth and you pay a hundredth.
+      </p>
+      <p>
+        Two consequences organize this lesson. Near a smooth optimum, precision is cheap, so a design or a policy does not have to hit the exact best point to capture nearly all the benefit. And the best point is the best only for a stated objective under stated constraints; change either and the best point moves, sometimes to an edge where the curve is not flat at all.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Every optimization problem has the same three parts: a choice you control (call it <em>x</em>), an <strong>objective</strong> that depends on it (<em>f</em>(<em>x</em>), to be made small or large), and the <strong>constraints</strong> on which choices are allowed. The bee&rsquo;s cell is a clean example. The cell must hold a fixed volume of honey, so volume is a constraint, and the wax in the walls and cap, their surface area, is the objective to minimize. This is Day 3&rsquo;s surface-to-volume ratio again, but with the size held fixed: the volume is fixed, so minimizing the surface means choosing the shape, and here the cap&rsquo;s angle is the unknown. Deepen the tip and, for the same volume of honey, the side walls can be shorter; but the three faces themselves grow larger. One effect saves wax, the other spends it, and the total has a lowest point somewhere between.
+      </p>
+      <p>
+        Finding that lowest point rests on one observation, known as <strong>Fermat&rsquo;s theorem on stationary points</strong>. Suppose <em>f</em> is smooth (Day 4: it has a derivative everywhere) and <em>x</em> is a minimum that is not at an edge of the allowed range. If the slope there were positive, stepping slightly left would lower <em>f</em>, so <em>x</em> could not have been the minimum; if the slope were negative, stepping right would. Only a slope of exactly zero survives: <em>f</em>&prime;(<em>x</em>) = 0. That is the <strong>first-order condition</strong>. Solving it yields the <em>stationary points</em>, the candidates. For a maximum the same argument runs with the inequalities flipped.
+      </p>
+      <p>
+        A zero slope is necessary but not sufficient: it also occurs at a maximum and at a flat inflection like <em>x</em><sup>3</sup> at <em>x</em> = 0. Day 4&rsquo;s second derivative sorts them out, in the <strong>second-derivative test</strong>. If <em>f</em>&Prime; &gt; 0 at the stationary point, the curve bends upward like a bowl and the point is a minimum. If <em>f</em>&Prime; &lt; 0 it bends downward and the point is a maximum. If <em>f</em>&Prime; = 0 the test is silent. You have already used this without the name: Day 7 found the logistic curve&rsquo;s fastest growth by setting the derivative of the growth rate with respect to <em>N</em> to zero, which gave <em>N</em> = <em>K</em>/2, and that rate&rsquo;s second derivative, &minus;2<em>r</em>/<em>K</em>, is negative, so it was a maximum.
+      </p>
+      <p>
+        Why a zero slope makes errors cheap follows from the <strong>second-order Taylor approximation</strong>, which describes a smooth curve near a point by its slope and its curvature: <em>f</em>(<em>x</em>* + <em>&delta;</em>) &asymp; <em>f</em>(<em>x</em>*) + <em>f</em>&prime;(<em>x</em>*)<em>&delta;</em> + &frac12;<em>f</em>&Prime;(<em>x</em>*)<em>&delta;</em>&sup2;. Here <em>x</em>* is the optimum and <em>&delta;</em> is how far you miss. At the optimum <em>f</em>&prime;(<em>x</em>*) = 0, so the term that would grow in direct proportion to the miss vanishes, leaving &frac12;<em>f</em>&Prime;(<em>x</em>*)<em>&delta;</em>&sup2;. The price of missing is the curvature times the square of the miss. Curvature sets how forgiving the optimum is: a gently curved bowl forgives large misses, a sharply curved one punishes small ones. Squaring is why small misses are cheap: a miss of 0.01 enters as 0.0001. The approximation holds only for small misses, and real curves are usually lopsided, costing more to miss on one side than the other.
+      </p>
+      <p>
+        Constraints and objectives can move the best point itself, in two ways. First, change the objective and the optimum moves. A driver&rsquo;s cost per mile is not only fuel: time has a price too, and the time per mile falls as speed rises. Adding that falling term pulls the best speed upward, to the point where the extra fuel cost of one more mile per hour equals the value of the time it saves. That is marginal cost equal to marginal benefit, the first-order condition in an economist&rsquo;s words. Second, a binding constraint can push the best allowed point onto an edge. If the law caps speed below the driver&rsquo;s preferred speed, the best legal speed is the cap itself, and there the slope is not zero: the driver&rsquo;s cost is still falling toward the speed they want, and its steepness says what a small relaxation of the limit would be worth. The flatness argument covers only interior optima. Fejes T&oacute;th&rsquo;s cap shows a third kind of movement: he did not adjust the angle but changed which shapes were allowed, and the floor itself dropped.
+      </p>
+      <p>
+        One caution about the word &ldquo;optimal,&rdquo; because it is easy to hear it as a verdict. The mathematics optimizes whatever function it is handed. &ldquo;The bees minimize wax&rdquo; is a model with a single objective, and real combs serve other purposes too: bearing weight, being built quickly, holding brood at a steady temperature. How bees arrive at hexagonal cells is itself unsettled: one 2013 study (Karihaloo and colleagues) argues that the hexagons form partly as warm wax flows into shape, while another (Bauer and Bienefeld) argues that the bees shape them actively. <span class="chip chip--warn">Debated</span> So &ldquo;bees optimize&rdquo; is shorthand for &ldquo;the cell is the wax-minimizing form,&rdquo; a fact about the geometry and not a claim about what the bees intend.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        The bees&rsquo; angle is the zero-slope point of the wax curve, so the curve is flat there. A two-minute miss in the faces&rsquo; angle works out to a three-minute miss in the tilt that the formula below uses, and the extra wax is under one part in a million of the cell&rsquo;s total. K&ouml;nig&rsquo;s discrepancy mattered as mathematics, not as beekeeping. The exact optimum is 109&deg;28&prime;16&Prime;, so Maraldi&rsquo;s figure was within sixteen seconds of arc and K&ouml;nig&rsquo;s was off by about two minutes sixteen. Fejes T&oacute;th&rsquo;s improvement is a different shape, not a better angle, and even it saves less than 0.35 percent of the opening&rsquo;s area &mdash; as much as thousands of times the wax at stake in K&ouml;nig&rsquo;s two minutes, and still small. Near a smooth optimum, little is left to gain.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Optimum (maximum or minimum)</dt>
+        <dd>The best value of an objective over the allowed choices: a minimum when you want it small (wax, fuel), a maximum when you want it large (profit, growth rate).</dd>
+        <dt>First-order condition</dt>
+        <dd><em>f</em>&prime;(<em>x</em>*) = 0. At a smooth optimum away from the edges the slope is zero. It is necessary, not sufficient.</dd>
+        <dt>Second-derivative test</dt>
+        <dd>At a stationary point, <em>f</em>&Prime; &gt; 0 means a minimum, <em>f</em>&Prime; &lt; 0 a maximum, and <em>f</em>&Prime; = 0 settles nothing.</dd>
+        <dt>Quadratic loss (flatness)</dt>
+        <dd>Near an optimum the penalty for missing by <em>&delta;</em> is about &frac12;<em>f</em>&Prime;<em>&delta;</em>&sup2;, growing with the square of the miss; the curvature <em>f</em>&Prime; says how forgiving the optimum is.</dd>
+        <dt>Constrained optimization</dt>
+        <dd>Finding the best choice among those allowed. When a constraint binds, the best allowed point sits on the boundary, where the slope is not zero; that slope measures what relaxing the constraint would be worth.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The 55-mph limit and the shape of a fuel curve</h3>
+      <p>
+        The 1974 national speed limit sits at the regulation link of Logan&rsquo;s car chain. On January 2, 1974, amid the oil crisis set off by the Arab oil embargo, President Nixon signed the Emergency Highway Energy Conservation Act, which required states to set a 55-mph maximum or lose federal highway funds. A car&rsquo;s fuel use per mile is a smooth curve in speed, and its shape says where such a limit can and cannot save fuel. Department of Energy and Oak Ridge National Laboratory tests of 74 cars and light trucks (model years 2003&ndash;2012, so they give the shape, not 1974&rsquo;s numbers) found fuel economy falling sharply above about 50 mph, by 36 percent on average from 50 to 80 mph; DOE&rsquo;s summary puts the peak for most vehicles near 40 mph.
+      </p>
+      <div class="worked">
+        <p><strong>1. Model.</strong> Fuel per mile is <em>F</em>(<em>v</em>) = <em>A</em>/<em>v</em> + <em>Bv</em>&sup2;: engine burn per hour, spread over more miles as speed rises, plus air drag, whose energy per mile grows as <em>v</em>&sup2;. Setting <em>F</em>&prime; = &minus;<em>A</em>/<em>v</em>&sup2; + 2<em>Bv</em> = 0 gives <em>v</em>* = (<em>A</em>/2<em>B</em>)<sup>1/3</sup>; <em>F</em>&Prime; = 2<em>A</em>/<em>v</em>&sup3; + 2<em>B</em> &gt; 0, so it is a minimum.</p>
+        <p><strong>2. Calibrate.</strong> Put <em>v</em>* at 40 mph. With <em>x</em> = <em>v</em>/40, fuel per mile relative to the best is (2/<em>x</em> + <em>x</em>&sup2;)/3, which equals 1 at <em>x</em> = 1.</p>
+        <p><strong>3. Test.</strong> The model&rsquo;s fuel economy falls 11.7%, 14.8% and 15.9% going 50&rarr;60, 60&rarr;70 and 70&rarr;80 mph; ORNL&rsquo;s averages are 12.4%, 14.0% and 15.4%.</p>
+        <p><strong>4. Flat, then steep.</strong> Ten percent over the best speed (44 mph) costs 0.9% more fuel per mile; 55 mph costs 11.5% more, 70 mph 40% more, 80 mph 67% more.</p>
+        <p><strong>5. The limit.</strong> A car cut from 70 to 55 mph saves 1 &minus; 1.115/1.402 = 20.5% of its fuel per mile; one cut from 58 to 55 saves 1 &minus; 1.115/1.161 = 3.9%.</p>
+      </div>
+      <p>
+        The model is a caricature (it ignores tires, gearing and engine maps), but it shows where a cap&rsquo;s savings come from: cars far out on the steep side, not cars near the bottom. The Transportation Research Board&rsquo;s 1984 review, <em>55: A Decade of Experience</em>, put the 1983 saving at about 167,000 barrels of petroleum a day, under 2 percent of highway fuel, while recognizing that such estimates are hard to make precisely. <span class="chip chip--warn">Debated</span> The curve says where savings can come from; how many miles were driven where, and how well the limit was obeyed, decide the total.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr"><em>f</em>&prime;(<em>x</em>*) = 0 &nbsp;and&nbsp; <em>f</em>(<em>x</em>* + <em>&delta;</em>) &asymp; <em>f</em>(<em>x</em>*) + &frac12; <em>f</em>&Prime;(<em>x</em>*) <em>&delta;</em>&sup2;</p>
+        <p class="expr-spoken visually-hidden">At an interior optimum x-star the first derivative of f is zero, and the value of f at x-star plus delta is approximately f at x-star plus one half times the second derivative at x-star times delta squared.</p>
+        <dl>
+          <dt><em>f</em>(<em>x</em>)</dt>
+          <dd>the objective: the quantity being made as small (or large) as possible</dd>
+          <dt><em>x</em>*</dt>
+          <dd>the optimum: the best choice, away from any edge of the allowed range</dd>
+          <dt><em>&delta;</em></dt>
+          <dd>how far the actual choice misses the optimum</dd>
+          <dt><em>f</em>&prime;, <em>f</em>&Prime;</dt>
+          <dd>the first and second derivatives: the slope and the curvature</dd>
+        </dl>
+      </div>
+      <p>For the bee, let <em>S</em> be the wax area of walls and cap as a function of the tilt <em>&theta;</em> of the cap&rsquo;s faces, measured from the cell&rsquo;s axis. With the volume held fixed, the objective is:</p>
+      <div class="formula">
+        <p class="expr"><em>S</em>(<em>&theta;</em>) = 6<em>sh</em> &minus; (3/2)<em>s</em>&sup2; cot&nbsp;<em>&theta;</em> + (3&radic;3/2)<em>s</em>&sup2; csc&nbsp;<em>&theta;</em></p>
+        <p class="expr-spoken visually-hidden">S of theta equals six s h, minus three halves s squared times the cotangent of theta, plus three root three over two times s squared times the cosecant of theta.</p>
+        <dl>
+          <dt><em>s</em></dt>
+          <dd>the side of the cell&rsquo;s hexagon</dd>
+          <dt><em>h</em></dt>
+          <dd>the length of a plain flat-bottomed hexagonal tube holding the same honey, fixed by the volume</dd>
+          <dt>&minus;(3/2)<em>s</em>&sup2; cot&nbsp;<em>&theta;</em></dt>
+          <dd>the wall wax saved by a deeper tip</dd>
+          <dt>+(3&radic;3/2)<em>s</em>&sup2; csc&nbsp;<em>&theta;</em></dt>
+          <dd>the wax in the three faces, which grow as the tip deepens</dd>
+        </dl>
+      </div>
+      <p>The decisive step sets the derivative to zero:</p>
+      <div class="formula">
+        <p class="expr">d<em>S</em>/d<em>&theta;</em> = (3/2)<em>s</em>&sup2; csc&sup2;<em>&theta;</em> &minus; (3&radic;3/2)<em>s</em>&sup2; csc&nbsp;<em>&theta;</em> cot&nbsp;<em>&theta;</em> = 0 &nbsp;&rArr;&nbsp; cos&nbsp;<em>&theta;</em> = 1/&radic;3 &nbsp;&rArr;&nbsp; cos&nbsp;<em>&psi;</em> = &minus;1/3</p>
+        <p class="expr-spoken visually-hidden">The derivative of S with respect to theta equals three halves s squared cosecant squared theta, minus three root three over two s squared cosecant theta cotangent theta, and setting it to zero gives cosine theta equals one over root three, which gives cosine psi equals minus one third.</p>
+        <dl>
+          <dt><em>&psi;</em></dt>
+          <dd>the angle at the tip of each rhombus, tied to the tilt by tan(<em>&psi;</em>/2) = &radic;3 sin&nbsp;<em>&theta;</em>; cos&nbsp;<em>&psi;</em> = &minus;1/3 gives <em>&psi;</em> = 109&deg;28&prime;16&Prime;, the bees&rsquo; angle</dd>
+        </dl>
+      </div>
+      <p>There <em>S</em>&Prime; = 9<em>s</em>&sup2;/(2&radic;2) &asymp; 3.18<em>s</em>&sup2; &gt; 0, a minimum. A 2&prime; change in <em>&psi;</em> moves <em>&theta;</em> by about 3&prime;, or 8.7 &times; 10<sup>&minus;4</sup> radian, so the extra wax is about &frac12; &times; 3.18<em>s</em>&sup2; &times; (8.7 &times; 10<sup>&minus;4</sup>)&sup2; &asymp; 1.2 &times; 10<sup>&minus;6</sup><em>s</em>&sup2;. The total wax at the optimum is 6<em>sh</em> + 2.12<em>s</em>&sup2;, at least 2.12<em>s</em>&sup2; even for a cell with no side walls, so the relative cost is under 6 &times; 10<sup>&minus;7</sup>: under one part in a million. (K&ouml;nig&rsquo;s full 2&prime;16&Prime; costs under 8 &times; 10<sup>&minus;7</sup> of the total.) Fejes T&oacute;th&rsquo;s saving, less than 0.35 percent of the opening&rsquo;s area (2.60<em>s</em>&sup2;), is under about 0.009<em>s</em>&sup2;, as much as roughly 7,500 times larger.</p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you see optima this way, you can ask three questions of any claim that something is &ldquo;best.&rdquo; What is being optimized, and who chose it? How curved is the optimum, which tells you what precision is worth? And is the optimum interior, where flatness applies, or pinned against a constraint, where the slope is not zero and loosening or tightening the constraint matters? In the honeycomb a miss of a few minutes of arc costs almost nothing; the fuel curve has cheap misses near its bottom and expensive ones far out on its steep side.
+      </p>
+      <p>
+        The mathematics cannot choose the objective, though. &ldquo;Progress&rdquo; in the sense of your book always means progress toward something, and that something enters the optimization as the choice of <em>f</em>. That is where values come in. Day 23 (Goodhart&rsquo;s law) shows what happens when the quantity being optimized is only a proxy for what we care about, and Day 173 (gradient descent) searches for a low point of a loss function in a model with a great many settings, using the gradient, the vector of all the slopes.
+      </p>
+      <p><b>Settled.</b> The mathematics: a smooth interior optimum has zero slope and a quadratic penalty for missing. The bees&rsquo; cap angle is the wax minimum for a three-rhombus cap, and tested fuel use per mile climbs steeply above about 50 mph.</p>
+      <p><b>Debated.</b> How bees come to build the form (two 2013 studies disagree), and what the 55-mph limit saved: the Transportation Research Board estimated roughly 2,000 to 4,000 lives a year while cautioning that an exact figure is not possible.</p>
+      <p><b>Value judgment.</b> Whether those savings were worth the extra hours on the road weighs fuel, risk and time against one another, and the arithmetic cannot set those weights.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 4, The derivative: the slope of a curve is its derivative and the second derivative says whether it bends up or down, which are exactly the two readings the tests in this lesson use. Day 3, The square-cube law: wax is surface and honey is volume, so the bee&rsquo;s problem is Day 3&rsquo;s surface-to-volume ratio with the size fixed and the shape left free, the cap&rsquo;s angle trading wall area against face area.
+      </p>
+      <p>
+        <b>Across.</b> Biology, Medicine &amp; Health: Cecil Murray&rsquo;s 1926 paper in the <em>Proceedings of the National Academy of Sciences</em> treats a blood vessel&rsquo;s radius as an optimum. By Poiseuille&rsquo;s law, the power needed to push a given flow through a vessel of fixed length is proportional to 1/<em>r</em>&#8308;, where <em>r</em> is its radius, while the blood it holds, which the body must keep supplying, is proportional to <em>r</em>&sup2;. Setting the derivative of the sum to zero gives flow proportional to radius cubed, so at a branch the parent&rsquo;s radius cubed equals the sum of the daughters&rsquo;. It is the same mathematics as the cell and the fuel curve, with a more sharply curved bottom: in this two-term model a radius 10 percent off costs about 3 to 5 percent more in total. Measured vessels follow the law roughly rather than exactly (T. F. Sherman, <em>Journal of General Physiology</em>, 1981).
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Infinite Powers: How Calculus Reveals the Secrets of the Universe, Chapter 4 (&ldquo;The Dawn of Differential Calculus&rdquo;) &mdash; Steven Strogatz (Houghton Mifflin Harcourt, 2019) &middot; Reading &middot; one chapter, about 30&ndash;40 minutes</p>
+        <p>A leading applied mathematician tells how Fermat found maxima and minima by noticing that a curve goes flat at its peak, and how the same idea gave the law of refraction. It supplies the history and intuition behind setting a derivative to zero.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>At a smooth interior optimum the slope is zero; the second derivative says whether it is a minimum or a maximum.</li>
+        <li>Near the optimum a miss of <em>&delta;</em> costs about &frac12;<em>f</em>&Prime;<em>&delta;</em>&sup2;, so small misses are cheap and the curvature sets how cheap.</li>
+        <li>The bees&rsquo; cap angle, arccos(&minus;1/3) &asymp; 109&deg;28&prime;16&Prime;, is the wax minimum; a two-minute miss would waste under one part in a million.</li>
+        <li>A speed cap saves fuel mainly from drivers far out on the steep side; the 55-mph limit&rsquo;s estimated 1983 saving was under 2 percent of highway fuel.</li>
+        <li>&ldquo;Optimal&rdquo; means best for a chosen objective under chosen constraints; where a constraint binds, the slope at the best point is not zero.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Airlines enter a cost index (the ratio of time-related costs such as crew and maintenance to the price of fuel) into each aircraft&rsquo;s flight-management computer, which uses it to choose the cruise speed: if fuel prices jump 20 percent, why does the flat-optimum idea suggest an airline loses little by updating its index a few weeks late?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> G. F. Maraldi (1712); C. Maclaurin, <em>Philosophical Transactions</em> (1743); L. Fejes T&oacute;th, <em>Bulletin of the American Mathematical Society</em> (1964); the Emergency Highway Energy Conservation Act (1974); Transportation Research Board Special Report 204 (1984); DOE and Oak Ridge National Laboratory fuel-economy tests; C. D. Murray, <em>PNAS</em> (1926); T. F. Sherman (1981); Karihaloo et al. and Bauer and Bienefeld (2013). Checked via web search except the last three entries, which come from the Connected Path&rsquo;s plan. Not confirmed: the logarithm-table explanation of K&ouml;nig&rsquo;s error, and whether Maraldi measured his angles.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> The cell-wax, fuel-model and vessel arithmetic is worked from the formulas shown. Written and published automatically; nobody reviews it before you do. Resource from the Connected Path&rsquo;s curated list; its chapter number and title could not be re-checked. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="../../2026/10/2026-10-29-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-09.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
