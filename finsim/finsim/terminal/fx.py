@@ -4,7 +4,9 @@ Build 2 P06: OA-08 / OA-09 / OA-11 / OA-12 / OA-14 / OA-15 / OA-24, contracts C1
 
 Conventions stated here (the §1.3 sentences that bite in this module)
 - FX_SPOT: a deal is done at the mid plus or minus 0.2 pip AGAINST the user (pip 0.0001; JPY-quoted pairs 0.01) and
-  settles T+2 US business days (USD/CAD and USD/TRY T+1, ``instruments.fx_spot_days``).  A pair follows the market
+  settles T+2 (USD/CAD and USD/TRY T+1, ``instruments.fx_spot_days``): a USD / EUR / GBP pair on its currencies' own calendars through
+  ``ccycal`` (FX_CCS_PLAN D10, 1.0.6.1: TARGET2, New York, London; a USD pair's T+1 needs only the other currency's business day, a
+  cross also settles on a New York business day), any other pair on US business days (NYSE; local holidays not modelled).  A pair follows the market
   convention (``EURUSD`` = USD per EUR; ``USDJPY`` = JPY per USD, Yahoo ``JPY=X``; a cross ``EURJPY`` = JPY per EUR, the
   currency earlier in ``instruments.CCY_ORDER`` first).  Side rule in the quoted convention: buying the BASE pays
   ``mid + spread`` quote units per base unit, selling the base receives ``mid - spread``.
@@ -58,9 +60,17 @@ Conventions stated here (the §1.3 sentences that bite in this module)
   PENDING with one open Attention ERROR ``SETTLEMENT_UNFUNDED`` and is retried on the next tick; nothing is invented.
 - ``fund_ccy`` (cross-currency swap notionals): the account's settled cash in the currency, else Treasury's cash in that
   currency as one linked sweep, else 409 ``INSUFFICIENT_FUNDS_CCY`` with the hint "buy <ccy> <amount> with Convert".
+- LINKED DEALS (FX_CCS_PLAN K4, D6, D7, D9; 1.0.6.1): ``book_linked_spot`` books an FX desk spot deal for an OTC contract inside the
+  contract's own command - the cross-currency swap's inception conversion (settlement rows tagged ``xccy_start``) and the
+  settlement-funding purchases (``ccyfunding``; tagged ``xccy_event`` when they fund one swap's event).  A tagged row settles only inside
+  its contract's event (``settle_linked``: receive before the exchange, pay after it), never through SETTLE_DUE or by hand while the
+  contract is open and the event has not run (``linked_hold``; no next-day fallback); once the contract closes it is a trade again.
+  ``funding_check`` counts the account's OTC exchanges and deliveries due by the value date (``scheduled_otc_flows``), so the
+  conversion's EUR sale is fundable from the swap's start receipt of the same day.
 """
 from __future__ import annotations
 
+import inspect
 import json
 from datetime import date, datetime, timedelta, timezone
 from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN, Decimal
@@ -241,15 +251,65 @@ def fx_trade_date(services, now: int) -> date:
     return accounting_day(datetime.fromtimestamp(int(now), timezone.utc))
 
 
+#: FX_CCS_PLAN D10 / K4: the currencies whose own settlement calendars ``ccycal`` models (TARGET2, New York, London).  A pair of two of
+#: them takes its value dates from ``ccycal``; every other pair keeps the NYSE calendar ("local holidays not modelled")
+CCYCAL_CCYS = ("USD", "EUR", "GBP")
+
+
+def _ccycal():
+    """The currency-calendar module (FX_CCS_PLAN K1, package P-A), imported lazily: None while it is not in the tree or does not
+    import, and the NYSE calendar applies as before 1.0.6.1."""
+    try:
+        from . import ccycal
+        return ccycal
+    except Exception:   # noqa: BLE001 - not landed / broken at import: the legacy calendar
+        return None
+
+
+def ccycal_pair(pair: str) -> bool:
+    """True when both currencies of ``pair`` have a ``ccycal`` calendar (USD / EUR / GBP)."""
+    p = str(pair or "").upper()
+    return len(p) == 6 and p[:3] in CCYCAL_CCYS and p[3:] in CCYCAL_CCYS
+
+
+def value_calendar(services, pair: str):
+    """The calendar a value date of ``pair`` must be a business day of (K1 ``ccycal.value_calendar``: both currencies for a USD pair,
+    both currencies and New York for a cross), or None for a pair outside USD / EUR / GBP (the NYSE calendar applies)."""
+    cc = _ccycal() if ccycal_pair(pair) else None
+    return None if cc is None else cc.value_calendar(services, str(pair).upper())
+
+
+def value_date_problem(services, pair: str, vd: date) -> Optional[str]:
+    """Why ``vd`` cannot be a value date of ``pair`` on its value calendar, naming the calendar ("not a business day in EUR
+    (TARGET2)"), or None when it is good.  A pair outside USD / EUR / GBP is judged on the NYSE calendar."""
+    pair = str(pair or "").upper()
+    cc = _ccycal() if ccycal_pair(pair) else None
+    if cc is None:
+        return None if services.cal.is_business_day(vd) else "not a business day (US calendar; the currencies' own holidays are not modelled)"
+    return cc.value_date_problem(services, pair, vd)
+
+
 def spot_date(services, pair: str, trade_date: date) -> date:
+    """The spot value date of ``pair`` dealt on ``trade_date`` (FX_CCS_PLAN D10, K4).  A USD / EUR / GBP pair through ``ccycal``: a USD
+    pair's T+1 is a business day of the non-USD currency (a New York holiday on T+1 does not delay spot) and the spot date is good in
+    both (EURUSD dealt 2026-11-10 settles 2026-11-12, Veterans Day 11-11 skipped); a cross's T+1 is good in both currencies and its
+    spot date also in New York (EURGBP dealt 2026-11-24 settles 2026-11-27).  Any other pair: ``fx_spot_days`` US business days."""
+    cc = _ccycal() if ccycal_pair(pair) else None
+    if cc is not None:
+        return cc.spot_date(services, str(pair).upper(), trade_date)
     return services.cal.settlement_date(trade_date, fx_spot_days(pair))
 
 
 def tenor_date(services, pair: str, tenor: str, trade_date: date) -> date:
     """A tenor's value date from the spot date: ON = spot + 1 business day (spot-next); 1W / 2W = spot + 7 / 14 days, following;
     months = spot + n months, modified following, end-of-month rule (spot on its month's last business day -> the last
-    business day of the target month).  US business days (NYSE calendar; the currencies' own holidays are not modelled)."""
+    business day of the target month).  A USD / EUR / GBP pair rolls on its value calendar (``ccycal.tenor_date``, which also
+    knows the PB desk's 18M / 2Y); any other pair on US business days (NYSE calendar; its currencies' own holidays are not
+    modelled).  The FX desk's own grid stops at 1Y (``_forward_value_date`` checks the tenor first)."""
     tenor = str(tenor or "").upper()
+    cc = _ccycal() if ccycal_pair(pair) else None
+    if cc is not None:
+        return cc.tenor_date(services, str(pair).upper(), tenor, trade_date)
     cal = services.cal
     sd = spot_date(services, pair, trade_date)
     if tenor == "ON":
@@ -531,10 +591,163 @@ def _pending_forward_flow(conn, account_id: str, ccy: str, by_date: date) -> Tup
     return recv, pay
 
 
+# ---- FX_CCS_PLAN K4: the OTC exchanges and deliveries a funding check counts ----------------------------------------------------------
+#: the OTC kinds whose physical legs (notional exchanges, forward deliveries) move the account's cash
+OTC_FLOW_KINDS = ("XCCY", "FX_FORWARD")
+#: the events of a product's ``scheduled_flows`` (K5 / K6) that are always exchanges or deliveries; an END / MATURITY flow is one only
+#: when it is the final exchange (the swap's last coupon is dated the same day and may carry the END event too: ``is_exchange_flow``)
+OTC_EXCHANGE_EVENTS = ("START", "DELIVERY", "EXCHANGE", "NOTIONAL_START", "NOTIONAL_END")
+
+
+def is_exchange_flow(f: dict) -> bool:
+    """True for a notional exchange or a forward delivery, False for a coupon: an explicit ``flow_kind`` ("exchange" / "delivery" /
+    "coupon") decides; else the event (START / DELIVERY ...), or an END / MATURITY flow whose words name an exchange, not a coupon."""
+    k = str(f.get("flow_kind") or "").lower()
+    if k:
+        return k in ("exchange", "delivery")
+    ev = str(f.get("event") or "").upper()
+    if ev in OTC_EXCHANGE_EVENTS:
+        return True
+    what = str(f.get("what") or "").lower()
+    return ev in ("END", "MATURITY") and "exchange" in what and "coupon" not in what
+
+
+def _terms_of(row) -> dict:
+    try:
+        t = json.loads(row["terms_json"] or "{}")
+    except (TypeError, ValueError):
+        t = {}
+    return t if isinstance(t, dict) else {}
+
+
+def _otc_reset_done(conn, cid: str, kind: str, event_date: Optional[str] = None) -> bool:
+    if event_date is None:
+        return conn.execute("SELECT 1 FROM otc_resets WHERE contract_id=? AND kind=? LIMIT 1", (cid, kind)).fetchone() is not None
+    return conn.execute("SELECT 1 FROM otc_resets WHERE contract_id=? AND kind=? AND event_date=? LIMIT 1", (cid, kind, event_date)).fetchone() is not None
+
+
+def terms_flows(conn, row) -> List[dict]:
+    """The exchanges / deliveries of an OPEN OTC contract read straight from its row (K4's reading until the products' own
+    ``scheduled_flows`` hooks land, and their fallback): an XCCY's start exchange until ``otc_resets`` NOTIONAL_START exists (we
+    receive the pay leg's notional, we pay the receive leg's) and its final exchange until NOTIONAL_END (after the start at the
+    contract's 1360 / 2360 balances, which carry any notional reset); an FX_FORWARD's two delivery legs on its value date.
+    ``[{date, ccy, amount_c (+ in / - out), what, event, known}]``."""
+    r = dict(row)
+    t = _terms_of(r)
+    cid = r["contract_id"]
+    out: List[dict] = []
+    if r.get("status") not in (None, "OPEN"):
+        return out
+    if r["kind"] == "XCCY":
+        legs = t.get("legs") or {}
+        lent, bor = legs.get("receive") or {}, legs.get("pay") or {}
+        lc, bc = lent.get("currency"), bor.get("currency")
+        if not lc or not bc:
+            return out
+        start = str(t.get("start_date") or r["start_date"])
+        end = str(r["maturity_date"] or t.get("maturity_date"))
+        started = _otc_reset_done(conn, cid, "NOTIONAL_START")
+        if not started:
+            out.append({"date": start, "ccy": bc, "amount_c": int(bor.get("notional_c") or 0), "what": f"start exchange: {cid} notional borrowed",
+                        "event": "START", "known": True, "contract_id": cid, "flow_kind": "exchange"})
+            out.append({"date": start, "ccy": lc, "amount_c": -int(lent.get("notional_c") or 0), "what": f"start exchange: {cid} notional lent",
+                        "event": "START", "known": True, "contract_id": cid, "flow_kind": "exchange"})
+        if not _otc_reset_done(conn, cid, "NOTIONAL_END"):
+            aid = r["account_id"]
+            back = balance(conn, aid, "1360", lc, cid) if started else int(lent.get("notional_c") or 0)
+            repay = balance(conn, aid, "2360", bc, cid) if started else int(bor.get("notional_c") or 0)
+            out.append({"date": end, "ccy": lc, "amount_c": int(back), "what": f"final exchange: {cid} notional lent comes back", "event": "END",
+                        "known": True, "contract_id": cid, "flow_kind": "exchange"})
+            out.append({"date": end, "ccy": bc, "amount_c": -int(repay), "what": f"final exchange: {cid} notional borrowed repaid", "event": "END",
+                        "known": True, "contract_id": cid, "flow_kind": "exchange"})
+    elif r["kind"] == "FX_FORWARD":
+        vd = str(t.get("delivery_date") or t.get("value_date") or r["maturity_date"])
+        if t.get("buy_ccy") and t.get("sell_ccy"):
+            out.append({"date": vd, "ccy": t["buy_ccy"], "amount_c": int(t.get("buy_c") or 0), "what": f"forward delivery: {cid} receives",
+                        "event": "DELIVERY", "known": True, "contract_id": cid, "flow_kind": "delivery"})
+            out.append({"date": vd, "ccy": t["sell_ccy"], "amount_c": -int(t.get("sell_c") or 0), "what": f"forward delivery: {cid} delivers",
+                        "event": "DELIVERY", "known": True, "contract_id": cid, "flow_kind": "delivery"})
+    return out
+
+
+def _product_of(services, kind: str):
+    """The product module that owns an OTC kind's ``scheduled_flows`` (K5 swaps_trs for XCCY, K6 otc_options for FX_FORWARD)."""
+    name = "swaps_trs" if kind == "XCCY" else "otc_options"
+    mod = getattr(services, name, None) if services is not None else None
+    if mod is None or not hasattr(mod, "scheduled_flows"):
+        try:
+            import importlib
+            mod = importlib.import_module(f"{__package__}.products.{name}")
+        except Exception:   # noqa: BLE001 - not importable: the terms reading
+            return None
+    return mod
+
+
+def hook_takes_services(fn) -> bool:
+    """True when a product's ``scheduled_flows`` hook takes the services bundle as its third argument (swaps_trs.scheduled_flows(conn,
+    row, services=None): the float coupons' known / exact amounts read the published indices through it)."""
+    try:
+        params = list(inspect.signature(fn).parameters.values())
+    except (TypeError, ValueError):
+        return False
+    if any(q.kind == q.VAR_POSITIONAL for q in params) or any(q.name == "services" for q in params):
+        return True
+    return len([q for q in params if q.kind in (q.POSITIONAL_ONLY, q.POSITIONAL_OR_KEYWORD)]) >= 3
+
+
+def contract_flows(conn, row, services=None) -> List[dict]:
+    """K5 / K6: a contract's scheduled flows from its product's ``scheduled_flows`` hook when it exists and answers - called as
+    ``fn(conn, row, services)`` when the hook takes a third argument (P-C-R4: a CCS coupon is known once its index is published, D9;
+    the hook reads the indices through this runtime, not only the one it saw at ``register``), else ``fn(conn, row)`` - else
+    ``terms_flows`` (exchanges and deliveries only).  An OPEN XCCY or FX_FORWARD always has an exchange or a delivery still to come, so
+    an empty answer for one (a hook still being built) falls back to ``terms_flows`` too - never "nothing scheduled".  Each flow carries
+    ``flow_kind`` ("exchange", "delivery" or "coupon"): the hook's own, else what ``is_exchange_flow`` reads from its event and words."""
+    mod = _product_of(services, row["kind"])
+    fn = getattr(mod, "scheduled_flows", None) if mod is not None else None
+    if callable(fn):
+        try:
+            got = fn(conn, row, services) if services is not None and hook_takes_services(fn) else fn(conn, row)
+            if got:
+                out = [dict(f) for f in got]
+                for f in out:
+                    if not f.get("flow_kind"):
+                        f["flow_kind"] = ("delivery" if str(f.get("event") or "").upper() == "DELIVERY" else "exchange") if is_exchange_flow(f) else "coupon"
+                return out
+        except NotImplementedError:
+            pass
+        except Exception:   # noqa: BLE001 - a broken hook: the exchanges as the row states them, never nothing
+            pass
+    return terms_flows(conn, row)
+
+
+def scheduled_otc_flows(conn, account_id: str, ccy: str, by_date, services=None) -> Tuple[int, int]:
+    """K4: ``(recv_c, pay_c)`` of ``ccy``: the account's OPEN OTC contracts' exchange and delivery legs not yet posted that fall due on
+    or before ``by_date`` (a CCS's start receipt of EUR counts for a EUR sale of the same value date, D-T1).  Coupons are not counted;
+    a flow not yet known (``known`` False) is not counted."""
+    ccy = _ccy(ccy)
+    by = by_date.isoformat() if isinstance(by_date, date) else str(by_date)
+    recv = pay = 0
+    rows = conn.execute(f"SELECT * FROM otc_contracts WHERE account_id=? AND status='OPEN' AND kind IN ({','.join('?' for _ in OTC_FLOW_KINDS)})",
+                        (account_id, *OTC_FLOW_KINDS)).fetchall()
+    for row in rows:
+        for f in contract_flows(conn, row, services):
+            if str(f.get("ccy") or "") != ccy or not f.get("known", True) or f.get("amount_c") is None or str(f.get("date") or "9999") > by:
+                continue
+            if not is_exchange_flow(f):
+                continue
+            amt = int(f.get("amount_c") or 0)
+            if amt > 0:
+                recv += amt
+            else:
+                pay += -amt
+    return recv, pay
+
+
 def funding_check(services, account_id: str, ccy: str, need_c: int, value_date: date, snapshot=None, conn=None) -> dict:
     """Can the account deliver ``need_c`` of ``ccy`` on ``value_date``?  Own available then (``accounting.buying_power``:
-    settled + receivables due by then - payables - reserved, floored) + the account's unposted forwards due by then + what
-    Treasury can sweep (and, for USD in a PB account with financing on, PB headroom).  ``{fundable, shortfall_c, ...}``."""
+    settled + receivables due by then - payables - reserved, floored) + the account's unposted forwards due by then + its OTC
+    exchanges and deliveries due by then (``scheduled_otc_flows``, reported as ``otc_flows_c``; FX_CCS_PLAN K4) + what Treasury can
+    sweep (and, for USD in a PB account with financing on, PB headroom).  ``{fundable, shortfall_c, ...}``."""
     acc = services.accounting
     need_c = int(need_c)
     own = tre = pb = 0
@@ -548,11 +761,14 @@ def funding_check(services, account_id: str, ccy: str, need_c: int, value_date: 
         tre = pb = 0
     if conn is not None:
         recv, pay = _pending_forward_flow(conn, account_id, ccy, value_date)
+        orecv, opay = scheduled_otc_flows(conn, account_id, ccy, value_date, services)
     else:
         with services.db.reader() as rconn:
             recv, pay = _pending_forward_flow(rconn, account_id, ccy, value_date)
+            orecv, opay = scheduled_otc_flows(rconn, account_id, ccy, value_date, services)
     fwd = recv - pay
-    have = own + fwd
+    otc = orecv - opay
+    have = own + fwd + otc
     from_tre = min(max(0, need_c - have), tre)
     from_pb = min(max(0, need_c - have - from_tre), pb)
     short = max(0, need_c - have - from_tre - from_pb)
@@ -563,17 +779,20 @@ def funding_check(services, account_id: str, ccy: str, need_c: int, value_date: 
         else:
             fixes.append(f"buy {ccy} first on this desk (value on or before {value_date.isoformat()})")
             fixes.append(f"or transfer {ccy} from Treasury (Treasury > Transfer) if Treasury holds it")
-    return {"currency": ccy, "need_c": need_c, "own_available_c": own, "forwards_due_c": fwd, "treasury_available_c": tre, "pb_headroom_c": pb,
+    return {"currency": ccy, "need_c": need_c, "own_available_c": own, "forwards_due_c": fwd, "otc_flows_c": otc, "otc_receipts_c": orecv, "otc_payments_c": opay,
+            "treasury_available_c": tre, "pb_headroom_c": pb,
             "from_own_c": min(need_c, max(0, have)), "from_treasury_c": from_tre, "from_pb_c": from_pb, "shortfall_c": short, "fundable": short == 0,
             "value_date": value_date.isoformat(), "fixes": fixes,
             "text": (f"{ccy} {fmt_money(need_c)} due {value_date.isoformat()}: own {fmt_money(max(0, have))}"
+                     + (f" (OTC exchanges / deliveries due by then {'+' if otc >= 0 else '-'}{fmt_money(abs(otc))})" if otc else "")
                      + (f", Treasury sweep {fmt_money(from_tre)}" if from_tre else "") + (f", PB financing {fmt_money(from_pb)}" if from_pb else "")
                      + (f" - SHORT {fmt_money(short)}" if short else " - covered"))}
 
 
 def _unfundable(acct_id: str, ccy: str, chk: dict, forward: bool) -> dict:
     return {"code": "SETTLEMENT_UNFUNDABLE",
-            "message": (f"SELL {ccy} {fmt_money(chk['need_c'])} for value {chk['value_date']}: {acct_id} has {ccy} {fmt_money(max(0, chk['own_available_c'] + chk['forwards_due_c']))}"
+            "message": (f"SELL {ccy} {fmt_money(chk['need_c'])} for value {chk['value_date']}: {acct_id} has {ccy}"
+                        f" {fmt_money(max(0, chk['own_available_c'] + chk['forwards_due_c'] + int(chk.get('otc_flows_c') or 0)))}"
                         f" available by then and Treasury {ccy} {fmt_money(chk['treasury_available_c'])} - short {ccy} {fmt_money(chk['shortfall_c'])}. "
                         + "; ".join(chk["fixes"])),
             "details": dict(chk, account_id=acct_id, forward=forward)}
@@ -667,8 +886,10 @@ def _forward_value_date(services, pair: str, tenor, value_date, now: int) -> Tup
             vd = value_date if isinstance(value_date, date) else date.fromisoformat(str(value_date))
         except ValueError as e:
             raise RejectError("VALUE_DATE", f"value_date must be YYYY-MM-DD, got {value_date!r}") from e
-        if not services.cal.is_business_day(vd):
-            raise RejectError("VALUE_DATE", f"{vd.isoformat()} is not a business day: pick another value date")
+        bad = value_date_problem(services, pair, vd)
+        if bad:                                   # G10 / D10: on the pair's value calendar, named (TARGET2, New York, London)
+            text = bad if bad.startswith(vd.isoformat()) else f"{vd.isoformat()} is {bad}"
+            raise RejectError("VALUE_DATE", f"{text}: pick another value date", {"field": "value_date", "value_date": vd.isoformat()})
         if vd <= sd:
             raise RejectError("VALUE_DATE", f"a forward's value date must be after the spot date {sd.isoformat()} (deal spot for {sd.isoformat()})")
         last = tenor_date(services, pair, "1Y", td)
@@ -679,6 +900,8 @@ def _forward_value_date(services, pair: str, tenor, value_date, now: int) -> Tup
     t = str(tenor or "").upper()
     if not t:
         raise RejectError("TENOR", f"a forward needs a tenor ({', '.join(TENORS)}) or a value date")
+    if t not in TENORS:                           # the FX desk's grid (ccycal also knows 18M / 2Y: those are the PB desk's)
+        raise RejectError("TENOR", f"tenor {t!r}: use one of {', '.join(TENORS)} or a value date", {"field": "tenor", "tenors": list(TENORS)})
     return tenor_date(services, pair, t, td), t
 
 
@@ -861,17 +1084,25 @@ def _deal_lines(account_id: str, pv: dict) -> Tuple[List, Dict[str, str]]:
     return lines, {c: ", ".join(str(r) for _a, r in ps) for c, ps in pieces.items()}
 
 
-def _settlement_rows_for(ctx: TxContext, deal_id: str, account_id: str, pv: dict) -> List[dict]:
+def _settlement_rows_for(ctx: TxContext, deal_id: str, account_id: str, pv: dict, settle_ref: Optional[Tuple[str, str]] = None) -> List[dict]:
+    """The deal's two settlement rows due on its value date; ``settle_ref`` (ref_type, ref_id) tags them for ``settle_linked`` (K4)."""
     out = []
     for leg, ccy, amt, gl in (("BUY_CCY", pv["buy_ccy"], int(pv["buy_c"]), "1250"), ("SELL_CCY", pv["sell_ccy"], -int(pv["sell_c"]), "2350")):
         sid = next_id(ctx.conn, "settlement")
-        ctx.conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status) VALUES (?,?,?,?,?,?,?,?,?,'PENDING')",
-                         (sid, None, deal_id, account_id, leg, ccy, int(amt), gl, pv["value_date"]))
-        out.append({"settle_id": sid, "leg": leg, "currency": ccy, "amount_c": int(amt), "gl": gl, "due_date": pv["value_date"], "status": "PENDING"})
+        if settle_ref is not None:
+            ctx.conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status, ref_type, ref_id)"
+                             " VALUES (?,?,?,?,?,?,?,?,?,'PENDING',?,?)", (sid, None, deal_id, account_id, leg, ccy, int(amt), gl, pv["value_date"], settle_ref[0], settle_ref[1]))
+        else:
+            ctx.conn.execute("INSERT INTO settlements(settle_id, fill_id, fx_deal_id, account_id, leg, currency, amount_c, gl, due_date, status) VALUES (?,?,?,?,?,?,?,?,?,'PENDING')",
+                             (sid, None, deal_id, account_id, leg, ccy, int(amt), gl, pv["value_date"]))
+        row = {"settle_id": sid, "leg": leg, "currency": ccy, "amount_c": int(amt), "gl": gl, "due_date": pv["value_date"], "status": "PENDING"}
+        if settle_ref is not None:
+            row.update(ref_type=settle_ref[0], ref_id=settle_ref[1])
+        out.append(row)
     return out
 
 
-def _book_spot(ctx: TxContext, pv: dict, *, link: Optional[dict] = None, title: str = "FX spot") -> dict:
+def _book_spot(ctx: TxContext, pv: dict, *, link: Optional[dict] = None, title: str = "FX spot", settle_ref: Optional[Tuple[str, str]] = None) -> dict:
     """Post one spot deal of the quote ``pv`` (entry + settlement rows + fx_deals row + event) inside ``ctx``."""
     conn = ctx.conn
     account_id = pv["account_id"]
@@ -883,12 +1114,14 @@ def _book_spot(ctx: TxContext, pv: dict, *, link: Optional[dict] = None, title: 
             f" {sign} {pv['spread_pips']} pip), spread cost USD {fmt_money(pv.get('spread_cost_c') or 0)}, value {pv['value_date']}"
             + (f" ({link.get('text')})" if link and link.get("text") else ""))
     entry_id = ctx.post(Entry("FX", memo, lines, f"fx:{deal_id}", ref_type="fx_deal", ref_id=deal_id))
-    settlements = _settlement_rows_for(ctx, deal_id, account_id, pv)
+    settlements = _settlement_rows_for(ctx, deal_id, account_id, pv, settle_ref)
     inputs = {k: pv.get(k) for k in ("pair", "foreign_ccy", "usd_quoted", "cross", "rate_quoted", "rate_basis", "pip", "spread_pips", "amount_c", "amount_ccy",
                                      "usd_adjusted_c", "trade_date", "spot_date", "settle_days", "reason", "mid_basis", "ledger_pieces", "usd_value_c")}
     inputs["ledger_rates"] = ledger_rates
     if link:
         inputs["link"] = link
+    if settle_ref is not None:
+        inputs["settle_ref"] = {"ref_type": settle_ref[0], "ref_id": settle_ref[1]}
     conn.execute("INSERT INTO fx_deals(deal_id, command_id, account_id, kind, buy_ccy, sell_ccy, buy_c, sell_c, rate, mid, spread_cost_c, quote_json, trade_ts,"
                  " trade_date, value_date, status, settled_ts, entry_id, inputs_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'PENDING',NULL,?,?)",
                  (deal_id, ctx.command_id, account_id, "SPOT", buy, sell, buy_c, sell_c, str(pv["rate"]), pv["mid"], int(pv.get("spread_cost_c") or 0), dumps(pv["quote"]),
@@ -908,6 +1141,72 @@ def _services_of(ctx: TxContext):
     if ctx.services is None:
         raise RejectError("NO_SERVICES", "the command context carries no services bundle")
     return ctx.services
+
+
+#: the settlement reference columns (C15; collateral and swaps add the identical statements - ``ensure_schema_ext`` is idempotent)
+SETTLEMENT_REF_COLUMNS = ["ALTER TABLE settlements ADD COLUMN ref_type TEXT", "ALTER TABLE settlements ADD COLUMN ref_id TEXT"]
+LINKED_TITLES = {"xccy_start": "FX conversion", "otc_funding": "FX settlement funding"}
+
+
+def _has_ref_columns(conn) -> bool:
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(settlements)").fetchall()}
+    return "ref_type" in cols and "ref_id" in cols
+
+
+def book_linked_spot(ctx: TxContext, account_id: str, buy_ccy: str, sell_ccy: str, amount_c: int, amount_ccy: str, value_date, mid, link: dict,
+                     settle_ref: Optional[Tuple[str, str]] = None, *, check_funding: bool = True) -> dict:
+    """K4 (FX_CCS_PLAN D6, D9): an FX desk spot deal booked for an OTC contract inside the caller's command - the cross-currency
+    swap's inception conversion (``link`` {type "xccy_start", id <contract>}, ``settle_ref`` ("xccy_start", <contract>)) or a
+    settlement-funding purchase (``link`` {type "otc_funding", contracts, due, obligations}; ``settle_ref`` ("xccy_event",
+    <contract>) when every obligation it funds is one swap's event).
+    - Rate: ``mid`` (the pair's mid in its own convention - the swap's pinned executable deal rate X0 for the conversion; None = the
+      command snapshot's executable mid) -/+ the desk spread (0.2 pip) against the Fund: SELL EUR 2,000,000.00 at 1.1158 - 0.00002 =
+      1.11578 gives USD fx_c(2,000,000.00, 1.11578) = 2,231,560.00, spread cost 2,231,600.00 - 2,231,560.00 = 40.00.
+    - ``value_date`` must equal the pair's spot date for this command's FX trade date (``spot_date``; ccycal for USD / EUR / GBP),
+      else 409 FX_VALUE_DATE: a linked deal is dealt on the trade date whose spot date is its value date.
+    - OA-11 with ``check_funding``: the sold currency must be deliverable on the value date, counting the account's scheduled OTC
+      exchanges and deliveries (``scheduled_otc_flows`` - the contract row must be inserted before this call), else 409
+      SETTLEMENT_UNFUNDABLE.  A settlement-funding purchase passes ``check_funding=False``: it is booked and its USD leg waits
+      SETTLEMENT_UNFUNDED at settlement when the USD is not there (D9); the check is returned as ``funding``.
+    - The settlement rows carry ``settle_ref`` so that only the contract's event settles them while it is OPEN (``settle_linked``,
+      ``linked_hold``; D7).  The deal's ``inputs.link`` names what it serves.
+    Returns ``{deal, entry_id, settlements, memo, preview, funding}``."""
+    services = _services_of(ctx)
+    if not isinstance(link, dict) or not link.get("type"):
+        raise RejectError("LINK_REQUIRED", "a linked spot deal names what it serves: link {type, id | contracts, ...}")
+    if settle_ref is not None:
+        settle_ref = (str(settle_ref[0]), str(settle_ref[1]))
+        if settle_ref[0] not in LINKED_SETTLE_TYPES or not settle_ref[1] or settle_ref[1] == "None":
+            raise RejectError("SETTLE_REF", f"settle_ref must be one of {', '.join(LINKED_SETTLE_TYPES)} with a contract id, got {settle_ref!r}")
+        if not _has_ref_columns(ctx.conn):
+            services.db.ensure_schema_ext("fx", SETTLEMENT_REF_COLUMNS)
+    try:
+        vd = value_date if isinstance(value_date, date) else date.fromisoformat(str(value_date))
+    except ValueError as e:
+        raise RejectError("VALUE_DATE", f"value_date must be YYYY-MM-DD, got {value_date!r}") from e
+    outright = None
+    if mid is not None:
+        outright = qprice(Decimal(str(mid)))
+        if outright <= 0:
+            raise RejectError("MID", f"the mid {mid!r} is not a usable rate")
+    pv = quote(services, ctx.marks, account_id, buy_ccy, sell_ccy, int(amount_c), amount_ccy, conn=ctx.conn, now=ctx.ts, value_date=vd, outright=outright)
+    if pv["blockers"]:
+        b = pv["blockers"][0]
+        raise ConflictError(b["code"], f"{LINKED_TITLES.get(link['type'], 'linked FX deal')}: {b['message']}", dict(b.get("details") or {}, link=link))
+    if pv["spot_date"] != vd.isoformat():
+        raise ConflictError("FX_VALUE_DATE", f"{pv['pair']} dealt on {pv['trade_date']} settles {pv['spot_date']}, not {vd.isoformat()}: a linked spot deal is dealt"
+                            f" on the trade date whose spot date is its value date", {"pair": pv["pair"], "trade_date": pv["trade_date"], "spot_date": pv["spot_date"],
+                                                                                     "value_date": vd.isoformat(), "link": link})
+    chk = funding_check(services, account_id, pv["sell_ccy"], int(pv["sell_c"]), vd, snapshot=ctx.marks, conn=ctx.conn)
+    if check_funding and not chk["fundable"]:
+        u = _unfundable(account_id, pv["sell_ccy"], chk, False)
+        raise ConflictError(u["code"], u["message"], dict(u["details"], link=link))
+    if mid is not None:
+        pv["quote"] = dict(pv.get("quote") or {}, pinned_mid=str(outright), pinned_by=str(link.get("text") or link.get("type")))
+    out = _book_spot(ctx, pv, link=link, title=LINKED_TITLES.get(link["type"], "FX linked spot"), settle_ref=settle_ref)
+    out["preview"] = pv
+    out["funding"] = chk
+    return out
 
 
 def h_spot(ctx: TxContext, payload: dict) -> dict:
@@ -1146,10 +1445,56 @@ def _open_unfunded(conn, settle_id: str):
     return conn.execute("SELECT id FROM attention WHERE code='SETTLEMENT_UNFUNDED' AND ref_type='settlement' AND ref_id=? AND resolved_ts IS NULL", (settle_id,)).fetchone()
 
 
-def settle_deal(ctx: TxContext, deal_id: str, force: bool = False, services=None) -> dict:
+# ---- FX_CCS_PLAN D7 / K4: settlement rows linked to an OTC contract's event --------------------------------------------------------------
+#: a row tagged with one of these settles only inside its contract's event while the contract is OPEN and that event has not run
+LINKED_SETTLE_TYPES = ("xccy_start", "xccy_event")
+LINKED_EVENT_WORDS = {"xccy_start": "start exchange", "xccy_event": "payment / final exchange"}
+
+
+def linked_hold(conn, s) -> Optional[str]:
+    """Why the settlement row ``s`` must wait for its contract's event (D7), or None when it may settle like any other.
+    Held: ``ref_type`` xccy_start / xccy_event, its contract (``ref_id``) still OPEN, and the event of the row's due date has not run -
+    for xccy_start the start exchange (``otc_resets`` NOTIONAL_START), for xccy_event the payment or final exchange of that date
+    (``otc_resets`` PAY or NOTIONAL_END with ``event_date`` = the due date).  There is no next-day fallback: a START that has not run
+    keeps the inception conversion's legs unsettled with it.  Once the contract is MATURED or TERMINATED (or the event ran, e.g. an
+    unfunded USD leg after the payment), the row is untagged in effect and SETTLE_DUE settles it as a trade."""
+    keys = set(s.keys())
+    if "ref_type" not in keys or "ref_id" not in keys:
+        return None
+    rt, rid = s["ref_type"], s["ref_id"]
+    if rt not in LINKED_SETTLE_TYPES or not rid or s["status"] != "PENDING":
+        return None
+    c = conn.execute("SELECT status FROM otc_contracts WHERE contract_id=?", (rid,)).fetchone()
+    if c is None or c["status"] != "OPEN":
+        return None
+    due = str(s["due_date"])
+    if rt == "xccy_start":
+        ran = _otc_reset_done(conn, rid, "NOTIONAL_START")
+    else:
+        ran = _otc_reset_done(conn, rid, "PAY", due) or _otc_reset_done(conn, rid, "NOTIONAL_END", due)
+    if ran:
+        return None
+    return (f"settlement {s['settle_id']} ({s['currency']} {fmt_money(abs(int(s['amount_c'])))} due {due}) is linked to {rid}: it settles inside the"
+            f" {LINKED_EVENT_WORDS[rt]} of {rid} on {due}, together with the swap's own flows, and never alone while {rid} is open")
+
+
+def held_settle_ids(conn, settle_ids=None) -> set:
+    """The PENDING settlement ids that ``linked_hold`` keeps for their contract's event (all of them, or those of ``settle_ids``):
+    SETTLE_DUE leaves these out of its keys (the orchestrator's hook in ``lifecycle_jobs.SettleDue.due``)."""
+    if not _has_ref_columns(conn):
+        return set()
+    marks = ",".join("?" for _ in LINKED_SETTLE_TYPES)
+    rows = conn.execute(f"SELECT * FROM settlements WHERE status='PENDING' AND ref_type IN ({marks})", LINKED_SETTLE_TYPES).fetchall()
+    want = None if settle_ids is None else {str(x) for x in settle_ids}
+    return {r["settle_id"] for r in rows if (want is None or r["settle_id"] in want) and linked_hold(conn, r)}
+
+
+def settle_deal(ctx: TxContext, deal_id: str, force: bool = False, services=None, legs=None, linked: bool = False) -> dict:
     """Settle the PENDING legs of one deal (idempotent: SETTLED legs are skipped; each leg's idem key is
-    ``settle:{settle_id}``).  A forward not yet posted is posted first (``post_forward``).  Returns
-    ``{deal_id, settled: [...], unfunded: [...], skipped, status}``."""
+    ``settle:{settle_id}``).  A forward not yet posted is posted first (``post_forward``).  ``legs`` (settle ids) limits it to
+    those rows (K4 ``settle_deal(legs=...)``).  A row held for its OTC contract's event (``linked_hold``, D7) is refused 409
+    LINKED_SETTLEMENT unless ``linked`` (the event's own ``settle_linked``).  Returns ``{deal_id, settled: [...], unfunded: [...],
+    skipped, status}``."""
     services = services if services is not None else ctx.services
     conn = ctx.conn
     deal = conn.execute("SELECT * FROM fx_deals WHERE deal_id=?", (deal_id,)).fetchone()
@@ -1163,12 +1508,25 @@ def settle_deal(ctx: TxContext, deal_id: str, force: bool = False, services=None
         return {"deal_id": deal_id, "settled": [], "unfunded": [], "skipped": True, "status": deal["status"]}
     if deal["status"] == "SETTLED" and all(r["status"] == "SETTLED" for r in rows):
         return {"deal_id": deal_id, "settled": [], "unfunded": [], "skipped": True, "status": "SETTLED"}
+    want = None if legs is None else {str(x) for x in legs}
+    if not linked:
+        held = [r for r in rows if r["status"] == "PENDING" and (want is None or r["settle_id"] in want) and linked_hold(conn, r)]
+        if held:
+            r = held[0]
+            what = LINKED_EVENT_WORDS.get(str(r["ref_type"]), "event")
+            raise ConflictError("LINKED_SETTLEMENT", (f"FX deal {deal_id} ({', '.join(f'{h['settle_id']} {h['currency']} {fmt_money(abs(int(h['amount_c'])))}' for h in held)},"
+                                                      f" due {r['due_date']}) is linked to {r['ref_id']}: it settles inside the {what} of {r['ref_id']} on"
+                                                      f" {r['due_date']}, together with the swap's own flows, and never alone while {r['ref_id']} is open"),
+                                {"settle_ids": [h["settle_id"] for h in held], "deal_id": deal_id, "ref_type": r["ref_type"], "contract_id": r["ref_id"],
+                                 "due_date": r["due_date"]})
     account_id = deal["account_id"]
     _account(conn, account_id)
     today = ctx.today
     settled, unfunded = [], []
     for r in rows:
         if r["status"] == "SETTLED":
+            continue
+        if want is not None and r["settle_id"] not in want:
             continue
         if r["due_date"] > today and not force:
             raise RejectError("NOT_DUE", f"settlement {r['settle_id']} is due {r['due_date']} (today {today}); pass force to settle early",
@@ -1223,9 +1581,58 @@ def h_settle(ctx: TxContext, payload: dict) -> dict:
 
 
 def due_deals(conn, today: str):
-    """Deal ids with a PENDING leg due on or before ``today`` (for WP-08's SETTLE_DUE keys)."""
-    rows = conn.execute("SELECT DISTINCT fx_deal_id FROM settlements WHERE fx_deal_id IS NOT NULL AND status='PENDING' AND due_date <= ? ORDER BY fx_deal_id", (today,)).fetchall()
-    return [r["fx_deal_id"] for r in rows]
+    """Deal ids with a PENDING leg due on or before ``today`` (for WP-08's SETTLE_DUE keys).  K4 / D7: a leg held for its OTC
+    contract's event (``linked_hold``) is left out on its due date and after it - no next-day fallback - until that event has run or
+    the contract has closed."""
+    rows = conn.execute("SELECT * FROM settlements WHERE fx_deal_id IS NOT NULL AND status='PENDING' AND due_date <= ? ORDER BY fx_deal_id, settle_id",
+                        (str(today),)).fetchall()
+    out: List[str] = []
+    for r in rows:
+        if r["fx_deal_id"] in out or linked_hold(conn, r):
+            continue
+        out.append(r["fx_deal_id"])
+    return out
+
+
+def settle_linked(ctx: TxContext, ref_type: str, ref_id: str, due_date, phase: str, *, strict: Optional[bool] = None, services=None) -> dict:
+    """K4 (D7): inside an OTC contract's event, settle the ``phase`` legs - "receive" (amount > 0) or "pay" (amount < 0) - of the FX
+    deals whose settlement rows carry (``ref_type``, ``ref_id``) and fall due on or before ``due_date``, through
+    ``settle_deal(legs=..., linked=True)``.  The XCCY START calls it receive -> exchange -> pay, so the conversion's USD comes in
+    before the USD is lent and its EUR goes out after the EUR is borrowed; only the net shortfall per currency is funded.
+    ``strict`` (default: True for xccy_start) raises 409 SETTLEMENT_UNFUNDED when a leg cannot be funded, so the event's SAVEPOINT
+    rolls back everything; otherwise (xccy_event) the leg waits SETTLEMENT_UNFUNDED with its ERROR and SETTLE_DUE retries it once
+    the event has run (D9).  Returns ``{ref_type, ref_id, phase, due_date, settled, unfunded, deals}``."""
+    if ref_type not in LINKED_SETTLE_TYPES:
+        raise RejectError("SETTLE_REF", f"ref_type must be one of {', '.join(LINKED_SETTLE_TYPES)}, got {ref_type!r}")
+    ph = str(phase or "").lower()
+    if ph not in ("receive", "pay"):
+        raise RejectError("PHASE", f"phase must be receive or pay, got {phase!r}")
+    d = due_date.isoformat() if isinstance(due_date, date) else str(due_date)
+    strict = (ref_type == "xccy_start") if strict is None else bool(strict)
+    out = {"ref_type": ref_type, "ref_id": str(ref_id), "phase": ph, "due_date": d, "settled": [], "unfunded": [], "deals": []}
+    conn = ctx.conn
+    if not _has_ref_columns(conn):
+        return out
+    sign = "amount_c > 0" if ph == "receive" else "amount_c < 0"
+    rows = conn.execute("SELECT settle_id, fx_deal_id FROM settlements WHERE ref_type=? AND ref_id=? AND status='PENDING' AND due_date<=? AND fx_deal_id IS NOT NULL"
+                        f" AND {sign} ORDER BY due_date, fx_deal_id, settle_id", (ref_type, str(ref_id), d)).fetchall()
+    by_deal: Dict[str, List[str]] = {}
+    for r in rows:
+        by_deal.setdefault(r["fx_deal_id"], []).append(r["settle_id"])
+    for deal_id, sids in by_deal.items():
+        res = settle_deal(ctx, deal_id, services=services, legs=sids, linked=True)
+        out["deals"].append({"deal_id": deal_id, "status": res.get("status"), "legs": sids})
+        out["settled"] += [dict(x, deal_id=deal_id) for x in res.get("settled") or []]
+        out["unfunded"] += [dict(x, deal_id=deal_id) for x in res.get("unfunded") or []]
+    for x in out["settled"]:                          # SETTLE_DUE's "waits for the event" item of a row the event has now settled
+        conn.execute("UPDATE attention SET resolved_ts=? WHERE code='LINKED_SETTLEMENT' AND ref_type='job' AND ref_id=? AND resolved_ts IS NULL",
+                     (ctx.ts, f"SETTLE_DUE:{x['settle_id']}"))
+    if strict and out["unfunded"]:
+        u = out["unfunded"][0]
+        raise ConflictError("SETTLEMENT_UNFUNDED", f"{ref_id}: the linked {u.get('currency')} {fmt_money(int(u.get('amount_c') or 0))} of FX deal {u.get('deal_id')}"
+                            f" due {d} cannot be funded; nothing of the {LINKED_EVENT_WORDS[ref_type]} is posted and it is retried",
+                            {"ref_type": ref_type, "ref_id": str(ref_id), "due_date": d, "unfunded": out["unfunded"]})
+    return out
 
 
 # ---- currency funding for WP-26 (XCCY notional exchanges) ----------------------------------------------------------------------
@@ -1616,7 +2023,9 @@ def instrument_extra(rt, inst, now: int) -> dict:
     rq, iq = rate_for(rt, quote_ccy)
     spec_view = [{"label": "pair", "value": f"{p}: {quote_ccy} per 1 {base}"}, {"label": "pip", "value": str(pip_of(p))},
                  {"label": "deal rate", "value": f"mid +/- {_FEE['spread_pips']} pip against you"},
-                 {"label": "spot value", "value": f"T+{fx_spot_days(p)} US business days ({spot_date(rt, p, td).isoformat()} for trade date {td.isoformat()})"},
+                 {"label": "spot value", "value": (f"T+{fx_spot_days(p)} business days of " + ("both currencies" + (" and New York" if "USD" not in (base, quote_ccy) else "")
+                                                   + " (TARGET2 / New York / London)" if ccycal_pair(p) else "the US calendar (local holidays not modelled)")
+                                                   + f" ({spot_date(rt, p, td).isoformat()} for trade date {td.isoformat()})")},
                  {"label": "mid source", "value": pm["source"] or "n/a"},
                  {"label": f"{base} rate", "value": ib.get("label") or ib.get("note") or "n/a"},
                  {"label": f"{quote_ccy} rate", "value": iq.get("label") or iq.get("note") or "n/a"},
@@ -1710,7 +2119,9 @@ def unsupported() -> List[dict]:
             {"item": "FX swaps, non-deliverable forwards and listed FX options", "state": "NOT_OFFERED",
              "wording": "deal a spot and an opposite forward instead; FX options are OTC with a prime broker", "where": "FX desk"},
             {"item": "Foreign venue holidays and currency holidays", "state": "APPROXIMATED",
-             "wording": "value dates and foreign settlement use the US business-day calendar; a venue's next open after its close is estimated from today's hours",
+             "wording": ("USD, EUR and GBP value dates follow New York, TARGET2 and London (a USD pair's T+1 needs only the other currency's business day; a"
+                         " cross also settles on a New York business day); other currencies' value dates and foreign settlement use the US business-day"
+                         " calendar (local holidays not modelled); a venue's next open after its close is estimated from today's hours"),
              "where": "FX desk, foreign listings"},
             {"item": "Foreign venue taxes", "state": "ASSUMED", "wording": "UK SDRT 0.50 %, Hong Kong stamp duty 0.10 %, French FTT 0.40 %, Italian FTT 0.10 %;"
              " others 0 - verify current rates", "where": "order preview fee lines"}]
@@ -1727,6 +2138,14 @@ def register(bus) -> None:
 def bind(rt) -> None:
     """Adds the FX_FORWARD_DUE lifecycle job just before SETTLE_DUE (C13) - a database without the hook keeps working, the
     forwards then post when ``fx.settle`` / ``fx.forward_due`` runs for them."""
+    db = getattr(rt, "db", None)
+    if db is not None and callable(getattr(db, "ensure_schema_ext", None)):
+        try:                                       # FX_CCS_PLAN K4: linked settlement rows carry (ref_type, ref_id)
+            db.ensure_schema_ext("fx", SETTLEMENT_REF_COLUMNS)
+        except Exception as e:   # noqa: BLE001 - logged; book_linked_spot adds them itself before it writes them
+            log = getattr(rt, "log", None)
+            if log:
+                log.warning("fx.bind: the settlement reference columns could not be added: %s", e)
     try:
         from .lifecycle_eod import add_product_job
         from .lifecycle_jobs import Job
@@ -1744,4 +2163,8 @@ __all__ = ["spot_preview", "forward_preview", "quote", "pair_for", "pair_info", 
            "fit_base", "cross_ledger", "settle_deal", "due_deals", "fund_ccy", "conversion_plan", "convert_for", "forward_rate", "forward_grid", "forward_mtm",
            "forward_overlays", "post_forward", "venue_fee_c", "venue_fee_table", "positions_view", "pairs_view", "deals_view", "listings_view", "funding_check",
            "instrument_extra", "register_routes", "unsupported", "h_spot", "h_settle", "h_forward", "h_forward_due", "register", "bind",
-           "SESSION_GROUP", "SETTLE_DAYS", "TENORS", "tenor_date", "spot_date", "fx_trade_date", "rate_for", "usd_leg", "pair_mid", "next_forward_due"]
+           "SESSION_GROUP", "SETTLE_DAYS", "TENORS", "tenor_date", "spot_date", "fx_trade_date", "rate_for", "usd_leg", "pair_mid", "next_forward_due",
+           # FX_CCS_PLAN K4 (1.0.6.1)
+           "CCYCAL_CCYS", "ccycal_pair", "value_calendar", "value_date_problem", "book_linked_spot", "settle_linked", "linked_hold", "held_settle_ids",
+           "LINKED_SETTLE_TYPES", "scheduled_otc_flows", "contract_flows", "hook_takes_services", "terms_flows", "OTC_FLOW_KINDS", "OTC_EXCHANGE_EVENTS", "SETTLEMENT_REF_COLUMNS",
+           "is_exchange_flow"]

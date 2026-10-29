@@ -3436,3 +3436,24 @@ An independent auditor walked the PB OTC forwards and cross-currency swaps on co
   by tenor and size), OTC-09 (two-currency rate risk), OTC-10 / OTC-11 (exposure and IM treatment of forwards), OTC-12 / OTC-13 (equity forward
   financing and discrete dividends), OTC-14 / OTC-15 / OTC-16 / OTC-19 (float / float XCCY, conventions, FX-move VM on the notionals), OTC-17,
   OTC-20, OTC-21, OTC-22. 1.0.6 must not start that redesign (it would be redone).
+
+#### 15.15c The OTC audit after the FX / cross-currency design (amends 15.15b; FX_CCS_PLAN rev 2 section 1.5)
+
+Release 1.0.6.1 (`docs\FX_CCS_PLAN.md` rev 2, plus `docs\INSTITUTIONAL_V3_PLAN.md` 6.1 R-A..R-E) fixes, for the USD / EUR / GBP pairs and the
+EUR/USD ESTR / SOFR float / float swap: OTC-01 (curve and overnight-print age limits), OTC-02 (forwards counted once in currency exposure),
+OTC-03 (float / float on spot dates), OTC-04 / OTC-05 (one term curve per currency, basis levels), OTC-06 (TARGET2, New York, London and SIFMA
+calendars; Tokyo via R-A), OTC-07 (2W priced), OTC-08 in part (the ticket shows spot, spot date, points and the outright), OTC-09 (rate risk per
+currency), OTC-10 (PB OTC FX forwards leave the headline), OTC-14 (EUR / USD float / float), OTC-15 in part (EURUSD shown in market convention),
+OTC-16 (VM on the CSA exposure), OTC-17 (delivery at 00:30 ET on the value date), OTC-19 in part, OTC-20 in part and OTC-22 in part.
+
+Deferred to 1.0.6.2, each with the reason the owner reads in his FX report (FX_CCS_PLAN 10.7):
+- the FX desk's own forwards move onto the same curves (17.1 pips apart from the PB desk at 1Y EURUSD in the example);
+- OTC-08: the PB spread by tenor and size (a dealer-terms redesign for every pair);
+- OTC-11: netting and risk-based IM (they change the IM of every open OTC contract and need their own acceptance; the GS percentages stay);
+- OTC-12 (first item: equity forwards are financed at SOFR + 1.25 % both ways, a money defect; no equity forward is open in the owner's books)
+  and OTC-13 (discrete dividends need a dividend schedule source);
+- OTC-14 / OTC-19: GBP SONIA legs, JPY / CHF / CAD / AUD legs, fixed / float, per-currency fixed-leg conventions, non-USD pairs, 7Y-30Y in the UI;
+- OTC-15: other pairs' display and whole-unit JPY; OTC-20: pruning the pair list and NZD / SEK / NOK rates; OTC-21: ACT/365 for JPY / CAD /
+  AUD (it moves the legacy prices of three products); OTC-22: the dealt-currency selector, FX swaps and NDFs.
+- Pairs with a currency outside USD / EUR / GBP (and JPY once R-A lands) keep the pre-1.0.6.1 method on the PB desk, labelled "LEGACY METHOD -
+  LIMITED", up to 1 year, under 1.0.6's rate-age limit.

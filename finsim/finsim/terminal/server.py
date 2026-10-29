@@ -115,7 +115,9 @@ OPTIONAL_MODULES = {"orders": "orders", "options": "products.options", "futures"
                     "swaps_cds": "products.swaps_cds",
                     # FINSIM1_PLAN C2: the FinSim1 completion build - the Dashboard (P1), the two trade blotters (P2), NAV history and
                     # restatements (P3), cash / settlement / collateral (P6), the historical import (P5); each stays "missing" until it lands
-                    "dashboard": "dashboard", "blotters": "blotters", "navhistory": "navhistory", "collateral": "collateral", "importer": "importer"}
+                    "dashboard": "dashboard", "blotters": "blotters", "navhistory": "navhistory", "collateral": "collateral", "importer": "importer",
+                    # FX_CCS_PLAN 1.0.6.1 (P-D): the standing settlement-funding instruction of OTC contracts (K8)
+                    "ccyfunding": "ccyfunding"}
 
 
 def code_tree() -> str:

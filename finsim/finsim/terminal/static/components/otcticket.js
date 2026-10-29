@@ -26,6 +26,14 @@
  * - The terms typed are kept per product through previews, errors, sub-tab switches and page re-renders; a preview whose terms were
  *   edited afterwards is marked out of date and cannot be booked until it is previewed again.  A refused input stays marked.
  * - Booking needs a confirmation that repeats the deal, the premium, the IM and the funding.
+ * - FX forwards (FX_CCS_PLAN rev 2, 1.0.6.1): a USD / EUR / GBP pair is priced on the FX term curves out to 2 years (tenors 1W .. 2Y and
+ *   18M from desk.fx_forward_tenors; a date up to the 2-year date), every value date a business day of the pair's settlement calendars;
+ *   a pair with another currency keeps the legacy method up to 1 year (desk.fx_forward_tenors_legacy), labelled LEGACY METHOD - LIMITED.
+ *   The preview shows the spot (derived from the USD pairs for a cross, with the cross print and the difference), the spot date and days
+ *   from spot, each curve with its date and kind (observed / PROXY), the discount factors, the points, the outright, the half-width and
+ *   the dealt rate, the labels, the cross-checks (flat overnight rates, the cross print, the FX desk), the delivery, the settlement-funding
+ *   line, the notional limits and the funding gap.  The settlement-funding choice buys the delivered currency with USD two business days
+ *   before the value date (an audited FX desk spot deal) - off unless chosen.  A refusal of the value date marks the date box.
  * - No dependencies beyond core.js; the file is ASCII.
  */
 (function () {
@@ -38,15 +46,22 @@
     forwards: [{ key: 'EQ_FORWARD', label: 'Equity forward' }, { key: 'FX_FORWARD', label: 'FX forward' }]
   };
   var TENORS = ['1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y'];
-  /* P8B-03: an FX forward's tenors are the FX desk's (value dates from the spot date: ON = spot-next) - the server's list
-     (desk.fx_forward_tenors), so every tenor offered is one the dealer prices */
-  var FX_FWD_TENORS = ['ON', '1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y'];
+  /* P8B-03 / FX_CCS_PLAN D3: an FX forward's tenors are the ones its pricer prices - a USD / EUR / GBP pair on the term curves 1W .. 2Y
+     (desk.fx_forward_tenors), another pair the FX desk's ON .. 1Y (desk.fx_forward_tenors_legacy, the legacy method) */
+  var FX_FWD_TENORS = ['1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y', '18M', '2Y'];
+  var FX_FWD_TENORS_LEGACY = ['ON', '1W', '2W', '1M', '2M', '3M', '6M', '9M', '1Y'];
+  var CURVE_CCYS = { USD: 1, EUR: 1, GBP: 1 };
+  /* the server names a refused date "value_date" / "maturity_date"; the box that holds it is the date box */
+  var FIELD_ALIAS = { value_date: 'expiry', maturity_date: 'expiry', delivery_date: 'expiry', settlement_funding: 'sfi' };
   var DEFAULTS = {
     EQ_OPTION: { underlying_id: 'AAPL', side: 'BUY', right: 'PUT', style: 'EUROPEAN', strike_mode: 'pct', strike: '95', tenor: '3M', expiry: '', units: '1,000' },
     FX_OPTION: { pair: 'EURUSD', side: 'BUY', right: 'CALL', strike_mode: 'atm', strike: '', tenor: '1M', expiry: '', notional: '1,000,000.00' },
     EQ_FORWARD: { underlying_id: 'AAPL', side: 'BUY', tenor: '3M', expiry: '', units: '1,000' },
-    FX_FORWARD: { pair: 'EURUSD', side: 'BUY', tenor: '3M', expiry: '', notional: '1,000,000.00' }
+    FX_FORWARD: { pair: 'EURUSD', side: 'BUY', tenor: '3M', expiry: '', notional: '1,000,000.00', sfi: 'NONE' }
   };
+  function curvePair(p) { p = String(p || '').toUpperCase(); return p.length === 6 && !!CURVE_CCYS[p.slice(0, 3)] && !!CURVE_CCYS[p.slice(3)]; }
+  /* the currency an FX forward delivers (the one you sell): the base on a sale, the quote on a purchase */
+  function soldCcy(v) { var p = String(v.pair || 'EURUSD').toUpperCase(); return v.side === 'SELL' ? p.slice(0, 3) : p.slice(3); }
   var RETRY_CODES = { CHAIN_FETCHING: 1, VOL_FETCHING: 1, NO_QUOTE: 1, QUOTE_STALE: 1 };
   var MAX_RETRIES = 6;
   var memo = {};                                  /* account -> {mode, product: {options, forwards}, values}: kept across re-renders */
@@ -55,6 +70,8 @@
   function clean(s) { return String(s == null ? '' : s).trim().replace(/,/g, ''); }
   function sig(o) { return JSON.stringify(o); }
   function money(row, key) { return T.money(row, key); }
+  /* V1061R2-03: a sensitivity (a decimal string the server computed) money-formatted like every other amount on the ticket */
+  function amountText(x) { return T.fmt.money(x, 2); }
   function pctText(x) { if (x == null || x === '') { return 'n/a'; } var n = Number(x); return isFinite(n) ? (n * 100).toFixed(2) + ' %' : String(x); }
   function nyTime(epoch) { return epoch ? (T.fmt.dt ? T.fmt.dt(epoch) : String(epoch)) + ' ET' : ''; }
   function describe(e) { return T.api && T.api.describe ? T.api.describe(e) : String(e && e.message || e); }
@@ -78,7 +95,8 @@
       '.otcticket .ot-stale { color: var(--accent, #c90); }' +
       '.otcticket .ot-head { font-weight: 600; margin: 4px 0; }' +
       '.otcticket input.bad, .otcticket select.bad { border-color: var(--down, #c55); outline: 1px solid var(--down, #c55); }' +
-      '.otcticket .ot-status { margin: 4px 0; }';
+      '.otcticket .ot-status { margin: 4px 0; }' +
+      '.otcticket .ot-labels .hint { white-space: normal; margin: 1px 0; }';
     document.head.appendChild(s);
   }
 
@@ -111,6 +129,9 @@
       if (!/^\d{4}-\d{2}-\d{2}$/.test(clean(v.expiry))) { return { error: 'date: YYYY-MM-DD (or leave it empty and pick a tenor)', field: 'expiry' }; }
       t.expiry = clean(v.expiry);
     } else { t.tenor = v.tenor; }
+    if (kind === 'FX_FORWARD' && v.sfi === 'BUY_WITH_USD' && soldCcy(v) !== 'USD') {
+      t.settlement_funding = {}; t.settlement_funding[soldCcy(v)] = 'BUY_WITH_USD';
+    }
     return { terms: t };
   }
 
@@ -167,6 +188,7 @@
     }
     function setStatus(text) { state.status = text || ''; if (ui.status) { ui.status.textContent = state.status; ui.status.hidden = !state.status; } }
     function setError(text, field) {
+      if (field && FIELD_ALIAS[field]) { field = FIELD_ALIAS[field]; }
       state.error = text || null; state.errorField = field || null;
       if (ui.error) { ui.error.textContent = state.error || ''; ui.error.hidden = !state.error; }
       if (ui.form) {
@@ -192,7 +214,7 @@
       input.value = v == null ? '' : String(v);
       function upd() { vals()[name] = input.value; touched(name); }
       input.addEventListener('input', upd);
-      input.addEventListener('change', function () { upd(); if (name === 'strike_mode' || name === 'pair' || name === 'side') { renderForm(); } });
+      input.addEventListener('change', function () { upd(); if (name === 'strike_mode' || name === 'pair' || name === 'side' || name === 'sfi') { renderForm(); } });
       input.addEventListener('keydown', function (ev) { if (T.keys.is(ev, 'ticket.preview')) { ev.preventDefault(); ev.stopPropagation(); onPreview(0); } });
       if (state.errorField === name) { input.classList.add('bad'); }
       return input;
@@ -211,7 +233,10 @@
     }
     function tenorsFor(k) {
       var d = state.desk || {};
-      return k === 'FX_FORWARD' ? (d.fx_forward_tenors || FX_FWD_TENORS) : (d.tenors || TENORS);
+      if (k !== 'FX_FORWARD') { return d.tenors || TENORS; }
+      var pair = String(vals().pair || 'EURUSD').toUpperCase();
+      var method = (d.forward_methods || {})[pair] || (curvePair(pair) ? 'curves' : 'legacy');
+      return method === 'legacy' ? (d.fx_forward_tenors_legacy || FX_FWD_TENORS_LEGACY) : (d.fx_forward_tenors || FX_FWD_TENORS);
     }
     function pairs() {
       var list = (state.desk && state.desk.pairs) || ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'USDCAD', 'AUDUSD', 'NZDUSD', 'EURJPY', 'EURGBP', 'EURCHF', 'GBPJPY'];
@@ -236,11 +261,38 @@
       return T.h('div', { class: 'hint' }, 'Spot only - no forward price, so no forward or FX option: ' +
         order.map(function (w) { return groups[w].join(', ') + ' (' + w + ')'; }).join(' . '));
     }
+    /* FX_CCS_PLAN D2: the FX term curves the USD / EUR / GBP pairs price on (desk.curves): each with its date and kind, or why it is
+       unavailable now (a forward on it is then refused with that reason - never priced on another rate); a legacy pair says its method */
+    function curvesNote() {
+      var d = state.desk || {};
+      var pair = String(vals().pair || '').toUpperCase();
+      if (!curvePair(pair)) {
+        return T.h('div', { class: 'hint ot-stale' }, (d.legacy_label || 'LEGACY METHOD - LIMITED') + ': ' + pair + ' has no term curve in this build (up to 1 year)');
+      }
+      var cs = d.curves || null;
+      if (!cs) { return null; }
+      var parts = [];
+      [pair.slice(0, 3), pair.slice(3)].forEach(function (c) {
+        var x = cs[c];
+        if (!x) { return; }
+        parts.push(c + ': ' + (x.ok ? (x.kind || '') + ' curve of ' + (x.as_of || '?') : 'unavailable - ' + (x.note || 'no curve')));
+      });
+      return parts.length ? T.h('div', { class: 'hint' }, 'FX term curves: ' + parts.join(' . ')) : null;
+    }
     function expiryField(label) {
       var fwd = kind() === 'FX_FORWARD';
+      var legacy = fwd && !curvePair(vals().pair);
       return T.field(label, T.h('span', { class: 'ot-row' }, select('tenor', tenorsFor(kind()).map(function (t) { return [t, t]; })), T.h('span', { class: 'muted' }, 'or a date'),
-        text('expiry', 'YYYY-MM-DD', 110)), fwd ? 'a tenor from the spot date (ON = spot-next; weeks following, months modified following); a date overrides it'
-        : 'a tenor from today (months modified following on the trading calendar); a date overrides it');
+        text('expiry', 'YYYY-MM-DD', 110)), !fwd ? 'a tenor from today (months modified following on the trading calendar); a date overrides it'
+        : (legacy ? 'legacy method (no term curve for this pair): a tenor from the spot date up to 1 year (ON = spot-next), NYSE calendar; a date overrides it'
+          : 'a tenor from the spot date up to 2 years (weeks following, months modified following on both currencies\' settlement calendars, and New York for a cross); a date overrides it'));
+    }
+    function sfiField() {
+      var v = vals();
+      var sold = soldCcy(v);
+      if (sold === 'USD') { return T.field('settlement funding', T.h('span', { class: 'muted' }, 'you deliver USD: from the account\'s cash, then one Treasury sweep')); }
+      return T.field('settlement funding', select('sfi', [['NONE', 'none (I fund the ' + sold + ')'], ['BUY_WITH_USD', 'buy the ' + sold + ' with USD']]),
+        'the standing settlement-funding instruction: the ' + sold + ' delivered on the value date is bought on the FX desk against USD, value the same day; it is a deal in Completed Trades - nothing converts on its own');
     }
     function renderForm() {
       var k = kind();
@@ -272,6 +324,7 @@
           ['SELL', 'sell ' + String(v.pair || 'EURUSD').slice(0, 3) + ' / buy ' + String(v.pair || 'EURUSD').slice(3)]] : [['BUY', 'buy forward (long)'], ['SELL', 'sell forward (short)']]),
           'dealt at the model forward +/- the dealer\'s half-width against you' + (terms.forward_hw_bp ? ' (' + terms.forward_hw_bp + ' bp x ' + (terms.otc_spread_mult || '1') + ')' : '')));
         rows.push(expiryField(k === 'FX_FORWARD' ? 'value date' : 'maturity'));
+        if (k === 'FX_FORWARD') { rows.push(sfiField()); }
       }
       if (k === 'EQ_OPTION' || k === 'EQ_FORWARD') {
         rows.push(T.field('quantity (shares)', text('units', '1,000', 110), 'whole shares; notional = shares x the observed price'));
@@ -280,7 +333,8 @@
       }
       T.clear(ui.form).appendChild(T.form(rows));
       if (k === 'FX_FORWARD' || k === 'FX_OPTION') { var so = spotOnlyNote(); if (so) { ui.form.appendChild(so); } }
-      ui.form.appendChild(T.h('div', { class: 'hint' }, k === 'FX_FORWARD' ? 'Delivered on the value date: you receive one currency and pay the other at the dealt rate (an FX deal settled in both currencies; the sold currency must be in this account or Treasury by then).'
+      if (k === 'FX_FORWARD') { var cn = curvesNote(); if (cn) { ui.form.appendChild(cn); } }
+      ui.form.appendChild(T.h('div', { class: 'hint' }, k === 'FX_FORWARD' ? 'Delivered at 00:30 ET on the value date: you receive one currency and pay the other at the dealt rate (an FX deal settled in both currencies; the sold currency must be in this account or Treasury by then, or bought under settlement funding).'
         : (k === 'EQ_FORWARD' ? 'Cash-settled: shares x (the observed close on the maturity date - the dealt forward).' : 'The premium settles ' + (k === 'EQ_OPTION' ? 'T+1' : 'T+2 (the pair\'s spot date)') + '; daily variation margin on the model value under the CSA; cash-settled at expiry.')));
       ui.previewBtn.disabled = !!state.blocked || state.busy;
     }
@@ -349,10 +403,13 @@
       if (k === 'EQ_OPTION' || k === 'EQ_FORWARD') {
         var u = i.underlying || {};
         out.push(row('underlying ' + (pv.underlying_id || ''), T.fmt.px(i.S) + ' (' + (u.label || u.source || '') + ')', 'the observed price the deal is priced from'));
+      } else if (k === 'FX_FORWARD' && pv.method === 'CURVES' && pv.pricing_record) {
+        return curveInputs(pv);
       } else {
         var f = i.fx || {};
         out.push(row(pv.pair + ' spot', T.fmt.px(i.S) + ' (' + (f.source || '') + ', ' + (f.quality || '') + (f.quote_time ? ', ' + nyTime(f.quote_time) : '') + ')'));
-        if (i.forward && i.forward.arithmetic) { out.push(row('forward (CIP)', i.forward.arithmetic, 'covered interest parity: the FX desk\'s forward (computed)')); }
+        if (i.forward && i.forward.arithmetic) { out.push(row('forward (CIP)', i.forward.arithmetic, k === 'FX_FORWARD' ? 'the legacy method: simple interest on one overnight / policy rate per currency, no term structure, no basis'
+          : 'covered interest parity: the FX desk\'s forward (computed)')); }
       }
       if (k === 'EQ_OPTION' || k === 'FX_OPTION') {
         out.push(row('volatility', (Number(i.sigma) * 100).toFixed(2) + ' %', ''));
@@ -372,6 +429,77 @@
       if (i.days_to_expiry != null) { out.push(row('time', i.days_to_expiry + ' days to expiry, ' + i.days_to_delivery + ' days to delivery (T = ' + i.T + ')')); }
       out.push(row('model', pv.model || i.model || ''));
       return T.kv(out);
+    }
+    /* FX_CCS_PLAN 3.2: what a curve-priced FX forward is computed from - the spot (derived / print / difference), each curve with its date and
+       kind, the discount factors, the outright and its points, the basis levels and the labels (every figure the server's) */
+    function curveInputs(pv) {
+      var rec = pv.pricing_record || {};
+      var sp = rec.spot || {};
+      var out = [];
+      var legs = (sp.legs || []).map(function (l) { return (l.pair || '') + ' ' + (l.mid || '') + (l.quote_time ? ' (' + nyTime(l.quote_time) + ', ' + (l.quality || '') + ')' : ''); }).join(' . ');
+      out.push(row(pv.pair + ' spot', (sp.mid || pv.S) + ' . ' + (sp.basis || '') + (legs ? ': ' + legs : ''), sp.arithmetic || ''));
+      if (sp.print && sp.print.mid != null) {
+        out.push(row('cross print', sp.print.mid + ' (' + (sp.diff_pips || '0') + ' pips from the derived cross; limit ' + (sp.tolerance_pips || '5.0') + ')' +
+          (sp.print.executable === false ? ' - not executable, stored only' : ''), 'the cross\'s own print is stored and compared, never priced from'));
+      }
+      out.push(row('spot date', (rec.spot_date || pv.spot_date || '') + ' . value date ' + (rec.value_date || pv.value_date || '') + ' . ' + (pv.days_from_spot != null ? pv.days_from_spot : rec.days) + ' days from spot',
+        rec.value_calendar ? 'value calendar: ' + (rec.value_calendar.calendar || '') : ''));
+      Object.keys(rec.curves || {}).forEach(function (c) {
+        var cv = rec.curves[c] || {};
+        var fn = cv.first_node || {};
+        out.push(row(c + ' curve', (cv.kind || '') + ' . ' + (cv.source || '') + ' of ' + (cv.as_of || '') + ' . overnight ' + (fn.name || fn.series || '') + ' ' + (fn.value_pct || '') + ' % (' + (fn.obs_date || '') + ')' +
+          (cv.z_S ? ' . z(S) ' + cv.z_S + ' % z(V) ' + cv.z_V + ' %' : '') + (cv.level_bp && cv.level_bp !== '0' && cv.level_bp !== '0.0' ? ' . basis level ' + cv.level_bp + ' bp' : '') +
+          (c === 'EUR' && cv.spread_bp != null ? ' . EUR OIS spread ' + cv.spread_bp + ' bp' : ''), (cv.compounding || '') + (cv.interpolation ? '; ' + cv.interpolation : '')));
+      });
+      var dfs = rec.dfs || {};
+      out.push(row('discount factors', dfs.arithmetic || ((dfs.base || '') + ' / ' + (dfs.quote || '')), 'DF* = the curve plus its cross-currency basis level (under the USD CSA), to 1e-10'));
+      out.push(row('outright', ((rec.forward || {}).arithmetic || '') + ' (' + ((rec.forward || {}).points || pv.points || '') + ' pips)'));
+      var b = rec.basis || {};
+      if (b.pair) {
+        out.push(row('basis levels', 'EUR/USD ' + (b.eur_usd_level_bp == null ? 'n/a' : b.eur_usd_level_bp) + ' bp . GBP/USD ' + (b.gbp_usd_level_bp == null ? 'n/a' : b.gbp_usd_level_bp) +
+          ' bp' + (b.cross_bp != null ? ' . cross ' + b.cross_bp + ' bp' : '') + ' on ' + (b.on || ''), b.source || ''));
+      }
+      out.push(row('model', pv.model || ''));
+      return T.kv(out);
+    }
+    function labelsBlock(pv) {
+      var labs = pv.labels || [];
+      if (!labs.length) { return null; }
+      var box = T.h('div', { class: 'ot-labels' });
+      labs.forEach(function (l) { box.appendChild(T.h('div', { class: 'hint' }, l)); });
+      return box;
+    }
+    function checksBlock(pv) {
+      var cc = pv.cross_checks || null;
+      if (!cc) { return null; }
+      var rows = [];
+      function line(name, x) {
+        if (!x) { return; }
+        rows.push([name, x.outright ? x.outright + (x.diff_pips != null ? ' (' + x.diff_pips + ' pips against the outright)' : '') : (x.note || 'n/a'), x.method || x.note || '']);
+      }
+      line('flat overnight rates', cc.flat_overnight);
+      line('on the cross print', cc.on_print);
+      line('FX desk forward', cc.fx_desk);
+      return T.kv(rows);
+    }
+    function limitsLines(pv) {
+      var out = [];
+      var lim = pv.limits || null;
+      if (lim) {
+        var r = lim.headline_gross_nav_before != null ? ' . headline gross / NAV ' + lim.headline_gross_nav_before + 'x -> ' + lim.headline_gross_nav_after + 'x . gross notional / NAV ' +
+          lim.gross_notional_nav_before + 'x -> ' + lim.gross_notional_nav_after + 'x' : (lim.note ? ' . ' + lim.note : '');
+        out.push(['notional limits', (lim.text || 'none configured') + r, lim.basis || '']);
+      }
+      var fp = pv.funding_plan || null;
+      if (fp) {
+        /* the settlement-funding plan's gaps, in its own words (the USD a purchase needs beyond what the account and Treasury will hold) */
+        var gaps = (fp.gaps || []).map(function (g) { return g.text || ((g.value_date || '') + ': short USD ' + (g.gap != null ? g.gap : '')); });
+        if (!(pv.delivery_check && pv.delivery_check.covered_by_sfi)) {           /* else the delivery check already leads with it */
+          out.push(['settlement funding', fp.line || '', (fp.plan && fp.plan.available === false ? 'the plan: ' + (fp.plan.reason || 'unavailable') : '')]);
+        }
+        if (gaps.length) { out.push(['funding gap', gaps.join(' . '), 'at today\'s balances: the USD the purchases need beyond what the account and Treasury will hold']); }
+      }
+      return out;
     }
     function greeksBlock(pv) {
       var g = pv.greeks || {}, p = pv.position_greeks || {};
@@ -399,12 +527,24 @@
           out.push(['forward', 'mid ' + pv.forward + ' (SOFR carry) . dealer\'s ' + pv.forward_deal + ' (SOFR ' + (pv.side === 'BUY' ? '+' : '-') + ' PB spread ' +
             pctText(pv.financing_spread) + ') . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you)', pv.price_rule]);
         } else {
-          out.push(['forward', 'model ' + pv.forward + ' . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you)', pv.price_rule]);
+          /* V1061R2-01: a curve-priced FX forward says where its half-width comes from (a schedule term, ASSUMED) */
+          out.push(['forward', 'model ' + pv.forward + ' . dealt ' + pv.strike + ' (' + pv.half_width + ' = ' + pv.half_width_px + ' against you' +
+            (pv.half_width_source ? '; ' + pv.half_width_source : '') + ')', pv.price_rule]);
         }
-        if (pv.delivery) { out.push(['delivery', 'receive ' + pv.delivery.receive.ccy + ' ' + T.fmt.money(pv.delivery.receive.amount) + ' . pay ' + pv.delivery.pay.ccy + ' ' + T.fmt.money(pv.delivery.pay.amount) + ' on ' + pv.value_date]); }
-        if (pv.delivery_check && pv.delivery_check.fundable === false) { out.push(['warning', T.h('span', { class: 'ot-stale' }, pv.delivery_check.note || 'the sold currency is not there for the value date yet')]); }
+        if (pv.delivery) { out.push(['delivery', 'receive ' + pv.delivery.receive.ccy + ' ' + T.fmt.money(pv.delivery.receive.amount) + ' . pay ' + pv.delivery.pay.ccy + ' ' + T.fmt.money(pv.delivery.pay.amount) + ' on ' + pv.value_date +
+          (pv.spot_date ? ' (spot ' + pv.spot_date + ', ' + pv.days_from_spot + ' days from spot)' : '')]); }
+        if (pv.delivery_check) {                    /* G11: the delivery note is never empty; covered by the settlement-funding instruction it is information, else a warning */
+          var dc = pv.delivery_check;
+          out.push([dc.covered_by_sfi || dc.fundable ? 'delivery check' : 'warning', T.h('span', { class: dc.covered_by_sfi || dc.fundable ? '' : 'ot-stale' }, dc.note || 'the sold currency is not there for the value date yet')]);
+        }
+        if (pv.kind === 'FX_FORWARD') { limitsLines(pv).forEach(function (r) { out.push(r); }); }
+        if (pv.kind === 'FX_FORWARD' && pv.method === 'LEGACY') { out.push(['method', T.h('span', { class: 'ot-stale' }, (pv.labels || [])[1] || 'LEGACY METHOD - LIMITED')]); }
       }
-      out.push(['expiry', pv.expiry + ' (' + pv.days + ' days' + (pv.tenor && pv.tenor !== 'date' ? ', ' + pv.tenor : '') + ') . ' + (pv.settlement || '')]);
+      if (pv.kind === 'FX_FORWARD' && pv.spot_date) {
+        out.push(['value date', pv.value_date + ' (' + pv.days_from_spot + ' days from the spot date ' + pv.spot_date + (pv.tenor && pv.tenor !== 'date' ? ', ' + pv.tenor : '') + ') . ' + (pv.settlement || '')]);
+      } else {
+        out.push(['expiry', pv.expiry + ' (' + pv.days + ' days' + (pv.tenor && pv.tenor !== 'date' ? ', ' + pv.tenor : '') + ') . ' + (pv.settlement || '')]);
+      }
       out.push(['notional', 'USD ' + money(pv, 'notional')]);
       out.push(['cost of dealing', 'USD ' + money(pv, 'cost_of_dealing') + ' (the day-one result: the dealt price against the mid model value)']);
       out.push(['value at mid', 'USD ' + money(pv, 'mark0') + ' (the contract\'s mark; daily variation margin moves its changes in cash)']);
@@ -430,6 +570,20 @@
       var g = greeksBlock(pv);
       if (g) { ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'greeks', T.h('small', null, 'computed at the mid vol')), g)); }
       ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'inputs', T.h('small', null, 'every number is computed from these')), inputsBlock(pv)));
+      var lb = labelsBlock(pv);
+      if (lb) { ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'labels', T.h('small', null, 'what each input is: observed, PROXY or ASSUMED')), lb)); }
+      var ck = checksBlock(pv);
+      if (ck) { ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'cross-checks', T.h('small', null, 'shown and stored, never priced')), ck)); }
+      var sens = pv.sensitivities || null;
+      if (sens && sens.rate01) {
+        var sr = [];
+        Object.keys(sens.pv_delta || {}).forEach(function (c) { sr.push(['PV delta ' + c, c + ' ' + amountText(sens.pv_delta[c])]); });
+        Object.keys(sens.rate01 || {}).forEach(function (c) { sr.push([c + ' rates +1 bp', 'USD ' + amountText(sens.rate01[c])]); });
+        Object.keys(sens.basis01 || {}).forEach(function (p) { sr.push([p.slice(0, 3) + '/' + p.slice(3) + ' basis +1 bp', 'USD ' + amountText(sens.basis01[p])]); });
+        Object.keys(sens.spread01 || {}).forEach(function (c) { sr.push([c + ' OIS spread +1 bp', 'USD ' + amountText(sens.spread01[c])]); });
+        if (sens.points01 != null) { sr.push(['forward points +1 pip', 'USD ' + amountText(sens.points01)]); }
+        ui.preview.appendChild(T.h('div', { class: 'section' }, T.h('h2', null, 'sensitivities', T.h('small', null, 'each by re-pricing, USD; ' + (sens.valuation || ''))), T.kv(sr)));
+      }
       ui.bookBtn.disabled = !!state.blocked || p.stale || !pv.bookable || !!blockers.length;
       ui.bookBtn.title = ui.bookBtn.disabled ? (state.blocked || (p.stale ? 'preview again' : (blockers[0] ? blockers[0].message : ''))) :
         'asks the simulated dealer of the prime broker for a quote (about 30 s; good for 120 s; re-priced at acceptance)' + (T.keys.paren ? T.keys.paren('ticket.submit') : '');

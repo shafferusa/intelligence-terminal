@@ -14,7 +14,8 @@ Conventions stated here (the §1.3 sentences and the §12.4 / §13.7 rules that 
 - Editable schedules (B4): the open copies the broker's seed row into ``pb_schedules.schedule_json``; ``tables.
   PB_SCHEDULES`` is only the seed.  ``schedule(account)`` reads the live row (seed when a row is missing, labelled
   ``source "seed"``); ``account.update_schedule`` (light) validates each field (decimal strings or cents, never
-  floats; ``swap_margin_mode`` CTM | STM; nothing below zero) and writes ONE event ``SETTINGS_CHANGED`` with
+  floats; ``swap_margin_mode`` CTM | STM; nothing below zero except the SIGNED cross-currency basis levels and EUR OIS spread of
+  FX_CCS_PLAN D5) and writes ONE event ``SETTINGS_CHANGED`` with
   ``before`` / ``after`` per changed field.  The two money fields are accepted under the names the API serves them
   (``equity_min`` / ``monthly_minimum``: decimal USD, at most 2 decimals, converted to the stored integer cents with
   ``units.to_c``) or as stored (``equity_min_c`` / ``monthly_minimum_c``: integer cents); a missing, empty or
@@ -66,7 +67,14 @@ Conventions stated here (the §1.3 sentences and the §12.4 / §13.7 rules that 
   ``forward_hw_bp`` (bp of the forward).  The seeds (``OTC_SEEDS``, assumed, editable per account) differ by broker;
   GS, JPMorgan, Citi and BofA keep the earlier static swap rule (50 bp / 10 % / 2 %).  ``im_params(services,
   account_id)`` serves the IM terms (bp as bp, the ``*_pct`` as fractions) on the caller's reading connection.
-- FIELD_SPECS (C9 / C22): ``{field: {kind, label, unit, min, max, hint[, choices]}}`` in trader words; the unit says how
+- CROSS-CURRENCY TERMS (FX_CCS_PLAN rev 2 D5, 1.0.6.1): ``xccy_basis_eur_bp`` / ``xccy_basis_gbp_bp`` (the EUR/USD and GBP/USD
+  cross-currency basis levels, mid, bp, -200..200, SIGNED), ``xccy_basis_hw_bp`` (the cross-currency swap dealing half-width, bp, 0..100)
+  and ``eur_ois_spread_bp`` (the EUR OIS curve's spread over the ECB AAA government curve, bp, -100..100, SIGNED).  Seeds
+  (``XCCY_SEEDS``, ASSUMED): 0.0 / 0.0 / the broker's IRS half-width seed / 0.0.  Each level is a parallel spread on that currency's
+  DISCOUNT curve under the USD CSA (``fxcurves.discount``); the EUR OIS spread moves the EUR grid nodes for projection and discounting;
+  an edit re-marks every open contract at that PB that uses them at the next VM (the hints say so) and writes the usual
+  SETTINGS_CHANGED.  ``xccy_terms(services, account_id)`` serves them with their source and time for a pricing record.
+- FIELD_SPECS (C9 / C22): ``{field: {kind, label, unit, min, max, hint[, choices][, signed]}}`` in trader words; the unit says how
   the editor shows and reads a value (``pct``: a fraction typed in percent, ``bp``, ``vol``: a fraction typed in vol
   points, ``usd``, ``usd_per_unit``, ``mult``, ``enum``); ``seed_schedule(broker)`` is the broker's seed incl. the OTC terms and
   (FINSIM1 P6 task 6, 1.0.6) the CSA securities terms ``csa_securities`` / ``csa_bill_haircut`` / ``csa_bond_haircut`` (``CSA_SEEDS``,
@@ -107,8 +115,9 @@ MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 PRICE_8 = Decimal("0.00000001")
 
 
-def _spec(kind: str, lo, hi, label: str, unit: str, hint: str = "", choices: Optional[Tuple[str, ...]] = None) -> dict:
-    return {"kind": kind, "min": lo, "max": hi, "label": label, "unit": unit, "hint": hint, **({"choices": choices} if choices else {})}
+def _spec(kind: str, lo, hi, label: str, unit: str, hint: str = "", choices: Optional[Tuple[str, ...]] = None, signed: bool = False) -> dict:
+    return {"kind": kind, "min": lo, "max": hi, "label": label, "unit": unit, "hint": hint, **({"choices": choices} if choices else {}),
+            **({"signed": True} if signed else {})}
 
 
 # §12.4 + SR-10 fields (C9 / C22): name -> {kind, min, max, label, unit, hint[, choices]}.  ``kind`` is how the value is STORED
@@ -142,6 +151,22 @@ FIELD_SPECS: Dict[str, dict] = {
     "fx_option_hw_vol": _spec("decimal", D("0"), D("0.20"), "FX options: dealing half-width", "vol",
                               "the premium is priced at the implied vol +/- this many vol points, against you"),
     "forward_hw_bp": _spec("decimal", D("0"), D("1000"), "Forwards: dealing half-width", "bp", "the dealt forward = the model forward +/- this many bp of it, against you"),
+    # FX_CCS_PLAN rev 2 D5 (1.0.6.1): the cross-currency basis levels, the cross-currency swap half-width and the EUR OIS spread - disclosed,
+    # editable schedule terms (ASSUMED seeds: XCCY_SEEDS); the two levels and the spread are SIGNED (a negative basis is the usual EUR/USD state)
+    "xccy_basis_eur_bp": _spec("decimal", D("-200"), D("200"), "EUR/USD cross-currency basis level (mid)", "bp",
+                               "ASSUMED - an assumed level, not a neutral one (the EUR/USD basis has been negative for most of the time since 2008): a parallel"
+                               " spread on the EUR discount curve under the USD CSA; it moves the forwards of EUR pairs and the cross-currency swaps' par"
+                               " spread. An edit re-marks every open contract at this prime broker that uses it at the next daily VM", signed=True),
+    "xccy_basis_gbp_bp": _spec("decimal", D("-200"), D("200"), "GBP/USD cross-currency basis level (mid)", "bp",
+                               "ASSUMED - an assumed level, not a neutral one: a parallel spread on the GBP discount curve under the USD CSA; it moves the"
+                               " forwards of GBP pairs. An edit re-marks every open contract at this prime broker that uses it at the next daily VM", signed=True),
+    "xccy_basis_hw_bp": _spec("decimal", D("0"), D("100"), "Cross-currency swaps: dealing half-width", "bp",
+                              "the dealt cross-currency spread = the par spread +/- this (x the OTC spread multiplier), against you, rounded on the"
+                              " 0.1 bp grid; also the half-width of a termination's close-out value"),
+    "eur_ois_spread_bp": _spec("decimal", D("-100"), D("100"), "EUR OIS curve: spread over the ECB AAA government curve", "bp",
+                               "ASSUMED - the gap between EUR OIS and the AAA government curve is not observed: added to every node of the ECB AAA curve"
+                               " (not to the ESTR node), for projection and discounting. An edit re-marks every open EUR contract at this prime broker at"
+                               " the next daily VM", signed=True),
     # FINSIM1 P6 task 6 (1.0.6): the CSA's securities collateral terms (assumed seeds: CSA_SEEDS) - which US Treasuries may be pledged
     # besides cash and the haircut each counts at (``collateral.pledge`` / ``pledges_view``)
     "csa_securities": _spec("enum", None, None, "CSA collateral: securities accepted", "enum",
@@ -154,6 +179,9 @@ EDITABLE_FIELDS: Tuple[str, ...] = tuple(FIELD_SPECS)
 IM_FIELDS: Tuple[str, ...] = ("irs_im_bp", "trs_im_pct", "xccy_im_pct", "option_im_pct", "forward_im_pct")
 OTC_TERM_FIELDS: Tuple[str, ...] = IM_FIELDS + ("eq_option_hw_vol", "fx_option_hw_vol", "forward_hw_bp")
 CSA_FIELDS: Tuple[str, ...] = ("csa_securities", "csa_bill_haircut", "csa_bond_haircut")
+#: FX_CCS_PLAN rev 2 D5 (1.0.6.1): the cross-currency curve terms; SIGNED_FIELDS may be below zero
+XCCY_TERM_FIELDS: Tuple[str, ...] = ("xccy_basis_eur_bp", "xccy_basis_gbp_bp", "xccy_basis_hw_bp", "eur_ois_spread_bp")
+SIGNED_FIELDS: Tuple[str, ...] = tuple(k for k, spec in FIELD_SPECS.items() if spec.get("signed"))
 
 
 def _otc(irs, trs, xccy, opt, fwd, eqv, fxv, fbp) -> Dict[str, Decimal]:
@@ -173,6 +201,13 @@ OTC_SEEDS: Dict[str, Dict[str, Decimal]] = {
     "BNP": _otc("60", "0.15", "0.03", "0.20", "0.10", "0.0150", "0.0040", "3.0"),
     "BOFA": _otc("50", "0.10", "0.02", "0.15", "0.06", "0.0100", "0.0030", "2.0"),
 }
+# FX_CCS_PLAN rev 2 D5 (1.0.6.1): the cross-currency terms per broker (ASSUMED, editable per account): both basis levels and the EUR OIS
+# spread 0.0 bp for every broker (an assumed level, not a neutral one); the cross-currency swap half-width = the broker's IRS half-width seed.
+# A schedule stored before 1.0.6.1 reads the seed.
+XCCY_SEEDS: Dict[str, Dict[str, str]] = {
+    b: {"xccy_basis_eur_bp": "0.0", "xccy_basis_gbp_bp": "0.0", "xccy_basis_hw_bp": hw, "eur_ois_spread_bp": "0.0"}
+    for b, hw in (("GS", "1.0"), ("JPM", "1.0"), ("MS", "1.2"), ("DB", "1.5"), ("BARC", "1.2"), ("CITI", "1.0"), ("UBS", "1.2"), ("BNP", "1.5"),
+                  ("BOFA", "1.0"))}
 # FINSIM1 P6 task 6 (1.0.6): the CSA securities terms per broker (ASSUMED, editable per account): US Treasuries accepted, bills at a 2 %
 # haircut and notes / bonds at 4 % for the large US dealers, a little more for the others.  A schedule stored before 1.0.6 reads the seed.
 CSA_SEEDS: Dict[str, Dict[str, str]] = {
@@ -242,6 +277,10 @@ class PbSchedule:
     csa_securities: str
     csa_bill_haircut: Decimal
     csa_bond_haircut: Decimal
+    xccy_basis_eur_bp: Decimal
+    xccy_basis_gbp_bp: Decimal
+    xccy_basis_hw_bp: Decimal
+    eur_ois_spread_bp: Decimal
     note: str = ""
     updated_ts: int = 0
     source: str = "pb_schedules"
@@ -284,6 +323,8 @@ def seed_schedule(broker: str) -> dict:
     for k, v in (OTC_SEEDS.get(key) or OTC_SEEDS["GS"]).items():
         out.setdefault(k, str(v))
     for k, v in (CSA_SEEDS.get(key) or CSA_SEEDS["GS"]).items():
+        out.setdefault(k, str(v))
+    for k, v in (XCCY_SEEDS.get(key) or XCCY_SEEDS["GS"]).items():
         out.setdefault(k, str(v))
     return out
 
@@ -501,6 +542,9 @@ class Prime:
 
     def im_params(self, account_id: str) -> dict:
         return im_params(self.services, account_id)
+
+    def xccy_terms(self, account_id: Optional[str] = None, conn=None) -> dict:
+        return xccy_terms(self.services, account_id, conn)
 
     def unsupported(self) -> List[dict]:
         """``rt.prime`` is this object: /api/unsupported reads the module rows through it."""
@@ -889,6 +933,29 @@ def im_params(services, account_id: str) -> dict:
     return out
 
 
+def xccy_terms(services, account_id: Optional[str] = None, conn=None) -> dict:
+    """FX_CCS_PLAN rev 2 D5: the cross-currency curve terms of a PB account's live schedule for a pricing record -
+    ``{xccy_basis_eur_bp, xccy_basis_gbp_bp, xccy_basis_hw_bp, eur_ois_spread_bp, otc_spread_mult}`` as ``Decimal`` bp (the multiplier as
+    a ``Decimal``), plus ``broker``, ``name``, ``source`` ("Goldman Sachs schedule (seed / as edited), ASSUMED"), ``updated_ts`` and
+    ``account_id``.  No account (the FX desk, not a PB): every term 0.0, the multiplier 1.0, labelled "FX desk: no prime-broker schedule
+    (0.0 bp, ASSUMED)".  A non-PB or unknown account raises its 404 like ``read_schedule``."""
+    if not account_id:
+        out = {k: D("0.0") for k in XCCY_TERM_FIELDS}
+        out.update(otc_spread_mult=D("1.0"), broker=None, name=None, account_id=None, updated_ts=None,
+                   source="FX desk: no prime-broker schedule (0.0 bp, ASSUMED)")
+        return out
+    if conn is not None:
+        s = read_schedule(conn, account_id)
+    else:
+        from . import marks as _marks
+        with _marks.shared_reader(services.db) as c:
+            s = read_schedule(c, account_id)
+    out = {k: getattr(s, k) for k in XCCY_TERM_FIELDS}
+    out.update(otc_spread_mult=s.otc_spread_mult, broker=s.broker, name=s.name, account_id=s.account_id, updated_ts=s.updated_ts or None,
+               source=f"{s.name} schedule ({'seed' if s.source == 'seed' else 'as edited'}), ASSUMED")
+    return out
+
+
 # ---- opening and closing accounts ----------------------------------------------------------------------------------------------
 def account_view(conn, account_id: str) -> dict:
     row = account_row(conn, account_id)
@@ -1174,7 +1241,8 @@ def register(bus) -> None:
 
 
 __all__ = ["ACCRUAL_KIND_PB", "ACCRUAL_KIND_CREDIT", "CASH_INSTRUMENT", "BROKERS", "EDITABLE_FIELDS", "FIELD_SPECS", "FIELDS_NOTE", "OTC_LIVE", "OTC_NOT_BUILT",
-           "OTC_GENERIC", "OTC_LABELS", "OTC_SEEDS", "IM_FIELDS", "OTC_TERM_FIELDS", "im_params", "close_check", "relationship", "register_routes", "field_specs",
+           "OTC_GENERIC", "OTC_LABELS", "OTC_SEEDS", "IM_FIELDS", "OTC_TERM_FIELDS", "XCCY_TERM_FIELDS", "XCCY_SEEDS", "SIGNED_FIELDS", "CSA_FIELDS",
+           "CSA_SEEDS", "xccy_terms", "im_params", "close_check", "relationship", "register_routes", "field_specs",
            "NotFound", "PbSchedule", "Prime", "bind", "brokers", "seed_schedule", "parse_field", "parse_money", "MONEY_ALIASES", "schedule_from_json", "read_schedule", "schedule_view",
            "pb_headroom_detail", "pb_headroom_c", "HEADROOM_FORMULA", "night_cutoff_ts", "balance_at", "balance_at_close", "restricted_at_close", "credit_base_c", "financing_rate", "credit_rate", "accrual_lines_pb",
            "accrual_lines_pb_credit", "accrual_state", "nights_due", "post_pb_accrual", "fees_charged_c", "monthly_minimum_line", "post_monthly_minimum",

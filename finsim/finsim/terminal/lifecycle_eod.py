@@ -25,6 +25,12 @@ Conventions stated here
   item reports it; postings already made are never reversed.  The underlyings of OPEN TRS contracts and the FX pairs of OPEN
   cross-currency swaps are recorded too (their resets settle at those closes).  Held and working instruments, the underlyings of held
   options and the FX pairs of foreign cash balances are the recorded set.
+  FX CLOSES (V1061R1-02, 1.0.6.1): an FX pair's CLOSE is the 17:00 ET print - from the cache when its quote time is within
+  [17:00 - 60 s, 17:00 + ``FX_RECORD_AFTER_S``], else from Yahoo's 1-minute bar that ends at 17:00 ET (``minute_bars``, method
+  ``minute_close``), else it stays unrecorded ("unavailable": one WARN MARK_MISSING naming the 1-minute bar) - never from a daily bar,
+  whose FX "close" is a snapshot near the London day start (the 10-28 EURUSD daily close 1.11296606 against 1.11569786 at 17:00 ET).
+  A pair is back-filled only from the date it entered the recorded set (``fx_entry_dates``: the trade date of the OPEN contract that
+  observes it, the first foreign cash line of its currency, its first fill), never the ``MARKS_LOOKBACK_DAYS`` before a booking.
 - SNAPSHOT (§6.6): at the ``snapshot_time_et`` setting (17:45) every calendar day, per OPEN account and per lifetime
   (``{lifetime}:ALL``), key ``{scope}:{date}``, from ``accounting.snapshot_row`` (NAV, cumulative components,
   ``flows_day_c``, ``pnl_day_c``, ``partial``, ``missing``) at the date's recorded CLOSE / SETTLE marks (PORTFOLIO-14,
@@ -80,7 +86,7 @@ from .books import account_row, open_lifetimes
 from .clock import accounting_day, epoch_of, ny_of
 from .commands import Command, RejectError, TxContext
 from .db import canonical_json, dumps, get_setting
-from .instruments import otc_reference_ids
+from .instruments import fx_pair_id, otc_reference_ids, otc_reference_since
 from .lifecycle_jobs import (ACTOR, SOURCE, AccrueDaily, Job, PayMonthly, PbMonthlyMin, SettleDue, SweepOut, accrual_state_row, last_trading_day, module, open_accounts,
                              trading_days)
 from .units import fmt_money, qprice
@@ -92,6 +98,9 @@ MISSING_RETRY_S = 3600            # a date whose daily bar is missing or whose p
 MISSING_PARK_S = 86400            # after MARK_MISSING was raised: once a day
 TODAY_RETRY_S = 300               # POSTCLOSE-01: today's official close not published yet -> retried every 5 minutes, never recorded early
 REVISE_UNTIL_ET = "17:05"         # POSTCLOSE-01: until the day's swap VM (17:05) a recorded equity CLOSE that differs from the official print is re-recorded
+FX_GROUP = "FX_SPOT"
+FX_RECORD_AFTER_S = 300           # V1061R1-02: an FX print counts as the 17:00 close up to 17:05 (the FX record time); a later one is not that close
+FX_BAR_WINDOW_S = 600             # V1061R1-02: the 1-minute bars asked for a missed FX close: [close - 10 min, close + 1 min)
 OFFICIAL_CLOSE_KINDS = ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED")   # their CLOSE is the regular-session closing print (at or after the close)
 COLLATERAL_MARK_ET = "17:10"
 MARGIN_MARK_ET = "17:10"
@@ -181,6 +190,45 @@ def _daily_provider(services):
     return fp if fp is not None and hasattr(fp, "daily") else None
 
 
+def _minute_provider(services):
+    """V1061R1-02: the provider of Yahoo 1-minute bars (``minute_bars``), else None."""
+    providers = getattr(services, "providers", None)
+    yahoo = getattr(providers, "yahoo", None) if providers is not None else None
+    if yahoo is not None and hasattr(yahoo, "minute_bars"):
+        return yahoo
+    fp = getattr(services, "fp", None)
+    return fp if fp is not None and hasattr(fp, "minute_bars") else None
+
+
+def is_fx(inst) -> bool:
+    return getattr(inst, "kind", None) == "FX" or getattr(inst, "session_group", None) == FX_GROUP
+
+
+def fx_entry_dates(conn: sqlite3.Connection) -> Dict[str, date]:
+    """V1061R1-02: ``{pair: the date the FX pair entered the recorded set}`` - the earliest of the trade date of the OPEN OTC contracts that
+    observe it (``instruments.otc_reference_since``) and the first business date of a foreign cash line (1010) of its currency in an OPEN
+    lifetime.  MARKS_RECORD never back-fills an FX close before it: nothing values a contract or a balance at a close before it existed (the
+    first FX booking of 1.0.6.1 back-filled 10 days and raised MARK_MISSING for 2026-10-23, a date nothing needs)."""
+    out: Dict[str, date] = dict(otc_reference_since(conn))
+    lids = open_lifetimes(conn)
+    if lids:
+        q = ",".join("?" for _ in lids)
+        for r in conn.execute(f"SELECT l.currency AS ccy, MIN(e.business_date) AS d FROM journal_lines l JOIN journal_entries e ON e.entry_id=l.entry_id"
+                              f" JOIN accounts a ON a.account_id=l.account_id WHERE l.gl='1010' AND l.currency<>'USD' AND a.lifetime_id IN ({q})"
+                              f" GROUP BY l.currency", lids).fetchall():
+            if not r["d"]:
+                continue
+            try:
+                d = date.fromisoformat(str(r["d"])[:10])
+            except ValueError:
+                continue
+            ccy = str(r["ccy"]).upper()
+            for pair in {fx_pair_id(ccy), ccy + "USD", "USD" + ccy}:            # recorded_set names the pair the master holds
+                if pair not in out or d < out[pair]:
+                    out[pair] = d
+    return out
+
+
 # ---- MARKS_RECORD ------------------------------------------------------------------------------------------------------------------
 class MarksRecord(Job):
     name = "MARKS_RECORD"
@@ -200,12 +248,20 @@ class MarksRecord(Job):
             return []
         since = max(today - timedelta(days=MARKS_LOOKBACK_DAYS), min(starts))      # never before the books existed
         keys: List[str] = []
+        fx_since: Optional[Dict[str, date]] = None
         for iid, inst in recorded_set(conn, master).items():
             if inst.kind in ("PRIVATE", "SWAP", "BOND", "YIELD"):
                 continue
             kind = mark_kind(inst)
             first = conn.execute("SELECT MIN(trade_date) d FROM fills WHERE instrument_id=?", (iid,)).fetchone()
             inst_since = max(since, date.fromisoformat(first["d"])) if first is not None and first["d"] else since
+            if is_fx(inst):
+                # V1061R1-02: an FX pair is back-filled only from the date it entered the recorded set, never the lookback before a booking
+                if fx_since is None:
+                    fx_since = fx_entry_dates(conn)
+                entered = [x for x in (fx_since.get(iid), date.fromisoformat(first["d"]) if first is not None and first["d"] else None) if x is not None]
+                if entered:
+                    inst_since = max(since, min(entered))
             have = {r["mark_date"] for r in conn.execute("SELECT mark_date FROM marks WHERE instrument_id=? AND kind=? AND mark_date>=?", (iid, kind, inst_since.isoformat())).fetchall()}
             for d in trading_days(sessions, inst.session_group, inst_since, today):
                 if d.isoformat() in have:
@@ -272,10 +328,46 @@ class MarksRecord(Job):
         # (the 15:59:59 ORCL 130.55 of 2026-10-27 against the official 130.53); options and FX keep the one-minute tolerance
         if ny_of(int(qt)).date() != d or int(qt) < int(close) - (0 if official else 60):
             return None
+        if is_fx(inst) and int(qt) > int(close) + FX_RECORD_AFTER_S:
+            # V1061R1-02: the FX day rolls at 17:00 ET - an evening print after a downtime is not the 17:00 close (the 1-minute bar is)
+            return None
         return {"instrument_id": inst.instrument_id, "mark_date": d.isoformat(), "kind": "CLOSE", "price": str(qprice(px)), "currency": inst.currency, "quality": "close",
                 "source": getattr(rec, "source", "") or "", "method": "official_close" if official else "direct", "quote_time": int(qt),
                 "fetched_at": int(getattr(rec, "fetched_at", 0) or now), "note": "official close: the regular-session closing print" if official else None,
                 "prev_close": None if getattr(rec, "prev_close", None) is None else str(rec.prev_close)}
+
+    def _from_minute_bar(self, services, inst, d: date, now: int, failures: dict) -> Tuple[Optional[dict], str]:
+        """V1061R1-02: an FX pair's missed CLOSE of ``d`` from Yahoo's 1-minute bar that ENDS at the 17:00 ET close (it starts at 16:59:00;
+        its close is the last price before 17:00) - one small request per (pair, date), scheduler-side.  ``(row, outcome)``; outcome in
+        recorded | no_bar | provider_failed | no_provider | no_symbol.  No bar ending at the close (a gap in the feed, or a date beyond
+        Yahoo's 1-minute history): None - the close stays unavailable, never another bar's price and never the daily bar."""
+        provider = _minute_provider(services)
+        if provider is None:
+            return None, "no_provider"
+        sym = getattr(inst, "yahoo_symbol", None)
+        if not sym:
+            return None, "no_symbol"
+        if sym in failures:
+            return None, "provider_failed"
+        close = services.sessions.session_close(inst.session_group, d)
+        if close is None:
+            return None, "no_bar"
+        close = int(close)
+        try:
+            bars = list(provider.minute_bars(sym, close - FX_BAR_WINDOW_S, close + 60))
+        except Exception as e:   # noqa: BLE001 - FetchError or a provider fault: no bar, no number
+            failures[sym] = str(e)
+            log = getattr(services, "log", None)
+            if log is not None:
+                log.warning("MARKS_RECORD 1-minute bars %s %s: %s", sym, d, e)
+            return None, "provider_failed"
+        bar = next((b for b in bars if int(b.t) == close - 60 and b.c is not None), None)
+        if bar is None:
+            return None, "no_bar"
+        late = now > close + FX_RECORD_AFTER_S
+        return {"instrument_id": inst.instrument_id, "mark_date": d.isoformat(), "kind": "CLOSE", "price": str(qprice(Decimal(str(bar.c)))), "currency": inst.currency,
+                "quality": "close", "source": "Yahoo 1-minute bars (the bar ending at the 17:00 ET close)", "method": "minute_close", "quote_time": close,
+                "fetched_at": now, "note": ("recorded late: " if late else "") + "the close of the 1-minute bar 16:59-17:00 ET (the FX day rolls at 17:00)"}, "recorded"
 
     def _from_daily(self, services, inst, d: date, now: int, bars_cache: dict, failures: dict) -> Tuple[Optional[dict], str]:
         """``(row, outcome)``; outcome ∈ recorded | no_bar | provider_failed | no_provider | no_symbol."""
@@ -371,6 +463,9 @@ class MarksRecord(Job):
                     rev = self._revision(conn, inst, row, services.sessions)
                     if rev is not None:
                         revised.append(rev)
+                elif is_fx(inst):
+                    # V1061R1-02: an FX close never comes from a daily bar (its "close" is a snapshot near the London day start)
+                    row, outcome = self._from_minute_bar(services, inst, d, now, failures)
                 else:
                     row, outcome = self._from_daily(services, inst, d, now, bars_cache, failures)
                 if row is not None:
@@ -379,7 +474,10 @@ class MarksRecord(Job):
                     continue
                 unresolved.append({"key": key, "outcome": outcome})
                 if outcome == "no_bar" and d < ny_of(now).date():
-                    missing.append({"instrument_id": iid, "mark_date": ds, "symbol": getattr(inst, "yahoo_symbol", None)})
+                    m = {"instrument_id": iid, "mark_date": ds, "symbol": getattr(inst, "yahoo_symbol", None)}
+                    if is_fx(inst):
+                        m["bar"] = "minute"
+                    missing.append(m)
                     scheduler.defer(self.name, key, MISSING_PARK_S)
                 elif d == ny_of(now).date():
                     # POSTCLOSE-01: today's official close is not published yet (no print at or after the close, no daily bar): retried in 5
@@ -410,8 +508,14 @@ def h_marks_record(ctx: TxContext, payload: dict) -> dict:
         ref = f"{m['instrument_id']}:{m['mark_date']}"
         if ctx.conn.execute("SELECT 1 FROM attention WHERE code='MARK_MISSING' AND ref_type='mark' AND ref_id=? AND resolved_ts IS NULL", (ref,)).fetchone() is None:
             # P8B-14: a missing bar is said as a gap in the free data feed - never a guess that the instrument (a major FX pair) was delisted
-            ctx.attention("WARN", SOURCE, "MARK_MISSING", f"{m['instrument_id']}: the free data feed sent no daily bar for {m['mark_date']} ({m.get('symbol') or '?'});"
-                          " the close of that date stays unrecorded and accruals / expiries that need it wait for it", dict(m, ref_type="mark", ref_id=ref, auto_resolve=1))
+            if m.get("bar") == "minute":
+                # V1061R1-02: an FX close is the 17:00 ET print; without it the close is unavailable (never a daily bar's snapshot)
+                text = (f"{m['instrument_id']}: the free data feed sent no 1-minute bar ending at the 17:00 ET close of {m['mark_date']} ({m.get('symbol') or '?'});"
+                        " that FX close stays unavailable (it is never taken from a daily bar) and the variation margin that needs it waits for it")
+            else:
+                text = (f"{m['instrument_id']}: the free data feed sent no daily bar for {m['mark_date']} ({m.get('symbol') or '?'});"
+                        " the close of that date stays unrecorded and accruals / expiries that need it wait for it")
+            ctx.attention("WARN", SOURCE, "MARK_MISSING", text, dict(m, ref_type="mark", ref_id=ref, auto_resolve=1))
             opened += 1
     for r in payload.get("revised") or []:
         ref = f"{r['instrument_id']}:{r['mark_date']}"

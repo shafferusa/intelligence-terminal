@@ -1566,6 +1566,8 @@ NO_COMMAND_HINT = (
 LEGACY_REMOVED = ("`legacy` was removed in 1.0.6: the retired simulation game is no longer part of FinSim's command line. "
                   "Nothing was deleted: its code and %USERPROFILE%\\.finsim\\finsim.db are kept as they were.")
 IMPORTER_MODULE = __package__ + ".importer"
+#: FX_CCS_PLAN section 10 (1.0.6.1): the owner's OTC booking program and its read-only checker
+OTCPLAN_MODULE = __package__ + ".otcplan"
 
 
 def _load_importer():
@@ -1590,6 +1592,36 @@ def cmd_import(argv: Sequence[str], *, out: Optional[Callable[..., None]] = None
         _say(f"import: the historical import tool could not be loaded ({type(e).__name__}: {e})", out=out)
         return EXIT_NOT_RUNNING
     rc = mod.main(list(argv))      # type: ignore[attr-defined]
+    try:
+        return int(rc or 0)
+    except (TypeError, ValueError):
+        return EXIT_NOT_RUNNING
+
+
+def _load_otcplan():
+    """FX_CCS_PLAN section 10: ``finsim.terminal.otcplan``, imported only when ``otcplan`` runs."""
+    return importlib.import_module(OTCPLAN_MODULE)
+
+
+def cmd_otcplan(argv: Sequence[str], *, out: Optional[Callable[..., None]] = None,
+                loader: Callable[[], object] = _load_otcplan) -> int:
+    """``python -m finsim otcplan ...`` hands every argument after ``otcplan`` to ``finsim.terminal.otcplan.main(argv)`` and returns
+    its exit code (``otcplan --help`` is 0).  A build without the program prints "not in this build" and exits 2."""
+    try:
+        mod = loader()
+    except ModuleNotFoundError as e:
+        if e.name == OTCPLAN_MODULE:
+            _say("otcplan: the OTC booking program is not in this build", out=out)
+            return EXIT_USAGE
+        _say(f"otcplan: the OTC booking program could not be loaded ({type(e).__name__}: {e})", out=out)
+        return EXIT_NOT_RUNNING
+    except Exception as e:   # noqa: BLE001 - a broken tool is reported, never a traceback on the owner's console
+        _say(f"otcplan: the OTC booking program could not be loaded ({type(e).__name__}: {e})", out=out)
+        return EXIT_NOT_RUNNING
+    try:
+        rc = mod.main(list(argv))      # type: ignore[attr-defined]
+    except SystemExit as e:            # argparse: --help exits 0, a usage error 2
+        rc = e.code if isinstance(e.code, int) else (0 if e.code is None else EXIT_USAGE)
     try:
         return int(rc or 0)
     except (TypeError, ValueError):
@@ -1624,6 +1656,8 @@ def build_parser() -> argparse.ArgumentParser:
     # listed for --help only: main() hands everything after `import` to the import tool untouched (C18)
     sub.add_parser("import", add_help=False, help="the historical import tool: report / dry-run / apply / restore "
                    "(`import --help` lists its options; 0 done, 1 failed, 2 refused)")
+    sub.add_parser("otcplan", add_help=False, help="the owner's OTC booking program: run a plan through the RFQ desk, snapshot / check a "
+                   "database read-only, reprice a pricing record (`otcplan --help` lists its commands)")
     return ap
 
 
@@ -1635,6 +1669,8 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         return argparse.Namespace(cmd=None)
     if args[0] == "import":
         return argparse.Namespace(cmd="import", import_args=args[1:])
+    if args[0] == "otcplan":
+        return argparse.Namespace(cmd="otcplan", otcplan_args=args[1:])
     return build_parser().parse_args(args)
 
 
@@ -1650,6 +1686,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return EXIT_OK
     if args.cmd == "import":
         return cmd_import(args.import_args)
+    if args.cmd == "otcplan":
+        return cmd_otcplan(args.otcplan_args)
     if args.cmd == "serve":
         return cmd_serve(args.port, args.home, args.db, args.offline, args.log_level, host=args.host)
     if args.cmd == "stop":

@@ -28,8 +28,17 @@ Conventions
   (api.fiscaldata.treasury.gov MSPD table 3 market + auctions, ``GOV_UA``), ``TreasuryDirect`` (FedInvest today's
   prices, ``GOV_UA``), ``TreasuryCurve.real_latest`` (the daily real yield curve, ``GOV_UA``), ``EcbData`` (euro-area AAA
   par yields and the deposit rate, ``TERMINAL_UA``), ``MofJgb`` (JGB yields, ``TERMINAL_UA``), ``NyFed`` (SOFR,
-  ``TERMINAL_UA``).  The Bank of England database answers 403 to scripts: it is never fetched (gilts stay LIMITED, monthly
-  from FRED's OECD series).
+  ``TERMINAL_UA``).  (Gilts stay LIMITED, monthly from FRED's OECD series: out of the 1.0.6.1 scope.)
+- RFR AND TERM CURVES (FX_CCS_PLAN rev 2 K2 / D12, 1.0.6.1; ``ProviderSet.rfr``, the ``rfr`` and ``curves`` jobs of the worker):
+  ``EcbData.estr`` / ``estr_index`` / ``aaa_spot`` (the ECB data portal, ESTR ``EST B.EU000A2X2A25.WT``, the compounded ESTR index
+  ``EST B.EU000A2QQF08.CI``, the AAA spot rates ``YC ... SR_3M .. SR_10Y`` with the six Svensson parameters) with a 60 s timeout and 2
+  attempts - an HTML body (the ECB's error page) is unavailable, never parsed; ``NyFed.sofr_index`` (the SOFR Index, ``sofrai``);
+  ``BoeData`` (the Bank of England: the database CSV of IUDSOIA / IUDZOS2 and the yield-curve zip).  THE BANK OF ENGLAND RULE: every
+  request sends ``GOV_UA`` - the terminal's honest project identity with the owner's e-mail, the one it also sends to FRED and FINRA -
+  never ``TERMINAL_UA`` and never a browser agent; the Bank's edge refuses some agents (an Akamai "Access Denied", HTTP 403): a 403 is
+  recorded as "unavailable" with the page's reference and is FINAL - no other agent is ever tried, nothing is retried until the next
+  scheduled run.  FRED is the fallback of ESTR (``ECBESTRVOLWGTTRMDMNRT``), the SOFR Index (``SOFRINDEX``) and SONIA (``IUDSOIA``),
+  asked only when the primary source failed; each observation keeps the source it came from.
 - Every live provider takes an injectable ``getter(url, ua, timeout, accept) -> bytes`` and ``sleep`` so tests run
   without a network; with an injected sleep the rate limiter's clock advances with it, never with wall time.
 - ``FakeProvider`` serves tests and ``serve --offline``: quotes, daily bars, meta, chains (raw payloads reduced exactly
@@ -56,8 +65,10 @@ from .http import FetchError, ProviderHealth, RateLimiter, http_get, retrying
 from .parsers import (DAILY_DELAY_LABEL, FRED_MAINTENANCE, OCC_TAIL, TENOR_Q, TENOR_YEARS, TENORS, YAHOO_DELAY_LABEL, YAHOO_DELAY_S, ChainRow,  # noqa: F401
                       ChainSnapshot, ChainUnderlying, DailyBar, DivEvent, Events, FxRates, ParCurve, SplitEvent, YahooIntraday, _chart_error, chart_bars,
                       chart_result, clean_meta, dec, et_naive_to_epoch, intv, num, parse_auctions, parse_chain, parse_daily, parse_ecb_csv, parse_events,
+                      parse_minute_bars,
                       parse_fedinvest, parse_finra, parse_frankfurter, parse_fred_csv, parse_fred_json, parse_intraday, parse_mof_jgb, parse_mspd,
-                      parse_nyfed_rates, parse_treasury_real_xml, parse_treasury_xml)
+                      parse_nyfed_rates, parse_treasury_real_xml, parse_treasury_xml, boe_refusal_reference, parse_boe_iadb, parse_boe_ois_zip,
+                      parse_ecb_csv_exact, parse_nyfed_index)
 
 YAHOO_HOSTS = ("https://query1.finance.yahoo.com", "https://query2.finance.yahoo.com")
 CBOE_URL = "https://cdn.cboe.com/api/global/delayed_quotes/options/{sym}.json"
@@ -76,6 +87,24 @@ AUCTIONS_URL = (FISCALDATA + "/v1/accounting/od/auctions_query?filter=issue_date
                 "high_discnt_rate,inflation_index_security,floating_rate,reopening,first_int_payment_date,spread,cash_management_bill_cmb")
 FEDINVEST_URL = "https://www.treasurydirect.gov/GA-FI/FedInvest/todaySecurityPriceDetail"
 NYFED_SOFR_URL = "https://markets.newyorkfed.org/api/rates/secured/sofr/last/{n}.json"
+NYFED_SOFRAI_URL = "https://markets.newyorkfed.org/api/rates/secured/sofrai/last/{n}.json"
+BOE_IADB_URL = ("https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom={since}&Dateto=now"
+                "&SeriesCodes={codes}&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N")
+BOE_CURVE_URL = "https://www.bankofengland.co.uk/-/media/boe/files/statistics/yield-curves/latest-yield-curve-data.zip"
+ECB_ESTR = ("EST", "B.EU000A2X2A25.WT")
+ECB_ESTR_INDEX = ("EST", "B.EU000A2QQF08.CI")
+ECB_AAA_SPOT_TENORS = ("3M", "6M", "9M", "1Y", "2Y", "3Y", "5Y", "7Y", "10Y")
+ECB_AAA_SV_PARAMS = ("BETA0", "BETA1", "BETA2", "BETA3", "TAU1", "TAU2")
+ECB_AAA_SPOT_KEY = "B.U2.EUR.4F.G_N_A.SV_C_YM." + "+".join(["SR_" + t for t in ECB_AAA_SPOT_TENORS] + list(ECB_AAA_SV_PARAMS))
+RFR_TIMEOUT_S = 60.0                  # FX-C-18: the ECB's 20-30 s answers are a delay, not a failure
+RFR_ATTEMPTS = 2
+ESTR_SOURCE = "ECB data portal (EST B.EU000A2X2A25.WT, euro short-term rate)"
+ESTR_INDEX_SOURCE = "ECB data portal (EST B.EU000A2QQF08.CI, compounded euro short-term rate index)"
+SOFR_INDEX_SOURCE = "NY Fed (markets.newyorkfed.org, SOFR Index)"
+BOE_IADB_SOURCE = "Bank of England database ({code})"
+BOE_CURVE_SOURCE = "Bank of England yield curves (latest-yield-curve-data.zip, OIS daily data current month, 3. spot, short end)"
+ECB_SPOT_SOURCE = "ECB data portal (YC euro-area AAA government spot rates, Svensson model, continuous compounding)"
+FRED_RFR = {"ESTR": "ECBESTRVOLWGTTRMDMNRT", "SOFR_INDEX": "SOFRINDEX", "IUDSOIA": "IUDSOIA"}
 ECB_URL = "https://data-api.ecb.europa.eu/service/data/{flow}/{key}?lastNObservations={n}&format=csvdata"
 ECB_DFR = ("FM", "D.U2.EUR.4F.KR.DFR.LEV")
 ECB_AAA_PAR = ("YC", "B.U2.EUR.4F.G_N_A.SV_C_YM.{tenors}")
@@ -177,6 +206,16 @@ class YahooChart(_Base):
         rng = "1mo" if days <= 22 else "3mo"
         bars = parse_daily(self._chart(symbol, f"range={rng}&interval=1d"))
         return bars[-days:] if days > 0 else bars
+
+    def minute_bars(self, symbol: str, start: int, end: int) -> List[Bar1m]:
+        """V1061R1-02: the 1-minute bars that start in ``[start, end)`` (epoch seconds), one small request (``period1`` / ``period2``,
+        ``interval=1m``; Yahoo keeps about 30 days of 1-minute history).  MARKS_RECORD reads a missed FX close from the bar that ends at
+        the 17:00 ET close - never from the daily bar, whose FX "close" is a snapshot near the London day start."""
+        start, end = int(start), int(end)
+        if end <= start or end - start > 86400:
+            raise FetchError("invalid minute-bar window", status=400, retryable=False)
+        res = self._chart(symbol, f"period1={start}&period2={end}&interval=1m&includePrePost=false")
+        return parse_minute_bars(res, start, end)
 
     def meta(self, symbol: str) -> dict:
         res = self._chart(symbol, "range=5d&interval=1d")
@@ -421,6 +460,11 @@ class NyFed(_Base):
     def sofr(self, n: int = 10) -> List[Tuple[date, Decimal]]:
         return parse_nyfed_rates(self._get(NYFED_SOFR_URL.format(n=max(1, min(60, int(n)))), TERMINAL_UA, 20.0))
 
+    def sofr_index(self, n: int = 10) -> "Observations":
+        """FX_CCS_PLAN K2: the SOFR Index (``sofrai``), exact levels, labelled with the NY Fed as source."""
+        raw = self._get(NYFED_SOFRAI_URL.format(n=max(1, min(60, int(n)))), TERMINAL_UA, 20.0, attempts=RFR_ATTEMPTS)
+        return Observations(parse_nyfed_index(raw), SOFR_INDEX_SOURCE)
+
 
 class EcbData(_Base):
     name = "ecb"
@@ -440,6 +484,42 @@ class EcbData(_Base):
         """The euro-area AAA government PAR yield curve (Svensson; ECB YC dataflow) at its latest common date."""
         key = ECB_AAA_PAR[1].format(tenors="+".join("PY_" + t for t in ECB_AAA_TENORS))
         return ecb_curve_from(self.series(ECB_AAA_PAR[0], key, 3))
+
+    # ---- FX_CCS_PLAN K2 (1.0.6.1): 60 s timeout, 2 attempts, exact values ----------------------------------------------
+    def _exact(self, flow: str, key: str, n: int) -> Dict[str, List[Tuple[date, Decimal]]]:
+        url = ECB_URL.format(flow=flow, key=key, n=max(1, min(60, int(n))))
+        return parse_ecb_csv_exact(self._get(url, TERMINAL_UA, RFR_TIMEOUT_S, accept="text/csv", attempts=RFR_ATTEMPTS))
+
+    def estr(self, n: int = 10) -> "Observations":
+        """ESTR (percent, the rate FOR each TARGET2 day, published 08:00 CET the next one)."""
+        got = self._exact(ECB_ESTR[0], ECB_ESTR[1], n)
+        return Observations(next((v for k, v in got.items() if k.endswith(".WT")), []), ESTR_SOURCE)
+
+    def estr_index(self, n: int = 10) -> "Observations":
+        """The ECB's compounded ESTR index (1 Oct 2019 = 100), an index LEVEL."""
+        got = self._exact(ECB_ESTR_INDEX[0], ECB_ESTR_INDEX[1], n)
+        return Observations(next((v for k, v in got.items() if k.endswith(".CI")), []), ESTR_INDEX_SOURCE)
+
+    def aaa_spot(self, n: int = 3) -> Tuple[Dict[date, Dict[str, Decimal]], Dict[date, Dict[str, Decimal]]]:
+        """The euro-area AAA government SPOT rates (``SR_<tenor>``, percent, continuously compounded) and the six Svensson parameters,
+        each as ``{date: {label: Decimal}}`` (``3M`` .. ``10Y``; ``BETA0`` .. ``TAU2``), exact."""
+        got = self._exact("YC", ECB_AAA_SPOT_KEY, n)
+        return ecb_spot_from(got)
+
+
+def ecb_spot_from(got: Dict[str, List[Tuple[date, Decimal]]]) -> Tuple[Dict[date, Dict[str, Decimal]], Dict[date, Dict[str, Decimal]]]:
+    """``{key: [(date, value)]}`` of ``SR_<tenor>`` / Svensson keys -> ``({date: {tenor: value}}, {date: {param: value}})``."""
+    spot: Dict[date, Dict[str, Decimal]] = {}
+    sv: Dict[date, Dict[str, Decimal]] = {}
+    for key, obs in got.items():
+        last = key.rsplit(".", 1)[-1]
+        if last.startswith("SR_") and last[3:] in ECB_AAA_SPOT_TENORS:
+            for d, v in obs:
+                spot.setdefault(d, {})[last[3:]] = v
+        elif last in ECB_AAA_SV_PARAMS:
+            for d, v in obs:
+                sv.setdefault(d, {})[last] = v
+    return spot, sv
 
 
 def ecb_curve_from(got: Dict[str, List[Tuple[date, Decimal]]]) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
@@ -467,6 +547,83 @@ class MofJgb(_Base):
 
     def jgb_curve(self) -> Optional[Tuple[date, Dict[Decimal, Decimal]]]:
         return parse_mof_jgb(self._get(MOF_JGB_URL, TERMINAL_UA, 30.0, accept="text/csv"))
+
+
+class BoeData(_Base):
+    """The Bank of England (module docstring RFR AND TERM CURVES): ``GOV_UA`` on every request, never another agent; a 403 is
+    "unavailable" with the page's reference and final (``refused`` names it; nothing is retried with another agent)."""
+
+    name = "boe"
+
+    def __init__(self, clock, health=None, getter=None, sleep=_time.sleep, log=None):
+        super().__init__(clock, health, getter, sleep, rps=0.5, log=log)
+        self.refused: Optional[dict] = None          # {status, reference, at_ts} of the last 403, cleared by a success
+
+    def _boe_get(self, url: str, accept: str) -> bytes:
+        try:
+            raw = self._get(url, GOV_UA, RFR_TIMEOUT_S, accept=accept, attempts=RFR_ATTEMPTS)
+        except FetchError as e:
+            if e.status == 403:
+                ref = boe_refusal_reference(e.body)
+                self.refused = {"status": 403, "reference": ref, "at_ts": self._now()}
+                msg = f"Bank of England: HTTP 403 Access Denied{f' (reference {ref})' if ref else ''} - unavailable; no other agent is tried"
+                if self.health is not None:
+                    self.health.mark_unavailable(self.name, msg, 403)        # the request was counted once; the row names the reference
+                    self.health.set_refused_ua(self.name, True)
+                raise FetchError(msg, status=403, retryable=False, kind="refused") from None
+            raise
+        self.refused = None
+        return raw
+
+    def iadb(self, codes=("IUDSOIA", "IUDZOS2"), since: Optional[date] = None) -> Dict[str, "Observations"]:
+        """The database CSV of ``codes`` from ``since`` (default 30 days back) -> ``{code: Observations}`` (exact, each labelled with the
+        Bank of England database and its code)."""
+        since = since or (self.clock.today() - timedelta(days=30))
+        codes = [str(c).upper() for c in codes if re.fullmatch(r"[A-Za-z0-9]{3,12}", str(c))]
+        mon = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")[since.month - 1]      # never the locale's %b
+        url = BOE_IADB_URL.format(since=f"{since.day:02d}/{mon}/{since.year}", codes=",".join(codes))
+        got = parse_boe_iadb(self._boe_get(url, "text/csv, text/plain, */*"))
+        return {code: Observations(got.get(code, []), BOE_IADB_SOURCE.format(code=code)) for code in codes}
+
+    def ois_curve(self) -> Dict[date, Dict[str, Decimal]]:
+        """The UK OIS spot curve of every day in the yield-curve zip (``parse_boe_ois_zip``)."""
+        return parse_boe_ois_zip(self._boe_get(BOE_CURVE_URL, "application/zip, application/octet-stream, */*"))
+
+
+class RfrSources:
+    """``ProviderSet.rfr`` (live): what the worker's ``rfr`` and ``curves`` jobs call - ``estr``, ``estr_index``, ``sofr_index``,
+    ``sonia`` (the BoE database), ``boe_ois_curve``, ``ecb_aaa_spot`` and ``fred`` (the fallback, through the FRED route)."""
+
+    offline = False
+
+    def __init__(self, ecb: EcbData, nyfed: NyFed, boe: BoeData, fred_latest: Callable[[str, int], List[Tuple[date, Decimal]]]):
+        self.ecb, self.nyfed, self.boe, self._fred = ecb, nyfed, boe, fred_latest
+
+    def estr(self, n: int = 10):
+        return self.ecb.estr(n)
+
+    def estr_index(self, n: int = 10):
+        return self.ecb.estr_index(n)
+
+    def sofr_index(self, n: int = 10):
+        return self.nyfed.sofr_index(n)
+
+    def sonia(self, since: Optional[date] = None) -> Dict[str, "Observations"]:
+        return self.boe.iadb(("IUDSOIA", "IUDZOS2"), since)
+
+    def boe_ois_curve(self) -> Dict[date, Dict[str, Decimal]]:
+        return self.boe.ois_curve()
+
+    def ecb_aaa_spot(self, n: int = 3):
+        return self.ecb.aaa_spot(n)
+
+    def fred(self, series_id: str, lookback_days: int = 30) -> "Observations":
+        rows = self._fred(series_id, lookback_days)
+        own = getattr(rows, "source", None)
+        return Observations(list(rows), f"FRED ({series_id})" if not own or own == "FRED" else own)
+
+    def configured(self) -> bool:
+        return True
 
 
 class DebtSources:
@@ -534,6 +691,7 @@ class FakeProvider:
         self._lock = threading.RLock()
         self._quotes: Dict[str, YahooIntraday] = {}
         self._daily: Dict[str, List[DailyBar]] = {}
+        self._minute: Dict[str, List[Bar1m]] = {}           # V1061R1-02: 1-minute bars a test sets (``set_minute_bars``)
         self._meta: Dict[str, dict] = {}
         self._events: Dict[str, Events] = {}
         self._chains: Dict[str, ChainSnapshot] = {}
@@ -555,6 +713,13 @@ class FakeProvider:
         self._nyfed: List[Tuple[date, Decimal]] = []
         self._ecb_dfr: List[Tuple[date, Decimal]] = []
         self._fred_maintenance = False
+        # FX_CCS_PLAN K2 (1.0.6.1): the RFR prints, indices and term curves a test sets (``set_rfr`` / ``set_boe_curve`` /
+        # ``set_ecb_spot``); ``configured()`` is False until one is set, and the worker's rfr / curves jobs then stay quiet offline
+        self._rfr: Dict[str, List[Tuple[date, Decimal]]] = {}
+        self._boe_curve: Dict[date, Dict[str, Decimal]] = {}
+        self._ecb_spot: Dict[date, Dict[str, Decimal]] = {}
+        self._ecb_sv: Dict[date, Dict[str, Decimal]] = {}
+        self._rfr_set = False
         self.fred_route = FredRoute(None, None, self._fred_primary, None, {"SOFR": (self._fb_sofr, SOFR_FALLBACK_SOURCE),
                                                                            "ECBDFR": (self._fb_ecbdfr, ECBDFR_FALLBACK_SOURCE)})
 
@@ -598,6 +763,18 @@ class FakeProvider:
                 out.append(DailyBar(d, qprice(b[1]), qprice(b[2]), qprice(b[3]), qprice(b[4]), None if b[5] is None else int(b[5])))
         with self._lock:
             self._daily[symbol] = sorted(out, key=lambda x: x.date)
+
+    def set_minute_bars(self, symbol: str, bars: Iterable[Tuple]) -> None:
+        """V1061R1-02: ``[(t, close) | (t, o, h, l, c, v)]``, ``t`` the bar's start (epoch seconds, minute-aligned)."""
+        out = []
+        for b in bars:
+            if len(b) == 2:
+                px = qprice(b[1])
+                out.append(Bar1m(int(b[0]), px, px, px, px, None))
+            else:
+                out.append(Bar1m(int(b[0]), qprice(b[1]), qprice(b[2]), qprice(b[3]), qprice(b[4]), None if b[5] is None else int(b[5])))
+        with self._lock:
+            self._minute[symbol] = sorted(out, key=lambda x: x.t)
 
     def set_meta(self, symbol: str, meta: dict) -> None:
         with self._lock:
@@ -712,6 +889,88 @@ class FakeProvider:
             else:
                 self._ecb_dfr = [(d if isinstance(d, date) else date.fromisoformat(str(d)), qprice(v)) for d, v in (observations or [])]
 
+    # ---- RFR and term curves (FX_CCS_PLAN K2, 1.0.6.1) ---------------------------------------------------------------
+    def set_rfr(self, series: str, observations=None) -> None:
+        """``set_rfr("ESTR", [("2026-10-27", "2.440")])``: ESTR, ESTR_INDEX, SOFR_INDEX, IUDSOIA or IUDZOS2 (the BoE database codes),
+        exact values.  A FRED fallback reads ``set_rate`` as before."""
+        rows = [(d if isinstance(d, date) else date.fromisoformat(str(d)), Decimal(str(v))) for d, v in (observations or [])]
+        with self._lock:
+            self._rfr[str(series).upper()] = sorted(rows)
+            self._rfr_set = True
+
+    def set_boe_curve(self, as_of=None, points: Optional[Dict] = None, raw: Optional[bytes] = None) -> None:
+        """One day's UK OIS spot curve ``{"1M": "3.899390", ...}`` (or a raw yield-curve zip through the live parser)."""
+        with self._lock:
+            if raw is not None:
+                self._boe_curve.update(parse_boe_ois_zip(raw))
+            else:
+                d = as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of))
+                self._boe_curve[d] = {str(k): Decimal(str(v)) for k, v in (points or {}).items()}
+            self._rfr_set = True
+
+    def set_ecb_spot(self, as_of=None, points: Optional[Dict] = None, sv: Optional[Dict] = None, raw=None) -> None:
+        """One day's ECB AAA spot rates ``{"3M": "2.542643", ...}`` and Svensson parameters (or a raw ECB CSV through the live parser)."""
+        with self._lock:
+            if raw is not None:
+                spot_, sv_ = ecb_spot_from(parse_ecb_csv_exact(raw))
+                self._ecb_spot.update(spot_)
+                self._ecb_sv.update(sv_)
+            else:
+                d = as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of))
+                self._ecb_spot[d] = {str(k): Decimal(str(v)) for k, v in (points or {}).items()}
+                if sv:
+                    self._ecb_sv[d] = {str(k): Decimal(str(v)) for k, v in sv.items()}
+            self._rfr_set = True
+
+    def configured(self) -> bool:
+        """True once a test set an RFR print, an index or a term curve (the worker's rfr / curves jobs are quiet offline before)."""
+        with self._lock:
+            return self._rfr_set
+
+    def _rfr_rows(self, series: str, what: str, provider: str, source: str) -> "Observations":
+        self._count(what, provider, series)
+        with self._lock:
+            rows = self._rfr.get(series)
+        if rows is None:
+            raise FetchError(f"no {series} set", status=404, retryable=False)
+        return Observations(list(rows), source)
+
+    def estr(self, n: int = 10):
+        return self._rfr_rows("ESTR", "estr", "ecb", ESTR_SOURCE)
+
+    def estr_index(self, n: int = 10):
+        return self._rfr_rows("ESTR_INDEX", "estr_index", "ecb", ESTR_INDEX_SOURCE)
+
+    def sofr_index(self, n: int = 10):
+        return self._rfr_rows("SOFR_INDEX", "sofr_index", "nyfed", SOFR_INDEX_SOURCE)
+
+    def sonia(self, since: Optional[date] = None) -> Dict[str, "Observations"]:
+        self._count("boe_iadb", "boe", "BOE_IADB")              # its own failure key (FRED's IUDSOIA fallback is keyed "IUDSOIA")
+        with self._lock:
+            got = {c: self._rfr.get(c) for c in ("IUDSOIA", "IUDZOS2")}
+        if all(v is None for v in got.values()):
+            raise FetchError("no Bank of England database series set", status=404, retryable=False)
+        return {c: Observations([r for r in (v or []) if since is None or r[0] >= since], BOE_IADB_SOURCE.format(code=c)) for c, v in got.items()}
+
+    def boe_ois_curve(self) -> Dict[date, Dict[str, Decimal]]:
+        self._count("boe_curve", "boe", "BOE_OIS_SPOT")
+        with self._lock:
+            if not self._boe_curve:
+                raise FetchError("no Bank of England OIS curve set", status=404, retryable=False)
+            return {d: dict(v) for d, v in self._boe_curve.items()}
+
+    def ecb_aaa_spot(self, n: int = 3):
+        self._count("ecb_spot", "ecb", "ECB_AAA_SPOT")
+        with self._lock:
+            if not self._ecb_spot:
+                raise FetchError("no ECB AAA spot curve set", status=404, retryable=False)
+            return {d: dict(v) for d, v in self._ecb_spot.items()}, {d: dict(v) for d, v in self._ecb_sv.items()}
+
+    def fred(self, series_id: str, lookback_days: int = 30) -> "Observations":
+        rows = self.latest(series_id, lookback_days)
+        own = getattr(rows, "source", None)
+        return Observations(list(rows), f"FRED ({series_id})" if not own or own == "FRED" else own)
+
     def set_fred_maintenance(self, on: bool = True) -> None:
         """FRED answers its HTML maintenance page (ORC-8) until switched off."""
         with self._lock:
@@ -810,6 +1069,12 @@ class FakeProvider:
             bars = list(self._daily.get(symbol) or [])
         return bars[-days:] if days > 0 else bars
 
+    def minute_bars(self, symbol: str, start: int, end: int) -> List[Bar1m]:
+        self._count("minute_bars", "yahoo", symbol)
+        with self._lock:
+            bars = list(self._minute.get(symbol) or [])
+        return [b for b in bars if int(start) <= int(b.t) < int(end)]
+
     def meta(self, symbol: str) -> dict:
         self._count("meta", "yahoo", symbol)
         with self._lock:
@@ -875,11 +1140,13 @@ class ProviderSet:
     ``treasury`` (curve / curve_dfs), ``fred`` (latest; a ``FredRoute`` live), ``frankfurter`` (fx_latest), ``finra``
     (finra_daily), ``debt`` (mspd / auctions / fedinvest / real_curve / ecb_aaa_curve / jgb_curve), ``health``."""
 
-    def __init__(self, yahoo, cboe, treasury, fred, frankfurter, finra, health: ProviderHealth, fake: Optional[FakeProvider] = None, debt=None):
+    def __init__(self, yahoo, cboe, treasury, fred, frankfurter, finra, health: ProviderHealth, fake: Optional[FakeProvider] = None, debt=None,
+                 rfr=None):
         self.yahoo, self.cboe, self.treasury, self.fred, self.frankfurter, self.finra = yahoo, cboe, treasury, fred, frankfurter, finra
         self.health = health
         self.fake = fake
         self.debt = debt if debt is not None else fake
+        self.rfr = rfr if rfr is not None else fake            # FX_CCS_PLAN K2: RfrSources live, the FakeProvider offline
 
     @property
     def offline(self) -> bool:
@@ -897,8 +1164,9 @@ class ProviderSet:
                           {"SOFR": (lambda n: nyfed.sofr(min(30, max(5, int(n) // 2))), SOFR_FALLBACK_SOURCE),
                            "ECBDFR": (lambda n: ecb.deposit_rate(min(30, max(5, int(n) // 2))), ECBDFR_FALLBACK_SOURCE)}, log=log)
         debt = DebtSources(FiscalData(clock, **kw), TreasuryDirect(clock, **kw), treasury, ecb, MofJgb(clock, **kw))
+        rfr = RfrSources(ecb, nyfed, BoeData(clock, **kw), route.latest)
         return cls(YahooChart(clock, **kw), CboeChain(clock, **kw), _TreasuryAdapter(treasury), route, _FrankfurterAdapter(Frankfurter(clock, **kw)),
-                   _FinraAdapter(FinraShortVolume(clock, **kw)), health, debt=debt)
+                   _FinraAdapter(FinraShortVolume(clock, **kw)), health, debt=debt, rfr=rfr)
 
     @classmethod
     def offline_set(cls, fp: FakeProvider, clock=None) -> "ProviderSet":
@@ -938,7 +1206,10 @@ class _FinraAdapter:
 
 
 __all__ = ["YahooChart", "CboeChain", "TreasuryCurve", "FredSeries", "FredRoute", "Observations", "Frankfurter", "FinraShortVolume", "FakeProvider",
-           "ProviderSet", "Getter", "FiscalData", "TreasuryDirect", "NyFed", "EcbData", "MofJgb", "DebtSources", "ecb_curve_from",
+           "ProviderSet", "Getter", "FiscalData", "TreasuryDirect", "NyFed", "EcbData", "MofJgb", "DebtSources", "ecb_curve_from", "ecb_spot_from",
+           "BoeData", "RfrSources", "NYFED_SOFRAI_URL", "BOE_IADB_URL", "BOE_CURVE_URL", "ECB_ESTR", "ECB_ESTR_INDEX", "ECB_AAA_SPOT_KEY",
+           "ECB_AAA_SPOT_TENORS", "ECB_AAA_SV_PARAMS", "RFR_TIMEOUT_S", "RFR_ATTEMPTS", "ESTR_SOURCE", "ESTR_INDEX_SOURCE", "SOFR_INDEX_SOURCE",
+           "BOE_IADB_SOURCE", "BOE_CURVE_SOURCE", "ECB_SPOT_SOURCE", "FRED_RFR",
            "YAHOO_HOSTS", "CBOE_URL", "TREASURY_URL", "FRED_URL", "FRED_KEY_URL", "FRED_PAUSE_S", "FRANKFURTER_URL", "FINRA_URL", "TREASURY_REAL_URL",
            "MSPD_URL", "MSPD_LATEST_URL", "AUCTIONS_URL", "FEDINVEST_URL", "NYFED_SOFR_URL", "ECB_URL", "MOF_JGB_URL", "SOFR_FALLBACK_SOURCE",
            "ECBDFR_FALLBACK_SOURCE",

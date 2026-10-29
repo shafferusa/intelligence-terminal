@@ -408,30 +408,63 @@ def otc_reference_ids(conn: sqlite3.Connection) -> Dict[str, List[str]]:
     swap's foreign currency (its mark and the 17:00 FX close of an MTM reset).  The quote worker pins these at HELD priority
     and MARKS_RECORD records their closes, so a TRS / XCCY never waits on a name nobody holds (WP-15 integration)."""
     out: Dict[str, List[str]] = {}
-    rows = conn.execute("SELECT c.account_id, c.kind, c.terms_json FROM otc_contracts c JOIN accounts a ON a.account_id=c.account_id"
-                        " JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN' AND a.status='OPEN' AND l.status='OPEN'"
-                        " AND c.kind IN ('TRS','XCCY','EQ_OPTION','EQ_FORWARD','FX_OPTION','FX_FORWARD') ORDER BY c.contract_id").fetchall()
-    for r in rows:
-        try:
-            terms = json.loads(r["terms_json"] or "{}")
-        except ValueError:
-            terms = {}
-        ids: List[str] = []
-        kind = r["kind"]
-        if kind in ("TRS", "EQ_OPTION", "EQ_FORWARD") and terms.get("underlying_id"):
-            ids.append(str(terms["underlying_id"]).upper())
-        elif kind == "XCCY" and terms.get("foreign_ccy"):
-            ids.append(fx_pair_id(str(terms["foreign_ccy"])))
-        elif kind in ("FX_OPTION", "FX_FORWARD") and terms.get("pair"):
-            pair = str(terms["pair"]).upper().replace("/", "")
-            ids.append(pair)
-            for c in (pair[:3], pair[3:6]):                      # a cross (EURJPY) also needs each leg's USD pair
-                if len(c) == 3 and c != "USD":
-                    ids.append(fx_pair_id(c))
-        for iid in ids:
+    for r in _open_reference_rows(conn):
+        for iid in _reference_ids(r["kind"], r["terms_json"]):
             accts = out.setdefault(iid, [])
             if r["account_id"] not in accts:
                 accts.append(r["account_id"])
+    return out
+
+
+def _open_reference_rows(conn: sqlite3.Connection) -> list:
+    """The OPEN OTC contracts of OPEN accounts and lifetimes whose kind observes an instrument (``otc_reference_ids``)."""
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(otc_contracts)").fetchall()}
+    td = "c.trade_date" if "trade_date" in cols else "NULL"
+    return conn.execute(f"SELECT c.contract_id, c.account_id, c.kind, c.terms_json, c.start_date, {td} AS trade_date FROM otc_contracts c"
+                        " JOIN accounts a ON a.account_id=c.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id WHERE c.status='OPEN'"
+                        " AND a.status='OPEN' AND l.status='OPEN' AND c.kind IN ('TRS','XCCY','EQ_OPTION','EQ_FORWARD','FX_OPTION','FX_FORWARD')"
+                        " ORDER BY c.contract_id").fetchall()
+
+
+def _reference_ids(kind: str, terms_json) -> List[str]:
+    """The instruments one OTC contract observes: a TRS / equity option / equity forward its underlying, an XCCY the USD pair of its
+    foreign currency, an FX option / forward its pair and, for a cross, each leg's USD pair."""
+    try:
+        terms = json.loads(terms_json or "{}")
+    except ValueError:
+        terms = {}
+    if not isinstance(terms, dict):
+        return []
+    ids: List[str] = []
+    if kind in ("TRS", "EQ_OPTION", "EQ_FORWARD") and terms.get("underlying_id"):
+        ids.append(str(terms["underlying_id"]).upper())
+    elif kind == "XCCY" and terms.get("foreign_ccy"):
+        ids.append(fx_pair_id(str(terms["foreign_ccy"])))
+    elif kind in ("FX_OPTION", "FX_FORWARD") and terms.get("pair"):
+        pair = str(terms["pair"]).upper().replace("/", "")
+        ids.append(pair)
+        for c in (pair[:3], pair[3:6]):                      # a cross (EURJPY) also needs each leg's USD pair
+            if len(c) == 3 and c != "USD":
+                ids.append(fx_pair_id(c))
+    return ids
+
+
+def otc_reference_since(conn: sqlite3.Connection) -> Dict[str, date]:
+    """V1061R1-02: ``{instrument_id: the first date an OPEN OTC contract observes it}`` - the earliest trade date of the contracts that
+    reference it (``trade_date``, else ``start_date``: a contract booked before 1.0.6.1 stored no trade date).  MARKS_RECORD back-fills an
+    FX pair's closes from this date only: a pair that enters the recorded set with today's booking needs no close before it."""
+    out: Dict[str, date] = {}
+    for r in _open_reference_rows(conn):
+        raw = r["trade_date"] or r["start_date"]
+        try:
+            d = date.fromisoformat(str(raw)[:10]) if raw else None
+        except ValueError:
+            d = None
+        if d is None:
+            continue
+        for iid in _reference_ids(r["kind"], r["terms_json"]):
+            if iid not in out or d < out[iid]:
+                out[iid] = d
     return out
 
 

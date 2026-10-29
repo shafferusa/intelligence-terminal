@@ -167,8 +167,14 @@
     kv.push(['next', s && s.eventsText ? (s.eventsText(c.next_events) || 'none') : '']);
     kv.push(['result to date', 'swap result ' + money(c, 'result') + ' . financing ' + money(c, 'financing') + ' . coupons / premium ' + money(c, 'coupons') +
       ' . dividend equivalents ' + money(c, 'dividends') + ' (financing and coupons: + paid / - received)']);
-    box.appendChild(T.kvGrid(kv));
     var d = c.detail || {};
+    /* FX_CCS_PLAN 1.0.6.1: the owner reference, the linked deals, an FX forward's pricing record and the confirmation (the server's words) */
+    if (c.client_ref) { kv.push(['owner reference', c.client_ref]); }
+    var linked = c.linked_deals || d.linked_deals || null;
+    if (linked && linked.length && s && s.linkedText) { kv.push(['linked deals', s.linkedText(linked)]); }
+    if (c.kind === 'FX_FORWARD' && s && s.recordRows) { s.recordRows(d.pricing_record).forEach(function (r) { kv.push(r); }); }
+    if (s && s.confRows) { s.confRows(c.confirmation || d.confirmation).forEach(function (r) { kv.push(r); }); }
+    box.appendChild(T.kvGrid(kv));
     if (c.kind === 'CDX') {
       var ev = d.credit_events || [];
       var cb = T.h('div', { class: 'section' }, T.h('h3', null, 'Credit events', T.h('small', null, ' index factor ' + (d.index_factor || '1.000000') + ' of ' +

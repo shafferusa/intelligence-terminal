@@ -129,18 +129,51 @@ Conventions stated here (each is a §1.3 sentence or a rule the tests pin)
   netting (C21) under ``ctx.asof_date`` = its own date.
 - JOBS: the handlers write their own ``jobs_done`` row (DONE, or SKIPPED with a note — quiet for "not yet"); ``reset_keys`` /
   ``event_keys`` list every key that is not DONE.  Money is integer cents / Decimal end to end; there are no floats.
+
+FX_CCS_PLAN rev 2 (release 1.0.6.1, package P-C) - these rules extend or replace the ones above where they say so
+- XCCY FLOAT / FLOAT (D4, 3.3): ``pay_index`` and ``recv_index`` both given = the EUR/USD ESTR / SOFR variant (``variant`` FLOAT_FLOAT); one only
+  = 400 NOT_IN_THIS_BUILD (fixed / floating); GBP (SONIA, the next currency) and JPY / CHF / CAD / AUD (no daily overnight rate) = 400
+  NOT_IN_THIS_BUILD with the reason; an index must match its currency (400 TERMS); ACT/360 only; months a multiple of 3 (3..120); no MTM reset.
+  Dates: T = the FX trade date, S = the EURUSD spot date (``ccycal``), e_k = MF(S + 3k months) on TARGET2 + New York, p_k = e_k + 2 business
+  days, every SOFR date a US government securities day (400 SCHEDULE); maturity_date = p_n (the last payment and the final exchange).
+- THE DEALER'S QUOTE: X0 = the executable EURUSD mid (PO-08); the full value for the spot date on the ``fxcurves`` curves (USD projection =
+  discounting; EUR discounting adds the PB's basis level ``xccy_basis_eur_bp``, the EUR grid carries ``eur_ois_spread_bp``); PV(0) at spread 0 and
+  its two parts; A* = sum (d_k / 360) x DF*_EUR(S, p_k) at 1e-10; s_par = PV(0) / (X0 N A*) (the EUR payer); dealt = s_par + ``xccy_basis_hw_bp``
+  x ``otc_spread_mult`` rounded UP on the 0.1 bp grid for a payer (down for a receiver); a client spread better than that is 400 OFF_MARKET;
+  mark0 = the full value at the dealt spread (the cost of dealing).  Coupons: N x (R x P - 1) + N x spread x d / 360 (spread excluded from the
+  compounding); the paid ones are the index-exact ``to_c(N x (R + spread) x d / 360)``, R = (I(e) / I(s) - 1) x 360 / d at 1e-7.  Every quote,
+  preview and contract stores the pricing record (``terms_json.pricing_record``) ``otcplan.reprice`` re-derives.
+- BOOKING (D6): the IM, the contract row, then (``start_conversion``) the inception conversion in the SAME command through
+  ``fx.book_linked_spot``: SELL the EUR notional / BUY USD at the desk's bid on X0, value S, linked both ways, its rows tagged xccy_start.
+- START (D7): one command at 00:45 ET of S - the conversion's USD in, only the net shortfall funded, the exchange at X0, the conversion's EUR out;
+  any failure rolls the step back (SKIPPED with an ERROR, retried; the tagged rows wait); not done by 06:00 ET: ERROR XCCY_EVENT_LATE.  PAY: both
+  indices published (else INDEX_PENDING: quiet on its first day), one true-up entry per leg (``accr:{kind}:{cid}:trueup:{e_k}``), the
+  settlement-funding deal settled around the payment (``fx.settle_linked`` xccy_event).  END: the last PAY, the reverse exchange with the
+  funding deal's EUR in before and its USD out after, then ``swaps.close_contract``.
+- MARK AND VM (D8, D19, every XCCY): values are for the spot date of the valuation date; ``mark_xccy`` returns the CLEAN mark (NAV's overlay =
+  full value - the notionals and accrued coupons on the balance sheet at X_t) and ``inputs.csa_exposure_c`` = the full value, which the CTM
+  variation margin follows (``swaps._vm_core``).  The fixed / fixed variant keeps its leg model; its exposure adds the same balance sheet.
+- TERMINATION (D17, every XCCY): before S with a linked conversion 409 XCCY_NOT_STARTED; otherwise cash-settled in USD at the full value with the
+  dealer's half-width against the Fund (the float variant: the basis level moved by the half-width; fixed / fixed: each leg at the quote that
+  would replace it) - the notionals and accrued coupons cleared through 3900 at X_t, never a physical re-exchange, never EUR cash.
+- HOOKS (K5): ``scheduled_flows(conn, row)`` (exchanges, coupons - known once indexed) and ``risk_sensitivities(services, row)`` (ONLY the
+  off-ledger part: the clean mark's FX delta, the exchanges not yet on the ledger, rate01 per currency, basis01 per pair).
+- STALE LISTING (INSTITUTIONAL_V3_PLAN 6.1 R-D; one helper, K-V5): ``last_trade_age_sessions`` counts the sessions closed since an exchange-listed
+  instrument's last observed print (None for instruments without exchange prints); a new TRS on an underlying silent for more than
+  ``STALE_LISTING_SESSIONS`` (5) sessions is refused at its preview and booking: 409 STALE_LISTING "no trade since <date>: the security may be
+  delisted or suspended".
 """
 from __future__ import annotations
 
 import contextvars
 import json
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
-from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
+from decimal import Context, Decimal, InvalidOperation, ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_EVEN, localcontext
 from typing import Callable, Dict, List, Optional, Tuple
 
-from .. import execution, prime
+from .. import config, execution, prime
 from .. import fx as fxmod
 from .. import marks as _marks
 from ..books import account_row, eligibility as _eligibility, split_account_id
@@ -148,11 +181,11 @@ from ..clock import epoch_of, ny_of, ny_str
 from ..commands import ConflictError, RejectError, TxContext
 from ..db import dumps, next_id
 from ..instruments import EQUITY_KINDS, fx_pair_id
-from ..ledger import Entry, Line, balance, cr, dr
+from ..ledger import Entry, Line, balance, cr, dr, natural
 from ..lifecycle_jobs import accrue_segment as _core_accrue_segment, sofr_for_night
 from ..quotes import MarkView
 from ..tables import POLICY_INDEX, POLICY_INDEX_MONTHLY
-from ..units import fmt_money, from_c, qprice, to_c
+from ..units import fmt_money, from_c, fx_c, qprice, to_c
 from . import swaps
 
 JOB_RESET, JOB_EVENTS = "TRS_RESET", "XCCY_EVENTS"
@@ -173,6 +206,7 @@ CONVENTIONS = ("SWAP_MARK", "SWAP_VM", "SWAP_RESET", "ACCRUAL", "RATE_LAG", "DIV
 TRS_MODEL = "mark = sign x units x (S - reset_px): the underlying's observed price since the last reset"
 XCCY_MODEL = ("mark = sum over legs of sign x N x (K - par) x annuity x fx (+ receive, - pay); USD leg on the par curve, foreign leg on a flat"
               " curve at its policy rate; the notionals are on the balance sheet (1360 / 2360) and are not in the mark")
+FLOAT_VARIANT = "FLOAT_FLOAT"          # FX_CCS_PLAN D4 (1.0.6.1): the EUR/USD ESTR / SOFR float / float cross-currency swap
 
 Period = Tuple[date, date, date]
 
@@ -782,6 +816,82 @@ class TrsDeal:
         return None if self.sofr is None else fin_rate(self.sofr[1], self.spread, self.terms.receiver)
 
 
+# ---- the stale-listing guard (INSTITUTIONAL_V3_PLAN 6.1 R-D, built in 1.0.6.1 as ONE helper; V-X of 1.0.8 reuses it: K-V5) -------------
+#: a listed underlying whose last observed trade is older than this many sessions of its exchange is refused (409 STALE_LISTING)
+STALE_LISTING_SESSIONS = 5
+STALE_LOOKBACK_DAYS = 400                     # sessions are counted at most this far back (a print older than that is simply "older")
+
+
+def last_trade(services, instrument_id: str, snapshot=None, conn: Optional[sqlite3.Connection] = None) -> Optional[Tuple[int, str]]:
+    """``(epoch, source)`` of an exchange-listed instrument's last OBSERVED trade: the later of the observed quote's time and the newest recorded
+    CLOSE row's quote time (``marks``); None when nothing was ever observed.  Only the time of a print counts - a quote's quality ("close") or a
+    CLOSE row recorded today with an old print never makes an old trade look recent."""
+    uid = str(instrument_id or "").strip().upper()
+    best: Optional[Tuple[int, str]] = None
+    snap = snapshot if snapshot is not None else _provider_snapshot(services, [uid])
+    mv = None
+    try:
+        mv = snap.mark(uid) if snap is not None else None
+    except Exception:   # noqa: BLE001 - a provider without this id: the recorded closes decide
+        mv = None
+    qt = getattr(mv, "quote_time", None) if mv is not None and getattr(mv, "mark", None) is not None else None
+    if isinstance(qt, (int, float)) and not isinstance(qt, bool) and qt > 0:
+        best = (int(qt), f"the observed quote ({getattr(mv, 'source', '') or 'quote'}, {getattr(mv, 'quality', '') or 'unknown'})")
+    with _marks.shared_reader(services.db, conn) as c:
+        r = c.execute("SELECT MAX(quote_time) AS qt FROM marks WHERE instrument_id=? AND kind='CLOSE' AND quote_time IS NOT NULL", (uid,)).fetchone()
+    if r is not None and r["qt"] is not None and (best is None or int(r["qt"]) > best[0]):
+        best = (int(r["qt"]), "a recorded close")
+    return best
+
+
+def last_trade_age_sessions(services, instrument_id: str, snapshot=None, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None) -> Optional[int]:
+    """K-V5 (INSTITUTIONAL_V3_PLAN 6.1 R-D): how many sessions of the instrument's exchange have CLOSED since the session of its last observed
+    trade - 0 for a print of today or of the last session.  None for an instrument without exchange prints (bonds, bills, OTC contracts,
+    private marks, FX: only exchange-listed equities, ETFs, ADRs, REITs and preferreds are counted) and for one never observed (the price checks
+    refuse that one with their own reason).  Pure: reads the quote snapshot, the recorded closes and the session table."""
+    uid = str(instrument_id or "").strip().upper()
+    with _marks.shared_reader(services.db, conn) as c:
+        inst = services.instruments.get(uid, c)
+        if inst is None or inst.kind not in EQUITY_KINDS:
+            return None
+        got = last_trade(services, uid, snapshot, c)
+    if got is None:
+        return None
+    ts = int(now if now is not None else services.clock.epoch())
+    last_day = ny_of(got[0]).date()
+    today = ny_of(ts).date()
+    sessions = getattr(services, "sessions", None)
+    n = 0
+    d = last_day + timedelta(days=1)
+    stop = min(today, last_day + timedelta(days=STALE_LOOKBACK_DAYS))
+    while d <= stop:
+        try:
+            close = sessions.session_close(inst.session_group, d) if sessions is not None else None
+        except KeyError:
+            close = None
+        if close is not None and int(close) <= ts:
+            n += 1
+        d += timedelta(days=1)
+    return n
+
+
+def stale_listing_check(services, instrument_id: str, snapshot=None, conn: Optional[sqlite3.Connection] = None, now: Optional[int] = None,
+                        what: str = "a TRS") -> Optional[dict]:
+    """R-D: 409 STALE_LISTING "no trade since <date>: the security may be delisted or suspended" when the last observed trade of an exchange-listed
+    underlying is older than ``STALE_LISTING_SESSIONS`` sessions; the facts otherwise (None for an instrument the rule does not cover)."""
+    age = last_trade_age_sessions(services, instrument_id, snapshot, conn, now)
+    if age is None:
+        return None
+    got = last_trade(services, instrument_id, snapshot, conn)
+    last_day = ny_of(got[0]).date().isoformat() if got else None
+    facts = {"underlying_id": str(instrument_id).upper(), "last_trade_date": last_day, "sessions_since": age, "max_sessions": STALE_LISTING_SESSIONS,
+             "basis": got[1] if got else None}
+    if age > STALE_LISTING_SESSIONS:
+        raise ConflictError("STALE_LISTING", f"{str(instrument_id).upper()}: no trade since {last_day} ({age} sessions without a print, at most"
+                            f" {STALE_LISTING_SESSIONS}): the security may be delisted or suspended - {what} on it is refused", facts)
+    return facts
+
+
 def _trs_underlying(services, conn: sqlite3.Connection, uid: str):
     inst = services.instruments.get(uid, conn)
     if inst is None:
@@ -801,7 +911,9 @@ def _official_close_price(services, conn: sqlite3.Connection, marks, inst, now: 
     """V104R2-OTC-02: outside the underlying's regular session the reset price of a new TRS is the OFFICIAL close of the last session that
     has closed (the recorded CLOSE, else the print observed at the close - POSTCLOSE-01's rule, never the last print before 16:00 shown as
     the close); None while the session is open (a fresh print deals).  409 CLOSE_PENDING (retry_ms: the ticket asks again by itself) when
-    that close is not recorded or observed yet."""
+    that close is not recorded or observed yet.  V1061-04: that refusal first asks the quote worker for the underlying at ORDER priority
+    (``_pin``) - out of session nothing else fetches an instrument nobody holds or watches, so its close was never "being recorded" and the
+    stale-listing guard (R-D) never saw its last print; the next preview sees the fetched quote (and refuses a silent listing)."""
     sessions = getattr(services, "sessions", None)
     if sessions is None or not hasattr(sessions, "state"):
         return None
@@ -819,9 +931,11 @@ def _official_close_price(services, conn: sqlite3.Connection, marks, inst, now: 
     day, close_ts = got
     px, info = close_on(services, conn, marks, inst, day)
     if px is None:
+        fetching = _pin(services, [inst.instrument_id])             # V1061-04: the quote is asked for; the ticket's retry sees it
         raise ConflictError("CLOSE_PENDING", f"{inst.instrument_id}: the market is closed and the official close of {day.isoformat()} is not recorded yet"
-                            f" ({info.get('note') or 'no print at the close'}); the reset price is that close, never the last print before it - it is"
-                            " being recorded now", {"close_date": day.isoformat(), "retry_ms": RETRY_MS, "underlying_id": inst.instrument_id})
+                            f" ({info.get('note') or 'no print at the close'}); the reset price is that close, never the last print before it - "
+                            + ("its quote is being fetched now" if fetching else "it is being recorded now"),
+                            {"close_date": day.isoformat(), "retry_ms": RETRY_MS, "underlying_id": inst.instrument_id, "fetching": fetching})
     mv = MarkView(inst.instrument_id, px, "close", info.get("source") or "the official close", info.get("method") or "close", info.get("quote_time") or close_ts,
                   int(now), "close", dict(info, close_date=day.isoformat()), False, f"the official close of {day.isoformat()}")
     return px, mv
@@ -833,6 +947,9 @@ def _trs_deal(services, conn: sqlite3.Connection, marks, acct: dict, terms: TrsT
     (V104R2-OTC-02); ``firm`` (C14) = the dealer's accepted quote, whose reset price is booked as quoted."""
     inst = _trs_underlying(services, conn, terms.underlying_id)
     ts = int(now if now is not None else services.clock.epoch())
+    # INSTITUTIONAL_V3_PLAN 6.1 R-D: a delisted or suspended underlying (no print for more than 5 sessions) is refused at the preview and the
+    # booking alike - never priced at an old close (AVB: last print 2026-08-14)
+    stale_listing_check(services, inst.instrument_id, marks, conn, ts, what="a new TRS")
     if firm and firm.get("reset_px") not in (None, ""):
         reset_px = qprice(Decimal(str(firm["reset_px"])))
         q = dict(firm.get("quote") or {})
@@ -1014,11 +1131,13 @@ def parse_xccy_terms(terms: dict) -> dict:
     """Validate the §13.12 cross-currency term dictionary (400 TERMS / CURRENCY_UNSUPPORTED / NOT_IN_THIS_BUILD); module
     docstring XCCY TERMS."""
     t = dict(terms or {})
-    for k in ("pay_index", "recv_index", "pay_float", "recv_float", "float_index", "fixing", "pay_fixing", "recv_fixing"):
-        v = t.get(k)
-        if v not in (None, "", False) and str(v).strip().upper() not in ("FIXED", "NONE", "FALSE"):
-            raise RejectError("NOT_IN_THIS_BUILD", f"floating cross-currency legs are not in this build ({k}={v!r}): no non-USD reference fixing is sourced;"
-                              " both legs are fixed-rate", {"field": k})
+
+    def floating(v) -> bool:
+        return v not in (None, "", False) and str(v).strip().upper() not in ("FIXED", "NONE", "FALSE")
+    for k in ("pay_float", "recv_float", "float_index", "fixing", "pay_fixing", "recv_fixing"):
+        if floating(t.get(k)):
+            raise RejectError("NOT_IN_THIS_BUILD", f"{k}={t.get(k)!r} is not a term of this build: a floating leg is named by pay_index / recv_index (EUR/USD"
+                              " ESTR / SOFR float / float); other floating legs and fixed / floating swaps are not offered", {"field": k})
     pay_ccy = str(t.get("pay_ccy") or "").strip().upper()
     recv_ccy = str(t.get("recv_ccy") or "").strip().upper()
     if len(pay_ccy) != 3 or len(recv_ccy) != 3:
@@ -1028,6 +1147,12 @@ def parse_xccy_terms(terms: dict) -> dict:
     if "USD" not in (pay_ccy, recv_ccy):
         raise RejectError("CURRENCY_UNSUPPORTED", "one leg must be USD in this build (the mark-to-market reset re-strikes the USD notional)",
                           {"pay_ccy": pay_ccy, "recv_ccy": recv_ccy})
+    fl_pay, fl_recv = floating(t.get("pay_index")), floating(t.get("recv_index"))
+    if fl_pay and fl_recv:                       # FX_CCS_PLAN D4 (1.0.6.1): the float / float variant
+        return parse_float_terms(t, pay_ccy, recv_ccy)
+    if fl_pay or fl_recv:
+        raise RejectError("NOT_IN_THIS_BUILD", "fixed / floating cross-currency swaps are not in this build: both legs float (EUR ESTR / USD SOFR) or both are"
+                          " fixed", {"field": "pay_index" if fl_pay else "recv_index"})
     foreign = recv_ccy if pay_ccy == "USD" else pay_ccy
     supported = sorted(c for c in POLICY_INDEX if c != "USD")
     if foreign not in supported:
@@ -1451,6 +1576,8 @@ def _preview(services, conn: sqlite3.Connection, account_id: str, kind: str, ter
         deal = _trs_deal(services, conn, marks, acct, parse_trs_terms(terms), today, now=ts)
         out = _trs_dict(deal)
         out["funding"] = swaps.funding_preview(services, conn, account_id, "USD", deal.im_c, marks, what="IM")         # PO-07
+    elif kind == "XCCY" and _is_float(parse_xccy_terms(terms)):
+        out = _float_preview(services, conn, account_id, acct, parse_xccy_terms(terms), ts, marks)
     elif kind == "XCCY":
         xd = _xccy_deal(services, conn, marks, acct, parse_xccy_terms(terms), today, now_ts=ts)
         out = _xccy_dict(xd)
@@ -1477,7 +1604,8 @@ def book(ctx: TxContext, payload: dict) -> dict:
     if kind == "TRS":
         return _book_trs(ctx, services, acct, parse_trs_terms(payload.get("terms") or {}))
     if kind == "XCCY":
-        return _book_xccy(ctx, services, acct, parse_xccy_terms(payload.get("terms") or {}))
+        p = parse_xccy_terms(payload.get("terms") or {})
+        return _book_xccy_float(ctx, services, acct, p) if _is_float(p) else _book_xccy(ctx, services, acct, p)
     raise RejectError("OTC_KIND", f"{kind} is not a TRS or a cross-currency swap (IRS is products/swaps.py)")
 
 
@@ -1571,6 +1699,8 @@ def mark_xccy(services, contract, at: Optional[int] = None, valuation_date=None,
     now_ts = int(at if at is not None else services.clock.epoch())
     on = _date(valuation_date) if valuation_date is not None else ny_of(now_ts).date()
     terms = _terms(row)
+    if _is_float(terms):                         # FX_CCS_PLAN D8 / D19 (1.0.6.1): the full value for the spot date; clean + CSA exposure
+        return _float_mark(services, row, terms, now_ts, valuation_date=valuation_date, snapshot=snapshot)
     base = {"as_of": now_ts, "valuation_date": on.isoformat(), "contract_id": cid, "model": XCCY_MODEL, "quality": "computed"}
     if row.get("status") != "OPEN":
         return 0, dict(base, note=f"{row.get('status')}: no remaining cash flows", remaining_periods=0)
@@ -1594,7 +1724,14 @@ def mark_xccy(services, contract, at: Optional[int] = None, valuation_date=None,
         stored = int(row.get("mark_c") or 0)
         return _stale_view(cid, stored, "XCCY model (stored mark)", row.get("mark_ts"), now_ts, dict(base, stored_mark_c=stored),
                            f"{e.message}; the last computed mark, labelled stale")
-    return to_c(value), dict(base, **inputs)
+    # FX_CCS_PLAN D8 (1.0.6.1, every XCCY): the CSA exposure is the full (dirty) value = the clean mark + the notionals and accrued coupons on the
+    # balance sheet at the same FX rate; the CTM variation margin follows it, NAV keeps the clean mark
+    fx_rate = Decimal(str(inputs["fx"]["usd_per_unit"]))
+    with _marks.shared_reader(services.db) as conn:
+        bsheet, bdetail = _balance_sheet(conn, row, lambda c: ONE if c == "USD" else fx_rate)
+    clean_c = to_c(value)
+    inputs = dict(inputs, clean_mark_c=clean_c, balance_sheet_c=to_c(bsheet), balance_sheet=bdetail, csa_exposure_c=clean_c + to_c(bsheet))
+    return clean_c, dict(base, **inputs)
 
 
 def dv01_c(services, contract) -> int:
@@ -1604,6 +1741,9 @@ def dv01_c(services, contract) -> int:
     if row is None or row.get("status") != "OPEN" or row["kind"] != "XCCY":
         return 0
     terms = _terms(row)
+    if _is_float(terms):                         # the USD rate01 of the float swap (re-priced), 0 when it cannot be valued now
+        got = _float_risk(services, row, terms)
+        return int((got.get("rate01_c") or {}).get("USD") or 0)
     remaining = [q for q in _periods(terms) if q[2] > ny_of(services.clock.epoch()).date()]
     if not remaining:
         return 0
@@ -1715,6 +1855,8 @@ def xccy_leg_spec(conn: sqlite3.Connection, row: dict, kind: str, night: date) -
     START_PENDING / FX_RESET_PENDING when the night cannot accrue yet."""
     cid = row["contract_id"]
     terms = _terms(row)
+    if _is_float(terms):                         # 4.2: COMPOUND_ARREARS on SOFR / ESTR (+ the dealt spread on the foreign leg)
+        return _float_leg_spec(conn, row, terms, kind, night)
     periods = _periods(terms)
     if not _has_reset(conn, cid, "NOTIONAL_START"):
         raise RejectError("START_PENDING", f"{cid}: the start exchange has not happened; nothing accrues before it", {"contract_id": cid})
@@ -1919,6 +2061,8 @@ def _ev_start(ctx: TxContext, services, row: dict, d: date, key: str, job: Optio
         raise RejectError("KEY_INVALID", f"{d.isoformat()} is not the start date of {cid} ({row['start_date']})")
     if ctx.ts < epoch_of(d, EVENT_ET):
         return _skip(ctx, job, key, "START_NOT_YET", f"{cid}: the start exchange runs from {EVENT_ET} ET on {d.isoformat()}", aid, cid, quiet=True)
+    if _is_float(_terms(row)):                   # D7: the start exchange and its linked conversion, payment versus payment, in one step
+        return _float_start(ctx, services, row, d, key, job)
     conn.execute("SAVEPOINT xccy_start")
     try:
         res = _start_exchange(ctx, services, row, overdraft=False)
@@ -1936,6 +2080,8 @@ def _ev_start(ctx: TxContext, services, row: dict, d: date, key: str, job: Optio
 
 def _xccy_pay(ctx: TxContext, services, row: dict, d: date, job: Optional[str], key: str) -> dict:
     """Both legs' coupons of the period paid on ``d`` (module docstring XCCY COUPONS: PAY)."""
+    if _is_float(_terms(row)):                   # 4.2: the index-exact coupons with their true-ups
+        return _float_pay(ctx, services, row, d, job, key)
     conn = ctx.conn
     cid, aid = row["contract_id"], row["account_id"]
     ds = d.isoformat()
@@ -2063,6 +2209,8 @@ def _ev_fx_reset(ctx: TxContext, services, row: dict, d: date, key: str) -> dict
 
 def _ev_end(ctx: TxContext, services, row: dict, d: date, key: str, job: Optional[str]) -> dict:
     """Maturity: the last coupons, the reverse exchange, then the close (module docstring XCCY END)."""
+    if _is_float(_terms(row)):                   # 4.2 END: the last coupons, the reverse exchange with the funding deal settled around it
+        return _float_end(ctx, services, row, d, key, job)
     conn = ctx.conn
     cid, aid = row["contract_id"], row["account_id"]
     ds = d.isoformat()
@@ -2120,13 +2268,15 @@ def h_exchange(ctx: TxContext, payload: dict) -> dict:
     if row["status"] != "OPEN":
         return _done_noop(ctx, JOB_EVENTS, key, "NOT_OPEN", f"{cid} is {row['status']}")
     d = date.fromisoformat(ds)
-    if ev == "START":
-        return _ev_start(ctx, services, row, d, key, JOB_EVENTS)
-    if ev == "PAY":
-        return _xccy_pay(ctx, services, row, d, JOB_EVENTS, key)
     if ev == "FX_RESET":
         return _ev_fx_reset(ctx, services, row, d, key)
-    return _ev_end(ctx, services, row, d, key, JOB_EVENTS)
+    if ev == "START":
+        res = _ev_start(ctx, services, row, d, key, JOB_EVENTS)
+    elif ev == "PAY":
+        res = _xccy_pay(ctx, services, row, d, JOB_EVENTS, key)
+    else:
+        res = _ev_end(ctx, services, row, d, key, JOB_EVENTS)
+    return _event_late(ctx, row, d, ev, key, res) if _is_float(_terms(row)) else res
 
 
 def h_fx_reset(ctx: TxContext, payload: dict) -> dict:
@@ -2189,49 +2339,6 @@ def _terminate_trs(ctx: TxContext, services, row: dict) -> Tuple[dict, int, dict
     inputs = {"S": str(px), "quote": _quote_dict(mv), "reset_px": str(reset_px), "units": units, "receiver": bool(terms.get("receiver")), "vm_reference_c": ref,
               "accrual_entries": posted, "dividends": divs, "model": TRS_MODEL}
     return closed, value, inputs, posted + [x["entry_id"] for x in divs]
-
-
-def _terminate_xccy(ctx: TxContext, services, row: dict) -> Tuple[dict, int, dict, List[int]]:
-    conn = ctx.conn
-    cid, aid = row["contract_id"], row["account_id"]
-    got = mark_xccy(services, row, at=ctx.ts, snapshot=ctx.marks)
-    if not isinstance(got, tuple):
-        raise ConflictError("NO_CURVE", f"{cid}: {getattr(got, 'note', 'no mark')}: a termination needs the current model mark", {"contract_id": cid})
-    value, inputs = got
-    terms = _terms(row)
-    today = ny_of(ctx.ts).date()
-    entries: List[int] = []
-    exch = None
-    if _has_reset(conn, cid, "NOTIONAL_START"):
-        through = min(today, _date(row["maturity_date"])) - timedelta(days=1)
-        entries += _catch_up(ctx, services, row, ("swaprcv", "swappay"), through)
-        lc, bc = terms["legs"]["receive"]["currency"], terms["legs"]["pay"]["currency"]
-        racc, pacc = balance(conn, aid, "1225", lc, cid), balance(conn, aid, "2340", bc, cid)
-        ln, bn = balance(conn, aid, "1360", lc, cid), balance(conn, aid, "2360", bc, cid)
-        idem = f"xccy:{cid}:terminate"
-        funding = _fund(ctx, services, aid, bc, pacc + bn, "xccy", idem, overdraft=False, commit=True, csa=True)
-        lines: List[Line] = []
-        if racc:
-            lines += [dr(aid, "1010", lc, racc, memo="accrued receive leg settled"), cr(aid, "1225", lc, racc, instrument_id=cid, memo="accrued receive leg settled")]
-        if ln:
-            lines += [dr(aid, "1010", lc, ln, memo="notional lent received back"), cr(aid, "1360", lc, ln, instrument_id=cid, memo="notional receivable settled")]
-        if pacc:
-            lines += [dr(aid, "2340", bc, pacc, instrument_id=cid, memo="accrued pay leg settled"), cr(aid, "1010", bc, pacc, memo="accrued pay leg paid")]
-        if bn:
-            lines += [dr(aid, "2360", bc, bn, instrument_id=cid, memo="notional payable settled"), cr(aid, "1010", bc, bn, memo="notional borrowed repaid")]
-        memo = (f"XCCY termination exchange {cid}: accrued coupons settle (receive {lc} {fmt_money(racc)}, pay {bc} {fmt_money(pacc)}) and the notionals are"
-                f" re-exchanged at face (receive back {lc} {fmt_money(ln)}, repay {bc} {fmt_money(bn)}) in their own currencies (SWAP_RESET)")
-        entry_id = ctx.post(Entry("XCCY_EXCHANGE", memo, lines, idem, ref_type="otc", ref_id=cid)) if lines else None
-        exch = {"accrued_receive_c": racc, "accrued_pay_c": pacc, "lent_back_c": ln, "repaid_c": bn, "funding": funding, "entry_id": entry_id}
-        conn.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES (?,?,'NOTIONAL_END',?,?,?)",
-                     (cid, today.isoformat(), ln if lc == "USD" else bn, dumps(dict(exch, terminated=True)), entry_id))
-        if entry_id is not None:
-            entries.append(entry_id)
-    ref = _vm_reference(conn, cid)
-    memo = (f"XCCY termination {cid}: value {fmt_money(value)} = the current model mark of the coupon legs; VM balance {fmt_money(int(row['vm_balance_c']))} unwound;"
-            " IM released")
-    closed = swaps.close_contract(ctx, services, _contract(conn, cid), "TERMINATED", value, ref, f"otc:{cid}:terminate", "OTC_TERMINATE", memo, False, False)
-    return closed, value, dict(inputs, exchange=exch, vm_reference_c=ref), entries
 
 
 def terminate(ctx: TxContext, payload: dict) -> dict:
@@ -2378,6 +2485,8 @@ def next_events(services, contract, conn: Optional[sqlite3.Connection] = None, l
                 ev.update(accrued_receivable_c=balance(conn, aid, "1225", "USD", cid), accrued_payable_c=balance(conn, aid, "2340", "USD", cid),
                           mark_c=int(row.get("mark_c") or 0), legs=[])
             events.append(ev)
+    elif _is_float(terms):
+        events = _float_next_events(services, conn, row, terms, today)
     else:
         maturity = row["maturity_date"]
         paid = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
@@ -2433,6 +2542,8 @@ def contract_detail(services, contract, conn: Optional[sqlite3.Connection] = Non
                 "spread": terms.get("spread"), "financing_now": rate, "accrued_receivable_c": balance(conn, aid, "1225", "USD", cid),
                 "accrued_payable_c": balance(conn, aid, "2340", "USD", cid), "last_reset_date": row.get("last_reset_date"), "resets": resets,
                 "reset_dates": [q[1].isoformat() for q in _periods(terms)]}
+    if _is_float(terms):
+        return _float_detail(services, conn, row, terms)
     legs = {}
     for side in ("receive", "pay"):
         leg = terms["legs"][side]
@@ -2449,10 +2560,1788 @@ def contract_detail(services, contract, conn: Optional[sqlite3.Connection] = Non
 def unsupported() -> List[dict]:
     """Settings > Unsupported: what the cross-currency swap of this build does not do (P8B-05: said where the owner looks, never found by
     refusal)."""
-    return [{"item": "Floating cross-currency legs (SOFR, ESTR, SONIA, TONA ...) and a cross-currency basis", "state": "NOT_OFFERED",
-             "wording": "cross-currency swaps are fixed / fixed in this version: no free non-USD reference fixing is sourced to set and settle a floating"
-                        " leg, so both legs are fixed-rate (semi-annual) at the dealer's quote; one leg is USD",
+    return [{"item": "Floating cross-currency legs other than EUR ESTR / USD SOFR (GBP SONIA, JPY TONA, CHF SARON, CAD CORRA, AUD AONIA) and fixed / floating"
+                     " cross-currency swaps", "state": "NOT_OFFERED",
+             "wording": ("this version offers the EUR/USD float / float swap (EUR on compounded ESTR plus the dealer's spread against USD on compounded SOFR, quarterly,"
+                         " ACT/360, a disclosed and editable basis level) besides the fixed / fixed swap; a GBP SONIA leg is the next currency (its index is"
+                         " stored), JPY / CHF / CAD / AUD have no daily overnight-rate source here, and fixed / floating and resetting (MTM) float / float"
+                         " swaps are not built"),
              "where": "prime-broker OTC tab, Swaps (cross-currency swap)"}]
+
+
+# ---- XCCY float / float: the EUR/USD ESTR / SOFR swap (FX_CCS_PLAN rev 2 D4-D8, D11, D17, 3.3, 4.2; release 1.0.6.1) ------------------------
+#: the overnight index of each currency's floating leg in this build, and what the others answer (D4 "What stays out")
+FLOAT_INDEX = {"USD": "SOFR", "EUR": "ESTR"}
+FLOAT_INDEX_WORDS = {"SOFR": "SOFR (NY Fed): compounded in arrears = the ratio of the NY Fed's SOFR Index",
+                     "ESTR": "ESTR (ECB): compounded in arrears = the ratio of the ECB's compounded ESTR index"}
+FLOAT_DEFERRED = {"GBP": "not in this build yet: the SONIA index (Bank of England IUDZOS2) is stored; the GBP leg is the next currency (1.0.6.2)"}
+FLOAT_STEP_MONTHS = 3
+FLOAT_PAY_DELAY_BD = 2
+FLOAT_MAX_MONTHS = 120
+SPREAD_STEP_BP = Decimal("0.1")              # the dealt spread's grid (0.1 bp), rounded against the client
+FLOAT_LATE_ET = "06:00"                      # D7: an event not done by 06:00 ET of its date raises ERROR XCCY_EVENT_LATE
+MODEL_VERSION = "fxcurves-2"
+P34 = Context(prec=34, rounding=ROUND_HALF_EVEN)
+FLOAT_METHOD = ("RFR float / float cross-currency swap: ESTR and SOFR compounded in arrears (published indices), 2 BD payment delay, quarterly,"
+                " ACT/360, spread on the EUR leg; dealer quote = par spread + half-width; MODEL on PROXY curves; basis level ASSUMED")
+FLOAT_MODEL = ("full value for the spot date = sum of the USD flows x DF_USD + EURUSD x sum of the EUR flows x DF*_EUR (DF* = the EUR curve plus the"
+               " EUR/USD basis level, discounting only); a coupon = N x (R x P - 1) + N x spread x days / 360, R the factor realised so far, P from"
+               " the projection curve; clean mark (NAV) = full value - the notionals and accrued coupons on the balance sheet; CSA exposure (VM) ="
+               " the full value")
+FLOAT_COMPOUNDING = {"SOFR": "compounded in arrears (the NY Fed's SOFR Index), no lookback, 2 business-day payment delay",
+                     "ESTR": "compounded in arrears (the ECB's compounded ESTR index), no lookback, 2 business-day payment delay; the spread is added, not"
+                             " compounded"}
+FLOAT_CALENDAR_WORDS = {"schedule": "TARGET2 + New York", "sofr": "SOFR period dates are US government securities business days (SIFMA)",
+                        "roll": "modified following"}
+SETTLEMENT_FUNDING_MODES = ("BUY_WITH_USD", "NONE")
+INDEX_PENDING = "INDEX_PENDING"
+
+
+def _is_float(terms: Optional[dict]) -> bool:
+    return str((terms or {}).get("variant") or "").upper() == FLOAT_VARIANT
+
+
+def _fxcurves():
+    """FX_CCS_PLAN K3: the FX curve module (P-A), imported lazily; None while it is not in the tree (every price then answers 409
+    CURVE_UNAVAILABLE with that reason - nothing is priced without its curves)."""
+    try:
+        from .. import fxcurves as m             # noqa: WPS433 - optional module, read lazily
+        return m
+    except Exception:   # noqa: BLE001 - a missing or broken module is "unavailable", never an import error here
+        return None
+
+
+def _ccycal():
+    try:
+        from .. import ccycal as m               # noqa: WPS433 - K1 (P-A)
+        return m
+    except Exception:   # noqa: BLE001
+        return None
+
+
+def _spread_arg(v, name: str) -> Optional[Decimal]:
+    """A client spread in bp on the 0.1 bp grid; None (blank) = the dealer's quote."""
+    if v is None or (isinstance(v, str) and v.strip().lower() in ("", "quote", "par")):
+        return None
+    if isinstance(v, (bool, float)):
+        raise RejectError("TERMS", f"{name} must be a decimal string in basis points (0.1 = 0.1 bp), not a {type(v).__name__}", {"field": name})
+    try:
+        d = Decimal(str(v).strip())
+    except (InvalidOperation, ValueError) as e:
+        raise RejectError("TERMS", f"{name} is not a number: {v!r}", {"field": name}) from e
+    if not d.is_finite() or abs(d) > 500:
+        raise RejectError("TERMS", f"{name} must be between -500 and 500 bp, got {v!r}", {"field": name})
+    if d != d.quantize(SPREAD_STEP_BP):
+        raise RejectError("TERMS", f"{name} {v!r} is finer than the dealing grid 0.1 bp", {"field": name})
+    return d.quantize(SPREAD_STEP_BP)
+
+
+def _float_index_of(ccy: str, given, side: str) -> str:
+    """The index a floating leg in ``ccy`` names: SOFR for USD, ESTR for EUR (400 TERMS for a mismatch; 400 NOT_IN_THIS_BUILD for a currency
+    whose floating leg is not offered, with the reason)."""
+    idx = str(given or "").strip().upper()
+    idx = {"\u20acSTR": "ESTR", "EUR_ESTR": "ESTR", "EURSTR": "ESTR", "SOFR_COMPOUNDED": "SOFR"}.get(idx, idx)
+    if ccy in FLOAT_DEFERRED:
+        raise RejectError("NOT_IN_THIS_BUILD", f"a {ccy} floating leg is {FLOAT_DEFERRED[ccy]}", {"field": f"{side}_index", "currency": ccy})
+    if ccy not in FLOAT_INDEX:
+        raise RejectError("NOT_IN_THIS_BUILD", f"a {ccy} floating leg is not offered: no daily overnight rate is sourced for {ccy} in this terminal",
+                          {"field": f"{side}_index", "currency": ccy})
+    want = FLOAT_INDEX[ccy]
+    if idx != want:
+        raise RejectError("TERMS", f"the {ccy} leg floats on {want}, not {idx or '(none)'}: each index must match its currency (USD with SOFR, EUR with ESTR)",
+                          {"field": f"{side}_index", "currency": ccy, "index": want})
+    return want
+
+
+def _settlement_funding_arg(v, ccys: Tuple[str, ...]) -> Optional[dict]:
+    """D9: ``settlement_funding {ccy: BUY_WITH_USD | NONE}`` for the contract's non-USD currencies (None when absent; 400 TERMS otherwise)."""
+    if v in (None, "", {}):
+        return None
+    if not isinstance(v, dict):
+        raise RejectError("TERMS", "settlement_funding must be an object such as {\"EUR\": \"BUY_WITH_USD\"}", {"field": "settlement_funding"})
+    out = {}
+    for k, mode in v.items():
+        ccy, m = str(k or "").strip().upper(), str(mode or "").strip().upper()
+        if ccy == "USD" or ccy not in ccys:
+            raise RejectError("TERMS", f"settlement_funding names {ccy or '(none)'}: only the swap's non-USD currency ({', '.join(c for c in ccys if c != 'USD')})"
+                              " can be bought with USD", {"field": "settlement_funding"})
+        if m not in SETTLEMENT_FUNDING_MODES:
+            raise RejectError("TERMS", f"settlement_funding {ccy} must be BUY_WITH_USD or NONE, got {mode!r}", {"field": "settlement_funding"})
+        out[ccy] = m
+    return out
+
+
+def parse_float_terms(t: dict, pay_ccy: str, recv_ccy: str) -> dict:
+    """D4 / 3.3: the float / float term dictionary (both ``pay_index`` and ``recv_index`` given) - 400 TERMS / NOT_IN_THIS_BUILD with the reason."""
+    foreign = recv_ccy if pay_ccy == "USD" else pay_ccy
+    pay_index = _float_index_of(pay_ccy, t.get("pay_index"), "pay")
+    recv_index = _float_index_of(recv_ccy, t.get("recv_index"), "recv")
+    for side in ("pay", "recv"):
+        b = str(t.get(f"{side}_basis") or "ACT/360").strip().upper()
+        if b != "ACT/360":
+            raise RejectError("TERMS", f"{side}_basis must be ACT/360 for an overnight-index leg (SOFR and ESTR are ACT/360), got {b}", {"field": f"{side}_basis"})
+        if t.get(f"{side}_rate") not in (None, ""):
+            raise RejectError("TERMS", f"{side}_rate is a fixed rate: a floating leg pays its index (leave it blank)", {"field": f"{side}_rate"})
+    if _flag(t.get("mtm_reset", False), "mtm_reset"):
+        raise RejectError("NOT_IN_THIS_BUILD", "a mark-to-market (resetting) float / float cross-currency swap is not in this build: the notionals are"
+                          " exchanged at the deal rate at the start and the end (mtm_reset false)", {"field": "mtm_reset"})
+    raw_months = t.get("months", t.get("tenor_months"))
+    if raw_months in (None, ""):
+        raise RejectError("TERMS", "months (the tenor, a multiple of 3) is required")
+    months = _whole(raw_months, "months", FLOAT_STEP_MONTHS, FLOAT_MAX_MONTHS)
+    if months % FLOAT_STEP_MONTHS:
+        raise RejectError("TERMS", f"months {months} must be a multiple of {FLOAT_STEP_MONTHS} (quarterly periods on both legs)", {"field": "months"})
+    eur_side = "pay" if pay_ccy == foreign else "recv"
+    usd_side = "recv" if eur_side == "pay" else "pay"
+    if t.get(f"{usd_side}_spread_bp") not in (None, "") and _spread_arg(t.get(f"{usd_side}_spread_bp"), f"{usd_side}_spread_bp") != 0:
+        raise RejectError("TERMS", f"the spread is quoted on the {foreign} leg ({eur_side}_spread_bp); the USD leg pays SOFR flat", {"field": f"{usd_side}_spread_bp"})
+    client_bp = _spread_arg(t.get(f"{eur_side}_spread_bp"), f"{eur_side}_spread_bp")
+    pay_n = _money_arg(t.get("pay_notional_c"), t.get("pay_notional"), "pay_notional")
+    recv_n = _money_arg(t.get("recv_notional_c"), t.get("recv_notional"), "recv_notional")
+    if pay_n is None and recv_n is None:
+        raise RejectError("TERMS", "give the pay or the receive notional (the other is struck at the deal FX rate)")
+    conv = _flag(t.get("start_conversion", False), "start_conversion")
+    if conv and eur_side != "pay":
+        raise RejectError("TERMS", f"the inception conversion sells the {foreign} received at the start exchange; this swap pays {foreign} at the start"
+                          f" (it lends {foreign}): buy it with Convert or the settlement-funding instruction instead", {"field": "start_conversion"})
+    return {"variant": FLOAT_VARIANT, "pay_ccy": pay_ccy, "recv_ccy": recv_ccy, "foreign": foreign, "usd_side": "receive" if recv_ccy == "USD" else "pay",
+            "pay_index": pay_index, "recv_index": recv_index, "pay_notional_c": pay_n, "recv_notional_c": recv_n, "pay_rate": None, "recv_rate": None,
+            "pay_basis": "ACT/360", "recv_basis": "ACT/360", "months": months, "mtm_reset": False, "eur_side": "pay" if eur_side == "pay" else "receive",
+            "client_spread_bp": client_bp, "start_conversion": conv,
+            "settlement_funding": _settlement_funding_arg(t.get("settlement_funding"), (pay_ccy, recv_ccy))}
+
+
+class _ZC:
+    """One fxcurves ``Curve`` as the swap's full value reads it (FX_CCS_PLAN D2, K3): ``df(a, b)`` = fxcurves.df, unquantised (Decimal precision
+    34) - the same arithmetic as the PB forward and the independent re-pricer (z linear in percent between nodes, the level / shift added after
+    the interpolation, t = ACT/365 days from the curve's d0)."""
+
+    def __init__(self, crv):
+        self.crv = crv
+        self.ccy = str(getattr(crv, "ccy", "") or "")
+
+    def df(self, a: date, b: date) -> Decimal:
+        return _fxcurves().df(self.crv, a, b)
+
+
+@dataclass
+class FloatState:
+    """Where a booked float / float swap stands (empty for a quote): the start exchange done, the periods paid, each leg's exact coupon of a
+    finished period (``known``, cents, once both indices are published - else the posted estimate) and the factor realised so far of the
+    period accruing (``realised``: (R, the day after the last accrued night))."""
+    started: bool = False
+    ended: bool = False
+    paid: Tuple[int, ...] = ()
+    known: Dict[Tuple[int, str], int] = field(default_factory=dict)
+    realised: Dict[Tuple[int, str], Tuple[Decimal, date]] = field(default_factory=dict)
+
+
+@dataclass
+class FloatLegs:
+    """The fixed parts of the valuation: the legs' currencies and notionals, the periods and the spread's currency."""
+    leg_ccy: Dict[str, str]
+    leg_n_c: Dict[str, int]
+    periods: List[Period]
+    spread_ccy: str = "EUR"
+
+    @property
+    def start(self) -> date:
+        return self.periods[0][0]
+
+
+def float_full_value(legs: FloatLegs, spread: Decimal, X: Decimal, t_spot: date, proj: Dict[str, "_ZC"], disc: Dict[str, "_ZC"],
+                     state: Optional[FloatState] = None) -> Tuple[Decimal, Decimal, Decimal]:
+    """3.3 the full value in USD for the spot date ``t_spot`` (unrounded) and its USD and EUR flow sums: ``USD flows x DF_USD(t_spot, d) + X x EUR
+    flows x DF*_EUR(t_spot, d)``.  The Fund's flows: the lent (receive-leg) notional out and the borrowed (pay-leg) notional in at the start
+    (until exchanged), each leg's coupon N x (R x P - 1) + N x spread x d / 360 at its payment date (receive +, pay -; paid periods left
+    out), the notionals back at the last payment date.  P = 1 / DF_proj(a, e), a = the period start or the day after the last accrued night."""
+    st = state or FloatState()
+    tot = {"USD": Decimal(0), "EUR": Decimal(0)}
+    with localcontext(P34):
+        for side, sign in (("receive", ONE), ("pay", -ONE)):
+            ccy = legs.leg_ccy[side]
+            n = from_c(int(legs.leg_n_c[side]))
+            if not st.started:
+                tot[ccy] += -sign * n * disc[ccy].df(t_spot, legs.start)
+            sp = spread if ccy == legs.spread_ccy else Decimal(0)
+            for k, (s, e, p) in enumerate(legs.periods):
+                if k in st.paid:
+                    continue
+                known = st.known.get((k, side))
+                if known is not None:
+                    cpn = from_c(int(known))
+                else:
+                    r_fac, a = st.realised.get((k, side), (ONE, s))
+                    pfac = ONE if a >= e else ONE / proj[ccy].df(a, e)
+                    cpn = n * (r_fac * pfac - ONE) + n * sp * Decimal((e - s).days) / Decimal(360)
+                tot[ccy] += sign * cpn * disc[ccy].df(t_spot, p)
+            if not st.ended:
+                tot[ccy] += sign * n * disc[ccy].df(t_spot, legs.periods[-1][2])
+        return tot["USD"] + X * tot["EUR"], tot["USD"], tot["EUR"]
+
+
+def _sched_term(sched, name: str, what: str) -> Decimal:
+    """A dealer term of the PB schedule (FX_CCS_PLAN D5): 409 SCHEDULE_TERM_UNAVAILABLE when this build's schedule does not carry it - a level is
+    never assumed by the code."""
+    v = getattr(sched, name, None)
+    if v in (None, ""):
+        raise ConflictError("SCHEDULE_TERM_UNAVAILABLE", f"the prime broker's schedule has no {what} ({name}) in this build: the float cross-currency swap is"
+                            " not priced without it", {"field": name})
+    return Decimal(str(v))
+
+
+@dataclass
+class FloatMarket:
+    """The curves of one valuation date (D2): USD (projection = discounting) and EUR (projection, carrying the PB's EUR OIS spread on its grid
+    nodes; discounting adds the EUR/USD basis level) - fxcurves ``Curve`` objects."""
+    on: date
+    usd: object
+    eur: object
+    level_bp: Decimal
+    eur_ois_spread_bp: Decimal
+    level_source: Optional[str] = None
+    level_updated_ts: Optional[int] = None
+
+    def eur_disc(self, level_add=0):
+        fxc = _fxcurves()
+        return fxc.discount(self.eur, self.level_bp + Decimal(str(level_add)), f"{self.eur.ccy}USD", self.level_source, self.level_updated_ts)
+
+    def zc(self, bu=0, be=0, mid=0, grid=0) -> Tuple[Dict[str, "_ZC"], Dict[str, "_ZC"]]:
+        """(projection, discounting) curves with the bumps of a sensitivity, each re-priced in full (D14): ``bu`` / ``be`` bp on every USD /
+        EUR node (fxcurves.shifted), ``mid`` bp on the EUR discount curve only (the basis level), ``grid`` bp on the EUR grid nodes only (the
+        EUR OIS spread, fxcurves.with_spread)."""
+        fxc = _fxcurves()
+        usd = fxc.shifted(self.usd, bu) if bu else self.usd
+        eur = fxc.with_spread(self.eur, Decimal(str(self.eur.spread_bp)) + Decimal(str(grid))) if grid else self.eur
+        if be:
+            eur = fxc.shifted(eur, be)
+        eur_d = fxc.discount(eur, self.level_bp + Decimal(str(mid)), f"{self.eur.ccy}USD", self.level_source, self.level_updated_ts)
+        u = _ZC(usd)
+        return {"USD": u, self.eur.ccy: _ZC(eur)}, {"USD": u, self.eur.ccy: _ZC(eur_d)}
+
+
+def _curve_of(services, ccy: str, on: date, acct: Optional[dict]):
+    """fxcurves.curve for one currency on ``on`` with the PB's EUR OIS spread (K3); 409 CURVE_UNAVAILABLE when the module is not built."""
+    fxc = _fxcurves()
+    if fxc is None or not hasattr(fxc, "curve"):
+        raise ConflictError("CURVE_UNAVAILABLE", f"no {ccy} term curve: the FX curve module is not in this build, and a float leg is never priced on a flat"
+                            " rate", {"currency": ccy})
+    return fxc.curve(services, ccy, on, pb=(acct or {}).get("account_id"))
+
+
+def float_market(services, conn, acct: dict, on: date, sched=None) -> FloatMarket:
+    """The USD and EUR curves of ``on`` (D2) and the PB's EUR/USD basis level and EUR OIS spread (D5)."""
+    sched = sched if sched is not None else prime.read_schedule(conn, acct)
+    level = _sched_term(sched, "xccy_basis_eur_bp", "EUR/USD cross-currency basis level")
+    ois = getattr(sched, "eur_ois_spread_bp", None)
+    usd = _curve_of(services, "USD", on, acct)
+    eur = _curve_of(services, "EUR", on, acct)
+    dealer = config.PRIME_BROKERS.get(prime.broker_of(acct), prime.broker_of(acct))
+    return FloatMarket(on, usd, eur, level, Decimal(str(ois)) if ois not in (None, "") else Decimal(0),
+                       f"{dealer} schedule (seed / as edited), ASSUMED", getattr(sched, "updated_ts", None))
+
+
+def _curve_record(curve, until: date) -> dict:
+    """The curve's record for a pricing record (K3 ``record(until)``), else what it exposes."""
+    fn = getattr(curve, "record", None)
+    if callable(fn):
+        try:
+            rec = fn(until)
+            if isinstance(rec, dict):
+                return rec
+        except Exception:   # noqa: BLE001 - the record below
+            pass
+    first = getattr(curve, "first_node", None)
+    return {"ccy": getattr(curve, "ccy", None), "kind": getattr(curve, "kind", None), "source": getattr(curve, "source", None),
+            "as_of": str(getattr(curve, "d0", "")), "first_node": first, "nodes": [[str(x) for x in n] for n in getattr(curve, "nodes", [])],
+            "spread_bp": None if getattr(curve, "spread_bp", None) is None else str(curve.spread_bp), "labels": list(getattr(curve, "labels", []) or []),
+            "compounding": "continuously compounded"}
+
+
+def _curve_label(curve) -> List[str]:
+    return [str(x) for x in (getattr(curve, "labels", None) or [])]
+
+
+def _first_print(curve) -> dict:
+    fn = getattr(curve, "first_node", None) or {}
+    if not isinstance(fn, dict):
+        fn = {k: getattr(fn, k, None) for k in ("series", "obs_date", "value_pct", "z")}
+    return {"series": fn.get("series"), "obs_date": None if fn.get("obs_date") is None else str(fn.get("obs_date")),
+            "value_pct": None if fn.get("value_pct") is None else str(fn.get("value_pct")), "source": fn.get("source") or getattr(curve, "source", None)}
+
+
+@dataclass
+class FloatDeal:
+    acct: dict
+    p: dict
+    broker: str
+    dealer: str
+    trade_date: date
+    start: date
+    periods: List[Period]
+    fx_view: MarkView
+    X0: Decimal
+    n_usd_c: int
+    n_eur_c: int
+    legs: FloatLegs
+    market: FloatMarket
+    hw_bp: Decimal
+    mult: Decimal
+    pv0: Decimal
+    final_timing: Decimal
+    astar: Decimal
+    par_bp: Decimal
+    dealt_bp: Decimal
+    rounding_bp: Decimal
+    client_bp: Optional[Decimal]
+    mark0_c: int
+    sens: dict
+    im_c: int
+    im_pct: Decimal
+    im_source: str
+    margin_mode: str
+    schedule_updated_ts: Optional[int]
+    conversion: Optional[dict]
+    net_start: Dict[str, int]
+    rows: List[dict]
+    full_at_dealt: Decimal
+
+    @property
+    def termination(self) -> date:
+        return self.periods[-1][1]
+
+    @property
+    def maturity(self) -> date:
+        return self.periods[-1][2]
+
+    @property
+    def eur_side(self) -> str:
+        return self.p["eur_side"]
+
+    @property
+    def hw_eff_bp(self) -> Decimal:
+        return (self.hw_bp * self.mult).quantize(Decimal("0.0001"))
+
+    @property
+    def spread(self) -> Decimal:
+        return self.dealt_bp * BP
+
+
+def float_dates(services, foreign: str, trade_date: date, months: int) -> Tuple[date, List[Period]]:
+    """D10 / 3.3: the start (the pair's spot date on TARGET2 + New York) and the periods (e_k = MF(S + 3k months) from the start, p_k = e_k + 2
+    business days, every SOFR date a US government securities day - else 400 SCHEDULE)."""
+    cc = _ccycal()
+    if cc is None:
+        raise ConflictError("CALENDAR_UNAVAILABLE", "the currency calendars are not in this build: the float swap's dates cannot be set", {})
+    pair = fx_pair_id(foreign)
+    start = cc.spot_date(services, pair, trade_date)
+    cal = cc.joint(cc.TARGET, cc.USNY)
+    periods = [(_date(s), _date(e), _date(p)) for s, e, p in cc.schedule(cal, start, int(months), FLOAT_STEP_MONTHS, pay_delay_bd=FLOAT_PAY_DELAY_BD, sofr=True)]
+    return start, periods
+
+
+#: the book's NAV / headline gross / gross notional the limits block reads, kept LIMITS_TTL_S per runtime: a ticket previews on every change and
+#: the risk report values the whole book (display only; the block says when the figures were taken)
+LIMITS_TTL_S = 60
+LIMITS_CACHE_ATTR = "_xccy_limits_cache"     # kept on the runtime itself: one cache per served process / test runtime
+
+
+def _risk_totals(services, scope: str) -> dict:
+    rk = getattr(services, "risk", None)
+    fn = getattr(rk, "report", None) if rk is not None else None
+    if not callable(fn):
+        return {"unavailable": "the risk module is not bound: the ratios before and after are not computed"}
+    now = int(services.clock.epoch())
+    per = getattr(services, LIMITS_CACHE_ATTR, None)
+    if not isinstance(per, dict):
+        per = {}
+        try:
+            setattr(services, LIMITS_CACHE_ATTR, per)
+        except (AttributeError, TypeError):      # a services object without attributes of its own: no cache
+            pass
+    hit = per.get(scope)
+    if hit is not None and 0 <= now - int(hit["fetched_ts"]) < LIMITS_TTL_S:
+        return hit
+    try:
+        view = fn(services, scope, _provider_snapshot(services))
+    except Exception as e:   # noqa: BLE001 - display only
+        return {"unavailable": f"the risk report failed ({type(e).__name__}: {e})"}
+    hit = {"fetched_ts": now, "nav_c": int(getattr(view, "nav_c", 0) or 0), "gross_c": getattr(view, "gross_c", None),
+           "notional_c": getattr(view, "gross_notional_c", None), "as_of": getattr(view, "as_of", None)}
+    per[scope] = hit
+    return hit
+
+
+def _limits_block(services, conn, account_id: str, add_notional_c: int, mark0_c: int, snapshot=None) -> dict:
+    """D18: no notional limit exists - the words, and the headline gross exposure / NAV and the gross notional / NAV before and after the trade
+    (the swap sits outside the headline: its gross does not move; its USD notional adds to the gross notional).  Unavailable with the reason when
+    the risk module cannot report now."""
+    out = {"words": "notional limits: none configured in the prime broker's schedule; compliance has no OTC limit", "caps": "none configured",
+           "warning_limit": "2x NAV (the Risk page's warning)", "add_notional_c": int(add_notional_c)}
+    tot = _risk_totals(services, f"{split_account_id(account_id)[0]}:ALL")
+    if tot.get("unavailable"):
+        out["unavailable"] = tot["unavailable"]
+        return out
+    nav_c, gross_c, notional_c = int(tot["nav_c"]), tot.get("gross_c"), tot.get("notional_c")
+    out["figures_as_of"] = tot.get("as_of") or tot.get("fetched_ts")
+
+    def ratio(a, b):
+        if a is None or not b:
+            return None
+        return str((Decimal(int(a)) / Decimal(int(b))).quantize(Decimal("0.0001")))
+    nav_after = nav_c + int(mark0_c)
+    out.update(nav_before_c=nav_c, nav_after_c=nav_after, headline_gross_c=None if gross_c is None else int(gross_c),
+               headline_gross_nav_before=ratio(gross_c, nav_c), headline_gross_nav_after=ratio(gross_c, nav_after),
+               gross_notional_before_c=None if notional_c is None else int(notional_c),
+               gross_notional_after_c=None if notional_c is None else int(notional_c) + int(add_notional_c),
+               gross_notional_nav_before=ratio(notional_c, nav_c),
+               gross_notional_nav_after=ratio(None if notional_c is None else int(notional_c) + int(add_notional_c), nav_after))
+    return out
+
+
+def _quoted_float_flows(deal: "FloatDeal") -> List[dict]:
+    """D9 (P-D-R2): the quoted swap's own flows for ``ccyfunding.plan(extra=...)`` - it is not a contract yet (a quote, or the booking, which
+    builds its record before the contract row, its IM and the conversion exist), so the plan shows its EUR obligations, their purchases and the
+    settlement-funding gap before it is booked.  As a booked swap's flows read: V1061-03 its IM (a USD outflow on the trade date: posted at the
+    booking, one Treasury sweep, held until the swap ends), the net start flows on S (with the inception conversion the foreign currency nets
+    to 0 and USD pays the conversion's spread), each coupon on its payment date (projected: ``known`` false, the index decides) and the final
+    exchange on the last payment date; ``mode`` = the quote's instruction for that currency (BUY_WITH_USD, else NONE)."""
+    f = deal.p["foreign"]
+    sf = deal.p.get("settlement_funding") or {}
+
+    def mode(c):
+        return "BUY_WITH_USD" if sf.get(c) == "BUY_WITH_USD" else "NONE"
+
+    def iso(x):
+        return x.isoformat() if hasattr(x, "isoformat") else str(x)
+    borrow = 1 if deal.eur_side == "pay" else -1            # +1: the foreign currency is borrowed (its coupons and its repayment go out)
+    out: List[dict] = []
+    if int(deal.im_c or 0) > 0:
+        out.append({"date": deal.trade_date.isoformat(), "ccy": "USD", "amount_c": -int(deal.im_c), "known": True, "event": "IM", "kind": "XCCY",
+                    "mode": "NONE",
+                    "what": f"initial margin USD {fmt_money(int(deal.im_c))} posted at the booking (held by {deal.dealer} until the swap ends)"})
+    for ccy, amt in sorted((deal.net_start or {}).items()):
+        if int(amt):
+            out.append({"date": deal.start.isoformat(), "ccy": ccy, "amount_c": int(amt), "what": "start exchange (net of the inception conversion)"
+                        if deal.conversion else "start exchange", "known": True, "event": "START", "kind": "XCCY", "mode": mode(ccy)})
+    for k, r in enumerate(deal.rows, start=1):
+        pay = iso(r.get("pay_date") or r.get("p"))
+        fc, uc = r.get(f"{f.lower()}_indicative_c"), r.get("usd_indicative_c")
+        if fc is not None:
+            out.append({"date": pay, "ccy": f, "amount_c": -borrow * int(fc), "what": f"coupon {k} (indicative; the {FLOAT_INDEX[f]} index decides)",
+                        "known": False, "event": "PAY", "kind": "XCCY", "mode": mode(f)})
+        if uc is not None:
+            out.append({"date": pay, "ccy": "USD", "amount_c": borrow * int(uc), "what": f"coupon {k} (indicative; the SOFR index decides)",
+                        "known": False, "event": "PAY", "kind": "XCCY", "mode": mode("USD")})
+    last = deal.maturity.isoformat()
+    out.append({"date": last, "ccy": f, "amount_c": -borrow * int(deal.n_eur_c), "what": "final exchange", "known": True, "event": "END", "kind": "XCCY", "mode": mode(f)})
+    out.append({"date": last, "ccy": "USD", "amount_c": borrow * int(deal.n_usd_c), "what": "final exchange", "known": True, "event": "END", "kind": "XCCY",
+                "mode": mode("USD")})
+    return out
+
+
+def _funding_line(services, conn, account_id: str, deal: "FloatDeal") -> Optional[dict]:
+    """D9: the settlement-funding instruction and the plan's gap (``ccyfunding.plan``, P-D, read lazily); None while it is not built.  The plan
+    is given the quoted swap's own flows (``_quoted_float_flows``), so the first quote already shows its EUR purchases and gap (P-D-R2)."""
+    sf = deal.p.get("settlement_funding") or {}
+    words = []
+    for ccy, mode in sorted(sf.items()):
+        words.append(f"every {ccy} obligation (coupons, the final exchange) is bought with USD two business days before it is due, as an audited FX"
+                     f" desk spot deal" if mode == "BUY_WITH_USD" else f"{ccy} obligations are not funded automatically (instruction off)")
+    out = {"instruction": sf or None, "words": "; ".join(words) or "no settlement-funding instruction: an obligation in a currency the account does not"
+                                                                       " hold overdraws it (FUNDING_SHORTFALL)"}
+    try:
+        from .. import ccyfunding as cf          # noqa: WPS433 - K8 (P-D), optional
+        fn = getattr(cf, "plan", None)
+        if callable(fn):
+            got = fn(services, account_id, extra=_quoted_float_flows(deal))
+            if isinstance(got, dict):
+                out["plan"] = {k: got.get(k) for k in ("gap", "gaps", "gap_c", "words", "note") if k in got} or None
+    except Exception:   # noqa: BLE001 - the plan is display only
+        pass
+    return out
+
+
+def _float_deal(services, conn: sqlite3.Connection, marks, acct: dict, p: dict, now_ts: int) -> FloatDeal:
+    """The dealer's quote of a float / float swap at ``now_ts`` (3.3): the deal rate X0 (the executable EURUSD mid), the notionals, the dates, the
+    curves of the trade date, PV(0) and its two parts, A*, the par spread, the dealt spread (par + the half-width, on the 0.1 bp grid against the
+    client), mark0 (the full value at the dealt spread: the cost of dealing), the sensitivities, IM and the inception conversion."""
+    foreign = p["foreign"]
+    today = ny_of(int(now_ts)).date()
+    fxv, X0 = _deal_fx(services, marks, foreign, today)
+    eur_side = p["eur_side"]
+    usd_side = "receive" if eur_side == "pay" else "pay"
+    given_f = p["pay_notional_c"] if eur_side == "pay" else p["recv_notional_c"]
+    given_u = p["recv_notional_c"] if eur_side == "pay" else p["pay_notional_c"]
+    if given_f is not None:
+        n_eur = int(given_f)
+        n_usd = to_c(from_c(n_eur) * X0)
+        if given_u is not None and int(given_u) != n_usd:
+            raise RejectError("TERMS", f"the USD notional is struck at the deal FX rate {X0}: {foreign} {fmt_money(n_eur)} x {X0} = USD {fmt_money(n_usd)},"
+                              f" not {fmt_money(int(given_u))}; leave one notional blank", {"deal_rate": str(X0), "usd_notional_c": n_usd})
+    else:
+        n_usd = int(given_u)
+        n_eur = to_c(from_c(n_usd) / X0)
+    trade_date = fxmod.fx_trade_date(services, int(now_ts))
+    start, periods = float_dates(services, foreign, trade_date, p["months"])
+    sched = prime.read_schedule(conn, acct)
+    mult = qprice(Decimal(sched.otc_spread_mult))
+    hw_bp = _sched_term(sched, "xccy_basis_hw_bp", "cross-currency swap dealing half-width")
+    market = float_market(services, conn, acct, trade_date, sched)
+    legs = FloatLegs({eur_side: foreign, usd_side: "USD"}, {eur_side: n_eur, usd_side: n_usd}, periods, foreign)
+    proj, disc = market.zc()
+    t_spot = start
+    with localcontext(P34):
+        pv0, _u, _e = float_full_value(legs, Decimal(0), X0, t_spot, proj, disc)
+        sign_eur = -ONE if eur_side == "pay" else ONE
+        e_n, p_n = periods[-1][1], periods[-1][2]
+        final_timing = Decimal(0)
+        for side, sign in (("receive", ONE), ("pay", -ONE)):
+            ccy = legs.leg_ccy[side]
+            fxr = ONE if ccy == "USD" else X0
+            final_timing += sign * from_c(legs.leg_n_c[side]) * fxr * (disc[ccy].df(t_spot, p_n) - disc[ccy].df(t_spot, e_n))
+        astar = sum(((Decimal((e - s).days) / Decimal(360)) * disc[foreign].df(start, pd_) for s, e, pd_ in periods), Decimal(0)).quantize(DF_Q, rounding=ROUND_HALF_EVEN)
+        bpv = X0 * from_c(n_eur) * astar
+        if bpv == 0:
+            raise RejectError("TERMS", "the swap has no EUR annuity: it cannot be quoted")
+        par = -pv0 / (sign_eur * bpv)                        # PV(s) = PV(0) + sign_eur x X0 x N x A* x s = 0
+        par_bp = par / BP
+        hw_eff = hw_bp * mult
+        if eur_side == "pay":
+            dealt_bp = (par_bp + hw_eff).quantize(SPREAD_STEP_BP, rounding=ROUND_CEILING)
+        else:
+            dealt_bp = (par_bp - hw_eff).quantize(SPREAD_STEP_BP, rounding=ROUND_FLOOR)
+    client_bp = p.get("client_spread_bp")
+    if client_bp is not None:
+        better = (client_bp < dealt_bp) if eur_side == "pay" else (client_bp > dealt_bp)
+        if better:
+            raise RejectError("OFF_MARKET", f"{'paying' if eur_side == 'pay' else 'receiving'} {FLOAT_INDEX[foreign]} {_bp_text(client_bp)} is better for you than"
+                              f" {prime.broker_of(acct)}'s quote {FLOAT_INDEX[foreign]} {_bp_text(dealt_bp)} (par {par_bp.quantize(Decimal('0.0001'))} bp"
+                              f" {'+' if eur_side == 'pay' else '-'} {hw_eff.normalize()} bp half-width): a dealer does not deal there; leave the spread blank"
+                              " to deal at the quote", {"spread_bp": str(client_bp), "quote_bp": str(dealt_bp), "par_bp": str(par_bp.quantize(Decimal('0.0001')))})
+        dealt_bp = client_bp
+    rounding_bp = (dealt_bp - par_bp - hw_eff) if eur_side == "pay" else (par_bp - hw_eff - dealt_bp)
+    b = dealt_bp * BP
+    with localcontext(P34):
+        full_b, _u, _e = float_full_value(legs, b, X0, t_spot, proj, disc)
+        mark0 = to_c(full_b)
+
+        def bumped(**kw):
+            pj, ds = market.zc(**kw)
+            return float_full_value(legs, b, X0, t_spot, pj, ds)[0]
+        sens = {"basis01_c": to_c(bumped(mid=1) - full_b), "rate01_c": {"USD": to_c(bumped(bu=1) - full_b), foreign: to_c(bumped(be=1) - full_b)},
+                "eur_ois_spread01_c": to_c(bumped(grid=1) - full_b),
+                "fx_1pct_c": to_c(float_full_value(legs, b, X0 * Decimal("1.01"), t_spot, proj, disc)[0] - full_b),
+                "bp_value_c": to_c(bpv * BP)}
+        rows = []
+        for k, (s, e, pd_) in enumerate(periods, 1):
+            dk = Decimal((e - s).days)
+            ce = to_c(from_c(n_eur) * ((ONE / proj[foreign].df(s, e) - ONE) + b * dk / Decimal(360)))
+            cu = to_c(from_c(n_usd) * (ONE / proj["USD"].df(s, e) - ONE))
+            rows.append({"period": k, "start": s.isoformat(), "end": e.isoformat(), "pay_date": pd_.isoformat(), "days": int(dk),
+                         f"{foreign.lower()}_indicative_c": ce, "usd_indicative_c": cu, "indicative": True})
+    imp = swaps.im_params(services, acct["account_id"])
+    im_pct = Decimal(imp["xccy_im_pct"])
+    im = to_c(im_pct * from_c(n_usd))
+    conversion = None
+    net_start = {"USD": -n_usd if usd_side == "receive" else n_usd, foreign: n_eur if eur_side == "pay" else -n_eur}
+    if p.get("start_conversion"):
+        pair = fx_pair_id(foreign)
+        quoted, rate = fxmod.deal_rate(X0, pair, "USD", foreign)            # the FX desk's bid on the pinned mid (its disclosed spread)
+        f_c, usd_c, _adj = fxmod.deal_amounts(rate, n_eur, foreign, foreign)
+        spread_pips = ((X0 - quoted) / fxmod.pip_of(pair)).normalize()
+        conversion = {"on": True, "pair": pair, "mid": str(X0), "rate": str(quoted), "rate_usd_per_unit": str(rate),
+                      "spread_pips": f"{spread_pips:f}", "sell": {"currency": foreign, "amount_c": f_c}, "buy": {"currency": "USD", "amount_c": usd_c},
+                      "spread_cost_c": to_c(from_c(f_c) * X0) - usd_c, "value_date": start.isoformat(), "trade_date": trade_date.isoformat(), "deal_id": None,
+                      "words": (f"sell {foreign} {fmt_money(f_c)} / buy USD {fmt_money(usd_c)} at {quoted} (the FX desk's bid: mid {X0} - "
+                                f"{spread_pips:f} pip), value {start.isoformat()}, booked in the same command and settled with the start exchange"
+                                " (payment versus payment)")}
+        net_start = {"USD": usd_c - n_usd, foreign: 0}
+    return FloatDeal(acct, p, prime.broker_of(acct), config.PRIME_BROKERS.get(prime.broker_of(acct), prime.broker_of(acct)), trade_date, start, periods, fxv, X0,
+                     n_usd, n_eur, legs, market, hw_bp, mult, pv0, final_timing, astar, par_bp, dealt_bp, rounding_bp, client_bp, mark0, sens, im, im_pct,
+                     imp["source"], str(sched.swap_margin_mode).upper(), getattr(sched, "updated_ts", None), conversion, net_start, rows, full_b)
+
+
+def _bp_text(bp) -> str:
+    """0.1 -> "+ 0.1 bp", 0 -> "flat", -2.5 -> "- 2.5 bp"."""
+    d = Decimal(str(bp))
+    if d == 0:
+        return "flat"
+    return f"{'+' if d > 0 else '-'} {abs(d).normalize():f} bp"
+
+
+def _float_side_text(foreign: str, eur_side: str, dealt_bp) -> str:
+    """"pay EUR ESTR + 0.1 bp (borrowed) / receive USD SOFR flat (lent)" (the legs named by their coupons, D4 Direction)."""
+    idx = FLOAT_INDEX[foreign]
+    f = f"{foreign} {idx} {_bp_text(dealt_bp)}"
+    if eur_side == "pay":
+        return f"pay {f} (borrowed) / receive USD SOFR flat (lent)"
+    return f"receive {f} (lent) / pay USD SOFR flat (borrowed)"
+
+
+def _float_labels(deal: "FloatDeal") -> List[str]:
+    out = ["MODEL"]
+    for c in (deal.market.usd, deal.market.eur_disc()):
+        out += [x for x in _curve_label(c) if x not in out]
+    out.append(f"ASSUMED: the {deal.p['foreign']}/USD basis level, the dealer half-width and IM are {deal.dealer} schedule terms")
+    out.append(swaps.QUOTE_LABEL)
+    return out
+
+
+def _basis_lines(deal: "FloatDeal") -> List[str]:
+    lvl = deal.market.level_bp
+    f = deal.p["foreign"]
+    par4 = deal.par_bp.quantize(Decimal("0.0001"))
+    return [f"basis level {lvl.normalize():f} bp ASSUMED: an assumed level, not a neutral one (the EUR/USD basis has been negative for most of the time since"
+            f" 2008); each 1 bp is worth USD {fmt_money(abs(int(deal.sens['basis01_c'])))} on this swap",
+            f"par spread {par4} bp: the {f}-leg spread at which the swap is worth 0 on the dealer's curves (the final exchange paid"
+            f" {FLOAT_PAY_DELAY_BD} business days after the end: {fmt_money(to_c(deal.final_timing))}; the coupon payment delays:"
+            f" {fmt_money(to_c(deal.pv0) - to_c(deal.final_timing))})",
+            f"dealer half-width {deal.hw_bp.normalize():f} bp x {deal.mult.normalize():f} ({deal.dealer} schedule, ASSUMED)",
+            (f"dealt spread {_bp_text(deal.dealt_bp)} = {par4} {'+' if deal.eur_side == 'pay' else '-'} {deal.hw_eff_bp.normalize():f}, rounded"
+             f" {'up' if deal.eur_side == 'pay' else 'down'} on the 0.1 bp grid (against you)") if deal.client_bp is None else
+            f"dealt spread {_bp_text(deal.dealt_bp)}: your spread, no better than the dealer's quote"]
+
+
+def _float_record(deal: "FloatDeal", now_ts: int, limits: Optional[dict], funding: Optional[dict]) -> dict:
+    """3.3 the stored pricing record (the preview, the RFQ quote and ``terms_json.pricing_record`` carry it): every input with its source and
+    time, the curves to the first node beyond the last payment, the dealer terms, the results.  ``otcplan.reprice`` re-derives every number from
+    it alone (K9): discount factors unquantised; A* = round_half_even(sum over k of d_k / 360 x DF*_EUR(S, p_k), 1e-10); s_par = PV(0) / (X0 x N
+    x A*) unrounded for the EUR payer (its negative for the receiver); dealt = the 0.1 bp ceiling (payer) / floor (receiver) of s_par +/- hw x
+    mult; mark0 = the full value at the dealt spread, rounded to the cent."""
+    f = deal.p["foreign"]
+    fxv = deal.fx_view
+    until = deal.maturity
+    pv0_c, ft_c = to_c(deal.pv0), to_c(deal.final_timing)
+    return {"method": FLOAT_METHOD, "model_version": MODEL_VERSION, "model": FLOAT_MODEL, "valuation_ts": int(now_ts),
+            "trade_date": deal.trade_date.isoformat(), "spot_date": deal.start.isoformat(), "start_date": deal.start.isoformat(),
+            "termination_date": deal.termination.isoformat(), "maturity_date": deal.maturity.isoformat(),
+            "deal_fx": {"pair": fx_pair_id(f), "mid": str(deal.X0), "source": getattr(fxv, "source", None), "quote_time": getattr(fxv, "quote_time", None),
+                        "quality": getattr(fxv, "quality", None), "label": quote_label(fxv), "convention": f"USD per {f} (EURUSD, market convention)"},
+            "curves": {"USD": dict(_curve_record(deal.market.usd, until), role="projection and discounting (USD has no basis level)"),
+                       f: dict(_curve_record(deal.market.eur, until), role=f"projection; discounting adds the {f}/USD basis level",
+                               eur_ois_spread_bp=str(deal.market.eur_ois_spread_bp)),
+                       f"{f}_discount": dict(_curve_record(deal.market.eur_disc(), until), role=f"the {f} discount curve under the USD CSA: the {f} curve"
+                                                                                                f" plus the basis level {deal.market.level_bp} bp")},
+            "legs": {side: {"currency": deal.legs.leg_ccy[side], "index": FLOAT_INDEX[deal.legs.leg_ccy[side]], "notional_c": deal.legs.leg_n_c[side],
+                            "print": _first_print(deal.market.usd if deal.legs.leg_ccy[side] == "USD" else deal.market.eur),
+                            "spread_bp": str(deal.dealt_bp) if deal.legs.leg_ccy[side] == f else "0", "day_count": "ACT/360",
+                            "compounding": FLOAT_COMPOUNDING[FLOAT_INDEX[deal.legs.leg_ccy[side]]], "payment_delay_bd": FLOAT_PAY_DELAY_BD,
+                            "calendar": "TARGET2" if deal.legs.leg_ccy[side] == "EUR" else "New York (SOFR dates: SIFMA)"} for side in ("receive", "pay")},
+            "basis": {"pair": fx_pair_id(f), "level_bp": str(deal.market.level_bp), "par_bp": str(deal.par_bp), "par_bp_4dp": str(deal.par_bp.quantize(Decimal("0.0001"))),
+                      "hw_bp": str(deal.hw_bp), "otc_spread_mult": str(deal.mult), "dealt_bp": str(deal.dealt_bp),
+                      "rounding_bp": str(deal.rounding_bp.quantize(Decimal("0.0001"))), "on_leg": f, "eur_side": deal.eur_side,
+                      "client_bp": None if deal.client_bp is None else str(deal.client_bp),
+                      "source": f"{deal.dealer} schedule (seed / as edited), ASSUMED: no free cross-currency basis source", "updated_ts": deal.schedule_updated_ts},
+            "schedule": [{"s": r["start"], "e": r["end"], "p": r["pay_date"], "days": r["days"], f"{f.lower()}_indicative_c": r[f"{f.lower()}_indicative_c"],
+                          "usd_indicative_c": r["usd_indicative_c"]} for r in deal.rows],
+            "exchanges": _float_exchanges(deal), "conversion": deal.conversion,
+            "notionals": {"usd_c": deal.n_usd_c, f"{f.lower()}_c": deal.n_eur_c, "struck": f"USD = to_c({f} x X0)"},
+            "results": {"pv_zero_c": pv0_c, "pv_zero": str(deal.pv0), "final_exchange_timing_c": ft_c, "coupon_delays_c": pv0_c - ft_c,
+                        "annuity_star": str(deal.astar), "bp_value_c": deal.sens["bp_value_c"], "mark0_c": deal.mark0_c, "basis01_c": deal.sens["basis01_c"],
+                        "rate01_c": dict(deal.sens["rate01_c"]), "eur_ois_spread01_c": deal.sens["eur_ois_spread01_c"], "fx_1pct_c": deal.sens["fx_1pct_c"],
+                        "net_start_flows": dict(deal.net_start),
+                        "im": {"pct": str(deal.im_pct), "im_c": deal.im_c, "rule": f"IM = {swaps.pct_text(deal.im_pct)} of the USD notional ({deal.im_source})"}},
+            "limits": limits, "funding": funding, "labels": _float_labels(deal), "eur_obligations": _float_obligations(deal)}
+
+
+def _float_exchanges(deal: "FloatDeal") -> dict:
+    f = deal.p["foreign"]
+    lent, bor = ("USD", f) if deal.eur_side == "pay" else (f, "USD")
+    amt = {"USD": deal.n_usd_c, f: deal.n_eur_c}
+    return {"initial": {"date": deal.start.isoformat(), "rate": str(deal.X0), "we_pay": {"currency": lent, "amount_c": amt[lent], "gl": "1360"},
+                        "we_receive": {"currency": bor, "amount_c": amt[bor], "gl": "2360"},
+                        "words": (f"on the start date {deal.start.isoformat()} {deal.dealer} pays {bor} {fmt_money(amt[bor])} and the Fund pays {lent}"
+                                  f" {fmt_money(amt[lent])} at {deal.X0}")},
+            "final": {"date": deal.maturity.isoformat(), "rate": str(deal.X0), "we_pay": {"currency": bor, "amount_c": amt[bor], "gl": "2360"},
+                      "we_receive": {"currency": lent, "amount_c": amt[lent], "gl": "1360"},
+                      "words": (f"with the last coupons on {deal.maturity.isoformat()} the Fund repays {bor} {fmt_money(amt[bor])} and receives {lent}"
+                                f" {fmt_money(amt[lent])} back (no notional reset)")}}
+
+
+def _float_obligations(deal: "FloatDeal") -> List[dict]:
+    """The obligations in the foreign currency (D9): each coupon of the paid foreign leg (indicative; the index decides) and the final exchange."""
+    f = deal.p["foreign"]
+    sf = (deal.p.get("settlement_funding") or {}).get(f)
+    cal_ok = _ccycal()
+    out = []
+    if deal.eur_side != "pay":
+        return out
+    for i, r in enumerate(deal.rows):
+        amount = int(r[f"{f.lower()}_indicative_c"]) + (deal.n_eur_c if i == len(deal.rows) - 1 else 0)
+        what = f"coupon {r['period']} (indicative; the {FLOAT_INDEX[f]} index decides)" + (" + the final exchange" if i == len(deal.rows) - 1 else "")
+        how = "not funded automatically: the account must hold it"
+        if sf == "BUY_WITH_USD":
+            buy_on = None
+            if cal_ok is not None:
+                try:
+                    cal = cal_ok.joint(cal_ok.TARGET, cal_ok.USNY)
+                    buy_on = cal.add_business_days(_date(r["pay_date"]), -2) if hasattr(cal, "add_business_days") else None
+                except Exception:   # noqa: BLE001 - the words without the date
+                    buy_on = None
+            how = f"settlement funding: {f} bought with USD" + (f" on {buy_on.isoformat()}" if buy_on else " two business days before") + f", value {r['pay_date']}"
+        out.append({"date": r["pay_date"], "currency": f, "amount_c": amount, "what": what, "funded_by": how})
+    return out
+
+
+def _float_dict(services, conn, deal: "FloatDeal", now_ts: int, snapshot=None, limits: Optional[dict] = None, funding_line: Optional[dict] = None) -> dict:
+    """The preview of a float / float swap (the shape of ``tests/fixtures/terminal/xccy_float_preview.json``, P-B's ticket)."""
+    p = deal.p
+    f = p["foreign"]
+    pair = fx_pair_id(f)
+    eur_side, usd_side = deal.eur_side, ("receive" if deal.eur_side == "pay" else "pay")
+    aid = deal.acct["account_id"]
+    legs = {}
+    for side in ("receive", "pay"):
+        ccy = deal.legs.leg_ccy[side]
+        idx = FLOAT_INDEX[ccy]
+        row1 = deal.rows[0]
+        legs[side] = {"side": side, "kind": "swaprcv" if side == "receive" else "swappay", "currency": ccy, "index": idx, "index_name": FLOAT_INDEX_WORDS[idx],
+                      "notional_c": deal.legs.leg_n_c[side], "spread_bp": str(deal.dealt_bp) if ccy == f else "0", "day_count": "ACT/360",
+                      "compounding": FLOAT_COMPOUNDING[idx], "payment_delay_bd": FLOAT_PAY_DELAY_BD,
+                      "calendar": "TARGET2" if ccy == "EUR" else "New York (SOFR dates: SIFMA)",
+                      "current_print": _first_print(deal.market.usd if ccy == "USD" else deal.market.eur),
+                      "role": ("lent: paid out at the start (1360 receivable) and received back at maturity; its coupons are received" if side == "receive"
+                               else "borrowed: received at the start (2360 payable) and repaid at maturity; its coupons are paid"),
+                      "period1_indicative_c": row1["usd_indicative_c"] if ccy == "USD" else row1[f"{f.lower()}_indicative_c"]}
+    limits = limits if limits is not None else _limits_block(services, conn, aid, deal.n_usd_c, deal.mark0_c, snapshot)
+    funding_line = funding_line if funding_line is not None else _funding_line(services, conn, aid, deal)
+    record = _float_record(deal, now_ts, limits, funding_line)
+    side_text = _float_side_text(f, eur_side, deal.dealt_bp)
+    spread_key = f"{'pay' if eur_side == 'pay' else 'recv'}_spread_bp"
+    other_key = f"{'recv' if eur_side == 'pay' else 'pay'}_spread_bp"
+    out = {"kind": "XCCY", "variant": FLOAT_VARIANT, "account_id": aid, "broker": deal.broker, "dealer": deal.dealer, "currency": "USD",
+           "pay_ccy": p["pay_ccy"], "recv_ccy": p["recv_ccy"], "foreign_ccy": f, "side": f"RECEIVE_{p['recv_ccy']}_PAY_{p['pay_ccy']}", "side_text": side_text,
+           "pair_label": f"{pair[:3]}/{pair[3:]}", "deal_pair": pair, "deal_rate": str(deal.X0), "deal_rate_text": f"{pair} {deal.X0} (USD per {f}, market convention)",
+           "deal_rate_source": quote_label(deal.fx_view), "fx_quote": _quote_dict(deal.fx_view),
+           "deal_rate_as_of": getattr(deal.fx_view, "quote_time", None) or ((getattr(deal.fx_view, "inputs", None) or {}).get("as_of")),
+           "notional_c": deal.n_usd_c, "usd_notional_c": deal.n_usd_c, "foreign_notional_c": deal.n_eur_c,
+           "pay_notional_c": deal.legs.leg_n_c["pay"], "recv_notional_c": deal.legs.leg_n_c["receive"],
+           "months": p["months"], "tenor_months": p["months"], "period_months": FLOAT_STEP_MONTHS, "payment_delay_bd": FLOAT_PAY_DELAY_BD,
+           "trade_date": deal.trade_date.isoformat(), "start_date": deal.start.isoformat(), "termination_date": deal.termination.isoformat(),
+           "maturity_date": deal.maturity.isoformat(), "calendars": dict(FLOAT_CALENDAR_WORDS), "legs": legs,
+           spread_key: str(deal.dealt_bp), other_key: "0", "dealt_spread_bp": str(deal.dealt_bp),
+           "spread": dict(record["basis"], lines=_basis_lines(deal)),
+           "pv_zero_c": record["results"]["pv_zero_c"], "pv_zero_parts": {"final_exchange_timing_c": record["results"]["final_exchange_timing_c"],
+                                                                          "coupon_delays_c": record["results"]["coupon_delays_c"]},
+           "annuity_star": str(deal.astar), "bp_value_c": deal.sens["bp_value_c"], "mark0_c": deal.mark0_c, "cost_of_dealing_c": max(0, -deal.mark0_c),
+           "basis01_c": deal.sens["basis01_c"], "rate01_c": dict(deal.sens["rate01_c"]), "eur_ois_spread01_c": deal.sens["eur_ois_spread01_c"],
+           "fx_1pct_c": deal.sens["fx_1pct_c"], "dv01_c": deal.sens["rate01_c"]["USD"],
+           "dv01_note": "PV change for +1 bp on the USD curve (signed); rate01_c gives each currency",
+           "im_c": deal.im_c, "im_pct": swaps.pct_text(deal.im_pct), "im_rule": f"IM = {swaps.pct_text(deal.im_pct)} of the USD notional ({deal.im_source}, ASSUMED)",
+           "margin_mode": deal.margin_mode,
+           "csa_note": ("variation margin daily at 17:05 ET in USD on the CSA exposure (the full value: the clean mark plus the notionals and accrued coupons"
+                        " at the FX close); NAV carries the clean mark"),
+           "schedule": deal.rows, "exchanges": _float_exchanges(deal),
+           "start_conversion": deal.conversion or {"on": False, "words": "no inception conversion: the swap's start exchange is settled from the account"},
+           "net_start_flows": dict(deal.net_start, words=_net_start_words(deal)),
+           "settlement_funding": p.get("settlement_funding"), "settlement_funding_words": (funding_line or {}).get("words"),
+           "eur_obligations": record["eur_obligations"], "limits": limits, "labels": record["labels"], "pricing_record": record,
+           "terms": _float_terms_echo(p), "conventions": list(CONVENTIONS), "model": FLOAT_MODEL, "method": FLOAT_METHOD, "blockers": [],
+           "inputs": {"model": FLOAT_MODEL, "deal_rate": str(deal.X0), "fx_quality": getattr(deal.fx_view, "quality", None),
+                      "fx_source": getattr(deal.fx_view, "source", None), "fx_quote_time": getattr(deal.fx_view, "quote_time", None),
+                      "fx_label": quote_label(deal.fx_view), "curves_of": deal.market.on.isoformat(), "spread_precision": "0.1 bp"}}
+    return out
+
+
+def _net_start_words(deal: "FloatDeal") -> str:
+    f = deal.p["foreign"]
+    u, e = int(deal.net_start.get("USD", 0)), int(deal.net_start.get(f, 0))
+    parts = []
+    for ccy, v in (("USD", u), (f, e)):
+        if v < 0:
+            parts.append(f"pays {ccy} {fmt_money(-v)}")
+        elif v > 0:
+            parts.append(f"receives {ccy} {fmt_money(v)}")
+    why = " (the conversion's spread)" if deal.conversion and u < 0 and e == 0 else ""
+    return f"on {deal.start.isoformat()} the Fund " + (" and ".join(parts) if parts else "pays and receives nothing net") + f" net{why}"
+
+
+def _float_terms_echo(p: dict) -> dict:
+    out = {"pay_ccy": p["pay_ccy"], "recv_ccy": p["recv_ccy"], "pay_index": p["pay_index"], "recv_index": p["recv_index"], "months": p["months"],
+           "mtm_reset": False, "start_conversion": bool(p.get("start_conversion")), "settlement_funding": p.get("settlement_funding")}
+    if p.get("pay_notional_c") is not None:
+        out["pay_notional_c"] = p["pay_notional_c"]
+    if p.get("recv_notional_c") is not None:
+        out["recv_notional_c"] = p["recv_notional_c"]
+    return out
+
+
+def float_start_check(services, conn, aid: str, deal: "FloatDeal", snapshot=None) -> dict:
+    """3.3 Blocked: the IM now and the start-date net (with the conversion: USD 40.00 in the example; without it: the USD lent) - one commitment
+    measured as a booking measures it (PO-07); a foreign currency the swap lends at the start is checked from what the account holds by then."""
+    u_net = -int(deal.net_start.get("USD", 0))
+    need = deal.im_c + max(0, u_net)
+    f = swaps.funding_preview(services, conn, aid, "USD", need, snapshot,
+                              what=f"IM + the USD the start exchange needs on {deal.start.isoformat()}" if u_net > 0 else "IM")
+    f["start_date"] = deal.start.isoformat()
+    f["start_net_usd_c"] = -u_net
+    f_ccy = deal.p["foreign"]
+    if int(deal.net_start.get(f_ccy, 0)) < 0:            # the swap lends the foreign currency at the start: from what the account holds by then
+        chk = fxmod.funding_check(services, aid, f_ccy, -int(deal.net_start[f_ccy]), deal.start, conn=conn)
+        f["foreign_check"] = chk
+        if not chk.get("fundable"):
+            f["ok"] = False
+            f["note"] = (f"the start exchange pays {f_ccy} {fmt_money(-int(deal.net_start[f_ccy]))} on {deal.start.isoformat()}: {chk.get('text')}; it is never"
+                         " converted automatically")
+    return f
+
+
+def _float_preview(services, conn, account_id: str, acct: dict, p: dict, ts: int, marks) -> dict:
+    deal = _float_deal(services, conn, marks, acct, p, ts)
+    out = _float_dict(services, conn, deal, ts, marks)
+    out["funding"] = float_start_check(services, conn, account_id, deal, marks)
+    return out
+
+
+def _book_xccy_float(ctx: TxContext, services, acct: dict, p: dict) -> dict:
+    """D4-D6 / 4.2 Booking, one command: the IM (one Treasury sweep), the contract (start = the spot date, trade date = the FX trade date,
+    maturity = the last payment date, mark0 = the cost of dealing), the inception conversion through ``fx.book_linked_spot`` (value = the start,
+    tagged xccy_start, linked both ways), the SWAP row; no exchange before the start."""
+    conn = ctx.conn
+    aid = acct["account_id"]
+    deal = _float_deal(services, conn, ctx.marks, acct, p, int(ctx.ts))
+    chk = float_start_check(services, conn, aid, deal, ctx.marks)
+    if not chk.get("ok", True):
+        raise ConflictError("INSUFFICIENT_FUNDS", chk.get("note") or "the IM and the start-date net cannot be funded", {"funding": chk})
+    f = p["foreign"]
+    linked = getattr(fxmod, "book_linked_spot", None)
+    if deal.conversion and not callable(linked):
+        raise ConflictError("CONVERSION_UNAVAILABLE", "the inception conversion cannot be booked in this build (the FX desk's linked spot deal is not available);"
+                            " nothing was written", {"start_conversion": True})
+    broker = deal.broker
+    # V1061-03: the record's book-reading parts (D18 limits, D9 funding plan) before anything is posted - the plan reads this command's own
+    # uncommitted writes, and the quote's own IM and start net are handed to it as flows (``_quoted_float_flows``): counted once, as quoted
+    limits = _limits_block(services, conn, aid, deal.n_usd_c, deal.mark0_c, ctx.marks)
+    funding_line = _funding_line(services, conn, aid, deal)
+    cid = next_id(conn, "swap")
+    idem = f"im:{cid}:open"
+    funding = _fund(ctx, services, aid, "USD", deal.im_c, "otc", idem, overdraft=False, commit=True)      # PO-07: against available
+    side_text = _float_side_text(f, deal.eur_side, deal.dealt_bp)
+    memo = (f"OTC IM {cid}: {fx_pair_id(f)[:3]}/{fx_pair_id(f)[3:]} float / float cross-currency swap, {side_text}; {f} {fmt_money(deal.n_eur_c)} / USD"
+            f" {fmt_money(deal.n_usd_c)} at {_px_text(deal.X0)} ({quote_label(deal.fx_view)}) from {deal.start.isoformat()} to {deal.maturity.isoformat()} with"
+            f" {broker}; IM = {swaps.pct_text(deal.im_pct)} x USD {fmt_money(deal.n_usd_c)} = {fmt_money(deal.im_c)} ({deal.im_source}); mark0"
+            f" {fmt_money(deal.mark0_c)} = cost of dealing (par {deal.par_bp.quantize(Decimal('0.0001'))} bp + {deal.hw_eff_bp.normalize():f} bp half-width,"
+            f" dealt {_bp_text(deal.dealt_bp)})")
+    entries = [ctx.post(Entry("OTC_IM", memo, [dr(aid, "1330", "USD", deal.im_c, instrument_id=cid, memo="OTC initial margin"),
+                                               cr(aid, "1010", "USD", deal.im_c, memo="IM paid")], idem, ref_type="otc", ref_id=cid))]
+    conversion = dict(deal.conversion) if deal.conversion else None
+    conv_out = None
+    name = (f"XCCY {fx_pair_id(f)[:3]}/{fx_pair_id(f)[3:]} float: {side_text}, USD {fmt_money(deal.n_usd_c)}"
+            f" ({deal.start.isoformat()} to {deal.maturity.isoformat()}, {broker})")
+    _insert_instrument(services, ctx, cid, name, deal.maturity, {"contract_id": cid, "otc_kind": "XCCY", "variant": FLOAT_VARIANT, "broker": broker,
+                                                                  "pay_ccy": p["pay_ccy"], "recv_ccy": p["recv_ccy"], "deal_rate": str(deal.X0),
+                                                                  "start_date": deal.start.isoformat(), "maturity_date": deal.maturity.isoformat(),
+                                                                  "margin_mode": deal.margin_mode})
+    record = _float_record(deal, ctx.ts, limits, funding_line)
+    record["conversion"] = conversion
+    pj = [[s.isoformat(), e.isoformat(), q.isoformat()] for s, e, q in deal.periods]
+    legs = {}
+    for side in ("receive", "pay"):
+        ccy = deal.legs.leg_ccy[side]
+        legs[side] = {"currency": ccy, "notional_c": deal.legs.leg_n_c[side], "index": FLOAT_INDEX[ccy], "basis": "ACT/360",
+                      "spread_bp": str(deal.dealt_bp) if ccy == f else "0", "rate": None, "fixing": "COMPOUND_ARREARS"}
+    t = {"kind": "XCCY", "variant": FLOAT_VARIANT, "pay_ccy": p["pay_ccy"], "recv_ccy": p["recv_ccy"], "foreign_ccy": f, "usd_side": p["usd_side"],
+         "eur_side": deal.eur_side, "legs": legs, "pay_index": p["pay_index"], "recv_index": p["recv_index"], "deal_rate": str(deal.X0),
+         "deal_pair": fx_pair_id(f), "months": p["months"], "tenor_months": p["months"], "period_months": FLOAT_STEP_MONTHS,
+         "payment_delay_bd": FLOAT_PAY_DELAY_BD, "calendars": dict(FLOAT_CALENDAR_WORDS), "mtm_reset": False, "periods": pj, "fixed_periods": pj,
+         "trade_date": deal.trade_date.isoformat(), "start_date": deal.start.isoformat(), "termination_date": deal.termination.isoformat(),
+         "maturity_date": deal.maturity.isoformat(), "spread": {"on_leg": f, "dealt_bp": str(deal.dealt_bp), "par_bp": str(deal.par_bp),
+                                                                 "level_bp": str(deal.market.level_bp), "hw_bp": str(deal.hw_bp), "otc_spread_mult": str(deal.mult)},
+         "pay_spread_bp": str(deal.dealt_bp) if deal.eur_side == "pay" else "0", "recv_spread_bp": "0" if deal.eur_side == "pay" else str(deal.dealt_bp),
+         "half_width_bp": str(deal.hw_bp), "otc_spread_mult": str(deal.mult), "mark0_c": deal.mark0_c, "dv01_0_c": deal.sens["rate01_c"]["USD"],
+         "im_pct": str(deal.im_pct), "dealt_ts": ctx.ts, "model": FLOAT_MODEL, "deal_rate_source": quote_label(deal.fx_view),
+         "deal_rate_quote_time": getattr(deal.fx_view, "quote_time", None), "start_conversion": conversion,
+         "settlement_funding": p.get("settlement_funding"), "pricing_record": record}
+    inputs = {"as_of": ctx.ts, "model": FLOAT_MODEL, "deal_rate": str(deal.X0), "deal_rate_source": quote_label(deal.fx_view), "full_value_c": deal.mark0_c,
+              "balance_sheet_c": 0, "clean_mark_c": deal.mark0_c, "csa_exposure_c": deal.mark0_c, "valuation_date": deal.trade_date.isoformat(),
+              "spot_date": deal.start.isoformat(), "curve_as_of": str(getattr(deal.market.usd, "d0", "")),
+              "fx": {"pair": fx_pair_id(f), "usd_per_unit": str(deal.X0), "quality": getattr(deal.fx_view, "quality", None),
+                     "source": getattr(deal.fx_view, "source", None), "quote_time": getattr(deal.fx_view, "quote_time", None)}}
+    conn.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date, maturity_date, margin_mode, im_c,"
+                 " status, last_reset_date, reset_px, mark_c, mark_ts, vm_balance_c, inputs_json, closed_ts) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'OPEN',?,?,?,?,0,?,NULL)",
+                 (cid, ctx.command_id, aid, broker, "XCCY", dumps(t), deal.n_usd_c, "USD", deal.start.isoformat(), deal.maturity.isoformat(),
+                  deal.margin_mode, deal.im_c, deal.start.isoformat(), str(deal.X0), deal.mark0_c, ctx.ts, dumps(inputs)))
+    if conversion:
+        # D6: the inception conversion in the SAME command, after the contract row exists (fx.book_linked_spot's OA-11 check counts the swap's
+        # scheduled start receipt of the foreign currency, K4), then linked both ways: the deal's inputs.link names the contract, the contract's
+        # terms carry start_conversion.deal_id
+        conv_out = _call_linked_spot(linked, ctx, aid, deal, cid)
+        dd = conv_out.get("deal") if isinstance(conv_out, dict) else None
+        conversion["deal_id"] = (dd or {}).get("deal_id") if isinstance(dd, dict) else (conv_out or {}).get("deal_id")
+        if not conversion["deal_id"]:
+            raise ConflictError("CONVERSION_UNAVAILABLE", "the inception conversion was not booked (no deal id came back); nothing was written",
+                                {"conversion": conv_out})
+        if (conv_out or {}).get("entry_id"):
+            entries.append(conv_out["entry_id"])
+        t["start_conversion"] = conversion
+        t["pricing_record"]["conversion"] = conversion
+        conn.execute("UPDATE otc_contracts SET terms_json=? WHERE contract_id=?", (dumps(t), cid))
+    ctx.touched_instruments.add((aid, cid))
+    ctx.event("OTC_BOOKED", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, kind="XCCY", variant=FLOAT_VARIANT, broker=broker,
+              pay_ccy=p["pay_ccy"], recv_ccy=p["recv_ccy"], usd_notional_c=deal.n_usd_c, foreign_notional_c=deal.n_eur_c, deal_rate=str(deal.X0),
+              dealt_spread_bp=str(deal.dealt_bp), par_spread_bp=str(deal.par_bp.quantize(Decimal("0.0001"))), mark0_c=deal.mark0_c, im_c=deal.im_c,
+              margin_mode=deal.margin_mode, start_date=deal.start.isoformat(), maturity_date=deal.maturity.isoformat(),
+              conversion_deal_id=(conversion or {}).get("deal_id"))
+    view = swaps.contract_view(services, cid, conn=conn, detail=True, now_ts=ctx.ts)
+    preview = _float_dict(services, conn, deal, ctx.ts, ctx.marks, limits=limits, funding_line=funding_line)
+    preview["start_conversion"] = conversion or preview["start_conversion"]
+    preview["pricing_record"] = t["pricing_record"]
+    return {"contract": view, "contract_id": cid, "im_transfer": {"amount_c": deal.im_c, "funding": funding}, "start_exchange": None,
+            "conversion": conv_out, "entries": entries, "preview": preview}
+
+
+def _call_linked_spot(fn, ctx: TxContext, aid: str, deal: "FloatDeal", cid: str) -> dict:
+    """K4 ``fx.book_linked_spot``: SELL the foreign notional / BUY USD at the desk's bid on the deal's mid, value = the start date, linked to the
+    contract (``link {type: xccy_start, id}``) and its settlement rows tagged xccy_start / the contract."""
+    f = deal.p["foreign"]
+    link = {"type": "xccy_start", "id": cid, "text": f"inception conversion of {cid}"}
+    out = fn(ctx, aid, "USD", f, deal.n_eur_c, f, deal.start, deal.X0, link, ("xccy_start", cid))
+    return out if isinstance(out, dict) else {"deal": out}
+
+
+# ---- a booked float / float swap: its state, the mark (clean + CSA exposure), the accruals, START / PAY / END ----------------------------------
+def _float_legs_of(terms: dict) -> FloatLegs:
+    f = terms["foreign_ccy"]
+    legs = terms["legs"]
+    return FloatLegs({s: legs[s]["currency"] for s in ("receive", "pay")}, {s: int(legs[s]["notional_c"]) for s in ("receive", "pay")}, _periods(terms), f)
+
+
+def _float_spread(terms: dict) -> Decimal:
+    return Decimal(str((terms.get("spread") or {}).get("dealt_bp") or "0")) * BP
+
+
+def _index_factor(services, ccy: str, s: date, e: date) -> Decimal:
+    """K3 ``fxcurves.index_factor``: I(e) / I(s) from the published compounded index (EUR: the TARGET2 fallback from the daily prints); 409
+    INDEX_PENDING while either is not published - a coupon is never estimated for payment."""
+    fxc = _fxcurves()
+    if fxc is None or not hasattr(fxc, "index_factor"):
+        raise ConflictError(INDEX_PENDING, f"the {FLOAT_INDEX.get(ccy, ccy)} index cannot be read in this build (the FX curve module is not available): the"
+                            " payment waits", {"currency": ccy, "start": s.isoformat(), "end": e.isoformat()})
+    return Decimal(str(fxc.index_factor(services, ccy, s, e)))
+
+
+def _compounded_rate(factor: Decimal, days: int) -> Decimal:
+    """D4: R = (I(e) / I(s) - 1) x 360 / d, rounded to 7 decimals of a fraction (fxcurves.compounded_rate when present)."""
+    fxc = _fxcurves()
+    fn = getattr(fxc, "compounded_rate", None) if fxc is not None else None
+    if callable(fn):
+        return Decimal(str(fn(factor, days)))
+    return ((Decimal(factor) - ONE) * Decimal(360) / Decimal(int(days))).quantize(Decimal("0.0000001"), rounding=ROUND_HALF_EVEN)
+
+
+def float_exact_coupon(services, ccy: str, n_c: int, s: date, e: date, spread: Decimal) -> Tuple[int, dict]:
+    """D4 the exact coupon of a period: ``to_c(N x (R + spread) x d / 360)`` with R from the published indices (409 INDEX_PENDING otherwise)."""
+    days = (e - s).days
+    factor = _index_factor(services, ccy, s, e)
+    r = _compounded_rate(factor, days)
+    amount = to_c(from_c(int(n_c)) * (r + Decimal(spread)) * Decimal(days) / Decimal(360))
+    return amount, {"factor": str(factor), "rate": str(r), "spread": str(Decimal(spread)), "days": days, "index": FLOAT_INDEX.get(ccy, ccy),
+                    "start": s.isoformat(), "end": e.isoformat(), "formula": f"to_c({fmt_money(int(n_c))} x ({r} + {Decimal(spread)}) x {days} / 360)"}
+
+
+def float_state(services, conn: sqlite3.Connection, row: dict, terms: dict, with_index: bool = True) -> FloatState:
+    """Where the booked swap stands (FloatState): START / END done, the paid periods, each unpaid finished period's coupon (the exact one when both
+    indices are published, else the posted estimate) and the factor realised so far of the period accruing (accrual_state)."""
+    cid, aid = row["contract_id"], row["account_id"]
+    legs = _float_legs_of(terms)
+    periods = legs.periods
+    paid_dates = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
+    st = FloatState(started=_has_reset(conn, cid, "NOTIONAL_START"), ended=_has_reset(conn, cid, "NOTIONAL_END"))
+    st.paid = tuple(k for k, (_s, _e, p) in enumerate(periods) if p.isoformat() in paid_dates)
+    spread = _float_spread(terms)
+    for side, kind in (("receive", "swaprcv"), ("pay", "swappay")):
+        ccy = legs.leg_ccy[side]
+        a_st = _state(conn, kind, cid)
+        seg = a_st["segment_start"] if a_st is not None else None
+        for k, (s, e, _p) in enumerate(periods):
+            if k in st.paid:
+                continue
+            if a_st is not None and seg == s.isoformat() and a_st["accrued_through"]:
+                st.realised[(k, side)] = (Decimal(str(a_st["rate"])), _date(a_st["accrued_through"]) + timedelta(days=1))
+            elif a_st is not None and seg is not None and seg > s.isoformat():
+                exact = None
+                if with_index:
+                    try:
+                        exact, _info = float_exact_coupon(services, ccy, legs.leg_n_c[side], s, e, spread if ccy == legs.spread_ccy else Decimal(0))
+                    except RejectError:                    # not published yet (INDEX_PENDING): the posted estimate
+                        exact = None
+                if exact is None:
+                    spec = swaps.LegSpec(kind, "float", ccy, legs.leg_n_c[side], "ACT/360", tuple(periods), "COMPOUND_ARREARS")
+                    exact = swaps._posted_leg_c(conn, aid, cid, spec, (s, e, _p))
+                st.known[(k, side)] = int(exact)
+    return st
+
+
+def _balance_sheet(conn: sqlite3.Connection, row: dict, fx_of) -> Tuple[Decimal, dict]:
+    """D8 B(t): the contract's notionals and accrued coupons on the balance sheet in USD at the FX rate ``fx_of(ccy)``: 1360 + 1225 (assets) - 2360
+    - 2340 (liabilities), each in its own currency."""
+    aid, cid = row["account_id"], row["contract_id"]
+    total = Decimal(0)
+    detail: Dict[str, Dict[str, int]] = {}
+    for r in conn.execute("SELECT gl, currency, SUM(balance_c) AS b FROM gl_balances WHERE account_id=? AND instrument_id=? AND gl IN ('1360','1225','2360','2340')"
+                          " GROUP BY gl, currency", (aid, cid)).fetchall():
+        b = natural(r["gl"], int(r["b"] or 0))
+        if not b:
+            continue
+        detail.setdefault(r["currency"], {})[r["gl"]] = b
+        sign = ONE if r["gl"] in ("1360", "1225") else -ONE
+        total += sign * from_c(b) * fx_of(r["currency"])
+    return total, detail
+
+
+def _float_mark(services, row: dict, terms: dict, at: int, valuation_date=None, snapshot=None, level_shift_bp: Decimal = Decimal(0)):
+    """``(clean mark cents, inputs)`` of a booked float / float swap for the spot date of the valuation date (D19): the full value (3.3) at the FX
+    rate (the pair's close of the valuation date for SWAP_VM, LC-3; the live mid otherwise), minus B(t); ``inputs.csa_exposure_c`` = the full value
+    (D8: the CTM variation margin follows it).  A stale ``MarkView`` of the stored mark when an input is missing; ``(None, {vm_outcome})`` for a
+    VM date whose close is not known.  ``level_shift_bp`` moves the basis level (the termination's half-width, D17)."""
+    cid = row["contract_id"]
+    now_ts = int(at)
+    f = terms["foreign_ccy"]
+    pair = fx_pair_id(f)
+    on = _date(valuation_date) if valuation_date is not None else fxmod.fx_trade_date(services, now_ts)
+    base = {"as_of": now_ts, "valuation_date": on.isoformat(), "contract_id": cid, "model": FLOAT_MODEL, "variant": FLOAT_VARIANT, "quality": "computed"}
+    if row.get("status") != "OPEN":
+        return 0, dict(base, note=f"{row.get('status')}: no remaining cash flows")
+    snap = snapshot if snapshot is not None else _snapshot(services, [pair])
+    stored = int(row.get("mark_c") or 0)
+    try:
+        if valuation_date is not None:
+            with _marks.shared_reader(services.db) as conn:
+                px, info = _vm_close(services, pair, "FX_SPOT", on, lambda r: fx_close_on(services, conn, snap, f, r), snap.fx(f) if snap is not None else None)
+            if px is None:
+                return None, dict(base, **info)
+            X = qprice(px)
+            fx_in = {"pair": pair, "usd_per_unit": str(X), "quality": "close", "source": info.get("source"), "quote_time": info.get("quote_time"),
+                     "close_date": info.get("close_date"), "basis": info.get("basis")}
+        else:
+            fxv = snap.fx(f) if snap is not None else None
+            if fxv is None or fxv.mark is None or fxv.quality == "unavailable":
+                raise ConflictError("NO_QUOTE", f"no {pair} rate: the {f} flows cannot be converted", {"pair": pair})
+            X = qprice(fxv.mark)
+            fx_in = {"pair": pair, "usd_per_unit": str(X), "quality": fxv.quality, "source": fxv.source, "quote_time": fxv.quote_time}
+        cc = _ccycal()
+        if cc is None:
+            raise ConflictError("CALENDAR_UNAVAILABLE", "the currency calendars are not in this build", {})
+        t_spot = cc.spot_date(services, pair, on)
+        with _marks.shared_reader(services.db) as conn:
+            acct = _rowd(account_row(conn, row["account_id"]))
+            market = float_market(services, conn, acct, on)
+            if level_shift_bp:
+                market = FloatMarket(market.on, market.usd, market.eur, market.level_bp + Decimal(level_shift_bp), market.eur_ois_spread_bp)
+            state = float_state(services, conn, row, terms)
+            legs = _float_legs_of(terms)
+            proj, disc = market.zc()
+            with localcontext(P34):
+                full, usd_part, f_part = float_full_value(legs, _float_spread(terms), X, t_spot, proj, disc, state)
+                bsheet, bdetail = _balance_sheet(conn, row, lambda c: ONE if c == "USD" else X)
+                clean = full - bsheet
+    except ConflictError as e:
+        if valuation_date is not None:
+            # a curve / print / calendar input is missing for that VM date: retried (CLOSE_PENDING-style pending outcome, quiet the first time)
+            return None, dict(base, vm_outcome="CLOSE_PENDING", note=f"{e.code}: {e.message}", waits_for="the swap's curves and prints of that date")
+        return _stale_view(cid, stored, "XCCY float model (stored mark)", row.get("mark_ts"), now_ts, dict(base, stored_mark_c=stored),
+                           f"{e.message}; the last computed mark, labelled stale")
+    full_c, clean_c = to_c(full), to_c(clean)
+    inputs = dict(base, fx=fx_in, spot_date=t_spot.isoformat(), curve_as_of=str(getattr(market.usd, "d0", "")),
+                  curves={"USD": str(getattr(market.usd, "d0", "")), f: str(getattr(market.eur, "d0", ""))}, level_bp=str(market.level_bp),
+                  full_value_c=full_c, balance_sheet_c=to_c(bsheet), balance_sheet=bdetail, clean_mark_c=clean_c, csa_exposure_c=full_c,
+                  usd_flows_pv_c=to_c(usd_part), foreign_flows_pv=str(f_part.quantize(Decimal("0.01"))), started=state.started,
+                  paid_periods=list(state.paid), qualities=[fx_in.get("quality") or "close"],
+                  formula=f"clean {fmt_money(clean_c)} = full value {fmt_money(full_c)} - balance sheet {fmt_money(to_c(bsheet))} at {X}")
+    if level_shift_bp:
+        inputs["level_shift_bp"] = str(level_shift_bp)
+    return clean_c, inputs
+
+
+def _float_leg_spec(conn: sqlite3.Connection, row: dict, terms: dict, kind: str, night: date) -> Tuple[Optional[swaps.LegSpec], Optional[int]]:
+    """4.2 Accruals: the COMPOUND_ARREARS ``LegSpec`` of a float leg (index SOFR / ESTR, the dealt spread on the foreign leg, ACT/360) - nights S ..
+    e_n - 1; START_PENDING before the start exchange."""
+    cid = row["contract_id"]
+    if not _has_reset(conn, cid, "NOTIONAL_START"):
+        raise RejectError("START_PENDING", f"{cid}: the start exchange has not happened; nothing accrues before it", {"contract_id": cid})
+    periods = _periods(terms)
+    k = _period_index(periods, night)
+    if k is None:
+        return None, None
+    side = "receive" if kind == "swaprcv" else "pay"
+    leg = terms["legs"][side]
+    ccy = leg["currency"]
+    spread = _float_spread(terms) if ccy == terms["foreign_ccy"] else Decimal(0)
+    return swaps.LegSpec(kind, "float", ccy, int(leg["notional_c"]), "ACT/360", tuple(periods), "COMPOUND_ARREARS", None, FLOAT_INDEX[ccy], spread), k
+
+
+def _settle_linked(ctx: TxContext, ref_type: str, cid: str, due: date, phase: str) -> Optional[dict]:
+    """K4 ``fx.settle_linked``: settle the receive / pay legs of the deals tagged to this contract and due by ``due`` (None while not built)."""
+    fn = getattr(fxmod, "settle_linked", None)
+    if not callable(fn):
+        return None
+    return fn(ctx, ref_type, cid, due, phase)
+
+
+def _float_start(ctx: TxContext, services, row: dict, d: date, key: str, job: Optional[str]) -> dict:
+    """D7 / 4.2 START, one command at 00:45 ET of the start date: the conversion's receivable (USD in), the net shortfall funded, the exchange (USD
+    lent out, EUR borrowed in, at the deal rate), the conversion's payable (EUR out), the NOTIONAL_START row.  Any failure rolls the whole step back
+    (SAVEPOINT): SKIPPED with an ERROR naming the reason, retried; the linked rows wait - nothing settles the conversion alone."""
+    conn = ctx.conn
+    cid, aid = row["contract_id"], row["account_id"]
+    conn.execute("SAVEPOINT xccy_float_start")
+    try:
+        res = _float_start_steps(ctx, services, row, d)
+        conn.execute("RELEASE SAVEPOINT xccy_float_start")
+    except RejectError as e:
+        conn.execute("ROLLBACK TO SAVEPOINT xccy_float_start")
+        conn.execute("RELEASE SAVEPOINT xccy_float_start")
+        return _skip(ctx, job, key, e.code, f"{cid}: the start exchange (with its linked conversion) could not run: {e.message}; nothing was posted, the linked"
+                     " settlement rows wait (retried; never automatic FX)", aid, cid, e.details, severity="ERROR")
+    _job_done(ctx, job, key, "DONE", f"start exchange posted (entry {res['entry_id']}){' with the conversion settled' if res.get('conversion') else ''}")
+    _resolve(ctx, ("INSUFFICIENT_FUNDS", "INSUFFICIENT_FUNDS_CCY", "XCCY_EVENT_LATE"), key)
+    return dict(res, status="DONE", key=key, posted=True)
+
+
+def _float_start_steps(ctx: TxContext, services, row: dict, d: date) -> dict:
+    conn = ctx.conn
+    cid, aid = row["contract_id"], row["account_id"]
+    terms = _terms(row)
+    f = terms["foreign_ccy"]
+    rate = qprice(terms["deal_rate"])
+    lent, bor = terms["legs"]["receive"], terms["legs"]["pay"]
+    lc, bc = lent["currency"], bor["currency"]
+    ln, bn = int(lent["notional_c"]), int(bor["notional_c"])
+    conv = terms.get("start_conversion") or {}
+    linked = bool(conv.get("deal_id"))
+    idem = f"xccy:{cid}:start"
+    got_in = _settle_linked(ctx, "xccy_start", cid, d, "receive") if linked else None        # 1. the conversion's receivable: USD in
+    if linked and getattr(fxmod, "settle_linked", None) is None:
+        raise ConflictError("CONVERSION_UNAVAILABLE", "the linked conversion cannot be settled in this build (fx.settle_linked is not available)")
+    with swaps.asof_context(ctx, d):
+        funding = _fund(ctx, services, aid, lc, ln, "xccy", idem, overdraft=False, commit=True)            # 2. only the net shortfall is swept
+
+        def fxr(ccy: str):
+            return None if ccy == "USD" else rate
+        lines = [dr(aid, "1360", lc, ln, instrument_id=cid, fx_rate=fxr(lc), memo="notional lent (receive leg; comes back at maturity)"),
+                 cr(aid, "1010", lc, ln, fx_rate=fxr(lc), memo="notional paid at the start"),
+                 dr(aid, "1010", bc, bn, fx_rate=fxr(bc), memo="notional received at the start"),
+                 cr(aid, "2360", bc, bn, instrument_id=cid, fx_rate=fxr(bc), memo="notional borrowed (pay leg; repaid at maturity)")]
+        memo = (f"XCCY start exchange {cid}: we pay {lc} {fmt_money(ln)} (lent: the receive leg, back at maturity) and receive {bc} {fmt_money(bn)} (borrowed:"
+                f" the pay leg, repaid at maturity) at the deal rate {_px_text(rate)} USD per {f}"
+                + (f"; settled payment versus payment with the inception conversion {conv.get('deal_id')}" if linked else "")
+                + "; each leg balances in its own currency (SWAP_RESET)")
+        entry_id = ctx.post(Entry("XCCY_EXCHANGE", memo, lines, idem, ref_type="otc", ref_id=cid, business_date=d.isoformat()))          # 3. the exchange
+    got_out = _settle_linked(ctx, "xccy_start", cid, d, "pay") if linked else None             # 4. the conversion's payable: EUR out
+    usd_n = ln if lc == "USD" else bn
+    detail = {"we_pay": {"currency": lc, "amount_c": ln, "gl": "1360"}, "we_receive": {"currency": bc, "amount_c": bn, "gl": "2360"}, "rate": str(rate),
+              "funding": funding, "entry_id": entry_id, "conversion": {"deal_id": conv.get("deal_id"), "receive": got_in, "pay": got_out} if linked else None}
+    conn.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES (?,?,'NOTIONAL_START',?,?,?)",
+                 (cid, d.isoformat(), usd_n, dumps(detail), entry_id))
+    ctx.touched_instruments.add((aid, cid))
+    ctx.event("XCCY_EXCHANGE", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, event="START", date=d.isoformat(), entry_id=entry_id,
+              we_pay=detail["we_pay"], we_receive=detail["we_receive"], rate=str(rate), conversion=detail["conversion"])
+    return {"entry_id": entry_id, "funding": funding, "we_pay": detail["we_pay"], "we_receive": detail["we_receive"], "rate": str(rate),
+            "conversion": detail["conversion"]}
+
+
+def _float_pay(ctx: TxContext, services, row: dict, d: date, job: Optional[str], key: str, pay_phase: bool = True) -> dict:
+    """4.2 PAY (00:45 ET of p_k): both legs accrued through e_k - 1 (else ACCRUALS_PENDING), both indices published (else INDEX_PENDING: quiet on
+    its first day, a WARN after), the exact coupons, one true-up entry per leg (idem ``accr:{kind}:{cid}:trueup:{e_k}``), the settlement-funding
+    deal's receivable, the payment, its payable, the PAY row.  ``pay_phase`` False (the END) leaves the funding deal's USD leg for after the final
+    exchange."""
+    conn = ctx.conn
+    cid, aid = row["contract_id"], row["account_id"]
+    ds = d.isoformat()
+    done = conn.execute("SELECT amount_c, detail_json, entry_id FROM otc_resets WHERE contract_id=? AND event_date=? AND kind='PAY'", (cid, ds)).fetchone()
+    if done is not None:
+        _job_done(ctx, job, key, "DONE", "already paid")
+        return {"status": "DONE", "already": True, "posted": False, "key": key, "entry_id": done["entry_id"], "payment": _detail(done)}
+    terms = _terms(row)
+    legs_def = _float_legs_of(terms)
+    periods = legs_def.periods
+    k = next((i for i, q in enumerate(periods) if q[2] == d), None)
+    if k is None:
+        raise RejectError("KEY_INVALID", f"{ds} is not a payment date of {cid}")
+    if ctx.ts < epoch_of(d, EVENT_ET):
+        return _skip(ctx, job, key, "PAY_NOT_YET", f"{cid}: the payment of {ds} runs from {EVENT_ET} ET", aid, cid, quiet=True)
+    if not _has_reset(conn, cid, "NOTIONAL_START"):
+        return _skip(ctx, job, key, "START_PENDING", f"{cid}: the start exchange has not happened", aid, cid)
+    s, e, _p = periods[k]
+    spread = _float_spread(terms)
+    legs: Dict[str, dict] = {}
+    for side, kind in (("receive", "swaprcv"), ("pay", "swappay")):
+        ccy = legs_def.leg_ccy[side]
+        st = _state(conn, kind, cid)
+        through = st["accrued_through"] if st is not None else None
+        last_night = (e - timedelta(days=1)).isoformat()
+        if through is None or through < last_night:
+            return _skip(ctx, job, key, "ACCRUALS_PENDING", f"{cid}: the {side} leg is accrued through {through or 'nothing'}, the period ends {e.isoformat()}"
+                         " (ACCRUE_DAILY first)", aid, cid, {"leg": side, "accrued_through": through, "needed": last_night})
+        sp = spread if ccy == legs_def.spread_ccy else Decimal(0)
+        try:
+            exact, info = float_exact_coupon(services, ccy, legs_def.leg_n_c[side], s, e, sp)
+        except ConflictError as ex:
+            first_day = ny_of(int(ctx.ts)).date() <= d
+            return _skip(ctx, job, key, INDEX_PENDING, f"{cid}: the {FLOAT_INDEX.get(ccy, ccy)} index of {s.isoformat()} or {e.isoformat()} is not published yet"
+                         f" ({ex.message}); the payment waits for it - a coupon is never estimated for payment", aid, cid,
+                         {"leg": side, "start": s.isoformat(), "end": e.isoformat()}, quiet=first_day)
+        spec = swaps.LegSpec(kind, "float", ccy, legs_def.leg_n_c[side], "ACT/360", tuple(periods), "COMPOUND_ARREARS", None, FLOAT_INDEX[ccy], sp)
+        posted = swaps._posted_leg_c(conn, aid, cid, spec, (s, e, _p))
+        legs[side] = {"kind": kind, "currency": ccy, "gl": spec.gl, "notional_c": legs_def.leg_n_c[side], "amount_c": exact, "posted_c": posted,
+                      "trueup_c": exact - posted, "spec": spec, **info}
+    entries: List[int] = []
+    for side in ("receive", "pay"):                       # 3. the true-ups: the nightly estimate moved to the published index
+        lg = legs[side]
+        diff = int(lg["trueup_c"])
+        if diff:
+            memo = (f"XCCY {cid} {lg['currency']} {side} leg {s.isoformat()}..{e.isoformat()}: true-up of the nightly estimate to the published index - exact"
+                    f" {fmt_money(lg['amount_c'])} ({lg['formula']}, {lg['index']} factor {lg['factor']}) - posted {fmt_money(lg['posted_c'])} = {fmt_money(diff)}"
+                    " (ACCRUAL)")
+            entries.append(ctx.post(Entry("ACCRUAL", memo, swaps._leg_lines(aid, cid, lg["spec"], diff), f"accr:{lg['kind']}:{cid}:trueup:{e.isoformat()}",
+                                          ref_type="otc", ref_id=cid, business_date=ds)))
+    idem = f"xccypay:{cid}:{ds}"
+    rl, pl = legs["receive"], legs["pay"]
+    got_in = _settle_linked(ctx, "xccy_event", cid, d, "receive")                           # 4. the settlement-funding deal's receivable
+    with swaps.asof_context(ctx, d):
+        funding = _fund(ctx, services, aid, pl["currency"], pl["amount_c"], "xccypay", idem, overdraft=True)
+        lines: List[Line] = []
+        if rl["amount_c"]:
+            lines += [dr(aid, "1010", rl["currency"], rl["amount_c"], memo="receive leg coupon received"),
+                      cr(aid, "1225", rl["currency"], rl["amount_c"], instrument_id=cid, memo="receive leg coupon settled")]
+        if pl["amount_c"]:
+            lines += [dr(aid, "2340", pl["currency"], pl["amount_c"], instrument_id=cid, memo="pay leg coupon settled"),
+                      cr(aid, "1010", pl["currency"], pl["amount_c"], memo="pay leg coupon paid")]
+        memo = (f"XCCY payment {cid} {ds}: receive {rl['currency']} {fmt_money(rl['amount_c'])} ({rl['index']} compounded {rl['rate']} x {rl['days']} days"
+                f" ACT/360 on {fmt_money(rl['notional_c'])}) / pay {pl['currency']} {fmt_money(pl['amount_c'])} ({pl['index']} compounded {pl['rate']}"
+                f"{' + ' + str(Decimal(pl['spread'])) if Decimal(pl['spread']) else ''} x {pl['days']} days ACT/360 on {fmt_money(pl['notional_c'])}); each leg"
+                " settles in its own currency (SWAP_RESET)")
+        entry_id = ctx.post(Entry("XCCY_PAY", memo, lines, idem, ref_type="otc", ref_id=cid, business_date=ds)) if lines else None
+    got_out = _settle_linked(ctx, "xccy_event", cid, d, "pay") if pay_phase else None     # 6. the funding deal's USD leg
+
+    def usd(amount_c: int, ccy: str) -> int:
+        return amount_c if ccy == "USD" else to_c(from_c(amount_c) * ctx.fx.rate(ccy))
+    net_usd = usd(rl["amount_c"], rl["currency"]) - usd(pl["amount_c"], pl["currency"])
+    clean = {side: {k2: v for k2, v in lg.items() if k2 != "spec"} for side, lg in legs.items()}
+    detail = {"legs": clean, "net_usd_c": net_usd, "funding": funding, "entry_id": entry_id, "trueup_entries": entries,
+              "settlement_funding": {"receive": got_in, "pay": got_out}}
+    conn.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES (?,?,'PAY',?,?,?)", (cid, ds, net_usd, dumps(detail), entry_id))
+    _job_done(ctx, job, key, "DONE", f"receive {rl['currency']} {fmt_money(rl['amount_c'])}, pay {pl['currency']} {fmt_money(pl['amount_c'])} (index-exact)")
+    _resolve(ctx, ("ACCRUALS_PENDING", INDEX_PENDING, "START_PENDING", "XCCY_EVENT_LATE"), key)
+    ctx.touched_instruments.add((aid, cid))
+    ctx.event("XCCY_PAY", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, date=ds, legs=clean, net_usd_c=net_usd, entry_id=entry_id)
+    return {"status": "DONE", "key": key, "posted": entry_id is not None, "entry_id": entry_id, "legs": clean, "net_usd_c": net_usd, "funding": funding,
+            "trueup_entries": entries}
+
+
+def _float_end(ctx: TxContext, services, row: dict, d: date, key: str, job: Optional[str]) -> dict:
+    """4.2 END (00:45 ET of the last payment date): the last PAY (its funding deal's receivable first), the reverse exchange (USD lent back, EUR
+    borrowed repaid, each in its own currency at this command's FX rate), the funding deal's USD leg after it (payment versus payment), then
+    ``swaps.close_contract`` (VM unwound, IM released, MATURED)."""
+    conn = ctx.conn
+    cid, aid = row["contract_id"], row["account_id"]
+    ds = d.isoformat()
+    done = conn.execute("SELECT entry_id FROM otc_resets WHERE contract_id=? AND kind='NOTIONAL_END'", (cid,)).fetchone()
+    if done is not None:
+        _job_done(ctx, job, key, "DONE", "already matured")
+        return {"status": "DONE", "already": True, "posted": False, "key": key, "entry_id": done["entry_id"]}
+    if ds != row["maturity_date"]:
+        raise RejectError("KEY_INVALID", f"{ds} is not the maturity of {cid} ({row['maturity_date']})")
+    if ctx.ts < epoch_of(d, EVENT_ET):
+        return _skip(ctx, job, key, "END_NOT_YET", f"{cid}: the maturity exchange runs from {EVENT_ET} ET on {ds}", aid, cid, quiet=True)
+    if not _has_reset(conn, cid, "NOTIONAL_START"):
+        return _skip(ctx, job, key, "START_PENDING", f"{cid}: the start exchange has not happened", aid, cid)
+    pay_out = None
+    if not _has_reset(conn, cid, "PAY", ds):
+        pay_out = _float_pay(ctx, services, row, d, None, key, pay_phase=False)
+        if pay_out.get("status") == "SKIPPED":
+            _job_done(ctx, job, key, "SKIPPED", pay_out["note"])
+            return pay_out
+    terms = _terms(row)
+    lc, bc = terms["legs"]["receive"]["currency"], terms["legs"]["pay"]["currency"]
+    ln = balance(conn, aid, "1360", lc, cid)
+    bn = balance(conn, aid, "2360", bc, cid)
+    idem = f"xccy:{cid}:end"
+    with swaps.asof_context(ctx, d):
+        funding = _fund(ctx, services, aid, bc, bn, "xccy", idem, overdraft=True)
+        lines: List[Line] = []
+        if ln:
+            lines += [dr(aid, "1010", lc, ln, memo="notional lent received back"), cr(aid, "1360", lc, ln, instrument_id=cid, memo="notional receivable settled")]
+        if bn:
+            lines += [dr(aid, "2360", bc, bn, instrument_id=cid, memo="notional payable settled"), cr(aid, "1010", bc, bn, memo="notional borrowed repaid")]
+        memo = (f"XCCY maturity exchange {cid} {ds}: we receive back {lc} {fmt_money(ln)} (lent) and repay {bc} {fmt_money(bn)} (borrowed), each in its own"
+                " currency at this command's FX rate (the FX result since the start is realised) (SWAP_RESET)")
+        entry_id = ctx.post(Entry("XCCY_EXCHANGE", memo, lines, idem, ref_type="otc", ref_id=cid, business_date=ds)) if lines else None
+    got_out = _settle_linked(ctx, "xccy_event", cid, d, "pay")
+    detail = {"we_receive": {"currency": lc, "amount_c": ln, "gl": "1360"}, "we_pay": {"currency": bc, "amount_c": bn, "gl": "2360"}, "funding": funding,
+              "entry_id": entry_id, "settlement_funding_pay": got_out}
+    conn.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES (?,?,'NOTIONAL_END',?,?,?)",
+                 (cid, ds, ln if lc == "USD" else bn, dumps(detail), entry_id))
+    closed = swaps.close_contract(ctx, services, _contract(conn, cid), "MATURED", 0, _vm_reference(conn, cid), f"otc:{cid}:mature", "OTC_MATURE",
+                                  f"XCCY maturity {cid} {ds}: VM balance unwound, IM {fmt_money(int(row['im_c']))} released (SWAP_RESET)", False, True)
+    _job_done(ctx, job, key, "DONE", f"matured: receive back {lc} {fmt_money(ln)}, repay {bc} {fmt_money(bn)}")
+    _resolve(ctx, ("ACCRUALS_PENDING", INDEX_PENDING, "START_PENDING", "XCCY_EVENT_LATE"), key)
+    ctx.touched_instruments.add((aid, cid))
+    ctx.event("SWAP_MATURED", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, date=ds, kind="XCCY", entry_id=entry_id,
+              **{k2: v for k2, v in closed.items() if k2 not in ("funding", "entry_id")})
+    return {"status": "DONE", "key": key, "posted": True, "entry_id": entry_id, "pay": pay_out, "matured": closed, "funding": funding, "exchange": detail}
+
+
+def _event_late(ctx: TxContext, row: dict, d: date, ev: str, key: str, res: dict) -> dict:
+    """D7: a START / PAY / END of a float swap not done by 06:00 ET of its date raises one ERROR XCCY_EVENT_LATE naming the event and its last
+    skip reason (the START runbook, 10.8)."""
+    if not isinstance(res, dict) or res.get("status") != "SKIPPED" or ctx.ts < epoch_of(d, FLOAT_LATE_ET):
+        return res
+    cid, aid = row["contract_id"], row["account_id"]
+    if ctx.conn.execute("SELECT 1 FROM attention WHERE code='XCCY_EVENT_LATE' AND ref_id=? AND resolved_ts IS NULL", (key,)).fetchone() is None:
+        words = {"START": "start exchange (with its linked conversion)", "PAY": "coupon payment", "END": "maturity exchange"}.get(ev, ev.lower())
+        msg = (f"{cid}: the {words} of {d.isoformat()} is not done by {FLOAT_LATE_ET} ET - last reason: {res.get('note') or res.get('message') or res.get('code')};"
+               " the linked settlement rows wait (nothing is overdrawn); see the START runbook")
+        ctx.attention("ERROR", SOURCE, "XCCY_EVENT_LATE", msg, {"account_id": aid, "ref_type": "otc", "ref_id": key, "contract_id": cid, "event": ev,
+                                                                 "date": d.isoformat(), "last_code": res.get("code"), "auto_resolve": 1})
+        ctx.event("ATTENTION", account_id=aid, ref_type="otc", ref_id=key, code="XCCY_EVENT_LATE", contract_id=cid, event=ev)
+    return dict(res, late=True)
+
+
+# ---- termination of any cross-currency swap (FX_CCS_PLAN D17; both variants) ------------------------------------------------------------
+def _fixed_closeout(services, row: dict, terms: dict, snap, at: int) -> Tuple[int, dict, Decimal]:
+    """D17 for the fixed / fixed variant: its clean value with the dealer's half-width against the Fund on each leg (a received leg valued at par +
+    hw, a paid one at par - hw: the quotes it would take to replace them) at the live FX rate; ``(clean cents, inputs, fx)``."""
+    on = ny_of(int(at)).date()
+    remaining = [q for q in _periods(terms) if q[2] > on]
+    foreign = terms["foreign_ccy"]
+    fxv = snap.fx(foreign) if snap is not None else None
+    if fxv is None or fxv.mark is None or fxv.quality == "unavailable":
+        raise ConflictError("NO_QUOTE", f"no {fx_pair_id(foreign)} rate: the swap cannot be closed out now", {"pair": fx_pair_id(foreign)})
+    fx_rate = qprice(fxv.mark)
+    hw = Decimal(str(terms.get("half_width") or "0"))
+    total = Decimal(0)
+    legs = {}
+    if remaining:
+        for side in ("receive", "pay"):
+            leg = terms["legs"][side]
+            ccy = leg["currency"]
+            notional = int(row["notional_c"]) if ccy == "USD" else int(leg["notional_c"])
+            par, annuity, curve = leg_curve(services, ccy, len(remaining))
+            against = (qprice(par) + hw) if side == "receive" else (qprice(par) - hw)
+            sign = ONE if side == "receive" else -ONE
+            fx = ONE if ccy == "USD" else fx_rate
+            v = leg_value(sign, notional, leg["rate"], against, annuity, fx)
+            total += v
+            legs[side] = {"currency": ccy, "par_rate": str(par), "closeout_rate": str(against), "annuity": str(annuity), "value_c": to_c(v)}
+    return to_c(total), {"fx": {"pair": fx_pair_id(foreign), "usd_per_unit": str(fx_rate), "quality": fxv.quality, "source": fxv.source,
+                                "quote_time": fxv.quote_time}, "legs": legs, "half_width": str(hw), "model": XCCY_MODEL}, fx_rate
+
+
+def _terminate_xccy(ctx: TxContext, services, row: dict) -> Tuple[dict, int, dict, List[int]]:
+    """D17 (FX_CCS_PLAN rev 2; both variants): before the start with a linked inception conversion -> 409 XCCY_NOT_STARTED, nothing written;
+    otherwise cash-settled in USD at the FULL value with the dealer's half-width against the Fund (float: the basis level moved by the half-width,
+    down for the payer of the EUR leg; fixed / fixed: each leg at the quote that would replace it) - the accruals caught up first, then ONE entry
+    clears the notionals and accrued coupons (1360 / 2360 / 1225 / 2340) through 3900 at the FX rate now with their USD value in cash (never EUR),
+    and ``swaps.close_contract`` posts the clean close-out value to 4450, unwinds the VM and releases the IM.  Linked funding deals already booked
+    stay (trades) and settle on their own value dates."""
+    conn = ctx.conn
+    cid, aid = row["contract_id"], row["account_id"]
+    terms = _terms(row)
+    float_ = _is_float(terms)
+    started = _has_reset(conn, cid, "NOTIONAL_START")
+    conv = terms.get("start_conversion") or {}
+    if not started and float_ and conv.get("deal_id"):
+        s = row["start_date"]
+        raise ConflictError("XCCY_NOT_STARTED", f"{cid}: the start exchange and its conversion settle together on {s}; terminate from {s} 00:45 ET - nothing was"
+                            " written", {"contract_id": cid, "start_date": s, "conversion_deal_id": conv.get("deal_id")})
+    today = ny_of(ctx.ts).date()
+    entries: List[int] = []
+    if started:
+        last_night_end = _date(terms.get("termination_date") or row["maturity_date"])
+        through = min(today, last_night_end) - timedelta(days=1)
+        entries += _catch_up(ctx, services, row, ("swaprcv", "swappay"), through)
+    row = _contract(conn, cid)
+    if float_:
+        eur_side = terms.get("eur_side") or ("pay" if terms["legs"]["pay"]["currency"] != "USD" else "receive")
+        hw_eff = Decimal(str(terms.get("half_width_bp") or "0")) * Decimal(str(terms.get("otc_spread_mult") or "1"))
+        shift = -hw_eff if eur_side == "pay" else hw_eff
+        got = _float_mark(services, row, terms, ctx.ts, snapshot=ctx.marks, level_shift_bp=shift)
+        if not isinstance(got, tuple) or got[0] is None:
+            note = getattr(got, "note", None) or (got[1].get("note") if isinstance(got, tuple) and isinstance(got[1], dict) else None) or "no value"
+            raise ConflictError("NO_CURVE", f"{cid}: {note}: a termination needs the swap's full value now - nothing was written", {"contract_id": cid})
+        clean_c, inputs = int(got[0]), dict(got[1])
+        X = Decimal(str(inputs["fx"]["usd_per_unit"]))
+    else:
+        clean_c, inputs, X = _fixed_closeout(services, row, terms, ctx.marks, ctx.ts)
+    # the balance sheet of the contract, cleared at X through 3900; its USD value is paid / received in cash
+    bal = {}
+    for gl in ("1360", "1225", "2360", "2340"):
+        for ccy in sorted({terms["legs"]["receive"]["currency"], terms["legs"]["pay"]["currency"]}):
+            b = balance(conn, aid, gl, ccy, cid)
+            if b:
+                bal[(gl, ccy)] = b
+    lines: List[Line] = []
+    b_usd = 0
+    usd_of: Dict[str, int] = {}
+    for (gl, ccy), b in sorted(bal.items()):
+        asset = gl in ("1360", "1225")
+        if ccy == "USD":
+            lines.append(cr(aid, gl, "USD", b, instrument_id=cid, memo="cleared at the termination") if asset else
+                         dr(aid, gl, "USD", b, instrument_id=cid, memo="cleared at the termination"))
+            b_usd += b if asset else -b
+        else:
+            lines.append(cr(aid, gl, ccy, b, instrument_id=cid, fx_rate=X, memo=f"cleared at the termination at {X}") if asset else
+                         dr(aid, gl, ccy, b, instrument_id=cid, fx_rate=X, memo=f"cleared at the termination at {X}"))
+            usd_of[ccy] = usd_of.get(ccy, 0) + (b if asset else -b)
+    for ccy, net in sorted(usd_of.items()):              # the foreign lines through 3900 at X: the USD side carries their value (D17)
+        if not net:
+            continue
+        parts = [b for (gl, c), b in bal.items() if c == ccy]
+        lines.append(dr(aid, "3900", ccy, net, fx_rate=X, memo=f"{ccy} cleared through FX conversion clearing") if net > 0 else
+                     cr(aid, "3900", ccy, -net, fx_rate=X, memo=f"{ccy} cleared through FX conversion clearing"))
+        usd_val = sum((fx_c(b, X) * (1 if gl in ("1360", "1225") else -1)) for (gl, c), b in bal.items() if c == ccy)
+        lines.append(cr(aid, "3900", "USD", usd_val, memo=f"USD value of the {ccy} cleared at {X}") if usd_val > 0 else
+                     dr(aid, "3900", "USD", -usd_val, memo=f"USD value of the {ccy} cleared at {X}"))
+        b_usd += usd_val
+        del parts
+    total_cash_needed = 0
+    vb = int(row["vm_balance_c"] or 0) if row["margin_mode"] == "CTM" else 0
+    unwind_cash = -vb if row["margin_mode"] == "CTM" else 0      # VM posted (vb < 0) comes back, VM received (vb > 0) goes back
+    ref_c = _vm_reference(conn, cid)
+    result_cash = clean_c if row["margin_mode"] == "CTM" else clean_c - ref_c
+    total_cash = b_usd + unwind_cash + result_cash
+    funding = None
+    if total_cash < 0:                                          # one funding for the whole close-out: own cash, then one Treasury sweep (USD only)
+        total_cash_needed = -total_cash
+        link_type, link_id = ("xccy", f"xccy:{cid}:terminate") if lines else ("otc", f"otc:{cid}:terminate")    # the entry this command posts (L19)
+        funding = swaps.fund_commitment(ctx, services, aid, "USD", total_cash_needed, link_type, link_id, csa_netting=True)
+    clear_id = None
+    if lines:
+        if b_usd > 0:
+            lines.append(dr(aid, "1010", "USD", b_usd, memo="the notionals' and accrued coupons' USD value received"))
+        elif b_usd < 0:
+            lines.append(cr(aid, "1010", "USD", -b_usd, memo="the notionals' and accrued coupons' USD value paid"))
+        memo = (f"XCCY termination {cid}: the notionals and accrued coupons on the balance sheet are cleared through 3900 at {X} (no physical re-exchange,"
+                f" no {', '.join(sorted(usd_of)) or 'foreign currency'} moves); their USD value {fmt_money(b_usd)} settles in cash (D17)")
+        clear_id = ctx.post(Entry("XCCY_EXCHANGE", memo, lines, f"xccy:{cid}:terminate", ref_type="otc", ref_id=cid))
+        entries.append(clear_id)
+        conn.execute("INSERT INTO otc_resets(contract_id, event_date, kind, amount_c, detail_json, entry_id) VALUES (?,?,'NOTIONAL_END',?,?,?)",
+                     (cid, today.isoformat(), b_usd, dumps({"terminated": True, "cleared": {f"{gl}:{c}": b for (gl, c), b in bal.items()}, "rate": str(X),
+                                                             "usd_value_c": b_usd, "entry_id": clear_id, "cash_settled": True}), clear_id))
+    full_c = clean_c + b_usd
+    memo = (f"XCCY termination {cid}: full value {fmt_money(full_c)} with the dealer's half-width against the Fund = clean {fmt_money(clean_c)} + balance"
+            f" sheet {fmt_money(b_usd)}, cash-settled in USD (D17); VM balance {fmt_money(int(row['vm_balance_c']))} unwound; IM released")
+    closed = swaps.close_contract(ctx, services, _contract(conn, cid), "TERMINATED", clean_c, ref_c, f"otc:{cid}:terminate", "OTC_TERMINATE", memo, False, False)
+    pending = [d for d in swaps.linked_deals(conn, row) if d.get("status") == "PENDING"]
+    out_inputs = dict(inputs, full_value_c=full_c, clean_c=clean_c, balance_sheet_c=b_usd, clearing_entry_id=clear_id, vm_reference_c=ref_c,
+                      cash_needed_c=total_cash_needed, funding=funding.to_dict() if hasattr(funding, "to_dict") else funding,
+                      linked_deals_pending=[{"deal_id": d["deal_id"], "value_date": d["value_date"], "what": d["what"]} for d in pending])
+    if pending:
+        out_inputs["linked_note"] = ("linked FX deals already booked stay (they are trades) and settle on their own value dates: "
+                                     + ", ".join(f"{d['deal_id']} value {d['value_date']}" for d in pending))
+    return closed, full_c, out_inputs, entries
+
+
+# ---- the float variant's flows, risk, events and detail ---------------------------------------------------------------------------------
+def _float_flows(conn: sqlite3.Connection, row: dict, terms: dict, services=None) -> List[dict]:
+    """K5 ``scheduled_flows`` of a float swap: the start exchange (until it ran), each unpaid coupon (``known`` with the exact amount once the
+    period has ended and both indices are published - a projection otherwise, ``known`` false) and the final exchange (until it ran).  The amounts
+    of a coupon not known yet are projected on the curves of the trade date in the pricing record (never payable)."""
+    cid, aid = row["contract_id"], row["account_id"]
+    legs = _float_legs_of(terms)
+    periods = legs.periods
+    out: List[dict] = []
+    started = _has_reset(conn, cid, "NOTIONAL_START")
+    if not started:
+        for side, sign in (("receive", -1), ("pay", 1)):
+            out.append(_flow(periods[0][0], legs.leg_ccy[side], sign * legs.leg_n_c[side],
+                             f"start exchange: notional {'lent' if side == 'receive' else 'borrowed'}", "START", flow_kind="exchange"))
+    paid = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
+    rec = terms.get("pricing_record") or {}
+    sched = {r.get("p"): r for r in (rec.get("schedule") or [])}
+    f = legs.spread_ccy
+    for k, (s, e, p) in enumerate(periods):
+        if p.isoformat() in paid:
+            continue
+        for side, sign in (("receive", 1), ("pay", -1)):
+            ccy = legs.leg_ccy[side]
+            kind = "swaprcv" if side == "receive" else "swappay"
+            r = sched.get(p.isoformat()) or {}
+            proj = r.get("usd_indicative_c") if ccy == "USD" else r.get(f"{f.lower()}_indicative_c")
+            amount, known = (None if proj is None else sign * int(proj)), False
+            st = _state(conn, kind, cid)
+            if st is not None and st["segment_start"] and st["segment_start"] > s.isoformat():
+                try:                                       # the period has ended: the index decides (known once both indices are published)
+                    exact, _info = float_exact_coupon(services if services is not None else _BOUND.get("services"), ccy, legs.leg_n_c[side], s, e,
+                                                      _float_spread(terms) if ccy == f else Decimal(0))
+                    amount, known = sign * exact, True
+                except Exception:   # noqa: BLE001 - not published yet / not built: the projection, not known
+                    pass
+            out.append(_flow(p, ccy, amount, f"{side} leg coupon {s.isoformat()}..{e.isoformat()} ({FLOAT_INDEX[ccy]}"
+                             f"{' ' + _bp_text(Decimal(str((terms.get('spread') or {}).get('dealt_bp') or '0'))) if ccy == f else ' flat'}"
+                             f"{'' if known else ', projected: the index decides'})", "PAY" if k < len(periods) - 1 else "END", known=known,
+                             flow_kind="coupon"))
+    if not _has_reset(conn, cid, "NOTIONAL_END"):
+        last = periods[-1][2]
+        for side, sign in (("receive", 1), ("pay", -1)):
+            out.append(_flow(last, legs.leg_ccy[side], sign * legs.leg_n_c[side],
+                             f"final exchange: notional {'lent comes back' if side == 'receive' else 'borrowed repaid'}", "END", flow_kind="exchange"))
+    out.sort(key=lambda fl: (fl["date"], {"START": 0, "PAY": 1, "END": 2}.get(fl["event"], 3)))
+    return out
+
+
+#: the services bundle ``register`` saw: ``scheduled_flows(conn, row)`` (K5 has no services argument) reads the published indices through it
+_BOUND: Dict[str, object] = {}
+
+
+def _float_risk(services, row: dict, terms: dict, snapshot=None) -> dict:
+    """K5 / D14 ``risk_sensitivities`` of a float swap - ONLY the off-ledger part: ``fx_delta`` = the clean mark's FX delta in foreign units (the
+    full value's foreign flows plus the foreign balance-sheet items, which the clean mark leaves to the ledger), ``fx_nominal`` = the exchanges not
+    on the ledger yet (before the start both exchanges, which net to 0; after it none), ``rate01_c`` / ``basis01_c`` by re-pricing (+1 bp)."""
+    cid = row["contract_id"]
+    f = terms["foreign_ccy"]
+    pair = fx_pair_id(f)
+    notes = ["off-ledger part only: the notionals (1360 / 2360) and accrued coupons (1225 / 2340) are in the ledger's currency balances"]
+    snap = snapshot if snapshot is not None else _snapshot(services, [pair])
+    out = {"fx_delta": {}, "fx_nominal": {}, "rate01_c": {}, "basis01_c": {}, "eur_ois_spread01_c": None, "notes": notes, "contract_id": cid,
+           "off_ledger_only": True}
+    try:
+        fxv = snap.fx(f) if snap is not None else None
+        if fxv is None or fxv.mark is None or fxv.quality == "unavailable":
+            raise ConflictError("NO_QUOTE", f"no {pair} rate")
+        X = qprice(fxv.mark)
+        cc = _ccycal()
+        on = fxmod.fx_trade_date(services, int(services.clock.epoch()))
+        t_spot = cc.spot_date(services, pair, on)
+        with _marks.shared_reader(services.db) as conn:
+            acct = _rowd(account_row(conn, row["account_id"]))
+            market = float_market(services, conn, acct, on)
+            state = float_state(services, conn, row, terms)
+            legs = _float_legs_of(terms)
+            b = _float_spread(terms)
+            proj, disc = market.zc()
+            with localcontext(P34):
+                full, _u, f_part = float_full_value(legs, b, X, t_spot, proj, disc, state)
+                bal_f = Decimal(0)
+                for gl, sgn in (("1360", ONE), ("1225", ONE), ("2360", -ONE), ("2340", -ONE)):
+                    bal_f += sgn * from_c(balance(conn, row["account_id"], gl, f, cid))
+
+                def rp(**kw):
+                    pj, ds = market.zc(**kw)
+                    return float_full_value(legs, b, X, t_spot, pj, ds, state)[0]
+                out["fx_delta"] = {f: to_c(f_part - bal_f)}
+                out["rate01_c"] = {"USD": to_c(rp(bu=1) - full), f: to_c(rp(be=1) - full)}
+                out["basis01_c"] = {f"{f}USD": to_c(rp(mid=1) - full)}
+                out["eur_ois_spread01_c"] = to_c(rp(grid=1) - full)
+            if not state.started:
+                out["fx_nominal"] = {legs.leg_ccy["receive"]: 0, legs.leg_ccy["pay"]: 0}
+                notes.append("before the start exchange: the start and the final exchange net to 0 in each currency (no notional reset)")
+            out.update(valuation_date=on.isoformat(), spot_date=t_spot.isoformat(), fx=str(X))
+    except (ConflictError, RejectError) as e:
+        notes.append(f"unavailable: {e.message}")
+    return out
+
+
+def _float_next_events(services, conn, row: dict, terms: dict, today: date) -> List[dict]:
+    legs = _float_legs_of(terms)
+    periods = legs.periods
+    cid = row["contract_id"]
+    f = legs.spread_ccy
+    paid = {r["event_date"] for r in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
+    rec = terms.get("pricing_record") or {}
+    sched = {r.get("p"): r for r in (rec.get("schedule") or [])}
+    events: List[dict] = []
+    if periods and not _has_reset(conn, cid, "NOTIONAL_START"):
+        lent, bor = terms["legs"]["receive"], terms["legs"]["pay"]
+        conv = terms.get("start_conversion") or {}
+        events.append({"date": periods[0][0].isoformat(), "event": "START",
+                       "detail": (f"start exchange: we pay {lent['currency']} {fmt_money(int(lent['notional_c']))} (lent) and receive {bor['currency']}"
+                                  f" {fmt_money(int(bor['notional_c']))} (borrowed) at {terms.get('deal_rate')}"
+                                  + (f", settled with the inception conversion {conv.get('deal_id')} (payment versus payment)" if conv.get("deal_id") else ""))})
+    for k, (s, e, p) in enumerate(periods):
+        ps = p.isoformat()
+        if p < today or ps in paid:
+            continue
+        r = sched.get(ps) or {}
+        lg = []
+        for side in ("receive", "pay"):
+            ccy = legs.leg_ccy[side]
+            proj = r.get("usd_indicative_c") if ccy == "USD" else r.get(f"{f.lower()}_indicative_c")
+            lg.append({"leg": "float", "side": side, "currency": ccy, "index": FLOAT_INDEX[ccy], "amount_c": proj, "known": False, "indicative": True,
+                       "period": [s.isoformat(), e.isoformat()], "note": "indicative until the index is published at the period end"})
+        events.append({"date": ps, "event": "MATURITY" if k == len(periods) - 1 else "PAY", "legs": lg,
+                       **({"detail": "last coupons with the final exchange; VM unwound and IM released"} if k == len(periods) - 1 else {})})
+    events.sort(key=lambda x: (x["date"], {"START": 0, "PAY": 1, "MATURITY": 2}.get(x["event"], 3)))
+    return events
+
+
+def _float_detail(services, conn, row: dict, terms: dict) -> dict:
+    """The float swap's drawer: legs with their current compounding, true-ups, the payments, the linked deals and the confirmation with the
+    settlement instructions (10.7)."""
+    cid, aid = row["contract_id"], row["account_id"]
+    f = terms["foreign_ccy"]
+    legs_def = _float_legs_of(terms)
+    today = ny_of(services.clock.epoch()).date()
+    legs = {}
+    for side, kind in (("receive", "swaprcv"), ("pay", "swappay")):
+        ccy = legs_def.leg_ccy[side]
+        st = _state(conn, kind, cid)
+        comp = None
+        if st is not None and st["accrued_through"]:
+            seg = _date(st["segment_start"])
+            nights = (_date(st["accrued_through"]) - seg).days + 1
+            fac = Decimal(str(st["rate"]))
+            comp = {"period_start": seg.isoformat(), "accrued_through": st["accrued_through"], "nights": nights, "factor": str(fac),
+                    "accrued_c": int(st["cum_c"]), "rate_so_far": str(((fac - ONE) * Decimal(360) / Decimal(nights)).quantize(Decimal("0.00000001"))) if nights else None,
+                    "note": "a nightly estimate at the latest print; each payment trues it up to the published index"}
+        legs[side] = {"currency": ccy, "index": FLOAT_INDEX[ccy], "notional_c": legs_def.leg_n_c[side], "spread_bp": terms["legs"][side].get("spread_bp"),
+                      "basis": "ACT/360", "accrued_c": balance(conn, aid, "1225" if side == "receive" else "2340", ccy, cid),
+                      "notional_balance_c": balance(conn, aid, "1360" if side == "receive" else "2360", ccy, cid),
+                      "role": "lent (1360)" if side == "receive" else "borrowed (2360)", "compounding": comp, "method": FLOAT_COMPOUNDING[FLOAT_INDEX[ccy]]}
+    pays = []
+    for r in conn.execute("SELECT event_date, amount_c, detail_json, entry_id FROM otc_resets WHERE contract_id=? AND kind='PAY' ORDER BY event_date", (cid,)).fetchall():
+        dd = _detail(r)
+        pays.append({"date": r["event_date"], "net_usd_c": int(r["amount_c"]), "entry_id": r["entry_id"],
+                     "legs": {s: {k: (dd.get("legs") or {}).get(s, {}).get(k) for k in ("currency", "amount_c", "posted_c", "trueup_c", "rate", "factor", "days")}
+                              for s in ("receive", "pay")}})
+    side_text = _float_side_text(f, terms.get("eur_side") or "pay", Decimal(str((terms.get("spread") or {}).get("dealt_bp") or "0")))
+    return {"kind": "XCCY", "variant": FLOAT_VARIANT, "pay_ccy": terms.get("pay_ccy"), "recv_ccy": terms.get("recv_ccy"), "deal_rate": terms.get("deal_rate"),
+            "deal_pair": terms.get("deal_pair"), "mtm_reset": False, "side_text": side_text, "legs": legs, "payments": pays,
+            "spread": terms.get("spread"), "trade_date": terms.get("trade_date"), "start_date": row["start_date"], "termination_date": terms.get("termination_date"),
+            "maturity_date": row["maturity_date"], "started": _has_reset(conn, cid, "NOTIONAL_START"), "matured_exchange": _has_reset(conn, cid, "NOTIONAL_END"),
+            "start_conversion": terms.get("start_conversion"), "settlement_funding": terms.get("settlement_funding"),
+            "linked_deals": swaps.linked_deals(conn, row), "confirmation": _float_confirmation(row, terms, today),
+            "pricing_record": terms.get("pricing_record"), "fx_resets": [], "today": today.isoformat()}
+
+
+def _float_confirmation(row: dict, terms: dict, today: date) -> dict:
+    """10.7 the confirmation block: parties, dates, amounts, rate, CSA, IM and the settlement instructions (simulator accounts); "CONFIRMED -
+    simulated confirmation" (never "dealer-confirmed")."""
+    f = terms["foreign_ccy"]
+    broker = str(row.get("broker") or "")
+    dealer = config.PRIME_BROKERS.get(broker.upper(), broker or "the dealer")
+    legs = terms["legs"]
+    n_f = int(legs["pay" if (terms.get("eur_side") or "pay") == "pay" else "receive"]["notional_c"])
+    n_u = int(row["notional_c"])
+    dealt = Decimal(str((terms.get("spread") or {}).get("dealt_bp") or "0"))
+    conv = terms.get("start_conversion") or {}
+    s, m = row["start_date"], row["maturity_date"]
+    status = swaps._row_get(row, "confirm_status")
+    booking = swaps.booking_of(row) or None
+    instr = [f"initial exchange, value {s}: {dealer} pays {f} {fmt_money(n_f)}; the Fund pays USD {fmt_money(n_u)} at {terms.get('deal_rate')}"
+             + (f"; settled payment versus payment with the inception conversion {conv.get('deal_id')}: the Fund delivers {f} {fmt_money(n_f)} to the FX desk"
+                f" for USD at {conv.get('rate')}; the net USD ({fmt_money(int((conv.get('buy') or {}).get('amount_c') or 0) - n_u)}) comes from the account,"
+                " else Treasury" if conv.get("deal_id") else ""),
+             f"coupons on each payment date: the Fund pays {f} on {FLOAT_INDEX[f]} compounded {_bp_text(dealt)}; {dealer} pays USD on SOFR compounded; ACT/360"
+             + ("; the EUR is bought under the settlement-funding instruction at each period end, value the payment date"
+                if (terms.get("settlement_funding") or {}).get(f) == "BUY_WITH_USD" else ""),
+             f"final exchange, value {m}, together with the last coupons: the Fund pays {f} {fmt_money(n_f)}; {dealer} pays USD {fmt_money(n_u)}",
+             "termination: cash-settled in USD at the full value with the half-width against the Fund; refused before the start while the conversion is linked",
+             f"variation margin daily in USD (CTM) on the CSA exposure; initial margin in USD held by {dealer}",
+             f"accounts: {dealer} is the counterparty; the Fund's cash accounts are its {dealer} prime-brokerage cash in each currency ({row['account_id']},"
+             " simulator accounts)"]
+    return {"status": status, "label": swaps.confirm_label(booking, status) or swaps.NO_CONFIRM_LABEL,
+            "parties": {"fund": row["account_id"], "counterparty": dealer, "role": "prime broker and OTC dealer (simulated)"},
+            "product": f"{fx_pair_id(f)[:3]}/{fx_pair_id(f)[3:]} float / float cross-currency swap (ESTR / SOFR), no notional reset",
+            "trade_date": terms.get("trade_date"), "start_date": s, "termination_date": terms.get("termination_date"), "maturity_date": m,
+            # V1061-05: cents under *_c keys, so the API codec serves amounts ({"eur": "2000000.00", "usd": ...}), never bare cent integers
+            "notionals": {f"{f.lower()}_c": n_f, "usd_c": n_u}, "deal_rate": terms.get("deal_rate"),
+            "spread": f"{FLOAT_INDEX[f]} {_bp_text(dealt)} on the {f} leg",
+            "client_ref": swaps._row_get(row, "client_ref"), "im_c": int(row.get("im_c") or 0), "csa": f"the existing CSA with {dealer} (CTM)",
+            "settlement_instructions": instr, "today": today.isoformat()}
+
+
+# ---- FX_CCS_PLAN K5 contract hooks (1.0.6.1): scheduled flows and the off-ledger risk part ---------------------------------------------
+def _flow(d, ccy: str, amount_c: Optional[int], what: str, event: str, known: bool = True, **extra) -> dict:
+    """One scheduled flow (K5).  ``flow_kind`` ("exchange" / "coupon") is given explicitly by every caller (P-D-R3: ``fx.funding_check``
+    counts exchanges and deliveries only, never by the words); the words decide only for a caller that gives none."""
+    kind = extra.pop("flow_kind", None) or ("coupon" if "coupon" in what else "exchange")
+    return dict({"date": d.isoformat() if hasattr(d, "isoformat") else str(d), "ccy": ccy, "amount_c": amount_c, "what": what, "event": event,
+                 "known": bool(known and amount_c is not None), "flow_kind": kind}, **extra)
+
+
+def scheduled_flows(conn: sqlite3.Connection, row, services=None) -> List[dict]:
+    """K5: the contract's scheduled flows not yet on the ledger, ``[{date, ccy, amount_c (+ in / - out), what, event, known}]`` in date order -
+    an XCCY's start exchange (until it has run), its coupons (each leg in its own currency; a floating coupon is ``known`` only once its
+    index is published, until then its projection is ``amount_c`` with ``known`` false) and its final exchange (until it has run).  A TRS
+    settles at its resets (none listed).  Pure; ``fx.funding_check`` and ``ccyfunding.plan`` read it."""
+    r = _rowd(row) if not isinstance(row, dict) else dict(row)
+    if r is None or r.get("kind") != "XCCY" or r.get("status") != "OPEN":
+        return []
+    if "terms_json" not in r:
+        r = _rowd(conn.execute("SELECT * FROM otc_contracts WHERE contract_id=?", (r.get("contract_id"),)).fetchone()) or {}
+        if not r:
+            return []
+    terms = _terms(r)
+    if terms.get("variant") == FLOAT_VARIANT:
+        return _float_flows(conn, r, terms, services)
+    cid = r["contract_id"]
+    periods = _periods(terms)
+    if not periods:
+        return []
+    lent, bor = terms["legs"]["receive"], terms["legs"]["pay"]
+    out: List[dict] = []
+    started = _has_reset(conn, cid, "NOTIONAL_START")
+    if not started:
+        ln = _leg_notional(conn, r, terms, periods, "receive", 0)
+        bn = _leg_notional(conn, r, terms, periods, "pay", 0)
+        out.append(_flow(periods[0][0], lent["currency"], None if ln is None else -int(ln), "start exchange: notional lent", "START", flow_kind="exchange"))
+        out.append(_flow(periods[0][0], bor["currency"], None if bn is None else int(bn), "start exchange: notional borrowed", "START", flow_kind="exchange"))
+    paid = {x["event_date"] for x in conn.execute("SELECT event_date FROM otc_resets WHERE contract_id=? AND kind='PAY'", (cid,)).fetchall()}
+    for k, (s, e, p) in enumerate(periods):
+        if p.isoformat() in paid:
+            continue
+        for side, sign in (("receive", 1), ("pay", -1)):
+            leg = terms["legs"][side]
+            n = _leg_notional(conn, r, terms, periods, side, k)
+            amount = None if n is None else sign * swaps.coupon_c(n, qprice(leg["rate"]), s, e, leg["basis"])
+            out.append(_flow(p, leg["currency"], amount, f"{side} leg coupon {s.isoformat()}..{e.isoformat()} (fixed {_pct(leg['rate'])})", "PAY" if k < len(periods) - 1 else "END",
+                             flow_kind="coupon"))
+    if not _has_reset(conn, cid, "NOTIONAL_END"):
+        last = periods[-1][2]
+        ln = _leg_notional(conn, r, terms, periods, "receive", len(periods) - 1)
+        bn = _leg_notional(conn, r, terms, periods, "pay", len(periods) - 1)
+        out.append(_flow(last, lent["currency"], None if ln is None else int(ln), "final exchange: notional lent comes back", "END", flow_kind="exchange"))
+        out.append(_flow(last, bor["currency"], None if bn is None else -int(bn), "final exchange: notional borrowed repaid", "END", flow_kind="exchange"))
+    out.sort(key=lambda f: (f["date"], {"START": 0, "PAY": 1, "END": 2}.get(f["event"], 3)))
+    return out
+
+
+def risk_sensitivities(services, row, snapshot=None) -> dict:
+    """K5 / D14: ONLY the off-ledger part of the contract's currency risk - the ledger part (1360 / 2360 notionals, 1225 / 2340 accruals) is
+    ``risk._currency_balances``' and is never repeated here.  ``fx_delta`` {ccy: units_c} = the clean mark's FX delta in currency units
+    (the mark is linear in the FX rate, so this is exact re-pricing); ``fx_nominal`` {ccy: units_c} = the exchanges not yet on the ledger
+    (before the start exchange both exchanges, which net to 0 without a notional reset; after it none - 1360 / 2360 hold the final one);
+    ``rate01_c`` {ccy: usd_c} the USD value of +1 bp on each currency's curve; ``basis01_c`` {pair: usd_c}; ``notes``.  None for another kind."""
+    r = _rowd(row) if not isinstance(row, dict) else dict(row)
+    if r is None or r.get("kind") != "XCCY":
+        return None
+    if "terms_json" not in r:
+        r = _contract_of(services, r) or {}
+    if r.get("status") != "OPEN":
+        return {"fx_delta": {}, "fx_nominal": {}, "rate01_c": {}, "basis01_c": {}, "notes": [f"{r.get('contract_id')} is {r.get('status')}: no risk"]}
+    terms = _terms(r)
+    if terms.get("variant") == FLOAT_VARIANT:
+        return _float_risk(services, r, terms, snapshot)
+    cid = r["contract_id"]
+    with _marks.shared_reader(services.db) as conn:
+        flows = [f for f in scheduled_flows(conn, r) if f["event"] == "START" or (f["event"] == "END" and f["what"].startswith("final exchange")
+                                                                                     and not _has_reset(conn, cid, "NOTIONAL_START"))]
+    nominal: Dict[str, int] = {}
+    for f in flows:
+        if f["amount_c"] is not None:
+            nominal[f["ccy"]] = nominal.get(f["ccy"], 0) + int(f["amount_c"])
+    on = ny_of(int(services.clock.epoch())).date()
+    remaining = [q for q in _periods(terms) if q[2] > on]
+    notes = ["fixed / fixed model: each leg on its own curve (USD par curve, the foreign leg flat at its policy rate); no basis level"]
+    fx_delta: Dict[str, int] = {}
+    rate01: Dict[str, int] = {}
+    if remaining:
+        try:
+            snap = snapshot if snapshot is not None else _snapshot(services, [fx_pair_id(terms["foreign_ccy"])])
+            _v, inputs = _xccy_value(services, r, terms, len(remaining), snap)
+            fx_rate = Decimal(str(inputs["fx"]["usd_per_unit"]))
+            for side in ("receive", "pay"):
+                leg = inputs["legs"][side]
+                ccy = leg["currency"]
+                rate01[ccy] = rate01.get(ccy, 0) + int(leg["dv01_c"])
+                if ccy != "USD" and fx_rate:
+                    fx_delta[ccy] = fx_delta.get(ccy, 0) + to_c(from_c(int(leg["value_c"])) / fx_rate)
+        except ConflictError as e:
+            notes.append(f"unavailable: {e.message}")
+    return {"fx_delta": fx_delta, "fx_nominal": nominal, "rate01_c": rate01, "basis01_c": {}, "notes": notes, "contract_id": cid, "off_ledger_only": True}
 
 
 # ---- registry ---------------------------------------------------------------------------------------------------------------------
@@ -2463,10 +4352,15 @@ def register(bus, services=None) -> None:
     bus.register("trs.reset", h_reset)
     bus.register("xccy.exchange", h_exchange)
     bus.register("xccy.fx_reset", h_fx_reset)
+    if services is not None:
+        _BOUND["services"] = services
 
 
 __all__ = ["preview", "book", "terminate", "mark_trs", "mark_xccy", "dv01_c", "accrue_night", "pay", "fix", "next_events", "contract_detail", "reset_keys",
            "event_keys", "register", "h_reset", "h_exchange", "h_fx_reset", "parse_trs_terms", "parse_xccy_terms", "TrsTerms", "TrsDeal", "XLeg", "XccyDeal",
            "fin_rate", "flat_dfs", "foreign_curve", "leg_curve", "leg_value", "leg_dv01", "usd_notional", "xccy_leg_spec", "close_on", "fx_close_on",
            "CONVENTIONS", "TRS_MODEL", "XCCY_MODEL", "TRS_IM_PCT", "XCCY_IM_PCT", "RESET_ET", "EVENT_ET", "FX_RESET_ET", "JOB_RESET", "JOB_EVENTS",
-           "MARKS_HOOK", "RecordingMarks", "PinnedMarks", "mark_view_of", "xccy_dates", "xccy_start_check", "next_event_due", "unsupported"]
+           "MARKS_HOOK", "RecordingMarks", "PinnedMarks", "mark_view_of", "xccy_dates", "xccy_start_check", "next_event_due", "unsupported",
+           "scheduled_flows", "risk_sensitivities", "FLOAT_VARIANT", "parse_float_terms", "float_full_value", "float_dates", "float_market", "float_state",
+           "float_exact_coupon", "float_start_check", "FloatLegs", "FloatState", "FloatMarket", "FloatDeal", "FLOAT_INDEX", "FLOAT_METHOD", "FLOAT_MODEL",
+           "MODEL_VERSION", "INDEX_PENDING", "STALE_LISTING_SESSIONS", "last_trade", "last_trade_age_sessions", "stale_listing_check"]

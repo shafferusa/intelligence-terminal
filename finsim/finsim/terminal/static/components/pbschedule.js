@@ -25,6 +25,10 @@
  *   not serve is shown empty ("not served") and is sent only when the owner types a value.  Nothing is ever sent because it could not
  *   be read (the 2026-10-21 defect: the form read equity_min_c, which the API no longer serves, showed 0.00, and saving any other
  *   field erased the minimum commission).  A field an older stored row lacks shows the seed it runs on, marked "seed".
+ * - FX_CCS_PLAN D5 (1.0.6.1): the cross-currency terms under "OTC dealing" - the EUR/USD and GBP/USD basis levels and the EUR OIS spread
+ *   over the ECB AAA curve take SIGNED basis points (-12.5 or "-12.5 bp"), the cross-currency dealing half-width a non-negative one; each
+ *   is an ASSUMED schedule term, and an edit re-marks every open contract at this prime broker that uses it at its next variation margin
+ *   (the hint says so; the edit is one SETTINGS_CHANGED event with the before and after values).
  * - Save shows a before / after confirmation listing exactly the fields that change; nothing is sent until confirmed.  Past postings
  *   are never restated.  The header says "opened <date>" until the first edit, then the last change with its before / after.
  * - The relationship: the ISDA Master / CSA / PBA recorded with the dealer and their dates; "Close relationship" for a flat account
@@ -57,6 +61,11 @@
     ['eq_option_hw_vol', 'equity options: dealing half-width', 'decimal', 'priced at the implied vol +/- this, against you', 'vol', 'OTC dealing'],
     ['fx_option_hw_vol', 'FX options: dealing half-width', 'decimal', 'priced at the implied vol +/- this, against you', 'vol', 'OTC dealing'],
     ['forward_hw_bp', 'forwards: dealing half-width', 'decimal', 'the dealt forward = the model forward +/- this, against you', 'bp', 'OTC dealing'],
+    /* FX_CCS_PLAN D5 (1.0.6.1): the cross-currency terms - signed levels (the 7th element), ASSUMED, re-marking the open contracts that use them */
+    ['xccy_basis_eur_bp', 'EUR/USD cross-currency basis level (mid)', 'decimal', 'ASSUMED - no free basis source: a parallel spread on the EUR discount curve under the USD CSA; it moves the PB forward of every EUR pair and the cross-currency swap\'s par spread; signed (the EUR/USD basis has mostly been negative since 2008). An edit re-marks every open contract at this prime broker that uses it at its next variation margin', 'bp', 'OTC dealing', true],
+    ['xccy_basis_gbp_bp', 'GBP/USD cross-currency basis level (mid)', 'decimal', 'ASSUMED - no free basis source: a parallel spread on the GBP discount curve under the USD CSA (the PB forward of every GBP pair); signed. An edit re-marks every open contract at this prime broker that uses it at its next variation margin', 'bp', 'OTC dealing', true],
+    ['xccy_basis_hw_bp', 'cross-currency swaps: dealing half-width', 'decimal', 'the dealt spread = the par spread +/- this, against you, rounded on the 0.1 bp grid', 'bp', 'OTC dealing'],
+    ['eur_ois_spread_bp', 'EUR OIS curve: spread over the ECB AAA government curve', 'decimal', 'ASSUMED - the gap between EUR OIS and the AAA government curve is not observed; added to every ECB AAA grid node (not the ESTR overnight node), for pricing and discounting; signed. An edit re-marks every open contract at this prime broker that uses it at its next variation margin', 'bp', 'OTC dealing', true],
     ['irs_im_bp', 'IRS initial margin', 'decimal', 'IM = |DV01| x this many bp of rate move', 'bp', 'Initial margin'],
     ['trs_im_pct', 'TRS initial margin', 'decimal', 'of the TRS notional', 'pct', 'Initial margin'],
     ['xccy_im_pct', 'cross-currency swap initial margin', 'decimal', 'of the USD notional', 'pct', 'Initial margin'],
@@ -70,6 +79,10 @@
   var ENUMS = { swap_margin_mode: ['CTM', 'STM'], csa_securities: ['TREASURIES', 'CASH_ONLY'] };
   var UNIT = { pct: '%', bp: 'bp', vol: 'vol pts', usd: 'USD', usd_per_unit: 'USD', mult: 'x', enum: '' };
   var DECIMAL_RE = /^\d+(\.\d{1,8})?$/;
+  /* a signed field: flagged here (the 7th element) or served with "signed": true (prime.FIELD_SPECS, FX_CCS_PLAN D5) */
+  function signedField(key, spec) { var f = fieldDef(key); return !!((f && f[6]) || (spec && spec.signed)); }
+  /* "-0.5" -> [true, "0.5"]; a zero is never negative */
+  function splitSign(s) { s = String(s == null ? '' : s).trim(); var neg = s.charAt(0) === '-'; var abs = s.replace(/^[-+]/, ''); return [neg && !/^0*(\.0*)?$/.test(abs), abs]; }
   var MONEY_RE = /^\d+(\.\d{0,2})?$/;
   var TYPED_RE = /^(\d*\.?\d+|\d+\.)\s*(%|bps?|vol(\s*pts?)?|vp|usd|\$|x)?$/i;
   var NOT_SERVED = 'not served';
@@ -129,13 +142,16 @@
   }
   /* the stored form of a typed value, or {error}: "1.25 %" / "1.25" / "125 bp" for a % field -> "0.0125"; "1 vol" -> "0.01";
      "2.5 bp" -> "2.5"; money -> "1234.50"; an enum upper-cased */
-  function normalise(kind, raw, unit, key) {
+  function normalise(kind, raw, unit, key, spec) {
     var s = String(raw == null ? '' : raw).trim();
     if (kind === 'enum') { var ch = ENUMS[key] || ENUMS.swap_margin_mode; s = s.toUpperCase(); return ch.indexOf(s) >= 0 ? { value: s } : { error: 'one of ' + ch.join(', ') }; }
     if (kind === 'money') { var c = toCents(s); return c == null ? { error: 'a USD amount at or above 0.00 with at most 2 decimals' } : { value: fromCents(c) }; }
     s = s.replace(/,/g, '').replace(/^\$\s*/, '');
+    var neg = false;
+    var signed = signedField(key, spec);
+    if (signed) { var sp = splitSign(s.replace(/^\+\s*/, '')); neg = sp[0]; s = sp[1].trim(); }
     var m = TYPED_RE.exec(s);
-    if (!m) { return { error: 'a non-negative number' + (unit === 'pct' ? ' in % (e.g. 1.25) or bp (e.g. 125 bp)' : unit === 'vol' ? ' of vol points (e.g. 1.00)' : unit === 'bp' ? ' of basis points' : '') }; }
+    if (!m) { return { error: (signed ? 'a number (negative allowed)' : 'a non-negative number') + (unit === 'pct' ? ' in % (e.g. 1.25) or bp (e.g. 125 bp)' : unit === 'vol' ? ' of vol points (e.g. 1.00)' : unit === 'bp' ? ' of basis points' : '') }; }
     var num = m[1].charAt(0) === '.' ? '0' + m[1] : m[1].replace(/\.$/, '');
     var sfx = (m[2] || '').toLowerCase().replace(/\s+/g, '');
     var out;
@@ -145,16 +161,18 @@
     else { out = (sfx === '' || sfx === 'usd' || sfx === '$' || sfx === 'x') ? num : null; }
     if (out == null) { return { error: 'the unit ' + m[2] + ' does not fit this field (' + (UNIT[unit] || 'a number') + ')' }; }
     if (!DECIMAL_RE.test(out)) { return { error: 'too many decimals (the schedule keeps 8 decimal places of the stored value)' }; }
-    return { value: out };
+    return { value: neg && !/^0*(\.0*)?$/.test(out) ? '-' + out : out };
   }
   /* equal as numbers (the server normalises "0.0030" == "0.003", "1.5" == "1.50"); a missing side is never equal */
   function same(kind, a, b) {
     if (a == null || b == null) { return false; }
     if (kind === 'money') { var ca = toCents(a), cb = toCents(b); return ca != null && ca === cb; }
     if (kind === 'enum') { return String(a).toUpperCase() === String(b).toUpperCase(); }
-    var pa = String(a).split('.'), pb = String(b).split('.');
+    var sa = splitSign(a), sb = splitSign(b);                             /* the sign apart: "-0.5" is not "0.5" (a signed level) */
+    if (sa[0] !== sb[0]) { return false; }
+    var pa = sa[1].split('.'), pb = sb[1].split('.');
     var fa = (pa[1] || '').replace(/0+$/, ''), fb = (pb[1] || '').replace(/0+$/, '');
-    return String(parseInt(pa[0], 10)) === String(parseInt(pb[0], 10)) && fa === fb;
+    return String(parseInt(pa[0] || '0', 10)) === String(parseInt(pb[0] || '0', 10)) && fa === fb;
   }
   function shown(v, unit) { return v == null ? NOT_SERVED : (display(unit, v) + (UNIT[unit] ? ' ' + UNIT[unit] : '')); }
   /* the allowed range of a field in its typed unit, from the served spec (stored units), else empty */
@@ -329,7 +347,7 @@
         inp.input.classList.remove('bad');
         if (raw === inp.initial) { return; }                                  /* not edited: never sent */
         if (inp.current == null && raw.trim() === '') { return; }             /* not served and still empty: nothing to send */
-        var n = normalise(inp.kind, raw, inp.unit, key);
+        var n = normalise(inp.kind, raw, inp.unit, key, specOf(key));
         if (!n.error && inp.kind !== 'enum' && inp.kind !== 'money' && !within(inp.range, n.value, inp.unit)) { n = { error: 'outside the allowed ' + inp.range.text }; }
         if (n.error) { out.errors.push(inp.label + ': ' + n.error); inp.input.classList.add('bad'); return; }
         if (same(inp.kind, n.value, inp.current)) { return; }                 /* edited back to the served value */

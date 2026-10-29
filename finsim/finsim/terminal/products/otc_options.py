@@ -33,9 +33,21 @@ Conventions stated here
   earns less than SOFR) - plus or minus the half-width, so K - F is the whole cost of dealing (a termination deals the opposite side
   the same way); cash-settled: sign x units x (S_T - K) at the underlying's observed close of the maturity date.  P8B-07: a name with
   no dividend data (no Yahoo events over a year and no yield in the instrument master) is not priced - q is never assumed 0.
-- FX_FORWARD: the CIP outright of the value date (``fx.forward_rate``, C17); DELIVERABLE: at the value date the account receives
-  one currency and pays the other at K through a linked FX deal that SETTLE_DUE settles in both currencies (the sold currency
-  must be there by then - the preview warns as the FX desk does).  Its value meanwhile: sign x A x (F - K) x DF_quote in USD.
+- FX_FORWARD (FX_CCS_PLAN rev 2 D3 / 3.2, release 1.0.6.1): a pair of USD / EUR / GBP is priced on the FX term curves (``fxcurves``,
+  K3): F = S x DF*_base(S, V) / DF*_quote(S, V), the discount factors (1e-10) on each currency's curve plus its cross-currency basis
+  level from the PB schedule (``xccy_basis_eur_bp`` / ``xccy_basis_gbp_bp``, ASSUMED; USD none), F at 6 dp (JPY-quoted pairs 4 dp); S
+  = a USD pair's executable print, a cross DERIVED from its two USD pairs (6 dp; executable only when both legs are and their quote
+  times are within 120 s; the cross print is stored with its difference, more than 5.0 pips refuses SPOT_INCONSISTENT).  Tenors 1W,
+  2W, 1M, 2M, 3M, 6M, 9M, 1Y, 18M, 2Y (24M = 2Y) and broken dates up to the 2Y date, every value date a business day of the pair's
+  value calendar (``ccycal``: both currencies, and New York for a cross; 400 VALUE_DATE naming the calendar), beyond 2Y 400 TENOR.
+  Every quote stores its pricing record (the spot legs and print, each curve with its date, nodes and first node, the discount factors,
+  the outright and points, the basis levels, the dealer's terms, IM, limits, settlement funding, the cross-checks and the labels).
+  A pair with another currency keeps the LEGACY METHOD - LIMITED (the CIP outright of ``fx.forward_rate``: one overnight / policy rate
+  per currency, simple interest, no term structure, no basis) up to 1Y; beyond 1Y 400 TENOR.  DELIVERABLE: at 00:30 ET on the value
+  date the account receives one currency and pays the other at K through a linked FX deal that SETTLE_DUE settles in both currencies
+  (the sold currency must be there by then - the preview warns; the contract's ``settlement_funding`` names the currencies the
+  settlement-funding job buys with USD beforehand).  Its value meanwhile, for the spot date S_t of the valuation date: sign x A x
+  (F_t - K) x DF*_quote(S_t, V) x USD per quote unit, F_t quantised as the quote's (so mark0 is exactly the quote's).
 - DEALING: an option is priced at sigma +/- the PB's half-width (``eq_option_hw_vol`` / ``fx_option_hw_vol`` x ``otc_spread_mult``)
   against you (a buy at the higher vol, a sale at the lower); a forward at F +/- ``forward_hw_bp`` x ``otc_spread_mult`` bp of F
   against you.  The difference from the mid model value is the cost of dealing - the day-one P&L, shown before booking.
@@ -55,10 +67,13 @@ Conventions stated here
   else the vol of the last mark carried forward (said), T measured from that close; the change is exchanged in cash under the
   CSA (CTM collateral or STM settlement).  So a bought option receives collateral equal to its value from the dealer (a
   zero-threshold two-way CSA) and a sold one posts it.
-- EXPIRY / MATURITY (job OTC_EXPIRY, C13; key {contract}:{date}; equity from 16:20 ET, FX from 17:05 ET on the date): options and
-  equity forwards are cash-settled at the observed close (FX: the pair's 17:00 ET close): ``swaps.close_contract`` posts the value,
-  unwinds the VM balance and releases the IM; an FX forward is delivered (above).  No close observed yet -> SKIPPED CLOSE_PENDING
-  (retried; quiet first, one WARN once it persists) - never an earlier or intraday price.
+- EXPIRY / MATURITY (job OTC_EXPIRY, C13; key {contract}:{date}; equity from 16:20 ET, FX options from 17:05 ET on the date, FX
+  forwards from 00:30 ET of the value date): options and equity forwards are cash-settled at the observed close (FX: the pair's
+  17:00 ET close): ``swaps.close_contract`` posts the value, unwinds the VM balance and releases the IM.  An FX forward needs no price:
+  at 00:30 ET of its value date (G12: a 17:05 delivery fell after the FX day had rolled) it closes at value 0 (its value passes into
+  the delivery deal), the VM balance is unwound, the IM released, and the delivery deal at K is posted for SETTLE_DUE (above).  No
+  close observed yet (an option / equity forward) -> SKIPPED CLOSE_PENDING (retried; quiet first, one WARN once it persists) - never an
+  earlier or intraday price.
 - TERMINATION (``otc.terminate``, owner): at the model value now with the half-width against you (an option sold back at sigma - hw,
   bought back at sigma + hw; a forward closed at F -/+ hw), VM unwound, IM released; observed inputs are required (409 otherwise).
 - INPUTS kept fresh for these contracts (C14 refresher ``otc_options``, never on a request thread): the underlyings and FX pairs of
@@ -95,7 +110,8 @@ OPTION_KINDS = ("EQ_OPTION", "FX_OPTION")
 FX_KINDS = ("FX_OPTION", "FX_FORWARD")
 SOURCE = "otc_options"
 JOB_EXPIRY = "OTC_EXPIRY"
-EXPIRY_ET = {"EQ": "16:20", "FX": "17:05"}
+#: when OTC_EXPIRY settles a kind on its date (G12: an FX forward delivers at 00:30 ET of its value date, with SETTLE_DUE)
+EXPIRY_ET = {"EQ": "16:20", "FX": "17:05", "FX_FORWARD": "00:30"}
 EQ_OPTION_GROUP = "US_EQUITY_OPTIONS"
 FX_GROUP = "FX_SPOT"
 TENORS = ("1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y")
@@ -121,6 +137,47 @@ MODELS = {"EQ_OPTION": "Black-Scholes-Merton (European) / CRR 60-step tree (Amer
                          " it when you sell) +/- the half-width; value = sign x units x (F - K) x e^(-SOFR x T)"),
           "FX_FORWARD": "F = CIP outright of the value date (fx.forward_rate); value = sign x A x (F - K) x DF_quote at the quote currency's USD rate"}
 CONVENTIONS = ("OTC_OPTION", "OTC_FORWARD", "OTC_VM", "ELIGIBILITY")
+#: FX_CCS_PLAN D2 / D3: the currencies with a term curve, a calendar and a basis level (the PB forward's curve method)
+CURVE_CCYS = ("USD", "EUR", "GBP")
+#: the PB forward's tenors for a curve pair (ccycal.OTC_TENORS) and their aliases
+OTC_FX_TENORS = ("1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y", "18M", "2Y")
+FWD_TENOR_ALIAS = {"24M": "2Y", "12M": "1Y"}
+BASIS_FIELD = {"EUR": "xccy_basis_eur_bp", "GBP": "xccy_basis_gbp_bp"}
+MODEL_VERSION = "fxcurves-2"
+LEGACY_LABEL = "LEGACY METHOD - LIMITED: one overnight / policy rate per currency, no term structure, no basis"
+CURVES_MODEL = ("F = S x DF*_base(S, V) / DF*_quote(S, V) on the FX term curves under the USD CSA (each currency's curve plus its cross-currency basis"
+                " level); value = sign x A x (F - K) x DF*_quote x USD per quote unit, for the spot date of the valuation date")
+CAPS_TEXT = "notional limits: none configured in the {broker} schedule; compliance has no OTC limit"
+SFI_MODES = ("BUY_WITH_USD", "NONE")
+#: V1061R2-01 (FX_CCS_PLAN 3.2 labels row, D16): the PB forward's schedule terms - the basis levels, the dealer half-width and the IM
+#: percentage - are ASSUMED.  The curve module's forward has no dealer, so its label names the basis levels only (BASIS_ONLY_LABEL); the
+#: dealer's quote names all three in one label (TERMS_LABEL), as the float / float swap's record does.
+BASIS_ONLY_LABEL = "ASSUMED: the basis levels are "
+TERMS_LABEL = "ASSUMED: the basis levels, the dealer half-width and IM are {name} schedule terms"
+ASSUMED_SUFFIX = ", ASSUMED"
+
+
+def schedule_terms_labels(labels: List[str], xt: dict) -> List[str]:
+    """V1061R2-01: ``labels`` with the curve module's basis-only label replaced in place by ``TERMS_LABEL`` (appended when absent) -
+    "ASSUMED: the basis levels, the dealer half-width and IM are Goldman Sachs schedule terms" for the GS account."""
+    text = TERMS_LABEL.format(name=(xt or {}).get("name") or "the prime broker's")
+    out, done = [], False
+    for lab in labels:
+        if str(lab).startswith(BASIS_ONLY_LABEL) or lab == text:
+            if not done:
+                out.append(text)
+                done = True
+            continue
+        out.append(lab)
+    if not done:
+        out.append(text)
+    return out
+
+
+def assumed_source(source: Optional[str]) -> str:
+    """V1061R2-01 (D16): an IM percentage's source said ASSUMED once - "the prime broker's schedule, ASSUMED"."""
+    s = str(source or "the prime broker's schedule")
+    return s if s.endswith(ASSUMED_SUFFIX) else s + ASSUMED_SUFFIX
 
 tables.add_conventions({
     "OTC_OPTION": ("OTC options with the prime broker are priced from observed inputs - the underlying's price, the Cboe implied vol (FX: a"
@@ -394,10 +451,49 @@ def _pair(t: dict) -> str:
     return p
 
 
-def tenors_for(kind: str) -> Tuple[str, ...]:
-    """The tenors a kind takes: an FX forward the FX desk's table (value dates from the spot date), the others ``TENORS`` (expiries /
+def curve_pair(pair) -> bool:
+    """FX_CCS_PLAN D3: True for a pair of two of USD / EUR / GBP (priced on the FX term curves); a pair with another currency keeps the
+    legacy method."""
+    p = str(pair or "").upper()
+    return len(p) == 6 and p[:3] in CURVE_CCYS and p[3:] in CURVE_CCYS
+
+
+def tenors_for(kind: str, pair: Optional[str] = None) -> Tuple[str, ...]:
+    """The tenors a kind takes: an FX forward of a curve pair (or with no pair given) the PB's 1W .. 2Y (value dates from the spot date
+    on the pair's value calendar), of another pair the FX desk's ON .. 1Y (the legacy method); the others ``TENORS`` (expiries /
     maturities from the trade date)."""
-    return tuple(_fx.TENORS) if kind == "FX_FORWARD" else TENORS
+    if kind != "FX_FORWARD":
+        return TENORS
+    if pair is None or curve_pair(pair):
+        return OTC_FX_TENORS
+    return tuple(_fx.TENORS)
+
+
+def _tenor_months(tenor: str) -> Optional[int]:
+    """Months of a tenor written nM / nY (None for weeks, ON or anything else)."""
+    s = str(tenor or "").strip().upper()
+    if len(s) >= 2 and s[:-1].isdigit() and s[-1] in "MY":
+        return int(s[:-1]) * (12 if s[-1] == "Y" else 1)
+    return None
+
+
+def _parse_sfi(v, pair: str) -> dict:
+    """``settlement_funding {ccy: BUY_WITH_USD | NONE}`` (FX_CCS_PLAN D9): only the pair's non-USD currencies; 400 TERMS otherwise."""
+    if v in (None, "", {}):
+        return {}
+    if not isinstance(v, dict):
+        raise RejectError("TERMS", "settlement_funding: give {currency: BUY_WITH_USD | NONE}, e.g. {\"EUR\": \"BUY_WITH_USD\"}",
+                          {"field": "settlement_funding"})
+    out = {}
+    for k, m in v.items():
+        ccy, mode = str(k or "").strip().upper(), str(m or "").strip().upper()
+        if ccy not in (pair[:3], pair[3:]) or ccy == "USD":
+            raise RejectError("TERMS", f"settlement_funding: {ccy or '(blank)'} is not a non-USD currency of {pair}", {"field": "settlement_funding"})
+        if mode not in SFI_MODES:
+            raise RejectError("TERMS", f"settlement_funding {ccy}: {m!r} - use BUY_WITH_USD (buy it with USD two business days before each obligation)"
+                              " or NONE", {"field": "settlement_funding"})
+        out[ccy] = mode
+    return out
 
 
 def parse_terms(kind: str, terms: dict) -> dict:
@@ -437,11 +533,20 @@ def parse_terms(kind: str, terms: dict) -> dict:
             out["strike"] = _dec(strike, "strike")
     tenor = str(t.get("tenor") or "").strip().upper()
     when = t.get("expiry") or t.get("value_date") or t.get("maturity_date")
+    if kind == "FX_FORWARD":
+        tenor = FWD_TENOR_ALIAS.get(tenor, tenor)
+        out["settlement_funding"] = _parse_sfi(t.get("settlement_funding"), out["pair"])
     if tenor:
-        # P8B-03: an FX forward takes the FX desk's tenor table (value dates from the spot date, fx.tenor_date: ON, 1W, 2W, 1M .. 1Y) - the
-        # same list the desk offers (desk()["fx_forward_tenors"]), so a tenor the ticket offers is one the pricer prices
-        allowed = tenors_for(kind)
+        # P8B-03: an FX forward takes the tenor table its pricer prices - a curve pair the PB's 1W .. 2Y (FX_CCS_PLAN D3), another pair the FX
+        # desk's ON .. 1Y (legacy) - the same lists the desk offers (desk()["fx_forward_tenors"] / ["fx_forward_tenors_legacy"])
+        allowed = tenors_for(kind, out.get("pair"))
         if tenor not in allowed:
+            months = _tenor_months(tenor)
+            if kind == "FX_FORWARD" and months is not None and months > 12 and not curve_pair(out["pair"]):
+                raise RejectError("TENOR", f"beyond 1 year {out['pair']} has no term curve in this build: a pair with a currency outside USD / EUR / GBP is"
+                                  " priced by the legacy method up to 1Y", {"field": "tenor", "tenors": list(allowed)})
+            if kind == "FX_FORWARD" and months is not None and months > 24:
+                raise RejectError("TENOR", "beyond 2 years the PB forward is not offered", {"field": "tenor", "tenors": list(allowed)})
             raise RejectError("TERMS", f"tenor must be one of {', '.join(allowed)} (or give a date), got {t.get('tenor')!r}", {"field": "tenor", "tenors": list(allowed)})
         out["tenor"] = tenor
     elif when:
@@ -459,10 +564,10 @@ def _expiry(services, t: dict, trade_date: date, fx: bool, pair: Optional[str] =
     the trading calendar; an FX forward's tenor is the FX desk's value date from the spot date) or the date given (a business day
     after the premium / spot date, at most ``MAX_DAYS`` away)."""
     cal = services.cal
+    if t["kind"] == "FX_FORWARD":
+        return _fwd_value_date(services, t, trade_date, pair)
     if t.get("tenor"):
         tenor = t["tenor"]
-        if t["kind"] == "FX_FORWARD":
-            return _fx.tenor_date(services, pair, tenor, trade_date), tenor
         if tenor in TENOR_DAYS:
             return cal.roll_following(trade_date + timedelta(days=TENOR_DAYS[tenor])), tenor
         d = swaps.add_months(trade_date, TENOR_MONTHS[tenor])
@@ -473,6 +578,44 @@ def _expiry(services, t: dict, trade_date: date, fx: bool, pair: Optional[str] =
         raise RejectError("TERMS", f"{d.isoformat()} is not a business day (trading calendar)", {"field": "expiry"})
     if (d - trade_date).days > MAX_DAYS:
         raise RejectError("TERMS", f"{d.isoformat()} is more than {MAX_DAYS} days away (the chains and the curve inputs go to about a year)", {"field": "expiry"})
+    return d, "date"
+
+
+def _ccycal():
+    """The currency calendars (FX_CCS_PLAN K1), imported lazily: a module that is not in the build answers unavailable, never a guess."""
+    try:
+        from .. import ccycal
+        return ccycal
+    except ImportError as e:
+        raise ConflictError("CALENDAR_UNAVAILABLE", "the currency settlement calendars are not in this build: no PB forward value date", {"cause": type(e).__name__}) from e
+
+
+def _fwd_value_date(services, t: dict, trade_date: date, pair: str) -> Tuple[date, str]:
+    """An FX forward's value date: a curve pair (FX_CCS_PLAN D3 / D10) a tenor from the spot date on the pair's value calendar (``ccycal``),
+    or a date that must be a business day of that calendar (400 VALUE_DATE naming it) up to the 2Y date (400 TENOR beyond); another pair
+    (legacy) the FX desk's tenor dates (NYSE calendar, said LIMITED) up to its 1Y date (400 TENOR beyond)."""
+    deliver = pair[:3] if t.get("side") == "SELL" else pair[3:]
+    if curve_pair(pair):
+        cc = _ccycal()
+        if t.get("tenor"):
+            return cc.tenor_date(services, pair, t["tenor"], trade_date), t["tenor"]
+        d = _date(t["expiry"])
+        cc.require_value_date(services, pair, d, deliver)
+        limit = cc.tenor_date(services, pair, "2Y", trade_date)
+        if d > limit:
+            raise RejectError("TENOR", f"beyond 2 years the PB forward is not offered: {d.isoformat()} is after the 2-year date {limit.isoformat()}",
+                              {"field": "expiry", "limit": limit.isoformat()})
+        return d, "date"
+    if t.get("tenor"):
+        return _fx.tenor_date(services, pair, t["tenor"], trade_date), t["tenor"]
+    d = _date(t["expiry"])
+    if not services.cal.is_business_day(d):
+        raise RejectError("VALUE_DATE", f"{pair} value date {d.isoformat()}: not a business day on the NYSE calendar (local holidays not modelled)",
+                          {"field": "expiry", "value_date": d.isoformat()})
+    limit = _fx.tenor_date(services, pair, "1Y", trade_date)
+    if d > limit:
+        raise RejectError("TENOR", f"beyond 1 year {pair} has no term curve in this build: a pair with a currency outside USD / EUR / GBP is priced by the"
+                          f" legacy method up to its 1-year date {limit.isoformat()}", {"field": "expiry", "limit": limit.isoformat()})
     return d, "date"
 
 
@@ -983,7 +1126,320 @@ def _eq_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
             "quote": mv, "dv01_c": dv01_c, "margin_mode": str(sched.swap_margin_mode).upper(), "spread": spread, "carry_pct": carry_pct}
 
 
+# ---- the PB FX forward on the FX term curves (FX_CCS_PLAN rev 2 D2 / D3 / D5 / 3.2; K3) -----------------------------------------------
+Q10 = Decimal("0.0000000001")
+
+
+def _fxc():
+    """The FX term-curve module (P-A, K3), imported lazily; a build without it refuses the curve pairs' forwards - never another rate."""
+    try:
+        from .. import fxcurves
+        return fxcurves
+    except ImportError as e:
+        raise ConflictError("CURVE_UNAVAILABLE", "the FX term curves are not in this build: no PB forward is priced for a USD / EUR / GBP pair", {"cause": type(e).__name__}) from e
+
+
+def _q10(x) -> Decimal:
+    return Decimal(x).quantize(Q10, rounding=ROUND_HALF_EVEN)
+
+
+def _pxq(pair: str) -> Decimal:
+    return PX4 if str(pair)[3:] == "JPY" else PX6
+
+
+def _xccy_terms(services, conn, acct: dict) -> dict:
+    """The PB's cross-currency terms (D5: the basis levels, the EUR OIS spread; ``prime.xccy_terms``) - 409 when the schedule of this build
+    has none (never an assumed 0)."""
+    fn = getattr(prime, "xccy_terms", None)
+    if fn is None:
+        raise ConflictError("SCHEDULE_TERMS", "the prime-broker schedule of this build has no cross-currency basis levels: no PB forward on the curves", {})
+    return fn(services, acct["account_id"], conn=conn)
+
+
+def _curve_of(services, ccy: str, on: date, acct_id: Optional[str]):
+    """The currency's zero curve on ``on`` (``fxcurves.curve``; the EUR grid carries the PB's EUR OIS spread)."""
+    return _fxc().curve(services, ccy, on, pb=acct_id)
+
+
+def _fwd_curves(services, pair: str, on: date, acct_id: Optional[str], xt: dict) -> dict:
+    """D2 / D5: the discount curve of each currency of ``pair`` on ``on`` - its curve plus its basis level from the PB schedule (USD none);
+    RATE_UNAVAILABLE / CURVE_UNAVAILABLE refuse."""
+    fxc = _fxc()
+    return {c: fxc.discount_curve(services, c, on, acct_id, xt) for c in (pair[:3], pair[3:])}
+
+
+def _dfs(curves: dict, pair: str, s: date, v: date) -> Tuple[Decimal, Decimal]:
+    """The raw (unquantised) discount factors DF*_base(s, v), DF*_quote(s, v) on the given discount curves (any order of s and v:
+    DF(s, v) for v before s is the inverse, D19)."""
+    fxc = _fxc()
+    return Decimal(fxc.df(curves[pair[:3]], s, v)), Decimal(fxc.df(curves[pair[3:]], s, v))
+
+
+def fwd_outright(S: Decimal, df_b: Decimal, df_q: Decimal, pair: str) -> Decimal:
+    """D3: F = S x DF*_base / DF*_quote at the pair's precision (6 dp; JPY-quoted 4 dp), from the 1e-10 discount factors."""
+    return (Decimal(S) * _q10(df_b) / _q10(df_q)).quantize(_pxq(pair), rounding=ROUND_HALF_EVEN)
+
+
+def fwd_value_c(sign: int, A: Decimal, F: Decimal, K: Decimal, df_q: Decimal, usd_q: Decimal) -> int:
+    """3.2: the forward's value to you in USD cents for the spot date of the valuation date: sign x A x (F - K) x DF*_quote x USD per quote
+    unit, with the quote's quantisations (F at the pair's precision, DF at 1e-10) - so mark0 is exactly the quote's.  Worked (3.2): -2,000,000
+    x 0.000173 x 0.9094909816 x 1.3323 = -419.2533 -> -419.25."""
+    return int(sign) * to_c(Decimal(A) * (Decimal(F) - Decimal(K)) * _q10(df_q) * Decimal(usd_q))
+
+
+def _raw_value(sign: int, A: Decimal, S: Decimal, K: Decimal, df_b: Decimal, df_q: Decimal, usd_q: Decimal, dF: Decimal = Decimal(0)) -> Decimal:
+    """The forward's value in USD without intermediate rounding: sign x A x (S x DF_b / DF_q + dF - K) x DF_q x USD per quote unit."""
+    from decimal import localcontext
+    with localcontext() as c:
+        c.prec = 34
+        return Decimal(sign) * A * ((S * df_b / df_q) + dF - K) * df_q * usd_q
+
+
+def fwd_sensitivities(curves: dict, pair: str, sign: int, A: Decimal, S: Decimal, K: Decimal, usd_q: Decimal, s: date, v: date) -> dict:
+    """3.2 sensitivities, each by re-pricing without intermediate rounding (USD cents): ``pv_delta`` {ccy: currency cents} (base +sign x A x
+    DF*_base, quote -sign x A x K x DF*_quote), ``rate01_c`` {ccy} (+1 bp on every node of that currency's discount curve,
+    ``fxcurves.shifted``), ``basis01_c`` {USD pair: c} (+1 bp on that basis level: the same discount curve), ``spread01_c`` {"EUR"} (+1 bp
+    of EUR OIS spread: the EUR grid nodes, ``fxcurves.with_spread``), ``points01_c`` (F + 1 pip).  Worked (3.2, at T): rate01 EUR +420.66 /
+    GBP -420.57, EUR OIS spread +423.92, points01 -242.34, PV deltas EUR -1,882,614.77 / GBP +1,576,373.42."""
+    from ..instruments import fx_pair_id
+    fxc = _fxc()
+    base, quote = pair[:3], pair[3:]
+    b0, q0 = _dfs(curves, pair, s, v)
+    v0 = _raw_value(sign, A, S, K, b0, q0, usd_q)
+    out: dict = {"pv_delta": {base: to_c(Decimal(sign) * A * b0), quote: -to_c(Decimal(sign) * A * K * q0)}, "rate01_c": {}, "basis01_c": {}, "spread01_c": {}}
+    for c in (base, quote):
+        bumped = dict(curves, **{c: fxc.shifted(curves[c], 1)})
+        b1, q1 = _dfs(bumped, pair, s, v)
+        d = to_c(_raw_value(sign, A, S, K, b1, q1, usd_q) - v0)
+        out["rate01_c"][c] = d
+        if c in BASIS_FIELD:
+            out["basis01_c"][fx_pair_id(c)] = d
+    if "EUR" in (base, quote):
+        e = curves["EUR"]
+        bumped = dict(curves, EUR=fxc.with_spread(e, Decimal(e.spread_bp) + 1))
+        b1, q1 = _dfs(bumped, pair, s, v)
+        out["spread01_c"]["EUR"] = to_c(_raw_value(sign, A, S, K, b1, q1, usd_q) - v0)
+    out["points01_c"] = to_c(_raw_value(sign, A, S, K, b0, q0, usd_q, _fx.pip_of(pair)) - v0)
+    return out
+
+
+def _jsafe(x):
+    """A record as JSON-safe values (Decimals and dates as strings)."""
+    if isinstance(x, dict):
+        return {k: _jsafe(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_jsafe(v) for v in x]
+    if isinstance(x, Decimal):
+        return str(x)
+    if isinstance(x, date):
+        return x.isoformat()
+    return x
+
+
+def _spot_blockers(pair: str, sp: dict) -> List[dict]:
+    """D3 / 3.2 Blocked: a spot that is not executable gives no quote - NO_QUOTE / QUOTE_STALE / SESSION_CLOSED / SPOT_INCONSISTENT with the
+    reason in words (asked again by itself)."""
+    if sp.get("executable"):
+        return []
+    code = str(sp.get("code") or "QUOTE_STALE")
+    reason = str(sp.get("reason") or "not executable")
+    return [_blocker(code, f"{pair}: {reason} - the PB forward is dealt in the FX session on fresh, consistent prints; asked again by itself",
+                     reason=reason, retry_ms=RETRY_MS)]
+
+
+def _limits_block(services, acct: dict, notional_c: int, mark0_c: int) -> dict:
+    """D18: no notional limit is configured - said, with the book's headline gross / NAV (the Risk page's 2x warning) and gross notional /
+    NAV before and after the trade (an OTC FX forward is outside the headline: only the notional and NAV move)."""
+    broker = prime.broker_of(acct)
+    name = config.PRIME_BROKERS.get(broker, broker) if hasattr(config, "PRIME_BROKERS") else broker
+    out = {"text": CAPS_TEXT.format(broker=name), "caps": "none configured", "warning_limit": "2x NAV (the Risk page's gross-exposure warning)"}
+    try:
+        from .. import risk as _risk
+        lid = split_account_id(acct["account_id"])[0]
+        snap = services.marks.snapshot()
+        ex = _risk.exposure_summary(services, f"{lid}:ALL", snapshot=snap)
+        nav_c = int(services.accounting.nav(f"{lid}:ALL", snapshot=snap).nav_c)
+    except Exception as e:   # noqa: BLE001 - the ratios are information; their absence is said
+        out["note"] = f"the book's exposure could not be measured now: {type(e).__name__}: {e}"[:200]
+        return out
+    nav_after = nav_c + int(mark0_c)
+
+    def ratio(x, n):
+        return None if not n or n <= 0 else str((Decimal(abs(int(x))) / Decimal(n)).quantize(Decimal("0.0001")))
+    after_notional = int(ex["gross_notional_c"]) + abs(int(notional_c))
+    out.update(book=lid, nav_before_c=nav_c, nav_after_c=nav_after, headline_gross_before_c=int(ex["gross_c"]), headline_gross_after_c=int(ex["gross_c"]),
+               gross_notional_before_c=int(ex["gross_notional_c"]), gross_notional_after_c=after_notional,
+               headline_gross_nav_before=ratio(ex["gross_c"], nav_c), headline_gross_nav_after=ratio(ex["gross_c"], nav_after),
+               gross_notional_nav_before=ratio(ex["gross_notional_c"], nav_c), gross_notional_nav_after=ratio(after_notional, nav_after),
+               basis="an OTC FX forward is outside the headline gross (its risk is the currency exposure); its USD notional adds to the gross notional")
+    return out
+
+
+def _quoted_flows(pair: str, sell_ccy: str, sell_c: int, buy_ccy: Optional[str], buy_c: Optional[int], vd: date, sfi: dict, im_c: int = 0,
+                  im_date: Optional[date] = None) -> List[dict]:
+    """D9 (P-D-R2): the quoted forward's own delivery legs for ``ccyfunding.plan(extra=...)`` - the trade is not a contract yet (a quote, or
+    the booking, which builds its record before the contract row and its IM exist), so the plan shows its purchase and the settlement-funding
+    gap before it is booked.  V1061-03: its IM (``im_c``, posted at the booking on ``im_date`` - one Treasury sweep - and released only at the
+    00:30 delivery, after the purchase's USD leg has settled) is a USD outflow too, as it is in the plan of the booked contract (the ledger),
+    so the quote's gap equals the booked one.  ``[{date, ccy, amount_c (+ in / - out), what, known, event, kind, mode}]``; ``mode`` = the
+    quote's instruction for that currency (BUY_WITH_USD, else NONE)."""
+    v = vd.isoformat()
+
+    def mode(c):
+        return "BUY_WITH_USD" if (sfi or {}).get(c) == "BUY_WITH_USD" else "NONE"
+    out = [{"date": v, "ccy": sell_ccy, "amount_c": -abs(int(sell_c)), "what": f"forward delivery: deliver {sell_ccy} {fmt_money(abs(int(sell_c)))} ({pair})",
+            "known": True, "event": "DELIVERY", "kind": "FX_FORWARD", "mode": mode(sell_ccy)}]
+    if int(im_c or 0) > 0 and im_date is not None:
+        out.append({"date": im_date.isoformat(), "ccy": "USD", "amount_c": -int(im_c), "known": True, "event": "IM", "kind": "FX_FORWARD", "mode": "NONE",
+                    "what": f"initial margin USD {fmt_money(int(im_c))} posted at the booking (held until the delivery on {v})"})
+    if buy_ccy and buy_c not in (None, ""):
+        out.append({"date": v, "ccy": buy_ccy, "amount_c": abs(int(buy_c)), "what": f"forward delivery: receive {buy_ccy} {fmt_money(abs(int(buy_c)))} ({pair})",
+                    "known": True, "event": "DELIVERY", "kind": "FX_FORWARD", "mode": mode(buy_ccy)})
+    return out
+
+
+def _funding_block(services, acct: dict, pair: str, sell_ccy: str, sell_c: int, vd: date, sfi: dict, buy_ccy: Optional[str] = None,
+                   buy_c: Optional[int] = None, im_c: int = 0, im_date: Optional[date] = None) -> dict:
+    """D9: the contract's settlement-funding instruction in words and the plan's gap (``ccyfunding.plan``, read lazily; "unavailable", said,
+    while that module is not in the build - never a guessed gap).  The plan is given the quoted trade's own legs and IM (``_quoted_flows``),
+    so the first quote already shows its purchase and the gap the booked contract will show (P-D-R2, V1061-03)."""
+    mode = (sfi or {}).get(sell_ccy) if sell_ccy != "USD" else None
+    if sell_ccy == "USD":
+        line = f"the USD delivered on {vd.isoformat()} comes from the account's cash, then one Treasury sweep"
+    elif mode == "BUY_WITH_USD":
+        line = (f"settlement funding ON: the {sell_ccy} {fmt_money(int(sell_c))} delivered on {vd.isoformat()} is bought with USD two business days before (value"
+                f" {vd.isoformat()}), an audited FX desk spot deal; nothing converts on its own")
+    else:
+        line = (f"settlement funding OFF for {sell_ccy}: the {sell_ccy} {fmt_money(int(sell_c))} delivered on {vd.isoformat()} must be in this account or Treasury by"
+                " then (buy it on the FX desk); a delivery that cannot be funded waits, with an error")
+    out = {"sfi": dict(sfi or {}), "line": line}
+    mod = getattr(services, "ccyfunding", None)
+    fn = getattr(mod, "plan", None) if mod is not None else None
+    if not callable(fn):
+        out["plan"] = {"available": False, "reason": "the settlement-funding plan is not in this build"}
+        return out
+    try:
+        p = fn(services, acct["account_id"], extra=_quoted_flows(pair, sell_ccy, sell_c, buy_ccy, buy_c, vd, sfi, im_c, im_date))
+    except Exception as e:   # noqa: BLE001 - said, never a guessed gap
+        out["plan"] = {"available": False, "reason": f"{type(e).__name__}: {e}"[:200]}
+        return out
+    if isinstance(p, dict):
+        out["plan"] = _jsafe({k: p.get(k) for k in ("available", "reason", "gaps", "note") if k in p})
+        out["gaps"] = _jsafe(p.get("gaps") or [])
+    return out
+
+
 def _fx_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, request: bool) -> dict:
+    """FX_FORWARD: a curve pair on the FX term curves (3.2), another pair by the legacy method (1.5)."""
+    if curve_pair(t["pair"]):
+        return _fx_forward_curve_deal(services, conn, snap, acct, t, now, request)
+    return _fx_forward_legacy_deal(services, conn, snap, acct, t, now, request)
+
+
+def _fx_forward_curve_deal(services, conn, snap, acct: dict, t: dict, now: int, request: bool) -> dict:
+    """3.2 / D3: the PB forward of a USD / EUR / GBP pair on the FX term curves (``fxcurves.forward``), dealt at F -/+ the PB half-width,
+    with its full pricing record (the curve module's spot, curves, discount factors, outright, basis and labels, plus the dealer's terms, IM,
+    the sensitivities, the limits, the settlement funding, the cross-checks and the settlement)."""
+    fxc = _fxc()
+    cc = _ccycal()
+    sched = _schedule(conn, acct)
+    xt = _xccy_terms(services, conn, acct)
+    aid = acct["account_id"]
+    pair = t["pair"]
+    base, quote = pair[:3], pair[3:]
+    td = _fx.fx_trade_date(services, now)
+    on = ny_of(now).date()
+    vd, tenor = _expiry(services, t, td, True, pair)
+    sd = cc.spot_date(services, pair, td)
+    if vd <= sd:
+        raise RejectError("TERMS", f"the value date {vd.isoformat()} must be after the spot date {sd.isoformat()} (a spot deal is the FX desk's)",
+                          {"field": "tenor" if t.get("tenor") else "expiry"})
+    if request:
+        _pin(services, _fx_ids(pair))
+    sp = fxc.spot(services, pair, snap, now)
+    if sp.get("mid") is None:
+        raise ConflictError("NO_QUOTE", f"{pair}: no observed rate yet ({sp.get('reason') or 'unavailable'}) - it is being fetched; the ticket asks again by"
+                            " itself", {"pair": pair, "retry_ms": RETRY_MS})
+    fwd = fxc.forward(services, pair, vd, snap, aid, now=now, on=on, trade_date=td, spot_rec=sp)
+    S, F = Decimal(fwd["S"]), Decimal(fwd["F"])
+    df_b, df_q = Decimal(fwd["df_base"]), Decimal(fwd["df_quote"])
+    points = Decimal(str(fwd["forward"]["points"]))
+    mult = Decimal(sched.otc_spread_mult)
+    hw_bp = (Decimal(sched.forward_hw_bp) * mult).quantize(Decimal("0.0001"))
+    hw_px = (F * hw_bp / Decimal(10000)).quantize(_pxq(pair), rounding=ROUND_HALF_EVEN)
+    sign = _sign(t["side"])
+    K = F + hw_px if sign > 0 else F - hw_px
+    usd_q, _ql = _usd_per(services, snap, quote, now)
+    usd_b, _bl = _usd_per(services, snap, base, now)
+    if usd_q is None or usd_b is None:
+        raise ConflictError("NO_QUOTE", f"{pair}: no USD rate for {quote if usd_q is None else base}", {"pair": pair, "retry_ms": RETRY_MS})
+    A = from_c(int(t["notional_c"]))
+    mark0_c = fwd_value_c(sign, A, F, K, df_q, usd_q)
+    notional_c = to_c(A * usd_b)
+    imp = _im_terms(services, acct)
+    im_pct = Decimal(imp["forward_im_pct"]) if imp.get("forward_im_pct") is not None else Decimal(sched.forward_im_pct)
+    im_c = to_c(from_c(notional_c) * im_pct)
+    # V1061R2-01 (D16): the IM percentage and the dealer half-width are schedule terms - ASSUMED wherever they are shown or stored
+    im_source = assumed_source(imp.get("source"))
+    hw_source = f"the dealer half-width is a {xt.get('name') or 'prime-broker'} schedule term, ASSUMED"
+    buy_ccy, sell_ccy = (base, quote) if sign > 0 else (quote, base)
+    pi = _fx.pair_info(buy_ccy, sell_ccy)
+    if pi["cross"]:
+        base_c, quote_c = int(t["notional_c"]), to_c(A * K)
+        buy_c, sell_c = (base_c, quote_c) if sign > 0 else (quote_c, base_c)
+        ledger_rate = str(K)
+    else:
+        econ = _fx._usd_pair_economics(pi, K, K, int(t["notional_c"]), base)
+        buy_c, sell_c, ledger_rate = int(econ["buy_c"]), int(econ["sell_c"]), str(econ["rate"])
+    blockers = _spot_blockers(pair, sp)
+    curves = _fwd_curves(services, pair, on, aid, xt)
+    sens = fwd_sensitivities(curves, pair, sign, A, S, K, usd_q, sd, vd)
+    labels = schedule_terms_labels(list(fwd.get("labels") or ["MODEL"]), xt)       # V1061R2-01: the half-width and IM named ASSUMED too
+    try:
+        checks = fxc.cross_checks(services, pair, vd, snap, fwd=fwd, pb=aid, now=now)
+    except Exception as e:   # noqa: BLE001 - the cross-checks are information; their failure is said, the quote stands
+        checks = {"note": f"cross-checks unavailable: {getattr(e, 'message', None) or e}"[:200]}
+    broker = prime.broker_of(acct)
+    days = (vd - sd).days
+    record = _jsafe({k: v for k, v in fwd.items() if k not in ("F", "S", "df_base", "df_quote")})
+    record.update(
+        kind="FX_FORWARD", tenor=tenor, side=t["side"], notional_base_c=int(t["notional_c"]),
+        dealer={"broker": config.PRIME_BROKERS.get(broker, broker) if hasattr(config, "PRIME_BROKERS") else broker, "forward_hw_bp": str(sched.forward_hw_bp),
+                "otc_spread_mult": str(mult), "hw_bp": str(hw_bp), "hw_px": str(hw_px), "K": str(K), "side": t["side"],
+                "schedule_source": f"{xt.get('source') or 'prime-broker schedule'}", "schedule_updated_ts": xt.get("updated_ts"),
+                "rule": f"K = F {'+' if sign > 0 else '-'} {hw_bp} bp of F = {F} {'+' if sign > 0 else '-'} {hw_px} = {K} (against you)", "hw_source": hw_source},
+        im={"pct": str(im_pct), "usd_notional_c": notional_c, "im_c": im_c, "usd_rate": str(usd_b),
+            "rule": f"{_pct(im_pct)} x the USD notional {fmt_money(notional_c)} ({base} {fmt_money(int(t['notional_c']))} x {usd_b})", "source": im_source},
+        amounts={"buy_ccy": buy_ccy, "buy_c": buy_c, "sell_ccy": sell_ccy, "sell_c": sell_c, "usd_notional_c": notional_c, "mark0_c": mark0_c,
+                 "usd_per_base": str(usd_b), "usd_per_quote": str(usd_q),
+                 "mark0_arithmetic": f"{'+' if sign > 0 else '-'}{fmt_money(int(t['notional_c']))} x ({F} - {K}) x {df_q} x {usd_q} = {from_c(mark0_c)}"},
+        sensitivities={"pv_delta_c": sens["pv_delta"], "rate01_c": sens["rate01_c"], "basis01_c": sens["basis01_c"], "spread01_c": sens["spread01_c"],
+                       "points01_c": sens["points01_c"], "valuation": f"at {td.isoformat()} for the spot date {sd.isoformat()}",
+                       "basis": "each by re-pricing without intermediate rounding, USD; PV deltas in currency units"},
+        cross_checks=_jsafe(checks), labels=labels,
+        settlement={"value_date": vd.isoformat(), "deliver": {"ccy": sell_ccy, "amount_c": sell_c}, "receive": {"ccy": buy_ccy, "amount_c": buy_c},
+                    "delivery": "at 00:30 ET on the value date through an FX deal at K, settled by SETTLE_DUE in both currencies"})
+    fin = {"outright": str(F), "points": str(points), "pip": str(_fx.pip_of(pair)), "spot_date": sd.isoformat(), "value_date": vd.isoformat(), "days": days,
+           "limited": False, "method": "curves", "arithmetic": (record.get("forward") or {}).get("arithmetic") or f"F = {S} x {df_b} / {df_q} = {F}", "note": ""}
+    inputs = {"S": str(S), "F": str(F), "K": str(K), "days_to_value": days, "df_quote": str(df_q), "df_base": str(df_b), "notional_c": int(t["notional_c"]), "sign": sign,
+              "pair": pair, "usd_per_quote": str(usd_q), "usd_per_base": str(usd_b), "valuation_date": td.isoformat(), "value_date": vd.isoformat(),
+              "spot_date": sd.isoformat(), "method": "curves", "model_version": MODEL_VERSION, "labels": labels,
+              "fx": {"pair": pair, "mid": str(S), "quality": sp.get("quality") or ((sp.get("legs") or [{}])[0].get("quality")), "quote_time": sp.get("quote_time"),
+                     "source": sp.get("arithmetic") or ((sp.get("legs") or [{}])[0].get("source")), "basis": sp.get("basis"), "executable": sp.get("executable")},
+              "forward": fin,
+              "curves": {c: {k: (record.get("curves") or {}).get(c, {}).get(k) for k in ("kind", "as_of", "source", "level_bp", "spread_bp", "z_S", "z_V")}
+                         for c in (base, quote)}}
+    return {"kind": "FX_FORWARD", "sched": sched, "today": td, "trade_date": td, "expiry": vd, "tenor": tenor, "S": S, "F": F, "K": K, "hw_bp": hw_bp, "hw_px": hw_px,
+            "mult": mult, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct,
+            "im_source": im_source, "hw_source": hw_source, "premium_c": 0, "inputs": inputs, "blockers": blockers, "pair": pair, "usd_q": usd_q, "usd_b": usd_b,
+            "dv01_c": sens["rate01_c"].get(quote), "margin_mode": str(sched.swap_margin_mode).upper(), "buy_ccy": buy_ccy, "sell_ccy": sell_ccy, "buy_c": buy_c,
+            "sell_c": sell_c, "sd": sd, "fin": fin, "ledger_rate": ledger_rate, "method": "CURVES", "record": record, "sens": sens, "points": points,
+            "df_b": df_b, "df_q": df_q, "labels": labels, "sfi": dict(t.get("settlement_funding") or {}), "xt": xt}
+
+
+def _fx_forward_legacy_deal(services, conn, snap, acct: dict, t: dict, now: int, request: bool) -> dict:
+    """1.5: a pair with a currency outside USD / EUR / GBP - the pre-1.0.6.1 method (``fx.forward_rate``: one overnight / policy rate per
+    currency, simple interest) up to 1Y, labelled LEGACY METHOD - LIMITED."""
     sched = _schedule(conn, acct)
     pair = t["pair"]
     base, quote = pair[:3], pair[3:]
@@ -1039,12 +1495,26 @@ def _fx_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
               "usd_per_quote": str(usd_q), "usd_per_base": str(usd_b), "valuation_date": td.isoformat(), "value_date": vd.isoformat(),
               "fx": {"pair": pair, "mid": str(S), "quality": pm.get("quality"), "quote_time": pm.get("quote_time"), "source": pm.get("source"), "basis": pm.get("basis")},
               "forward": {k: fin.get(k) for k in ("outright", "points", "arithmetic", "spot_date", "value_date", "days", "limited", "note")},
-              "r_base": fin["r_base"], "r_quote": rq}
+              "r_base": fin["r_base"], "r_quote": rq, "method": "legacy", "labels": ["MODEL", LEGACY_LABEL]}
+    # 1.5: the legacy method's own sensitivities (re-priced on its two simple rates): the value is sign x A x (S x DF_b - K x DF_q) x USD per quote
+    # unit with DF = 1 / (1 + r x d / B), so the PV deltas are +sign x A x DF_b (base) and -sign x A x K x DF_q (quote)
+    rb = fin["r_base"]
+    df_b = Decimal(repr(fx_df(rb["value_pct"], int(rb["basis"]), days_d)))
+    sens = {"pv_delta": {base: to_c(Decimal(sign) * A * df_b), quote: -to_c(Decimal(sign) * A * K * Decimal(repr(df_q)))},
+            "rate01_c": {quote: dv01_c}, "basis01_c": {}, "spread01_c": {},
+            "points01_c": to_c(Decimal(sign) * A * _fx.pip_of(pair) * Decimal(repr(df_q)) * usd_q)}
+    record = {"kind": "FX_FORWARD", "pair": pair, "method": f"{LEGACY_LABEL}: {fin.get('arithmetic')}", "model_version": "legacy-cip-1",
+              "trade_date": td.isoformat(), "spot_date": sd.isoformat(), "value_date": vd.isoformat(), "days": days_d, "tenor": tenor, "side": t["side"],
+              "spot": inputs["fx"], "forward": {"outright": str(F), "points": fin.get("points"), "pip": fin.get("pip"), "arithmetic": fin.get("arithmetic")},
+              "rates": {"base": fin["r_base"], "quote": rq}, "dealer": {"forward_hw_bp": str(sched.forward_hw_bp), "otc_spread_mult": str(mult), "hw_px": str(hw_px),
+                                                                           "K": str(K), "side": t["side"]},
+              "labels": ["MODEL", LEGACY_LABEL], "sensitivities": {"pv_delta_c": sens["pv_delta"], "rate01_c": sens["rate01_c"], "points01_c": sens["points01_c"]}}
     return {"kind": "FX_FORWARD", "sched": sched, "today": td, "trade_date": td, "expiry": vd, "tenor": tenor, "S": S, "F": F, "K": K, "hw_bp": hw_bp, "hw_px": hw_px,
             "mult": mult, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct,
             "im_source": imp.get("source"), "premium_c": 0, "inputs": inputs, "blockers": blockers, "pair": pair, "usd_q": usd_q, "usd_b": usd_b, "dv01_c": dv01_c,
             "margin_mode": str(sched.swap_margin_mode).upper(), "buy_ccy": buy_ccy, "sell_ccy": sell_ccy, "buy_c": buy_c, "sell_c": sell_c, "sd": sd, "fin": fin,
-            "ledger_rate": ledger_rate}
+            "ledger_rate": ledger_rate, "method": "LEGACY", "record": record, "sens": sens, "points": fin.get("points"), "df_b": df_b, "df_q": Decimal(repr(df_q)),
+            "labels": ["MODEL", LEGACY_LABEL], "sfi": dict(t.get("settlement_funding") or {})}
 
 
 DEALS = {"EQ_OPTION": _eq_option_deal, "FX_OPTION": _fx_option_deal, "EQ_FORWARD": _eq_forward_deal, "FX_FORWARD": _fx_forward_deal}
@@ -1094,7 +1564,26 @@ def _store_terms(deal: dict, t: dict) -> dict:
         else:
             out.update(buy_ccy=deal["buy_ccy"], sell_ccy=deal["sell_ccy"], buy_c=deal["buy_c"], sell_c=deal["sell_c"], value_date=deal["expiry"].isoformat(),
                        ledger_rate=deal["ledger_rate"])
+            # K6 (FX_CCS_PLAN 1.0.6.1): the method, the points, the discount factors and the settlement-funding instruction; the pricing record
+            # itself is added at booking (book) - the preview carries it at its top level
+            out.update(pricing_method=deal.get("method") or "LEGACY", points=None if deal.get("points") is None else str(deal["points"]),
+                       df_base=None if deal.get("df_b") is None else str(deal["df_b"]), df_quote=None if deal.get("df_q") is None else str(deal["df_q"]),
+                       spot_date=deal["sd"].isoformat(), settlement_funding=dict(deal.get("sfi") or {}), labels=list(deal.get("labels") or []))
     return out
+
+
+def _record_extras(services, conn, acct: dict, deal: dict, snap) -> dict:
+    """The parts of an FX forward's pricing record that read the book (D18 limits, D9 funding) and the cross-checks (D2): computed once
+    per deal (the preview and the booking), stored in the record.  A legacy deal carries the limits and funding too."""
+    if deal.get("kind") != "FX_FORWARD" or deal.get("_extras_done"):
+        return deal.get("record") or {}
+    rec = deal.setdefault("record", {})
+    rec["limits"] = _limits_block(services, acct, int(deal["notional_c"]), int(deal["mark0_c"]))
+    # V1061-03: built before the booking posts the IM (book() calls this first), so the quote's own IM is handed to the plan once
+    rec["funding"] = _funding_block(services, acct, deal["pair"], deal["sell_ccy"], int(deal["sell_c"]), deal["expiry"], deal.get("sfi") or {},
+                                    deal.get("buy_ccy"), deal.get("buy_c"), int(deal.get("im_c") or 0), deal.get("trade_date"))
+    deal["_extras_done"] = True
+    return rec
 
 
 def _preview_dict(services, conn, acct: dict, deal: dict, t: dict, now: int) -> dict:
@@ -1143,19 +1632,42 @@ def _preview_dict(services, conn, acct: dict, deal: dict, t: dict, now: int) -> 
                                    f" ({deal['hw_bp']} bp half-width) = {deal['K']}"),
                        settlement="cash: sign x units x (the underlying's observed close on the maturity date - K)")
         else:
+            sd = deal["sd"]
             out.update(pair=deal["pair"], notional_base_c=int(t["notional_c"]), base_ccy=deal["pair"][:3], quote_ccy=deal["pair"][3:], value_date=deal["expiry"].isoformat(),
                        delivery={"receive": {"ccy": deal["buy_ccy"], "amount_c": deal["buy_c"]}, "pay": {"ccy": deal["sell_ccy"], "amount_c": deal["sell_c"]}},
-                       settlement=(f"delivered on {deal['expiry'].isoformat()}: you receive {deal['buy_ccy']} {fmt_money(deal['buy_c'])} and pay {deal['sell_ccy']}"
-                                   f" {fmt_money(deal['sell_c'])} (an FX deal settled by SETTLE_DUE; the sold currency must be in the account or Treasury by then)"))
+                       settlement=(f"delivered at 00:30 ET on {deal['expiry'].isoformat()}: you receive {deal['buy_ccy']} {fmt_money(deal['buy_c'])} and pay"
+                                   f" {deal['sell_ccy']} {fmt_money(deal['sell_c'])} (an FX deal at K settled by SETTLE_DUE; the sold currency must be in the account or"
+                                   " Treasury by then)"),
+                       spot_date=sd.isoformat(), days_from_spot=(deal["expiry"] - sd).days, method=deal.get("method") or "LEGACY", labels=list(deal.get("labels") or []),
+                       points=None if deal.get("points") is None else str(deal["points"]), settlement_funding=dict(deal.get("sfi") or {}),
+                       pricing_record=deal.get("record"), sensitivities=(deal.get("record") or {}).get("sensitivities"),
+                       cross_checks=(deal.get("record") or {}).get("cross_checks"), limits=(deal.get("record") or {}).get("limits"),
+                       funding_plan=(deal.get("record") or {}).get("funding"))
+            if deal.get("method") == "CURVES":
+                out["model"] = CURVES_MODEL
+                out["half_width_source"] = deal.get("hw_source")          # V1061R2-01: shown beside the dealt rate on the ticket
+                out["price_rule"] = (f"outright {deal['F']} = {deal['S']} x DF*_{deal['pair'][:3]} {deal['df_b']} / DF*_{deal['pair'][3:]} {deal['df_q']}"
+                                     f" ({out['points']} pips); dealt {deal['F']} {'+' if sign > 0 else '-'} {deal['hw_px']} ({deal['hw_bp']} bp, against you) = {deal['K']}"
+                                     + (f"; {deal['hw_source']}" if deal.get("hw_source") else ""))
+            else:
+                out["model"] = MODELS[kind] + " - " + LEGACY_LABEL
             try:
                 chk = _fx.funding_check(services, acct["account_id"], deal["sell_ccy"], int(deal["sell_c"]), deal["expiry"], conn=conn)
-                # funding_check says it in ``text`` (+ its ``fixes``); the warning reads it (an empty note showed a generic line on every sale)
+                # G11: funding_check says it in ``text`` (+ its ``fixes``); the note reads it, then the settlement-funding line (never empty)
                 note = chk.get("note") or chk.get("text") or ""
                 if not chk.get("fundable") and chk.get("fixes"):
                     note += " - " + "; ".join(chk["fixes"])
-                out["delivery_check"] = {"fundable": bool(chk.get("fundable")), "note": note}
+                fl = ((deal.get("record") or {}).get("funding") or {}).get("line")
+                sfi_on = (deal.get("sfi") or {}).get(deal["sell_ccy"]) == "BUY_WITH_USD"
+                if sfi_on and fl:
+                    # the instruction buys the delivered currency beforehand: the note leads with it, today's holding follows as information
+                    note = fl + (f" (today: {note})" if note else "")
+                elif fl:
+                    note = (note + ". " if note else "") + fl
+                out["delivery_check"] = {"fundable": bool(chk.get("fundable")), "note": note or f"{deal['sell_ccy']} {fmt_money(int(deal['sell_c']))} due {deal['expiry'].isoformat()}",
+                                         "sfi": (deal.get("sfi") or {}).get(deal["sell_ccy"]), "covered_by_sfi": bool(sfi_on)}
             except Exception as e:   # noqa: BLE001 - a warning only
-                out["delivery_check"] = {"fundable": None, "note": str(e)[:160]}
+                out["delivery_check"] = {"fundable": None, "note": f"the delivery check could not run: {type(e).__name__}: {e}"[:160]}
     return out
 
 
@@ -1187,6 +1699,7 @@ def preview(services, account_id: str, kind: str, terms: dict, conn=None, now: O
         ids = [t.get("underlying_id")] if k in ("EQ_OPTION", "EQ_FORWARD") else _fx_ids(t["pair"])
         snap = _snapshot(services, ids)
         deal = _deal(services, c, snap, acct, k, t, ts, request=True)
+        _record_extras(services, c, acct, deal, snap)
         out = _preview_dict(services, c, acct, deal, t, ts)
         out["funding"] = _funding(services, c, acct, deal, snap)
         if not out["funding"].get("ok", True):
@@ -1233,8 +1746,11 @@ def book(ctx: TxContext, payload: dict) -> dict:
         raise ConflictError("INSUFFICIENT_FUNDS", fund["note"], {"funding": fund})
     broker = prime.broker_of(acct)
     cid = next_id(conn, "otc")
+    _record_extras(services, conn, acct, deal, ctx.marks)
     terms = _store_terms(deal, t)
     terms["dealt_ts"] = ctx.ts
+    if kind == "FX_FORWARD" and deal.get("record"):
+        terms["pricing_record"] = dict(deal["record"], booked_ts=ctx.ts)
     side_text = _side_text(kind, terms)
     entries: List[int] = []
     im_c = int(deal["im_c"])
@@ -1408,6 +1924,8 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
     # FX kinds
     pair = terms["pair"]
     base, quote = pair[:3], pair[3:]
+    if kind == "FX_FORWARD" and str(terms.get("pricing_method") or "").upper() == "CURVES":
+        return _curve_fwd_value(services, conn, snap, row, terms, now, close=close, val_date=val_date, bump=bump)
     if close is not None:
         S = close[0]
         usd_q = Decimal(str(close[1].get("usd_per_quote") or "1"))
@@ -1458,6 +1976,114 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
     return value_c, inputs
 
 
+def _curve_fwd_value(services, conn, snap, row: dict, terms: dict, now: int, close=None, val_date=None, bump: Optional[dict] = None) -> Tuple[int, dict]:
+    """3.2 / D19: a curve-priced FX forward's value to you in USD cents for the spot date S_t of the valuation date - sign x A x (F_t - K) x
+    DF*_quote(S_t, V) x USD per quote unit, F_t and the discount factors quantised as at the quote - on the curves on or before the
+    valuation date (live: now, the derived cross / the pair's print; VM: the 17:00 ET closes of the VM date, the cross derived from its two
+    USD pairs).  Once the spot date reaches the value date the discount factors run backwards (DF(S_t, V) = 1 / DF(V, S_t), D19).  ``bump``
+    {r_bp: x}: the quote currency's discount curve moved by x bp (``dv01_c``).  Raises ConflictError when an input is missing (the mark is
+    then the stored one, labelled stale; the VM waits and retries)."""
+    fxc = _fxc()
+    cc = _ccycal()
+    sign = 1 if terms.get("side") == "BUY" else -1
+    K = Decimal(str(terms["strike"]))
+    vd = _date(terms.get("value_date") or terms["expiry"])
+    A = from_c(int(terms["notional_c"]))
+    pair = terms["pair"]
+    base, quote = pair[:3], pair[3:]
+    if close is not None:
+        S = Decimal(close[0])
+        usd_q = Decimal(str(close[1].get("usd_per_quote") or "1"))
+        usd_b = Decimal(str(close[1].get("usd_per_base") or "1"))
+        day = _date(close[1].get("close_date") or val_date)
+        on, td = day, day
+        fxinfo = dict(close[1], pair=pair)
+    else:
+        sp = fxc.spot(services, pair, snap, now)
+        if sp.get("mid") is None:
+            raise ConflictError("NO_QUOTE", f"{pair}: no observed rate ({sp.get('reason') or 'unavailable'})")
+        S = Decimal(sp["mid"])
+        usd_q, _ql = _usd_per(services, snap, quote, now)
+        usd_b, _bl = _usd_per(services, snap, base, now)
+        if usd_q is None or usd_b is None:
+            raise ConflictError("NO_QUOTE", f"{pair}: no USD rate")
+        td, on = _fx.fx_trade_date(services, now), ny_of(now).date()
+        day = td
+        legs = sp.get("legs") or [{}]
+        fxinfo = {"pair": pair, "mid": str(S), "quality": legs[0].get("quality") if len(legs) == 1 else _fx._worst(*(lg.get("quality") for lg in legs)),
+                  "quote_time": sp.get("quote_time"), "source": sp.get("arithmetic") or legs[0].get("source"), "basis": sp.get("basis"),
+                  "executable": sp.get("executable")}
+    sd = cc.spot_date(services, pair, td)
+    acct = account_row(conn, row["account_id"])
+    xt = _xccy_terms(services, conn, dict(acct) if acct is not None else {"account_id": row["account_id"]})
+    curves = _fwd_curves(services, pair, on, row["account_id"], xt)
+    if bump and bump.get("r_bp"):
+        curves = dict(curves, **{quote: fxc.shifted(curves[quote], Decimal(str(bump["r_bp"])))})
+    b_raw, q_raw = _dfs(curves, pair, sd, vd)
+    df_b, df_q = _q10(b_raw), _q10(q_raw)
+    F = fwd_outright(S, df_b, df_q, pair)
+    value_c = fwd_value_c(sign, A, F, K, df_q, usd_q)
+    labels = ["MODEL"] + [lab for c in (base, quote) for lab in (curves[c].labels or [])]
+    inputs = {"kind": "FX_FORWARD", "K": str(K), "sign": sign, "model": CURVES_MODEL, "method": "curves", "S": str(S), "F": str(F), "df_base": str(df_b),
+              "df_quote": str(df_q), "spot_date": sd.isoformat(), "days_to_value": (vd - sd).days, "notional_c": int(terms["notional_c"]), "pair": pair,
+              "usd_per_quote": str(usd_q), "usd_per_base": str(usd_b), "valuation_date": day.isoformat(), "fx": fxinfo, "labels": list(dict.fromkeys(labels)),
+              "curves": {c: {"as_of": curves[c].d0.isoformat(), "kind": curves[c].kind, "level_bp": str(curves[c].level_bp)} for c in (base, quote)},
+              "formula": (f"{'+' if sign > 0 else '-'}{base} {fmt_money(int(terms['notional_c']))} x (F {F} - K {K}) x DF*_{quote} {df_q} x {usd_q} USD/{quote}"
+                          f" (F = {S} x {df_b} / {df_q}, for the spot date {sd.isoformat()})")}
+    return value_c, inputs
+
+
+def _forward_sensitivities(services, row: dict, terms: dict, snapshot) -> Optional[dict]:
+    """K6: an open FX forward's PV deltas and rate / basis / points sensitivities NOW, by re-pricing (curves) or on the legacy method's two
+    simple rates; None when the terms carry no pair."""
+    pair = str(terms.get("pair") or "")
+    if len(pair) != 6:
+        return None
+    sign = 1 if terms.get("side") == "BUY" else -1
+    K = Decimal(str(terms["strike"]))
+    A = from_c(int(terms["notional_c"]))
+    vd = _date(terms.get("value_date") or terms["expiry"])
+    base, quote = pair[:3], pair[3:]
+    snap = _snap_for(services, row, terms, snapshot)
+    now = int(services.clock.epoch())
+    usd_q, _ql = _usd_per(services, snap, quote, now)
+    if usd_q is None:
+        raise ConflictError("NO_QUOTE", f"{pair}: no USD rate for {quote}")
+    day = _fx.fx_trade_date(services, now)
+    if str(terms.get("pricing_method") or "").upper() == "CURVES":
+        fxc = _fxc()
+        cc = _ccycal()
+        sp = fxc.spot(services, pair, snap, now)
+        if sp.get("mid") is None:
+            raise ConflictError("NO_QUOTE", f"{pair}: no observed rate ({sp.get('reason') or 'unavailable'})")
+        S = Decimal(sp["mid"])
+        sd = cc.spot_date(services, pair, day)
+        with _marks.shared_reader(services.db) as conn:
+            acct = account_row(conn, row["account_id"])
+            xt = _xccy_terms(services, conn, dict(acct) if acct is not None else {"account_id": row["account_id"]})
+        curves = _fwd_curves(services, pair, ny_of(now).date(), row["account_id"], xt)
+        s = fwd_sensitivities(curves, pair, sign, A, S, K, usd_q, sd, vd)
+        labels = ["MODEL"] + [lab for c in (base, quote) for lab in (curves[c].labels or [])]
+        return {"fx_delta": s["pv_delta"], "rate01_c": s["rate01_c"], "basis01_c": s["basis01_c"], "spread01_c": s["spread01_c"], "points01_c": s["points01_c"],
+                "labels": list(dict.fromkeys(labels)), "valuation_date": day.isoformat(), "spot_date": sd.isoformat()}
+    # the legacy method (1.5): DF = 1 / (1 + r x d / B) per currency, d from today's spot date
+    sd = _fx.spot_date(services, pair, day)
+    days = max(0, (vd - sd).days)
+    rb_pct, rb = _fx.rate_for(services, base, max(1, days))
+    rq_pct, rq = _fx.rate_for(services, quote, max(1, days))
+    if rb_pct is None or rq_pct is None:
+        raise ConflictError("RATE_UNAVAILABLE", f"{pair}: {(rb if rb_pct is None else rq).get('note')}")
+    dfb = Decimal(repr(fx_df(rb_pct, int(rb["basis"]), days)))
+    dfq = Decimal(repr(fx_df(rq_pct, int(rq["basis"]), days)))
+    dfq1 = Decimal(repr(fx_df(Decimal(str(rq_pct)) + Decimal("0.01"), int(rq["basis"]), days)))
+    S, _pm = _fx_spot(services, snap, pair, now, False)
+    v0 = Decimal(sign) * A * (S * dfb / dfq - K) * dfq * usd_q
+    v1 = Decimal(sign) * A * (S * dfb / dfq1 - K) * dfq1 * usd_q
+    return {"fx_delta": {base: to_c(Decimal(sign) * A * dfb), quote: -to_c(Decimal(sign) * A * K * dfq)}, "rate01_c": {quote: to_c(v1 - v0)}, "basis01_c": {},
+            "points01_c": to_c(Decimal(sign) * A * _fx.pip_of(pair) * dfq * usd_q), "labels": ["MODEL", LEGACY_LABEL],
+            "notes": [f"{row.get('contract_id')}: {LEGACY_LABEL}; no basis level, rate01 of the quote currency only"]}
+
+
 def _snap_for(services, row: dict, terms: dict, snapshot):
     """The snapshot to value a contract on: the caller's when it holds this contract's names, else a small one of them (a view's
     snapshot holds only the TRS / XCCY names it collected)."""
@@ -1502,11 +2128,27 @@ def mark(services, contract, at: Optional[int] = None, valuation_date=None, snap
 
 def dv01_c(services, contract) -> int:
     """C21: the signed value change for +1 bp of the discounting rate (USD SOFR; FX: the quote currency's rate), from the inputs of
-    the last stored mark when the live inputs are not at hand - raises ConflictError (NO_MARK) when nothing can be valued."""
+    the last stored mark when the live inputs are not at hand - raises ConflictError (NO_MARK) when nothing can be valued.
+
+    A PB forward on the FX term curves (3.2) answers its rate01 on the quote currency's curve from ``_forward_sensitivities``, re-priced
+    without intermediate rounding: the number its ticket showed (the preview's ``dv01_c``) and the Risk page's rate01 for that currency
+    (OTC-09: the contracts table and drawer say it is that currency's rate01 and point to Risk > Currency risk (FX)).  The difference of
+    two rounded marks is not used for it: F moves by about 0.000174 for +1 bp on the worked example and its 6 dp rounding alone can move
+    that difference by up to 2,000,000 x 0.0000005 x 0.9095 x 1.3323 = 1.21 USD (-421.51 there against the rate01 -420.57)."""
     row = swaps._contract_dict(services, contract)
     if row is None or row.get("status") != "OPEN" or row["kind"] not in KINDS:
         return 0
     terms = _terms(row)
+    if row["kind"] == "FX_FORWARD" and str(terms.get("pricing_method") or "").upper() == "CURVES":
+        quote = str(terms.get("pair") or "")[3:]
+        try:
+            sens = _forward_sensitivities(services, row, terms, None)
+        except (ConflictError, RejectError) as e:
+            raise ConflictError("NO_MARK", f"{row['contract_id']}: {e.message}") from e
+        got = ((sens or {}).get("rate01_c") or {}).get(quote)
+        if got is None:
+            raise ConflictError("NO_MARK", f"{row['contract_id']}: no rate sensitivity on the {quote or 'quote currency'} curve now")
+        return int(got)
     snap = _snap_for(services, row, terms, None)
     with _marks.shared_reader(services.db) as conn:
         try:
@@ -1645,30 +2287,37 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
     if ds != row["maturity_date"]:
         raise RejectError("KEY_INVALID", f"{cid} expires on {row['maturity_date']}, not {ds}")
     d = date.fromisoformat(ds)
-    fxk = row["kind"] in FX_KINDS
-    if ctx.ts < epoch_of(d, EXPIRY_ET["FX" if fxk else "EQ"]):
-        return _skip(ctx, key, "NOT_YET", f"{cid} settles from {EXPIRY_ET['FX' if fxk else 'EQ']} ET on {ds}", row["account_id"], cid, True)
+    et = _expiry_et(row["kind"])
+    if ctx.ts < epoch_of(d, et):
+        return _skip(ctx, key, "NOT_YET", f"{cid} settles from {et} ET on {ds}", row["account_id"], cid, True)
     terms = _terms(row)
     aid = row["account_id"]
-    snap = _snap_for(services, row, terms, ctx.marks)
-    S, info = _close_px(services, conn, snap, row, terms, d)
-    if S is None:
-        prev = conn.execute("SELECT note FROM jobs_done WHERE job=? AND key=?", (JOB_EXPIRY, key)).fetchone()
-        repeat = prev is not None and str(prev["note"] or "").startswith("CLOSE_PENDING")
-        return _skip(ctx, key, "CLOSE_PENDING", f"{cid}: {info.get('note') or 'the close is not known yet'}; the settlement waits for the observed close of {ds}"
-                     " (never an earlier or intraday price)", aid, cid, quiet=not repeat)
-    if info.get("close_date") and info["close_date"] != ds:
-        return _skip(ctx, key, "CLOSE_PENDING", f"{cid}: the close available is of {info['close_date']}, not {ds}", aid, cid, quiet=False)
     kind = row["kind"]
     ref_c = swaps._reference_mark_c(conn, cid)
     entries: List[int] = []
     if kind == "FX_FORWARD":
-        value_c, arith = 0, f"delivered: {terms.get('buy_ccy')} {fmt_money(int(terms.get('buy_c') or 0))} received, {terms.get('sell_ccy')} {fmt_money(int(terms.get('sell_c') or 0))} paid at {terms.get('strike')}"
+        # G12 (FX_CCS_PLAN D3 / 4.1): delivered at 00:30 ET of the value date with no price input - the contract closes at 0 (its value passes
+        # into the delivery deal at K), its VM balance is unwound and its IM released; SETTLE_DUE settles the deal's two legs in the same tick
+        S, info = None, {}
+        value_c = 0
+        memo = (f"OTC FX forward delivery {cid}: {_side_text(kind, terms)}; delivered at the dealt rate K {terms.get('strike')}: receive {terms.get('buy_ccy')}"
+                f" {fmt_money(int(terms.get('buy_c') or 0))}, pay {terms.get('sell_ccy')} {fmt_money(int(terms.get('sell_c') or 0))}, value {ds} (00:30 ET; no price"
+                f" input - the contract's value passes into the delivery deal, the P&L since the last VM is in the FX result of its legs); VM balance"
+                f" {fmt_money(int(row['vm_balance_c']))} unwound; IM released (OTC_FORWARD)")
     else:
+        snap = _snap_for(services, row, terms, ctx.marks)
+        S, info = _close_px(services, conn, snap, row, terms, d)
+        if S is None:
+            prev = conn.execute("SELECT note FROM jobs_done WHERE job=? AND key=?", (JOB_EXPIRY, key)).fetchone()
+            repeat = prev is not None and str(prev["note"] or "").startswith("CLOSE_PENDING")
+            return _skip(ctx, key, "CLOSE_PENDING", f"{cid}: {info.get('note') or 'the close is not known yet'}; the settlement waits for the observed close of {ds}"
+                         " (never an earlier or intraday price)", aid, cid, quiet=not repeat)
+        if info.get("close_date") and info["close_date"] != ds:
+            return _skip(ctx, key, "CLOSE_PENDING", f"{cid}: the close available is of {info['close_date']}, not {ds}", aid, cid, quiet=False)
         value_c, arith = _payoff_c(kind, terms, S, info)
-    memo = (f"OTC {'maturity' if kind in ('EQ_FORWARD', 'FX_FORWARD') else 'expiry'} {cid}: {_side_text(kind, terms)}; observed close {_px(S, PX6 if kind in FX_KINDS else PX4)}"
-            f" ({info.get('basis') or info.get('source') or 'close'} {info.get('close_date') or ds}); value {arith} = {fmt_money(value_c)}; VM balance"
-            f" {fmt_money(int(row['vm_balance_c']))} unwound; IM released (OTC_OPTION / OTC_FORWARD)")
+        memo = (f"OTC {'maturity' if kind == 'EQ_FORWARD' else 'expiry'} {cid}: {_side_text(kind, terms)}; observed close {_px(S, PX6 if kind in FX_KINDS else PX4)}"
+                f" ({info.get('basis') or info.get('source') or 'close'} {info.get('close_date') or ds}); value {arith} = {fmt_money(value_c)}; VM balance"
+                f" {fmt_money(int(row['vm_balance_c']))} unwound; IM released (OTC_OPTION / OTC_FORWARD)")
     closed = swaps.close_contract(ctx, services, row, "MATURED", value_c, ref_c, f"otc:{cid}:expire", "OTC_EXPIRY", memo, False, True)
     entries += [e for e in (closed["entry_id"], closed["im_entry_id"]) if e is not None]
     delivery = None
@@ -1676,12 +2325,17 @@ def h_expire(ctx: TxContext, payload: dict) -> dict:
         delivery = _deliver(ctx, services, row, terms)
         if delivery.get("entry_id"):
             entries.append(delivery["entry_id"])
-    _job_done(ctx, key, "DONE", f"{kind} settled at {S}: value {fmt_money(value_c)}")
+    _job_done(ctx, key, "DONE", (f"{kind} delivered at K {terms.get('strike')}" if kind == "FX_FORWARD" else f"{kind} settled at {S}") + f": value {fmt_money(value_c)}")
     ctx.conn.execute("UPDATE attention SET resolved_ts=? WHERE code='CLOSE_PENDING' AND ref_id=? AND resolved_ts IS NULL", (ctx.ts, key))
-    ctx.event("OTC_EXPIRED", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, kind=kind, close=str(S), value_c=value_c, delivery=delivery,
-              **{k: v for k, v in closed.items() if k not in ("funding", "value_c")})
-    return {"status": "DONE", "posted": True, "key": key, "contract_id": cid, "close": str(S), "value_c": value_c, "entries": entries, "delivery": delivery,
-            "result_c": closed["result_c"], "cash_c": closed["cash_c"], "im_released_c": closed["im_released_c"], "close_info": info}
+    ctx.event("OTC_EXPIRED", account_id=aid, instrument_id=cid, ref_type="otc", ref_id=cid, kind=kind, close=None if S is None else str(S), value_c=value_c,
+              delivery=delivery, **{k: v for k, v in closed.items() if k not in ("funding", "value_c")})
+    return {"status": "DONE", "posted": True, "key": key, "contract_id": cid, "close": None if S is None else str(S), "value_c": value_c, "entries": entries,
+            "delivery": delivery, "result_c": closed["result_c"], "cash_c": closed["cash_c"], "im_released_c": closed["im_released_c"], "close_info": info}
+
+
+def _expiry_et(kind: str) -> str:
+    """The time OTC_EXPIRY settles a kind on its date: FX forwards 00:30 ET (G12), FX options 17:05 ET, equity 16:20 ET."""
+    return EXPIRY_ET.get(str(kind), EXPIRY_ET["FX" if kind in FX_KINDS else "EQ"])
 
 
 def _deliver(ctx: TxContext, services, row: dict, terms: dict) -> dict:
@@ -1726,8 +2380,7 @@ def next_expiry_due(conn, now_ts: int) -> Optional[Tuple[int, str]]:
         done = conn.execute("SELECT status FROM jobs_done WHERE job=? AND key=?", (JOB_EXPIRY, key)).fetchone()
         if done is not None and done["status"] == "DONE":
             continue
-        fx = r["kind"] in FX_KINDS
-        ts = max(now, epoch_of(date.fromisoformat(r["maturity_date"]), EXPIRY_ET["FX" if fx else "EQ"]))
+        ts = max(now, epoch_of(date.fromisoformat(r["maturity_date"]), _expiry_et(r["kind"])))
         what = {"FX_FORWARD": "delivery", "EQ_FORWARD": "maturity"}.get(r["kind"], "expiry")
         if best is None or ts < best[0]:
             best = (ts, f"{r['contract_id']} {what} {r['maturity_date']}")
@@ -1736,7 +2389,7 @@ def next_expiry_due(conn, now_ts: int) -> Optional[Tuple[int, str]]:
 
 def expiry_keys(conn, now_ts: int) -> List[Tuple[str, str]]:
     """``(contract_id, date)`` of every OPEN option / forward of an OPEN account and lifetime whose expiry / maturity is today or
-    earlier and whose settlement time has passed (equity 16:20 ET, FX 17:05 ET), not DONE in ``jobs_done``."""
+    earlier and whose settlement time has passed (equity 16:20 ET, FX options 17:05 ET, FX forwards 00:30 ET), not DONE in ``jobs_done``."""
     now = int(now_ts)
     today = ny_of(now).date()
     rows = conn.execute("SELECT c.contract_id, c.kind, c.maturity_date FROM otc_contracts c JOIN accounts a ON a.account_id=c.account_id JOIN lifetimes l"
@@ -1745,7 +2398,7 @@ def expiry_keys(conn, now_ts: int) -> List[Tuple[str, str]]:
     out = []
     for r in rows:
         d = date.fromisoformat(r["maturity_date"])
-        if now < epoch_of(d, EXPIRY_ET["FX" if r["kind"] in FX_KINDS else "EQ"]):
+        if now < epoch_of(d, _expiry_et(r["kind"])):
             continue
         key = f"{r['contract_id']}:{r['maturity_date']}"
         done = conn.execute("SELECT status FROM jobs_done WHERE job=? AND key=?", (JOB_EXPIRY, key)).fetchone()
@@ -1774,7 +2427,20 @@ def next_events(services, contract, conn=None, limit: int = 4) -> List[dict]:
                         "detail": f"premium USD {fmt_money(abs(int(s['amount_c'])))} {'paid' if int(s['amount_c']) < 0 else 'received'} (settlement {sid})"})
     kind = row["kind"]
     if kind == "FX_FORWARD":
-        out.append({"date": row["maturity_date"], "event": "DELIVERY", "detail": f"receive {terms.get('buy_ccy')} {fmt_money(int(terms.get('buy_c') or 0))}, pay"
+        sfi = terms.get("settlement_funding") or {}
+        sell = terms.get("sell_ccy")
+        if sell and sell != "USD" and sfi.get(sell) == "BUY_WITH_USD":
+            # D9: the purchase trades two business days of the purchase pair's value calendar (TARGET2 + New York for EUR) before the value date
+            buy_on = row["maturity_date"]
+            try:
+                from ..instruments import fx_pair_id
+                buy_on = _ccycal().value_calendar(services, fx_pair_id(sell)).add_business_days(_date(row["maturity_date"]), -2).isoformat()
+            except Exception:   # noqa: BLE001 - the event still shows, dated on the value date
+                pass
+            out.append({"date": buy_on, "event": "SETTLEMENT_FUNDING",
+                        "detail": f"buy {sell} {fmt_money(int(terms.get('sell_c') or 0))} with USD (value {row['maturity_date']}), an audited FX desk spot deal"
+                                  " (settlement-funding instruction)"})
+        out.append({"date": row["maturity_date"], "event": "DELIVERY", "detail": f"00:30 ET: receive {terms.get('buy_ccy')} {fmt_money(int(terms.get('buy_c') or 0))}, pay"
                                                                                  f" {terms.get('sell_ccy')} {fmt_money(int(terms.get('sell_c') or 0))} at {terms.get('strike')}"})
     elif kind == "EQ_FORWARD":
         out.append({"date": row["maturity_date"], "event": "MATURITY", "detail": f"cash: units x ({terms.get('underlying_id')} close - {terms.get('strike')})"})
@@ -1811,7 +2477,35 @@ def contract_detail(services, contract, conn=None) -> Optional[dict]:
                    if kind == "FX_FORWARD" else None)
         if kind == "FX_FORWARD":
             out.update(fx_im_base(row, terms))
+            out.update(confirmation=_confirmation(conn, row, terms), pricing_record=terms.get("pricing_record"), method=terms.get("pricing_method") or "LEGACY",
+                       labels=terms.get("labels") or (terms.get("pricing_record") or {}).get("labels") or (["MODEL", LEGACY_LABEL]),
+                       settlement_funding=terms.get("settlement_funding") or {}, spot_date=terms.get("spot_date"), points=terms.get("points"))
     return out
+
+
+def _confirmation(conn, row: dict, terms: dict) -> dict:
+    """K5 / 4.1 / 10.7: the FX forward's confirmation block - parties, dates, amounts, rate, CSA, IM and the settlement instructions in trader
+    words; a simulated confirmation (never "dealer-confirmed")."""
+    acct = account_row(conn, row["account_id"])
+    a = dict(acct) if acct is not None else {}
+    broker = config.PRIME_BROKERS.get(row.get("broker"), row.get("broker")) if hasattr(config, "PRIME_BROKERS") else row.get("broker")
+    status = str(row.get("confirm_status") or "") if "confirm_status" in row.keys() else ""
+    words = "CONFIRMED - simulated confirmation" if status.upper().startswith("CONFIRM") else "PENDING - the simulated confirmation follows at 17:05 ET"
+    buy, sell = terms.get("buy_ccy"), terms.get("sell_ccy")
+    vd = terms.get("value_date") or row.get("maturity_date")
+    sfi = (terms.get("settlement_funding") or {}).get(sell)
+    sell_line = (f"the Fund delivers {sell} {fmt_money(int(terms.get('sell_c') or 0))} on {vd} from its {broker} prime-brokerage {sell} cash"
+                 + (" (bought with USD under the settlement-funding instruction two business days before)" if sfi == "BUY_WITH_USD" else ""))
+    buy_line = f"{broker} delivers {buy} {fmt_money(int(terms.get('buy_c') or 0))} on {vd} into the Fund's {broker} prime-brokerage {buy} cash"
+    return {"words": words, "status": status or None,
+            "parties": {"fund": f"{a.get('name') or row['account_id']} ({row['account_id']})", "counterparty": f"{broker} (prime broker), ISDA Master + CSA + PBA"},
+            "trade_date": terms.get("trade_date"), "spot_date": terms.get("spot_date"), "value_date": vd,
+            "deal": f"{'BUY' if terms.get('side') == 'BUY' else 'SELL'} {terms.get('pair', '')[:3]} {fmt_money(int(terms.get('notional_c') or 0))} / "
+                    f"{'SELL' if terms.get('side') == 'BUY' else 'BUY'} {terms.get('pair', '')[3:]} at {terms.get('strike')} (forward {terms.get('F0')}, {terms.get('points') or '?'} pips)",
+            "rate": terms.get("strike"), "csa": f"VM daily in USD ({terms.get('margin_mode') or 'CTM'}) on the contract's value; IM in USD held by {broker}",
+            "im": f"USD {fmt_money(int(row.get('im_c') or 0))}" if int(row.get("im_c") or 0) else "released",
+            "settlement_instructions": [sell_line, buy_line, "delivered at 00:30 ET on the value date through an FX deal at the dealt rate, settled by SETTLE_DUE"],
+            "labels": terms.get("labels") or ["MODEL"]}
 
 
 def fx_im_base(row, terms: dict) -> dict:
@@ -1829,6 +2523,66 @@ def fx_im_base(row, terms: dict) -> dict:
     rate = (Decimal(usd_c) / Decimal(base_c)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_EVEN)
     text = f"{rate:.6f}".rstrip("0").rstrip(".")
     return {"im_base_rate": text, "im_base_pair": f"{pair[:3]}/USD"}
+
+
+# ---- K6 hooks (FX_CCS_PLAN 7): the scheduled flows and the off-ledger risk of an OTC FX forward ---------------------------------------
+def _row_dict(row) -> Optional[dict]:
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return row
+    try:
+        return {k: row[k] for k in row.keys()}
+    except Exception:   # noqa: BLE001 - not a row
+        return None
+
+
+def scheduled_flows(conn, row) -> List[dict]:
+    """K6: the flows a contract has scheduled and not yet posted - an OPEN FX_FORWARD's two delivery legs on its value date
+    ``[{date, ccy, amount_c (+ in / - out), what, event, known, contract_id}]``; nothing for another kind or once delivered (the
+    delivery deal is then on the ledger).  ``conn`` is unused (the terms carry the amounts) and kept for the common signature."""
+    r = _row_dict(row)
+    if r is None or str(r.get("kind") or "") != "FX_FORWARD" or str(r.get("status") or "OPEN") != "OPEN":
+        return []
+    t = _terms(r)
+    vd = str(t.get("value_date") or r.get("maturity_date") or t.get("expiry") or "")[:10]
+    cid = r.get("contract_id")
+    out = []
+    for ccy, amt, sign, verb in ((t.get("buy_ccy"), t.get("buy_c"), 1, "receive"), (t.get("sell_ccy"), t.get("sell_c"), -1, "deliver")):
+        if not ccy or amt in (None, ""):
+            continue
+        out.append({"date": vd, "ccy": str(ccy), "amount_c": sign * abs(int(amt)), "event": "DELIVERY", "flow_kind": "delivery", "known": True, "contract_id": cid,
+                    "what": f"{verb} {ccy} {fmt_money(abs(int(amt)))}: delivery of the {t.get('pair') or ''} forward {cid} at {t.get('strike')}, value {vd}"})
+    return out
+
+
+def risk_sensitivities(services, row, snapshot=None) -> Optional[dict]:
+    """K6 / D14: ONLY the off-ledger part of an OPEN FX_FORWARD's risk (the ledger holds nothing of it until delivery):
+    ``{fx_nominal {ccy: units_c} (both legs), fx_delta {ccy: units_c} (the PV deltas), rate01_c {ccy: usd_c}, basis01_c {pair: usd_c},
+    points01_c, notes}``; after delivery (or for another kind) None.  Sensitivities that cannot be re-priced now are left out and named
+    in ``notes`` - never estimated."""
+    r = _row_dict(row)
+    if r is None or str(r.get("kind") or "") != "FX_FORWARD" or str(r.get("status") or "OPEN") != "OPEN":
+        return None
+    t = _terms(r)
+    nominal: Dict[str, int] = {}
+    for ccy, amt, sign in ((t.get("buy_ccy"), t.get("buy_c"), 1), (t.get("sell_ccy"), t.get("sell_c"), -1)):
+        if ccy and amt not in (None, ""):
+            nominal[str(ccy)] = nominal.get(str(ccy), 0) + sign * abs(int(amt))
+    out = {"contract_id": r.get("contract_id"), "kind": "FX_FORWARD", "pair": t.get("pair"), "fx_nominal": nominal, "fx_delta": {}, "rate01_c": {},
+           "basis01_c": {}, "points01_c": None, "notes": []}
+    try:
+        sens = _forward_sensitivities(services, r, t, snapshot)
+    except (ConflictError, RejectError) as e:
+        out["notes"].append(f"{r.get('contract_id')}: sensitivities unavailable now - {e.message}")
+        return out
+    except Exception as e:   # noqa: BLE001 - a hook never breaks the Risk page; named
+        out["notes"].append(f"{r.get('contract_id')}: sensitivities unavailable now - {type(e).__name__}: {e}"[:240])
+        return out
+    if sens:
+        out.update(sens)
+    return out
+
 
 
 # ---- the desk (GET /api/otc/options/desk) and the inputs refresher -------------------------------------------------------------------
@@ -1850,7 +2604,12 @@ def desk(services, account_id: str) -> dict:
         elig = {"error": str(e)[:200]}
     terms = {k: str(getattr(sched, k)) for k in prime.OTC_TERM_FIELDS}
     terms.update(otc_spread_mult=str(sched.otc_spread_mult), swap_margin_mode=sched.swap_margin_mode, financing_spread=str(sched.financing_spread))
+    # FX_CCS_PLAN D5: the cross-currency terms (basis levels, EUR OIS spread, the swap half-width) - ASSUMED schedule terms, shown on the OTC tab
+    for k in getattr(prime, "XCCY_TERM_FIELDS", ()):
+        if getattr(sched, k, None) is not None:
+            terms[k] = str(getattr(sched, k))
     pairs = [p for p in FX_PAIRS if services.instruments.get(p) is not None] + [p for p in FX_CROSSES if services.instruments.get(p) is not None]
+    curves_status = _curves_status(services)
     vol_source = {}
     for p in pairs:
         base, quote = p[:3], p[3:]
@@ -1864,7 +2623,10 @@ def desk(services, account_id: str) -> dict:
     for p in pairs:
         for c in (p[:3], p[3:]):
             if c not in rates_of:
-                rates_of[c] = _fx.rate_for(services, c)
+                rates_of[c] = _fx.rate_for(services, c)      # every currency's rate status (the fixed / fixed swap ticket reads it)
+        if curve_pair(p):
+            continue                         # FX_CCS_PLAN D3: priced on the term curves; a curve that is unavailable now refuses its preview, with the reason
+        for c in (p[:3], p[3:]):
             pct, info = rates_of[c]
             if pct is None:
                 spot_only[p] = f"spot only: {info.get('note') or 'no ' + c + ' rate'}"
@@ -1877,10 +2639,33 @@ def desk(services, account_id: str) -> dict:
         blocked = elig.get("pb_otc_reason") or "this book is not eligible for OTC bookings"
     return {"account_id": account_id, "broker": rel["broker"], "name": rel["name"], "relationship": rel, "eligibility": elig, "blocked": blocked,
             "terms": terms, "labels": {k: prime.FIELD_SPECS[k]["label"] for k in prime.OTC_TERM_FIELDS}, "tenors": list(TENORS),
-            "fx_forward_tenors": list(tenors_for("FX_FORWARD")), "pairs": pairs, "forward_pairs": [p for p in pairs if p not in spot_only],
+            "fx_forward_tenors": list(tenors_for("FX_FORWARD")), "fx_forward_tenors_legacy": list(tenors_for("FX_FORWARD", "USDJPY")),
+            "forward_methods": {p: ("curves" if curve_pair(p) else "legacy") for p in pairs}, "legacy_label": LEGACY_LABEL, "curves": curves_status,
+            "pairs": pairs, "forward_pairs": [p for p in pairs if p not in spot_only],
             "spot_only": spot_only, "rates": rates,
             "vol_source": vol_source, "kinds": [{"kind": k, "label": swaps.KIND_LABELS.get(k, k)} for k in KINDS],
             "conventions": {k: tables.CONVENTIONS.get(k, "") for k in CONVENTIONS + ("SWAP_VM",)}}
+
+
+def _curves_status(services) -> Dict[str, dict]:
+    """The FX term curves of USD / EUR / GBP as the desk shows them: ``{ccy: {ok, kind, as_of, label | note}}`` (a curve that cannot be built
+    now says why; its pairs' previews refuse with that reason - never another rate)."""
+    out: Dict[str, dict] = {}
+    try:
+        on = _fx.fx_trade_date(services, int(services.clock.epoch()))
+    except Exception:   # noqa: BLE001
+        on = None
+    for c in CURVE_CCYS:
+        try:
+            cv = _curve_of(services, c, on, None)
+            d0 = getattr(cv, "d0", None)
+            out[c] = {"ok": True, "kind": getattr(cv, "kind", None), "as_of": d0.isoformat() if isinstance(d0, date) else d0,
+                      "label": (list(getattr(cv, "labels", None) or []) or [None])[0], "source": getattr(cv, "source", None)}
+        except (ConflictError, RejectError) as e:
+            out[c] = {"ok": False, "note": e.message, "code": e.code}
+        except Exception as e:   # noqa: BLE001 - the desk still opens; the reason is said
+            out[c] = {"ok": False, "note": f"{type(e).__name__}: {e}"[:200]}
+    return out
 
 
 def reference_ids(conn) -> Dict[str, List[str]]:
@@ -2000,7 +2785,15 @@ def unsupported() -> List[dict]:
              "where": "prime-broker OTC tab, FX desk forwards"},
             {"item": "OTC equity forwards and options on a name without dividend data", "state": "LIMITED",
              "wording": ("a name with no Yahoo dividend events over a year and no yield in the instrument master is not priced: its dividend yield is"
-                         " unknown and never assumed to be 0"), "where": "prime-broker OTC tab, Options and Forwards"}]
+                         " unknown and never assumed to be 0"), "where": "prime-broker OTC tab, Options and Forwards"},
+            # FX_CCS_PLAN 1.5 / D3 (1.0.6.1): what the PB forward on the term curves does not cover
+            {"item": "PB FX forwards of a pair with a currency outside USD, EUR and GBP", "state": "LIMITED",
+             "wording": ("priced by the legacy method up to 1 year: one overnight / policy rate per currency, simple interest, no term structure, no"
+                         " cross-currency basis (labelled LEGACY METHOD - LIMITED); 18 months and 2 years are refused - no term curve for that currency in"
+                         " this build"), "where": "prime-broker OTC tab, Forwards"},
+            {"item": "PB FX forwards beyond 2 years", "state": "NOT_OFFERED",
+             "wording": "the forward is offered up to the 2-year date of its pair (the term curves and the dealer's terms are set up to it)",
+             "where": "prime-broker OTC tab, Forwards"}]
 
 
 def register(bus, services=None) -> None:
@@ -2012,7 +2805,8 @@ def bind(rt) -> None:
     try:
         from ..lifecycle_eod import ProductJob, add_product_job
         add_product_job(ProductJob(JOB_EXPIRY, "otc.expire", "otc_options", "expiry_keys", ("contract_id", "date"),
-                                   "the expiry / maturity date: equity from 16:20 ET, FX from 17:05 ET", lambda conn, clock, cal, sessions, s: (conn, clock.epoch())),
+                                   "the expiry / maturity date: equity from 16:20 ET, FX options from 17:05 ET, FX forwards delivered from 00:30 ET of the value date",
+                                   lambda conn, clock, cal, sessions, s: (conn, clock.epoch())),
                         before="SWAP_VM")
     except ImportError:
         pass
@@ -2030,4 +2824,6 @@ def bind(rt) -> None:
 
 __all__ = ["KINDS", "preview", "book", "terminate", "mark", "dv01_c", "next_events", "contract_detail", "expiry_keys", "h_expire", "register", "bind",
            "register_routes", "unsupported", "desk", "reference_ids", "refresh", "parse_terms", "chain_vol", "realised_vol", "eq_price", "black_df", "cip_forward",
-           "dividend_yield", "JOB_EXPIRY", "MODELS", "CONVENTIONS", "FX_PROXY", "tenors_for", "eq_forward_px", "eq_forward_carry", "next_expiry_due"]
+           "dividend_yield", "JOB_EXPIRY", "MODELS", "CONVENTIONS", "FX_PROXY", "tenors_for", "eq_forward_px", "eq_forward_carry", "next_expiry_due",
+           "scheduled_flows", "risk_sensitivities", "curve_pair", "fwd_outright", "fwd_value_c", "fwd_sensitivities", "OTC_FX_TENORS", "LEGACY_LABEL",
+           "CURVE_CCYS", "EXPIRY_ET"]

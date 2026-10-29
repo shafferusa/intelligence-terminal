@@ -13,6 +13,8 @@
  * - "New order" opens the docked ticket for the filtered account, or a venue picker for the book.
  * - The page polls every 5 s while anything is working, else every 30 s.
  * Trader wording only; ASCII; the C4 classes (.filterbar, .stage-chip, .badge-asof, .drawer, .drawer-tabs, .kv-grid).
+ * 1.0.6.1 (walk defect P8R2-01): a stored code (SESSION_CLOSED, CALL_7PCT, SEQUENTIAL, AON ...) is shown in words - the server's
+ * strategy_words / fill_mode_words / decision_words first, else words() on the text (T.codeWords per UPPER_SNAKE token); display only.
  */
 (function () {
   'use strict';
@@ -22,6 +24,13 @@
   var PAGE = 200;
 
   /* ---------------------------------------------------------------- shared cells ---------------------------------- */
+  /* every UPPER_SNAKE code inside a stored text in words (T.codeWords): "order rested; SESSION_CLOSED" -> "... session closed" */
+  function words(text) {
+    if (text == null) { return ''; }
+    return String(text).replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g, function (c) { return T.codeWords(c); });
+  }
+  function stratWords(o) { return o && o.strategy_key ? (o.strategy_words || T.codeWords(o.strategy_key)) : ''; }
+  function modeWords(o) { return o && o.fill_mode ? (o.fill_mode_words || T.codeWords(o.fill_mode)) : ''; }
   function chipHtml(r) {
     var label = r.stage_label || r.stage_words || '';
     return '<span class="stage-chip stage-' + T.esc(r.stage_chip || 'queued') + '" title="' + T.esc(label) + '">' + T.esc(r.stage_words || String(r.stage || '').toLowerCase()) + '</span>';
@@ -49,7 +58,7 @@
     return '<span title="' + T.esc(d.words || '') + '">' + T.esc((n > 0 ? '+' : '') + T.fmt.num(n, 2) + ' %') + '</span>';
   }
   function instHtml(r) {
-    var pkg = r.package_id ? '<div class="muted" title="' + T.esc(r.package_words || '') + '">' + T.esc(r.package_id + (r.strategy_key ? ' ' + r.strategy_key : '') + (r.package_words ? ' . ' + r.package_words : '')) + '</div>' : '';
+    var pkg = r.package_id ? '<div class="muted" title="' + T.esc(r.package_words || '') + '">' + T.esc(r.package_id + (r.strategy_key ? ' ' + stratWords(r) : '') + (r.package_words ? ' . ' + r.package_words : '')) + '</div>' : '';
     var nm = r.symbol || r.instrument_id || '';
     return T.esc(nm) + (r.instrument_name && r.instrument_name !== nm ? ' <span class="muted" title="' + T.esc(r.instrument_name) + '">' + T.esc(String(r.instrument_name).slice(0, 18)) + '</span>' : '') + pkg;
   }
@@ -88,7 +97,7 @@
     { key: 'account_name', label: 'account', cls: 'l', text: function (r) { return r.account_name || ''; }, title: function (r) { return r.account_id || ''; } },
     { key: 'counterparty', label: 'counterparty', cls: 'l', html: function (r) { return wrap(r.counterparty || '', 160); }, text: function (r) { return r.counterparty || ''; } },
     { key: 'reserved', label: 'reserved', text: function (r) { return r.reserved != null ? T.fmt.money(r.reserved) : ''; }, sort: function (r) { return Number(r.reserved) || 0; } },
-    { key: 'reason', label: 'reason', cls: 'l', html: function (r) { return wrap(r.reason || '', 260, r.reason || ''); }, text: function (r) { return r.reason || ''; } }
+    { key: 'reason', label: 'reason', cls: 'l', html: function (r) { return wrap(words(r.reason), 260, words(r.reason)); }, text: function (r) { return words(r.reason); } }
   ].filter(function (c) { return c.key !== 'act'; });
 
   /* P8R1-04 (rule 5): the table fits 1440 px with the ticket dock open - related fields stacked in one cell, actions first.  While the box
@@ -99,8 +108,8 @@
   function l2(html, title) { return '<div class="cl2"' + (title ? ' title="' + T.esc(title) + '"' : '') + '>' + html + '</div>'; }
   function wrapped(html, px, cls) { return '<div class="clw' + (cls ? ' ' + cls : '') + '" style="max-width:' + px + 'px">' + html + '</div>'; }
   function narrowLine(html) { return '<div class="cl2 narrow-only">' + html + '</div>'; }
-  function ownReason(r) { return r.reason && String(r.stage_label || '').indexOf(r.reason) < 0 ? r.reason : ''; }      /* not when the label already says it */
-  function stageWords(r) { return (r.stage_label || r.stage_words || '') + (ownReason(r) ? ' . ' + ownReason(r) : ''); }
+  function ownReason(r) { return r.reason && String(r.stage_label || '').indexOf(r.reason) < 0 ? words(r.reason) : ''; }      /* not when the label already says it */
+  function stageWords(r) { return words(r.stage_label || r.stage_words || '') + (ownReason(r) ? ' . ' + ownReason(r) : ''); }
   function clip(text, n) { text = String(text || ''); return text.length > n ? text.slice(0, n - 3).replace(/\s+\S*$/, '') + ' ...' : text; }
   function distWords(r) {
     var d = r.distance; if (!d) { return ''; }
@@ -123,12 +132,12 @@
       title: function (r) { return stageWords(r); } },
     { key: 'stage', label: 'stage', cls: 'l stack wide-only', html: function (r) {
         /* a long stage text (a refusal's whole message) shows its first words; all of it is in the tooltip and the order drawer */
-        return chipHtml(r) + (r.stage_label ? wrapped(T.esc(clip(r.stage_label, 80)), 170, 'muted') : '') + (ownReason(r) ? wrapped(T.esc(clip(ownReason(r), 80)), 170, 'cl2') : '');
+        return chipHtml(r) + (r.stage_label ? wrapped(T.esc(clip(words(r.stage_label), 80)), 170, 'muted') : '') + (ownReason(r) ? wrapped(T.esc(clip(ownReason(r), 80)), 170, 'cl2') : '');
       }, text: function (r) { return stageWords(r); }, sort: function (r) { return r.stage || ''; }, title: function (r) { return stageWords(r); } },
     { key: 'symbol', label: 'instrument / class', cls: 'l stack', html: function (r) {
         var nm = r.symbol || r.instrument_id || '';
         var name = r.instrument_name && r.instrument_name !== nm ? ' <span class="muted" title="' + T.esc(r.instrument_name) + '">' + T.esc(String(r.instrument_name).slice(0, 18)) + '</span>' : '';
-        var cls = T.esc(r.asset_class || '') + (r.package_id ? ' . ' + T.esc(r.package_id + (r.strategy_key ? ' ' + r.strategy_key : '')) : '');
+        var cls = T.esc(r.asset_class || '') + (r.package_id ? ' . ' + T.esc(r.package_id + (r.strategy_key ? ' ' + stratWords(r) : '')) : '');
         return wrapped(T.esc(nm) + name, 150) + wrapped(cls, 150, 'cl2') + '<div class="cl2 clw narrow-only" style="max-width:150px">' + T.esc(r.account_name || '') + '</div>';
       }, text: function (r) { return (r.symbol || r.instrument_id || '') + ' ' + (r.asset_class || '') + (r.package_id ? ' ' + r.package_id : ''); } },
     { key: 'side_words', label: 'side / type / expires', cls: 'l stack', html: function (r) {
@@ -224,7 +233,7 @@
     function paintTimeline() {
       var kv = [['account', (d.account_name || '') + ' (' + d.account_id + ')'], ['counterparty', d.counterparty || ''], ['class', d.asset_class || ''],
                 ['quantity', T.fmt.qty(d.qty) + ' . filled ' + T.fmt.qty(d.filled_qty || 0) + (d.avg_px ? ' @ ' + T.fmt.px(d.avg_px) : '') + (d.remaining != null && d.actions && d.actions.cancel ? ' . open ' + T.fmt.qty(d.remaining) : '')],
-                ['reserved now', d.reserved != null ? T.fmt.money(d.reserved) : 'nothing (not working)'], ['reason', d.reason || ''],
+                ['reserved now', d.reserved != null ? T.fmt.money(d.reserved) : 'nothing (not working)'], ['reason', words(d.reason)],
                 ['replaces', d.replaces_order_id || ''], ['replaced by', d.replaced_by_order_id || ''], ['amended', d.amend_count ? d.amend_count + ' time(s)' : '']];
       if (d.badge) { kv.push(['source', d.source_label || '']); }
       body.appendChild(T.kvGrid(kv.filter(function (p) { return p[1] != null && p[1] !== ''; })));
@@ -233,7 +242,7 @@
       T.components.grid.mount(g, { tools: false, rows: steps, empty: 'no events', columns: [
         { key: 'ts', label: 'time', cls: 'l', text: function (s) { return T.fmt.dt(s.ts); } },
         { key: 'stage', label: 'step', cls: 'l', text: function (s) { return s.words || s.stage; } },
-        { key: 'note', label: 'what happened', cls: 'l', html: function (s) { return wrap(s.note || '', 760); }, text: function (s) { return s.note || ''; } }] });
+        { key: 'note', label: 'what happened', cls: 'l', html: function (s) { return wrap(words(s.note), 760); }, text: function (s) { return words(s.note); } }] });
     }
     function settleOf(fid) { var hit = null; (d.settlements || []).forEach(function (s) { if (s.fill_id === fid) { hit = s; } }); return hit; }
     function paintFills() {
@@ -273,7 +282,7 @@
       body.appendChild(T.h('h2', null, 'package'));
       var p = d.package;
       if (!p) { body.appendChild(T.h('div', { class: 'muted' }, 'not part of a package')); return; }
-      body.appendChild(T.h('div', null, p.package_id + (p.strategy_key ? ' . ' + p.strategy_key : '') + ' . ' + (p.fill_mode || '') + ' . ' + (p.state_words || '')));
+      body.appendChild(T.h('div', null, p.package_id + (p.strategy_key ? ' . ' + stratWords(p) : '') + ' . ' + modeWords(p) + ' . ' + (p.state_words || '')));
       var g = T.h('div'); body.appendChild(g);
       T.components.grid.mount(g, { tools: false, rows: p.legs || [], columns: [{ key: 'order_id', label: 'leg', cls: 'l' }, { key: 'instrument_id', label: 'instrument', cls: 'l' },
         { key: 'side', label: 'side', cls: 'l', text: function (l) { return String(l.side || '').replace(/_/g, ' '); } }, { key: 'qty', label: 'qty', text: function (l) { return T.fmt.qty(l.qty) + ' (' + T.fmt.qty(l.filled_qty) + ' filled)'; } },
@@ -284,18 +293,18 @@
       if (!p) { body.appendChild(T.h('div', { class: 'muted' }, 'no stored preview')); return; }
       if (p.kind === 'as_of') { body.appendChild(T.h('div', null, p.note || '')); return; }
       body.appendChild(T.kvGrid([['previewed', p.as_of ? T.fmt.dt(p.as_of) : 'n/a'], ['expected price', p.expected_price ? T.fmt.px(p.expected_price) + ' (' + (p.price_basis || '') + ')' : 'n/a'],
-                                 ['fill now', p.fill_now ? 'yes' : 'no (' + (p.decision || '') + ')'], ['gross', T.money(p, 'gross')], ['fee', T.money(p, 'fee')],
+                                 ['fill now', p.fill_now ? 'yes' : 'no (' + (p.decision_words || T.codeWords(p.decision)) + ')'], ['gross', T.money(p, 'gross')], ['fee', T.money(p, 'fee')],
                                  ['cash need', T.money(p, 'need')], ['available then', T.money(p, 'available')], ['sweep-in', T.money(p, 'sweep_in')],
-                                 ['trade date', p.trade_date || ''], ['settles', p.settle_date || ''], ['session', String(p.session_phase || '').toLowerCase()]]));
-      (p.warnings || []).forEach(function (w) { body.appendChild(T.h('div', { class: 'warn-box' }, typeof w === 'string' ? w : (w.message || ''))); });
+                                 ['trade date', p.trade_date || ''], ['settles', p.settle_date || ''], ['session', p.session_words || T.codeWords(String(p.session_phase || '').toUpperCase())]]));
+      (p.warnings || []).forEach(function (w) { body.appendChild(T.h('div', { class: 'warn-box' }, words(typeof w === 'string' ? w : (w.message || '')))); });
     }
     function paintReview() {
       var r = d.review;
       if (!r) { body.appendChild(T.h('div', { class: 'muted' }, 'reviewing ...')); return; }
-      body.appendChild(T.h('div', { class: r.action === 'FILL' ? 'blue-box' : 'amber-box' }, T.h('b', null, r.text || '')));
+      body.appendChild(T.h('div', { class: r.action === 'FILL' ? 'blue-box' : 'amber-box' }, T.h('b', null, words(r.text))));
       var m = r.market;
       body.appendChild(T.kvGrid([['observed', m ? T.h('span', null, T.px(m, { size: 'inline' })) : 'no quote observed'], ['distance', r.distance ? r.distance.words : 'n/a'],
-                                 ['participation cap', r.cap_note || 'n/a'], ['note', r.note || ''], ['checked at', T.fmt.dt(r.evaluated_at)]]));
+                                 ['participation cap', words(r.cap_note) || 'n/a'], ['note', words(r.note)], ['checked at', T.fmt.dt(r.evaluated_at)]]));
       body.appendChild(T.h('div', { class: 'hint' }, 'A review runs the matching rules on the cached quote and the session now; it places nothing and writes nothing.'));
       body.appendChild(T.h('button', { class: 'btn small', onclick: function () { load(true); } }, 'Review again'));
     }

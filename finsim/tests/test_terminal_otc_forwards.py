@@ -17,6 +17,11 @@ in the comment above it.
 - P8B-09: one mark snapshot computes each session window once (the Dashboard's 'marks' part).
 - P8B-14: a missing daily bar is said as a data gap, never as a delisting.
 - P8B-15: GET /api/jobs gives the product jobs' next run from their open contracts.
+
+1.0.6.1 (FX_CCS_PLAN rev 2 D3, package P-B): a PB OTC FX forward of a USD / EUR / GBP pair is priced on the FX term curves (1W .. 2Y), so
+the tests that price or book a EURUSD forward first install the worked example's curves (``fxcurves.fixture_curves``: the 2026-10-27 rows,
+SOFR 3.95 % and ESTR 2.440 % of 10-27) and their figures are re-pinned on them; a pair with another currency keeps the legacy method (and
+the FX desk's own forwards are unchanged), so the other tests keep their numbers.
 """
 from __future__ import annotations
 
@@ -30,7 +35,7 @@ from decimal import Decimal
 
 from tests import test_terminal_otc_asof as A
 from tests.terminal_helpers import assert_integrity, execute
-from finsim.terminal import fx, lifecycle_eod, risk, tables
+from finsim.terminal import fx, fxcurves, lifecycle_eod, risk, tables
 from finsim.terminal.clock import epoch_of
 from finsim.terminal.commands import ConflictError, RejectError
 from finsim.terminal.products import otc_options, swaps, swaps_trs
@@ -57,6 +62,11 @@ def runtime(tmp):
     for iid, px in (("EURUSD", "1.1158"), ("USDJPY", "153.32"), ("USDCHF", "0.8277"), ("AAPL", "343.83"), ("TSLA", "441.00")):
         rt.marks.set(iid, px, "delayed", now)
     return rt
+
+
+def curves(rt):
+    """1.0.6.1: the FX term curves of the worked example (the 2026-10-27 rows; one business day old on 10-28) for the EURUSD PB forwards."""
+    fxcurves.fixture_curves(rt, persist=False)
 
 
 class _Base(unittest.TestCase):
@@ -120,7 +130,8 @@ class RateAgeTests(_Base):
         """P8B-04: a pair one of whose currencies has no usable rate is spot only - NZD (no free series), CHF (stopped) and, in this fixture, the
         currencies never observed - each with its reason; the forward pairs are the others."""
         d = otc_options.desk(self.rt, PB)
-        self.assertEqual(["EURUSD", "USDJPY"], [p for p in d["forward_pairs"] if p in otc_options.FX_PAIRS])
+        # 1.0.6.1: GBPUSD is priced on the term curves (a curve that is unavailable refuses its preview, with the reason), so it is not spot only
+        self.assertEqual(["EURUSD", "GBPUSD", "USDJPY"], [p for p in d["forward_pairs"] if p in otc_options.FX_PAIRS])
         so = d["spot_only"]
         self.assertTrue(so["USDCHF"].startswith("spot only: no current CHF rate: IRSTCI01CHM156N has stopped updating"), so["USDCHF"])
         self.assertEqual("spot only: no free policy-rate series for NZD in this terminal: no forward price (spot only)", so["NZDUSD"])
@@ -130,30 +141,35 @@ class RateAgeTests(_Base):
 
 
 class ForwardTenorTests(_Base):
-    """P8B-03 / OTC-07: one tenor table for FX forwards (the FX desk's), ON .. 1Y with 2W, every tenor offered is priced."""
+    """P8B-03 / OTC-07: every tenor offered is priced - a USD / EUR / GBP pair's on the term curves (1W .. 2Y, FX_CCS_PLAN D3), another
+    pair's the FX desk's table (ON .. 1Y, the legacy method)."""
 
     def test_the_offered_tenors_are_priced(self):
         rt = self.rt
-        self.assertEqual(["ON", "1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y"], otc_options.desk(rt, PB)["fx_forward_tenors"])
-        self.assertEqual(list(fx.TENORS), otc_options.desk(rt, PB)["fx_forward_tenors"])
-        # Wed 10-28 10:00: FX trade date 10-28, spot Fri 10-30.  ON = spot + 1 business day = Mon 11-02 (3 days); 2W = spot + 14 = Fri 11-13 (14 days).
-        # 2W: F = 1.1158 x (1 + 3.93 % x 14/360) / (1 + 2.5 % x 14/360) = 1.1158 x 1.00152833 / 1.00097222 = 1.116420; dealt 2 bp of F against you:
-        # 1.116420 x 0.0002 = 0.000223 -> K = 1.116643
+        curves(rt)
+        d = otc_options.desk(rt, PB)
+        self.assertEqual(["1W", "2W", "1M", "2M", "3M", "6M", "9M", "1Y", "18M", "2Y"], d["fx_forward_tenors"])
+        self.assertEqual(list(fx.TENORS), d["fx_forward_tenors_legacy"])
+        # Wed 10-28 10:00: FX trade date 10-28, spot Fri 10-30 (T+1 10-29 TARGET2, T+2 10-30 TARGET2 + New York); 2W = spot + 14 = Fri 11-13 (14 days).
+        # The curves of 10-27 (t = days from 10-27 / 365): t_S = 3/365 = 0.008219, t_V = 17/365 = 0.046575.  EUR: z(t_S) = 2.473805 + (2.542643 -
+        # 2.473805) x (0.008219 - 0.002740) / (0.25 - 0.002740) = 2.475330 %; z(t_V) = 2.473805 + 0.068838 x 0.177283 = 2.486009 %; DF*_EUR = exp(-0.02486009
+        # x 0.046575 + 0.02475330 x 0.008219) = 0.9990460399.  USD (SOFR 3.95 % -> 4.004641 %, the Treasury bootstrap 4.293581 % at 0.5): z(t_S) =
+        # 4.007825 %, z(t_V) = 4.030112 %; DF_USD = 0.9984535685.  F = 1.1158 x 0.9990460399 / 0.9984535685 = 1.116462; dealt 2 bp of F against you:
+        # 1.116462 x 0.0002 = 0.000223 -> K = 1.116685
         p = swaps.preview(rt, PB, "FX_FORWARD", dict(FWD, tenor="2W"))
-        self.assertEqual(("2026-11-13", 14, "1.116420", "1.116643", "2W"), (p["value_date"], p["inputs"]["days_to_value"], p["forward"], p["strike"], p["tenor"]))
-        # ON: F = 1.1158 x (1 + 3.93 % x 3/360) / (1 + 2.5 % x 3/360) = 1.1158 x 1.00032750 / 1.00020833 = 1.115933
-        p = swaps.preview(rt, PB, "FX_FORWARD", dict(FWD, tenor="ON"))
-        self.assertEqual(("2026-11-02", 3, "1.115933"), (p["value_date"], p["inputs"]["days_to_value"], p["forward"]))
-        # a tenor outside the table: 400 TERMS on the tenor field, listing the table; an equity forward keeps its own table (no ON)
-        with self.assertRaises(RejectError) as cm:
-            swaps.preview(rt, PB, "FX_FORWARD", dict(FWD, tenor="3W"))
-        self.assertEqual(("TERMS", "tenor", list(fx.TENORS)), (cm.exception.code, cm.exception.details["field"], cm.exception.details["tenors"]))
+        self.assertEqual(("2026-11-13", 14, "1.116462", "1.116685", "2W"), (p["value_date"], p["days_from_spot"], p["forward"], p["strike"], p["tenor"]))
+        # a tenor outside the table (ON is the FX desk's; 3W nobody's): 400 TERMS on the tenor field, listing the table; an equity forward keeps its own (no ON)
+        for tenor in ("ON", "3W"):
+            with self.assertRaises(RejectError) as cm:
+                swaps.preview(rt, PB, "FX_FORWARD", dict(FWD, tenor=tenor))
+            self.assertEqual(("TERMS", "tenor", d["fx_forward_tenors"]), (cm.exception.code, cm.exception.details["field"], cm.exception.details["tenors"]))
         with self.assertRaises(RejectError) as cm:
             swaps.preview(rt, PB, "EQ_FORWARD", {"underlying_id": "AAPL", "units": 1000, "side": "BUY", "tenor": "ON"})
         self.assertEqual("tenor", cm.exception.details["field"])
-        # the FX desk's grid has the 2W row too, at the same outright
+        # the FX desk's own grid (unchanged in 1.0.6.1: simple-interest CIP on one rate per currency) has the 2W row on the same value date:
+        # F = 1.1158 x (1 + 3.95 % x 14/360) / (1 + 2.5 % x 14/360) = 1.1158 x 1.00153611 / 1.00097222 = 1.116429 (the PB curves: 1.116462)
         g = {r["tenor"]: r for r in fx.forward_grid(rt, "EURUSD")["tenors"]}
-        self.assertEqual(("2026-11-13", "1.116420"), (g["2W"]["value_date"], g["2W"]["outright"]))
+        self.assertEqual(("2026-11-13", "1.116429"), (g["2W"]["value_date"], g["2W"]["outright"]))
 
 
 class EquityForwardTests(_Base):
@@ -224,17 +240,21 @@ class EquityForwardTests(_Base):
 
 
 class RiskForwardTests(_Base):
-    """P8B-08 / OTC-02: buy EUR 1,000,000.00 3M at K 1.120032 (F 1.119808 + 2 bp; the delivery sells USD 1,000,000 x 1.120032 = 1,120,032.00).
+    """P8B-08 / OTC-02: buy EUR 1,000,000.00 3M on the curves (1.0.6.1): spot 10-30, value 2027-01-30 (a Saturday) modified following ->
+    Fri 2027-01-29, 91 days; t_V = 94/365 = 0.257534: DF*_EUR = exp(-0.02547191 x 0.257534 + 0.02475330 x 0.008219) = 0.9936637222 (EUR z(t_V)
+    between 3M 2.542643 and 6M 2.693553), DF_USD = exp(-0.04152693 x 0.257534 + 0.04007825 x 0.008219) = 0.9896883365; F = 1.1158 x 0.9936637222
+    / 0.9896883365 = 1.120282; K = F + 2 bp = 1.120282 + 0.000224 = 1.120506 (the delivery sells USD 1,000,000 x 1.120506 = 1,120,506.00).
     Its USD notional at the deal 1,000,000 x 1.1158 = 1,115,800.00 sits in 'FX forwards (notional)' outside the headline (long 0, short 0);
     the currency exposure carries the EUR leg: EUR 1,000,000.00 x 1.1158 = USD 1,115,800.00, so 'USD +5 % vs foreign currencies' = -55,790.00
     and 'USD -5 %' = +55,790.00."""
 
     def test_an_otc_fx_forward_is_a_currency_exposure_not_a_headline_long(self):
         rt = self.rt
+        curves(rt)
         r = execute(rt, "otc.book", {"account_id": PB, "kind": "FX_FORWARD", "terms": dict(FWD)}, "ui:fxfwd-0001")
         self.assertTrue(r.ok, r.body)
         t = json.loads(A.one(rt, "SELECT terms_json FROM otc_contracts WHERE contract_id=?", (r.body["contract_id"],))["terms_json"])
-        self.assertEqual(("1.120032", "EUR", 100000000, "USD", 112003200), (t["strike"], t["buy_ccy"], t["buy_c"], t["sell_ccy"], t["sell_c"]))
+        self.assertEqual(("1.120506", "EUR", 100000000, "USD", 112050600), (t["strike"], t["buy_ccy"], t["buy_c"], t["sell_ccy"], t["sell_c"]))
         v = risk.report(rt, PB)
         b = {e["bucket"]: e for e in v.exposures}
         self.assertNotIn("OTC options and forwards", b)
@@ -244,15 +264,15 @@ class RiskForwardTests(_Base):
         self.assertEqual({"USD +5 % vs foreign currencies": -5579000, "USD -5 % vs foreign currencies": 5579000},
                          {s["name"]: s["pnl_c"] for s in v.scenarios if s["group"] == "fx"})
         # OTC-18 (15.15b): the position row reads as the forward it is - 1,000,000 EUR bought forward vs USD, its two legs and value date, the
-        # dealt rate 1.120032 against the forward now, held 0 days (never a negative count)
+        # dealt rate 1.120506 against the forward now, held 0 days (never a negative count)
         p = rt.accounting.position(PB, r.body["contract_id"])
         pf = p.extra["position_fields"]["extra"]
-        self.assertEqual((1000000, "EUR bought forward vs USD", "1.120032", "buy EUR / sell USD", "buy EUR 1,000,000.00 / sell USD 1,120,032.00, value 2027-01-29",
+        self.assertEqual((1000000, "EUR bought forward vs USD", "1.120506", "buy EUR / sell USD", "buy EUR 1,000,000.00 / sell USD 1,120,506.00, value 2027-01-29",
                           "dealt rate", 0),
                          (p.extra["units"], p.extra["unit_label"], p.extra["entry"], pf["side"], pf["legs"], pf["entry_label"], p.days_held))
         # OTC-23 (15.15b): the dealer's quote spells the deal out
         pv = swaps.preview(rt, PB, "FX_FORWARD", dict(FWD))
-        self.assertEqual("you buy EUR 1,000,000.00 / sell USD 1,120,032.00 for value 2027-01-29 at 1.120032 (model forward 1.119808)", swaps._quote_terms("FX_FORWARD", pv)[2])
+        self.assertEqual("you buy EUR 1,000,000.00 / sell USD 1,120,506.00 for value 2027-01-29 at 1.120506 (model forward 1.120282)", swaps._quote_terms("FX_FORWARD", pv)[2])
         # an equity forward stays in the headline (equity delta)
         r = execute(rt, "otc.book", {"account_id": PB, "kind": "EQ_FORWARD", "terms": {"underlying_id": "AAPL", "units": 100, "side": "BUY", "tenor": "3M"}},
                     "ui:eqfwd-0002")
@@ -268,6 +288,7 @@ class JobsAndWordingTests(_Base):
         OTC_EXPIRY's next run is the earlier, 2027-01-28 16:20 ET; FX_FORWARD_DUE has no FX-desk forward pending (none here); XCCY_EVENTS none."""
         from finsim.terminal import api
         rt = self.rt
+        curves(rt)
         self.assertTrue(execute(rt, "otc.book", {"account_id": PB, "kind": "FX_FORWARD", "terms": dict(FWD)}, "ui:fxfwd-0002").ok)
         self.assertTrue(execute(rt, "otc.book", {"account_id": PB, "kind": "EQ_FORWARD", "terms": {"underlying_id": "AAPL", "units": 100, "side": "BUY",
                                                                                                        "tenor": "3M"}}, "ui:eqfwd-0003").ok)
@@ -290,16 +311,17 @@ class JobsAndWordingTests(_Base):
     def test_the_fx_forward_notional_says_its_usd_value_is_at_the_spot_when_dealt(self):
         """P8R1-07: an FX forward's USD notional is the base notional at the base currency's USD rate WHEN DEALT (the IM's base), not what
         the deal delivers.  BUY EUR 1,000,000.00 3M at spot 1.1158: USD notional 1,000,000 x 1.1158 = 1,115,800.00 (IM 6 % = 66,948.00),
-        while the delivery pays USD 1,120,032.00 at the dealt forward 1.120032 - so the drawer says "at the spot rate 1.1158 when dealt"
-        (the old "USD 1,115,800.00 at the deal" read as the delivered amount)."""
+        while the delivery pays USD 1,120,506.00 at the dealt forward 1.120506 (1.0.6.1: on the curves, RiskForwardTests) - so the drawer says
+        "at the spot rate 1.1158 when dealt" (the old "USD 1,115,800.00 at the deal" read as the delivered amount)."""
         rt = self.rt
+        curves(rt)
         r = execute(rt, "otc.book", {"account_id": PB, "kind": "FX_FORWARD", "terms": dict(FWD)}, "ui:fxfwd-im-base")
         self.assertTrue(r.ok, r.body)
         cid = r.body["contract_id"]
         row = A.one(rt, "SELECT notional_c, im_c FROM otc_contracts WHERE contract_id=?", (cid,))
         self.assertEqual((111580000, 6694800), (row["notional_c"], row["im_c"]))
         d = otc_options.contract_detail(rt, cid)
-        self.assertEqual(("1.1158", "EUR/USD", ["USD", 112003200]), (d["im_base_rate"], d["im_base_pair"], d["delivery"]["pay"]))
+        self.assertEqual(("1.1158", "EUR/USD", ["USD", 112050600]), (d["im_base_rate"], d["im_base_pair"], d["delivery"]["pay"]))
         # a cross's USD notional is at its base currency's USD rate: EUR 2,000,000.00 at EUR/USD 1.1158 = USD 2,231,600.00 (a contract booked
         # before the field existed reads the same: the rate is the stored USD notional over the stored base notional)
         self.assertEqual({"im_base_rate": "1.1158", "im_base_pair": "EUR/USD"},

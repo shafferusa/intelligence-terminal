@@ -1934,6 +1934,15 @@ Thus the sum of the nightly postings always equals `to_c(base × rate × n / bas
 - Reconciliation: when the next session's `prev_close` differs from a recorded CLOSE by more than one tick, an INFO
   attention item reports it (`CLOSE_REVISED`); postings already made are not reversed (disclosed).
 
+FX closes (1.0.6.1, V1061R1-02).
+- An FX pair's CLOSE is the 17:00 ET print:
+  - the cached print when its quote time is from 16:59:00 to 17:05:00 ET;
+  - else Yahoo's 1-minute bar 16:59-17:00 ET (method minute_close; one period1 / period2 request);
+  - else it stays unavailable, with one WARN MARK_MISSING naming the 1-minute bar.
+- It is never taken from a daily bar. Yahoo's FX daily 'close' is a snapshot near the London day start: EURUSD 10-28 1.11296606 against 1.11569786 at 17:00 ET.
+- A pair is back-filled only from the day it entered the recorded set: the trade date of the OPEN contract that observes it, the first foreign-cash line of its currency, or its first fill.
+- Daily bars and dividend / split events are dated in the exchange's zone by the offset in force at each bar. meta.gmtoffset is only today's offset; Yahoo stamps FX daily bars at the London day start, 23:00 UTC in summer time.
+
 ### 11.5 Sweep-out worked example (from §19.2)
 
 US_EXCHANGE after the SPY buy, before settlement: settled 3,846,625.00, payables 3,846,625.00, no orders, buffer

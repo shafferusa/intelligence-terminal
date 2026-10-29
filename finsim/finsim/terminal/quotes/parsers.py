@@ -6,6 +6,9 @@ Conventions
 - Yahoo: ``last`` = ``meta.regularMarketPrice``, ``quote_time`` = ``meta.regularMarketTime`` (the provider's own clock),
   ``provider_session`` = ``currentTradingPeriod.regular``; the ``bar`` is the latest COMPLETED 1-minute bar
   (``t ≤ fetched_at − 60``), ``bars_tail`` the last five bars, never more (copied from finsim2 ``parse_chart``).
+  Daily bars (and dividend / split events) are dated in the exchange's own zone (``meta.exchangeTimezoneName`` through
+  ``finsim.tzfallback``) by the offset in force AT EACH BAR - ``meta.gmtoffset`` is only today's (V1061R1-02: Yahoo stamps an FX daily
+  bar at the London day start, 23:00 UTC in summer time); ``parse_minute_bars`` reads a ``period1 / period2`` 1-minute window.
 - Cboe (copied from finsim2 ``contracts``): reduced at parse to expiries ≤ ``CHAIN_MAX_DAYS`` and strikes within
   ± ``CHAIN_STRIKE_BAND`` of spot; implied vols in percent are normalised to decimals when the median exceeds 3; the
   chain's ``quote_time`` is the UNDERLYING's ``last_trade_time`` (naive Eastern → epoch).
@@ -33,6 +36,18 @@ Conventions
   * ``parse_mof_jgb``: www.mof.go.jp ``jgbcme.csv`` (JGB yields by maturity 1Y..40Y, one row per business day, "-" when
     missing) -> the latest dated row with at least six maturities as ``(date, {years: percent})``.
   * ``parse_treasury_real_xml``: the Treasury.gov daily REAL yield curve (TC_5YEAR .. TC_30YEAR) as a ``ParCurve``.
+- RFR AND TERM CURVES (FX_CCS_PLAN rev 2 K2 / D12, 1.0.6.1; every value an EXACT ``Decimal`` from its text, never through a float):
+  * ``parse_ecb_csv_exact``: ``parse_ecb_csv`` with exact values (the ESTR print, the compounded ESTR index 110.09953057, the AAA spot
+    rates with their 10 published decimals, the Svensson parameters).
+  * ``parse_nyfed_index``: markets.newyorkfed.org ``api/rates/secured/sofrai/last/N.json`` -> [(effective date, SOFR Index level)].
+  * ``parse_boe_iadb``: the Bank of England database CSV (``_iadb-fromshowcolumns.asp?csv.x=yes ... CSVF=TN&UsingCodes=Y``): a
+    ``DATE`` column ("26 Oct 2026") and one column per series code (IUDSOIA, IUDZOS2); a blank cell is no observation.
+  * ``parse_boe_ois_zip``: the Bank of England ``latest-yield-curve-data.zip`` -> the workbook "OIS daily data current month.xlsx" ->
+    the sheet "3. spot, short end" (found by NAME through ``xl/workbook.xml`` and its relationships, never by position), read with
+    ``zipfile`` and ``xml.etree`` only: the row whose first cell reads "months:" names each column's maturity in months, every row whose
+    first cell is an Excel date serial is one day's curve -> ``{date: {"1M": Decimal, ..., "60M": Decimal}}`` (percent, continuously
+    compounded).  ``boe_refusal_reference`` reads the "Reference #..." of an Akamai "Access Denied" page.  Every member is size-capped
+    (``ZIP_MEMBER_MAX``) before it is read.
 """
 from __future__ import annotations
 
@@ -46,6 +61,12 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_EVEN
 from typing import Dict, Iterable, List, Optional, Tuple
+
+import html as _html
+import zipfile
+from datetime import timedelta
+
+from finsim.tzfallback import get_zone
 
 from ..clock import NY, UTC
 from ..config import CHAIN_MAX_DAYS, CHAIN_STRIKE_BAND
@@ -391,16 +412,49 @@ def _day_of(t, off: int) -> Optional[date]:
         return None
 
 
+def _exchange_zone(meta):
+    """The exchange's time zone (``meta.exchangeTimezoneName``, e.g. "Europe/London" for Yahoo's FX pairs) through
+    ``finsim.tzfallback.get_zone``; None when it is missing or unknown (the caller then keeps the meta's ``gmtoffset``)."""
+    name = meta.get("exchangeTimezoneName") if isinstance(meta, dict) else None
+    if not isinstance(name, str) or not name.strip() or len(name) > 64:
+        return None
+    try:
+        return get_zone(name.strip())
+    except Exception:   # noqa: BLE001 - ZoneNotFound (a KeyError) or a bad key: the meta's offset is the fallback
+        return None
+
+
+def _local_day(t, zone, off: int) -> Optional[date]:
+    """V1061R1-02: the exchange-local date of a bar stamped ``t``, by the UTC offset IN FORCE AT ``t`` (``zone``), never by the offset of
+    today: Yahoo stamps an FX pair's daily bar at the London day start - 23:00 UTC in British Summer Time, 00:00 UTC in winter - and
+    ``meta.gmtoffset`` is only the offset now (0 after 2026-10-25), which dated every summer-time bar a day early (the 2026-10-23 bar
+    landed on 10-22 and 10-23 had none).  Without a known zone, the meta's offset (the pre-1.0.6.1 rule)."""
+    if zone is None:
+        return _day_of(t, off)
+    try:
+        return datetime.fromtimestamp(int(t), UTC).astimezone(zone).date()
+    except (OverflowError, OSError, ValueError, TypeError):
+        return None
+
+
 def parse_daily(result: dict) -> List[DailyBar]:
-    """Daily bars (exchange-local dates via ``gmtoffset``), de-duplicated by date, close never None."""
+    """Daily bars, de-duplicated by date, close never None.  Each bar is dated in the exchange's own zone by the offset in force at the
+    bar (V1061R1-02; ``_local_day``), else by the meta's ``gmtoffset``."""
     meta = result.get("meta") if isinstance(result, dict) and isinstance(result.get("meta"), dict) else {}
     off = _offset(meta)
+    zone = _exchange_zone(meta)
     by_date: Dict[date, DailyBar] = {}
     for b in chart_bars(result):
-        d = _day_of(b.t, off)
+        d = _local_day(b.t, zone, off)
         if d is not None:
             by_date[d] = DailyBar(d, b.o, b.h, b.l, b.c, b.v)
     return [by_date[d] for d in sorted(by_date)]
+
+
+def parse_minute_bars(result: dict, start: int, end: int) -> List[Bar1m]:
+    """V1061R1-02: the 1-minute bars of a ``period1 / period2 / interval=1m`` chart that start in ``[start, end)`` - minute-aligned points only
+    (Yahoo's trailing last-price point is not a bar), sorted by time."""
+    return [b for b in chart_bars(result) if int(b.t) % 60 == 0 and int(start) <= int(b.t) < int(end)]
 
 
 def parse_events(result: dict) -> Events:
@@ -408,6 +462,7 @@ def parse_events(result: dict) -> Events:
     if not isinstance(result, dict):
         return Events([], [])
     off = _offset(result.get("meta"))
+    zone = _exchange_zone(result.get("meta"))
     ev = result.get("events") if isinstance(result.get("events"), dict) else {}
     divs: List[DivEvent] = []
     splits: List[SplitEvent] = []
@@ -415,14 +470,14 @@ def parse_events(result: dict) -> Events:
     for e in (dv.values() if isinstance(dv, dict) else []):
         if not isinstance(e, dict):
             continue
-        a, when = dec(e.get("amount")), _day_of(e.get("date"), off)
+        a, when = dec(e.get("amount")), _local_day(e.get("date"), zone, off)
         if a is not None and a > 0 and when is not None:
             divs.append(DivEvent(when, a))
     sp = ev.get("splits")
     for e in (sp.values() if isinstance(sp, dict) else []):
         if not isinstance(e, dict):
             continue
-        n, d, when = intv(e.get("numerator")), intv(e.get("denominator")), _day_of(e.get("date"), off)
+        n, d, when = intv(e.get("numerator")), intv(e.get("denominator")), _local_day(e.get("date"), zone, off)
         if n and d and when is not None and n > 0 and d > 0:
             splits.append(SplitEvent(when, n, d))
     divs.sort(key=lambda x: x.ex_date)
@@ -748,6 +803,262 @@ def parse_treasury_real_xml(text, fetched_at: int = 0) -> Optional[ParCurve]:
     return best
 
 
+# ---- RFR and term curves (FX_CCS_PLAN rev 2 K2, 1.0.6.1) ---------------------------------------------------------------------
+ZIP_MEMBER_MAX = 32 << 20                 # a member of the BoE zip (or of the workbook inside it) larger than this is refused unread
+XLSX_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
+DOCREL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+BOE_OIS_MEMBER = "OIS daily data current month.xlsx"
+BOE_OIS_SHEET = "3. spot, short end"
+EXCEL_EPOCH = date(1899, 12, 30)
+_CELL_COL = re.compile(r"^([A-Z]{1,3})")
+_BOE_DATE = re.compile(r"^\s*(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})\s*$")
+_MONS = {m: i + 1 for i, m in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"))}
+_REF = re.compile(r"Reference\s*#?\s*([0-9A-Za-z.]{6,80})")
+
+
+def exact_dec(x) -> Optional[Decimal]:
+    """``x`` (a str / int / Decimal from the payload) as an exact finite ``Decimal`` - never through a float; None when unreadable."""
+    if x is None or isinstance(x, (bool, float)):
+        return None
+    try:
+        d = Decimal(str(x).strip())
+    except (ArithmeticError, ValueError):
+        return None
+    return d if d.is_finite() else None
+
+
+def parse_ecb_csv_exact(text) -> Dict[str, List[Tuple[date, Decimal]]]:
+    """``parse_ecb_csv`` with EXACT values (no float, no 8-dp rounding): ``{series key: [(date, Decimal)]}``; an HTML body (the ECB's
+    error page) is unavailable, never parsed."""
+    if looks_like_html(text):
+        raise FetchError("the ECB data API answered an HTML page instead of data", retryable=False)
+    if isinstance(text, (bytes, bytearray)):
+        text = text.decode("utf-8", "replace")
+    reader = csv.reader(io.StringIO(text))
+    header = next(reader, None) or []
+    try:
+        ik, it, iv = header.index("KEY"), header.index("TIME_PERIOD"), header.index("OBS_VALUE")
+    except ValueError:
+        raise FetchError("unexpected ECB CSV header", retryable=False) from None
+    out: Dict[str, Dict[date, Decimal]] = {}
+    for row in reader:
+        if len(row) <= max(ik, it, iv):
+            continue
+        key = row[ik].strip()[:80]
+        d = _iso_date(row[it])
+        v = exact_dec(row[iv]) if row[iv].strip() else None
+        if not key or d is None or v is None:
+            continue
+        out.setdefault(key, {})[d] = v
+    return {k: sorted(v.items()) for k, v in out.items()}
+
+
+def parse_nyfed_index(text) -> List[Tuple[date, Decimal]]:
+    """markets.newyorkfed.org ``api/rates/secured/sofrai/last/N.json`` (``refRates[].effectiveDate`` / ``index``) -> ``[(date, SOFR Index
+    level)]`` sorted, exact (the JSON numbers are read as Decimals)."""
+    if looks_like_html(text):
+        raise FetchError("the NY Fed answered an HTML page instead of data", retryable=False)
+    try:
+        payload = json.loads(text.decode("utf-8", "replace") if isinstance(text, (bytes, bytearray)) else text, parse_float=Decimal)
+    except ValueError:
+        raise FetchError("NY Fed JSON did not parse", retryable=False) from None
+    rows = payload.get("refRates") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        raise FetchError("unexpected NY Fed payload", retryable=False)
+    out: Dict[date, Decimal] = {}
+    for r in rows:
+        if not isinstance(r, dict) or str(r.get("type") or "SOFRAI").upper() != "SOFRAI":
+            continue
+        d = _iso_date(r.get("effectiveDate"))
+        v = exact_dec(r.get("index"))
+        if d is not None and v is not None and v > 0:
+            out[d] = v
+    return sorted(out.items())
+
+
+def _boe_date(s) -> Optional[date]:
+    m = _BOE_DATE.match(str(s or ""))
+    if not m:
+        return _iso_date(s)
+    mon = _MONS.get(m.group(2).lower())
+    if mon is None:
+        return None
+    try:
+        return date(int(m.group(3)), mon, int(m.group(1)))
+    except ValueError:
+        return None
+
+
+def boe_refusal_reference(body) -> Optional[str]:
+    """The "Reference #18.2378ce17..." of an Akamai "Access Denied" page (HTML entities decoded), or None."""
+    if isinstance(body, (bytes, bytearray)):
+        body = bytes(body[:8192]).decode("utf-8", "replace")
+    m = _REF.search(_html.unescape(str(body or "")))
+    return m.group(1).rstrip(".") if m else None
+
+
+def parse_boe_iadb(text) -> Dict[str, List[Tuple[date, Decimal]]]:
+    """The Bank of England database CSV -> ``{series code: [(date, Decimal)]}`` sorted, exact; a blank cell is no observation.  An HTML
+    body (an "Access Denied" page) is unavailable, never parsed."""
+    if looks_like_html(text):
+        raise FetchError("the Bank of England database answered an HTML page instead of data", retryable=False)
+    if isinstance(text, (bytes, bytearray)):
+        text = text.decode("utf-8-sig", "replace")
+    reader = csv.reader(io.StringIO(text))
+    header = [h.strip().upper() for h in (next(reader, None) or [])]
+    if not header or header[0] != "DATE" or len(header) < 2:
+        raise FetchError("unexpected Bank of England CSV header", retryable=False)
+    out: Dict[str, Dict[date, Decimal]] = {code: {} for code in header[1:] if re.fullmatch(r"[A-Z0-9]{3,12}", code)}
+    for row in reader:
+        if not row:
+            continue
+        d = _boe_date(row[0])
+        if d is None:
+            continue
+        for i, code in enumerate(header[1:], start=1):
+            if code not in out or i >= len(row) or not row[i].strip():
+                continue
+            v = exact_dec(row[i])
+            if v is not None:
+                out[code][d] = v
+    return {k: sorted(v.items()) for k, v in out.items()}
+
+
+def _zip_member(zf: "zipfile.ZipFile", wanted: str) -> bytes:
+    names = {n.lower().replace("\\", "/").rsplit("/", 1)[-1]: n for n in zf.namelist()}
+    name = names.get(wanted.lower())
+    if name is None:
+        raise FetchError(f"the Bank of England yield-curve file has no {wanted!r}", retryable=False)
+    info = zf.getinfo(name)
+    if info.file_size > ZIP_MEMBER_MAX:
+        raise FetchError(f"{wanted!r} is larger than {ZIP_MEMBER_MAX >> 20} MB: not read", retryable=False)
+    return zf.read(name)
+
+
+def _xml(zf: "zipfile.ZipFile", name: str):
+    info = zf.getinfo(name)
+    if info.file_size > ZIP_MEMBER_MAX:
+        raise FetchError(f"{name} is too large: not read", retryable=False)
+    try:
+        return ET.fromstring(zf.read(name))
+    except ET.ParseError:
+        raise FetchError(f"{name} did not parse", retryable=False) from None
+
+
+def _col_number(ref: str) -> int:
+    m = _CELL_COL.match(ref or "")
+    n = 0
+    for ch in (m.group(1) if m else ""):
+        n = n * 26 + ord(ch) - 64
+    return n
+
+
+def xlsx_sheet_rows(raw: bytes, sheet_name: str) -> List[Dict[int, Optional[str]]]:
+    """The rows of one sheet of an .xlsx (stdlib ``zipfile`` + ``xml.etree``): ``[{column number: cell text}]`` with shared strings and
+    inline strings resolved; the sheet is found by its NAME through ``xl/workbook.xml`` and ``xl/_rels/workbook.xml.rels``."""
+    try:
+        zf = zipfile.ZipFile(io.BytesIO(raw))
+    except zipfile.BadZipFile:
+        raise FetchError("the workbook is not a valid .xlsx", retryable=False) from None
+    with zf:
+        names = set(zf.namelist())
+        wb = _xml(zf, "xl/workbook.xml")
+        target = None
+        sheets = wb.find(f"{{{XLSX_NS}}}sheets")
+        rid = None
+        for sh in (sheets if sheets is not None else []):
+            if " ".join(str(sh.get("name") or "").split()).lower() == " ".join(sheet_name.split()).lower():
+                rid = sh.get(f"{{{DOCREL_NS}}}id")
+                break
+        if rid is None:
+            raise FetchError(f"the workbook has no sheet {sheet_name!r}", retryable=False)
+        rels = _xml(zf, "xl/_rels/workbook.xml.rels")
+        for rel in rels.findall(f"{{{REL_NS}}}Relationship"):
+            if rel.get("Id") == rid:
+                t = str(rel.get("Target") or "").lstrip("/")
+                target = t if t.startswith("xl/") else "xl/" + t
+                break
+        if target is None or target not in names:
+            raise FetchError(f"the workbook's sheet {sheet_name!r} has no part", retryable=False)
+        shared: List[str] = []
+        if "xl/sharedStrings.xml" in names:
+            for si in _xml(zf, "xl/sharedStrings.xml").findall(f"{{{XLSX_NS}}}si"):
+                shared.append("".join(t.text or "" for t in si.iter(f"{{{XLSX_NS}}}t")))
+        root = _xml(zf, target)
+    rows: List[Dict[int, Optional[str]]] = []
+    for r in root.iter(f"{{{XLSX_NS}}}row"):
+        row: Dict[int, Optional[str]] = {}
+        for c in r.findall(f"{{{XLSX_NS}}}c"):
+            col = _col_number(c.get("r") or "")
+            t = c.get("t")
+            v = c.find(f"{{{XLSX_NS}}}v")
+            val = None if v is None else v.text
+            if t == "s" and val is not None:
+                try:
+                    val = shared[int(val)]
+                except (ValueError, IndexError):
+                    val = None
+            elif t == "inlineStr":
+                val = "".join(x.text or "" for x in c.iter(f"{{{XLSX_NS}}}t"))
+            if col:
+                row[col] = val
+        rows.append(row)
+    return rows
+
+
+def parse_boe_ois_sheet(rows: List[Dict[int, Optional[str]]]) -> Dict[date, Dict[str, Decimal]]:
+    """The "3. spot, short end" rows -> ``{date: {"<m>M": Decimal}}``: the "months:" row maps columns to maturities (the Bank writes
+    1.0000000400000015 for 1 month: each is read as the nearest whole month, within 0.001); a row whose first cell is an Excel date serial
+    is that day's curve (blank cells are no value)."""
+    months: Optional[Dict[int, int]] = None
+    out: Dict[date, Dict[str, Decimal]] = {}
+    for row in rows:
+        first = str(row.get(1) or "").strip().lower()
+        if first.rstrip(":") == "months":
+            months = {}
+            for col, v in row.items():
+                if col <= 1 or v in (None, ""):
+                    continue
+                m = exact_dec(v)                       # the Bank writes 1.0000000400000015 for 1 month: the nearest whole month
+                if m is None:
+                    continue
+                r = m.to_integral_value(rounding=ROUND_HALF_EVEN)
+                if abs(m - r) <= Decimal("0.001") and 1 <= int(r) <= 600:
+                    months[col] = int(r)
+            continue
+        if months is None:
+            continue
+        serial = exact_dec(row.get(1))
+        if serial is None or not (20000 <= serial <= 80000):
+            continue
+        d = EXCEL_EPOCH + timedelta(days=int(serial))
+        pts: Dict[str, Decimal] = {}
+        for col, m in months.items():
+            v = exact_dec(row.get(col)) if row.get(col) not in (None, "") else None
+            if v is not None:
+                pts[f"{m}M"] = v
+        if pts:
+            out[d] = pts
+    if months is None:
+        raise FetchError("the Bank of England OIS sheet has no 'months:' row", retryable=False)
+    return out
+
+
+def parse_boe_ois_zip(raw: bytes, member: str = BOE_OIS_MEMBER, sheet: str = BOE_OIS_SHEET) -> Dict[date, Dict[str, Decimal]]:
+    """``latest-yield-curve-data.zip`` -> the UK OIS spot curve of every day in it (``parse_boe_ois_sheet``).  An HTML body (an "Access
+    Denied" page) is unavailable, never parsed."""
+    if looks_like_html(raw):
+        raise FetchError("the Bank of England answered an HTML page instead of the yield-curve file", retryable=False)
+    try:
+        outer = zipfile.ZipFile(io.BytesIO(raw))
+    except zipfile.BadZipFile:
+        raise FetchError("the Bank of England yield-curve file is not a valid zip", retryable=False) from None
+    with outer:
+        inner = _zip_member(outer, member)
+    return parse_boe_ois_sheet(xlsx_sheet_rows(inner, sheet))
+
+
 # ---- fiscaldata (MSPD, auctions) and TreasuryDirect FedInvest ------------------------------------------------------------
 CUSIP_RE = re.compile(r"^[0-9]{3}[0-9A-Z]{5}[0-9]$")
 MSPD_TYPES = {"Bills Maturity Value": "BILL", "Notes": "NOTE", "Bonds": "BOND", "Inflation-Protected Securities": "TIPS", "Floating Rate Notes": "FRN"}
@@ -897,8 +1208,9 @@ def parse_fedinvest(text) -> Tuple[Optional[date], Dict[str, dict]]:
 
 
 __all__ = ["num", "dec", "intv", "et_naive_to_epoch", "YahooIntraday", "DailyBar", "DivEvent", "SplitEvent", "Events", "ChainUnderlying", "ChainRow",
-           "ChainSnapshot", "ParCurve", "FxRates", "chart_result", "chart_bars", "clean_meta", "parse_intraday", "parse_daily", "parse_events", "parse_chain",
+           "ChainSnapshot", "ParCurve", "FxRates", "chart_result", "chart_bars", "clean_meta", "parse_intraday", "parse_daily", "parse_minute_bars", "parse_events", "parse_chain",
            "parse_treasury_xml", "parse_fred_csv", "parse_frankfurter", "parse_finra", "OCC_TAIL", "TENORS", "TENOR_Q", "TENOR_YEARS", "YAHOO_DELAY_S",
            "YAHOO_DELAY_LABEL", "DAILY_DELAY_LABEL", "FRED_MAINTENANCE", "looks_like_html", "parse_fred_json", "parse_nyfed_rates", "parse_ecb_csv",
            "parse_mof_jgb", "parse_treasury_real_xml", "REAL_TENORS", "parse_mspd", "parse_auctions", "parse_fedinvest", "CUSIP_RE", "MSPD_TYPES",
-           "FEDINVEST_TYPES"]
+           "FEDINVEST_TYPES", "exact_dec", "parse_ecb_csv_exact", "parse_nyfed_index", "parse_boe_iadb", "parse_boe_ois_zip", "parse_boe_ois_sheet",
+           "xlsx_sheet_rows", "boe_refusal_reference", "BOE_OIS_MEMBER", "BOE_OIS_SHEET", "ZIP_MEMBER_MAX", "EXCEL_EPOCH"]

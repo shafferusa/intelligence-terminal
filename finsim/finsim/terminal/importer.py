@@ -1271,6 +1271,11 @@ def _pack_provider_class():
         def intraday(self, symbol):
             raise FetchError(f"{symbol}: no intraday quotes in the import's data pack", status=None, retryable=False)
 
+        def minute_bars(self, symbol, start, end):
+            # V1061R1-02: an FX close comes only from the 1-minute bar ending at 17:00 ET, which no data pack carries: the key waits for the
+            # live scheduler (never a daily bar's close)
+            raise FetchError(f"{symbol}: no 1-minute bars in the import's data pack", status=None, retryable=False)
+
     return _PackProvider
 
 

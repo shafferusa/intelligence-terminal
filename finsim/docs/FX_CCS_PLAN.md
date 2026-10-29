@@ -1715,6 +1715,8 @@ rows.
 
 ## 9. Acceptance (package V, after integration)
 
+> ORCHESTRATOR NOTE FOR V (2026-10-29 02:01 ET): the pool finished at 02:00 ET, so V runs before the day's curves exist: the new curves job fetches the Bank of England OIS curve only after 07:00 ET and the ECB AAA curve only after 08:00 ET (P-A). Do every item that needs no live curve first and in full (1 suites, 2 the 1.0.6 comparison, 6 the real-data self-check, 7 the money-test review, 8 clean-up, and every part of 3 / 4 / 5 that does not need a priced EUR or GBP curve). Never use fixture curves or any fallback for items 3 / 4 / 5 and never sleep to wait for the slots: if a copy cannot price for lack of the day's curves, report those items in acceptance as passed=false with 'BLOCKED_BY_DATA_TIME: <what is missing>' and do NOT list that as a defect. The orchestrator runs items 3 / 4 / 5 with real curves after 08:00 ET, before the gate.
+
 1. **Suites.** `tests\run_terminal_suite.py` on py-3.12 and py-3.14: 0 failures, 0 errors, 0 ResourceWarnings.
 2. **1.0.6 against 1.0.6.1, before any booking.** On a fresh post-import copy of the owner's database (sqlite3 backup, source `mode=ro`, a
    new folder under `scratchpad\checks\fxccs-*`), the method of 15.9 item 7.
@@ -1811,8 +1813,9 @@ rows.
         - An open RFQ from an earlier run: decline it with this run's `dec` id, then go to the next attempt.
       - Any other code: UNEXECUTED.
    3. **Wait for the quote.** Poll GET `/api/otc/rfqs/{id}` every 5 s for up to `quote_wait_s`.
-      - QUOTED: validate the quote (below). It passes: accept with the `acc` id. It fails: decline with the `dec` id; UNEXECUTED, naming the
-        check that failed.
+      - QUOTED: validate the quote (below). It passes: accept with the `acc` id. It fails: decline with the `dec` id. A failure of the
+        market data's timing only (a print too old or not executable when quoted, the legs apart, the cross print beyond 5.0 pips) goes to the
+        next attempt after `retry_wait_s`, as a QUOTE_STALE request does; any other failure is UNEXECUTED, naming the check that failed.
       - EXPIRED (the dealer did not quote): next attempt.
       - Still REQUESTED: decline, then next attempt.
    4. **Accept.**
@@ -1830,7 +1833,15 @@ rows.
 **Quote validation, before any accept (FX-C-05).** The checks:
 - The expected labels are present (`expect.labels`).
 - Every input of the pricing record has its source and time. Each overnight print is at most 10 days old and each curve at most 3 BD.
-- The spot legs are within 120 s of each other, and the quote is within 120 s of the spot.
+- The spot legs are within 120 s of each other. Each FX print the quote is priced on (the forward's spot legs, the swap's deal FX) is at most
+  300 s older than the quote and was executable when quoted (quality delayed / live).
+  - Why 300 s (1.0.6.1 fix round 1, V1061-01, 2026-10-29): revision 2 said "the quote within 120 s of the spot".
+    - The only FX source, Yahoo's EURUSD=X / GBPUSD=X, stamps its prints on a 60 s grid and serves them 168-228 s after their own time (24
+      fetches 04:46-04:52 ET: 167.7-200.8 s; acceptance V: 159-220 s). So the 120 s rule declined every real quote and both trades ended
+      UNEXECUTED.
+    - 300 s is that lag plus the terminal's 15 s ORDER-priority fetch and the dealer job. It is also the terminal's own fetch and staleness
+      grace.
+    - The real-data dry run of 05:13 ET booked both trades at print ages of 213 s and 183 s, and the checker passed C1-C11.
 - The cross difference is at most 5.0 pips.
 - **Independent re-derivation** with `otcplan.reprice` (K9), with exact equality at the stated quantisation:
   - B: DF*_EUR and DF*_GBP (1e-10); F, points, hw_px and K (6 dp); K = F - hw_px; the GBP amount, the USD notional and the IM (cents).
@@ -1859,13 +1870,15 @@ A quote that fails a check is never accepted. Revision 1's "K within 50 pips of 
 | C4 Pricing record and its inputs | Complete: every input has its source and time, and the labels are present. Each input equals the stored row of its as-of date: the curve nodes (`curve_points`), the overnight prints (the rate series), the spot legs and the print (the RFQ's pinned prints, value and time), and the GS schedule values in force at the quote (the schedule and its SETTINGS_CHANGED history). |
 | C5 Cash, scoped | F1:PB_GS and F1:TREASURY in USD, EUR and GBP: settled 1010 at or above 0, and no FUNDING_SHORTFALL attention for those accounts and currencies raised after the snapshot. Other accounts' attentions are listed. |
 | C6 Ledger | Integrity full ok; the trial balance balances in base and per currency; 1330 per contract = `im_c`; the L22 VM rule holds. |
-| C7 Exposure | EUR -4,000,000.00 nominal (A and B); GBP +to_c(2,000,000 x K). The per-currency PV delta of the Risk block equals the ledger balances plus `otcplan.reprice`'s off-ledger deltas, to within 0.01. The report's sensitivities are recomputed to within 0.01. |
+| C7 Exposure | EUR -4,000,000.00 nominal (A and B); GBP +to_c(2,000,000 x K). The per-currency PV delta of the Risk block equals the ledger balances plus `otcplan.reprice`'s off-ledger deltas, to within 0.01. The report's sensitivities are recomputed to within 0.01. When the run booked no FX contract (every trade UNEXECUTED), C7 passes as not applicable and says so: `by_currency` is then legitimately empty. |
 | C8 Idempotency (`--second`) | The second report shows ALREADY_BOOKED for both trades. No command carries the second run's prefix, and no new row is attributed to the plan. |
 | C9 Restart (`--after-restart`) | Contract views and positions served after a stop and start equal those served before. |
 | C10 Words | Nothing says "dealer-confirmed"; the source labels name the owner's instruction reference. |
 | C11 Schedule edits | SETTINGS_CHANGED events after the snapshot are listed, each with its re-mark of each new contract (`otcplan.reprice` with the old and the new value). A run command that edits the schedule FAILs. |
 
 The output is PASS or FAIL per item, with evidence. Exit 0 only when every item passes.
+
+`check`, `run`, `snapshot` and `reprice` answer a missing or unreadable input file, a file that is not JSON, or a database that cannot be opened read-only with one line and exit 2.
 
 ### 10.4 The dry run on a fresh copy (V, then again by the orchestrator in the booking window on the day of the live run)
 
@@ -2146,3 +2159,48 @@ CCS to 6 %? **Default: keep the schedule.**
 | https://query1.finance.yahoo.com/v8/finance/chart/EURUSD=X (also EURGBP=X, GBPUSD=X; `interval=1m` for 10-28 12:00-22:00Z; 6EZ27.CME; EURGBP1Y=X answers 404) | FX spot, the 1-minute cross measurement and the futures probe |
 | `C:\Users\logan\.finsim\terminal.db` read through `mode=ro` at about 17:45 EDT (state_version 3867) and 19:30 EDT (3897) | the live book; NULL trade dates; SWP-000006 without a VM row |
 | The 1.0.6 tree (read-only) | `products\swaps_trs.py`, `swaps.py`, `otc_options.py`, `fx.py`, `prime.py`, `risk.py`, `tables.py`, `calendar.py`, `commands.py`, `db.py`, `quotes\providers.py`, `quotes\rates.py`, `quotes\http.py`, `config.py`, `lifecycle.py`, `lifecycle_eod.py`, `lifecycle_jobs.py`, `blotters.py`, `server.py`, `api.py`, `static\components\swapticket.js`, `otcticket.js`, `pbschedule.js`, `static\pages\risk.js`; `tests\terminal_fixture_server.py`, `tests\terminal_helpers.py` |
+
+## Orchestrator addenda (1.0.6.1 as built)
+
+Notes the 1.0.6.1 builders wrote for this plan (they may not edit docs); applied verbatim by the orchestrator at the 1.0.6.1 gate.
+
+### P-A, to D10 / 1.4
+
+P-A build note (1.0.6.1, 2026-10-29). The four calendars were checked against real publication days on FRED with the project agent, and each reproduces them exactly: TARGET2 against every ESTR day since 2019-10-01; London (England and Wales) against every SONIA day since 2000-01-04, including every substitute day and the one-offs of 2002, 2011, 2012, 2020, 2022 and 2023; New York (Federal Reserve) against every EFFR day since 2016-03-01; USGS against every SOFR day since 2018-04-03. The evidence changed two USGS assumptions. (1) No SOFR was published on Good Friday 2021-04-02 or 2023-04-07, so the hand-maintained list of early-close-only Good Fridays is empty. (2) SIFMA closes the Friday before an Independence Day or Christmas Day that falls on a Saturday (no SOFR on 2020-07-03, 2021-12-24 or 2026-07-03); the same is ASSUMED for Juneteenth from 2022 (first case 2027-06-18). A New Year's Day or Veterans Day on a Saturday closes nothing (SOFR was published on 2021-12-31 and 2023-11-10). One-off closes on the list: 2001-09-11/12, 2012-10-30 and 2018-12-05; 2025-01-09 was an early close only (SOFR was published). USGS 2026-2028 is therefore New York plus 2026-04-03 and 2026-07-03; 2027-03-26, 2027-06-18 and 2027-12-24; 2028-04-14.
+
+### P-A, to Q1 / R13
+
+Implementation note (P-A, 2026-10-29). Following D2 and D5, the EUR OIS spread is added to the ECB grid nodes only, never to the ESTR first node; this is the same rule behind the +423.92 per bp of B-T8. Under that rule, Q1's rows read: +10 bp F 0.865049, K 0.864876, GBP 1,729,752.00 (-3,496.00 against the default); -10 bp F 0.868548, K 0.868374, GBP 1,736,748.00 (+3,500.00). The plan's figures (0.865063 / 1,729,780.00 / -3,468.00 and 0.868535 / 1,736,722.00 / +3,474.00) are a parallel shift of the whole EUR curve, ESTR node included. R13's 'about GBP 3,470 per 10 bp' becomes about GBP 3,500. The default row (0.0 bp, F 0.866797, K 0.866624, GBP 1,733,248.00) is unaffected. tests/test_terminal_fxcurves.py pins both variants.
+
+### P-B, B-T12
+
+B-T12 as built (P-B, 2026-10-29): the section-6 figures value the 2026-10-27 curves at 2026-11-02, which the 3-business-day curve age rule (D2) refuses; the test values the same rows re-dated 2026-10-30 (fxcurves.fixture_curves(d0=2026-10-30)): EUR nominal -4,000,000.00 (unchanged), EUR PV delta -3,882,616.37 (A -1,999,651.71 = ledger -2,000,000.00 + hook +348.29; B -1,882,964.66), EURUSD +5 % -216,611.17, EUR/USD basis01 +856.41 (A +436.83, B +419.58) - the designer's own functions re-run with T0 = 2026-10-30.
+
+### P-D, operator note for 10.4 / 10.5 / 9 item 5
+
+1. otcplan run checks /api/health. It accepts VERSION 1.0.6 as the 1.0.6.1 code only when the 1.0.6.1 modules (swaps, swaps_trs, otc_options, fx, ccyfunding) are bound, so V's pre-gate dry run is not blocked; the report says so. It requires provider rows boe, ecb and nyfed with ok=true, so start the dry-run server early enough for P-A's rfr/curves slots to fetch (BoE after 07:00 ET, ECB after 08:00 ET); before that the server check fails (exit 2) and nothing is sent.
+2. Run the checker with the run report written by run (report.json in --report): py -3.12 -m finsim otcplan check --db <copy> --before before.json --run <dir>\report.json [--second <dir2>\report.json] [--after-restart views.json]. --after-restart takes {"before": {...views}, "after": {...views}}; C9 compares the stored facts of each contract, not live marks.
+3. Forward check: py -3.12 tests\terminal_fx_forward_check.py --run <C1.db> --control <C0.db> --report <dir>. It never writes C0/C1: it works on backups in --work (deleted at the end) and needs about 2 x 35 MB of disk. On the owner's book with both trades it ran 134 ticks per copy in 151 s.
+4. Until the orchestrator adds the SettleDue filter (request 1), the forward check and the live START morning show two WARN LINKED_SETTLEMENT items from SETTLE_DUE at 00:30 on S. They are expected; the START resolves them at 00:45.
+
+### Fix round 2, to 9 item 5 and 10.4 step 9 (the forward check)
+
+Forward check (V1061R1-01 / -03 / -04).
+- One set of inputs: before the first tick, the control's working copy receives the run copy's quote_cache, curve_points, marks, dividends, debt_prices and finra_short. The report (inputs_before_alignment) lists what differed, so a dry run inside the equity session no longer fails on input drift.
+- Held inputs: overnight prints (daily series only), term-curve grids and the par curve are re-dated once per New York business day, at the first tick from 08:00 ET, to the previous business day. They are never re-dated on a weekend or holiday, so no weekend VM posts that production would not post.
+- Comparison: pre-existing contracts are compared on the rows written since the fork (the control's last command).
+- START of each cross-currency swap: the report prints settled cash per currency in the swap's account (funding sweeps apart). It checks each net against the quote's net_start_flows (USD = minus the conversion spread, the -40.00 class; EUR 0.00) and against the exchange and conversion rows. It also shows the funding (source, own cash available, shortfall, Treasury sweep) and checks that the account's and Treasury's settled cash are at or above zero after the START and at the end of the run.
+
+### Fix round 3, to 10.2 step 6 and 10.3 C9 (cash and collateral views)
+
+Cash and collateral views (V1061R2-02).
+- 10.2 step 6 reads cash from GET /api/accounting/cash?scope=F1:ALL (every account per currency, and the Treasury) and collateral from GET /api/collateral/summary?scope=F1:ALL (IM and VM per counterparty). GET /api/cash and GET /api/collateral never existed.
+- report.txt prints the 10.7 item:
+  - the Treasury's settled cash per currency and its available USD;
+  - the plan account's prime broker: IM posted (required), VM posted and VM received.
+- C9 Restart compares, before and after a stop and start, the stored facts of five views:
+  - the contracts and the positions (Risk, scope F1:ALL and the PB account);
+  - the cash: ledger cash per account and currency (settled, receivable, payable, held at a lender, margin, accrued, OTC margin) and the Treasury's settled cash per currency;
+  - the collateral: each prime broker's IM posted and required, VM posted and received.
+- Available and reserved cash and live marks are re-computed and not compared.
+- A view that could not be read before or after the restart fails C9. Before this fix, two "unavailable" answers compared equal.

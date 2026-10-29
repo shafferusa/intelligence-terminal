@@ -21,6 +21,12 @@
  *              collateral, excess or deficit, open calls and the assumed terms - P6's figures (collateral.summary) carried in the risk
  *              answer, "unavailable" with the reason while they are not in the build (no collateral route is called from here)
  *   sector     PORTFOLIO-19: the headline exposure per sector (a TRS counts in its underlying's sector; unclassified names said so)
+ *   fx         FX_CCS_PLAN K7 (1.0.6.1): per currency the nominal and the PV delta, each the ledger part (balances, receivables / payables,
+ *              positions) plus the OTC FX contracts' off-ledger part, with the USD effect of a 1 % and a 5 % move; the pair scenarios (each
+ *              USD pair with the other held, each traded cross with either leg held - they replace the single +/-5 % USD row); rate01 per
+ *              currency, basis01 per pair, the EUR OIS spread and points01; the prime brokers' counterparty lines (IM posted, VM, the
+ *              exposure to a default); the liquidity ladder (scheduled flows, settlement-funding purchases and gaps); the notional limits
+ *              ("none configured") - every figure MODEL, with its labels (PROXY / ASSUMED) and what could not be valued now
  *   warnings and compliance notices.
  * V104R2-BW-08: the exposure table marks the buckets that add up to the gross tile ("in gross"); the others are shown for their size.
  * ASCII only; no framework.
@@ -126,6 +132,42 @@
         { key: 'unpriced', label: 'not re-priced', cls: 'l', html: function (r) { var u = r.unpriced || []; return u.length ? '<span title="' + T.esc(u.join(', ')) + '">' + u.length + ' (' + T.esc(u.slice(0, 3).join(', ')) + (u.length > 3 ? ' ...' : '') + ')</span>' : ''; }, text: function (r) { return (r.unpriced || []).join(' '); } }] });
       S.scenNotes = T.h('div', { class: 'notes pnote' }); ps.appendChild(S.scenNotes);
       body.appendChild(ps);
+      /* FX_CCS_PLAN K7: the FX block */
+      var pfx = panel('fx', 'Currency risk (FX)', 'the ledger part once, plus the OTC FX forwards\' and cross-currency swaps\' off-ledger part; MODEL numbers');
+      S.fxNote = T.h('div', { class: 'pnote' }); pfx.appendChild(S.fxNote);
+      pfx.appendChild(T.h('h3', null, 'by currency'));
+      S.fxCcy = gridIn(pfx, { rowKey: function (r) { return r.ccy; }, empty: 'USD only', columns: [
+        { key: 'ccy', label: 'ccy', cls: 'l' },
+        { key: 'nominal', label: 'nominal', html: function (r) { return '<span class="' + T.sign(r, 'nominal') + '">' + T.esc(T.money(r, 'nominal')) + '</span><span class="sub2">ledger ' + T.esc(T.money(r, 'nominal_ledger')) + ' . OTC ' + T.esc(T.money(r, 'nominal_hooks')) + '</span>'; },
+          text: function (r) { return T.money(r, 'nominal'); }, sort: function (r) { return T.num(r, 'nominal') || 0; } },
+        { key: 'pv_delta', label: 'PV delta', html: function (r) { return r.pv_delta == null ? '<span class="muted" title="' + T.esc((r.partial || []).join(', ')) + '">unavailable now</span>'
+          : '<span class="' + T.sign(r, 'pv_delta') + '">' + T.esc(T.money(r, 'pv_delta')) + '</span><span class="sub2">ledger ' + T.esc(T.money(r, 'pv_delta_ledger')) + ' . OTC ' + T.esc(r.pv_delta_hooks == null ? 'n/a' : T.money(r, 'pv_delta_hooks')) + '</span>'; },
+          text: function (r) { return r.pv_delta == null ? '' : T.money(r, 'pv_delta'); }, sort: function (r) { return T.num(r, 'pv_delta') || 0; } },
+        { key: 'rate', label: 'USD rate', text: function (r) { return r.rate == null ? 'no rate' : T.fmt.px(r.rate); } },
+        money('usd_per_1pct', 'USD per +1 %', 'the USD effect of the currency rising 1 % against USD, on the PV delta'), money('usd_per_5pct', 'USD per +5 %')] });
+      pfx.appendChild(T.h('h3', null, 'pair moves'));
+      S.fxPairs = gridIn(pfx, { rowKey: function (r) { return r.pair + ':' + r.held + ':' + r.shock; }, empty: 'no currency exposure', columns: [
+        { key: 'pair', label: 'pair', cls: 'l', text: function (r) { return String(r.pair || '').slice(0, 3) + '/' + String(r.pair || '').slice(3); } }, { key: 'shock', label: 'move', cls: 'l' },
+        { key: 'held', label: 'held', cls: 'l', text: function (r) { return String(r.held || '').replace(/\b([A-Z]{3})([A-Z]{3})\b/g, '$1/$2'); } },
+        { key: 'pnl', label: 'P&L', html: function (r) { return r.pnl == null ? '<span class="muted" title="' + T.esc(r.note || '') + '">unavailable</span>' : '<span class="' + T.sign(r, 'pnl') + '">' + T.esc(T.money(r, 'pnl')) + '</span>'; },
+          text: function (r) { return r.pnl == null ? '' : T.money(r, 'pnl'); }, sort: function (r) { return T.num(r, 'pnl') || 0; } }] });
+      pfx.appendChild(T.h('h3', null, 'rates, basis, spread and points (per +1 bp / +1 pip)'));
+      S.fxSens = gridIn(pfx, { rowKey: function (r) { return r.what + ':' + r.key; }, empty: 'no OTC FX contract', columns: [
+        { key: 'what', label: 'measure', cls: 'l' }, { key: 'key', label: 'currency / pair', cls: 'l' }, money('usd', 'USD'),
+        { key: 'contracts', label: 'contracts', cls: 'l', html: function (r) { return '<span class="sub2">' + T.esc(r.contracts || '') + '</span>'; }, text: function (r) { return r.contracts || ''; } }] });
+      pfx.appendChild(T.h('h3', null, 'counterparty and collateral'));
+      S.fxCp = gridIn(pfx, { rowKey: function (r) { return r.account_id; }, empty: 'no OTC contracts', columns: [
+        { key: 'name', label: 'prime broker', cls: 'l', text: function (r) { return nameOf(r, names); } }, { key: 'contracts', label: 'contracts', text: function (r) { return String(r.contracts == null ? '' : r.contracts); } },
+        money('mtm', 'contracts value'), money('csa_exposure', 'CSA value'), money('im_posted', 'IM posted'), money('vm_posted', 'VM posted'), money('vm_received', 'VM received'),
+        { key: 'exposure', label: 'exposure to a default', title_h: 'IM posted (assumed not segregated, ASSUMED) + whatever the VM posted exceeds what you owe on the contracts',
+          html: function (r) { return '<span title="' + T.esc(r.basis || '') + '">' + T.esc(T.money(r, 'exposure')) + '</span>'; }, text: function (r) { return T.money(r, 'exposure'); } }] });
+      pfx.appendChild(T.h('h3', null, 'liquidity ladder'));
+      S.fxLadder = gridIn(pfx, { rowKey: function (r) { return [r.date, r.ccy, r.kind, r.contract_id || '', r.what || ''].join(':'); }, empty: 'nothing scheduled', columns: [
+        { key: 'date', label: 'date', cls: 'l' }, { key: 'kind', label: 'kind', cls: 'l', text: function (r) { return { flow: 'scheduled flow', purchase: 'settlement funding', gap: 'funding gap' }[r.kind] || r.kind || ''; } },
+        { key: 'ccy', label: 'ccy', cls: 'l' }, money('amount', 'amount', '+ received / - paid'),
+        { key: 'what', label: 'what', cls: 'l', html: function (r) { return '<span class="sub2" style="max-width:520px" title="' + T.esc(r.what || '') + '">' + T.esc(r.what || '') + '</span>'; }, text: function (r) { return r.what || ''; } }] });
+      S.fxLimits = T.h('div', { class: 'pnote' }); pfx.appendChild(S.fxLimits);
+      body.appendChild(pfx);
       /* concentration */
       var pk = panel('concentration', 'Concentration', 'the largest exposures against the book\'s NAV (warning above 25 %)');
       S.conc = gridIn(pk, { rowKey: function (r) { return r.account_id + ':' + r.instrument_id; }, empty: 'no positions', columns: [
@@ -271,9 +313,13 @@
         ((g.unavailable || []).length ? ' Greeks unavailable: ' + g.unavailable.map(function (u) { return u.instrument_id + ' (' + u.reason + ')'; }).join('; ') + '.' : '');
       S.dv.update(r.dv01_rows || [], { empty: 'no rates exposure' });
       S.tenor.update(r.dv01_by_tenor || [], { empty: 'none' });
-      S.scen.update(r.scenarios || [], { empty: 'none' });
+      /* FX_CCS_PLAN K7: the currency moves are the FX block's pair rows (each pair, which leg held), not one +/-5 % USD row */
+      var fxb = r.fx_sensitivities || null;
+      S.scen.update((r.scenarios || []).filter(function (s) { return !fxb || s.group !== 'fx'; }), { empty: 'none' });
       T.clear(S.scenNotes);
-      (r.scenario_notes || []).forEach(function (n) { S.scenNotes.appendChild(T.h('div', null, T.h('b', null, n.title || n.group), n.text || '')); });
+      (r.scenario_notes || []).forEach(function (n) { if (fxb && n.group === 'fx') { return; } S.scenNotes.appendChild(T.h('div', null, T.h('b', null, n.title || n.group), n.text || '')); });
+      if (fxb) { S.scenNotes.appendChild(T.h('div', null, T.h('b', null, 'Currency moves'), 'by pair, on the PV deltas, in the Currency risk (FX) block below')); }
+      paintFx(fxb || {});
       S.conc.update(r.concentration || [], { empty: 'no positions' });
       finKv(r);
       S.margin.update(r.margin || [], { empty: 'no margin in use' });
@@ -307,6 +353,32 @@
         var tgt = document.getElementById('risk-' + String(query.section).replace(/[^a-z0-9-]/gi, ''));
         if (tgt) { try { tgt.scrollIntoView({ block: 'start' }); } catch (e) { tgt.scrollIntoView(); } }
       }
+    }
+    function paintFx(b) {
+      if (!b || !b.limits) {                      /* a server without the block: said, never an empty "none configured" */
+        ['fxCcy', 'fxPairs', 'fxSens', 'fxCp', 'fxLadder'].forEach(function (k) { S[k].update([], { empty: 'unavailable' }); });
+        S.fxLimits.textContent = '';
+        S.fxNote.textContent = 'the currency risk block is not available from this server';
+        return;
+      }
+      S.fxCcy.update(b.by_currency || [], { empty: 'USD only' });
+      S.fxPairs.update(b.pairs || [], { empty: 'no currency exposure' });
+      var sens = [];
+      function add(list, what, keyName, valName) {
+        (list || []).forEach(function (x) { sens.push({ what: what, key: x[keyName], usd: x[valName], contracts: (x.rows || []).map(function (y) { return y.contract_id; }).join(', ') }); });
+      }
+      add(b.rates01, 'rates +1 bp', 'ccy', 'usd_per_bp');
+      add(b.basis01, 'basis level +1 bp', 'pair', 'usd_per_bp');
+      add(b.spread01, 'OIS spread +1 bp', 'ccy', 'usd_per_bp');
+      add(b.points01, 'forward points +1 pip', 'pair', 'usd_per_pip');
+      sens.forEach(function (x) { if (/^[A-Z]{6}$/.test(String(x.key || ''))) { x.key = x.key.slice(0, 3) + '/' + x.key.slice(3); } });
+      S.fxSens.update(sens, { empty: 'no OTC FX contract' });
+      S.fxCp.update(b.counterparty || [], { empty: 'no OTC contracts' });
+      S.fxLadder.update(b.ladder || [], { empty: 'nothing scheduled' });
+      var lim = b.limits || {};
+      S.fxLimits.textContent = [(lim.text || 'notional limits: none configured') + (lim.headline_gross_nav != null ? ' . headline gross / NAV ' + lev(lim.headline_gross_nav) + ' (warning above ' +
+        (lim.warning_limit || '2x NAV') + ') . gross notional / NAV ' + lev(lim.gross_notional_nav) : ''), lim.basis || ''].filter(Boolean).join(' . ');
+      S.fxNote.textContent = [(b.labels || []).join(' . '), b.method || '', (b.notes || []).length ? 'notes: ' + b.notes.join('; ') : ''].filter(Boolean).join(' . ');
     }
     function load() {
       var want = scope;

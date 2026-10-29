@@ -32,7 +32,10 @@ SEED_GS = {"name": "Goldman Sachs", "equity_per_share": "0.0030", "equity_min_c"
            "irs_im_bp": "50", "trs_im_pct": "0.10", "xccy_im_pct": "0.02", "option_im_pct": "0.15", "forward_im_pct": "0.06", "eq_option_hw_vol": "0.0100",
            "fx_option_hw_vol": "0.0030", "forward_hw_bp": "2.0",
            # FINSIM1 P6 task 6 (1.0.6): the CSA securities terms of the GS seed (prime.CSA_SEEDS, assumed): Treasuries, bills 2 %, notes / bonds 4 %
-           "csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04"}
+           "csa_securities": "TREASURIES", "csa_bill_haircut": "0.02", "csa_bond_haircut": "0.04",
+           # FX_CCS_PLAN rev 2 D5 (1.0.6.1, intended change): the cross-currency terms of the GS seed (prime.XCCY_SEEDS, ASSUMED): EUR/USD and
+           # GBP/USD basis levels 0.0 bp, the cross-currency swap half-width = GS's IRS half-width 1.0 bp, the EUR OIS spread 0.0 bp
+           "xccy_basis_eur_bp": "0.0", "xccy_basis_gbp_bp": "0.0", "xccy_basis_hw_bp": "1.0", "eur_ois_spread_bp": "0.0"}
 
 
 def _h_fund(ctx, payload):
@@ -320,6 +323,59 @@ class PrimeTests(unittest.TestCase):
         self.assertEqual(1209900, rt.accounting.buying_power(PB_GS, "USD").pb_headroom_c)
         self.assertEqual([("LOAN_DRAWN", 2)], [(t, one(rt, "SELECT COUNT(*) n FROM events WHERE type=?", (t,))["n"]) for t in ("LOAN_DRAWN",)])
         assert_integrity(self, rt, "full")
+
+    # ---- FX_CCS_PLAN rev 2 D5 (1.0.6.1): the cross-currency terms - seeds, signed values, ranges, the re-mark hint, the event -----------------
+    def test_fx_ccs_d5_cross_currency_terms(self):
+        # seeds on all nine brokers (ASSUMED): both basis levels and the EUR OIS spread 0.0 bp; the CCS half-width = the broker's IRS half-width
+        for b in prime.BROKERS:
+            sd = prime.seed_schedule(b)
+            self.assertEqual(("0.0", "0.0", "0.0", sd["irs_half_width_bp"]),
+                             (sd["xccy_basis_eur_bp"], sd["xccy_basis_gbp_bp"], sd["eur_ois_spread_bp"], sd["xccy_basis_hw_bp"]), b)
+        self.assertEqual({"GS": "1.0", "JPM": "1.0", "MS": "1.2", "DB": "1.5", "BARC": "1.2", "CITI": "1.0", "UBS": "1.2", "BNP": "1.5", "BOFA": "1.0"},
+                         {b: prime.seed_schedule(b)["xccy_basis_hw_bp"] for b in prime.BROKERS})
+        specs = {r["field"]: r for r in prime.field_specs()}
+        self.assertEqual(("EUR/USD cross-currency basis level (mid)", "bp", "-200", "200", True),
+                         tuple(specs["xccy_basis_eur_bp"][k] for k in ("label", "unit", "min", "max", "signed")))
+        self.assertEqual(("-200", "200", True), (specs["xccy_basis_gbp_bp"]["min"], specs["xccy_basis_gbp_bp"]["max"], specs["xccy_basis_gbp_bp"]["signed"]))
+        self.assertEqual(("0", "100"), (specs["xccy_basis_hw_bp"]["min"], specs["xccy_basis_hw_bp"]["max"]))
+        self.assertNotIn("signed", specs["xccy_basis_hw_bp"])
+        self.assertEqual(("-100", "100", True), (specs["eur_ois_spread_bp"]["min"], specs["eur_ois_spread_bp"]["max"], specs["eur_ois_spread_bp"]["signed"]))
+        for k in ("xccy_basis_eur_bp", "xccy_basis_gbp_bp", "eur_ois_spread_bp"):
+            self.assertIn("ASSUMED", specs[k]["hint"])
+            self.assertIn("re-marks every open", specs[k]["hint"])              # an edit re-marks the open contracts at the next VM
+        self.assertIn("not a neutral one", specs["xccy_basis_eur_bp"]["hint"])
+        rt = self.start()
+        self.eligible()
+        self.assertTrue(open_pb(rt, "GS").ok)
+        # a schedule stored before 1.0.6.1 (without the four fields) reads the seeds
+        with rt.db.writer() as tx:
+            stored = json.loads(tx.conn.execute("SELECT schedule_json FROM pb_schedules WHERE account_id=?", (PB_GS,)).fetchone()[0])
+            for k in prime.XCCY_TERM_FIELDS:
+                stored.pop(k, None)
+            tx.conn.execute("UPDATE pb_schedules SET schedule_json=? WHERE account_id=?", (json.dumps(stored), PB_GS))
+        s = rt.prime.schedule(PB_GS)
+        self.assertEqual((Decimal("0.0"), Decimal("0.0"), Decimal("1.0"), Decimal("0.0")),
+                         (s.xccy_basis_eur_bp, s.xccy_basis_gbp_bp, s.xccy_basis_hw_bp, s.eur_ois_spread_bp))
+        # signed values: the EUR/USD level -12.5 bp and the EUR OIS spread -100 bp (the lower bound) are accepted; one SETTINGS_CHANGED
+        r = update_schedule(rt, PB_GS, request_id="ui:sched-gs-xccy-1", xccy_basis_eur_bp="-12.5", eur_ois_spread_bp="-100")
+        self.assertTrue(r.ok, r.body)
+        self.assertEqual(({"eur_ois_spread_bp": "0.0", "xccy_basis_eur_bp": "0.0"}, {"eur_ois_spread_bp": "-100", "xccy_basis_eur_bp": "-12.5"}),
+                         (r.body["before"], r.body["after"]))
+        ev = one(rt, "SELECT * FROM events WHERE type='SETTINGS_CHANGED' AND account_id=? ORDER BY id DESC LIMIT 1", (PB_GS,))
+        pl = json.loads(ev["payload_json"])
+        self.assertEqual((["eur_ois_spread_bp", "xccy_basis_eur_bp"], {"xccy_basis_eur_bp": "-12.5", "eur_ois_spread_bp": "-100"}), (pl["fields"], pl["after"]))
+        t = prime.xccy_terms(rt, PB_GS)
+        self.assertEqual((Decimal("-12.5"), Decimal("0.0"), Decimal("1.0"), Decimal("-100"), Decimal("1.0"), "GS"),
+                         (t["xccy_basis_eur_bp"], t["xccy_basis_gbp_bp"], t["xccy_basis_hw_bp"], t["eur_ois_spread_bp"], t["otc_spread_mult"], t["broker"]))
+        self.assertEqual(("Goldman Sachs schedule (as edited), ASSUMED", rt.clock.epoch()), (t["source"], t["updated_ts"]))
+        self.assertEqual("FX desk: no prime-broker schedule (0.0 bp, ASSUMED)", prime.xccy_terms(rt, None)["source"])
+        # out of range or unsigned: refused, nothing written
+        for fields in ({"xccy_basis_eur_bp": "-200.1"}, {"xccy_basis_gbp_bp": "250"}, {"xccy_basis_hw_bp": "-1"}, {"eur_ois_spread_bp": "100.5"},
+                       {"xccy_basis_hw_bp": "101"}, {"xccy_basis_eur_bp": ""}):
+            r = update_schedule(rt, PB_GS, **fields)
+            self.assertEqual((400, "SCHEDULE_VALUE"), (r.http, r.code), fields)
+        self.assertEqual(1, one(rt, "SELECT COUNT(*) n FROM events WHERE type='SETTINGS_CHANGED' AND account_id=?", (PB_GS,))["n"])
+        self.assertIn("-200 to 200 bp", update_schedule(rt, PB_GS, xccy_basis_eur_bp="-201").body["error"]["message"])
 
     # ---- §19.23: schedule edit 0.0030 -> 0.0025 = fee 2.50 with the before/after event; validation; past postings never restated -----------
     def test_19_23_schedule_edit_fee_2_50_before_after_event_and_validation(self):

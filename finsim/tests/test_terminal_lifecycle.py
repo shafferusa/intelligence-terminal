@@ -161,10 +161,14 @@ class LifecycleTests(unittest.TestCase):
         r = execute(rt, "credit.loan_draw", {"account_id": CREDIT, "currency": "EUR", "amount_c": 100000000, "term_days": None})
         self.assertTrue(r.ok, r.body)
         self.assertEqual((19899500, 980000000), (bal(rt, US_EXCHANGE, "1010"), bal(rt, TREASURY, "1010")))     # 200,000 - 1,005; 10,000,000 - 200,000
-        # the clock stops Fri 16:00 (no tick) and restarts Tue 10-20 09:00; the Friday and Monday closes come from daily bars
+        # the clock stops Fri 16:00 (no tick) and restarts Tue 10-20 09:00; the Friday and Monday closes come from daily bars - the EURUSD close
+        # (EURUSD is in the recorded set from the EUR loan's cash, 10-16) from Yahoo's 1-minute bar ending at 17:00 ET, never from a daily bar
+        # (V1061R1-02, 1.0.6.1: an FX daily bar's "close" is a snapshot near the London day start; the 1.1201 below is never recorded)
+        from finsim.terminal.clock import epoch_of
         rt.fp.set_daily("ABC", [("2026-10-16", "50.00"), ("2026-10-19", "50.00")])
         rt.fp.set_daily("SPY", [("2026-10-16", "769.32"), ("2026-10-19", "770.00")])
-        rt.fp.set_daily("EURUSD=X", [("2026-10-16", "1.1238"), ("2026-10-19", "1.1238")])
+        rt.fp.set_daily("EURUSD=X", [("2026-10-16", "1.1201"), ("2026-10-19", "1.1201")])
+        rt.fp.set_minute_bars("EURUSD=X", [(epoch_of(date(2026, 10, 16), "16:59"), "1.1238"), (epoch_of(date(2026, 10, 19), "16:59"), "1.1238")])
         out = tick(rt, "2026-10-20T09:00:00-04:00")
         from finsim.terminal.lifecycle_eod import PRODUCT_JOBS          # jobs product modules add (C13) are skipped here when their module is not bound
         self.assertEqual({}, {k: v for k, v in out["skipped_modules"].items() if k not in ("DIVIDEND", "DIVPAY", "PC_PAY", "SWAP_FIX", "SWAP_PAY", "TRS_RESET", "XCCY_EVENTS", "SWAP_VM",
@@ -174,10 +178,11 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual([], [(r["key"], r["status"]) for r in jobs_done(rt, "SETTLE_DUE")])
         self.assertEqual([], idem_amounts(rt, "settle:"))
         self.assertEqual(0, bal(rt, US_EXCHANGE, "1200"))
-        # the Friday and Monday CLOSE marks from daily() bars, note "recorded late"
+        # the Friday and Monday CLOSE marks from daily() bars, note "recorded late"; EURUSD's from the 16:59-17:00 ET 1-minute bars (V1061R1-02)
         marks = sc.q(rt, "SELECT instrument_id, mark_date, price, method, note FROM marks ORDER BY instrument_id, mark_date")
+        fx_note = "recorded late: the close of the 1-minute bar 16:59-17:00 ET (the FX day rolls at 17:00)"
         self.assertEqual([("ABC", "2026-10-16", "50", "daily_close", "recorded late"), ("ABC", "2026-10-19", "50", "daily_close", "recorded late"),
-                          ("EURUSD", "2026-10-16", "1.1238", "daily_close", "recorded late"), ("EURUSD", "2026-10-19", "1.1238", "daily_close", "recorded late"),
+                          ("EURUSD", "2026-10-16", "1.1238", "minute_close", fx_note), ("EURUSD", "2026-10-19", "1.1238", "minute_close", fx_note),
                           ("SPY", "2026-10-16", "769.32", "daily_close", "recorded late"), ("SPY", "2026-10-19", "770", "daily_close", "recorded late")],
                          [(m["instrument_id"], m["mark_date"], m["price"], m["method"], m["note"]) for m in marks])
         self.assertEqual([], sc.q(rt, "SELECT 1 FROM attention WHERE code='MARK_MISSING'"))

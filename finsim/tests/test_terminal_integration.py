@@ -155,12 +155,14 @@ class TrsXccyIntegrationTests(unittest.TestCase):
         # Thu 05-21: the EURUSD 17:00 close 1.1300 is recorded; the live print is still Wednesday's 1.1238.  The mark at 1.1300 (4 periods left):
         # USD leg +11,238,000 x (0.04000 - 0.04010) x 1.903633365 = -1,123.8 x 1.903633365 = -2,139.303175587;
         # EUR leg -10,000,000 x (0.02500 - 0.02490) x 1.9392669142 x 1.1300 = -1,939.2669142 x 1.13 = -2,191.371613046;
-        # sum -4,330.674788633 -> -4,330.67; delta -4,330.67 - (-4,318.65) = -12.02 posted (Dr 1320 / Cr 1010)
+        # sum -4,330.674788633 -> -4,330.67 (the clean overlay). FX_CCS_PLAN D8 (1.0.6.1): the VM follows the CSA exposure = the clean mark + the
+        # notionals on the balance sheet at the close: 1360 USD 11,238,000.00 - 2360 EUR 10,000,000.00 x 1.13 = -62,000.00 -> -66,330.67;
+        # delta -66,330.67 - (-4,318.65) = -62,012.02 posted (Dr 1320 / Cr 1010)
         record_close(rt, "EURUSD", "2026-05-21", "1.1300", "17:00")
         rt.clock.set("2026-05-21T17:10:00-04:00")
         r = st.vm(rt, "2026-05-21")
-        self.assertEqual(("DONE", -433067, -1202, "1.13"), (r.body["status"], r.body["mark_c"], r.body["delta_c"], r.body["inputs"]["fx"]["usd_per_unit"]))
-        self.assertEqual([("1320", "USD", st.SWP1, 1202), ("1010", "USD", None, -1202)], st.lines_by_idem(rt, f"swapvm:{st.SWP1}:2026-05-21"))
+        self.assertEqual(("DONE", -433067, -6201202, -6633067, "1.13"), (r.body["status"], r.body["mark_c"], r.body["delta_c"], r.body["csa_exposure_c"], r.body["inputs"]["fx"]["usd_per_unit"]))
+        self.assertEqual([("1320", "USD", st.SWP1, 6201202), ("1010", "USD", None, -6201202)], st.lines_by_idem(rt, f"swapvm:{st.SWP1}:2026-05-21"))
         # Mon 05-25 10:00: a live EURUSD print of 05-25 and no close recorded for Fri 05-22 -> the VM of 05-22 is CAUGHT_UP, nothing posted
         rt.clock.set("2026-05-25T10:00:00-04:00")
         rt.marks.set("EURUSD", "1.1350", "delayed", epoch_of(date(2026, 5, 25), "09:58"))

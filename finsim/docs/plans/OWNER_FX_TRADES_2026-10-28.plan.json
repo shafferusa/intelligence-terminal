@@ -1,0 +1,21 @@
+{
+  "plan_id": "OWNER-FX-2026-10-28",
+  "format": 2,
+  "instruction": "finsim/docs/OWNER_FX_TRADES_2026-10-28.md",
+  "account_id": "F1:PB_GS",
+  "window_et": {"from": "08:00", "to": "16:30", "fx_business_day": true},
+  "max_attempts_per_run": 3, "retry_wait_s": 45, "quote_wait_s": 150, "accept_replays": 2,
+  "trades": [
+    {"key": "A", "client_ref": "OWNER-FX-2026-10-28-A", "kind": "XCCY",
+     "terms": {"pay_ccy": "EUR", "recv_ccy": "USD", "pay_notional": "2000000.00", "pay_index": "ESTR", "recv_index": "SOFR",
+               "months": 24, "mtm_reset": false, "start_conversion": true, "settlement_funding": {"EUR": "BUY_WITH_USD"},
+               "client_ref": "OWNER-FX-2026-10-28-A"},
+     "expect": {"variant": "FLOAT_FLOAT", "pay_notional_c": 200000000, "labels": ["MODEL", "PROXY", "ASSUMED"]}},
+    {"key": "B", "client_ref": "OWNER-FX-2026-10-28-B", "kind": "FX_FORWARD",
+     "terms": {"pair": "EURGBP", "side": "SELL", "notional": "2000000.00", "tenor": "2Y",
+               "settlement_funding": {"EUR": "BUY_WITH_USD"}, "client_ref": "OWNER-FX-2026-10-28-B"},
+     "expect": {"pair": "EURGBP", "side": "SELL", "notional_c": 200000000, "labels": ["MODEL", "observed", "PROXY", "ASSUMED"]}}
+  ],
+  "untouched": {"contracts": ["CDX-000001", "CDX-000002", "SWP-000001", "SWP-000002", "SWP-000003", "SWP-000004", "SWP-000005",
+                              "SWP-000006"]}
+}

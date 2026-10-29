@@ -990,7 +990,11 @@ class XccyTests(unittest.TestCase):
         assert_integrity(self, rt, "full")
 
     # ---- termination ---------------------------------------------------------------------------------------------------------------
-    def test_xccy_terminate_settles_accrued_and_re_exchanges_notionals(self):
+    def test_xccy_terminate_cash_settles_in_usd_d17(self):
+        """FX_CCS_PLAN D17 (1.0.6.1, C-T11; changed on purpose): a cross-currency swap - fixed / fixed included - terminates CASH-SETTLED IN USD at its
+        full value with the dealer's half-width against the Fund; the notionals and accrued coupons are cleared through 3900 at the FX rate now and
+        nothing is re-exchanged.  Before 1.0.6.1 this test re-exchanged the notionals at face in their own currencies, which needed EUR the Fund did not
+        hold (409 INSUFFICIENT_FUNDS_CCY, G18) - the reason for the change."""
         rt = self.start()
         self.assertTrue(self.book().ok)
         rt.marks.set("EURUSD", "1.1238", "delayed", epoch_of(date(2026, 5, 18), "17:00"))      # the 17:00 ET close of the trade date (LC-3)
@@ -999,37 +1003,43 @@ class XccyTests(unittest.TestCase):
         self.start_exchange()
         rt.clock.set("2026-05-23T00:40:00-04:00")
         accrue_nights(self, rt, date(2026, 5, 20), 3, ("swaprcv", "swappay"))
-        # Saturday 05-23: the value is the model mark on unchanged inputs, -4,318.65 (4 periods remain); the termination repays EUR 10,000,000.00 plus the
-        # accrued 2,083.33 but the account holds only the EUR 10,000,000.00 it borrowed -> 409 INSUFFICIENT_FUNDS_CCY (buy EUR 2,083.33), nothing written
+        # Saturday 05-23, EURUSD 1.1238 (unchanged), 4 periods remain; the accrued nights 05-20..05-22: USD 3,746.00 (1225), EUR 2,083.33 (2340)
+        # close-out (D17, each leg at the quote that would replace it - the half-width 1.0 bp against the Fund):
+        #   USD received at 4.00 % vs par + hw 4.02 %: 11,238,000 x (0.04000 - 0.04020) x 1.903633365 = -2,247.60 x 1.903633365 = -4,278.6064
+        #   EUR paid at 2.50 % vs par - hw 2.48 %: -10,000,000 x (0.02500 - 0.02480) x 1.9392669142 x 1.1238 = -3,878.5338 x 1.1238 = -4,358.6963
+        #   clean = -8,637.3027 -> -8,637.30
+        # balance sheet B at 1.1238 (D8): 1360 USD 11,238,000.00 + 1225 USD 3,746.00 - fx_c(2360 EUR 10,000,000.00) 11,238,000.00 - fx_c(2340 EUR 2,083.33)
+        #   2,341.25 (2,083.33 x 1.1238 = 2,341.24625 -> 2,341.25) = 1,404.75;  full value = -8,637.30 + 1,404.75 = -7,232.55, paid in USD
         rt.clock.set("2026-05-23T10:00:00-04:00")
         r = execute(rt, "otc.terminate", {"contract_id": SWP1}, "ui:xccy-term-0001")
-        self.assertEqual((409, "INSUFFICIENT_FUNDS_CCY", "buy EUR 2,083.33 with Convert"), (r.http, r.code, r.body["error"]["details"]["hint"]))
-        self.assertEqual("OPEN", contract(rt)["status"])
-        self.assertTrue(deposit(rt, 1000000, "EUR", lifetime="F1", request_id="ui:eur-deposit-0003").ok)
-        r = execute(rt, "otc.terminate", {"contract_id": SWP1}, "ui:xccy-term-0002")
         self.assertTrue(r.ok, r.body)
-        # the exchange entry: accrued USD 3,746.00 received, USD 11,238,000.00 lent back, accrued EUR 2,083.33 paid, EUR 10,000,000.00 repaid
-        self.assertEqual([("1010", "USD", None, 374600), ("1225", "USD", SWP1, -374600), ("1010", "USD", None, 1123800000), ("1360", "USD", SWP1, -1123800000),
-                          ("2340", "EUR", SWP1, 208333), ("1010", "EUR", None, -208333), ("2360", "EUR", SWP1, 1000000000), ("1010", "EUR", None, -1000000000)],
-                         lines_by_idem(rt, f"xccy:{SWP1}:terminate"))
-        # the close: the VM posted (4,318.65) comes back and the value -4,318.65 is paid - Dr 1010 / Cr 1320 and Dr 4450 / Cr 1010 4,318.65; IM released
-        self.assertEqual([("1010", "USD", None, 431865), ("1320", "USD", SWP1, -431865), ("4450", "USD", SWP1, 431865), ("1010", "USD", None, -431865)],
+        self.assertEqual((-723255, -863730, 140475), (r.body["termination_value_c"], r.body["inputs"]["clean_c"], r.body["inputs"]["balance_sheet_c"]))
+        self.assertEqual(("0.04020", "0.02480", -427861, -435870), (r.body["inputs"]["legs"]["receive"]["closeout_rate"], r.body["inputs"]["legs"]["pay"]["closeout_rate"],
+                                                                    r.body["inputs"]["legs"]["receive"]["value_c"], r.body["inputs"]["legs"]["pay"]["value_c"]))
+        # the clearing entry (storage sign; base in the last place): Cr 1225 USD 3,746.00, Cr 1360 USD 11,238,000.00, Dr 2340 EUR 2,083.33 (base 2,341.25),
+        # Dr 2360 EUR 10,000,000.00 (base 11,238,000.00), Cr 3900 EUR 10,002,083.33 (the plug: base -11,240,341.25), Dr 3900 USD 11,240,341.25 (the same
+        # pieces converted one by one, so 3900 nets 0 in base), Dr 1010 USD 1,404.75 (B received in cash) - no EUR line on 1010: no EUR moves
+        self.assertEqual([("1225", "USD", SWP1, -374600, -374600), ("1360", "USD", SWP1, -1123800000, -1123800000), ("2340", "EUR", SWP1, 208333, 234125),
+                          ("2360", "EUR", SWP1, 1000000000, 1123800000), ("3900", "EUR", None, -1000208333, -1124034125), ("3900", "USD", None, 1124034125, 1124034125),
+                          ("1010", "USD", None, 140475, 140475)], lines_by_idem(rt, f"xccy:{SWP1}:terminate", base=True))
+        # the close: the VM posted (4,318.65) comes back and the clean close-out -8,637.30 is paid - Dr 1010 / Cr 1320 4,318.65, Dr 4450 / Cr 1010 8,637.30
+        self.assertEqual([("1010", "USD", None, 431865), ("1320", "USD", SWP1, -431865), ("4450", "USD", SWP1, 863730), ("1010", "USD", None, -863730)],
                          lines_by_idem(rt, f"otc:{SWP1}:terminate"))
-        self.assertEqual((-431865, -431865, 0, 22476000, "TERMINATED"), (r.body["termination_value_c"], r.body["result_c"], r.body["cash_c"], r.body["im_released_c"],
-                                                                         r.body["contract"]["status"]))
-        self.assertEqual(("EUR", 208333, "xccy", f"xccy:{SWP1}:terminate"), sweeps(rt)[-1])
-        # 4450 USD = the value -4,318.65 (realised); the coupons on 4453 (kind EXPENSE): USD 3,746.00 received -> -3,746.00, EUR 2,083.33 paid -> +2,083.33;
-        # nothing on 4450 EUR; every contract balance 0 (L22)
-        self.assertEqual((-431865, -374600, 208333, 0), (bal(rt, PB, "4450", "USD", SWP1), bal(rt, PB, "4453", "USD", SWP1), bal(rt, PB, "4453", "EUR", SWP1),
+        self.assertEqual((-863730, -431865, 22476000, "TERMINATED"), (r.body["result_c"], r.body["cash_c"], r.body["im_released_c"], r.body["contract"]["status"]))
+        # one Treasury sweep for the whole close-out, USD only: 1,404.75 + 4,318.65 - 8,637.30 = -2,913.90 -> 2,913.90 (never EUR)
+        self.assertEqual(("USD", 291390, "xccy", f"xccy:{SWP1}:terminate"), sweeps(rt)[-1])
+        # 4450 USD = the clean close-out -8,637.30 (realised); the coupons on 4453 stay (USD 3,746.00 received -> -3,746.00, EUR 2,083.33 paid -> +2,083.33);
+        # every contract balance 0 (L22); the EUR 10,000,000.00 the swap brought stays the Fund's EUR cash; settled USD = the IM released 224,760.00
+        self.assertEqual((-863730, -374600, 208333, 0), (bal(rt, PB, "4450", "USD", SWP1), bal(rt, PB, "4453", "USD", SWP1), bal(rt, PB, "4453", "EUR", SWP1),
                                                         bal(rt, PB, "4450", "EUR", SWP1)))
         self.assertEqual((0, 0, 0, 0, 0, 0), (bal(rt, PB, "1225", "USD", SWP1), bal(rt, PB, "2340", "EUR", SWP1), bal(rt, PB, "1360", "USD", SWP1),
                                               bal(rt, PB, "2360", "EUR", SWP1), bal(rt, PB, "1320", "USD", SWP1), bal(rt, PB, "1330", "USD", SWP1)))
+        self.assertEqual((22476000, 1000000000), (bal(rt, PB, "1010", "USD"), bal(rt, PB, "1010", "EUR")))
         ne = one(rt, "SELECT * FROM otc_resets WHERE contract_id=? AND kind='NOTIONAL_END'", (SWP1,))
-        self.assertEqual(("2026-05-23", True), (ne["event_date"], json.loads(ne["detail_json"])["terminated"]))
+        self.assertEqual(("2026-05-23", True, True), (ne["event_date"], json.loads(ne["detail_json"])["terminated"], json.loads(ne["detail_json"])["cash_settled"]))
         with rt.db.reader() as conn:
             self.assertEqual([], swaps_trs.event_keys(conn, rt.clock.epoch()))
         assert_integrity(self, rt, "full")
-
 
 if __name__ == "__main__":
     unittest.main()

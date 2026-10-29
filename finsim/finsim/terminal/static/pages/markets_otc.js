@@ -103,6 +103,11 @@
         'half-widths: equity options ' + volText(t.eq_option_hw_vol) + ', FX options ' + volText(t.fx_option_hw_vol) + ', forwards ' + (t.forward_hw_bp || 'n/a') + ' bp' +
         (t.otc_spread_mult && Number(t.otc_spread_mult) !== 1 ? ' (x ' + t.otc_spread_mult + ')' : '') + ' . IM: sold options ' + pctText(t.option_im_pct) + ', forwards ' + pctText(t.forward_im_pct) +
         ', IRS ' + (t.irs_im_bp || 'n/a') + ' bp of DV01, TRS ' + pctText(t.trs_im_pct) + ', XCCY ' + pctText(t.xccy_im_pct)));
+      if (t.xccy_basis_eur_bp != null) {             /* FX_CCS_PLAN D5: the cross-currency terms, each an assumed, editable schedule term */
+        head.appendChild(T.h('span', { class: 'muted', title: 'cross-currency terms (ASSUMED, editable in Settings > Prime brokers): the basis levels sit on the EUR / GBP discount curves of the FX forwards and the cross-currency swaps; the EUR OIS spread on the ECB AAA curve' },
+          'cross-currency: EUR/USD basis ' + t.xccy_basis_eur_bp + ' bp, GBP/USD ' + t.xccy_basis_gbp_bp + ' bp, EUR OIS spread ' + t.eur_ois_spread_bp + ' bp, swap half-width ' +
+          t.xccy_basis_hw_bp + ' bp (ASSUMED)'));
+      }
       head.appendChild(T.h('a', { href: '#/settings/pb', title: 'edit this dealer\'s schedule' }, 'terms'));
     }
     function paintBlocked() {

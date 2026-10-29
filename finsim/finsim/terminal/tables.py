@@ -94,6 +94,39 @@ RATE_MAX_AGE_DAILY_DAYS = 10
 RATE_MAX_AGE_MONTHLY_DAYS = 62
 
 
+#: FX_CCS_PLAN rev 2 K2 (1.0.6.1): the overnight risk-free rate of each currency the PB OTC desk prices on term curves - the stored daily
+#: series (``RateStore``, percent as published), its compounded index (an index LEVEL, not a percent: ESTR_INDEX = the ECB's compounded
+#: euro short-term rate index, 1 Oct 2019 = 100; SOFR_INDEX = the NY Fed's SOFR Index, 2 Apr 2018 = 1; SONIA_INDEX = the Bank of England's
+#: compounded SONIA index IUDZOS2), the day-count basis, the name and where it comes from (the primary source first, FRED the fallback).
+RFR: Dict[str, dict] = {
+    "USD": {"series": "SOFR", "index": "SOFR_INDEX", "basis": 360, "name": "SOFR", "administrator": "Federal Reserve Bank of New York",
+            "source": "NY Fed (markets.newyorkfed.org); FRED fallback (SOFR, SOFRINDEX)", "fred": "SOFR", "fred_index": "SOFRINDEX",
+            "calendar": "USGS"},
+    "EUR": {"series": "ESTR", "index": "ESTR_INDEX", "basis": 360, "name": "ESTR", "administrator": "European Central Bank",
+            "source": "ECB data portal (EST B.EU000A2X2A25.WT, B.EU000A2QQF08.CI); FRED fallback (ECBESTRVOLWGTTRMDMNRT)",
+            "fred": "ECBESTRVOLWGTTRMDMNRT", "fred_index": None, "calendar": "TARGET"},
+    "GBP": {"series": "IUDSOIA", "index": "SONIA_INDEX", "basis": 365, "name": "SONIA", "administrator": "Bank of England",
+            "source": "Bank of England database (IUDSOIA, IUDZOS2); FRED fallback (IUDSOIA)", "fred": "IUDSOIA", "fred_index": None,
+            "calendar": "GBLO"},
+}
+#: FX_CCS_PLAN rev 2 K2 (1.0.6.1): one zero curve per currency (continuously compounded, ACT/365 from the curve's date; ``fxcurves``).
+#: ``series`` is the curve id in ``curve_points``; ``grid`` the tenors stored; ``kind`` observed or PROXY (labelled on every quote).
+CURVES: Dict[str, dict] = {
+    "GBP": {"series": "BOE_OIS_SPOT", "kind": "observed", "grid": tuple(f"{m}M" for m in range(1, 61)), "unit": "percent, continuously compounded",
+            "source": ("Bank of England yield-curve file latest-yield-curve-data.zip, workbook \"OIS daily data current month.xlsx\", sheet "
+                       "\"3. spot, short end\" (UK OIS spot curve, 1 to 60 months)"),
+            "label": "observed: Bank of England UK OIS curve of {date} (continuously compounded)", "calendar": "GBLO"},
+    "EUR": {"series": "ECB_AAA_SPOT", "kind": "PROXY", "grid": ("3M", "6M", "9M", "1Y", "2Y", "3Y", "5Y", "7Y", "10Y"),
+            "unit": "percent, continuously compounded", "spread_field": "eur_ois_spread_bp",
+            "source": "ECB data portal, euro-area AAA government spot rates (YC B.U2.EUR.4F.G_N_A.SV_C_YM.SR_<tenor>, Svensson model, continuous compounding)",
+            "label": ("PROXY: ECB euro-area AAA government curve of {date} + {spread} bp ({schedule}, ASSUMED): no free EUR OIS curve"),
+            "params_series": "ECB_AAA_SV", "calendar": "TARGET"},
+    "USD": {"series": "UST_PAR", "kind": "PROXY", "grid": "the IRS desk's semi-annual bootstrap of the Treasury par curve (0.5, 1.0, ... years)",
+            "unit": "percent par yields, bootstrapped to discount factors", "source": "treasury.gov daily par yield curve (stored as UST_PAR)",
+            "label": "PROXY: Treasury par curve of {date}, the IRS desk's stand-in for the SOFR curve", "calendar": "USGS"},
+}
+
+
 def daycount(ccy: str) -> int:
     return DAYCOUNT_CASH.get(ccy, DAYCOUNT_CASH["*"])
 

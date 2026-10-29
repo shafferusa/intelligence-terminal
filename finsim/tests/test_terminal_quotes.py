@@ -597,5 +597,64 @@ class FreshnessTableTests(unittest.TestCase):
         self.assertEqual(rec.last, back.last)
 
 
+
+class FxBarTests(unittest.TestCase):
+    """V1061R1-02 (release 1.0.6.1): Yahoo FX bars on the recorded payloads of 2026-10-29 (``yahoo_daily_eurusd_20261029.json``: EURUSD=X
+    range=10d interval=1d, fetched 06:12 ET; ``yahoo_eurusd_1m_20261028_close.json``: the 1-minute bars 16:50-17:00 ET of 10-28)."""
+
+    def setUp(self):
+        self.clock = FakeClock("2026-10-29T06:30:00-04:00")
+        self.health = ProviderHealth(lambda: self.clock.epoch(), day=lambda: self.clock.today().isoformat())
+
+    def test_fx_daily_bars_are_dated_by_the_offset_in_force_at_each_bar(self):
+        payload = json.loads(load("yahoo_daily_eurusd_20261029.json"))
+        bars = parse_daily(chart_result(payload))
+        # Yahoo stamps EURUSD=X daily bars at the London day start: 23:00Z in British Summer Time (until 2026-10-25 01:00Z), 00:00Z after;
+        # meta.gmtoffset is 0 (today's).  1792710000 = 2026-10-22 23:00Z = 2026-10-23 00:00 BST -> 10-23; 1792364400 = 10-18 23:00Z = Monday 10-19.
+        # The old rule (today's offset for every bar) put them on 10-22 and on SUNDAY 10-18, and 10-23 had no bar (three MARK_MISSING).
+        self.assertEqual([date(2026, 10, 16), date(2026, 10, 19), date(2026, 10, 20), date(2026, 10, 21), date(2026, 10, 22), date(2026, 10, 23),
+                          date(2026, 10, 26), date(2026, 10, 27), date(2026, 10, 28), date(2026, 10, 29)], [b.date for b in bars])
+        self.assertTrue(all(b.date.weekday() < 5 for b in bars))
+        by = {b.date: b.c for b in bars}
+        self.assertEqual(D("1.12214553"), by[date(2026, 10, 23)])          # 1.1221455335617065 at 8 dp: the bar of 10-22 23:00Z
+        self.assertEqual(D("1.12346923"), by[date(2026, 10, 22)])          # 1.1234692335128784: the bar of 10-21 23:00Z
+        self.assertEqual(D("1.11296606"), by[date(2026, 10, 28)])          # 10-28 00:00Z (GMT): the daily "close" MARKS_RECORD no longer uses for FX
+        # a zone the terminal does not know keeps the meta's offset (the pre-1.0.6.1 rule)
+        payload["chart"]["result"][0]["meta"]["exchangeTimezoneName"] = "Mars/Olympus_Mons"
+        self.assertEqual(date(2026, 10, 22), parse_daily(chart_result(payload))[5].date)
+        # the US equity fixture keeps its dates (09:30 ET bars: the same date under either offset)
+        self.assertEqual(date(2026, 10, 13), parse_daily(chart_result(json.loads(load("yahoo_daily_spy.json"))))[0].date)
+
+    def test_minute_bars_one_small_request_and_the_bar_ending_at_17_00(self):
+        from finsim.terminal.quotes.parsers import parse_minute_bars
+        g = _Getter(default=load("yahoo_eurusd_1m_20261028_close.json"))
+        close = epoch_of(date(2026, 10, 28), "17:00")                       # 2026-10-28 17:00 EDT = 21:00Z = 1793221200
+        self.assertEqual(1793221200, close)
+        bars = YahooChart(self.clock, self.health, getter=g, sleep=lambda s: None).minute_bars("EURUSD=X", close - 600, close + 60)
+        self.assertEqual(1, len(g.calls))
+        self.assertIn("/v8/finance/chart/EURUSD%3DX?period1=1793220600&period2=1793221260&interval=1m&includePrePost=false", g.calls[-1][0])
+        self.assertEqual(BROWSER_UA, g.calls[-1][1])                        # Yahoo only: the browser agent the policy allows there
+        self.assertEqual(11, len(bars))                                     # 16:50 .. 17:00, every one minute-aligned
+        self.assertTrue(all(b.t % 60 == 0 for b in bars))
+        b1659 = next(b for b in bars if b.t == close - 60)                  # the bar 16:59:00-17:00:00 ET: its close is the 17:00 price
+        self.assertEqual(D("1.11569786"), b1659.c)                          # 1.1156978607177734 at 8 dp
+        self.assertEqual(D("1.11594689"), next(b for b in bars if b.t == close).c)
+        # the window is [start, end): the 17:00 bar is outside [16:50, 17:00)
+        self.assertEqual(10, len(parse_minute_bars(chart_result(json.loads(load("yahoo_eurusd_1m_20261028_close.json"))), close - 600, close)))
+        # an empty or over-long window is refused before any request
+        with self.assertRaises(FetchError):
+            YahooChart(self.clock, self.health, getter=g, sleep=lambda s: None).minute_bars("EURUSD=X", close, close)
+        with self.assertRaises(FetchError):
+            YahooChart(self.clock, self.health, getter=g, sleep=lambda s: None).minute_bars("EURUSD=X", close - 2 * 86400, close)
+        self.assertEqual(1, len(g.calls))
+
+    def test_the_fake_provider_serves_the_bars_a_test_sets(self):
+        fp = FakeProvider(self.clock)
+        close = epoch_of(date(2026, 10, 28), "17:00")
+        self.assertEqual([], fp.minute_bars("EURUSD=X", close - 600, close + 60))
+        fp.set_minute_bars("EURUSD=X", [(close - 60, "1.11569786"), (close - 120, "1.11557341"), (close + 3600, "1.1158")])
+        self.assertEqual([(close - 120, D("1.11557341")), (close - 60, D("1.11569786"))], [(b.t, b.c) for b in fp.minute_bars("EURUSD=X", close - 600, close + 60)])
+
+
 if __name__ == "__main__":
     unittest.main()

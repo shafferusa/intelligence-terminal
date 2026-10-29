@@ -465,5 +465,145 @@ class OfficialCloseTests(unittest.TestCase):
         self.assertEqual(("2026-10-27", "122.68", "122.69", "0.01"), (rev["mark_date"], rev["recorded"], rev["prev_close"], rev["diff"]))
 
 
+
+class FxCloseTests(unittest.TestCase):
+    """V1061R1-02 (release 1.0.6.1): an FX pair's CLOSE is the 17:00 ET print.  The first FX booking put EURUSD / GBPUSD / EURGBP into the
+    recorded set and MARKS_RECORD back-filled 10 days of closes from Yahoo DAILY bars: dated with today's gmtoffset (the summer-time bars a day
+    early, 10-23 none: three WARN MARK_MISSING on the owner's header) and closing at a snapshot near the London day start, not 17:00 ET (the
+    10-28 EURUSD daily close 1.11296606 against 1.11569786 at 16:59-17:00 ET: 27.3 pips, about USD 5,460 per EUR 2,000,000).  Now: a pair is
+    back-filled only from the day it entered the recorded set; a missed close comes from the 1-minute bar that ends at 17:00 ET, else it stays
+    unavailable; never from a daily bar."""
+
+    CLOSE_1028 = 1793221200            # 2026-10-28 17:00 EDT = 21:00Z
+
+    def setUp(self):
+        from finsim.terminal.lifecycle_eod import MarksRecord, h_marks_record
+        self.tmp = tempfile.mkdtemp(prefix="fst-fxclose-")
+        self.rt = make_runtime(self.tmp, at="2026-10-19T09:00:00-04:00")            # the books open on Mon 10-19
+        self.rt.bus.register("lifecycle.marks_record", h_marks_record, light=True)
+        self.records = {}
+        rt = self.rt
+
+        class Cache:
+            def get(_self, iid):
+                return self.records.get(iid)
+        rt.cache = Cache()
+        self.job = MarksRecord()
+        self.job.services = rt
+        self.deferred = []
+
+        class Sched:
+            def defer(_self, name, key, seconds):
+                self.deferred.append((key, seconds))
+        self.sched = Sched()
+        rt.clock.set("2026-10-29T10:00:00-04:00")
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _forward_booked(self, trade_date="2026-10-27"):
+        """An OPEN EURGBP forward traded on ``trade_date`` (observes EURGBP, EURUSD and GBPUSD: instruments.otc_reference_ids), with the
+        ``trade_date`` column that the swaps module adds to ``otc_contracts`` when it binds (not bound in this runtime)."""
+        with self.rt.db.writer() as tx:
+            if "trade_date" not in {r[1] for r in tx.conn.execute("PRAGMA table_info(otc_contracts)").fetchall()}:
+                tx.conn.execute("ALTER TABLE otc_contracts ADD COLUMN trade_date TEXT")
+            tx.conn.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date,"
+                            " maturity_date, margin_mode, im_c, status, trade_date) VALUES ('OTC-000001', 1, 'T1:US_EXCHANGE', 'GS', 'FX_FORWARD',"
+                            " '{\"pair\": \"EURGBP\", \"side\": \"SELL\"}', 223160000, 'USD', ?, '2028-11-02', 'CTM', 0, 'OPEN', ?)", (trade_date, trade_date))
+
+    def test_a_swap_s_pair_enters_on_its_trade_date_not_its_start_date(self):
+        """A cross-currency swap traded 10-27 starts on its spot date 10-29; its VM (and the EURUSD close it reads) runs from the trade date."""
+        with self.rt.db.writer() as tx:
+            if "trade_date" not in {r[1] for r in tx.conn.execute("PRAGMA table_info(otc_contracts)").fetchall()}:
+                tx.conn.execute("ALTER TABLE otc_contracts ADD COLUMN trade_date TEXT")
+            tx.conn.execute("INSERT INTO otc_contracts(contract_id, command_id, account_id, broker, kind, terms_json, notional_c, currency, start_date,"
+                            " maturity_date, margin_mode, im_c, status, trade_date) VALUES ('SWP-000007', 1, 'T1:US_EXCHANGE', 'GS', 'XCCY',"
+                            " '{\"foreign_ccy\": \"EUR\"}', 223160000, 'USD', '2026-10-29', '2028-11-06', 'CTM', 0, 'OPEN', '2026-10-27')")
+        self.assertEqual(["EURUSD:2026-10-27", "EURUSD:2026-10-28"], self._due("EURUSD:"))
+
+    def _due(self, prefix):
+        with self.rt.db.reader() as conn:
+            return sorted(k for k in self.job.due(conn, self.rt.clock, self.rt.cal, self.rt.sessions) if k.startswith(prefix))
+
+    def _mark(self, iid, ds):
+        with self.rt.db.reader() as conn:
+            r = conn.execute("SELECT price, method, source, quote_time, note FROM marks WHERE instrument_id=? AND mark_date=? AND kind='CLOSE'", (iid, ds)).fetchone()
+        return None if r is None else dict(r)
+
+    def test_a_pair_is_back_filled_only_from_the_day_it_entered_the_recorded_set(self):
+        self.assertEqual([], self._due("EURUSD:"))                         # nothing observes EURUSD yet
+        self._forward_booked("2026-10-27")
+        # before the fix: since = max(10-29 - 10 days, the books' start 10-19) = 10-19, so 10-19 .. 10-28 (8 FX days) per pair - and 10-23,
+        # with no correctly dated daily bar, raised MARK_MISSING; now from the trade date 10-27: 10-27 and 10-28 (today's waits for 17:05)
+        self.assertEqual(["EURUSD:2026-10-27", "EURUSD:2026-10-28"], self._due("EURUSD:"))
+        self.assertEqual(["GBPUSD:2026-10-27", "GBPUSD:2026-10-28"], self._due("GBPUSD:"))      # (the test master holds no EURGBP row)
+
+    def test_a_foreign_cash_balance_enters_the_set_on_its_first_cash_line(self):
+        from tests.terminal_helpers import execute
+        self.rt.clock.set("2026-10-26T11:00:00-04:00")
+        r = execute(self.rt, "test.post", {"kind": "ADJUST", "memo": "EUR cash", "idem_key": "fxclose:eur", "lines": [
+            ["T1:FOREIGN_FX", "1010", "EUR", 100000, None, "1.12"], ["T1:FOREIGN_FX", "3000", "EUR", -100000, None, "1.12"]]})
+        self.assertTrue(r.ok, r.body)
+        self.rt.clock.set("2026-10-29T10:00:00-04:00")
+        self.assertEqual(["EURUSD:2026-10-26", "EURUSD:2026-10-27", "EURUSD:2026-10-28"], self._due("EURUSD:"))
+
+    def test_a_missed_close_comes_from_the_1_minute_bar_ending_at_17_00_never_the_daily_bar(self):
+        self._forward_booked()
+        c = self.CLOSE_1028
+        # the 10-28 evening: the cache holds a 20:00 ET print (after a downtime over 17:05) - not the 17:00 close
+        self.records["EURUSD"] = QuoteRecord("EURUSD", "yahoo", "Yahoo Finance chart (EURUSD=X)", "direct", last=Decimal("1.1158"), quote_time=c + 3 * 3600,
+                                             fetched_at=c + 3 * 3600, session_group="FX_SPOT")
+        # Yahoo's real bars (tests/fixtures/terminal/yahoo_eurusd_1m_20261028_close.json): 16:58 1.11557341, 16:59 1.11569786, 17:00 1.11594689; the
+        # daily bar's "close" for 10-28 is 1.11296606 (yahoo_daily_eurusd_20261029.json) - a snapshot near the London day start
+        self.rt.fp.set_minute_bars("EURUSD=X", [(c - 120, "1.11557341"), (c - 60, "1.11569786"), (c, "1.11594689")])
+        self.rt.fp.set_daily("EURUSD=X", [("2026-10-27", "1.11738086"), ("2026-10-28", "1.11296606")])
+        self.job.run_batch(self.rt, ["EURUSD:2026-10-28"], self.sched)
+        m = self._mark("EURUSD", "2026-10-28")
+        # the close of the bar 16:59:00-17:00:00 ET, at 8 dp; quote time = the 17:00 close
+        self.assertEqual(("1.11569786", "minute_close", c), (m["price"], m["method"], m["quote_time"]))
+        self.assertIn("1-minute", m["source"])
+        self.assertIn("recorded late", m["note"])
+        self.assertNotEqual("1.11296606", m["price"])
+        # the daily bar would have cost (1.11569786 - 1.11296606) x 2,000,000 = 0.0027318 x 2,000,000 = USD 5,463.60 on a EUR 2,000,000 VM
+        self.assertEqual(Decimal("5463.60"), (Decimal(m["price"]) - Decimal("1.11296606")) * 2000000)
+        self.assertEqual([], self.deferred)
+
+    def test_without_the_1_minute_bar_the_close_stays_unavailable(self):
+        self._forward_booked()
+        self.rt.fp.set_daily("EURUSD=X", [("2026-10-28", "1.11296606")])        # a daily bar exists: it is never used for FX
+        self.rt.fp.set_minute_bars("EURUSD=X", [(self.CLOSE_1028 - 180, "1.11557341")])   # a 16:57 bar only: not the bar ending at 17:00
+        res = self.job.run_batch(self.rt, ["EURUSD:2026-10-28"], self.sched)
+        self.assertIsNone(self._mark("EURUSD", "2026-10-28"))
+        self.assertEqual([{"key": "EURUSD:2026-10-28", "outcome": "no_bar"}], res["unresolved"])
+        self.assertEqual([("EURUSD:2026-10-28", 86400)], self.deferred)            # a past date: parked a day
+        with self.rt.db.reader() as conn:
+            att = conn.execute("SELECT severity, message FROM attention WHERE code='MARK_MISSING'").fetchall()
+        self.assertEqual(1, len(att))
+        self.assertEqual(("WARN", "EURUSD: the free data feed sent no 1-minute bar ending at the 17:00 ET close of 2026-10-28 (EURUSD=X); that FX close stays"
+                                  " unavailable (it is never taken from a daily bar) and the variation margin that needs it waits for it"),
+                         (att[0]["severity"], att[0]["message"]))
+        # today's close at 17:05 with no print at 17:00 and no bar yet: retried in 5 minutes, never the daily bar
+        self.rt.clock.set("2026-10-29T17:06:00-04:00")
+        self.rt.fp.set_daily("EURUSD=X", [("2026-10-29", "1.11395788")])
+        self.deferred.clear()
+        self.job.run_batch(self.rt, ["EURUSD:2026-10-29"], self.sched)
+        self.assertIsNone(self._mark("EURUSD", "2026-10-29"))
+        self.assertEqual([("EURUSD:2026-10-29", 300)], self.deferred)
+
+    def test_the_17_05_print_is_the_close_a_later_one_is_not(self):
+        self._forward_booked()
+        c = self.CLOSE_1028
+        self.records["EURUSD"] = QuoteRecord("EURUSD", "yahoo", "Yahoo Finance chart (EURUSD=X)", "direct", last=Decimal("1.11570000"), quote_time=c + 270,
+                                             fetched_at=c + 280, session_group="FX_SPOT")          # 17:04:30: the FX record time
+        self.job.run_batch(self.rt, ["EURUSD:2026-10-28"], self.sched)
+        self.assertEqual(("1.1157", "direct"), (self._mark("EURUSD", "2026-10-28")["price"], self._mark("EURUSD", "2026-10-28")["method"]))
+        # GBPUSD's print is from 17:06 (after the 17:05 window) and Yahoo has no bar: unavailable, not the 17:06 price
+        self.records["GBPUSD"] = QuoteRecord("GBPUSD", "yahoo", "Yahoo Finance chart (GBPUSD=X)", "direct", last=Decimal("1.3323"), quote_time=c + 360,
+                                             fetched_at=c + 360, session_group="FX_SPOT")
+        self.job.run_batch(self.rt, ["GBPUSD:2026-10-28"], self.sched)
+        self.assertIsNone(self._mark("GBPUSD", "2026-10-28"))
+
+
 if __name__ == "__main__":
     unittest.main()

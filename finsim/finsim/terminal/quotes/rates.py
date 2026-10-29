@@ -21,10 +21,24 @@ Conventions
   brings them back after a restart), so during a FRED outage every rate shows its real as-of date, never today's.
   ``route`` (set at bind time) is the provider's ``FredRoute``: ``view()["fred"]`` says "FRED unavailable (maintenance)"
   while it lasts.
+- RFR AND TERM CURVES (FX_CCS_PLAN rev 2 K2 / D12, 1.0.6.1): ``RateStore`` also holds the overnight risk-free rates of
+  ``tables.RFR`` - ``ESTR`` (ECB, FRED fallback), ``IUDSOIA`` (SONIA: the Bank of England database first, FRED the fallback), ``SOFR`` -
+  and their compounded INDICES ``ESTR_INDEX``, ``SOFR_INDEX`` and ``SONIA_INDEX`` (index LEVELS, not percents: see UNITS), each
+  observation with its own source (``observation(series, d)``; ``sources_seen(series)`` keeps the latest date each source gave, so
+  "both as-of dates are recorded" for SONIA).  It also holds the dated term-curve GRIDS of ``TERM_SERIES``: ``BOE_OIS_SPOT`` (the Bank
+  of England UK OIS spot curve, tenors 1M..60M), ``ECB_AAA_SPOT`` (the ECB euro-area AAA government spot rates, 3M..10Y) - both in
+  PERCENT, continuously compounded, kept to 6 decimals of a percent (``CURVE_NODE_Q``: the value a curve node uses, stored as is) - and
+  ``ECB_AAA_SV`` (the six Svensson parameters, for the self-check only).  ``put_grid`` / ``grid`` / ``grid_on_or_before`` /
+  ``latest_grid``; persisted in ``curve_points`` (series, as_of, tenor label, value) through ``rates.record`` like the par curve;
+  ``load_persisted`` brings the last ``GRID_KEEP_DATES`` dates per series back and ``grid_on_or_before`` reads an older date from the
+  database when asked.  ``fxcurves`` builds the zero curves from them.
 - ``FxStore`` holds the Frankfurter ECB reference rates (units of currency per USD) used only as the FX fallback.
 - UNITS — the one place the rate units of the terminal are defined (display-units fix, 2026-10-21):
   * Every observation this module stores or returns — FRED series (SOFR, the ``tables.POLICY_INDEX`` indices, the OAS
-    series, VIXCLS) and the Treasury par curve — is a PERCENT exactly as published: ``Decimal("3.87")`` means 3.87 %.
+    series, VIXCLS), ESTR, the term-curve grids and the Treasury par curve — is a PERCENT exactly as published:
+    ``Decimal("3.87")`` means 3.87 %.  EXCEPTIONS: the compounded indices ``ESTR_INDEX`` (110.09953057), ``SOFR_INDEX``
+    (1.26467626) and ``SONIA_INDEX`` (121.79978731) are index LEVELS - never a percent, never divided by 100 (a coupon uses the
+    RATIO of two levels: ``fxcurves.index_factor``) - and the Svensson parameters of ``ECB_AAA_SV`` are model parameters.
     ``latest`` / ``as_of_le`` / ``series`` / ``policy_rate`` / ``oas`` / ``vix`` / ``sofr`` and ``CurveStore.par_yield``
     all return percents.
   * Spreads, fees and every accrual rate are FRACTIONS: ``tables.RATES`` spreads (−0.0050 = −0.50 %), ``LOAN_SPREAD``,
@@ -81,13 +95,27 @@ OAS_SERIES = {"AAA": "BAMLC0A1CAAA", "AA": "BAMLC0A2CAA", "A": "BAMLC0A3CA", "BB
 #: OECD main economic indicators, long-term government bond yields (10-year), MONTHLY averages on FRED: the gilt / OAT / BTP
 #: benchmarks of the Debt / Foreign Markets pages are LIMITED to these (the Bank of England database refuses scripts)
 OECD_10Y = {"GB": "IRLTLT01GBM156N", "FR": "IRLTLT01FRM156N", "IT": "IRLTLT01ITM156N"}
-FRED_SERIES = tuple(dict.fromkeys(("SOFR",) + tuple(tables.POLICY_INDEX.values()) + ("BAMLH0A0HYM2", "BAMLC0A0CM", "VIXCLS")
-                                   + tuple(v for k, v in OAS_SERIES.items() if k != "HY") + tuple(OECD_10Y.values())))   # each series once
+#: FX_CCS_PLAN K2 (1.0.6.1): SONIA (IUDSOIA) is the worker's ``rfr`` job's now - the Bank of England database first, FRED only when the
+#: Bank fails - so the 6-hourly FRED slot no longer fetches it
+RFR_OWNED = ("IUDSOIA",)
+FRED_SERIES = tuple(s for s in dict.fromkeys(("SOFR",) + tuple(tables.POLICY_INDEX.values()) + ("BAMLH0A0HYM2", "BAMLC0A0CM", "VIXCLS")
+                                             + tuple(v for k, v in OAS_SERIES.items() if k != "HY") + tuple(OECD_10Y.values()))
+                    if s not in RFR_OWNED)   # each series once
+#: FX_CCS_PLAN rev 2 K2: the RFR series and their compounded indices (index LEVELS, not percents), and the dated term-curve grids
+RFR_SERIES = ("ESTR", "IUDSOIA", "SOFR")
+INDEX_SERIES = ("ESTR_INDEX", "SOFR_INDEX", "SONIA_INDEX")
+BOE_SERIES = "BOE_OIS_SPOT"
+ECB_SPOT_SERIES = "ECB_AAA_SPOT"
+ECB_SV_SERIES = "ECB_AAA_SV"
+TERM_SERIES = (BOE_SERIES, ECB_SPOT_SERIES, ECB_SV_SERIES)
+CURVE_NODE_Q = Decimal("0.000001")         # a term-curve value is kept to 6 decimals of a percent (0.0001 bp): the node value used
+GRID_KEEP_DATES = 40                       # dated grids per series kept in memory (older dates are read from curve_points on demand)
 PERCENT = Decimal(100)
 UNIT_PERCENT = "percent"
 UNIT_FRACTION = "fraction"
 UNITS_NOTE = ("FRED and par-curve values are percents as published (3.87 = 3.87 %); spreads, fees and accrual rates are fractions "
-              "(0.0337 = 3.37 %); a percent outside /api/rates and /api/curve is named *_pct")
+              "(0.0337 = 3.37 %); a percent outside /api/rates and /api/curve is named *_pct; the compounded indices ESTR_INDEX, SOFR_INDEX and "
+              "SONIA_INDEX are index levels, not percents")
 
 
 def _rid(prefix: str, payload: dict) -> str:
@@ -388,12 +416,39 @@ class DatedCurve(CurveStore):
         return self
 
 
+class Grid:
+    """One dated term-curve grid (``RateStore.put_grid``): ``series``, ``as_of``, ``points`` {tenor label: Decimal} (percent,
+    continuously compounded, 6 dp for the spot curves; model parameters for ``ECB_AAA_SV``), ``source``, ``fetched_ts``."""
+
+    __slots__ = ("series", "as_of", "points", "source", "fetched_ts")
+
+    def __init__(self, series: str, as_of: date, points: Dict[str, Decimal], source: str = "", fetched_ts: int = 0):
+        self.series, self.as_of, self.points, self.source, self.fetched_ts = series, as_of, dict(points), source, int(fetched_ts or 0)
+
+    def __repr__(self) -> str:
+        return f"<Grid {self.series} {self.as_of.isoformat()} {len(self.points)} points>"
+
+    def to_dict(self) -> dict:
+        return {"series": self.series, "as_of": self.as_of.isoformat(), "points": {k: str(v) for k, v in self.points.items()}, "source": self.source,
+                "fetched_ts": self.fetched_ts}
+
+
+def _grid_value(series: str, v) -> Decimal:
+    """A grid value as stored: a spot rate to 6 decimals of a percent (``CURVE_NODE_Q``), a Svensson parameter to 8 dp."""
+    d = Decimal(str(v))
+    return d.quantize(CURVE_NODE_Q) if series in (BOE_SERIES, ECB_SPOT_SERIES) else qprice(d)
+
+
 class RateStore:
     def __init__(self, db=None, bus=None, log=None):
         self.db, self.bus, self.log = db, bus, log
         self._lock = threading.RLock()
         self._obs: Dict[str, List[Tuple[date, Decimal]]] = {}
         self._source: Dict[str, str] = {}
+        self._obs_src: Dict[str, Dict[date, str]] = {}          # 1.0.6.1: the source of each observation (curve_points.source)
+        self._seen: Dict[str, Dict[str, date]] = {}             # 1.0.6.1: per series, the latest observation date each source gave
+        self._grids: Dict[str, Dict[date, Grid]] = {}           # 1.0.6.1: the dated term-curve grids of TERM_SERIES
+        self.fetch_status: Dict[str, dict] = {}                 # 1.0.6.1: the worker's last fetch of each RFR series / grid ({ok, at_ts, text, ...})
         self.route = None                    # the provider's FredRoute (module docstring SOURCES), set at bind time
 
     def put(self, series_id: str, observations: Iterable[Tuple[date, Decimal]], source: str = "FRED", persist: bool = True) -> int:
@@ -410,6 +465,13 @@ class RateStore:
             merged.update(rows)
             self._obs[series_id] = sorted(merged.items())
             self._source[series_id] = source
+            srcs = self._obs_src.setdefault(series_id, {})
+            for d, _v in rows:
+                srcs[d] = source
+            seen = self._seen.setdefault(series_id, {})
+            last = max(d for d, _v in rows)
+            if seen.get(source) is None or seen[source] < last:
+                seen[source] = last
         if persist:
             _record(self.bus, self.db, {"series": series_id, "observations": [[d.isoformat(), str(v)] for d, v in rows], "source": source})
         return len(rows)
@@ -434,6 +496,114 @@ class RateStore:
     def series(self, series_id: str) -> List[Tuple[date, Decimal]]:
         with self._lock:
             return list(self._obs.get(series_id) or [])
+
+    def observation(self, series_id: str, d, exact: bool = False) -> Optional[dict]:
+        """1.0.6.1: the observation of ``series_id`` dated ``d`` (``exact``) or the latest on or before ``d`` (RATE_LAG) with its own
+        source: ``{series, obs_date, value, source}`` (``value`` a Decimal; a percent, or an index level for ``*_INDEX``); None when absent."""
+        d = d if isinstance(d, date) else date.fromisoformat(str(d)[:10])
+        got = None
+        with self._lock:
+            for od, v in self._obs.get(series_id) or []:
+                if od < d:
+                    got = None if exact else (od, v)
+                elif od == d:
+                    got = (od, v)
+                    break
+                else:
+                    break
+            if got is None:
+                return None
+            src = (self._obs_src.get(series_id) or {}).get(got[0]) or self._source.get(series_id) or ""
+        return {"series": series_id, "obs_date": got[0], "value": got[1], "source": src}
+
+    def sources_seen(self, series_id: str) -> Dict[str, str]:
+        """1.0.6.1: ``{source: latest observation date (ISO)}`` of a series - for SONIA both the Bank of England's and FRED's as-of dates."""
+        with self._lock:
+            return {k: v.isoformat() for k, v in (self._seen.get(series_id) or {}).items()}
+
+    # ---- the term-curve grids (1.0.6.1, module docstring RFR AND TERM CURVES) ----------------------------------------------
+    def put_grid(self, series: str, as_of, points: Dict[str, object], source: str = "", fetched_ts: int = 0, persist: bool = True) -> Grid:
+        """Store one dated grid (a date's grid is replaced as a whole; nothing else is ever removed) and persist it through
+        ``rates.record`` (``curve_points``: series, as_of, tenor label, value)."""
+        if series not in TERM_SERIES:
+            raise ValueError(f"put_grid: {series!r} is not a term-curve series ({', '.join(TERM_SERIES)})")
+        d = as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)[:10])
+        pts = {str(k): _grid_value(series, v) for k, v in dict(points).items()}
+        if not pts:
+            raise ValueError(f"put_grid: {series} {d.isoformat()} has no points")
+        g = Grid(series, d, pts, source, fetched_ts)
+        with self._lock:
+            by = self._grids.setdefault(series, {})
+            by[d] = g
+            for old in sorted(by)[:-GRID_KEEP_DATES]:
+                by.pop(old, None)
+        if persist:
+            _record(self.bus, self.db, {"series": series, "as_of": d.isoformat(), "points": {k: str(v) for k, v in pts.items()}, "source": source,
+                                        "fetched_ts": int(fetched_ts or 0)})
+        return g
+
+    def _grid_rows(self, series: str, d: date, on_or_before: bool) -> Optional[Grid]:
+        if self.db is None:
+            return None
+        try:
+            with self.db.reader() as conn:
+                if on_or_before:
+                    row = conn.execute("SELECT MAX(as_of) AS d FROM curve_points WHERE series=? AND as_of<=?", (series, d.isoformat())).fetchone()
+                    if row is None or row["d"] is None:
+                        return None
+                    day = row["d"]
+                else:
+                    day = d.isoformat()
+                rows = conn.execute("SELECT tenor, value, source, fetched_ts FROM curve_points WHERE series=? AND as_of=?", (series, day)).fetchall()
+        except Exception:   # noqa: BLE001 - a database without curve_points (a pure store) has no grid
+            return None
+        pts: Dict[str, Decimal] = {}
+        src, fts = "", 0
+        for r in rows:
+            try:
+                pts[str(r["tenor"])] = _grid_value(series, r["value"])
+            except ArithmeticError:
+                continue
+            src, fts = r["source"] or src, int(r["fetched_ts"] or 0)
+        if not pts:
+            return None
+        return Grid(series, date.fromisoformat(day), pts, src, fts)     # not cached: memory holds only the latest dates, without gaps
+
+    def grid(self, series: str, as_of) -> Optional[Grid]:
+        """The grid of ``series`` dated exactly ``as_of`` (memory, else ``curve_points``)."""
+        d = as_of if isinstance(as_of, date) else date.fromisoformat(str(as_of)[:10])
+        with self._lock:
+            got = (self._grids.get(series) or {}).get(d)
+        return got if got is not None else self._grid_rows(series, d, False)
+
+    def grid_on_or_before(self, series: str, d) -> Optional[Grid]:
+        """The latest grid of ``series`` dated on or before ``d``.  Memory holds the latest ``GRID_KEEP_DATES`` dates without gaps (every
+        grid this process stores goes to memory first), so a date inside that window is answered from memory; an older date, or a store
+        with nothing in memory, reads ``curve_points``."""
+        d = d if isinstance(d, date) else date.fromisoformat(str(d)[:10])
+        with self._lock:
+            by = self._grids.get(series) or {}
+            dates = [x for x in by if x <= d]
+            got = by[max(dates)] if dates else None
+        if got is not None:
+            return got
+        return self._grid_rows(series, d, True) if self.db is not None else None
+
+    def latest_grid(self, series: str) -> Optional[Grid]:
+        """The latest grid of ``series`` (memory or ``curve_points``)."""
+        with self._lock:
+            by = self._grids.get(series) or {}
+            got = by[max(by)] if by else None
+        if self.db is not None:
+            db_got = self._grid_rows(series, date(9999, 12, 31), True)
+            if db_got is not None and (got is None or db_got.as_of > got.as_of):
+                return db_got
+        return got
+
+    def grid_dates(self, series: str) -> List[date]:
+        """The dates of ``series`` held in memory."""
+        with self._lock:
+            return sorted((self._grids.get(series) or {}))
 
     def source(self, series_id: str) -> Optional[str]:
         with self._lock:
@@ -486,7 +656,32 @@ class RateStore:
                 "oas": {b: one(sid) for b, sid in OAS_SERIES.items()}, "long_term": {c: one(sid) for c, sid in OECD_10Y.items()}, "VIXCLS": one("VIXCLS"),
                 # OTC-R1-05: the two index OAS series the CDX desk uses as its labelled proxy spreads (IG = US Corporate, HY = US High Yield)
                 "cdx_proxy": {"IG": one("BAMLC0A0CM"), "HY": one("BAMLH0A0HYM2")},
+                # FX_CCS_PLAN K2 (1.0.6.1): the overnight RFRs with their compounded indices and the term-curve grids (dates and sources)
+                "rfr": self.rfr_view(), "term_curves": self.term_curves_view(),
                 "fred": self.fred_status(), "units": UNITS_NOTE}
+
+    def rfr_view(self) -> dict:
+        """``{ccy: {series, value, as_of, unit, source, sources_seen, fetch, index: {series, value, as_of, unit "index level", source, fetch}}}``
+        for USD / EUR / GBP (``tables.RFR``); values are what is stored (percent; index levels), never a default."""
+        out = {}
+        for ccy, spec in tables.RFR.items():
+            row = {}
+            for key, sid, unit in (("rate", spec["series"], UNIT_PERCENT), ("index", spec["index"], "index level")):
+                got = self.latest(sid)
+                obs = self.observation(sid, got[0], exact=True) if got is not None else None
+                row[key] = {"series": sid, "value": None if got is None else str(got[1]), "as_of": None if got is None else got[0].isoformat(), "unit": unit,
+                            "source": None if obs is None else obs["source"], "sources_seen": self.sources_seen(sid), "fetch": self.fetch_status.get(sid)}
+            out[ccy] = dict(row["rate"], name=spec["name"], basis=spec["basis"], index=row["index"])
+        return out
+
+    def term_curves_view(self) -> dict:
+        """``{series: {as_of, points, source, fetch}}`` of the latest stored grid of each term-curve series (no grid: as_of None)."""
+        out = {}
+        for sid in TERM_SERIES:
+            g = self.latest_grid(sid)
+            out[sid] = {"as_of": None if g is None else g.as_of.isoformat(), "points": 0 if g is None else len(g.points), "source": None if g is None else g.source,
+                        "fetch": self.fetch_status.get(sid), "unit": "percent, continuously compounded" if sid != ECB_SV_SERIES else "Svensson parameters"}
+        return out
 
     def load_persisted(self) -> int:
         if self.db is None:
@@ -494,17 +689,39 @@ class RateStore:
         n = 0
         with self.db.reader() as conn:
             rows = conn.execute("SELECT series, as_of, value, source FROM curve_points WHERE tenor=? ORDER BY series, as_of", (OBS_TENOR,)).fetchall()
-        by: Dict[str, List[Tuple[date, Decimal]]] = {}
-        src: Dict[str, str] = {}
+            grid_rows = []
+            for sid in TERM_SERIES:      # the last GRID_KEEP_DATES dates of each term-curve series (older ones are read on demand)
+                ds = [r[0] for r in conn.execute("SELECT DISTINCT as_of FROM curve_points WHERE series=? ORDER BY as_of DESC LIMIT ?",
+                                                 (sid, GRID_KEEP_DATES)).fetchall()]
+                if ds:
+                    marks = ",".join("?" * len(ds))
+                    grid_rows += conn.execute(f"SELECT series, as_of, tenor, value, source, fetched_ts FROM curve_points WHERE series=? AND as_of IN ({marks})",
+                                              (sid, *ds)).fetchall()
+        by: Dict[str, List[Tuple[date, Decimal, str]]] = {}
         for r in rows:
             try:
-                by.setdefault(r["series"], []).append((date.fromisoformat(r["as_of"]), Decimal(r["value"])))
-                src[r["series"]] = r["source"] or "FRED"
+                by.setdefault(r["series"], []).append((date.fromisoformat(r["as_of"]), Decimal(r["value"]), r["source"] or "FRED"))
                 n += 1
             except (ValueError, ArithmeticError):
                 continue
         for sid, obs in by.items():
-            self.put(sid, obs, src.get(sid, "FRED"), persist=False)
+            # each observation keeps its own source (a fallback's rows stay labelled as the fallback); the series label is the latest's
+            for src in dict.fromkeys(o[2] for o in obs):
+                self.put(sid, [(d, v) for d, v, s_ in obs if s_ == src], src, persist=False)
+            with self._lock:
+                self._source[sid] = obs[-1][2]
+        grids: Dict[Tuple[str, str], dict] = {}
+        for r in grid_rows:
+            g = grids.setdefault((r["series"], r["as_of"]), {"points": {}, "source": "", "fetched_ts": 0})
+            try:
+                g["points"][str(r["tenor"])] = Decimal(r["value"])
+            except ArithmeticError:
+                continue
+            g["source"], g["fetched_ts"] = r["source"] or g["source"], int(r["fetched_ts"] or 0)
+        for (sid, d), g in sorted(grids.items()):
+            if g["points"]:
+                self.put_grid(sid, d, g["points"], g["source"], g["fetched_ts"], persist=False)
+                n += 1
         return n
 
 
@@ -628,6 +845,7 @@ def register(bus) -> None:
     bus.register("marks.record", h_marks_record, light=True)
 
 
-__all__ = ["CurveStore", "DatedCurve", "FOR_DATE_LOOKBACK_BD", "RateStore", "FxStore", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "OECD_10Y", "SHIFT_SYMBOLS",
+__all__ = ["CurveStore", "DatedCurve", "FOR_DATE_LOOKBACK_BD", "RateStore", "FxStore", "Grid", "RFR_OWNED", "RFR_SERIES", "INDEX_SERIES", "TERM_SERIES",
+           "BOE_SERIES", "ECB_SPOT_SERIES", "ECB_SV_SERIES", "CURVE_NODE_Q", "GRID_KEEP_DATES", "bootstrap_dfs", "register", "record_marks", "FRED_SERIES", "OAS_SERIES", "OECD_10Y", "SHIFT_SYMBOLS",
            "CURVE_SERIES", "FX_SERIES", "OBS_TENOR", "h_rates_record", "h_marks_record", "pct_to_fraction", "fraction_to_pct", "treasury_cash_rate",
            "PERCENT", "UNIT_PERCENT", "UNIT_FRACTION", "UNITS_NOTE"]

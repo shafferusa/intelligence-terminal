@@ -33,6 +33,19 @@ Conventions
   A slot failure is logged, counted and visible in ``stats()``; provider errors land in ``ProviderHealth`` and, via
   ``provider_health.update``, in the ``provider_health`` table and ONE open WARN attention per provider (auto-resolved
   on the next success).  Nothing is retried in a tight loop and nothing is ever invented when a fetch fails.
+- RFR AND TERM CURVES (FX_CCS_PLAN rev 2 K2 / D12, 1.0.6.1): two built-in jobs on the C14 refresher machinery (``QuoteWorker`` installs
+  them; their outcome shows under ``refreshers`` and the health rows ``rfr`` / ``curves``; each source keeps its own row ``ecb``,
+  ``nyfed``, ``boe``, ``fred``).  ``rfr`` (asked every 30 min): fetches ESTR, the compounded ESTR index, the SOFR Index and SONIA with
+  its compounded index (the Bank of England database), each with its FRED fallback where one exists (ESTR, SOFR Index, SONIA) asked
+  only when the primary failed; it runs every 30 min from 02:00 to 12:00 ET on weekdays until the day's prints arrive (each series
+  dated on or after the previous business day of its own calendar; SONIA two London business days back, the Bank of England
+  database's usual lag), otherwise every 3 h.  ``curves`` (asked hourly): the Bank of
+  England OIS curve after 07:00 ET and the ECB AAA spot curve after 08:00 ET of each business day, retried hourly until a grid of the
+  previous business day appears, at most ``CURVES_MAX_TRIES`` (6) fetches a day each; the first run after a start fetches whatever
+  is not current.  A Bank of England 403 is final for ``BOE_REFUSED_PAUSE_S`` (3 h: nothing asks the Bank again before; FRED serves
+  SONIA meanwhile; never another agent).  A source failure never raises (it is in that source's health row and in
+  ``RateStore.fetch_status``, which the curves name in their CURVE_UNAVAILABLE text); with the FakeProvider (``--offline``, tests) both
+  jobs stay quiet until a test sets RFR data (``FakeProvider.configured()``).
 - Light commands here: ``provider_health.update``, ``dividends.upsert``, ``instruments.upsert`` (resolve by symbol via
   ``InstrumentMaster.upsert_from_yahoo_meta``), ``instruments.set_adv``, ``finra.record``.  ``register_all(bus)`` registers
   every WP-01 handler.
@@ -60,7 +73,7 @@ from ..commands import Command, RejectError
 from ..config import QUOTE_INTERVALS
 from ..db import canonical_json
 from ..instruments import ADV_DAYS, EQUITY_KINDS, Instrument, adv_from_daily, fx_pair_id, needs_adv, otc_reference_ids, parse_futures_id
-from . import cache as _cache_mod, rates as _rates_mod
+from . import cache as _cache_mod, providers as _providers_mod, rates as _rates_mod
 from .cache import ChainCache, QuoteCache, record_from_intraday, records_from_chain
 from .http import FetchError
 from .parsers import chart_bars, parse_intraday
@@ -77,7 +90,20 @@ SLOT_RETRY_S = 3600
 ADV_RETRY_S = 600                # one Yahoo daily-bars fetch per name per 10 min when it gave no ADV (the ticket re-previews every 5 s)
 ADV_MAX = 50
 SPLIT_CODE = "SPLIT_MANUAL_REVIEW"
-PROVIDER_LABEL = {"yahoo": "Yahoo", "cboe": "Cboe", "treasury": "Treasury.gov", "fred": "FRED", "finra": "FINRA", "frankfurter": "Frankfurter"}
+PROVIDER_LABEL = {"yahoo": "Yahoo", "cboe": "Cboe", "treasury": "Treasury.gov", "fred": "FRED", "finra": "FINRA", "frankfurter": "Frankfurter",
+                  "boe": "Bank of England", "ecb": "ECB data portal", "nyfed": "NY Fed", "rfr": "Overnight rates (ESTR, SONIA, SOFR Index)",
+                  "curves": "Term curves (Bank of England OIS, ECB AAA)"}
+#: what a refused honest User-Agent stops, per provider (the attention text)
+REFUSED_EFFECT = {"cboe": "options are computed-only (no execution)",
+                  "boe": "SONIA comes from FRED and the GBP curve stays unavailable until the Bank answers; no other agent is tried"}
+# FX_CCS_PLAN K2 (1.0.6.1): the rfr and curves jobs (module docstring RFR AND TERM CURVES)
+RFR_JOB_S = 1800
+RFR_LATE_S = 3 * 3600
+RFR_MORNING_ET = (dtime(2, 0), dtime(12, 0))
+CURVES_JOB_S = 3600
+CURVES_MAX_TRIES = 6
+CURVES_AFTER_ET = {"boe": dtime(7, 0), "ecb": dtime(8, 0)}
+BOE_REFUSED_PAUSE_S = 3 * 3600
 # C14 (Build 2): product refreshers and the chart's full-session bars
 REFRESH_BACKOFF_S = (60, 120, 300, 900, 1800, 3600)     # a failing refresher retries after these (1st, 2nd ... failure in a row), then hourly
 REFRESHER_NAME_RE = re.compile(r"^[A-Za-z0-9_.:-]{1,40}$")
@@ -116,7 +142,8 @@ def h_provider_health_update(ctx, payload: dict) -> dict:
         if bad and open_row is None:
             label = PROVIDER_LABEL.get(name, name)
             if r.get("refused_ua"):
-                code, msg = "CBOE_REFUSED_UA" if name == "cboe" else "PROVIDER_REFUSED", f"{label} refused the honest User-Agent; options are computed-only (no execution)"
+                effect = REFUSED_EFFECT.get(name, "its data stays unavailable until it answers; no other agent is tried")
+                code, msg = "CBOE_REFUSED_UA" if name == "cboe" else "PROVIDER_REFUSED", f"{label} refused the honest User-Agent; {effect}"
             else:
                 since = ny_str(int(r["last_err_ts"])) if r.get("last_err_ts") else "now"
                 msg = f"{label} unreachable since {since} — its quotes go stale; executions needing them pause"
@@ -584,6 +611,266 @@ class RatesRefresher:
             self._health_sent = (sig, now)
 
 
+# ---- FX_CCS_PLAN K2 (1.0.6.1): the rfr and curves jobs ----------------------------------------------------------------------------
+def _et(now: int):
+    return ny_of(int(now))
+
+
+def _quiet_offline(providers) -> Optional[str]:
+    """None when the job may fetch; else why it stays quiet (no RFR sources, or the FakeProvider without RFR data)."""
+    src = getattr(providers, "rfr", None) if providers is not None else None
+    if src is None:
+        return "no RFR sources in this provider set"
+    if getattr(providers, "offline", False):
+        conf = getattr(src, "configured", None)
+        if not callable(conf) or not conf():
+            return "offline: no RFR data set"
+    return None
+
+
+def _status(rates, key: str, ok: bool, now: int, text: str, **extra) -> None:
+    st = getattr(rates, "fetch_status", None)
+    if isinstance(st, dict):
+        st[key] = dict(extra, ok=bool(ok), at_ts=int(now), text=text)
+
+
+def _err_text(e: Exception, now: int) -> str:
+    return f"{str(e)[:160]} at {ny_str(int(now))} ET"
+
+
+class RfrJob:
+    """The ``rfr`` job (module docstring RFR AND TERM CURVES); ``fn(services, now)`` for the C14 refresher machinery."""
+
+    name = "rfr"
+
+    def __init__(self, worker: "QuoteWorker"):
+        self.worker = worker
+        self.last_fetch_ts: Optional[int] = None
+        self.boe_paused_until: Optional[int] = None
+
+    def expected(self, today) -> Dict[str, object]:
+        """The date each series should have reached on ``today``: the previous business day of its own calendar, except SONIA, which
+        the Bank of England database carries two London business days back (on 2026-10-28 evening its latest IUDSOIA was 10-26 while
+        IUDZOS2 had 10-27; FRED likewise)."""
+        from .. import ccycal
+        return {"ESTR": ccycal.TARGET.prev_business_day(today), "ESTR_INDEX": ccycal.TARGET.prev_business_day(today),
+                "SOFR_INDEX": ccycal.USGS.prev_business_day(today), "IUDSOIA": ccycal.GBLO.add_business_days(today, -2),
+                "SONIA_INDEX": ccycal.GBLO.prev_business_day(today)}
+
+    def arrived(self, rates, today) -> bool:
+        for series, want in self.expected(today).items():
+            got = rates.latest(series)
+            if got is None or got[0] < want:
+                return False
+        return True
+
+    def due(self, rates, now: int) -> Tuple[bool, str]:
+        if self.last_fetch_ts is None:
+            return True, "first run"
+        if now - self.last_fetch_ts >= RFR_LATE_S:
+            return True, "3 h since the last fetch"
+        et = _et(now)
+        if et.weekday() < 5 and RFR_MORNING_ET[0] <= et.time() < RFR_MORNING_ET[1] and not self.arrived(rates, et.date()):
+            return True, "the morning's prints are not all in yet"
+        return False, "the prints are in; next fetch 3 h after the last"
+
+    def __call__(self, services, now: int):
+        w = self.worker
+        quiet = _quiet_offline(w.providers)
+        if quiet:
+            return quiet
+        rates = w.refresher.rates
+        if rates is None:
+            return "no rate store"
+        now = int(now)
+        go, why = self.due(rates, now)
+        if not go:
+            return f"not due: {why}"
+        self.last_fetch_ts = now
+        return fetch_rfr(w.providers.rfr, rates, now, w.clock.today(), self, beat=w._beat)
+
+
+def _put(rates, series: str, obs, source: str) -> int:
+    return rates.put(series, list(obs), source) if obs else 0
+
+
+def fetch_rfr(src, rates, now: int, today, job: Optional[RfrJob] = None, beat: Optional[Callable[[], None]] = None) -> str:
+    """One rfr fetch: every series from its primary source, the FRED fallback only when the primary failed.  Stores through
+    ``RateStore.put`` (``rates.record``); returns a one-line summary; never raises for a source failure."""
+    from datetime import timedelta as _td
+    done, failed = [], []
+
+    def step(series: str, primary, fallback_sid: Optional[str] = None, store_as: Optional[str] = None):
+        target = store_as or series
+        try:
+            obs = primary()
+            if not obs:
+                raise FetchError(f"{getattr(obs, 'source', '') or target}: no observation in the answer", retryable=False)
+            n = _put(rates, target, obs, getattr(obs, "source", "") or target)
+            last = obs[-1][0].isoformat() if obs else None
+            _status(rates, target, True, now, f"{getattr(obs, 'source', '')}: {n} observations, latest {last}", source=getattr(obs, "source", ""), as_of=last)
+            done.append(f"{target} {last}")
+            return True
+        except FetchError as e:
+            err = e
+        if beat:
+            beat()
+        if fallback_sid:
+            try:
+                obs = src.fred(fallback_sid, 30)
+                if not obs:
+                    raise FetchError(f"FRED {fallback_sid}: no observation in the answer", retryable=False)
+                n = _put(rates, target, obs, obs.source)
+                last = obs[-1][0].isoformat() if obs else None
+                _status(rates, target, True, now, f"primary failed ({_err_text(err, now)}); FRED {fallback_sid}: {n} observations, latest {last}",
+                        source=obs.source, as_of=last, primary_error=str(err)[:160])
+                done.append(f"{target} {last} (FRED)")
+                return True
+            except FetchError as e2:
+                _status(rates, target, False, now, f"{_err_text(err, now)}; FRED {fallback_sid}: {str(e2)[:120]}", primary_error=str(err)[:160])
+                failed.append(target)
+                return False
+        _status(rates, target, False, now, _err_text(err, now), primary_error=str(err)[:160])
+        failed.append(target)
+        return False
+
+    step("ESTR", lambda: src.estr(10), "ECBESTRVOLWGTTRMDMNRT")
+    if beat:
+        beat()
+    step("ESTR_INDEX", lambda: src.estr_index(10))
+    if beat:
+        beat()
+    step("SOFR_INDEX", lambda: src.sofr_index(10), "SOFRINDEX")
+    if beat:
+        beat()
+    paused = job is not None and job.boe_paused_until is not None and now < job.boe_paused_until
+    boe, boe_err = None, FetchError("the Bank of England is paused for 3 h after a 403 (no other agent is tried)", status=403, retryable=False)
+    if not paused:
+        try:
+            boe = src.sonia(today - _td(days=30))
+        except FetchError as e:
+            boe_err = e
+            if e.status == 403 and job is not None:
+                job.boe_paused_until = now + BOE_REFUSED_PAUSE_S
+    if boe is not None:
+        for code, target in (("IUDSOIA", "IUDSOIA"), ("IUDZOS2", "SONIA_INDEX")):
+            obs = boe.get(code) or []
+            n = _put(rates, target, obs, getattr(obs, "source", "") or f"Bank of England database ({code})")
+            last = obs[-1][0].isoformat() if obs else None
+            _status(rates, target, bool(obs), now, f"{getattr(obs, 'source', '')}: {n} observations, latest {last}", source=getattr(obs, "source", ""), as_of=last)
+            if obs:
+                done.append(f"{target} {last}")
+        if not (boe.get("IUDSOIA") or []):
+            boe_err = FetchError("the Bank of England database gave no IUDSOIA observation", retryable=False)
+        if not (boe.get("IUDZOS2") or []):
+            failed.append("SONIA_INDEX")
+    else:
+        _status(rates, "SONIA_INDEX", False, now, _err_text(boe_err, now), primary_error=str(boe_err)[:160])
+        failed.append("SONIA_INDEX")
+    if boe is None or not (boe.get("IUDSOIA") or []):
+
+        def _boe_failed():
+            raise boe_err
+        step("IUDSOIA", _boe_failed, "IUDSOIA")           # SONIA: FRED only because the Bank of England failed
+    if beat:
+        beat()
+    return ("stored: " + ", ".join(done) if done else "nothing stored") + (f"; unavailable: {', '.join(failed)}" if failed else "")
+
+
+class CurvesJob:
+    """The ``curves`` job (module docstring RFR AND TERM CURVES); ``fn(services, now)`` for the C14 refresher machinery."""
+
+    name = "curves"
+
+    def __init__(self, worker: "QuoteWorker"):
+        self.worker = worker
+        self.tries: Dict[Tuple[str, str], int] = {}
+        self.started: set = set()
+        self.boe_paused_until: Optional[int] = None
+
+    def __call__(self, services, now: int):
+        from .. import ccycal
+        w = self.worker
+        quiet = _quiet_offline(w.providers)
+        if quiet:
+            return quiet
+        rates = w.refresher.rates
+        if rates is None:
+            return "no rate store"
+        now = int(now)
+        et = _et(now)
+        today = et.date()
+        out = []
+        for source, series, cal in (("boe", _rates_mod.BOE_SERIES, ccycal.GBLO), ("ecb", _rates_mod.ECB_SPOT_SERIES, ccycal.TARGET)):
+            want = cal.prev_business_day(today)
+            latest = rates.latest_grid(series)
+            if latest is not None and latest.as_of >= want:
+                out.append(f"{source}: current ({latest.as_of.isoformat()})")
+                continue
+            first = source not in self.started
+            key = (source, today.isoformat())
+            if not first:
+                if et.time() < CURVES_AFTER_ET[source]:
+                    out.append(f"{source}: waits for {CURVES_AFTER_ET[source].strftime('%H:%M')} ET")
+                    continue
+                if self.tries.get(key, 0) >= CURVES_MAX_TRIES:
+                    out.append(f"{source}: {CURVES_MAX_TRIES} fetches today, none newer than {latest.as_of.isoformat() if latest else 'nothing'}")
+                    continue
+            if source == "boe" and self.boe_paused_until is not None and now < self.boe_paused_until:
+                out.append("boe: paused after a 403 (no other agent is tried)")
+                continue
+            self.started.add(source)
+            self.tries[key] = self.tries.get(key, 0) + 1
+            out.append(f"{source}: " + (fetch_boe_curve(w.providers.rfr, rates, now, latest, self) if source == "boe"
+                                        else fetch_ecb_curve(w.providers.rfr, rates, now, latest)))
+            w._beat()
+        return "; ".join(out)
+
+
+def fetch_boe_curve(src, rates, now: int, latest=None, job: Optional[CurvesJob] = None) -> str:
+    """The Bank of England zip -> every day newer than the stored latest -> ``RateStore.put_grid`` (BOE_OIS_SPOT).  Never raises."""
+    series = _rates_mod.BOE_SERIES
+    try:
+        days = src.boe_ois_curve()
+    except FetchError as e:
+        if e.status == 403 and job is not None:
+            job.boe_paused_until = now + BOE_REFUSED_PAUSE_S
+        _status(rates, series, False, now, f"Bank of England yield-curve file: {_err_text(e, now)}", primary_error=str(e)[:160])
+        return f"unavailable ({str(e)[:120]})"
+    stored = []
+    for d in sorted(days):
+        if latest is not None and d <= latest.as_of:
+            continue
+        rates.put_grid(series, d, days[d], _providers_mod.BOE_CURVE_SOURCE, now)
+        stored.append(d.isoformat())
+    last = max(days).isoformat() if days else None
+    _status(rates, series, bool(days), now, f"Bank of England yield-curve file: latest {last}" + (f", stored {', '.join(stored)}" if stored else ", nothing new"),
+            as_of=last)
+    return f"latest {last}" + (f", stored {len(stored)} day(s)" if stored else ", nothing new")
+
+
+def fetch_ecb_curve(src, rates, now: int, latest=None) -> str:
+    """The ECB AAA spot rates and Svensson parameters -> every day newer than the stored latest -> ``RateStore.put_grid``.  Never raises."""
+    series = _rates_mod.ECB_SPOT_SERIES
+    try:
+        spot, sv = src.ecb_aaa_spot(3)
+    except FetchError as e:
+        _status(rates, series, False, now, f"ECB data portal (AAA spot rates): {_err_text(e, now)}", primary_error=str(e)[:160])
+        return f"unavailable ({str(e)[:120]})"
+    stored = []
+    for d in sorted(spot):
+        if latest is not None and d <= latest.as_of:
+            continue
+        rates.put_grid(series, d, spot[d], _providers_mod.ECB_SPOT_SOURCE, now)
+        if sv.get(d):
+            rates.put_grid(_rates_mod.ECB_SV_SERIES, d, sv[d], _providers_mod.ECB_SPOT_SOURCE + " - Svensson parameters", now)
+        stored.append(d.isoformat())
+    last = max(spot).isoformat() if spot else None
+    _status(rates, series, bool(spot), now, f"ECB data portal (AAA spot rates): latest {last}" + (f", stored {', '.join(stored)}" if stored else ", nothing new"),
+            as_of=last)
+    return f"latest {last}" + (f", stored {len(stored)} day(s)" if stored else ", nothing new")
+
+
 # ---- the worker -------------------------------------------------------------------------------------------------------------------
 class QuoteWorker(threading.Thread):
     def __init__(self, cache: QuoteCache, chains: ChainCache, instruments, providers: ProviderSet, sessions, bus, matcher, clock, log, fetch_threads: int = 2,
@@ -619,6 +906,14 @@ class QuoteWorker(threading.Thread):
         self._bars_errors: Dict[str, str] = {}
         for name, (interval_s, fn, after_et, _label) in _take_registrations():      # this runtime's binds registered them just before
             self._install_refresher(name, interval_s, fn, after_et)
+        # FX_CCS_PLAN K2 (1.0.6.1): the built-in rfr and curves jobs (quiet offline until a test sets RFR data)
+        self.rfr_job, self.curves_job = RfrJob(self), CurvesJob(self)
+        with self._lock:
+            have = set(self._refreshers)
+        if "rfr" not in have:
+            self._install_refresher("rfr", RFR_JOB_S, self.rfr_job, None)
+        if "curves" not in have:
+            self._install_refresher("curves", CURVES_JOB_S, self.curves_job, None)
 
     # ---- public ------------------------------------------------------------------------------------------------------
     def _beat(self) -> None:
@@ -1194,5 +1489,6 @@ class QuoteWorker(threading.Thread):
                 self.log.exception("matcher.on_quotes failed")
 
 
-__all__ = ["QuoteWorker", "RatesRefresher", "Slot", "Refresher", "register", "register_all", "register_refresher", "unregister_refresher",
+__all__ = ["QuoteWorker", "RatesRefresher", "Slot", "Refresher", "RfrJob", "CurvesJob", "fetch_rfr", "fetch_boe_curve", "fetch_ecb_curve", "RFR_JOB_S",
+           "CURVES_JOB_S", "CURVES_MAX_TRIES", "BOE_REFUSED_PAUSE_S", "register", "register_all", "register_refresher", "unregister_refresher",
            "registered_refreshers", "h_provider_health_update", "h_dividends_upsert", "h_instruments_upsert", "h_instruments_set_adv", "h_finra_record"]

@@ -29,7 +29,8 @@
   var PROVIDER_WHAT = { yahoo: 'last trade, up to 15 min delayed (equities / ETFs / futures / FX / indices; 1-minute bars)', cboe: 'option chains and NBBO, about 15 min delayed',
     treasury: 'daily par yield curve (cached for the day)', fred: 'daily rates and credit spreads (published the next morning)', finra: 'daily short volume (borrow estimate)',
     frankfurter: 'ECB reference rates (fallback FX)', fiscaldata: 'Treasury auctions and outstanding securities',
-    treasurydirect: 'FedInvest Treasury prices (daily)', nyfed: 'SOFR fallback (daily)', ecb: 'ECB deposit rate and euro-area AAA curve (daily)', mof: 'JGB yields (daily)',
+    treasurydirect: 'FedInvest Treasury prices (daily)', nyfed: 'SOFR fallback and the SOFR Index (daily)', ecb: 'ECB deposit rate, ESTR and its index, the euro-area AAA curves (daily)',
+    mof: 'JGB yields (daily)', boe: 'SONIA and the UK OIS curve (daily, Bank of England)',
     debt: 'debt refresher (every 30 min): the Treasury list, FedInvest prices, ECB and MOF yields', otc_options: 'OTC option inputs: daily closes and chains (every 15 s while contracts are open)' };
   function plabel(p) { return T.providerLabel ? T.providerLabel(p) : String(p || '').replace(/_/g, ' '); }
   function glabel(g) { return GROUP_LABEL[g] || String(g || '').replace(/_/g, ' '); }

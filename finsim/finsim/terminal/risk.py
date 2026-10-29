@@ -60,6 +60,18 @@ Conventions
   currency buckets, IRS / cross-currency swaps, CDX and FX forwards are not).  P8B-08: that includes the prime broker's OTC FX
   forwards: their USD notional sits in 'FX forwards (notional)' with the FX desk's, and their two legs count in the currency
   exposure and the FX scenarios until delivery; OTC equity forwards stay in the headline (equity delta).
+- FX_CCS_PLAN D14 / K7 (1.0.6.1): the currency exposure has ONE ledger part and ONE off-ledger part.  The ledger part comes only from
+  ``_currency_balances`` (every non-USD asset and liability GL - 2350, 2360, 2340 ... - plus the FX desk's pending forwards) and the
+  non-USD positions at market; the off-ledger part comes only from the product hooks ``risk_sensitivities`` of the OPEN OTC FX contracts
+  (FX_FORWARD: both legs until delivery; XCCY: the exchanges not yet on the ledger and the clean mark's FX delta), so nothing is counted
+  twice: by currency, nominal = ledger + hook nominal and PV delta = ledger balances + hook PV delta.  ``fx_sensitivities`` carries
+  per currency the nominal and the PV delta with their two parts and the USD effect of a 1 % and a 5 % move, the pair scenarios (each
+  USD pair with the other held; each traded cross with either leg held - re-priced linearly on the PV deltas, a cross's held leg moving
+  its other currency by 1 / (1 + shock)), rate01 per currency, basis01 per pair, points01, the prime brokers' counterparty lines, the
+  liquidity ladder (the contracts' scheduled flows and, when that module is in the build, the settlement-funding purchases and gaps)
+  and the notional limits ("none configured").  OTC FX contracts (FX_FORWARD, XCCY) leave the USD DV01 rows and the rates scenario:
+  their rate risk is per currency (OTC-09).  Every figure of the block is MODEL with its inputs' labels (PROXY / ASSUMED) as the hooks
+  give them; a contract that cannot be re-priced now is named in ``notes`` and its currencies' PV deltas read as unavailable.
 - JSON (``to_dict``): cents fields become decimal strings under the name without ``_c``; fractions (``pct_nav``,
   the leverage multiples) are 4-dp decimal strings; nothing is a float.  The preview hook is ``pretrade``
   (``orders.preview`` and ``private.preview`` call ``services.risk.pretrade``); ``warnings_for_preview`` is the same
@@ -91,6 +103,13 @@ EQUITY_SHOCKS = (Decimal("-0.20"), Decimal("-0.10"), Decimal("-0.05"), Decimal("
 RATE_SHOCKS_BP = (-100, -50, -25, 25, 50, 100)
 VOL_SHOCKS = (Decimal("-0.05"), Decimal("0.05"))
 FX_SHOCKS = (Decimal("-0.05"), Decimal("0.05"))
+#: FX_CCS_PLAN K7: the pair moves of the FX block (signed fractions of the pair's price)
+FX_PAIR_SHOCKS = (Decimal("0.01"), Decimal("-0.01"), Decimal("0.05"), Decimal("-0.05"))
+#: the OTC FX contract kinds whose off-ledger risk comes from a product hook (D14), and the service that carries the hook
+FX_HOOK_MODULES = {"FX_FORWARD": "otc_options", "XCCY": "swaps_trs"}
+FX_OTC_KINDS = tuple(FX_HOOK_MODULES)
+CAPS_TEXT = "notional limits: none configured in the prime-broker schedules; compliance has no OTC limit"
+FX_RATE_RISK = "rate risk per currency in the FX block (rate01), not a USD DV01"
 THRESHOLDS = {"CONCENTRATION": Decimal("0.25"), "LEVERAGE": Decimal("2"), "OPTION_MARGIN": Decimal("0.50"), "LOANS": Decimal("0.50"),
               "OTC_VM": Decimal("0.10"), "PRIVATE_ILLIQUID": Decimal("0.30")}
 FUTURES_BUCKET = {"CME_EQUITY_INDEX": "Index futures (notional)", "CME_RATES": "Rates futures (notional)", "NYMEX_ENERGY": "Energy futures (notional)",
@@ -547,7 +566,12 @@ def _pos_risk(services, snap, p, now: int) -> PosRisk:
             r.bucket, r.headline = "OTC options and forwards", True
             r.exposure_c, r.exposure_basis = p.mv_base_c, "OTC option value"
         dv = extra.get("dv01_c")
-        if dv is not None:
+        if swap_kind in FX_OTC_KINDS:
+            # FX_CCS_PLAN D14 / OTC-09: an OTC FX contract's rate risk is two-currency - its rate01 per currency sits in the FX block, never in
+            # the USD DV01 rows or the rates scenario (one USD DV01 had one currency and the wrong sign)
+            r.dv01_c, r.dv01_basis = None, ""
+            r.extra["rate_risk"] = FX_RATE_RISK
+        elif dv is not None:
             r.dv01_c, r.dv01_basis = int(dv), "PV change for +1 bp of the swap curve, as booked"
         elif swap_kind == "IRS" or swap_kind == "XCCY":
             r.dv01_basis = "DV01 unavailable (no swap curve loaded)"
@@ -739,6 +763,8 @@ def _scenario_rates(rows: List[PosRisk], bp: int, services=None, snap=None) -> d
     by_class: Dict[str, int] = {}
     unpriced: List[str] = []
     for r in rows:
+        if r.kind == "SWAP" and r.extra.get("kind") in FX_OTC_KINDS:
+            continue                                                         # D14: per-currency rate01 in the FX block, not this USD shift
         if r.kind == "BOND":
             v = _bond_reprice(services, snap, r, bp) if services is not None else None
             if v is None and r.dv01_c is not None:
@@ -844,6 +870,7 @@ class RiskView:
     by_sector: List[dict] = field(default_factory=list)          # PORTFOLIO-19: the headline exposure per sector (sums to the headline gross)
     reg_t: dict = field(default_factory=dict)                    # task 13: per account from collateral.summary (C16), or why it is unavailable
     headline_note: str = ""                                      # V104R2-BW-08: which buckets add up to the gross tile
+    fx_sensitivities: dict = field(default_factory=dict)         # FX_CCS_PLAN K7: the FX block (ledger part + the hooks' off-ledger part)
 
     def to_dict(self) -> dict:
         d = dict(self.__dict__)
@@ -870,8 +897,10 @@ def _book_names(services, lifetime_ids: List[str]) -> Dict[str, dict]:
 
 
 def _currency_balances(services, ids: List[str]) -> Dict[str, int]:
-    """Σ (assets − liabilities) at cost per non-USD currency over the accounts, excluding the cost accounts that market
-    values replace (storage sign is debit-positive, so a plain sum is assets − liabilities)."""
+    """THE ledger part of the currency exposure (FX_CCS_PLAN D14): Σ (assets − liabilities) at cost per non-USD currency over the
+    accounts, excluding the cost accounts that market values replace (storage sign is debit-positive, so a plain sum is assets −
+    liabilities), plus the FX desk's pending forwards.  An OPEN PB OTC FX forward is not here: its two legs are off the ledger until
+    delivery and come from its product hook (``_fx_hooks``), exactly once."""
     if not ids:
         return {}
     q = ",".join("?" for _ in ids)
@@ -891,20 +920,52 @@ def _currency_balances(services, ids: List[str]) -> Dict[str, int]:
                     out[f["sell_ccy"]] = out.get(f["sell_ccy"], 0) - int(f["sell_c"] or 0)
         except sqlite3.Error:      # a database without the FX deals table: cash and positions only
             pass
-        # P8B-08 / OTC-02: an OPEN PB OTC FX forward carries its two legs (the amounts it delivers at K) until its value date, exactly as an
-        # FX-desk forward does above; at delivery it becomes an FX deal posted at once (entry_id set), so nothing is counted twice
+    return out
+
+
+def _fx_hooks(services, ids: List[str], snap) -> dict:
+    """FX_CCS_PLAN D14 / K5-K6: the off-ledger part of the OPEN OTC FX contracts (FX_FORWARD, XCCY) of the accounts, from each kind's
+    product hook ``risk_sensitivities(services, row, snapshot)``: ``{rows [the hooks' dicts with account_id / broker / kind], nominal
+    {ccy: c}, delta {ccy: c}, partial {ccy: [contract ids whose PV delta is unknown now]}, errors [text], contracts [rows]}``.  A kind
+    whose module or hook is not in this build, or a hook that fails, is named in ``errors`` - never estimated here."""
+    out: dict = {"rows": [], "nominal": {}, "delta": {}, "partial": {}, "errors": [], "contracts": []}
+    if not ids:
+        return out
+    q = ",".join("?" for _ in ids)
+    kq = ",".join("?" for _ in FX_OTC_KINDS)
+    try:
+        with shared_reader(services.db) as conn:
+            contracts = [{k: r[k] for k in r.keys()} for r in conn.execute(
+                f"SELECT * FROM otc_contracts WHERE status='OPEN' AND kind IN ({kq}) AND account_id IN ({q}) ORDER BY contract_id",
+                list(FX_OTC_KINDS) + list(ids)).fetchall()]
+    except sqlite3.Error:          # a database without the OTC contracts table
+        return out
+    out["contracts"] = contracts
+    for c in contracts:
+        mod = getattr(services, FX_HOOK_MODULES.get(c["kind"], ""), None)
+        fn = getattr(mod, "risk_sensitivities", None) if mod is not None else None
+        if not callable(fn):
+            out["errors"].append(f"{c['contract_id']} ({c['kind']}): its off-ledger currency risk is not available in this build")
+            continue
         try:
-            for c in conn.execute(f"SELECT terms_json FROM otc_contracts WHERE kind='FX_FORWARD' AND status='OPEN' AND account_id IN ({q})", list(ids)).fetchall():
-                try:
-                    t = json.loads(c["terms_json"] or "{}")
-                except ValueError:
-                    continue
-                if t.get("buy_ccy") and t["buy_ccy"] != "USD":
-                    out[t["buy_ccy"]] = out.get(t["buy_ccy"], 0) + int(t.get("buy_c") or 0)
-                if t.get("sell_ccy") and t["sell_ccy"] != "USD":
-                    out[t["sell_ccy"]] = out.get(t["sell_ccy"], 0) - int(t.get("sell_c") or 0)
-        except sqlite3.Error:      # a database without the OTC contracts table
-            pass
+            s = fn(services, c, snapshot=snap)
+        except Exception as e:   # noqa: BLE001 - a hook never breaks the Risk page; named
+            out["errors"].append(f"{c['contract_id']}: {type(e).__name__}: {e}"[:240])
+            continue
+        if not s:
+            continue
+        s = dict(s, contract_id=c["contract_id"], kind=c["kind"], account_id=c["account_id"], broker=c.get("broker"))
+        out["rows"].append(s)
+        for ccy, v in (s.get("fx_nominal") or {}).items():
+            out["nominal"][ccy] = out["nominal"].get(ccy, 0) + int(v)
+        deltas = s.get("fx_delta") or {}
+        for ccy, v in deltas.items():
+            out["delta"][ccy] = out["delta"].get(ccy, 0) + int(v)
+        for ccy in (s.get("fx_nominal") or {}):
+            if ccy not in deltas:
+                out["partial"].setdefault(ccy, []).append(c["contract_id"])
+        for n in s.get("notes") or []:
+            out["errors"].append(str(n))
     return out
 
 
@@ -1012,6 +1073,12 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     for r in rows:
         if r.currency != "USD" and r.mv_c is not None:
             native[r.currency] = native.get(r.currency, 0) + int(r.mv_c)
+    # D14: the ledger part above, plus the OTC FX contracts' off-ledger part from their hooks - each counted once
+    ledger_native = dict(native)
+    hooks = _fx_hooks(services, account_ids, snap)
+    for ccy, c in hooks["nominal"].items():
+        if ccy != "USD":
+            native[ccy] = native.get(ccy, 0) + int(c)
     by_ccy: Dict[str, dict] = {}
     fx_rows: List[dict] = []
     for ccy in sorted(native):
@@ -1122,7 +1189,253 @@ def report(services, scope: str = "ALL", snapshot=None, now: Optional[int] = Non
     view.headline_note = ("the buckets marked 'in gross' add up to the gross exposure tile (long + short headline exposure); the others - IRS / "
                           "cross-currency swaps and CDX at notional, FX forwards and the currency (FX) rows - are shown for their size but are not in it: "
                           "their measures are DV01, CS01 and the currency exposure")
+    try:
+        view.fx_sensitivities = fx_block(services, snap, account_ids, ledger_native, hooks, ex, accounts, names, fin)
+    except Exception as e:   # noqa: BLE001 - the block informs; its failure is named, the rest of the report stands
+        view.fx_sensitivities = dict(_empty_fx_block(), notes=[f"the FX block is unavailable: {type(e).__name__}: {e}"[:240]])
     return view
+
+
+# ---- FX_CCS_PLAN K7: the FX block --------------------------------------------------------------------------------------------------
+def _empty_fx_block() -> dict:
+    return {"by_currency": [], "pairs": [], "rates01": [], "basis01": [], "spread01": [], "points01": [], "counterparty": [], "ladder": [],
+            "limits": {"headline_gross_nav": None, "gross_notional_nav": None, "warning_limit": "2x NAV", "caps": "none configured", "text": CAPS_TEXT},
+            "notes": [], "labels": [], "funding_plans": []}
+
+
+def _pair_move(pair: str, shock: Decimal, held: Optional[str]) -> Dict[str, Decimal]:
+    """The factor each currency's USD rate moves by when ``pair`` moves by ``shock`` (a fraction): a USD pair moves its foreign currency
+    (base: x (1 + shock); quote: x 1 / (1 + shock)); a cross moves the currency whose USD pair is NOT ``held`` (the base's pair held: the
+    quote currency x 1 / (1 + shock); the quote's pair held: the base x (1 + shock))."""
+    from .instruments import fx_pair_id
+    base, quote = pair[:3], pair[3:]
+    f = ONE + shock
+    if quote == "USD":
+        return {base: f}
+    if base == "USD":
+        return {quote: ONE / f}
+    if held == fx_pair_id(base):
+        return {quote: ONE / f}
+    return {base: f}
+
+
+def fx_block(services, snap, account_ids: List[str], ledger_native: Dict[str, int], hooks: dict, ex: dict, accounts: Dict[str, dict],
+             names: Dict[str, str], fin: dict) -> dict:
+    """FX_CCS_PLAN K7 / section 6: the Risk page's FX block for the scope (see the module conventions).  ``ledger_native`` is the ledger
+    part per currency (``_currency_balances`` + non-USD positions at market), ``hooks`` the off-ledger part (``_fx_hooks``)."""
+    from .instruments import fx_cross_id, fx_pair_id
+    out = _empty_fx_block()
+    notes: List[str] = list(hooks.get("errors") or [])
+    labels: List[str] = []
+    for h in hooks.get("rows") or []:
+        for lab in h.get("labels") or []:
+            if lab not in labels:
+                labels.append(lab)
+    ccys = sorted({c for c in ledger_native if c != "USD"} | {c for c in hooks["nominal"] if c != "USD"} | {c for c in hooks["delta"] if c != "USD"})
+    rates: Dict[str, Optional[Decimal]] = {c: _rate_of(snap, c) for c in ccys}
+    pvd: Dict[str, Optional[int]] = {}
+    for ccy in ccys:
+        nl, nh = int(ledger_native.get(ccy, 0)), int(hooks["nominal"].get(ccy, 0))
+        dh = int(hooks["delta"].get(ccy, 0))
+        partial = list(hooks["partial"].get(ccy) or [])
+        pv = None if partial else nl + dh
+        pvd[ccy] = pv
+        rate = rates[ccy]
+        rows = []
+        if nl:
+            rows.append({"source": "ledger", "what": f"{ccy} balances, receivables / payables and positions on the ledger", "nominal_c": nl, "pv_delta_c": nl})
+        for h in hooks.get("rows") or []:
+            n, d = (h.get("fx_nominal") or {}).get(ccy), (h.get("fx_delta") or {}).get(ccy)
+            if n is None and d is None:
+                continue
+            rows.append({"source": h["contract_id"], "kind": h["kind"], "what": f"{h['contract_id']} ({OTC_KIND_LABEL.get(h['kind'], h['kind'])}): off the ledger",
+                         "nominal_c": None if n is None else int(n), "pv_delta_c": None if d is None else int(d)})
+        usd1 = usd5 = None
+        if pv is not None and rate is not None:
+            usd1 = to_c(from_c(pv) * rate * Decimal("0.01"))
+            usd5 = to_c(from_c(pv) * rate * Decimal("0.05"))
+        if partial:
+            notes.append(f"{ccy}: the PV delta is unavailable now ({', '.join(partial)} could not be re-priced); the nominal stands")
+        out["by_currency"].append({"ccy": ccy, "rate": rate, "nominal_c": nl + nh, "nominal_ledger_c": nl, "nominal_hooks_c": nh, "pv_delta_c": pv,
+                                   "pv_delta_ledger_c": nl, "pv_delta_hooks_c": None if partial else dh, "usd_per_1pct_c": usd1, "usd_per_5pct_c": usd5,
+                                   "partial": partial, "rows": rows})
+    usd_hooks = int(hooks["nominal"].get("USD", 0))
+    if usd_hooks:
+        out["usd_nominal_hooks_c"] = usd_hooks
+    # the pair scenarios: each USD pair with the other USD pairs held; each cross an open OTC FX forward trades, with either leg held
+    def pnl(pair: str, shock: Decimal, held: Optional[str]):
+        total, missing = 0, []
+        for c, fac in _pair_move(pair, shock, held).items():
+            if c == "USD":
+                continue
+            if c not in pvd:
+                continue                                                  # no exposure in that currency: it does not move the book
+            if pvd[c] is None or rates.get(c) is None:
+                missing.append(c)
+                continue
+            total += to_c(from_c(pvd[c]) * rates[c] * (fac - ONE))
+        return (None if missing else total), missing
+    usd_pairs = [fx_pair_id(c) for c in ccys]
+    crosses: List[str] = []
+    for h in hooks.get("rows") or []:
+        p = str(h.get("pair") or "")
+        if len(p) == 6 and "USD" not in (p[:3], p[3:]):
+            p = fx_cross_id(p[:3], p[3:])
+            if p not in crosses:
+                crosses.append(p)
+    for pair in usd_pairs:
+        others = [p for p in usd_pairs if p != pair]
+        held = (" and ".join(others) + " held") if others else "no other currency held"
+        for s in FX_PAIR_SHOCKS:
+            v, missing = pnl(pair, s, None)
+            out["pairs"].append({"pair": pair, "shock": _shock_text(s), "shock_frac": s, "held": held, "pnl_c": v,
+                                 "note": (f"unavailable: no PV delta for {', '.join(missing)} now" if missing else "")})
+    for pair in crosses:
+        for leg in (fx_pair_id(pair[:3]), fx_pair_id(pair[3:])):
+            for s in FX_PAIR_SHOCKS:
+                v, missing = pnl(pair, s, leg)
+                out["pairs"].append({"pair": pair, "shock": _shock_text(s), "shock_frac": s, "held": f"{leg} held", "pnl_c": v,
+                                     "note": (f"unavailable: no PV delta for {', '.join(missing)} now" if missing else "")})
+    # rate01 per currency, basis01 per pair, points01 per pair (the hooks' re-priced figures, summed)
+    def agg(field_name: str, key_name: str) -> List[dict]:
+        acc_: Dict[str, dict] = {}
+        for h in hooks.get("rows") or []:
+            for k0, v in (h.get(field_name) or {}).items():
+                if v is None:
+                    continue
+                k = str(k0).replace("/", "").upper()                      # "EUR/USD" and "EURUSD" are one pair
+                a = acc_.setdefault(k, {key_name: k, "usd_per_bp_c": 0, "rows": []})
+                a["usd_per_bp_c"] += int(v)
+                a["rows"].append({"contract_id": h["contract_id"], "kind": h["kind"], "usd_per_bp_c": int(v)})
+        return [acc_[k] for k in sorted(acc_)]
+    out["rates01"] = agg("rate01_c", "ccy")
+    out["basis01"] = agg("basis01_c", "pair")
+    out["spread01"] = agg("spread01_c", "ccy")                           # D5: the EUR OIS spread over the ECB AAA curve, +1 bp on its grid nodes
+    pts: Dict[str, dict] = {}
+    for h in hooks.get("rows") or []:
+        v = h.get("points01_c")
+        if v is None:
+            continue
+        p = str(h.get("pair") or "")
+        a = pts.setdefault(p, {"pair": p, "usd_per_pip_c": 0, "rows": []})
+        a["usd_per_pip_c"] += int(v)
+        a["rows"].append({"contract_id": h["contract_id"], "kind": h["kind"], "usd_per_pip_c": int(v)})
+    out["points01"] = [pts[k] for k in sorted(pts)]
+    out["counterparty"] = _fx_counterparty(services, accounts, names, fin)
+    ladder, plans, lnotes = _fx_ladder(services, hooks, accounts, names)
+    out["ladder"], out["funding_plans"] = ladder, plans
+    notes += lnotes
+    out["limits"] = {"headline_gross_nav": ex.get("gross_leverage"), "gross_notional_nav": ex.get("gross_notional_leverage"), "warning_limit": "2x NAV",
+                     "caps": "none configured", "text": CAPS_TEXT,
+                     "basis": "OTC FX forwards and cross-currency swaps are outside the headline gross; their notional is in the gross notional"}
+    if hooks.get("rows"):
+        labels = ["MODEL"] + [x for x in labels if x != "MODEL"]
+    out["labels"] = labels
+    out["notes"] = notes
+    out["method"] = ("nominal and PV delta per currency = the ledger part (balances, receivables / payables and positions) + the OTC FX contracts'"
+                     " off-ledger part from their own re-pricing; a pair move re-prices the PV deltas linearly at today's USD rates; rate01, basis01"
+                     " and points01 are each a full re-price of the contract for +1 bp / +1 pip")
+    return out
+
+
+def _fx_counterparty(services, accounts: Dict[str, dict], names: Dict[str, str], fin: dict) -> List[dict]:
+    """K7 ``counterparty``: per prime-broker account with OTC contracts - the contracts' value to you (the CSA exposure where the contract
+    states one, else its mark), the IM posted, VM posted / received, and the exposure to the dealer's default = the IM posted (assumed
+    not segregated, ASSUMED) + whatever the VM posted exceeds what you owe on the contracts."""
+    out = []
+    pb_ids = [aid for aid, a in sorted(accounts.items()) if a.get("kind") == "PB"]
+    if not pb_ids:
+        return out
+    with shared_reader(services.db) as conn:
+        for aid in pb_ids:
+            try:
+                rows = conn.execute("SELECT contract_id, kind, mark_c, inputs_json FROM otc_contracts WHERE status='OPEN' AND account_id=?", (aid,)).fetchall()
+            except sqlite3.Error:
+                rows = []
+            if not rows:
+                continue
+            mtm = csa = 0
+            for r in rows:
+                m = int(r["mark_c"] or 0)
+                mtm += m
+                try:
+                    inp = json.loads(r["inputs_json"] or "{}") or {}
+                except ValueError:
+                    inp = {}
+                x = inp.get("csa_exposure_c") if isinstance(inp, dict) else None
+                csa += int(x) if isinstance(x, int) and not isinstance(x, bool) else m
+            per = (fin.get("accounts") or {}).get(aid) or {}
+            im, vp, vr = int(per.get("otc_im_c") or 0), int(per.get("otc_vm_posted_c") or 0), int(per.get("otc_vm_received_c") or 0)
+            exposure = im + max(0, csa + vp - vr)
+            a = accounts[aid]
+            out.append({"account_id": aid, "name": names.get(aid, aid), "broker": a.get("broker"), "contracts": len(rows), "mtm_c": mtm, "csa_exposure_c": csa,
+                        "im_posted_c": im, "vm_posted_c": vp, "vm_received_c": vr, "exposure_c": exposure,
+                        "basis": ("exposure to the dealer's default = IM posted (assumed not segregated, ASSUMED) + max(0, the contracts' CSA value to you + VM"
+                                  " posted - VM received)")})
+    return out
+
+
+def _fx_ladder(services, hooks: dict, accounts: Dict[str, dict], names: Dict[str, str]):
+    """K7 ``ladder``: the OPEN OTC FX contracts' scheduled flows (each product's ``scheduled_flows``) and, when the settlement-funding module
+    is in the build, its planned purchases and gaps (``ccyfunding.plan``, read lazily) - ``(rows, plans, notes)``."""
+    rows: List[dict] = []
+    notes: List[str] = []
+    plans: List[dict] = []
+    contracts = hooks.get("contracts") or []
+    if contracts:
+        with shared_reader(services.db) as conn:
+            for c in contracts:
+                mod = getattr(services, FX_HOOK_MODULES.get(c["kind"], ""), None)
+                fn = getattr(mod, "scheduled_flows", None) if mod is not None else None
+                if not callable(fn):
+                    continue
+                try:
+                    from .fx import hook_takes_services          # lazy: the hook reads the published indices through this runtime (P-C-R4)
+                    flows = (fn(conn, c, services) if hook_takes_services(fn) else fn(conn, c)) or []
+                except Exception as e:   # noqa: BLE001 - named
+                    notes.append(f"{c['contract_id']}: scheduled flows unavailable: {type(e).__name__}: {e}"[:200])
+                    continue
+                for f in flows:
+                    if not isinstance(f, dict):
+                        continue
+                    rows.append({"date": f.get("date"), "ccy": f.get("ccy"), "amount_c": f.get("amount_c"), "what": f.get("what"), "kind": "flow",
+                                 "event": f.get("event"), "known": f.get("known"), "contract_id": f.get("contract_id") or c["contract_id"],
+                                 "account_id": c["account_id"]})
+    fund_mod = getattr(services, "ccyfunding", None)
+    plan_fn = getattr(fund_mod, "plan", None) if fund_mod is not None else None
+    acct_ids = sorted({c["account_id"] for c in contracts})
+    if acct_ids and not callable(plan_fn):
+        notes.append("the settlement-funding plan (EUR purchases before each obligation) is not in this build: the ladder shows the contracts' flows only")
+    elif callable(plan_fn):
+        for aid in acct_ids:
+            try:
+                p = plan_fn(services, aid)
+            except Exception as e:   # noqa: BLE001 - named, never a guessed gap
+                notes.append(f"{names.get(aid, aid)}: settlement-funding plan unavailable: {type(e).__name__}: {e}"[:200])
+                continue
+            if not isinstance(p, dict):
+                continue
+            plans.append({k: p.get(k) for k in ("account_id", "available", "reason", "gaps", "usd_start", "notes", "method") if k in p})
+            # the plan's own ladder repeats the obligations the contracts' flows already list: only its purchases and its gaps are added here
+            for x in p.get("purchases") or []:
+                if not isinstance(x, dict):
+                    continue
+                what = x.get("what")
+                what = "; ".join(str(w) for w in what) if isinstance(what, (list, tuple)) else str(what or "")
+                usd = x.get("usd_at_mid_c")
+                ftd = x.get("funding_trade_date") or x.get("trade_date")
+                rows.append({"date": x.get("value_date") or x.get("date"), "ccy": x.get("ccy"), "amount_c": x.get("amount_c"), "kind": "purchase",
+                             "what": (f"settlement-funding purchase{' dealt ' + str(ftd) if ftd else ''}: buy {x.get('ccy')}"
+                                      + (f" with about USD {fmt_money(int(usd))} at today's mid" if isinstance(usd, int) else "") + (f" - for {what}" if what else "")),
+                             "trade_date": ftd, "usd_c": None if not isinstance(usd, int) else -usd, "account_id": aid})
+            for g in p.get("gaps") or []:
+                if isinstance(g, dict):
+                    gap = g.get("gap_c")
+                    rows.append({"date": g.get("funding_trade_date") or g.get("value_date") or g.get("date"), "ccy": "USD",
+                                 "amount_c": None if not isinstance(gap, int) else -gap, "what": g.get("text") or "settlement-funding gap", "kind": "gap",
+                                 "account_id": aid})
+    rows.sort(key=lambda r: (str(r.get("date") or ""), {"purchase": 0, "flow": 1, "gap": 2}.get(r.get("kind"), 3), str(r.get("ccy") or "")))
+    return rows, plans, notes
 
 
 def _by_sector(head: List[PosRisk], base_c: int) -> List[dict]:

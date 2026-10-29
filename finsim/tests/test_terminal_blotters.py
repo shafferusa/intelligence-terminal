@@ -551,6 +551,188 @@ def _insert_ended_package(rt, primary: str) -> None:
                    ts, ts, ts + 7200, "PK-T1", primary, "owner: not intended", _json.dumps({"as_of": ts})))
 
 
+# ===== 1.0.6.1 (FX_CCS_PLAN P-D task 5, D-T7; walk defect P8R2-01, WALK-1) ===================================================================
+class FxBookingLabelsAndWords(unittest.TestCase):
+    """The owner's two FX trades booked on a real ``build_runtime`` (Fund Book F1, Goldman Sachs PB, Thu 2026-10-29 10:00 ET, the worked
+    example's curves and prints): Completed Trades shows the two contracts with the owner's reference and the swap's inception conversion
+    naming the contract it serves; a settlement-funding purchase reads as the standing instruction's; Pending shows an expired quote
+    request under "expired".  WALK-1: a stored order whose notes, package and preview carry internal codes shows words only."""
+
+    @classmethod
+    def setUpClass(cls):
+        from tests.test_terminal_api import build as api_build
+        from finsim.terminal import config, fx, fxcurves
+        from finsim.terminal.quotes import QuoteRecord
+        cls.tmp = tempfile.mkdtemp(prefix="fst-blot-fx-")
+        rt = cls.rt = api_build(cls.tmp, at="2026-10-29T10:00:00-04:00", books=[config.BOOKS[1]])
+        fxcurves.fixture_curves(rt, persist=True)
+        now = rt.clock.epoch()
+        for iid, px in (("EURUSD", "1.1158"), ("GBPUSD", "1.3323")):
+            rt.cache.put(QuoteRecord(iid, "yahoo", "test print", "direct", last=Decimal(px), quote_time=now, fetched_at=now, session_group="FX_SPOT"), at=now)
+
+        def ex(kind, payload, rid, actor="ui"):
+            r = rt.bus.execute(Command(kind, payload, rid, actor))
+            assert r.ok, (kind, r.body)
+            return r.body
+        ex("account.open_pb", {"lifetime_id": "F1", "broker": "GS"}, "ui:blotfx-open-pb")
+        a = {"pay_ccy": "EUR", "recv_ccy": "USD", "pay_notional": "2000000.00", "pay_index": "ESTR", "recv_index": "SOFR", "months": 24, "mtm_reset": False,
+             "start_conversion": True, "settlement_funding": {"EUR": "BUY_WITH_USD"}, "client_ref": "OWNER-FX-2026-10-28-A"}
+        b = {"pair": "EURGBP", "side": "SELL", "notional": "2000000.00", "tenor": "2Y", "settlement_funding": {"EUR": "BUY_WITH_USD"},
+             "client_ref": "OWNER-FX-2026-10-28-B"}
+        cls.swap = ex("otc.book", {"account_id": "F1:PB_GS", "kind": "XCCY", "terms": a}, "OWNER-FX-2026-10-28:20261029T100000:A:1:acc")["contract_id"]
+        cls.fwd = ex("otc.book", {"account_id": "F1:PB_GS", "kind": "FX_FORWARD", "terms": b}, "OWNER-FX-2026-10-28:20261029T100000:B:1:acc")["contract_id"]
+
+        def sfi(ctx, p):          # a settlement-funding purchase as OTC_CCY_FUNDING books it (value = this trade date's spot date)
+            return fx.book_linked_spot(ctx, "F1:PB_GS", "EUR", "USD", 1294583, "EUR", "2026-11-02", None,
+                                       {"type": "otc_funding", "contracts": [p["cid"]], "due": "2026-11-02", "currency": "EUR",
+                                        "obligations": [{"contract_id": p["cid"], "amount_c": 1294583, "what": "pay leg coupon 1"}]}, ("xccy_event", p["cid"]),
+                                       check_funding=False)["deal"]
+        rt.bus.register("test.sfi", sfi)
+        cls.sfi_deal = ex("test.sfi", {"cid": cls.swap}, "lc:blotfx-sfi", actor="lifecycle")["deal_id"]
+        with rt.db.writer() as tx:        # an expired quote request (the dealer could not quote), as RFQ_DEALER leaves one
+            tx.conn.execute("INSERT INTO rfqs(rfq_id, command_id, account_id, broker, kind, terms_json, status, requested_ts, closed_ts, reason, updated_ts)"
+                            " VALUES ('RFQ-000901', 0, 'F1:PB_GS', 'GS', 'FX_FORWARD', ?, 'EXPIRED', ?, ?, ?, ?)",
+                            (json.dumps(dict(b, client_ref="WALK-TEST-REF")), now - 300, now - 120, "the simulated dealer could not quote: EURGBP: QUOTE_STALE", now - 120))
+            # WALK-1: a stored 1.0.5-style order whose notes, package and preview carry internal codes (written as the old builds wrote them)
+            c = tx.conn
+            cmd = int(c.execute("SELECT MIN(id) FROM commands").fetchone()[0])
+            pv = {"as_of": now - 3600, "execution": {"fill_now": False, "decision": "AWAITING_SESSION", "session": {"phase": "PRE_MARKET"}},
+                  "warnings": ["the US_EQUITY_OPTIONS session is closed"]}
+            c.execute("INSERT INTO hedge_packages(package_id, command_id, account_id, primary_order_id, candidate_id, strategy_key, legs_json, fill_mode, status, created_ts)"
+                      " VALUES ('PK-WALK1', ?, 'F1:US_EXCHANGE', 'O-WALK1', 'CALL_7PCT', 'CALL_7PCT', '[]', 'SEQUENTIAL', 'CANCELLED', ?)", (cmd, now - 3600))
+            c.execute("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, filled_qty, avg_px, order_type, limit_px, fill_mode, tif, status,"
+                      " session_group, created_ts, updated_ts, expires_ts, package_id, parent_order_id, reason, preview_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                      ("O-WALK1", "test:O-WALK1", "F1:US_EXCHANGE", "SPY", "BUY", 5, 0, None, "LIMIT", "500.00", "SEQUENTIAL", "DAY", "CANCELLED", "US_EQUITY",
+                       now - 3600, now - 600, now + 3600, "PK-WALK1", None, "owner cancelled; SESSION_CLOSED", json.dumps(pv)))
+            for ts, frm, to, note in ((now - 3500, None, "WORKING", "submitted; resting for the session; SESSION_CLOSED"),
+                                      (now - 3000, "WORKING", "WORKING", "hedge leg of O-000017 (CALL_7PCT): AWAITING_SESSION"),
+                                      (now - 600, "WORKING", "CANCELLED", "cancelled by the owner")):
+                c.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES ('O-WALK1',?,?,?,?)", (ts, frm, to, note))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    @classmethod
+    def ok(cls, method, path, body=None):
+        st, out, _h = cls.rt.router.handle(method, path, None, body, "127.0.0.1", None)
+        if st != 200:
+            raise AssertionError(f"{method} {path} -> {st} {out}")
+        return out
+
+    def test_dt7_completed_trades_show_the_contracts_and_the_conversion_with_their_labels(self):
+        rows = self.ok("GET", "/api/blotter/executions?scope=F1:ALL")["rows"]
+        by = {r["execution_id"]: r for r in rows}
+        gs = blotters.dealer_name("GS")
+        for cid, ref in ((self.swap, "OWNER-FX-2026-10-28-A"), (self.fwd, "OWNER-FX-2026-10-28-B")):
+            self.assertEqual(("otc", f"Simulated OTC trade with {gs}, booked by the operator at the owner's instruction (ref {ref})"),
+                             (by[cid]["kind"], by[cid]["source_label"]))
+        conv = [r for r in rows if r["kind"] == "fx_deal" and r.get("link_type") == "xccy_start"]
+        self.assertEqual(1, len(conv))
+        c = conv[0]
+        # SELL EUR 2,000,000.00 / BUY USD 2,231,560.00 (1.1158 - 0.2 pip = 1.11578), value 2026-11-02 = the swap's start
+        self.assertEqual(([self.swap], "2231560.00", "2000000.00", "2026-11-02"), (c["serves"], c["notional"], c["gross"], c["settle_date"]))
+        self.assertEqual(f"inception conversion of {self.swap}: settled with its start exchange on 2026-11-02 (payment versus payment)", c["link_text"])
+        self.assertEqual(f"Simulated FX deal, booked with {self.swap}, booked by the operator at the owner's instruction (ref OWNER-FX-2026-10-28-A)", c["source_label"])
+        s = by[self.sfi_deal]
+        self.assertEqual(("system", f"System (the standing settlement-funding instruction of {self.swap})", "otc_funding", [self.swap]),
+                         (s["source"], s["source_label"], s["link_type"], s["serves"]))
+        self.assertTrue(s["note"].startswith(f"settlement funding of {self.swap}: EUR for the obligations due 2026-11-02 (pay leg coupon 1)"), s["note"])
+        self.assertEqual(2, len([r for r in rows if r["kind"] == "otc"]))
+
+    def test_v1061r2_04_completed_trades_name_eurusd_in_market_convention(self):
+        """V1061R2-04: the owner asked that a currency pair is never shown reversed, and Completed Trades is his confirmation view (10.7).
+        Both EUR/USD rows of trade A read in market convention - EUR the base, the rate in USD per EUR, the side words base first:
+        - the inception conversion: SELL EUR 2,000,000.00 / BUY USD at the bid 1.1158 - 0.2 pip (0.00002) = 1.11578, USD 2,000,000.00 x
+          1.11578 = 2,231,560.00 -> "EUR/USD spot", instrument EURUSD, "SELL EUR / BUY USD", "1.11578 USD per EUR" (it read "USD/EUR spot",
+          USDEUR, "BUY USD / SELL EUR", "1.11578 rate");
+        - the float / float swap: pay EUR ESTR / receive USD SOFR at the deal rate X0 = 1.1158 -> "EUR/USD cross-currency swap", "PAY EUR /
+          RECEIVE USD", "1.1158 USD per EUR" (it read "USD/EUR cross-currency swap", "RECEIVE USD / PAY EUR");
+        - the settlement-funding purchase: BUY EUR 12,945.83 / SELL USD at the ask 1.1158 + 0.2 pip = 1.11582 -> "EUR/USD spot", "BUY EUR /
+          SELL USD".
+        The forward keeps EURGBP (its pair as dealt).  The execution drawer and the CSV read the same row."""
+        rows = self.ok("GET", "/api/blotter/executions?scope=F1:ALL")["rows"]
+        by = {r["execution_id"]: r for r in rows}
+        conv = [r for r in rows if r["kind"] == "fx_deal" and r.get("link_type") == "xccy_start"][0]
+        self.assertEqual(("EUR/USD spot", "EURUSD", "SELL EUR / BUY USD", "1.11578", "USD per EUR", "2231560.00", "USD", "2000000.00"),
+                         (conv["symbol"], conv["instrument_id"], conv["side_words"], conv["price"], conv["price_label"], conv["notional"], conv["currency"],
+                          conv["gross"]))
+        swap = by[self.swap]
+        self.assertEqual(("EUR/USD cross-currency swap", "PAY EUR / RECEIVE USD", "1.1158", "USD per EUR"),
+                         (swap["symbol"], swap["side_words"], swap["price"], swap["price_label"]))
+        sfi = by[self.sfi_deal]
+        self.assertEqual(("EUR/USD spot", "EURUSD", "BUY EUR / SELL USD", "1.11582", "USD per EUR"),
+                         (sfi["symbol"], sfi["instrument_id"], sfi["side_words"], sfi["price"], sfi["price_label"]))
+        self.assertEqual(("EURGBP OTC forward", "0.866624"), (by[self.fwd]["symbol"], by[self.fwd]["price"]))
+        # no row names a pair the other way round
+        self.assertEqual([], [r["execution_id"] for r in rows if "USD/EUR" in str(r.get("symbol")) or r.get("instrument_id") == "USDEUR"
+                              or "USD/GBP" in str(r.get("symbol")) or "GBP/EUR" in str(r.get("symbol"))])
+        # the execution drawer (GET /api/executions/{id}) and the CSV read the same words
+        d = self.ok("GET", f"/api/executions/{conv['execution_id']}")["execution"]
+        self.assertEqual(("EUR/USD spot", "SELL EUR / BUY USD", "1.11578", "USD per EUR"), (d["symbol"], d["side_words"], d["price"], d["price_label"]))
+        st, csv_text, _h = self.rt.router.handle("GET", "/api/blotter/executions?scope=F1:ALL&format=csv", None, None, "127.0.0.1", None)
+        self.assertEqual(200, st)
+        line = [x for x in str(csv_text).splitlines() if x.startswith(conv["execution_id"] + ",")][0]
+        self.assertIn(",EURUSD,EUR/USD spot,FX,SELL EUR / BUY USD,,2231560.00,USD,1.11578,USD per EUR,", line)
+
+    def test_v1061r2_04_the_market_convention_words(self):
+        """V1061R2-04, pure: the pair of two currencies is the market's (``instruments.fx_cross_id``), whichever way the deal runs; the rate is
+        the dealt rate as quoted (quote currency per 1 base), or, for a USD-based pair stored without it, the stored ledger rate said as USD
+        per 1 unit (never a reversed label)."""
+        w = blotters.fx_deal_words
+        self.assertEqual({"pair": "EURUSD", "pair_label": "EUR/USD", "side_words": "SELL EUR / BUY USD", "price": "1.11578", "price_label": "USD per EUR"},
+                         w("USD", "EUR", "1.11578", "1.11578"))
+        self.assertEqual(("USD/JPY", "SELL USD / BUY JPY", "153.32", "JPY per USD"), tuple(w("JPY", "USD", "0.00652231", "153.32")[k] for k in
+                                                                                            ("pair_label", "side_words", "price", "price_label")))
+        self.assertEqual(("0.00652231", "USD per JPY (the stored ledger rate)"), tuple(w("JPY", "USD", "0.00652231")[k] for k in ("price", "price_label")))
+        self.assertEqual(("EUR/GBP", "SELL EUR / BUY GBP", "GBP per EUR"), tuple(w("GBP", "EUR", "0.866624", "0.866624")[k] for k in
+                                                                                 ("pair_label", "side_words", "price_label")))
+        x = blotters.xccy_words
+        self.assertEqual({"pair_label": "EUR/USD", "side_words": "PAY EUR / RECEIVE USD", "price": "1.1158", "price_label": "USD per EUR"}, x("USD", "EUR", "1.1158"))
+        self.assertEqual(("EUR/USD", "RECEIVE EUR / PAY USD"), tuple(x("EUR", "USD", "1.1158")[k] for k in ("pair_label", "side_words")))
+        self.assertEqual(("USD/JPY", "RECEIVE USD / PAY JPY", "USD per JPY"), tuple(x("USD", "JPY", "0.00652231")[k] for k in ("pair_label", "side_words",
+                                                                                                                            "price_label")))
+
+    def test_dt7_pending_shows_the_expired_quote_request(self):
+        exp = [r for r in self.ok("GET", "/api/blotter/pending?book=F&status=expired")["rows"] if r["row_kind"] == "rfq"]
+        self.assertEqual(["RFQ-000901"], [r["rfq_id"] for r in exp])
+        r = exp[0]
+        self.assertEqual(("EXPIRED", "expired", "OTC", "WALK-TEST-REF"), (r["stage"], r["stage_words"], r["asset_class"], r["client_ref"]))
+        self.assertEqual("expired: the simulated dealer could not quote: EURGBP: quote stale", r["stage_label"])
+        self.assertNotIn("RFQ-000901", [x.get("rfq_id") for x in self.ok("GET", "/api/blotter/pending?book=F")["rows"]])     # not open
+
+    def test_walk1_a_stored_orders_drawer_shows_words_only(self):
+        import re
+        code = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
+        d = self.ok("GET", "/api/orders/O-WALK1")
+        shown = [s.get("note") for s in d["timeline"]] + [s.get("words") for s in d["timeline"]]
+        pv = d["preview_summary"]
+        shown += [pv["decision_words"], pv["session_words"]] + [w if isinstance(w, str) else w.get("message") for w in pv["warnings"]]
+        pk = d["package"]
+        shown += [pk["strategy_words"], pk["fill_mode_words"], pk["state_words"]] + [x.get("stage_words") for x in pk["legs"]] + [x.get("type_words") for x in pk["legs"]]
+        row = next(x for x in self.ok("GET", "/api/blotter/pending?book=F&status=cancelled")["rows"] if x.get("order_id") == "O-WALK1")
+        shown += [row.get("stage_label"), row.get("strategy_words"), row.get("fill_mode_words"), row.get("package_words")]
+        self.assertEqual([], [t for t in shown if t and code.search(str(t))], shown)
+        self.assertEqual("hedge leg of O-000017 (protective call ~7 % above): the session is not open", d["timeline"][2]["note"])
+        self.assertEqual(("protective call ~7 % above", "sequential (the hedge legs wait for the primary)", "the session is not open", "pre market",
+                          ["the US equity options session is closed"]), (pk["strategy_words"], pk["fill_mode_words"], pv["decision_words"], pv["session_words"],
+                                                                         pv["warnings"]))
+        # the stored rows are untouched (display only)
+        with self.rt.db.reader() as conn:
+            self.assertEqual("submitted; resting for the session; SESSION_CLOSED", conn.execute("SELECT note FROM order_events WHERE order_id='O-WALK1' ORDER BY id").fetchone()[0])
+            self.assertEqual(("CALL_7PCT", "SEQUENTIAL"), tuple(conn.execute("SELECT strategy_key, fill_mode FROM hedge_packages WHERE package_id='PK-WALK1'").fetchone()))
+
+    def test_walk1_the_pending_page_renders_the_words(self):
+        import os
+        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "finsim", "terminal", "static", "pages", "pending.js")
+        with open(path, encoding="utf-8") as f:
+            js = f.read()
+        self.assertIn("function words(text)", js)
+        for raw in ("' ' + r.strategy_key", "' . ' + p.strategy_key", "(p.fill_mode || '')", "(p.decision || '')", "wrap(s.note || ''"):
+            self.assertNotIn(raw, js)
+
+
 # ---- fixture writers ------------------------------------------------------------------------------------------------------------------------------
 def _h_expire_option(ctx, p: dict) -> dict:
     """Test-only command: the long call expires worthless (origin EXPIRY at 0, as the OPTION_EXPIRY job books it)."""

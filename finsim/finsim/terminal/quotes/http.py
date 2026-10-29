@@ -18,7 +18,8 @@ Conventions
   (maintenance)") instead of the success the 200 had counted.
 - The Build 2 debt sources (2026-10-21) have their own rows: ``fiscaldata`` (api.fiscaldata.treasury.gov: MSPD and
   auctions), ``treasurydirect`` (FedInvest prices), ``nyfed`` (SOFR fallback), ``ecb`` (deposit rate fallback, euro-area
-  AAA par curve), ``mof`` (JGB yields).  ``FetchError.kind`` names a failure class the caller acts on (``maintenance``).
+  AAA par curve), ``mof`` (JGB yields), ``boe`` (the Bank of England database and yield-curve file, ``GOV_UA`` only, FX_CCS_PLAN
+  K2).  ``FetchError.kind`` names a failure class the caller acts on (``maintenance``).
 - Nothing here sleeps while holding any lock; nothing here touches the database.
 """
 from __future__ import annotations
@@ -33,7 +34,7 @@ from typing import Callable, Dict, Optional
 
 from ..config import BROWSER_UA, GOV_UA, MAX_BYTES, TERMINAL_UA
 
-PROVIDERS = ("yahoo", "cboe", "treasury", "fred", "finra", "frankfurter", "fiscaldata", "treasurydirect", "nyfed", "ecb", "mof")
+PROVIDERS = ("yahoo", "cboe", "treasury", "fred", "finra", "frankfurter", "fiscaldata", "treasurydirect", "nyfed", "ecb", "mof", "boe")
 RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
 DOWN_429_S = 60
 DOWN_FAIL_S = 120

@@ -442,7 +442,13 @@ class SettleDue(Job):
         rows = conn.execute("SELECT s.settle_id FROM settlements s JOIN accounts a ON a.account_id=s.account_id JOIN lifetimes l ON l.lifetime_id=a.lifetime_id"
                             " WHERE s.status='PENDING' AND s.due_date<=? AND a.status='OPEN' AND l.status='OPEN'" + held +
                             " ORDER BY CASE WHEN s.amount_c > 0 THEN 0 ELSE 1 END, s.due_date, s.settle_id", (cutoff.isoformat(),)).fetchall()
-        return [r["settle_id"] for r in rows]
+        keys = [r["settle_id"] for r in rows]
+        try:   # FX_CCS_PLAN D7 / K4: a settlement linked to an OTC contract's event (xccy_start / xccy_event) waits for that event
+            from .fx import held_settle_ids
+            waiting = held_settle_ids(conn, keys)
+        except Exception:   # noqa: BLE001 - an fx without the hook holds nothing
+            waiting = set()
+        return [k for k in keys if k not in waiting]
 
     def payload(self, key: str) -> dict:
         return {"key": key, "settle_id": key}

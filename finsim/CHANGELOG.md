@@ -3,6 +3,77 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.6.1 (built 2026-10-29; your Goldman FX trades: prime-broker FX forwards to 2 years and the EUR/USD cross-currency swap)
+
+**Prime-broker FX forwards out to 2 years**
+
+- Prime-broker forwards on USD, EUR and GBP pairs are now priced on one term curve per currency: GBP on the Bank of England UK OIS curve (observed); EUR on the ECB euro-area AAA government curve plus the prime broker's EUR OIS spread (a proxy; the spread is an assumed schedule term); USD on the Treasury par curve, as on the swap desk (a proxy). Each curve starts at its overnight print (SONIA, ESTR, SOFR).
+- Tenors 1W, 2W, 1M to 1Y, 18M and 2Y, or any business day up to the 2-year date. A value date on a holiday of the pair's settlement calendars (TARGET2, London, New York) is refused and names the calendar.
+- A cross's spot (EUR/GBP) is derived from its two USD pairs; its own print is kept beside it, and a difference of more than 5 pips refuses the quote.
+- Every quote and booked forward keeps its full pricing record: the spot legs, each curve with its date and nodes, the discount factors, the outright and points, the basis levels, the dealer's half-width, the initial margin, the notional limits (none configured), the settlement funding and the cross-checks, each labelled observed, MODEL, PROXY or ASSUMED.
+- Delivery happens at 00:30 ET on the value date, with no price input. A currency that is not there waits, unfunded; nothing is ever converted on its own. The delivery note is never empty, and the drawer shows a simulated confirmation.
+- Pairs with another currency (JPY, CHF, CAD, AUD and others) keep the old method up to 1 year, labelled "LEGACY METHOD - LIMITED"; beyond 1 year they are refused.
+- A price that needs a print older than 10 days, a curve older than 3 business days or a missing curve point is refused with its reason; nothing falls back to a flat rate.
+
+**The EUR/USD cross-currency swap**
+
+- New: a EUR/USD float / float swap. The Fund pays EUR on compounded ESTR plus the dealer's spread and receives USD on compounded SOFR, quarterly, ACT/360, with a 2-business-day payment delay. It starts on the spot date (TARGET2 and New York days) and both exchanges are at the deal rate (no reset).
+- The dealer quotes its par spread on the same curves plus the schedule half-width, rounded against the Fund. The EUR/USD basis level is a disclosed, editable Goldman Sachs schedule term (0.0 bp, ASSUMED).
+- An inception conversion (sell the EUR received at the start for USD at the FX desk) can be booked in the same command; it settles together with the start exchange, payment versus payment.
+- Coupons are paid at the published compounded indices (the ECB ESTR index, the NY Fed SOFR Index), with a true-up of the nightly estimates.
+- Every cross-currency swap is margined daily on its CSA exposure (the full value, notionals and accrued coupons included); NAV keeps the clean mark.
+- A termination is cash-settled in USD at the full value with the dealer's half-width against the Fund, with no re-exchange. It is refused before the start while a conversion is linked. This also changes the fixed / fixed swap, whose termination used to need the foreign currency in cash.
+- Settings > Unsupported says which floating legs are offered (EUR ESTR / USD SOFR) and which are not yet (GBP SONIA, JPY, CHF, CAD, AUD, fixed / float).
+
+**Settlement funding**
+
+- The settlement-funding instruction: two business days before an obligation in EUR (or another currency the FX desk deals) is due, FinSim buys that currency with USD as an audited FX desk spot deal named after the obligation. If USD is short, the purchase waits with an error; nothing moves on its own. The plan shows every obligation, purchase and the USD gap ahead (for the forward's 2028 delivery). You can switch the instruction per contract.
+- Linked deals (the inception conversion, the funding purchases) settle only inside their contract's own event, never alone.
+
+**Risk**
+
+- The Risk page has a new "Currency risk (FX)" panel: per currency the nominal and the PV delta, the USD effect of 1 % and 5 %, the moves of each USD pair and each traded cross, rate risk per currency, the basis and EUR OIS spread sensitivities, forward points, the prime brokers' counterparty lines (initial margin, variation margin, exposure to a default), a liquidity ladder and the notional limits. It replaces the single +/-5 % USD scenario row.
+- Currency exposure counts each balance once: the ledger part plus the part only the OTC contracts know.
+- OTC FX forwards and cross-currency swaps leave the USD DV01 rows and the rates scenario; their rate risk is shown per currency.
+
+**Your trades and the booking program**
+
+- New: `python -m finsim otcplan` books a plan of OTC trades through the dealer's quote-request desk. Before it accepts a quote, an independent re-pricer re-derives every number and must match exactly. Every booking carries an owner reference, so a re-run never books twice. Its check (read-only) proves the booking against a snapshot taken before it.
+- Your two Goldman trades of 2026-10-28 are the first plan: the EUR/USD cross-currency swap with its EUR to USD conversion, and the EUR/GBP 2-year forward.
+- A forward check runs a copy of your book through the swap's start date and compares it with an untouched control copy before anything is booked live.
+- OTC bookings and quote requests can carry an owner reference (unique); Completed Trades shows it and names what each linked FX deal serves. Pending lists expired and declined quote requests.
+
+**Other**
+
+- A new equity total return swap on a stock with no trade for more than 5 sessions is refused ("no trade since <date>: the security may be delisted or suspended").
+- The Pending Trades order drawer shows stored internal codes in words (session closed, strategy names, fill modes).
+- New data, all free: ESTR and its index (ECB), the SOFR Index (NY Fed), SONIA, its index and the UK OIS curve (Bank of England, fetched with FinSim's own honest user agent only), the ECB AAA curve; FRED as the fallback where it carries the series. A read-only self-check of these sources: `tests\terminal_rfr_selfcheck.py`.
+- The swap and forward drawers' rate-risk number is the same rate01 the ticket and the Risk page show.
+
+**Fixes from the acceptance run**
+
+- The FX booking program accepts a dealer quote priced on FX prints up to 5 minutes old. Yahoo's free FX prints arrive about 3 minutes after their time, so the old 2-minute rule refused every real quote. A quote declined only because its prints were too old is now asked for again instead of ending the trade.
+- The booking checker no longer fails its currency-exposure item when a run booked nothing. A missing input file now gives a one-line message instead of a Python error.
+- A forward or cross-currency swap quote now counts its own initial margin in the settlement-funding gap it shows (the EUR purchase of 2028), so the quote shows the same gap as the booked contract.
+- A total return swap preview outside market hours now fetches the underlying's quote itself, so a delisted name (AVB) is refused within seconds instead of waiting for a close that never comes.
+- The cross-currency swap's confirmation shows its notionals as amounts (EUR 2,000,000.00 / USD ...). The swap drawers show the initial margin as USD 44,600.00, not 44600.00.
+- FX closes: an FX pair's daily close is the 17:00 ET print, else the 1-minute bar ending at 17:00 ET, else unavailable; it is never taken from a daily bar. A new FX booking no longer back-fills ten days of closes or raises MARK_MISSING for dates nothing needs.
+- Yahoo daily bars are dated by the offset in force at each bar, which fixes summer-time FX bars landing a day early.
+- Forward check of the FX booking:
+  - control and run copies run on one set of inputs;
+  - held curves are re-dated on business days only;
+  - the START is shown and checked: its net per currency against the quote (USD -40.00), its funding source, and settled cash at or above zero.
+- The EUR/GBP forward now says that the dealer's half-width (2.0 bp) and the 6 % initial margin are assumed Goldman Sachs schedule terms, as the basis levels are. Its pricing record, stored when the forward is booked, ends with "ASSUMED: the basis levels, the dealer half-width and IM are Goldman Sachs schedule terms". On the ticket, the dealt-rate line says the half-width is a Goldman Sachs schedule term, ASSUMED, and the IM rule ends "(the prime broker's schedule, ASSUMED)".
+- The forward ticket shows its sensitivities as money (EUR -1,882,614.77, not EUR -1882614.77). The swap ticket's "rates +1 bp" figures are shown the same way.
+- Completed Trades never shows a currency pair the wrong way round:
+  - the swap's inception conversion now reads "EUR/USD spot", SELL EUR / BUY USD @ 1.11578 USD per EUR (it read "USD/EUR spot ... rate");
+  - the swap reads "EUR/USD cross-currency swap", PAY EUR / RECEIVE USD, 1.1158 USD per EUR;
+  - the execution drawer, the CSV and Pending Trades read the same.
+- The booking program's report now shows the Treasury's cash and the Goldman Sachs collateral after booking:
+  - the Treasury's settled and available cash;
+  - Goldman's initial margin posted against the margin required, and the variation margin posted and received.
+  The program used to ask the terminal for two pages that do not exist, so both read "unavailable". Its restart check now compares this cash and collateral too, and fails when a page cannot be read instead of passing.
+
 ## 1.0.6 (built 2026-10-29)
 
 - Your imported positions, your restated NAV history and your ledger are unchanged by this release.

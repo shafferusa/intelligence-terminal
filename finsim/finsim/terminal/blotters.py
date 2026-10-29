@@ -58,6 +58,20 @@ Release 1.0.6 (phase 2, 15.3 E1 / E3; P2 tasks 2, 4, 5 and 6) adds:
   ``PATCH /api/orders/{id}`` amends (``order.amend``), ``POST /api/orders/{id}/replace`` replaces (``order.replace``; OMS-03).
 - The stage vocabulary is published as the ORDER_STAGES / EXECUTION_STAGES conventions (``tables.add_conventions``).
 
+Release 1.0.6.1 (FX_CCS_PLAN rev 2, package P-D task 5; walk defect P8R2-01, WALK-1) adds, display only (no stored row changes):
+- an OTC contract booked with an owner reference (``otc_contracts.client_ref``) reads "Simulated OTC trade with <dealer>, booked by the
+  operator at the owner's instruction (ref <client_ref>)"; an FX deal booked for a contract names what it serves from its stored
+  ``inputs.link``: the swap's inception conversion ("inception conversion of SWP-..., settled with its start exchange on <date>"), a
+  settlement-funding purchase ("settlement funding of <contracts>: <ccy> for the obligations due <date>", source "system": the standing
+  instruction booked it), a forward's delivery deal ("delivery of OTC-... at <rate>"); ``link_type``, ``serves`` and ``link_text`` carry it;
+- Pending shows the expired quote requests under "expired" and the declined ones under "cancelled" (both under "all"), with the reason;
+- stored notes and codes in trader words (plan section 3 rule 4): the order timeline's notes, the preview summary's decision and
+  warnings, a package's strategy and fill mode (``strategy_words``, ``fill_mode_words``, ``decision_words``) - an UPPER_SNAKE code in a
+  stored note becomes its words (the review, session-group, strategy and hedge-candidate maps; any other code in lower-case words);
+- (fix round 3, V1061R2-04) currency pairs in market convention, never reversed: an FX deal reads "EUR/USD spot", instrument EURUSD,
+  "SELL EUR / BUY USD" (the base first), its dealt rate as quoted with its unit ("1.11578 USD per EUR"); a cross-currency swap reads
+  "EUR/USD cross-currency swap", "PAY EUR / RECEIVE USD", its deal rate "USD per EUR" (``market_pair``, ``fx_deal_words``, ``xccy_words``).
+
 The module has no commands and no schema of its own (C8's columns are added by ``orders.bind``); it reads optional columns and
 tables (``booking``, the C15 settlement fail columns, ``sec_loans``, ``rfqs``) only when they exist, so it imports, registers and
 serves on any database a 1.0.x release opened (15.2 step 3, S-14).
@@ -67,6 +81,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import re
 import sqlite3
 from datetime import datetime
 from decimal import Decimal
@@ -74,11 +89,20 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 from . import config
 from .clock import accounting_day, ny_of, ny_str
+from .instruments import fx_cross_id
 from .units import from_c
 
 AS_OF = "AS_OF"
 HISTORICAL_MODEL = "HISTORICAL_MODEL"
 SIMULATED_LABEL = "Simulated fill"
+#: FX_CCS_PLAN P-D task 5: the owner's booking program sets ``client_ref`` on each of his contracts
+OWNER_REF_TEXT = "booked by the operator at the owner's instruction (ref {ref})"
+#: WALK-1 (P8R2-01): a stored UPPER_SNAKE code shown in words; a package's fill mode in words
+CODE_RE = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
+FILL_MODE_WORDS = {"SEQUENTIAL": "sequential (the hedge legs wait for the primary)", "AON": "all or none (every leg fills together or none does)"}
+HEDGE_TITLES = {"PUT_7PCT": "protective put ~7 % below", "COLLAR_7": "collar ~7 % / ~7 %", "PUT_SPREAD": "put spread 7 % / 15 %",
+                "CALL_7PCT": "protective call ~7 % above", "CALL_SPREAD": "call spread 7 % / 15 %", "COLLAR_SHORT": "short collar"}
+_CODE_MAPS: List[Dict[str, str]] = []
 HISTORICAL_MODEL_LABEL = "Historical model (not an independent execution)"
 SYSTEM_EVENTS = {"EXERCISE": "exercise", "ASSIGNMENT": "assignment", "EXPIRY": "expiry", "FUTURES_FINAL": "final settlement", "MATURITY": "maturity"}
 SOURCE_KEYS = ("simulated", "as_of", "historical_model", "system")
@@ -252,6 +276,51 @@ def _fill_command_id(conn: sqlite3.Connection, fill_row) -> Optional[int]:
     return None if r is None else int(r[0])
 
 
+def _code_maps() -> List[Dict[str, str]]:
+    """The existing word maps (built once): the review codes, the session groups, the strategy titles, the hedge candidates, fill modes."""
+    if _CODE_MAPS:
+        return _CODE_MAPS
+    maps: List[Dict[str, str]] = [dict(FILL_MODE_WORDS), dict(HEDGE_TITLES)]
+    try:
+        from .orders_rules import REVIEW_WORDS
+        maps.append(dict(REVIEW_WORDS))
+    except Exception:   # noqa: BLE001 - a build without it: the lower-case words
+        pass
+    try:
+        from .orders_preview import GROUP_WORDS
+        maps.append(dict(GROUP_WORDS))
+    except Exception:   # noqa: BLE001
+        pass
+    try:
+        from .strategies_catalogue import STRATEGIES
+        maps.append({str(s.get("key")): str(s.get("title") or "").lower() or str(s.get("key")) for s in STRATEGIES if s.get("key")})
+    except Exception:   # noqa: BLE001
+        pass
+    _CODE_MAPS.extend(maps)
+    return _CODE_MAPS
+
+
+def code_words(code) -> Optional[str]:
+    """WALK-1: one stored code in trader words (None for None): a known code from the existing maps, any other UPPER_SNAKE code in
+    lower-case words ("SESSION_CLOSED" -> "the session is closed", "BEAR_PUT_SPREAD" -> "bear put spread"); anything else unchanged."""
+    if code is None:
+        return None
+    c = str(code)
+    for m in _code_maps():
+        if c in m and m[c]:
+            return m[c]
+    if CODE_RE.fullmatch(c):
+        return c.replace("_", " ").lower()
+    return c
+
+
+def words_text(text) -> str:
+    """WALK-1: a stored note with every UPPER_SNAKE code replaced by its words ("...; SESSION_CLOSED" -> "...; the session is closed")."""
+    if text is None:
+        return ""
+    return CODE_RE.sub(lambda m: code_words(m.group(0)) or m.group(0), str(text))
+
+
 def _order_fill(conn: sqlite3.Connection, order_id: str):
     return conn.execute("SELECT f.trade_date, f.entry_id, j.command_id FROM fills f LEFT JOIN journal_entries j ON j.entry_id=f.entry_id"
                         " WHERE f.order_id=? ORDER BY f.ts, f.fill_id LIMIT 1", (order_id,)).fetchone()
@@ -301,7 +370,11 @@ def source_label(conn: sqlite3.Connection, kind: str, row, _cache: Optional[dict
         out.update(source="system", label=f"System ({SYSTEM_EVENTS[origin]})")
     if kind == "otc_contract":
         # an OTC contract is not a fill (P4-R1): a live contract reads "Simulated OTC trade with <dealer>"
-        out.update(label=f"Simulated OTC trade with {dealer_name(_get(row, 'broker'))}")
+        label = f"Simulated OTC trade with {dealer_name(_get(row, 'broker'))}"
+        ref = _get(row, "client_ref")
+        if ref:                                       # FX_CCS_PLAN P-D task 5: the owner's booking program's reference
+            label += ", " + OWNER_REF_TEXT.format(ref=ref)
+        out.update(label=label)
     return out
 
 
@@ -427,23 +500,64 @@ def _quote_used(text) -> Optional[dict]:
     return {k: q.get(k) for k in keep if q.get(k) is not None}
 
 
+def market_pair(ccy_a: str, ccy_b: str) -> Tuple[str, str]:
+    """V1061R2-04: the market-convention ``(base, quote)`` of two currencies (``instruments.fx_cross_id``: EUR/USD, GBP/USD, USD/JPY,
+    EUR/GBP) - never the deal's own buy / sell or receive / pay order: the owner asked that a currency pair is never shown reversed."""
+    pair = fx_cross_id(str(ccy_a or "").upper(), str(ccy_b or "").upper())
+    return pair[:3], pair[3:]
+
+
+def fx_deal_words(buy_ccy: str, sell_ccy: str, rate, rate_quoted=None) -> dict:
+    """V1061R2-04: an FX deal in market convention - ``{pair: "EURUSD", pair_label: "EUR/USD", side_words: "SELL EUR / BUY USD" (the base
+    first), price, price_label: "USD per EUR"}``.  The price is the dealt rate as quoted (the deal's ``inputs.rate_quoted``: quote currency
+    per 1 base).  A deal stored without it shows its stored rate, which is already quote per base for a cross or a pair quoted in USD
+    (EUR/USD); for a USD-based pair (USD/JPY) the stored rate is the ledger's USD per 1 unit, and its label says so."""
+    b, s = str(buy_ccy or "").upper(), str(sell_ccy or "").upper()
+    base, quote = market_pair(b, s)
+    buying_base = b == base
+    side = f"{'BUY' if buying_base else 'SELL'} {base} / {'SELL' if buying_base else 'BUY'} {quote}"
+    if rate_quoted not in (None, ""):
+        price, label = str(rate_quoted), f"{quote} per {base}"
+    elif base != "USD":
+        price, label = str(rate), f"{quote} per {base}"
+    else:
+        price, label = str(rate), f"USD per {quote} (the stored ledger rate)"
+    return {"pair": base + quote, "pair_label": f"{base}/{quote}", "side_words": side, "price": price, "price_label": label}
+
+
+def xccy_words(recv_ccy: str, pay_ccy: str, deal_rate) -> dict:
+    """V1061R2-04: a cross-currency swap in market convention - ``{pair_label: "EUR/USD", side_words: "PAY EUR / RECEIVE USD" (the base
+    first), price, price_label}``.  Its deal rate is stored as USD per 1 unit of the other currency: the market quote for EUR/USD, GBP/USD,
+    AUD/USD (price_label "USD per EUR"); for a USD-based pair (USD/JPY) the label says USD per JPY."""
+    r, p = str(recv_ccy or "").upper(), str(pay_ccy or "").upper()
+    base, quote = market_pair(r, p)
+    first, second = ("PAY", "RECEIVE") if p == base else ("RECEIVE", "PAY")
+    foreign = base if quote == "USD" else quote
+    return {"pair_label": f"{base}/{quote}", "side_words": f"{first} {base} / {second} {quote}", "price": None if deal_rate is None else str(deal_rate),
+            "price_label": f"USD per {foreign}"}
+
+
 def _fx_rows(services, conn: sqlite3.Connection, accts: Dict[str, dict]) -> List[dict]:
     if not accts or not _has_table(conn, "fx_deals"):
         return []
     ids = tuple(accts)
     q = ",".join("?" for _ in ids)
     out = []
+    refs: Dict[str, Optional[str]] = {}
     for r in conn.execute(f"SELECT * FROM fx_deals WHERE account_id IN ({q})", ids).fetchall():
         acct = accts[r["account_id"]]
         fee = conn.execute("SELECT COALESCE(SUM(amount_c), 0) FROM journal_lines WHERE entry_id=? AND gl='5000'", (r["entry_id"],)).fetchone()[0]
         settled = r["status"] == "SETTLED"
+        link = fx_link_words(conn, r, refs)
+        # V1061R2-04: the pair, the side and the rate in market convention (EUR/USD, SELL EUR / BUY USD, USD per EUR), never buy / sell order
+        w = fx_deal_words(r["buy_ccy"], r["sell_ccy"], r["rate"], _json(_get(r, "inputs_json")).get("rate_quoted"))
         row = _base(acct)
         row.update({
             "execution_id": r["deal_id"], "kind": "fx_deal", "parent_id": f"T-{r['command_id']}", "parent_kind": "ticket",
-            "instrument_id": f"{r['buy_ccy']}{r['sell_ccy']}", "symbol": f"{r['buy_ccy']}/{r['sell_ccy']} {str(r['kind']).lower()}",
+            "instrument_id": w["pair"], "symbol": f"{w['pair_label']} {str(r['kind']).lower()}",
             "instrument_name": f"FX {str(r['kind']).lower()}", "underlying_id": None, "asset_class": "FX", "side": f"BUY_{r['buy_ccy']}",
-            "side_words": f"BUY {r['buy_ccy']} / SELL {r['sell_ccy']}", "qty": None, "notional_c": int(r["buy_c"]), "currency": r["buy_ccy"],
-            "price": str(r["rate"]), "price_label": "rate", "gross_c": int(r["sell_c"]), "fee_c": int(fee or 0), "fees_journal_c": int(fee or 0), "fee_lines": [],
+            "side_words": w["side_words"], "qty": None, "notional_c": int(r["buy_c"]), "currency": r["buy_ccy"],
+            "price": w["price"], "price_label": w["price_label"], "gross_c": int(r["sell_c"]), "fee_c": int(fee or 0), "fees_journal_c": int(fee or 0), "fee_lines": [],
             "cost_of_dealing_c": int(r["spread_cost_c"] or 0), "exec_ts": int(r["trade_ts"]), "trade_date": r["trade_date"], "settle_date": r["value_date"],
             "settled_ts": r["settled_ts"], "settle_id": None,
             "counterparty": f"{dealer_name(acct.get('broker'))} (prime broker)" if acct.get("kind") == "PB" else "FX dealer (simulated)",
@@ -451,8 +565,51 @@ def _fx_rows(services, conn: sqlite3.Connection, accts: Dict[str, dict]) -> List
             "source": "simulated", "source_label": SIMULATED_LABEL, "asof": False, "badge": None, "entered_ts": None, "batch_id": None, "booking": None,
             "import_key": None, "origin": None, "order_type": None,
             "note": f"sold {r['sell_ccy']} {from_c(int(r['sell_c']))}; cost of dealing {from_c(int(r['spread_cost_c'] or 0))}"})
+        if link:
+            row.update(link_type=link["type"], serves=link["serves"], link_text=link["text"], source=link["source"], source_label=link["label"],
+                       note=f"{link['text']}; {row['note']}")
         out.append(row)
     return out
+
+
+def fx_link_words(conn: sqlite3.Connection, deal, refs: Optional[Dict[str, Optional[str]]] = None) -> Optional[dict]:
+    """FX_CCS_PLAN P-D task 5: what an FX deal booked for an OTC contract serves, from its stored ``inputs.link`` -
+    ``{type, serves [contract ids], text, source, label}``; None for a deal the desk dealt on its own."""
+    link = _json(_get(deal, "inputs_json")).get("link")
+    if not isinstance(link, dict) or not link.get("type"):
+        return None
+    refs = {} if refs is None else refs
+
+    def ref_of(cid: str) -> Optional[str]:
+        if cid not in refs:
+            refs[cid] = None
+            try:
+                got = conn.execute("SELECT client_ref FROM otc_contracts WHERE contract_id=?", (cid,)).fetchone()
+                refs[cid] = got[0] if got is not None else None
+            except sqlite3.Error:                     # a database without the column: no reference
+                refs[cid] = None
+        return refs[cid]
+    t = str(link.get("type"))
+    vd = _get(deal, "value_date")
+    if t == "xccy_start":
+        cid = str(link.get("id") or "")
+        ref = ref_of(cid)
+        text = f"inception conversion of {cid}: settled with its start exchange on {vd} (payment versus payment)"
+        label = f"Simulated FX deal, booked with {cid}" + (", " + OWNER_REF_TEXT.format(ref=ref) if ref else "")
+        return {"type": t, "serves": [cid], "text": text, "source": "simulated", "label": label}
+    if t == "otc_funding":
+        cids = [str(c) for c in (link.get("contracts") or [])]
+        what = "; ".join(str(o.get("what") or "") for o in (link.get("obligations") or []) if isinstance(o, dict) and o.get("what"))
+        text = (f"settlement funding of {', '.join(cids)}: {link.get('currency') or _get(deal, 'buy_ccy')} for the obligations due {link.get('due') or vd}"
+                + (f" ({what})" if what else ""))
+        return {"type": t, "serves": cids, "text": text, "source": "system",
+                "label": f"System (the standing settlement-funding instruction of {', '.join(cids)})"}
+    if t == "otc":
+        cid = str(link.get("id") or "")
+        return {"type": t, "serves": [cid], "text": f"delivery of {cid} at {_get(deal, 'rate')}, value {vd}", "source": "system",
+                "label": f"System (delivery of {cid})"}
+    cid = str(link.get("id") or "")
+    return {"type": t, "serves": [cid] if cid else [], "text": str(link.get("text") or f"linked to {cid}"), "source": "simulated", "label": SIMULATED_LABEL}
 
 
 def _otc_describe(kind: str, terms: dict, row) -> Tuple[str, str, Optional[int], Optional[str], str]:
@@ -480,6 +637,10 @@ def _otc_describe(kind: str, terms: dict, row) -> Tuple[str, str, Optional[int],
         legs = terms.get("legs") or {}
         recv = (legs.get("receive") or {}).get("currency") or terms.get("recv_ccy") or "?"
         pay = (legs.get("pay") or {}).get("currency") or terms.get("pay_ccy") or "?"
+        if len(str(recv)) == 3 and len(str(pay)) == 3 and str(recv).upper() != str(pay).upper() and "?" not in str(recv) + str(pay):
+            # V1061R2-04: named by the market-convention pair - "EUR/USD cross-currency swap", "PAY EUR / RECEIVE USD" - never receive / pay order
+            w = xccy_words(recv, pay, terms.get("deal_rate"))
+            return (f"{w['pair_label']} cross-currency swap", w["side_words"], None, w["price"], w["price_label"])
         return (f"{recv}/{pay} cross-currency swap", f"RECEIVE {recv} / PAY {pay}", None, None if terms.get("deal_rate") is None else str(terms.get("deal_rate")), "rate")
     side = str(terms.get("side") or "").upper()
     what = {"EQ_OPTION": "option", "FX_OPTION": "option", "EQ_FORWARD": "forward", "FX_FORWARD": "forward"}.get(k, k.lower())
@@ -903,7 +1064,8 @@ def order_stage(row, now: int, session=None) -> dict:
         label = f"{STAGE_WORDS[stage]}: {tail}" if tail else STAGE_WORDS[stage]
     else:
         stage, label = (status or "WORKING"), status.lower().replace("_", " ")
-    return {"stage": stage, "stage_label": label, "stage_words": STAGE_WORDS.get(stage, stage.lower().replace("_", " ")), "stage_chip": STAGE_CHIP.get(stage, "queued")}
+    return {"stage": stage, "stage_label": words_text(label), "stage_words": STAGE_WORDS.get(stage, stage.lower().replace("_", " ")),
+            "stage_chip": STAGE_CHIP.get(stage, "queued")}
 
 
 def package_state(legs: Sequence) -> Tuple[str, str]:
@@ -1081,6 +1243,7 @@ def _order_pending_rows(services, conn, accts: Dict[str, dict], statuses: Sequen
             "gtd_date": _get(r, "gtd_date"), "activate_ts": _get(r, "activate_ts"), "counterparty": _listed_counterparty(acct, kind, r["inst_group"]),
             "reserved_c": reserved.get(r["order_id"]) if is_live else None, "reason": r["reason"] or "", "fees_c": int(r["fees_c"] or 0),
             "package_id": r["package_id"], "strategy_key": (pk or {}).get("strategy_key"), "package_state": (pk or {}).get("state"),
+            "strategy_words": code_words((pk or {}).get("strategy_key")), "fill_mode_words": code_words(r["fill_mode"]) if r["package_id"] else None,
             "package_words": (pk or {}).get("state_words"), "parent_order_id": r["parent_order_id"], "fill_mode": r["fill_mode"],
             "borrow_id": r["borrow_id"], "replaces_order_id": _get(r, "replaces_order_id"), "replaced_by_order_id": _get(r, "replaced_by_order_id"),
             "amend_count": int(_get(r, "amend_count", 0) or 0), "actions": _actions(r), "booking": _get(r, "booking")})
@@ -1094,20 +1257,29 @@ def _order_pending_rows(services, conn, accts: Dict[str, dict], statuses: Sequen
     return out
 
 
-def _rfq_pending_rows(services, accts: Dict[str, dict], lifetime_ids: Sequence[str], now: int) -> Tuple[List[dict], Optional[str]]:
+RFQ_CLOSED_STAGES = {"EXPIRED": "EXPIRED", "DECLINED": "CANCELLED"}
+
+
+def _rfq_pending_rows(services, accts: Dict[str, dict], lifetime_ids: Sequence[str], now: int, closed: Sequence[str] = ()) -> Tuple[List[dict], Optional[str]]:
     """The open OTC quote requests (C14: ``swaps.rfq_rows(services, scope)``, P4) as Pending rows - AWAITING DEALER QUOTE while REQUESTED,
-    AWAITING YOUR ACCEPTANCE while QUOTED and the quote is valid.  ``([], note)`` while the function is not in the build or fails."""
+    AWAITING YOUR ACCEPTANCE while QUOTED and the quote is valid; with ``closed`` (EXPIRED / DECLINED, FX_CCS_PLAN D15) the requests that
+    expired or were declined, with their reason.  ``([], note)`` while the function is not in the build or fails."""
     sw = getattr(services, "swaps", None)
     fn = getattr(sw, "rfq_rows", None) if sw is not None else None
     if not callable(fn):
         return [], None
     raw: List[dict] = []
     scopes = sorted({a["lifetime_id"] for a in accts.values()}) or list(lifetime_ids or [])
+    want = tuple(str(c).upper() for c in closed or ())
     try:
         for lid in scopes:
             got = fn(services, f"{lid}:ALL")
             got = got.get("rows") if isinstance(got, dict) else got
             raw.extend(dict(x) for x in (got or []) if isinstance(x, dict))
+            for st in want:
+                got = fn(services, f"{lid}:ALL", status=st)
+                got = got.get("rows") if isinstance(got, dict) else got
+                raw.extend(dict(x) for x in (got or []) if isinstance(x, dict))
     except Exception as e:   # noqa: BLE001 - the quote requests are shown unavailable, the orders still list
         return [], f"OTC quote requests unavailable: {type(e).__name__}"
     out, seen = [], set()
@@ -1115,7 +1287,11 @@ def _rfq_pending_rows(services, accts: Dict[str, dict], lifetime_ids: Sequence[s
         rid = str(r.get("rfq_id") or r.get("id") or "")
         aid = r.get("account_id")
         status = str(r.get("status") or "").upper()
-        if not rid or rid in seen or aid not in accts or status not in RFQ_OPEN:
+        if not rid or rid in seen or aid not in accts or status not in RFQ_OPEN + want:
+            continue
+        if status in RFQ_CLOSED_STAGES:
+            seen.add(rid)
+            out.append(_rfq_closed_row(accts[aid], r, status))
             continue
         seen.add(rid)
         exp = r.get("expires_ts") or r.get("quote_expires_ts") or r.get("valid_until_ts")
@@ -1156,6 +1332,33 @@ def _rfq_pending_rows(services, accts: Dict[str, dict], lifetime_ids: Sequence[s
     return out, None
 
 
+def _rfq_closed_row(acct: dict, r: dict, status: str) -> dict:
+    """An expired or declined quote request as a Pending row (FX_CCS_PLAN D15: a refused or expired quote stays visible)."""
+    terms = r.get("terms") if isinstance(r.get("terms"), dict) else _json(r.get("terms_json"))
+    kind = str(r.get("kind") or "")
+    symbol, side_words, qty, _px, _pk = _otc_describe(kind, terms, r)
+    stage = RFQ_CLOSED_STAGES[status]
+    reason = str(r.get("reason") or ("declined by you" if status == "DECLINED" else "the quote expired"))
+    ts = r.get("requested_ts") or r.get("closed_ts")
+    closed_ts = r.get("closed_ts") or ts
+    row = _base(acct)
+    row.update({"row_kind": "rfq", "order_id": r["rfq_id"], "rfq_id": r["rfq_id"], "instrument_id": kind, "symbol": r.get("label") or symbol,
+                "instrument_name": r.get("summary") or symbol, "underlying_id": terms.get("underlying_id"), "kind": kind, "asset_class": "OTC",
+                "side": r.get("side") or side_words, "side_words": r.get("side_words") or side_words, "order_type": "RFQ", "type_words": "quote request",
+                "limit_px": None, "stop_px": None, "trail_amt": None, "trail_pct": None, "triggered": False, "qty": qty, "filled_qty": 0, "open_qty": 0,
+                "notional_c": r.get("notional_c"), "avg_px": None, "status": status, "market": None, "distance": None,
+                "submitted_ts": int(ts) if ts else None, "updated_ts": int(closed_ts) if closed_ts else None, "expires_ts": r.get("expires_ts"),
+                "expiration_words": "quote expired" if status == "EXPIRED" else "declined", "tif": None, "gtd_date": None, "activate_ts": None,
+                "counterparty": f"{dealer_name(r.get('broker') or acct.get('broker'))} (simulated dealer)", "reserved_c": None, "reason": words_text(reason),
+                "fees_c": 0, "package_id": None, "strategy_key": None, "package_state": None, "package_words": None, "parent_order_id": None, "fill_mode": None,
+                "borrow_id": None, "replaces_order_id": None, "replaced_by_order_id": None, "amend_count": 0, "booking": None, "quote": r.get("quote"),
+                "quote_words": r.get("quote_words"), "client_ref": terms.get("client_ref"),
+                "actions": {"cancel": False, "resume": False, "modify": False, "replace": False, "review": False, "accept": False, "decline": False},
+                "stage": stage, "stage_label": f"{STAGE_WORDS[stage]}: {words_text(reason)}", "stage_words": STAGE_WORDS[stage], "stage_chip": STAGE_CHIP[stage]})
+    row["_sort"] = (-(int(closed_ts) if closed_ts else 0), str(r["rfq_id"]), 0, str(r["rfq_id"]))
+    return row
+
+
 def _rejection_rows(services, conn, accts: Dict[str, dict]) -> List[dict]:
     """``order_rejections`` of the scope's accounts as REJECTED rows (every ticket: ``ticket_kind`` in the stored payload)."""
     if not accts or not _has_table(conn, "order_rejections"):
@@ -1189,7 +1392,7 @@ def _rejection_rows(services, conn, accts: Dict[str, dict]) -> List[dict]:
                     "code": r["code"], "request_id": r["request_id"], "fees_c": 0, "package_id": None, "strategy_key": None, "package_state": None,
                     "package_words": None, "parent_order_id": None, "fill_mode": None, "borrow_id": None, "replaces_order_id": None, "replaced_by_order_id": None,
                     "amend_count": 0, "booking": None, "actions": {"cancel": False, "resume": False, "modify": False, "replace": False, "review": False},
-                    "stage": "REJECTED", "stage_label": f"rejected: {r['message'] or ''}".strip(), "stage_words": STAGE_WORDS["REJECTED"],
+                    "stage": "REJECTED", "stage_label": words_text(f"rejected: {r['message'] or ''}".strip()), "stage_words": STAGE_WORDS["REJECTED"],
                     "stage_chip": STAGE_CHIP["REJECTED"]})
         row["_sort"] = (-int(r["ts"]), f"R-{int(r['id']):012d}", 0, "")
         out.append(row)
@@ -1210,8 +1413,11 @@ def pending_rows(services, conn, *, lifetime_ids: Optional[Sequence[str]] = None
         snapshot = marks.snapshot() if marks is not None and hasattr(marks, "snapshot") else marks
     notes: List[str] = []
     rows = _order_pending_rows(services, conn, accts, PENDING_FILTERS[status], now, snapshot, {})
-    if status in ("open", "all"):
-        rfq, note = _rfq_pending_rows(services, accts, lifetime_ids or [], now)
+    closed = {"expired": ("EXPIRED",), "cancelled": ("DECLINED",), "ended": ("EXPIRED", "DECLINED"), "all": ("EXPIRED", "DECLINED")}.get(status, ())
+    if status in ("open", "all") or closed:
+        rfq, note = _rfq_pending_rows(services, accts, lifetime_ids or [], now, closed)
+        if status not in ("open", "all"):
+            rfq = [r for r in rfq if r.get("status") not in RFQ_OPEN]
         rows += rfq
         if note:
             notes.append(note)
@@ -1367,7 +1573,8 @@ def order_timeline(raw, events: Sequence[dict]) -> List[dict]:
             stage = "WAITING_PARENT"
         else:
             stage = "EVENT"
-        steps.append({"stage": stage, "words": TIMELINE_WORDS.get(stage, stage.lower()), "ts": int(e.get("ts") or 0), "note": note, "from_status": frm, "to_status": to})
+        steps.append({"stage": stage, "words": TIMELINE_WORDS.get(stage, stage.lower()), "ts": int(e.get("ts") or 0), "note": words_text(note), "from_status": frm,
+                      "to_status": to})
     return steps
 
 
@@ -1417,10 +1624,13 @@ def preview_summary(raw) -> Optional[dict]:
     eco = pv.get("economics") if isinstance(pv.get("economics"), dict) else {}
     fu = pv.get("funding") if isinstance(pv.get("funding"), dict) else {}
     ses = ex.get("session") if isinstance(ex.get("session"), dict) else {}
+    warnings = [words_text(w) if isinstance(w, str) else dict(w, message=words_text(w.get("message"))) if isinstance(w, dict) else w
+                for w in list(pv.get("warnings") or [])[:6]]
     return {"kind": "preview", "as_of": pv.get("as_of"), "expected_price": ex.get("expected_price"), "price_basis": ex.get("price_basis"),
-            "fill_now": ex.get("fill_now"), "decision": ex.get("decision"), "gross": eco.get("gross"), "fee": eco.get("fee"), "net_cash": eco.get("net_cash"),
-            "trade_date": eco.get("trade_date"), "settle_date": eco.get("settle_date"), "need": fu.get("need"), "available": fu.get("available"),
-            "sweep_in": fu.get("sweep_in"), "session_phase": ses.get("phase"), "warnings": list(pv.get("warnings") or [])[:6]}
+            "fill_now": ex.get("fill_now"), "decision": ex.get("decision"), "decision_words": code_words(ex.get("decision")), "gross": eco.get("gross"),
+            "fee": eco.get("fee"), "net_cash": eco.get("net_cash"), "trade_date": eco.get("trade_date"), "settle_date": eco.get("settle_date"),
+            "need": fu.get("need"), "available": fu.get("available"), "sweep_in": fu.get("sweep_in"), "session_phase": ses.get("phase"),
+            "session_words": code_words(str(ses.get("phase")).upper()) if ses.get("phase") else None, "warnings": warnings}
 
 
 def order_detail(services, conn, order_id: str, *, review: bool = False, now: Optional[int] = None) -> dict:
@@ -1463,8 +1673,9 @@ def order_detail(services, conn, order_id: str, *, review: bool = False, now: Op
         legs = conn.execute("SELECT * FROM orders WHERE package_id=? ORDER BY created_ts, order_id", (raw["package_id"],)).fetchall()
         hp = conn.execute("SELECT * FROM hedge_packages WHERE package_id=?", (raw["package_id"],)).fetchone()
         state, words = package_state(legs)
-        d["package"] = {"package_id": raw["package_id"], "strategy_key": _get(hp, "strategy_key") or _get(hp, "candidate_id"), "fill_mode": _get(hp, "fill_mode"),
-                        "state": state, "state_words": words, "stored_status": _get(hp, "status"),
+        skey = _get(hp, "strategy_key") or _get(hp, "candidate_id")
+        d["package"] = {"package_id": raw["package_id"], "strategy_key": skey, "fill_mode": _get(hp, "fill_mode"), "strategy_words": code_words(skey),
+                        "fill_mode_words": code_words(_get(hp, "fill_mode")), "state": state, "state_words": words, "stored_status": _get(hp, "status"),
                         "legs": [dict({"order_id": l["order_id"], "instrument_id": l["instrument_id"], "side": l["side"], "qty": int(l["qty"]),
                                        "filled_qty": int(l["filled_qty"] or 0), "status": l["status"], "type_words": type_words(l)}, **order_stage(l, now))
                                  for l in legs]}
@@ -1801,7 +2012,7 @@ def executions_route(req):
 
 
 __all__ = ["AS_OF", "HISTORICAL_MODEL", "SIMULATED_LABEL", "HISTORICAL_MODEL_LABEL", "SYSTEM_EVENTS", "STATUS_WORDS", "SOURCE_KEYS", "ASSET_CLASSES",
-           "CSV_COLUMNS", "source_label", "dealer_name", "lender_words", "pct_text", "execution_rows", "filter_rows", "counts_of", "executions_csv",
+           "CSV_COLUMNS", "source_label", "dealer_name", "code_words", "words_text", "fx_link_words", "OWNER_REF_TEXT", "lender_words", "pct_text", "execution_rows", "filter_rows", "counts_of", "executions_csv",
            "register_routes", "executions_route", "STAGE_WORDS", "STAGE_CHIP", "PENDING_FILTERS", "order_stage", "package_state", "expiration_words",
            "type_words", "pending_rows", "filter_pending", "counts", "order_timeline", "preview_summary", "order_detail", "execution_detail",
            "pending_route", "counts_route", "execution_route", "order_route", "amend_route", "replace_route"]
