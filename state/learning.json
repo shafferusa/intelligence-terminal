@@ -1,6 +1,6 @@
 {
   "curriculum": "academy-connected",
-  "day": 8,
+  "day": 25,
   "last_taught": "2026-10-29",
   "started": "2026-10-15",
   "completed": [
@@ -72,5 +72,30 @@
         "2026-09-25"
       ]
     }
-  }
+  },
+  "batches": [
+    {
+      "date": "2026-10-29",
+      "days": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "note": "Published at once at Logan's request after usage outages left Oct 22-27 without runs; written per prompts/learning.md and fact-checked by a second pass."
+    }
+  ]
 }

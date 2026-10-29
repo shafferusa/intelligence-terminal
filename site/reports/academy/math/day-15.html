@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>An Expert Told the Jury the Odds Were 1 in 73 Million. He Had Answered the Wrong Question. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "An Expert Told the Jury the Odds Were 1 in 73 Million. He Had Answered the Wrong Question.",
+    "path": "reports/academy/math/day-15.html",
+    "summary": "Day 15 of the Connected Path: Bayes' theorem says evidence should move a belief by the likelihood ratio applied to the prior odds, the step missing when a 1-in-73-million figure for two cot deaths was put to the jury in Sally Clark's 1999 trial.",
+    "headlines": [
+      "Day 15 of 293 · Mathematics: Bayes' theorem (posterior odds = likelihood ratio × prior odds) says how far evidence should move a belief",
+      "Sally Clark's jury heard '1 in 73 million' for two cot deaths; the real question was which of two very rare explanations was likelier",
+      "Watch or Read: Bayes theorem, the geometry of changing beliefs (about 15 min)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>An Expert Told the Jury the Odds Were 1 in 73 Million. He Had Answered the Wrong Question.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Bayes&rsquo; theorem says evidence moves a belief by the ratio of how likely it is under each
+        rival explanation, applied to how plausible each was beforehand &mdash; the step a famous
+        1-in-73-million figure skipped.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 15 of 293 &middot; Mathematics 15 of 24 &middot; How We Know I: Bayes&rsquo; theorem and base rates</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>1 in 73 million at Chester Crown Court</h3>
+      <p>
+        On 9 November 1999, a jury at Chester Crown Court convicted Sally Clark, a solicitor from
+        Wilmslow in Cheshire, of murdering her two baby sons, by a majority of ten to two. Christopher
+        had died in 1996, aged eleven weeks; Harry in 1998, aged eight weeks. The prosecution
+        called Professor Sir Roy Meadow, a leading paediatrician, as an expert witness.
+      </p>
+      <p>
+        Meadow told the court that in an affluent, non-smoking family like the Clarks&rsquo; the chance
+        of one sudden infant death &mdash; a cot death &mdash; was about 1 in 8,543, a figure he took from a
+        large study of infant deaths. Squaring it, he said, put the chance of two such deaths in one family
+        at about 1 in 73 million. He made the number vivid: it was like backing an 80-to-1 outsider in
+        the Grand National four years running and winning each time.
+      </p>
+      <p>
+        Clark was sentenced to life imprisonment. A first appeal failed in October 2000. In October 2001
+        the Royal Statistical Society said publicly that the 1-in-73-million figure
+        had no statistical basis. In January 2003 the Court of Appeal quashed both convictions,
+        chiefly because a pathologist had not disclosed microbiology results suggesting that Harry had
+        a bacterial infection. By then she had spent more than three years in prison. She died in 2007.
+      </p>
+      <p>
+        Set the appeal aside and look only at the number the jury heard. If the innocent explanation
+        had a chance of just 1 in 73 million, doesn&rsquo;t that make guilt all but certain? What
+        exactly is wrong with that reasoning?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Bayes&rsquo; theorem says how much a piece of evidence should change what you believe: start
+        from how plausible each explanation was before the evidence, then multiply by how much more
+        probable the evidence is under one explanation than under its rival.
+      </p>
+      <p>
+        Two quantities do the work, and neither can be dropped. The first is the starting plausibility
+        of each explanation, which statisticians call the <em>prior</em>, or the <em>base rate</em> when
+        it comes from counting. The second is the <em>likelihood ratio</em>: how many times likelier the
+        evidence is if one explanation is true than if its rival is. A positive medical test, a DNA
+        match, a witness&rsquo;s identification, an expert&rsquo;s &ldquo;one in a million&rdquo;: each is
+        strong evidence only to the extent that it would be far more likely if the suspicion were
+        true than if it were false, and only against how common the suspicion was to begin with.
+      </p>
+      <p>
+        The story turns on one consequence. How rare an event is, taken alone, tells you almost nothing
+        about what caused it. Two babies dying in one family is extraordinarily rare, whatever the
+        cause, so both explanations on offer were extraordinarily rare. A rare event is strong evidence
+        for an explanation only if it is much rarer under the rival.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with a distinction that sounds trivial and is not. A <strong>conditional
+        probability</strong> is the chance of one thing given that another is true, written
+        P(A&nbsp;|&nbsp;B) and read &ldquo;the probability of A given B.&rdquo; Nearly every player in
+        the NBA is taller than six feet, so the probability of being tall, given that you play in the
+        NBA, is close to 1. Almost no six-footer plays in the NBA, so the probability of playing in the
+        NBA, given that you are tall, is close to 0. The two conditional probabilities use the same two
+        facts, run in opposite directions, and can differ enormously in size. Confusing one for the
+        other is a classic error in reasoning about evidence.
+      </p>
+      <p>
+        <strong>Bayes&rsquo; theorem</strong>, named for Thomas Bayes, an eighteenth-century English
+        minister whose essay on the problem was published after his death, is the rule for turning one
+        direction into the other. Its most useful form compares two rival explanations,
+        H<sub>1</sub> and H<sub>2</sub>, in the light of some evidence E, and it works in
+        <strong>odds</strong>, which are probabilities written as a ratio. A probability of 1% is odds
+        of 1 to 99; odds of 1 to 9 are a probability of 1 in 10. The rule reads: <em>posterior odds =
+        likelihood ratio &times; prior odds</em>. The prior odds say how plausible H<sub>1</sub> was
+        against H<sub>2</sub> before E arrived. The likelihood ratio says how many times more probable
+        E is if H<sub>1</sub> is true than if H<sub>2</sub> is. The posterior odds are where you stand
+        afterwards.
+      </p>
+      <p>
+        Three things follow at once. If the likelihood ratio is 1, the evidence is equally probable
+        either way and your odds do not move. If it is 10, your odds are multiplied by ten &mdash; but
+        ten times a very small prior is still small, which is why a positive test for a rare condition
+        is mostly a false alarm (the Example below). And it is a <em>ratio</em>: the numerator alone,
+        the chance of the evidence if one explanation is true, means nothing until you know the chance
+        under the rival.
+      </p>
+      <p>
+        Now see what the 1-in-73-million figure was and was not. Taken at face value, it is a
+        likelihood: how probable two cot deaths are if the family is innocent. The rival explanation
+        makes the evidence almost certain &mdash; if a mother kills both babies, both babies die &mdash;
+        so the likelihood ratio looks enormous, about 73 million to one. Stop there and guilt seems
+        settled. But the rule has a second factor, the prior odds, and here the prior is also
+        minuscule: before any baby has died, how likely is it that a given mother will murder two? A
+        likelihood ratio of millions multiplied by prior odds of one in millions can land almost
+        anywhere. The size of the two numbers relative to each other is the whole answer, and the
+        court heard only one of them.
+      </p>
+      <p>
+        Counting whole families, a method known as <strong>natural frequencies</strong>, makes this concrete. Suppose, purely for illustration &mdash; invented
+        round numbers, not data &mdash; that among ten million families with two babies, ten lose both
+        to cot death and one loses both to murder. A family arrives in court having lost both babies.
+        Eleven families in ten million fit that fact, and ten of the eleven are innocent. Each group is
+        a rarity; what matters is the ratio between them, here ten to one in favour of innocence
+        before any other evidence is weighed. The mathematician Ray Hill estimated in 2004 that, for a
+        family with two unexplained baby deaths, double cot death was several times likelier than
+        double murder <span class="chip chip--warn">Debated</span> &mdash; an estimate of this kind
+        depends on assumptions about how common each event is. Nothing here says
+        Clark was probably innocent. It says the number the jury heard could not, by itself, say
+        anything either way. Other evidence &mdash; the pathology, the withheld microbiology &mdash;
+        would each be a further likelihood ratio, multiplying the odds again.
+      </p>
+      <p>
+        The figure also had a plainer flaw. Meadow reached 1 in 73 million by multiplying 1 in 8,543 by
+        itself, and chances multiply like that only for <em>independent</em> events &mdash; the rule
+        Day 11&rsquo;s problem of points used for successive rounds of a game. Cot deaths are not
+        independent within a family: genetic and household factors make a second death more likely after
+        a first, so the squared figure was far too small. The Royal Statistical Society&rsquo;s verdict
+        was that it had no statistical basis, and the Court of Appeal criticised the statistical
+        evidence as well as the withheld microbiology.
+      </p>
+      <p>
+        The error has a name. Mistaking P(evidence&nbsp;|&nbsp;innocent) &mdash; how likely the
+        evidence is if the defendant is innocent &mdash; for P(innocent&nbsp;|&nbsp;evidence) &mdash; how
+        likely the defendant is to be innocent given the evidence &mdash; is the <strong>prosecutor&rsquo;s
+        fallacy</strong>. Its mirror image, sometimes called the defence attorney&rsquo;s fallacy,
+        argues that because many people in a large population would also match a piece of evidence, the
+        match proves nothing; it overlooks that the match still multiplies the odds by its likelihood
+        ratio.
+      </p>
+      <p>
+        One caution, aimed at the habit of treating a calculation as a verdict. Bayes&rsquo; theorem is
+        a theorem: given the definition of conditional probability, its arithmetic is as certain as
+        any proof (Day 10). What it cannot certify is its inputs. A prior is a judgment about how
+        common something is, and a prior that already assumes guilt will hand guilt back. Enough
+        strong evidence pulls people who began with different priors toward the same conclusion, but it
+        takes more the further apart they began, and a prior of exactly zero can never be moved by
+        anything. Much of the real argument in real cases lives in the priors.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        So here is the answer to the puzzle. A 1-in-73-million chance of two cot deaths was never the
+        chance that Sally Clark was innocent. At best it was one half of the calculation &mdash; the
+        likelihood &mdash; and a flawed half, because squaring ignored that cot deaths cluster in
+        families. The other half, the prior, was missing: mothers who murder two babies are
+        extraordinarily rare too. The jury&rsquo;s real task was to compare two very rare
+        explanations, a double cot death and a double murder, and Hill&rsquo;s estimate put the first
+        several times likelier than the second. The number answered &ldquo;how rare is this if she is
+        innocent?&rdquo; when the question was &ldquo;which rare thing happened?&rdquo;
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Prior probability (base rate)</dt>
+        <dd>How probable an explanation is, or how common a condition is, before the new evidence is
+        considered. It is called the base rate when it comes from counting a population.</dd>
+        <dt>Likelihood ratio</dt>
+        <dd>How many times more probable the evidence is under one explanation than under its rival.
+        A ratio near 1 means the evidence barely tells the two apart.</dd>
+        <dt>Posterior probability</dt>
+        <dd>The probability of an explanation after the evidence has been taken into account; in odds
+        form, the prior odds multiplied by the likelihood ratio.</dd>
+        <dt>Conditional probability</dt>
+        <dd>The chance of one thing given another, P(A&nbsp;|&nbsp;B). In general P(A&nbsp;|&nbsp;B)
+        and P(B&nbsp;|&nbsp;A) are different numbers.</dd>
+        <dt>Prosecutor&rsquo;s fallacy</dt>
+        <dd>Mistaking the probability of the evidence given innocence for the probability of innocence
+        given the evidence.</dd>
+        <dt>Natural frequencies</dt>
+        <dd>Probabilities restated as counts of whole cases in a concrete group (&ldquo;of 1,000 women,
+        10 have cancer&rdquo;), which keeps the base rate in view and turns the arithmetic into
+        counting.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: A Positive Mammogram, Counted in Whole Women</h3>
+      <p>
+        The same logic runs through medicine, where the rival explanations are &ldquo;has the
+        disease&rdquo; and &ldquo;does not,&rdquo; and the evidence is a test result. Gerd Gigerenzer
+        and colleagues (&ldquo;Helping Doctors and Patients Make Sense of Health Statistics,&rdquo;
+        <em>Psychological Science in the Public Interest</em>, 2007) use breast-cancer screening as
+        a standard case. Gigerenzer reports a training session in which 160 gynecologists were given the facts as
+        percentages &mdash; how common the disease is, how often the test is positive in women who have
+        it, how often in women who do not &mdash; and asked what a positive result means. The most
+        common answer was 90%; the right answer is close to one in ten, and only about one in five chose
+        it. After a short training in natural frequencies, which means thinking in counts of women, most
+        answered correctly.
+      </p>
+      <div class="worked">
+        <b>Worked example: 1,000 women screened (teaching values)</b>
+        <ol>
+          <li>Start with 1,000 women. If 1% have breast cancer, 10 do and 990 do not.</li>
+          <li>The test is positive for 90% of women who have the disease: 9 of the 10.</li>
+          <li>It is also positive for 9% of women who do not: 9% of 990 is about 89.</li>
+          <li>Count the positives: 9 + 89 = 98. Only 9 of those 98 have cancer &mdash; about 9%, close to one in ten.</li>
+          <li>In odds form: prior odds 1 to 99; likelihood ratio 0.90 &divide; 0.09 = 10; posterior odds 10 to 99, a probability of 10/109, about 9%. Same answer by multiplication.</li>
+        </ol>
+      </div>
+      <p>
+        The test is good &mdash; it catches 9 cancers in 10 &mdash; and a positive result still
+        probably means no cancer, because the 990 healthy women so outnumber the 10 sick ones. A
+        tenfold likelihood ratio acting on a 1-in-100 prior reaches about 9%, not near-certainty. The
+        doctors who answered 90% had most plausibly confused the two directions &mdash; &ldquo;the test
+        is positive in 90% of cancers&rdquo; is not &ldquo;90% of positives are cancers&rdquo; &mdash;
+        the prosecutor&rsquo;s fallacy in a white coat. Real screening performance varies with age, test and programme; these are round values
+        for teaching.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">P(H<sub>1</sub> | E) / P(H<sub>2</sub> | E) &nbsp;=&nbsp; [ P(E | H<sub>1</sub>) / P(E | H<sub>2</sub>) ] &times; [ P(H<sub>1</sub>) / P(H<sub>2</sub>) ]</p>
+        <p class="expr-spoken visually-hidden">The probability of H one given E, divided by the probability of H two given E, equals the quantity probability of E given H one divided by probability of E given H two, times the quantity probability of H one divided by probability of H two.</p>
+        <dl>
+          <dt>H<sub>1</sub>, H<sub>2</sub></dt>
+          <dd>two rival, mutually exclusive explanations (double cot death and double murder; cancer and no cancer)</dd>
+          <dt>E</dt>
+          <dd>the evidence (two babies dead; a positive mammogram)</dd>
+          <dt>P(A | B)</dt>
+          <dd>the probability of A given that B is true</dd>
+          <dt>P(H<sub>1</sub> | E) / P(H<sub>2</sub> | E)</dt>
+          <dd>the posterior odds: how plausible H<sub>1</sub> is against H<sub>2</sub> after seeing E</dd>
+          <dt>P(E | H<sub>1</sub>) / P(E | H<sub>2</sub>)</dt>
+          <dd>the likelihood ratio: how many times more probable E is under H<sub>1</sub> than under H<sub>2</sub></dd>
+          <dt>P(H<sub>1</sub>) / P(H<sub>2</sub>)</dt>
+          <dd>the prior odds: how plausible H<sub>1</sub> was against H<sub>2</sub> before E</dd>
+        </dl>
+      </div>
+      <p>
+        The decisive step is one division. Writing the probability of &ldquo;H and E together&rdquo; two
+        ways gives P(H&nbsp;|&nbsp;E)&nbsp;P(E) = P(E&nbsp;|&nbsp;H)&nbsp;P(H), so P(H&nbsp;|&nbsp;E) =
+        P(E&nbsp;|&nbsp;H)&nbsp;P(H)&nbsp;/&nbsp;P(E). Write that for H<sub>1</sub> and for H<sub>2</sub>
+        and divide:
+      </p>
+      <div class="formula">
+        <p class="expr">[ P(E | H<sub>1</sub>) P(H<sub>1</sub>) / P(E) ] &divide; [ P(E | H<sub>2</sub>) P(H<sub>2</sub>) / P(E) ] &nbsp;=&nbsp; P(E | H<sub>1</sub>) P(H<sub>1</sub>) / [ P(E | H<sub>2</sub>) P(H<sub>2</sub>) ]</p>
+        <p class="expr-spoken visually-hidden">Probability of E given H one times probability of H one, over probability of E, divided by probability of E given H two times probability of H two, over probability of E, equals probability of E given H one times probability of H one, over probability of E given H two times probability of H two.</p>
+        <dl>
+          <dt>P(E)</dt>
+          <dd>the overall probability of the evidence, which sits under both posteriors and divides out &mdash; which is why the odds form never needs it</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you see evidence as a ratio applied to a base rate, you can ask two questions of almost any
+        striking claim: &ldquo;compared with what?&rdquo; and &ldquo;how common was this before the
+        evidence arrived?&rdquo; A DNA match, a screening result, an algorithm&rsquo;s alert, an
+        expert&rsquo;s &ldquo;one in a million&rdquo;: each is a likelihood that means little until it is
+        set against a rival explanation and a prior. It also shows why independent pieces of evidence
+        strengthen one another, since their likelihood ratios multiply, while a second look at the same
+        evidence adds nothing. Day 17 (Significance, p-values and systematic error) takes up the
+        p-value, which, like Meadow&rsquo;s number, is a probability of the data given a hypothesis,
+        not of the hypothesis given the data.
+      </p>
+      <p>
+        Whether juries should be walked through this arithmetic is <span class="chip chip--warn">Debated</span>:
+        in R v Adams (1996, with a second appeal in 1997), a rape case in which DNA evidence was set
+        against other evidence, the Court of Appeal criticised the way Bayes&rsquo; theorem had been put
+        to the jury.
+      </p>
+      <p>
+        <b>Settled.</b> Bayes&rsquo; theorem is a theorem, and mistaking the probability of the evidence
+        given innocence for the probability of innocence is a recognised error (the Royal Statistical
+        Society, 2001).
+      </p>
+      <p>
+        <b>Debated.</b> How probabilistic reasoning should be put to juries; which priors are
+        defensible; and whether probability measures long-run frequencies or degrees of belief.
+      </p>
+      <p>
+        <b>Value judgment.</b> How much risk of convicting the innocent a society accepts in order to
+        avoid freeing the guilty is a moral choice, and no formula makes it for you.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 11, Probability and expected value: Pascal and Fermat solved the problem of
+        points by multiplying the chances of successive rounds, and Meadow&rsquo;s squaring broke
+        exactly the independence that rule requires; conditional probability is the step Bayes adds.
+        Day 10, Proof: a proof&rsquo;s certainty holds only if every step is valid, and Bayes&rsquo;
+        theorem is certain in that sense, but a conclusion drawn with it is only as sound as the prior
+        and likelihoods fed in, and those are judgments, not theorems.
+      </p>
+      <p>
+        <b>Across.</b> Engineering: after earlier searches for Air France Flight 447, which crashed into
+        the Atlantic on 1 June 2009, found nothing, France&rsquo;s accident-investigation bureau, the
+        BEA, asked the US firm Metron to build a probability map of the seabed. Its prior drew on the
+        plane&rsquo;s last known position, data from earlier crashes and a drift model; Bayes&rsquo; rule
+        then folded in each empty search. A failed search multiplies an area&rsquo;s probability by the
+        chance that the search would have missed the wreck there, and the rest of the map rises. The wreckage was found on 3 April 2011 after about a week of searching (Stone,
+        Keller, Kratzke and Strumpfer, <em>Statistical Science</em>, 2014): the same update, used to decide
+        where to look instead of what to believe.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Bayes theorem, the geometry of changing beliefs &mdash; 3Blue1Brown (Grant Sanderson), 2019
+        &middot; Video &middot; about 15 minutes</p>
+        <p>It draws Bayes&rsquo; theorem as areas, so updating a prior becomes something you can see
+        rather than a formula to memorise, and it reinforces the natural-frequency method used here.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Posterior odds = likelihood ratio &times; prior odds; the base rate and the likelihood ratio are both indispensable.</li>
+        <li>A rare event is strong evidence for an explanation only if it is much rarer under the rival explanation.</li>
+        <li>P(evidence | innocent) is not P(innocent | evidence): confusing them is the prosecutor&rsquo;s fallacy, and squaring the chances of two deaths assumes they are independent.</li>
+        <li>Counting whole cases makes base rates visible: in the mammography example, a positive result means cancer in about 9 of 98 cases.</li>
+        <li>The theorem is certain; the priors and likelihoods you feed it are judgments.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        A University of Essex review (2019) of the Metropolitan Police&rsquo;s live facial-recognition
+        trials in London found that only 8 of the system&rsquo;s 42 matches could be confirmed as correct, so even granting
+        that it wrongly flags just one scanned face in a thousand, how can most of its alerts still be
+        false?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Royal Statistical Society statement on the Sally Clark case (2001);
+      R v Clark [2003] EWCA Crim 1020; R v Adams (1996, 1997); Ray Hill, <em>Paediatric and Perinatal
+      Epidemiology</em> 18(5), 2004; Gigerenzer et al., <em>Psychological Science in the Public
+      Interest</em> (2007) and his 2008 Cochrane Colloquium abstract; Stone et al., <em>Statistical
+      Science</em> 29(1), 2014; Fussey and Murray, University of Essex (2019). Checked via web search;
+      Hill&rsquo;s exact ratio could not be confirmed.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list; its title and length were not re-checked
+      and it is cited without a link. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-14.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-16.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

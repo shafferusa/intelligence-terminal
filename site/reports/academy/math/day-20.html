@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Dozens of Studies Said Hormone Therapy Protected Women&rsquo;s Hearts. Then a Randomized Trial Found No Protection. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Dozens of Studies Said Hormone Therapy Protected Women’s Hearts. Then a Randomized Trial Found No Protection.",
+    "path": "reports/academy/math/day-20.html",
+    "summary": "Assigning a treatment by chance makes the treated and untreated groups alike on average in every respect, measured or not, so a difference in their outcomes estimates the treatment’s causal effect; the Women’s Health Initiative trial of 2002 found no protection against heart disease from hormone therapy, where dozens of observational studies had suggested a risk about 44 percent lower.",
+    "headlines": [
+      "Day 20 of 293 · Mathematics: random assignment makes the groups alike on average, so a difference in outcomes is the treatment’s effect plus chance",
+      "Observational studies put hormone therapy’s heart risk at 0.56 times that of non-users; the randomized Women’s Health Initiative found a hazard ratio of 1.29",
+      "Watch or Read: Controlled Experiments, Crash Course Statistics #9 (about 10-13 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Dozens of Studies Said Hormone Therapy Protected Women&rsquo;s Hearts. Then a Randomized Trial Found No Protection.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        Letting a lottery decide who gets a treatment makes the treated and untreated groups alike on
+        average in everything, measured or not &mdash; which is why one trial in 2002 could overturn
+        decades of observational evidence.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 20 of 293 &middot; Mathematics 20 of 24 &middot; How We Know VI: Randomized controlled trials</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A trial stopped three years short of its plan</h3>
+      <p>
+        In September 1991 the <em>New England Journal of Medicine</em> published the ten-year
+        follow-up of the Nurses&rsquo; Health Study, which had tracked 48,470 postmenopausal American
+        nurses. After adjustment for age and other risk factors, the women currently taking estrogen
+        had suffered major coronary disease at 0.56 times the rate of women who never had &mdash; a
+        risk about 44 percent lower. That same year a review pooling more than thirty published studies put the figure at 0.56 as well. Over the following decade, millions of women were prescribed hormone
+        therapy, in part on the strength of that evidence.
+      </p>
+      <p>
+        None of those studies had decided by chance who took the pills. The Women&rsquo;s Health Initiative
+        did. It enrolled 16,608 postmenopausal women who still had a uterus and gave each one a single
+        daily tablet. By lottery, the tablet held either conjugated equine estrogens (0.625
+        milligrams) plus medroxyprogesterone acetate (2.5 milligrams) or an identical-looking
+        placebo. The plan was to follow them for an average of 8.5 years.
+      </p>
+      <p>
+        On May 31, 2002, with the women an average of 5.2 years into the trial, its independent data
+        and safety monitoring board recommended stopping. A boundary fixed in advance had been
+        crossed &mdash; the excess of invasive breast cancer was past it &mdash; and across all the
+        outcomes tracked, the harms outweighed the benefits. The National Institutes of Health
+        announced the stop on July 9, 2002. On heart disease, the benefit the observational studies had
+        promised, the women on hormones had more events, not fewer: 37 coronary events per 10,000
+        women per year against 30 on placebo, a hazard ratio of 1.29.
+      </p>
+      <p>
+        How could dozens of studies, following tens of thousands of real women for years, all point
+        toward protection when the trial found none? And why should one trial outweigh them all?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Assigning a treatment by chance makes the treated and untreated groups alike, on average, in
+        every respect &mdash; age, income, habits, genes, and everything nobody thought to measure
+        &mdash; so a difference in their outcomes estimates what the treatment itself does, give or
+        take the play of chance. A study built this way is a <strong>randomized controlled
+        trial</strong>.
+      </p>
+      <p>
+        Observation cannot make that promise. When people choose a treatment, or doctors choose it for
+        them, the choosers differ from the non-choosers in ways that also affect their health, so
+        comparing the two groups mixes the treatment&rsquo;s effect with differences between the
+        people. A lottery has no motives. It cannot favor the healthier, the richer or the more
+        careful, so it can leave the groups different in those ways only by luck &mdash; and luck is
+        something statistics can measure (Day 17).
+      </p>
+      <p>
+        The lottery is not the whole design. Three safeguards keep it from being undone afterward: a
+        control group, usually given a placebo; blinding, so that nobody&rsquo;s expectations change
+        what is recorded; and a plan, fixed in advance, for which outcomes count and how they will be
+        analyzed.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        <strong>The problem: you only ever see one of the two worlds.</strong> To say a treatment
+        <em>caused</em> a recovery, you would want to compare each person with themselves in a
+        parallel world where they went untreated. Nobody can visit that world. Statisticians call the
+        missing outcome the <strong>counterfactual</strong>: what would have happened otherwise. Every
+        method for finding causes is a way of approximating it with other people. The obvious
+        approximation &mdash; compare people who took the treatment with people who did not &mdash;
+        works only if the two groups would have fared the same without it. Day 18 showed how that
+        fails: a third factor, a confounder, that affects both who gets the treatment and how they turn
+        out, can create, hide or even reverse an association.
+      </p>
+      <p>
+        <strong>Why adjustment is not enough.</strong> The usual repair is statistical adjustment:
+        compare women of the same age, weight and smoking history. The Nurses&rsquo; Health Study did
+        this carefully. But adjustment balances only what was measured, and measured well. Surveys of
+        who took hormones tended to find users better educated and better off than non-users,
+        though not uniformly healthier on every measure. Everything that went into those choices
+        &mdash; income, access to doctors, caution with one&rsquo;s own health &mdash; can push heart
+        disease down by itself. That tangle is the <strong>healthy-user effect</strong>, a case of
+        <strong>selection bias</strong>: the treated group was selected, by its own choices and its
+        doctors&rsquo;, to be healthier than the untreated group before any pill was swallowed. No
+        list of adjustment variables can be known to be complete.
+      </p>
+      <p>
+        <strong>Random assignment removes the choosing.</strong> A computer or a table of random
+        numbers, not the patient or the doctor, decides who gets which arm, and the assignment is
+        concealed until the person is enrolled so that nobody can steer a sicker patient toward one
+        arm. Now ask what could differ between the groups. Not education or income or caution: the
+        lottery paid no attention to them, so they are the same in both arms on average. The same holds
+        for traits nobody measured or even knew existed. &ldquo;On average&rdquo; has a precise
+        meaning. Run the lottery many times and the arms would differ by chance in one direction about
+        as often as in the other, and the typical size of that chance imbalance shrinks like 1/&radic;n
+        as the arms grow &mdash; the square-root law of Day 16&rsquo;s sampling error. Random sampling
+        makes a sample resemble its population; random assignment makes two arms resemble each other.
+        One small trial can still be unlucky. A large one rarely is.
+      </p>
+      <p>
+        <strong>The control group and the placebo.</strong> The comparison arm turns the question into
+        a difference between arms rather than a before-and-after. Many things happen to patients
+        whatever the treatment: people enrolled when they feel their worst tend to improve anyway (Day
+        19&rsquo;s regression to the mean), and people who believe they are being treated often report
+        feeling better. A control arm gets the same attention and the same expectations, usually with a
+        <strong>placebo</strong> &mdash; an inert tablet that looks identical &mdash; so all of this
+        happens equally in both arms and cancels in the comparison. What remains is attributable to
+        what differed: the drug.
+      </p>
+      <p>
+        <strong>Blinding.</strong> If participants know which arm they are in, they may behave
+        differently; if the clinicians who diagnose outcomes know, their judgment can tilt, especially
+        on soft diagnoses. In a <strong>double-blind</strong> trial neither the participants nor the
+        staff who assess them know who is on which tablet. Blinding does not remove confounding
+        &mdash; randomization does that. It protects the measurement of the outcome and keeps the arms
+        from being treated differently afterward.
+      </p>
+      <p>
+        <strong>Outcomes fixed in advance.</strong> Measure enough outcomes in enough subgroups and
+        some will come out &ldquo;significant&rdquo; by luck alone (Day 17&rsquo;s look-elsewhere
+        effect). A trial therefore names its main outcome and its analysis plan before the data come
+        in. The Women&rsquo;s Health Initiative named coronary heart disease as the benefit it was
+        testing and invasive breast cancer as the main risk to watch, and it set its stopping rule
+        beforehand too. Day 22 returns to what happens when studies skip this step.
+      </p>
+      <p>
+        <strong>Intention-to-treat.</strong> After the lottery, things go wrong: some participants
+        stop taking the pills, some drop out, some switch. The tempting move is to analyze only those
+        who followed instructions. But people who stick with a regimen are not a random half of their
+        arm &mdash; they tend to be the healthier, more conscientious ones &mdash; so analyzing only
+        them lets selection bias back in through the side door. The remedy is
+        <strong>intention-to-treat</strong> analysis: count everyone in the arm to which the lottery
+        assigned them, whatever they then did. The Women&rsquo;s Health Initiative analyzed its
+        principal results this way, even though some women in both arms stopped taking their tablets
+        before the trial ended. The price is that the result is a diluted estimate of what the pill does
+        when taken as directed; the gain is that it measures what a policy of prescribing it
+        does, with the bias protection intact.
+      </p>
+      <p>
+        <strong>Reading the result.</strong> A trial that waits for events such as heart attacks
+        summarizes the contrast with a <strong>hazard ratio</strong>: the rate at which events happen in
+        the treated arm divided by the rate in the control arm, among people still event-free at each
+        moment. A ratio of 1 means no difference; 1.29 means the rate on hormones was about 29 percent
+        higher. Read it beside the absolute figures: 37 versus 30 coronary events per 10,000 women per
+        year is 7 extra events per 10,000 women each year, real but small for any one woman. Then chance
+        is Day 17&rsquo;s business. The reported 95 percent confidence interval for the heart-disease
+        hazard ratio was 1.02 to 1.63; adjusted for the repeated interim looks at the data, which a
+        stopping rule requires, it widened to 0.85 to 1.97. So this trial alone did not prove that the
+        hormones harm the heart. What it showed is that protection of the size the observational studies
+        suggested, 0.56, was far outside what its data would allow, since even the wider interval stops
+        at 0.85.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        The Nurses&rsquo; Health Study compared women who had chosen hormones, or been given them,
+        with women who had not, and those groups already differed before the first pill. The trial
+        removed the choosing. With a lottery in charge, the only systematic difference left between the
+        arms was the tablet, and the tablet did not protect the heart. That is why a trial of 16,608
+        women could outweigh studies of tens of thousands more: not because it was bigger, but because
+        it was built so that the explanation &ldquo;the women were different&rdquo; was no longer
+        available. The healthy-user effect is the textbook account of the gap, and it is probably part of
+        it <span class="chip chip--warn">Debated</span> &mdash; reviews also point to differences in
+        design, since many observational studies followed women already on therapy, and in the women
+        themselves, who were generally younger and nearer menopause than the trial&rsquo;s average
+        participant, about 63. One more caveat: the 1991 paper was mostly about estrogen alone, while
+        the trial tested estrogen with a progestin, so the match is not perfect; but observational
+        studies of the combined pills had also suggested protection.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Random assignment</dt>
+        <dd>Deciding by chance, with the next assignment hidden from whoever enrolls people, who gets
+        which treatment, so the arms are alike on average in everything, measured or not.</dd>
+        <dt>Control group and placebo</dt>
+        <dd>The comparison arm, which does not receive the treatment under test. A placebo is an inert
+        look-alike that gives that arm the same attention and expectations.</dd>
+        <dt>Blinding (double-blind)</dt>
+        <dd>Keeping participants, and in a double-blind trial also the staff who assess them, from
+        knowing who received what, so that knowledge cannot color behavior or diagnosis.</dd>
+        <dt>Selection bias (healthy-user effect)</dt>
+        <dd>A difference between groups that comes from how people ended up in them. The healthy-user
+        effect is the case where people who choose a treatment are healthier for other reasons.</dd>
+        <dt>Intention-to-treat</dt>
+        <dd>Analyzing everyone in the arm they were randomly assigned to, whatever they did next, which
+        keeps the lottery&rsquo;s balance intact.</dd>
+        <dt>Hazard ratio</dt>
+        <dd>The event rate in one arm divided by the rate in the other at any moment, among those still
+        event-free. A value of 1 means no difference.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The 1954 Salk Polio Vaccine Trial, Run Two Ways at Once</h3>
+      <p>
+        In 1954 about 1.8 million children took part in a field trial of Jonas Salk&rsquo;s
+        polio vaccine, evaluated by Thomas Francis Jr. of the University of Michigan. It used two
+        designs side by side. In 11 states, children whose parents consented were randomly given vaccine
+        or an identical placebo, double-blind. In 33 states, every consenting second-grader was
+        vaccinated, and first- and third-graders, unvaccinated, served as observed controls.
+      </p>
+      <div class="worked">
+        <p><strong>1. The observed-control areas.</strong> Vaccinated second-graders had 25 cases per
+        100,000; the unvaccinated first- and third-graders had 54. That looks like a rate about 54
+        percent lower &mdash; but only consenting families&rsquo; children were vaccinated.</p>
+        <p><strong>2. Two biases, pulling opposite ways.</strong> Consenting families tended to be
+        better off, and in that era better-off children tended to be more vulnerable to polio, which
+        makes the vaccine look worse than it was. And the doctors diagnosing polio knew who had been
+        vaccinated, while mild cases resemble other illnesses, which makes it look better. Nobody could
+        say what the net bias was.</p>
+        <p><strong>3. The randomized areas.</strong> Parents consented first, then a lottery decided.
+        About 200,000 children got vaccine and about 200,000 got placebo; the rates were 28 against 71
+        per 100,000. Since 28 &divide; 71 &asymp; 0.39, the rate was about 61 percent lower.</p>
+        <p><strong>4. Chance.</strong> That is roughly 200 cases in all, split between two nearly equal
+        arms. A useless vaccine would put about 100 &plusmn; 7 in each; the arms held about 60 and about
+        140, more than five standard deviations from an even split &mdash; beyond Day 17&rsquo;s
+        five-sigma bar.</p>
+        <p><strong>5. Why it was believed.</strong> Assignment after consent, an identical placebo and
+        blinded diagnosis closed the selection and diagnosis routes, leaving only chance, which step 4
+        ruled out. The two designs landed in the same neighborhood here, but only the randomized one
+        could show that the neighborhood was safe to trust. The announcement that the vaccine worked came on April 12, 1955.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">E[Y | D=1] &minus; E[Y | D=0] &nbsp;=&nbsp; E[Y<sub>1</sub> &minus; Y<sub>0</sub> | D=1] &nbsp;+&nbsp; ( E[Y<sub>0</sub> | D=1] &minus; E[Y<sub>0</sub> | D=0] )</p>
+        <p class="expr-spoken visually-hidden">The average outcome among the treated minus the average outcome among the untreated equals the average effect of the treatment on the treated, plus the selection bias: the average untreated outcome of the treated group minus the average untreated outcome of the untreated group.</p>
+        <dl>
+          <dt>Y</dt>
+          <dd>the outcome actually observed, such as whether a woman developed heart disease</dd>
+          <dt>D</dt>
+          <dd>1 if a person received the treatment, 0 if not</dd>
+          <dt>Y<sub>1</sub>, Y<sub>0</sub></dt>
+          <dd>the outcome the same person would have had with, and without, the treatment; only one is ever observed</dd>
+          <dt>E[ &middot; | D=d ]</dt>
+          <dd>the average over the people in the group with D equal to d</dd>
+          <dt>E[Y<sub>1</sub> &minus; Y<sub>0</sub> | D=1]</dt>
+          <dd>the causal effect we want, averaged over those who were treated</dd>
+          <dt>E[Y<sub>0</sub> | D=1] &minus; E[Y<sub>0</sub> | D=0]</dt>
+          <dd>selection bias: how different the two groups would have been even if nobody had been treated</dd>
+        </dl>
+      </div>
+      <p>The decisive step is what a lottery does to the second term:</p>
+      <div class="formula">
+        <p class="expr">D independent of (Y<sub>0</sub>, Y<sub>1</sub>) &nbsp;&rArr;&nbsp; E[Y<sub>0</sub> | D=1] = E[Y<sub>0</sub> | D=0] &nbsp;&rArr;&nbsp; selection bias = 0</p>
+        <p class="expr-spoken visually-hidden">If assignment D is independent of the potential outcomes Y-zero and Y-one, then the average untreated outcome is the same in the treated and untreated groups, so the selection bias is zero.</p>
+        <dl>
+          <dt>independent of</dt>
+          <dd>knowing who got the treatment tells you nothing about how anyone would have fared with or without it &mdash; exactly what a coin flip guarantees</dd>
+        </dl>
+      </div>
+      <p>
+        What is left is the causal effect, plus the chance that this particular lottery drew slightly
+        unbalanced arms. The equalities hold on average over repeated lotteries, not in any one trial,
+        and that leftover chance is what Day 17&rsquo;s tests and intervals measure.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Randomization hands you a question to put to any claim that X causes or prevents Y: <em>who
+        chose X, and could their reasons also affect Y?</em> If the answer is yes and nobody
+        randomized, the association is a lead, not a verdict, however large it is and however many
+        studies repeat it &mdash; thirty studies that share one bias add precision, not accuracy. It
+        also gives you a checklist for reading a trial: how people were assigned and whether that was
+        concealed, who knew what, whether the main outcome was named in advance, whether people were
+        analyzed as assigned, and whether the headline is a relative or an absolute number. For a
+        book about whether inventions and reforms made lives better, the same question governs every
+        claim of progress: compared with whom, and who chose? Where a trial would be unethical or impractical, Day 21 turns to natural experiments, and Day 22 to how the published record of studies can mislead.
+      </p>
+      <p>
+        <b>Settled.</b> In the women enrolled (average age about 63), estrogen plus progestin did not
+        prevent heart disease, raised breast cancer, stroke and clot risk, and lowered colorectal
+        cancer and fractures; in 2022 the US Preventive Services Task Force again recommended against
+        it for preventing chronic conditions.
+      </p>
+      <p>
+        <b>Debated.</b> Whether starting near menopause changes the heart risk (the trials&rsquo;
+        own subgroup patterns were suggestive but not conclusive), and how much of the gap was
+        healthy-user bias rather than design differences.
+      </p>
+      <p>
+        <b>Value judgment.</b> Whether it is right to assign people by lottery to something that may
+        help or harm them, and who should carry that risk for knowledge others will use.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 18, Correlation, confounding and Simpson&rsquo;s paradox, showed that a hidden
+        third factor can create, hide or reverse an association, and that stratifying fixes only what
+        you measured. Randomization is the general answer: it balances every confounder at once,
+        including those no one thought of. Once the arms are alike, only chance is left, and Day 17,
+        Significance, p-values and systematic error, supplies the tools for it, such as the 1.02 to
+        1.63 interval above.
+      </p>
+      <p>
+        <b>Across.</b> In Computing, online A/B tests are randomized controlled trials at software
+        scale: users are assigned at random to the current page or a variant and the outcomes compared.
+        In 2012 an idea for lengthening the headlines of Bing&rsquo;s search ads sat in a backlog for
+        more than six months; when an engineer finally ran it as a randomized experiment, revenue rose
+        by about 12 percent &mdash; over $100 million a year in the United States alone, the authors
+        estimated &mdash; without hurting key user-experience metrics (Ron Kohavi and Stefan Thomke,
+        <em>Harvard Business Review</em>, 2017). The shared mechanism is the lottery itself; the
+        difference is cost, since millions of users can be assigned in software and results can arrive
+        within hours.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Controlled Experiments: Crash Course Statistics #9 &mdash; Crash Course (PBS Digital Studios), hosted by Adriene Hill (2018) &middot; Video &middot; about 10-13 minutes</p>
+        <p>A clear visual walk-through of control groups, placebos, blinding and random assignment, the trial machinery this lesson names, pitched at your level.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Choosers differ from non-choosers, so comparing them mixes a treatment&rsquo;s effect with those differences; adjustment fixes only what was measured.</li>
+        <li>Random assignment makes the arms alike on average in everything, measured or not, so the
+        remaining difference is the treatment&rsquo;s effect plus chance.</li>
+        <li>A placebo, blinding, outcomes named in advance and intention-to-treat analysis each guard a
+        different door through which bias could re-enter.</li>
+        <li>A hazard ratio is a relative rate (1.29: about 29 percent higher); read it beside the absolute difference, 7 extra coronary events per 10,000 women a year.</li>
+        <li>The Women&rsquo;s Health Initiative ruled out heart protection near the 0.56 that the
+        observational studies suggested, without by itself proving harm.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Observational studies found that people with higher blood levels of vitamin D had less cancer
+        and heart disease, yet the VITAL trial, which randomly assigned about 26,000 American adults to
+        vitamin D supplements or a placebo, found no significant reduction in either, so what most
+        plausibly explains the gap between the two kinds of study?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Women&rsquo;s Health Initiative principal results, <em>JAMA</em> 288
+      (2002): 321&ndash;333; Stampfer et al., <em>NEJM</em> 325 (1991): 756&ndash;762; Stampfer and
+      Colditz, <em>Preventive Medicine</em> 20 (1991): 47&ndash;63; Rossouw et al., <em>JAMA</em> 297
+      (2007): 1465&ndash;1477; the Preventive Services Task Force&rsquo;s 2022 hormone-therapy statement;
+      Francis&rsquo;s 1955 evaluation of the polio trials, with rates as tabulated by Freedman, Pisani and
+      Purves; Kohavi and Thomke, <em>Harvard Business Review</em> (2017). Checked via web search, except
+      the VITAL figures and the video&rsquo;s exact title, episode number and length, which could not be confirmed.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-19.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-21.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

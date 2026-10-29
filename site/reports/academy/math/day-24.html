@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Bertha Benz Bought Fuel at a Pharmacy and Drove About 106 Kilometers in 1888. Why Did the Car Win, and What Did Winning Cost? — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Bertha Benz Bought Fuel at a Pharmacy and Drove About 106 Kilometers in 1888. Why Did the Car Win, and What Did Winning Cost?",
+    "path": "reports/academy/math/day-24.html",
+    "summary": "Day 24 of the Connected Path reads the car's rise through this block's mathematics (fuel energy density, a falling price, an S-curve of adoption and death rates per mile) and shows that the chain runs as a loop, with a rule before the invention and the consequences rewriting the rules.",
+    "headlines": [
+      "Day 24 of 293 · Systems Case: the car's rise reads in four numbers, but the chain behind them is a loop, not a line",
+      "A rule came before the car (Britain, 1865), the invention arguably before the need, and the deaths rewrote the rules (US, 1966)",
+      "Watch or Read: Numbers Don’t Lie, the transport essays (about 30 min)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T04:58:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Bertha Benz Bought Fuel at a Pharmacy and Drove About 106 Kilometers in 1888. Why Did the Car Win, and What Did Winning Cost?</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        The mathematics of this block explains a good deal of why the car won, but the chain those numbers sit in is a loop rather than a line: a rule came before the car, the invention arguably came before the need, and the consequences rewrote the rules.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Systems Case</p>
+      <span class="track-progress">Day 24 of 293 &middot; Systems Case 24 of 24 &middot; Systems Case 1: Car I, the car by the numbers (spiral visit)</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Bertha Benz drives to her mother&rsquo;s, August 1888</h3>
+      <p>
+        Early on 5 August 1888 &mdash; the date tradition gives &mdash; Bertha Benz, 39, left the
+        family&rsquo;s home in Mannheim with her teenage sons Eugen, 15, and Richard, 13. She had not
+        told her husband. The machine was a three-wheeled Patent-Motorwagen, the design Karl Benz had patented two years earlier (German patent 37435, filed on 29 January 1886 and granted that November). Her destination was Pforzheim and her mother&rsquo;s house, about 106 kilometers away.
+      </p>
+      <p>
+        Nothing along the way was set up for her. Fuel meant ligroin, a light petroleum fraction sold as
+        a cleaning solvent, and she bought it at the town pharmacy in Wiesloch, the Stadt-Apotheke
+        (the town now promotes it as the world&rsquo;s first filling station, a label applied afterward).
+        When the wooden brake blocks wore thin, a craftsman &mdash; a cobbler in most accounts &mdash; nailed leather onto them. Family tradition adds that she cleared a blocked fuel
+        line with a hatpin and insulated a bare ignition wire with a garter. By one account she and her
+        sons pushed the car up the steeper hills. She reached Pforzheim around dusk, sent Karl a
+        telegram, and drove home several days later.
+      </p>
+      <p>
+        Forty-one years later, in 1929, the United States alone had about 23 million registered cars.
+      </p>
+      <p>
+        So here is the puzzle. How did a machine that needed a pharmacy for fuel and a craftsman for its
+        brakes end up on 23 million American registrations within forty-one years? And how much of that
+        can the mathematics you have just learned explain?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Why did the car win, and what did winning cost? This lesson answers with the mathematics of this
+        block. The car&rsquo;s rise can be read in four kinds of numbers &mdash; an advantage in energy
+        per kilogram, a price falling by a steady percentage each year, adoption tracing an S-shaped
+        curve, and harms judged as rates rather than totals &mdash; but the chain they sit in is a loop, not a line.
+      </p>
+      <p>
+        That is the job of a Systems Case: take one real system and follow it through the chain you
+        described when you set this path up &mdash; need, invention, physical constraint, engineering,
+        financing and production, regulation, adoption, consequences, feedback. This is the first of
+        four visits to the car. Only mathematics has been taught so far, so five links can be walked
+        with numbers already in hand; the other four are mapped in a sentence or two, with the day that
+        will teach them.
+      </p>
+      <p>
+        One assumption in the chain deserves a challenge. As written it reads like a pipeline, each link
+        feeding the next, and the car did not travel it in order. Britain had capped steam road vehicles
+        at walking pace about twenty years before Karl Benz filed his patent, so a rule came before the
+        invention. The invention arguably came before any widespread need. And the car&rsquo;s consequences, deaths among them, later rewrote its rules and its design.
+      </p>
+
+      <h3>The Chain</h3>
+      <p>
+        Each paragraph below is one link, in your order, with its field in bold. A link marked
+        &ldquo;preview&rdquo; is only mapped here; the day that teaches it is named.
+      </p>
+      <p>
+        <b>Need (Psychology, Sociology) &mdash; preview.</b> Nothing in 1888 demanded the car: horses,
+        trams and railways already moved people and goods, and accounts of Bertha&rsquo;s drive commonly
+        say she meant to show that Karl&rsquo;s machine was practical, which suggests the want still had
+        to be built. On that reading the invention came before the need, though that is an
+        interpretation, not a measurement. Psychology (Day 159, Motivation and human needs) teaches what
+        human needs are, and the third car visit (Day 216) takes up needs and status in the car&rsquo;s social story.
+      </p>
+      <p>
+        <b>Invention (History, Engineering) &mdash; preview.</b> Karl Benz&rsquo;s patent covered a
+        vehicle driven by a gas engine; Gottlieb Daimler and Wilhelm Maybach were building engine-driven
+        vehicles near Stuttgart in the same years. Day 224 (History II, The invention of invention)
+        traces how invention itself became organized work, and Day 91 (Engineering, The internal
+        combustion engine) explains how the engine works.
+      </p>
+      <p>
+        <b>Physical constraint (Mathematics, Day 1) &mdash; deep.</b> Energy density is how much energy a
+        fuel or battery stores per kilogram. Gasoline holds about 12 kilowatt-hours (kWh, the unit on an
+        electric bill) per kilogram
+        (the EPA counts 33.7 kWh per gallon, and a gallon weighs about 2.8 kilograms); a mid-2020s
+        lithium-ion battery pack holds roughly 0.15 to 0.20 kWh per kilogram. Day 1&rsquo;s Fermi
+        estimate put the raw gap at 60 to 80 times by weight and, once an electric drivetrain&rsquo;s
+        better efficiency is counted, about twenty times in useful energy. That ratio is a large part of
+        why a gasoline car could carry a long range in a small tank.
+      </p>
+      <p>
+        <b>Engineering (Engineering) &mdash; preview.</b> Bertha&rsquo;s repairs on the road &mdash;
+        leather on the brake blocks and, by tradition, a hatpin and a garter &mdash; were field
+        engineering, and she is credited with suggesting a lower gear for hills. The Engineering block
+        (Days 87&ndash;103) teaches design trade-offs, the engine and making the machine safe, and the
+        second car visit (Day 103) returns to the car with all of it in hand.
+      </p>
+      <p>
+        <b>Financing and production (Mathematics, Day 2) &mdash; deep.</b> The Model T touring car cost
+        $850 at its 1908 launch; by 1925 a touring car listed at about $290 and a runabout at about
+        $260, and about 15 million Model Ts had been built when production ended in 1927. A price that falls by a steady percentage each year is a straight line on Day 2&rsquo;s logarithmic scale; the worked example below puts the Model T&rsquo;s average fall at about 6 percent a year in nominal dollars, though the price did not fall every year. General
+        prices were higher in 1925 than in 1908, so the fall in real terms was steeper. Why the price fell
+        &mdash; interchangeable parts and learning curves &mdash; is Engineering&rsquo;s job (Days 96
+        and 97). Financing, at your level, is a mechanism in one clause: a captive finance arm lends
+        against the car as collateral and turns a purchase price into a monthly payment; General Motors
+        founded such an arm, GMAC, in 1919. The second car visit (Day 103) returns to the Model T.
+      </p>
+      <p>
+        <b>Regulation (Mathematics, Days 8, 21 and 23) &mdash; deep.</b> This link came first. Britain&rsquo;s
+        Locomotive Act of 1865 capped steam road locomotives at 4 miles an hour in the country and 2 in
+        towns, with a man walking ahead carrying a red flag, about twenty years before Benz&rsquo;s
+        patent. It was written for steam traction engines, not cars, but when petrol cars reached Britain
+        in the 1890s they fell under it. The Act of 1896 raised the cap to 14 miles an hour, and the
+        London-to-Brighton &ldquo;Emancipation Run&rdquo; that November celebrated the change.
+      </p>
+      <p>
+        <b>Regulation, continued.</b> A century later the evidence becomes quantitative. After the 1973
+        oil embargo, Congress set a national 55-mph limit (the Emergency Highway Energy Conservation Act,
+        signed 2 January 1974). Day 8&rsquo;s optimization lesson explains why the saving could be small: fuel use per mile is flat near its best speed and climbs steeply only well above it, so a cap helps mainly cars running far out on the steep side, and a Transportation Research Board review in 1984 judged the saving modest. The limit
+        may also have saved lives, though that was estimated rather than measured. Its repeal in 1995
+        became Day 21&rsquo;s natural experiment: Friedman, Hedeker and Richter (2009) compared states
+        and attributed about 12,500 extra deaths over 1995&ndash;2005, a 3.2 percent rise, to the higher
+        limits. <span class="chip chip--warn">Debated</span> And regulation by fixed test cycle failed
+        under Day 23&rsquo;s Goodhart&rsquo;s law (when a measure becomes a target, it stops being a good
+        measure): Volkswagen&rsquo;s diesel software, which the US Environmental Protection Agency said
+        in September 2015 could detect a test, was a flagrant case of engineering for the measure instead of the goal.
+      </p>
+      <p>
+        <b>Adoption (Mathematics, Day 7) &mdash; deep.</b> US automobile registrations rose from about
+        8,000 in 1900 to about 23 million in 1929 (Federal Highway Administration), an average of about
+        32 percent a year, the steep rise of an S-curve. Day 7&rsquo;s warning applies: the
+        ceiling is an assumption fed into the curve, not something early data reveal. The Depression
+        stalled the count for several years, and a count has no natural ceiling, so registrations kept
+        climbing for decades as the population grew and households added second and third vehicles.
+        What saturates is the share of households that own a car.
+      </p>
+      <p>
+        <b>Consequences (Mathematics, Days 14 and 18) &mdash; deep.</b> The World Health
+        Organization&rsquo;s Global Status Report on Road Safety 2023 estimates about 1.19 million road
+        deaths worldwide in 2021 &mdash; a modelled estimate, not a count &mdash; with more than half
+        among pedestrians, cyclists and motorcyclists and over 90 percent in low- and middle-income
+        countries. In the United States, deaths per 100 million vehicle-miles fell from about 24 in 1921 (a rough early estimate) to about 1.3 in the early 2020s, a fall of about 95 percent. That is a rate, and Day 18 says what
+        to do with a rate: ask what else changed. Roads, vehicles, trauma care, seat-belt and
+        drink-driving laws and drinking norms all changed together, so no single one gets the credit.
+        Day 14&rsquo;s game theory applies to the fleet itself: a heavier vehicle protects its own
+        occupants and raises the risk to everyone it hits, so each household&rsquo;s safest private
+        choice pushes the fleet toward an outcome worse for all. Michelle White&rsquo;s 2004 study
+        estimated that for every fatal crash avoided by the occupants of an SUV or pickup, at least four more occur among others. <span class="chip chip--warn">Debated</span> The analogy fails wherever
+        buyers want a larger vehicle for reasons other than safety.
+      </p>
+      <p>
+        <b>Feedback (Government, Law, Engineering) &mdash; preview.</b> The consequences fed back into the
+        rules and the machine. Ralph Nader&rsquo;s <i>Unsafe at Any Speed</i> (1965) was followed by the
+        National Traffic and Motor Vehicle Safety Act of 1966. The 1973 oil shock produced the 55-mph
+        limit and, in 1975, federal fuel-economy standards whose looser rules for light trucks are often
+        blamed for the later SUV boom. <span class="chip chip--warn">Debated</span> Government (Day 243,
+        How regulation works), Law (Day 254, Tort and product liability) and Engineering (Day 101,
+        Crashworthiness and the Haddon matrix) teach these loops.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        So how did a machine that needed a pharmacy and a craftsman reach 23 million registrations? The
+        numbers explain part of the answer. Hydrocarbon fuel packs 60 to 80 times a battery&rsquo;s
+        energy per kilogram, so a small tank carried real range. The Model T&rsquo;s price fell an average of about 6 percent a year, which put it within reach of more buyers. Adoption climbed an S-curve at
+        an average of about 32 percent a year for 29 years. And the harm, read as a rate, fell about 95
+        percent per mile even though the annual US total is still about 40,000 deaths. The numbers cannot
+        say why people wanted cars, how the engine was made to work, or how credit and streets were
+        reorganized around them; later blocks teach those. And they refuse a straight line: Britain had capped steam road vehicles at walking pace about twenty years before Karl Benz&rsquo;s patent, the invention arguably preceded any pressing need, and the deaths rewrote the rules.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Energy density</dt>
+        <dd>The energy a fuel or battery stores per kilogram; for a given weight it decides how much
+        range a vehicle can carry.</dd>
+        <dt>Log-scale price decline</dt>
+        <dd>A price falling by a steady percentage each year, which plots as a straight line on a
+        logarithmic axis (Day 2).</dd>
+        <dt>S-curve adoption</dt>
+        <dd>Ownership that starts slowly, speeds up, then levels off as the market saturates; the ceiling
+        is an assumption, not a law (Day 7).</dd>
+        <dt>Rates versus totals</dt>
+        <dd>A rate divides harm by exposure, such as deaths per mile driven; the total is the rate times
+        the exposure, so a rate can fall steeply while the total stays large.</dd>
+        <dt>Natural experiment</dt>
+        <dd>A change of rule or circumstance that sorts places or people into treated and untreated
+        groups as if at random, as when states raised speed limits at different times (Day 21).</dd>
+        <dt>Feedback loop</dt>
+        <dd>A chain of causes that returns to its start, either reinforcing a change or balancing it;
+        the car&rsquo;s story is several loops running at once.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Four Ratios, One Car</h3>
+      <p>
+        Here is the car&rsquo;s numerical case with the arithmetic shown, using only tools from this
+        block. The first two steps turn two endpoints into a compound annual growth rate (CAGR); Day 2&rsquo;s caution applies to all of them: two endpoints can hide detours.
+      </p>
+      <div class="worked">
+        <b>Worked example</b>
+        <ol>
+          <li><strong>Price.</strong> The Model T touring car went from $850 (1908) to about $290
+          (1925), a factor of 850 &divide; 290 &asymp; 2.9 over 17 years. The yearly factor is
+          (290 &divide; 850)<sup>1/17</sup> &asymp; 0.94, so the price fell about 6 percent a year and
+          halved roughly every ln 2 &divide; 0.063 &asymp; 11 years.</li>
+          <li><strong>Adoption.</strong> US registrations went from about 8,000 (1900) to about 23
+          million (1929), a factor of about 2,900 over 29 years. The yearly factor is
+          2,900<sup>1/29</sup> &asymp; 1.32, so registrations grew about 32 percent a year on average and
+          doubled roughly every ln 2 &divide; ln 1.32 &asymp; 2.5 years.</li>
+          <li><strong>Harm as a rate.</strong> Deaths per 100 million vehicle-miles went from about 24
+          (1921) to about 1.3 (early 2020s): 1.3 &divide; 24 &asymp; 0.054, a fall of about 95
+          percent.</li>
+          <li><strong>Rate times exposure.</strong> A Fermi check on exposure: roughly 250 million
+          vehicles at roughly 12,000 miles each is about 3 trillion vehicle-miles a year. At 1.3 per 100
+          million miles that gives 1.3 &times; 30,000 &asymp; 39,000 deaths, close to the actual total of
+          about 40,000. The rate fell 95 percent and the total is still large because the miles driven
+          grew so much.</li>
+        </ol>
+      </div>
+      <p>
+        The four ratios say how fast and how much. They are silent on why people wanted cars and who
+        bore the harm, which is why the case also needs a loop diagram and an evidence check.
+      </p>
+
+      <h3>The Loops</h3>
+      <p>
+        A reinforcing loop (R) amplifies a change; a balancing loop (B) pushes back against it. The
+        Systems Thinking block teaches the grammar of such diagrams (Day 26, Feedback loops: reinforcing
+        and balancing; Day 27, Delays, overshoot and oscillation). Here the car&rsquo;s main loops are
+        described in words.
+      </p>
+      <div class="formula">
+        <p class="expr">R1 adoption &middot; R2 price &middot; B1 saturation &middot; B2 harm</p>
+        <p class="expr-spoken visually-hidden">Four loops. R1, adoption, is reinforcing. R2, price, is reinforcing. B1, saturation, is balancing. B2, harm, is balancing and delayed.</p>
+        <dl>
+          <dt>R1</dt>
+          <dd><b>Adoption, reinforcing.</b> More cars lead to more filling stations, paved roads and
+          dealers, which make a car more useful, which leads to more cars. Bertha&rsquo;s pharmacy
+          purchase is the loop at its first turn, a single supplier where a network was needed.</dd>
+          <dt>R2</dt>
+          <dd><b>Price, reinforcing.</b> More output lowers the cost and price of each car, which brings
+          more buyers and so more output. This is the Model T&rsquo;s loop; Engineering (Days 96 and 97)
+          teaches the mechanism.</dd>
+          <dt>B1</dt>
+          <dd><b>Saturation, balancing.</b> As households acquire cars, fewer remain to buy a first one,
+          so growth slows. This is the S-curve&rsquo;s ceiling (Day 7).</dd>
+          <dt>B2</dt>
+          <dd><b>Harm, balancing and delayed.</b> More driving brings more deaths, which bring safety law
+          and safer engineering, which lower deaths per mile. The delay ran to decades: the federal
+          safety act came in 1966.</dd>
+          <dt>Reversed order</dt>
+          <dd>Regulation before invention (Britain&rsquo;s 1865 Locomotive Act) and, arguably, invention before need (Benz&rsquo;s 1886 patent): the chain&rsquo;s arrows can run backwards.</dd>
+          <dt>Side effects</dt>
+          <dd>A rule can gain little where the optimum is flat: the 55-mph limit&rsquo;s fuel saving was modest (Day 8). A
+          rule can be gamed: fixed test cycles invited Volkswagen&rsquo;s defeat device (Day 23). And a
+          rule&rsquo;s effect can stay disputed for decades (Day 21).</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now read any technology&rsquo;s rise in a handful of numbers and see where the reading
+        stops. Fuel energy per kilogram, a steady-percentage price fall, an S-curve and a death rate per
+        mile each answer &ldquo;how much?&rdquo; and &ldquo;how fast?&rdquo; with a figure you can check.
+        None answers &ldquo;did people want it?&rdquo; or &ldquo;who paid?&rdquo;, and a chain read as a
+        straight line hides that the rule, the invention and the need arrived in no tidy order. That
+        bears on the question at the center of your book: &ldquo;progress&rdquo; needs a target and a
+        beneficiary named, and the numbers supply neither. The loop diagram also tells you where to look
+        next, because a balancing loop with a delay of decades, like the one running from deaths to
+        rules, does harm for years before it corrects. The second car visit (Day 103) follows
+        engineering and production in depth, the third (Day 216) the social links, and the fourth (Day
+        293) asks whether the car was progress.
+      </p>
+      <p><b>Settled.</b> The energy-density gap, the Model T&rsquo;s price fall, US registration growth
+      and the fall in US deaths per mile are measured; WHO&rsquo;s 1.19 million is a modelled
+      estimate.</p>
+      <p><b>Debated.</b> How much of the falling death rate any one cause explains; how large the
+      speed-limit effects were (the 2009 Friedman study is one estimate); and how far
+      heavier vehicles raise net deaths.</p>
+      <p><b>Value judgment.</b> Who gained (mobility, livelihoods), who paid (pedestrians, cyclists and
+      poorer countries bear most deaths) and who consented (bystanders and children did not choose the risk). A utilitarian ledger sums lives and welfare; the natural-law and Christian traditions
+      stress a duty of care to the vulnerable neighbor. The world without the car is an unknowable
+      counterfactual.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 1 (Orders of magnitude) supplied the gasoline-versus-battery comparison; here it
+        is the car&rsquo;s physical constraint, a gap of about twenty times in useful energy. Day 2
+        (Exponential growth and logarithms) is how to read the Model T&rsquo;s price: a steady
+        percentage fall each year is a straight line on a log scale. Day 7 (Logistic growth and S-curves)
+        supplies the adoption curve and its warning that the ceiling is an assumption. Day 21 (Natural experiments) supplies the method behind one estimate of what the 1995 repeal of the national speed limit did to deaths.
+      </p>
+      <p>
+        <b>Across.</b> Bertha&rsquo;s ligroin was a light petroleum fraction, and its energy advantage is
+        chemistry: burning a hydrocarbon swaps its carbon&ndash;hydrogen and carbon&ndash;carbon bonds, and the oxygen molecule&rsquo;s, for the stronger bonds in carbon dioxide and water, and the surplus is released as heat; the oxygen comes from the air, not the tank. The Energy, Chemistry &amp; Materials block takes up the subject in Day 70 (Combustion and energy density).
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Numbers Don&rsquo;t Lie: 71 Stories to Help Us Understand the Modern World (the transport
+        essays) &mdash; Vaclav Smil (2020) &middot; Reading &middot; about 30 minutes for the transport
+        section&rsquo;s short essays</p>
+        <p>Smil&rsquo;s short essays lead with the numbers, several of them on cars, engines and
+        transport, and they model exactly this case&rsquo;s method of reading a technology through
+        energy, prices, adoption and risk as orders of magnitude and rates. Smil returns in the Energy
+        block.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Four numbers read the car&rsquo;s rise: a fuel edge of 60 to 80 times per kilogram, a price falling about 6 percent a year and registrations rising about 32 percent a year (averages), and deaths per mile down about 95 percent.</li>
+        <li>A rate can fall steeply while the total stays large, because the total is rate times exposure.</li>
+        <li>The chain is a loop: a rule (Britain, 1865) preceded the invention, the invention (1886) arguably preceded the need, and the deaths rewrote the rules (US, 1966).</li>
+        <li>Many causes moved together, so a falling death rate credits no single cause.</li>
+        <li>The numbers say how fast and how much; why people wanted cars and who bore the cost are
+        separate questions.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        Jet fuel holds about as much energy per kilogram as gasoline, so even granting an electric drivetrain its efficiency edge, why does a battery pack&rsquo;s deficit in energy per kilogram hurt a long-haul airliner far more than it hurts a car?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Bertha Benz&rsquo;s drive (Encyclopaedia Britannica; the National Motor
+      Museum; Mercedes-Benz media material); Karl Benz&rsquo;s patent DRP 37435 (National Motor Museum);
+      US registrations from the Federal Highway Administration&rsquo;s <em>Highway Statistics Summary to
+      1995</em>; Model T prices from Ford history pages and a year-by-year price table. Checked via web
+      search. The British Acts of 1865 and 1896, the speed-limit and federal-law dates, Friedman et al., White, the Transportation Research Board review, the death-rate and WHO figures and GMAC&rsquo;s date come from the course&rsquo;s
+      research notes and could not be re-confirmed.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource: from the Connected Path&rsquo;s curated list; the book&rsquo;s transport section could not
+      be re-checked. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-23.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

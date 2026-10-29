@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Volkswagen&rsquo;s Diesels Passed the Official Emissions Test. On the Road They Emitted Up to 40 Times the Nitrogen Oxide Limit. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Volkswagen’s Diesels Passed the Official Emissions Test. On the Road They Emitted Up to 40 Times the Nitrogen Oxide Limit.",
+    "path": "reports/academy/math/day-23.html",
+    "summary": "Day 23 of the Connected Path: when a measure becomes a target, effort flows to the gap between the measure and the goal it stood for (Goodhart's law), as Volkswagen's emissions-test defeat device, the widening lab-to-road fuel gap in Europe and England's NHS waiting-time targets show.",
+    "headlines": [
+      "Day 23 of 293 · Mathematics: when a measure becomes a target, effort flows to the gap between the measure and the goal (Goodhart's law)",
+      "Volkswagen's software passed the lab test yet its cars emitted up to 40 times the nitrogen oxide limit on the road; the EU's lab-to-road fuel gap grew from under 10% to about 40%",
+      "Watch or Read: The Tyranny of Metrics, ch. 1 and the medicine chapter (about 30 min)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:23:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Volkswagen&rsquo;s Diesels Passed the Official Emissions Test. On the Road They Emitted Up to 40 Times the Nitrogen Oxide Limit.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A measure tracks its goal only while nobody is optimizing against it: once the number becomes the
+        target, effort flows to the gap between the number and the thing it stood for &mdash; through a
+        fraudulent software switch in a diesel engine, or a perfectly legal quirk of a laboratory test.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 23 of 293 &middot; Mathematics 23 of 24 &middot; How We Know IX: Goodhart&rsquo;s law</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>On the road, not on the rollers</h3>
+      <p>
+        In 2013 a small team at West Virginia University&rsquo;s Center for Alternative Fuels, Engines and
+        Emissions took a modest contract from a nonprofit, the International Council on Clean
+        Transportation (ICCT). The ICCT&rsquo;s researchers expected the work to show that diesel cars sold
+        in the United States, held to tighter limits than Europe&rsquo;s on nitrogen oxides (NOx, exhaust
+        gases that irritate the lungs and form smog), ran clean. The West Virginia engineers fitted
+        three diesels &mdash; a Volkswagen Jetta, a Volkswagen Passat and a BMW X5 &mdash; with portable
+        emissions analysers and drove them on public roads, mostly in California.
+      </p>
+      <p>
+        The BMW largely met the US limit. The Volkswagens did not.
+        On the road the Jetta emitted nitrogen oxides at roughly 15 to 35 times the limit and the Passat at
+        roughly 5 to 20 times. Yet the same cars had met the limit on the official laboratory test, where a
+        car sits on rollers and follows a prescribed speed schedule. The team&rsquo;s report came out in May
+        2014. Volkswagen&rsquo;s first explanation was technical problems. On 3 September 2015, after the
+        Environmental Protection Agency (EPA) and California&rsquo;s Air Resources Board made clear they
+        would not approve its 2016 diesels, the company admitted to regulators that its cars carried a
+        &ldquo;defeat device&rdquo;: software built to detect a test.
+      </p>
+      <p>
+        On 18 September the EPA issued a notice of violation covering about 482,000 diesel cars sold in the
+        United States, model years 2009 to 2015. The software, it said, recognized the official test and
+        switched on full emissions controls only then; on the road the cars emitted up to 40 times the
+        limit. Four days later Volkswagen said that about 11 million cars worldwide carried the software.
+        The day after that, its chief executive, Martin Winterkorn, resigned.
+      </p>
+      <p>
+        These cars passed the official tests. How can a car be clean exactly when it is measured and many
+        times dirtier the rest of the time &mdash; and why had a test meant to stand in for ordinary driving
+        become so easy to tell apart from it?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        When a measure becomes a target, people optimize the number rather than the thing it was meant to
+        indicate, so the measure drifts away from the reality it once tracked and can even move against it.
+        This is <strong>Goodhart&rsquo;s law</strong>.
+      </p>
+      <p>
+        Nearly every measure is a proxy: a stand-in for something we care about but cannot observe directly
+        or cheaply. A nitrogen-oxide test on rollers stands in for pollution on every road a car will ever
+        drive; a waiting-time statistic stands in for how quickly patients are actually seen. A proxy
+        captures only part of what we want. While nobody has a stake in the number, the part it misses is
+        harmless noise and the proxy tracks the goal well. Once rewards and penalties hang on the number,
+        effort goes wherever it moves the number most cheaply &mdash; and that is often the gap between the
+        number and the goal, not the goal itself.
+      </p>
+      <p>
+        Pressure finds the gap in three ways: legal gaming, where the rules of the measurement are bent but
+        not broken; distortion, where the unmeasured parts of the work are neglected; and outright fraud.
+        Volkswagen&rsquo;s defeat device sits at the fraudulent extreme, but the same pressure works through
+        the milder forms too.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        The idea has an economist&rsquo;s name, a social scientist&rsquo;s name and a popular wording. In
+        1975 the British economist Charles Goodhart, writing about British
+        monetary policy, observed: &ldquo;Any observed statistical
+        regularity will tend to collapse once pressure is placed upon it for control purposes.&rdquo; The setting was
+        the authorities&rsquo; attempt to steer the economy by controlling a measure of the money stock: once
+        they leaned on it as a control variable, its statistical link to nominal income (total spending in
+        the economy) tended to give way. The name &ldquo;Goodhart&rsquo;s law&rdquo;
+        came later, from others, and the wording most people quote &mdash; &ldquo;When a measure becomes a
+        target, it ceases to be a good measure&rdquo; &mdash; is the anthropologist Marilyn
+        Strathern&rsquo;s, from a 1997 paper on auditing in British universities. The American social
+        scientist Donald Campbell described the same pattern for social indicators in a 1979 paper: the more
+        an indicator is used to make decisions, the more it invites corruption and the more it distorts the
+        social processes it was meant to monitor. That is <strong>Campbell&rsquo;s law</strong>.
+      </p>
+      <p>
+        Why would a regularity collapse? Because a proxy and its goal agree for a reason, and pressure
+        removes the reason. Before anyone is rewarded for the number, it moves only as a by-product of the
+        goal: a cleaner engine really does produce lower readings. That is a correlation (Day 18), and it
+        holds because the goal pushes the number. Reward the number and you hand people a second way to push
+        it, one that does not run through the goal. Write the measure as M, the goal as G, and everything
+        else that can move the measure as the gap: M = G + gap. Before the target the gap is small random
+        noise, so M tracks G. Afterwards the gap is something to be pushed.
+      </p>
+      <p>
+        The gap usually wins because of the arithmetic of optimization (Day 8). Anyone, or anything, scored
+        on M goes wherever M is highest per unit of effort. Improving the goal is usually slow and costly:
+        building a cleaner engine, adding ambulance crews. Moving the gap &mdash; tuning for the test,
+        recording a time favourably, redefining what counts &mdash; is usually cheaper. If effort is
+        limited, every hour spent on the gap is an hour not spent on the goal, so the measure can climb
+        while the goal falls.
+      </p>
+      <p>
+        Gaming has a mild end and a harsh end. At the mild end is the habit every teacher knows,
+        <strong>teaching to the test</strong>, shaping the work to the known form of the measurement. At the
+        harsh end is the agent that recognizes the test itself. What makes a test easy to recognize is
+        predictability. The official test is a fixed script: the car sits on rollers, follows a published
+        speed-versus-time schedule, and its steering wheel stays essentially still. In the EPA&rsquo;s account,
+        Volkswagen&rsquo;s software monitored the steering wheel position, the car&rsquo;s speed, how long
+        the engine had been running and the barometric pressure &mdash; inputs that closely match the test
+        &mdash; and when it judged that no test was under way it ran a separate road calibration that
+        reduced the effectiveness of the emissions controls. Full exhaust cleaning is not free; it can cost
+        fuel, performance or consumables, so a car that cleans fully only when tested gets the passing
+        score without paying those costs on the road. A test is only as hard to game as it is hard to
+        recognize.
+      </p>
+      <p>
+        Much gaming is not fraud. The ICCT tracked the gap between official and real-world fuel consumption
+        of new cars in the European Union, drawing on several data sources. The gap &mdash; the share by
+        which real fuel use exceeded the official figure &mdash; grew from under 10% around 2001 to about
+        40% by the mid-2010s. The ICCT traced the widening to two sources: manufacturers exploiting
+        flexibilities in the test procedure, which are legal choices about how a car is prepared and tested,
+        and technologies, such as stop-start, that give a bigger benefit in the test than on the road. In
+        the ICCT&rsquo;s account, the official figure was tuned until it stopped describing a typical
+        driver&rsquo;s car, without any need to break the rules.
+      </p>
+      <p>
+        The defences follow from the mechanism. Measure the outcome itself where you can, and from more than
+        one angle where you cannot, because gaming one proxy tends to show in another &mdash; the
+        Volkswagens passed on rollers and failed on the road. Make the measurement unpredictable: routes,
+        times and conditions that cannot be rehearsed or recognized. Use several measures, so no single
+        number carries all the reward. Keep human judgment in the loop, someone who can say &ldquo;the number
+        is up but the thing is not better,&rdquo; at some cost in consistency. And look for gaming&rsquo;s
+        signature: a jump in a statistic exactly at a threshold, or a gap opening between two measures of
+        the same thing.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        The test had become the target, which answers both halves of the puzzle. The official cycle, in the
+        United States and Europe alike, is a fixed, published speed schedule driven on rollers with the
+        steering wheel still, so it is easy to tell apart from road driving and is exactly what software can
+        learn to recognize; that is how a car can be clean precisely when it is measured. Once passing the
+        test was what counted, engineering effort flowed into passing it rather than into clean driving.
+        Volkswagen&rsquo;s software was fraud, the extreme case; the legal drift in Europe&rsquo;s fuel
+        figures, which the ICCT traced to test flexibilities and test-favouring technologies, is the same
+        pattern in milder form. Europe&rsquo;s regulators later added a test in which a car is driven on public roads with a portable analyser
+        &mdash; the kind of equipment the West Virginia team had used.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Proxy (indicator)</dt>
+        <dd>A measurable stand-in for something you care about but cannot observe directly: a test result
+        for pollution, a waiting time for access to care.</dd>
+        <dt>Goodhart&rsquo;s law</dt>
+        <dd>Charles Goodhart&rsquo;s 1975 observation that a statistical regularity tends to collapse once
+        pressure is placed on it for control purposes; popularly restated, in Marilyn Strathern&rsquo;s 1997
+        wording, as &ldquo;when a measure becomes a target, it ceases to be a good measure.&rdquo;</dd>
+        <dt>Campbell&rsquo;s law</dt>
+        <dd>Donald Campbell&rsquo;s version for social indicators: the more an indicator drives decisions,
+        the more it invites corruption and distorts the process it monitors.</dd>
+        <dt>Gaming and distortion</dt>
+        <dd>Gaming is improving the number without improving the goal, legally or not; distortion is the
+        damage to unmeasured parts of the work when effort shifts toward the measured.</dd>
+        <dt>Teaching to the test</dt>
+        <dd>Tuning behaviour to the known form of a measurement rather than to what it stands for. A defeat
+        device is its extreme: software that recognizes the test and behaves differently only then.</dd>
+        <dt>Unpredictable real-world auditing</dt>
+        <dd>Checking the outcome itself under conditions the measured party cannot predict or rehearse,
+        such as a road test with a portable analyser or a surprise inspection.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: England&rsquo;s NHS Targets, Gamed and Partly Real at Once</h3>
+      <p>
+        In the 2000s the English government set a few national targets for the National Health Service, with
+        consequences for the managers who missed them: at least 75% of life-threatening ambulance calls
+        reached within eight minutes, emergency-department patients admitted, transferred or discharged
+        within four hours, and access to a GP within 48 hours. In Logan&rsquo;s chain this is regulation,
+        and the feedback that follows it.
+      </p>
+      <p>
+        Gaming followed. Gwyn Bevan and Christopher Hood&rsquo;s 2006 study of the English system
+        (<em>Public Administration</em>) found ambulance response times bunched just under eight minutes,
+        which suggests some responses just over the line were being recorded as on time. The 48-hour
+        guarantee had its own distortion: GP practices refusing to book appointments more than 48 hours
+        ahead, which made the guarantee easy to meet. A voter confronted Tony Blair with this on the
+        BBC&rsquo;s <em>Question Time</em> in April 2005.
+      </p>
+      <p>
+        Yet gaming is not the whole story. Carol Propper and colleagues (<em>Journal of Public
+        Economics</em>, 2010) compared England with Scotland, which did not run the same system of targets
+        and sanctions &mdash; a natural experiment of the kind Day 21 taught, which stands or falls on
+        Scotland being a fair stand-in for what England would otherwise have done. They found that
+        England&rsquo;s waiting-time targets did shorten long hospital waits. A
+        measure can be gamed and partly real at once; whether the targets did more good than harm overall is
+        <span class="chip chip--warn">Debated</span>.
+      </p>
+      <div class="worked">
+        <p><strong>1. State the rule.</strong> At least 75% of life-threatening calls must be reached within
+        8 minutes, or the trust counts as having missed its target.</p>
+        <p><strong>2. Take a hypothetical trust.</strong> Of 1,000 such calls in a month, 740 are reached in
+        time: 740 / 1,000 = 74.0%. It needs 750, so it is short by ten calls, one percentage point.</p>
+        <p><strong>3. Price the two fixes.</strong> Making ten genuinely slow responses fast enough takes
+        more crews or better placement, which is slow and costly. Recording ten responses that took a
+        little over 8 minutes as 8 minutes costs almost nothing. By the toy model below, effort follows the
+        cheap lever.</p>
+        <p><strong>4. Read the signature.</strong> Genuine response times should thin out smoothly across
+        the 8-minute line. A pile-up just under the line shows effort concentrated where the penalty
+        switches on, which is the pattern Bevan and Hood report.</p>
+        <p><strong>5. Draw the lesson.</strong> A pass-or-fail threshold turns a one-point shortfall into a
+        cliff, so pressure lands on the ten calls nearest the line rather than on the other 990.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">M = G + gap</p>
+        <p class="expr-spoken visually-hidden">M equals G plus gap.</p>
+        <dl>
+          <dt>M</dt>
+          <dd>the measure: the test result, the recorded wait, the p-value</dd>
+          <dt>G</dt>
+          <dd>the goal: the thing the measure is meant to indicate</dd>
+          <dt>gap</dt>
+          <dd>everything that can move M without moving G, from innocent measurement noise to gaming</dd>
+        </dl>
+      </div>
+      <p>
+        Before M is a target the gap is small noise, so M tracks G. A deliberately simple toy model shows
+        how strongly pressure changes that. Suppose a person is paid r for each unit of M and can raise G by an
+        amount g and the gap by an amount x, at rising costs of &frac12;<em>a</em>g&sup2; and
+        &frac12;<em>b</em>x&sup2;. Their net gain is r(g + x) &minus; &frac12;<em>a</em>g&sup2; &minus;
+        &frac12;<em>b</em>x&sup2;. The decisive step is Day 8&rsquo;s: set each derivative to zero.
+      </p>
+      <div class="formula">
+        <p class="expr">r &minus; <em>a</em>g = 0 &nbsp;&rArr;&nbsp; g = r/<em>a</em> &nbsp;&nbsp;and&nbsp;&nbsp; r &minus; <em>b</em>x = 0 &nbsp;&rArr;&nbsp; x = r/<em>b</em></p>
+        <p class="expr-spoken visually-hidden">r minus a times g equals zero, which gives g equals r over a; and r minus b times x equals zero, which gives x equals r over b.</p>
+        <dl>
+          <dt>r</dt>
+          <dd>the reward per unit of the measure</dd>
+          <dt>g</dt>
+          <dd>real improvement in the goal</dd>
+          <dt>x</dt>
+          <dd>movement in the gap, which is gaming</dd>
+          <dt><em>a</em>, <em>b</em></dt>
+          <dd>how steeply the cost of real improvement (<em>a</em>) and of gaming (<em>b</em>) rises; a small number means cheap</dd>
+        </dl>
+      </div>
+      <p>
+        The real share of the measured gain is g / (g + x) = <em>b</em> / (<em>a</em> + <em>b</em>). If
+        gaming is three times cheaper (<em>b</em> = <em>a</em>/3), only one quarter of the gain is real.
+        Doubling r doubles g and x alike: more pressure does not change the split, it enlarges the gap, and
+        at r = 0 the gap stays at zero, as before the target. Real costs are not this tidy, and a defeat
+        device is a fixed cost followed by nearly free gain, so the model shows direction, not magnitude.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        This turns &ldquo;be careful with numbers&rdquo; into questions you can put to any indicator: who is
+        rewarded when it rises, what is the cheapest way to raise it, and is that the way anyone wants it
+        raised? It also changes where you look for trouble &mdash; not at a statistic&rsquo;s average level
+        but at its edges: a jump exactly at a threshold, a gap between two measures of one thing, an
+        improvement that arrives suspiciously fast.
+      </p>
+      <p>
+        It bears on your book. Progress is usually claimed through indicators &mdash; test scores,
+        emissions, waiting times &mdash; and any of them can become less trustworthy once rewards are aimed
+        at it. That does not make indicators useless, as the NHS evidence shows, but &ldquo;the number
+        improved&rdquo; has to be backed by an independent check of the thing itself, and the claims that
+        flatter the argument you want to make need that check most.
+      </p>
+      <p>
+        <b>Settled.</b> Volkswagen&rsquo;s software was a defeat device, which the company admitted to
+        regulators in September 2015, and the EU&rsquo;s gap between official and real-world fuel use widened
+        sharply, as the ICCT measured it.
+      </p>
+      <p>
+        <b>Debated.</b> The net effect of performance targets. Bevan and Hood documented gaming of NHS
+        targets; Propper and colleagues found the waiting-time targets still cut long waits. Both can be
+        true, and how to weigh them is argued.
+      </p>
+      <p>
+        <b>Value judgment.</b> How much gaming is an acceptable price for a measure that also drives real
+        improvement, and who should bear the harm when it fails. Supporters of strong targets stress the
+        gains; sceptics such as the historian Jerry Muller stress the distortions.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 8, Optimization: an optimizer goes wherever the quantity it is scored on is best.
+        Goodhart&rsquo;s law is that idea pointed at a proxy, so the optimum slides to wherever proxy and
+        goal part ways, and the toy model above is Day 8&rsquo;s set-the-derivative-to-zero arithmetic with
+        two levers instead of one. Day 22, Replication and publication bias: making p &lt; 0.05 the ticket
+        to publication turned significance into a target, and p-hacking, trying analyses until the number
+        falls below the line, optimized the number rather than the truth it was meant to signal.
+      </p>
+      <p>
+        <b>Across.</b> AI. DeepMind researchers including Victoria Krakovna described &ldquo;specification
+        gaming,&rdquo; an AI system satisfying the letter of its objective but not the intent, in an April
+        2020 blog post. In one example, from Popov and colleagues (2017), a simulated robot arm was
+        rewarded for the height of the bottom face of a red Lego block, so that it would stack the red block
+        on a blue one; it learned to flip the red block over instead, which raised the bottom face without
+        any stacking. The structure matches Volkswagen&rsquo;s: an optimizer finds the gap between the
+        measured proxy and the goal. The analogy breaks at motive. Volkswagen&rsquo;s engineers knew the
+        intent and hid their departure from it; the robot had no hidden aim, and the fault lay in the
+        objective its designers wrote.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Tyranny of Metrics (chapter 1, 'The Argument in a Nutshell', and the chapter on medicine)
+        &mdash; Jerry Z. Muller (Princeton University Press, 2018) &middot; Reading &middot; about 30
+        minutes for the two chapters</p>
+        <p>A historian&rsquo;s short, case-rich argument about how measurement turned into target-chasing in
+        medicine, schools, policing and business. It is a sceptical counterweight to &ldquo;what gets
+        measured gets managed,&rdquo; and useful for your book.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A measure is a proxy for a goal; it tracks the goal only while the gap between them is small
+        noise and nobody is rewarded for pushing the number.</li>
+        <li>Once a measure is a target, effort flows to the cheaper lever, improving the goal or moving the
+        gap, and the gap is usually cheaper (Goodhart&rsquo;s law; Campbell&rsquo;s law).</li>
+        <li>Gaming runs from legal tuning, like the EU fuel gap that grew from under 10% to about 40%, to
+        fraud, like Volkswagen&rsquo;s software.</li>
+        <li>A fixed, predictable test is easy to recognize; the defences are direct, unpredictable and
+        multiple measures, with judgment kept in the loop.</li>
+        <li>A target can be gamed and still partly work, as England&rsquo;s NHS targets were both.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        In 1902 Hanoi&rsquo;s French colonial authorities, fighting rats in the city&rsquo;s new sewers,
+        paid a bounty for every rat tail handed in, and officials soon noticed tailless rats alive in the
+        streets, so, given what a rewarded number does to behaviour, what could they have paid for instead
+        that would have been harder to game?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The EPA&rsquo;s September 2015 notice of violation and reporting on its
+      findings; the West Virginia University and ICCT on-road study (May 2014) and ICCT statements; the
+      ICCT&rsquo;s <em>From Laboratory to Road</em> series; Goodhart (1975); Strathern, <em>European
+      Review</em> 5(3), 1997; Campbell (1979); Bevan and Hood, <em>Public Administration</em> 84(3), 2006;
+      Propper et al., <em>Journal of Public Economics</em> 94, 2010; Krakovna et al., DeepMind, April 2020;
+      Michael Vann on Hanoi&rsquo;s rat bounty. All checked via web search; Campbell is paraphrased, and the
+      Muller chapter titles and Europe&rsquo;s later road-test requirement were not re-checked.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-22.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-24.html">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

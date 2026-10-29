@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>John Snow Couldn’t Randomize London’s Water. Two Companies’ Tangled Pipes Nearly Did It for Him. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "John Snow Couldn’t Randomize London’s Water. Two Companies’ Tangled Pipes Nearly Did It for Him.",
+    "path": "reports/academy/math/day-21.html",
+    "summary": "Day 21 of the Connected Path: when an accident of history or policy sorts people into treated and untreated groups as if at random, comparing how each group changes (difference-in-differences) can reveal a cause no one could randomize, provided the groups would have moved in parallel without the treatment.",
+    "headlines": [
+      "Day 21 of 293 · Mathematics: when an accident of history sorts people as if by coin toss, comparing how groups change can reveal a cause",
+      "John Snow’s 1854 South London data: 315 cholera deaths per 10,000 houses on one water company’s supply against 37 on the other’s, with pipes down the same streets",
+      "Watch or Read: Natural experiments help answer important questions (Popular science background, Prize in Economic Sciences 2021) (about 20 minutes)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>John Snow Couldn&rsquo;t Randomize London&rsquo;s Water. Two Companies&rsquo; Tangled Pipes Nearly Did It for Him.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        When an accident of history sorts people into groups as if by a coin toss, comparing how the
+        groups change can expose a cause no one could randomize &mdash; but only if the groups would have
+        moved together without it.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 21 of 293 &middot; Mathematics 21 of 24 &middot; How We Know VII: Natural experiments</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Two water companies, one street</h3>
+      <p>
+        In the summer of 1854 cholera came back to London. John Snow, a London physician, had argued in
+        print since 1849 that the disease spread through drinking water fouled by the waste of earlier
+        victims, not through the foul air that many of his colleagues blamed. Arguing was not proving, and
+        South London offered a chance to do more.
+      </p>
+      <p>
+        There, two private companies piped the Thames to customers&rsquo; taps. The Southwark and Vauxhall
+        Company still drew its water from the tidal river at Battersea Fields, where London&rsquo;s sewage
+        reached it. The Lambeth Company had moved its intake in 1852 to Thames Ditton, upriver and beyond
+        the reach of the tide. Their pipes ran down the same streets, and one house might take one
+        company&rsquo;s water while its neighbour took the other&rsquo;s.
+      </p>
+      <p>
+        For every house where someone had died of cholera, Snow set out to learn which company supplied
+        it. When residents did not know, a chemical test for salt, which the tidal water carried in greater
+        quantity, could tell the two supplies apart. His tally for the seven weeks to 26 August 1854 ran like this. In the 40,046 houses
+        on Southwark and Vauxhall water, 1,263 people died of cholera, or 315 per 10,000 houses. In the
+        26,107 houses on Lambeth water, 98 died, or 37 per 10,000. In the rest of London the rate was 59.
+        The first rate was more than eight times the second.
+      </p>
+      <p>
+        Snow had not assigned anyone to drink sewage, and nobody had tossed a coin. The households he was
+        comparing had not been chosen by him, and households differ, as a rule, in a hundred ways. How
+        could that comparison show that water carried cholera?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A <strong>natural experiment</strong> is a situation in which an accident of nature, history or
+        policy sorts people into treated and untreated groups as if at random, so that comparing how the
+        two groups change can reveal a cause that no one could ethically or practically randomize.
+      </p>
+      <p>
+        Day 20 taught the clean way to find a cause: let a coin decide who is treated, and the groups come
+        out alike on average in everything, measured or not. But you cannot flip a coin to decide who
+        drinks sewage, which states raise a speed limit, or whose mother lives through a famine. Sometimes
+        the world does the sorting for you, with a blockade, a law passed in some places and not in
+        others, or two companies&rsquo; pipes laid down the same streets. The only question is whether it
+        sorted people arbitrarily enough to stand in for a coin.
+      </p>
+      <p>
+        The standard way to use such sorting is <strong>difference-in-differences</strong>: measure how
+        much the treated group changed, measure how much the untreated group changed over the same
+        period, and subtract. It carries one assumption that does all the work, <strong>parallel
+        trends</strong>: without the treatment, the two groups would have moved together. Everything below
+        is about why that assumption can sometimes be believed and when it cannot.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the two comparisons that come to hand and why each fails. Compare treated and untreated
+        groups after the fact, and any difference may simply be a difference the groups already had: Day
+        18&rsquo;s confounders. Compare the treated group before and after, and anything else that changed
+        over the same stretch is credited to the treatment: a trend, a bad season, a recession, or Day
+        19&rsquo;s regression to the mean if the group was picked because it looked extreme. Each fails for
+        a different reason, and the method below combines them so that each covers the other&rsquo;s weakness.
+      </p>
+      <p>
+        First, the sorting. What makes an event a natural experiment is that whatever decided who got
+        treated must be unrelated to the outcome except through the treatment. This is called
+        <strong>as-if random assignment</strong>, and it is a claim to defend, not a fact you are handed.
+        Snow defended it the way it is still defended. He went to see how the sorting worked: the rival
+        companies had laid mains down the same streets, and each house&rsquo;s choice had been made long
+        before, by an owner or occupier, when the two companies were competing for customers, for reasons with no
+        evident connection to who would later catch cholera. He then looked at what he could see, writing that there was no
+        difference either in the condition or occupation of the persons receiving the water of the
+        different companies. It is not literally random, since people did choose, once. The argument is
+        that the choice was unrelated to anything that would later matter. No fewer than 300,000 people, he wrote, had been divided into two groups &ldquo;without their
+        choice, and, in most cases, without their knowledge,&rdquo; and the experiment, in his words, was
+        &ldquo;on the grandest scale.&rdquo;
+      </p>
+      <p>
+        Second, the &ldquo;before.&rdquo; Snow also had the 1849 epidemic, when both companies drew
+        polluted water from the tidal Thames (Lambeth&rsquo;s intake was then near Hungerford Market, in
+        central London). In outline, the South London districts that Lambeth would later supply fared no
+        better in 1849 than those served by Southwark and Vauxhall. By 1854, after Lambeth moved its
+        intake, its customers were dying at a fraction of the other company&rsquo;s rate. This is a primitive
+        version of what economists now call difference-in-differences. The groups did not have to start
+        level. What matters is how each group <em>changed</em>.
+      </p>
+      <p>
+        Why subtract? Between any two periods, many things move a whole population at once: weather, the
+        economy, how deaths are recorded. They show up in the untreated group&rsquo;s change and in the
+        treated group&rsquo;s change alike, so they cancel when you subtract one from the other. What
+        survives is whatever happened to one group and not the other. If the only such thing is the
+        treatment, what survives is its effect. The untreated group is working as a stand-in for the
+        <strong>counterfactual</strong>: what would have happened to the treated group had it not been
+        treated. Nobody can observe that, so the stand-in is an assumption. That assumption is parallel
+        trends.
+      </p>
+      <p>
+        Parallel trends cannot be tested in the period that matters, because the treated group&rsquo;s
+        untreated future never happens. What you can do is look at the periods before the treatment. If
+        the two groups moved together across several earlier years, the assumption gains credibility. Those earlier movements are the <strong>pre-trend</strong>, and a
+        parallel pre-trend is reassuring but not proof:
+        groups that moved together in the past can part ways at the very moment of treatment.
+      </p>
+      <p>
+        So the work of reading a difference-in-differences study is the work of hunting for reasons the
+        groups would <em>not</em> have moved together. Five come up again and again. The groups may have
+        been on different paths already. A second event may have struck only the treated group at the same
+        time. Treatment may have gone where the outcome was expected to change, so that choice, not
+        chance, did the sorting. Places picked because they looked extreme may drift back toward ordinary
+        by themselves. And the untreated group may be touched by the treatment through spillover, as
+        when drivers cross a state line. Any one of these turns the comparison group into a poor stand-in,
+        and the estimate then measures the stand-in&rsquo;s failure as well as the treatment.
+      </p>
+      <p>
+        That is why a natural experiment is best read as an argument. It borrows the logic of a trial
+        without a trial&rsquo;s guarantee: the coin toss of Day 20 made the groups comparable by design, and here
+        the case for comparability has to be built from how the world happened to sort people. Sometimes the case is strong, as in Snow&rsquo;s South London. Often it is merely
+        plausible. The skill is telling them apart.
+      </p>
+      <p>
+        Two limits are worth holding on to. First, parallel trends is a claim on a particular scale. If both
+        groups&rsquo; death rates would have fallen by the same <em>percentage</em> rather than by the same
+        <em>number</em>, subtracting raw numbers misstates the effect, so the choice of scale is part of the
+        assumption. Second, the answer is an effect on the treated group, in that place and at that time. It
+        says what happened to those who were treated; whether the same would happen elsewhere is a further
+        question the design does not answer.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        That is how a comparison of households Snow had not chosen could carry so much weight. The pipes,
+        not the families, had decided who drank which water, and the decision had been made years earlier
+        for reasons with no evident link to cholera. Snow reported that the two sets of houses did not differ in
+        condition or occupation, and he found 315 deaths per 10,000 houses on one company&rsquo;s supply
+        against 37 on the other&rsquo;s, more than eight times as many. The 1849 epidemic supplied the
+        &ldquo;before&rdquo;: when both companies took polluted water, the districts Lambeth would
+        later serve had fared no better than Southwark and Vauxhall&rsquo;s, and after Lambeth moved upriver its customers did far better. Nobody flipped a
+        coin, but the world had come close enough that Snow&rsquo;s comparison is still a classic case of the design. It carried weight because the
+        sorting was well understood and could be checked, not because of any elaborate statistical model.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Natural experiment</dt>
+        <dd>A situation in which something outside the researcher&rsquo;s control (nature, history, a law)
+        sorts people into treated and untreated groups in a way that approximates random assignment.</dd>
+        <dt>As-if random assignment</dt>
+        <dd>The claim that who got treated was unrelated to anything else that affects the outcome. It
+        cannot be proved, only argued from how the sorting worked and checked against what can be
+        observed.</dd>
+        <dt>Counterfactual</dt>
+        <dd>What would have happened to the treated group had it not been treated. It is never observed,
+        so every causal estimate substitutes something for it.</dd>
+        <dt>Difference-in-differences</dt>
+        <dd>The treated group&rsquo;s change over time minus the untreated group&rsquo;s change over the same
+        time. Subtracting cancels whatever moved both groups alike.</dd>
+        <dt>Parallel-trends assumption</dt>
+        <dd>Without the treatment, the two groups would have changed by the same amount. Their levels may
+        differ; only their changes must match.</dd>
+        <dt>Pre-trend</dt>
+        <dd>How the two groups moved in the periods before the treatment. A run of parallel movement makes
+        the parallel-trends assumption more believable, though never certain.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Repealing the 55-mph Limit, State by State</h3>
+      <p>
+        Day 8 told how the national 55-mph limit was imposed in 1974 to save fuel. The other half of that
+        story is its end. Congress repealed the national maximum speed limit in the National Highway System
+        Designation Act, signed on 28 November 1995, and handed the choice back to the states, which then
+        raised their limits at different times and by different amounts. This sits at the regulation link of
+        the car chain, and the staggered timing is what gives a researcher something to compare.
+      </p>
+      <p>
+        In 2009 Lee Friedman, Donald Hedeker and Elihu Richter published such a comparison in the
+        <em>American Journal of Public Health</em>. They compared states and road types over 1995 to 2005,
+        setting changes where and when limits rose against changes where they had not. They attributed 3.2%
+        more road deaths to the higher limits, an estimated 12,545 deaths over the decade. <span class="chip chip--warn">Debated</span>
+      </p>
+      <div class="worked">
+        <b>Worked example: the arithmetic</b>
+        <ol>
+          <li>Invented numbers, not the study&rsquo;s. Deaths per 100,000 people: states that raised their
+          limit went from 15 to 16, and states that did not went from 18 to 16.</li>
+          <li>Treated states, before to after: 16 &minus; 15 = +1. Looking only here, the higher limit seems
+          to cost one death per 100,000.</li>
+          <li>After only, treated against untreated: 16 &minus; 16 = 0. Looking only here, it seems to cost
+          nothing.</li>
+          <li>Difference-in-differences: (16 &minus; 15) &minus; (16 &minus; 18) = 1 &minus; (&minus;2) = +3.
+          Deaths fell by 2 in the comparison states. If the treated states would have fallen by the same 2,
+          the higher limit left them 3 above where they would otherwise have been.</li>
+          <li>That +3 is real only if the treated states would also have fallen by 2. Their different
+          starting levels do not matter; their different trend would.</li>
+        </ol>
+      </div>
+      <p>
+        Whether the real study meets that standard depends on why states raised limits when they did. If
+        timing followed legislative calendars, it looks close to arbitrary. If limits rose first where
+        highways are long, straight and empty, the groups were already on different paths, and no
+        arithmetic repairs that.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">effect &asymp; (T<sub>after</sub> &minus; T<sub>before</sub>) &minus; (C<sub>after</sub> &minus; C<sub>before</sub>)</p>
+        <p class="expr-spoken visually-hidden">The effect is approximately the treated group's outcome after minus its outcome before, minus the quantity of the comparison group's outcome after minus its outcome before.</p>
+        <dl>
+          <dt>effect</dt>
+          <dd>the estimated causal effect of the treatment on the treated group</dd>
+          <dt>T<sub>after</sub>, T<sub>before</sub></dt>
+          <dd>the treated group&rsquo;s average outcome after and before the treatment</dd>
+          <dt>C<sub>after</sub>, C<sub>before</sub></dt>
+          <dd>the comparison (untreated) group&rsquo;s average outcome after and before</dd>
+        </dl>
+      </div>
+      <p>The decisive step is why the subtraction isolates the treatment. Write each group&rsquo;s change as a shared shock plus, for the treated group, the treatment&rsquo;s effect:</p>
+      <div class="formula">
+        <p class="expr">(T<sub>after</sub> &minus; T<sub>before</sub>) = s + &tau; &nbsp;&nbsp; (C<sub>after</sub> &minus; C<sub>before</sub>) = s &nbsp;&rArr;&nbsp; (s + &tau;) &minus; s = &tau;</p>
+        <p class="expr-spoken visually-hidden">The treated group's change equals s plus tau. The comparison group's change equals s. Subtracting, s plus tau minus s equals tau.</p>
+        <dl>
+          <dt>s</dt>
+          <dd>the shock that would have hit both groups alike, such as a national trend; the parallel-trends assumption is exactly that s is the same for both</dd>
+          <dt>&tau;</dt>
+          <dd>the treatment&rsquo;s effect on the treated group, which is what remains after s cancels</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Most questions in law, regulation and policy cannot be settled by a randomized trial. Governments
+        rarely randomize minimum wages, speed limits or school-funding formulas across cities. So much of the
+        credible evidence about policy has to come from natural experiments, and
+        difference-in-differences is among their workhorses. In 2021 the Royal Swedish Academy of Sciences gave the Prize in Economic Sciences in
+        Memory of Alfred Nobel to David Card, for his empirical contributions to labour economics, and to
+        Joshua Angrist and Guido Imbens, for their methodological contributions to the analysis of causal
+        relationships.
+      </p>
+      <p>
+        What you gain is three questions to put to any claim that a policy caused an outcome. What sorted
+        people into treatment, and could that sorting be related to the outcome? What is the comparison
+        group standing in for? And what, besides a hope, says the two would have moved together? A narrow
+        confidence interval cannot rescue a failed parallel-trends assumption: that is Day 17&rsquo;s
+        systematic error, which no amount of data shrinks. An estimate can be precise and still answer a
+        question nobody asked.
+      </p>
+      <p><b>Settled.</b> Snow&rsquo;s counts, and the logic that subtracting a comparison group&rsquo;s change cancels whatever moved both groups alike.</p>
+      <p><b>Debated.</b> Whether a given natural experiment is truly as-if random. Friedman and colleagues put the 1995 repeal at 12,545 extra deaths; Lave and Elias (1994) argued that the 1987 rise to 65 mph on rural interstates lowered statewide fatality rates by 3.4% to 5.1%, as drivers moved to safer roads and police to other work. The periods and roads differ.</p>
+      <p><b>Value judgment.</b> Whether faster travel is worth an estimated loss of life, and who should bear that risk, is something no estimate decides.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 20, Randomized controlled trials: a coin toss makes the groups alike on average
+        in everything, measured or not, while a natural experiment must earn that property from an accident
+        of history and argue for it. Day 18, Correlation, confounding and Simpson&rsquo;s paradox:
+        difference-in-differences cancels confounders that are fixed or shared by both groups, such as
+        wealth, geography or a national trend, but not one whose trend differs between them, which is the
+        form Day 18&rsquo;s lurking variable takes here.
+      </p>
+      <p>
+        <b>Across.</b> In Biology, Medicine &amp; Health, the Dutch Hunger Winter of 1944&ndash;45 is a
+        natural experiment in prenatal development that no one could ethically run. A German blockade cut
+        rations in the western Netherlands to starvation levels over the winter, with sharp start and end
+        dates and unaffected regions nearby, so exposure was set by when and where a pregnancy fell, not by
+        choice. Ravelli, Stein and Susser (<em>New England Journal of Medicine</em>, 1976) found higher
+        obesity rates at age 19 among men exposed early in gestation, and Heijmans and colleagues
+        (<em>PNAS</em>, 2008) found epigenetic differences about six decades later. The shared mechanism is
+        sorting by an accident of history. It strains in one respect: the famine struck one
+        urban region, and a famine can change who is conceived and who survives, so researchers must ask
+        whether the exposed group is representative of anyone else.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Natural experiments help answer important questions (Popular science background, Prize in Economic Sciences 2021) &mdash; The Royal Swedish Academy of Sciences (NobelPrize.org, 2021) &middot; Reading &middot; about 20 minutes</p>
+        <p>The Nobel committee&rsquo;s plain-language account of how natural experiments and difference-in-differences identify causes, using the New Jersey minimum-wage study and others. It shows the method beyond epidemiology.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A natural experiment is an accident of nature, history or policy that sorts people into treated and untreated groups as if at random; the &ldquo;as if&rdquo; must be argued.</li>
+        <li>Difference-in-differences subtracts the untreated group&rsquo;s change from the treated group&rsquo;s, cancelling whatever moved both alike.</li>
+        <li>Everything rests on parallel trends: without the treatment the groups would have moved together, though their levels may differ.</li>
+        <li>Snow&rsquo;s tangled pipes put 315 cholera deaths per 10,000 houses on one company&rsquo;s water against 37 on the other&rsquo;s, in houses he reported alike in condition and occupation.</li>
+        <li>Pre-existing trend differences, a second event, choice into treatment, regression to the mean or spillover break the comparison, and a narrow confidence interval cannot repair them.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        When New Jersey raised its minimum wage from $4.25 to $5.05 an hour on 1 April 1992 while
+        neighbouring eastern Pennsylvania did not, and David Card and Alan Krueger surveyed about 400
+        fast-food restaurants on both sides before and after, what must be true of the Pennsylvania
+        restaurants for the comparison to reveal the wage rise&rsquo;s effect on jobs?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Snow, <em>On the Mode of Communication of Cholera</em>, 2nd ed. (London, 1855), Table IX; Freedman, &ldquo;Statistical Models and Shoe Leather,&rdquo; <em>Sociological Methodology</em> 21 (1991); the National Highway System Designation Act of 1995; Friedman, Hedeker and Richter, <em>American Journal of Public Health</em> 99(9), 2009; Lave and Elias, <em>Accident Analysis &amp; Prevention</em> 26(1), 1994; the Royal Swedish Academy of Sciences&rsquo; 2021 prize citations. Checked via web search, except the Dutch Hunger Winter studies (Ravelli 1976, Heijmans 2008), the New Jersey minimum-wage study and Snow&rsquo;s 1849 district figures, given from the lesson&rsquo;s source record and only in outline.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource from the Connected Path&rsquo;s curated list, cited without a link because its exact address could not be confirmed. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-20.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-22.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

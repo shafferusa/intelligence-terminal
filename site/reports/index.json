@@ -1,6 +1,227 @@
 [
   {
     "date": "2026-10-29",
+    "slot": "learn",
+    "title": "In the 1730s a Calculation Said the Bees Were Off by Two Minutes of Arc. The Calculation Was Wrong — and a Miss That Small Would Have Cost Almost No Wax Anyway.",
+    "path": "reports/academy/math/day-08.html",
+    "summary": "Day 8 of the Connected Path: at the best point of a smooth trade-off the derivative is zero and the curve is flat, so the cost of a small miss grows only as its square — which shows why a two-minute-of-arc error in the honeybee cell’s angle would waste under one part in a million of its wax, and why a speed cap saves fuel mainly from drivers far from the best speed.",
+    "headlines": [
+      "Day 8 of 293 · Mathematics: at the best point of a smooth trade-off the curve is flat, so a small miss costs almost nothing",
+      "All of Mathematics, Days 8–24, is live now — start here and read in order",
+      "Watch or Read: Infinite Powers, ch. 4, ‘The Dawn of Differential Calculus’ (about 30–40 min)"
+    ],
+    "reading_minutes": 16
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Two Airliners Had the Whole Sky Over the Grand Canyon. They Flew Into Each Other Anyway.",
+    "path": "reports/academy/math/day-09.html",
+    "summary": "A velocity is a vector, and the relative velocity of two craft shows that, when both hold course and speed, a collision course is the one on which the other craft's bearing never changes while the range shrinks: the rule built into the maritime collision regulations, and a mechanism consistent with how two airliners over the Grand Canyon in 1956 failed to see each other in time.",
+    "headlines": [
+      "Day 9 of 293 · Mathematics: relative velocity is one vector minus another, and a steady bearing with shrinking range means collision unless someone changes course or speed",
+      "Ships must treat a steady bearing as danger (COLREGs Rule 7); in 1956 two airliners over the Grand Canyon did not see each other in time, 128 dead",
+      "Watch or Read: Vectors | Chapter 1, Essence of linear algebra (about 10 min)"
+    ],
+    "reading_minutes": 14
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Andrew Wiles Announced a Proof of Fermat’s Last Theorem in June 1993. Within Months, a Referee Had Found a Hole.",
+    "path": "reports/academy/math/day-10.html",
+    "summary": "Day 10 of the Connected Path: a mathematical proof deduces a claim from axioms and earlier theorems, settling every case at once with a certainty no number of examples can give, but only if every step is valid, as Wiles's 1993 gap and the formal verification that followed the Pentium division bug both show.",
+    "headlines": [
+      "Day 10 of 293 · Mathematics: a proof deduces a claim from axioms and settles every case at once, but only if every step is valid",
+      "A gap leaves a claim unsupported, not false; after the 1994 Pentium division bug, chipmakers invested heavily in proving designs correct",
+      "Watch or Read: Fermat's Last Theorem (US title: Fermat's Enigma), ch. 1, ‘I Think I’ll Stop Here’ (about 30-40 min)"
+    ],
+    "reading_minutes": 16
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "In 1654 Pascal and Fermat Settled an Unfinished Game by Letter. Their Method Is Where Expected Value Starts.",
+    "path": "reports/academy/math/day-11.html",
+    "summary": "Probability puts weights on every outcome that could happen and expected value averages what they are worth, the idea that began with Pascal and Fermat's 1654 split of an unfinished game and met its limit in d'Alembert's objection to Daniel Bernoulli's 1760 smallpox calculation.",
+    "headlines": [
+      "Day 11 of 293 · Mathematics: expected value is a probability-weighted average of outcomes, a long-run guide rather than a verdict on one risk",
+      "Pascal and Fermat's 1654 split of an unfinished game (48 pistoles to 16) and Bernoulli's smallpox gain of about three years show both the power and the limit of averages",
+      "Watch or Read: Against the Gods, ch. 4, ‘The French Connection’ (about 25-30 min)"
+    ],
+    "reading_minutes": 14
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Fukushima Daiichi’s Design Tsunami Was 5.7 Meters. The Wave That Hit It Was More Than Twice as High.",
+    "path": "reports/academy/math/day-12.html",
+    "summary": "Day 12 of the Connected Path: a distribution’s shape decides what ‘extreme’ can mean, so in a thin-tailed bell-curve world a wave more than twice the design value is all but impossible, while in a fat-tailed world (earthquake sizes follow a power law) the biggest event on record is a poor guide to the next, and a ‘100-year’ flood is a yearly 1-in-100 chance, not a schedule.",
+    "headlines": [
+      "Day 12 of 293 · Mathematics: a distribution’s tail decides what ‘extreme’ means, and fat tails make the worst on record a poor guide",
+      "Fukushima’s design tsunami was 5.7 m and the wave was roughly 13 to 15 m; a ‘100-year’ flood has a 26% chance within 30 years",
+      "Watch or Read: The Black Swan, ch. 15, ‘The Bell Curve, That Great Intellectual Fraud’ (one chapter, about 30-40 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Milgram Mailed Folders to Strangers, Mostly in Nebraska. The 64 That Reached a Boston Stockbroker Took About Six Hand-Offs. The Other 232 Never Arrived.",
+    "path": "reports/academy/math/day-13.html",
+    "summary": "Day 13 of the Connected Path: a network's structure (how many links each node has, whether a few hubs hold most of them, how clustered neighbourhoods are and whether a few shortcuts bridge them) decides how fast things spread and how failures cascade, from Milgram's folders to the 2003 blackout.",
+    "headlines": [
+      "Day 13 of 293 · Mathematics: a few long-range shortcuts make a clustered network small, and hubs make it fast to spread across and fragile to fail",
+      "Milgram's 64 finished chains took about six hand-offs, but 232 of 296 folders never arrived: a short path existing is not the same as its being found",
+      "Watch or Read: The Science of Six Degrees of Separation (about 10 minutes, length not confirmed)"
+    ],
+    "reading_minutes": 16
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "The Program That Could Never Beat a Single Opponent Won the Tournament. Twice.",
+    "path": "reports/academy/math/day-14.html",
+    "summary": "Day 14 of the Connected Path: when payoffs depend on what others choose, the stable outcome can leave everyone worse off (the prisoner’s dilemma) unless the game repeats often enough for reciprocity to pay, which is how TIT FOR TAT won Axelrod’s tournaments without ever outscoring a partner.",
+    "headlines": [
+      "Day 14 of 293 · Mathematics: in the prisoner’s dilemma the equilibrium leaves everyone worse off, until repetition makes reciprocity pay",
+      "TIT FOR TAT never outscored a partner in a match, yet won Axelrod’s first tournament on total points, then won again in a field of 62 entries",
+      "Watch or Read: The Evolution of Trust (about 30 minutes, interactive)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "An Expert Told the Jury the Odds Were 1 in 73 Million. He Had Answered the Wrong Question.",
+    "path": "reports/academy/math/day-15.html",
+    "summary": "Day 15 of the Connected Path: Bayes' theorem says evidence should move a belief by the likelihood ratio applied to the prior odds, the step missing when a 1-in-73-million figure for two cot deaths was put to the jury in Sally Clark's 1999 trial.",
+    "headlines": [
+      "Day 15 of 293 · Mathematics: Bayes' theorem (posterior odds = likelihood ratio × prior odds) says how far evidence should move a belief",
+      "Sally Clark's jury heard '1 in 73 million' for two cot deaths; the real question was which of two very rare explanations was likelier",
+      "Watch or Read: Bayes theorem, the geometry of changing beliefs (about 15 min)"
+    ],
+    "reading_minutes": 14
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "The Literary Digest Counted 2.4 Million Ballots and Called the Wrong President. Gallup Asked Far Fewer People and Called the Winner.",
+    "path": "reports/academy/math/day-16.html",
+    "summary": "Day 16 of the Connected Path: a random sample's error is predictable and shrinks with the square root of its size, while bias from who is asked or who answers does not shrink at all, which is how the Literary Digest's 2.4 million ballots lost to Gallup's far smaller sample and why the Current Population Survey now worries more about who answers than how many.",
+    "headlines": [
+      "Day 16 of 293 · Mathematics: random sampling error shrinks with the square root of sample size, but bias from who is asked or who answers does not shrink at all",
+      "The Digest’s 2.4 million ballots missed Roosevelt’s 1936 share by about 20 points; BLS’s 60,000-household survey cannot call a 0.1-point monthly move in unemployment real",
+      "Watch or Read: Sampling Methods and Bias with Surveys: Crash Course Statistics #10 (about 11-13 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "At Six Sigma, Neutrinos Outran Light. A Faulty Fiber-Optic Connection Said Otherwise.",
+    "path": "reports/academy/math/day-17.html",
+    "summary": "Day 17 of the Connected Path: a p-value or sigma level measures only how surprising data would be if the scatter in the error bars were all that was at work, so OPERA's six-sigma faster-than-light neutrinos could be wrong when a timing fault outside the error budget shifted every measurement the same way.",
+    "headlines": [
+      "Day 17 of 293 · Mathematics: a p-value is only as sound as its error model and cannot see a systematic error nobody listed",
+      "OPERA’s 6.0-sigma faster-than-light neutrinos traced to timing faults; by March 2012 ICARUS measured them at light speed",
+      "Watch or Read: The ASA Statement on p-Values: Context, Process, and Purpose (about 15 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Berkeley’s Graduate Programs Admitted 44% of Men and 35% of Women in 1973. In Four of Its Six Biggest Departments, Women Were Admitted More Often.",
+    "path": "reports/academy/math/day-18.html",
+    "summary": "Day 18 of the Connected Path: a third variable can create, hide or reverse an association, as in Berkeley’s 1973 graduate admissions, where women were admitted less often overall but more often in four of the six biggest departments, and the data alone cannot say whether to trust the pooled or the split table.",
+    "headlines": [
+      "Day 18 of 293 · Mathematics: a hidden third variable can reverse a trend (Simpson’s paradox)",
+      "Berkeley 1973 graduate admissions: women admitted less often overall, but more often in four of the six biggest departments",
+      "Watch or Read: The Book of Why, ch. 6, ‘Paradoxes Galore!’ (about 30-40 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "On Average, Tall Parents Had Shorter Children and Short Parents Taller Ones. So Why Didn’t Everyone End Up Average?",
+    "path": "reports/academy/math/day-19.html",
+    "summary": "Regression to the mean: when two measurements are imperfectly correlated, cases picked as extreme on one are on average less extreme on the other, yet a population's spread holds steady, so an improvement after picking the worst cases, like speed cameras sited after crash clusters, can come from statistics alone.",
+    "headlines": [
+      "Day 19 of 293 · Mathematics: cases picked as extreme on one measurement are, on average, less extreme on the next (regression to the mean)",
+      "Speed cameras sited after crash clusters and schools picked for low scores tend to improve partly on their own; only a comparison group shows what the action added",
+      "Watch or Read: Thinking, Fast and Slow, ch. 17, ‘Regression to the Mean’ (about 20 min)"
+    ],
+    "reading_minutes": 14
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Dozens of Studies Said Hormone Therapy Protected Women’s Hearts. Then a Randomized Trial Found No Protection.",
+    "path": "reports/academy/math/day-20.html",
+    "summary": "Assigning a treatment by chance makes the treated and untreated groups alike on average in every respect, measured or not, so a difference in their outcomes estimates the treatment’s causal effect; the Women’s Health Initiative trial of 2002 found no protection against heart disease from hormone therapy, where dozens of observational studies had suggested a risk about 44 percent lower.",
+    "headlines": [
+      "Day 20 of 293 · Mathematics: random assignment makes the groups alike on average, so a difference in outcomes is the treatment’s effect plus chance",
+      "Observational studies put hormone therapy’s heart risk at 0.56 times that of non-users; the randomized Women’s Health Initiative found a hazard ratio of 1.29",
+      "Watch or Read: Controlled Experiments, Crash Course Statistics #9 (about 10-13 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "John Snow Couldn’t Randomize London’s Water. Two Companies’ Tangled Pipes Nearly Did It for Him.",
+    "path": "reports/academy/math/day-21.html",
+    "summary": "Day 21 of the Connected Path: when an accident of history or policy sorts people into treated and untreated groups as if at random, comparing how each group changes (difference-in-differences) can reveal a cause no one could randomize, provided the groups would have moved in parallel without the treatment.",
+    "headlines": [
+      "Day 21 of 293 · Mathematics: when an accident of history sorts people as if by coin toss, comparing how groups change can reveal a cause",
+      "John Snow’s 1854 South London data: 315 cholera deaths per 10,000 houses on one water company’s supply against 37 on the other’s, with pipes down the same streets",
+      "Watch or Read: Natural experiments help answer important questions (Popular science background, Prize in Economic Sciences 2021) (about 20 minutes)"
+    ],
+    "reading_minutes": 14
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Amgen Tried to Reproduce 53 Landmark Cancer Findings. Six Held Up.",
+    "path": "reports/academy/math/day-22.html",
+    "summary": "Day 22 of the Connected Path: a statistically significant result can still be a fluke or an exaggeration once publication bias, low power and flexible analysis have acted on it, so a finding counts only after it replicates, as Amgen’s 6 confirmed findings out of 53 and a meta-analysis of the lead-crime literature show.",
+    "headlines": [
+      "Day 22 of 293 · Mathematics: significant results that pass the publication filter are often inflated or false, so a finding counts once it replicates",
+      "Amgen confirmed 6 of 53 landmark cancer papers; 97% of 100 psychology originals were significant but only about 36% of replications were",
+      "Watch or Read: Is Most Published Research Wrong? (about 12 minutes)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Volkswagen’s Diesels Passed the Official Emissions Test. On the Road They Emitted Up to 40 Times the Nitrogen Oxide Limit.",
+    "path": "reports/academy/math/day-23.html",
+    "summary": "Day 23 of the Connected Path: when a measure becomes a target, effort flows to the gap between the measure and the goal it stood for (Goodhart's law), as Volkswagen's emissions-test defeat device, the widening lab-to-road fuel gap in Europe and England's NHS waiting-time targets show.",
+    "headlines": [
+      "Day 23 of 293 · Mathematics: when a measure becomes a target, effort flows to the gap between the measure and the goal (Goodhart's law)",
+      "Volkswagen's software passed the lab test yet its cars emitted up to 40 times the nitrogen oxide limit on the road; the EU's lab-to-road fuel gap grew from under 10% to about 40%",
+      "Watch or Read: The Tyranny of Metrics, ch. 1 and the medicine chapter (about 30 min)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Bertha Benz Bought Fuel at a Pharmacy and Drove About 106 Kilometers in 1888. Why Did the Car Win, and What Did Winning Cost?",
+    "path": "reports/academy/math/day-24.html",
+    "summary": "Day 24 of the Connected Path reads the car's rise through this block's mathematics (fuel energy density, a falling price, an S-curve of adoption and death rates per mile) and shows that the chain runs as a loop, with a rule before the invention and the consequences rewriting the rules.",
+    "headlines": [
+      "Day 24 of 293 · Systems Case: the car's rise reads in four numbers, but the chain behind them is a loop, not a line",
+      "A rule came before the car (Britain, 1865), the invention arguably before the need, and the deaths rewrote the rules (US, 1966)",
+      "Watch or Read: Numbers Don’t Lie, the transport essays (about 30 min)"
+    ],
+    "reading_minutes": 15
+  },
+  {
+    "date": "2026-10-29",
     "slot": "pm",
     "title": "Closing Brief — Thu, Oct 29, 2026",
     "path": "reports/2026/10/2026-10-29-pm.html",

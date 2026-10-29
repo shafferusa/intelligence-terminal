@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Two Airliners Had the Whole Sky Over the Grand Canyon. They Flew Into Each Other Anyway. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "Two Airliners Had the Whole Sky Over the Grand Canyon. They Flew Into Each Other Anyway.",
+    "path": "reports/academy/math/day-09.html",
+    "summary": "A velocity is a vector, and the relative velocity of two craft shows that, when both hold course and speed, a collision course is the one on which the other craft's bearing never changes while the range shrinks: the rule built into the maritime collision regulations, and a mechanism consistent with how two airliners over the Grand Canyon in 1956 failed to see each other in time.",
+    "headlines": [
+      "Day 9 of 293 · Mathematics: relative velocity is one vector minus another, and a steady bearing with shrinking range means collision unless someone changes course or speed",
+      "Ships must treat a steady bearing as danger (COLREGs Rule 7); in 1956 two airliners over the Grand Canyon did not see each other in time, 128 dead",
+      "Watch or Read: Vectors | Chapter 1, Essence of linear algebra (about 10 min)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Two Airliners Had the Whole Sky Over the Grand Canyon. They Flew Into Each Other Anyway.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Subtract one mover&rsquo;s velocity from another&rsquo;s and you learn whether they will meet
+        &mdash; and if they will, the other craft hangs motionless in your view while it slowly grows.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 9 of 293 &middot; Mathematics 9 of 24 &middot; Vectors and relative velocity</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A crowded sky that looked empty</h3>
+      <p>
+        On the morning of Saturday, June 30, 1956, two airliners left Los Angeles about three minutes apart. TWA
+        Flight 2, a Lockheed Super Constellation, was bound for Kansas City; United Flight 718, a Douglas
+        DC-7, for Chicago. Their routes converged over northern Arizona, and both were cruising at about
+        21,000 feet, in daylight, among towering clouds, in airspace where no controller was keeping
+        them apart. The rule there was see and avoid: each crew was expected to look out of the window
+        and keep clear.
+      </p>
+      <p>
+        At about half past ten that morning, above the canyon, they met. The DC-7&rsquo;s left wing struck the
+        Constellation&rsquo;s tail section, and both airliners fell into the Grand Canyon. All 128 people
+        aboard died, then the deadliest commercial air disaster in United States history.
+      </p>
+      <p>
+        The Civil Aeronautics Board, the federal body that investigated airline accidents at the time,
+        found that the pilots &ldquo;did not see each other in time to avoid the collision.&rdquo; It
+        could not say why. Its list of possible reasons ran from the practical to the human: clouds
+        between the two aircraft, the limits of what could be seen from the cockpit, crews occupied with
+        their ordinary cockpit duties, perhaps a wish to give passengers a look at the canyon, and the
+        physiological limits of human vision.
+      </p>
+      <p>
+        Now notice how ordinary the setting was. It was mid-morning, in daylight, and two professional
+        crews were expected to be looking out for exactly this. How does an airliner on a course to hit
+        you go unseen?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Quantities that have both a size and a direction, such as a velocity, are vectors, and the
+        relative velocity of two movers &mdash; one&rsquo;s velocity minus the other&rsquo;s &mdash;
+        decides whether and when they will meet.
+      </p>
+      <p>
+        A speed is just a number: 12 knots. A velocity is 12 knots toward the north, and the direction
+        is not decoration. Two ships both making 12 knots can be steaming apart or steaming toward each
+        other. Anything described by a size and a direction &mdash; a velocity, a force, a wind &mdash;
+        is a vector. You draw it as an arrow whose length is the size and whose pointing is the
+        direction, you add vectors by laying the arrows tip to tail, and you subtract them just as
+        simply.
+      </p>
+      <p>
+        The payoff comes from asking what the world looks like from where you sit. Your own motion is
+        the background; what matters is how the other craft moves compared with you. That is a single
+        arrow, and its direction answers the question of whether you will meet. If it points straight
+        back along the line from the other craft to you, you will collide if neither of you changes
+        course or speed &mdash; and, strangely, the other craft will not appear to slide sideways
+        across your view at all.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with what a vector is. A <strong>scalar</strong> is a quantity with only a size: a
+        temperature, a mass, a speed. A <strong>vector</strong> has a size, called its magnitude, and a
+        direction. Velocity is the vector version of speed: its magnitude is the speed and its
+        direction is the way you are going. Day 4 introduced the derivative as a rate of change and
+        showed a car&rsquo;s speed as the derivative of its position, the rate at which where you are
+        changes. Once position can change in two dimensions, that rate of change has a direction too,
+        so velocity is a vector for the same reason position is: it takes two numbers, not one, to say
+        it.
+      </p>
+      <p>
+        Two numbers are how you compute with vectors. Pick two perpendicular axes &mdash; east and
+        north on a chart &mdash; and describe any velocity by how much of it points along each. Those
+        are its <strong>components</strong>. Navigators measure a heading as an angle clockwise from
+        north, so a craft moving at speed |v| on heading &theta; has an east component |v| sin &theta;
+        and a north component |v| cos &theta;. Sine and cosine are the standard names for two ratios of
+        a right triangle&rsquo;s sides; here the triangle&rsquo;s long side is the velocity arrow and
+        its other two sides are the components. A ship making 12 knots on heading 037&deg; (a knot is
+        one nautical mile per hour) has components of about 7.2 knots east and 9.6 north, the sides of
+        a 3-4-5 triangle scaled by 2.4. Going back from components to the arrow uses the Pythagorean
+        theorem for the size: components of 3 east and 12 north make a speed of &radic;(3&sup2; +
+        12&sup2;), about 12.4.
+      </p>
+      <p>
+        Adding vectors is adding components. A boat steering north at 12 knots through water that is
+        itself flowing east at 3 knots moves over the seabed at 3 east and 12 north &mdash; the two
+        arrows laid tip to tail &mdash; a ground speed of about 12.4 knots on a track about 14&deg; east
+        of north. The velocity the ground sees is the velocity through the medium plus the velocity of
+        the medium.
+      </p>
+      <p>
+        Subtraction is the move this lesson turns on. To subtract a vector, add its reverse: the same
+        size, the opposite direction. And subtraction answers a natural question: how does something
+        else move as seen from here? Drive at 60 mph past a car doing 50 and it drifts backward at 10
+        mph: 50 &minus; 60 = &minus;10. Meet a car doing 50 coming the other way, counting your own
+        forward direction as positive, and it closes at &minus;50 &minus; 60 = &minus;110 mph. In two
+        dimensions the same operation works on components. The <strong>relative velocity</strong> of B as
+        seen from A is v<sub>B</sub> &minus; v<sub>A</sub>: east component minus east component, north
+        minus north. Subtracting your velocity removes your own motion from the picture, and what is
+        left is how the other craft moves compared with you.
+      </p>
+      <p>
+        Now ask when two craft meet. Suppose both hold a steady course and speed. Call the arrow from
+        you to the other craft its position relative to you, r. It changes at a steady rate, the
+        relative velocity, so r(<em>t</em>) = r<sub>0</sub> + v<sub>rel</sub><em>t</em>, where
+        r<sub>0</sub> is the arrow now. That is a straight line traced at a constant speed. It reaches
+        you only if the line passes through you, which happens only when v<sub>rel</sub> points exactly
+        opposite to r<sub>0</sub>, straight back along the line of sight. Then the other craft slides
+        along that one line, closing at a steady rate, until the range (the distance between you) is zero at time <em>T</em>
+        &mdash; the range divided by the closing speed. If v<sub>rel</sub> points anywhere else, the
+        line misses you, the <strong>bearing</strong> (the compass direction from you to the other
+        craft) drifts, and the craft passes at its <strong>closest point of approach</strong>, the
+        smallest distance that straight-line path ever reaches. While your own heading holds steady, a
+        bearing that draws aft means the other craft will pass behind you, and one that draws forward
+        means it will cross ahead.
+      </p>
+      <p>
+        That gives the <strong>constant-bearing rule</strong>: if the bearing of another craft stays
+        fixed while the range shrinks, and you both keep your courses and speeds, you are on a
+        collision course. Sailors abbreviate it CBDR, constant bearing, decreasing range. Fixed bearing
+        with growing range means the craft is moving away, which is why the range matters as well.
+      </p>
+      <p>
+        Notice what this means for whoever is on watch. A craft on a collision course does not move
+        across your view. Everything else drifts past; this one holds its place at a fixed angle in the
+        window, and the only thing that changes is its size. It grows slowly. Apparent width goes as one
+        over the range, and the range is R<sub>0</sub>(1 &minus; <em>t</em>/<em>T</em>), so the craft has
+        doubled in apparent width when half the warning time is gone, and has grown tenfold only when
+        nine-tenths of it has gone. Human vision is built to catch movement, especially at the edges of
+        the visual field; a small spot that neither moves nor yet grows is easy to overlook. The Board&rsquo;s list of reasons the 1956 crews might not have seen each
+        other included the physiological limits of human vision. A watchkeeper&rsquo;s habit follows
+        from the geometry: do not wait for movement. Take a bearing, take another a little later, and
+        if it has not changed, act.
+      </p>
+      <p>
+        The rule has limits that the mathematics states for itself. It assumes steady velocities, so a
+        turn or a change of speed by either craft breaks it. And it is exact only for points; a very
+        large vessel, or any craft at close range, can hit you while its bearing is visibly changing,
+        because it is wide.
+      </p>
+
+      <h3>Back to the Grand Canyon</h3>
+      <p>
+        Treat the two airliners the way we treated the ships. Accounts of the collision describe a
+        shallow-angle encounter, the DC-7&rsquo;s left wing striking the Constellation&rsquo;s tail
+        section. To see the shape of the problem, use round numbers rather than the reported ones: both
+        airliners at 300 mph, on courses 25&deg; apart. Put one on heading 000&deg; and the other on
+        025&deg;. Their velocities are (0, 300) and (127, 272) mph, so the relative velocity is
+        (127, &minus;28), a speed of about 130 mph. For two airliners cruising near 300 mph, that is a
+        gentle approach, less than half of either one&rsquo;s speed.
+      </p>
+      <p>
+        If both held course and speed until the last moments, the geometry forces a steady bearing: each
+        crew would have seen the other airliner as a small speck holding its place in the window and
+        swelling slowly. From 5 miles away, a closing speed of 130 mph leaves a little over two minutes.
+        The speck doubles in apparent width only after about 70 seconds have passed, and has grown
+        tenfold only with about 14 seconds left. Human vision is tuned to motion, and a target that
+        neither moves nor grows much is easy to miss, especially if it sits behind a window post or a
+        cloud. That is a reconstruction, not a finding. The Board could not say which of its listed
+        factors operated, and a steady bearing is a general mechanism consistent with its list, not
+        part of it.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Vector</dt>
+        <dd>A quantity with a size (magnitude) and a direction, drawn as an arrow. Velocity is a vector;
+        speed, its magnitude, is a scalar.</dd>
+        <dt>Components</dt>
+        <dd>A vector&rsquo;s parts along perpendicular axes. For speed |v| on heading &theta; from north:
+        |v| sin &theta; east and |v| cos &theta; north. Vectors add and subtract component by
+        component.</dd>
+        <dt>Relative velocity</dt>
+        <dd>The velocity of B as seen from A, v<sub>B</sub> &minus; v<sub>A</sub>; subtracting a vector
+        means adding its reverse.</dd>
+        <dt>Bearing</dt>
+        <dd>The compass direction from you to another craft, measured clockwise from north.</dd>
+        <dt>Constant bearing, decreasing range (CBDR)</dt>
+        <dd>The signature of a collision course when both craft hold course and speed: the other craft
+        holds one place in your view while it gets closer.</dd>
+        <dt>Closest point of approach (CPA)</dt>
+        <dd>The smallest distance two steadily moving craft reach; zero means a collision.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: A Rule Written Into Maritime Law</h3>
+      <p>
+        Ships treat this geometry as law. The International Regulations for Preventing Collisions at
+        Sea (the COLREGs, in their 1972 form) tell every watchkeeper what to do about it. Rule 7 says
+        that risk of collision shall be deemed to exist if &ldquo;the compass bearing of an approaching
+        vessel does not appreciably change.&rdquo; It adds a caution that the reverse does not always
+        hold: risk may sometimes exist even when the bearing is changing appreciably, especially with a
+        very large vessel, a tow, or at close range. Here is the rule at work, each ship treated as a
+        point.
+      </p>
+      <div class="worked">
+        <p><strong>Setup.</strong> Your ship heads north at 12 knots. Another ship is 6 nautical miles
+        east and 8 north of you, heading due west at 9 knots.</p>
+        <p><strong>1. Position.</strong> r<sub>0</sub> = (6, 8) nautical miles: range &radic;(36 + 64) =
+        10, bearing arctan(6/8) &asymp; 037&deg;.</p>
+        <p><strong>2. Velocities.</strong> v<sub>A</sub> = (0, 12); v<sub>B</sub> = (&minus;9, 0), since
+        west is negative east.</p>
+        <p><strong>3. Subtract.</strong> v<sub>rel</sub> = v<sub>B</sub> &minus; v<sub>A</sub> =
+        (&minus;9, &minus;12), a closing speed of &radic;(81 + 144) = 15 knots.</p>
+        <p><strong>4. Compare directions.</strong> r<sub>0</sub> = 2 &times; (3, 4) and v<sub>rel</sub>
+        = &minus;3 &times; (3, 4): exactly opposite, straight back along the line of sight. The bearing
+        stays at 037&deg;.</p>
+        <p><strong>5. Time.</strong> 10 nautical miles at 15 knots is 40 minutes. Check by components:
+        you cover 8 miles north at 12 knots and they cover 6 miles west at 9 knots, both in 40 minutes,
+        arriving at the same spot together.</p>
+      </div>
+      <p>
+        Slow the other ship to 6 knots and everything changes: the bearing drifts from 037&deg; to
+        about 056&deg; in half an hour, and the ship passes astern of you, coming no closer than about
+        1.8 miles.
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">v = (|v| sin &theta;, |v| cos &theta;) &nbsp;&nbsp; v<sub>rel</sub> = v<sub>B</sub> &minus; v<sub>A</sub></p>
+        <p class="expr-spoken visually-hidden">The velocity v has an east component equal to the speed times the sine of theta and a north component equal to the speed times the cosine of theta. The relative velocity of B seen from A equals the velocity of B minus the velocity of A.</p>
+        <dl>
+          <dt>v</dt>
+          <dd>a velocity written as a pair: (east component, north component)</dd>
+          <dt>|v|</dt>
+          <dd>its magnitude, the speed</dd>
+          <dt>&theta;</dt>
+          <dd>the heading, measured clockwise from north</dd>
+          <dt>v<sub>A</sub>, v<sub>B</sub></dt>
+          <dd>the velocities of craft A (you) and craft B</dd>
+          <dt>v<sub>rel</sub></dt>
+          <dd>the velocity of B as seen from A</dd>
+        </dl>
+      </div>
+      <p>The decisive step shows why a collision course is a fixed line:</p>
+      <div class="formula">
+        <p class="expr">r(<em>t</em>) = r<sub>0</sub> + v<sub>rel</sub><em>t</em> &nbsp;&rArr;&nbsp; if v<sub>rel</sub> = &minus;r<sub>0</sub>/<em>T</em>, then r(<em>t</em>) = r<sub>0</sub>(1 &minus; <em>t</em>/<em>T</em>)</p>
+        <p class="expr-spoken visually-hidden">The position of B relative to A at time t equals the starting position plus the relative velocity times t. If the relative velocity equals minus the starting position divided by T, then the position at time t equals the starting position times the quantity 1 minus t over T.</p>
+        <dl>
+          <dt>r(<em>t</em>)</dt>
+          <dd>the arrow from A to B at time <em>t</em></dd>
+          <dt>r<sub>0</sub></dt>
+          <dd>that arrow at the start; its length R<sub>0</sub> is the starting range</dd>
+          <dt><em>t</em></dt>
+          <dd>time since the start</dd>
+          <dt><em>T</em></dt>
+          <dd>the time of collision, R<sub>0</sub> divided by the closing speed |v<sub>rel</sub>|</dd>
+        </dl>
+      </div>
+      <p>
+        The right-hand side never leaves the line through r<sub>0</sub>, so the bearing never changes,
+        and its length R<sub>0</sub>(1 &minus; <em>t</em>/<em>T</em>) falls to zero at <em>t</em> =
+        <em>T</em>. The model assumes steady velocities and a flat, straight-line world.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now look at two arrows and tell a miss from a hit before either craft has moved far,
+        and you know what a hit looks like from the inside: nothing moving. That is counterintuitive and
+        useful, because the instinct is to watch for the thing rushing across your view, and the thing
+        that will hit you is the one that is not.
+      </p>
+      <p>
+        It also changes what counts as a fix. The Board could not say why the Grand Canyon crews failed
+        to see each other, and the remedy that followed was institutional rather than better eyes. The
+        Federal Aviation Act, signed on August 23, 1958, created the Federal Aviation Agency with authority over
+        how civil and military aircraft use the nation&rsquo;s airspace. The crash was not the only
+        pressure: an April 1958 collision near Las Vegas between a United DC-7 and an Air Force jet
+        fighter weighed on Congress as well. Note the order, too. Your chain, from need through
+        invention and engineering to regulation and adoption, reads like a straight line, but here the
+        regulator arrived after airline travel was established and after the deaths: regulation as
+        feedback, not foresight.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 4, The derivative: velocity is the derivative of position, and the arrow
+        appears once position has two coordinates. Day 8, Optimization: closest approach is an
+        optimization problem. The squared distance between two craft, as a function of time, has a flat
+        bottom where its derivative is zero. For the ships above, <em>d</em>&sup2; = (6 &minus;
+        9<em>t</em>)&sup2; + (8 &minus; 12<em>t</em>)&sup2; with <em>t</em> in hours; setting its
+        derivative &minus;18(6 &minus; 9<em>t</em>) &minus; 24(8 &minus; 12<em>t</em>) to zero gives
+        <em>t</em> = 2/3 of an hour, the 40 minutes found above, with <em>d</em> = 0 there.
+      </p>
+      <p>
+        <b>Across.</b> Space &amp; Astronomy. NASA histories recount that on Gemini 4, in June 1965,
+        astronaut James McDivitt tried to fly his capsule up to the spent upper stage of the Titan
+        rocket that had launched him, and could not close on it. Relative velocity is still what matters for
+        whether two spacecraft meet, but gravity bends both paths, so today&rsquo;s straight-line
+        arithmetic stops working. A burn that speeds you up raises your orbit, and a higher orbit takes
+        longer to go round, so the gap can open instead of closing. Rendezvous planning therefore uses relative-motion equations that
+        include gravity.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Vectors | Chapter 1, Essence of linear algebra (also listed as 'Vectors, what even are
+        they?') &mdash; Grant Sanderson, 3Blue1Brown (2016) &middot; Video &middot; about 10
+        minutes</p>
+        <p>An animated introduction to vectors as arrows and as lists of components, with vector
+        addition and scaling. It shows the geometry beneath relative velocity rather than describing
+        it.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A vector has a size and a direction; in components, vectors add and subtract with plain
+        arithmetic.</li>
+        <li>The velocity of B as seen from A is v<sub>B</sub> &minus; v<sub>A</sub>; subtracting your own
+        velocity removes your own motion.</li>
+        <li>If both craft hold course and speed, a steady bearing with shrinking range means a collision
+        course.</li>
+        <li>That threat sits motionless in your view and grows slowly; COLREGs Rule 7 makes a steady
+        bearing the signal of danger.</li>
+        <li>The Board found only that the 1956 crews did not see each other in time; a steady bearing is
+        a mechanism consistent with its list, not its finding.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        If two cars approach an uncontrolled crossroads on a flat rural road, one heading north and one
+        heading west, at the same speed and the same distance from the junction, why might each driver
+        fail to notice the other until very late, even in clear daylight with open sightlines in every
+        direction?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Civil Aeronautics Board findings on the 1956 collision (1957) as
+      summarized by the FAA and the Aviation Safety Network; the Federal Aviation Act of 1958 and
+      accounts of the April 1958 Las Vegas collision; COLREGs Rule 7 (1972); 3Blue1Brown&rsquo;s
+      <em>Essence of linear algebra</em>. Checked via web search; the CAB report itself could not be
+      opened, so the account of the collision rests on those summaries, and the 1956 arithmetic uses
+      round illustrative figures rather than the reported ones. The Gemini 4 account and the point
+      about vision and motion are standard accounts that were not rechecked.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list; its title and length could not be re-checked. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-08.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-10.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

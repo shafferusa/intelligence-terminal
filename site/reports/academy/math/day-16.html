@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Literary Digest Counted 2.4 Million Ballots and Called the Wrong President. Gallup Asked Far Fewer People and Called the Winner. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "The Literary Digest Counted 2.4 Million Ballots and Called the Wrong President. Gallup Asked Far Fewer People and Called the Winner.",
+    "path": "reports/academy/math/day-16.html",
+    "summary": "Day 16 of the Connected Path: a random sample's error is predictable and shrinks with the square root of its size, while bias from who is asked or who answers does not shrink at all, which is how the Literary Digest's 2.4 million ballots lost to Gallup's far smaller sample and why the Current Population Survey now worries more about who answers than how many.",
+    "headlines": [
+      "Day 16 of 293 · Mathematics: random sampling error shrinks with the square root of sample size, but bias from who is asked or who answers does not shrink at all",
+      "The Digest’s 2.4 million ballots missed Roosevelt’s 1936 share by about 20 points; BLS’s 60,000-household survey cannot call a 0.1-point monthly move in unemployment real",
+      "Watch or Read: Sampling Methods and Bias with Surveys: Crash Course Statistics #10 (about 11-13 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:16:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Literary Digest Counted 2.4 Million Ballots and Called the Wrong President. Gallup Asked Far Fewer People and Called the Winner.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A sample&rsquo;s size controls only its random error, which shrinks with the square root of the
+        number of people asked; who was asked, and who chose to answer, controls bias, and no number
+        of respondents shrinks that.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 16 of 293 &middot; Mathematics 16 of 24 &middot; How We Know II: Sampling and the margin of error</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>The poll that counted 2.4 million ballots</h3>
+      <p>
+        By the autumn of 1936 the <em>Literary Digest</em>, a weekly magazine, had a record to protect.
+        Its mail-in straw polls had called the winner of the presidential races of 1920, 1924, 1928 and
+        1932. That year it mailed about ten million mock ballots, drawing the addresses largely from
+        telephone directories, automobile-registration lists and its own subscriber rolls. About 2.4
+        million came back.
+      </p>
+      <p>
+        In its issue of October 31 the <em>Digest</em> published the result. Alf Landon, the Republican
+        governor of Kansas, would defeat President Franklin Roosevelt, 57 percent to 43 percent of the
+        vote for the two major candidates. The number came with a long reputation behind it.
+      </p>
+      <p>
+        Three days later, on Tuesday, November 3, Americans voted. Roosevelt won about 61 percent of
+        all votes cast &mdash; roughly 62.5 percent of the two-candidate vote the <em>Digest</em> had
+        been trying to measure &mdash; and carried 46 of the 48 states. Landon took Maine and Vermont.
+        The magazine had missed Roosevelt&rsquo;s share by about twenty points, and in 1938 it was absorbed by <em>Time</em>.
+      </p>
+      <p>
+        George Gallup, a young pollster who ran the American Institute of Public Opinion from
+        Princeton, New Jersey, had told his newspaper clients that Roosevelt would win. He had
+        interviewed only a small fraction as many people. He had even said, months earlier, roughly
+        what the <em>Digest</em>&rsquo;s own poll would show.
+      </p>
+      <p>
+        The usual rule of thumb is that more data means less error, and 2.4 million is a great deal of data.
+        So how can 2.4 million answers lose to a sample a tiny fraction of the size?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A sample tells you about a population only if it was drawn at random. Then its error is
+        predictable and shrinks with the square root of the sample size, while bias from who gets
+        asked, or who answers, does not shrink at all.
+      </p>
+      <p>
+        The <strong>population</strong> is the whole group you want to know about &mdash; every voter,
+        every American worker. The <strong>sample</strong> is the part you actually ask. If everyone
+        had a known chance of being picked and everyone picked answered, the sample would miss the
+        truth by a small amount, in either direction, and a pollster could say honestly how far off it
+        might be. That statement is the margin of error.
+      </p>
+      <p>
+        But the calculation is silent about a sample that leans one way, and a bigger sample leans the
+        same way, only more precisely. So the question to put to any survey is not &ldquo;how many
+        people?&rdquo; but &ldquo;who was left out, and who stayed silent?&rdquo; The first question
+        is about precision. The second is about truth.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with a jar holding a million beans, exactly half of them red. You cannot count the jar,
+        so you scoop out a thousand beans without looking and count the red ones. You will almost
+        never get exactly 500, and a second scoop gives a different count. Each scoop is a
+        <strong>simple random sample</strong>: every bean had the same chance of being picked, and in a
+        jar this large picking one hardly changed the odds on another. A poll is the same experiment with people for
+        beans. Its general name is <strong>random (probability) sampling</strong>: every member of the
+        <strong>sampling frame</strong> &mdash; the list you actually draw from &mdash; has a known,
+        non-zero chance of being picked, set by a chance device rather than by anyone&rsquo;s choice.
+      </p>
+      <p>
+        Now imagine repeating the scoop ten thousand times and recording the share of red each time.
+        Those results pile up in a pattern called the <strong>sampling distribution</strong>. Its
+        centre is the true share, 50 percent, because random scooping errs high as often as low. Its
+        width &mdash; the typical miss &mdash; is the <strong>standard error</strong> (SE), and it
+        depends on only two things: how much variety the jar holds, and how many beans you scoop.
+      </p>
+      <p>
+        Why a square root? Treat each bean as a yes-or-no draw whose <strong>variance</strong>
+        &mdash; the average squared distance from the mean, the square of Day 12&rsquo;s standard
+        deviation &mdash; is p(1 &minus; p), where p is the true share of red. When you add independent
+        quantities, their variances add. A sum of n draws therefore has variance n&middot;p(1 &minus;
+        p), and its standard deviation grows like &radic;n. But a poll reports the <em>average</em>,
+        which is the sum divided by n, and dividing by n divides the spread by n too, leaving
+        &radic;n / n = 1/&radic;n. The result is SE = &radic;[p(1 &minus; p)/n]. For p = 0.5 and n =
+        1,000, SE = &radic;(0.25/1,000) &asymp; 0.0158, about 1.6 percentage points.
+      </p>
+      <p>
+        How often is a miss of a given size? Day 11&rsquo;s law of large numbers says the sample share
+        settles toward the truth as n grows, but not how the misses are distributed. The
+        <strong>central limit theorem</strong> does. Whatever the shape of the individual draws &mdash;
+        here only yes or no &mdash; the average of many independent draws, provided their spread is
+        finite, has a distribution that approaches Day 12&rsquo;s bell curve, centred on the truth with
+        width SE. That brings in the bell curve&rsquo;s rule, Day 12&rsquo;s about 95 percent within two
+        standard deviations, made precise: 95 percent of its area lies within 1.96 standard
+        deviations of its centre. So 95 percent of the time the sample falls within 1.96
+        &times; SE of the truth, and 1.96 &times; SE is the <strong>margin of error</strong>. For a
+        thousand people split near 50&ndash;50 it is 1.96 &times; 1.58 &asymp; 3.1 points, the
+        &ldquo;plus or minus 3&rdquo; printed under thousands of polls.
+      </p>
+      <p>
+        Read the margin as a property of the procedure: run this method over and over, and about 95
+        times in 100 the truth lies within that distance of the result. It applies to each candidate&rsquo;s
+        share separately. A lead is the gap between two shares that move in opposite directions, so in
+        a close two-way race the margin on the lead is about double. And it assumes the bell-curve
+        approximation is good. For yes-or-no answers it is. For fat-tailed quantities like household
+        wealth or insurance losses, Day 12&rsquo;s warning applies: a few giants can dominate the
+        average, the approximation converges slowly, and a printed margin can badly flatter the
+        estimate.
+      </p>
+      <p>
+        Notice what n does. The margin is proportional to n<sup>&minus;1/2</sup>: a power law like Day
+        3&rsquo;s, a straight line of slope &minus;&frac12; on log&ndash;log axes. Quadrupling the
+        sample only halves the margin: 1,000 people give &plusmn;3.1 points, 4,000 give &plusmn;1.55,
+        16,000 give about &plusmn;0.8. The <em>Digest</em>&rsquo;s 2.4 million ballots were 2,400 times
+        as many as 1,000 &mdash; more than three orders of magnitude, in Day 1&rsquo;s language &mdash;
+        and bought a margin of about &plusmn;0.06 points, 49 times smaller.
+      </p>
+      <p>
+        All of that rests on two assumptions the formula never checks. First, the draws are random
+        from the whole population, so no one is likelier to be picked because of what they would say.
+        Second, everyone picked answers, or at least those who do not answer resemble those who do.
+        Break the first and you have <strong>selection bias</strong>: the frame misses part of the
+        population or over-represents another, as when telephone subscribers stand in for all voters.
+        Break the second and you have <strong>non-response bias</strong>: the people who answer differ
+        from the people who do not. Both push the whole sample&rsquo;s average the same way every
+        time, so there is no random scatter for more data to average out. A bigger sample gets closer
+        to a wrong number, while the margin of error, which measures only the scatter, stays small
+        and misleading.
+      </p>
+      <p>
+        Real surveys rarely use a simple random sample. <strong>Stratified</strong> sampling divides
+        the population into groups and samples each; <strong>cluster</strong> sampling picks
+        geographic areas first and households within them, which is cheaper but less precise than the
+        same number of independent draws, because neighbours resemble one another. Both remain
+        probability designs, so the mathematics applies with adjustments. <strong>Quota</strong>
+        sampling, which Gallup used in the 1930s, is different: interviewers are told to find a set
+        number of people of each type &mdash; by age, sex, income &mdash; and choose whom to approach
+        themselves. That matches the sample to known totals but leaves selection to human judgement,
+        so the formulas no longer strictly hold. The method underestimated Roosevelt in 1936 by
+        several points and failed outright in 1948, when Gallup and the other major pollsters picked Dewey over
+        Truman.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Now the puzzle resolves. Size controls only the random scatter, and the <em>Digest</em> had
+        driven that to about &plusmn;0.06 points. Its error was bias, and enormous. Telephone, car and
+        subscriber lists in 1936 over-represented better-off households, in a year when votes split
+        sharply by income. And only about one ballot in four came back, 2.4 million of roughly ten
+        million. Which of the two did more damage is disputed <span class="chip chip--warn">Debated</span>:
+        the textbook account blames the lists, while Peverill Squire&rsquo;s 1988 analysis of 1937
+        survey data argued that Landon&rsquo;s supporters were also likelier to mail their ballots
+        back, and that this mattered at least as much. Either way it was bias, and bias does not
+        shrink with size. Gallup&rsquo;s far smaller sample was imperfect too &mdash; quotas, not
+        chance &mdash; but its bias was smaller, small enough not to change the winner.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Population, sample, sampling frame</dt>
+        <dd>The population is everyone you want to know about, the sample is the part you ask, and the
+        frame is the list you draw from, which may differ from the population: a telephone directory
+        is not the electorate.</dd>
+        <dt>Random (probability) sample</dt>
+        <dd>A sample in which every member of the frame has a known, non-zero chance of selection, set
+        by a chance device rather than by an interviewer&rsquo;s or a respondent&rsquo;s choice.</dd>
+        <dt>Central limit theorem</dt>
+        <dd>The average of many independent draws, whatever their individual shape (given finite
+        spread), is approximately bell-shaped around the true value, which is why bell-curve rules
+        govern sampling error.</dd>
+        <dt>Standard error and margin of error</dt>
+        <dd>The standard error is the typical size of the random miss; for a share it is
+        &radic;[p(1 &minus; p)/n]. The margin of error is 1.96 of them either side of the result for
+        95 percent confidence, and it covers random error only.</dd>
+        <dt>Selection bias</dt>
+        <dd>Systematic error because the frame, or the way people are picked, over- or under-represents
+        some part of the population.</dd>
+        <dt>Non-response bias</dt>
+        <dd>Systematic error because the people who answer differ from the people who were picked and
+        did not.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: How 60,000 households become the unemployment rate</h3>
+      <p>
+        Nobody counts the unemployed. The Bureau of Labor Statistics estimates the rate from the
+        Current Population Survey, which the Census Bureau runs for it every month. The survey takes
+        about 60,000 eligible households through a multistage probability design: geographic areas
+        chosen at random within strata, then clusters of neighbouring housing units chosen at random within those areas. Each
+        household is in the sample four months, out for eight, then in for four more, so 75 percent of
+        one month&rsquo;s sample is also in the next, which sharpens the estimate of change. The
+        survey speaks for a labour force of about 170 million people. In Logan&rsquo;s chain it sits
+        at the feedback link, the measurement that tells a society whether its earlier choices are
+        working.
+      </p>
+      <p>
+        The main threat today is bias, not size. BLS&rsquo;s published household response rate was
+        86.4 percent in February 2016 and 65.9 percent in February 2026: about one selected household
+        in three does not answer. Like most surveys, the CPS reweights the answers it gets to match
+        known population totals, which works only if non-respondents resemble respondents of the same
+        type, and how well it works is disputed <span class="chip chip--warn">Debated</span>.
+      </p>
+      <div class="worked">
+        <p><strong>1. Read the two numbers.</strong> The seasonally adjusted unemployment rate was 4.1
+        percent in August 2026 and 4.2 percent in September, as published to the nearest tenth: a change of 0.1 percentage point.</p>
+        <p><strong>2. Take BLS&rsquo;s own interval.</strong> At 90 percent confidence BLS puts the
+        margin on a one-month change in the rate at about &plusmn;0.3 point, a figure it states for a
+        rate near 6 percent. Near 4 percent the rate is somewhat less variable, so the margin is
+        somewhat narrower, but still well above 0.1.</p>
+        <p><strong>3. Convert the margin to standard errors.</strong> A 90 percent margin is 1.645 SE
+        (BLS rounds to 1.6), so one SE on the monthly change is about 0.3 &divide; 1.645 &asymp;
+        0.18 point.</p>
+        <p><strong>4. Compare.</strong> 0.1 &divide; 0.18 &asymp; 0.55 SE. Sampling noise alone
+        produces a swing that large about half the time or more, so &ldquo;unchanged&rdquo; is a defensible
+        reading of the data and &ldquo;rose&rdquo; is something the survey cannot establish.</p>
+        <p><strong>5. Price the precision.</strong> Halving the margin to &plusmn;0.15 would take four
+        times the sample, about 240,000 households &mdash; and the 34 percent who do not answer
+        would still be missing.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">SE = &radic;[ p(1 &minus; p) / n ] &nbsp;&rArr;&nbsp; margin of error (95%) &asymp; 1.96 &times; SE</p>
+        <p class="expr-spoken visually-hidden">The standard error equals the square root of p times one minus p, divided by n. This implies the 95 percent margin of error is approximately 1.96 times the standard error.</p>
+        <dl>
+          <dt>p</dt>
+          <dd>the true share of the population with the trait being counted, as a fraction between 0 and 1; in practice the sample&rsquo;s own share is plugged in</dd>
+          <dt>n</dt>
+          <dd>the number of people in a simple random sample, all of whom answer</dd>
+          <dt>SE</dt>
+          <dd>the standard error: the typical size of the random miss in the sample share</dd>
+          <dt>1.96</dt>
+          <dd>the number of standard deviations that encloses the middle 95 percent of a bell curve</dd>
+        </dl>
+      </div>
+      <p>
+        For n = 1,000 and p = 0.5 this gives &plusmn;3.1 points; for n = 2.4 million, &plusmn;0.06. Now
+        the half of the story the formula leaves out: total error is not just SE. Writing est for the
+        sample&rsquo;s estimate and E[&nbsp;] for the average over many repeated samples, the decisive
+        step splits the miss into scatter plus offset and squares it:
+      </p>
+      <div class="formula">
+        <p class="expr">E[(est &minus; p)&sup2;] = E[(est &minus; E[est])&sup2;] + 2(E[est] &minus; p)&middot;E[est &minus; E[est]] + (E[est] &minus; p)&sup2; = SE&sup2; + 0 + b&sup2;</p>
+        <p class="expr-spoken visually-hidden">The average squared miss, E of est minus p squared, equals the average squared scatter, E of est minus E of est squared, plus twice the offset times the average of est minus E of est, plus the offset squared. The middle term is zero, so the average squared miss equals SE squared plus b squared.</p>
+        <dl>
+          <dt>est</dt>
+          <dd>the estimate from one sample, such as the sample share</dd>
+          <dt>E[&nbsp;]</dt>
+          <dd>the average over many repeated samples drawn the same way</dd>
+          <dt>b</dt>
+          <dd>the bias, E[est] &minus; p: how far the average estimate sits from the truth</dd>
+          <dt>0</dt>
+          <dd>the middle term vanishes because E[est &minus; E[est]] = 0: scatter averages to nothing around its own centre</dd>
+        </dl>
+      </div>
+      <p>
+        Take the square root and the typical miss is &radic;(SE&sup2; + b&sup2;). For the <em>Digest</em>,
+        SE&sup2; &asymp; 0.0000001 while b&sup2; &asymp; 0.2&sup2; = 0.04, so the total miss is
+        about 0.20, or twenty points. Raising n shrinks the first term toward zero and leaves the
+        second exactly where it was.
+      </p>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now split any survey&rsquo;s uncertainty into the part you can compute and the part
+        you must judge. The margin of error is a floor, not a ceiling: it says how wrong a perfectly
+        random, fully answered survey of that size would typically be, and the real uncertainty is at
+        least that. So for any statistic resting on a survey &mdash; an unemployment rate, an approval
+        rating, a study of what Americans believe &mdash; ask two questions in order. How big and how
+        random? Who is missing or silent?
+      </p>
+      <p>
+        This also challenges a common instinct, worth checking in your own thinking: that more data is
+        more trustworthy. The <em>Digest</em> is the counterexample, and the same failure recurs
+        whenever huge convenience samples, such as online reader polls or scraped posts, are treated
+        as measurements of a population. A large biased sample is not a weaker version of a good one;
+        it is a more confident version of a wrong one. Day 17 carries this split, random against
+        systematic error, from polls into laboratories.
+      </p>
+      <p><b>Settled.</b> Sampling theory: random error is computable and shrinks as 1/&radic;n, and bias does not shrink with n at all.</p>
+      <p><b>Debated.</b> Why the <em>Digest</em> failed &mdash; its lists or non-response, per Squire &mdash; and how well reweighting can repair today&rsquo;s falling response rates.</p>
+      <p><b>Value judgment.</b> Whether a sample-based estimate may allocate House seats and money, when a literal headcount is more transparent but misses people, trades fairness to the undercounted against the legitimacy of counting; statistics cannot settle that.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 12, Distributions: the 1.96 is the precise form of that lesson&rsquo;s
+        rule that about 95 percent of values lie within two standard deviations, the central limit theorem is why a
+        yes-or-no poll lands on that curve, and Day 12&rsquo;s fat tails mark where the machinery
+        stops working. Day 3, Scaling and power laws: the margin of error is
+        a power law in n with exponent &minus;&frac12;, which is why four times the people buys only
+        half the error.
+      </p>
+      <p>
+        <b>Across.</b> Law. In <em>Department of Commerce v. U.S. House of Representatives</em> (525
+        U.S. 316, decided January 25, 1999) the Supreme Court held, five to four, that the Census Act
+        forbids using statistical sampling to produce the counts that apportion House seats. The
+        Census Bureau had planned two uses for the 2000 census to fix chronic undercounting of some
+        groups, including certain minorities, children and renters: visit a random sample of the
+        households that did not mail back a form and treat it as representative of the non-responders
+        in the same census tract, then use a second, much larger survey of housing units to estimate
+        who the count had missed. These are remedies for non-response bias and for people missed
+        altogether, put to a court. The Court ruled on the statute and did
+        not reach the Constitution&rsquo;s &ldquo;actual Enumeration&rdquo; clause; whether accuracy for
+        the undercounted should outrank a transparent headcount is a question of values
+        <span class="chip chip--info">Value judgment</span>.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Sampling Methods and Bias with Surveys: Crash Course Statistics #10 &mdash; Crash Course (PBS Digital Studios), hosted by Adriene Hill (2018) &middot; Video &middot; about 11-13 minutes</p>
+        <p>A brisk visual survey of random, stratified, cluster and convenience sampling and the biases each invites, giving you the vocabulary to judge any poll you read.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A sample speaks for a population only if drawn at random; then its random error is predictable.</li>
+        <li>For a share, SE = &radic;[p(1 &minus; p)/n] and the 95 percent margin is about 1.96 SE: &plusmn;3.1 points for 1,000 people split near 50&ndash;50.</li>
+        <li>The margin shrinks as 1/&radic;n: four times the sample halves it, and 2.4 million ballots bought about &plusmn;0.06 points.</li>
+        <li>Bias from who is in the frame and who answers does not shrink with n: the <em>Digest</em> missed by about twenty points with 2.4 million ballots.</li>
+        <li>A margin of error covers random error only, so ask who was left out and who stayed silent; the CPS response rate fell from 86.4 to 65.9 percent in ten years.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        The final polls before Britain&rsquo;s 2015 general election, each asking a thousand or more
+        people, showed the Conservatives and Labour roughly level, yet the Conservatives won by about
+        six and a half points, so why would asking twice as many people in the same way have left
+        the miss almost unchanged?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Bureau of Labor Statistics, checked on its own pages: Employment
+      Situation technical note and Table A-1 (September 2026), household-survey response rates, and the
+      Handbook of Methods (CPS design). <em>Department of Commerce v. U.S. House of
+      Representatives</em>, 525 U.S. 316 (1999); P. Squire, <em>Public Opinion Quarterly</em> 52 (1988);
+      Freedman, Pisani and Purves, <em>Statistics</em>; Sturgis et al., British Polling Council inquiry
+      (2016). The 1936 poll and election figures, Gallup&rsquo;s forecasts, the case&rsquo;s details,
+      those authors&rsquo; findings and the video&rsquo;s episode number and length are from standard
+      references, not re-confirmed.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-15.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-17.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

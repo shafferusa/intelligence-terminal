@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>In 1654 Pascal and Fermat Settled an Unfinished Game by Letter. Their Method Is Where Expected Value Starts. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "In 1654 Pascal and Fermat Settled an Unfinished Game by Letter. Their Method Is Where Expected Value Starts.",
+    "path": "reports/academy/math/day-11.html",
+    "summary": "Probability puts weights on every outcome that could happen and expected value averages what they are worth, the idea that began with Pascal and Fermat's 1654 split of an unfinished game and met its limit in d'Alembert's objection to Daniel Bernoulli's 1760 smallpox calculation.",
+    "headlines": [
+      "Day 11 of 293 · Mathematics: expected value is a probability-weighted average of outcomes, a long-run guide rather than a verdict on one risk",
+      "Pascal and Fermat's 1654 split of an unfinished game (48 pistoles to 16) and Bernoulli's smallpox gain of about three years show both the power and the limit of averages",
+      "Watch or Read: Against the Gods, ch. 4, ‘The French Connection’ (about 25-30 min)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>In 1654 Pascal and Fermat Settled an Unfinished Game by Letter. Their Method Is Where Expected Value Starts.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Probability weights every way a situation could turn out, and expected value averages what those outcomes
+        are worth &mdash; a long-run average that tells you a gamble&rsquo;s fair price to someone who can repeat it,
+        and much less about whether one person should take a risk once.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 11 of 293 &middot; Mathematics 11 of 24 &middot; Probability and expected value</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>How to split the pot when the game is cut short</h3>
+      <p>
+        In the summer of 1654 Blaise Pascal was writing to Pierre de Fermat, a magistrate in the Parlement of
+        Toulouse whose mathematics, done alongside his legal career, had circulated among Paris scholars since the
+        1630s. The question between them had reached Pascal, by most accounts, from a gambler and salon regular, the
+        Chevalier de M&eacute;r&eacute;. Two players each put 32 pistoles (gold coins) into a pot of 64, and the first to
+        win three rounds takes all of it. Play is interrupted with one player ahead, two rounds to one. How should
+        the 64 pistoles be divided?
+      </p>
+      <p>
+        The puzzle was already old. In 1494 the Italian mathematician Luca Pacioli had printed it in his
+        <em>Summa de arithmetica</em> and answered that the stakes should be split in proportion to what each
+        player had already won &mdash; 5 to 3 in his example. Applied
+        to Pascal&rsquo;s game, that rule gives the leader two-thirds of the pot, about 43 pistoles, and the other player
+        about 21. Later writers, Tartaglia among them, doubted the rule and proposed others, but none of their
+        answers settled the question.
+      </p>
+      <p>
+        In the letters that followed &mdash; Pascal&rsquo;s of 29 July and 24 August 1654 are among those that
+        survive, and the exchange ran into October &mdash; the two men reached the same answer by different routes:
+        48 pistoles to the player who was ahead, 16 to the other. That an answer exists is not the strange part. The
+        strange part is what &ldquo;fair&rdquo; can mean here. The game was never finished. No one will ever know who
+        would have won the remaining rounds, and neither player is owed a share of something that did not happen. How
+        can there be a fair share of a future that never occurred?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Probability puts a weight on every outcome that could happen, and expected value is the average of what those
+        outcomes are worth, each counted in proportion to its weight. That is all it is: a list of the ways things
+        could turn out, a number on each saying how heavily it counts, and a weighted average.
+      </p>
+      <p>
+        The average has a precise meaning. If you could repeat the same gamble many times, your result per try would
+        settle close to the expected value. That is why the idea is the working tool of insurers, casinos and
+        public-health agencies, who do repeat their gambles, and why it settled the unfinished game: a fair share is
+        the average of what a player would receive across all the ways the game could have ended.
+      </p>
+      <p>
+        It is also why the idea has limits. Someone who faces a risk once does not get a long run to average over, and
+        the average is only as good as the list of outcomes and the weights behind it. Expected value is a rule for
+        deciding, not a fact about the world, and today&rsquo;s lesson is as much about where it stops as about how it
+        works.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the list. The <strong>sample space</strong> is the complete list of outcomes that could happen,
+        with no overlaps and none missing: the six faces of a die, heads or tails, the possible endings of a game. A
+        <strong>probability</strong> is a weight between 0 and 1 attached to each outcome, chosen so that all the
+        weights together add to exactly 1. The probability of an event, such as &ldquo;the die shows an even
+        number,&rdquo; is the sum of the weights of the outcomes it contains: for a fair die, three faces at 1/6 each
+        make 1/2. When the outcomes are symmetric, the weights are equal and a probability is a count, favourable
+        outcomes divided by all outcomes. When they are not, the weights come from elsewhere, usually from counting
+        past cases or from a model; the figures in the example below are estimates of that kind. How evidence should
+        change a weight is the subject of Day 15, Bayes&rsquo; theorem.
+      </p>
+      <p>
+        Now the unfinished game, solved the two ways Pascal and Fermat solved it. Player A leads two rounds to one,
+        the first to three wins, and each round is an even chance for either player. <strong>Fermat&rsquo;s route is to
+        list the endings.</strong> At most two more rounds can be needed, so imagine both are played whether or not
+        the game is already decided. There are four equally likely sequences: A wins both, A wins then B wins, B wins
+        then A wins, B wins both. A reaches three rounds first in the first three sequences, and B only in the
+        fourth. The extra rounds do no harm: they cannot change who reaches three first, and they make the four
+        endings equally likely. So A wins with probability 3/4, and A&rsquo;s fair share is 3/4 of 64 pistoles, which
+        is 48.
+      </p>
+      <p>
+        <strong>Pascal&rsquo;s route is to work backward from the next round.</strong> If A wins it, which has
+        probability 1/2, the game ends and A takes all 64. If B wins it, the score is two rounds each, the position is
+        perfectly symmetric, and a fair split is 32 apiece. A&rsquo;s position is therefore worth a coin flip between
+        64 and 32: 1/2 &times; 64 + 1/2 &times; 32 = 48. The same answer comes out because the two routes are one
+        argument organized differently. Fermat weights complete endings; Pascal weights the next step and trusts the
+        value of the position after it. That second habit, valuing a position by averaging the values of the
+        positions it can lead to, is a general one, and it appears wherever a decision unfolds in stages.
+      </p>
+      <p>
+        Why is 48 &ldquo;fair&rdquo; for a game that never finished? Because it is the amount at which a player who
+        cares only about the average would not mind whether to take the money or play on. The stakes are on the table,
+        the future is uncertain for both, and fairness means giving each player what their position is worth before the
+        uncertainty resolves: the average over every way it could. That average is the <strong>expected value</strong>.
+        Multiply each outcome&rsquo;s value by its probability and add the products. For a fair die,
+        (1 + 2 + 3 + 4 + 5 + 6) / 6 = 3.5, a number no roll can show. The name misleads: you do not &ldquo;expect&rdquo;
+        3.5 on any roll. Read it as the balance point of the outcomes, or as the fair price for one roll of a game that
+        pays out the face value. Christiaan Huygens, who had heard of the Pascal&ndash;Fermat exchange, built the idea
+        into <em>De ratiociniis in ludo aleae</em> (1657), often described as the first printed textbook of
+        probability.
+      </p>
+      <p>
+        Why should an average matter to anyone? Mostly it does not, if they play once; that is the limit below. But for
+        anyone who plays many times it is what they get. This is the <strong>law of large numbers</strong>: when you
+        repeat the same gamble many times, with repeats that do not influence each other (they are
+        <strong>independent</strong>), the average result per try gets close to the expected value, and the chance of
+        staying far from it shrinks as the repeats pile up. Jacob Bernoulli, one of the many mathematicians of the
+        Bernoulli family, proved the first version; he reported working on it for about twenty years, and it appeared in
+        his <em>Ars Conjectandi</em> in 1713, eight years after his death. Roll a die once and you might get a 6.
+        Average ten thousand rolls and you will almost certainly land very near 3.5.
+      </p>
+      <p>
+        Two cautions keep the law honest. First, it concerns the average per try, not the running total. The gap
+        between your total and the expected total typically grows as you keep playing, roughly with the square root of
+        the number of tries, even while the gap between your average and the expected value shrinks. Second, it does
+        not say that luck evens out. After ten heads in a row the coin is still an even chance on the eleventh flip; the
+        early streak is not paid back, only diluted by the thousands of flips that follow. Believing otherwise is the
+        gambler&rsquo;s fallacy.
+      </p>
+      <p>
+        Three limits follow from the machinery. The result is only as good as the list: leave out an outcome or get a
+        weight wrong, and the arithmetic is flawless while the answer is wrong. The long run has to exist: an insurer
+        pooling a million policies averages, and one patient deciding whether to accept a procedure does not. And the
+        quantity being averaged has to be what you actually care about: dollars and years of life are not the same
+        thing, and a small chance of dying now is not obviously the same kind of cost as a small average loss spread
+        across a lifetime.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        That resolves the puzzle. The share was never owed for a future that did not happen; it was owed for the
+        position each player actually held, and a position is worth the average of everywhere it can still lead.
+        Fermat&rsquo;s four endings and Pascal&rsquo;s backward step both count all the ways the game could have gone.
+        A wins in three of the four equally likely endings, so A&rsquo;s fair share is 3/4 of 64: 48 pistoles, with
+        16 to B. Pacioli&rsquo;s proportional rule looked only backward at rounds won and ignored how many remained,
+        which is why it gave the leader about 43.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Sample space</dt>
+        <dd>The complete list of outcomes that could happen, with no overlaps and none missing &mdash; the six faces of
+        a die, or the possible endings of an interrupted game.</dd>
+        <dt>Probability</dt>
+        <dd>A weight from 0 (cannot happen) to 1 (certain) on each outcome, chosen so the weights over the whole
+        sample space add to 1. An event&rsquo;s probability is the sum of the weights of its outcomes.</dd>
+        <dt>Expected value</dt>
+        <dd>Each outcome&rsquo;s value times its probability, added up: the weighted average, the fair price of a
+        gamble for someone who can repeat it. It need not be a possible outcome; a fair die&rsquo;s is 3.5.</dd>
+        <dt>Law of large numbers</dt>
+        <dd>With many independent repeats of the same gamble, the average result per try very probably lands close to
+        the expected value. It says nothing about luck compensating for a streak.</dd>
+        <dt>Risk now versus benefit later</dt>
+        <dd>Expected value can set a small, immediate risk to one person against a larger gain spread across a
+        population and a lifetime. Whether that trade is acceptable is not settled by the arithmetic.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Bernoulli&rsquo;s 1760 smallpox calculation</h3>
+      <p>
+        Smallpox was a major killer in eighteenth-century Europe, and one preventive existed:
+        <em>variolation</em>, deliberately infecting a healthy person with material from a mild case, which usually
+        brought a milder illness and lasting immunity but sometimes killed. Lady Mary Wortley Montagu, who had seen it
+        practised in Constantinople, had her son variolated there in 1718 and her young daughter in London in
+        1721, with physicians watching as witnesses. Whether to adopt it, for a family or a country, is a question about
+        weights, and in your chain from need to consequence it sits at the adoption link. In 1760 Daniel Bernoulli read the Paris
+        Academy of Sciences a memoir, printed in 1766, that answered it with Edmond Halley&rsquo;s 1693 life table (a
+        table of how many people survive to each age).
+      </p>
+      <div class="worked">
+        <p><strong>1. Outcomes and weights.</strong> Variolate a child: dies of the procedure with probability
+        1/200 = 0.5 percent (Bernoulli&rsquo;s estimate), otherwise survives, immune. Do nothing: Bernoulli assumed that
+        each year 1 in 8 of those who had not yet had smallpox caught it, and 1 in 8 of those who caught it died.</p>
+        <p><strong>2. Multiply.</strong> A not-yet-infected person&rsquo;s chance of dying of smallpox in a year:
+        1/8 &times; 1/8 = 1/64, about 1.6 percent, every year until infection.</p>
+        <p><strong>3. Compare in deaths.</strong> If all 1,000 people were eventually infected, 1,000 &times; 1/8 = 125
+        would die of smallpox, against 1,000 &times; 1/200 = 5 from variolating them all. Other causes take some people
+        first, so the real gap is smaller, which is why he needed a life table.</p>
+        <p><strong>4. Compare in years.</strong> Run through the table, universal variolation would raise average life
+        expectancy at birth from about 26 years 7 months to about 29 years 9 months, a gain of about three years.</p>
+        <p><strong>5. Whose number is it?</strong> Jean le Rond d&rsquo;Alembert replied in print in 1761 that an
+        average gain spread over later life cannot simply be set against a 1-in-200 chance of dying within weeks.
+        Bernoulli had weighed the gain to a population; d&rsquo;Alembert asked what one person facing the risk
+        should do.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">E[X] = p<sub>1</sub>x<sub>1</sub> + p<sub>2</sub>x<sub>2</sub> + &hellip; + p<sub>n</sub>x<sub>n</sub> = &Sigma; p<sub>i</sub>x<sub>i</sub> &nbsp;&nbsp;with each p<sub>i</sub> &ge; 0 and &Sigma; p<sub>i</sub> = 1</p>
+        <p class="expr-spoken visually-hidden">The expected value of X equals p one times x one, plus p two times x two, and so on up to p n times x n, which is the sum over i of p i times x i, where every p i is at least zero and the p's add up to one.</p>
+        <dl>
+          <dt>X</dt>
+          <dd>the uncertain quantity: a payout, a share of a pot, years of life</dd>
+          <dt>x<sub>i</sub></dt>
+          <dd>the value of X if outcome number i happens</dd>
+          <dt>p<sub>i</sub></dt>
+          <dd>the probability of outcome i; the weights are never negative and add up to 1 over the whole sample space</dd>
+          <dt>n</dt>
+          <dd>the number of outcomes in the sample space</dd>
+          <dt>&Sigma;</dt>
+          <dd>&ldquo;add up the terms&rdquo;, one for each outcome i</dd>
+          <dt>E[X]</dt>
+          <dd>the expected value: the probability-weighted average of the x<sub>i</sub></dd>
+        </dl>
+      </div>
+      <p>The decisive step for the unfinished game, with Pascal&rsquo;s and Fermat&rsquo;s routes meeting on one line:</p>
+      <div class="formula">
+        <p class="expr">A&rsquo;s share = 1/2 &times; 64 + 1/2 &times; 32 = 48 = 3/4 &times; 64</p>
+        <p class="expr-spoken visually-hidden">A's share equals one half times 64 plus one half times 32, which is 48, which also equals three quarters times 64.</p>
+        <dl>
+          <dt>1/2</dt>
+          <dd>the chance that either player wins the next round</dd>
+          <dt>64</dt>
+          <dd>the whole pot in pistoles, which A takes if A wins the next round</dd>
+          <dt>32</dt>
+          <dd>A&rsquo;s share if B wins the next round and the score is two rounds each</dd>
+          <dt>3/4</dt>
+          <dd>the probability A wins the game, three of the four equally likely endings in Fermat&rsquo;s list</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you see expected value as a weighted average with a long-run meaning, you can put two questions to any
+        figure labelled &ldquo;expected.&rdquo; Is the list of outcomes complete, and are the weights honest? And does
+        anyone actually get a long run? A casino, an insurer and a national vaccination programme do; a single patient
+        does not, and a number that is right for the first can be silent about the second. Later days return to each
+        half: Day 12 maps the full range of outcomes and shows why averages mislead when a few extreme ones dominate,
+        and Day 157 describes how people in fact weigh gains, losses and probabilities, which departs from the expected-value rule.
+      </p>
+      <p>
+        It also challenges a habit worth checking before you write a book about progress. Progress is often measured by
+        an average &mdash; life expectancy, income per head, deaths averted &mdash; and d&rsquo;Alembert&rsquo;s objection
+        points to a question to put to any of them: who bore the risk that produced the average, and did they choose
+        it?
+      </p>
+      <p><b>Settled.</b> The mathematics of probability and expected value, and the law of large numbers.</p>
+      <p><b>Debated.</b> How good Bernoulli&rsquo;s inputs were, since 1 in 200 and 1 in 8 are eighteenth-century
+      estimates from thin data, and how a small immediate risk should be weighed against a larger average gain later;
+      d&rsquo;Alembert&rsquo;s objection and the evidence on how people actually weigh risk both bear on it.</p>
+      <p><b>Value judgment.</b> Whether to maximize expected value in a personal choice, especially when choosing for a
+      child or for others, and who may impose a risk on a few for an average gain.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 10, Proof, drew the line between testing examples and covering every case. Fermat&rsquo;s half
+        of the 1654 answer is the covering kind in miniature: four endings that between them cover every way the game
+        can finish (and yes, it is the same Fermat as the Last Theorem). Day 6, Differential equations, stated change as a
+        rule in terms of the current amount; Bernoulli&rsquo;s smallpox model is a rule of that kind, giving the rate
+        at which the share of people still free of smallpox falls with age in terms of the share that remains.
+      </p>
+      <p>
+        <b>Across.</b> Philosophy. Pascal himself applied expected value to belief. In the &ldquo;Wager&rdquo; of his
+        <em>Pens&eacute;es</em>, published after his death in 1670, the usual reading sets a finite stake against an
+        infinite reward, so that belief has infinite expected value at any nonzero probability that God exists. Whether
+        the argument works is disputed by philosophers, religious and secular
+        <span class="chip chip--warn">Debated</span>, and two of the best-known objections hit steps of this lesson.
+        Diderot objected that an imam could reason the same way, which is an incomplete sample space, and an infinite
+        payoff makes the probabilities stop mattering as weights. A third holds that belief is not something one can
+        simply choose in order to collect a payoff. The Wager is a test of where expected-value reasoning stops.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Against the Gods: The Remarkable Story of Risk, Chapter 4 (&lsquo;The French Connection&rsquo;) &mdash;
+        Peter L. Bernstein (John Wiley &amp; Sons, 1996) &middot; Reading &middot; one chapter, about 25-30 minutes</p>
+        <p>A vivid history of how Pascal, Fermat and the problem of points turned gamblers&rsquo; puzzles into the
+        mathematics of risk, including Pascal&rsquo;s triangle and his Wager. It adds the human story around the
+        arithmetic of today&rsquo;s lesson; Bernstein was a historian of finance, so later chapters lean toward
+        markets.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>Probability weights a complete list of outcomes; expected value is their weighted average.</li>
+        <li>Pascal and Fermat split the interrupted game by weighting every possible ending: 3/4 of 64, so 48
+        pistoles to the leader and 16 to the other.</li>
+        <li>The law of large numbers makes expected value a long-run average per try, not a promise about the next
+        try.</li>
+        <li>The answer is only as good as the list of outcomes and the weights, and it needs a long run to
+        apply.</li>
+        <li>Bernoulli&rsquo;s gain of about three years of life and d&rsquo;Alembert&rsquo;s reply show that the best
+        policy on average is not automatically the right risk for one person.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        On an American roulette wheel (38 pockets: 18 red, 18 black and 2 green), a $10 bet on red wins $10 or loses $10; given that
+        bet&rsquo;s expected value, why can the casino be indifferent to whether any one player wins tonight, even though each player cares a great deal?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Pascal&rsquo;s letters to Fermat (July&ndash;October 1654) and modern accounts of
+      the problem of points; Pacioli, <em>Summa de arithmetica</em> (1494); Huygens, <em>De ratiociniis in ludo
+      aleae</em> (1657); Jacob Bernoulli, <em>Ars Conjectandi</em> (1713); histories of Daniel Bernoulli&rsquo;s 1760
+      memoir (including Dietz and Heesterbeek, <em>Mathematical Biosciences</em>, 2002) and d&rsquo;Alembert&rsquo;s
+      <em>Opuscules math&eacute;matiques</em> (1761); accounts of Lady Mary Wortley Montagu and variolation. Checked via
+      web search. The 1-in-200 figure rests on secondary accounts of the memoir, and the Wager passage
+      and Diderot&rsquo;s remark were not checked against the original texts.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource from
+      the Connected Path&rsquo;s curated list; its chapter title was confirmed through listings of the book&rsquo;s
+      contents found by web search. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-10.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-12.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

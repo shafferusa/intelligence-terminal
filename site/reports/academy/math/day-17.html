@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>At Six Sigma, Neutrinos Outran Light. A Faulty Fiber-Optic Connection Said Otherwise. — Learning Brief, Thu, Oct 29, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-29",
+    "slot": "learn",
+    "title": "At Six Sigma, Neutrinos Outran Light. A Faulty Fiber-Optic Connection Said Otherwise.",
+    "path": "reports/academy/math/day-17.html",
+    "summary": "Day 17 of the Connected Path: a p-value or sigma level measures only how surprising data would be if the scatter in the error bars were all that was at work, so OPERA's six-sigma faster-than-light neutrinos could be wrong when a timing fault outside the error budget shifted every measurement the same way.",
+    "headlines": [
+      "Day 17 of 293 · Mathematics: a p-value is only as sound as its error model and cannot see a systematic error nobody listed",
+      "OPERA’s 6.0-sigma faster-than-light neutrinos traced to timing faults; by March 2012 ICARUS measured them at light speed",
+      "Watch or Read: The ASA Statement on p-Values: Context, Process, and Purpose (about 15 minutes)"
+    ],
+    "reading_minutes": 15,
+    "generated_at": "2026-10-29T05:12:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>At Six Sigma, Neutrinos Outran Light. A Faulty Fiber-Optic Connection Said Otherwise.</h1>
+      <p class="paper-dateline">
+        Thursday, October 29, 2026 <span class="sep">&middot;</span> 15 min read
+      </p>
+      <p class="paper-standfirst">
+        A p-value or &ldquo;sigma&rdquo; level says how surprising your data would be if nothing but the
+        scatter in your error bars were at work &mdash; it cannot tell you whether the error bars were
+        right, or whether the claim was believable to begin with.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 17 of 293 &middot; Mathematics 17 of 24 &middot; How We Know III: Significance, p-values and systematic error</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>Neutrinos that arrived 60 nanoseconds early</h3>
+      <p>
+        On 23 September 2011, physicists from an experiment called OPERA reported a result at a
+        seminar at CERN, near Geneva, that relativity forbids. A beam of neutrinos &mdash;
+        nearly massless particles that pass through rock almost untouched &mdash; had been fired from
+        CERN through 730 kilometers of the Earth&rsquo;s crust to a detector buried under the Gran
+        Sasso mountain in Italy. OPERA had recorded more than 15,000 neutrino interactions, and on average they had
+        arrived about 60 nanoseconds &mdash; 60 billionths of a second &mdash; sooner than light would
+        have covered the same ground. Light needs about 2.4 milliseconds for that trip, so the
+        neutrinos had won by roughly 2.5 parts in 100,000.
+      </p>
+      <p>
+        The collaboration&rsquo;s paper put the early arrival at 60.7 nanoseconds, with a statistical
+        uncertainty of 6.9 nanoseconds and a systematic uncertainty of 7.4, and called the result significant at
+        six sigma &mdash; with the systematic allowance already counted in. OPERA put the measurement in
+        front of the field and invited scrutiny, and CERN&rsquo;s statement that day said independent
+        measurements were needed before the effect could be either accepted or dismissed.
+      </p>
+      <p>
+        The scrutiny arrived within months. In February 2012 OPERA itself disclosed two possible
+        faults in its timing chain, one of them in the fiber-optic connection that carried the GPS
+        timing signal to the experiment&rsquo;s master clock. In March, ICARUS &mdash; a neighboring
+        experiment in the same laboratory, using the same CERN beam &mdash; measured seven neutrinos
+        arriving at light speed, within its error bars. On 30 March OPERA&rsquo;s spokesperson, Antonio
+        Ereditato, and its physics coordinator, Dario Autiero, resigned. By June, four experiments at
+        Gran Sasso, OPERA among them, had found neutrinos travelling at the speed of light.
+      </p>
+      <p>
+        Six sigma means that if the experiment&rsquo;s error bars were right and nothing real were going
+        on, a deviation this large would turn up about once in a billion tries. How can a result that
+        improbable still be wrong?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A p-value is a measure of surprise under a stated model: the probability of seeing data at least
+        as extreme as yours if nothing were going on except the random scatter that model describes. A
+        &ldquo;sigma level&rdquo; is the same quantity in different units &mdash; how many standard
+        deviations your result sits from what &ldquo;nothing going on&rdquo; predicts.
+      </p>
+      <p>
+        The words that matter are <em>under a stated model</em>. The model contains the boring
+        explanation you are trying to reject (no effect, no new particle) and every assumption about how
+        your measurements behave &mdash; above all that your error bars are the right size and that the
+        apparatus is not quietly nudging every reading in the same direction. If that assumption is
+        false, the p-value can be astonishingly small for reasons that have nothing to do with the world.
+      </p>
+      <p>
+        A p-value also says nothing about how plausible the claim was before you measured. So it answers
+        one narrow question well &mdash; how surprising would this be from random scatter alone? &mdash;
+        and leaves unanswered the two that decide whether to believe a result: did anything besides
+        random scatter push on the data, and was the claim credible to begin with?
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Start with the <strong>null hypothesis</strong>, the claim that nothing interesting is happening.
+        For OPERA it was that neutrinos travel at exactly the speed of light, so their arrival time minus
+        light&rsquo;s should be zero. Real measurements are never exactly zero, so the question is how far
+        from zero is too far to blame on noise. The tools are already in your hands: Day 16&rsquo;s
+        standard error is the typical size of the random scatter in a measurement like yours. Divide the
+        gap between what you measured and what the null predicts by that scatter and you have a count of
+        standard deviations, written with the Greek letter sigma, &sigma;. OPERA&rsquo;s gap was 60.7
+        nanoseconds and its quoted error, statistical and systematic combined (the arithmetic is below), about 10.1, so
+        60.7 &divide; 10.1 = 6.0 standard deviations.
+      </p>
+      <p>
+        The bell curve of Day 12 turns that count into a probability, because its tails fall away
+        extremely fast. A result 1&sigma; from the null happens by luck roughly a third of the time, 2&sigma;
+        roughly one time in twenty, 3&sigma; about one time in 370 (counting deviations in either
+        direction), 5&sigma; about one time in 3.5 million, and 6&sigma; about one time in a billion (the last
+        two counting one direction only). That probability &mdash; of a deviation <em>at least this
+        extreme</em> if the null model were true &mdash; is the <strong>p-value</strong>. It is a
+        conditional probability of exactly the kind Day 15 warned about, P(data | null), and it can only be
+        read in that direction.
+      </p>
+      <p>
+        It is not P(null | data). The American Statistical Association&rsquo;s 2016 statement on p-values
+        lists among its six principles that a p-value is not the probability that the hypothesis under
+        test is true, nor the probability that the data were produced by chance alone. Day 15&rsquo;s Sally
+        Clark case showed the trap: a tiny chance of the evidence under innocence was read as a tiny
+        chance of innocence. Getting from one to the other takes the <strong>prior</strong>, how
+        plausible the claim was before the data, and a claim with long odds against can survive a small
+        p-value with its chance of being true still low.
+      </p>
+      <p>
+        OPERA&rsquo;s claim started with long odds. Special relativity had passed a century of tests. And in
+        1987 a supernova in the Large Magellanic Cloud, about 168,000 light-years away, sent Earth a
+        burst of neutrinos that detectors caught about three hours before its light, because neutrinos
+        escape an exploding star&rsquo;s core before the light can work its way out. If neutrinos beat light
+        by OPERA&rsquo;s 2.5 parts in 100,000, they would have arrived about four years early (168,000
+        &times; 0.000025 &asymp; 4.2). That prior was not airtight: OPERA&rsquo;s neutrinos averaged about 17
+        billion electron-volts against roughly 10 million for the supernova&rsquo;s, so physicists could
+        write down models where the speed excess depended on energy. But Andrew Cohen and Sheldon Glashow
+        argued soon afterward that neutrinos that fast would shed energy by radiating electron&ndash;positron
+        pairs. This is the case where a small p-value is the start of the argument.
+      </p>
+      <p>
+        Now the part the p-value cannot see. Every measurement carries two kinds of error.
+        <strong>Statistical error</strong> is scatter that differs from one measurement to the next, in
+        unpredictable directions; averaging more measurements shrinks it in proportion to 1/&radic;n, as
+        in Day 16. <strong>Systematic error</strong> is a bias that pushes every measurement the same way
+        &mdash; a clock that runs fast, a cable that adds delay, a poll that systematically misses part of the population.
+        Averaging does nothing to it. Day 16&rsquo;s Literary Digest, with 2.4 million ballots all drawn from
+        the same skewed pool, simply produced a very confident wrong answer.
+      </p>
+      <p>
+        The two combine in quadrature (square root of the sum of squares), so the total can never fall
+        below the larger of them. OPERA&rsquo;s 15,000-plus events gave a statistical error of 6.9
+        nanoseconds. With ten times the events that would fall to about 2.2, but the total would only
+        fall from 10.1 to 7.7, and the &ldquo;significance&rdquo; of the same 60.7 nanoseconds &mdash; still
+        there, because bias does not average out &mdash; would <em>rise</em> from 6.0&sigma; to nearly
+        8&sigma;. With a hundred times the events, the total is 7.4
+        and the significance about 8.2&sigma;. More data would have made the false signal look more certain.
+      </p>
+      <p>
+        OPERA did not ignore systematic error: its 7.4 nanoseconds was an allowance for the sources the
+        team knew how to list, and it was inside the six sigma. (Statistical error alone would have given
+        8.8&sigma;.) But a p-value is computed <em>inside</em> the model. It can include the errors you thought
+        of and has no way to include one you did not. The particle physicist Louis Lyons has pointed out
+        that systematic uncertainties are harder to estimate than statistical ones. The cost of a
+        misjudgment is steep: if the true error is twice the quoted one, a claimed 6&sigma; is really
+        3&sigma;.
+      </p>
+      <p>
+        A third gap is the <strong>look-elsewhere effect</strong>. A p-value answers for one pre-specified
+        look. Search a spectrum with 100 places a bump could appear, or slice a clinical trial into 20
+        subgroups, and the chance that <em>some</em> place shows a striking fluctuation is far larger than the
+        chance that a named place does. The honest figure is the &ldquo;global&rdquo; significance, reckoned
+        over everywhere you looked, not the &ldquo;local&rdquo; significance at the spot where the bump
+        happened to appear. Fixing the analysis before seeing the data (a blind analysis) reduces the
+        problem; the Example below does the arithmetic.
+      </p>
+      <p>
+        Finally, the thresholds are conventions, not discoveries of nature. The p &lt; 0.05 line used across
+        much of medicine and social science is usually traced to R. A. Fisher&rsquo;s 1925 handbook
+        <em>Statistical Methods for Research Workers</em>, which offered it as a convenient place to draw
+        the line; particle physics settled on 5&sigma;. Where such
+        lines should sit, and whether a single line should exist at all, is argued among statisticians.
+        <span class="chip chip--warn">Debated</span>
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Now the puzzle resolves. OPERA&rsquo;s six sigma was correct arithmetic about a model: if the timing
+        chain behaved as calibrated, with errors no larger than the 6.9 and 7.4 nanoseconds OPERA had
+        estimated, a 60.7-nanosecond early arrival would happen by luck about once in a billion tries. It
+        said nothing about whether the model was right. When OPERA re-measured the fiber link that carries
+        the GPS timing signal to its master clock, it found a delay about 73 nanoseconds longer than its
+        earlier calibration &mdash; roughly ten times the systematic allowance, from a fault outside the
+        budget. It shifted every neutrino&rsquo;s timestamp the same way, so 15,000 events could not average
+        it out. A second fault, in an oscillator, pulled the other way. Once both were accounted for and
+        the measurement repeated with short pulses of neutrinos in May 2012, OPERA&rsquo;s flight time
+        agreed with light&rsquo;s, as did those of Borexino, ICARUS and LVD. What settled it was not a smaller
+        p-value but re-checking the apparatus itself, and independent measurements by other detectors.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Null hypothesis</dt>
+        <dd>The default claim that nothing is going on &mdash; no effect, no new particle &mdash; against
+        which the data are tested.</dd>
+        <dt>p-value</dt>
+        <dd>The probability, assuming the null model is true, of data at least as extreme as what was
+        observed. It is not the probability that the null is true.</dd>
+        <dt>Sigma level</dt>
+        <dd>A result&rsquo;s distance from the null, in standard deviations of the total error; the bell
+        curve converts it to a p-value (about 1 in 20 at 2&sigma;, 1 in 3.5 million at 5&sigma;).</dd>
+        <dt>Statistical versus systematic error</dt>
+        <dd>Random scatter that shrinks as data accumulate, versus a consistent bias that does not.</dd>
+        <dt>Look-elsewhere effect</dt>
+        <dd>The inflation of false alarms when you search many places; the honest significance counts all
+        of them.</dd>
+        <dt>Prior plausibility</dt>
+        <dd>How believable a claim was before the data, which a p-value neither measures nor replaces.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The Higgs Boson and the Five-Sigma Rule</h3>
+      <p>
+        On 4 July 2012 at CERN, the ATLAS and CMS experiments each announced a new particle near 125
+        GeV (about 125 billion electron-volts of mass-energy): ATLAS at 5.0&sigma; and CMS at 4.9&sigma;, after combining their decay channels. A typical
+        clinical study, by contrast, calls p &lt; 0.05 &mdash; about two sigma &mdash; &ldquo;significant.&rdquo; Lyons names
+        three reasons particle physics asks for more: the look-elsewhere effect, systematic errors that are
+        hard to estimate, and a record in which 3&sigma; and 4&sigma; effects have too often faded as more
+        data arrived.
+      </p>
+      <div class="worked">
+        <p><strong>1. Convert the thresholds.</strong> Medicine&rsquo;s p &lt; 0.05 (two-sided) sits at 1.96&sigma;:
+        a false alarm about once in 20 if nothing is going on. Physics&rsquo;s 5&sigma; (one-sided) is
+        p = 2.9 &times; 10<sup>&minus;7</sup>, about once in 3.5 million.</p>
+        <p><strong>2. Add a search.</strong> Say a search scans 100 independent mass windows (an illustrative
+        number, not either experiment&rsquo;s real one). A 3&sigma; bump (one-sided p = 0.00135) in one named
+        window is a 1-in-741 fluke.</p>
+        <p><strong>3. Ask about any window.</strong> The chance that at least one of the 100 shows a
+        3&sigma; bump by luck is 1 &minus; (1 &minus; 0.00135)<sup>100</sup> = 1 &minus; 0.874 = 0.126, about
+        1 in 8. A &ldquo;3&sigma;&rdquo; bump somewhere in the spectrum is unremarkable.</p>
+        <p><strong>4. Repeat at 5&sigma;.</strong> 100 &times; 2.9 &times; 10<sup>&minus;7</sup> = 2.9 &times;
+        10<sup>&minus;5</sup>, about 1 in 35,000, or roughly 4&sigma;. The scan makes a fluke of that size a
+        hundred times more likely, yet 1 in 35,000 is still remarkable, unlike the 3&sigma; case&rsquo;s 1 in 8.</p>
+        <p><strong>5. Allow for the error bar.</strong> If the true error is twice the quoted one, a
+        claimed 5&sigma; is really 2.5&sigma;. Independent confirmation guards against exactly
+        this: ATLAS and CMS are separate detectors run by separate collaborations.</p>
+      </div>
+      <p>
+        Neither threshold is a fact about nature: each trades false alarms against missed discoveries,
+        and the right trade depends on what each kind of mistake costs. <span class="chip chip--info">Value
+        judgment</span>
+      </p>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">p = P( data at least this extreme &nbsp;|&nbsp; H<sub>0</sub> true )</p>
+        <p class="expr-spoken visually-hidden">p equals the probability of data at least this extreme, given that the null hypothesis H zero is true.</p>
+        <dl>
+          <dt>p</dt>
+          <dd>the p-value</dd>
+          <dt>P( &hellip; | &hellip; )</dt>
+          <dd>probability of the first thing, assuming the second</dd>
+          <dt>H<sub>0</sub></dt>
+          <dd>the null hypothesis together with every modeling assumption, including the size of the
+          error bars</dd>
+        </dl>
+      </div>
+      <div class="formula">
+        <p class="expr">Z = (x &minus; x<sub>0</sub>) / &sigma;<sub>tot</sub><br>&sigma;<sub>tot</sub> = &radic;(&sigma;<sub>stat</sub><sup>2</sup> + &sigma;<sub>sys</sub><sup>2</sup>)<br>OPERA: 60.7 / &radic;(6.9<sup>2</sup> + 7.4<sup>2</sup>) = 6.0</p>
+        <p class="expr-spoken visually-hidden">Z equals x minus x-naught, divided by sigma total. Sigma total is the square root of sigma stat squared plus sigma sys squared. For OPERA, 60.7 divided by the square root of 6.9 squared plus 7.4 squared equals 6.0.</p>
+        <dl>
+          <dt>Z</dt>
+          <dd>the result&rsquo;s distance from the null, in standard deviations (the &ldquo;sigma level&rdquo;)</dd>
+          <dt>x</dt>
+          <dd>the measured value (OPERA: 60.7 ns early)</dd>
+          <dt>x<sub>0</sub></dt>
+          <dd>the value the null predicts (OPERA: 0 ns)</dd>
+          <dt>&sigma;<sub>stat</sub></dt>
+          <dd>statistical error, which falls like 1/&radic;n as events accumulate (OPERA: 6.9 ns)</dd>
+          <dt>&sigma;<sub>sys</sub></dt>
+          <dd>the estimated systematic error, which does not fall with n (OPERA: 7.4 ns); independent errors
+          add as squares</dd>
+          <dt>&sigma;<sub>tot</sub></dt>
+          <dd>the combined error, never smaller than either part</dd>
+        </dl>
+      </div>
+      <div class="formula">
+        <p class="expr">P(at least one fluke in N places) = 1 &minus; (1 &minus; p)<sup>N</sup> &nbsp;&approx;&nbsp; N p</p>
+        <p class="expr-spoken visually-hidden">The probability of at least one fluke in N places equals 1 minus the quantity 1 minus p, raised to the power N, which is approximately N times p when p is small.</p>
+        <dl>
+          <dt>p</dt>
+          <dd>the chance of a fluke at least this big in any one named place</dd>
+          <dt>N</dt>
+          <dd>the number of independent places searched</dd>
+        </dl>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>The bell curve&rsquo;s conversion from sigma to probability.</caption>
+          <thead>
+            <tr><th>Sigma</th><th>Two-sided p</th><th>One-sided p</th><th>One-sided, 1 in &hellip;</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1.96&sigma;</td><td>0.05</td><td>0.025</td><td>40</td></tr>
+            <tr><td>3&sigma;</td><td>0.0027</td><td>0.00135</td><td>741</td></tr>
+            <tr><td>5&sigma;</td><td>5.7 &times; 10<sup>&minus;7</sup></td><td>2.9 &times; 10<sup>&minus;7</sup></td><td>3.5 million</td></tr>
+            <tr><td>6&sigma;</td><td>2.0 &times; 10<sup>&minus;9</sup></td><td>9.9 &times; 10<sup>&minus;10</sup></td><td>1 billion</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        You can now take any &ldquo;X-sigma&rdquo; or &ldquo;p &lt; 0.05&rdquo; headline and ask three
+        questions the number cannot answer for itself. What error bars went into it, and could something
+        outside them push every measurement the same way? How many places were looked at before this one
+        was reported? And how believable was the claim before the data? Only the first is arithmetic; the
+        other two concern the design of the study and everything else we know, which is why independent
+        replication counts for more than a smaller p-value. It also separates two things people run together:
+        a small p-value says an effect is hard to blame on noise, not that it is large or important. Day 22
+        (Replication and publication bias) takes up what happens when only the studies that cross the line
+        get published.
+      </p>
+      <p><b>Settled.</b> What a p-value means, how a bell curve turns sigmas into probabilities, and that
+      OPERA&rsquo;s anomaly came from timing faults.</p>
+      <p><b>Debated.</b> Where thresholds should sit and how central p-values should be. The American
+      Statistical Association (2016) warned against bright-line use; Benjamin and colleagues (2018)
+      proposed p &lt; 0.005 for new claims; Lakens and colleagues (2018) argued each field should justify
+      its own.</p>
+      <p><b>Value judgment.</b> How many false alarms, or missed discoveries, a field should tolerate is a
+      question of costs, which statistics can price but cannot choose.</p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 16, Sampling and the margin of error: the standard error built there is the
+        statistical error here, and a p-value is largely that error read as a probability. The Literary
+        Digest&rsquo;s 2.4 million ballots and OPERA&rsquo;s 15,000 events are one lesson: bias does not shrink
+        as the sample grows. Day 15, Bayes&rsquo; theorem and base rates: a p-value is P(data | null), and
+        getting to P(null | data) needs the prior, which is why a claim against a century of tested
+        physics needs more than a small p-value.
+      </p>
+      <p>
+        <b>Across.</b> Space &amp; Astronomy supplies a sequel. In March 2014 the BICEP2 team reported a
+        pattern in the polarization of the cosmic microwave background that it read as primordial
+        gravitational waves from cosmic inflation, rejecting the no-signal hypothesis at 7&sigma;. Dust in
+        our own galaxy also emits polarized microwaves, and the team had only a rough estimate of how much. A joint
+        analysis with the Planck satellite, published in 2015, found strong evidence for dust and no
+        statistically significant evidence for the primordial signal. It is OPERA&rsquo;s structure again,
+        with one difference: the unmodeled contribution was a physical foreground in the sky, not a faulty
+        instrument, but either way the quoted significance covered only the errors the analysis had allowed for.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The ASA Statement on p-Values: Context, Process, and Purpose &mdash; Ronald L. Wasserstein &amp;
+        Nicole A. Lazar (American Statistical Association), The American Statistician 70(2), 2016 &middot;
+        Reading &middot; about 15 minutes (read the six principles)</p>
+        <p>The statistics profession&rsquo;s own short, plain-language statement of what a p-value does and
+        does not mean. It is the authoritative reference for the misreadings this lesson warns against.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A p-value is the chance of data at least this extreme if the null model were true, not the chance that the null is true.</li>
+        <li>The bell curve converts sigma to probability: about 1 in 20 at 2&sigma;, 1 in 3.5 million at 5&sigma;, 1 in a billion at 6&sigma;.</li>
+        <li>Statistical error shrinks with more data; systematic error does not, and a p-value can include only the systematic errors someone thought to list.</li>
+        <li>A bump found by searching many places must be judged against the whole search, not the one place where it appeared.</li>
+        <li>OPERA&rsquo;s six sigma fell to timing faults, so a surprising claim needs replication and a believable prior, not only a small p-value.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        The ISIS-2 trial (<em>The Lancet</em>, 1988) of 17,187 heart-attack patients showed that aspirin
+        cut deaths, yet when the investigators also split the patients by astrological birth sign, those
+        born under Gemini or Libra seemed to do slightly worse on aspirin, so why should no one believe
+        that subgroup result even if it had carried a p-value below 0.05?
+      </p>
+      </div>
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> OPERA Collaboration, arXiv:1109.4897; CERN statements of 23 September
+      2011 and 8 June 2012; ICARUS, <em>Physics Letters B</em> 713 (2012); Cohen and Glashow,
+      <em>Physical Review Letters</em> 107 (2011); Lyons, &ldquo;Open statistical issues in particle
+      physics&rdquo; (2008); ATLAS and CMS, 4 July 2012; BICEP2, arXiv:1403.3985, and the 2015 joint
+      analysis with Planck; ISIS-2, <em>The Lancet</em> (1988); Wasserstein and Lazar (2016); Benjamin et
+      al. and Lakens et al., <em>Nature Human Behaviour</em> (2018). Checked via web search; Fisher&rsquo;s
+      1925 attribution was not.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource: from the Connected Path&rsquo;s curated list; no link could be confirmed. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-16.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a href="./day-18.html">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
