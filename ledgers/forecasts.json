@@ -6220,6 +6220,36 @@
    "probability": "50-65%",
    "basis": "~18.5 at 06:23 ET vs 17.20 Oct 29 close; Nasdaq futures -2.4%",
    "status": "open"
+  },
+  {
+   "id": "2026-10-30-pm-1",
+   "date": "2026-10-30",
+   "slot": "pm",
+   "forecast": "S&P 500 closes Monday Nov 2 above its Oct 30 close of 7,580.07",
+   "horizon": "2026-11-02",
+   "probability": "45-60%",
+   "basis": "Near coin flip after a 1.8% fall; oversold chips vs weekend OPEC+/Iran risk and Apple earnings",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-30-pm-2",
+   "date": "2026-10-30",
+   "slot": "pm",
+   "forecast": "10-year Treasury par yield is below 5.00% at the close on Nov 6 (jobs-report day)",
+   "horizon": "2026-11-06",
+   "probability": "65-80%",
+   "basis": "4.94% on Oct 30 after a 35bp October fall; soft labour data and risk-off tape; hot payrolls the main risk",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-30-pm-3",
+   "date": "2026-10-30",
+   "slot": "pm",
+   "forecast": "OPEC+ announces no increase in December production targets at its Nov 1 meeting",
+   "horizon": "2026-11-01",
+   "probability": "55-70%",
+   "basis": "Trade report (Oilprice.com) that the group is preparing to stop raising targets; prices already above $100",
+   "status": "open"
   }
  ]
 }

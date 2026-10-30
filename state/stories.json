@@ -1,6 +1,83 @@
 {
  "stories": [
   {
+   "id": "sylvia-doj-referral",
+   "headline": "WaPo: Lt. Gen. Sylvia referred to DOJ over alleged leaks; no charge",
+   "status": "Developing",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "pa-measles-oct28",
+   "headline": "PA DOH: 1,398 measles cases, 265 hospitalised, 5 deaths as of Oct 28 (Reuters); CDC national 4,852 cases",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "allegheny-ballot-question-nov3",
+   "headline": "Allegheny County Nov 3 ballot question on council staff/office funding; GRC recommends no",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "pgh-zoning-signed-oct29",
+   "headline": "Mayor O'Connor signed zoning ordinances Oct 29: parking minimums eliminated, ADUs, affordable-housing incentives (WPXI)",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "abbv-cl-q3-oct30",
+   "headline": "AbbVie adj EPS $3.82, rev $17.40B, FY guide $13.95-13.99, div +5.2% (8-K), +1.4%; Colgate base EPS $0.97, organic +3.6%, GM guide raised (8-K), +2.3%",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "ninth-circuit-ca-ballots-oct30",
+   "headline": "Ninth Circuit panel again denies DOJ bid to set aside ~20K CA ballots (NBC, Democracy Docket); SCOTUS appeal expected, none found; AP: early vote ~10M ahead of 2022; Trump restores Iowa/Kansas Sunday rallies",
+   "status": "Materially changed",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "binance-theft-oct30",
+   "headline": "Binance: $5B of ~$6.4B frozen (CNBC/TechCrunch); TRM/Chainalysis/Elliptic attribute to TraderTraitor, no govt confirmation; BTC low ~$76.4K; COIN -10.6%, HOOD -7.2%",
+   "status": "Developing",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "oil-month-hormuz-oct30",
+   "headline": "Dec Brent settled ~$117.64 (single source), WTI ~$103-104; UKMTO limpet-style attack on tanker; Iran claims 4 mine hits, CENTCOM denies; Cooper briefed Trump on strike options; Qatari delegation in Tehran; OPEC+ Sunday",
+   "status": "Developing",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "eci-q3-ust-month-oct30",
+   "headline": "ECI Q3 +0.8% (wages +0.7%, 3.1% y/y; real -0.6%); Chicago PMI 55.3; 10Y par 4.94% (-4bp, -35bp in Oct), 2Y 4.56%; Dec hike ~72% (reported)",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "amzn-pares-oct30",
+   "headline": "Amazon closes -1.4% at $240.35 after ~-7% premarket; Reddit -29.2%, Roblox -18.1%, Twilio -15.2% on outlooks",
+   "status": "Materially changed",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
+   "id": "intel-worst-day-oct30",
+   "headline": "Intel -28.6% to $65.76 (worst day since 1974, AP); AMD -10.9%, SMH -7.0%, NVDA -4.2%, chips ~-$1T; S&P -1.82% 7,580.07, Nasdaq -2.86% 25,437.00",
+   "status": "New",
+   "last_updated": "2026-10-30-pm",
+   "score_rationale": "finance-first selection, 2026-10-30 pm"
+  },
+  {
    "id": "pa-legislature-fewest-bills",
    "headline": "PA 2025-26 session on track for fewest bills since 1973 (WESA); House back Nov 9, Senate Nov 17",
    "status": "New",
@@ -24,13 +101,6 @@
   {
    "id": "doj-ca-subpoenas",
    "headline": "DOJ grand jury subpoenas CA/LA County election officials for Nov 4 testimony; warning letters to 57 of 58 counties; MN SoS subpoenaed; no charges",
-   "status": "New",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "binance-theft-oct30",
-   "headline": "Binance breach via compromised DevOps laptop; ~$6.3B reported (Chainalysis ~$5.9B), ~$3B frozen; TRM/Chainalysis attribute to TraderTraitor/Lazarus; ~$1.5B liquidations; BTC ~$77.5K",
    "status": "New",
    "last_updated": "2026-10-30-am",
    "score_rationale": "finance-first selection, 2026-10-30 am"
@@ -539,127 +609,7 @@
    "sources": [],
    "score_rationale": "AI/IPO",
    "keep_on_watchlist": true
-  },
-  {
-   "id": "fomc-oct-28",
-   "headline": "FOMC Oct 28 decision 2 PM: hold ~91% priced (FedWatch), Dec hike ~75%; dissent watch; no SEP; BoC 9:45 today, ECB Thu, BoJ Fri",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Lead: Fed decision day",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "boeing-q3-2026",
-   "headline": "Boeing Q3 (8-K): rev $24.19B +4%, core loss/sh $0.34 vs ~0.21 est, FCF $464M, backlog $745B; stock ~-9.5 to -10% to ~$170",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Biggest Dow drag",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "conf-board-oct-2026",
-   "headline": "Conference Board Oct 91.7 (from 84.2; cons ~81); durables Sept +1.8% vs 0.6%; new home sales 676K; Case-Shiller 20c +2.7% y/y",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Data surprise eve of Fed",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "oil-gulf-diplomacy-oct27",
-   "headline": "Brent Dec ~$115.6 Oct 28 after Houthi Ras Tanura claim (unconfirmed damage); Iran reportedly offered 2-week regional pause tied to Hormuz (Reuters single); API -2.0M",
-   "status": "Continuing",
-   "verification": "Single-reliable-source (truce offer)",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Oil/inflation channel",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "visa-enphase-oct27",
-   "headline": "Visa FQ4 (8-K): rev $12.1B +13%, adj EPS $3.48 vs ~3.44, div +16%; ~-1.2% AH. Enphase Q4 guide $225-255M vs ~$300M, ~-10% AH",
-   "status": "New",
-   "verification": "Confirmed-primary (Visa)",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "After-hours earnings",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "israel-election-oct27",
-   "headline": "Israel partial count ~76%: Netanyahu bloc ~54, Eisenkot bloc ~47, Arab parties ~19; Likud ~27, Yashar ~20; shekel/bonds fell",
-   "status": "Developing",
-   "verification": "Confirmed-multiple (partial count)",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "World",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "brazil-lula-wins",
-   "headline": "Lula wins runoff 51.8-48.2 (TSE); Ibovespa -13.9% Oct 26, USD/BRL +8.8% to 5.42; Flavio Bolsonaro seeks annulment",
-   "status": "Resolved",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Replaces brazil-runoff",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "us-v-california-carter",
-   "headline": "US v. California: Carter heard TRO Oct 27, skeptical, special master planned, written ruling expected Oct 28",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "US",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "cintas-unifirst-ftc",
-   "headline": "Semafor: FTC told Cintas it will sue to block ~$5.5B UniFirst deal; FTC says no final vote; UNF ~-9%, CTAS ~-4.6%",
-   "status": "New",
-   "verification": "Single-reliable-source",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Antitrust",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "prt-wabash-closure",
-   "headline": "PRT board voted Oct 23 to close Wabash Tunnel Dec 1",
-   "status": "Resolved",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Local",
-   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-10-30T10:47:28Z"
+ "updated": "2026-10-30T21:15:00Z"
 }
