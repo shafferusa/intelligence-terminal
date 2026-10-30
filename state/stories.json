@@ -1,6 +1,90 @@
 {
  "stories": [
   {
+   "id": "pa-legislature-fewest-bills",
+   "headline": "PA 2025-26 session on track for fewest bills since 1973 (WESA); House back Nov 9, Senate Nov 17",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "dnipro-station-strike",
+   "headline": "Russian drone hits Dnipro rail station Oct 29, at least 14 killed; Oleshky local ceasefire, aid convoy",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "wegmans-galleria-mtlebanon",
+   "headline": "Wegmans to anchor Roadside Development's Galleria of Mt. Lebanon redevelopment (~110K sq ft); Roadside bought property in April; Oct 29 pm 'bought' wording corrected",
+   "status": "Corrected",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "doj-ca-subpoenas",
+   "headline": "DOJ grand jury subpoenas CA/LA County election officials for Nov 4 testimony; warning letters to 57 of 58 counties; MN SoS subpoenaed; no charges",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "binance-theft-oct30",
+   "headline": "Binance breach via compromised DevOps laptop; ~$6.3B reported (Chainalysis ~$5.9B), ~$3B frozen; TRM/Chainalysis attribute to TraderTraitor/Lazarus; ~$1.5B liquidations; BTC ~$77.5K",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "cvx-xom-q3",
+   "headline": "Chevron adj EPS $5.28 vs $4.89 (8-K), downstream $4.9B, FCF $12.0B; Exxon ex-items $4.23 vs ~$4.03-4.12; both ~+1.5% premarket",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "hormuz-mine-claims-oct30",
+   "headline": "IRGC says 3 tankers hit mines near Hormuz; CENTCOM denies; UKMTO one tanker hit by projectile; WTI ~$104 +2%, Dec Brent ~$116 expires Oct 30; OPEC+ Nov 1",
+   "status": "Developing",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "boj-hold-oct30",
+   "headline": "BoJ holds 1.25%, 8-1 (Takata for hike); underlying inflation 'broadly in line' first time since 2013; Dec hike ~80% priced",
+   "status": "Resolved",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "ust-rally-oct30",
+   "headline": "10Y ~4.92% overnight (par 4.98% Oct 29); Reuters: biggest monthly drop since Dec 2023; Dec hike ~75-80%; ECI Q3 8:30 cons +0.8%",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "ai-supplier-selloff-oct30",
+   "headline": "Nasdaq 100 futures -2.4%, SMH ~-4.6% premarket; AMD -8%, MU -5%, ASML -5%, NVDA -3%; Kospi -3.5% (SK Hynix -7%), Nikkei -2.1%, Taiwan -2.5%",
+   "status": "New",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "amzn-q3-premarket",
+   "headline": "Amazon indicated ~-6.8% (~$227): EPS $1.89 miss, AWS +39%, TTM FCF -$42.4B, Q4 op-inc guide mid ~$31B vs $33.2B; higher 2027 capex signalled",
+   "status": "Materially changed",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
+   "id": "intc-q4-guide-premarket",
+   "headline": "Intel indicated ~-25% premarket (~$69 vs $92.07): Q4 guide $15-16B vs ~$17B, EPS $0.25 vs $0.43; PC market -12% 2026, -10% 2027; Israel halt -$300M",
+   "status": "Materially changed",
+   "last_updated": "2026-10-30-am",
+   "score_rationale": "finance-first selection, 2026-10-30 am"
+  },
+  {
    "id": "googl-worst-day-oct29",
    "headline": "Alphabet -12.6% to $283.82 Oct 29, worst day since 2004 IPO (~$480-500B lost); MSFT gave up premarket gain, closed -0.2%",
    "status": "New",
@@ -154,18 +238,6 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "AI",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "wegmans-galleria-mtlebanon",
-   "headline": "Wegmans buys Galleria of Mt. Lebanon; ~110K sq ft store; opening date conflicting (2028 per WESA)",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-29-pm",
-   "last_updated": "2026-10-29-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Local",
    "keep_on_watchlist": true
   },
   {
@@ -587,139 +659,7 @@
    "sources": [],
    "score_rationale": "Local",
    "keep_on_watchlist": true
-  },
-  {
-   "id": "pa-sb1014-signed",
-   "headline": "Shapiro signed SB 1014 school phone ban Oct 26; policies by 2027-28",
-   "status": "Resolved",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-27-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Local/PA",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "php-ai-vulns-nsa",
-   "headline": "NSA urges patching two critical PHP flaws found with AI tools (Calif, Wiz); take systems offline if can't patch",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "pa-sb1150-sunshine",
-   "headline": "PA House passes SB 1150 (Sunshine Act loophole) 182-21; to Shapiro; likely last voting day of session",
-   "status": "New",
-   "verification": "Single-reliable-source (Spotlight PA)",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "scotus-bop-transgender-care",
-   "headline": "SCOTUS denies admin emergency request to enforce BOP policy ending gender-affirming care; Thomas, Alito dissent; Lamberth injunction stays; appeal continues in DC Cir",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "smci-nflx-t-oct21",
-   "headline": "SMCI +9.55%, DELL +5.3%; NFLX -5.31% to $65.04; T -6.45% (Mexico impairment); ISRG -2.26% after -8% open; CMG -5.2% on downgrade",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "ibm-lrcx-txn-q3",
-   "headline": "IBM rev $17.1B, op EPS $2.95, FCF outlook raised, ~+4% AH; LRCX Dec-q guide $8.6B±0.4B, ~-5% AH; TXN EPS $2.62, Q4 guide $2.45-2.79",
-   "status": "New",
-   "verification": "Confirmed-primary (8-Ks)",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "oil-eia-gfs-pride-oct21",
-   "headline": "EIA crude -3.06M vs -0.8M exp; Brent settle $108.82 (+0.03), WTI Dec $97.15; CENTCOM says Iranian projectile sank container ship GFS Pride (CBS; IRGC says mines)",
-   "status": "New",
-   "verification": "Confirmed-primary (EIA); ship sinking Single-reliable-source/Disputed",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "meta-q3-class-c",
-   "headline": "Meta Q3 rev $64.6B +26%; EPS $3.83 incl $9.89B AG charge ($7.40 ex); 2026 capex narrowed $135-145B; FCF -$2.12B; non-voting Class C 1:1 stock dividend eff. Jan 19 2027; ~+6% AH",
-   "status": "New",
-   "verification": "Confirmed-primary (8-K)",
-   "first_seen": "2026-10-21-pm",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "spcx-tesla-merger-committees",
-   "headline": "SPCX closes +7.79% at $159.31; TSLA +3.41%; Tesla Q3 per Electrek: rev ~$28.05B, adj EPS $0.48, auto GM ex-credits 18.1% (8-K not on EDGAR at press time); merger committees still Musk's account only",
-   "status": "Materially changed",
-   "verification": "Confirmed-multiple (prices); Tesla results Single-reliable-source at press",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 pm",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "meta-tsla-q3-oct21",
-   "headline": "Meta, Tesla, IBM, Lam report Oct 21 AMC; Meta 2026 capex guide 130-145B is the AI test",
-   "status": "Resolved",
-   "verification": "Confirmed-primary (company IR)",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-pm",
-   "one_line": "Reported; see meta-q3-class-c and spcx-tesla-merger-committees",
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 am",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "smci-raise-kospi-rebound",
-   "headline": "SMCI raises Sept-qtr revenue to 18.5-19.5B (from 14.5-15.5B); Kospi +3.29% to 5,735.66, Samsung +5.67%, SK hynix +5.81%; HSI -2.2%",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-21-am",
-   "last_updated": "2026-10-21-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Top Story 2026-10-21 am",
-   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-10-29T20:51:21Z"
+ "updated": "2026-10-30T10:47:28Z"
 }

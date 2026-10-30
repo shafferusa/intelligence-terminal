@@ -6180,6 +6180,46 @@
    "probability": "55-70%",
    "basis": "Closed 4.98% Oct 29; typical daily range +/-5bp; ECI and month-end flows the main risks",
    "status": "open"
+  },
+  {
+   "id": "2026-10-30-am-1",
+   "date": "2026-10-30",
+   "slot": "am",
+   "forecast": "Nasdaq Composite closes Oct 30 below its Oct 29 close of 26,184.72",
+   "horizon": "2026-10-30",
+   "probability": "75-88%",
+   "basis": "NQ futures -2.4% at 06:30 ET; Intel -25%, Amazon -7% premarket",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-30-am-2",
+   "date": "2026-10-30",
+   "slot": "am",
+   "forecast": "10-year Treasury par yield closes Oct 30 below 4.98%",
+   "horizon": "2026-10-30",
+   "probability": "70-85%",
+   "basis": "10Y ~4.92% in overseas trade (Reuters/CNBC) vs 4.98% Oct 29 par close",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-30-am-3",
+   "date": "2026-10-30",
+   "slot": "am",
+   "forecast": "BLS Q3 Employment Cost Index rises 0.8% or more q/q (seasonally adjusted, civilian, as published Oct 30)",
+   "horizon": "2026-10-30",
+   "probability": "45-60%",
+   "basis": "consensus +0.8%; Q2 +0.9%",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-30-am-4",
+   "date": "2026-10-30",
+   "slot": "am",
+   "forecast": "VIX closes Oct 30 above 18.0",
+   "horizon": "2026-10-30",
+   "probability": "50-65%",
+   "basis": "~18.5 at 06:23 ET vs 17.20 Oct 29 close; Nasdaq futures -2.4%",
+   "status": "open"
   }
  ]
 }

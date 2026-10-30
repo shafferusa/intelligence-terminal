@@ -1,5 +1,5 @@
 {
-  "last_success": "2026-10-29-pm",
+  "last_success": "2026-10-30-am",
   "runs": {
     "2026-10-29-learn": {
       "status": "success",
@@ -40,18 +40,6 @@
     "2026-09-30-learn": {
       "status": "success",
       "ts": "2026-09-30T08:55:42Z"
-    },
-    "2026-09-29-learn": {
-      "status": "success",
-      "ts": "2026-09-29T09:10:00Z"
-    },
-    "2026-09-29-am": {
-      "status": "success",
-      "ts": "2026-09-29T15:13:07Z"
-    },
-    "2026-09-29-pm": {
-      "status": "success",
-      "ts": "2026-09-29T20:45:31Z"
     },
     "2026-09-30-am": {
       "status": "success",
@@ -257,6 +245,10 @@
       "status": "success",
       "ts": "2026-10-29T21:10:11Z",
       "note": "Skipped at Logan's request: Mathematics days 8-24 were published at once on 2026-10-29."
+    },
+    "2026-10-30-am": {
+      "status": "success",
+      "ts": "2026-10-30T10:48:17Z"
     }
   }
 }

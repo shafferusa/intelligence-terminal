@@ -1,94 +1,38 @@
 {
- "fetched": "2026-10-28T06:49:33-04:00",
+ "fetched": "2026-10-30T06:50:00-04:00",
  "earnings_fetched": "2026-10-18",
  "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted. | 2026-10-19 am: Finnhub day-of refresh; TreasuryDirect upcoming refreshed.",
  "events": [
   {
-   "ts_et": "2026-10-28T08:30",
+   "ts_et": "2026-10-30T08:30",
    "type": "data",
-   "name": "Advance goods trade balance (Sept); wholesale/retail inventories",
-   "importance": "Medium",
-   "reason": "Q3 GDP input",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-28T09:45",
-   "type": "central_bank",
-   "name": "Bank of Canada decision + MPR",
+   "name": "Employment Cost Index Q3",
    "importance": "High",
-   "reason": "Previews split hike/hold",
-   "source": "research"
+   "reason": "Fed's preferred wage gauge before Dec meeting",
+   "source": "bls.ics"
   },
   {
-   "ts_et": "2026-10-28T10:30",
+   "ts_et": "2026-10-30T09:45",
    "type": "data",
-   "name": "EIA weekly petroleum status",
-   "importance": "Medium",
-   "reason": "Oil above $100",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-28T11:30",
-   "type": "auction",
-   "name": "$30B 2-year FRN; $75B 17-week bill",
+   "name": "Chicago PMI (Oct)",
    "importance": "Low",
-   "reason": "Supply",
-   "source": "treasurydirect"
-  },
-  {
-   "ts_et": "2026-10-28T14:00",
-   "type": "central_bank",
-   "name": "FOMC statement; Warsh presser 14:30",
-   "importance": "Critical",
-   "reason": "Hold priced; December signal",
-   "source": "federalreserve/research"
-  },
-  {
-   "ts_et": "2026-10-28T16:05",
-   "type": "earnings",
-   "name": "Microsoft, Alphabet, ServiceNow, KLA, Rambus (AMC)",
-   "importance": "Critical",
-   "reason": "AI cloud revenue test",
+   "reason": "Regional survey",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-29T08:15",
-   "type": "central_bank",
-   "name": "ECB decision",
+   "ts_et": "2026-11-01T00:00",
+   "type": "energy",
+   "name": "OPEC+ meeting (December output)",
    "importance": "High",
-   "reason": "Hold expected; Dec hike priced",
-   "source": "newsquawk via research"
-  },
-  {
-   "ts_et": "2026-10-29T13:00",
-   "type": "auction",
-   "name": "$44B 7-year note",
-   "importance": "High",
-   "reason": "Duration supply",
-   "source": "treasurydirect"
-  },
-  {
-   "ts_et": "2026-10-29T16:00",
-   "type": "earnings",
-   "name": "Amazon (AMC)",
-   "importance": "High",
-   "reason": "AWS",
+   "reason": "Oil supply amid Hormuz disruption",
    "source": "research"
   },
   {
-   "ts_et": "2026-10-29T17:00",
-   "type": "local",
-   "name": "Allegheny County Council 2027 budget hearing",
-   "importance": "Low",
-   "reason": "Local",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-10-30T00:00",
-   "type": "central_bank",
-   "name": "Bank of Japan decision",
+   "ts_et": "2026-11-02T00:00",
+   "type": "treasury",
+   "name": "Treasury marketable borrowing estimates",
    "importance": "Medium",
-   "reason": "Hold expected",
+   "reason": "Refunding prelude (per previews)",
    "source": "research"
   },
   {
@@ -108,15 +52,47 @@
    "source": "research"
   },
   {
+   "ts_et": "2026-11-03T10:00",
+   "type": "data",
+   "name": "JOLTS (Sept)",
+   "importance": "Medium",
+   "reason": "Labor demand",
+   "source": "bls.ics"
+  },
+  {
    "ts_et": "2026-11-04T08:30",
    "type": "treasury",
    "name": "Quarterly refunding announcement",
    "importance": "High",
    "reason": "Coupon sizes",
    "source": "treasury.gov"
+  },
+  {
+   "ts_et": "2026-11-05T08:30",
+   "type": "data",
+   "name": "Productivity and Costs Q3",
+   "importance": "Medium",
+   "reason": "Unit labor costs",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-06T08:30",
+   "type": "data",
+   "name": "Employment Situation (Oct)",
+   "importance": "Critical",
+   "reason": "Jobs report before Dec FOMC",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-10T08:30",
+   "type": "data",
+   "name": "CPI (Oct)",
+   "importance": "Critical",
+   "reason": "Inflation before Dec FOMC",
+   "source": "bls.ics"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
  "fomc_next": "2026-10-28",
- "holiday_note": "Week of Oct 19: no NYSE holiday or early close (data/nyse-holidays.json)."
+ "holiday_note": "2026-10-30: no NYSE holiday or early close this week or next (data/nyse-holidays.json)."
 }

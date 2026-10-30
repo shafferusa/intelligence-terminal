@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Fri, Oct 30, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-10-30",
+    "slot": "am",
+    "title": "Morning Brief — Fri, Oct 30, 2026",
+    "path": "reports/2026/10/2026-10-30-am.html",
+    "summary": "Intel is indicated about 25% lower and Amazon about 7% lower after their results, pulling Nasdaq 100 futures down 2.4% and chip stocks from Seoul to New York with them, while Treasuries rally toward 4.92%, oil rises on disputed Hormuz mine claims and bitcoin falls after a reported $6.3 billion Binance theft, before the 8:30 AM Employment Cost Index.",
+    "headlines": [
+      "Nasdaq futures -2.4%: Intel indicated ~25% lower on its outlook, Amazon ~7% lower; Kospi -3.5% on chips",
+      "10-year near 4.92%, set for its biggest monthly drop since 2023; Employment Cost Index at 8:30 AM",
+      "WTI +2% on disputed Hormuz mine claims; bitcoin near $77,500 after reported $6.3B Binance theft"
+    ],
+    "reading_minutes": 34,
+    "generated_at": "2026-10-30T06:47:28-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Intel and Amazon Drag Nasdaq Futures Down 2.4% as Asia&rsquo;s Chip Stocks Slide</h1>
+      <p class="paper-dateline">
+        Friday, October 30, 2026 <span class="sep">&middot;</span> 34 min read
+      </p>
+      <p class="paper-standfirst">
+        For the third day running, a giant&rsquo;s results have turned the AI build-out into a question about who pays for it: Intel is indicated 25% lower, Amazon 7% lower and chipmakers from Seoul to Silicon Valley are falling, while Treasuries rally, oil climbs on Hormuz and a record crypto theft hits bitcoin before the Employment Cost Index at 8:30.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The tape.</b> Nasdaq 100 futures are down 2.4% and S&amp;P 500 futures 1.1%, while Dow futures are flat (about 6:30 AM). Intel is indicated about 25% lower on a weak outlook and Amazon about 7% lower; AMD, Micron and ASML are down 5&ndash;8%. On Thursday the S&amp;P 500 fell 0.3% to 7,720.39 and the Nasdaq 1.4%, while the Russell 2000 rose 1.0%.</li>
+          <li><b>The macro thread.</b> Investors are no longer paying for AI spending on trust. After Alphabet&rsquo;s negative free cash flow on Wednesday, Amazon showed trailing free cash flow of &minus;$42 billion and Intel cut its holiday-quarter forecast. Korea&rsquo;s Kospi fell 3.5% and Japan&rsquo;s Nikkei 2.1%, led by chip stocks.</li>
+          <li><b>Rates, the Fed and the Treasury.</b> Treasuries are rallying: the 10-year is about 4.92% in overseas trade after closing at 4.98%, on course for its biggest monthly fall since December 2023 (Reuters). The Employment Cost Index is at 8:30 (consensus +0.8% for the quarter). Futures price a December Fed hike at about 75&ndash;80%, down from about 84% on Wednesday.</li>
+          <li><b>Biggest market risk.</b> That the selling in AI suppliers spreads from the companies with weak cash flow to the ones with strong cash flow. Nvidia, Broadcom and TSMC are down 3&ndash;4% premarket without news of their own.</li>
+          <li><b>Oil and crypto.</b> WTI is up about 2% at $104 and expiring December Brent near $116 (Reuters), as Iran&rsquo;s Revolutionary Guards say three tankers hit mines near Hormuz and US Central Command says none did. Bitcoin is near $77,500 after Binance disclosed a theft that outlets put at about $6.3 billion; about $1.5 billion of leveraged positions were liquidated.</li>
+          <li><b>The country, the world and home.</b> Four days before the midterms, federal prosecutors have subpoenaed California and Los Angeles County election officials to testify the day after the vote. A Russian drone killed at least 14 people at Dnipro&rsquo;s main rail station. Wegmans will anchor a rebuilt Galleria of Mt. Lebanon.</li>
+          <li><b>Watch today.</b> Employment Cost Index 8:30; Chicago PMI 9:45; AbbVie and Colgate before the open; December Brent expires. This weekend: OPEC+ meets Sunday, and US clocks fall back an hour early Sunday morning.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Intel and Amazon push Nasdaq futures down 2.4% and take the chip trade with them</h3>
+          <p class="story-deck">This week the market has punished three giants for AI spending that their cash flow does not cover. This morning, for the first time, the selling has reached the companies that supply the build-out.</p>
+          <div class="story-body">
+            <p>At about 6:30 AM, Nasdaq 100 futures were near 28,865, down 2.4% from Thursday&rsquo;s settlement, and S&amp;P 500 futures near 7,672, down 1.1%. Dow futures were unchanged and Russell 2000 futures were down 0.6%. Premarket indications at about 6:40 AM had Intel at about $69, 25% below Thursday&rsquo;s close, and Amazon at about $227, down 6.8%. Reuters estimates the two would lose about $300 billion of market value between them if the moves hold. Chipmakers followed: AMD was indicated down 8.1%, Marvell 5.9%, Micron 5.1%, ASML 4.8%, Broadcom 3.6%, TSMC 3.4% and Nvidia 2.8%, and the VanEck semiconductor fund (SMH) 4.6% lower. Microsoft and Alphabet were down less than 1% (Yahoo Finance).</p>
+            <p>Asia traded the same way overnight. Korea&rsquo;s Kospi fell 3.5% to 5,730.74 after dropping more than 5% intraday, which triggered a temporary curb on program selling; SK Hynix fell 7.1% and Samsung Electronics 3.0%, and foreign investors sold a net &#8361;1.6 trillion (Seoul Economic Daily). Japan&rsquo;s Nikkei fell 2.1% to 63,290.11, led by SoftBank Group (&minus;6%), Advantest and Tokyo Electron (Reuters), and Taiwan&rsquo;s index fell 2.5%. Hong Kong rose 1.5%.</p>
+            <p>The week has a single theme. Last week Meta was marked down for selling stock to fund AI. On Thursday Alphabet had its worst day since its 2004 listing after free cash flow turned negative, while Microsoft, which pays for its build-out from cash flow, held steady. Overnight, Amazon reported trailing free cash flow of &minus;$42.4 billion and Intel a forecast well below estimates. What is new this morning is that the suppliers are falling too: until now the market had treated their customers&rsquo; capital spending as a guaranteed source of revenue for them.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Chip and AI-infrastructure stocks are the largest group by weight in the Nasdaq 100, and they have carried this year&rsquo;s gains. Thursday&rsquo;s rotation &mdash; equal-weight S&amp;P (RSP) up 1.2% and small caps 1.0% while the Nasdaq fell 1.4% &mdash; shows the money moving within the market, not leaving it. Our call: the Nasdaq Composite closes today below Thursday&rsquo;s 26,184.72 (75&ndash;88%), given futures down 2.4% three hours before the open; a large rebound in the hour after the open would undo it. Futures are not a guaranteed open.
+            </div>
+          </div>
+          <p class="story-sourceline">Yahoo Finance (futures, premarket indications and overseas closes, about 6:30&ndash;6:40 AM); Reuters; Seoul Economic Daily; Amazon and Intel Form 8-K filings (SEC EDGAR).</p>
+        </article>
+
+        <article class="story">
+          <h3>Intel is indicated 25% lower after forecasting a weak holiday quarter and a shrinking PC market</h3>
+          <p class="story-deck">Third-quarter results beat on the strength of data-center sales. The forecast for the fourth quarter fell well short, and executives said the PC slump will last into 2027.</p>
+          <div class="story-body">
+            <p>Intel reported third-quarter revenue of about $16.5 billion, up 21%, and adjusted earnings of $0.52 a share, with data-center revenue up about 78% (company results via TradingKey, CNBC). The forecast drove the stock: fourth-quarter revenue of $15&ndash;16 billion against about $17 billion expected, and adjusted earnings of $0.25 a share against about $0.43. The company said it expects the PC market to shrink about 12% this year and about 10% in 2027, and the chief financial officer said the slowdown will last at least through the first half of 2027. Intel also said a roughly two-week production halt in Israel in October will cut fourth-quarter revenue by about $300 million (Bloomberg, CNBC). Reuters reports the company warned of cash burn this year.</p>
+            <p>The shares closed Thursday at $92.07, after falling 3.6% in the session, and were indicated near $69 at 6:40 AM. A 25% fall would be among the largest one-day declines in the company&rsquo;s history; the after-hours estimates had ranged from 15% to 23%, so selling deepened overnight.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The PC forecast matters beyond Intel: it tells AMD, Micron and the memory makers that consumer demand will not cushion them if data-center orders slow. AMD is indicated 8% lower this morning, more than Nvidia.
+            </div>
+          </div>
+          <p class="story-sourceline">Intel Form 8-K (SEC EDGAR, filed 4:08 PM Oct. 29); CNBC; Bloomberg; Reuters; TradingKey; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Amazon is indicated 7% lower: AWS grew 39%, but free cash flow over the past year was &minus;$42 billion</h3>
+          <p class="story-deck">Its cloud business grew at its fastest pace in about five years. Earnings and the holiday-quarter profit forecast fell short, and spending is going higher next year.</p>
+          <div class="story-body">
+            <p>Amazon reported third-quarter revenue of $201.9 billion, up 12% and slightly below estimates, and earnings of $1.89 a share against about $1.96&ndash;1.97 expected. Amazon Web Services grew 39% to about $46.0 billion, at a record margin. Advertising growth slowed to 12% from 26%. Free cash flow over the trailing twelve months was &minus;$42.4 billion, against +$14.8 billion a year earlier, as the company holds its 2026 capital plan at about $220 billion. The fourth-quarter guide was revenue of $240&ndash;247 billion, with operating income at a midpoint of about $31 billion against roughly $33.2 billion expected, and Reuters reports the company signalled higher capital spending next year (Amazon 8-K; Reuters; Forbes).</p>
+            <p>The stock fell 4.3% to $243.79 during Thursday&rsquo;s session, before the report, and was indicated near $227 at 6:40 AM. The comparison with Microsoft is the one the market is making: Azure grew 48% while Microsoft produced $18.6 billion of free cash flow in a single quarter.</p>
+          </div>
+          <p class="story-sourceline">Amazon Form 8-K, Exhibit 99.1 (SEC EDGAR, filed 4:05 PM Oct. 29); Reuters; CNBC; Forbes; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Treasuries rally as stocks fall; the 10-year heads for its biggest monthly drop since 2023</h3>
+          <p class="story-deck">The 10-year is about 4.92% this morning, down from 5.13% on Oct. 21. The Employment Cost Index at 8:30 is the last wage reading before the jobs report on Nov. 6.</p>
+          <div class="story-body">
+            <p>The 10-year Treasury yield was about 4.91&ndash;4.93% in Asian and European trade (Reuters, CNBC), down roughly 6 basis points from Thursday&rsquo;s official close of 4.98%. Reuters reports that would leave it down about 37 basis points for October, the largest monthly fall since December 2023. Thursday&rsquo;s official curve had already rallied after in-line inflation data and a clean seven-year auction: the 2-year fell 6 basis points to 4.61% and the 30-year 5 to 5.32%. Fed funds futures now price a December hike at about 75&ndash;80% (CME FedWatch, as reported by Fox Business and FXStreet), down from about 84% on Wednesday.</p>
+            <p>At 8:30 the Labor Department publishes the third-quarter Employment Cost Index. Forecasters expect a rise of 0.8% for the quarter after 0.9% in the second, when it was up 3.4% from a year earlier. With September&rsquo;s core PCE at 3.1% and payroll growth stalled at 29,000, a wage reading at or below consensus would support the market&rsquo;s move away from a December hike; a reading of 1.0% or more would revive it.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Our calls: the 10-year par yield closes today below Thursday&rsquo;s 4.98% (70&ndash;85%), given it is already about 6 basis points lower; and the ECI rises 0.8% or more for the quarter (45&ndash;60%), given the consensus and the second quarter&rsquo;s 0.9%.
+            </div>
+          </div>
+          <p class="story-sourceline">US Treasury daily par yield curve (Oct. 29); BLS release schedule; Reuters; CNBC; CME FedWatch via Fox Business and FXStreet; FRED.</p>
+        </article>
+
+        <article class="story">
+          <h3>The Bank of Japan holds at 1.25% and says inflation is now in line with its target for the first time since 2013</h3>
+          <p class="story-deck">One board member voted to hike. The yen strengthened slightly, and markets now treat December as the likely date for the next increase.</p>
+          <div class="story-body">
+            <p>The Bank of Japan left its policy rate at 1.25% by an 8&ndash;1 vote, with board member Takata dissenting in favour of a rise to 1.50% (Bloomberg, Japan Times). Its quarterly outlook judged underlying inflation &ldquo;broadly in line&rdquo; with the 2% target, the first such assessment since 2013 (Reuters). Governor Kazuo Ueda said the bank has &ldquo;not reached our goal yet,&rdquo; but that this &ldquo;doesn&rsquo;t mean we will just sit and wait,&rdquo; and he gave no timing (Reuters). The dollar fell to about 157.1 yen from 157.8 and was 157.3 at 6:38 AM. MUFG estimates a December hike was about 80% priced before the meeting (via FXStreet).</p>
+          </div>
+          <p class="story-sourceline">Bloomberg; Reuters; Japan Times; FXStreet; Yahoo Finance (USD/JPY). The Bank of Japan&rsquo;s own statement could not be retrieved this morning.</p>
+        </article>
+
+        <article class="story">
+          <h3>Oil rises as Iran claims three tankers hit mines near Hormuz and the US says none did</h3>
+          <p class="story-deck">The December Brent contract expires today near $116, and OPEC+ meets on Sunday. Brent is heading for a fourth straight monthly gain.</p>
+          <div class="story-body">
+            <p>Iran&rsquo;s Revolutionary Guards said three tankers hit mines and caught fire over 24 hours in the eastern Strait of Hormuz, saying they had used an &ldquo;unauthorised southern route&rdquo; with navigation systems off. US Central Command said &ldquo;no ships have hit mines in the Strait of Hormuz&rdquo; and that its forces have cleared the major lanes. The UK Maritime Trade Operations centre separately confirmed one tanker struck by an unidentified projectile and one dhow lost <span class="flag flag--disputed">Disputed</span>. The vessels in the Iranian claim have not been independently identified.</p>
+            <p>WTI was up about 2.2% at $104.25 at 6:28 AM (Yahoo Finance). December Brent traded near $116 in Asia, up about $1.20 (Reuters); the six-month high is $117.18, on Oct. 23. The January contract, which becomes the benchmark on Monday, is several dollars lower. Iran&rsquo;s foreign minister says Tehran is discussing with mediators a &ldquo;7-day plan&rdquo; under which the strait would reopen on day six and talks resume on day seven if the US meets its conditions; the Wall Street Journal reports President Trump has rejected it and expects to resume strikes after the midterms, and the White House says the US blockade remains in force. OPEC+ meets Sunday on December output.</p>
+          </div>
+          <p class="story-sourceline">IRGC statement and CENTCOM statement as reported by OANN and others; UKMTO; Reuters; Anadolu; Wall Street Journal via the Times of Israel; Yahoo Finance (WTI).</p>
+        </article>
+
+        <article class="story">
+          <h3>Chevron and Exxon beat estimates on a refining boom</h3>
+          <p class="story-deck">The war-driven spread between crude and fuel prices has made refining the oil majors&rsquo; best business this year. Both shares are indicated about 1.5% higher.</p>
+          <div class="story-body">
+            <p>Chevron earned $9.9 billion, or $5.06 a share, in the third quarter, and $5.28 a share adjusted, against about $4.89 expected (CNBC). Its downstream (refining and marketing) earnings rose to $4.9 billion from $1.1 billion a year earlier, its US refineries ran at record throughput at 98% utilisation, and free cash flow was $12.0 billion. Production fell to 3.98 million barrels a day from 4.07 million in the second quarter. It said its Venezuelan joint ventures plan to invest $7 billion over five years (Chevron 8-K). Exxon Mobil reported $15.4 billion, or $3.72 a share, and $4.23 excluding identified items against estimates of about $4.03&ndash;4.12, with refining earnings roughly doubling from the second quarter (company release, Reuters). At 6:40 AM Chevron was indicated 1.5% higher and Exxon 1.5% higher.</p>
+          </div>
+          <p class="story-sourceline">Chevron Form 8-K, Exhibit 99.1 (SEC EDGAR, filed 6:16 AM Oct. 30, primary); ExxonMobil earnings release via Reuters; CNBC; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Binance discloses a theft that outlets put at about $6.3 billion; bitcoin falls toward $77,000</h3>
+          <p class="story-deck">If the figure holds, it would be the largest crypto theft on record. About half has reportedly been frozen.</p>
+          <div class="story-body">
+            <p>Binance said in a statement early Friday (02:25 UTC) that its initial investigation points to a compromised laptop belonging to a DevOps engineer, which let an attacker submit unauthorised withdrawals; it says no private keys were exposed. Crypto outlets put the loss at about $6.3 billion; Chainalysis estimates about $5.9 billion at the time of the theft, and about $3 billion, including $2.3 billion of stablecoins, has reportedly been frozen with help from partners. The blockchain analytics firms TRM Labs and Chainalysis attribute the attack to North Korea&rsquo;s TraderTraitor unit, linked to the Lazarus Group; TRM says it has &ldquo;high confidence.&rdquo; No government has confirmed the attribution, and Binance has not confirmed the dollar figure (CoinDesk, Blockonomi, Bitcoin.com, FinanceFeeds).</p>
+            <p>About $1.5 billion of leveraged positions were liquidated across exchanges in 24 hours, mostly bitcoin longs (CoinGlass via Bitcoin.com). Bitcoin was near $77,500 at 6:38 AM, down from $81,268 at Wednesday&rsquo;s close, and total crypto market value was about $2.60 trillion, down 5.6% in 24 hours (CoinGecko).</p>
+          </div>
+          <p class="story-sourceline">Binance statement as reported by crypto outlets; Chainalysis and TRM Labs via Blockonomi and FinanceFeeds; CoinGlass via Bitcoin.com; CoinGecko; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Federal prosecutors subpoena California election officials to testify the day after the midterms</h3>
+          <p class="story-deck">The grand jury subpoenas concern the screening of registrants whom the government lists as likely noncitizens. No one has been charged.</p>
+          <div class="story-body">
+            <p>The Justice Department has issued grand jury subpoenas to state and local election officials in California, including staff of the Los Angeles County Registrar-Recorder, requiring testimony on Nov. 4. According to NBC, NPR and ABC, the subpoenas seek the officials&rsquo; correspondence with Homeland Security Secretary Markwayne Mullin and acting Deputy Attorney General Trent McCotter, and the county&rsquo;s procedures for screening noncitizens. The department also sent warning letters to 57 of California&rsquo;s 58 counties, and Minnesota&rsquo;s secretary of state&rsquo;s office received a subpoena for voter records. The department declined to comment on what it called leaks. California Attorney General Rob Bonta called the subpoenas an attack on election officials. Separately, a divided Ninth Circuit panel this week refused the department&rsquo;s emergency request to make California set aside about 20,000 mail ballots, after a district judge denied the same request; the department has appealed again.</p>
+          </div>
+          <p class="story-sourceline">NBC News; NPR Illinois; ABC News; CBS; CNN; Jurist.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight &amp; Since the Close</h2>
+      <div class="story-body">
+        <p><b>Asia</b> fell hardest in chips. Korea&rsquo;s Kospi lost 3.5% to 5,730.74 and the Kosdaq 3.8%; Japan&rsquo;s Nikkei 2.1% to 63,290.11 and the broader Topix about 1%; Taiwan&rsquo;s index 2.5% to 45,211.83; Shanghai 1.4% to 3,599.02, with China&rsquo;s CSI 300 near a one-year low. Hong Kong&rsquo;s Hang Seng was the exception, up 1.5% to 23,294.42. <b>Europe</b> is slightly lower: at about 6:25 AM the Stoxx 600 was down 0.3% (its tech sector about 2%), the DAX 0.6%, while energy lifted London&rsquo;s FTSE 100 0.2% and the CAC was flat (Yahoo Finance; Globe and Mail).</p>
+        <p><b>Since the US close:</b> Amazon and Intel reported and fell; Reddit, Roblox and Twilio each fell about 17&ndash;18% after hours on their forecasts, and Rivian rose about 5% (CNBC). Chevron and Exxon reported this morning and beat estimates. The dollar index is down 0.4% at 101.64 and the euro is up at $1.1206; gold is down 1.0% at $3,992.60, back below $4,000, and silver 3.0%. Bitcoin is near $77,500 after the Binance theft.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p><b>Futures.</b> At about 6:30 AM, S&amp;P 500 futures were near 7,672 (&minus;1.1%), Nasdaq 100 futures near 28,865 (&minus;2.4%), Dow futures near 52,484 (flat) and Russell 2000 futures near 2,849 (&minus;0.6%). The gap between the Nasdaq and the Dow is the story: the selling is concentrated in the technology names that dominate the cap-weighted indexes. Thursday&rsquo;s breadth was positive despite the Nasdaq&rsquo;s drop &mdash; 3,357 stocks rose and 1,955 fell &mdash; but more dollars traded in falling stocks ($547 billion) than in rising ones ($486 billion), the mark of heavy selling in a few very large companies. Futures are not a guaranteed open, and two data releases and two hours stand between them and the bell.</p>
+        <p><b>The curve.</b> Thursday&rsquo;s official Treasury curve rallied across tenors: 3-month 4.18%, 2-year 4.61% (&minus;6 bp), 5-year 4.78%, 10-year 4.98% (&minus;7 bp) and 30-year 5.32% (&minus;5 bp). The 2s10s spread is 37 basis points and 3-month/10-year 80. The 10-year&rsquo;s breakeven inflation rate was 2.35% on Thursday and its real yield 2.67% on Wednesday (FRED), so most of this month&rsquo;s fall in the 10-year from its 5.13% peak is lower real yields. Overnight the 10-year is about 4.92%.</p>
+        <p><b>Dollar, volatility, credit.</b> The dollar index is down 0.4% at 101.64 as the yen firmed slightly after the Bank of Japan and the euro rose to $1.12. The VIX closed Thursday at 17.20 and was about 18.5 early this morning; its curve still slopes upward (VIX9D 15.87, VIX3M 19.37 at Thursday&rsquo;s close), so the options market is pricing a bad day, not a crisis. The high-yield spread was 3.14 percentage points on Oct. 28, near its tightest this month. Credit has not joined the stock market&rsquo;s worry.</p>
+        <p><b>Commodities and crypto.</b> WTI is $104.25 (+2.2%) and expiring December Brent about $116. Gold is $3,992.60 (&minus;1.0%), heading for a second monthly loss. Copper is down 1.0% at $6.51 a pound. Bitcoin is near $77,500 and ether $2,239, both down more than 4% since Wednesday.</p>
+        <p><b>The most fragile assumption.</b> This morning&rsquo;s tape assumes the damage stays inside technology: Dow futures are flat, small caps only slightly lower and credit spreads near their tightest. If the chip selling spreads into the industrials and utilities that have been sold as &ldquo;AI power&rdquo; plays, or if high-yield spreads widen on the crypto losses, the rotation becomes a broad sell-off. A Dow that turns lower by more than 1% in the first hour, or a VIX above 20, would be the sign.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p><b>Wages at 8:30.</b> The Employment Cost Index measures what employers pay in wages and benefits, adjusted for changes in the mix of jobs, which makes it the Fed&rsquo;s preferred wage gauge. The consensus is +0.8% for the third quarter after +0.9% (3.4% a year) in the second. The labour data around it are mixed: payrolls rose 29,000 in September after 133,000 in August and a decline of 10,000 in July, unemployment rose to 4.2%, but weekly jobless claims of 194,000 for the week to Oct. 24 show few layoffs (FRED). The October jobs report is on Friday, Nov. 6 (BLS). Chicago&rsquo;s purchasing managers&rsquo; index follows at 9:45; it was 58.8 in September, and forecasts for October range from 54.8 to 56.1.</p>
+        <p><b>The Fed path.</b> The Fed held at 3.75&ndash;4.00% on Wednesday, with Governor Cook and President Hammack dissenting in favour of a hike. No Fed officials are scheduled to speak today. Futures price a hike at the Dec. 9 meeting at about 75&ndash;80% and another by March. The case for one rests on inflation: September&rsquo;s headline PCE was 3.6% a year and core 3.1%, with core rising 0.3% for the month, and headline CPI rose 0.65% in September (FRED, nominal index). The case against is the labour market and now a softer stock market.</p>
+        <p><b>Treasury.</b> No auctions today. The Treasury&rsquo;s quarterly refunding begins Monday with its borrowing estimates, according to market previews, followed by the refunding statement on Wednesday, Nov. 4, which will set coupon auction sizes for the coming quarter. In August the Treasury estimated it would borrow $628 billion in October&ndash;December and end the year with $850 billion in cash. One question for the statement is whether it keeps the larger buyback capacity it added in September. SOFR was 3.94% on Oct. 28, in line with the fed funds range.</p>
+        <p><b>Global central banks.</b> The Bank of Japan held at 1.25% with one vote to hike; the ECB held at 2.50% on Thursday, when Christine Lagarde said she will step down on Feb. 7, about nine months before her term ends; the Bank of Canada raised its rate on Wednesday. Australia&rsquo;s third-quarter producer prices rose 1.1%, adding to the hot consumer-price data that has traders betting on a hawkish central bank there.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-biz">
+      <h2 id="s-biz">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p><b>Before the open.</b> AbbVie (company guide for adjusted earnings of $3.73&ndash;3.77 a share; revenue consensus $17.37 billion) and Colgate-Palmolive (about $0.93 a share expected) report this morning. AbbVie shares were indicated 2.8% higher at 6:40 AM; we had not seen its results at that time. Chevron and Exxon are covered in Top Stories.</p>
+        <p><b>Thursday after the close.</b> Beyond Amazon and Intel, Reddit fell about 18% after hours and Roblox about 17% on their outlooks, Twilio about 17%, Starbucks about 2% and Sandisk about 3%; Rivian rose about 5% after beating estimates (CNBC).</p>
+        <p><b>Deals.</b> Bloomberg reported on Wednesday that Marvell is near an all-stock purchase of Lumentum, the optical-components maker, valued at about $83&ndash;85 billion, which could be announced as soon as next week. Neither company has confirmed talks, and no filing has been made. Marvell fell 13% on Thursday and is indicated 6% lower. Nvidia owns a stake in Lumentum.</p>
+        <p><b>Read-through.</b> The day&rsquo;s premarket split is by business model. Energy (Exxon and Chevron each about +1.5%) and drugmakers (AbbVie) are higher; anything tied to AI hardware is lower. SpaceX (SPCX) is indicated 3.2% lower at about $139 with the growth names, having fallen 3.2% over the previous two sessions, and Tesla is down 2.3%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Friday, Oct. 30, 2026. All times ET. Consensus as reported; &mdash; where none was found.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Before open</td><td class="txt">Earnings: Chevron (out), Exxon Mobil (out), AbbVie, Colgate-Palmolive</td><td>ABBV EPS $3.73&ndash;3.77 (guide)</td><td>&mdash;</td></tr>
+            <tr><td><b>8:30</b></td><td class="txt"><b>Employment Cost Index, Q3 (q/q)</b></td><td><b>+0.8%</b></td><td><b>+0.9%</b></td></tr>
+            <tr><td>9:45</td><td class="txt">Chicago PMI, October</td><td>54.8&ndash;56.1</td><td>58.8</td></tr>
+            <tr><td>Day</td><td class="txt">December Brent futures expire</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sun 2:00 AM</td><td class="txt">US daylight saving time ends</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Sun</td><td class="txt">OPEC+ meeting on December output</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Mon</td><td class="txt">Treasury borrowing estimates; Apple earnings (after the close)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>Tue</td><td class="txt">Midterm elections; job openings (JOLTS) at 10:00</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><b>Base case &mdash; the rotation continues (about 50&ndash;60%).</b> The Nasdaq falls 1.5&ndash;3% while the Dow and equal-weight indexes hold up, Treasuries keep their gains and credit stays calm. This matches the pattern since Wednesday and today&rsquo;s futures. Our calls logged for grading: the Nasdaq Composite closes below 26,184.72 (75&ndash;88%), the 10-year par yield closes below 4.98% (70&ndash;85%), and the VIX closes above 18.0 (50&ndash;65%), given it was about 18.5 early and closed at 17.20 on Thursday.</p>
+        <p><b>Downside &mdash; a broad sell-off (about 20&ndash;30%).</b> The chip selling spreads into AI power and industrial names and into credit; the Dow falls more than 1% and the VIX rises above 20. The crypto losses are the wild card: forced selling by leveraged holders can spread to stocks of crypto-linked companies and brokers.</p>
+        <p><b>Upside &mdash; the dip is bought (about 15&ndash;25%).</b> A soft ECI and lower yields lift rate-sensitive stocks, and buyers step into chipmakers after the open. The basis: Thursday&rsquo;s session, when equal-weight stocks and small caps rose while the Nasdaq fell, shows buyers are still active outside megacap technology.</p>
+        <p><b>Into next week.</b> The weekend carries three event risks: OPEC+ on Sunday, Iran&rsquo;s response to the US letter, and Tuesday&rsquo;s midterms. Apple reports Monday and the Treasury sets its auction sizes on Wednesday.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-us">
+      <h2 id="s-us">The United States</h2>
+      <div class="story-body">
+        <p><b>The final weekend.</b> Polling averages of the generic congressional ballot show Democrats ahead by about 8 points: 51.4% to 43.2% in the RealClearPolitics average and D+8.1 in Decision Desk HQ&rsquo;s (Oct. 27&ndash;29). Forecasting models agree that Democrats are favoured to win the House and differ on the Senate, where the chances they give Democrats range from 57% (Decision Desk HQ) to 75% (Nate Silver&rsquo;s model, as reported by The Conversation). Polls are not predictions. President Trump replaced planned in-person rallies in Iowa and Kansas with telephone rallies, and holds his last in-person rally of the campaign today in Daytona Beach, Florida (Al Jazeera, ABC). The Wesleyan Media Project counts more than $7.1 billion in House, Senate and governor ad spending this cycle.</p>
+        <p><b>Alaska.</b> Rep. Mary Peltola, the Democratic Senate candidate, told a Juneau rally on Thursday she was &ldquo;not interested in tricking voters&rdquo; and &ldquo;knew nothing about&rdquo; the second Dan Sullivan on the ballot, a candidate the New York Times reported was recruited by a group with ties to her allies. The Times reported that a former Peltola campaign manager said she knew of the effort; the Democratic Senatorial Campaign Committee and the state party deny involvement. President Trump has called for her removal from the ballot and prosecution. Gov. Mike Dunleavy has ordered a state public-safety inquiry. One wire report describes a federal investigation, but we could not confirm that it involves subpoenas in Alaska rather than California <span class="flag">Unconfirmed</span>. No one has been charged.</p>
+        <p><b>The Pentagon.</b> Defense Secretary Pete Hegseth fired Lt. Gen. Brett Sylvia, the Pentagon&rsquo;s top military planner, citing &ldquo;severe misconduct&rdquo;; the department alleges he leaked classified information about the Iran and Ukraine wars and has referred the matter to the Justice Department, which has not announced charges (NBC, Fox, The Atlantic). Outlets count at least 25 other senior officers removed by Hegseth this year.</p>
+        <p><b>Funding.</b> The stopgap spending law funds the government through Dec. 11, leaving full-year 2027 appropriations to the post-election session of Congress.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p><b>Iran.</b> Beyond the Hormuz mine claims, Iran has not replied to the letter from Vice President Vance delivered through Qatar on Sunday, according to the Tasnim and Fars news agencies. President Trump describes the letter as strictly about humanitarian deliveries; other reports describe it as an offer to restart talks. The White House says there will be no US attack before the midterms and that the blockade remains in force.</p>
+        <p><b>Israel.</b> The Central Elections Committee&rsquo;s count gives Prime Minister Netanyahu&rsquo;s bloc 53 of 120 seats, down from 64 in 2022, the opposition led by Gadi Eisenkot 48, and Arab-led parties a record 19. Results go to President Herzog on Nov. 4, after which he consults party leaders and gives a nominee 42 days to form a government; Netanyahu remains caretaker. Likud figures say the Arab-led parties &ldquo;stole&rdquo; the election, without evidence, and Netanyahu rules out a government that depends on them (CNBC, Haaretz).</p>
+        <p><b>Russia and Ukraine.</b> A Russian drone struck a platform at Dnipro&rsquo;s main rail station on Thursday, killing at least 14 people and injuring at least 14, six critically; at least six more were killed elsewhere (RT&Eacute;, ABC Australia, Al Jazeera). Overnight Russia struck energy facilities in Kyiv and port infrastructure near Odesa. Russia&rsquo;s defence ministry said it downed more than 1,000 Ukrainian drones overnight, including hundreds aimed at the Moscow region, where three airports restricted flights; those figures have not been independently verified. An aid convoy set out for the Russian-held town of Oleshky under a local ceasefire that the White House credits to First Lady Melania Trump. The US has eased some sanctions on Russia, and a tanker carrying about 300,000 barrels of Russian diesel is bound for New York; President Zelensky says sanctions should not be eased while the war continues. The Kremlin says the next round of talks with US envoys will come after Nov. 4.</p>
+        <p><b>Europe.</b> Lagarde&rsquo;s early exit from the ECB opens a race for three of the six seats on its executive board: Isabel Schnabel leaves in January and chief economist Philip Lane in May. Reports suggest EU leaders could agree a package before their Dec. 17&ndash;18 summit; Klaas Knot and Pablo Hern&aacute;ndez de Cos are among the names reported (Bloomberg). In Spain, the toll from Tuesday&rsquo;s high-speed rail crash near Urda stands at 68&ndash;69 in reports, and investigators are examining a controller&rsquo;s order that let one train proceed toward another that had stopped.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">AI &amp; Technology</h2>
+      <div class="story-body">
+        <p><b>The money question.</b> The market&rsquo;s view of the AI build-out changed this week, as Top Stories describe. The read-through: companies that fund AI from cash flow (Microsoft) are being held; companies that borrow, sell stock or burn cash to do it (Alphabet, Amazon, Meta) are being marked down; and this morning, for the first time, their suppliers (Nvidia, Broadcom, AMD, TSMC, the memory makers) are falling on the risk that spending growth slows.</p>
+        <p><b>Nvidia.</b> CNBC reports that US agencies have surveilled Alice Huang of Singapore-based Megaspeed, an Nvidia customer, as a suspected Chinese intelligence asset. Nvidia says allegations that its chips were diverted through the company were &ldquo;investigated and debunked&rdquo; last year, and Jensen Huang has called the company&rsquo;s dealings with it normal. No charges have been reported <span class="flag">Single-reliable-source</span>.</p>
+        <p><b>Models.</b> Google&rsquo;s Gemini 4 Carbon, announced Wednesday, is available only to selected cyber-defence organisations, with wider access planned through a &ldquo;Fairwind&rdquo; programme and no public date. It ranks first on the Artificial Analysis index with a score of 59, per secondary reports. Google&rsquo;s choice to release a frontier model first to defenders is a test of a cautious rollout model for systems strong at finding software vulnerabilities.</p>
+        <p><b>Funding.</b> Korean AI-chip designer FuriosaAI raised $620 million at a $2.9 billion valuation (Bloomberg), and cloud-security company Upwind raised $400 million at $3.8 billion.</p>
+        <p><b>Cyber.</b> Beyond Binance, the University of New Mexico Hospital diverted ambulances after a ransomware attack detected Oct. 26; a new group calling itself Byod has claimed it, and systems have been restored (BleepingComputer).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-science">
+      <h2 id="s-science">Science</h2>
+      <div class="story-body">
+        <p><b>A Jurassic swimmer.</b> This week&rsquo;s <i>Nature</i> cover describes <i>Megacauda sungei</i>, a roughly 165-million-year-old relative of early mammals whose skeleton shows it both dug and swam, like a modern platypus (Luo, Zhou, Martin and colleagues). It adds to evidence that mammal relatives filled varied ecological roles well before the dinosaurs died out.</p>
+        <p><b>An Alzheimer&rsquo;s candidate, early.</b> <i>Nature Medicine</i> published preclinical work and a phase 1 trial of VG-3927, a small-molecule drug that activates TREM2, a receptor on the brain&rsquo;s immune cells. In healthy volunteers it reached the central nervous system, engaged its target and was tolerated. Phase 1 trials test safety, not benefit; whether it slows the disease is unknown.</p>
+        <p><b>Also published.</b> <i>Science</i> carried a study dating a Martian meteorite to at least 4.1 billion years ago and two condensed-matter papers on magnetic and topological states in engineered materials. <i>Nature</i> reported that the brain clears large numbers of faulty neurons around birth.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Space</h2>
+      <div class="story-body">
+        <p><b>The 100th US spacewalk.</b> NASA&rsquo;s Anil Menon and the Canadian Space Agency&rsquo;s Joshua Kutryk spent 7 hours 11 minutes outside the International Space Station on Thursday, installing the seventh of eight new roll-out solar arrays. The eighth goes up on a spacewalk set for Nov. 5; with all eight, the station&rsquo;s power rises from about 160 kilowatts to about 215 (NASA).</p>
+        <p><b>Launches.</b> SpaceX plans its next Starlink launch from Vandenberg tonight at 11:48 PM ET; it flew its 117th Falcon 9 mission of the year on Tuesday (Space.com). United Launch Alliance targets Nov. 13 for Vulcan&rsquo;s return to flight, after a nine-month grounding over its solid rocket boosters, carrying 40 Amazon Leo internet satellites in its first six-booster configuration (Spaceflight Now). For Amazon the launch matters as Leo is the next big item in its capital plan; for SpaceX shareholders it marks the return of a competitor for satellite launches.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-also">
+      <h2 id="s-also">Also in the News</h2>
+      <div class="story-body">
+        <p><b>Measles.</b> The CDC counts 4,588 US cases this year as of Oct. 22, up 178 in a week, with 479 hospitalisations and 43 outbreaks. Pennsylvania has 1,317 cases; the state counts five deaths, three of them confirmed by the CDC (Reuters). The next update is expected Wednesday.</p>
+        <p><b>Weather.</b> The Atlantic hurricane season is quiet, with no storms expected for the next seven days (National Hurricane Center). Moisture from the remnants of Pacific Tropical Storm Vance is bringing rain to the southern and southwestern US and a risk of flooding in Mexico.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">66&deg;<small>high</small></p>
+          <p class="weather-desc">Mostly sunny; light north wind</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">66&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">40&deg;</span>
+            <span class="sky">Partly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Saturday</b>
+            <span class="hi">63&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Partly sunny</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette &middot; South Hills</p>
+        <h3>Wegmans will anchor a rebuilt Galleria of Mt. Lebanon</h3>
+        <div class="story-body">
+          <p>Roadside Development, the Washington, D.C., firm that bought the Galleria on Washington Road in April, and Wegmans announced on Thursday that Wegmans will anchor a redevelopment of the two-story, roughly 168,000-square-foot mall with a store of about 110,000 square feet. It would be the chain&rsquo;s second in the Pittsburgh area, after Cranberry. Existing tenants stay open during planning. Reports differ on timing: one says the store opens in 2027, another that renovation begins in 2028. Yesterday&rsquo;s edition said Wegmans had bought the property; most reports describe it as the anchor tenant of Roadside&rsquo;s project (see Corrections).</p>
+        </div>
+        <p class="story-sourceline">Mt. Lebanon municipality; WPXI; TribLive; Axios Pittsburgh; Herald-Standard; The Shelby Report.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>The legislature leaves for the election with the fewest bills passed in at least 50 years</h3>
+        <div class="story-body">
+          <p>The 2025&ndash;26 General Assembly is on track to pass fewer bills than any session since at least 1973, WESA reports. Skill-game regulation never got a vote, and the Senate passed none of the data-center measures. The House returns Nov. 9 and the Senate Nov. 17 for the post-election session. Gov. Josh Shapiro signed a bell-to-bell ban on cell phones in schools on Monday, effective next school year. On Tuesday Shapiro faces Stacy Garrity; the latest independent polls had him ahead by 23&ndash;25 points (Franklin &amp; Marshall, Oct. 7&ndash;18; Quinnipiac). Locally, Rep. Chris Deluzio faces Beaver County Sheriff Tony Guy in the 17th District. Mail ballots must reach county election offices by 8 PM Tuesday.</p>
+        </div>
+        <p class="story-sourceline">WESA; Pennsylvania General Assembly session calendar; Office of the Governor; Franklin &amp; Marshall College Poll; Quinnipiac University Poll.</p>
+      </article>
+    </section>
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Rotation out of AI hardware; rates falling, credit calm</span></p>
+          <p><b>Supporting risk-on:</b> SPY closed Thursday 5.6% above its 200-day average and 1.2% below its 52-week high; equal-weight RSP rose 1.2% and IWM 1.0% on Thursday; breadth was positive (3,357 up, 1,955 down) and the share of stocks above their 50-session trend proxy rose to 47.0% from 40.7%; the high-yield spread was 3.14 points on Oct. 28; the 10-year is falling. <b>Contradicting:</b> Nasdaq 100 futures are down 2.4% and SMH is indicated 4.6% lower; QQQ was already 2.2% below its 20-day average and 1.4% below its 50-day at Thursday&rsquo;s close; down-volume exceeded up-volume in dollars on Thursday despite more advancers; the VIX is up about 1.3 points early; crypto has lost about 5.6% of its value in a day. Confidence: moderate. Change from yesterday: the selling has spread from cash-burning AI spenders to their suppliers.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; futures</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Cash indexes: Previous close, Oct. 29 (Yahoo Finance v8). Futures: Delayed (+10 min), about 06:28 ET Oct. 30, vs Thursday&rsquo;s settlement.</caption>
+              <thead><tr><th>Instrument</th><th>Level</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,720.39</td><td class="down">&minus;0.30%</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>26,184.72</td><td class="down">&minus;1.37%</td></tr>
+                <tr><td class="txt">Dow Jones Industrial Average</td><td>52,342.56</td><td class="down">&minus;0.25%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>2,859.22</td><td class="up">+1.01%</td></tr>
+                <tr><td class="txt">S&amp;P 500 futures (ES)</td><td>7,671.50</td><td class="down">&minus;1.07%</td></tr>
+                <tr><td class="txt">Nasdaq 100 futures (NQ)</td><td>28,864.75</td><td class="down">&minus;2.36%</td></tr>
+                <tr><td class="txt">Dow futures (YM)</td><td>52,484</td><td class="flat">&minus;0.05%</td></tr>
+                <tr><td class="txt">Russell 2000 futures (RTY)</td><td>2,849.30</td><td class="down">&minus;0.63%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Distance from simple moving averages and 52-week range, Previous close Oct. 29, computed from Yahoo Finance daily closes. SPCX history begins Jun. 12, 2026 (no 200-day average).</caption>
+              <thead><tr><th>ETF</th><th>Close</th><th>vs 20d</th><th>vs 50d</th><th>vs 200d</th><th>52-wk range</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">SPY</td><td>769.36</td><td>&minus;0.2%</td><td>+0.2%</td><td>+5.6%</td><td>631.97&ndash;779.09</td></tr>
+                <tr><td class="txt">QQQ</td><td>715.34</td><td>&minus;2.2%</td><td>&minus;1.4%</td><td>+5.3%</td><td>558.28&ndash;759.66</td></tr>
+                <tr><td class="txt">DIA</td><td>522.73</td><td>+0.7%</td><td>+0.2%</td><td>+3.3%</td><td>451.39&ndash;542.81</td></tr>
+                <tr><td class="txt">IWM</td><td>284.01</td><td>+2.3%</td><td>&minus;0.2%</td><td>+1.9%</td><td>229.11&ndash;305.09</td></tr>
+                <tr><td class="txt">SMH</td><td>561.67</td><td>&minus;2.4%</td><td>&minus;2.0%</td><td>+8.3%</td><td>325.10&ndash;668.91</td></tr>
+                <tr><td class="txt">TLT</td><td>81.49</td><td>+2.6%</td><td>+1.2%</td><td>&minus;3.7%</td><td>77.11&ndash;90.82</td></tr>
+                <tr><td class="txt">SPCX</td><td>143.89</td><td>&minus;6.9%</td><td>&minus;3.8%</td><td>&mdash;</td><td>108.27&ndash;211.39 (since listing)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Thursday, Oct. 29 (EOD official, Massive grouped daily; universe 5,410 US common stocks with close &ge;$1 and volume &ge;100,000): 3,357 advancers, 1,955 decliners, 98 unchanged. Dollar volume in advancing stocks $486 billion, in declining stocks $547 billion. Share above the 50-session trend: 47.0%, up from 40.7% on Wednesday (Estimated &mdash; EMA proxy, accumulating history, 68/200 sessions; the 200-session figure is not yet available). The cumulative advance&ndash;decline line since our records began remains negative (&minus;11,588 over 69 sessions). Thursday was a broad up day hidden under megacap losses.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors &amp; industries</summary>
+          <p>Premarket (indications, about 06:40 ET): semiconductors are the weak group (SMH &minus;4.6%; AMD &minus;8.1%, MU &minus;5.1%, ASML &minus;4.8%, AVGO &minus;3.6%, TSM &minus;3.4%, NVDA &minus;2.8%); energy is the strong one (XOM and CVX each +1.5%). Software sold off on Thursday (ServiceNow &minus;27%, Fortinet &minus;20%), and indications this morning are close to flat for both. Industrials with AI-power exposure are the group to watch for spillover after Caterpillar&rsquo;s 9.3% drop on Thursday.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close Oct. 29 and premarket indication about 06:40 ET Oct. 30 (Yahoo Finance v8, single-venue extended-hours prints).</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>Indicated</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">INTC</td><td>92.07</td><td>68.99</td><td class="down">&minus;25.1%</td></tr>
+                <tr><td class="txt">AMD</td><td>566.42</td><td>520.80</td><td class="down">&minus;8.1%</td></tr>
+                <tr><td class="txt">AMZN</td><td>243.79</td><td>227.34</td><td class="down">&minus;6.8%</td></tr>
+                <tr><td class="txt">MRVL</td><td>218.34</td><td>205.50</td><td class="down">&minus;5.9%</td></tr>
+                <tr><td class="txt">MU</td><td>934.27</td><td>886.50</td><td class="down">&minus;5.1%</td></tr>
+                <tr><td class="txt">ASML</td><td>1,675.70</td><td>1,595.54</td><td class="down">&minus;4.8%</td></tr>
+                <tr><td class="txt">AVGO</td><td>345.00</td><td>332.72</td><td class="down">&minus;3.6%</td></tr>
+                <tr><td class="txt">TSM</td><td>431.81</td><td>417.24</td><td class="down">&minus;3.4%</td></tr>
+                <tr><td class="txt">SPCX</td><td>143.89</td><td>139.25</td><td class="down">&minus;3.2%</td></tr>
+                <tr><td class="txt">NVDA</td><td>213.66</td><td>207.70</td><td class="down">&minus;2.8%</td></tr>
+                <tr><td class="txt">TSLA</td><td>403.30</td><td>394.00</td><td class="down">&minus;2.3%</td></tr>
+                <tr><td class="txt">META</td><td>624.52</td><td>615.39</td><td class="down">&minus;1.5%</td></tr>
+                <tr><td class="txt">AAPL</td><td>348.91</td><td>345.32</td><td class="down">&minus;1.0%</td></tr>
+                <tr><td class="txt">MSFT</td><td>530.14</td><td>526.62</td><td class="down">&minus;0.7%</td></tr>
+                <tr><td class="txt">GOOGL</td><td>283.82</td><td>282.68</td><td class="down">&minus;0.4%</td></tr>
+                <tr><td class="txt">XOM</td><td>183.29</td><td>186.10</td><td class="up">+1.5%</td></tr>
+                <tr><td class="txt">CVX</td><td>231.46</td><td>234.82</td><td class="up">+1.5%</td></tr>
+                <tr><td class="txt">ABBV</td><td>290.79</td><td>299.00</td><td class="up">+2.8%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>FINRA daily short-sale volume, Oct. 29 (EOD official): aggregate 48.4% of reported volume. Amazon 35.0%, Nvidia 38.4%, Microsoft 41.4%, Intel 43.1%, Alphabet 47.6%, SPCX 53.0%. Daily short volume is not short interest; short interest is settlement-dated and two to three weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>US Treasury daily par yield curve, EOD official (home.treasury.gov). Percent.</caption>
+              <thead><tr><th>Date</th><th>1M</th><th>3M</th><th>6M</th><th>1Y</th><th>2Y</th><th>5Y</th><th>7Y</th><th>10Y</th><th>20Y</th><th>30Y</th></tr></thead>
+              <tbody>
+                <tr><td>Oct 29</td><td>4.06</td><td>4.18</td><td>4.28</td><td>4.42</td><td>4.61</td><td>4.78</td><td>4.87</td><td>4.98</td><td>5.35</td><td>5.32</td></tr>
+                <tr><td>Oct 28</td><td>4.07</td><td>4.18</td><td>4.32</td><td>4.47</td><td>4.67</td><td>4.85</td><td>4.95</td><td>5.05</td><td>5.41</td><td>5.37</td></tr>
+                <tr><td>Oct 27</td><td>4.10</td><td>4.22</td><td>4.34</td><td>4.50</td><td>4.70</td><td>4.82</td><td>4.91</td><td>4.99</td><td>5.34</td><td>5.30</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Spreads Oct. 29: 2s10s +37 bp (from +38), 3m10y +80 bp, 5s30s +54 bp. Thursday&rsquo;s rally was a parallel shift of 5&ndash;7 bp beyond one year. 10-year breakeven 2.35% (Oct. 29) and real yield 2.67% (Oct. 28), FRED. SOFR 3.94% (Oct. 28). Overnight 10-year about 4.92% (Reuters/CNBC, via proxy reports &mdash; delayed, unverified). The MOVE index has no free source and is not shown.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA US High Yield option-adjusted spread: 3.14 points on Oct. 28 (EOD official, FRED; the Oct. 29 value is not yet published), down from 3.30 on Oct. 26. HYG closed at $77.58 and LQD at $104.22 on Thursday, both nearly unchanged. Credit has not reacted to the equity rotation. The one transmission channel worth watching today is crypto: firms and funds with leveraged crypto exposure may need to raise cash after the Binance theft.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 17.20, VIX9D 15.87 and VIX3M 19.37 at Thursday&rsquo;s close (Yahoo Finance, EOD official); the VIX was about 18.5 at 06:23 ET (Delayed). The term structure is in normal upward slope (9-day below 30-day below 3-month), so no inversion. Put/call ratios are not tracked. Dealer gamma is not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Spot: Delayed, about 06:38 ET Oct. 30 (Yahoo Finance). ECB reference rates: EOD official (ECB reference, Oct. 29, via Frankfurter), units per US dollar.</caption>
+              <thead><tr><th>Pair</th><th>Spot</th><th>ECB ref.</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Dollar index (DXY)</td><td>101.64 (&minus;0.4%)</td><td>&mdash;</td></tr>
+                <tr><td class="txt">EUR per USD / EURUSD</td><td>1.1206</td><td>0.89847</td></tr>
+                <tr><td class="txt">USD/JPY</td><td>157.28</td><td>158.06</td></tr>
+                <tr><td class="txt">GBPUSD / GBP per USD</td><td>1.3428</td><td>0.75093</td></tr>
+                <tr><td class="txt">USD/CNY</td><td>6.6423</td><td>6.6616</td></tr>
+                <tr><td class="txt">USD/CAD</td><td>&mdash;</td><td>1.3996</td></tr>
+                <tr><td class="txt">USD/MXN</td><td>&mdash;</td><td>18.7475</td></tr>
+                <tr><td class="txt">USD/INR</td><td>&mdash;</td><td>95.27</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Front-month futures, Delayed (+10 min), about 06:28 ET Oct. 30 (Yahoo Finance), vs Thursday&rsquo;s settlement. December Brent from Reuters (Asian trade, about $116); Yahoo&rsquo;s Brent series has rolled to January and is not used for the headline.</caption>
+              <thead><tr><th>Contract</th><th>Last</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">WTI crude ($/bbl)</td><td>104.25</td><td class="up">+2.2%</td></tr>
+                <tr><td class="txt">Brent, December ($/bbl)</td><td>~116</td><td class="up">~+1.0%</td></tr>
+                <tr><td class="txt">Gold ($/oz)</td><td>3,992.60</td><td class="down">&minus;1.0%</td></tr>
+                <tr><td class="txt">Silver ($/oz)</td><td>50.62</td><td class="down">&minus;3.0%</td></tr>
+                <tr><td class="txt">Copper ($/lb)</td><td>6.51</td><td class="down">&minus;1.0%</td></tr>
+                <tr><td class="txt">Natural gas ($/MMBtu)</td><td>2.90</td><td class="down">&minus;1.6%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $77,531, ether $2,239, solana $96.94 at 06:38 ET (Yahoo Finance, Live aggregate). Total crypto market value $2.60 trillion, down 5.6% in 24 hours; bitcoin dominance 59.8% (Live, CoinGecko /global). About $1.5 billion of leveraged positions liquidated in 24 hours (CoinGlass, as reported). The Binance theft is the dominant catalyst reported; its size and attribution are not yet confirmed by Binance or any government.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Size and equal-weight factors beat cap-weight on Thursday (RSP +1.2%, IWM +1.0%, SPY &minus;0.4%) and futures point to a repeat. Stocks down and bonds up together is the hedge working as intended, unlike earlier this month when both fell. Gold has not acted as a haven: it is down with real yields only modestly lower and the dollar weaker, which points to selling by leveraged holders rather than a rates story. Oil is moving on Gulf supply alone.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p><b>Out since Thursday&rsquo;s close:</b> Amazon (EPS $1.89 vs ~$1.96; AWS +39%; TTM FCF &minus;$42.4B), Intel (Q4 revenue guide $15&ndash;16B vs ~$17B), Reddit, Roblox, Twilio, Rivian, Starbucks; Chevron (adj. EPS $5.28 vs ~$4.89; FCF $12.0B), Exxon Mobil (EPS ex-items $4.23 vs ~$4.03&ndash;4.12). <b>Before the open:</b> AbbVie, Colgate-Palmolive. <b>Next week:</b> Apple Monday after the close (first call led by chief executive John Ternus, per secondary reports).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No auctions today. Thursday&rsquo;s $44 billion seven-year note cleared at 4.894% with no tail (as reported; TreasuryDirect results not re-read this morning). Monday: Treasury borrowing estimates (per previews; not yet on treasury.gov). Wednesday, Nov. 4: quarterly refunding statement, with coupon sizes for November&ndash;January. Month-end today: SOFR at 3.94% on Oct. 28 has run near the top half of the 3.75&ndash;4.00% range, so watch Monday&rsquo;s print for month-end repo pressure.</p>
+        </details>
+      </details>
+    </section>
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> US Treasury daily par yield curve; FRED (St. Louis Fed, including BLS and ICE BofA series); BLS release calendar; SEC EDGAR filings from Chevron, Amazon and Intel; FINRA daily short-sale volume; National Weather Service; NASA; <i>Nature</i>, <i>Nature Medicine</i> and <i>Science</i>. Market levels are from Yahoo Finance, Frankfurter (ECB) and CoinGecko, and breadth is from Massive. News reporting is from Reuters, Bloomberg, CNBC, NBC, ABC, NPR, CBS, CNN, the Wall Street Journal, the Japan Times, Seoul Economic Daily, Haaretz, RT&Eacute;, Al Jazeera, CoinDesk, WESA, WPXI and TribLive, among others named in each story.</p>
+      <p><strong>Corrections.</strong> Thursday&rsquo;s Closing Brief said Wegmans had bought the Galleria of Mt. Lebanon. Roadside Development bought the property in April; Thursday&rsquo;s announcement is that Wegmans will anchor Roadside&rsquo;s redevelopment. One trade publication described a purchase, but the municipality and most outlets describe Wegmans as the anchor tenant.</p>
+      <p><strong>Method.</strong> All times Eastern. Free-tier quotes are single-venue and can differ slightly from official closes. Premarket and after-hours prices are indications. Missing data is declared missing, never estimated. Probabilities are ranges with a stated basis and are logged for grading. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-10-29-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
