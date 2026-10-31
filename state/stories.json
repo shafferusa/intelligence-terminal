@@ -188,7 +188,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Macro/Fed",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "ecb-hold-lagarde-exit",
@@ -212,7 +212,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Market",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "cat-q3-guidance",
@@ -224,7 +224,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Earnings",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "lly-mrk-ma-q3",
@@ -236,7 +236,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Earnings",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "intel-q3-guide",
@@ -356,7 +356,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "World: disaster",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "vertiv-ai-suppliers",
@@ -380,7 +380,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Global central banks",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "oil-iran-vance-letter",
@@ -404,7 +404,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Corporate: industrial bellwether; move unexplained",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "software-outlooks-now-ftnt",
@@ -416,7 +416,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Corporate: software guidance; M&A single-reported",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "gdp-pce-oct29",
@@ -428,7 +428,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Macro: first data since FOMC",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "ai-capex-funding-split",
@@ -488,7 +488,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Central banks; forecast 2026-10-27-pm-2 landed",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "ust-curve-bear-steepen-oct28",
@@ -500,7 +500,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Rates; Treasury par curve",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "msft-fq1-2027",
@@ -536,7 +536,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Lead: market-moving policy; primary statement",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "pa-phone-ban-act117",
@@ -548,7 +548,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Local PA",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "eqt-range-doordash",
@@ -572,7 +572,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Data-centre power demand",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "msft-googl-q3",
@@ -596,7 +596,7 @@
    "one_line": null,
    "sources": [],
    "score_rationale": "Chip rally driver overnight",
-   "keep_on_watchlist": true
+   "keep_on_watchlist": false
   },
   {
    "id": "anthropic-s1-broadcom-lease",
@@ -609,7 +609,19 @@
    "sources": [],
    "score_rationale": "AI/IPO",
    "keep_on_watchlist": true
+  },
+  {
+   "id": "weekly-review-2026-10-31",
+   "headline": "Week of Oct 26-30: AI sell-off spreads from spenders (GOOGL -12.6% Thu) to suppliers (INTC -28.6% Fri); Fed hold 10-2 with two hike dissents; 10Y 4.94% (-35bp Oct); Brent Dec $117.64; Binance ~$6.3B theft; China Oct PMI 49.3 (Sat)",
+   "status": "Continuing",
+   "verification": "Confirmed-multiple",
+   "first_seen": "2026-10-31-sat",
+   "last_updated": "2026-10-31-sat",
+   "one_line": "Keep: AI capex funding (AMD/QCOM/ARM next week), Fed Dec, refunding Nov 4, Hormuz/Iran post-election, OPEC+ Nov 1, midterms/DOJ ballot fights, Binance withdrawals, Anthropic S-1/A, ECB succession, Israel coalition. Dropped: Fed/BoC/ECB/BoJ decisions done, GDP/PCE, software rout, CAT, LLY/MRK, Spain crash.",
+   "sources": [],
+   "score_rationale": "weekly synthesis",
+   "keep_on_watchlist": true
   }
  ],
- "updated": "2026-10-30T21:15:00Z"
+ "updated": "2026-10-31T13:25:23Z"
 }

@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-10-30T20:50:00Z",
+ "fetched_at": "2026-10-31T13:25:23Z",
  "treasury_par_curve": {
   "as_of": "2026-10-30 EOD official",
   "source": "home.treasury.gov",
@@ -50,8 +50,8 @@
    4.98
   ],
   "T10YIE": [
-   "2026-10-29",
-   2.35
+   "2026-10-30",
+   2.34
   ],
   "DFII10": [
    "2026-10-29",
@@ -90,13 +90,12 @@
   }
  },
  "crypto": {
-  "source": "CoinGecko (no key)",
-  "fetched": "2026-10-28T10:49:33Z",
+  "source": "Yahoo Finance (Live)",
+  "fetched": "2026-10-31T13:13:00Z",
   "data": {
-   "bitcoin": 81432,
-   "ethereum": 2366.72,
-   "solana": 102.97,
-   "cardano": 0.207329
+   "bitcoin": 77336.73,
+   "ethereum": 2244.1,
+   "solana": 95.63
   }
  },
  "indices": {
@@ -588,16 +587,11 @@
   ]
  },
  "breadth_latest": {
-  "date": "2026-10-29",
-  "advancers": 3357,
-  "decliners": 1955,
-  "unchanged": 98,
-  "universe": 5410,
-  "up_vol": 485894984010.8602,
-  "down_vol": 546546282397.63885,
-  "pct_above_e50": 47.0,
-  "pct_above_e200": null,
-  "label": "Estimated -- EMA proxy, accumulating history (68/200 sessions)"
+  "date": "2026-10-30",
+  "advancers": 1681,
+  "decliners": 3878,
+  "pct_above_e50": 41.6,
+  "source": "Massive grouped daily"
  },
  "finra_short_vol": {
   "date": "2026-10-29",
@@ -631,11 +625,8 @@
   "note": "BZ=F rolled to Dec (95.67) - not used"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-25",
-  "cutoff": "2026-09-25T11:02:00-04:00 (this morning's am run window start)",
-  "method": "Market-wide latest-8-K atom feed reviewed for watchlist-name matches, plus a targeted check of CME Group's own filing feed after it appeared in the market-wide feed; not a full 86-ticker per-company sweep this run.",
-  "new_filings_since_cutoff": [],
-  "note": "CME Group appeared in today's market-wide 8-K feed but its own per-company feed shows its most recent filing dated Sept 9 (director/officer changes) -- the market-wide feed entry appears to be an indexing artifact, not a new same-day filing. No other watchlist names appeared in the market-wide feed. Akamai (not a watchlist name) filed an 8-K covering its Anthropic deal, discussed in Top Stories."
+  "date": "2026-10-31",
+  "result": "Anthropic, PBC public S-1 2026-10-26 (CIK 0002130357), no ticker/exchange; other 8 private-module companies: 0 hits"
  },
  "mega_cap_tech": {
   "as_of": "2026-09-25 EOD official",

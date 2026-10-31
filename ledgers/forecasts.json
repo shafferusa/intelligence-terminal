@@ -3469,7 +3469,10 @@
    "horizon": "2026-10-20",
    "probability": "55-70%",
    "basis": "Trump's own 'big decision coming up' framing, Vance's stated one-to-two-month window, and the Gulf-leaders meeting expected around next week's UN General Assembly.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "By Oct 20 Trump had not set a clear direction; on Oct 25 he still called it 'getting to be decision time' (Fox News), with no strikes ordered and no talks opened.",
+   "graded": "2026-10-31",
+   "lesson": "A one-month horizon on a president who keeps both options open was too short."
   },
   {
    "id": "2026-09-18-am-2",
@@ -3684,7 +3687,10 @@
    "horizon": "2026-10-28",
    "probability": "55-70%",
    "basis": "Today's flash PMI showed the fastest growth in five-plus years with intensifying price pressure, Fed Governor Barr explicitly called further hikes 'likely to be needed,' and the Sept 16 dot plot already had 12 of 18 participants expecting one more 2026 hike; weighed against six weeks of data still to come (including another CPI print) that could soften the case, and the Fed's own blackout period timing.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "The September dot plot overstated how quickly the committee would follow through."
   },
   {
    "id": "2026-09-23-pm-2",
@@ -3967,7 +3973,10 @@
    "horizon": "2026-10-28",
    "probability": "60-70%",
    "basis": "CME FedWatch ~70% (secondary); SEP leans to one more hike; hawkish Barr/Williams/Hammack vs Bessent's public push for patience.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Same miss: the October hike never had majority support once oil eased."
   },
   {
    "id": "2026-09-28-am-3",
@@ -4055,7 +4064,10 @@
    "horizon": "2026-10-28",
    "probability": "55-65%",
    "basis": "FedWatch ~70% pre-data; Cook 'about double' target; offset by confidence 12-yr low, JOLTS miss, quits 1.9%, HY widening.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Same miss as Sept 28."
   },
   {
    "id": "2026-09-29-am-2",
@@ -4169,7 +4181,10 @@
    "horizon": "2026-10-28",
    "probability": "45-55%",
    "basis": "Williams removed urgency; FedWatch ~51.5% (single source); Barr/Cook hawkish on inflation; Europe inflation rising.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "A coin-flip call that landed on the wrong side; later forecasts corrected toward a hold."
   },
   {
    "id": "2026-09-30-am-3",
@@ -4270,7 +4285,10 @@
    "horizon": "2026-10-28",
    "probability": "65-80%",
    "basis": "CME FedWatch ~72% hold (CNBC, Oct 2); Jefferson 'may take more time'; Williams 'no urgency'",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right, and earlier than the market."
   },
   {
    "id": "2026-10-02-am-3",
@@ -4293,7 +4311,10 @@
    "horizon": "2026-10-28",
    "probability": "80-90%",
    "basis": "Sep payrolls +29K, UR 4.2%, AHE +0.1%; CNBC FedWatch ~17% Oct hike, Kalshi 18%, Reuters <15%; Logan wants 50bp+ more (Dec priced >60%).",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-02-pm-2",
@@ -4615,7 +4636,10 @@
    "horizon": "2026-10-25",
    "probability": "55-65%",
    "basis": "Led first round 47.03-45.16 after beating polls; allies strong in governor/Senate races; but pre-vote runoff polls tied within MoE (Datafolha Lula 47-46, Quaest Bolsonaro 44-42).",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Lula won the Oct 25 runoff 51.8% to 48.2% (electoral court via NPR, Bloomberg).",
+   "graded": "2026-10-31",
+   "lesson": "Polls showing a tie were read as a lean to the challenger; the incumbent's turnout machine was underweighted."
   },
   {
    "id": "2026-10-06-pm-1",
@@ -4664,7 +4688,10 @@
    "horizon": "2026-10-29",
    "probability": "15-30%",
    "basis": "CME FedWatch ~22%; Sept payrolls +29K and Daly conditional language vs ISM services prices 74.0 and Brent >$100; Sept CPI Oct 14 swing factor",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement). No hike.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; the event did not happen, as expected."
   },
   {
    "id": "2026-10-07-am-3",
@@ -4726,7 +4753,10 @@
    "basis": "Futures ~18-22% per CNBC relays of CME; Waller allowed skipping meetings; soft payrolls; oil >$100 and minutes' energy emphasis argue for; Sep CPI Oct 14 decisive.",
    "date": "2026-10-08",
    "slot": "am",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement). No hike.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; the event did not happen, as expected."
   },
   {
    "id": "2026-10-08-am-3",
@@ -4824,7 +4854,10 @@
    "horizon": "2026-10-28",
    "probability": "75-85%",
    "basis": "CME FedWatch ~18% hike odds (Oct 8); Waller signalled flexibility on timing; Sep CPI (Oct 14) could shift it.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-09-pm-2",
@@ -5185,7 +5218,10 @@
    "horizon": "2026-10-19",
    "probability": "20-35%",
    "basis": "President said US 'may' join and would 'look at it'; Axios reported no kinetic action for now; he turned down two Saudi requests in September.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No acknowledged US strikes on Houthi targets were reported by Oct 19.",
+   "graded": "2026-10-31",
+   "lesson": "Washington left the Saudi-Houthi war to Riyadh."
   },
   {
    "id": "2026-10-12-pm-4",
@@ -5247,8 +5283,11 @@
    "horizon": "2026-10-17",
    "probability": "15-30%",
    "basis": "NOTAM closure runs through Oct 17; attacks continued Oct 12; closure extended in steps.",
-   "status": "open",
-   "note": "Not gradable at Saturday's run: the NOTAM closure ran to 5 PM ET Oct 17. Graded 2026-10-24."
+   "status": "wrong",
+   "note": "Not gradable at Saturday's run: the NOTAM closure ran to 5 PM ET Oct 17. Graded 2026-10-24.",
+   "outcome": "King Khalid airport's closure notice lapsed Oct 17 without a reopening; limited Saudi-carrier flights began about Oct 21 and scheduled service resumed Oct 25 (Gulf News, Al-Monitor, AP).",
+   "graded": "2026-10-31",
+   "lesson": "Closure notices are extended more often than they lapse during active attacks."
   },
   {
    "id": "2026-10-13-pm-1",
@@ -5323,7 +5362,10 @@
    "horizon": "2026-10-28",
    "probability": "15-25%",
    "basis": "CME FedWatch <20%; hawkish minutes vs +29K payrolls.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement). No hike.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; the event did not happen."
   },
   {
    "id": "2026-10-14-am-4",
@@ -5333,7 +5375,10 @@
    "horizon": "2026-10-23",
    "probability": "20-35%",
    "basis": "Brent 106.40, <4% away; Iranian officials signal escalation; Aramco office hit.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent front-month settled $113.17 on Oct 22 (Yahoo Finance BZ=F).",
+   "graded": "2026-10-31",
+   "lesson": "The Hormuz premium rebuilt faster than the diplomacy implied."
   },
   {
    "id": "2026-10-14-am-5",
@@ -5434,7 +5479,10 @@
    "horizon": "2026-10-28",
    "probability": "35-50%",
    "basis": "FedWatch quoted 32-52% after CPI; Williams 'appropriate'; Sept SEP shows one more 2026 hike.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement). No hike.",
+   "graded": "2026-10-31",
+   "lesson": "A 35-50% call that leaned too hawkish for October."
   },
   {
    "id": "2026-10-15-am-5",
@@ -5444,7 +5492,10 @@
    "horizon": "2026-10-23",
    "probability": "15-30%",
    "basis": "Brent $104.12 at 06:23; attacks continue but no export-terminal hit; tanker-sanctions easing report.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent front-month settled $113.17 on Oct 22 (Yahoo Finance BZ=F).",
+   "graded": "2026-10-31",
+   "lesson": "Same as the Oct 14 call."
   },
   {
    "id": "2026-10-15-pm-1",
@@ -5493,7 +5544,10 @@
    "horizon": "2026-10-28",
    "probability": "65-80%",
    "basis": "CME says hike odds fell below 30% from 53%; Goldman expects an October pause; Warsh declined to push back.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-16-am-2",
@@ -5529,7 +5583,10 @@
    "horizon": "2026-10-19",
    "probability": "45-60%",
    "basis": "Reuters poll 4.4% after Q2 4.3%; Sept exports +36%; weak domestic demand against.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "China's Q3 GDP grew 4.5% y/y (NBS), above the 4.4% Reuters poll.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-16-pm-1",
@@ -5539,7 +5596,10 @@
    "horizon": "2026-10-23",
    "probability": "55-70%",
    "basis": "Closed 5.09% Oct 16 after -15bp week; Oct hike odds fell to ~13-18%; tech selloff supports Treasuries. Invalidator: oil spike feeding hike bets, weak 20-yr auction Oct 21.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.00% on Oct 23 (Treasury).",
+   "graded": "2026-10-31",
+   "lesson": "Right, with room."
   },
   {
    "id": "2026-10-16-pm-2",
@@ -5549,7 +5609,10 @@
    "horizon": "2026-10-23",
    "probability": "55-70%",
    "basis": "Settled $109.86 Oct 16 (CNBC); Kpler Hormuz flows ~68% of normal; attacks continuing; US-Iran talks stalled. Invalidator: a US-Iran de-escalation or reopened strait.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "December Brent settled $116.72 on Oct 23 (Yahoo Finance BZ=F).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-16-pm-3",
@@ -5559,7 +5622,10 @@
    "horizon": "2026-10-23",
    "probability": "45-60%",
    "basis": "Closed 19.99 Oct 16 with VIX3M 20.50 above spot (no full inversion); stress concentrated in AI-infrastructure credit. Against: VIX9D above spot, CoreWeave financing unresolved, big-tech earnings week.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "VIX closed 19.45 on Oct 23 (Cboe via Yahoo).",
+   "graded": "2026-10-31",
+   "lesson": "Right, narrowly."
   },
   {
    "id": "2026-10-18-sun-1",
@@ -5569,7 +5635,10 @@
    "horizon": "2026-10-23",
    "probability": "45-55%",
    "basis": "Index 2.0% off record with damage concentrated in chips; equal weight rose last week; Wednesday mega-cap results can swing either way.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "S&P 500 closed Oct 23 at 7,623.68, below 7,659.44.",
+   "graded": "2026-10-31",
+   "lesson": "The coin-flip went against; AI-spending doubts after Meta weighed on the week."
   },
   {
    "id": "2026-10-18-sun-2",
@@ -5579,7 +5648,10 @@
    "horizon": "2026-10-23",
    "probability": "10-20%",
    "basis": "Needs +2.1% with VIX near 20 and AI-credit worries unresolved.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No record; the week's high close was 7,757.17 on Oct 21.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-18-sun-3",
@@ -5589,7 +5661,10 @@
    "horizon": "2026-10-23",
    "probability": "45-55%",
    "basis": "Nine straight losses and 10% below 20-day favour a bounce; Lam/TXN/Meta results and CoreWeave financing could extend the slide.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "SMH closed Oct 23 at 527.20, below 539.79.",
+   "graded": "2026-10-31",
+   "lesson": "Chips fell 6% on Oct 22; the bounce did not hold."
   },
   {
    "id": "2026-10-18-sun-4",
@@ -5599,7 +5674,10 @@
    "horizon": "2026-10-23",
    "probability": "80-90%",
    "basis": "Management has signalled rising AI spending all year; a cut would be a strategic reversal.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Meta narrowed its 2026 capex range to $135-145B from $130-145B, raising the bottom (Oct 21 results).",
+   "graded": "2026-10-31",
+   "lesson": "Right; the stock still fell 7% on how the spending is funded."
   },
   {
    "id": "2026-10-18-sun-5",
@@ -5609,7 +5687,10 @@
    "horizon": "2026-10-23",
    "probability": "45-60%",
    "basis": "Zacks ~$0.44, Finnhub $0.45; deliveries ~486.5k known; margin pressure from pricing.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Tesla adjusted EPS $0.48 vs ~$0.44 (Electrek, Teslarati).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-6",
@@ -5619,7 +5700,10 @@
    "horizon": "2026-10-23",
    "probability": "70-80%",
    "basis": "Netflix usually lands at or above its revenue guide; consensus $12.87-13.0B.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Netflix Q3 revenue $12.87B vs $12.86B guidance (8-K).",
+   "graded": "2026-10-31",
+   "lesson": "Right by $10 million; the stock fell on its ad outlook anyway."
   },
   {
    "id": "2026-10-18-sun-7",
@@ -5629,7 +5713,10 @@
    "horizon": "2026-10-23",
    "probability": "65-75%",
    "basis": "5.09% Oct 16 after -15bp week; quiet Fed; oil and 20-year auction are the risks either way.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.00% on Oct 23 (Treasury).",
+   "graded": "2026-10-31",
+   "lesson": "Right, near the bottom of the band."
   },
   {
    "id": "2026-10-18-sun-8",
@@ -5639,7 +5726,10 @@
    "horizon": "2026-10-23",
    "probability": "60-75%",
    "basis": "20-year par 5.47% Oct 16; would need +8bp in three sessions to breach.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "20-year reopening stopped at 5.469% (TreasuryDirect).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-9",
@@ -5649,7 +5739,10 @@
    "horizon": "2026-10-23",
    "probability": "75-85%",
    "basis": "Range 198k-207k for two months; consensus ~200k.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Initial claims 195,000 for the week ending Oct 17 (FRED ICSA).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-10",
@@ -5659,7 +5752,10 @@
    "horizon": "2026-10-23",
    "probability": "75-85%",
    "basis": "Settled $109.86 Oct 16, above $100 every session; weekend Hormuz mine claims and St Petersburg strike add risk; downside needs a US-Iran breakthrough.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "December Brent settled $116.72 on Oct 23.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-11",
@@ -5669,7 +5765,10 @@
    "horizon": "2026-10-23",
    "probability": "15-25%",
    "basis": "~13-18% Oct 16 after bond rally; Fed in blackout; needs an oil spike or hot UMich expectations.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FedWatch October hike odds were about 17% on Oct 20 and about 10% by Oct 27, as reported.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-18-sun-12",
@@ -5679,7 +5778,10 @@
    "horizon": "2026-10-23",
    "probability": "50-60%",
    "basis": "Reuters poll median 4.4% (Q2 4.3%); exports strong in September.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "China Q3 GDP 4.5% y/y (NBS).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-13",
@@ -5689,7 +5791,10 @@
    "horizon": "2026-10-23",
    "probability": "15-25%",
    "basis": "19.99 with VIX9D above spot; five mega-cap reports Wednesday night.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "VIX's highest close Oct 19-23 was 19.45.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-18-sun-14",
@@ -5699,7 +5804,10 @@
    "horizon": "2026-10-23",
    "probability": "25-40%",
    "basis": "Bloomberg/FT report talks on IG and insurer-backed funding; nothing announced; pressure high after 25% weekly fall.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No CoreWeave financing announcement was found for Oct 19-23.",
+   "graded": "2026-10-31",
+   "lesson": "The FT-reported talks did not produce a deal within the week."
   },
   {
    "id": "2026-10-18-sun-15",
@@ -5709,7 +5817,10 @@
    "horizon": "2026-10-23",
    "probability": "20-30%",
    "basis": "3.23 Oct 15 from 3.11; IG unchanged; contagion so far confined to a few issuers.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "ICE BofA HY OAS printed 3.40 on Oct 22 (FRED).",
+   "graded": "2026-10-31",
+   "lesson": "A 15-25% tail that happened, exactly at the line; credit stress was closer than priced."
   },
   {
    "id": "2026-10-18-sun-16",
@@ -5719,7 +5830,10 @@
    "horizon": "2026-10-23",
    "probability": "15-25%",
    "basis": "Aramco Dhahran admin building hit last week; Yanbu missiles intercepted; mine claims rising; no facility hit confirmed yet.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No Gulf government confirmed damage by Oct 23; Saudi Arabia later acknowledged only a contained fire near Ras Tanura (Oct 27).",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-18-sun-17",
@@ -5729,7 +5843,10 @@
    "horizon": "2026-10-23",
    "probability": "3-8%",
    "basis": "President pledged no strike before Nov 3; strike options reported prepared.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No US strikes on Iran by Oct 23.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-18-sun-18",
@@ -5739,7 +5856,10 @@
    "horizon": "2026-10-23",
    "probability": "45-55%",
    "basis": "Earnings steady the market without settling the AI-debt question; quiet Fed; oil premium persists.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "S&P 7,623.68 and 10-year 5.00% were inside the base case and Fed odds below 30%, but Brent settled $116.72, above the $100-115 band.",
+   "graded": "2026-10-31",
+   "lesson": "Three of four legs held; oil's range was set too low. Compound scenarios fail on their weakest leg."
   },
   {
    "id": "2026-10-18-sun-19",
@@ -5749,7 +5869,10 @@
    "horizon": "2026-10-23",
    "probability": "15-20%",
    "basis": "Requires strong Meta/Lam results and/or CoreWeave financing plus Gulf de-escalation.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "SMH 527.20 and S&P 7,623.68 on Oct 23.",
+   "graded": "2026-10-31",
+   "lesson": "Did not happen."
   },
   {
    "id": "2026-10-18-sun-20",
@@ -5759,7 +5882,10 @@
    "horizon": "2026-10-23",
    "probability": "20-30%",
    "basis": "AI-credit fears spread via a capex cut, failed financing or downgrade.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "S&P closed 7,623.68, above 7,506.",
+   "graded": "2026-10-31",
+   "lesson": "Did not happen, though HY OAS did touch 3.40."
   },
   {
    "id": "2026-10-18-sun-21",
@@ -5769,7 +5895,10 @@
    "horizon": "2026-10-23",
    "probability": "5-10%",
    "basis": "Needs a confirmed Gulf supply loss or a ship lost to a mine in the main lanes.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Brent's highest settle Oct 19-23 was $116.72.",
+   "graded": "2026-10-31",
+   "lesson": "Did not happen."
   },
   {
    "id": "2026-10-18-sun-22",
@@ -5779,7 +5908,10 @@
    "horizon": "2026-10-23",
    "probability": "45-60%",
    "basis": "Emergency motions filed; election 16 days away; no hearing date found.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No ruling by Oct 23; Judge Carter held the TRO hearing Oct 27 and the Ninth Circuit dismissed an appeal Oct 26 because he had not ruled.",
+   "graded": "2026-10-31",
+   "lesson": "Federal courts moved slower than the election calendar implied."
   },
   {
    "id": "2026-10-18-sun-23",
@@ -5789,7 +5921,10 @@
    "horizon": "2026-10-23",
    "probability": "65-80%",
    "basis": "Staff recommendation with FTA approval in hand; $43M repair cost; no organised opposition found.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "PRT's board voted unanimously on Oct 23 to close the Wabash Tunnel on Dec 1 (Post-Gazette, CBS Pittsburgh).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-18-sun-24",
@@ -5799,7 +5934,10 @@
    "horizon": "2026-10-23",
    "probability": "3-10%",
    "basis": "Bills in committee; 52% vs ~35% tax gap; no floor agenda; only three House session days.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No skill-game bill reached the governor by Oct 23.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-19-am-1",
@@ -5809,7 +5947,10 @@
    "horizon": "2026-10-19",
    "probability": "60-70%",
    "basis": "ES +0.47% at 06:22 ET; Europe lower trims edge",
-   "status": "open"
+   "status": "correct",
+   "outcome": "S&P 500 closed Oct 19 at 7,690.73.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-19-am-2",
@@ -5819,7 +5960,10 @@
    "horizon": "2026-10-19",
    "probability": "70-80%",
    "basis": "Overnight ~5.07-5.08%; no market-moving US data; Fed quiet period",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "10-year par yield 5.15% on Oct 19 (Treasury).",
+   "graded": "2026-10-31",
+   "lesson": "Long yields rose into the 20-year auction."
   },
   {
    "id": "2026-10-19-am-3",
@@ -5829,7 +5973,10 @@
    "horizon": "2026-10-19",
    "probability": "60-70%",
    "basis": "108.71 at 06:22 ET; IRGC mine claim unverified",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The ledger text reads 'below 10', a typo for the report's $110 threshold; December Brent settled $109.55 on Oct 19, below $110.",
+   "graded": "2026-10-31",
+   "lesson": "Right on the intended threshold; the ledger entry was malformed and is graded partial for that reason."
   },
   {
    "id": "2026-10-19-am-4",
@@ -5839,7 +5986,10 @@
    "horizon": "2026-10-28",
    "probability": "75-85%",
    "basis": "CME ~85-87% hold Fri Oct 16; core CPI 0.3% m/m",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-19-am-5",
@@ -5849,7 +5999,10 @@
    "horizon": "2026-10-20",
    "probability": "85-95%",
    "basis": "Reuters poll 22/22 hold; Q3 GDP beat",
-   "status": "open"
+   "status": "correct",
+   "outcome": "PBoC held the 1-year LPR at 3.00% for a 17th month.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-19-pm-1",
@@ -5859,7 +6012,10 @@
    "horizon": "2026-10-20",
    "probability": "55-65%",
    "basis": "NAHB fell to 29 (lowest since 2012), 43% of builders cutting prices; 10Y at 5.15%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "September starts 1.221M annual rate vs ~1.305M forecast (Census via FRED).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-19-pm-2",
@@ -5869,7 +6025,10 @@
    "horizon": "2026-10-20",
    "probability": "70-80%",
    "basis": "Past week's range 5.09-5.19%; no major data besides housing starts; Fed blackout",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.12% on Oct 20.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-20-am-1",
@@ -5879,7 +6038,10 @@
    "horizon": "2026-10-23",
    "probability": "45-60%",
    "basis": "Brent 111.61 at 06:33 ET Oct 20, five-month high; no confirmed progress on Iran 7-day plan; claims on both sides unverified; Saudi East-West pipeline operating",
-   "status": "open"
+   "status": "correct",
+   "outcome": "December Brent settled $116.72 on Oct 23.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-20-am-2",
@@ -5889,7 +6051,10 @@
    "horizon": "2026-10-21",
    "probability": "50-65%",
    "basis": "20Y par 5.53% Oct 19 (+6bp); Sept reopening 5.420% (single source)",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "20-year reopening stopped at 5.469% (TreasuryDirect).",
+   "graded": "2026-10-31",
+   "lesson": "Demand was better than the pre-auction level implied."
   },
   {
    "id": "2026-10-20-am-3",
@@ -5899,7 +6064,10 @@
    "horizon": "2026-10-28",
    "probability": "15-25%",
    "basis": "FedWatch-based ~17% (Mitrade Oct 20); pre-blackout Jefferson/Williams/Waller leaned hold; oil higher since",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement). No hike.",
+   "graded": "2026-10-31",
+   "lesson": "Low-probability call; did not happen."
   },
   {
    "id": "2026-10-20-am-4",
@@ -5909,7 +6077,10 @@
    "horizon": "2026-10-21",
    "probability": "40-55%",
    "basis": "Options-implied move ~7.5-7.8% (TipRanks); short-notice report; pending spectrum deal",
-   "status": "open"
+   "status": "correct",
+   "outcome": "SPCX closed Oct 21 at $159.31, +7.8% from $147.79.",
+   "graded": "2026-10-31",
+   "lesson": "Right, barely past the line."
   },
   {
    "id": "2026-10-20-am-5",
@@ -5919,7 +6090,10 @@
    "horizon": "2026-10-23",
    "probability": "55-70%",
    "basis": "28.4% Oct 19, 28.6% Oct 16; Monday's index rally did not lift it; proxy history 60 sessions",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "37.5% of stocks above the 50-session EMA proxy after Oct 23 (breadth.json).",
+   "graded": "2026-10-31",
+   "lesson": "Breadth improved under the index; the equal-weight rotation was already under way."
   },
   {
    "id": "2026-10-20-pm-1",
@@ -5929,7 +6103,10 @@
    "horizon": "2026-10-21",
    "probability": "60-75%",
    "basis": "After-hours quote about -10.6% (~$391.55) at 16:41 ET on Q3 results; after-hours moves often partially retrace",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "ISRG closed Oct 21 at $428.12, −2.3%; it opened about 8% lower and recovered.",
+   "graded": "2026-10-31",
+   "lesson": "After-hours moves overstated the regular-session reaction."
   },
   {
    "id": "2026-10-20-pm-2",
@@ -5939,7 +6116,10 @@
    "horizon": "2026-10-21",
    "probability": "70-80%",
    "basis": "After-hours quote about -4.9% on 2026 ad-revenue cut to ~$2.7B from ~$3B",
-   "status": "open"
+   "status": "correct",
+   "outcome": "NFLX closed Oct 21 at $65.04, −5.3%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-20-pm-3",
@@ -5949,7 +6129,10 @@
    "horizon": "2026-10-21",
    "probability": "70-80%",
    "basis": "5.12% Oct 20; range of the past week 5.09-5.24; 20-year auction at 1 PM adds two-way risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 5.13% on Oct 21.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-21-am-1",
@@ -5959,7 +6142,10 @@
    "horizon": "2026-10-22",
    "probability": "50-65%",
    "basis": "Recent post-earnings moves and options-implied move as reported; capex outlook is the swing factor",
-   "status": "open"
+   "status": "correct",
+   "outcome": "META closed Oct 22 at $648.85, −7.0%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-21-am-2",
@@ -5969,7 +6155,10 @@
    "horizon": "2026-10-21",
    "probability": "40-55%",
    "basis": "Brent $110.93 at 06:30 ET after Araghchi's Hormuz comments and a 4.9M bbl API draw; Tuesday reversed from $111.99 to $108.79 on headlines",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "December Brent settled $108.82 on Oct 21 (CNBC).",
+   "graded": "2026-10-31",
+   "lesson": "Missed by about a dollar."
   },
   {
    "id": "2026-10-21-am-3",
@@ -5979,7 +6168,10 @@
    "horizon": "2026-10-21",
    "probability": "70-80%",
    "basis": "20Y par 5.47% at Oct 20 close; Sept new issue 5.420%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "20-year reopening stopped at 5.469%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-21-am-4",
@@ -5989,7 +6181,10 @@
    "horizon": "2026-10-21",
    "probability": "65-80%",
    "basis": "API showed a 4.93M bbl draw for the week to Oct 16 vs ~1.3M expected; series usually agree on direction",
-   "status": "open"
+   "status": "correct",
+   "outcome": "EIA: commercial crude stocks fell 3.06M barrels in the week to Oct 16.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-21-pm-1",
@@ -5999,7 +6194,10 @@
    "horizon": "2026-10-22",
    "probability": "70-80%",
    "basis": "Consensus ~200K, prior 199K; recent weekly range ~195-205K",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Initial claims 195,000 (FRED ICSA).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-21-pm-2",
@@ -6009,7 +6207,10 @@
    "horizon": "2026-10-22",
    "probability": "70-80%",
    "basis": "Oct 21 close 5.13%; daily moves this month mostly within +/-5bp",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "10-year par yield fell 17 bp to 4.96% on Oct 22.",
+   "graded": "2026-10-31",
+   "lesson": "The band was too narrow for a day of risk-off rally."
   },
   {
    "id": "2026-10-21-pm-3",
@@ -6019,7 +6220,10 @@
    "horizon": "2026-10-28",
    "probability": "75-85%",
    "basis": "CME FedWatch ~84% hold as reported Oct 20-21; Beige Book slight-to-modest growth; housing weak",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-27-pm-1",
@@ -6029,7 +6233,10 @@
    "horizon": "2026-10-28",
    "probability": "85-95%",
    "basis": "CME FedWatch ~90% hold as reported Oct 27; all previews found expect a hold",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-27-pm-2",
@@ -6039,7 +6246,10 @@
    "horizon": "2026-10-28",
    "probability": "70-85%",
    "basis": "Reuters poll 19 of 34 economists; swaps ~85% per BBH",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Bank of Canada raised its rate 25bp to 2.50% on Oct 28.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-28-am-1",
@@ -6049,7 +6259,10 @@
    "horizon": "2026-10-28",
    "probability": "85-95%",
    "basis": "CME FedWatch ~91% hold, Kalshi ~93%; no official signal of a move; no SEP at this meeting",
-   "status": "open"
+   "status": "correct",
+   "outcome": "FOMC held at 3.75-4.00% on Oct 28, 10-2, with Cook and Hammack dissenting for a hike (Fed statement).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-28-am-2",
@@ -6059,7 +6272,10 @@
    "horizon": "2026-10-28",
    "probability": "35-55%",
    "basis": "Bloomberg and Investing.com previews flag a possible hawkish dissent; no named dissenter confirmed",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Two dissents, both for a hike (Cook, Hammack).",
+   "graded": "2026-10-31",
+   "lesson": "Right; more than expected."
   },
   {
    "id": "2026-10-28-am-3",
@@ -6069,7 +6285,10 @@
    "horizon": "2026-10-28",
    "probability": "55-70%",
    "basis": "Oct 27 par 10Y 4.99%, early Oct 28 ~5.01% (CNBC); typical FOMC-day range; futures pricing",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Hold with December left open; 10-year par 5.05% on Oct 28.",
+   "graded": "2026-10-31",
+   "lesson": "Right, inside the band."
   },
   {
    "id": "2026-10-28-pm-1",
@@ -6089,7 +6308,10 @@
    "horizon": "2026-10-29",
    "probability": "45-60%",
    "basis": "Consensus ~3.2%; September advance goods deficit widened to $134.9B on record imports, a drag risk",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Q3 real GDP advance estimate 3.4% annualized (BEA).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-28-pm-3",
@@ -6099,7 +6321,10 @@
    "horizon": "2026-10-29",
    "probability": "80-92%",
    "basis": "After-hours ~$294.5 (-9%) at 4:40 PM on EPS miss and negative FCF; overnight reversals of that size are uncommon",
-   "status": "open"
+   "status": "correct",
+   "outcome": "GOOGL closed Oct 29 at $283.82, −12.6%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-am-1",
@@ -6109,7 +6334,10 @@
    "horizon": "2026-10-29",
    "probability": "60-75%",
    "basis": "NQ futures ~-1% at 06:35 ET; GOOGL indicated ~-10%, NOW ~-19%; offset risk from GDP/PCE and pre-Amazon positioning",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Nasdaq closed Oct 29 at 26,184.72, −1.38%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-am-2",
@@ -6119,7 +6347,10 @@
    "horizon": "2026-10-29",
    "probability": "55-70%",
    "basis": "Consensus +0.3%; Sept core CPI +0.33% m/m (FRED)",
-   "status": "open"
+   "status": "correct",
+   "outcome": "September core PCE +0.3% m/m (BEA).",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-am-3",
@@ -6129,7 +6360,10 @@
    "horizon": "2026-10-29",
    "probability": "45-60%",
    "basis": "Sept 7-year cleared 5.085% with 2.42 bid-to-cover (weak); long-end selloff this week; offset by yields near cycle highs",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The 7-year cleared at 4.894%, matching when-issued: no tail.",
+   "graded": "2026-10-31",
+   "lesson": "The seventh auction in a row where the tail call missed; demand at 5% has been sturdier than assumed."
   },
   {
    "id": "2026-10-29-am-4",
@@ -6139,7 +6373,10 @@
    "horizon": "2026-10-29",
    "probability": "85-95%",
    "basis": "Unanimous previews (Reuters, FXStreet) expect a hold after two hikes since June",
-   "status": "open"
+   "status": "correct",
+   "outcome": "ECB held the deposit rate at 2.50%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-pm-1",
@@ -6149,7 +6386,10 @@
    "horizon": "2026-10-30",
    "probability": "70-85%",
    "basis": "AH ~$232 (-5%) at 4:42 PM after EPS miss and TTM FCF -$42.4B; call at 5 PM could narrow",
-   "status": "open"
+   "status": "correct",
+   "outcome": "AMZN closed Oct 30 at $240.35, −1.4%.",
+   "graded": "2026-10-31",
+   "lesson": "Right, but by far less than after-hours implied."
   },
   {
    "id": "2026-10-29-pm-2",
@@ -6159,7 +6399,10 @@
    "horizon": "2026-10-30",
    "probability": "85-95%",
    "basis": "Bloomberg survey: none expect October hike, 83% see December",
-   "status": "open"
+   "status": "correct",
+   "outcome": "BoJ held at 1.25%, 8-1.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-pm-3",
@@ -6169,7 +6412,10 @@
    "horizon": "2026-10-30",
    "probability": "80-92%",
    "basis": "AH ~$77 (-16%) on Q4 guide well below consensus",
-   "status": "open"
+   "status": "correct",
+   "outcome": "INTC closed Oct 30 at $65.76, −28.6%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-29-pm-4",
@@ -6179,7 +6425,10 @@
    "horizon": "2026-10-30",
    "probability": "55-70%",
    "basis": "Closed 4.98% Oct 29; typical daily range +/-5bp; ECI and month-end flows the main risks",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 4.94% on Oct 30.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-30-am-1",
@@ -6189,7 +6438,10 @@
    "horizon": "2026-10-30",
    "probability": "75-88%",
    "basis": "NQ futures -2.4% at 06:30 ET; Intel -25%, Amazon -7% premarket",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Nasdaq closed Oct 30 at 25,437.00, −2.86%.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-30-am-2",
@@ -6199,7 +6451,10 @@
    "horizon": "2026-10-30",
    "probability": "70-85%",
    "basis": "10Y ~4.92% in overseas trade (Reuters/CNBC) vs 4.98% Oct 29 par close",
-   "status": "open"
+   "status": "correct",
+   "outcome": "10-year par yield 4.94% on Oct 30.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-30-am-3",
@@ -6209,7 +6464,10 @@
    "horizon": "2026-10-30",
    "probability": "45-60%",
    "basis": "consensus +0.8%; Q2 +0.9%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "ECI +0.8% q/q (BLS).",
+   "graded": "2026-10-31",
+   "lesson": "Right, exactly at the line."
   },
   {
    "id": "2026-10-30-am-4",
@@ -6219,7 +6477,10 @@
    "horizon": "2026-10-30",
    "probability": "50-65%",
    "basis": "~18.5 at 06:23 ET vs 17.20 Oct 29 close; Nasdaq futures -2.4%",
-   "status": "open"
+   "status": "correct",
+   "outcome": "VIX closed 19.42 on Oct 30.",
+   "graded": "2026-10-31",
+   "lesson": "Right."
   },
   {
    "id": "2026-10-30-pm-1",
@@ -6249,6 +6510,46 @@
    "horizon": "2026-11-01",
    "probability": "55-70%",
    "basis": "Trade report (Oilprice.com) that the group is preparing to stop raising targets; prices already above $100",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-31-sat-1",
+   "date": "2026-10-31",
+   "slot": "sat",
+   "forecast": "US announces or carries out strikes on Iranian territory between Nov 4 and Nov 7, 2026.",
+   "horizon": "2026-11-07",
+   "probability": "15-30%",
+   "basis": "White House ruled out strikes only before Nov 3; options briefed (WSJ, CNN); Iran has not replied to the Vance letter; Qatari mediation still active.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-31-sat-2",
+   "date": "2026-10-31",
+   "slot": "sat",
+   "forecast": "VIX closes above 25 on at least one day Nov 2-6, 2026.",
+   "horizon": "2026-11-06",
+   "probability": "15-25%",
+   "basis": "VIX 19.42 with VIX9D level with spot; election, Iran, jobs report and chip earnings inside the window; contango intact to VIX3M.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-31-sat-3",
+   "date": "2026-10-31",
+   "slot": "sat",
+   "forecast": "S&P 500 closes Fri Nov 6 above its Oct 30 close of 7,580.07.",
+   "horizon": "2026-11-06",
+   "probability": "45-60%",
+   "basis": "Oversold tech after a 1.8% fall and favourable midterm-year November seasonality vs election, Iran and jobs-report risk.",
+   "status": "open"
+  },
+  {
+   "id": "2026-10-31-sat-4",
+   "date": "2026-10-31",
+   "slot": "sat",
+   "forecast": "January Brent settles above $120 on at least one day Nov 2-6, 2026.",
+   "horizon": "2026-11-06",
+   "probability": "10-20%",
+   "basis": "Jan Brent settled $113.43 Oct 30; needs a confirmed hit in the main channel or US strikes; OPEC+ expected to hold targets.",
    "status": "open"
   }
  ]
