@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-10-31T13:25:23Z",
+ "fetched_at": "2026-11-01T15:25:00Z",
  "treasury_par_curve": {
   "as_of": "2026-10-30 EOD official",
   "source": "home.treasury.gov",
@@ -75,18 +75,18 @@
  },
  "fx": {
   "source": "Frankfurter/ECB",
-  "date": "2026-10-29",
+  "date": "2026-10-30",
   "rates": {
-   "AUD": 1.4234,
-   "BRL": 5.3516,
-   "CAD": 1.3996,
-   "CHF": 0.82857,
-   "CNY": 6.6616,
-   "EUR": 0.89847,
-   "GBP": 0.75093,
-   "INR": 95.27,
-   "JPY": 158.06,
-   "MXN": 18.7475
+   "AUD": 1.4236,
+   "BRL": 5.4325,
+   "CAD": 1.3969,
+   "CHF": 0.82295,
+   "CNY": 6.6529,
+   "EUR": 0.89509,
+   "GBP": 0.74633,
+   "INR": 94.95,
+   "JPY": 157.25,
+   "MXN": 18.908
   }
  },
  "crypto": {
@@ -1082,14 +1082,14 @@
   }
  },
  "coingecko": {
-  "fetched": "2026-10-08T10:35:00Z",
-  "bitcoin": 82750,
-  "ethereum": 2556.12,
-  "solana": 114.53,
-  "cardano": 0.253747,
-  "total_cap_usd": 2794389520703,
-  "btc_dominance": 59.26,
-  "cap_chg_24h_pct": -3.93
+  "fetched": "2026-11-01T15:25:00Z",
+  "bitcoin": 77950,
+  "ethereum": 2267.38,
+  "solana": 95.01,
+  "cardano": 0.19315,
+  "total_cap_usd": 2611230224357.8794,
+  "btc_dominance": 59.95,
+  "cap_chg_24h_pct": -3.06
  },
  "board": {
   "as_of": "2026-10-16 16:00 ET EOD (Yahoo v8; Treasury par curve for yields)",
@@ -1266,10 +1266,10 @@
   }
  },
  "coingecko_global": {
-  "as_of": "2026-10-30T10:48:05Z",
-  "total_mcap_usd": 2595431801708,
-  "btc_dominance": 59.78,
-  "mcap_chg_24h_pct": -5.57
+  "as_of": "2026-11-01T15:25:00Z",
+  "total_mcap_usd": 2611230224357.8794,
+  "btc_dominance": 59.95,
+  "mcap_chg_24h_pct": -3.06
  },
  "fred_csv_2026_09_29": {
   "fetched_at": "2026-09-29T15:13:07Z",
@@ -11488,6 +11488,34 @@
     "lo52": 8.99,
     "vol": 0
    }
+  }
+ },
+ "sun_2026_11_01": {
+  "note": "Sunday gather; Yahoo v8 429 on parallel burst (Friday Oct 30 EOD closes reused from yahoo_pm_2026_10_30); Cboe CDN 307/reset; Treasury par+real Oct 30; FRED; ECB Oct 30; CoinGecko live",
+  "treasury_real_2026_10_30": {
+   "5Y": 2.25,
+   "7Y": 2.42,
+   "10Y": 2.6,
+   "20Y": 2.92,
+   "30Y": 3.08
+  },
+  "fred": {
+   "BAMLC0A0CM": [
+    "2026-10-29",
+    0.89
+   ],
+   "DFF": [
+    "2026-10-29",
+    3.88
+   ],
+   "T10Y2Y": [
+    "2026-10-30",
+    0.38
+   ],
+   "T10YIE": [
+    "2026-10-30",
+    2.34
+   ]
   }
  }
 }

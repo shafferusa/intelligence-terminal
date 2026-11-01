@@ -6551,6 +6551,96 @@
    "probability": "10-20%",
    "basis": "Jan Brent settled $113.43 Oct 30; needs a confirmed hit in the main channel or US strikes; OPEC+ expected to hold targets.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-1",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Control of the US Senate is not projected by major news organisations (AP or the networks) by 6 AM ET Thursday, Nov. 5, 2026.",
+   "horizon": "2026-11-05",
+   "probability": "35-55%",
+   "basis": "Several toss-ups incl. slow-counting Alaska (ranked choice) and mail-heavy states; pending DOJ certification suit in Alaska; early-closing states (OH, NC, ME) could settle it",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-2",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "US announces or carries out strikes on Iranian territory between Nov. 4 and Nov. 7, 2026.",
+   "horizon": "2026-11-07",
+   "probability": "15-30%",
+   "basis": "White House ruled out strikes only before Nov 3; Rubio 'no decision'; Trump says one or two targets remain; Iran's two-day Hormuz plan unanswered; Qatari mediation active",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-3",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "October nonfarm payrolls (first print, Nov. 6) are negative.",
+   "horizon": "2026-11-06",
+   "probability": "10-20%",
+   "basis": "Sept +29K; forecasts ~45-55K; initial claims low at 194K (week of Oct 24); real wages falling",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-4",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "AMD and Qualcomm BOTH guide December-quarter revenue below consensus at the midpoint in their results this week.",
+   "horizon": "2026-11-06",
+   "probability": "20-35%",
+   "basis": "Intel's PC/memory-cost warning; AMD data-centre demand and Broadcom/Micron resilience argue against",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-5",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Treasury raises nominal coupon auction sizes, or drops its 'at least the next several quarters' guidance, at the Nov. 4, 2026 refunding.",
+   "horizon": "2026-11-04",
+   "probability": "5-15%",
+   "basis": "Explicit Treasury guidance; dealers expect first increase in early 2027 (MNI, dealer survey)",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-6",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Base case: S&P 500 closes Fri Nov 6 within ±2% of its Oct 30 close of 7,580.07 (7,428-7,732).",
+   "horizon": "2026-11-06",
+   "probability": "45-55%",
+   "basis": "Orderly election, mixed chip results, payrolls 0-100K; VIX 19.42 implies weekly 1-sd move of ~2.7%",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-7",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Bull case: S&P 500 closes Fri Nov 6 more than 2% above 7,580.07 (above 7,732).",
+   "horizon": "2026-11-06",
+   "probability": "18-28%",
+   "basis": "Quick uncontested result, reassuring Apple/AMD, soft-but-positive jobs, Hormuz progress",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-8",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Bear case: S&P 500 closes Fri Nov 6 between 2% and 5% below 7,580.07 (7,201-7,428).",
+   "horizon": "2026-11-06",
+   "probability": "18-28%",
+   "basis": "Chip warning spreads, negative payrolls or disputed Senate count",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-01-sun-9",
+   "date": "2026-11-01",
+   "slot": "sun",
+   "forecast": "Shock case: S&P 500 closes Fri Nov 6 more than 5% below 7,580.07 (below 7,201).",
+   "horizon": "2026-11-06",
+   "probability": "3-8%",
+   "basis": "Requires US strikes hitting Gulf energy/tanker traffic with oil >$125 plus weak jobs or contested election",
+   "status": "open"
   }
  ]
 }

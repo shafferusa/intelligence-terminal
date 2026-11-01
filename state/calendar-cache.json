@@ -1,54 +1,70 @@
 {
- "fetched": "2026-10-30T06:50:00-04:00",
- "earnings_fetched": "2026-10-18",
- "earnings_fetched_note": "2026-10-18 sun: Alpha Vantage 3-month CSV + Finnhub Oct 19-23 fetched; conflicts GE (Mon vs Tue -> Tue), PM (Tue vs Wed -> Wed), GD (Oct 22 vs Oct 30), SPCX (Oct 20 vs Nov 3) noted. | 2026-10-19 am: Finnhub day-of refresh; TreasuryDirect upcoming refreshed.",
+ "fetched": "2026-11-01T10:25:00-05:00",
+ "earnings_fetched": "2026-11-01",
+ "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
  "events": [
   {
-   "ts_et": "2026-10-30T08:30",
+   "ts_et": "2026-11-02T10:00",
    "type": "data",
-   "name": "Employment Cost Index Q3",
-   "importance": "High",
-   "reason": "Fed's preferred wage gauge before Dec meeting",
-   "source": "bls.ics"
+   "name": "ISM Manufacturing PMI (Oct)",
+   "importance": "Medium",
+   "reason": "Consensus 54.7 (Trading Economics); prices index",
+   "source": "ismworld.org calendar"
   },
   {
-   "ts_et": "2026-10-30T09:45",
-   "type": "data",
-   "name": "Chicago PMI (Oct)",
+   "ts_et": "2026-11-02T11:30",
+   "type": "treasury",
+   "name": "13-wk $95B / 26-wk $82B bill auctions",
    "importance": "Low",
-   "reason": "Regional survey",
-   "source": "research"
+   "reason": "Bill supply",
+   "source": "treasurydirect"
   },
   {
-   "ts_et": "2026-11-01T00:00",
-   "type": "energy",
-   "name": "OPEC+ meeting (December output)",
-   "importance": "High",
-   "reason": "Oil supply amid Hormuz disruption",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-02T00:00",
+   "ts_et": "2026-11-02T15:00",
    "type": "treasury",
    "name": "Treasury marketable borrowing estimates",
    "importance": "Medium",
-   "reason": "Refunding prelude (per previews)",
-   "source": "research"
+   "reason": "Refunding prelude",
+   "source": "treasury.gov"
   },
   {
    "ts_et": "2026-11-02T16:00",
    "type": "earnings",
-   "name": "Apple",
+   "name": "Apple (FQ4; Ternus first call)",
    "importance": "High",
-   "reason": "Mega-cap",
-   "source": "research"
+   "reason": "Mega-cap; memory-cost margins",
+   "source": "finnhub+alphavantage"
+  },
+  {
+   "ts_et": "2026-11-02T16:00",
+   "type": "earnings",
+   "name": "Palantir",
+   "importance": "High",
+   "reason": "AI software bellwether",
+   "source": "alphavantage+news"
+  },
+  {
+   "ts_et": "2026-11-02T20:42",
+   "type": "launch",
+   "name": "Falcon 9 USSF-432",
+   "importance": "Low",
+   "reason": "National-security launch (SPCX)",
+   "source": "ll2"
+  },
+  {
+   "ts_et": "2026-11-02T22:30",
+   "type": "central_bank",
+   "name": "RBA decision (Nov 3 2:30pm AEDT)",
+   "importance": "Medium",
+   "reason": "Hike to 4.85% expected by CBA/ANZ/Westpac",
+   "source": "rba"
   },
   {
    "ts_et": "2026-11-03T00:00",
    "type": "politics",
    "name": "US midterm elections",
    "importance": "Critical",
-   "reason": "Control of Congress",
+   "reason": "Control of Congress; certification litigation",
    "source": "research"
   },
   {
@@ -60,28 +76,108 @@
    "source": "bls.ics"
   },
   {
+   "ts_et": "2026-11-03T16:00",
+   "type": "earnings",
+   "name": "AMD, Super Micro, Arista, Amgen, Booking, Block",
+   "importance": "High",
+   "reason": "Chip/AI infrastructure read after Intel warning",
+   "source": "finnhub"
+  },
+  {
+   "ts_et": "2026-11-03T00:00",
+   "type": "crypto",
+   "name": "Binance full proof of reserves (delayed from Nov 2)",
+   "importance": "Medium",
+   "reason": "Post-hack solvency check",
+   "source": "research"
+  },
+  {
    "ts_et": "2026-11-04T08:30",
    "type": "treasury",
    "name": "Quarterly refunding announcement",
    "importance": "High",
-   "reason": "Coupon sizes",
+   "reason": "Coupon sizes; guidance",
    "source": "treasury.gov"
+  },
+  {
+   "ts_et": "2026-11-04T08:30",
+   "type": "data",
+   "name": "Trade balance (Sept)",
+   "importance": "Low",
+   "reason": "Per calendars; BEA",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-04T10:00",
+   "type": "data",
+   "name": "ISM Services PMI (Oct)",
+   "importance": "Medium",
+   "reason": "Consensus ~54.8",
+   "source": "ismworld.org calendar"
+  },
+  {
+   "ts_et": "2026-11-04T16:00",
+   "type": "earnings",
+   "name": "Qualcomm, AppLovin, DoorDash, MercadoLibre, Snap",
+   "importance": "High",
+   "reason": "Phones/PCs and growth names",
+   "source": "finnhub"
+  },
+  {
+   "ts_et": "2026-11-04T07:00",
+   "type": "earnings",
+   "name": "CVS, McDonald's, Uber, Datadog, Novo Nordisk (bmo)",
+   "importance": "Medium",
+   "reason": "Consumer/health",
+   "source": "finnhub+alphavantage"
+  },
+  {
+   "ts_et": "2026-11-04T00:00",
+   "type": "politics",
+   "name": "Israel official results to President Herzog",
+   "importance": "Medium",
+   "reason": "Coalition mandate within a week",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-11-05T07:00",
+   "type": "central_bank",
+   "name": "Bank of England decision + MPR",
+   "importance": "Medium",
+   "reason": "Held 3.75% 6-3 in Sept; hike risk",
+   "source": "bankofengland"
   },
   {
    "ts_et": "2026-11-05T08:30",
    "type": "data",
-   "name": "Productivity and Costs Q3",
+   "name": "Productivity and Costs Q3; jobless claims",
    "importance": "Medium",
    "reason": "Unit labor costs",
    "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-05T16:00",
+   "type": "earnings",
+   "name": "Arm (Finnhub Nov 5; AV Nov 4), Airbnb, Cloudflare, Atlassian",
+   "importance": "Medium",
+   "reason": "Chip IP / growth",
+   "source": "finnhub+alphavantage"
   },
   {
    "ts_et": "2026-11-06T08:30",
    "type": "data",
    "name": "Employment Situation (Oct)",
    "importance": "Critical",
-   "reason": "Jobs report before Dec FOMC",
+   "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
    "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-06T07:00",
+   "type": "earnings",
+   "name": "Humana, Moderna, Vistra (bmo)",
+   "importance": "Low",
+   "reason": "Health/power",
+   "source": "finnhub"
   },
   {
    "ts_et": "2026-11-10T08:30",
@@ -90,9 +186,33 @@
    "importance": "Critical",
    "reason": "Inflation before Dec FOMC",
    "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-13T08:30",
+   "type": "data",
+   "name": "PPI (Oct)",
+   "importance": "Medium",
+   "reason": "Producer prices",
+   "source": "bls.ics"
+  },
+  {
+   "ts_et": "2026-11-29T00:00",
+   "type": "energy",
+   "name": "OPEC+ ministerial (2027 framework)",
+   "importance": "High",
+   "reason": "2027 quotas",
+   "source": "research"
+  },
+  {
+   "ts_et": "2026-12-09T14:00",
+   "type": "fomc",
+   "name": "FOMC decision",
+   "importance": "Critical",
+   "reason": "Dec hike ~72% priced (Oct 30, as reported)",
+   "source": "federalreserve.gov"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
- "fomc_next": "2026-10-28",
- "holiday_note": "2026-10-30: no NYSE holiday or early close this week or next (data/nyse-holidays.json)."
+ "fomc_next": "2026-12-09",
+ "holiday_note": "2026-11-01: no NYSE holiday or early close Nov 2-6 (data/nyse-holidays.json). Clocks fell back Nov 1; times now EST."
 }
