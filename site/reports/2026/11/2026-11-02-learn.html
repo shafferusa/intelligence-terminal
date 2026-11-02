@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Cape Town Set a Date for Its Taps to Run Dry. Then the Date Kept Moving. — Learning Brief, Mon, Nov 2, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-11-02",
+    "slot": "learn",
+    "title": "Cape Town Set a Date for Its Taps to Run Dry. Then the Date Kept Moving.",
+    "path": "reports/2026/11/2026-11-02-learn.html",
+    "summary": "Day 25 of the Connected Path: a stock changes only through its flows and holds steady only when inflow equals outflow, which is why Cape Town could name a date its dams would run dry months ahead — and why cutting water use pushed that date back by months, not days, each time.",
+    "headlines": [
+      "Day 25 of 293 · Systems Thinking: a stock changes only through its flows and holds steady only when inflow equals outflow",
+      "Cape Town's 2018 Day Zero kept leaping forward because time to empty is stock divided by net outflow, not a day-for-day count",
+      "Watch or Read: Thinking in Systems, ch. 1, ‘The Basics’ (about 25 pages)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-11-02T04:58:00-05:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Cape Town Set a Date for Its Taps to Run Dry. Then the Date Kept Moving.</h1>
+      <p class="paper-dateline">
+        Monday, November 2, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A stock changes only through its flows and holds steady only when inflow equals outflow &mdash; which is why a city could name the day its reservoirs would run dry months in advance, and why modest cuts in water use kept pushing that day back by months at a time.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Systems Thinking</p>
+      <span class="track-progress">Day 25 of 293 &middot; Systems Thinking 1 of 12 &middot; Stocks and flows: bathtub dynamics</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A city counts down to Day Zero</h3>
+      <p>
+        In January 2018, after three dry winters, Cape Town&rsquo;s leaders told the city&rsquo;s roughly
+        four million residents that the taps could run dry on a specific day. Officials called it
+        &ldquo;Day Zero&rdquo;: the day the supply dams were projected to fall to 13.5% of capacity, the
+        level at which the city planned to shut off most household plumbing and send residents to queue
+        at collection points for a daily ration. That January the date stood at around 22 April; within
+        days officials moved it forward again, to 12 April.
+      </p>
+      <p>
+        From 1 February 2018, households were restricted to 50 litres of water per person per day, as the
+        city tried to pull its total draw down from the roughly 1.1&ndash;1.2 billion litres a day it had
+        been drawing in 2015. As the cuts bit, the projected date did not creep forward by matching days.
+        It leapt: by mid-February officials were naming June. By spring, citing a weekly dam decline that
+        had slowed to half a percentage point, they pushed it to 9 July. By early April they said Day Zero
+        probably would not arrive in 2018 at all, and moved their working estimate into 2019 &mdash; just
+        as winter rains began refilling the dams, and the crisis ended without a single tap running dry.
+      </p>
+      <p>
+        How could officials name a specific day a city of four million would run out of water, months
+        ahead of time &mdash; and why did a cut in daily use push the projected date back not by days, but
+        by months?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        A stock is anything that accumulates and can be measured at an instant &mdash; the water sitting in
+        a dam, the money in a bank account, the carbon dioxide in the sky. It changes only through its
+        flows: an inflow adding to it and an outflow draining it, both measured per unit of time, like
+        litres <em>per day</em> rather than litres. A stock keeps rising or falling for exactly as long as
+        those two flows are unequal, and it stops only at the instant inflow equals outflow &mdash; a state
+        worth its own name, dynamic equilibrium, because the stock holds still while water is still moving
+        through it in both directions.
+      </p>
+      <p>
+        That sounds obvious stated plainly, and it is still routinely gotten wrong, because intuition
+        tends to track the flow instead of the stock: if the inflow stops rising, people expect the level
+        to stop rising too. It does not. A dam with no rain falling into it keeps falling for as long as
+        anything is still being drawn out of it, no matter how small that draw has become &mdash; and a
+        smaller draw does not hold the water level steady, it only slows the fall.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Call the stock S and measure it at any moment t. Its rate of change is simply the difference
+        between what is coming in and what is going out right now: dS/dt = inflow &minus; outflow. That
+        differential equation is not new vocabulary &mdash; it is Day 4&rsquo;s derivative, the
+        instantaneous rate of change, applied to an accumulating quantity instead of a position. Run the
+        clock forward from a starting value S(0) and the stock at any later time is that starting value
+        plus everything that flowed in minus everything that flowed out along the way:
+        S(t) = S(0) + the integral, from 0 to t, of (inflow &minus; outflow). That is Day 5&rsquo;s integral
+        doing exactly the job it was built for &mdash; accumulating a rate into a quantity &mdash; and the
+        two equations say the same thing from opposite ends: the derivative tells you which way the stock
+        is moving right now, the integral tells you where it has ended up.
+      </p>
+      <p>
+        Three consequences follow directly from that one relationship, and all three are where intuition
+        goes wrong.
+      </p>
+      <p>
+        First, the stock&rsquo;s direction depends only on the <em>sign</em> of inflow minus outflow, never
+        on whether either flow happens to be rising or falling. A stock can be falling even while its
+        outflow is shrinking, as long as outflow still exceeds inflow; it can be rising even while its
+        inflow is shrinking, as long as inflow still exceeds outflow. People routinely expect a shrinking
+        outflow to mean a stabilizing stock. It does not, until that outflow actually drops to match the
+        inflow.
+      </p>
+      <p>
+        Second, a stock reaches dynamic equilibrium &mdash; holds a constant level &mdash; only at inflow =
+        outflow, and that balance point can sit anywhere: full, empty, or in between. A bathtub with the
+        tap open and the drain open can sit at a perfectly steady six inches of water for as long as the
+        tap and the drain are matched, even though water is pouring in and draining out the entire time.
+        Mistaking a steady level for a closed tap, or for no outflow at all, is common enough that
+        researchers who study the error gave it a name: the <strong>bathtub heuristic</strong> &mdash;
+        wrongly inferring the stock&rsquo;s trend directly from a flow&rsquo;s current level, as if the
+        stock were tracking the flow one-for-one instead of accumulating the net difference between two
+        flows over time.
+      </p>
+      <p>
+        Third &mdash; and this is the piece that explains Cape Town&rsquo;s leaping dates rather than
+        creeping ones &mdash; when net outflow (outflow minus inflow) holds roughly steady, the time left
+        until a stock empties is not proportional to the cut in outflow; it is <em>time to empty = S /
+        net outflow</em>, the stock divided by the net rate draining it. Halving a steady net outflow does
+        not buy twice as many days before the old deadline arrives; it buys a deadline that sits roughly
+        twice as far from today as the one you started with. Imagine a reservoir holding 100 units with no
+        rain falling into it (inflow near zero) and a city drawing down 10 units a day: at that rate, the
+        reservoir is 10 days from empty. Cut the draw to 5 units a day and the reservoir does not merely
+        gain a few days &mdash; it is now 20 days from empty, double the runway, from the same cut in half.
+        Cut it again to 2.5 units a day and the runway doubles again, to 40 days. Each proportional cut in
+        outflow produces a proportional stretch in the time remaining, which is why a modest, fixed
+        percentage reduction in water use can look, from the outside, like the deadline keeps leaping away
+        rather than edging back.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        Cape Town&rsquo;s dams were the stock. Summer rainfall into them was close to zero, so the inflow
+        side of the ledger was effectively off, and the whole system behaved like a reservoir draining on
+        outflow alone &mdash; close to the exact case where time to empty = S / net outflow applies almost
+        literally. When the city&rsquo;s restrictions pulled total daily use down toward roughly half of
+        2015&rsquo;s draw, the net outflow draining the dams fell by something close to that same fraction,
+        and the time remaining before the dams hit 13.5% stretched out by roughly the same proportion
+        &mdash; not by the number of days saved, but by a multiplying factor on however many days were
+        left. That is why the date did not inch from 22 April to 23 April as cuts arrived; it leapt to
+        June, then to July, as the usage cuts compounded. And it is also why the crisis ended the way it
+        did: the inflow side of the ledger, switched off all summer, switched back on when winter rains
+        finally arrived, pushing net outflow negative and the dams back up &mdash; not because the
+        city&rsquo;s restraint had somehow erased the deadline, but because the flow that had been near
+        zero all along came back.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Stock</dt>
+        <dd>Any quantity that accumulates and can be measured at a single instant &mdash; water in a dam,
+        dollars in an account, carbon dioxide in the atmosphere.</dd>
+        <dt>Flow (inflow and outflow)</dt>
+        <dd>A rate that adds to or drains a stock, measured per unit of time; a stock changes only through
+        its flows, never directly.</dd>
+        <dt>Net flow</dt>
+        <dd>Inflow minus outflow at a given moment; its sign, not its size or trend, determines whether the
+        stock is rising or falling right now.</dd>
+        <dt>Dynamic equilibrium</dt>
+        <dd>A stock holding a constant level because inflow equals outflow, not because either flow has
+        stopped; the level can sit anywhere, not only full or empty.</dd>
+        <dt>Bathtub heuristic (error)</dt>
+        <dd>The common mistake of reading a stock&rsquo;s trend directly off a flow&rsquo;s current level,
+        instead of off the accumulated difference between the two flows over time.</dd>
+        <dt>Time to empty</dt>
+        <dd>Stock divided by a steady net outflow; it changes in proportion to the net outflow, so a modest
+        cut in outflow can push the deadline away by a large multiple.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The Atmosphere as a Bathtub</h3>
+      <p>
+        Atmospheric carbon dioxide runs on exactly the same accounting, and it is the case where the
+        failure to read a bathtub correctly has been measured directly, in people who should know better.
+        Fossil-fuel burning and land-use change are the inflow; the land and ocean together are the
+        outflow, a planetary-scale carbon sink that currently absorbs a bit over half of each year&rsquo;s
+        emissions, leaving a little under half to accumulate in the air (the exact split varies year to
+        year and is still actively studied, but &ldquo;a bit over half absorbed&rdquo; has held up across
+        decades of measurement). The concentration is the stock, and like any stock it keeps rising for as
+        long as inflow exceeds outflow &mdash; which it still does, even in a year when emissions themselves
+        do not grow.
+      </p>
+      <p>
+        In a 2007 study published in <em>Climatic Change</em>, the systems researchers John Sterman and
+        Linda Booth Sweeney gave a sample of roughly 200 MIT graduate students &mdash; most trained in
+        science, engineering or economics, not people without quantitative background &mdash; a simple
+        task: sketch what happens to atmospheric CO2 if annual emissions are held flat at roughly
+        today&rsquo;s rate instead of being cut toward zero. Most drew the concentration leveling off or
+        falling, as though a steady inflow meant a steady or shrinking stock. It does not: the inflow has
+        to drop below the outflow &mdash; below what the land and ocean can absorb &mdash; before the stock
+        stops climbing, and it has to drop further than that before the stock actually falls. Holding
+        emissions flat holds the <em>tap</em> flat; it does nothing to the drain, and the tub keeps filling.
+      </p>
+      <div class="worked">
+        <p><strong>1. Identify the bathtub.</strong> Stock S = atmospheric CO2 concentration. Inflow =
+        annual emissions. Outflow = land and ocean absorption, currently a bit over half of emissions.</p>
+        <p><strong>2. Write the stock&rsquo;s rule.</strong> dS/dt = inflow &minus; outflow. The
+        concentration falls only when outflow exceeds inflow.</p>
+        <p><strong>3. Test &ldquo;hold emissions flat.&rdquo;</strong> If inflow stays level while outflow
+        is only a bit over half of it, inflow &minus; outflow stays positive &mdash; dS/dt &gt; 0 &mdash; so
+        the stock keeps rising, just at a steady rather than accelerating pace.</p>
+        <p><strong>4. Find the actual stabilizing condition.</strong> The concentration stops rising only
+        once inflow falls to match outflow &mdash; which itself shifts as the sinks respond to a changing
+        climate &mdash; not once emissions merely stop growing.</p>
+        <p><strong>5. Read the implication.</strong> &ldquo;Flat emissions&rdquo; and &ldquo;stable
+        climate&rdquo; are not the same claim; treating them as the same claim is the identical error
+        Sterman and Booth Sweeney&rsquo;s subjects made with a bathtub instead of a planet.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">dS/dt = inflow &minus; outflow &nbsp;&rArr;&nbsp; S(t) = S(0) + &int;<sub>0</sub><sup>t</sup> (inflow &minus; outflow) d&tau;</p>
+        <p class="expr-spoken visually-hidden">The rate of change of S with respect to t equals inflow
+        minus outflow. Equivalently, S of t equals S of zero plus the integral, from zero to t, of inflow
+        minus outflow, with respect to time.</p>
+        <dl>
+          <dt>S</dt>
+          <dd>the stock: the quantity accumulated at a given instant</dd>
+          <dt>t</dt>
+          <dd>time</dd>
+          <dt>inflow, outflow</dt>
+          <dd>the rates adding to and draining the stock, both measured per unit of time</dd>
+          <dt>S(0)</dt>
+          <dd>the stock&rsquo;s starting value, before any of the flows in the integral are added</dd>
+        </dl>
+      </div>
+      <p>When net outflow (outflow minus inflow) holds roughly steady, the stock empties on a schedule set
+      by division, not subtraction:</p>
+      <div class="formula">
+        <p class="expr">time to empty = S / (outflow &minus; inflow)</p>
+        <p class="expr-spoken visually-hidden">Time to empty equals the stock divided by the quantity
+        outflow minus inflow.</p>
+        <dl>
+          <dt>time to empty</dt>
+          <dd>how long, at the current net rate, until the stock reaches zero</dd>
+          <dt>outflow &minus; inflow</dt>
+          <dd>the steady net outflow assumed for this estimate; if it changes, the time to empty changes
+          with it, in proportion</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can see a system as a stock fed and drained by flows, you gain a specific defense against
+        a specific error: mistaking a change in a flow&rsquo;s trend for a change in the stock&rsquo;s fate.
+        A shrinking budget deficit does not mean a national debt is falling &mdash; it is still rising, just
+        more slowly, for as long as the deficit (the flow) stays positive. A slowing rate of new admissions
+        does not mean a hospital&rsquo;s patient count has peaked, if admissions still outpace discharges.
+        The question worth asking of any stock in the news is never &ldquo;is the flow getting
+        better,&rdquo; but &ldquo;has the flow crossed zero, or crossed the other flow it has to match.&rdquo;
+      </p>
+      <p>
+        <b>Settled.</b> Stock-and-flow accounting is mass balance: a stock&rsquo;s level at any time is
+        fixed by its starting value and the history of its flows, and the bathtub heuristic error is
+        well replicated across samples and decades of research.
+      </p>
+      <p>
+        <b>Debated.</b> How much of Cape Town&rsquo;s avoided Day Zero to credit to household rationing, to
+        cuts in agricultural and commercial allocations, or to the winter rains that arrived when they did
+        is still argued locally; the flows themselves are not in dispute, only how to apportion the outcome
+        among the people who changed them and the weather that did not ask permission.
+      </p>
+      <p>
+        <b>Value judgment.</b> Whether households should have absorbed the first and deepest cuts, ahead of
+        agriculture and industry, is a question about fairness and priority that stock-and-flow arithmetic
+        cannot answer on its own &mdash; it can only tell you how large a cut, wherever applied, buys how
+        much time.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 4 gave the derivative as the instantaneous rate of change; today&rsquo;s dS/dt =
+        inflow &minus; outflow is that same tool pointed at an accumulating quantity instead of a moving
+        position. Day 5 gave the integral as accumulation from a rate &mdash; the fundamental theorem of
+        calculus linking the two &mdash; and today&rsquo;s S(t) = S(0) + the running integral of net flow
+        is that theorem doing the actual work of a bathtub, a dam or a national debt.
+      </p>
+      <p>
+        <b>Across.</b> Accounting &mdash; Logan&rsquo;s own CFA ground &mdash; runs on the identical identity
+        under a different name: the clean-surplus relation states that ending equity equals beginning
+        equity plus net income minus dividends, which is exactly S(t) = S(0) + accumulated net flow, with
+        equity as the stock and net income less dividends as the net flow. A balance sheet is a stock
+        statement; an income statement is a flow statement; and the two are tied together by the same
+        bathtub arithmetic a hydrologist uses on a dam.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Thinking in Systems: A Primer, Chapter 1, &ldquo;The Basics&rdquo; &mdash; Donella H. Meadows,
+        ed. Diana Wright (Chelsea Green, 2008) &middot; Reading &middot; about 25 pages</p>
+        <p>The standard primer on stocks, flows and dynamic equilibrium, with the bathtub diagrams this
+        whole block of lessons will keep returning to; it is the block&rsquo;s main text.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A stock changes only through its flows; nothing about it can change except by inflow adding or
+        outflow draining.</li>
+        <li>A stock holds steady only when inflow equals outflow &mdash; dynamic equilibrium &mdash; not
+        whenever a flow stops changing.</li>
+        <li>Time to empty is stock divided by net outflow, so a proportional cut in outflow buys a
+        proportional stretch in time, not a matching number of extra days.</li>
+        <li>The bathtub heuristic error &mdash; reading a stock&rsquo;s trend off a flow&rsquo;s level
+        instead of its accumulated net difference &mdash; shows up in trained scientists and engineers, not
+        just casual intuition.</li>
+        <li>&ldquo;The flow is improving&rdquo; and &ldquo;the stock has turned&rdquo; are different claims;
+        only the second one means the stock itself has stopped getting worse.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        The 1922 Colorado River Compact divided 7.5 million acre-feet a year to each of the river&rsquo;s
+        two basins based on flows measured in an unusually wet early-twentieth-century stretch, with
+        Mexico later promised 1.5 million more by treaty, yet this century the river has averaged closer to
+        12&ndash;13 million acre-feet a year; using stock-and-flow reasoning, why would Lake Mead keep
+        falling toward roughly a quarter of its capacity even in a year when the river&rsquo;s flow was
+        entirely ordinary by this century&rsquo;s standards?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> City of Cape Town dam-level and Day Zero announcements,
+      January&ndash;April 2018; Gina Ziervogel, &ldquo;Unpacking the Cape Town Drought: Lessons
+      Learned&rdquo; (African Centre for Cities, University of Cape Town, 2019); John Sterman and Linda
+      Booth Sweeney, &ldquo;Understanding Public Complacency About Climate Change,&rdquo; <em>Climatic
+      Change</em> 80 (2007): 213&ndash;238; Global Carbon Project sink-partition estimates; the 1922
+      Colorado River Compact and 1944 Mexican Water Treaty; federal and Nevada Colorado River Commission
+      reporting on Lake Mead&rsquo;s 2022 levels. All checked via web search this run except the Meadows
+      citation (see Method).</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list, cited without a link: it could not be
+      web-verified this run, so it is cited from the book&rsquo;s well-established table of contents rather
+      than confirmed fresh. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-01-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
