@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-11-01T15:25:00Z",
+ "fetched_at": "2026-11-02T11:45:00Z",
  "treasury_par_curve": {
   "as_of": "2026-10-30 EOD official",
   "source": "home.treasury.gov",
@@ -594,8 +594,8 @@
   "source": "Massive grouped daily"
  },
  "finra_short_vol": {
-  "date": "2026-10-29",
-  "agg_ratio": 48.4
+  "date": "2026-10-30",
+  "agg_ratio": 47.3
  },
  "sector_etfs_wk": {
   "as_of": "2026-09-25 EOD official",
@@ -11516,6 +11516,97 @@
     "2026-10-30",
     2.34
    ]
+  }
+ },
+ "am_2026_11_02": {
+  "source": "Yahoo spark via proxy fetch (Yahoo v8 curl 429 on all 41 symbols), ~06:26-06:31 ET",
+  "quotes": {
+   "ES=F": 7654.0,
+   "NQ=F": 28772.75,
+   "YM=F": 52227.0,
+   "RTY=F": 2843.0,
+   "CL=F": 99.38,
+   "BZ=F": 108.46,
+   "GC=F": 3915.7,
+   "SI=F": 50.3,
+   "NG=F": 2.927,
+   "HG=F": 6.523,
+   "EURUSD=X": 1.1213,
+   "JPY=X": 157.861,
+   "GBPUSD=X": 1.3418,
+   "CNY=X": 6.6368,
+   "AUDUSD=X": 0.7013,
+   "MXN=X": 18.7291,
+   "DX-Y.NYB": 101.635,
+   "^VIX": 18.96,
+   "BTC-USD": 77785.97,
+   "ETH-USD": 2283.55,
+   "SOL-USD": 93.81,
+   "ADA-USD": 0.19042,
+   "^N225": 63081.86,
+   "^KS11": 5859.08,
+   "^TWII": 44920.14,
+   "^HSI": 23393.32,
+   "000001.SS": 3638.031,
+   "^AXJO": 8856.5,
+   "^STOXX50E": 6152.39,
+   "^STOXX": 647.3,
+   "^GDAXI": 25880.26,
+   "^FTSE": 10730.01,
+   "^FCHI": 7997.71
+  },
+  "prev_settle": {
+   "ES=F": 7614.0,
+   "NQ=F": 28534.0,
+   "YM=F": 51918.0,
+   "RTY=F": 2821.3,
+   "CL=F": 104.12,
+   "BZ=F": 113.43,
+   "GC=F": 3898.9
+  },
+  "fred": {
+   "DGS10": [
+    "2026-10-29",
+    4.98
+   ],
+   "DGS2": [
+    "2026-10-29",
+    4.61
+   ],
+   "T10Y2Y": [
+    "2026-10-30",
+    0.38
+   ],
+   "T10YIE": [
+    "2026-10-30",
+    2.34
+   ],
+   "DFII10": [
+    "2026-10-29",
+    2.63
+   ],
+   "SOFR": [
+    "2026-10-29",
+    3.94
+   ],
+   "BAMLH0A0HYM2": [
+    "2026-10-29",
+    3.26
+   ],
+   "ICSA": [
+    "2026-10-24",
+    194000
+   ]
+  },
+  "frankfurter": {
+   "date": "2026-10-30",
+   "note": "unchanged from prior fetch"
+  },
+  "weather": {
+   "today_hi": 70,
+   "tonight_lo": 52,
+   "tue_hi": 76,
+   "alerts": 0
   }
  }
 }

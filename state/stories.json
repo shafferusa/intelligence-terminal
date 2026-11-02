@@ -1,6 +1,83 @@
 {
  "stories": [
   {
+   "id": "oil-iran-diplomacy-nov2",
+   "headline": "WTI -4.6% to ~$99.4, Brent ~$108.5 (06:30 ET) on Axios report Trump wants more time for Iran diplomacy; Iran: 'ball in America's court', 2-day Hormuz reopening if blockade ends; IRGC mine claims, CENTCOM denies",
+   "status": "New",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; lead: most market-moving overnight development; oil/inflation/Fed channel"
+  },
+  {
+   "id": "futures-bounce-nov2",
+   "headline": "ES +0.5%, NQ +0.8% after Friday S&P -1.82% (7,580.07), Nasdaq 100 -3.5%, SOX -7.2%; Kospi +2.24% on Oct chip exports +259%",
+   "status": "New",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; market tape"
+  },
+  {
+   "id": "treasury-borrowing-nov2",
+   "headline": "Treasury borrowing estimates 3 PM Nov 2 (Aug est Oct-Dec $628B, $850B cash); refunding Wed Nov 4; 10Y par 4.94% Oct 30 (-35bp Oct)",
+   "status": "Developing",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; Treasury/rates"
+  },
+  {
+   "id": "aapl-pltr-earnings-nov2",
+   "headline": "Apple (Ternus first call; EPS est ~$2.03, rev ~$115.7B) and Palantir (rev est ~$2.23B) report after close Nov 2",
+   "status": "New",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; AI/consumer earnings test"
+  },
+  {
+   "id": "midterms-eve-nov2",
+   "headline": "Midterms Nov 3: House D 84-95% (Silver/Enten/DDHQ), Senate D 64-78%; 46M+ early ballots (UF Election Lab)",
+   "status": "Developing",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; US politics, market tax/regulatory read-through"
+  },
+  {
+   "id": "thompson-tro-doj-nov2",
+   "headline": "Judge Thompson TRO (Oct 30) bars DOJ/DHS pressure on election officials re noncitizen claims thru Nov 16; DOJ appealed Nov 1; LA County grand jury testimony Nov 4; 9th Cir 2-1 denial, SCOTUS filing expected not found",
+   "status": "Materially changed",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; election administration"
+  },
+  {
+   "id": "binance-restart-nov2",
+   "headline": "Binance resumed withdrawals Nov 1, net $3.64B out day one; says >90% covered; FBI (Nov 1) attributes to North Korea TraderTraitor; PoR expected Nov 3",
+   "status": "Materially changed",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; crypto/market structure"
+  },
+  {
+   "id": "rba-nov3",
+   "headline": "RBA Nov 3 decision: hike to 4.85% ~80% priced; BoE Thu Nov 5",
+   "status": "New",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; global central banks"
+  },
+  {
+   "id": "us-steel-edgar-thomson",
+   "headline": "US Steel ~$3B hot strip mill at Edgar Thomson (2029), Irvin to retire; tax pact squeezes Mon Valley",
+   "status": "New",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; local economy"
+  },
+  {
+   "id": "pa-election-nov3",
+   "headline": "PA governor Shapiro vs Garrity (Q-poll 59-34, F&M 59-36); all 203 House seats (D 103-100); mail ballots by 8 PM",
+   "status": "Developing",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; local/state"
+  },
+  {
+   "id": "allegheny-ballot-question-nov3",
+   "headline": "Allegheny County Nov 3 ballot question to allow council staff/office funding; 2027 county budget $1.25B no tax hike",
+   "status": "Continuing",
+   "last_updated": "2026-11-02-am",
+   "score_rationale": "finance-first selection, 2026-11-02 am; local"
+  },
+  {
    "id": "sylvia-doj-referral",
    "headline": "WaPo: Lt. Gen. Sylvia referred to DOJ over alleged leaks; no charge",
    "status": "Developing",
@@ -10,13 +87,6 @@
   {
    "id": "pa-measles-oct28",
    "headline": "PA DOH: 1,398 measles cases, 265 hospitalised, 5 deaths as of Oct 28 (Reuters); CDC national 4,852 cases",
-   "status": "New",
-   "last_updated": "2026-10-30-pm",
-   "score_rationale": "finance-first selection, 2026-10-30 pm"
-  },
-  {
-   "id": "allegheny-ballot-question-nov3",
-   "headline": "Allegheny County Nov 3 ballot question on council staff/office funding; GRC recommends no",
    "status": "New",
    "last_updated": "2026-10-30-pm",
    "score_rationale": "finance-first selection, 2026-10-30 pm"
@@ -39,13 +109,6 @@
    "id": "ninth-circuit-ca-ballots-oct30",
    "headline": "Ninth Circuit panel again denies DOJ bid to set aside ~20K CA ballots (NBC, Democracy Docket); SCOTUS appeal expected, none found; AP: early vote ~10M ahead of 2022; Trump restores Iowa/Kansas Sunday rallies",
    "status": "Materially changed",
-   "last_updated": "2026-10-30-pm",
-   "score_rationale": "finance-first selection, 2026-10-30 pm"
-  },
-  {
-   "id": "binance-theft-oct30",
-   "headline": "Binance: $5B of ~$6.4B frozen (CNBC/TechCrunch); TRM/Chainalysis/Elliptic attribute to TraderTraitor, no govt confirmation; BTC low ~$76.4K; COIN -10.6%, HOOD -7.2%",
-   "status": "Developing",
    "last_updated": "2026-10-30-pm",
    "score_rationale": "finance-first selection, 2026-10-30 pm"
   },
@@ -109,48 +172,6 @@
    "id": "cvx-xom-q3",
    "headline": "Chevron adj EPS $5.28 vs $4.89 (8-K), downstream $4.9B, FCF $12.0B; Exxon ex-items $4.23 vs ~$4.03-4.12; both ~+1.5% premarket",
    "status": "New",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "hormuz-mine-claims-oct30",
-   "headline": "IRGC says 3 tankers hit mines near Hormuz; CENTCOM denies; UKMTO one tanker hit by projectile; WTI ~$104 +2%, Dec Brent ~$116 expires Oct 30; OPEC+ Nov 1",
-   "status": "Developing",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "boj-hold-oct30",
-   "headline": "BoJ holds 1.25%, 8-1 (Takata for hike); underlying inflation 'broadly in line' first time since 2013; Dec hike ~80% priced",
-   "status": "Resolved",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "ust-rally-oct30",
-   "headline": "10Y ~4.92% overnight (par 4.98% Oct 29); Reuters: biggest monthly drop since Dec 2023; Dec hike ~75-80%; ECI Q3 8:30 cons +0.8%",
-   "status": "New",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "ai-supplier-selloff-oct30",
-   "headline": "Nasdaq 100 futures -2.4%, SMH ~-4.6% premarket; AMD -8%, MU -5%, ASML -5%, NVDA -3%; Kospi -3.5% (SK Hynix -7%), Nikkei -2.1%, Taiwan -2.5%",
-   "status": "New",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "amzn-q3-premarket",
-   "headline": "Amazon indicated ~-6.8% (~$227): EPS $1.89 miss, AWS +39%, TTM FCF -$42.4B, Q4 op-inc guide mid ~$31B vs $33.2B; higher 2027 capex signalled",
-   "status": "Materially changed",
-   "last_updated": "2026-10-30-am",
-   "score_rationale": "finance-first selection, 2026-10-30 am"
-  },
-  {
-   "id": "intc-q4-guide-premarket",
-   "headline": "Intel indicated ~-25% premarket (~$69 vs $92.07): Q4 guide $15-16B vs ~$17B, EPS $0.25 vs $0.43; PC market -12% 2026, -10% 2027; Israel halt -$300M",
-   "status": "Materially changed",
    "last_updated": "2026-10-30-am",
    "score_rationale": "finance-first selection, 2026-10-30 am"
   },
@@ -573,97 +594,7 @@
    "sources": [],
    "score_rationale": "Data-centre power demand",
    "keep_on_watchlist": false
-  },
-  {
-   "id": "msft-googl-q3",
-   "headline": "Microsoft (EPS ~4.71, rev ~90.6B) and Alphabet (EPS ~2.94-3.02, rev ~128B) report after close Oct 28; MSFT buyout offer to ~60K staff",
-   "status": "Developing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-28-am",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "AI trade test tonight",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "sk-hynix-q3-kospi",
-   "headline": "SK Hynix Q3 rev ~W104.6T, op profit ~W83.3T (prelim); Kospi +6.63% to 6,012.44; Samsung ~+9%, Kioxia ~+14%; Micron ~+4% premarket; SOX +3.6% Oct 27",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-28-am",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Chip rally driver overnight",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "anthropic-s1-broadcom-lease",
-   "headline": "Anthropic S-1: compute commitments ~$542-567B (Fortune), SpaceX up to $120.5B; chip SPV ~$60B ($42B senior + $18B junior; CNBC said $63B); security lapses disclosed; roadshow reportedly wk of Nov 9",
-   "status": "Materially changed",
-   "verification": "Confirmed-primary (S-1); financing size disputed $60-63B",
-   "first_seen": "2026-10-27-pm",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "AI/IPO",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "weekly-review-2026-10-31",
-   "headline": "Week of Oct 26-30: AI sell-off spreads from spenders (GOOGL -12.6% Thu) to suppliers (INTC -28.6% Fri); Fed hold 10-2 with two hike dissents; 10Y 4.94% (-35bp Oct); Brent Dec $117.64; Binance ~$6.3B theft; China Oct PMI 49.3 (Sat)",
-   "status": "Continuing",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-31-sat",
-   "last_updated": "2026-10-31-sat",
-   "one_line": "Keep: AI capex funding (AMD/QCOM/ARM next week), Fed Dec, refunding Nov 4, Hormuz/Iran post-election, OPEC+ Nov 1, midterms/DOJ ballot fights, Binance withdrawals, Anthropic S-1/A, ECB succession, Israel coalition. Dropped: Fed/BoC/ECB/BoJ decisions done, GDP/PCE, software rout, CAT, LLY/MRK, Spain crash.",
-   "sources": [],
-   "score_rationale": "weekly synthesis",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "opec-dec-hold-nov1",
-   "headline": "OPEC+ holds December targets at Nov 1 online meeting; 2027 framework Nov 29",
-   "status": "Resolved",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
-  },
-  {
-   "id": "iran-two-day-hormuz-plan",
-   "headline": "Araghchi: Qatar-mediated plan could reopen Hormuz in two days if US meets terms; no US reply; Khamenei warns",
-   "status": "Developing",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
-  },
-  {
-   "id": "binance-withdrawals-phase1",
-   "headline": "Binance phased withdrawal restart; ~95% of stolen user assets covered (company); full proof of reserves Tue Nov 3",
-   "status": "Developing",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
-  },
-  {
-   "id": "week-ahead-nov2-6",
-   "headline": "Watch: midterms Nov 3; refunding Nov 4; jobs Nov 6; AAPL/PLTR Nov 2, AMD Nov 3, QCOM Nov 4, ARM Nov 5(?); RBA Nov 3, BoE Nov 5",
-   "status": "Continuing",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
-  },
-  {
-   "id": "israel-results-herzog-nov4",
-   "headline": "Israel official results to Herzog Nov 4; unity-government reports denied",
-   "status": "Continuing",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
-  },
-  {
-   "id": "pgh-cityhall-charges",
-   "headline": "DA Zappala says charges expected this week in City Hall contracts probe (WPXI, single source)",
-   "status": "Developing",
-   "last_updated": "2026-11-01-sun",
-   "score_rationale": "week-ahead watch item, 2026-11-01 sun"
   }
  ],
- "updated": "2026-11-01T15:20:00Z"
+ "updated": "2026-11-02T11:50:00Z"
 }
