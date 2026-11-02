@@ -6681,6 +6681,36 @@
    "probability": "75-88%",
    "basis": "ASX rate tracker ~80% priced (Oct 29); Q3 CPI 4.3%; major banks reportedly forecast a hike.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-02-pm-1",
+   "date": "2026-11-02",
+   "slot": "pm",
+   "forecast": "Front-month WTI crude settles below $100.00 on Tue Nov 3, 2026.",
+   "horizon": "2026-11-03",
+   "probability": "55-70%",
+   "basis": "WTI settled ~$96.46 Nov 2 (-7.4%, as reported); Trump said no strikes before the vote; Iran-US indirect talks continuing.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-02-pm-2",
+   "date": "2026-11-02",
+   "slot": "pm",
+   "forecast": "VIX closes above 20.00 on Tue Nov 3, 2026.",
+   "horizon": "2026-11-03",
+   "probability": "55-70%",
+   "basis": "VIX 21.15 Nov 2 with VIX9D (22.46) above VIX3M (21.60); election results arrive after the close.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-02-pm-3",
+   "date": "2026-11-02",
+   "slot": "pm",
+   "forecast": "Binance publishes its full proof of reserves by 11:59 PM ET Wed Nov 4, 2026.",
+   "horizon": "2026-11-04",
+   "probability": "70-85%",
+   "basis": "ZK proof complete for 10 assets; company says remaining computation takes 40-50 hours; slipped once already.",
+   "status": "open"
   }
  ]
 }

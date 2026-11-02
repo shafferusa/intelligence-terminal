@@ -1,11 +1,25 @@
 {
  "stories": [
   {
-   "id": "oil-iran-diplomacy-nov2",
-   "headline": "WTI -4.6% to ~$99.4, Brent ~$108.5 (06:30 ET) on Axios report Trump wants more time for Iran diplomacy; Iran: 'ball in America's court', 2-day Hormuz reopening if blockade ends; IRGC mine claims, CENTCOM denies",
+   "id": "ism-oct-nov2",
+   "headline": "ISM mfg Oct 55.5 (54.5 prior), prices 75.2 (77.9), production 59.0 highest since Nov 2021; construction spending Sept -1.9%",
    "status": "New",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; lead: most market-moving overnight development; oil/inflation/Fed channel"
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; macro data"
+  },
+  {
+   "id": "chips-marvell-lumentum-oracle-nov2",
+   "headline": "Marvell to buy Lumentum all-stock (~$115B EV, 4.5 MRVL/LITE); MRVL -12.7%, LITE -18.6%; Oracle -8.8% on $20B stock+notes raise; Kioxia outlook hits memory; SOX -3.4%, Nasdaq -1.07%, Dow +0.41%, RSP +0.76%",
+   "status": "New",
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; AI capex/chip rout continuation"
+  },
+  {
+   "id": "oil-iran-diplomacy-nov2",
+   "headline": "WTI settles ~$96.46 (-7.4%), Brent ~$104.77 (-7.6%) as reported; Araghchi 'very intensive' talks via mediators; Iran delegation left Doha Nov 1; Trump no strikes before vote, 'the hammer' if talks fail",
+   "status": "Materially changed",
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; lead: most market-moving development"
   },
   {
    "id": "futures-bounce-nov2",
@@ -16,24 +30,24 @@
   },
   {
    "id": "treasury-borrowing-nov2",
-   "headline": "Treasury borrowing estimates 3 PM Nov 2 (Aug est Oct-Dec $628B, $850B cash); refunding Wed Nov 4; 10Y par 4.94% Oct 30 (-35bp Oct)",
-   "status": "Developing",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; Treasury/rates"
+   "headline": "Treasury borrowing est Oct-Dec $618B ($850B cash), Jan-Mar $800B ($1T cash); Jul-Sep actual $742B; bills 13w 4.040% / 26w 4.150%; refunding Wed Nov 4 8:30",
+   "status": "Materially changed",
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; Treasury/rates"
   },
   {
    "id": "aapl-pltr-earnings-nov2",
-   "headline": "Apple (Ternus first call; EPS est ~$2.03, rev ~$115.7B) and Palantir (rev est ~$2.23B) report after close Nov 2",
-   "status": "New",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; AI/consumer earnings test"
+   "headline": "Apple FQ4 rev $114.5B (+12%), EPS $2.10 vs ~$1.99, GM 47.9% incl ~1pt tariff refunds; Dec-qtr guide on call (not in edition). Palantir rev ~$2.31B (+96%), FY raised to $8.530-8.534B",
+   "status": "Materially changed",
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; earnings"
   },
   {
    "id": "midterms-eve-nov2",
-   "headline": "Midterms Nov 3: House D 84-95% (Silver/Enten/DDHQ), Senate D 64-78%; 46M+ early ballots (UF Election Lab)",
+   "headline": "Midterms Nov 3: Kalshi noon House D 94%, Senate D 74%; 57M+ early ballots (UF Election Lab via CBS/NBC); Stevens endorses Rogers in MI; no 9th Cir ruling on Thompson TRO appeal",
    "status": "Developing",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; US politics, market tax/regulatory read-through"
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; US politics"
   },
   {
    "id": "thompson-tro-doj-nov2",
@@ -44,17 +58,17 @@
   },
   {
    "id": "binance-restart-nov2",
-   "headline": "Binance resumed withdrawals Nov 1, net $3.64B out day one; says >90% covered; FBI (Nov 1) attributes to North Korea TraderTraitor; PoR expected Nov 3",
+   "headline": "Binance full PoR slipped to Nov 3 UTC; ZK proof done for 10 assets; says ~95% replenished; net outflow $3.64B first 9.5h; BTC ~$76,811 5:05 PM",
    "status": "Materially changed",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; crypto/market structure"
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; crypto/market structure"
   },
   {
    "id": "rba-nov3",
-   "headline": "RBA Nov 3 decision: hike to 4.85% ~80% priced; BoE Thu Nov 5",
-   "status": "New",
-   "last_updated": "2026-11-02-am",
-   "score_rationale": "finance-first selection, 2026-11-02 am; global central banks"
+   "headline": "RBA Nov 3 22:30 ET: all 4 majors expect hike to 4.85%; BoE Thu Nov 5",
+   "status": "Continuing",
+   "last_updated": "2026-11-02-pm",
+   "score_rationale": "finance-first selection, 2026-11-02 pm; global central banks"
   },
   {
    "id": "us-steel-edgar-thomson",
@@ -570,31 +584,7 @@
    "sources": [],
    "score_rationale": "Local PA",
    "keep_on_watchlist": false
-  },
-  {
-   "id": "eqt-range-doordash",
-   "headline": "EQT-Range all-stock ~$13B (8-K Oct 26); DoorDash-Instacart ~$17B advanced talks (WSJ/Reuters)",
-   "status": "New",
-   "verification": "Confirmed-primary (EQT); talks reported",
-   "first_seen": "2026-10-28-am",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "M&A",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "gev-q3-2026",
-   "headline": "GE Vernova Q3 (8-K): orders $29.3B +96% org, rev $12.6B, backlog $197B, FCF $5.4B, buyback to $20B, guidance raised",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-28-am",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Data-centre power demand",
-   "keep_on_watchlist": false
   }
  ],
- "updated": "2026-11-02T11:50:00Z"
+ "updated": "2026-11-02T21:47:27Z"
 }
