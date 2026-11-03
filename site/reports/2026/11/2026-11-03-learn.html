@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Philadelphia Held a Parade During a Flu Epidemic. St. Louis Shut Its Doors. The Peak Death Rates Split Eightfold. — Learning Brief, Tue, Nov 3, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-11-03",
+    "slot": "learn",
+    "title": "Philadelphia Held a Parade During a Flu Epidemic. St. Louis Shut Its Doors. The Peak Death Rates Split Eightfold.",
+    "path": "reports/2026/11/2026-11-03-learn.html",
+    "summary": "Day 26 of the Connected Path: a reinforcing loop amplifies whatever push it gets and a balancing loop pushes back toward a limit, and counting a loop's negative links tells you which kind you're looking at — the method behind why Philadelphia's 1918 flu peak was eight times St. Louis's.",
+    "headlines": [
+      "Day 26 of 293 · Systems Thinking: a reinforcing loop amplifies whatever push it gets, a balancing loop pushes back toward a limit",
+      "Philadelphia let its contagion loop run five days unopposed after a 200,000-person parade; St. Louis closed within two days of its first cases",
+      "Watch or Read: Public health interventions and epidemic intensity during the 1918 influenza pandemic (about 6 pages)"
+    ],
+    "reading_minutes": 13,
+    "generated_at": "2026-11-03T04:58:00-05:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Philadelphia Held a Parade During a Flu Epidemic. St. Louis Shut Its Doors. The Peak Death Rates Split Eightfold.</h1>
+      <p class="paper-dateline">
+        Tuesday, November 3, 2026 <span class="sep">&middot;</span> 13 min read
+      </p>
+      <p class="paper-standfirst">
+        A reinforcing loop amplifies whatever push it gets and a balancing loop pushes back toward a limit, and which one is steering a system at a given moment is written into the loop&rsquo;s own wiring, not into anyone&rsquo;s intentions.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Systems Thinking</p>
+      <span class="track-progress">Day 26 of 293 &middot; Systems Thinking 2 of 12 &middot; Feedback loops: reinforcing and balancing</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A parade for 200,000 in a city already infected</h3>
+      <p>
+        On September 28, 1918, Philadelphia went ahead with a Liberty Loan parade down Broad Street
+        that drew an estimated 200,000 people, to sell war bonds, even though influenza had already
+        reached sailors at the Navy Yard days earlier. Within 72 hours the city&rsquo;s hospitals were
+        reporting they could not keep up with new admissions. Philadelphia&rsquo;s health director did
+        not ban public gatherings &mdash; including further Liberty Loan events &mdash; until October 3,
+        five days after the parade, once the epidemic was already climbing fast.
+      </p>
+      <p>
+        St. Louis was hit by the same autumn wave at almost the same time. Its first reported civilian
+        cases appeared around October 5. Two days later, on October 7, the city closed schools,
+        theatres, churches and other places people gathered, citywide, while its case count was still
+        small.
+      </p>
+      <p>
+        Decades later the epidemiologist Richard Hatchett, the physician Carter Mecher and the
+        biostatistician Marc Lipsitch reconstructed both cities&rsquo; weekly mortality records for a
+        2007 paper in the <em>Proceedings of the National Academy of Sciences</em>. Philadelphia&rsquo;s
+        epidemic peaked at a weekly excess death rate of about 257 per 100,000 people. St.
+        Louis&rsquo;s peak, in its own worst week, reached only about 31 per 100,000 &mdash; roughly an
+        eighth as high.
+      </p>
+      <p>
+        The same virus hit both cities within days of each other, in the same country, in the same
+        autumn. Why did one city&rsquo;s worst week kill at eight times the rate of the other&rsquo;s?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Today&rsquo;s concept: a reinforcing loop amplifies whatever push it gets, feeding more of the
+        same back into itself, and a balancing loop pushes back toward some limit or goal, cancelling a
+        push rather than amplifying it. Most of what a system actually does over time &mdash; whether it
+        runs away, levels off, or oscillates &mdash; comes down to which kind of loop currently has the
+        upper hand, and for how long it keeps it.
+      </p>
+      <p>
+        A loop is simply a closed chain of cause and effect: A changes B, B changes C, and C changes A
+        again, so the effect eventually feeds back into its own cause. Trace a reinforcing loop around
+        once and a push on A comes back around as a further push on A in the same direction &mdash;
+        growth that feeds itself, like compound interest. Trace a balancing loop around once and a push
+        on A comes back around pushing A the other way &mdash; a thermostat correcting a room back
+        toward its setpoint.
+      </p>
+      <p>
+        Nothing says a system runs on only one loop. Most real systems carry several at once, some
+        reinforcing and some balancing, wired into the same chain of causes, and which one is actually
+        steering the system&rsquo;s behaviour at a given moment &mdash; a condition called loop dominance
+        &mdash; can shift as conditions change, often without any single big external shock.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A causal-loop diagram is a map of a loop&rsquo;s links, each marked with its polarity. A link
+        from X to Y is positive if pushing X up, all else equal, pushes Y up too, and negative if pushing
+        X up pushes Y down. Polarity describes direction, not whether a change is good or bad &mdash; a
+        negative link is not a bad thing, only a link that reverses direction.
+      </p>
+      <p>
+        The whole loop&rsquo;s classification follows from one count: trace the chain all the way
+        around, back to where it started, and count how many of its links are negative. A loop is
+        reinforcing if that count is even &mdash; including zero negative links, which still counts as
+        even &mdash; and balancing if the count is odd. Each negative link flips the direction of a push
+        once; an even number of flips returns the push to its original direction, and an odd number
+        reverses it.
+      </p>
+      <p>
+        Trace the epidemic&rsquo;s simplest loop first. More infected people in a city produce more
+        infectious contacts overall; more infectious contacts produce more new infections, because each
+        contact is a chance to transmit; and more new infections directly adds to the count of people
+        infected, closing the loop back to where it started. Each of those three links is positive, so
+        the loop has zero negative links. Zero is even. This is R, the contagion loop, and it is
+        reinforcing: the more people are infected, the faster new infections are produced, with nothing
+        in the loop itself to slow it down.
+      </p>
+      <p>
+        A second loop runs through the pool of people who can still catch the disease. As more people
+        become infected, the pool of remaining susceptible people shrinks &mdash; a negative link, since
+        infected and susceptible move in opposite directions. As the susceptible pool shrinks, new
+        infections per day shrink too, because fewer people are left to transmit to even at the same rate
+        of contact &mdash; a positive link, since susceptible and new infections move the same direction,
+        both falling. New infections then feed infected the same positive way as before. One negative
+        link in a loop of three is an odd count, so this is B1, a balancing loop: contagion eventually
+        runs out of fuel on its own, simply because an epidemic burns through the susceptible population
+        it depends on.
+      </p>
+      <p>
+        A third loop runs through the response itself. More deaths push a city toward tighter closures
+        &mdash; a positive link, deaths and closure-strength moving the same direction. Tighter closures
+        cut the contacts people have with each other &mdash; a negative link, since closure-strength up
+        means contacts down. Fewer contacts, as already traced, produce fewer new infections and
+        eventually fewer deaths &mdash; two more positive links closing the loop back to deaths. One
+        negative link again: an odd count, so B2, the deliberate closing of schools, theatres and
+        churches, is also a balancing loop &mdash; but one that depends on someone actually pulling the
+        lever, unlike B1, which runs on its own.
+      </p>
+      <p>
+        None of these three loops switches off while the others run; all three are always present,
+        pulling against one another at once. What changes is which one has the most leverage at a given
+        point &mdash; loop dominance. Early on, with almost everyone still susceptible and almost no one
+        dead yet, B1 and B2 barely register, and R runs nearly unopposed: an epidemic that starts
+        exponential stays exponential for a while. As infections mount, both balancing loops gain
+        strength &mdash; the susceptible pool measurably shrinks, and deaths mount high enough to force a
+        response &mdash; until their combined pull overtakes R&rsquo;s, and growth bends over into
+        decline. Where that crossover happens, and at what cost, is the whole difference between
+        Philadelphia and St. Louis. The same three-step method &mdash; write the chain, mark each
+        link&rsquo;s polarity, count the negative links &mdash; works on any closed causal chain, from an
+        epidemic to a bank run to the reward system of science itself, which is where the Example section
+        below goes next.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        In Philadelphia, R ran almost unopposed through a parade that handed the loop 200,000 fresh
+        contacts at once, while B2 waited five days &mdash; until October 3 &mdash; to even begin pulling
+        against it. By the time closures finally engaged, the epidemic had already grown large enough
+        that B1, the slower loop of simply running out of susceptible people, was doing most of the work
+        of eventually bending the curve &mdash; at a far higher peak. St. Louis engaged B2 on October 7,
+        within two days of its first cases, while the epidemic was still small enough that a deliberate
+        cut in contacts carried real leverage against R. The virus itself did not differ between the two
+        cities; the moment each city let its balancing loop start pulling did.
+      </p>
+
+      <h3>Key Concepts</h3>
+      <div class="key-terms">
+      <dl>
+        <dt>Reinforcing loop</dt>
+        <dd>A closed chain of cause and effect with an even number of negative links (zero counts as
+        even); a push through it returns as a further push in the same direction, so it amplifies
+        whatever change it gets.</dd>
+        <dt>Balancing loop</dt>
+        <dd>A closed chain of cause and effect with an odd number of negative links; a push through it
+        returns reversed, pushing the system back toward some limit, ceiling or goal.</dd>
+        <dt>Loop polarity</dt>
+        <dd>Whether a single link is positive (the two variables move the same direction) or negative
+        (they move opposite directions); polarity describes direction, not whether the effect is
+        desirable.</dd>
+        <dt>Causal-loop diagram</dt>
+        <dd>A map of a system&rsquo;s feedback structure: the variables, the links between them, and
+        each link&rsquo;s polarity, drawn as a closed chain.</dd>
+        <dt>Shifting loop dominance</dt>
+        <dd>The point at which the loop actually steering a system&rsquo;s behaviour changes, because the
+        relative strength of the loops present has crossed over &mdash; often without any single external
+        shock.</dd>
+        <dt>Matthew effect</dt>
+        <dd>Robert Merton&rsquo;s 1968 name for the reinforcing loop in which an already-eminent person
+        or institution receives disproportionate credit for a contribution, which then makes further
+        eminence more likely.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The Reward System of Science</h3>
+      <p>
+        Robert K. Merton named this same reinforcing structure inside science itself, in a 1968 paper in
+        <em>Science</em> titled &ldquo;The Matthew Effect in Science&rdquo; &mdash; after the Gospel of
+        Matthew&rsquo;s line that to those who have, more will be given. Drawing heavily on the
+        sociologist Harriet Zuckerman&rsquo;s interviews with Nobel laureates, Merton found that when
+        scientists of very different standing collaborate, credit for the joint work tends to flow
+        disproportionately to whichever collaborator is already the most eminent, regardless of who
+        actually did the work or whose name appears first. Zuckerman&rsquo;s own data showed something
+        concrete behind the pattern: roughly two-thirds of the papers published by the Nobel laureates she
+        studied had at least one co-author, which means most of a laureate&rsquo;s output was never a
+        solo-credit question to begin with &mdash; it was a credit-allocation question, decided again and
+        again by the same tilt toward the already-famous name.
+      </p>
+      <p>
+        The loop is the same structure taught above, applied to a different system. Being already
+        eminent brings a scientist more credit for new work; more credit brings more visibility, funding
+        and access to talented collaborators; more of those resources make further prominent work more
+        likely, which brings still more eminence. Margaret Rossiter named the system&rsquo;s companion
+        failure in 1993: the Matilda effect, after the nineteenth-century suffragist Matilda Joslyn Gage,
+        who had herself pointed out that women&rsquo;s scientific work was routinely credited to men
+        &mdash; Rosalind Franklin&rsquo;s contribution to the structure of DNA among the best-known cases.
+        Where the Matthew effect concentrates credit among the already-famous, the Matilda effect can cut
+        a contributor out of the loop before it ever starts compounding for her.
+      </p>
+      <div class="worked">
+        <p><strong>1. Name the chain.</strong> Eminence &rarr; credit for new work &rarr; visibility,
+        funding and collaborators &rarr; further prominent work &rarr; eminence.</p>
+        <p><strong>2. Mark each link&rsquo;s polarity.</strong> More eminence &rarr; more credit
+        (positive). More credit &rarr; more resources (positive). More resources &rarr; more prominent
+        work (positive). More prominent work &rarr; more eminence (positive).</p>
+        <p><strong>3. Count the negative links.</strong> Zero.</p>
+        <p><strong>4. Apply the rule.</strong> Zero is even, so the loop is reinforcing: scientific
+        eminence feeds itself with nothing in the loop&rsquo;s own structure to slow it down &mdash;
+        exactly like the epidemic&rsquo;s contagion loop R.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">loop is reinforcing &hArr; (negative links in the loop) mod 2 = 0; balancing
+        &hArr; mod 2 = 1</p>
+        <p class="expr-spoken visually-hidden">A loop is reinforcing exactly when the number of negative
+        links it contains, divided by two, leaves no remainder &mdash; that is, the count is even,
+        including zero. It is balancing exactly when that count is odd.</p>
+        <dl>
+          <dt>negative link</dt>
+          <dd>a link in the loop where the two variables it connects move in opposite directions</dd>
+          <dt>mod 2</dt>
+          <dd>the remainder after dividing by two; 0 means even, 1 means odd</dd>
+        </dl>
+      </div>
+      <p>The 1918 epidemic&rsquo;s causal-loop diagram, in the same compact form:</p>
+      <div class="formula">
+        <dl>
+          <dt>R (reinforcing)</dt>
+          <dd>infected &rarr; contacts &rarr; new infections &rarr; infected. Three positive links, zero
+          negative: reinforcing.</dd>
+          <dt>B1 (balancing)</dt>
+          <dd>infected &rarr; susceptibles depleted (negative link) &rarr; new infections (positive link)
+          &rarr; infected (positive link). One negative link: balancing.</dd>
+          <dt>B2 (balancing)</dt>
+          <dd>deaths &rarr; closures (positive link) &rarr; contacts (negative link) &rarr; new
+          infections &rarr; deaths (two more positive links). One negative link: balancing.</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can trace a loop and count its negative links, you gain a specific kind of foresight:
+        you can tell, from the wiring alone, whether a system is likely to run away or correct itself,
+        often before enough data exists to see the trend directly. A system that looks calm can tip into
+        runaway change &mdash; or a system that looks like it is spiralling can level off &mdash; without
+        any new external shock at all, purely because the relative strength of the loops already present
+        has crossed over. That is a more specific question than &ldquo;is this getting worse&rdquo;: it
+        is &ldquo;which loop currently has the leverage, and what would it take to shift it.&rdquo;
+      </p>
+      <p>
+        <b>Settled.</b> The loop mechanics taught here, and the raw difference in peak weekly death rates
+        between Philadelphia (about 257 per 100,000) and St. Louis (about 31 per 100,000), are not in
+        dispute.
+      </p>
+      <p>
+        <b>Debated.</b> How much those early interventions reduced total deaths, rather than merely
+        flattening and delaying the peak, is argued: Hatchett, Mecher and Lipsitch, and separately Howard
+        Markel&rsquo;s team, find real benefit from early, sustained closures, while the economist Robert
+        Barro&rsquo;s 2020 analysis of the same cities found the largely short-lived 1918 measures did
+        little to cut total deaths over the full epidemic. How much the Matthew effect reflects real
+        differences in merit, rather than pure visibility, is separately debated among sociologists of
+        science.
+      </p>
+      <p>
+        <b>Value judgment.</b> Whether a reward system that channels credit toward the already-eminent is
+        a tolerable cost of running science at all, or an injustice that should be actively corrected, is
+        a question about fairness the loop diagram itself cannot settle &mdash; it can only show that the
+        concentration is structural, not incidental.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 25 gave the stock-and-flow rule dS/dt = inflow &minus; outflow; a loop exists
+        exactly when one of those flows is itself a function of the very stock it feeds, which is what
+        turns yesterday&rsquo;s bathtub into today&rsquo;s closed chain. Day 7 showed a reinforcing loop
+        handing dominance to a balancing loop as a ceiling neared, in the logistic S-curve; today names
+        the mechanism behind that handoff directly &mdash; shifting loop dominance &mdash; the same thing
+        that bent Philadelphia&rsquo;s and St. Louis&rsquo;s epidemics over, just driven by a true ceiling
+        (the susceptible population) rather than a market or population limit.
+      </p>
+      <p>
+        <b>Across.</b> Donald Kessler and Burton Cour-Palais described an identical structure in orbital
+        mechanics in a 1978 paper in the <em>Journal of Geophysical Research</em>: debris in low Earth
+        orbit collides with satellites and other debris, and each collision creates more fragments, which
+        go on to cause more collisions &mdash; a reinforcing loop with the same zero-negative-link
+        structure as the epidemic&rsquo;s contagion loop R. Unlike B1 and B2 in 1918, the debris
+        loop&rsquo;s only natural balancing loop is slow atmospheric drag pulling fragments back down over
+        years or decades, which is why the Kessler syndrome is treated as a live risk to low orbit rather
+        than a self-correcting nuisance.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Public health interventions and epidemic intensity during the 1918 influenza pandemic &mdash;
+        Richard J. Hatchett, Carter E. Mecher &amp; Marc Lipsitch, PNAS 104(18), 2007 &middot; Reading
+        &middot; about 6 pages</p>
+        <p>The source of today&rsquo;s numbers, with the Philadelphia and St. Louis curves side by side:
+        you can see a reinforcing loop cut early and one left to run.</p>
+      </aside>
+
+      <div class="recap">
+      <b>Remember These</b>
+      <ul>
+        <li>A reinforcing loop has an even number of negative links (zero counts) and amplifies whatever
+        push it gets; a balancing loop has an odd number and pushes back.</li>
+        <li>Trace a loop by writing the chain, marking each link positive or negative, and counting the
+        negative links around the whole circuit.</li>
+        <li>Real systems usually run several loops at once; which one is steering behaviour &mdash; loop
+        dominance &mdash; can shift without any new external shock.</li>
+        <li>Philadelphia let its contagion loop run five days unopposed after a 200,000-person parade;
+        St. Louis engaged its balancing loop within two days of its first cases.</li>
+        <li>The same reinforcing structure that drives an epidemic also drives how science allocates
+        credit &mdash; Merton&rsquo;s Matthew effect.</li>
+      </ul>
+      </div>
+
+      <div class="think-about-it">
+      <b>Apply It</b>
+      <p>
+        On March 9, 2023, depositors and investors tried to pull about $42 billion from Silicon Valley
+        Bank in a single day, and California regulators closed the bank the next morning &mdash; using
+        today&rsquo;s method, what is the reinforcing loop that drove the run, and what balancing loop,
+        had it engaged early enough, could have broken it before it compounded?
+      </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Richard J. Hatchett, Carter E. Mecher &amp; Marc Lipsitch,
+      &ldquo;Public Health Interventions and Epidemic Intensity during the 1918 Influenza
+      Pandemic,&rdquo; PNAS 104(18), 2007; Howard Markel et al., JAMA 298(6), 2007; Robert J. Barro, NBER
+      Working Paper 27049 (2020); Robert K. Merton, &ldquo;The Matthew Effect in Science,&rdquo;
+      <em>Science</em> 159 (1968); Harriet Zuckerman&rsquo;s Nobel-laureate research; Margaret Rossiter,
+      &ldquo;The Matthew Matilda Effect in Science,&rdquo; <em>Social Studies of Science</em> 23(2),
+      1993; Donald J. Kessler &amp; Burton G. Cour-Palais, <em>Journal of Geophysical Research</em>
+      83(A6), 1978; the California Department of Financial Protection and Innovation&rsquo;s order and
+      wire reporting on Silicon Valley Bank&rsquo;s March 9, 2023 withdrawals. All checked via web search
+      this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list, cited without a link: the curriculum notes it
+      could not be independently web-verified when written, so it is cited from knowledge of the paper;
+      PNAS papers of this age are normally free to read. <a href="../../../status.html">System
+      status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-02-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
