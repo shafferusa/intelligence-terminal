@@ -6711,6 +6711,76 @@
    "probability": "70-85%",
    "basis": "ZK proof complete for 10 assets; company says remaining computation takes 40-50 hours; slipped once already.",
    "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-1",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "Apple (AAPL) closes Tue Nov 3, 2026 below Monday's close of $338.32.",
+   "horizon": "2026-11-03",
+   "probability": "75-88%",
+   "basis": "Premarket indications -3.8% to -4.5% after Dec-qtr gross-margin guide of 45-46% below estimates; no offsetting news.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-2",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "Front-month (January) WTI crude settles above $96.46 on Tue Nov 3, 2026.",
+   "horizon": "2026-11-03",
+   "probability": "60-72%",
+   "basis": "WTI ~$98.40 (+2.0%) at ~6:30 AM ET, about eight hours before settlement, after US 'defensive' strikes near Hormuz.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-3",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "AMD reports Q3 2026 revenue at or above $13.0 billion (released Nov 3 after the close).",
+   "horizon": "2026-11-03",
+   "probability": "75-88%",
+   "basis": "Consensus ~$13.1B sits above the midpoint of company guidance of $13.0B +/- $0.3B.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-4",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "BLS JOLTS job openings for September 2026 (released Nov 3) print between 6.8 million and 7.4 million.",
+   "horizon": "2026-11-03",
+   "probability": "60-75%",
+   "basis": "August was 7.08M; typical monthly moves are a few hundred thousand; no consensus found.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-5",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "Base case: S&P 500 closes Tue Nov 3, 2026 within 1% of Monday's 7,541.40 (7,466-7,617).",
+   "horizon": "2026-11-03",
+   "probability": "50-60%",
+   "basis": "ES -0.13% at 6:30 AM; options imply ~0.86% move (Saxo, single source); event risk lands after the close.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-6",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "Downside: S&P 500 closes Tue Nov 3, 2026 more than 1% below 7,541.40 (below 7,466).",
+   "horizon": "2026-11-03",
+   "probability": "25-35%",
+   "basis": "Apple weight and chip weakness; VIX9D above VIX.",
+   "status": "open"
+  },
+  {
+   "id": "2026-11-03-am-7",
+   "date": "2026-11-03",
+   "slot": "am",
+   "forecast": "Upside: S&P 500 closes Tue Nov 3, 2026 more than 1% above 7,541.40 (above 7,617).",
+   "horizon": "2026-11-03",
+   "probability": "10-20%",
+   "basis": "Would need lower oil and softer data pulling yields down.",
+   "status": "open"
   }
  ]
 }

@@ -1,6 +1,78 @@
 {
  "stories": [
   {
+   "id": "aapl-pltr-guide-nov3",
+   "headline": "Apple Dec-qtr guide rev +7-10%, GM 45-46% (below ~46.3-46.9% est.), memory costs; AAPL -3.8 to -4.5% premarket; PLTR -6-8% premarket on US commercial TCV +11% (secondary)",
+   "status": "Materially changed",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Lead: largest market-moving overnight development; mega-cap weight"
+  },
+  {
+   "id": "midterms-day-nov3",
+   "headline": "Election Day: Kalshi Mon House D ~94%, Senate D ~74%; 57M+ early ballots; SCOTUS denied DOJ bid to set aside ~20K CA ballots (Nov 2); first polls close 6 PM ET",
+   "status": "Developing",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Control of Congress; fiscal/tariff path; high-risk elections claims attributed"
+  },
+  {
+   "id": "oil-qeshm-nov3",
+   "headline": "WTI ~$98.40 (+2.0%), Brent ~$106.40 (+1.6%) ~6:30 ET after US 'defensive' strikes on Iranian targets near Hormuz/Qeshm (AP via WashTimes, Anadolu); Iran 2-day reopening offer",
+   "status": "Materially changed",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Inflation/Fed channel; war risk"
+  },
+  {
+   "id": "kospi-chips-nov3",
+   "headline": "Kospi -3.59% to 5,648.79; Shanghai -0.82%; Stoxx 600 -0.4%; Nasdaq 100 >10% below record (Reuters)",
+   "status": "New",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Chip sell-off spreading to Asia"
+  },
+  {
+   "id": "fed-dec-odds-nov3",
+   "headline": "Dec hike ~73% (single source, CME via Tradingpedia) vs 82-86% post-FOMC; 10Y par 4.91% Nov 2; 2s10s 32bp; breakeven 2.29%; JOLTS today (prior 7.08M); refunding Wed",
+   "status": "Continuing",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Rates path"
+  },
+  {
+   "id": "rba-hike-nov3",
+   "headline": "RBA hiked to 4.85% (6-3 vote) Nov 3 AEDT; BoE Thu, 54/63 economists expect hike to 4.00%",
+   "status": "Resolved",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "Global tightening; forecast 2026-11-02-am-4 resolved"
+  },
+  {
+   "id": "ukraine-mass-strike-nov3",
+   "headline": "Russia overnight 289 drones, 17 ballistic, 59 cruise missiles on energy in 9 regions (Zelensky); aid-site toll >=29; Abu Dhabi talks Nov 10-11 (Witkoff)",
+   "status": "New",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "War/energy; talks"
+  },
+  {
+   "id": "amd-tonight-nov3",
+   "headline": "AMD Q3 tonight: consensus rev ~$13.1B (guide $13.0B +/-0.3B), EPS ~$1.95; SMCI, ANET, AMGN, BKNG, XYZ also",
+   "status": "Developing",
+   "first_seen": "2026-11-03",
+   "last_seen": "2026-11-03",
+   "last_report": "reports/2026/11/2026-11-03-am.html",
+   "scoring": "AI hardware test"
+  },
+  {
    "id": "ism-oct-nov2",
    "headline": "ISM mfg Oct 55.5 (54.5 prior), prices 75.2 (77.9), production 59.0 highest since Nov 2021; construction spending Sept -1.9%",
    "status": "New",
@@ -36,20 +108,6 @@
    "score_rationale": "finance-first selection, 2026-11-02 pm; Treasury/rates"
   },
   {
-   "id": "aapl-pltr-earnings-nov2",
-   "headline": "Apple FQ4 rev $114.5B (+12%), EPS $2.10 vs ~$1.99, GM 47.9% incl ~1pt tariff refunds; Dec-qtr guide on call (not in edition). Palantir rev ~$2.31B (+96%), FY raised to $8.530-8.534B",
-   "status": "Materially changed",
-   "last_updated": "2026-11-02-pm",
-   "score_rationale": "finance-first selection, 2026-11-02 pm; earnings"
-  },
-  {
-   "id": "midterms-eve-nov2",
-   "headline": "Midterms Nov 3: Kalshi noon House D 94%, Senate D 74%; 57M+ early ballots (UF Election Lab via CBS/NBC); Stevens endorses Rogers in MI; no 9th Cir ruling on Thompson TRO appeal",
-   "status": "Developing",
-   "last_updated": "2026-11-02-pm",
-   "score_rationale": "finance-first selection, 2026-11-02 pm; US politics"
-  },
-  {
    "id": "thompson-tro-doj-nov2",
    "headline": "Judge Thompson TRO (Oct 30) bars DOJ/DHS pressure on election officials re noncitizen claims thru Nov 16; DOJ appealed Nov 1; LA County grand jury testimony Nov 4; 9th Cir 2-1 denial, SCOTUS filing expected not found",
    "status": "Materially changed",
@@ -62,13 +120,6 @@
    "status": "Materially changed",
    "last_updated": "2026-11-02-pm",
    "score_rationale": "finance-first selection, 2026-11-02 pm; crypto/market structure"
-  },
-  {
-   "id": "rba-nov3",
-   "headline": "RBA Nov 3 22:30 ET: all 4 majors expect hike to 4.85%; BoE Thu Nov 5",
-   "status": "Continuing",
-   "last_updated": "2026-11-02-pm",
-   "score_rationale": "finance-first selection, 2026-11-02 pm; global central banks"
   },
   {
    "id": "us-steel-edgar-thomson",
@@ -524,67 +575,7 @@
    "sources": [],
    "score_rationale": "Central banks; forecast 2026-10-27-pm-2 landed",
    "keep_on_watchlist": false
-  },
-  {
-   "id": "ust-curve-bear-steepen-oct28",
-   "headline": "10Y par 5.05% (+6bp), 30Y 5.37%, 2Y 4.67%; 2s10s 38bp",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-28-pm",
-   "last_updated": "2026-10-28-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Rates; Treasury par curve",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "msft-fq1-2027",
-   "headline": "Microsoft FQ1: rev $92.3B +19%, Azure +48%, cRPO $677B, capex $39.4B; ~+4% AH",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-28-pm",
-   "last_updated": "2026-10-28-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "AI revenue test; 8-K read",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "googl-q3-2026",
-   "headline": "Alphabet Q3: Cloud +103% to $30.7B, EPS $2.12 miss on $8.7B equity loss, capex $51.4B, FCF -$9.1B; ~-9% AH",
-   "status": "New",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-28-pm",
-   "last_updated": "2026-10-28-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Mega-cap AI capex vs cash flow test; 8-K read",
-   "keep_on_watchlist": true
-  },
-  {
-   "id": "fomc-2026-10-28-hold-dissents",
-   "headline": "FOMC holds 3.75-4.00% on 10-2 vote; Cook and Hammack dissent for hike; Dec hike ~85% priced",
-   "status": "Materially changed",
-   "verification": "Confirmed-primary",
-   "first_seen": "2026-10-28-pm",
-   "last_updated": "2026-10-28-pm",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Lead: market-moving policy; primary statement",
-   "keep_on_watchlist": false
-  },
-  {
-   "id": "pa-phone-ban-act117",
-   "headline": "PA Act 117 of 2026 (SB 1014) bell-to-bell school phone ban signed Oct 26; compliance 2027-28",
-   "status": "New",
-   "verification": "Confirmed-multiple",
-   "first_seen": "2026-10-28-am",
-   "last_updated": "2026-10-28-am",
-   "one_line": null,
-   "sources": [],
-   "score_rationale": "Local PA",
-   "keep_on_watchlist": false
   }
  ],
- "updated": "2026-11-02T21:47:27Z"
+ "updated": "2026-11-03T11:48:10Z"
 }
