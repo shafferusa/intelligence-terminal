@@ -67,6 +67,12 @@ BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 MAX_BYTES = 16 << 20
 CHAIN_MAX_DAYS = 400
 CHAIN_STRIKE_BAND = Decimal("0.35")
+# Option chains (reduced Cboe snapshots, least recently used dropped first) the server keeps in memory: the seed of the owner
+# setting ``chain_cache_entries`` (owner 2026-11-03 "raise the option-chain limit"; 1.0.7 and older kept 2), which he may set
+# from CHAIN_CACHE_ENTRIES_MIN to CHAIN_CACHE_ENTRIES_MAX.  The server reads it at start and applies a change at once.
+CHAIN_CACHE_ENTRIES = 12
+CHAIN_CACHE_ENTRIES_MIN = 2
+CHAIN_CACHE_ENTRIES_MAX = 24
 
 # Accounting-day boundary (§6.6) and the lifecycle times used by the core (sessions / snapshots).
 ACCOUNTING_DAY_CLOSE_ET = "17:00"

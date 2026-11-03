@@ -308,6 +308,7 @@ TABLES = ("meta", "commands", "events", "jobs_done", "job_failures", "attention"
 # Seed settings (§3.1); book_defaults is filled from the seeded books.
 DEFAULT_SETTINGS = {
     "participation_rate": "0.10",
+    "fill_mode": "REALISTIC",                       # 1.0.7.1: or AUTOFILL (Settings > General); only NEW files are seeded, so readers default too
     "sweep_out_time_et": "17:30",
     "snapshot_time_et": "17:45",
     "treasury_reserve_c": 0,
@@ -317,6 +318,7 @@ DEFAULT_SETTINGS = {
     "pb_otc_threshold_c": 2500000000,
     "qp_threshold_c": {"INDIVIDUAL": 500000000, "FUND": 2500000000, "INSTITUTION": 0},
     "private_defaults": {"fee_pct": "0.03", "settle_days": 30, "lockup_months": 6},
+    "chain_cache_entries": config.CHAIN_CACHE_ENTRIES,    # 12 option chains kept live; only NEW files are seeded, so readers default too
 }
 
 # Id sequences (§3: "order ids O-000001, fill ids F-000001, ...")

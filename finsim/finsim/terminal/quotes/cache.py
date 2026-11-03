@@ -30,8 +30,10 @@ Conventions
 - ``ChainCache.underlying_quote(uid)`` (EXEC-7): the Cboe underlying bid / ask / sizes of a fresh cached chain as a
   ``QuoteRecord`` (method ``chain_underlying``), so a stock order fills at the observed ask (buys) / bid (sells) while a
   fresh chain of it is in memory (nothing is fetched for this).
-- ``ChainCache``: an LRU of two reduced chains with ONE in-flight fetch per underlying shared by every requester
-  (single-flight ``Future``); the worker serves pending requests one at a time so the SPX parse never overlaps another.
+- ``ChainCache``: an LRU of ``max_entries`` reduced chains with ONE in-flight fetch per underlying shared by every requester
+  (single-flight ``Future``); the worker serves pending requests one at a time so the SPX parse never overlaps another.  The
+  class default is 2; the server builds it with the owner setting ``chain_cache_entries`` (2-24, default 12 since 1.0.7.1)
+  and ``resize()`` applies a change live: under the lock, a smaller limit drops the least recently used chains at once.
 - Persistence (TX-6, 2026-10-21): ``persist()`` (the worker's 60 s slot and shutdown) upserts only the records that
   changed since the last persist (the dirty set: every ``put``, and a ``record_error`` that creates a record or changes
   its error text) straight into ``quote_cache`` in one short writer transaction — never through the command journal
@@ -878,8 +880,7 @@ class ChainCache:
             uid = snap.underlying_id
             self._snaps[uid] = snap
             self._snaps.move_to_end(uid)
-            while len(self._snaps) > self.max_entries:
-                self._snaps.popitem(last=False)
+            self._evict()
             self._errors.pop(uid, None)
             self._next_due[uid] = int(snap.fetched_at) + int(QUOTE_INTERVALS["CHAIN"])
             if self._in_flight == uid:
@@ -887,6 +888,30 @@ class ChainCache:
             f = self._futures.pop(uid, None)
         if f is not None and not f.done():
             f.set_result(snap)
+
+    def _evict(self) -> List[str]:
+        """Drop the least recently used snapshots (put or ``get``) beyond ``max_entries``; the caller holds the lock.  Returns
+        the dropped underlyings, oldest first."""
+        out: List[str] = []
+        while len(self._snaps) > self.max_entries:
+            out.append(self._snaps.popitem(last=False)[0])
+        return out
+
+    def resize(self, max_entries: int) -> List[str]:
+        """The owner setting ``chain_cache_entries`` applied live: ``max_entries`` changes under the lock, and a smaller limit
+        drops the least recently used snapshots at once (the order ``put`` drops them in); a larger one keeps them all.  Returns
+        the dropped underlyings, oldest first.  In-flight fetches, pins, the on-screen set and errors are untouched, so a dropped
+        chain that is still pinned or on screen is fetched again when it is next due or requested."""
+        n = int(max_entries)
+        if n < 1:
+            raise ValueError(f"a chain cache keeps at least one chain, not {max_entries!r}")
+        with self._lock:
+            old = self.max_entries
+            self.max_entries = n
+            dropped = self._evict()
+        if self.log is not None and (old != n or dropped):
+            self.log.info("option chains kept live: %s -> %s%s", old, n, f" (dropped {', '.join(dropped)})" if dropped else "")
+        return dropped
 
     def fail(self, underlying_id: str, exc: Exception) -> None:
         with self._lock:
@@ -934,7 +959,7 @@ class ChainCache:
     def stats(self) -> dict:
         with self._lock:
             return {"cached": list(self._snaps), "pending": list(self._pending), "in_flight": self._in_flight, "pinned": sorted(self._pins),
-                    "on_screen": sorted(self._screen), "errors": dict(self._errors)}
+                    "on_screen": sorted(self._screen), "errors": dict(self._errors), "max_entries": self.max_entries}
 
 
 __all__ = ["QuoteCache", "ChainCache", "record_from_intraday", "record_from_chain_row", "records_from_chain", "unavailable_record", "register",

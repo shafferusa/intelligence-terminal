@@ -35,6 +35,17 @@ FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 6-7):
 - REVIEW (OMS-08): ``review(order, rec, session, now, inst, bar_used)`` runs ``evaluate`` - pure, nothing written - and says what the
   order would do now: "would fill N at P now (basis)" or the reason it would not (STOP_NOT_REACHED, NOT_MARKETABLE, AWAITING_SESSION,
   STALE, BAR_CAP_USED ...) with the distance from the observed price to the limit / stop.
+
+FinSim1 1.0.7.1 (owner 2026-11-03: "autofill these and give me the option"; "this is a simulation and you can edit the code"):
+- FILL MODE: the owner setting ``fill_mode`` (Settings > General) is REALISTIC - the default, and what an absent or unknown value means:
+  exactly the rules above - or AUTOFILL.  In AUTOFILL ``fill_cap`` lifts only the participation cap (NO_NEW_BAR, NO_VOLUME_THIS_BAR
+  and BAR_CAP_USED with it) and the options' displayed-size cap (NO_SIZE): an order that is executable now fills its whole remaining
+  quantity in one fill, and its cap note starts with ``AUTOFILL_NOTE`` ("autofill (owner setting): no size or volume cap") and says
+  what Realistic would fill now.  FILL_PRICE, LIMIT_RULE, STOP_RULE, SESSION and STALE are untouched: no price is invented, a stale or
+  missing quote still blocks, a limit that is not marketable still rests.  FX is unchanged, an option still never fills twice on one
+  observation (SAME_OBSERVATION) and an all-or-none package still needs the displayed size (AON_SIZE).  This module stays pure: the
+  caller reads the setting (``orders_preview.fill_mode_of``) and passes ``fill_mode``, or hands over ``orders_preview.bar_usage(conn)``,
+  which carries the mode read on that same connection (``resolve_fill_mode``) - so ``order.match`` decides inside its own transaction.
 """
 from __future__ import annotations
 
@@ -67,6 +78,17 @@ FUNDS_WAIT = "waiting for funds"
 FUNDS_CODES = ("INSUFFICIENT_FUNDS", "INSUFFICIENT_FUNDS_CCY")
 AUTO_RESUME_NOTE = "resumed: funds available"
 FUNDS_WAIT_ITEM = "ORDER_WAITING_FUNDS"      # the INFO attention item of an order queued for funds at submit
+# FinSim1 1.0.7.1 FILL MODE (module docstring): the owner setting ``fill_mode`` - not an order's package ``fill_mode`` (SEQUENTIAL / AON)
+FILL_MODE_SETTING = "fill_mode"
+FILL_MODE_REALISTIC = "REALISTIC"            # the default: the participation and displayed-size caps apply (1.0.7 exactly)
+FILL_MODE_AUTOFILL = "AUTOFILL"              # an executable order fills its whole remaining quantity in one fill
+FILL_MODES = (FILL_MODE_REALISTIC, FILL_MODE_AUTOFILL)
+AUTOFILL_NOTE = "autofill (owner setting): no size or volume cap"      # the start of every autofilled fill's cap note
+tables.add_conventions({"AUTOFILL": (
+    "Autofill (Settings > General; Realistic is the default): an order that is executable now fills its whole remaining quantity in one"
+    " fill, priced exactly as in Realistic mode, with no participation (1-minute bar volume) cap and no displayed-size cap; a stale or"
+    " missing quote, a closed session, a stop not reached or a limit that is not marketable still blocks, an all-or-none package still"
+    " needs the displayed size, and every such fill is marked 'autofill (owner setting): no size or volume cap'.")})
 
 
 def funds_wait_reason(ccy: str, need_c: int, available_c: int, fx_first: bool = False) -> str:
@@ -344,18 +366,71 @@ def _bar_used(bar_used: BarUsed, instrument_id: str, bar_t: int) -> int:
     return max(0, int(bar_used))
 
 
-def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal, bar_used: BarUsed = None) -> Tuple[int, str]:
+def fill_mode_value(value) -> str:
+    """The fill mode a stored or passed value means (1.0.7.1): AUTOFILL only for that word (any case, blanks around it ignored);
+    anything else - None, REALISTIC, a typo, an order's own package mode SEQUENTIAL / AON - is REALISTIC, so the default never
+    changes a fill."""
+    return FILL_MODE_AUTOFILL if isinstance(value, str) and value.strip().upper() == FILL_MODE_AUTOFILL else FILL_MODE_REALISTIC
+
+
+def resolve_fill_mode(fill_mode: Optional[str] = None, bar_used: BarUsed = None) -> str:
+    """The fill mode a cap applies: ``fill_mode`` when the caller passes one; else the mode ``orders_preview.bar_usage(conn)`` read on
+    the caller's connection together with the bar usage (its ``fill_mode`` attribute); else REALISTIC (a bare int or function)."""
+    if fill_mode is not None:
+        return fill_mode_value(fill_mode)
+    return fill_mode_value(getattr(bar_used, "fill_mode", None))
+
+
+def _same_observation(order: OrderRow, rec: Optional[QuoteRecord], kind: str) -> bool:
+    """Options and FX never fill twice on one observation: the record's quote time is not newer than the order's last fill."""
+    return (kind in ("OPTION", "FX") and rec is not None and order.last_quote_time is not None and rec.quote_time is not None
+            and int(rec.quote_time) <= int(order.last_quote_time))
+
+
+def _cap_reason(cap_note: str) -> str:
+    """The reason code of a zero cap: the code its note names, NO_SIZE otherwise (a displayed size of 0)."""
+    return next((r for r in ("NO_NEW_BAR", "NO_VOLUME_THIS_BAR", "SAME_OBSERVATION", "BAR_CAP_USED") if r in cap_note), "NO_SIZE")
+
+
+def _autofill_note(kind: str, remaining: int, realistic_cap: int, realistic_note: str) -> str:
+    """The cap note of an AUTOFILL fill: ``AUTOFILL_NOTE``, the whole remaining quantity in one fill, and what Realistic would fill
+    now - "autofill (owner setting): no size or volume cap; the whole remaining 38,000 shares in one fill (Realistic would fill 0 now:
+    no new 1-minute bar since the last fill)"."""
+    unit = ("contract" if kind in ("OPTION", "FUTURE") else "share") + ("" if remaining == 1 else "s")
+    why = "" if realistic_cap > 0 else ": " + REVIEW_WORDS.get(_cap_reason(realistic_note), "capped")
+    return f"{AUTOFILL_NOTE}; the whole remaining {remaining:,} {unit} in one fill (Realistic would fill {realistic_cap:,} now{why})"
+
+
+def fill_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal, bar_used: BarUsed = None,
+             fill_mode: Optional[str] = None) -> Tuple[int, str]:
     """§10.6: ``(qty cap this pass, disclosure)``.  Equities / futures: at most ``participation`` x the latest completed
     1-minute bar's volume, in lots, and never the same bar twice (NO_NEW_BAR); no bar or no volume -> the remaining
     quantity (NO_VOLUME); a completed bar with zero volume -> 0 (NO_VOLUME_THIS_BAR).  The cap is per (instrument, bar)
     across every order, account and book (EXEC-6): ``bar_used`` (an int, or ``fn(instrument_id, bar_t)``) is what fills
     already took from that bar, and only the rest of the cap is offered (BAR_CAP_USED when nothing is left).  Options: the
-    displayed ask (buys) / bid (sells) size (None -> remaining, disclosed; 0 -> 0).  FX: remaining (no volume concept)."""
+    displayed ask (buys) / bid (sells) size (None -> remaining, disclosed; 0 -> 0).  FX: remaining (no volume concept).
+
+    1.0.7.1 FILL MODE: the owner's ``fill_mode`` (passed, or carried by ``bar_used``: ``resolve_fill_mode``) REALISTIC is exactly the
+    above.  AUTOFILL returns the whole remaining quantity instead, with ``_autofill_note`` (the disclosure and the Realistic cap now),
+    whatever the bar volume, the bar usage or the displayed size; FX and SAME_OBSERVATION answer as in REALISTIC.  It is only ever
+    reached for an order ``evaluate`` already found executable, so no price, gate or limit changes."""
+    cap, note = _realistic_cap(order, rec, inst, participation, bar_used)
+    if resolve_fill_mode(fill_mode, bar_used) != FILL_MODE_AUTOFILL:
+        return cap, note
+    kind = inst.kind if inst is not None else order.kind
+    remaining = order.remaining
+    if kind == "FX" or remaining <= 0 or _same_observation(order, rec, kind):
+        return cap, note
+    return remaining, _autofill_note(kind, remaining, cap, note)
+
+
+def _realistic_cap(order: OrderRow, rec: Optional[QuoteRecord], inst: Optional[Instrument], participation: Decimal, bar_used: BarUsed = None) -> Tuple[int, str]:
+    """``fill_cap`` in REALISTIC mode (the §10.6 rules of its docstring, unchanged since 1.0.7)."""
     kind = inst.kind if inst is not None else order.kind
     lot = max(1, int(inst.lot if inst is not None else order.lot))
     remaining = order.remaining
     pct = f"{(participation * 100).normalize():f}"
-    if kind in ("OPTION", "FX") and rec is not None and order.last_quote_time is not None and rec.quote_time is not None and int(rec.quote_time) <= int(order.last_quote_time):
+    if _same_observation(order, rec, kind):
         return 0, "this observation already filled the order (no newer chain time): SAME_OBSERVATION"
     if kind == "OPTION":
         size = (rec.ask_size if order.side in BUY_SIDES else rec.bid_size) if rec is not None else None
@@ -401,9 +476,10 @@ def opening_cutoff_passed(order, now: int, expiry: Optional[str] = None) -> bool
 
 
 def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, participation: Optional[Decimal] = None,
-             inst: Optional[Instrument] = None, bar_used: BarUsed = None) -> Decision:
+             inst: Optional[Instrument] = None, bar_used: BarUsed = None, fill_mode: Optional[str] = None) -> Decision:
     """§10.5, exactly and purely (no I/O).  See the module docstring for the sentences this implements.  ``bar_used``: what
-    other fills already took from a 1-minute bar (EXEC-6; an int or ``fn(instrument_id, bar_t)``, read by the caller)."""
+    other fills already took from a 1-minute bar (EXEC-6; an int or ``fn(instrument_id, bar_t)``, read by the caller).
+    ``fill_mode``: the owner's fill mode (1.0.7.1; None -> the one ``bar_used`` carries, else REALISTIC), used by ``fill_cap`` only."""
     participation = Decimal(participation if participation is not None else order.participation)
     if order.status not in OPEN_STATUSES:
         return Decision("NONE", None, 0, "NOT_OPEN", None)
@@ -485,7 +561,7 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
             persist = order.rested_col and order.limit_rested is not True
             return Decision("NONE", None, 0, "NOT_MARKETABLE", bar_ts, qt, triggered=triggered_now, first_look=first_look, rested=True, persist_rested=persist,
                             note=(f"stop reached on the observed {trig_basis} {trig}: rests as a limit at {limit}" if triggered_now else ""))
-    cap, cap_note = fill_cap(order, rec, inst, participation, bar_used)
+    cap, cap_note = fill_cap(order, rec, inst, participation, bar_used, fill_mode=fill_mode)
     qty = min(order.remaining, cap)
     note = ""
     gap_word = basis if option else "print"
@@ -496,7 +572,7 @@ def evaluate(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, par
         note = (note + "; " if note else "") + f"triggered on the observed {trig_basis} {trig} (Cboe chain NBBO; an option never triggers on its own last trade)"
     persist = rested_after is not None and order.rested_col and order.limit_rested is not False
     if qty <= 0:
-        reason = next((r for r in ("NO_NEW_BAR", "NO_VOLUME_THIS_BAR", "SAME_OBSERVATION", "BAR_CAP_USED") if r in cap_note), "NO_SIZE")
+        reason = _cap_reason(cap_note)
         return Decision("TRIGGER" if triggered_now else "NONE", None, 0, reason, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note,
                         rested=rested_after, persist_rested=persist)
     return Decision("FILL", price, qty, why, bar_ts, qt, fill_basis, triggered_now, cap_note=cap_note, first_look=first_look, note=note, rested=rested_after,
@@ -602,11 +678,12 @@ def distance(order, rec: Optional[QuoteRecord]) -> Optional[dict]:
 
 
 def review(order: OrderRow, rec: Optional[QuoteRecord], session, now: int, inst: Optional[Instrument] = None, bar_used: BarUsed = None,
-           participation: Optional[Decimal] = None) -> dict:
+           participation: Optional[Decimal] = None, fill_mode: Optional[str] = None) -> dict:
     """OMS-08 (pure, nothing written): ``evaluate`` on the cached observation and the session now, said in words.  ``{action,
     reason, words, text, qty, price, price_basis, note, cap_note, distance, quote_time, evaluated_at}`` - "would fill 100 at 339.50
-    now (last)", or "would not fill now: the stop is not reached (stop 330.00 is 2.80 % below the observed last 339.50)"."""
-    dec = evaluate(order, rec, session, now, participation, inst, bar_used=bar_used)
+    now (last)", or "would not fill now: the stop is not reached (stop 330.00 is 2.80 % below the observed last 339.50)".
+    ``fill_mode`` as in ``evaluate`` (the Pending drawer passes ``bar_usage(conn)``, which carries the owner's mode)."""
+    dec = evaluate(order, rec, session, now, participation, inst, bar_used=bar_used, fill_mode=fill_mode)
     dist = distance(order, rec)
     why = REVIEW_WORDS.get(dec.reason, str(dec.reason or "").replace("_", " ").lower())
     if dec.action == "FILL":

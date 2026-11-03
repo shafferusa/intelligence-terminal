@@ -10,6 +10,13 @@ instead of being retried on every pass (TX-3; the bus keeps ONE open COMMAND_FAI
 FUNDS_WAIT (hotfix 1.0.3.1, 2026-10-21, ported to 1.0.4): each sweep first plans, read-only, which orders waiting for funds fit the cash
 now (``orders.plan_funds_resume``) and issues ONE ``order.resume_funded`` command only when one does; the resumed orders are evaluated in
 the same sweep by the normal rules.  A failing resume command backs off like an order (key ``order.resume_funded``).
+
+FinSim1 1.0.7.1 FILL MODE (``orders_rules`` module docstring): each pass reads the owner's fill mode once (``orders_preview.fill_mode_of``)
+and evaluates with it, so in AUTOFILL an order the caps alone held back (NO_NEW_BAR, NO_VOLUME_THIS_BAR, BAR_CAP_USED, NO_SIZE) gets its
+``order.match`` on the next pass; ``order.match`` reads the mode again inside its own transaction and decides.  In AUTOFILL the bar
+usage is not read (it caps nothing), and a fill decision on an observation this order already used under Realistic - a command's request
+id (a first look, a trigger, a partial fill) or a fill's idem key (the submit's partial fill) - waits for the next observation instead
+of re-using the id with another payload (409 REQUEST_ID_REUSED and a back-off) or sending a command that can only answer ALREADY_APPLIED.
 """
 from __future__ import annotations
 
@@ -18,8 +25,8 @@ import threading
 from typing import Dict, Iterable, Optional, Tuple
 
 from .commands import Command
-from .orders_preview import session_for, with_nbbo
-from .orders_rules import OrderRow, evaluate, evaluate_package, match_idem
+from .orders_preview import fill_mode_of, session_for, with_nbbo
+from .orders_rules import FILL_MODE_AUTOFILL, FILL_MODE_REALISTIC, OrderRow, evaluate, evaluate_package, match_idem
 from .quotes import QuoteRecord
 
 BACKOFF_S = (60, 120, 240, 480, 960, 1920, 3600)        # an order whose match command failed waits this long (1st, 2nd ... failure in a row)
@@ -192,10 +199,23 @@ class Matcher(threading.Thread):
             row = conn.execute("SELECT COALESCE(SUM(qty), 0) FROM fills WHERE instrument_id=? AND bar_ts=?", (instrument_id, int(bar_t))).fetchone()
         return int(row[0] or 0)
 
+    def _fill_mode(self) -> str:
+        """1.0.7.1: the owner's fill mode now (Settings > General), read once per pass on a pooled reader."""
+        with self.db.reader() as conn:
+            return fill_mode_of(conn)
+
+    def _observation_used(self, key: str) -> bool:
+        """1.0.7.1: this order's observation already had its look or its fill - a committed command used ``key`` as its request id
+        (only successful commands are stored), or a fill (the submit's, an amend's ...) carries it as its idem key."""
+        with self.db.reader() as conn:
+            return (conn.execute("SELECT 1 FROM commands WHERE request_id=?", (key,)).fetchone() is not None
+                    or conn.execute("SELECT 1 FROM fills WHERE idem_key=?", (key,)).fetchone() is not None)
+
     def _evaluate_rows(self, rows) -> int:
         now = self.clock.epoch()
         issued = 0
         packages: Dict[str, list] = {}
+        mode = self._fill_mode() if rows else FILL_MODE_REALISTIC
         for r in rows:
             if r["package_id"] and r["fill_mode"] == "AON":
                 packages.setdefault(r["package_id"], []).append(r)
@@ -208,15 +228,17 @@ class Matcher(threading.Thread):
             session = session_for(self.sessions, orow.session_group, rec, now)
             if inst is not None and self.services is not None:
                 rec = with_nbbo(self.services, inst, rec, session, now)
-            dec = evaluate(orow, rec, session, now, orow.participation, inst)
-            if dec.action == "FILL" and dec.bar_ts is not None and orow.kind not in ("OPTION", "FX"):
+            dec = evaluate(orow, rec, session, now, orow.participation, inst, fill_mode=mode)
+            if dec.action == "FILL" and dec.bar_ts is not None and orow.kind not in ("OPTION", "FX") and mode != FILL_MODE_AUTOFILL:
                 used = self._bar_used(orow.instrument_id, dec.bar_ts)
                 if used:
-                    dec = evaluate(orow, rec, session, now, orow.participation, inst, bar_used=used)
+                    dec = evaluate(orow, rec, session, now, orow.participation, inst, bar_used=used, fill_mode=mode)
             if not dec.wants_command or rec is None:
                 continue
-            cmd = Command("order.match", {"order_id": orow.order_id, "quote": rec.to_dict(), "hint": dec.action, "reason": dec.reason},
-                          match_idem(orow.order_id, rec.quote_time, dec.bar_ts), "matcher")
+            rid = match_idem(orow.order_id, rec.quote_time, dec.bar_ts)
+            if mode == FILL_MODE_AUTOFILL and dec.action == "FILL" and self._observation_used(rid):
+                continue                         # this observation already had its look or its fill: the next observation fills it
+            cmd = Command("order.match", {"order_id": orow.order_id, "quote": rec.to_dict(), "hint": dec.action, "reason": dec.reason}, rid, "matcher")
             if self._execute(cmd, orow.order_id):
                 issued += 1
         for pid, legs_raw in packages.items():

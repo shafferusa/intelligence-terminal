@@ -1,5 +1,6 @@
 /* Settings (TERMINAL_DESIGN.md s17.1 #/settings[/section]; WP-12; Build 2 P01 2026-10-21).  Sections: General (theme,
- * the keyboard map in force, participation rate), Keyboard (the owner's keys, 2026-10-21 17:10: every action by group with
+ * the keyboard map in force, participation rate, and the fill mode of 1.0.7.1 - Realistic or Autofill, owner 2026-11-03 "autofill
+ * these and give me the option": PATCH /api/settings {fill_mode}, Autofill asks first), Keyboard (the owner's keys, 2026-10-21 17:10: every action by group with
  * its key; Change = press the new key, a key in use asks to swap or cancel, Clear, Reset, Reset all, refused / noted browser
  * keys, Test a key; saved in the app with PATCH /api/settings {keybinds, keybind_defaults}; docs/KEYBINDS.md), Accounts
  * (per-account sweep switch / buffer, PB financing switch and limit ->
@@ -130,6 +131,35 @@
         T.form([T.field('participation rate', part, 'share of each new 1-minute bar\'s volume an order may take'), ['', T.h('button', { class: 'btn', onclick: function () { patch({ participation_rate: part.value.trim() }, 'execution defaults'); } }, 'Save')]]),
         T.h('div', { class: 'hint' }, 'Session overrides (an early close the NYSE file lacks) are in Settings > Calendar.'),
         T.convNote(['PARTICIPATION'])));
+      body.appendChild(fillModePanel());
+    }
+
+    /* 1.0.7.1 fill mode (owner 2026-11-03 "autofill these and give me the option"): Realistic (the default) or Autofill, the server's
+       setting fill_mode.  Saved alone with PATCH /api/settings {fill_mode} (journaled with before / after); switching to Autofill asks
+       first.  The server applies it at every order's next executable look; nothing here computes a fill. */
+    var FILL_MODE_WORDS = { REALISTIC: 'Realistic', AUTOFILL: 'Autofill' };
+    var AUTOFILL_WARNING = 'Autofill: every open or new order that is executable fills its whole remaining quantity at once, in one fill priced exactly as in ' +
+      'Realistic mode, with no participation (1-minute bar volume) cap and no displayed-size cap. A stale or missing quote, a closed session, a stop not reached or a limit ' +
+      'that is not marketable still blocks; all-or-none packages still need the displayed size. Each such fill is marked "autofill (owner setting): no size or volume cap".';
+    function fillModeNow() { return String(get('fill_mode', 'REALISTIC') || '').toUpperCase() === 'AUTOFILL' ? 'AUTOFILL' : 'REALISTIC'; }
+    function fillModePanel() {
+      var cur = fillModeNow();
+      var sel = T.h('select', { style: 'width:160px', 'aria-label': 'fill mode' });
+      ['REALISTIC', 'AUTOFILL'].forEach(function (m) { sel.appendChild(T.h('option', { value: m, selected: m === cur }, FILL_MODE_WORDS[m])); });
+      var save = T.h('button', { class: 'btn', onclick: function () {
+        var want = sel.value === 'AUTOFILL' ? 'AUTOFILL' : 'REALISTIC';
+        if (want === cur) { T.ui.toast('fill mode: ' + FILL_MODE_WORDS[cur] + ' (unchanged)', '', 2000); dirty = false; return; }
+        if (want === 'REALISTIC') { patch({ fill_mode: 'REALISTIC' }, 'fill mode Realistic'); return; }
+        T.ui.confirm(AUTOFILL_WARNING, { title: 'Switch the fill mode to Autofill', ok: 'Switch to Autofill', cancel: 'Keep Realistic' }).then(function (yes) {
+          if (yes) { patch({ fill_mode: 'AUTOFILL' }, 'fill mode Autofill'); } else { sel.value = cur; dirty = false; }
+        });
+      } }, 'Save');
+      var on = cur === 'AUTOFILL';
+      return T.h('div', { class: 'panel' }, T.h('h2', null, 'fill mode', T.h('small', null, on ? 'AUTOFILL IS ON: no size or volume cap' : 'Realistic: the participation and displayed-size caps apply')),
+        T.form([T.field('fill mode', sel, 'Realistic or Autofill (a simulation setting; every book)'), ['', save]]),
+        T.h('div', { class: 'hint', style: 'white-space:normal' }, 'Realistic (the default): each new 1-minute bar lets at most the participation rate of its volume fill and an option fills at most the displayed size; the rest keeps working.'),
+        T.h('div', { class: 'warn-box', style: 'border-left:3px solid var(--warn);padding:4px 8px;margin:6px 0;background:var(--panel-2);white-space:normal' }, (on ? 'ON NOW. ' : '') + AUTOFILL_WARNING),
+        T.convNote(['AUTOFILL']));
     }
 
     /* ---------------------------------------------------------------- Keyboard (owner 2026-10-21 17:10) -------- */
@@ -579,6 +609,8 @@
       p.appendChild(T.h('h2', null, 'market-data and execution preferences'));
       var prefs = [['participation rate', T.h('span', null, (get('participation_rate', null) != null ? T.fmt.pct(get('participation_rate', null), 0) + ' of each new 1-minute bar\'s volume' : 'n/a') + ' . ',
                       T.h('a', { href: '#/settings/general' }, 'change it in General')), 'the share of a bar\'s volume an order may take'],
+                   ['fill mode', T.h('span', null, FILL_MODE_WORDS[fillModeNow()] + (fillModeNow() === 'AUTOFILL' ? ' (no participation or displayed-size cap)' : ' (the participation and displayed-size caps apply)') + ' . ',
+                      T.h('a', { href: '#/settings/general' }, 'change it in General')), 'Realistic or Autofill: how much of an executable order fills at once'],
                    ['session overrides', T.h('span', null, (Object.keys(get('session_overrides', {}) || {}).length ? Object.keys(get('session_overrides', {})).length + ' day(s) overridden' : 'none') + ' . ',
                       T.h('a', { href: '#/settings/calendar' }, 'edit them in Calendar')), 'an early close or a closed day the NYSE file lacks'],
                    ['futures margins & limits', T.h('a', { href: '#/settings/margins' }, 'Margins & limits'), 'the static margin table and position limits (assumed values) and your overrides']];

@@ -31,16 +31,24 @@ FinSim1 1.0.6 (FINSIM1_PLAN P2 tasks 5 and 7):
   cover quantity is not counted twice against the position, a short sale keeps its borrow (no new locate; the quantity cannot exceed
   what the borrow covers), a triggered stop-limit keeps its trigger and a trailing stop keeps its reference.  The preview takes the
   same context from ``amend_of`` / ``replace_of`` in the request, so the ticket's amend mode previews exactly what the command checks.
+
+FinSim1 1.0.7.1 FILL MODE (owner 2026-11-03 "autofill these and give me the option"; ``orders_rules`` module docstring): ``fill_mode_of(conn)``
+reads the owner setting ``fill_mode`` (REALISTIC without a row) and ``bar_usage(conn)`` carries it with the bar usage, so every caller
+of ``evaluate`` / ``review`` that hands over ``bar_usage(conn)`` applies the mode in force on its own connection.  In AUTOFILL the preview
+says so: the cap note starts "autofill (owner setting): no size or volume cap", the assumption ends with it, ``execution.fill_mode`` is
+AUTOFILL, the participation rate is not shown (it does not apply) and the AUTOFILL convention replaces PARTICIPATION / NO_VOLUME.  In
+REALISTIC the preview is exactly 1.0.7's (no ``fill_mode`` key).
 """
 from __future__ import annotations
 
+import sqlite3
 import threading
 import uuid
 from collections import deque
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_EVEN
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from . import config, execution, tables
 from .books import account_kind_for, account_row, lifetime_row
@@ -50,8 +58,9 @@ from .db import get_setting
 from .instruments import Instrument
 from .ledger import position as _position
 from .marks import shared_reader
-from .orders_rules import (BUY_SIDES, CASH_SIDES, FUNDS_WAIT, FUTURES_SIDES, NEEDS_QUOTE_TYPES, OPENING_SIDES, OPTION_LAST_OPEN_ET, OPTION_SIDES,
-                           ORDER_TYPES, SELL_SIDES, TIFS, OrderRow, evaluate, exec_price, fill_cap, funds_wait_reason, on_tick, trail_stop, trigger_price)
+from .orders_rules import (AUTOFILL_NOTE, BUY_SIDES, CASH_SIDES, FILL_MODE_AUTOFILL, FILL_MODE_REALISTIC, FILL_MODE_SETTING, FUNDS_WAIT, FUTURES_SIDES,
+                           NEEDS_QUOTE_TYPES, OPENING_SIDES, OPTION_LAST_OPEN_ET, OPTION_SIDES, ORDER_TYPES, SELL_SIDES, TIFS, OrderRow, evaluate, exec_price,
+                           fill_cap, fill_mode_value, funds_wait_reason, on_tick, trail_stop, trigger_price)
 from .quotes import QuoteRecord, freshness, is_executable
 from .units import fmt_money, from_c, qprice, to_c
 
@@ -828,13 +837,37 @@ def _lent_shares(services, conn, account_id: str, instrument_id: str) -> int:
         return 0
 
 
-def bar_usage(conn) -> Callable[[str, int], int]:
-    """EXEC-6: ``fn(instrument_id, bar_t)`` -> the quantity every fill (any order, account or book) already took from that
-    1-minute bar; ``orders_rules.fill_cap`` offers only the rest of the participation cap."""
-    def used(instrument_id: str, bar_t: int) -> int:
-        row = conn.execute("SELECT COALESCE(SUM(qty), 0) FROM fills WHERE instrument_id=? AND bar_ts=?", (instrument_id, int(bar_t))).fetchone()
+def fill_mode_of(conn) -> str:
+    """1.0.7.1: the owner's fill mode on this connection (setting ``fill_mode``, Settings > General): AUTOFILL only when it is set so;
+    REALISTIC without a row (every database made before 1.0.7.1), for any other value, and when the settings cannot be read (the
+    default never changes a fill)."""
+    try:
+        return fill_mode_value(get_setting(conn, FILL_MODE_SETTING, FILL_MODE_REALISTIC))
+    except sqlite3.Error:
+        return FILL_MODE_REALISTIC
+
+
+class BarUsage:
+    """What the fill cap reads on ONE connection (``bar_usage(conn)``).  Called as ``(instrument_id, bar_t)``: the quantity every fill
+    (any order, account or book) already took from that 1-minute bar (EXEC-6).  ``fill_mode``: the owner's fill mode read on the same
+    connection when it was made (1.0.7.1, ``fill_mode_of``), which ``orders_rules.resolve_fill_mode`` applies - so ``order.match``,
+    the submit, amend, replace, the preview and the Pending review all fill by the mode in force in their own transaction."""
+    __slots__ = ("conn", "fill_mode")
+
+    def __init__(self, conn, fill_mode: Optional[str] = None):
+        self.conn = conn
+        self.fill_mode = fill_mode_of(conn) if fill_mode is None else fill_mode_value(fill_mode)
+
+    def __call__(self, instrument_id: str, bar_t: int) -> int:
+        row = self.conn.execute("SELECT COALESCE(SUM(qty), 0) FROM fills WHERE instrument_id=? AND bar_ts=?", (instrument_id, int(bar_t))).fetchone()
         return int(row[0] or 0)
-    return used
+
+
+def bar_usage(conn) -> BarUsage:
+    """EXEC-6: ``fn(instrument_id, bar_t)`` -> the quantity every fill (any order, account or book) already took from that
+    1-minute bar; ``orders_rules.fill_cap`` offers only the rest of the participation cap.  1.0.7.1: it also carries the owner's fill
+    mode read on ``conn`` (``BarUsage.fill_mode``)."""
+    return BarUsage(conn)
 
 
 def _own_ticket(inst: Instrument) -> Optional[tuple]:
@@ -1281,7 +1314,8 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
     tmp.activate_ts = activate_ts       # OMS-11: a next-session order is queued (evaluate answers AWAITING_SESSION until its open)
     participation = Decimal(str(get_setting(conn, "participation_rate", str(config.PARTICIPATION_RATE)) or config.PARTICIPATION_RATE))
     tmp.participation = participation
-    used = bar_usage(conn)
+    used = bar_usage(conn)                  # carries the owner's fill mode (1.0.7.1), which evaluate / fill_cap apply
+    autofill = used.fill_mode == FILL_MODE_AUTOFILL and inst.kind != "FX"         # FX has no cap to lift
     dec = evaluate(tmp, rec, session, now, participation, inst, bar_used=used)
     cap, cap_note = fill_cap(tmp, rec, inst, participation, used) if ok else (0, "not executable now")
     if rec is not None and (rec.bar is None or rec.bar.v is None) and inst.kind not in ("OPTION", "FX"):
@@ -1289,19 +1323,26 @@ def _validate(services, req: dict, snapshot, conn, now: Optional[int], rest_ok: 
     if inst.kind == "OPTION" and rec is not None and rec.method != "chain":
         assumption = "options execute only at the Cboe delayed NBBO; this record is not a chain quote"
     elif inst.kind == "OPTION":
-        assumption = "fills at the Cboe delayed ask (buys) / bid (sells); capped by the displayed size; stops and limits are judged on that bid / ask"
+        assumption = ("fills at the Cboe delayed ask (buys) / bid (sells); " + ("" if autofill else "capped by the displayed size; ")
+                      + "stops and limits are judged on that bid / ask")
     elif basis in ("ask", "bid"):
         assumption = "fills at the Cboe underlying ask (buys) / bid (sells) from the cached chain"
     elif not ok:
         assumption = "fills at the observed price once a fresh print is observed (the last trade; the Cboe ask / bid while a fresh chain is cached)"
     else:
         assumption = "fills at the last observed trade price; no bid/ask is available from the free feed"     # no fresh Cboe chain is cached (EXEC-7)
+    if autofill:                            # 1.0.7.1: the execution text says the caps are lifted; prices and gates are the same
+        assumption += f"; {AUTOFILL_NOTE}: the whole remaining quantity fills at once whenever the order is executable (fill mode Autofill, Settings > General)"
+        conv[:] = [c for c in conv if c not in ("PARTICIPATION", "NO_VOLUME")]
+        conv.insert(conv.index("FILL_PRICE") + 1 if "FILL_PRICE" in conv else 0, "AUTOFILL")
     rests_until = activate_ts if activate_ts is not None else (None if (session is not None and session.open) else next_open(services, inst, session, rec, now))
     sess_view = None if session is None else {"group": session.group, "open": session.open, "phase": session.phase, "closes_at": session.closes_at,
                                               "next_open": session.next_open if session.next_open else rests_until, "note": session.note}
     pv["execution"] = {"price_basis": price_basis, "expected_price": _s(expected), "fill_now": dec.action == "FILL", "fill_qty_now": dec.qty if dec.action == "FILL" else 0,
                        "decision": dec.reason, "decision_note": dec.note, "cap_note": cap_note, "session": sess_view, "rests_until": rests_until,
-                       "expires_at": expires_ts, "assumption": assumption, "participation": None if inst.kind == "FX" else str(participation)}
+                       "expires_at": expires_ts, "assumption": assumption, "participation": None if (inst.kind == "FX" or autofill) else str(participation)}
+    if autofill:
+        pv["execution"]["fill_mode"] = FILL_MODE_AUTOFILL      # REALISTIC adds no key: its preview stays exactly 1.0.7's
     if funds_wait is not None:
         pv["execution"].update({"fill_now": False, "fill_qty_now": 0, "queued": True, "queued_reason": funds_wait["reason"]})
     # OMS-11: the TIF in words, a next-session order's activation, the extended-hours disclosure (C6)

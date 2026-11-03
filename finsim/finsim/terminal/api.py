@@ -63,6 +63,7 @@ from .clock import accounting_day, iso as _iso, ny_str
 from .commands import Command, ConflictError, RejectError, Result
 from .db import BusyError, DatabaseError, dumps, get_setting, set_setting
 from .attention import attention_book, attention_in_books, attention_summary
+from .orders_rules import FILL_MODES, fill_mode_value
 from .tables import BOOK_PROFILES, CONVENTIONS
 from .units import fmt_money, from_c, to_c
 
@@ -715,16 +716,16 @@ class _ResultError(ApiError):
 
 # ---- light commands owned by the API layer (§4.1 "api.py") ---------------------------------------------------------------
 SETTING_KEYS = {"participation_rate", "sweep_out_time_et", "snapshot_time_et", "treasury_reserve_c", "session_overrides", "sweep_confirm_threshold_c", "theme",
-                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "build2_bonds",
-                "treasury_reserve_by_book", "futures_margin_overrides", "position_limit_overrides", "keybinds"}
+                "pb_otc_threshold_c", "qp_threshold_c", "book_defaults", "private_defaults", "build2_bonds", "fill_mode",
+                "treasury_reserve_by_book", "futures_margin_overrides", "position_limit_overrides", "keybinds", "chain_cache_entries"}
 CENT_SETTINGS = {"treasury_reserve_c", "sweep_confirm_threshold_c", "pb_otc_threshold_c"}
 #: the words a refusal uses for a setting (BM-02: never the internal key)
 SETTING_LABELS = {"participation_rate": "participation rate", "sweep_out_time_et": "sweep-out time", "snapshot_time_et": "snapshot time",
                   "treasury_reserve_c": "Treasury reserve", "treasury_reserve_by_book": "Treasury reserve", "session_overrides": "session overrides",
                   "sweep_confirm_threshold_c": "sweep confirmation threshold", "theme": "theme", "pb_otc_threshold_c": "PB / OTC eligibility threshold",
                   "qp_threshold_c": "qualified-purchaser threshold", "book_defaults": "book names and starting capitals", "private_defaults": "private markets defaults",
-                  "build2_bonds": "bond execution", "futures_margin_overrides": "futures margins",
-                  "position_limit_overrides": "position limits", "keybinds": "keyboard keys"}
+                  "build2_bonds": "bond execution", "fill_mode": "fill mode", "futures_margin_overrides": "futures margins",
+                  "position_limit_overrides": "position limits", "keybinds": "keyboard keys", "chain_cache_entries": "option chains kept live"}
 #: the settings ``book.update_settings`` owns (names rename the book at once; SR-07): a Settings save of these goes through it
 BOOK_SETTING_KEYS = ("book_defaults", "pb_otc_threshold", "pb_otc_threshold_c", "qp_threshold", "qp_threshold_c")
 OPTION_LIMIT_KEY = "OPTIONS"            # position_limit_overrides key of the default listed-option position limit (contracts)
@@ -1020,7 +1021,44 @@ def _session_overrides(value) -> dict:
     return out
 
 
+def _chain_entries(value) -> int:
+    """``chain_cache_entries`` (owner 2026-11-03 "raise the option-chain limit"): how many option chains the server keeps live,
+    a whole number from ``config.CHAIN_CACHE_ENTRIES_MIN`` to ``config.CHAIN_CACHE_ENTRIES_MAX`` (2-24), read like
+    ``participation_rate`` (a JSON number or its text; "12" and 12.0 are 12); anything else -> SETTING_VALUE in plain words."""
+    label = SETTING_LABELS["chain_cache_entries"]
+    lo, hi = config.CHAIN_CACHE_ENTRIES_MIN, config.CHAIN_CACHE_ENTRIES_MAX
+    try:
+        v = None if isinstance(value, bool) else Decimal(str(value).strip())
+    except (TypeError, ValueError, ArithmeticError):
+        v = None
+    if v is None or not v.is_finite() or v != v.to_integral_value() or not (lo <= v <= hi):
+        raise RejectError("SETTING_VALUE", f"{label}: {value!r} is not a valid value (a whole number from {lo} to {hi})",
+                          {"field": label, "min": lo, "max": hi})
+    return int(v)
+
+
+def chain_entries_in_force(stored, log=None) -> int:
+    """The number of option chains the server keeps live for the stored ``chain_cache_entries`` value (``get_setting``; None when
+    the database has no row, as one created before 1.0.7.1): that value when a Settings save would accept it, else
+    ``config.CHAIN_CACHE_ENTRIES`` (12; a refused stored value is logged when ``log`` is given).  The server applies it at start
+    and after every change (``server.apply_chain_cache_setting``), and ``settings_map`` shows it."""
+    if stored is None:
+        return config.CHAIN_CACHE_ENTRIES
+    try:
+        return _chain_entries(stored)
+    except RejectError:
+        if log is not None:
+            log.warning("setting chain_cache_entries %r is not a whole number from %d to %d: %d option chains are kept live",
+                        stored, config.CHAIN_CACHE_ENTRIES_MIN, config.CHAIN_CACHE_ENTRIES_MAX, config.CHAIN_CACHE_ENTRIES)
+        return config.CHAIN_CACHE_ENTRIES
+
+
 def _setting_value(key: str, value):
+    if key == "fill_mode":                                     # 1.0.7.1: REALISTIC (the default) or AUTOFILL, any case; stored upper-case
+        text = value.strip().upper() if isinstance(value, str) else None
+        if text not in FILL_MODES:
+            raise RejectError("SETTING_VALUE", f"fill mode: {value!r} is not a valid value (Realistic or Autofill)", {"field": "fill mode", "allowed": list(FILL_MODES)})
+        return text
     if key == "keybinds":                                      # merged with the stored overrides and checked in h_settings_set
         return _keybind_map(value, SETTING_LABELS[key])
     if key == "treasury_reserve_by_book":
@@ -1061,6 +1099,8 @@ def _setting_value(key: str, value):
         if not (Decimal("0.01") <= v <= Decimal(1)):
             _bad(key, value)
         return str(v)
+    if key == "chain_cache_entries":                           # stored as a JSON integer; the server resizes its chain cache on commit
+        return _chain_entries(value)
     if key == "build2_bonds":                                  # WP-10: DEBT execution behind this flag (default off)
         if isinstance(value, bool):
             return value
@@ -1145,8 +1185,10 @@ def settings_map(rt) -> dict:
             out[r["key"]] = json.loads(r["value_json"])
         except ValueError:
             out[r["key"]] = r["value_json"]
+    out["chain_cache_entries"] = chain_entries_in_force(out.get("chain_cache_entries"))   # always the number in force (12 without a row)
     out["gtc_days"] = config.GTC_DAYS
     out["ecp_floor_c"] = config.ECP_FLOOR_C
+    out["fill_mode"] = fill_mode_value(out.get("fill_mode"))     # 1.0.7.1: always the mode in force (REALISTIC without a row)
     out["tables"] = static_tables()
     rb = out.get("treasury_reserve_by_book")
     if isinstance(rb, dict):                                  # cents per book -> USD strings, like every other amount the API serves
@@ -1666,5 +1708,5 @@ def get_setting_safe(rt, key: str, default=None):
 
 
 __all__ = ["Router", "Request", "ApiError", "NotFound", "NotBuilt", "encode", "quote_dict", "mark_dict", "error_body", "run_command", "ok_or_raise", "need",
-           "lifetime_for", "register", "health_view", "settings_map", "thread_alive", "jobs_view", "lifecycle_times", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
+           "lifetime_for", "register", "health_view", "settings_map", "chain_entries_in_force", "thread_alive", "jobs_view", "lifecycle_times", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
            "OPEN_ORDER_STATUSES", "PLANNED_STATIC", "PLANNED", "NOT_REJECTIONS", "add_refusal_recorder", "remove_refusal_recorder", "refusal_recorders", "unsupported_rows"]

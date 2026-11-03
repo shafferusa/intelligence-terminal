@@ -3,6 +3,43 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.7.1 (built 2026-11-03; 12 option chains kept live instead of 2, and the Autofill fill mode)
+
+**Option chains kept live** (your "raise the option-chain limit")
+
+- The terminal now keeps up to 12 option chains in memory instead of 2. When a 13th underlying's chain arrives, the chain used least recently is dropped. With 2, a chain was often dropped within seconds of being fetched; on 2026-10-29 you held options on 12 underlyings.
+- Because chains now stay in memory, a stock whose option chain is kept live (you hold options on it, or its chain is on screen) fills at the Cboe ask (buys) or bid (sells) more often instead of the last trade, and a limit on it is judged against that ask / bid. 1.0.7 already did this whenever that chain happened to be cached; with 2 slots that was rare.
+- So an option is less often marked by the option model ("computed, not executable") instead of the Cboe bid / ask mid, a contract picked on a chain is less often refused as not listed because its chain was already dropped, and the hedge panel and the instrument page find the chain more often.
+- The number is a setting, "option chains kept live": a whole number from 2 to 24, and 12 when you have never set it. A change applies at once (a smaller number drops the least recently used chains straight away) and is kept across restarts; any other value is refused in words.
+- Nothing else about chains changes. Each chain still holds expiries up to 400 days and strikes within 35 % of spot, and each pinned or on-screen chain is still refreshed every 90 seconds, so Cboe is not asked more often (dropped chains are re-fetched less often). Memory, measured on 2026-11-03 Cboe delayed data: about 0.9 KB per contract kept, so 12 typical chains take about 25 MB; an index chain is large on its own (SPX about 22 MB, NDX 13 MB, RUT 9 MB). At the most, 24, chains of large names take roughly 100-200 MB, and 24 chains the size of SPX's would take up to about 0.5 GB, a lot on this laptop.
+
+**Fill mode: Realistic or Autofill** (your "autofill these and give me the option")
+
+- New in Settings > General: the fill mode, Realistic or Autofill, one choice for every book. Realistic is the default and keeps 1.0.7's fill rules (see the chains note above for stocks with a live chain): each new 1-minute bar lets at most the participation rate (10 % by default) of its volume fill, and an option fills at most the displayed bid / ask size; the rest keeps working.
+- Autofill (a simulation setting: a real market would rarely fill that size at one price): an order that is executable now fills its whole remaining quantity in one fill, at the same price Realistic would use, with no participation cap (even when the last 1-minute bar traded no volume) and no displayed-size cap. It reaches new orders when you submit them and every open or partly filled order at its next executable look.
+- What Autofill does not change: a stale or missing quote, a closed session, a stop not reached, a limit that is not marketable and the 15:30 ET cut-off for opening trades on an option's expiry day still block; an all-or-none option package still needs the displayed size on every leg; an option never fills twice on one observation; FX fills as before (already in full). Funding, locates and compliance checks are the same: if the account cannot pay for the whole remainder at once, the order waits for funds and resumes only when the whole remainder can be paid, even after you switch back to Realistic; use Pending > Resume to go back to filling it in slices.
+- Switching to Autofill asks you first and says what it does; switching back to Realistic does not ask. Every change is recorded with its before and after.
+- Every Autofill fill says so in its fill note (also in Completed Trades) and in the order's history, for example "autofill (owner setting): no size or volume cap; the whole remaining 38,000 shares in one fill (Realistic would fill 0 now: no new 1-minute bar since the last fill)".
+- With Autofill on, the ticket preview says the whole remaining quantity fills at once, leaves out the participation rate and shows the Autofill convention in place of the participation one. The Pending drawer's "would fill N at P now" uses the mode in force, and Settings > Market data shows the mode.
+- An order that already filled part of itself on an observation under Realistic gets the rest on the next new observation (a newer print or 1-minute bar), never a second fill on the same one.
+- Autofill fills count toward each 1-minute bar's volume like any other fill, so right after switching back to Realistic an order on the same instrument may wait for the next bar.
+- Installing 1.0.7.1 changes no fill: the mode stays Realistic until you switch it.
+
+**Tests**
+
+- Suites on the 1.0.7.1 build, one interpreter after the other: py-3.12 and py-3.14 each ran 1207 tests in 82 files with 0 failures, 0 errors, 0 skips and 0 ResourceWarnings: 1.0.7's 1176 tests plus the 31 new ones.
+- The 31 new tests (14 for the option chains, 17 for the fill mode with every number worked by hand) are in tests/test_terminal_chain_cache.py and tests/test_terminal_fill_mode.py and run with the suite.
+- Served offline on a fresh database, never on the live port: "option chains kept live" starts at 12, a save of 5 applies at once and is read again after a restart, and 30 is refused in words. Settings > General at 1440 and 1100 pixels wide: 0 page or console errors; switching to Autofill asks first, Keep Realistic keeps Realistic, and switching back works.
+
+**Known issues**
+
+- "Option chains kept live" has no control on the Settings page yet, so it stays at 12 unless it is changed outside the page.
+- The fill mode is one switch for all books; there is no per-book choice.
+
+**Not in this release**
+
+- Financing a purchase at 50 % initial margin in one step (your "so i only need to put up 50% initially"). It still takes two steps, as on 2026-11-03: buy, then draw on the prime broker against the new longs (PB financing switched on for the account; up to 50 % of the long market value, less what is already used).
+
 ## 1.0.7 (built 2026-10-29; single-name CDS on every prime broker)
 
 **Single-name CDS**

@@ -43,6 +43,9 @@ Conventions
   futures, fx, credit, lending, hedges, risk, compliance, strategies, performance, prime, lifetimes, swaps, swaps_trs,
   private, private_credit, dividends, bonds, repo``) — ``None`` when that package is not merged, so the API answers
   501 NOT_BUILT instead of inventing anything.  ``rt.modules`` records bound / missing / broken for health.
+- ``rt.chains`` keeps the owner setting ``chain_cache_entries`` option chains ("option chains kept live", 2-24, default 12; 2 up
+  to 1.0.7): read at start, and after every committed ``settings.set`` that changes it ``apply_chain_cache_setting`` resizes the
+  running cache (a smaller limit drops the least recently used chains at once).  It is not part of the ``rt.settings`` snapshot.
 - ``--offline``: ``FakeProvider`` instead of the network; refused (exit 5) on the default home
   (``%USERPROFILE%\\.finsim``) or whenever the database would be the default one — fake prices never reach the real
   book; ``health.offline = true`` and the UI paints the permanent red banner.
@@ -72,7 +75,7 @@ from typing import Callable, Deque, Dict, Optional, Tuple
 
 from . import APP_ID, VERSION, config
 from . import accounting as _accounting, books as _books, treasury as _treasury
-from .api import Router, register as _register_api, thread_alive
+from .api import Router, chain_entries_in_force, register as _register_api, thread_alive
 from .attention import retired_provider
 from .calendar import TradingCalendar
 from .clock import Clock, RealClock
@@ -585,6 +588,25 @@ def _bind_optional(rt: Runtime, bus: CommandBus, log) -> None:
             log.exception("lifecycle failed to import")
 
 
+_CHAIN_APPLY_LOCK = threading.Lock()
+
+
+def apply_chain_cache_setting(rt) -> Optional[int]:
+    """The owner setting ``chain_cache_entries`` ("option chains kept live", Settings; owner 2026-11-03 "raise the option-chain
+    limit") onto the running option-chain cache: the stored value read back (so the last save wins), or 12 without a row or for a
+    value a save would refuse (``api.chain_entries_in_force``).  ``ChainCache.resize`` changes the limit under the cache's lock; a
+    smaller one drops the least recently used chains at once.  Read and resize are one step under ``_CHAIN_APPLY_LOCK``, so two saves
+    committing at once can never leave the cache at the older value.  Returns the number in force (None without a resizable cache)."""
+    resize = getattr(getattr(rt, "chains", None), "resize", None)
+    if not callable(resize):
+        return None
+    with _CHAIN_APPLY_LOCK:
+        with rt.db.reader() as conn:
+            n = chain_entries_in_force(get_setting(conn, "chain_cache_entries"), rt.log)
+        resize(n)
+    return n
+
+
 def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, offline: bool = False, fake_provider=None, log=None, books=None,
                   fetch_threads: int = 2, port: Optional[int] = None, news_enabled: Optional[bool] = None, lock: Optional[InstanceLock] = None) -> Runtime:
     """Assemble the services bundle (§16 steps 3-4 and the handler registry).  Nothing is started; ``start_workers``
@@ -608,6 +630,7 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     rt.db.open(books=books)                                   # backup -> migrate (SchemaTooNew -> exit 4) -> seed
     with rt.db.reader() as conn:
         rt.settings = {k: get_setting(conn, k) for k in ("participation_rate", "session_overrides", "pb_otc_threshold_c", "qp_threshold_c")}
+        chain_entries = chain_entries_in_force(get_setting(conn, "chain_cache_entries"), log)   # not in rt.settings: a save changes it live
     if rt.settings.get("session_overrides"):
         rt.sessions.set_overrides(rt.settings["session_overrides"])
     rt.instruments = InstrumentMaster(rt.db, log)
@@ -628,7 +651,7 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
     else:
         rt.providers = ProviderSet.live(rt.clock, log)
     rt.cache = QuoteCache(rt.db, rt.instruments, rt.sessions, rt.clock, None, log)
-    rt.chains = ChainCache(rt.clock, log=log)
+    rt.chains = ChainCache(rt.clock, max_entries=chain_entries, log=log)    # the owner's "option chains kept live" (default 12)
     rt.curve, rt.rates, rt.fxstore = CurveStore(rt.db, None, rt.clock, log), RateStore(rt.db, None, log), FxStore(rt.db, None)
     rt.marks = MarkProvider(rt.cache, rt.chains, rt.instruments, rt.curve, rt.rates, rt.sessions, rt.clock, services=rt, fxstore=rt.fxstore, log=log)
     bus = CommandBus(rt.db, rt.clock, rt.cal, rt.sessions, rt.marks, log, services=rt)
@@ -689,6 +712,12 @@ def build_runtime(home: str, db_path: str, *, clock: Optional[Clock] = None, off
         if res is not None and res.ok and cmd.kind in ("order.submit", "order.resume") and rt.matcher is not None:
             rt.matcher.wake()
     bus.on_commit(_on_commit)
+
+    def _on_settings(cmd: Command, res) -> None:              # a committed save of "option chains kept live" resizes the cache at once
+        after = res.body.get("after") if res is not None and res.ok and cmd.kind == "settings.set" and isinstance(res.body, dict) else None
+        if isinstance(after, dict) and "chain_cache_entries" in after:
+            apply_chain_cache_setting(rt)
+    bus.on_commit(_on_settings)
     rt.router = Router(rt)
     rt.supervisor = Supervisor(rt)
     return rt
@@ -964,6 +993,6 @@ def serve(port: int = config.DEFAULT_PORT, home: Optional[str] = None, db: Optio
             lock.release()
 
 
-__all__ = ["TerminalServer", "Runtime", "Supervisor", "InstanceLock", "build_runtime", "serve", "make_handler", "offline_refusal", "default_home",
+__all__ = ["TerminalServer", "Runtime", "Supervisor", "InstanceLock", "build_runtime", "apply_chain_cache_setting", "serve", "make_handler", "offline_refusal", "default_home",
            "EXIT_OK", "EXIT_INSTANCE", "EXIT_SCHEMA", "EXIT_STARTUP", "LOCK_OFFSET", "OPTIONAL_MODULES", "db_lock_path", "probe_lock", "CLIENT_GONE",
            "code_tree", "already_running_message", "port_taken_message"]
