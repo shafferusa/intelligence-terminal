@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Jay Forrester Held GE’s Orders Constant on a Notepad. The Kentucky Plants Still Hired and Fired in Waves. — Learning Brief, Wed, Nov 4, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-11-04",
+    "slot": "learn",
+    "title": "Jay Forrester Held GE’s Orders Constant on a Notepad. The Kentucky Plants Still Hired and Fired in Waves.",
+    "path": "reports/2026/11/2026-11-04-learn.html",
+    "summary": "Day 27 of the Connected Path: a balancing loop with a delay overshoots and oscillates, because people act on information that is already stale and forget how much correction is already in the pipeline — the mechanism behind Jay Forrester's GE Kentucky hiring waves, the Beer Game's bullwhip effect, and the 2020-21 car chip shortage.",
+    "headlines": [
+      "Day 27 of 293 · Systems Thinking: a balancing loop with a delay overshoots and oscillates, generated from inside the system itself",
+      "Forrester held GE's incoming orders flat on paper; the Kentucky plants still swung through roughly three-year hiring cycles",
+      "Watch or Read: The Fifth Discipline, Ch. 3, Peter Senge (about 25-30 pages)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-11-04T04:55:40-05:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Jay Forrester Held GE&rsquo;s Orders Constant on a Notepad. The Kentucky Plants Still Hired and Fired in Waves.</h1>
+      <p class="paper-dateline">
+        Wednesday, November 4, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Add a delay to a loop that is trying to correct itself and correction turns into overcorrection &mdash; the same three-step mechanism behind a factory&rsquo;s hiring waves, a supply chain&rsquo;s bullwhip, and a hog farmer&rsquo;s price cycle.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Systems Thinking</p>
+      <span class="track-progress">Day 27 of 293 &middot; Systems Thinking 3 of 12 &middot; Delays, overshoot and oscillation</span>
+    </div>
+
+    <article class="lesson-body">
+
+<h3>A factory that made its own boom and bust</h3>
+      <p>
+        In the mid-1950s, the engineer Jay Forrester left MIT&rsquo;s Servomechanisms Laboratory &mdash;
+        where he had spent the war years and afterward built radar and guidance systems &mdash; for the
+        university&rsquo;s new school of management. People from General Electric brought him a question
+        about the
+        company&rsquo;s household-appliance plants in Louisville, Kentucky: why did the plants run three
+        and four shifts for a while, then lay off half their workforce a few years later, in a repeating
+        wave that GE&rsquo;s own managers could not pin on anything happening outside the company? The
+        business cycle was the obvious suspect, but it did not fit &mdash; the swings at the plants did not
+        line up cleanly with swings in the economy.
+      </p>
+      <p>
+        Forrester did not have a computer model to run. He had the plants&rsquo; own, quite ordinary rules
+        for hiring, production and ordering &mdash; rules written to keep inventory near a target and
+        output matched to incoming orders &mdash; and he worked them through by hand, step by step, on
+        paper. He held the plants&rsquo; incoming orders dead flat in the calculation, removing any outside
+        swing in demand as a possible cause. Employment still rose and fell in waves, cycling over roughly
+        three years from peak to peak, by his own later account of the exercise. He called this
+        hand-simulation the beginning of what became the field of system dynamics.
+      </p>
+      <p>
+        If the orders coming in were steady the entire time, where did the waves of hiring and layoffs
+        come from?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Today&rsquo;s concept: a balancing loop that is trying to correct itself overshoots and settles
+        into a cycle of oscillation when a delay sits inside it, because the people running the loop act on
+        information that is already out of date, and because they forget how much correction is already in
+        the pipeline, still working its way toward the goal.
+      </p>
+      <p>
+        A balancing loop on its own, as Day 26 showed, pushes a system back toward some target: a
+        thermostat reads the room, compares it to a setpoint, and adjusts. That works cleanly when the
+        adjustment takes effect right away. The moment a delay separates the action from its effect &mdash;
+        turning the furnace on does not warm the room instantly &mdash; the loop is steering on news that is
+        already stale. It keeps correcting past the point where correction was still needed, because the
+        earlier correction has not finished arriving yet.
+      </p>
+      <p>
+        The result is not random noise. It is a specific, repeatable shape: the corrected quantity swings
+        past its target, the controller notices the overshoot and reverses, that reversal also overshoots
+        in the other direction once its own delay plays out, and the cycle repeats &mdash; oscillation
+        generated entirely from inside the loop, with no outside push required to keep it going.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        Every delay in a system is either an information delay or a material delay, and most real loops
+        carry both. An information delay is the time between something changing and someone noticing
+        &mdash; a manager who checks inventory once a month is working with up-to-a-month-old numbers. A
+        material delay is the time between deciding to act and the action actually landing &mdash; the
+        weeks between placing a factory order and the finished goods arriving on a shelf. Either kind of
+        delay has the same effect on a balancing loop: it widens the gap between when a correction is
+        needed and when its consequences are visible.
+      </p>
+      <p>
+        Picture a simple goal-seeking rule: compare the actual level of something &mdash; inventory,
+        employment, a thermostat&rsquo;s reading &mdash; to a target, and adjust in proportion to the gap.
+        With no delay, that rule glides smoothly to the target and stays there, because the adjustment and
+        its effect are the same event. Add a delay of even a few steps between the adjustment and seeing
+        its result, and the rule starts reacting to a gap that its own earlier adjustments are already
+        closing, unseen. It keeps adding more correction on top of correction that has not landed yet. By
+        the time all of it lands at once, the system has overshot the target in the other direction, the
+        rule reads a gap on the opposite side, and it corrects hard the other way. The bigger the delay is
+        relative to how fast the rule tries to close the gap, the larger the overshoot and the longer the
+        resulting cycle takes to die out &mdash; and past a certain point it does not die out at all; it
+        keeps oscillating or grows wider with each swing.
+      </p>
+      <p>
+        The piece almost every real decision-maker drops is what system dynamicists call the supply line:
+        the stock of corrective action that has already been set in motion but has not yet arrived.
+        Day 25 named inventory as a stock that changes only through its inflows and outflows. The supply
+        line is a second, usually invisible stock sitting right next to it &mdash; orders already placed but
+        not yet delivered, job openings already posted but not yet filled, a wire transfer already sent
+        but not yet cleared. A rule that compares inventory on hand to a target, and ignores how much is
+        already in transit, will keep ordering more every time it checks and finds the shelf still short,
+        even though the shortage is already being fixed. That is functionally identical to a balancing loop
+        with an added delay: the correction already under way plays the role of a result the controller
+        cannot see yet.
+      </p>
+      <p>
+        John Sterman tested exactly this failure directly in a controlled setting: the Beer Distribution
+        Game, a role-play MIT&rsquo;s Sloan School had used in teaching since the 1960s, in which players
+        take the roles of retailer, wholesaler, distributor and factory in a simple supply chain, each
+        ordering from the stage above to keep their own inventory near a target, with a shipping delay
+        between placing an order and receiving it. In a 1989 paper in <em>Management Science</em>, Sterman
+        ran the game with real subjects &mdash; including experienced managers &mdash; against a customer
+        demand pattern that was almost flat: one modest, one-time step up, then steady. The orders players
+        placed did not stay flat. They swung widely, and the swings grew larger the further upstream &mdash;
+        from retailer toward factory &mdash; a stage merely echoing what it had already received, amplified.
+        Players who were asked why blamed the customer, the market, anything outside the game; the actual
+        cause, visible in Sterman&rsquo;s fitted model of their decisions, was that they were anchoring
+        their orders on the visible inventory gap and systematically underweighting the orders they had
+        already placed and not yet received &mdash; dropping the supply-line term, in effect, out of their
+        own decision rule.
+      </p>
+      <p>
+        That amplification pattern, each stage of a supply chain over-reacting more than the stage before
+        it, earned its own name once it showed up outside the classroom: the bullwhip effect, documented in
+        real distribution data by Hau Lee, V. Padmanabhan and Seungjin Whang in a widely cited 1997 article.
+        A small, real wobble in end-customer demand becomes a large one by the time it reaches raw-material
+        suppliers, not because anyone along the chain is behaving irrationally by their own lights, but
+        because each stage is running the same delayed, supply-line-blind correction rule Sterman&rsquo;s
+        subjects ran, one link further from the customer who actually generates the signal.
+      </p>
+      <p>
+        The deepest point in all of this is what Sterman&rsquo;s subjects got backwards: they treated the
+        oscillation as something happening to them, caused by an unpredictable world, when the oscillation
+        was something their own decision rule was doing to itself. System dynamicists call behaviour that a
+        system generates out of its own structure endogenous, to distinguish it from behaviour actually
+        forced on a system from outside. A delayed balancing loop does not need an external shock to
+        oscillate; the delay and the rule are enough on their own. That does not mean outside shocks never
+        happen or never matter &mdash; only that a system can produce the appearance of being buffeted by
+        the world while the real engine of its swings is sitting inside its own wiring the whole time.
+      </p>
+
+      <h3>Back to the story</h3>
+      <p>
+        That is exactly what Forrester found at GE&rsquo;s Kentucky plants. Held constant on paper, the
+        incoming orders were not driving the waves. The plants&rsquo; own production and hiring rules were
+        reacting to inventory and backlog figures that were already somewhat dated by the time anyone
+        acted on them, and those rules did not track how much correction &mdash; goods already in
+        production, workers already hired &mdash; was already in the pipeline before adding more. Every
+        correction landed on top of corrections still arriving, overshot, and had to be corrected back the
+        other way a few quarters later. The business cycle outside the plant gates was not required to
+        produce the three-year wave inside them; the plants&rsquo; own delayed balancing loop was enough.
+      </p>
+
+      <div class="key-terms">
+      <dl>
+        <dt>Information delay</dt>
+        <dd>The lag between something changing and someone noticing it &mdash; a monthly inventory count
+        that is already weeks stale the day it is read.</dd>
+        <dt>Material delay</dt>
+        <dd>The lag between deciding to act and the action actually taking effect &mdash; the weeks between
+        placing an order and the goods arriving.</dd>
+        <dt>Supply line</dt>
+        <dd>The stock of correction already set in motion but not yet arrived &mdash; orders placed but not
+        delivered, hires made but not started &mdash; distinct from the stock the decision-maker is
+        actually watching.</dd>
+        <dt>Overshoot</dt>
+        <dd>Correcting a gap past the point where the gap has actually closed, because some of the closing
+        is still in transit and unseen.</dd>
+        <dt>Bullwhip effect</dt>
+        <dd>The tendency of order swings to grow larger at each stage further from the end customer in a
+        multi-stage supply chain, each stage amplifying the delayed, supply-line-blind correction of the
+        stage below it.</dd>
+        <dt>Endogenous behaviour</dt>
+        <dd>A pattern a system produces from its own internal structure and decision rules, rather than one
+        imposed on it by an event outside the system.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: The 2020&ndash;21 Car Chip Shortage</h3>
+      <p>
+        This sits at the financing-and-production link of the car&rsquo;s own chain: when the pandemic
+        struck in spring 2020, automakers, expecting a collapse in demand, cancelled their semiconductor
+        orders, and chipmakers sold the freed capacity to laptop, phone and game-console makers riding a
+        work-from-home surge. Car demand did not collapse; it rebounded within months. But semiconductor
+        fabrication capacity cannot be reallocated on a few months&rsquo; notice &mdash; building out a new
+        production line typically takes many months to years &mdash; so the automakers found themselves
+        back of a queue they had voluntarily left, waiting behind customers who had moved in while the
+        queue was open.
+      </p>
+      <p>
+        Estimates of the resulting lost vehicle production in 2021 vary by forecaster and by when during
+        the year the estimate was made, which is itself a sign of a system still working through its own
+        delays: AlixPartners raised its forecast three times over the year, from 2.2 million vehicles in
+        January to 3.9 million in May to 7.7 million by September; S&amp;P Global Mobility&rsquo;s
+        eventual tally for 2021 alone came to roughly 9.5 million units, and AutoForecast Solutions put the
+        year&rsquo;s loss at about 10.5 million. A real supply shock compounded the bullwhip rather than
+        standing in for it: a fire on March 19, 2021 at Renesas Electronics&rsquo;s Naka plant in Japan,
+        which made roughly two-thirds of its output as automotive chips, knocked out a wafer line for
+        months just as the rebound was accelerating.
+      </p>
+      <div class="worked">
+        <p><strong>1. Name the chain.</strong> Automakers cancel chip orders &rarr; chipmakers reallocate
+        capacity to consumer electronics &rarr; car demand rebounds within months &rarr; chip fab capacity
+        takes far longer than that to rebuild or reallocate &rarr; automakers wait behind the customers who
+        took their old place in line.</p>
+        <p><strong>2. Find the delay.</strong> The material delay between deciding to expand or reallocate
+        chip production and that capacity actually existing runs to many months or years &mdash; far longer
+        than the few months it took car demand to recover.</p>
+        <p><strong>3. Find the supply-line error.</strong> Automakers and chipmakers alike were ordering and
+        allocating against the demand they could currently see, not against the capacity already committed
+        but not yet delivered &mdash; the same blind spot Sterman&rsquo;s Beer Game players showed.</p>
+        <p><strong>4. Read the amplification.</strong> A rebound in one quarter&rsquo;s car sales produced
+        order swings upstream, at the chip fabs, that outran the swing in actual demand &mdash; the bullwhip
+        pattern, not a one-to-one pass-through.</p>
+        <p><strong>5. Separate the endogenous part from the shock.</strong> The bullwhip itself was
+        endogenous, generated by the ordering rules; the Renesas fire was a genuine external shock that
+        landed on top of it and made the endogenous swing worse.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">orders = expected demand + (desired inventory &minus; actual inventory) / adjustment
+        time &minus; supply-line correction</p>
+        <p class="expr-spoken visually-hidden">Orders placed equal expected demand, plus the gap between
+        desired and actual inventory divided by how quickly the decision-maker tries to close that gap,
+        minus a correction for how much is already on order and in transit.</p>
+        <dl>
+          <dt>expected demand</dt>
+          <dd>the decision-maker&rsquo;s forecast of how much will be needed, usually built from recent
+          observed demand</dd>
+          <dt>desired inventory &minus; actual inventory</dt>
+          <dd>the gap between the inventory target and what is actually on hand right now</dd>
+          <dt>adjustment time</dt>
+          <dd>how many periods the decision-maker allows to close that gap; a shorter adjustment time means
+          a more aggressive, faster correction</dd>
+          <dt>supply-line correction</dt>
+          <dd>a subtraction for orders already placed but not yet received &mdash; the term Sterman&rsquo;s
+          1989 study found subjects systematically underweighted or dropped, which is what converts an
+          ordinary delayed balancing loop into overshoot and oscillation</dd>
+        </dl>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can name the information delay and the material delay inside a balancing loop, and ask
+        whether its decision rule is actually tracking its own supply line, you gain a specific diagnostic:
+        you can look at a boom-and-bust pattern &mdash; a factory&rsquo;s hiring, a supply chain&rsquo;s
+        orders, a market&rsquo;s price &mdash; and ask whether the swings need an outside story at all, or
+        whether the system&rsquo;s own decision rules, run through its own delays, are sufficient to produce
+        them. That question reframes who is responsible for a cycle: not necessarily the people who get
+        blamed for over-ordering or over-hiring in the moment, but the rule they are following and the delay
+        it is running against.
+      </p>
+      <p>
+        <b>Settled.</b> That a balancing loop with a sufficiently large delay relative to its correction
+        speed will overshoot and oscillate, and that people systematically underweight supply-line
+        information when managing stocks under delay, are both well-established results in control theory
+        and in Sterman&rsquo;s widely replicated experimental work.
+      </p>
+      <p>
+        <b>Debated.</b> How much of any one specific real-world cycle is this self-generated oscillation
+        versus a run of genuine outside shocks landing close together is frequently argued case by case;
+        the 2021 chip shortage shows both operating on the same system at once, and separating their shares
+        exactly is a matter of judgment, not a solved calculation.
+      </p>
+      <p>
+        <span class="chip chip--info">Value judgment</span> Whether a firm should accept higher costs to
+        smooth its workforce and its ordering across a cycle its own rules helped create, sparing its
+        workers and suppliers the swings, or treat that volatility as simply the price of running close to
+        efficient, is a question about who should absorb a system&rsquo;s instability &mdash; not one the
+        stock-and-flow arithmetic can settle by itself.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 26 named the balancing loop &mdash; a closed chain with an odd number of negative
+        links, pushing a system back toward a goal &mdash; and today adds the one ingredient that turns a
+        clean balancing loop into a cycle: a delay between the action and its visible effect. Day 25 gave
+        the stock-and-flow rule that a stock changes only through its flows; today&rsquo;s supply line is a
+        second such stock, usually tracked worse than the first, sitting between a decision and its
+        delivery.
+      </p>
+      <p>
+        <b>Across.</b> J. W. Crowell, A. C. Guyton and J. W. Moore lengthened the blood vessel path between
+        the heart and the brain in anesthetized dogs and reported the result in the <em>American Journal of
+        Physiology</em> in 1956: the dogs developed Cheyne-Stokes breathing, a cycle of deepening and fading
+        breaths separated by pauses. Stretching the delay between a change in blood carbon dioxide and the
+        brainstem actually registering it was enough, on its own, to turn the body&rsquo;s ordinary
+        breathing-control balancing loop into an oscillation &mdash; one recognized mechanism behind the same
+        breathing pattern that appears in some human heart-failure patients, whose slowed circulation
+        lengthens that same delay.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>The Fifth Discipline, Chapter 3, &ldquo;Prisoners of the System, or Prisoners of Our Own
+        Thinking?&rdquo; &mdash; Peter M. Senge (Doubleday, 1990, revised 2006) &middot; Reading &middot;
+        about 25&ndash;30 pages.</p>
+        <p>Walks through a full play of MIT&rsquo;s Beer Game, round by round, so you see from the inside
+        how sensible, well-intentioned players produce a boom and bust that nobody at the table wanted.</p>
+      </aside>
+
+      <div class="recap">
+        <b>Remember These</b>
+        <ul>
+          <li>A balancing loop with a delay overshoots its goal, because the correction already under way
+          has not finished arriving by the time more correction is added.</li>
+          <li>The supply line &mdash; correction already set in motion but not yet delivered &mdash; is a
+          stock people reliably forget to track, and forgetting it is what converts a delay into
+          oscillation.</li>
+          <li>The bullwhip effect is this same failure repeated at every stage of a supply chain, each stage
+          amplifying the one below it.</li>
+          <li>Behaviour a system generates from its own structure is endogenous; it needs no outside shock to
+          keep swinging, though real shocks can still land on top of it.</li>
+        </ul>
+      </div>
+
+      <div class="think-about-it">
+        <b>Apply It</b>
+        <p>
+        In the late 1920s the German economist Arthur Hanau documented a regular &ldquo;pig cycle&rdquo; in
+        German hog prices, where farmers expand breeding when prices are high but a decision to breed takes
+        close to a year to become pork on the market &mdash; using today&rsquo;s delayed balancing loop, why
+        does that arrangement produce repeated price booms and slumps even with steady demand for pork?
+        </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Jay W. Forrester, &ldquo;The Beginning of System Dynamics&rdquo;
+      (banquet talk, System Dynamics Society, 1989) and the System Dynamics Society&rsquo;s own account of
+      the GE Kentucky appliance-plant work; John D. Sterman, &ldquo;Modeling Managerial Behavior:
+      Misperceptions of Feedback in a Dynamic Decision-Making Experiment,&rdquo; <em>Management
+      Science</em> 35(3), 1989; Hau L. Lee, V. Padmanabhan &amp; Seungjin Whang on the bullwhip effect,
+      1997; J. W. Crowell, A. C. Guyton &amp; J. W. Moore, <em>American Journal of Physiology</em> 187(2),
+      1956; AlixPartners, S&amp;P Global Mobility and AutoForecast Solutions reporting on 2021 chip-shortage
+      vehicle-production losses; wire and trade-press coverage of the March 19, 2021 Renesas Naka plant
+      fire. All checked via web search this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do.
+      Resource from the Connected Path&rsquo;s curated list, cited without a link: the curriculum notes it
+      could not be independently web-verified when written, so it is cited from knowledge of the book.
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-03-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
