@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": [
+      "Bash(git fetch *)",
+      "mcp__github__actions_list",
+      "Bash(python3 .github/scripts/check_report.py *)",
+      "mcp__Claude_Code_Remote__get_trigger",
+      "Bash(actionlint *)",
+      "mcp__github__pull_request_read",
+      "mcp__Claude_Code_Remote__list_triggers",
+      "mcp__Claude_Code_Remote__get_session",
+      "mcp__github__actions_get",
+      "mcp__github__get_job_logs",
+      "mcp__github__list_commits",
+      "mcp__github",
+      "mcp__Claude_Code_Remote",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git pull *)",
+      "Bash(git push origin main)",
+      "Bash(git push origin HEAD)",
+      "Bash(git push -u origin claude/*)",
+      "Bash(git push origin claude/*)"
+    ],
+    "ask": [
+      "Bash(git push *--force*)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)"
+    ]
+  }
+}
