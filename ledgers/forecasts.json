@@ -6811,6 +6811,46 @@
       "probability": "80-90%",
       "basis": "Treasury's standing 'at least the next several quarters' guidance and dealer expectations reported by Reuters.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-04-am-1",
+      "date": "2026-11-04",
+      "slot": "am",
+      "forecast": "S&P 500 closes Nov 4, 2026 above Tuesday's 7,568.92.",
+      "horizon": "2026-11-04",
+      "probability": "65-80%",
+      "basis": "Index +1.5% at 10:31 ET; VIX down ~4 points; broad sector participation.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-04-am-2",
+      "date": "2026-11-04",
+      "slot": "am",
+      "forecast": "Vistra (VST) closes Nov 4, 2026 at least 8% below its Nov 3 close of $139.59 (i.e., at or below $128.42).",
+      "horizon": "2026-11-04",
+      "probability": "55-70%",
+      "basis": "VST -14% at 10:31 ET on data-center policy fears plus pre-earnings target cuts; broad market recovering.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-04-am-3",
+      "date": "2026-11-04",
+      "slot": "am",
+      "forecast": "The Bank of England raises Bank Rate to 4.00% on Nov 5, 2026.",
+      "horizon": "2026-11-05",
+      "probability": "80-90%",
+      "basis": "Three hike votes in September; UK CPI 3.5%; Bloomberg describes a hike as almost certain.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-04-am-4",
+      "date": "2026-11-04",
+      "slot": "am",
+      "forecast": "AP has not called the Alaska US Senate race by end of day Nov 11, 2026.",
+      "horizon": "2026-11-11",
+      "probability": "60-75%",
+      "basis": "Sullivan 48.3 vs Peltola 47.5 late Nov 3; ranked-choice and absentee counting can take up to 15 days.",
+      "status": "open"
     }
   ]
 }

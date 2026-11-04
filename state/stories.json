@@ -1,6 +1,114 @@
 {
   "stories": [
     {
+      "id": "midterms-results-nov4",
+      "headline": "AP calls Senate (late Nov 3) and House (early Nov 4) for Democrats; 7+ GOP Senate seats flipped (ME, NC, TX, OH, IA, KS, SC); AK uncalled (Sullivan 48.3, Peltola 47.5)",
+      "status": "Materially changed",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Lead: control of Congress; market reaction"
+    },
+    {
+      "id": "blue-sweep-tape-nov4",
+      "headline": "S&P +1.5% at 10:31 (7,684.74) after NQ futures -2.4% overnight; AAPL +6.5%, AMZN +7.1%, MSFT +6.1%; VST -14%, VRT -10.5%, CEG -8%, LMT -5%, DJT -10.6%; VIX 16.95",
+      "status": "New",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Lead market story: AI builder vs buyer split"
+    },
+    {
+      "id": "refunding-nov4",
+      "headline": "Refunding $125B (58/42/25), sizes unchanged Nov-Jan; 7Y to quarterly new issue from Mar 2027; buybacks up to $70B liquidity + $25B cash mgmt; 'at least' dropped from guidance; TGA peak ~$1.025T",
+      "status": "New",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Treasury primary-source item"
+    },
+    {
+      "id": "amd-reaction-nov4",
+      "headline": "AMD +1.7% at 10:31 after +6-7% premarket; SMCI +1.7%; ANET +9.7%; XYZ +14.8%; BKNG +9.5%; AMGN +1%",
+      "status": "Materially changed",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Earnings reaction"
+    },
+    {
+      "id": "cvs-split-nov4",
+      "headline": "CVS Q3 adj EPS $2.09, FY >= $8.20, plans to split retail pharmacy from Aetna/Caremark (1H 2028); shares -11.7%; Novo raises FY guide, ADR +5.6%",
+      "status": "New",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Health earnings"
+    },
+    {
+      "id": "adp-ism-oct-nov4",
+      "headline": "ADP Oct +86K vs 69-75K (Sep rev 86K); ISM services 54.5 vs 54.8 (54.9 prior); Friday NFP ~59K est",
+      "status": "New",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Macro data"
+    },
+    {
+      "id": "oil-nov4",
+      "headline": "WTI $93.66 (-2.5%), Brent $101.00 at ~10:21; API draw ~5.3M (single source); Hormuz flows 17.1M b/d Oct (Vortexa)",
+      "status": "Continuing",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Energy"
+    },
+    {
+      "id": "ukraine-abudhabi-nov10",
+      "headline": "US-Russia-Ukraine working-level talks Abu Dhabi Nov 10-11 (Witkoff); Zaporizhzhia aid hub strike toll 31+",
+      "status": "Materially changed",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "World"
+    },
+    {
+      "id": "israel-final-nov4",
+      "headline": "Israel final count to Herzog Nov 4: Likud 27, Yashar 21; Netanyahu bloc 53, opp 48, Arab 19; turnout 77.9%",
+      "status": "Materially changed",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "World"
+    },
+    {
+      "id": "pa-results-nov4",
+      "headline": "Shapiro re-elected (AP 8:01 PM); D flips PA-1/7/8/10; Deluzio re-elected PA-17; Dems claim state Senate & House (not called)",
+      "status": "Materially changed",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Local/PA"
+    },
+    {
+      "id": "allegheny-question-nov4",
+      "headline": "Allegheny County council-funding charter question rejected ~68% No (WESA unofficial)",
+      "status": "Resolved",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "Local"
+    },
+    {
+      "id": "openai-round-short",
+      "headline": "WSJ: OpenAI ~$11B committed of $30B target at $1.25T; FT: target cut to ~$20B",
+      "status": "New",
+      "first_seen": "2026-11-04",
+      "last_seen": "2026-11-04",
+      "last_report": "reports/2026/11/2026-11-04-am.html",
+      "scoring": "AI"
+    },
+    {
       "id": "amd-q3-beat-nov3",
       "headline": "AMD Q3 rev $13.38B vs ~$13.06B, Q4 guide ~$17.0B vs ~$16.2B, GM guide 55% vs 55.5%; AH +6-7%; SMCI, ANET beat/raise",
       "status": "New",
@@ -429,155 +537,7 @@
       "keep_on_watchlist": true,
       "last_seen": "2026-11-03",
       "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "gemini-4-carbon",
-      "headline": "Google Gemini 4 Carbon limited preview to vetted cyber defenders; AA index #1 at 59",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "AI",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "vulcan-rtf-nov13",
-      "headline": "ULA Vulcan return to flight Nov 13 (Amazon Leo); 100th US spacewalk Oct 29 (iROSA 7)",
-      "status": "New",
-      "verification": "Single-reliable-source",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Space",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "pgh-unearned-income-tax",
-      "headline": "Pittsburgh Councilwoman Warwick proposes 2% unearned-income tax (~$51M/yr); mayor questions legality; introduced only",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-am",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Local",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "alaska-senate-spoiler",
-      "headline": "NYT reports Peltola/DSCC-backed project recruited spoiler candidates incl. a second 'Dan Sullivan'; allegations, no charge",
-      "status": "Materially changed",
-      "verification": "Single-reliable-source",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "US elections",
-      "keep_on_watchlist": true,
-      "last_seen": "2026-11-03",
-      "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "spain-train-crash",
-      "headline": "Spain Urda crash toll 69 provisional, 110 injured; control-centre restart without speed limits under investigation",
-      "status": "Developing",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "World: disaster",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "vertiv-ai-suppliers",
-      "headline": "Vertiv +16.5% Oct 28 on orders >2x, 2026 sales guide raised $650M; Samsung OP KRW 107.4T, shares -4.1%",
-      "status": "New",
-      "verification": "Confirmed-primary",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-am",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "AI supply chain",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "ecb-boj-week",
-      "headline": "ECB 9:15 AM ET Oct 29 (hold 2.50% exp); BoJ Oct 30; yen ~158; Australia Sept CPI 4.3%",
-      "status": "Materially changed",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Global central banks",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "oil-iran-vance-letter",
-      "headline": "Dec Brent ~$114 (-1%) after WSJ report of Vance letter offering Iran direct talks; Dec Brent expires Oct 30; OPEC+ Nov 1; Shell record refining, $5B buyback",
-      "status": "Materially changed",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-am",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Energy/geopolitics",
-      "keep_on_watchlist": true,
-      "last_seen": "2026-11-03",
-      "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "caterpillar-q3-2026",
-      "headline": "Caterpillar Q3 rev $20.7B +17%, adj EPS $7.20 beat; shares indicated ~-9% premarket with no reported reason",
-      "status": "Materially changed",
-      "verification": "Confirmed-primary",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Corporate: industrial bellwether; move unexplained",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "software-outlooks-now-ftnt",
-      "headline": "ServiceNow ~-19% (cRPO guide 18.5% cc) and Fortinet ~-25% (gross margin) premarket; Marvell in talks for Lumentum (Bloomberg)",
-      "status": "Materially changed",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Corporate: software guidance; M&A single-reported",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "gdp-pce-oct29",
-      "headline": "Q3 GDP advance (3.2% exp) and Sept PCE (3.6% y/y, core +0.3% m/m) at 8:30 AM Oct 29",
-      "status": "Materially changed",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Macro: first data since FOMC",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "ai-capex-funding-split",
-      "headline": "Alphabet ~-10% premarket (FCF -$9.1B, capex $51.4B) vs Microsoft ~+3% (Azure +48%, guide 49-50%); market rewarding self-funded AI spend",
-      "status": "Materially changed",
-      "verification": "Confirmed-primary",
-      "first_seen": "2026-10-29-am",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Markets: megacap AI funding; lead",
-      "keep_on_watchlist": true
     }
   ],
-  "updated": "2026-11-03T22:34:28Z"
+  "updated": "2026-11-04T15:39:18Z"
 }

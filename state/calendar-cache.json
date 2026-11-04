@@ -1,218 +1,218 @@
 {
- "fetched": "2026-11-03T06:48:10-05:00",
- "earnings_fetched": "2026-11-01",
- "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
- "events": [
-  {
-   "ts_et": "2026-11-03T00:00",
-   "type": "politics",
-   "name": "US midterm elections",
-   "importance": "Critical",
-   "reason": "Control of Congress; certification litigation",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-03T10:00",
-   "type": "data",
-   "name": "JOLTS (Sept)",
-   "importance": "Medium",
-   "reason": "Labor demand",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-03T16:00",
-   "type": "earnings",
-   "name": "AMD, Super Micro, Arista, Amgen, Booking, Block",
-   "importance": "High",
-   "reason": "Chip/AI infrastructure read after Intel warning",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-11-03T00:00",
-   "type": "crypto",
-   "name": "Binance full proof of reserves (delayed from Nov 2)",
-   "importance": "Medium",
-   "reason": "Post-hack solvency check",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-04T08:30",
-   "type": "treasury",
-   "name": "Quarterly refunding announcement",
-   "importance": "High",
-   "reason": "Coupon sizes; guidance",
-   "source": "treasury.gov"
-  },
-  {
-   "ts_et": "2026-11-04T08:30",
-   "type": "data",
-   "name": "Trade balance (Sept)",
-   "importance": "Low",
-   "reason": "Per calendars; BEA",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-04T10:00",
-   "type": "data",
-   "name": "ISM Services PMI (Oct)",
-   "importance": "Medium",
-   "reason": "Consensus ~54.8",
-   "source": "ismworld.org calendar"
-  },
-  {
-   "ts_et": "2026-11-04T16:00",
-   "type": "earnings",
-   "name": "Qualcomm, AppLovin, DoorDash, MercadoLibre, Snap",
-   "importance": "High",
-   "reason": "Phones/PCs and growth names",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-11-04T07:00",
-   "type": "earnings",
-   "name": "CVS, McDonald's, Uber, Datadog, Novo Nordisk (bmo)",
-   "importance": "Medium",
-   "reason": "Consumer/health",
-   "source": "finnhub+alphavantage"
-  },
-  {
-   "ts_et": "2026-11-04T00:00",
-   "type": "politics",
-   "name": "Israel official results to President Herzog",
-   "importance": "Medium",
-   "reason": "Coalition mandate within a week",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-05T07:00",
-   "type": "central_bank",
-   "name": "Bank of England decision + MPR",
-   "importance": "Medium",
-   "reason": "Held 3.75% 6-3 in Sept; hike risk",
-   "source": "bankofengland"
-  },
-  {
-   "ts_et": "2026-11-05T08:30",
-   "type": "data",
-   "name": "Productivity and Costs Q3; jobless claims",
-   "importance": "Medium",
-   "reason": "Unit labor costs",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-05T16:00",
-   "type": "earnings",
-   "name": "Arm (Finnhub Nov 5; AV Nov 4), Airbnb, Cloudflare, Atlassian",
-   "importance": "Medium",
-   "reason": "Chip IP / growth",
-   "source": "finnhub+alphavantage"
-  },
-  {
-   "ts_et": "2026-11-06T08:30",
-   "type": "data",
-   "name": "Employment Situation (Oct)",
-   "importance": "Critical",
-   "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-06T07:00",
-   "type": "earnings",
-   "name": "Humana, Moderna, Vistra (bmo)",
-   "importance": "Low",
-   "reason": "Health/power",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-11-10T08:30",
-   "type": "data",
-   "name": "CPI (Oct)",
-   "importance": "Critical",
-   "reason": "Inflation before Dec FOMC",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-13T08:30",
-   "type": "data",
-   "name": "PPI (Oct)",
-   "importance": "Medium",
-   "reason": "Producer prices",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-29T00:00",
-   "type": "energy",
-   "name": "OPEC+ ministerial (2027 framework)",
-   "importance": "High",
-   "reason": "2027 quotas",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-12-09T14:00",
-   "type": "fomc",
-   "name": "FOMC decision",
-   "importance": "Critical",
-   "reason": "Dec hike ~72% priced (Oct 30, as reported)",
-   "source": "federalreserve.gov"
-  },
-  {
-   "ts_et": "2026-11-03T07:00",
-   "type": "earnings",
-   "name": "Pfizer, Marathon Petroleum, Shopify, Ferrari, Eaton, ADM, Sysco (bmo)",
-   "importance": "Medium",
-   "reason": "Pharma, refining, AI power equipment",
-   "source": "finnhub"
-  },
-  {
-   "ts_et": "2026-11-03T18:00",
-   "type": "politics",
-   "name": "First polls close (parts of IN, KY)",
-   "importance": "Critical",
-   "reason": "Election night",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-05T12:00",
-   "type": "cb",
-   "name": "Bank of England decision",
-   "importance": "High",
-   "reason": "54/63 economists expect hike to 4.00%",
-   "source": "research"
-  },
-  {
-   "ts_et": "2026-11-06T08:30",
-   "type": "data",
-   "name": "Employment Situation (Oct)",
-   "importance": "Critical",
-   "reason": "Consensus ~63K, UR 4.2%",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-05T08:30",
-   "type": "data",
-   "name": "Productivity and Costs (Q3 prelim)",
-   "importance": "Medium",
-   "reason": "Unit labor costs",
-   "source": "bls.ics"
-  },
-  {
-   "ts_et": "2026-11-06T19:46",
-   "type": "launch",
-   "name": "Falcon 9 USSF-432 (Vandenberg), NET",
-   "importance": "Low",
-   "reason": "Classified NSSL",
-   "source": "thespacedevs"
-  },
-  {
-   "ts_et": "2026-11-10T00:00",
-   "type": "geopolitics",
-   "name": "US-mediated Ukraine-Russia working-level talks, Abu Dhabi (Nov 10-11)",
-   "importance": "Medium",
-   "reason": "Per Witkoff; Kremlin confirmation unclear",
-   "source": "research"
-  }
- ],
- "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
- "fomc_next": "2026-12-09",
- "holiday_note": "2026-11-01: no NYSE holiday or early close Nov 2-6 (data/nyse-holidays.json). Clocks fell back Nov 1; times now EST."
+  "fetched": "2026-11-04T10:39:18-05:00",
+  "earnings_fetched": "2026-11-01",
+  "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
+  "events": [
+    {
+      "ts_et": "2026-11-04T08:30",
+      "type": "treasury",
+      "name": "Quarterly refunding announcement",
+      "importance": "High",
+      "reason": "Coupon sizes; guidance",
+      "source": "treasury.gov"
+    },
+    {
+      "ts_et": "2026-11-04T08:30",
+      "type": "data",
+      "name": "Trade balance (Sept)",
+      "importance": "Low",
+      "reason": "Per calendars; BEA",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-04T10:00",
+      "type": "data",
+      "name": "ISM Services PMI (Oct)",
+      "importance": "Medium",
+      "reason": "Consensus ~54.8",
+      "source": "ismworld.org calendar"
+    },
+    {
+      "ts_et": "2026-11-04T16:00",
+      "type": "earnings",
+      "name": "Qualcomm, AppLovin, DoorDash, MercadoLibre, Snap",
+      "importance": "High",
+      "reason": "Phones/PCs and growth names",
+      "source": "finnhub"
+    },
+    {
+      "ts_et": "2026-11-04T07:00",
+      "type": "earnings",
+      "name": "CVS, McDonald's, Uber, Datadog, Novo Nordisk (bmo)",
+      "importance": "Medium",
+      "reason": "Consumer/health",
+      "source": "finnhub+alphavantage"
+    },
+    {
+      "ts_et": "2026-11-04T00:00",
+      "type": "politics",
+      "name": "Israel official results to President Herzog",
+      "importance": "Medium",
+      "reason": "Coalition mandate within a week",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-05T07:00",
+      "type": "central_bank",
+      "name": "Bank of England decision + MPR",
+      "importance": "Medium",
+      "reason": "Held 3.75% 6-3 in Sept; hike risk",
+      "source": "bankofengland"
+    },
+    {
+      "ts_et": "2026-11-05T08:30",
+      "type": "data",
+      "name": "Productivity and Costs Q3; jobless claims",
+      "importance": "Medium",
+      "reason": "Unit labor costs",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-05T16:00",
+      "type": "earnings",
+      "name": "Arm (Finnhub Nov 5; AV Nov 4), Airbnb, Cloudflare, Atlassian",
+      "importance": "Medium",
+      "reason": "Chip IP / growth",
+      "source": "finnhub+alphavantage"
+    },
+    {
+      "ts_et": "2026-11-06T08:30",
+      "type": "data",
+      "name": "Employment Situation (Oct)",
+      "importance": "Critical",
+      "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-06T07:00",
+      "type": "earnings",
+      "name": "Humana, Moderna, Vistra (bmo)",
+      "importance": "Low",
+      "reason": "Health/power",
+      "source": "finnhub"
+    },
+    {
+      "ts_et": "2026-11-10T08:30",
+      "type": "data",
+      "name": "CPI (Oct)",
+      "importance": "Critical",
+      "reason": "Inflation before Dec FOMC",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-13T08:30",
+      "type": "data",
+      "name": "PPI (Oct)",
+      "importance": "Medium",
+      "reason": "Producer prices",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-29T00:00",
+      "type": "energy",
+      "name": "OPEC+ ministerial (2027 framework)",
+      "importance": "High",
+      "reason": "2027 quotas",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-12-09T14:00",
+      "type": "fomc",
+      "name": "FOMC decision",
+      "importance": "Critical",
+      "reason": "Dec hike ~72% priced (Oct 30, as reported)",
+      "source": "federalreserve.gov"
+    },
+    {
+      "ts_et": "2026-11-05T12:00",
+      "type": "cb",
+      "name": "Bank of England decision",
+      "importance": "High",
+      "reason": "54/63 economists expect hike to 4.00%",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-06T08:30",
+      "type": "data",
+      "name": "Employment Situation (Oct)",
+      "importance": "Critical",
+      "reason": "Consensus ~63K, UR 4.2%",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-05T08:30",
+      "type": "data",
+      "name": "Productivity and Costs (Q3 prelim)",
+      "importance": "Medium",
+      "reason": "Unit labor costs",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-06T19:46",
+      "type": "launch",
+      "name": "Falcon 9 USSF-432 (Vandenberg), NET",
+      "importance": "Low",
+      "reason": "Classified NSSL",
+      "source": "thespacedevs"
+    },
+    {
+      "ts_et": "2026-11-10T00:00",
+      "type": "geopolitics",
+      "name": "US-mediated Ukraine-Russia working-level talks, Abu Dhabi (Nov 10-11)",
+      "importance": "Medium",
+      "reason": "Per Witkoff; Kremlin confirmation unclear",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-04T10:30",
+      "type": "data",
+      "name": "EIA crude inventories",
+      "importance": "Medium",
+      "reason": "API ~-5.3M (single source); Hormuz supply",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-09T13:00",
+      "type": "treasury",
+      "name": "3-year note auction $58B",
+      "importance": "Medium",
+      "reason": "First post-election coupon test",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-10T13:00",
+      "type": "treasury",
+      "name": "10-year note auction $42B",
+      "importance": "High",
+      "reason": "Long-end demand post-election",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-12T13:00",
+      "type": "treasury",
+      "name": "30-year bond auction $25B",
+      "importance": "High",
+      "reason": "Long-end demand",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-10T00:00",
+      "type": "politics",
+      "name": "US-Russia-Ukraine talks, Abu Dhabi (Nov 10-11)",
+      "importance": "Medium",
+      "reason": "First round since February",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-13T00:00",
+      "type": "launch",
+      "name": "ULA Vulcan return to flight (Amazon Leo), NET",
+      "importance": "Low",
+      "reason": "Range approval pending",
+      "source": "research"
+    }
+  ],
+  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
+  "fomc_next": "2026-12-09",
+  "holiday_note": "2026-11-01: no NYSE holiday or early close Nov 2-6 (data/nyse-holidays.json). Clocks fell back Nov 1; times now EST."
 }
