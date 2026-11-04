@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)",
+      "mcp__github__actions_list",
+      "Bash(python3 .github/scripts/check_report.py *)",
+      "mcp__Claude_Code_Remote__get_trigger",
+      "Bash(actionlint *)",
+      "mcp__github__pull_request_read",
+      "mcp__Claude_Code_Remote__list_triggers",
+      "mcp__Claude_Code_Remote__get_session",
+      "mcp__github__actions_get",
+      "mcp__github__get_job_logs",
+      "mcp__github__list_commits"
+    ]
+  }
+}

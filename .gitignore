@@ -18,4 +18,7 @@ node_modules/
 .env.*
 
 # Local agent tooling scratch (worktrees for background research agents, etc.)
-.claude/
+# is ignored, except the shared settings.json: it carries the read-only permission
+# allowlist, and cloud sessions only see it if it is committed.
+.claude/*
+!.claude/settings.json
