@@ -1,6 +1,69 @@
 {
   "stories": [
     {
+      "id": "election-rally-close-nov4",
+      "headline": "Dow +3.03% to 53,356.12 (+1,569), S&P +1.58% 7,688.62, Nasdaq +1.44%, RUT +1.58%; RSP +1.86 > SPY +1.64; 8/11 sectors up; XLY +4.3, XLE -4.7; SOX -3.1; VIX 16.61",
+      "status": "Materially changed",
+      "rationale": "Lead: biggest market move, broad post-election rally",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "oil-vance-nov4",
+      "headline": "WTI settles $88.12 (-8.3%, Quartz/OilPrice), Brent ~$95 late; Vance blames Iran war; Trump 'in no rush'; EIA crude -865K vs +877K exp, distillates -3.6M",
+      "status": "Materially changed",
+      "rationale": "Market-moving commodity + geopolitics",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "ai-power-selloff-nov4",
+      "headline": "VST -13.8, NRG -13.5, VRT -12.9, PWR -11.7, ETN -9.9, GEV -9.3, CEG -6.7, MU -7.0, MRVL -7.1; ~two dozen of 41 local data-center limits passed (Axios/Ballotpedia); EQIX +3.9",
+      "status": "Materially changed",
+      "rationale": "Sector rotation with policy read-through",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "rates-gold-nov4",
+      "headline": "Par 2Y 4.58 (-3), 10Y 4.90 (-5), 30Y 5.28 (-4); gold settles ~$4,073 (+3.4%); DXY 101.52; refunding $125B unchanged, bills cut Dec/raise Jan",
+      "status": "New",
+      "rationale": "Rates/Treasury",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "ah-earnings-nov4",
+      "headline": "QCOM beat, FQ1 EPS guide mid below ~$2.27, AH -2 to -5%; ARM beat, AH -2 to -4%; APP beat/raise AH ~+16%; SNAP DAU 495M miss, AH down; AMD closed +1.0% $488.78",
+      "status": "New",
+      "rationale": "Earnings",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "cvs-split-close-nov4",
+      "headline": "CVS closed -12.5% at $79.96 on split plan (pharmacy vs Aetna/Caremark, 1H 2028)",
+      "status": "Materially changed",
+      "rationale": "Corporate",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "senate-uncalled-nov4",
+      "headline": "Senate D 54 R 44 (NBC); MS Colom leads Hyde-Smith by 43 votes at ~95.6% (WLBT/MFP), AK Peltola +626; Johnson won't seek leadership (NBC); Trump accepts results, veto hat",
+      "status": "Developing",
+      "rationale": "US politics, open counts",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "riksbank-boe-nov4",
+      "headline": "Riksbank +25bp to 2.00% unanimous; BoE Thu, hike to 4.00% expected",
+      "status": "New",
+      "rationale": "Global central banks",
+      "updated": "2026-11-04-pm"
+    },
+    {
+      "id": "pa-trifecta-nov4",
+      "headline": "PA Democrats win state Senate 26-24 and House >=111; first trifecta since 1993; Shapiro ~60-38; 4 US House flips (PA-1/7/8/10)",
+      "status": "Materially changed",
+      "rationale": "Local / Pennsylvania",
+      "updated": "2026-11-04-pm"
+    },
+    {
       "id": "midterms-results-nov4",
       "headline": "AP calls Senate (late Nov 3) and House (early Nov 4) for Democrats; 7+ GOP Senate seats flipped (ME, NC, TX, OH, IA, KS, SC); AK uncalled (Sullivan 48.3, Peltola 47.5)",
       "status": "Materially changed",
@@ -425,119 +488,7 @@
       "sources": [],
       "score_rationale": "Macro/Fed",
       "keep_on_watchlist": false
-    },
-    {
-      "id": "ecb-hold-lagarde-exit",
-      "headline": "ECB holds 2.50%; Lagarde to step down Feb 7, 2027 (term to Oct 2027); EURUSD 2026 low ~1.111 then ~1.119",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Global CB",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "software-rout-oct29",
-      "headline": "ServiceNow -27.0% (record worst day), Fortinet -20.1% on outlooks; Marvell -13.2% on Lumentum talk reports",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Market",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "cat-q3-guidance",
-      "headline": "Caterpillar -9.3% to $647.39: beat but FY outlook only maintained, moderate Q4 growth, margin near bottom of range (tariffs)",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Earnings",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "lly-mrk-ma-q3",
-      "headline": "Lilly +6.6% (rev $24.4B, FY guide $91-92B); Merck +3.8% beat; Mastercard +4.2% (single-sourced numbers)",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Earnings",
-      "keep_on_watchlist": false
-    },
-    {
-      "id": "intel-q3-guide",
-      "headline": "Intel ~-16% AH: Q4 guide rev $15-16B vs $17.05B, EPS $0.25 vs $0.43; PC market -10% in 2027",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "Earnings",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "alaska-dunleavy-probe",
-      "headline": "Gov. Dunleavy orders DPS inquiry into Peltola campaign spoiler reports; source Rios retracted per reports; no charges",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "US politics",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "israel-count-final-provisional",
-      "headline": "Israel count complete (provisional): Likud 27, Yashar 21; Netanyahu bloc 53, opp 48, Arab 19; official Nov 4",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "World",
-      "keep_on_watchlist": true
-    },
-    {
-      "id": "iran-vance-letter-no-reply",
-      "headline": "Tasnim: Iran received Vance letter, no reply; UKMTO tanker struck near Hormuz; Saudi intercept of Houthi missile",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "World/oil",
-      "keep_on_watchlist": true,
-      "last_seen": "2026-11-03",
-      "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "ukraine-talks-after-nov4",
-      "headline": "Kremlin: Abu Dhabi trilateral talks after Nov 4, no date; Ryabkov 'premature'",
-      "status": "New",
-      "verification": "Confirmed-multiple",
-      "first_seen": "2026-10-29-pm",
-      "last_updated": "2026-10-29-pm",
-      "one_line": null,
-      "sources": [],
-      "score_rationale": "World",
-      "keep_on_watchlist": true,
-      "last_seen": "2026-11-03",
-      "last_report": "reports/2026/11/2026-11-03-pm.html"
     }
   ],
-  "updated": "2026-11-04T15:39:18Z"
+  "updated": "2026-11-04T21:46:54Z"
 }

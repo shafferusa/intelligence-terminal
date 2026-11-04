@@ -6851,6 +6851,36 @@
       "probability": "60-75%",
       "basis": "Sullivan 48.3 vs Peltola 47.5 late Nov 3; ranked-choice and absentee counting can take up to 15 days.",
       "status": "open"
+    },
+    {
+      "id": "2026-11-04-pm-1",
+      "date": "2026-11-04",
+      "slot": "pm",
+      "forecast": "Front-month WTI crude settles below $92.00 on Thu Nov 5, 2026.",
+      "horizon": "2026-11-05",
+      "probability": "60-75%",
+      "basis": "Settled $88.12 Nov 4 after -8.3%; no after-hours reversal seen; risk is a new Hormuz incident",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-04-pm-2",
+      "date": "2026-11-04",
+      "slot": "pm",
+      "forecast": "The AP has not called the Mississippi US Senate race (Colom vs Hyde-Smith) by 6 PM ET Fri Nov 6, 2026.",
+      "horizon": "2026-11-06",
+      "probability": "70-85%",
+      "basis": "43-vote margin at ~95.6% tabulated overnight; affidavit/absentee ballots outstanding; no automatic recount",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-04-pm-3",
+      "date": "2026-11-04",
+      "slot": "pm",
+      "forecast": "October nonfarm payrolls first print (Nov 6) is between +25K and +100K.",
+      "horizon": "2026-11-06",
+      "probability": "55-70%",
+      "basis": "Consensus 59-65K, forecaster range 45-100K; ADP +86K",
+      "status": "open"
     }
   ]
 }
