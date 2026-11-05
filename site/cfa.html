@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+  CFA Math: the course page for Logan's 90-day CFA Level I math course
+  (docs/SPEC.md Sec.0e, started 2026-11-07, one lesson every day).
+
+  Shows how far the course has gone, the redo list (lessons he finished under
+  80% right the first time), formula flashcards from every lesson so far, and
+  all 90 days with the released ones linked. Scores live only on his device:
+  each lesson page grades itself and saves its result in localStorage, and
+  this page reads those results (assets/cfa.js).
+
+  Data: ./cfa.json (Build and deploy copies it in from curriculum/cfa-l1.json,
+  outside the site root) and ./reports/index.json (a lesson is out once the
+  cfa-release Action has put its entry, slot "cfa", in the index).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>CFA Math · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="wrap"><a href="./index.html">&larr; Logan&rsquo;s Daily Newspaper</a></div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Every calculation on the exam, one day at a time</h1>
+      <p class="paper-standfirst">
+        Ninety lessons, one a day, for the May 2027 exam. Each opens with a true story, explains why the math works,
+        walks one problem on the BA II Plus and the TI-84 Plus, and grades you on the page.
+      </p>
+    </header>
+
+    <div id="cfa-hub"><p class="muted">Loading&hellip;</p></div>
+
+    <section class="cfa-setup" aria-labelledby="s-setup">
+      <h2 id="s-setup">Set up your calculators once</h2>
+      <div class="sie-block traps">
+        <b>Exam rule</b>
+        Only the TI BA II Plus (or BA II Plus Professional) and the HP 12C family are allowed in the exam room. The
+        TI-84 Plus is not, and a result earned with an unapproved calculator is voided. The lessons show both so you
+        can learn on either, but sit the exam with the BA II Plus.
+      </div>
+      <div class="worked">
+        <b>BA II Plus</b>
+        <ol>
+          <li>Payments per year to 1 (it ships set to 12, the most common silent error):
+            <kbd>2ND</kbd> <kbd>P/Y</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. Setting P/Y
+            sets C/Y to the same value.</li>
+          <li>Show four decimals: <kbd>2ND</kbd> <kbd>FORMAT</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>.</li>
+          <li>Normal order of operations (AOS): <kbd>2ND</kbd> <kbd>FORMAT</kbd>, press <kbd>&darr;</kbd> until the
+            display shows Chn or AOS, press <kbd>2ND</kbd> <kbd>SET</kbd> until it shows AOS, then
+            <kbd>2ND</kbd> <kbd>QUIT</kbd>.</li>
+          <li>Before every new problem: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> for time value, or
+            <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> for cash flows.</li>
+        </ol>
+      </div>
+      <div class="worked">
+        <b>TI-84 Plus</b>
+        <ol>
+          <li>The finance tools are in <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>; <kbd class="menu">1:TVM Solver</kbd>
+            is the time-value screen.</li>
+          <li>In the TVM Solver set <samp>P/Y=1</samp> and <samp>C/Y=1</samp> unless the problem says otherwise, and
+            <samp>PMT: END</samp>.</li>
+          <li>Four decimals: <kbd>MODE</kbd>, move to the row reading FLOAT 0123456789, choose <samp>4</samp>,
+            <kbd>ENTER</kbd>, then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT).</li>
+          <li>To solve in the TVM Solver, move the cursor to the unknown and press <kbd>ALPHA</kbd> <kbd>ENTER</kbd> (SOLVE).</li>
+        </ol>
+      </div>
+      <p class="muted">Both calculators use the same sign rule: money you pay out is negative, money you receive is positive.</p>
+    </section>
+
+    <nav class="report-nav" aria-label="Site navigation">
+      <a href="./index.html">&larr; Front page</a>
+      <a href="./academy.html">The Academy</a>
+      <a href="./status.html">System status</a>
+    </nav>
+  </main>
+
+  <script src="./assets/cfa.js" defer></script>
+</body>
+</html>

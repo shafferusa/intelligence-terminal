@@ -1,0 +1,16 @@
+{
+  "course": "cfa-l1",
+  "title": "CFA Math (Level I)",
+  "exam": "CFA Level I, May 2027 window (11-17 May 2027)",
+  "start_date": "2026-11-07",
+  "total_days": 90,
+  "last_day": 0,
+  "last_released": null,
+  "paused": false,
+  "calculators": [
+    "TI BA II Plus",
+    "TI-84 Plus"
+  ],
+  "note": "One pre-written lesson a day, every day, released by .github/workflows/cfa-release.yml at about 4:37 AM ET (SPEC §0e). Day N is due on start_date + N - 1. Set paused to true to stop releases.",
+  "released": []
+}

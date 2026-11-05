@@ -702,6 +702,7 @@ td.down, .fact-card dd.down { color: var(--down); }
   --edition-sun:   #5B3A6E;
   --edition-learn: #7E3325;
   --edition-sie:   #33508A;
+  --edition-cfa:   #5A4A12;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -711,6 +712,7 @@ td.down, .fact-card dd.down { color: var(--down); }
     --edition-sun:   #C0A0D6;
     --edition-learn: #E39F90;
     --edition-sie:   #A3B8E6;
+    --edition-cfa:   #D8C27A;
   }
 }
 :root[data-theme="dark"] {
@@ -720,6 +722,7 @@ td.down, .fact-card dd.down { color: var(--down); }
   --edition-sun:   #C0A0D6;
   --edition-learn: #E39F90;
   --edition-sie:   #A3B8E6;
+  --edition-cfa:   #D8C27A;
 }
 
 .paper { --edition: var(--edition-am); }
@@ -728,6 +731,7 @@ td.down, .fact-card dd.down { color: var(--down); }
 .paper[data-slot="sun"]   { --edition: var(--edition-sun); }
 .paper[data-slot="learn"] { --edition: var(--edition-learn); }
 .paper[data-slot="sie"]   { --edition: var(--edition-sie); }
+.paper[data-slot="cfa"]   { --edition: var(--edition-cfa); }
 
 /* ---------- report masthead ---------- */
 
@@ -1611,3 +1615,176 @@ details.tracker > summary { cursor: pointer; font-family: var(--sans); font-weig
 }
 .watch-read p { margin: 0 0 0.4em; }
 .watch-read p:last-child { margin-bottom: 0; }
+
+/* ---------- CFA Math course (data-slot="cfa", SPEC Sec.0e) ----------
+   Reuses .track-head, .lesson-body, .formula, .worked and the SIE
+   .sie-block boxes (memorize / traps). Adds the calculator walkthrough
+   (BA II Plus and TI-84 Plus side by side, switchable) and the questions
+   that cfa.js grades on the page. */
+
+kbd {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.12rem 0.4rem;
+  margin: 0.08rem 0.05rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--ink);
+  white-space: nowrap;
+}
+kbd.menu { font-weight: 600; border-style: dashed; border-bottom-width: 1px; }
+samp { font-family: var(--mono); font-size: 0.875rem; }
+
+.calc {
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--edition, var(--accent));
+  border-radius: 8px;
+  padding: 0.9rem 1rem 0.6rem;
+  margin: 1.3em 0;
+  background: var(--card);
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.calc-task { margin: 0 0 0.7rem; }
+.calc-toggle { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.calc-toggle button {
+  font: inherit; font-size: 0.8125rem; font-weight: 600;
+  padding: 0.25rem 0.7rem; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+}
+.calc-toggle button[aria-pressed="true"] { background: var(--edition, var(--accent)); border-color: var(--edition, var(--accent)); color: var(--card); }
+.calc-steps { list-style: none; counter-reset: step; margin: 0; padding: 0; }
+.calc-steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 0.55rem 0 0.6rem 2rem;
+  border-top: 1px solid var(--line);
+}
+.calc-steps > li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0.6rem;
+  width: 1.4rem; height: 1.4rem; border-radius: 50%;
+  background: var(--tone-info-bg); color: var(--tone-info-fg);
+  font-size: 0.75rem; font-weight: 700; text-align: center; line-height: 1.4rem;
+}
+.calc-what { margin: 0 0 0.3rem; font-weight: 600; }
+.calc-keys { margin: 0.15rem 0; }
+.calc-label {
+  display: inline-block; min-width: 6.2rem;
+  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.calc-see { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.875rem; }
+.calc-answer { margin: 0.6rem 0 0.2rem; font-weight: 600; }
+:root[data-calc="ba"] .calc .ti, :root[data-calc="ti"] .calc .ba { display: none; }
+@media (max-width: 30rem) {
+  .calc-label { display: block; min-width: 0; }
+  .calc-steps > li { padding-left: 1.8rem; }
+}
+
+/* Questions graded on the page. */
+.cfa-warmup, .cfa-check {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  margin: 1.4em 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+.cfa-warmup { background: var(--tone-info-bg); border-color: var(--tone-info-bd); }
+.cfa-warmup > h3, .cfa-check > h3 { font-family: var(--sans); font-size: 1rem; margin: 0 0 0.3rem; }
+.cfa-warmup > p.cq-intro, .cfa-check > p.cq-intro { color: var(--muted); font-size: 0.875rem; margin: 0 0 0.6rem; }
+.cq { border-top: 1px solid var(--line); padding: 0.85rem 0 0.7rem; }
+.cfa-warmup .cq { border-top-color: var(--tone-info-bd); }
+.cq-stem { margin: 0 0 0.55rem; }
+.cq-input { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+.cq-input input {
+  font: inherit; font-family: var(--mono);
+  width: 11rem; max-width: 60vw;
+  padding: 0.4rem 0.55rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--card); color: var(--ink);
+}
+.cq-unit { color: var(--muted); font-size: 0.875rem; }
+.cq button.cq-check, .cq-rate button {
+  font: inherit; font-size: 0.875rem; font-weight: 600;
+  padding: 0.38rem 0.8rem; border-radius: 6px;
+  border: 1px solid var(--edition, var(--accent));
+  background: var(--edition, var(--accent)); color: var(--card); cursor: pointer;
+}
+.cq button:disabled { opacity: 0.55; cursor: default; }
+.cq-opts { list-style: none; margin: 0 0 0.55rem; padding: 0; }
+.cq-opts li { margin: 0.3rem 0; }
+.cq-opts label {
+  display: flex; gap: 0.5rem; align-items: flex-start;
+  padding: 0.45rem 0.6rem; border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+}
+.cq-opts input { margin-top: 0.3rem; flex: none; }
+.cq-opts label:has(input:checked) { border-color: var(--edition, var(--accent)); }
+.cq-opts li.is-right label { border-color: var(--tone-ok-fg); background: var(--tone-ok-bg); }
+.cq-opts li.is-wrong label { border-color: var(--tone-bad-fg); background: var(--tone-bad-bg); }
+.cq-why { margin: 0.25rem 0 0.4rem 1.9rem; font-size: 0.875rem; color: var(--muted); }
+.cq-explain textarea {
+  width: 100%; min-height: 4.5rem; box-sizing: border-box;
+  font: inherit; padding: 0.5rem 0.6rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--card); color: var(--ink); margin-bottom: 0.45rem;
+}
+.cq-feedback { margin: 0.5rem 0 0.3rem; font-weight: 700; }
+.cq-feedback.ok { color: var(--tone-ok-fg); }
+.cq-feedback.miss { color: var(--tone-bad-fg); }
+.cq-feedback.info { color: var(--muted); font-weight: 600; }
+.cq-hint { background: var(--tone-warn-bg); color: var(--ink); border-radius: 6px; padding: 0.5rem 0.7rem; margin: 0.5rem 0; }
+.cq-hint > b, .cq-solution > summary { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+details.cq-solution { margin: 0.5rem 0 0; padding: 0.55rem 0.75rem; border-radius: 6px; background: var(--card); border: 1px dashed var(--line); }
+details.cq-solution > summary { cursor: pointer; font-weight: 700; color: var(--edition, var(--accent)); }
+details.cq-solution[open] > summary { margin-bottom: 0.4rem; }
+.cq-rate { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+.cq-rate > span { width: 100%; font-size: 0.875rem; color: var(--muted); }
+.cq-rate button { background: transparent; color: var(--edition, var(--accent)); }
+.cq-rate button[aria-pressed="true"] { background: var(--edition, var(--accent)); color: var(--card); }
+
+.cfa-score {
+  background: var(--tone-ok-bg); color: var(--ink);
+  border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1.4em 0;
+  font-family: var(--sans); font-size: 0.9375rem;
+}
+.cfa-score > b { display: block; font-size: 0.6875rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--tone-ok-fg); margin-bottom: 0.35rem; }
+.cfa-score p { margin: 0.25rem 0; }
+.cfa-score .cfa-score-line { font-weight: 700; }
+.cfa-score .verdict.ok { color: var(--tone-ok-fg); font-weight: 700; }
+.cfa-score .verdict.redo { color: var(--tone-bad-fg); font-weight: 600; }
+.cfa-score .cfa-score-warm, .cfa-score .cfa-score-links { font-size: 0.875rem; color: var(--muted); }
+button.linklike { font: inherit; background: none; border: 0; padding: 0; color: var(--edition, var(--accent)); text-decoration: underline; cursor: pointer; }
+
+/* Course page (cfa.html). */
+.cfa-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin: 1rem 0; }
+.cfa-stat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0.7rem; text-align: center; }
+.cfa-stat-n { display: block; font-family: var(--sans); font-size: 1.35rem; font-weight: 700; color: var(--edition, var(--accent)); }
+.cfa-stat-l { display: block; font-family: var(--sans); font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.cfa-today { font-family: var(--sans); font-weight: 600; }
+.cfa-redo, .cfa-vault, .cfa-plan, .cfa-setup { margin: 1.6rem 0; font-family: var(--sans); font-size: 0.9375rem; }
+.cfa-redo h2, .cfa-vault h2, .cfa-plan h2, .cfa-setup h2 { font-family: var(--sans); font-size: 1.05rem; margin: 0 0 0.5rem; }
+.cfa-card { background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--edition, var(--accent)); border-radius: 8px; padding: 0.9rem 1rem; }
+.cfa-card-meta { font-size: 0.75rem; color: var(--muted); margin: 0 0 0.4rem; }
+.cfa-card-front { font-weight: 700; margin: 0 0 0.5rem; }
+.cfa-card-back { font-family: var(--mono); font-size: 0.9rem; background: var(--tone-warn-bg); border-radius: 6px; padding: 0.5rem 0.65rem; margin: 0 0 0.5rem; white-space: pre-wrap; }
+.cfa-card-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.cfa-card-actions button { font: inherit; font-size: 0.875rem; font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 6px; border: 1px solid var(--edition, var(--accent)); background: transparent; color: var(--edition, var(--accent)); cursor: pointer; }
+.cfa-days { list-style: none; margin: 0; padding: 0; }
+.cfa-day { display: grid; grid-template-columns: 4rem 1fr auto; gap: 0.15rem 0.6rem; align-items: baseline; padding: 0.45rem 0; border-top: 1px solid var(--line); }
+.cfa-day-n { font-family: var(--mono); font-size: 0.8125rem; color: var(--muted); }
+.cfa-day-area { grid-column: 2; font-size: 0.75rem; color: var(--muted); }
+.cfa-day .cfa-chip { grid-column: 3; grid-row: 1 / span 2; }
+.cfa-day.is-review .cfa-day-t, .cfa-day.is-exam .cfa-day-t { font-weight: 700; }
+.cfa-chip { font-size: 0.6875rem; font-weight: 700; padding: 0.1rem 0.45rem; border-radius: 4px; white-space: nowrap; }
+.cfa-chip.ok { background: var(--tone-ok-bg); color: var(--tone-ok-fg); }
+.cfa-chip.redo { background: var(--tone-bad-bg); color: var(--tone-bad-fg); }
+.cfa-chip.new { background: var(--tone-info-bg); color: var(--tone-info-fg); }
+.cfa-chip.upcoming { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+.muted { color: var(--muted); }

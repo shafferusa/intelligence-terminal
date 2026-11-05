@@ -1,0 +1,92 @@
+name: CFA Math release (daily lesson)
+
+# The CFA Math course (SPEC Sec.0e) is written in advance; this publishes the
+# lesson due today -- every day of the week -- with no Claude run, so lessons
+# keep coming even when Claude usage runs out.
+#
+# Pushes made with GITHUB_TOKEN start no other workflows, so after pushing this
+# job starts the Pages build itself (workflow_dispatch is the one event a
+# GITHUB_TOKEN may start) and sends the Telegram push itself, with the same
+# notify.py every edition uses (it waits for the page to answer 200 first).
+# notify-telegram.yml never sees this push, so nothing is sent twice.
+
+on:
+  schedule:
+    # 9:37 UTC = 4:37 AM EST. The course runs Nov 2026 - Feb 2027, all in EST.
+    # Off the top of the hour because scheduled runs at :00 are the ones
+    # GitHub delays most.
+    - cron: "37 9 * * *"
+    # Backup in case the first run is dropped or delayed past it; it releases
+    # only what is still due, so a normal morning makes it a no-op.
+    - cron: "13 11 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only report what is due"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: cfa-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Release the lesson(s) due today
+        id: rel
+        run: |
+          before=$(git rev-parse HEAD)
+          echo "before=$before" >> "$GITHUB_OUTPUT"
+          set +e
+          python3 .github/scripts/cfa_release.py ${{ inputs.dry_run && '--dry-run' || '' }} | tee release.out
+          code=${PIPESTATUS[0]}
+          set -e
+          grep '^released=' release.out | tail -1 >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push
+        if: steps.rel.outputs.released != '' && !inputs.dry_run
+        run: |
+          git config user.name  "Intelligence Terminal Bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/reports/cfa site/reports/index.json state/cfa.json state/run-log.jsonl
+          git commit -m "cfa: day ${{ steps.rel.outputs.released }}"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "push race, retry $i"; sleep $((i * 10))
+          done
+          echo "could not push the release" >&2
+          exit 1
+
+      - name: Build and deploy the site
+        if: steps.rel.outputs.released != '' && !inputs.dry_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-site.yml --ref main
+
+      - name: Send the Telegram push
+        if: steps.rel.outputs.released != '' && !inputs.dry_run
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PREV_SHA: ${{ steps.rel.outputs.before }}
+          PAGE_WAIT_SECONDS: "600"
+        run: python3 .github/scripts/notify.py
+
+      - name: Fail loudly if a due lesson could not be released
+        if: steps.rel.outputs.code != '0'
+        run: |
+          echo "cfa_release.py reported a problem -- see the release step log" >&2
+          exit 1

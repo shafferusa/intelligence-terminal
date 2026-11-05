@@ -11,7 +11,9 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).
 3. Your run procedure — one of:
-   - `prompts/learning.md` — **Learning Brief**, Mon–Fri ~5:00 AM ET, delivered by 5:30. Strictly
+   - `prompts/learning.md` — **Learning Brief — PAUSED since 2026-11-06** (SPEC §0e): while
+     `state/learning.json` has `"paused": true` the run exits at once, writing nothing. When live:
+     Mon–Fri ~5:00 AM ET, delivered by 5:30. Strictly
      learning: ONE concept per ~15-minute report from `curriculum/academy-connected.json`, connected
      back to earlier lessons and across to another field, one recommended video or reading, one
      application question. No news, no audio.
@@ -20,6 +22,11 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
    - `prompts/sie.md` — **SIE Program**, daily (weekends too) at noon ET. A 30-day FINRA SIE exam
      course with quizzes, grading, a weakness tracker and spaced repetition (SPEC §0b). Strictly
      exam study, no news.
+
+**The 2026-11-05 CFA course:** Logan's 90-day CFA Math course (Level I, May 2027) replaces the
+Learning Brief. Its lessons are written in advance (`curriculum/cfa-l1/`) and published daily by the
+`cfa-release` GitHub Action, never by a routine. No routine writes `site/reports/cfa/`,
+`state/cfa.json` or `curriculum/cfa-l1*`, and no news edition carries CFA lessons (SPEC §0e).
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
@@ -44,6 +51,10 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   (restarted at Day 1 on 2026-10-15, SPEC §0d). RETIRED records, never read:
   `curriculum/academy-300.json` (13 lessons taught, 2026-09-28 to 2026-10-14) and
   `curriculum/academy-150.json` (30 lessons taught).
+- `curriculum/cfa-l1.json` (the 90-day CFA Math plan), `curriculum/cfa-l1/` (README.md authoring
+  spec, calculator-guide.md, template.html, and the pre-written `day-NN.html` lessons) — released
+  by `.github/workflows/cfa-release.yml` + `.github/scripts/cfa_release.py` to
+  `site/reports/cfa/l1/`; position in `state/cfa.json`; course page `site/cfa.html` (SPEC §0e).
 - `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
   (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
   `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
