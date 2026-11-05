@@ -209,8 +209,9 @@ chose both calculators side by side and about 20 minutes a day.
   exits at once while it is set). The Connected Path keeps its position (day 29) and resumes only
   when Logan asks. The routine itself could not be disabled from a session; Logan can switch it off
   in his routines to save usage.
-- **CFA Math (Level I)**: 90 lessons, **one every day of the week** from Saturday 2026-11-07 to
-  Thursday 2027-02-04, for the May 2027 window (11–17 May 2027). Every calculation and formula on
+- **CFA Math (Level I)**: 90 lessons, **one every day of the week** from Monday 2026-11-16 to
+  Saturday 2027-02-13 (Logan: "have this start not on monday but 2 mondays from now"), for the May
+  2027 window (11–17 May 2027). No learning edition goes out 2026-11-06 to 2026-11-15. Every calculation and formula on
   the 2027 Level I exam: Quantitative Methods first, then the math of Economics, Financial Statement
   Analysis, Corporate Finance, Equities, Fixed Income, Derivatives, Alternative Investments and
   Portfolio Management, with review days. Plan: `curriculum/cfa-l1.json`; authoring spec:

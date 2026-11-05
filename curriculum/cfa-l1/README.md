@@ -109,5 +109,5 @@ new numbers), then the score box. `kind: "exam"` days follow the plan's own inst
 ## 6. Before you hand it over
 
 Run `python3 curriculum/cfa-l1/verify/day-NN.py` (it must print every number), then substitute the
-placeholders into a temporary copy named `2026-11-07-cfa.html` and run
+placeholders into a temporary copy named `2026-11-16-cfa.html` and run
 `python3 .github/scripts/check_report.py` on it: it must print `OK`.
