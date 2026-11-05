@@ -885,6 +885,10 @@
     {
      "front": "Bootstrap resampling",
      "back": "Draw random samples WITH replacement from the observed data to simulate the sampling distribution"
+    },
+    {
+     "front": "Monte Carlo simulation, step by step",
+     "back": "Specify the model and the distribution of each random input → draw random values → compute the outcome → repeat many times → summarize the distribution of outcomes"
     }
    ]
   },
@@ -963,6 +967,14 @@
     {
      "front": "Roy's safety-first ratio",
      "back": "SFRatio = [E(R_p) − R_L] / σ_p; choose the portfolio with the highest ratio"
+    },
+    {
+     "front": "Risk attitude and the coefficient A",
+     "back": "A > 0 risk-averse (larger A = more averse); A = 0 risk-neutral; A < 0 risk-seeking"
+    },
+    {
+     "front": "What the utility number U means",
+     "back": "The certainty-equivalent return: the sure (risk-free) return the investor would accept instead of the risky portfolio"
     }
    ]
   },
@@ -1002,6 +1014,10 @@
     {
      "front": "Bootstrapping step for an N-year par bond with coupon c (per 100)",
      "back": "100 = c × DF_1 + … + c × DF_(N−1) + (100 + c) × DF_N → solve DF_N, then Z_N = DF_N^(−1/N) − 1"
+    },
+    {
+     "front": "How the YTM relates to spot rates",
+     "back": "The YTM is the single discount rate that gives the same price as discounting each cash flow at its own spot rate — a weighted average of the spot rates"
     }
    ]
   },
@@ -1026,8 +1042,8 @@
      "back": "Par rate = (1 − DF_N) / (DF_1 + DF_2 + … + DF_N)"
     },
     {
-     "front": "Spot and forward curves when the spot curve is inverted",
-     "back": "Forward rates lie below spot rates"
+     "front": "Where forward rates lie relative to spot rates",
+     "back": "Above the spot curve when it slopes upward; below it when the spot curve is inverted"
     }
    ]
   },
@@ -1037,7 +1053,7 @@
    "area": "Fixed Income",
    "module": "Yield and Yield Spread Measures for Fixed-Rate Bonds",
    "title": "Yield spreads and matrix pricing",
-   "concept": "A yield spread is the extra yield over a benchmark — the G-spread over a government bond, the I-spread over swaps, the Z-spread added to every spot rate — and matrix pricing borrows the yields of comparable bonds to price one that rarely trades.",
+   "concept": "A yield spread is the extra yield over a benchmark — the G-spread over a government bond, the I-spread over swaps, the Z-spread added to every spot rate — and matrix pricing borrows the yields of comparable bonds to price one that rarely trades; for a floating-rate note the spread is a margin over the market reference rate — the quoted margin sets the coupon, the discount margin sets the required return.",
    "memorize": [
     {
      "front": "G-spread",
@@ -1045,7 +1061,7 @@
     },
     {
      "front": "Z-spread",
-     "back": "The constant Z that makes PV = Σ CF_t / (1 + z_t + Z)^t equal the bond's price"
+     "back": "The constant Z that makes PV = Σ CF_t / (1 + z_t + Z)^t equal the bond's price (z_t = the benchmark spot rate for date t — Day 36's Z_t)"
     },
     {
      "front": "Option-adjusted spread",
@@ -1058,6 +1074,10 @@
     {
      "front": "FRN inputs per period (P/Y = 1)",
      "back": "Coupon = (MRR + quoted margin)/m × 100; discount rate = (MRR + discount margin)/m"
+    },
+    {
+     "front": "I-spread",
+     "back": "I-spread = YTM of the bond − swap rate of the same maturity (in the same currency)"
     }
    ]
   },
@@ -1088,6 +1108,10 @@
     {
      "front": "Macaulay duration of a zero-coupon bond",
      "back": "Equal to its time to maturity"
+    },
+    {
+     "front": "Duration of a semiannual-pay bond",
+     "back": "Compute in periods with r/2, then divide by 2 for years; AnnModDur = MacDur(periods) / (1 + r/2) / 2"
     }
    ]
   },
@@ -1105,7 +1129,7 @@
     },
     {
      "front": "Money duration",
-     "back": "MoneyDur = AnnModDur × PV_full (for the position)"
+     "back": "MoneyDur = AnnModDur × PV_full of the position; ΔPV ≈ −MoneyDur × ΔYield"
     },
     {
      "front": "Price value of a basis point",
@@ -1114,6 +1138,10 @@
     {
      "front": "Portfolio duration (approximation)",
      "back": "D_p ≈ Σ w_i × D_i, w_i = market-value weights"
+    },
+    {
+     "front": "Approximate Macaulay duration",
+     "back": "ApproxMacDur = ApproxModDur × (1 + r)"
     }
    ]
   },
@@ -1134,8 +1162,16 @@
      "back": "%ΔPV ≈ −AnnModDur × ΔYield + ½ × AnnConvexity × (ΔYield)²"
     },
     {
+     "front": "Money convexity and the currency price change",
+     "back": "MoneyCon = AnnConvexity × PV_full; ΔPV ≈ −MoneyDur × ΔYield + ½ × MoneyCon × (ΔYield)²"
+    },
+    {
      "front": "Sign of the convexity adjustment for an option-free bond",
      "back": "Always positive (adds to the estimate for yield rises and falls)"
+    },
+    {
+     "front": "What gives a bond more convexity?",
+     "back": "Longer maturity, lower coupon, lower yield, and (for the same duration) more dispersed cash flows"
     }
    ]
   },
@@ -1166,7 +1202,7 @@
    "memorize": [
     {
      "front": "Standard error of the sample mean",
-     "back": "s_X̄ = s / √n (σ/√n if σ known)"
+     "back": "s_X̄ = s / √n (σ / √n if σ known)"
     },
     {
      "front": "Confidence interval for the mean",
@@ -1174,7 +1210,7 @@
     },
     {
      "front": "Reliability factors for z",
-     "back": "90%: 1.645; 95%: 1.96; 99%: 2.576"
+     "back": "90%: 1.645; 95%: 1.96; 99%: 2.58 (2.576)"
     },
     {
      "front": "When to use t",
@@ -1182,7 +1218,11 @@
     },
     {
      "front": "Central limit theorem",
-     "back": "For n ≥ 30, the sample mean is approximately normal with mean μ and variance σ²/n, whatever the population's distribution"
+     "back": "For any population with mean μ and finite variance σ², the sample mean of a large sample (rule of thumb n ≥ 30) is approximately normal with mean μ and variance σ²/n"
+    },
+    {
+     "front": "Sampling biases to name (2027 coverage uncertain)",
+     "back": "Data snooping; sample selection (incl. survivorship); look-ahead; time-period bias"
     }
    ]
   },
@@ -1230,11 +1270,11 @@
     },
     {
      "front": "t-test for a difference in means (independent samples, equal variances)",
-     "back": "t = (X̄_1 − X̄_2) / √(s_p²/n_1 + s_p²/n_2), df = n_1 + n_2 − 2"
+     "back": "t = [(X̄_1 − X̄_2) − (μ_1 − μ_2)] / √(s_p²/n_1 + s_p²/n_2), df = n_1 + n_2 − 2 (under H_0: μ_1 = μ_2 the numerator is just X̄_1 − X̄_2)"
     },
     {
      "front": "Paired-comparisons t-test",
-     "back": "t = d̄ / (s_d / √n), df = n − 1"
+     "back": "t = (d̄ − μ_d0) / s_d̄, with s_d̄ = s_d / √n, df = n − 1 (usually μ_d0 = 0)"
     },
     {
      "front": "Which test for matched data (same months, same firms)?",
@@ -1259,11 +1299,15 @@
      "back": "F = s_1² / s_2² (larger sample variance on top), df = n_1 − 1 and n_2 − 1"
     },
     {
+     "front": "When to use a non-parametric test",
+     "back": "Data are ranks, or parametric assumptions (e.g. normality) fail: small samples, outliers; or the hypothesis is not about a parameter"
+    },
+    {
      "front": "Expected count in a contingency table",
      "back": "E_ij = (row i total × column j total) / overall total"
     },
     {
-     "front": "Chi-square test of independence",
+     "front": "Chi-square test of independence (2027 coverage uncertain)",
      "back": "χ² = Σ (O_ij − E_ij)² / E_ij, df = (r − 1)(c − 1)"
     }
    ]
@@ -1278,7 +1322,7 @@
    "memorize": [
     {
      "front": "Least squares slope",
-     "back": "b̂_1 = Cov(X, Y) / Var(X) = Σ(X_i − X̄)(Y_i − Ȳ) / Σ(X_i − X̄)²"
+     "back": "b̂_1 = Cov(X, Y) / Var(X) = Σ(X_i − X̄)(Y_i − Ȳ) / Σ(X_i − X̄)² = r × s_Y / s_X"
     },
     {
      "front": "Least squares intercept",
@@ -1367,7 +1411,15 @@
     },
     {
      "front": "Link between F and t in simple regression",
-     "back": "F = t² (slope test)"
+     "back": "F = t² (slope test of H_0: b_1 = 0)"
+    },
+    {
+     "front": "Test of the intercept (alpha)",
+     "back": "t = (b̂_0 − B_0) / s_b̂0, df = n − 2"
+    },
+    {
+     "front": "Standard error of the slope",
+     "back": "s_b̂1 = SEE / √Σ(X_i − X̄)²"
     }
    ]
   },
@@ -1389,7 +1441,11 @@
     },
     {
      "front": "Log-lin model",
-     "back": "ln Y = b_0 + b_1 X; forecast Y = e^(b_0 + b_1 X)"
+     "back": "ln Y = b_0 + b_1 X; b_1 = continuous growth rate per unit of X; forecast Y = e^(b_0 + b_1 X)"
+    },
+    {
+     "front": "Lin-log model",
+     "back": "Y = b_0 + b_1 ln X: a 1% change in X changes Y by about b_1/100"
     },
     {
      "front": "Log-log model slope",
@@ -1454,6 +1510,10 @@
     {
      "front": "Sortino ratio",
      "back": "Sortino = (R_p − MAR) / downside deviation"
+    },
+    {
+     "front": "Calmar ratio",
+     "back": "Calmar = annualized return / maximum drawdown"
     }
    ]
   },
@@ -1587,6 +1647,10 @@
     {
      "front": "Who gains when rates rise?",
      "back": "The fixed-rate payer (floating receiver) in a swap; the long FRA"
+    },
+    {
+     "front": "Value of an existing swap to the fixed-rate receiver",
+     "back": "(old fixed rate − new par swap rate) × Σ new DF_i × notional (the payer gets the negative)"
     }
    ]
   },
@@ -1617,6 +1681,10 @@
     {
      "front": "Lower bound of a European put",
      "back": "p_0 ≥ max[0, X / (1 + r)^T − S_0]"
+    },
+    {
+     "front": "Option price before expiry",
+     "back": "Price = intrinsic value + time value; intrinsic value = max(0, S − X) for a call, max(0, X − S) for a put"
     }
    ]
   },
@@ -1643,6 +1711,10 @@
     {
      "front": "Synthetic put",
      "back": "p_0 = c_0 − S_0 + X / (1 + r)^T"
+    },
+    {
+     "front": "Fiduciary call = protective put",
+     "back": "c_0 + X / (1 + r)^T (call + bond paying X) = p_0 + S_0 (put + stock)"
     }
    ]
   },

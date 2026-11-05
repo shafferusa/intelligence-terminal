@@ -89,8 +89,9 @@ TI-84 Plus keystrokes.
 
 ## 4. Review days and the final stretch
 
-Review days (`kind: "review"` in the plan) have no story or new concept. They open with a one-paragraph
-"what this week was about", a compact formula recap (the week's memorize cards), then **ten** graded
+Review days (`kind: "review"` in the plan) have no story or new concept. They keep the warm-up (two
+questions from the plan's `warmup_from` days, which reach back past this week, for spacing), then a
+one-paragraph "what this week was about", a compact formula recap (the week's memorize cards), then **ten** graded
 questions (`c1`–`c10`, mixed `num` and `mc`, at least four needing the calculator, all CFA-style, all
 new numbers), then the score box. `kind: "exam"` days follow the plan's own instructions.
 
