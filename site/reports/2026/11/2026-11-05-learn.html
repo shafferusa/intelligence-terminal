@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
+  2. Replace the text of the page TITLE element (in the HEAD, just below the robots meta).
+     Edit that one element directly -- never a find-and-replace across the whole file:
+     this comment is part of the file too, and a pattern that matched in here once
+     commented out the whole head and sent eight reports out unstyled (2026-10).
+     NOTE: this comment must never contain a literal tag in angle brackets.
+  3. Replace the JSON inside the report-meta script block in the HEAD
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on the MAIN element (class "wrap paper") to am | pm | sat | sun | learn | sie.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+  7. Before committing, run: python3 .github/scripts/check_report.py PATH-TO-THE-NEW-PAGE
+     It must print OK (shared-rules section 12, step 10).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Jamaica’s Reefs Flipped From Coral to Seaweed in a Decade. Getting Them Back Has Taken Far Longer. — Learning Brief, Thu, Nov 5, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-11-05",
+    "slot": "learn",
+    "title": "Jamaica’s Reefs Flipped From Coral to Seaweed in a Decade. Getting Them Back Has Taken Far Longer.",
+    "path": "reports/2026/11/2026-11-05-learn.html",
+    "summary": "Day 28 of the Connected Path: some systems have two stable resting states separated by a threshold, so a push past it flips the system, and undoing the push does not flip it back — the mechanism behind Jamaica's 1983 coral-to-seaweed phase shift and Mark Granovetter's threshold model of riots.",
+    "headlines": [
+      "Day 28 of 293 · Systems Thinking: a push past a threshold can flip a system, and reversing the push does not flip it back",
+      "Jamaica's reef held half coral through the 1970s; a hurricane and a sea-urchin die-off three years apart left it over 90% seaweed by the early 1990s",
+      "Watch or Read: Catastrophic shifts in ecosystems, Scheffer et al., Nature (about 6 pages)"
+    ],
+    "reading_minutes": 14,
+    "generated_at": "2026-11-05T04:53:47-05:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Jamaica&rsquo;s Reefs Flipped From Coral to Seaweed in a Decade. Getting Them Back Has Taken Far Longer.</h1>
+      <p class="paper-dateline">
+        Thursday, November 5, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        Some systems rest in either of two stable conditions separated by a threshold, so a push across it flips the system on its own &mdash; and because a different mechanism now holds it there, simply undoing the push does not flip it back.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Systems Thinking</p>
+      <span class="track-progress">Day 28 of 293 &middot; Systems Thinking 4 of 12 &middot; Thresholds, tipping points and hysteresis</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>The urchins that vanished from the Caribbean</h3>
+      <p>
+        In August 1980, Hurricane Allen tracked close along Jamaica&rsquo;s north coast and tore apart reefs that
+        had rarely faced that kind of wave energy before, flattening much of the staghorn coral that had built
+        the shallow fore reef. A reef can usually absorb a hurricane and rebuild. This one had less margin than
+        it looked: decades of overfishing had already stripped Jamaica&rsquo;s north coast of most of the fish
+        that graze algae off bare rock, and one grazer was doing most of that work alone &mdash; the long-spined
+        black sea urchin, <em>Diadema antillarum</em>, clearing space fast enough that young coral could still
+        find somewhere to settle.
+      </p>
+      <p>
+        Then, in early 1983, an unidentified waterborne pathogen swept the Caribbean basin. Within about a year
+        it had killed more than 90 percent of the <em>Diadema</em> it found at most sites it reached; researchers
+        who tracked the die-off on Panama&rsquo;s reefs recorded urchin counts falling by over 90 percent in
+        permanent survey plots. On Jamaica&rsquo;s north coast, the pathogen removed the grazer that had been
+        standing between the reef and the seaweed waiting to take it.
+      </p>
+      <p>
+        The marine ecologist Terry Hughes had already been running long-term surveys of those reefs. His results,
+        published in <em>Science</em> in 1994, show coral cover that had held at roughly half the reef through
+        the 1970s falling to under 5 percent by the time he wrote the paper. Fleshy seaweed, which had covered
+        only a few percent of the reef before 1980, came to dominate more than 90 percent of it.
+      </p>
+      <p>
+        Reefs had weathered hurricanes before, and taken disease losses before, without this result. Why did a
+        1980 storm and a 1983 pathogen, landing three years apart on an already overfished reef, tip it somewhere
+        neither shock alone had managed &mdash; and why, decades later, with the storm long past and some
+        <em>Diadema</em> back, has the reef still not returned to coral at anything like its old extent?
+      </p>
+
+      <h3>The Big Idea</h3>
+      <p>
+        Today&rsquo;s concept: some systems have two (or more) stable conditions they can rest in, for the same
+        outside conditions, rather than just one &mdash; and they stay in whichever one they are already in
+        until something pushes them hard enough, past a specific threshold, to flip into the other. Once flipped,
+        reversing the original push does not flip the system back, because a different mechanism now holds it in
+        its new condition than held it in the old one.
+      </p>
+      <p>
+        Picture the system not as a single point that always settles back to the same place, but as a landscape
+        with two valleys, each a stable resting spot, separated by a ridge. A small disturbance just rolls the
+        system back down into whichever valley it is already sitting in &mdash; that is ordinary stability, the
+        kind a ridge-free system already has from a plain balancing loop. A disturbance big enough to push the
+        system up and over the ridge, though, sends it rolling down into the other valley instead, where a
+        different set of forces now holds it in place. Coral-dominated and algae-dominated are two such valleys
+        for a reef. The ridge between them is the threshold, and crossing it is what the rest of this lesson
+        explains.
+      </p>
+
+      <h3>How It Works</h3>
+      <p>
+        A system has genuine alternative stable states when, under the very same external conditions &mdash; the
+        same water temperature, the same nutrient level, the same storm history &mdash; more than one
+        self-sustaining configuration is possible, and which one you actually find depends on the system&rsquo;s
+        own recent history rather than on the conditions alone. That is a stronger claim than &ldquo;this system
+        changed when conditions changed&rdquo;: it says the system can sit in either state <em>with conditions
+        held fixed</em>, because each state defends itself once established.
+      </p>
+      <p>
+        A reinforcing loop, of the kind Day 26 named, is usually what does the defending. On a healthy reef,
+        grazing fish and urchins crop algae off open rock fast enough that coral larvae keep finding bare surface
+        to settle on; live coral shelters more grazing fish and invertebrates, which keeps grazing pressure high,
+        which keeps rock open for more coral. That loop reinforces coral dominance. Push grazing pressure down far
+        enough, though, and algae gets ahead of it: unchecked growth pre-empts the open rock coral larvae need,
+        shades out the coral already there, and the loss of coral removes the structure that sheltered the fish
+        that were doing the grazing &mdash; which drives grazing down further, which lets algae spread further
+        still. The same kind of loop, reinforcing the opposite state. A threshold is the specific point, somewhere
+        between those two loops, where the balance of forces flips sign &mdash; below it, grazing can outpace
+        algal growth and coral holds its ground; above it, algal growth outpaces grazing and the system is drawn
+        toward the algae-dominated valley on its own, with no further push required.
+      </p>
+      <p>
+        The ecologist Marten Scheffer and co-authors formalized the landscape picture in a widely cited 2001
+        <em>Nature</em> review: each valley is a basin of attraction, and <strong>resilience</strong>, in this
+        technical sense, is not how healthy a system currently looks but how large a disturbance it can absorb
+        without being pushed over the ridge into a different basin. That distinction matters because a system can
+        lose most of its resilience &mdash; its basin can narrow and its ridge can lower &mdash; from a slow,
+        easy-to-miss accumulation of stress, long before any single visible event reveals the change. A reef can
+        still look like a healthy coral reef while decades of overfishing have quietly narrowed its basin, so
+        that a disturbance it would once have shrugged off is now enough to tip it.
+      </p>
+      <p>
+        <strong>Hysteresis</strong> is the asymmetry that follows. Because a different mechanism holds the new
+        state than held the old one, and that new mechanism can be stronger, simply removing the disturbance that
+        caused the flip is not enough to reverse it. The storm passes; the pathogen runs its course; conditions
+        return to roughly what they were before &mdash; and the system can still remain on the far side of the
+        ridge, because algae actively defending its own dominance is a different, and sometimes larger, obstacle
+        than the original loss of grazing ever was. Undoing the flip typically needs a much larger push the other
+        way, sustained for much longer, than the push that caused it. Researchers who tracked a partial,
+        localized recovery of <em>Diadema</em> on a Caribbean reef (Peter Edmunds and Robert Carpenter, writing in
+        the <em>Proceedings of the National Academy of Sciences</em> in 2001) did find less algae and more
+        juvenile coral where urchins came back in numbers &mdash; evidence that the loop can run in reverse. But
+        the recovery they documented was local and partial, not the reef snapping back the moment the original
+        pressure eased, which is exactly what hysteresis predicts rather than what it would predict if the system
+        simply had one equilibrium all along.
+      </p>
+      <p>
+        Proving that a real ecosystem actually has two distinct stable states &mdash; rather than just sliding
+        back and forth as conditions themselves slide back and forth &mdash; is genuinely hard, and ecologists
+        disagree about how often it is true on real reefs. Peter Mumby, Alan Hastings and Nicholas Edwards, modeling
+        Caribbean reefs after the 1983 die-off in a 2007 <em>Nature</em> paper, found that reefs did become
+        susceptible to a true alternative stable state once most grazing fell onto parrotfish alone, with sharp
+        thresholds of grazing and coral cover beyond which a reef loses the ability to recover. John Bruno and
+        co-authors, surveying thousands of reefs worldwide for a 2009 paper in <em>Ecology</em>, found
+        coral-to-macroalgae dominance considerably less common and less geographically widespread than the field
+        had assumed &mdash; most degraded reefs they examined had simply lost coral, without seaweed rising to
+        take its place at anything like the levels Jamaica showed. Both findings can be true at once: alternative
+        stable states are real somewhere, Jamaica very likely among them, without being the universal fate of
+        every stressed reef.
+      </p>
+      <h3>Back to the story</h3>
+      <p>
+        Hurricane Allen and the 1983 <em>Diadema</em> pathogen landed, three years apart, on a reef whose
+        resilience had already been narrowed by decades of overfishing that had removed most of its other
+        grazers. Either shock alone might have been absorbed. Together, they likely dropped grazing pressure
+        below the threshold needed to keep pace with algal growth, pushing the reef over the ridge into the
+        algae-dominated basin Hughes measured by the early 1990s. That the storm damage healed and some
+        <em>Diadema</em> have partly returned, without the reef swinging back to anything near its old coral
+        cover, is hysteresis doing exactly what the idea predicts: the push that flipped the system and the push
+        it would take to flip it back are not mirror images of each other.
+      </p>
+
+      <div class="key-terms">
+      <dl>
+        <dt>Alternative stable states</dt>
+        <dd>Two or more self-sustaining configurations a system can rest in under the same external conditions,
+        with which one it occupies depending on its history rather than on current conditions alone.</dd>
+        <dt>Threshold (tipping point)</dt>
+        <dd>The specific point at which the balance of forces holding a system in its current state flips sign,
+        so that crossing it draws the system toward a different stable state on its own.</dd>
+        <dt>Basin of attraction</dt>
+        <dd>The range of conditions around a stable state from which the system will return to that state on its
+        own &mdash; pictured as a valley in a landscape, with the stable state at the bottom.</dd>
+        <dt>Resilience</dt>
+        <dd>In this technical sense, how large a disturbance a system can absorb without being pushed into a
+        different basin of attraction &mdash; not how healthy the system currently looks.</dd>
+        <dt>Hysteresis</dt>
+        <dd>The asymmetry between what pushes a system past a threshold and what it takes to push it back, which
+        arises because a different mechanism defends each stable state.</dd>
+        <dt>Threshold model of collective behaviour</dt>
+        <dd>Mark Granovetter&rsquo;s model of decisions &mdash; joining a riot, a strike, a run on a bank &mdash;
+        where each person acts only once enough other people already have, so the outcome depends on the whole
+        distribution of individual thresholds, not their average.</dd>
+      </dl>
+      </div>
+
+      <h3>Example: Granovetter&rsquo;s Riot That Almost Didn&rsquo;t Happen</h3>
+      <p>
+        The sociologist Mark Granovetter built the cleanest version of a threshold flip in 1978, stripped down to
+        pure numbers, to make a point about crowds rather than reefs: a population&rsquo;s average attitude can
+        tell you almost nothing about whether it riots, because the outcome depends on the exact shape of the
+        distribution of individual thresholds &mdash; the point Day 12&rsquo;s lesson on distributions made from
+        a different angle.
+      </p>
+      <p>
+        Imagine 100 people, each with a personal threshold for joining a riot: the number of other people who must
+        already be rioting before that person joins in. Give them thresholds 0, 1, 2, all the way up to 99 &mdash;
+        one person at each level, a perfectly even spread. The person with threshold 0 needs nobody else and
+        riots immediately. That one rioter is now enough to trigger the person with threshold 1, who triggers the
+        person with threshold 2, and so on in a chain, until all 100 people have joined. A population that looks,
+        on average, moderately reluctant to riot (the average threshold is 49.5) riots completely.
+      </p>
+      <div class="worked">
+        <p><strong>1. Build the baseline population.</strong> 100 people, thresholds 0 through 99, one person per
+        value &mdash; an even spread, average threshold 49.5.</p>
+        <p><strong>2. Run the cascade.</strong> Threshold-0 person riots &rarr; 1 rioting, which meets or exceeds
+        threshold-1&rsquo;s requirement &rarr; 2 rioting, meeting threshold-2&rsquo;s requirement &rarr; the chain
+        continues unbroken through threshold 99 &rarr; all 100 riot.</p>
+        <p><strong>3. Change one person&rsquo;s threshold.</strong> Move the single person who had threshold 1 up
+        to threshold 2, leaving everyone else unchanged. The population&rsquo;s average threshold barely moves.</p>
+        <p><strong>4. Re-run the cascade.</strong> Threshold-0 person riots &rarr; 1 rioting. The person who used
+        to have threshold 1 now needs 2 rioters and there is only 1 &rarr; no one else has a threshold at or below
+        1 &rarr; the chain stops. Only 1 person riots.</p>
+        <p><strong>5. Read the result.</strong> A change to a single person&rsquo;s threshold, invisible in the
+        population average, moved the system from one equilibrium (100 rioting) to a completely different one (1
+        rioting) &mdash; the same qualitative jump a reef makes crossing its own grazing threshold.</p>
+      </div>
+
+      <h3>Equation / Model</h3>
+      <div class="formula">
+        <p class="expr">r* = F(r*)</p>
+        <p class="expr-spoken visually-hidden">The equilibrium share of the population participating equals the
+        cumulative share of the population whose threshold is at or below that same equilibrium share.</p>
+        <dl>
+          <dt>r</dt>
+          <dd>the running share of the population already participating (rioting, striking, joining a bank
+          run), expressed as a fraction from 0 to 1</dd>
+          <dt>F(x)</dt>
+          <dd>the cumulative distribution of thresholds: the fraction of the population whose personal threshold
+          is x or lower</dd>
+          <dt>r*</dt>
+          <dd>an equilibrium &mdash; a value of r at which exactly the right share of the population has a
+          threshold low enough to be already satisfied, so participation stops changing</dd>
+        </dl>
+        <p>
+          Start at r&nbsp;=&nbsp;0 and feed the population&rsquo;s own thresholds back into F repeatedly: each
+          round, F tells you how many people are now willing to join given the last round&rsquo;s participation,
+          and that becomes the next round&rsquo;s r. The process settles where the curve of F crosses the line
+          r&nbsp;=&nbsp;r* &mdash; which can happen at more than one point. A population&rsquo;s distribution of
+          thresholds can have two stable crossing points, a near-zero one and a near-total one, with almost no
+          outside push separating which one the population actually reaches &mdash; the social-science version of
+          the same ridge between two basins that a grazing threshold creates on a reef.
+        </p>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <p>
+        Once you can ask whether a system you are looking at &mdash; a market, an institution, a habit, a reef
+        &mdash; has a real threshold hiding in it, you stop reading its current, calm-looking state as proof that
+        it is safe from a large disturbance, and you stop assuming that reversing a disturbance will automatically
+        undo its effect. Both assumptions fail exactly where alternative stable states are real: a system can look
+        fine right up until it crosses its ridge, and getting it back can cost far more, and take far longer, than
+        whatever pushed it over in the first place.
+      </p>
+      <p>
+        <b>Settled.</b> Threshold dynamics and hysteresis are mathematically well established and demonstrated in
+        controlled and semi-controlled systems &mdash; shallow lakes flipping between clear and turbid states
+        (Scheffer and colleagues, 2001) are among the best-documented real cases.
+      </p>
+      <p>
+        <b>Debated.</b> How common true alternative stable states are on coral reefs specifically is a live
+        argument inside ecology, not a settled question: Mumby, Hastings and Edwards (2007) found evidence for
+        them on Caribbean reefs; Bruno and colleagues (2009), surveying far more reefs, found coral-to-algae
+        dominance shifts considerably less widespread than assumed, with most degraded reefs simply losing coral
+        rather than gaining seaweed at Jamaica&rsquo;s scale.
+      </p>
+      <p>
+        <span class="chip chip--info">Value judgment</span> Restoring a flipped reef, or heading one off before it
+        tips, usually means limiting fishing that coastal communities depend on now, to protect a resilience whose
+        benefit mostly arrives later and falls on different people &mdash; a cost-now, benefit-later, burden-shifted
+        question about who should bear the price of keeping a threshold from being crossed, which the ecology
+        alone cannot answer.
+      </p>
+
+      <h3>Connections</h3>
+      <p>
+        <b>Back.</b> Day 26 named the reinforcing loop that can lock a system into either of two conditions; today
+        is what happens when two such loops compete for the same system, with a threshold marking where one loop
+        takes over from the other. Day 12&rsquo;s lesson on distributions made the point, in a different setting,
+        that Granovetter&rsquo;s result depends on here directly: the shape of a whole distribution, not its
+        average, decides what a population actually does.
+      </p>
+      <p>
+        <b>Across.</b> Timothy Lenton and co-authors, writing in the <em>Proceedings of the National Academy of
+        Sciences</em> in 2008, catalogued &ldquo;tipping elements&rdquo; in the Earth&rsquo;s climate system
+        &mdash; large-scale components, including the Greenland ice sheet, that current evidence suggests have
+        their own thresholds and their own hysteresis: once the ice sheet has lost enough mass, the lower, warmer
+        altitude it is left at would keep it from regrowing even if temperatures later returned to where they
+        started.
+      </p>
+
+      <aside class="watch-read">
+        <b>Watch or Read</b>
+        <p>Catastrophic shifts in ecosystems &mdash; Marten Scheffer, Steve Carpenter, Jonathan A. Foley, Carl
+        Folke &amp; Brian Walker, <em>Nature</em> 413 (2001) &middot; Reading &middot; about 6 pages.</p>
+        <p>The standard short review of alternative stable states, with the ball-in-a-landscape and hysteresis
+        diagrams and real cases drawn from lakes, reefs and deserts side by side.</p>
+      </aside>
+
+      <div class="recap">
+        <b>Remember These</b>
+        <ul>
+          <li>A system has alternative stable states when more than one self-sustaining configuration is possible
+          under the very same outside conditions.</li>
+          <li>A threshold is the point where the balance of forces holding a system in one state flips, drawing
+          it toward a different state on its own.</li>
+          <li>Hysteresis means the push that flips a system and the push that would flip it back are not mirror
+          images, because a different mechanism defends each state.</li>
+          <li>A population&rsquo;s whole distribution of thresholds, not its average attitude, decides whether it
+          tips &mdash; and whether it tips back.</li>
+          <li>Proving a real alternative stable state exists is hard; some apparent phase shifts turn out, on
+          closer survey, to be simple decline rather than a flip to a new state.</li>
+        </ul>
+      </div>
+
+      <div class="think-about-it">
+        <b>Apply It</b>
+        <p>
+        On 3 September 1967 Sweden switched by law from driving on the left to driving on the right in a single
+        morning (Dagen H). Using the idea of two stable states, explain why the change had to be made all at once
+        rather than by letting drivers switch sides gradually as they chose.
+        </p>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Terence P. Hughes, &ldquo;Catastrophes, phase shifts, and large-scale
+      degradation of a Caribbean coral reef,&rdquo; <em>Science</em> 265, 1994; Lessios, Robertson &amp; Cubit on
+      the 1983&ndash;84 <em>Diadema antillarum</em> die-off, <em>Science</em>, 1984; Peter Edmunds &amp; Robert
+      Carpenter, <em>PNAS</em> 98, 2001; Mark Granovetter, &ldquo;Threshold Models of Collective Behavior,&rdquo;
+      <em>American Journal of Sociology</em> 83(6), 1978; Marten Scheffer et al., &ldquo;Catastrophic shifts in
+      ecosystems,&rdquo; <em>Nature</em> 413, 2001; Peter Mumby, Alan Hastings &amp; Nicholas Edwards,
+      <em>Nature</em> 450, 2007; John Bruno et al., <em>Ecology</em> 90(6), 2009; Timothy Lenton et al.,
+      &ldquo;Tipping elements in the Earth&rsquo;s climate system,&rdquo; <em>PNAS</em> 105, 2008. All checked via
+      web search this run.</p>
+      <p><strong>Corrections.</strong> None.</p>
+      <p><strong>Method.</strong> Written and published automatically; nobody reviews it before you do. Resource
+      from the Connected Path&rsquo;s curated list, cited without a link: the curriculum notes it may sit behind
+      <em>Nature&rsquo;s</em> paywall and could not be independently verified as freely linkable this run.
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-11-04-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
