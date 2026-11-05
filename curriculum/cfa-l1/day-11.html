@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Nasdaq lost 78% in 31 months, then needed a 353% gain and 15 years to get back — CFA Math, Day 11 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The Nasdaq lost 78% in 31 months, then needed a 353% gain and 15 years to get back",
+    "path": "reports/cfa/l1/day-11.html",
+    "summary": "Day 11 of CFA Math: Logan learns the holding-period return and why returns over successive periods multiply as growth factors, so a loss L needs a gain of L/(1 − L) and a period return is annualized as (1 + R)^c − 1, and computes the Nasdaq's 2000–2015 round trip on the BA II Plus Δ% worksheet and the TI-84.",
+    "headlines": [
+      "Day 11 of 90 · Quantitative Methods: holding-period returns chain by multiplying (1 + R), never by adding",
+      "Calculator: the Nasdaq's 78% fall, the 353% gain needed to get back and the 12.82% annualized climb, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The Nasdaq lost 78% in 31 months, then needed a 353% gain and 15 years to get back</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Returns multiply, they don&rsquo;t add: turn each one into a growth factor, chain the factors, and one root puts any stretch of time on a yearly footing.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 11 of 90 &middot; LM1 Returns of Financial Assets and Instruments &middot; Holding-period returns and chain-linking</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="11">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 10 and 1, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="174.01431541365628" data-tol="0.01" data-show="174.01">
+          <p class="cq-stem"><b>From Day 10.</b> A project costs 2,500 today, then pays 600 at the end of each of years 1&ndash;4 and 900 at the end of year 5. What is its NPV at 7%? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> CF worksheet: CFo = &minus;2,500; C01 = 600 with F01 = 4 (it repeats four times); C02 = 900. Then NPV at I = 7.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>2500</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>600</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>900</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 174.0143</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd>, then <samp>npv(7,&minus;2500,{600,900},{4,1})</samp> <kbd>ENTER</kbd> &rarr; <samp>174.0143</samp> (braces are <kbd>2nd</kbd> <kbd>(</kbd> and <kbd>2nd</kbd> <kbd>)</kbd>; the minus is <kbd>(&minus;)</kbd>).</p>
+            <p>By hand: 560.75 + 524.06 + 489.78 + 457.74 + 641.69 &minus; 2,500 = <b>174.01</b>. Positive, so the IRR is above 7% (it is 9.42%: <kbd>IRR</kbd> <kbd>CPT</kbd> &rarr; <samp>IRR = 9.4177</samp>).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 1.</b> Money earns 6% a year, compounded annually, for 3 years. By how much has it grown in total?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 18.00%</span></label>
+              <p class="cq-why">That is 6% + 6% + 6%: simple interest. It leaves out the interest earned on earlier interest.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 19.10%</span></label>
+              <p class="cq-why">Right: 1.06<sup>3</sup> = 1.191016, and 1.191016 &minus; 1 = 19.10%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 119.10%</span></label>
+              <p class="cq-why">That is the growth factor 1.1910 read as a percent. Subtract 1 first: the money grew by 19.10%, to 119.10% of where it started.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Each year multiplies the balance by 1.06, so three years multiply it by 1.06<sup>3</sup>. Keep this in mind: today&rsquo;s whole lesson is that trick with a <em>different</em> return each period.</p></details>
+        </div>
+      </section>
+
+      <h3>Fifteen years to climb back</h3>
+      <p>On 10 March 2000, at the top of the dot-com boom, the Nasdaq Composite closed at a record 5,048.62.</p>
+      <p>Then it fell, and kept falling. Thirty-one months later, on 9 October 2002, it closed at 1,114.11, about 78% below the peak. On paper, $10,000 that tracked the index from that record close was down to about $2,207.</p>
+      <p>From there the climb back took more than twelve years. On 23 April 2015 it finally closed above the old record, at 5,056.06. That was fifteen years, one month and thirteen days after the peak: 31 months down, then about twelve and a half years back up. &ldquo;After 15 years, Nasdaq recoups losses of dot-com crash,&rdquo; ran one news report&rsquo;s headline.</p>
+      <p>Here is the puzzle. The index fell 78%, so you might expect a 78% rise to undo it. Why wasn&rsquo;t a 78% rise enough to get it back? And why did the climb back take so long?</p>
+
+      <h3>The idea</h3>
+      <p>A <b>holding-period return</b> (HPR) is what an investment earned over the time you held it, however long: a day, six months, twelve years. It counts both ways you get paid, the price change and any income (a dividend or coupon), as a fraction of what you paid.</p>
+      <p>Returns over back-to-back periods don&rsquo;t add. Each one is earned on a different amount: whatever the period before left you. So they <b>compound</b>, like Day 1&rsquo;s interest, and you combine them by multiplying growth factors (1 + R). That is <b>chain-linking</b>.</p>
+      <p>An everyday picture: a $100 jacket is marked down 50% to $50, then marked up 50%. It now costs $75, not $100. The markup was 50% of a smaller price.</p>
+      <p>Losses are where this bites. The deeper the fall, the smaller the base the recovery starts from, so the gain needed grows much faster than the loss.</p>
+      <p>Last, <b>annualizing</b> puts returns of any length on one yardstick, a year, by compounding them, never by multiplying or dividing by the number of periods.</p>
+
+      <h3>Why it works</h3>
+      <p><b>One period.</b> You pay P<sub>0</sub>. At the end you hold something worth P<sub>1</sub>, and you were paid D<sub>1</sub> along the way. Your gain is P<sub>1</sub> &minus; P<sub>0</sub> + D<sub>1</sub>. A return is gain per dollar put in, so divide by P<sub>0</sub>. That is the HPR.</p>
+      <p><b>Two parts.</b> D<sub>1</sub>/P<sub>0</sub> is the <b>income yield</b>, (P<sub>1</sub> &minus; P<sub>0</sub>)/P<sub>0</sub> the <b>price return</b>. Leave out D<sub>1</sub> and you understate the return.</p>
+      <p><b>A growth factor.</b> 1 + R = (P<sub>1</sub> + D<sub>1</sub>)/P<sub>0</sub> is what each $1 became. Day 1&rsquo;s (1 + r) is the same thing with one fixed r.</p>
+      <p><b>Chain the periods.</b> $1 becomes (1 + R<sub>1</sub>) after period 1. Period 2&rsquo;s return works on <em>that</em> amount, so it becomes (1 + R<sub>1</sub>)(1 + R<sub>2</sub>). Each period multiplies in one more factor. Subtract 1 at the end to get back to a return.</p>
+      <p><b>It always lands on start-to-end.</b> With prices only, the middle price cancels: (P<sub>1</sub>/P<sub>0</sub>) &times; (P<sub>2</sub>/P<sub>1</sub>) = P<sub>2</sub>/P<sub>0</sub>.</p>
+      <p><b>Why adding fails.</b> +50% then &minus;50%: 1.50 &times; 0.50 = 0.75, a 25% loss, though the returns add to zero. The &minus;50% hit a bigger base.</p>
+      <p><b>Climbing back.</b> After a loss L, $1 is (1 &minus; L). Back to $1 needs a factor of 1/(1 &minus; L), a gain of 1/(1 &minus; L) &minus; 1 = L/(1 &minus; L). A 10% loss needs 11.11%, 50% needs 100%, 75% needs 300%.</p>
+      <p><b>Annualizing.</b> A quarter&rsquo;s return R, earned four quarters running, turns $1 into (1 + R)<sup>4</sup> in a year. With c periods a year: (1 + R)<sup>c</sup> &minus; 1. Over T years, c = 1/T: the T-th root, which is Day 2&rsquo;s r = (FV/PV)<sup>1/N</sup> &minus; 1 again.</p>
+      <p>In plain words: each return works on whatever you have at that moment, so you multiply the (1 + R)s, never add the Rs.</p>
+      <div class="formula">
+        <p class="expr">HPR = (P<sub>1</sub> &minus; P<sub>0</sub> + D<sub>1</sub>) / P<sub>0</sub></p>
+        <p class="expr">R<sub>total</sub> = (1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>) &minus; 1</p>
+        <p class="expr">R<sub>annual</sub> = (1 + R<sub>period</sub>)<sup>c</sup> &minus; 1</p>
+        <p class="expr">Required gain = L / (1 &minus; L)</p>
+        <dl>
+          <dt>P<sub>0</sub></dt><dd>price paid at the start of the holding period</dd>
+          <dt>P<sub>1</sub></dt><dd>price at the end of the period</dd>
+          <dt>D<sub>1</sub></dt><dd>income received during the period (dividend, coupon)</dd>
+          <dt>R<sub>t</sub></dt><dd>return in period t, as a decimal</dd>
+          <dt>1 + R</dt><dd>the growth factor: what $1 became</dd>
+          <dt>n</dt><dd>number of periods chained</dd>
+          <dt>c</dt><dd>periods per year (4 for a quarter, 2 for six months; 1/T for a return earned over T years)</dd>
+          <dt>L</dt><dd>the loss, as a decimal (0.50 for a 50% loss)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>HPR = (P<sub>1</sub> &minus; P<sub>0</sub> + D<sub>1</sub>) / P<sub>0</sub></li>
+          <li>R<sub>total</sub> = (1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>) &minus; 1</li>
+          <li>R<sub>annual</sub> = (1 + R<sub>period</sub>)<sup>c</sup> &minus; 1 (for a return over several years, c = 1/years)</li>
+          <li>Required gain = L / (1 &minus; L) (a 50% loss needs +100%)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> (a) You buy a share at $40.00, receive a $1.20 dividend and sell it a year later at $43.00. Find the HPR and its two parts. (b) Three yearly returns: +10.5%, &minus;20% and +15%. What is the 3-year return? (c) Annualize a 3-month return of 2.5%.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) Gain = 43.00 &minus; 40.00 + 1.20 = 4.20. HPR = 4.20 &divide; 40.00 = <b>10.50%</b>.</li>
+          <li>Income yield = 1.20 &divide; 40.00 = 3.00%. Price return = 3.00 &divide; 40.00 = 7.50%. Together: 10.50%.</li>
+          <li>(b) Growth factors: 1.105 &times; 0.80 &times; 1.15 = 1.0166.</li>
+          <li>3-year return = 1.0166 &minus; 1 = <b>1.66%</b>. Adding the returns (10.5 &minus; 20 + 15) would say 5.5%, more than three times too much.</li>
+          <li>(c) A year holds four quarters, so c = 4: 1.025<sup>4</sup> &minus; 1 = 1.103813 &minus; 1 = <b>10.38%</b>, not 4 &times; 2.5% = 10.00%.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> The Nasdaq Composite closed at 5,048.62 on 10 March 2000 and at 1,114.11 on 9 October 2002. Find the HPR of the fall, where a 78% rise from the low would get it, the gain needed to get back, and the annualized return from the 2002 low to the record close of 5,056.06 on 23 April 2015 (4,579 days: use 12.54 years). The BA II Plus has a worksheet for this, <kbd>2ND</kbd> <kbd>&Delta;%</kbd> (above the <kbd>5</kbd> key). It solves NEW = OLD &times; (1 + %CH/100)<sup>#PD</sup>: with #PD = 1, %CH is the HPR; with #PD = years, it is the yearly rate. The TI-84 has no such worksheet, so it works on the home screen.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Open the percent-change worksheet and clear it (clearing also sets #PD back to 1)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>&Delta;%</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, then <kbd>CLEAR</kbd></div>
+            <p class="calc-see">Display: <samp>OLD = 0.0000</samp> (BA II Plus). The four lines are OLD, NEW, %CH, #PD, in that order; <kbd>&darr;</kbd> and <kbd>&uarr;</kbd> move between them.</p>
+          </li>
+          <li>
+            <p class="calc-what">The fall: OLD = the peak, NEW = the low, solve for %CH</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>5048.62</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1114.11</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>1114.11</kbd> <kbd>&divide;</kbd> <kbd>5048.62</kbd> <kbd>ENTER</kbd>, then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd>. Starting a line with an operator makes the TI-84 put <samp>Ans</samp> (the last answer) in front; this <kbd>&minus;</kbd> is the subtraction key, not <kbd>(&minus;)</kbd>.</div>
+            <p class="calc-see">Display: <samp>%CH = &minus;77.9324</samp> (BA II Plus) / <samp>.2207</samp>, then <samp>&minus;.7793</samp>, then <samp>&minus;77.9324</samp> (TI-84). The low was 0.2207 of the peak: an HPR of &minus;77.93%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Where a 78% rise from the low gets you: OLD = the low, %CH = 78, solve for NEW</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> (up to OLD) <kbd>1114.11</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (down to %CH) <kbd>78</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (back to NEW) <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>1114.11</kbd> <kbd>&times;</kbd> <kbd>1.78</kbd> <kbd>ENTER</kbd>, then <kbd>&divide;</kbd> <kbd>5048.62</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>NEW = 1,983.1158</samp> (BA II Plus) / <samp>1983.1158</samp>, then <samp>.3928</samp> (TI-84). A 78% rise reaches only 39% of the old peak.</p>
+          </li>
+          <li>
+            <p class="calc-what">The gain needed to get back: NEW = the old peak, solve for %CH</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> (the cursor is on NEW) <kbd>5048.62</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>5048.62</kbd> <kbd>&divide;</kbd> <kbd>1114.11</kbd> <kbd>ENTER</kbd>, then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>%CH = 353.1527</samp> (BA II Plus) / <samp>4.5315</samp>, then <samp>3.5315</samp>, then <samp>353.1527</samp> (TI-84). The low had to multiply by 4.5315: a gain of 353.15%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Annualize the climb: NEW = the 2015 record close, #PD = 12.54 years, solve for %CH (OLD is still the low)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&uarr;</kbd> (to NEW) <kbd>5056.06</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (past %CH to #PD) <kbd>12.54</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (back to %CH) <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>5056.06</kbd> <kbd>&divide;</kbd> <kbd>1114.11</kbd> <kbd>ENTER</kbd>, then <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>12.54</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the 12.54th root), then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>%CH = 12.8192</samp> (BA II Plus) / <samp>4.5382</samp>, then <samp>1.1282</samp>, then <samp>.1282</samp>, then <samp>12.8192</samp> (TI-84): 12.82% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">Cross-check with TVM: an annualized return is Day 2&rsquo;s implied rate (P/Y is still 1 from Day 1; a fractional N is fine)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>12.54</kbd> <kbd>N</kbd> <kbd>1114.11</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>5056.06</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=12.54</samp>, <samp>PV=&minus;1114.11</samp>, <samp>PMT=0</samp>, <samp>FV=5056.06</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 12.8192</samp> (BA II Plus) / <samp>I%=12.8192</samp> (TI-84). Same answer.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: the fall was an HPR of &minus;77.93%; a 78% rise would have reached only 1,983.12; getting back needed +353.15%; and the climb from the 2002 low to the 2015 record compounded at 12.82% a year.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Returns multiply, so think in growth factors. The fall left 1,114.11 &divide; 5,048.62 = 0.2207 of the peak: an HPR of &minus;77.93%.</p>
+      <p>A 78% rise multiplies that by 1.78 and reaches 1,983.12, only 39% of the old peak. The rise is measured on the small base. Getting back needed a factor of 4.5315, a gain of 353.15%. That is L/(1 &minus; L) = 0.779324 &divide; 0.220676.</p>
+      <p>And a 353% climb takes time. From the October 2002 low to the April 2015 record, about 12.54 years, the index compounded at 12.82% a year, a strong return. At that pace a 78% rise takes under five years; 353% takes twelve and a half.</p>
+      <p>Chain the whole trip and the middle price cancels: (1,114.11/5,048.62) &times; (5,056.06/1,114.11) = 1.0015. Fifteen years, +0.15%. Add the two returns instead (&minus;77.93% + 353.82%) and you would claim +275.89%.</p>
+      <p>(The index counts prices only, so these are price returns; dividends would add to them.)</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Adding period returns.</b> +10% then &minus;10% is 1.10 &times; 0.90 = 0.99, a 1% loss, not zero. Multiply the (1 + R)s, then subtract 1.</li>
+          <li><b>Forgetting the dividend or coupon in the HPR.</b> The income is part of the return: (P<sub>1</sub> &minus; P<sub>0</sub> + D<sub>1</sub>)/P<sub>0</sub>. The price change alone understates it by the income yield.</li>
+          <li><b>Annualizing by multiplying.</b> A 2.5% quarter is 1.025<sup>4</sup> &minus; 1 = 10.38% a year, not 4 &times; 2.5% = 10.00%. Likewise a 3-year return is annualized with the cube root, not by dividing by 3.</li>
+          <li><b>#PD left over on the BA II Plus.</b> The &Delta;% worksheet keeps #PD until you change or clear it. Left at 12.54, %CH comes out per year instead of for the whole holding period. Start each problem with <kbd>2ND</kbd> <kbd>CLR WORK</kbd>.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="11.009461556962297" data-tol="0.01" data-pct data-show="11.01%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An index falls from 3,200 to 2,000. Later it takes 4.5 years to climb from 2,000 back to 3,200. Work out the fall&rsquo;s HPR and the gain needed to get back (both are in the solution), then type the <em>annualized</em> return of the climb. As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the Nasdaq walkthrough: only OLD, NEW and #PD change. For the climb, OLD = 2,000, NEW = 3,200 and #PD = 4.5. On the TI-84: (3200 &divide; 2000)<sup>1/4.5</sup> &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>&Delta;%</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>3200</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2000</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>%CH = &minus;37.5000</samp> (the fall). Then <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> <kbd>2000</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3200</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>%CH = 60.0000</samp> (the gain needed). Then <kbd>&darr;</kbd> <kbd>4.5</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>%CH = 11.0095</samp>.</p>
+            <p>TI-84 Plus: <kbd>2000</kbd> <kbd>&divide;</kbd> <kbd>3200</kbd> <kbd>ENTER</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.3750</samp>; <kbd>3200</kbd> <kbd>&divide;</kbd> <kbd>2000</kbd> <kbd>ENTER</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6000</samp>; then <kbd>(</kbd> <kbd>3200</kbd> <kbd>&divide;</kbd> <kbd>2000</kbd> <kbd>)</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>4.5</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1101</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>11.0095</samp>.</p>
+            <p>So: the fall is &minus;37.50%; getting back needs +60.00% (check: L/(1 &minus; L) = 0.375 &divide; 0.625 = 0.60); and the climb is <b>11.01%</b> a year. Not 60% &divide; 4.5 = 13.33%: that divides instead of taking the root.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Why does a 50% fall need a 100% rise to get back to where it started?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The rise is a percentage of the smaller amount left after the fall</span></label>
+              <p class="cq-why">Right. 100 falls to 50. Getting back is +50 on a base of 50, which is +100%. In growth factors: 0.50 &times; 2.00 = 1.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Recoveries take years, and compounding over those years raises the gain needed</span></label>
+              <p class="cq-why">Time plays no part. One step shows it: a 50% fall followed the next day by a 100% rise gets back exactly. The size of the gain comes from the base, not the calendar.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. After a fall the index is recalculated (its divisor changes), so the same level needs more points</span></label>
+              <p class="cq-why">This confuses index mechanics with return arithmetic. A $100 jacket marked down 50% and then up 50% ends at $75 with no index anywhere in sight.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>After a loss L, each $1 is (1 &minus; L). To get back to $1 you need the factor 1/(1 &minus; L), a gain of L/(1 &minus; L). With L = 0.50: 0.50/0.50 = 1, or +100%. The gain is measured on the shrunken base, so the deeper the loss, the faster the required gain grows.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="-6.25" data-tol="0.01" data-pct data-show="&minus;6.25%">
+          <p class="cq-stem"><b>3. Twist: find the missing year.</b> A fund returned +12% in year 1 and +5% in total over the two years. What did it return in year 2? As a percent, to two decimals; type a minus sign for a loss.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Chain-linking runs backwards too: total factor = factor 1 &times; factor 2, so factor 2 = 1.05 &divide; 1.12.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>(1.12)(1 + R<sub>2</sub>) = 1.05, so 1 + R<sub>2</sub> = 1.05 &divide; 1.12 = 0.9375 and R<sub>2</sub> = <b>&minus;6.25%</b>. Check: 1.12 &times; 0.9375 = 1.05.</p>
+            <p>BA II Plus: <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>1.12</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0625</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>&minus;6.2500</samp>. Or in <kbd>2ND</kbd> <kbd>&Delta;%</kbd>: OLD = 112, NEW = 105, #PD = 1, <kbd>CPT</kbd> %CH &rarr; <samp>%CH = &minus;6.2500</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>1.12</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0625</samp>.</p>
+            <p>Subtracting (5% &minus; 12% = &minus;7.00%) is the adding mistake run backwards.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor buys a share at $50.00, receives a $1.50 dividend and sells the share six months later at $47.00. The annualized holding-period return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;11.64%</span></label>
+              <p class="cq-why">The dividend was left out: (47 &minus; 50)/50 = &minus;6.00% for six months, then 0.94<sup>2</sup> &minus; 1 = &minus;11.64%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;6.00%</span></label>
+              <p class="cq-why">The six-month HPR of &minus;3.00% was doubled instead of compounded. Annualizing uses (1 + R)<sup>2</sup> &minus; 1.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. &minus;5.91%</span></label>
+              <p class="cq-why">Right. HPR = (47 &minus; 50 + 1.50)/50 = &minus;3.00%; six months is half a year, so c = 2: 0.97<sup>2</sup> &minus; 1 = 0.9409 &minus; 1 = &minus;5.91%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>47</kbd> <kbd>&minus;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>1.5</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>50</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0300</samp>; <kbd>+</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.9700</samp>; <kbd>x&sup2;</kbd> &rarr; <samp>0.9409</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0591</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>47</kbd> <kbd>&minus;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>1.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>50</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0300</samp>; <kbd>+</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9700</samp>; <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9409</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0591</samp>.</p>
+            <p>Two checks the exam rewards: count the dividend, and compound when you annualize.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why are returns over successive periods combined by multiplying (1 + R), not by adding the returns?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Each period&rsquo;s return is earned on whatever the previous periods left you, a new and different base, so each one multiplies the running total by its growth factor (1 + R); the product of the factors is what $1 became, and subtracting 1 at the end turns it back into a return.</p>
+            <p>A complete answer says: (1) each return applies to the new, changed base, not the original amount; (2) so the growth factors (1 + R) multiply; (3) subtract 1 at the end to get the total return.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 1: Returns of Financial Assets and Instruments (holding-period return, income yield and price return, multi-period returns), with annualizing from Learning Module 2: Types of Financial Returns.</p>
+      <p><strong>Sources.</strong> AP via KTVU, &ldquo;Nasdaq sets record high, 15 years after dot-com bubble&rdquo;, 23 April 2015 (close of 5,056.06; prior record 5,048.62 on 10 March 2000); Fortune, &ldquo;Nasdaq surpasses internet bubble peak to set new record&rdquo;, 23 April 2015; AFP via Phys.org, &ldquo;After 15 years, Nasdaq recoups losses of dot-com crash&rdquo;, April 2015 (fifteen years, one month and 13 days); Wikipedia, &ldquo;Stock market downturn of 2002&rdquo; (closing low of 1,114.11 on 9 October 2002); Wikipedia, &ldquo;Closing milestones of the Nasdaq Composite&rdquo;.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-10.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

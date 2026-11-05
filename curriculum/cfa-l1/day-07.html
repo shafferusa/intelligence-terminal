@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Six days, one equation: ten questions to prove Week 1 stuck — CFA Math, Day 7 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Six days, one equation: ten questions to prove Week 1 stuck",
+    "path": "reports/cfa/l1/day-07.html",
+    "summary": "Day 7 of CFA Math, the Week 1 review: Logan recaps Days 1–6 on one card, checks his calculator settings, and works ten graded exam-style questions with new numbers on future value, the implied rate and N, the exact real rate, EAR and continuous compounding, and ordinary annuities and annuities due, on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 7 of 90 · Quantitative Methods: Week 1 review of compounding, discounting, real rates, EAR and annuities",
+      "Calculator: FV, the implied rate and N, EARs and annuity values in END and BGN, on the BA II Plus and the TI-84",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Six days, one equation: ten questions to prove Week 1 stuck</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        No new idea today: the week on one card, a thirty-second calculator check, then ten exam-style questions with new numbers, most of them worked on the calculator.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 7 of 90 &middot; Review &middot; Week 1: growth and discounting</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="7">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 6 and one from Day 5, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 6.</b> At 7% a year, ten payments of $1,000, one at the end of each year, are worth $7,023.58 today. If each payment came at the <em>start</em> of its year instead, the stream would be worth <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w1" value="A"> <span>A. $8,023.58</span></label>
+              <p class="cq-why">That adds an eleventh payment: $1,000 today on top of all ten year-end ones. An annuity due still has ten payments; each just comes a year sooner.</p></li>
+            <li><label><input type="radio" name="w1" value="B"> <span>B. $7,515.23</span></label>
+              <p class="cq-why">Right. Every payment moves one year earlier, so each is discounted one year less: 7,023.58 &times; 1.07 = 7,515.23.</p></li>
+            <li><label><input type="radio" name="w1" value="C"> <span>C. $6,564.09</span></label>
+              <p class="cq-why">That divides by 1.07, as if the payments moved a year later. Money that comes sooner is worth more, not less.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Check it the split way: $1,000 today plus an ordinary annuity of the other 9 payments, 1,000 + 1,000 &times; 6.515232 = 7,515.23. Same answer, because PV<sub>due</sub> = PV<sub>ordinary</sub> &times; (1 + r).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="num" data-answer="688.1641669596677" data-tol="0.01" data-signless data-show="688.16">
+          <p class="cq-stem"><b>From Day 5.</b> A $30,000 car loan at a 4.8% stated annual rate, compounded monthly, is repaid in 48 equal payments at the end of each month. What is the monthly payment? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars a month</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Monthly numbers: N = 48 and I/Y = 4.8 &divide; 12 = 0.4. PV = 30,000, FV = 0, END mode, then CPT PMT.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>The loan is the PV of the payments, so solve Day 5&rsquo;s formula for A: A = PV &times; r / [1 &minus; (1 + r)<sup>&minus;N</sup>] = 30,000 &times; 0.004 / (1 &minus; 0.825623) = 120 / 0.174377 = <b>688.16</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>48</kbd> <kbd>N</kbd> <kbd>0.4</kbd> <kbd>I/Y</kbd> <kbd>30000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;688.1642</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=48</samp>, <samp>I%=.4</samp>, <samp>PV=30000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;688.1642</samp>.</p>
+            <p>The minus sign: you receive the $30,000 and pay the installments. The 48 payments total $33,031.68, so $3,031.68 of it is interest.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>Six days, one equation. Day 1 grew money forward, FV<sub>N</sub> = PV(1 + r)<sup>N</sup>, because interest earns interest. Day 2 ran it backwards to a present value and solved the same equation for r or N. Day 3 asked where r comes from: a real rate plus premiums, with real and nominal rates linked by multiplying, not subtracting. Day 4 split the year into m periods: compounding more often raises the effective rate, up to the continuous ceiling e<sup>r<sub>s</sub></sup> &minus; 1. Day 5 priced a row of equal payments as N single sums added up, and Day 6 moved the row one period earlier, which multiplies its value by (1 + r).</p>
+
+      <div class="sie-block memorize">
+        <b>Memorize &middot; the week on one card</b>
+        <ul>
+          <li><b>Day 1.</b> FV<sub>N</sub> = PV &times; (1 + r)<sup>N</sup>. Simple interest = PV &times; r &times; N (no interest on interest).</li>
+          <li><b>Day 2.</b> PV = FV<sub>N</sub> / (1 + r)<sup>N</sup>; DF = 1 / (1 + r)<sup>N</sup>; r = (FV<sub>N</sub> / PV)<sup>1/N</sup> &minus; 1; N = ln(FV<sub>N</sub> / PV) / ln(1 + r).</li>
+          <li><b>Day 3.</b> r = real risk-free rate + inflation premium + default risk premium + liquidity premium + maturity premium.</li>
+          <li><b>Day 3.</b> (1 + nominal rate) = (1 + real rate) &times; (1 + inflation rate), so real = (1 + nominal) / (1 + inflation) &minus; 1. After-tax return = pre-tax return &times; (1 &minus; tax rate).</li>
+          <li><b>Day 4.</b> EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1; FV<sub>N</sub> = PV &times; (1 + r<sub>s</sub>/m)<sup>m &times; N</sup>; back again: r<sub>s</sub> = m &times; [(1 + EAR)<sup>1/m</sup> &minus; 1].</li>
+          <li><b>Day 4.</b> Continuous: FV<sub>N</sub> = PV &times; e<sup>r<sub>s</sub> &times; N</sup>; EAR = e<sup>r<sub>s</sub></sup> &minus; 1; r<sub>cc</sub> = ln(1 + EAR).</li>
+          <li><b>Day 5.</b> PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r; FV<sub>N</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r. Payments at the END of each period, the first at t = 1.</li>
+          <li><b>Day 6.</b> PV<sub>due</sub> = PV<sub>ordinary</sub> &times; (1 + r), and FV<sub>due</sub> = FV<sub>ordinary</sub> &times; (1 + r); or PV<sub>due</sub> = A + PV of an ordinary annuity of N &minus; 1 payments. BGN mode, then back to END.</li>
+          <li><b>Calculator.</b> P/Y = C/Y = 1; monthly: N = years &times; 12, rate = annual stated rate / 12. Paid out negative, received positive; solving for I/Y or N needs a sign change.</li>
+        </ul>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Mixing periodic and annual rates.</b> Monthly or quarterly cash needs the rate per period and N in periods: 6% stated with monthly payments for 5 years is 0.5% and N = 60. The mixed-up versions will be waiting among the options.</li>
+          <li><b>Forgetting to switch BGN back to END.</b> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> does not reset it. Left on, every ordinary annuity after it comes out (1 + r) times too big. Switch back the moment the annuity-due question is done.</li>
+          <li><b>Exact vs approximate real rate.</b> Nominal &minus; inflation is the shortcut. The exact real rate, (1 + nominal) / (1 + inflation) &minus; 1, is the shortcut divided by (1 + inflation): a little lower when it is positive, a smaller loss when it is negative (Day 3: &minus;16.23%, not &minus;22.08%). When the question says exact, divide; the shortcut will be one of the options.</li>
+        </ul>
+      </div>
+
+      <h3>On your calculator: a settings check</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A wrong setting gives a confident wrong answer, so take thirty seconds first: END mode, one period a year, a clean slate, and a test run you can check in your head. Then, before each question, ask: one sum or a stream? Do the rate and N count the same periods as the cash? END or BGN?</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">END mode, so payments sit at the end of each period</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. No <samp>BGN</samp> means END.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; on the bottom row, <samp>PMT:</samp> highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">One period a year: P/Y = 1</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>P/Y</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> (display <samp>P/Y = 1.0000</samp>; C/Y follows), <kbd>2ND</kbd> <kbd>QUIT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> in the same screen, <samp>P/Y=1</samp> and <samp>C/Y=1</samp></div>
+          </li>
+          <li>
+            <p class="calc-what">A clean slate</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> (zeroes N, I/Y, PV, PMT and FV; it leaves BGN/END and P/Y alone)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> nothing clears here: in every question, set every line, typing <kbd>0</kbd> where a value is absent</div>
+          </li>
+          <li>
+            <p class="calc-what">Test run: $100 at 10% for 2 years must grow to exactly $121</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>N</kbd> <kbd>10</kbd> <kbd>I/Y</kbd> <kbd>100</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=2</samp>, <samp>I%=10</samp>, <samp>PV=&minus;100</samp>, <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>FV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>FV = 121.0000</samp> (BA II Plus) / <samp>FV=121.0000</samp> (TI-84), which is 100 &times; 1.1 &times; 1.1. If you see <samp>101.6736</samp>, P/Y is still 12: the calculator ran 2 <em>months</em> at 10 &divide; 12% a month. Go back to step 2.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Ready: END, P/Y = 1, nothing left over. Question 9 needs BGN; its solution switches you back.</p>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions across the week, graded here: six numbers to type, four multiple choice. Work each before peeking; the first try is what counts. Each solution names the day to reread if it slipped.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="17859.811937903592" data-tol="0.01" data-signless data-show="17,859.81">
+          <p class="cq-stem"><b>1.</b> You invest $8,000 at 5.5% a year, compounded annually, for 15 years. What is it worth at the end? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> One sum, growing: N = 15, I/Y = 5.5, PV = &minus;8,000, PMT = 0, CPT FV. Or 8,000 &times; 1.055<sup>15</sup>.</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 1</summary>
+            <p>8,000 &times; 1.055<sup>15</sup> = 8,000 &times; 2.232476 = <b>17,859.81</b>. Simple interest would give only 8,000 &times; (1 + 0.055 &times; 15) = 14,600.00; the other $3,259.81 is interest on interest.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>15</kbd> <kbd>N</kbd> <kbd>5.5</kbd> <kbd>I/Y</kbd> <kbd>8000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; <samp>FV = 17,859.8119</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=15</samp>, <samp>I%=5.5</samp>, <samp>PV=&minus;8000</samp>, <samp>PMT=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=17859.8119</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="num" data-answer="6.415337715577629" data-tol="0.01" data-pct data-show="6.42%">
+          <p class="cq-stem"><b>2.</b> An investment bought for $20,000 is worth $35,000 nine years later. What annual compound return did it earn? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The rate is the unknown, so PV and FV need opposite signs: N = 9, PV = &minus;20,000, PMT = 0, FV = 35,000, CPT I/Y. Or (35,000 / 20,000)<sup>1/9</sup> &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 2</summary>
+            <p>r = (35,000 / 20,000)<sup>1/9</sup> &minus; 1 = 1.75<sup>1/9</sup> &minus; 1 = 1.064153 &minus; 1 = <b>6.42%</b>. Not 75% &divide; 9 = 8.33%: that is simple interest, and it ignores each year&rsquo;s gain earning a return too.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>9</kbd> <kbd>N</kbd> <kbd>20000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>35000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 6.4153</samp>. By the power key: <kbd>1.75</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.0642</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=9</samp>, <samp>PV=&minus;20000</samp>, <samp>PMT=0</samp>, <samp>FV=35000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=6.4153</samp>. Or <kbd>1.75</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.0642</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="18.85417667910728" data-tol="0.01" data-show="18.85">
+          <p class="cq-stem"><b>3.</b> At 6% a year, compounded annually, how many years does it take money to triple? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Any starting amount works: PV = &minus;1, FV = 3, I/Y = 6, PMT = 0, CPT N. Or N = ln(3) / ln(1.06).</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 2</summary>
+            <p>N = ln(3) / ln(1.06) = 1.098612 / 0.058269 = <b>18.85</b> years. Sense check: the Rule of 72 says money doubles in 72 &divide; 6 = 12 years, so tripling must take longer than 12 years and less than 24 (two doublings make four times the money).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>I/Y</kbd> <kbd>1</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>3</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>N</kbd> &rarr; <samp>N = 18.8542</samp>. Or <kbd>3</kbd> <kbd>LN</kbd> <kbd>&divide;</kbd> <kbd>1.06</kbd> <kbd>LN</kbd> <kbd>=</kbd> &rarr; <samp>18.8542</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>I%=6</samp>, <samp>PV=&minus;1</samp>, <samp>PMT=0</samp>, <samp>FV=3</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>N=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>N=18.8542</samp>. Or <kbd>LN</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>LN</kbd> <kbd>1.06</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>18.8542</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4.</b> A one-year deposit pays 10%, and inflation over the year is 6%. The deposit&rsquo;s exact real return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 4.00%</span></label>
+              <p class="cq-why">The subtraction shortcut, 10% &minus; 6%. It is only an approximation, and the question asks for the exact rate.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 16.60%</span></label>
+              <p class="cq-why">That multiplies, 1.10 &times; 1.06 &minus; 1, treating 10% as the real rate: it is the nominal rate you would need for a 10% <em>real</em> return at 6% inflation.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 3.77%</span></label>
+              <p class="cq-why">Right: 1.10 &divide; 1.06 &minus; 1 = 3.77%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation &middot; Day 3</summary>
+            <p>(1 + nominal) = (1 + real) &times; (1 + inflation), so real = 1.10 / 1.06 &minus; 1 = 1.037736 &minus; 1 = 3.77%. The shortcut is 0.23 points too high: the exact rate is the 4-point gap divided by 1.06, because inflation erodes the interest as well as the principal.</p>
+            <p>BA II Plus: <kbd>1.10</kbd> <kbd>&divide;</kbd> <kbd>1.06</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0377</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>3.7736</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.10</kbd> <kbd>&divide;</kbd> <kbd>1.06</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0377</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.7736</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>5.</b> Expected inflation is the same for every year ahead, yet a 10-year US Treasury note yields more than a 1-year Treasury bill. Which component of the required return <em>best</em> explains the gap?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c5" value="A"> <span>A. A maturity premium</span></label>
+              <p class="cq-why">Right. The longer the debt, the more its price moves when interest rates change, and investors want extra yield for carrying that risk.</p></li>
+            <li><label><input type="radio" name="c5" value="B"> <span>B. A default risk premium</span></label>
+              <p class="cq-why">US Treasuries are treated as default-free, so neither carries a default risk premium. It cannot explain a gap between them.</p></li>
+            <li><label><input type="radio" name="c5" value="C"> <span>C. A liquidity premium</span></label>
+              <p class="cq-why">Both trade in very deep markets and can be sold quickly near fair value. A liquidity premium is for debt that is hard to sell, like a small company&rsquo;s bonds.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation &middot; Day 3</summary>
+            <p>Required rate = real risk-free rate + inflation premium + default risk premium + liquidity premium + maturity premium. Here the issuer is the same, the inflation outlook is the same, and neither has a default or liquidity premium. The one term that differs is the maturity premium.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="num" data-answer="11.625957163742662" data-tol="0.01" data-pct data-show="11.63%">
+          <p class="cq-stem"><b>6.</b> A lender quotes 11% a year, compounded daily (365 days). What is the effective annual rate? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> BA II Plus ICONV: NOM = 11, C/Y = 365, CPT EFF. TI-84: &#9658;Eff(11,365). Or (1 + 0.11/365)<sup>365</sup> &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 4</summary>
+            <p>EAR = (1 + 0.11/365)<sup>365</sup> &minus; 1 = <b>11.63%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>11</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>365</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 11.6260</samp>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:&#9658;Eff(</kbd>, <kbd>ENTER</kbd>, <kbd>11</kbd> <kbd>,</kbd> <kbd>365</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>11.6260</samp>.</p>
+            <p>The continuous ceiling at 11% is e<sup>0.11</sup> &minus; 1 = 11.6278%: daily compounding is only 0.0018 points short of it.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>7.</b> A rate of 7% a year is compounded continuously. Its effective annual rate is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c7" value="A"> <span>A. 7.00%</span></label>
+              <p class="cq-why">That takes the stated rate as the effective rate. Any compounding within the year pushes the EAR above 7%.</p></li>
+            <li><label><input type="radio" name="c7" value="B"> <span>B. 7.25%</span></label>
+              <p class="cq-why">Right: e<sup>0.07</sup> &minus; 1 = 1.072508 &minus; 1 = 7.25%.</p></li>
+            <li><label><input type="radio" name="c7" value="C"> <span>C. 7.23%</span></label>
+              <p class="cq-why">That is monthly compounding, (1 + 0.07/12)<sup>12</sup> &minus; 1. Continuous compounding is the ceiling, a little higher.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation &middot; Day 4</summary>
+            <p>BA II Plus: <kbd>0.07</kbd> <kbd>2ND</kbd> <kbd>eˣ</kbd> (shows <samp>1.0725</samp>) <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0725</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>7.2508</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ; the screen shows <samp>e^(</samp>) <kbd>0.07</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0725</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>7.2508</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="num" data-answer="70405.00447233107" data-tol="0.01" data-signless data-show="70,405.00">
+          <p class="cq-stem"><b>8.</b> An investment pays $3,000 at the end of every quarter for 8 years. The stated annual rate is 8%, compounded quarterly. What is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Count in quarters: N = 8 &times; 4 = 32 and I/Y = 8 &divide; 4 = 2, with PMT = 3,000, FV = 0 and END. Then CPT PV.</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 5</summary>
+            <p>PV = 3,000 &times; [1 &minus; 1.02<sup>&minus;32</sup>] / 0.02 = 3,000 &times; (1 &minus; 0.530633) / 0.02 = 3,000 &times; 23.468335 = <b>70,405.00</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>32</kbd> <kbd>N</kbd> <kbd>2</kbd> <kbd>I/Y</kbd> <kbd>3000</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;70,405.0045</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=32</samp>, <samp>I%=2</samp>, <samp>PV=0</samp>, <samp>PMT=3000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;70405.0045</samp>.</p>
+            <p>The mixed-up answers: 8% with N = 8 gives 17,239.92, and 8% with N = 32 gives 34,305.00. The rate and N must count the same periods as the payment.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="49553.05698069239" data-tol="0.01" data-signless data-show="49,553.06">
+          <p class="cq-stem"><b>9.</b> An office lease costs $1,500 a month for 3 years, each payment due at the start of the month. At a 6% stated annual rate, compounded monthly, what is the lease worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Paid in advance, so BGN mode. N = 36, I/Y = 6 &divide; 12 = 0.5, PMT = 1,500, FV = 0, CPT PV. Then switch back to END.</div>
+          <details class="cq-solution"><summary>Solution &middot; Day 6</summary>
+            <p>PV<sub>due</sub> = 1,500 &times; [1 &minus; 1.005<sup>&minus;36</sup>] / 0.005 &times; 1.005 = 1,500 &times; 32.871016 &times; 1.005 = 1,500 &times; 33.035371 = <b>49,553.06</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (<samp>BGN</samp> shows), <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>36</kbd> <kbd>N</kbd> <kbd>0.5</kbd> <kbd>I/Y</kbd> <kbd>1500</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;49,553.0570</samp>. Then <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (<samp>BGN</samp> disappears).</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=36</samp>, <samp>I%=.5</samp>, <samp>PV=0</samp>, <samp>PMT=1500</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; on the <samp>PMT:</samp> row highlight <samp>BEGIN</samp> and press <kbd>ENTER</kbd>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;49553.0570</samp>. Then highlight <samp>END</samp> and press <kbd>ENTER</kbd>.</p>
+            <p>In END mode you would get 49,306.52, short by exactly one month&rsquo;s interest on it (0.5% &times; 49,306.52 = 246.53). Split check: 1,500 today plus a 35-payment ordinary annuity, 1,500 + 1,500 &times; 32.035371 = 49,553.06.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>10.</b> The discount rate is 5% a year. Which of these is worth the <em>most</em> today?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c10" value="A"> <span>A. $10,000 received in 10 years</span></label>
+              <p class="cq-why">PV = 10,000 / 1.05<sup>10</sup> = 6,139.13. All of the money waits the full ten years.</p></li>
+            <li><label><input type="radio" name="c10" value="B"> <span>B. $800 at the end of each year for 10 years</span></label>
+              <p class="cq-why">PV = 800 &times; 7.721735 = 6,177.39. Close, but each payment waits a year longer than in C.</p></li>
+            <li><label><input type="radio" name="c10" value="C"> <span>C. $780 at the start of each year for 10 years</span></label>
+              <p class="cq-why">Right: 780 &times; 7.721735 &times; 1.05 = 6,324.10. Each payment arrives a year sooner, worth 5% more today, which beats B&rsquo;s extra $20 a year.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation &middot; Days 2, 5 and 6</summary>
+            <p>BA II Plus, starting in END: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>10000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;6,139.1325</samp> (A). <kbd>0</kbd> <kbd>FV</kbd> <kbd>800</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;6,177.3879</samp> (B). <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>, <kbd>780</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;6,324.1009</samp> (C). Then <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> to get back to END.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=10</samp>, <samp>I%=5</samp>, <samp>PMT=0</samp>, <samp>FV=10000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;6139.1325</samp> (A). <samp>FV=0</samp>, <samp>PMT=800</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;6177.3879</samp> (B). <samp>PMT=780</samp>; on the <samp>PMT:</samp> row highlight <samp>BEGIN</samp> and press <kbd>ENTER</kbd>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;6324.1009</samp> (C). Then highlight <samp>END</samp> and press <kbd>ENTER</kbd>.</p>
+            <p>Adding up the cash gives the wrong order: B pays $8,000 in all and C only $7,800, but C&rsquo;s money comes sooner. And if BGN had been left on from question 9, B would show 6,486.26 and look like the winner.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods: a review of Learning Module 4, The Time Value of Money in Finance (single sums, the implied rate and number of periods, stated, effective and continuous rates, ordinary annuities and annuities due), and of Learning Module 1, Returns of Financial Assets and Instruments (the components of a required return; exact real and nominal rates).</p>
+      <p><strong>Sources.</strong> No story today, so no sources: every number on the page is an illustration, recomputed by the lesson&rsquo;s check script.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-06.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

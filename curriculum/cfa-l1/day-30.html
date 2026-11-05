@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Dow fell 22.6% on 19 October 1987. On a bell curve, that was a 22-sigma day that should never happen — CFA Math, Day 30 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The Dow fell 22.6% on 19 October 1987. On a bell curve, that was a 22-sigma day that should never happen",
+    "path": "reports/cfa/l1/day-30.html",
+    "summary": "Day 30 of CFA Math: in a normal distribution a result’s probability depends only on its z-score, z = (X − μ)/σ; Logan standardizes Black Monday’s −22.6% day (z = −22.65), finds a left-tail probability with normalcdf or a z-table and a 5% cutoff with invNorm or 1.645, and sees why skewness and excess kurtosis make crashes far likelier than the bell curve says.",
+    "headlines": [
+      "Day 30 of 90 · Quantitative Methods: in a normal distribution probability depends only on z = (X − μ)/σ, but real returns have fat tails",
+      "Calculator: a z-score, a left-tail probability and a 5% cutoff (normalcdf, invNorm or a z-table), on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The Dow fell 22.6% on 19 October 1987. On a bell curve, that was a 22-sigma day that should never happen</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A z-score says how many standard deviations a result sits from its average; one bell curve then gives the odds for every normal distribution, until the tails, where real markets break it.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 30 of 90 &middot; LM6 Statistical Distributions for Financial Asset Prices and Returns &middot; The normal curve and fat tails</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="30">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 29 and 23, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="31.104" data-tol="0.01" data-pct data-show="31.10%">
+          <p class="cq-stem"><b>From Day 29.</b> A fund beats its benchmark in any year with probability 0.6, independently of other years. What is the probability that it beats it in exactly 4 of the next 6 years? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Binomial: count the orders with <sub>6</sub>C<sub>4</sub>, then multiply by the probability of any one order, 0.6<sup>4</sup> &times; 0.4<sup>2</sup>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p><sub>6</sub>C<sub>4</sub> = 6! / (2! &times; 4!) = 15 orders. One order: 0.6<sup>4</sup> &times; 0.4<sup>2</sup> = 0.1296 &times; 0.16 = 0.020736. P(X = 4) = 15 &times; 0.020736 = 0.31104 = <b>31.10%</b>. (Leave out <sub>6</sub>C<sub>4</sub> and you get 2.07%: one order only.)</p>
+            <p>BA II Plus: <kbd>6</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>15.0000</samp>; <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>yˣ</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>0.3110</samp>.</p>
+            <p>TI-84 Plus: <kbd>6</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (to PRB; PROB on a CE) <kbd class="menu">3:nCr</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>^</kbd> <kbd>4</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>x&sup2;</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3110</samp>; or <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR), <kbd>&#9660;</kbd> down to <kbd class="menu">A:binompdf(</kbd> (<samp>0:binompdf(</samp> before OS 2.30), <kbd>ENTER</kbd>, then <kbd>6</kbd> <kbd>,</kbd> <kbd>.6</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3110</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 23.</b> Eleven daily returns, as reported (%): 0.6, &minus;2.1, 1.3, &minus;0.4, 0.9, &minus;3.6, 0.2, 1.8, &minus;0.9, 0.5, &minus;1.2. Using L<sub>y</sub> = (n + 1) &times; y/100, the 10th percentile is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. &minus;3.30%</span></label>
+              <p class="cq-why">Right. Sorted, the two lowest are &minus;3.6 and &minus;2.1. L<sub>10</sub> = 12 &times; 0.10 = 1.2, so go 0.2 of the way from the 1st to the 2nd: &minus;3.6 + 0.2 &times; 1.5 = &minus;3.30.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. &minus;3.45%</span></label>
+              <p class="cq-why">That uses the location n &times; y/100 = 1.1 instead of (n + 1) &times; y/100 = 1.2: &minus;3.6 + 0.1 &times; 1.5.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 0.06%</span></label>
+              <p class="cq-why">That interpolates at 1.2 in the unsorted list: 0.6 + 0.2 &times; (&minus;2.1 &minus; 0.6). Sort first.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Sorted: &minus;3.6, &minus;2.1, &minus;1.2, &minus;0.9, &minus;0.4, 0.2, 0.5, 0.6, 0.9, 1.3, 1.8. Location 1.2 sits a fifth of the way from &minus;3.6 to &minus;2.1. A low percentile of returns is a left-tail cutoff: hold on to that, because today&rsquo;s value at risk is the same idea.</p></details>
+        </div>
+      </section>
+
+      <h3>Black Monday, 1987</h3>
+      <p>On Friday 16 October 1987 the Dow Jones Industrial Average fell 108.35 points, or 4.6%, to 2,246.74. A bad day.</p>
+      <p>On Monday 19 October the selling began in Asian markets, moved through Europe and reached New York. By the close the Dow had lost 508 points, or 22.6%, finishing at 1,738.74. Friday and Monday together took about 26% off the index.</p>
+      <p>About 604 million shares changed hands on the New York Stock Exchange, roughly three times a normal day. It is still the largest one-day percentage fall in the Dow&rsquo;s history.</p>
+      <p>Now suppose daily returns follow a normal curve, the familiar bell, with a mean of 0.05% and a standard deviation of about 1%. How many standard deviations was that Monday? How long should you expect to wait for a day like it? And what does it mean that it happened at all?</p>
+
+      <h3>The idea</h3>
+      <p>Many things pile up around an average and thin out evenly on both sides: heights, measurement errors and, as a first guess, daily returns. Drawn as a curve, that is the bell: the <b>normal distribution</b>.</p>
+      <p>Two numbers pin it down completely: the mean &mu;, where the peak sits, and the standard deviation &sigma; (Day 24), how wide it spreads. So for any result only one question matters: how many standard deviations from the mean is it? That count is the <b>z-score</b>.</p>
+      <p>Once you have z, the odds are the same on every normal curve. About 1 result in 6 lands more than 1&sigma; below the mean; about 1 in 44 more than 2&sigma; below; about 1 in 741 more than 3&sigma; below.</p>
+      <p>Real returns bend the bell in two ways. <b>Skewness</b>: one tail is longer than the other. <b>Kurtosis</b>: more of the action sits far out in the tails than the bell allows, which is called <b>fat tails</b>.</p>
+      <p><b>Value at risk</b> (VaR) lives in that left tail: the loss you should expect to exceed only on, say, the worst 5% of days.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 24.</b> The standard deviation is the typical distance from the mean: the natural ruler for &ldquo;how unusual?&rdquo;</p>
+      <p><b>Step 1: measure from the middle.</b> Subtract the mean. A &minus;2% day, with a mean of 0.05%, sits &minus;2 &minus; 0.05 = &minus;2.05 points from average.</p>
+      <p><b>Step 2: count in standard deviations.</b> Divide by &sigma;. With a daily &sigma; of 1%, that is &minus;2.05 standard deviations.</p>
+      <p><b>Step 3: why one table fits every normal curve.</b> Every normal curve is the same bell, slid to sit at &mu; and stretched to width &sigma;. Subtracting &mu; slides it back to 0; dividing by &sigma; squeezes it to width 1. (Day 24 confirms it: subtracting &mu; leaves every deviation unchanged; dividing by &sigma; divides every deviation, and so the SD, by &sigma;: &sigma;/&sigma; = 1.)</p>
+      <p>Every point moves together, so no area changes; only the axis labels do: P(X &lt; x) = P(Z &lt; z).</p>
+      <p><b>Step 4: the bands.</b> On the standard curve, 68% of outcomes lie within &plusmn;1, 90% within &plusmn;1.645 (5% per tail), 95% within &plusmn;1.96 (2.5% per tail), 99% within &plusmn;2.58 (0.5% per tail). By symmetry, P(Z &lt; &minus;a) = 1 &minus; P(Z &le; a), so a table of positive z&rsquo;s covers losses too. Back to returns: X = &mu; + z&sigma;.</p>
+      <p><b>Skew and kurtosis use the same z.</b> Average z<sup>3</sup> over the data and you get (roughly) skewness: cubes keep the sign, so a long left tail makes it negative. Average z<sup>4</sup> for kurtosis: the fourth power lets the tails dominate (z = 3 counts 81 times as much as z = 1). For a normal curve it is exactly 3, hence <b>excess kurtosis = kurtosis &minus; 3</b>.</p>
+      <p><b>Mean, median, mode (Day 23).</b> A long tail drags the mean toward it; the median barely moves; the mode stays at the peak. Long left tail: mean &lt; median &lt; mode.</p>
+      <p><b>In plain words:</b> z counts how many &ldquo;usual-sized steps&rdquo; a result is from average, and the bell tells you how often results land that far out.</p>
+      <div class="formula">
+        <p class="expr">z = (X &minus; &mu;) / &sigma;</p>
+        <p class="expr">X = &mu; + z &times; &sigma;</p>
+        <p class="expr">Excess kurtosis = kurtosis &minus; 3</p>
+        <dl>
+          <dt>X</dt><dd>one outcome, such as a day&rsquo;s return</dd>
+          <dt>&mu;</dt><dd>the mean of the distribution</dd>
+          <dt>&sigma;</dt><dd>the standard deviation (not the variance), in the same units as X</dd>
+          <dt>z</dt><dd>how many standard deviations X lies from &mu;; negative means below the mean</dd>
+          <dt>P(Z &lt; z)</dt><dd>the share of the standard normal curve left of z, from the TI-84&rsquo;s normalcdf or a z-table</dd>
+          <dt>Kurtosis</dt><dd>roughly the average z<sup>4</sup>: 3 for a normal curve; above 3 means fat tails (leptokurtic)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Standard normal z-value: z = (X &minus; &mu;) / &sigma;</li>
+          <li>Normal confidence bands: 68% &asymp; &mu; &plusmn; 1&sigma;; 90% = &mu; &plusmn; 1.645&sigma;; 95% = &mu; &plusmn; 1.96&sigma;; 99% = &mu; &plusmn; 2.58&sigma;</li>
+          <li>One-tailed critical z values: 5% one tail: 1.645; 2.5%: 1.96; 1%: 2.33</li>
+          <li>Skewness and the mean&ndash;median&ndash;mode order: Positive skew (long right tail): mean &gt; median &gt; mode; negative skew (long left tail): mean &lt; median &lt; mode</li>
+          <li>Excess kurtosis: Excess kurtosis = sample kurtosis &minus; 3; &gt; 0 (leptokurtic) means fatter tails than the normal</li>
+          <li>Value at risk (describe only): The minimum loss expected over a period a given small % of the time (e.g. on the worst 5% of days): a left-tail percentile of returns</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Annual returns on an equity portfolio are normal with mean 8% and standard deviation 16%. (a) What is the probability of a loss, P(return &lt; 0)? (b) What interval holds 95% of one year&rsquo;s outcomes? (c) A sample of daily returns has mean 0.04%, median 0.07% and kurtosis 5.1. Describe its skew and its tails.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) Standardize: z = (0 &minus; 8) / 16 = &minus;0.50. A loss means landing more than 0.5 SD below the mean.</li>
+          <li>The z-table gives P(Z &le; 0.50) = 0.6915. By symmetry, P(Z &lt; &minus;0.50) = 1 &minus; 0.6915 = 0.3085: a <b>30.85%</b> chance of a losing year.</li>
+          <li>(b) 95% band: &mu; &plusmn; 1.96&sigma; = 8 &plusmn; 1.96 &times; 16 = 8 &plusmn; 31.36, so <b>&minus;23.36% to 39.36%</b>.</li>
+          <li>(c) The mean (0.04%) is below the median (0.07%): a longer left tail of large losses has dragged the mean down. That is <b>negative skew</b>.</li>
+          <li>Excess kurtosis = 5.1 &minus; 3 = <b>2.1</b> &gt; 0: leptokurtic. Fatter tails than the normal, so extreme days happen more often than a z-table implies.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Suppose daily index returns are normal with mean 0.05% and standard deviation 1%. Find (a) the z-score of a &minus;22.6% day, (b) P(return &lt; &minus;2%), and (c) the daily return with only a 5% chance of a worse day. Keep returns in percent throughout.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">(a) z for Black Monday: (X &minus; &mu;) &divide; &sigma;, with brackets so the subtraction happens first</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>22.6</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>22.6</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;22.6500</samp> (BA II Plus) / <samp>&minus;22.6500</samp> (TI-84). Keep the &divide; &sigma; even when &sigma; is 1: in c1 it is not.</p>
+          </li>
+          <li>
+            <p class="calc-what">(b) z for a &minus;2% day</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>2</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>2</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;2.0500</samp> (BA II Plus) / <samp>&minus;2.0500</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">(b) Turn z into a probability: the area left of &minus;2.05</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> No normal function on the BA II Plus; on the exam, z-table values come with the question. Table: P(Z &le; 2.05) = 0.9798. By symmetry, P(Z &lt; &minus;2.05) = 1 &minus; 0.9798: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.9798</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR) <kbd class="menu">2:normalcdf(</kbd>, then <kbd>(&minus;)</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>(&minus;)</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>.05</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. The line reads <samp>normalcdf(&minus;1E99,&minus;2,.05,1)</samp>: lower end &ldquo;minus infinity&rdquo;, upper end &minus;2, then &mu; and &sigma;. It standardizes for you.</div>
+            <p class="calc-see">Display: <samp>0.0202</samp> (BA II Plus) / <samp>.0202</samp> (TI-84): about one day in 50.</p>
+          </li>
+          <li>
+            <p class="calc-what">(c) Run it backwards: the return with 5% of days below it, X = &mu; + z&sigma; with z = &minus;1.645</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> Memorized: 5% in one tail is 1.645 standard deviations. <kbd>.05</kbd> <kbd>&minus;</kbd> <kbd>1.645</kbd> <kbd>&times;</kbd> <kbd>1</kbd> <kbd>=</kbd> (AOS multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">3:invNorm(</kbd> <kbd>.05</kbd> <kbd>,</kbd> <kbd>.05</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>: the area to the left first, then &mu; and &sigma;</div>
+            <p class="calc-see">Display: <samp>&minus;1.5950</samp> (BA II Plus) / <samp>&minus;1.5949</samp> (TI-84). The TI-84 uses the exact z, 1.6449; both are about &minus;1.6%.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: (a) z = &minus;22.65; (b) P(return &lt; &minus;2%) = 0.0202, about 2.02%; (c) &minus;1.595% (&minus;1.5949% on the TI-84), about &minus;1.6%. If returns really were normal, that is a one-day 5% value at risk of about 1.6%: the worst 5% of days lose at least that much.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Standardize the crash: z = (&minus;22.6 &minus; 0.05) / 1 = &minus;22.65. On this normal curve, a day at least that bad has a probability of about 7 &times; 10<sup>&minus;114</sup>: written out, a decimal point and 113 zeros before the first nonzero digit.</p>
+      <p>At 252 trading days a year, you would expect to wait about 6 &times; 10<sup>110</sup> years for one; the universe is about 1.4 &times; 10<sup>10</sup> years old. Even Friday&rsquo;s &minus;4.6% (z = &minus;4.65) was a once-in-about-2,400-years day on this curve, and Monday was nearly five times worse.</p>
+      <p>Yet it happened. The normal curve is the wrong model for the tails: real daily returns have excess kurtosis (fat tails) and negative skewness, and huge falls come far more often than the bell says.</p>
+      <p>It is a fair guide to ordinary days and a dangerous one to extreme days. A VaR built on it understates exactly the losses that matter most.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using 1.96 for a one-tailed 5% cutoff. 1.96 leaves 2.5% in <em>each</em> tail (the 95% band); 5% in one tail is 1.645. In the walkthrough, 0.05 &minus; 1.96 = &minus;1.91% is the 2.5% cutoff, not the 5% one (&minus;1.595%).</li>
+          <li>Dividing by the variance instead of the standard deviation. In the worked example, (0 &minus; 8) / 256 = &minus;0.031 would put the chance of a loss near 49% instead of 30.85%. z divides by &sigma;, which is in the same units as X.</li>
+          <li>Getting the mean&ndash;median order backwards. The mean is dragged toward the long tail: negative skew (long left tail) means mean &lt; median &lt; mode; positive skew means mean &gt; median &gt; mode.</li>
+          <li>Calling a kurtosis of 3 &ldquo;fat-tailed&rdquo;. 3 is the normal curve&rsquo;s own kurtosis (excess kurtosis 0). Fat tails (leptokurtic) means kurtosis above 3, excess kurtosis above 0.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="0.8197535924596124" data-tol="0.01" data-pct data-show="0.82%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A fund&rsquo;s monthly returns are normal with mean 0.8% and standard deviation 4.5%. What is the probability of a month worse than &minus;10%? As a percent, to two decimals. (For the BA II Plus, a z-table excerpt, P(Z &le; z): 2.30 &rarr; 0.9893; 2.35 &rarr; 0.9906; 2.40 &rarr; 0.9918; 2.45 &rarr; 0.9929.)</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same steps as the walkthrough&rsquo;s part (b), with a new &mu;, &sigma; and cutoff: &mu; = 0.8, &sigma; = 4.5, X = &minus;10. The z comes out round, so the table works on the BA II Plus.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>z = (&minus;10 &minus; 0.8) / 4.5 = &minus;10.8 / 4.5 = &minus;2.40. P(Z &lt; &minus;2.40) = 1 &minus; 0.9918 = 0.0082 = <b>0.82%</b>: about one month in 122. (Forget to subtract the mean and z = &minus;10 / 4.5 = &minus;2.22, about 1.3%.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>10</kbd> <kbd>+|&minus;</kbd> <kbd>&minus;</kbd> <kbd>.8</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4.5</kbd> <kbd>=</kbd> &rarr; <samp>&minus;2.4000</samp>; table: P(Z &le; 2.40) = 0.9918; <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.9918</kbd> <kbd>=</kbd> &rarr; <samp>0.0082</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">2:normalcdf(</kbd> <kbd>(&minus;)</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>,</kbd> (EE) <kbd>99</kbd> <kbd>,</kbd> <kbd>(&minus;)</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>.8</kbd> <kbd>,</kbd> <kbd>4.5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0082</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Why can one z-table serve every normal distribution, whatever its mean and standard deviation?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Because all normal distributions have the same standard deviation, so only the mean has to be adjusted</span></label>
+              <p class="cq-why">Normal curves come in every width: the walkthrough&rsquo;s &sigma; is 1%, c1&rsquo;s is 4.5%. Standardizing exists precisely because they differ.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because subtracting &mu; and dividing by &sigma; turns any normal variable into the standard normal (mean 0, SD 1), whose probabilities depend only on z</span></label>
+              <p class="cq-why">Right. Sliding the bell back to 0 and squeezing it to width 1 moves every point together, so no area changes: P(X &lt; x) = P(Z &lt; z).</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because z divides by the variance, which removes the units of measurement from every return</span></label>
+              <p class="cq-why">z divides by &sigma;, not &sigma;<sup>2</sup>. The variance is in %<sup>2</sup>, so dividing a distance in % by it does not even cancel the units, and it gives the wrong z: &minus;0.03 instead of &minus;0.50 in the worked example.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Every normal curve is one bell, slid to &mu; and stretched by &sigma;. Undo both and you have the standard normal, whose table works for all of them. That is why a daily &minus;1.95% (mean 0.05%, &sigma; 1%) and a monthly &minus;9% (mean 1%, &sigma; 5%) both sit at z = &minus;2.00 and both have probability 2.28%.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="6.686930091185411" data-tol="0.01" data-pct data-show="6.69%">
+          <p class="cq-stem"><b>3. Twist: solve for &sigma;.</b> A portfolio&rsquo;s returns are normal with mean 1%. Its 5% left-tail cutoff (only 5% of outcomes are worse) is &minus;10%. What is the standard deviation of its returns? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Run X = &mu; + z&sigma; backwards. 5% in the left tail means z = &minus;1.645; now X, &mu; and z are known, so solve for &sigma;.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&minus;10 = 1 &minus; 1.645&sigma;, so &sigma; = (1 &minus; (&minus;10)) / 1.645 = 11 / 1.645 = 6.6869 = <b>6.69%</b>. The exact z, 1.6449, gives 6.6875: also 6.69%. (Using 1.96 gives 5.61%: the two-tailed number in a one-tailed question.)</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>10</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.645</kbd> <kbd>=</kbd> &rarr; <samp>6.6869</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">3:invNorm(</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;1.6449</samp> (with no &mu; and &sigma; it uses the standard normal); then <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>10</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>ENTER</kbd> &rarr; <samp>6.6875</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> Annual returns on a portfolio are normally distributed with a mean of 7% and a standard deviation of 15%. The interval expected to contain 95% of annual returns is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;17.68% to 31.68%</span></label>
+              <p class="cq-why">That is 7 &plusmn; 1.645 &times; 15: the 90% band. 1.645 leaves 5% in each tail.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;31.70% to 45.70%</span></label>
+              <p class="cq-why">That is 7 &plusmn; 2.58 &times; 15: the 99% band.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. &minus;22.40% to 36.40%</span></label>
+              <p class="cq-why">Right: 7 &plusmn; 1.96 &times; 15 = 7 &plusmn; 29.40.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>95% in the middle leaves 2.5% in each tail, and the z that leaves 2.5% in one tail is 1.96. Use 1.645 only when the whole 5% sits in one tail, as in a 5% value at risk.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why is Black Monday evidence that daily returns have fat tails, and what does that mean for a risk measure built on the normal curve?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>With a daily &sigma; of about 1%, a &minus;22.6% day is z &asymp; &minus;22.65, and under a normal curve its probability is about 7 &times; 10<sup>&minus;114</sup>: it should essentially never happen, yet it did. So real returns have far more extreme outcomes than the normal allows (excess kurtosis above 0, often with negative skew), and a value at risk computed from the normal curve understates how big and how frequent the worst losses are.</p>
+            <p>A complete answer says: (1) under the normal model a 22-standard-deviation day has essentially zero probability; (2) it happened, so the tails are fatter than normal: excess kurtosis &gt; 0 (leptokurtic), often with negative skew; (3) normal-based risk measures such as VaR understate tail risk.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 6: Statistical Distributions for Financial Asset Prices and Returns (the normal distribution; standardizing with z; confidence intervals; left-tail probabilities; value at risk as a left-tail percentile), with skewness and kurtosis from Learning Module 5: Statistical Characteristics of Asset Returns.</p>
+      <p><strong>Sources.</strong> CNN Money, &ldquo;Remembering the worst day in Wall Street history&rdquo;, 19 October 2017 (Dow &minus;508 points, &minus;22.6%); CNBC, &ldquo;Remembering the Crash of &rsquo;87&rdquo;; RBC Wealth Management, &ldquo;The crash of 1987 by the numbers&rdquo; (Friday 16 October close of 2,246.74 after a 108.35-point, 4.6% fall; about 604 million NYSE shares; the selling began in Asia); Stanford University CS201 project page on the 1987 crash (close of 1,738.74). The probabilities under the normal model are computed for this lesson, not quoted.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-29.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Britain never had to repay its First World War loan. After almost a century of interest, it did. Why? — CFA Math, Day 8 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Britain never had to repay its First World War loan. After almost a century of interest, it did. Why?",
+    "path": "reports/cfa/l1/day-08.html",
+    "summary": "Day 8 of CFA Math: a level payment forever is worth A / r, because the discounted payments shrink geometrically and add up to a finite sum; Logan values the 3½% War Loan’s £3.50 a year at 2% and at the December 2014 record-low 2.639% gilt yield, and prices a perpetuity whose first payment is in year 5 by discounting A / r back four periods.",
+    "headlines": [
+      "Day 8 of 90 · Quantitative Methods: a level payment forever is worth A / r, valued one period before its first payment",
+      "Calculator: the War Loan’s £3.50 a year forever at 2% and 2.639%, and a perpetuity that starts in year 5, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Britain never had to repay its First World War loan. After almost a century of interest, it did. Why?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Payments that never stop still add up to a finite value, A / r, because money far in the future is worth almost nothing today; today you price Britain&rsquo;s undated War Loan and a perpetuity that starts late.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 8 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Perpetuities: payments forever</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="8">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 6 and one from Day 1, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="14692.047797846555" data-tol="0.01" data-signless data-show="14,692.05">
+          <p class="cq-stem"><b>From Day 6.</b> A school charges $4,000 tuition at the <em>start</em> of each year for 4 years. At 6% a year, what are the four payments worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Payments at the start of each period make an annuity due. BGN mode, then N = 4, I/Y = 6, PMT = 4,000, FV = 0, and solve for PV. Or take Day 5&rsquo;s ordinary-annuity PV and multiply by 1.06.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By formula: the 4-year factor at 6% is 3.465106; &times; 1.06 = 3.673012; &times; 4,000 = <b>14,692.05</b>. Split check: 4,000 today + 4,000 &times; 2.673012 (three year-end payments) = 14,692.05.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (<samp>BGN</samp> shows), <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>4</kbd> <kbd>N</kbd> <kbd>6</kbd> <kbd>I/Y</kbd> <kbd>4000</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;14,692.0478</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=4</samp>, <samp>I%=6</samp>, <samp>PV=0</samp>, <samp>PMT=4000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, then <kbd>&darr;</kbd> to <samp>PMT:END BEGIN</samp>, <kbd>►</kbd> to <samp>BEGIN</samp>, <kbd>ENTER</kbd>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;14692.0478</samp>.</p>
+            <p><b>Now switch back to END</b>: BA II Plus <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (the small <samp>BGN</samp> disappears); TI-84 Plus <kbd>&darr;</kbd> to the <samp>PMT:</samp> row, <kbd>◄</kbd> to <samp>END</samp>, <kbd>ENTER</kbd>. Today&rsquo;s walkthrough needs END.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 1.</b> $1,000 left for 20 years at 4% a year, compounded annually, grows to $2,191.12. Left for the same 20 years at 8% a year, it grows to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. $3,382.25</span></label>
+              <p class="cq-why">That doubles the interest: 1,000 + 2 &times; 1,191.12. It is simple-interest thinking: it forgets that the extra interest earns interest too.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. $4,660.96</span></label>
+              <p class="cq-why">Right: 1,000 &times; 1.08<sup>20</sup> = 1,000 &times; 4.660957 = 4,660.96.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. $4,382.25</span></label>
+              <p class="cq-why">That doubles the whole future value, 2 &times; 2,191.12, as if growth were proportional to the rate. Compounding makes it bigger than that.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>1.08</kbd> <kbd>yˣ</kbd> <kbd>20</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>1000</kbd> <kbd>=</kbd> &rarr; <samp>4,660.9571</samp>. TI-84 Plus: <kbd>1000</kbd> <kbd>&times;</kbd> <kbd>1.08</kbd> <kbd>^</kbd> <kbd>20</kbd> <kbd>ENTER</kbd> &rarr; <samp>4660.9571</samp>.</p>
+            <p>Doubling the rate more than triples the interest: 3,660.96 against 1,191.12, 3.07 times as much, because each year&rsquo;s extra interest compounds too. Over long horizons, the rate is the number that matters most. Keep that in mind for today.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The bond Britain could keep forever</h3>
+      <p>In 1917 Britain sold the 5% War Loan to pay for the First World War. In 1932 it was converted into a new stock, the 3&frac12;% War Loan: £3.50 a year for every £100, with no date by which it had to be repaid.</p>
+      <p>The government could choose to repay it at any time from 1 December 1952. It never had to. So, generation after generation, it simply paid the interest.</p>
+      <p>Then, on 3 December 2014, the UK Debt Management Office announced that the War Loan would be repaid at par, £100 for every £100 of stock, on Monday 9 March 2015. £1,938.6 million of it was still in issue. HM Treasury titled its announcement &ldquo;Chancellor to repay the nation&rsquo;s First World War debt&rdquo;.</p>
+      <p>On 5 July 2015 the last of Britain&rsquo;s undated gilts went too, among them the 2&frac12;% Consolidated Stock: the &ldquo;consols&rdquo;, with roots in 18th-century borrowing. That completed the repayment of about £2.6 billion of historical debt.</p>
+      <p>Here is the puzzle. A bond that never has to be repaid pays £3.50 a year, forever. What is that worth? And why, 83 years after 1932, did it suddenly pay the Treasury to hand back £100 for it?</p>
+
+      <h3>The idea</h3>
+      <p>A <b>perpetuity</b> is a level payment that never stops: A every period, the first one a period from now, forever. Undated bonds like the War Loan are perpetuities. So is a non-callable preferred share with a fixed dividend.</p>
+      <p>Forever sounds like an infinite amount of money. Its value is not, because money far away is worth almost nothing today. At 2%, £3.50 due in 100 years is worth 48p now. Due in 300 years, less than a penny. So the total settles on a number.</p>
+      <p>That number is <b>A / r</b>. Here it is in one picture. Put £175 in an account paying 2%. Each year it earns £3.50. Take the £3.50 out, and the £175 is still there to earn £3.50 again. Forever. So £3.50 a year forever costs exactly £175, which is 3.50 / 0.02.</p>
+      <p>Turn it round and a price tells you the rate: <b>r = A / PV</b>. £3.50 a year forever that sells for £100 offers 3.5%.</p>
+      <p>And if the first payment comes later? A / r still works. It just lands one period before that first payment, and you discount it back to today like any single sum (Day 2).</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 5.</b> N level payments, the first at t = 1, are worth PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r.</p>
+      <p><b>Let N run on.</b> (1 + r)<sup>&minus;N</sup> is Day 2&rsquo;s discount factor: what £1 paid at N is worth today. It shrinks toward zero. At 2%: 0.8203 for N = 10, 0.1380 for N = 100, 0.00005 for N = 500.</p>
+      <p><b>So the bracket becomes 1.</b> With (1 + r)<sup>&minus;N</sup> gone, PV = A &times; (1 &minus; 0) / r = A / r.</p>
+      <p><b>Watch it settle.</b> £3.50 a year at 2%: for 30 years, 78.39; 100 years, 150.84; 500 years, 174.99; forever, 175.00.</p>
+      <p><b>A second proof, in one line.</b> Call the perpetuity&rsquo;s value P. A period from now you collect A and still own a perpetuity, worth P again. So today P = (A + P) / (1 + r). Multiply out: P + rP = A + P, so rP = A and P = A / r. Check: (3.50 + 175) / 1.02 = 175.00.</p>
+      <p><b>Why A / r sits one period before the first payment.</b> The formula values payments at t = 1, 2, 3, &hellip; from t = 0, one period earlier. Slide the stream so the first payment is at t, and A / r is its value at t &minus; 1. From there it is a single sum: divide by (1 + r)<sup>t&minus;1</sup>.</p>
+      <p><b>In plain words:</b> A / r is the deposit whose interest is exactly A. Spend only the interest and the money never runs out.</p>
+      <div class="formula">
+        <p class="expr">PV = A / r</p>
+        <p class="expr">r = A / PV</p>
+        <p class="expr">First payment at t: PV<sub>0</sub> = (A / r) / (1 + r)<sup>t&minus;1</sup></p>
+        <dl>
+          <dt>A</dt><dd>the level payment each period; for A / r the first one comes one period from now (t = 1)</dd>
+          <dt>r</dt><dd>the market&rsquo;s required rate per period, as a decimal (not the bond&rsquo;s coupon rate)</dd>
+          <dt>PV</dt><dd>the value today, one period before the first payment</dd>
+          <dt>t</dt><dd>the period of the first payment, for a perpetuity that starts late</dd>
+          <dt>A / r</dt><dd>in the late case, the value at t &minus; 1, one period before the first payment</dd>
+          <dt>PV<sub>0</sub></dt><dd>the late-starting perpetuity&rsquo;s value today: A / r discounted t &minus; 1 periods</dd>
+        </dl>
+      </div>
+      <p><b>Two relatives, for later.</b> A payment that is A<sub>1</sub> a period from now and then grows at g forever is worth A<sub>1</sub> / (r &minus; g), only if r &gt; g: shares, on Day 19. And in property, the <b>cap rate</b> is net operating income (NOI) / value, so value = NOI / cap rate: $500,000 of NOI at a 5% cap rate is worth $10 million.</p>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>PV = A / r (a level perpetuity, first payment one period from now)</li>
+          <li>r = A / PV (the implied rate of a perpetuity)</li>
+          <li>PV<sub>0</sub> = (A / r) / (1 + r)<sup>(t &minus; 1)</sup> (first payment at time t)</li>
+          <li>PV = A<sub>1</sub> / (r &minus; g), valid only if r &gt; g (growing perpetuity, preview)</li>
+          <li>Cap rate = NOI / property value, so value = NOI / cap rate (a perpetuity with A = NOI; low priority)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A perpetuity pays $6 a year, the first payment one year from now. (a) At 8%, what is it worth? (b) If it trades at $80, what rate does it offer? (c) At 8%, what is a $6 perpetuity worth today if its first payment comes at the end of year 4?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) PV = A / r = 6 / 0.08 = <b>75.00</b>.</li>
+          <li>(b) r = A / PV = 6 / 80 = 0.075 = <b>7.50%</b>. Sanity check: a price above 75 means a rate below 8%.</li>
+          <li>(c) A / r values the payments one period before the first one: 6 / 0.08 = 75.00 at t = 3.</li>
+          <li>Discount 3 periods: 1.08<sup>3</sup> = 1.259712, so PV<sub>0</sub> = 75.00 / 1.259712 = <b>59.54</b>.</li>
+          <li>Check by subtraction: the 3 missing payments (t = 1 to 3) are worth 6 &times; 2.577097 = 15.46, and 75.00 &minus; 15.46 = 59.54.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> The War Loan, simplified: £3.50 a year per £100, forever, the first payment a year from now. (1) Its value at a round 2% market yield; (2) at December 2014&rsquo;s record-low 2.639%; (3) 500 years of it on the TVM keys, to see &ldquo;forever&rdquo; arrive; (4) at 2%, a £3.50 perpetuity whose first payment is in year 5; (5) a check of (4) by subtraction. P/Y = C/Y = 1, END mode.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Start from a clean screen, in END mode</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd>, then <kbd>CE/C</kbd> until the display shows <samp>0.0000</samp>. If a small <samp>BGN</samp> shows (from the warm-up), <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> to remove it.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, then <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">£3.50 forever at 2%: A &divide; r. Plain arithmetic, so the rate is a decimal: 2% is 0.02</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.5</kbd> <kbd>&divide;</kbd> <kbd>0.02</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>3.5</kbd> <kbd>&divide;</kbd> <kbd>0.02</kbd> <kbd>ENTER</kbd> (the screen writes <samp>3.5/0.02</samp>)</div>
+            <p class="calc-see">Display: <samp>175.0000</samp> on both: £175.00 per £100 of stock.</p>
+          </li>
+          <li>
+            <p class="calc-what">The same stream at the December 2014 record low, 2.639%</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.5</kbd> <kbd>&divide;</kbd> <kbd>0.02639</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>3.5</kbd> <kbd>&divide;</kbd> <kbd>0.02639</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>132.6260</samp> on both: £132.63 per £100.</p>
+          </li>
+          <li>
+            <p class="calc-what">See &ldquo;forever&rdquo; arrive: 500 years of £3.50 as a Day 5 annuity. Now you are on the TVM keys, so the rate goes in as a percent: 2</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>500</kbd> <kbd>N</kbd> <kbd>2</kbd> <kbd>I/Y</kbd> <kbd>3.5</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>, then set each line (type the value, <kbd>&darr;</kbd> to the next): <samp>N=500</samp>, <samp>I%=2</samp>, <samp>PV=0</samp>, <samp>PMT=3.5</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;174.9912</samp> (BA II Plus) / <samp>PV=&minus;174.9912</samp> (TI-84). Within a penny of 175: all the payments after year 500 add less than 1p today.</p>
+          </li>
+          <li>
+            <p class="calc-what">First payment in year 5: A / r = 175 is its value at t = 4. Enter 175 as FV and discount it 4 periods, with no payments in between</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>4</kbd> <kbd>N</kbd> <kbd>2</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>175</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&uarr;</kbd> up to <samp>N=</samp> and set <samp>N=4</samp>, <samp>I%=2</samp>, <samp>PV=0</samp>, <samp>PMT=0</samp>, <samp>FV=175</samp> (P/Y and C/Y stay 1); cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;161.6729</samp> / <samp>PV=&minus;161.6729</samp>: worth £161.67 today.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check by subtraction: value the 4 payments the late start skips, then take them off 175</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.5</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> (shows <samp>PV = &minus;13.3271</samp>), then <kbd>175</kbd> <kbd>&minus;</kbd> <kbd>13.3271</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> set <samp>PMT=3.5</samp> and <samp>FV=0</samp> (N is still 4); cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> (shows <samp>PV=&minus;13.3271</samp>); then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>175</kbd> <kbd>&minus;</kbd> <kbd>13.3271</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>161.6729</samp> on both: step 5&rsquo;s answer, to the last decimal.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: £3.50 a year forever is worth £175.00 at 2% and £132.63 at 2.639% (500 years of it: 174.9912). Starting in year 5, it is worth £161.67 today: 175 discounted 4 periods, or 175 minus the £13.33 the four skipped payments are worth.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The 3&frac12;% War Loan was a perpetuity: £3.50 a year per £100, no end date. So the stream was worth A / r, with r the market&rsquo;s rate for very long money, not the 3.5% printed on it.</p>
+      <p>The coupon rate is the break-even. At 3.5%, the stream is worth 3.50 / 0.035 = £100.00, exactly what the Treasury would pay to end it. Above 3.5% it is worth less: at 4%, £87.50. Whenever long rates were above 3.5%, repaying at par would have been a gift to the holders.</p>
+      <p>In December 2014 the 30-year gilt yield, a fair stand-in for a rate on money lent forever, hit a record low of 2.639%. At that rate £3.50 forever is worth £132.63. The option was the government&rsquo;s: it could end that stream for £100 and borrow the £100 at well under 3.5%. On £1,938.6 million, 3.5% was about £67.9 million a year. So it repaid.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Discounting a late-starting perpetuity t periods instead of t &minus; 1. A / r already sits one period before the first payment: in the worked example, 3 periods give 59.54; 4 give 55.13.</li>
+          <li>Using the coupon rate instead of the market rate. At its own coupon rate every perpetual bond is worth exactly par (3.50 / 0.035 = 100). Use the market&rsquo;s required rate: at 2%, 175.</li>
+          <li>Forgetting that A / r counts payments from t = 1 on and leaves out any payment today. If one is paid now too, add it: 6 + 75 = 81, which is 75 &times; 1.08, Day 6&rsquo;s (1 + r) again.</li>
+          <li>Typing the rate as a percent in plain arithmetic. In I/Y you type 2; in A &divide; r you divide by 0.02. 3.5 &divide; 2 = 1.75 is the slip.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="98.78931571626822" data-tol="0.01" data-signless data-show="98.79">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A perpetuity pays $5 a year forever, and the first payment comes at the end of year 7. At 4% a year, what is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> A / r = 5 &divide; 0.04 = 125 is its value at t = 6, one period before the first payment. Then discount it 6 periods: N = 6, I/Y = 4, PMT = 0, FV = 125, solve for PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By hand: 5 / 0.04 = 125.00 at t = 6. 1.04<sup>6</sup> = 1.265319, so PV<sub>0</sub> = 125 / 1.265319 = <b>98.79</b>.</p>
+            <p>BA II Plus: <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>0.04</kbd> <kbd>=</kbd> (shows <samp>125.0000</samp>), then <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>125</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;98.7893</samp>.</p>
+            <p>TI-84 Plus: home screen <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>0.04</kbd> <kbd>ENTER</kbd> (shows <samp>125.0000</samp>); then TVM Solver <samp>N=6</samp>, <samp>I%=4</samp>, <samp>PV=0</samp>, <samp>PMT=0</samp>, <samp>FV=125</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;98.7893</samp>.</p>
+            <p>Check by subtraction: 125 &minus; 5 &times; 5.242137 (the six skipped payments) = 98.79. Discounting 7 periods instead would give 94.99.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> A perpetuity pays forever, yet its value today is a finite number, A / r. Why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Each payment is discounted one period more than the one before, so the terms shrink by the same factor, 1/(1 + r), every period, and their sum settles at A / r</span></label>
+              <p class="cq-why">Right. Shrinking by a fixed factor each period is a geometric series, and with r &gt; 0 it has a finite sum.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because the issuer will repay it one day, so the payments do not really go on forever</span></label>
+              <p class="cq-why">A / r assumes the payments never stop and nothing is ever repaid. The War Loan never had to be repaid, and A / r still valued it.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because inflation wipes out the value of later payments</span></label>
+              <p class="cq-why">There is no inflation in A / r. Discounting alone does it: any positive rate makes far-off payments worth almost nothing today, even with prices flat.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>At 5%, each discounted payment is 0.952381 times the one before. All the payments after year 100 together are a perpetuity starting at year 101, worth (A / r) / 1.05<sup>100</sup>: just 0.76% of the total. The tail keeps going but adds almost nothing. If r were 0, the terms would never shrink and the sum would be infinite, which is why A / 0 has no value.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="100" data-tol="0.01" data-signless data-show="100.00">
+          <p class="cq-stem"><b>3. Twist: the rate moves.</b> A perpetuity, first payment a year from now, sells for $80 when the market rate is 5%. If the market rate falls to 4%, what will it sell for? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two steps. First get the payment from the price: A = PV &times; r. Then value that payment at the new rate: A / r.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>A = 80 &times; 0.05 = 4.00 a year. At 4%: 4.00 / 0.04 = <b>100.00</b>.</p>
+            <p>BA II Plus: <kbd>80</kbd> <kbd>&times;</kbd> <kbd>0.05</kbd> <kbd>=</kbd> (shows <samp>4.0000</samp>), then <kbd>&divide;</kbd> <kbd>0.04</kbd> <kbd>=</kbd> &rarr; <samp>100.0000</samp>. TI-84 Plus: <kbd>80</kbd> <kbd>&times;</kbd> <kbd>0.05</kbd> <kbd>ENTER</kbd> (shows <samp>4.0000</samp>), then <kbd>&divide;</kbd> <kbd>0.04</kbd> <kbd>ENTER</kbd> (the screen writes <samp>Ans/0.04</samp>) &rarr; <samp>100.0000</samp>.</p>
+            <p>The rate fell by a fifth (5% to 4%) and the price rose by a quarter (80 to 100, +25.00%). Perpetuities are very sensitive to rates, which is the story&rsquo;s whole point.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investment pays $10 a year forever, with the first payment at the end of year 6. At a discount rate of 5%, its present value today is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $149.24</span></label>
+              <p class="cq-why">That discounts 200 for 6 periods. But A / r = 200 already sits at t = 5, one period before the first payment: only 5 periods are left.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $200.00</span></label>
+              <p class="cq-why">That is A / r with no discounting at all: the value of a perpetuity starting next year, not in year 6.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $156.71</span></label>
+              <p class="cq-why">Right: 10 / 0.05 = 200 at t = 5, then 200 / 1.05<sup>5</sup> = 156.71.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>1.05<sup>5</sup> = 1.276282, so 200 / 1.276282 = 156.71. Check by subtraction: 200 &minus; 10 &times; 4.329477 (the five skipped payments) = 156.71.</p>
+            <p>BA II Plus: <kbd>10</kbd> <kbd>&divide;</kbd> <kbd>0.05</kbd> <kbd>=</kbd> (shows <samp>200.0000</samp>), then <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>5</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>200</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;156.7052</samp>.</p>
+            <p>TI-84 Plus: home screen <kbd>10</kbd> <kbd>&divide;</kbd> <kbd>0.05</kbd> <kbd>ENTER</kbd> (shows <samp>200.0000</samp>); then TVM Solver <samp>N=5</samp>, <samp>I%=5</samp>, <samp>PV=0</samp>, <samp>PMT=0</samp>, <samp>FV=200</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;156.7052</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why do you discount a perpetuity whose first payment is at time t for t &minus; 1 periods, not t?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A / r always gives a perpetuity&rsquo;s value one period before its first payment, because the formula assumes the first payment comes one period after the date it values. With the first payment at t, A / r is the value at t &minus; 1, so it only needs discounting t &minus; 1 periods back to today, as a single sum: PV<sub>0</sub> = (A / r) / (1 + r)<sup>t&minus;1</sup>.</p>
+            <p>A complete answer says: (1) A / r is the value one period before the first payment; (2) with the first payment at t, that is time t &minus; 1; (3) from there it is a single sum, discounted t &minus; 1 periods.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (perpetuities: present value, implied rate and perpetuities that start later; a preview of the growing perpetuity).</p>
+      <p><strong>Sources.</strong> UK Debt Management Office press notice, 3 December 2014 (the 3&frac12;% War Loan to be redeemed at par on 9 March 2015; &pound;1,938.6 million nominal in issue; created in 1932 by conversion of the 5% War Loan 1929&ndash;47, issued in 1917; redeemable at the government&rsquo;s option from 1 December 1952); HM Treasury, &ldquo;Chancellor to repay the nation&rsquo;s First World War debt&rdquo;, gov.uk, 3 December 2014; UK Debt Management Office press notice, 27 March 2015, and gov.uk, &ldquo;Repayment of &pound;2.6 billion historical debt to be completed by government&rdquo; (the 2&frac34;% Annuities, 2&frac12;% Annuities, 2&frac12;% Consolidated Stock and 2&frac12;% Treasury Stock redeemed on 5 July 2015, removing all undated gilts); Reuters, mid-December 2014, via Business Recorder (30-year gilt yields at an all-time low of 2.639%). Using the 30-year yield as a stand-in for a perpetual rate, and the 2% and 4% rates, are simplifications for the lesson.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-07.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

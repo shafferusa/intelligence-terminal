@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Air Force measured 4,063 pilots to design for the average one. Not a single pilot was average. — CFA Math, Day 24 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The Air Force measured 4,063 pilots to design for the average one. Not a single pilot was average.",
+    "path": "reports/cfa/l1/day-24.html",
+    "summary": "Day 24 of CFA Math: how far returns stray from their mean, with the range, mean absolute deviation, sample and population variance and standard deviation, the coefficient of variation and target downside deviation, computed by hand and with 1-V statistics.",
+    "headlines": [
+      "Day 24 of 90 · Quantitative Methods: variance and standard deviation measure how far returns stray from their mean",
+      "Calculator: a fund's sample SD, CV and downside deviation, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The Air Force measured 4,063 pilots to design for the average one. Not a single pilot was average.</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        An average says where returns sit; variance and standard deviation say how far they stray from it, and downside deviation counts only the misses that hurt.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 24 of 90 &middot; LM5 Statistical Characteristics of Asset Returns &middot; Variance, standard deviation and downside risk</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="24">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 23 and 17, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="1.46" data-tol="0.01" data-pct data-show="1.46%">
+          <p class="cq-stem"><b>From Day 23.</b> Eight monthly returns, as reported (%): 3.1, &minus;2.4, 5.6, 0.8, &minus;0.5, 4.2, 1.9, 7.3. Using L<sub>y</sub> = (n + 1) &times; y/100, what is the 40th percentile? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Sort first. Then find the location L<sub>40</sub> and interpolate between the sorted values on either side of it.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Sorted: &minus;2.4, &minus;0.5, 0.8, 1.9, 3.1, 4.2, 5.6, 7.3.</p>
+            <p>L<sub>40</sub> = (8 + 1) &times; 0.40 = 3.6: 60% of the way from the 3rd value (0.8) to the 4th (1.9).</p>
+            <p>0.8 + 0.6 &times; (1.9 &minus; 0.8) = 0.8 + 0.66 = <b>1.46%</b>. (The location n &times; y/100 = 3.2 would give 1.02%: Day 23&rsquo;s trap.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 17.</b> A 5% corporate bond pays its coupon semiannually. Settlement is 60 days into the 180-day coupon period (30/360), and the bond is quoted at 101.20 per 100. What does the buyer pay per 100?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 102.0333</span></label>
+              <p class="cq-why">Right. One period&rsquo;s coupon is 5 &divide; 2 = 2.5, so AI = (60/180) &times; 2.5 = 0.8333, and the full price is 101.20 + 0.8333.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 102.8667</span></label>
+              <p class="cq-why">This uses the whole annual coupon: (60/180) &times; 5 = 1.6667. A semiannual period pays only half of it.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 100.3667</span></label>
+              <p class="cq-why">This subtracts the accrued interest. The quote is the flat price; the buyer pays flat plus AI, the seller&rsquo;s share of the coming coupon.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Bonds are quoted flat. The invoice is the full price: flat + AI, with AI = (t/T) &times; one period&rsquo;s coupon.</p></details>
+        </div>
+      </section>
+
+      <h3>The pilot who wasn&rsquo;t there</h3>
+      <p>Around 1950, Lieutenant Gilbert S. Daniels was a young physical anthropologist at the Air Force&rsquo;s Aero Medical Laboratory, at Wright-Patterson Air Force Base in Ohio. He had body measurements for 4,063 pilots.</p>
+      <p>Cockpits were built to fit the &ldquo;average&rdquo; pilot. So Daniels asked a plain question: how many pilots actually were average?</p>
+      <p>He took ten body dimensions used in design, such as height, chest circumference and sleeve length. On each one he kept only the men inside a narrow &ldquo;approximately average&rdquo; band, and dropped the rest.</p>
+      <p>Height alone left 1,055 of the 4,063. Add chest circumference: 302. Sleeve length: 143. Crotch height: 73. Torso circumference: 28.</p>
+      <p>By the tenth dimension, nobody was left. Not one of the 4,063 was average all over.</p>
+      <p>He published the result in December 1952, in a technical note with a pointed title: &ldquo;The &lsquo;Average Man&rsquo;?&rdquo;</p>
+      <p>The average height, the average chest and the average sleeve length were all perfectly good numbers. So why did a cockpit built to them fit no one? And what number was missing?</p>
+
+      <h3>The idea</h3>
+      <p>An average answers one question: where is the middle? It says nothing about how far things stray from the middle. That second number is <b>dispersion</b>, and for an investor it is the first measure of <b>risk</b>.</p>
+      <p>Picture two funds that both average 5% a year. Fund A earns 5% every year. Fund B earns +30%, then &minus;20%. Same average; one is a smooth ride, the other a roller coaster.</p>
+      <p>And the swings cost money. Fund B turns $1 into 1.30 &times; 0.80 = $1.04 over the two years: only 1.98% a year compounded (Day 12&rsquo;s geometric mean).</p>
+      <p>Today&rsquo;s measures, from crude to precise:</p>
+      <ul>
+        <li><b>Range</b>: highest minus lowest. Quick, but it looks at only two numbers.</li>
+        <li><b>Mean absolute deviation (MAD)</b>: the average distance from the mean.</li>
+        <li><b>Variance</b> and <b>standard deviation (SD)</b>: the average <em>squared</em> distance, and its square root. The SD is the workhorse of risk.</li>
+        <li><b>Coefficient of variation (CV)</b>: SD per unit of mean return, to compare funds with different averages.</li>
+        <li><b>Target downside deviation</b>: like the SD, but it counts only the returns that fall short of a target.</li>
+      </ul>
+
+      <h3>Why it works</h3>
+      <p><b>Start with the deviations.</b> Five returns, 6, &minus;2, 10, 3, 8 (%), have mean 25/5 = 5 (Day 12). Each return&rsquo;s <b>deviation</b>, X<sub>i</sub> &minus; X̄, is its signed distance from 5: +1, &minus;7, +5, &minus;2, +3.</p>
+      <p><b>Averaging them fails:</b> they always add to 0. The mean is the balance point, so misses above it cancel misses below.</p>
+      <p><b>Fix 1: drop the signs.</b> Average the sizes: (1 + 7 + 5 + 2 + 3)/5 = 3.6. That is the MAD. Finance mostly uses fix 2.</p>
+      <p><b>Fix 2: square them.</b> Squares are never negative, and big misses count extra: a 7-point miss scores 49, a 1-point miss 1. Here they add to 88. Their average is the <b>variance</b>, in %&sup2; (percent squared).</p>
+      <p><b>Undo the square.</b> Its square root, back in percent, is the <b>standard deviation</b>. In plain words: variance is the average squared miss, and the SD is the size of a typical miss.</p>
+      <p><b>Why n &minus; 1 for a sample.</b> X̄ sits in the very middle of its own sample: no other point gives a smaller sum of squares (about 5 it is 88; about 4 or 6, 93). The true mean &mu; is almost never exactly X̄, so 88 understates the real scatter. Dividing by n &minus; 1 = 4, not 5, corrects that on average.</p>
+      <p>Another view: the deviations must add to 0, so once four are known (+1, &minus;7, +5, &minus;2), the fifth is forced (+3). Only n &minus; 1 are free: n &minus; 1 <b>degrees of freedom</b>.</p>
+      <p><b>Population.</b> With every member of the group you know &mu; itself, so divide by N.</p>
+      <p><b>Risk per unit of return.</b> CV = s/X̄ puts funds with different means on one scale. Lower CV, less risk per point of return.</p>
+      <p><b>Only the bad misses.</b> Upside surprises hurt nobody, so keep only the returns at or below a target B and measure each from B, not from the mean. Square, add, divide by n &minus; 1 with n counting <em>every</em> observation (a year above B is a zero shortfall), and take the root.</p>
+      <div class="formula">
+        <p class="expr">s&sup2; = &Sigma;(X<sub>i</sub> &minus; X̄)&sup2; / (n &minus; 1), &nbsp; s = &radic;s&sup2;</p>
+        <p class="expr">&sigma;&sup2; = &Sigma;(X<sub>i</sub> &minus; &mu;)&sup2; / N</p>
+        <p class="expr">MAD = &Sigma;|X<sub>i</sub> &minus; X̄| / n, &nbsp; Range = max &minus; min</p>
+        <p class="expr">CV = s / X̄</p>
+        <p class="expr">s<sub>Target</sub> = &radic;[ &Sigma;<sub>X<sub>i</sub> &le; B</sub> (X<sub>i</sub> &minus; B)&sup2; / (n &minus; 1) ]</p>
+        <dl>
+          <dt>X<sub>i</sub></dt><dd>observation i (here one year&rsquo;s return, in %)</dd>
+          <dt>X̄</dt><dd>the sample mean, &Sigma;X<sub>i</sub> / n</dd>
+          <dt>&mu;</dt><dd>the population mean: the true mean of the whole group</dd>
+          <dt>n</dt><dd>number of observations in the sample</dd>
+          <dt>N</dt><dd>number of members in the population</dd>
+          <dt>s&sup2;, s</dt><dd>sample variance (in %&sup2;) and sample standard deviation (in %)</dd>
+          <dt>&sigma;&sup2;, &sigma;</dt><dd>population variance and standard deviation</dd>
+          <dt>|X<sub>i</sub> &minus; X̄|</dt><dd>the size of a deviation, sign dropped</dd>
+          <dt>B</dt><dd>the target return (often 0% or a required return)</dd>
+          <dt>&Sigma;<sub>X<sub>i</sub> &le; B</sub></dt><dd>add only the observations at or below B</dd>
+          <dt>n &minus; 1</dt><dd>degrees of freedom: one is used up by X̄</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Sample variance: s&sup2; = &Sigma; (X<sub>i</sub> &minus; X̄)&sup2; / (n &minus; 1)</li>
+          <li>Population variance: &sigma;&sup2; = &Sigma; (X<sub>i</sub> &minus; &mu;)&sup2; / N</li>
+          <li>Mean absolute deviation: MAD = &Sigma; |X<sub>i</sub> &minus; X̄| / n</li>
+          <li>Coefficient of variation: CV = s / X̄ (risk per unit of mean return)</li>
+          <li>Target downside deviation (target semideviation): s<sub>Target</sub> = &radic;[ &Sigma;<sub>(X<sub>i</sub> &le; B)</sub> (X<sub>i</sub> &minus; B)&sup2; / (n &minus; 1) ] &mdash; sum over observations at or below the target B, divide by n &minus; 1 using all n</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Five annual returns: 6%, &minus;2%, 10%, 3%, 8%. Find the range, the MAD, the sample variance and standard deviation (and the population versions), the CV, and the target downside deviation for a target B = 4%.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Mean: X̄ = (6 &minus; 2 + 10 + 3 + 8)/5 = 25/5 = 5%. Range: 10 &minus; (&minus;2) = 12 percentage points.</li>
+          <li>Deviations from 5: +1, &minus;7, +5, &minus;2, +3 (they add to 0).</li>
+          <li>MAD = (1 + 7 + 5 + 2 + 3)/5 = 18/5 = 3.6%.</li>
+          <li>Squared deviations: 1, 49, 25, 4, 9. Sum = 88.</li>
+          <li>Sample: s&sup2; = 88/(5 &minus; 1) = 22.0 (%&sup2;); s = &radic;22 = <b>4.6904%</b>.</li>
+          <li>Population (if these five years were the whole group): &sigma;&sup2; = 88/5 = 17.6; &sigma; = 4.1952%.</li>
+          <li>CV = s/X̄ = 4.6904/5 = 0.9381.</li>
+          <li>Downside, B = 4%: only &minus;2 and 3 are at or below 4. Shortfalls: &minus;2 &minus; 4 = &minus;6 and 3 &minus; 4 = &minus;1. Squares: 36 + 1 = 37.</li>
+          <li>37/(5 &minus; 1) = 9.25; &radic;9.25 = <b>3.0414%</b>.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A fund&rsquo;s six annual returns: 14%, &minus;8%, 22%, 3%, &minus;12%, 11%. Find the mean and the sample and population standard deviations with one-variable statistics, then the coefficient of variation, then the target downside deviation for B = 0%. Type the returns in percent (14, not 0.14).</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; if L1 holds old numbers, press <kbd>&#9650;</kbd> until the <samp>L1</samp> title is highlighted, then <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the six returns (two are negative)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>14</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>22</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>11</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past <samp>Y</samp>, the frequency, which stays 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>14</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>22</kbd> <kbd>ENTER</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>11</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: the last entry reads <samp>X06 = 11.0000</samp> (BA II Plus); L1 holds six entries, the last one 11 (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Run one-variable statistics and read down to &sigma;x</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>; if the screen does not show <samp>1-V</samp>, press <kbd>2ND</kbd> <kbd>SET</kbd> until it does; then <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd>, reading each line</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd>, then <kbd>2nd</kbd> <kbd>1</kbd> (L1) <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>n = 6.0000</samp>, <samp>x̄ = 5.0000</samp>, <samp>Sx = 13.1757</samp>, <samp>&sigma;x = 12.0277</samp> (BA II Plus) / <samp>x̄=5.0000</samp>, <samp>Sx=13.1757</samp>, <samp>&sigma;x=12.0277</samp>, <samp>n=6</samp> (TI-84). Sx is the sample SD (divides by n &minus; 1 = 5); &sigma;x is the population SD (divides by 6). The sample variance is Sx&sup2; = 173.6 (%&sup2;), the sum of squared deviations 868 divided by 5.</p>
+          </li>
+          <li>
+            <p class="calc-what">Coefficient of variation: Sx divided by the mean, 5</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&uarr;</kbd> (back to <samp>Sx = 13.1757</samp>) <kbd>STO</kbd> <kbd>1</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">3:Sx</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> (or type <kbd>13.1757</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd>)</div>
+            <p class="calc-see">Display: <samp>2.6351</samp> on both: 2.64 points of risk for every point of mean return.</p>
+          </li>
+          <li>
+            <p class="calc-what">Downside deviation for B = 0%: the only returns at or below 0 are &minus;8 and &minus;12, so the shortfalls from the target are &minus;8 and &minus;12. Square, add, divide by n &minus; 1 = 5 (all six years count), take the root</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>12</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>41.6000</samp> after <kbd>=</kbd>, then <samp>6.4498</samp> (BA II Plus) / <samp>6.4498</samp> (TI-84). Type 8 and 12 without the minus: squaring removes it anyway, and on the TI-84 <kbd>(&minus;)</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> gives &minus;64, because it squares before it negates.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: mean 5%; sample SD 13.18% (population 12.03%); CV 2.64; target downside deviation (B = 0%) 6.45%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The missing number was the spread. On height alone, only 1,055 of the 4,063 pilots, 26%, fell inside Daniels&rsquo;s &ldquo;average&rdquo; band: real people scatter widely around the mean. Each extra dimension cut the group again, 302, 143, 73, 28, until nobody was left. A design sized to ten averages was sized for a man who did not exist.</p>
+      <p>Variance and standard deviation measure that scatter: the typical distance of an observation from its mean.</p>
+      <p>Returns behave the same way. The calculator fund averaged 5% a year, yet no year came closer than 2 points to 5% (its nearest was 3%). Its sample standard deviation of 13.18% says a typical year misses the average by roughly 13 points. Its downside deviation of 6.45% measures only the shortfalls below 0%.</p>
+      <p>An average return, like the average pilot, describes almost no actual year.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Dividing by n when the <em>sample</em> variance is asked. Sample means n &minus; 1; only a whole population divides by N.</li>
+          <li>Reading &sigma;x (population) instead of Sx (sample). Both calculators show them one line apart; return data are almost always a sample, so read Sx.</li>
+          <li>In downside deviation, dividing by the number of below-target observations instead of n &minus; 1. In the walkthrough, dividing by the 2 shortfalls gives 10.20% instead of 6.45%.</li>
+          <li>Reporting variance in %&sup2; as if it were a percentage. A variance of 173.6 is not 173.6%; the risk figure in percent is the SD, 13.18%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="9.181503144910424" data-tol="0.01" data-pct data-show="9.18%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Another fund&rsquo;s five annual returns: 11%, &minus;6%, 15%, 2%, &minus;4%. What is the sample standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> New data, same keys: clear the old data, enter five returns (two negative), run 1-V statistics. Read Sx, not &sigma;x.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>11</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>15</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd>, then <kbd>2ND</kbd> <kbd>STAT</kbd> (<samp>1-V</samp>) <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>n = 5.0000</samp>, <samp>x̄ = 3.6000</samp>, <samp>Sx = 9.1815</samp> (one more <kbd>&darr;</kbd>: <samp>&sigma;x = 8.2122</samp>).</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1, then <kbd>11</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>15</kbd> <kbd>ENTER</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>4</kbd> <kbd>ENTER</kbd>; <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>x̄=3.6000</samp>, <samp>Sx=9.1815</samp>, <samp>&sigma;x=8.2122</samp>.</p>
+            <p>By hand: deviations from 3.6 are 7.4, &minus;9.6, 11.4, &minus;1.6, &minus;7.6; their squares add to 337.2; 337.2/4 = 84.3; &radic;84.3 = <b>9.18%</b>. (8.21% is &sigma;x: divided by 5.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why does the sample variance divide by n &minus; 1 rather than n?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. To build in a safety margin: risk should be overstated, so the estimate is pushed up on purpose</span></label>
+              <p class="cq-why">n &minus; 1 is not a cushion. Dividing by n would understate the true variance on average; n &minus; 1 removes that bias, so the estimate is right on average, not deliberately high.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because the first observation is the starting point and has no deviation of its own, leaving n &minus; 1</span></label>
+              <p class="cq-why">No observation is special: every one, the first included, has a deviation from X̄. The lost degree of freedom comes from estimating X̄ from the same data.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because deviations from the sample&rsquo;s own mean run smaller than deviations from the true mean, so dividing by n would understate the variance</span></label>
+              <p class="cq-why">Right. X̄ gives the smallest possible sum of squares: in the worked example, 88 about 5 but 93 about 4 or 6. One degree of freedom is used up by X̄.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Because the deviations from X̄ must add to zero, only n &minus; 1 of them are free to vary. Dividing the sum of squares by those n &minus; 1 degrees of freedom makes the sample variance right on average. With every member of a population, &mu; is known exactly, nothing is used up, and you divide by N.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="5.722761571129799" data-tol="0.01" data-pct data-show="5.72%">
+          <p class="cq-stem"><b>3. Twist: only the shortfalls.</b> Same five returns as question 1: 11%, &minus;6%, 15%, 2%, &minus;4%. What is the target downside deviation for a target B = 3%? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Which returns are at or below 3%? (A positive return can still miss the target.) Measure each from 3, not from the mean, then divide by n &minus; 1, counting all five years.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>At or below 3%: &minus;6, 2 and &minus;4. Shortfalls: &minus;6 &minus; 3 = &minus;9, 2 &minus; 3 = &minus;1, &minus;4 &minus; 3 = &minus;7. Squares: 81 + 1 + 49 = 131.</p>
+            <p>131/(5 &minus; 1) = 32.75; &radic;32.75 = <b>5.72%</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>9</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>7</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> &rarr; <samp>5.7228</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>9</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>7</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.7228</samp>.</p>
+            <p>Dividing by the 3 shortfalls instead gives &radic;43.6667 = 6.61%: the trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A portfolio&rsquo;s returns over four years were 8%, &minus;4%, 12% and 0%. The sample standard deviation of these returns is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 6.32%</span></label>
+              <p class="cq-why">This divides by n = 4 instead of n &minus; 1 = 3: &radic;(160/4) = &radic;40. That is the population SD (&sigma;x).</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 7.30%</span></label>
+              <p class="cq-why">Right: mean 4; deviations 4, &minus;8, 8, &minus;4; squares add to 160; &radic;(160/3) = &radic;53.33 = 7.30%.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 53.33%</span></label>
+              <p class="cq-why">That is the sample variance, 160/3, in %&sup2;, reported as if it were the SD. Take the square root.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>By hand (quickest with four numbers): mean = 16/4 = 4; deviations 4, &minus;8, 8, &minus;4; squares 16 + 64 + 64 + 16 = 160; 160/3 = 53.33; &radic;53.33 = <b>7.30%</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>4</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>4</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> &rarr; <samp>7.3030</samp> (with <kbd>&divide;</kbd> <kbd>4</kbd> instead: <samp>6.3246</samp>, answer A).</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1, type 8, &minus;4, 12, 0 down L1, then <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>Sx=7.3030</samp>, <samp>&sigma;x=6.3246</samp>.</p>
+            <p>&ldquo;Sample&rdquo; in the question means n &minus; 1, and an SD is in %, never %&sup2;.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does a fund&rsquo;s standard deviation of returns tell you, and how does its target downside deviation differ?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The standard deviation is the typical distance of the fund&rsquo;s returns from their mean: the deviations are squared so their signs cannot cancel, averaged (dividing by n &minus; 1 for a sample) and square-rooted back to percent. The target downside deviation keeps only the returns at or below a target B, measures them from B and still divides by n &minus; 1, so upside surprises are not counted as risk.</p>
+            <p>A complete answer says: (1) the SD is the typical distance of returns from their mean, squared so signs cannot cancel, then rooted back to %; (2) the sample version divides by n &minus; 1; (3) downside deviation counts only returns at or below the target B, still dividing by n &minus; 1 using all n, so returns above the target add no risk.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 5: Statistical Characteristics of Asset Returns (measures of dispersion: range, mean absolute deviation, sample and population variance and standard deviation, the coefficient of variation and target downside deviation).</p>
+      <p><strong>Sources.</strong> Gilbert S. Daniels, &ldquo;The &lsquo;Average Man&rsquo;?&rdquo;, Aero Medical Laboratory technical note, Wright Air Development Center, Wright-Patterson Air Force Base, Ohio, December 1952 (DTIC AD0010203), and the full text of the same report in the Internet Archive (4,063 men; 1,055 left after stature, 302 after chest circumference, 143 after sleeve length, 73 after crotch height, 28 after torso circumference); Punya Mishra, &ldquo;Opinion: Gilbert Daniels, the gardener who changed our world&rdquo;, Arizona State University (a retelling of the 4,063-pilot study and its ten dimensions).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-23.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

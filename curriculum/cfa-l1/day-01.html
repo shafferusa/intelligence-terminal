@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Franklin left Boston £1,000 and a 200-year plan to turn it into £4 million. Here is his arithmetic — CFA Math, Day 1 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Franklin left Boston £1,000 and a 200-year plan to turn it into £4 million. Here is his arithmetic",
+    "path": "reports/cfa/l1/day-01.html",
+    "summary": "Day 1 of CFA Math: why compound interest makes money grow by multiplying, FV = PV(1 + r)^N, and how to set up the BA II Plus and the TI-84 and compute Franklin’s £1,000 at 5% for 100 years (£131,501.26).",
+    "headlines": [
+      "Day 1 of 90 · Quantitative Methods: compounding, where interest earns interest and money grows to PV(1 + r)^N",
+      "Calculator: the one-time setup, then Franklin’s £1,000 at 5% for 100 years, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Franklin left Boston £1,000 and a 200-year plan to turn it into £4 million. Here is his arithmetic</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Compound interest multiplies your money by the same number every year, so the interest starts earning interest: today you build FV = PV(1 + r)<sup>N</sup>, set up both calculators and check Franklin&rsquo;s sums.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 1 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Compounding</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="1">
+
+      <h3>Benjamin Franklin&rsquo;s 200-year bet</h3>
+      <p>On 23 June 1789, Benjamin Franklin added a codicil, a late amendment, to his will. It left £1,000 each to
+      Boston and Philadelphia, with instructions.</p>
+      <p>The money was to be lent at 5% a year to young married tradesmen, under 25, who had served an apprenticeship
+      in the town. Franklin died in Philadelphia on 17 April 1790.</p>
+      <p>He did the arithmetic in the codicil itself. If the loans were repaid, Boston&rsquo;s £1,000 would be
+      £131,000 after 100 years. £100,000 of it was then to go on public works. The other £31,000 was to be lent out for
+      a second century, at the end of which it would be, in his words, &ldquo;four millions and sixty one thousand
+      pounds&rdquo;: £4,061,000. Nobody was to add a penny.</p>
+      <p>Here is the puzzle. 5% of £1,000 is £50 a year. Over a century that is £5,000 of interest. So where do the
+      other £125,000 come from?</p>
+      <p>And a second one. When the second century ran out, around 1990, Boston&rsquo;s fund held about $4.5&ndash;5
+      million and Philadelphia&rsquo;s about $2 million: well short of Franklin&rsquo;s arithmetic. What went
+      wrong?</p>
+
+      <h3>The idea</h3>
+      <p>Interest is the price of borrowing: each year the borrower pays the lender a percentage of the money. The
+      whole question is, a percentage <em>of what?</em></p>
+      <p><strong>Simple interest</strong> is paid on the original sum only. Franklin&rsquo;s £1,000 at 5% earns £50,
+      then £50, then £50, every year. After 100 years: £1,000 + £5,000 = £6,000.</p>
+      <p><strong>Compound interest</strong> adds each year&rsquo;s interest to the balance, and next year&rsquo;s 5%
+      is paid on the bigger balance. Year 1 earns £50, so the balance is £1,050. Year 2 earns 5% of £1,050, which is
+      £52.50. That extra £2.50 is interest earned on interest.</p>
+      <p>Like a snowball rolling downhill, the bigger it gets, the more it picks up. By year 100, a single
+      year&rsquo;s interest is £6,261.96: more than the whole century of simple interest.</p>
+      <p>A quick picture: at 5%, money roughly doubles every 14 years (1.05<sup>14</sup> = 1.9799). A century holds
+      about seven doublings: 1, 2, 4, 8, 16, 32, 64, 128. That is why £1,000 heads for six figures.</p>
+
+      <h3>Why it works</h3>
+      <p>Build it one year at a time. There is only one rule: a year&rsquo;s interest = the rate &times; the balance
+      at the start of that year.</p>
+      <ol>
+        <li>Today you have PV.</li>
+        <li>After 1 year: PV + r &times; PV = PV &times; (1 + r). Adding 5% is the same as multiplying by 1.05.</li>
+        <li>After 2 years: year 2&rsquo;s interest is on PV &times; (1 + r), so you multiply by (1 + r) again:
+          PV &times; (1 + r)<sup>2</sup>.</li>
+        <li>After 3 years: one more multiplication: PV &times; (1 + r)<sup>3</sup>.</li>
+        <li>After N years: N multiplications by the same number, which is a power: PV &times; (1 + r)<sup>N</sup>.</li>
+      </ol>
+      <p>Check it on Franklin: 1,000 &times; 1.05 = 1,050, and 1,050 &times; 1.05 = 1,102.50, the same as adding £50,
+      then £52.50.</p>
+      <p>Where is the interest on interest hiding? Multiply out two years: (1 + r)<sup>2</sup> = 1 + 2r +
+      r<sup>2</sup>, so for Franklin 1,000 + 100 + 2.50 = 1,102.50. The 1 is his money back, the 2r two years of
+      simple interest (£100), and the r<sup>2</sup> the first year&rsquo;s £50 earning 5% (£2.50).</p>
+      <p>Simple interest is the same sum with every interest-on-interest piece thrown away: the interest is PV &times;
+      r &times; N, so the total is PV &times; (1 + r &times; N). Compounding <em>multiplies</em>; simple interest
+      <em>adds</em>.</p>
+      <p>In one sentence: every year your money is multiplied by the same number, 1.05, so after 100 years it has been
+      multiplied by 1.05 a hundred times, and that comes to 131.50.</p>
+      <div class="formula">
+        <p class="expr">FV<sub>N</sub> = PV &times; (1 + r)<sup>N</sup></p>
+        <dl>
+          <dt>FV<sub>N</sub></dt><dd>future value: what the money is worth after N periods</dd>
+          <dt>PV</dt><dd>present value: the amount invested today</dd>
+          <dt>r</dt><dd>interest rate per period, as a decimal (5% is 0.05)</dd>
+          <dt>N</dt><dd>number of periods (years, in today&rsquo;s problems)</dd>
+          <dt>(1 + r)<sup>N</sup></dt><dd>the growth factor: what 1 grows to</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Future value of a single sum: FV<sub>N</sub> = PV &times; (1 + r)<sup>N</sup></li>
+          <li>Simple interest over N periods: Interest = PV &times; r &times; N (no interest on interest)</li>
+          <li>Exam room: only the TI BA II Plus (incl. BA II Plus Professional) and the HP 12C family (incl. 12C
+            Platinum); the TI-84 is not allowed, and results earned with it are voided</li>
+          <li>BA II Plus setup: 2ND P/Y 1 ENTER 2ND QUIT; 2ND FORMAT 4 ENTER, &darr; to Chn/AOS, 2ND SET until AOS,
+            2ND QUIT</li>
+          <li>Sign rule: cash paid out is negative, cash received is positive; solving for I/Y or N needs a sign change
+            among PV, PMT and FV (else BA II Plus Error 5 / TI-84 ERR:NO SIGN CHNG)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p>You deposit $2,000 at 6% a year, compounded annually. What is it worth after 3 years, and how much more is
+      that than simple interest would give?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Year 1: interest = 2,000.00 &times; 0.06 = 120.00; balance = 2,120.00</li>
+          <li>Year 2: interest = 2,120.00 &times; 0.06 = 127.20; balance = 2,247.20</li>
+          <li>Year 3: interest = 2,247.20 &times; 0.06 = 134.83; balance = 2,382.03</li>
+          <li>Formula check: FV = 2,000 &times; 1.06<sup>3</sup> = 2,000 &times; 1.191016 = 2,382.03</li>
+          <li>Simple interest instead: 2,000 + 2,000 &times; 0.06 &times; 3 = 2,360.00</li>
+          <li>Interest on interest = 2,382.03 &minus; 2,360.00 = 22.03</li>
+          <li>Where the 22.03 comes from: in year 2, year 1&rsquo;s 120.00 of interest earns 7.20; in year 3, the
+            247.20 of earlier interest earns 14.83. 7.20 + 14.83 = 22.03.</li>
+        </ol>
+        <p>Answer: FV = $2,382.03, which is $22.03 more than simple interest ($2,360.00).</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <p><strong>The exam rule.</strong> Only the TI BA II Plus (or BA II Plus Professional) and the HP 12C family
+      are allowed in the exam room; results earned with a TI-84 are voided. Practise on both, but sit the exam with
+      the BA II Plus.</p>
+      <p><strong>The sign rule.</strong> Money you pay out is negative, money you receive is positive. Franklin&rsquo;s
+      fund lends out £1,000, so PV = &minus;1,000, and the FV it gets back comes out positive. When you later solve
+      for a rate or for N, the inputs need a sign change or the calculator refuses (BA II Plus <samp>Error 5</samp>,
+      TI-84 <samp>ERR:NO SIGN CHNG</samp>).</p>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Do the one-time setup (repeat it only after a reset). Then find what
+        Franklin&rsquo;s £1,000, lent at 5% a year, grows to after 100 years, and check it with the power key.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">One-time setup: four decimals and normal order of operations</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>FORMAT</kbd>
+              <kbd>4</kbd> <kbd>ENTER</kbd>, then <kbd>&darr;</kbd> until the display shows <samp>Chn</samp> or
+              <samp>AOS</samp>, <kbd>2ND</kbd> <kbd>SET</kbd> until it shows <samp>AOS</samp>, <kbd>2ND</kbd>
+              <kbd>QUIT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>MODE</kbd>, arrow down to the
+              row <samp>FLOAT 0123456789</samp>, arrow right to <samp>4</samp>, <kbd>ENTER</kbd>, then <kbd>2nd</kbd>
+              <kbd>MODE</kbd> (QUIT). The TI-84 always uses normal order of operations.</div>
+            <p class="calc-see">Display: <samp>DEC = 4.0000</samp> after <kbd>ENTER</kbd> (BA II Plus) /
+              <samp>4</samp> highlighted on the FLOAT row (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">One-time setup: one payment per year (and note your TI-84 software)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>P/Y</kbd>
+              <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. It ships set to 12; C/Y follows P/Y to
+              1.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> P/Y and C/Y are set in the TVM
+              Solver (step 4). Here, check your software once: <kbd>2nd</kbd> <kbd>+</kbd> (MEM)
+              <kbd class="menu">1:About</kbd>, note the version number, then <kbd>2nd</kbd> <kbd>MODE</kbd>
+              (QUIT). Before version 2.30 the distribution and test menus are numbered a little differently; the
+              lessons always name the function too.</div>
+            <p class="calc-see">Display: <samp>P/Y = 1.0000</samp> after <kbd>ENTER</kbd> (BA II Plus)</p>
+          </li>
+          <li>
+            <p class="calc-what">Clear old numbers and open the time-value screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd>
+              (sets N, I/Y, PV, PMT and FV to zero; do it before every new problem)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd>
+              <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd> (press the number, or
+              <kbd>ENTER</kbd> on the highlighted line, never both). It keeps old values, so step 4 sets every
+              line.</div>
+          </li>
+          <li>
+            <p class="calc-what">Enter Franklin&rsquo;s numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>N</kbd>
+              <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd>
+              <kbd>PMT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=100</samp>,
+              <samp>I%=5</samp>, <samp>PV=&minus;1000</samp> (type <kbd>(&minus;)</kbd> <kbd>1000</kbd>),
+              <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, then on the
+              <samp>PMT:</samp> row put the cursor on <samp>END</samp> and press <kbd>ENTER</kbd>. Press
+              <kbd>ENTER</kbd> after each number to move down a line.</div>
+            <p class="calc-see">Display: <samp>PV = &minus;1,000.0000</samp> after <kbd>PV</kbd> (BA II Plus)</p>
+          </li>
+          <li>
+            <p class="calc-what">Solve for FV</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> arrow up to <samp>FV=</samp>, then
+              <kbd>ALPHA</kbd> <kbd>ENTER</kbd> (SOLVE); a small square marks the solved line</div>
+            <p class="calc-see">Display: <samp>FV = 131,501.2578</samp> (BA II Plus) /
+              <samp>FV=131501.2578</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Check with the power key: the growth factor, then times 1,000</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>1.05</kbd>
+              <kbd>yˣ</kbd> <kbd>100</kbd> <kbd>=</kbd> (shows <samp>131.5013</samp>), then
+              <kbd>&times;</kbd> <kbd>1000</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd>
+              (QUIT) to the home screen, <kbd>1.05</kbd> <kbd>^</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (shows
+              <samp>131.5013</samp>), then <kbd>&times;</kbd> <kbd>1000</kbd> <kbd>ENTER</kbd> (the screen writes
+              <samp>Ans*1000</samp>)</div>
+            <p class="calc-see">Display: <samp>131,501.2578</samp> (BA II Plus) / <samp>131501.2578</samp>
+              (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: £131,501.26. Franklin wrote £131,000.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Interest earns interest. FV = 1,000 &times; 1.05<sup>100</sup> = £131,501.26. Franklin&rsquo;s £131,000 is
+      this figure, rounded down. His £4,061,000 is £31,000 &times; 131: the same 100-year growth factor, applied
+      again (the full factor, 1.05<sup>100</sup>, gives £4,076,539).</p>
+      <p>Simple interest would have given £6,000. Of the £131,501.26, £1,000 is the original sum and only £5,000 is
+      simple interest: the other £125,501.26 is interest on interest. That is the puzzle&rsquo;s missing
+      £125,000.</p>
+      <p>The real funds fell short because they never earned a steady 5%. Borrowers were hard to find, some never
+      repaid, and the managers eventually put much of the money into ordinary investments. Over a century a lost
+      point is enormous: 1.04<sup>100</sup> = 50.50 and 1.03<sup>100</sup> = 19.22, against 131.50 at 5%. One point
+      less leaves 38% of the result; two points less, under 15%. (The 1990 totals are in dollars and Franklin
+      counted in pounds, so they do not compare one for one.)</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Leaving the BA II Plus at its factory P/Y = 12: an annual problem is silently computed monthly.
+            Franklin&rsquo;s problem would show <samp>FV = 1,515.5843</samp>. Set P/Y = 1 once and leave it.</li>
+          <li>Typing 0.05 in I/Y. Rates go in as percent: type 5. With 0.05 you get £1,051.26 (that is 0.05% a
+            year).</li>
+          <li>Entering PV as +1,000, getting <samp>FV = &minus;131,501.2578</samp>, and reporting a negative future value.
+            Money paid out goes in negative; then the FV you receive comes out positive.</li>
+          <li>Using simple interest (PV &times; r &times; N) when the question compounds: £6,000 instead of
+            £131,501.26. &ldquo;Compounded annually&rdquo; means (1 + r)<sup>N</sup>.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="14540.911343993597" data-tol="0.01" data-signless data-show="14,540.91">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> €2,500 is invested at 4.5% a year, compounded
+          annually, for 40 years. What is it worth at the end? Answer in euros, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">euros</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as Franklin&rsquo;s problem. Only three inputs change: N, I/Y
+          and PV (still entered as a negative).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>40</kbd> <kbd>N</kbd> <kbd>4.5</kbd> <kbd>I/Y</kbd>
+            <kbd>2500</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd>
+            &rarr; <samp>FV = 14,540.9113</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=40</samp>, <samp>I%=4.5</samp>, <samp>PV=&minus;2500</samp>,
+            <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on
+            <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=14540.9113</samp>.</p>
+            <p>By formula: 2,500 &times; 1.045<sup>40</sup> = 2,500 &times; 5.816365 = 14,540.91. Keep the factor
+            in the calculator: rounded to 5.8164 it gives 14,541.00, 9 cents off. Answer: <b>€14,540.91</b>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> $1,000 earns 6% a year, compounded annually. If you leave it 20 years
+          instead of 10, the total interest earned (FV &minus; PV), compared with 10 years, is:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Exactly twice as much</span></label>
+              <p class="cq-why">That is simple interest, where every year earns the same PV &times; r, so twice the
+              years gives twice the interest ($600 &rarr; $1,200). Compounding does not work that way.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. More than twice as much</span></label>
+              <p class="cq-why">Right: $790.85 after 10 years, $2,207.14 after 20, about 2.79 times as much. The second
+              decade starts from $1,790.85, not $1,000, so its 6% a year is paid on a bigger balance.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Less than twice as much</span></label>
+              <p class="cq-why">This assumes growth slows down as the balance grows. It is the opposite: each
+              year&rsquo;s interest is 6% of a larger balance, so each decade earns more than the one before.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Doubling N squares the growth factor: 1.06<sup>10</sup> = 1.790848 and 1.06<sup>20</sup> =
+            (1.06<sup>10</sup>)<sup>2</sup> = 3.207135. The first decade turns $1,000 into $1,790.85 (interest
+            $790.85). The second decade grows all of that, interest included, to $3,207.14, so it alone earns
+            $3,207.14 &minus; $1,790.85 = $1,416.29. Total interest $2,207.14, more than twice $790.85.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="3589.249972727881" data-tol="0.01" data-signless data-show="3,589.25">
+          <p class="cq-stem"><b>3. Twist.</b> $10,000 is invested at 8% a year, compounded annually, for 10 years.
+          How much of the final value is interest on interest, the part simple interest would not have paid? Answer
+          in dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> You need three numbers: the FV (from the calculator), the original $10,000,
+          and the simple interest, 10,000 &times; 0.08 &times; 10. Take the last two away from the first.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>8</kbd> <kbd>I/Y</kbd>
+            <kbd>10000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd>
+            &rarr; <samp>FV = 21,589.2500</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=10</samp>, <samp>I%=8</samp>, <samp>PV=&minus;10000</samp>,
+            <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on
+            <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=21589.2500</samp>.</p>
+            <p>All interest = 21,589.25 &minus; 10,000 = 11,589.25. Simple interest = 10,000 &times; 0.08 &times; 10
+            = 8,000.00. Interest on interest = 11,589.25 &minus; 8,000.00 = <b>$3,589.25</b>, almost a third of all
+            the interest.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor deposits $15,000 in an account paying 6% a year,
+          compounded annually. The value of the account after 8 years is <em>closest to</em>:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $15,610.61</span></label>
+              <p class="cq-why">P/Y left at the factory 12: the BA II Plus divides 6 by 12 and computes 8 months at
+              0.5%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $22,200.00</span></label>
+              <p class="cq-why">Simple interest: 15,000 &times; (1 + 0.06 &times; 8). It leaves out the interest on
+              interest.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $23,907.72</span></label>
+              <p class="cq-why">Right: 15,000 &times; 1.06<sup>8</sup> = 15,000 &times; 1.593848 = 23,907.72.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus (P/Y = 1): <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>8</kbd> <kbd>N</kbd> <kbd>6</kbd>
+            <kbd>I/Y</kbd> <kbd>15000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd>
+            <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; <samp>FV = 23,907.7211</samp>.</p>
+            <p>TI-84 Plus: <samp>N=8</samp>, <samp>I%=6</samp>, <samp>PV=&minus;15000</samp>, <samp>PMT=0</samp>,
+            <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; <kbd>ALPHA</kbd>
+            <kbd>ENTER</kbd> on <samp>FV=</samp> &rarr; <samp>FV=23907.7211</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why does a compounded sum grow faster
+          than a simple-interest sum?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>With compounding, each period&rsquo;s interest is added to the balance, so the next period&rsquo;s
+            interest is earned on a bigger amount: interest earns interest. Simple interest pays the same PV &times; r
+            every period, so the gap widens the longer the money is left and the higher the rate.</p>
+            <p>A complete answer has: (1) each period&rsquo;s interest is added to the balance; (2) the next
+            period&rsquo;s interest is earned on that larger balance (interest on interest); (3) the gap grows with
+            time and with the rate.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time
+      Value of Money in Finance (future value of a single sum; simple versus compound interest), with CFA
+      Institute&rsquo;s calculator policy.</p>
+      <p><strong>Sources.</strong> Franklin&rsquo;s codicil of 23 June 1789, as quoted by When &amp; Where in Boston,
+      &ldquo;Franklin Fund is established&rdquo;; Unsung History podcast, &ldquo;The Unusual Codicil in Benjamin
+      Franklin&rsquo;s Will&rdquo;; Michael Meyer, <em>Benjamin Franklin&rsquo;s Last Bet</em> (Mariner Books, 2022),
+      and Terry W. Hartle&rsquo;s review of it, <em>Christian Science Monitor</em>, 2 June 2022; Mental Floss,
+      &ldquo;200-year-old gift from Benjamin Franklin to Boston and Philadelphia&rdquo;; City of Boston Archives,
+      &ldquo;Guide to the Franklin Fund records&rdquo;.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a class="is-disabled" aria-disabled="true">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

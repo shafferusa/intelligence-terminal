@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>On 13 September 2022 stocks fell 4.3% and bonds fell with them: the year the 60/40 cushion failed — CFA Math, Day 25 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "On 13 September 2022 stocks fell 4.3% and bonds fell with them: the year the 60/40 cushion failed",
+    "path": "reports/cfa/l1/day-25.html",
+    "summary": "Day 25 of CFA Math: covariance shows whether two returns move together and correlation rescales it to a grade from −1 to +1; Logan computes the 2018–2022 stock–bond correlation (+0.78) and sample covariance (146.29 %²) and sees what they say about the 60/40 cushion that failed in 2022.",
+    "headlines": [
+      "Day 25 of 90 · Quantitative Methods: covariance shows whether two returns move together, and correlation grades it from −1 to +1",
+      "Calculator: the 2018–2022 stock–bond correlation and the covariance r × Sx × Sy from two-variable statistics, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>On 13 September 2022 stocks fell 4.3% and bonds fell with them: the year the 60/40 cushion failed</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Covariance says whether two returns move together; correlation rescales it to a grade from &minus;1 to +1, so any two pairs can be compared.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 25 of 90 &middot; LM5 Statistical Characteristics of Asset Returns &middot; Covariance and correlation</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="25">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 24 and 18, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="6.442049363362563" data-tol="0.01" data-pct data-show="6.44%">
+          <p class="cq-stem"><b>From Day 24.</b> A fund&rsquo;s five annual returns: 7%, &minus;4%, 12%, 1%, 9%. What is the sample standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> One-variable statistics (1-V on the BA II Plus, 1-Var Stats on the TI-84). Read Sx, the sample figure, not &sigma;x.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Mean = 25 / 5 = 5. Deviations: 2, &minus;9, 7, &minus;4, 4. Squares: 4, 81, 49, 16, 16, sum 166. Sample variance = 166 / (5 &minus; 1) = 41.5; s = &radic;41.5 = <b>6.44%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> (each Y stays 1); <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp>, <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>Sx = 6.4420</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1 (cursor on its title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>), type 7, &minus;4, 12, 1, 9 down L1; <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>Sx=6.4420</samp>. The <samp>&sigma;x=5.7619</samp> just below it divides by n: the population figure, the trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 18.</b> A 180-day T-bill is quoted at a 4.00% discount rate (360-day year). Its bond-equivalent yield is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 4.06%</span></label>
+              <p class="cq-why">That is 4.00% &times; 365/360: the year is fixed, but the return is still figured on the face value instead of the price paid.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 4.08%</span></label>
+              <p class="cq-why">That is figured on the price paid (2/98), but annualized over a 360-day year: 360/180 &times; 2/98. The bond-equivalent yield uses 365.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 4.14%</span></label>
+              <p class="cq-why">Right. Price = 100 &times; (1 &minus; 180/360 &times; 0.04) = 98.00; BEY = 365/180 &times; 2/98 = 4.1383%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>The bond-equivalent yield is a 365-day add-on rate: the gain (100 &minus; 98 = 2) divided by the money paid (98), scaled by 365/days. A discount rate is figured on face value over 360 days, so it always understates it.</p></details>
+        </div>
+      </section>
+
+      <h3>The year the cushion failed</h3>
+      <p>On the morning of Tuesday 13 September 2022, the US government reported that consumer prices were 8.3% higher than a year earlier, more than forecast.</p>
+      <p>By the close the S&amp;P 500 had fallen 4.32%, 177.72 points to 3,932.69: its worst day since June 2020. Bonds offered no shelter. The two-year Treasury yield jumped from about 3.57% to 3.74%, and when yields rise, bond prices fall.</p>
+      <p>The whole year went the same way. The S&amp;P 500 lost 18.11% including dividends. The Bloomberg US Aggregate bond index lost 13.01%. It was the only year in the Aggregate&rsquo;s history in which both fell by more than 10%.</p>
+      <p>That stung, because the classic 60/40 portfolio (60% stocks, 40% bonds) rests on one idea: when stocks fall, bonds rise and soften the blow.</p>
+      <p>So how do you measure whether two assets really move against each other? And what does that number say about the years leading up to 2022?</p>
+
+      <h3>The idea</h3>
+      <p>Two questions about any pair of assets: do they move together, and how tightly?</p>
+      <p>Picture a <b>scatter plot</b>: one dot per year, the stock return across, the bond return up. Dots climbing left to right: they move together. Falling: opposite. A shapeless cloud: no pattern.</p>
+      <p><b>Covariance</b> turns that picture into one number. Its sign is the direction: positive, together; negative, opposite.</p>
+      <p><b>Correlation</b> rescales it to lie between &minus;1 and +1, so it also says how tight the pattern is. +1: every dot on one rising straight line. &minus;1: one falling line. 0: no straight-line pattern at all.</p>
+      <p>An everyday picture: a beach with an umbrella stand and an ice-cream stand. Rain sells umbrellas; sun sells ice cream. Each alone is bumpy; own both and the bumps cancel. That negative correlation is the cushion a 60/40 investor hopes bonds give stocks.</p>
+      <p>One limit from the start: r only sees straight lines. Take X = &minus;2, &minus;1, 0, 1, 2 and Y = X<sup>2</sup> = 4, 1, 0, 1, 4. Y is fixed exactly by X, yet r = 0.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 24.</b> Sample variance multiplies each deviation by itself and divides by n &minus; 1: s<sub>X</sub><sup>2</sup> = &Sigma;(X<sub>i</sub> &minus; X&#772;)(X<sub>i</sub> &minus; X&#772;) / (n &minus; 1).</p>
+      <p><b>Swap one copy for Y.</b> Use Y&rsquo;s deviation in the same year: (X<sub>i</sub> &minus; X&#772;)(Y<sub>i</sub> &minus; Y&#772;). Each year now casts a vote: both above their means, (+)(+) = +; both below, (&minus;)(&minus;) = +; one of each, &minus;. Big moves cast big votes.</p>
+      <p><b>Average the votes</b> with n &minus; 1, as on Day 24: that is the sample covariance s<sub>XY</sub>. Positive: mostly together. Negative: mostly opposite.</p>
+      <p><b>The snag.</b> Covariance is in %<sup>2</sup> and grows with volatility: double every X in the worked example and s<sub>XY</sub> doubles (&minus;18.33 to &minus;36.67), yet the link is no tighter.</p>
+      <p><b>The fix.</b> Measure each deviation in its own standard deviations, z<sub>X</sub> = (X<sub>i</sub> &minus; X&#772;) / s<sub>X</sub> (z<sub>Y</sub> likewise), then average the products: r = &Sigma;z<sub>X</sub>z<sub>Y</sub> / (n &minus; 1) = s<sub>XY</sub> / (s<sub>X</sub> s<sub>Y</sub>). Units cancel, and doubling X doubles s<sub>XY</sub> and s<sub>X</sub> alike, so r stays &minus;0.93.</p>
+      <p><b>Why &plusmn;1 is the limit.</b> Each set of z&rsquo;s squared adds to n &minus; 1 (z&rsquo;s have variance 1). Squares can&rsquo;t be negative, so &Sigma;(z<sub>X</sub> &minus; z<sub>Y</sub>)<sup>2</sup> = 2(n &minus; 1)(1 &minus; r) &ge; 0 forces r &le; 1, with r = 1 only if every dot sits on one rising line. &Sigma;(z<sub>X</sub> + z<sub>Y</sub>)<sup>2</sup> = 2(n &minus; 1)(1 + r) &ge; 0 forces r &ge; &minus;1.</p>
+      <p><b>The BA II Plus route.</b> It has no covariance key, so turn the formula round: s<sub>XY</sub> = r &times; Sx &times; Sy. Use the sample Sx and Sy: the n &minus; 1&rsquo;s cancel inside r, but not in the covariance.</p>
+      <p><b>Spearman, as insurance.</b> Rank each series (1 = highest) and take r of the ranks. Ranks 1 to n always have the same spread, so r collapses to a shortcut in d, each observation&rsquo;s rank gap. Only order counts, so one wild year weighs less.</p>
+      <p><b>In plain words:</b> covariance asks each year &ldquo;were both better than usual, or both worse?&rdquo; and adds up the answers. Correlation turns that tally into a grade from &minus;1 (always opposite) to +1 (always together).</p>
+      <div class="formula">
+        <p class="expr">s<sub>XY</sub> = &Sigma;(X<sub>i</sub> &minus; X&#772;)(Y<sub>i</sub> &minus; Y&#772;) / (n &minus; 1)</p>
+        <p class="expr">r<sub>XY</sub> = s<sub>XY</sub> / (s<sub>X</sub> s<sub>Y</sub>), &nbsp;&minus;1 &le; r &le; +1</p>
+        <p class="expr">r<sub>s</sub> = 1 &minus; 6&Sigma;d<sub>i</sub><sup>2</sup> / [n(n<sup>2</sup> &minus; 1)]</p>
+        <dl>
+          <dt>X<sub>i</sub>, Y<sub>i</sub></dt><dd>the two returns in period i</dd>
+          <dt>X&#772;, Y&#772;</dt><dd>their sample means</dd>
+          <dt>n</dt><dd>number of periods (pairs)</dd>
+          <dt>s<sub>XY</sub></dt><dd>sample covariance (%<sup>2</sup> for returns in %)</dd>
+          <dt>s<sub>X</sub>, s<sub>Y</sub></dt><dd>sample standard deviations (Sx, Sy)</dd>
+          <dt>r<sub>XY</sub></dt><dd>correlation coefficient, no units</dd>
+          <dt>r<sub>s</sub></dt><dd>Spearman rank correlation: r on the ranks</dd>
+          <dt>d<sub>i</sub></dt><dd>observation i&rsquo;s rank in X minus its rank in Y</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Sample covariance: s<sub>XY</sub> = &Sigma; (X<sub>i</sub> &minus; X&#772;)(Y<sub>i</sub> &minus; Y&#772;) / (n &minus; 1)</li>
+          <li>Correlation coefficient: r<sub>XY</sub> = s<sub>XY</sub> / (s<sub>X</sub> &times; s<sub>Y</sub>)</li>
+          <li>Covariance from correlation (BA II Plus route): s<sub>XY</sub> = r &times; s<sub>X</sub> &times; s<sub>Y</sub></li>
+          <li>Range and meaning of correlation: &minus;1 &le; r &le; +1; 0 means no LINEAR relation, not no relation</li>
+          <li>Spearman rank correlation (2027 coverage uncertain): r<sub>s</sub> = 1 &minus; 6 &Sigma; d<sub>i</sub><sup>2</sup> / [n (n<sup>2</sup> &minus; 1)], d<sub>i</sub> = difference between the two ranks of observation i</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Four years of returns (%): stock fund X = 10, &minus;5, 15, 0; bond fund Y = 2, 6, 1, 3. Find the sample covariance, both sample standard deviations and the correlation; then the Spearman rank correlation.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Means: X&#772; = 20 / 4 = 5; Y&#772; = 12 / 4 = 3.</li>
+          <li>Deviations: X: +5, &minus;10, +10, &minus;5. Y: &minus;1, +3, &minus;2, 0.</li>
+          <li>Cross-products: &minus;5, &minus;30, &minus;20, 0. Sum = &minus;55. s<sub>XY</sub> = &minus;55 / (4 &minus; 1) = <b>&minus;18.3333</b> (%<sup>2</sup>).</li>
+          <li>s<sub>X</sub><sup>2</sup> = (25 + 100 + 100 + 25) / 3 = 83.3333, so s<sub>X</sub> = 9.1287. s<sub>Y</sub><sup>2</sup> = (1 + 9 + 4 + 0) / 3 = 4.6667, so s<sub>Y</sub> = 2.1602.</li>
+          <li>r = &minus;18.3333 / (9.1287 &times; 2.1602) = <b>&minus;0.9297</b>: a strong negative linear relation.</li>
+          <li>Spearman. Ranks (1 = highest): X 2, 4, 1, 3; Y 3, 1, 4, 2. d = &minus;1, +3, &minus;3, +1; &Sigma;d<sup>2</sup> = 20.</li>
+          <li>r<sub>s</sub> = 1 &minus; 6 &times; 20 / [4 &times; (16 &minus; 1)] = 1 &minus; 120/60 = <b>&minus;1</b>: the two rankings are exactly reversed.</li>
+          <li>Read it: when the stock fund did badly, the bond fund did well: the cushion.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> S&amp;P 500 total returns (X) and Bloomberg US Aggregate returns (Y), 2018&ndash;2022, in %: X = &minus;4.38, 31.49, 18.40, 28.71, &minus;18.11; Y = 0.01, 8.72, 7.51, &minus;1.54, &minus;13.01. Find Sx, Sy and r with two-variable statistics, then the sample covariance s<sub>XY</sub> = r &times; Sx &times; Sy.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data and open the data screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>; then onto the <samp>L2</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the five years, each year&rsquo;s stock return as X and its bond return as Y</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4.38</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>0.01</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>31.49</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>8.72</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>18.4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>7.51</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>28.71</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1.54</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>18.11</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>13.01</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> (X01, Y01, X02, Y02 &hellip; Y05)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> down L1 from its first row: <kbd>(&minus;)</kbd> <kbd>4.38</kbd> <kbd>ENTER</kbd> <kbd>31.49</kbd> <kbd>ENTER</kbd> <kbd>18.4</kbd> <kbd>ENTER</kbd> <kbd>28.71</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>18.11</kbd> <kbd>ENTER</kbd>; then down L2 from its first row: <kbd>0.01</kbd> <kbd>ENTER</kbd> <kbd>8.72</kbd> <kbd>ENTER</kbd> <kbd>7.51</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>1.54</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>13.01</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: <samp>Y05 = &minus;13.0100</samp> (BA II Plus) / five rows per list (TI-84). A missing minus sign changes everything.</p>
+          </li>
+          <li>
+            <p class="calc-what">Two-variable statistics: read the sample Sx and Sy and store them</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> to <samp>Sx</samp>, <kbd>STO</kbd> <kbd>2</kbd>; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> to <samp>Sy</samp>, <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">2:2-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd>; <kbd>&darr;</kbd> to scroll</div>
+            <p class="calc-see">Display: <samp>x&#772; = 11.2220</samp>, <samp>Sx = 21.6329</samp>, <samp>&#563; = 0.3380</samp>, <samp>Sy = 8.7106</samp> (BA II Plus) / <samp>x&#772;=11.2220</samp>, <samp>Sx=21.6329</samp>, <samp>&#563;=.3380</samp>, <samp>Sy=8.7106</samp> (TI-84). Skip <samp>&sigma;x = 19.3491</samp> and <samp>&sigma;y = 7.7910</samp>: they divide by n.</p>
+          </li>
+          <li>
+            <p class="calc-what">The correlation r</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> from <samp>Sy</samp>, <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> past <samp>&sigma;y</samp>, <samp>a</samp> and <samp>b</samp> to <samp>r</samp>, then <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> first time only: <kbd>2nd</kbd> <kbd>0</kbd> (CATALOG), scroll to <samp>DiagnosticOn</samp> (<kbd>x&#8315;&#185;</kbd> jumps to the D&rsquo;s), <kbd>ENTER</kbd> <kbd>ENTER</kbd>. Then <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (2-Var Stats never shows r)</div>
+            <p class="calc-see">Display: <samp>r = 0.7763</samp> (BA II Plus) / <samp>a=&minus;3.1700</samp>, <samp>b=.3126</samp>, <samp>r&#178;=.6027</samp>, <samp>r=.7763</samp> (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Multiply: s<sub>XY</sub> = r &times; Sx &times; Sy, using the stored values</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">7:r</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">3:Sx</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">6:Sy</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>146.2914</samp> on both. Retyping the rounded displays gives 146.2825, off in the second decimal: store, don&rsquo;t retype.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: r = 0.7763 (about +0.78); sample covariance s<sub>XY</sub> = 146.2914 (%<sup>2</sup>), about +146.29.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>For 2018&ndash;2022: covariance +146.29 (%<sup>2</sup>), correlation +0.78. In those five years stocks and bonds mostly moved the same way.</p>
+      <p>Look at the votes: in 2018, 2019, 2020 and 2022 both sat on the same side of their averages. Only 2021 split them: stocks +28.71%, bonds &minus;1.54%.</p>
+      <p>That is the cushion problem. Positive correlation means bonds tend to fall when stocks fall, so they soften a crash less. 2022 was the extreme: a 60/40 mix of the two lost about 0.6 &times; 18.11 + 0.4 &times; 13.01 = 16.07%.</p>
+      <p>Three cautions. One year carries the result: 2022&rsquo;s vote is about two-thirds of the total. For 2018&ndash;2021 alone r is 0.38: still positive, but far weaker. Five annual returns are a small sample: the number describes those years, it is not a law. And r never says why: on 13 September it was one piece of news, an inflation report, that hit both.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Mixing population SDs with a sample covariance: r &times; &sigma;x &times; &sigma;y on today&rsquo;s data gives 117.03, not 146.29. Use Sx and Sy.</li>
+          <li>Reading r = 0 as &ldquo;no relationship&rdquo;. It means no <em>linear</em> relationship: Y = X<sup>2</sup> above is tied to X and has r = 0.</li>
+          <li>Treating correlation as causation. Two series can correlate by chance or because a third factor drives both; the curriculum calls both spurious correlation.</li>
+          <li>Comparing covariances across pairs. A bigger covariance may just mean more volatile assets; compare correlations, which are scale-free.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="-34.75" data-tol="0.01" data-show="&minus;34.75">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Five years of returns (%): fund X = 12, &minus;3, 7, 20, &minus;6; fund Y = 4, 6, 3, &minus;2, 7. What is the sample covariance of X and Y? In %<sup>2</sup>, to two decimals (keep the sign).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%&sup2;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with new data. Store r, Sx and Sy as they appear, then multiply the stored values.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>20</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>7</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd> (<samp>LIN</samp>) <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <samp>Sx = 10.7005</samp> <kbd>STO</kbd> <kbd>2</kbd>, <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <samp>Sy = 3.5071</samp> <kbd>STO</kbd> <kbd>3</kbd>, <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <samp>r = &minus;0.9260</samp> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>&minus;34.7500</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, type over the five rows: L1 = 12, &minus;3, 7, 20, &minus;6 and L2 = 4, 6, 3, &minus;2, 7 (<kbd>ENTER</kbd> after each, <kbd>(&minus;)</kbd> for a minus); <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">2:2-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>Sx=10.7005</samp>, <samp>Sy=3.5071</samp>; <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>r=&minus;.9260</samp>; then <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd class="menu">7:r</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">3:Sx</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">6:Sy</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;34.7500</samp>.</p>
+            <p>By hand: means 6 and 3.6; cross-products 2.4, &minus;21.6, &minus;0.6, &minus;78.4, &minus;40.8, sum &minus;139; &minus;139 / 4 = <b>&minus;34.75</b>. (With &sigma;x and &sigma;y instead you would get &minus;27.80, the population covariance.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> Why do analysts compare how closely different pairs of assets move together using correlation rather than covariance?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Covariance is in %&sup2; and grows with each asset&rsquo;s volatility; dividing by s<sub>X</sub> &times; s<sub>Y</sub> removes the units and the scale, leaving a number from &minus;1 to +1</span></label>
+              <p class="cq-why">Right. Double one asset&rsquo;s returns and the covariance doubles though the link is the same; r does not move, so r can be compared across any pairs.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Covariance cannot be negative, so it cannot show assets moving in opposite directions</span></label>
+              <p class="cq-why">It can be negative: the worked example&rsquo;s covariance is &minus;18.33. Covariance and correlation always share the same sign.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Correlation uses the population formula and covariance the sample formula, so only correlation is unbiased</span></label>
+              <p class="cq-why">Both can be sample statistics. Inside r the n &minus; 1 cancels anyway; the reason is units and scale, not which divisor is used.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>r = s<sub>XY</sub> / (s<sub>X</sub> s<sub>Y</sub>) measures each deviation in its own standard deviations before multiplying. The walkthrough&rsquo;s covariance (146.29) is eight times the size of the worked example&rsquo;s (&minus;18.33), yet its correlation is the weaker one: 0.78 against &minus;0.93. The big covariance mostly reflects bigger swings, not a tighter link.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="0.8285714285714285" data-tol="0.0001" data-show="0.8286">
+          <p class="cq-stem"><b>3. Twist: rank correlation.</b> Six funds&rsquo; returns (%) in two years, fund by fund: Year 1 = 12.5, 8.1, 15.2, 3.4, 9.9, 6.0; Year 2 = 10.1, 9.0, 11.8, 2.2, 6.5, 7.7. What is the Spearman rank correlation between the two years? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">r<sub>s</sub></span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Rank each year on its own (1 = highest), take d = rank in Year 1 minus rank in Year 2 for each fund, add up the d<sup>2</sup>, then r<sub>s</sub> = 1 &minus; 6&Sigma;d<sup>2</sup> / [n(n<sup>2</sup> &minus; 1)] with n = 6.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Ranks, Year 1: 2, 4, 1, 6, 3, 5. Year 2: 2, 3, 1, 6, 5, 4. d = 0, 1, 0, 0, &minus;2, 1; d<sup>2</sup> = 0, 1, 0, 0, 4, 1; &Sigma;d<sup>2</sup> = 6.</p>
+            <p>r<sub>s</sub> = 1 &minus; 6 &times; 6 / [6 &times; (36 &minus; 1)] = 1 &minus; 36/210 = <b>0.8286</b>.</p>
+            <p>BA II Plus: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>35</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.8286</samp> (AOS mode). TI-84 Plus: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>6</kbd> <kbd>&times;</kbd> <kbd>35</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.8286</samp>.</p>
+            <p>Check that Spearman is just r on the ranks: enter the two rank lists as X and Y (BA II Plus <samp>LIN</samp>, or L1 and L2 with <kbd class="menu">8:LinReg(a+bx)</kbd> on the TI-84) and r = 0.8286. On the raw returns r = 0.8659. Ranking from the lowest instead gives the same answer: every d just flips sign.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> Three years of returns (%): X = 10, 20, 0 and Y = 4, 2, 9. The sample covariance of X and Y is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;23.33</span></label>
+              <p class="cq-why">The cross-products divided by n = 3: the population formula. A sample covariance divides by n &minus; 1 = 2.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. &minus;35.00</span></label>
+              <p class="cq-why">Right: the cross-products add to &minus;70, and &minus;70 / (3 &minus; 1) = &minus;35.00.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. &minus;70.00</span></label>
+              <p class="cq-why">The sum of the cross-products, never averaged.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Means: X&#772; = 10, Y&#772; = 5. Deviations: X 0, +10, &minus;10; Y &minus;1, &minus;3, +4. Cross-products: 0, &minus;30, &minus;40; sum &minus;70. s<sub>XY</sub> = &minus;70 / 2 = <b>&minus;35.00</b> (%<sup>2</sup>).</p>
+            <p>Calculator check: the walkthrough&rsquo;s keystrokes on these three pairs, then r &times; Sx &times; Sy &rarr; <samp>&minus;35.0000</samp> on both.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does a correlation of +0.78 between stocks and bonds tell a 60/40 investor, and what would a correlation of 0 <em>not</em> tell them?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>At +0.78 the two tend to move the same way, so when stocks fall, bonds tend to fall too and cushion the loss less. A correlation of 0 would only mean no straight-line relation, not no relation at all, and no correlation, whatever its size, proves that one causes the other.</p>
+            <p>A complete answer says: (1) positive r = the two tend to move together, so bonds cushion stock losses less; (2) r measures the strength of a <em>linear</em> relation on a scale from &minus;1 to +1; (3) zero means no linear relation, not no relation; (4) correlation is not causation.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 5: Statistical Characteristics of Asset Returns (sample covariance, the correlation coefficient, scatter plots and the limits of correlation). Spearman rank correlation is included as insurance: its place in the 2027 curriculum is uncertain.</p>
+      <p><strong>Sources.</strong> Reuters, &ldquo;Wall St tumbles to biggest loss in two years following inflation data&rdquo;, 13 September 2022, via the Philippine Daily Inquirer (S&amp;P 500 &minus;4.32%, worst session since 11 June 2020; two-year yield 3.7434% from 3.571%); Associated Press, &ldquo;Wall Street takes a big tumble following hotter-than-expected inflation report&rdquo;, 13 September 2022, via the Dallas Morning News (&minus;177.72 points to 3,932.69; inflation 8.3%); Fulton Bank, &ldquo;Economic Update: 2022 Review&rdquo; (Bloomberg US Aggregate &minus;13.01%; the only time both stocks and the Aggregate fell more than 10%); Broadway Bank, &ldquo;Investment Management Newsletter, 4th Quarter 2022&rdquo; (S&amp;P 500 &minus;18.1% total return; Aggregate &minus;13.0%); YCharts, Bloomberg US Aggregate total return by year, 2018&ndash;2022; S&amp;P 500 total return by year, upmyinterest.com (2018&ndash;2020) and maisretorno.com (2021).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-24.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Shell cut its dividend by two-thirds, its first cut since WWII. Why didn’t its shares fall by two-thirds? — CFA Math, Day 19 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Shell cut its dividend by two-thirds, its first cut since WWII. Why didn’t its shares fall by two-thirds?",
+    "path": "reports/cfa/l1/day-19.html",
+    "summary": "Day 19 of CFA Math: a share whose dividends grow at a constant rate forever is a growing perpetuity worth next year’s dividend divided by (r − g); Logan values Shell’s old $1.88 dividend at $38.73, reads a price backwards to find the growth it implies, and values a preferred share as a plain perpetuity.",
+    "headlines": [
+      "Day 19 of 90 · Equity Investments: with constant dividend growth a share is worth D1/(r − g), and the same equation read backwards gives the market’s implied return and growth",
+      "Calculator: a share’s value from its dividend, the growth a market price implies and a preferred share’s value, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Shell cut its dividend by two-thirds, its first cut since WWII. Why didn’t its shares fall by two-thirds?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        If a dividend grows at a steady rate forever, the share is worth next year&rsquo;s dividend divided by (r &minus; g), and the same equation read backwards shows what growth a market price is expecting.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Equity Investments</p>
+      <span class="track-progress">Day 19 of 90 &middot; Equity Valuation: Concepts and Basic Tools &middot; Constant-growth dividend discount model</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="19">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 18 and one from Day 3, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="97.67444444444445" data-tol="0.01" data-show="97.67">
+          <p class="cq-stem"><b>From Day 18.</b> A 182-day US Treasury bill is quoted at a 4.60% discount rate. What is its price per 100 of face value? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> PV = FV &times; [1 &minus; (Days/Year) &times; DR], and a T-bill&rsquo;s discount rate uses a 360-day year.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>(182/360) &times; 0.046 = 0.023256 of the face value comes off, so the price is 100 &times; (1 &minus; 0.023256) = 97.6744, <b>97.67</b>.</p>
+            <p>BA II Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>182</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.046</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>97.6744</samp>.</p>
+            <p>TI-84 Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>182</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.046</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>97.6744</samp>.</p>
+            <p>A 365-day year gives 97.71; treating 4.60% as an add-on rate gives 97.73. Both are wrong for a bill.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 3.</b> Investors require a 9% nominal return on a share and expect 3% inflation. The exact real required return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 5.83%</span></label>
+              <p class="cq-why">Right: 1.09 &divide; 1.03 &minus; 1 = 0.058252, so 5.83%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 6.00%</span></label>
+              <p class="cq-why">That is the shortcut 9% &minus; 3%. Close, but not exact: it drops the cross term, real &times; inflation.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 12.27%</span></label>
+              <p class="cq-why">That is 1.09 &times; 1.03 &minus; 1: multiplying builds a nominal rate from a real one. Going from nominal to real, divide.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>(1 + nominal) = (1 + real) &times; (1 + inflation), so real = 1.09 / 1.03 &minus; 1 = 5.83%. Keep it in mind today: the r in today&rsquo;s formula is a nominal required return like this 9%, so the growth rate g that goes with it must be nominal too.</p></details>
+        </div>
+      </section>
+
+      <h3>Shell&rsquo;s first dividend cut since the war</h3>
+      <p>On 30 April 2020, with the pandemic crushing demand for oil, Royal Dutch Shell cut its quarterly dividend by two-thirds: from 47 US cents a share to 16 cents.</p>
+      <p>It was Shell&rsquo;s first dividend cut since the Second World War. The company had held its dividend even through the deep oil slumps of the 1980s.</p>
+      <p>Over a year, 47 cents a quarter is $1.88 a share. At 16 cents a quarter, it would be $0.64.</p>
+      <p>The shares fell. Within the first hour of trading in London they were about 7% lower. In New York, by one report, its US-listed shares fell as much as 14% in the first half hour.</p>
+      <p>Now set those falls next to the cut. If a share is worth the dividends it will pay, cutting the dividend by two-thirds should cut the share&rsquo;s value by two-thirds.</p>
+      <p>The price fell by only a fraction of that. Why? And what was the price saying before the news?</p>
+
+      <h3>The idea</h3>
+      <p>A share is a claim on dividends: cash paid to its owners year after year, with no end date. Its value today is the present value of all of them.</p>
+      <p>Day 8 valued a level payment forever: A / r. Dividends usually grow. If they grow at a constant rate g, forever, the share is a <b>growing perpetuity</b>, worth</p>
+      <p><b>V<sub>0</sub> = D<sub>1</sub> / (r &minus; g)</b></p>
+      <p>next year&rsquo;s dividend divided by the gap between the return investors require, r, and the growth rate, g. This is the <b>Gordon growth model</b>, or constant-growth dividend discount model.</p>
+      <p>The intuition. Investors want 8% a year. If the dividend grows 3% a year, the share&rsquo;s value grows 3% with it, so growth supplies 3 of the 8 points and the dividend the other 5. Shell&rsquo;s next dividend, $1.88 &times; 1.03 = $1.9364, must be 5% of the price: $1.9364 &divide; 0.05 = $38.73.</p>
+      <p>Read backwards, a market price tells you what investors expect: required return = dividend yield + growth.</p>
+      <p>Who gets a dividend? Four dates, in order:</p>
+      <ul>
+        <li><b>Declaration date:</b> the board announces it.</li>
+        <li><b>Ex-dividend date:</b> buy on or after it and you don&rsquo;t get this dividend. The share now carries one dividend fewer, so its price drops by about the dividend.</li>
+        <li><b>Holder-of-record date:</b> the owners on the company&rsquo;s list get paid.</li>
+        <li><b>Payment date:</b> the cash arrives.</li>
+      </ul>
+
+      <h3>Why it works</h3>
+      <p>Start from Day 2: money due in a year is worth that amount &divide; (1 + r) today.</p>
+      <ol>
+        <li>Hold the share a year: you get D<sub>1</sub> plus the share, worth V<sub>1</sub> by then. So V<sub>0</sub> = (D<sub>1</sub> + V<sub>1</sub>) / (1 + r).</li>
+        <li>A year on, every dividend still to come is (1 + g) times bigger, so the share is worth (1 + g) times more: V<sub>1</sub> = V<sub>0</sub> &times; (1 + g).</li>
+        <li>Substitute: V<sub>0</sub> = [D<sub>1</sub> + V<sub>0</sub>(1 + g)] / (1 + r).</li>
+        <li>Multiply both sides by (1 + r): V<sub>0</sub>(1 + r) = D<sub>1</sub> + V<sub>0</sub>(1 + g).</li>
+        <li>Collect the V<sub>0</sub> terms; the 1s cancel: V<sub>0</sub> &times; (r &minus; g) = D<sub>1</sub>.</li>
+        <li>Divide by (r &minus; g): <b>V<sub>0</sub> = D<sub>1</sub> / (r &minus; g)</b>.</li>
+      </ol>
+      <p><b>Backwards.</b> Call V<sub>0</sub> the market price P<sub>0</sub> and divide step 4 by it: 1 + r = D<sub>1</sub>/P<sub>0</sub> + 1 + g. So r = D<sub>1</sub>/P<sub>0</sub> + g (dividend yield plus the price growth of step 2), and g = r &minus; D<sub>1</sub>/P<sub>0</sub>.</p>
+      <p><b>Only D<sub>0</sub> given?</b> Then D<sub>1</sub> = D<sub>0</sub>(1 + g) hides g on the right. From P<sub>0</sub>(r &minus; g) = D<sub>0</sub>(1 + g): rP<sub>0</sub> &minus; gP<sub>0</sub> = D<sub>0</sub> + gD<sub>0</sub>, so g = (rP<sub>0</sub> &minus; D<sub>0</sub>) / (P<sub>0</sub> + D<sub>0</sub>). Test: P<sub>0</sub> = 38.728, D<sub>0</sub> = 1.88, r = 0.08 give back 3.0000%.</p>
+      <p><b>No growth.</b> g = 0 gives Day 8&rsquo;s A / r: the value of a non-callable, non-convertible preferred share, whose dividend is fixed. V<sub>0</sub> = D<sub>p</sub> / r<sub>p</sub>, at the preferred&rsquo;s own required return.</p>
+      <p><b>Why r must beat g.</b> Written out, V<sub>0</sub> = D<sub>1</sub>/(1 + r) + D<sub>1</sub>(1 + g)/(1 + r)<sup>2</sup> + &hellip; Each term is the one before times (1 + g)/(1 + r), here 1.03/1.08 = 0.9537, so the terms shrink and the sum settles at 38.7280. If g &ge; r they never shrink: no finite value, and D<sub>1</sub>/(r &minus; g) gives nonsense.</p>
+      <p>In plain words: a share is worth next year&rsquo;s dividend divided by how far the return you want outruns the dividend&rsquo;s growth.</p>
+      <div class="formula">
+        <p class="expr">V<sub>0</sub> = D<sub>1</sub> / (r &minus; g), with D<sub>1</sub> = D<sub>0</sub> &times; (1 + g)</p>
+        <p class="expr">r = D<sub>1</sub> / P<sub>0</sub> + g</p>
+        <p class="expr">g = r &minus; D<sub>1</sub> / P<sub>0</sub></p>
+        <p class="expr">V<sub>0</sub> = D<sub>p</sub> / r<sub>p</sub> (preferred share)</p>
+        <dl>
+          <dt>V<sub>0</sub></dt><dd>the share&rsquo;s value today</dd>
+          <dt>D<sub>0</sub></dt><dd>the dividend just paid (the last year&rsquo;s)</dd>
+          <dt>D<sub>1</sub></dt><dd>next year&rsquo;s dividend</dd>
+          <dt>g</dt><dd>the constant yearly growth rate of dividends, forever, as a decimal</dd>
+          <dt>r</dt><dd>the required return on the equity, as a decimal; must be bigger than g</dd>
+          <dt>P<sub>0</sub></dt><dd>today&rsquo;s market price</dd>
+          <dt>D<sub>p</sub></dt><dd>the preferred share&rsquo;s fixed yearly dividend</dd>
+          <dt>r<sub>p</sub></dt><dd>the required return on the preferred share</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Gordon growth model: V<sub>0</sub> = D<sub>1</sub> / (r &minus; g), where D<sub>1</sub> = D<sub>0</sub> &times; (1 + g)</li>
+          <li>Implied required return on equity: r = D<sub>1</sub> / P<sub>0</sub> + g</li>
+          <li>Implied dividend growth rate: g = r &minus; D<sub>1</sub> / P<sub>0</sub></li>
+          <li>Value of a non-callable, non-convertible preferred share: V<sub>0</sub> = D<sub>p</sub> / r<sub>p</sub></li>
+          <li>Dividend chronology: Declaration date &rarr; ex-dividend date (shares bought on or after it do not get the dividend; price falls by about D) &rarr; holder-of-record date &rarr; payment date</li>
+          <li>Implied growth when only D<sub>0</sub> and P<sub>0</sub> are known: g = (r &times; P<sub>0</sub> &minus; D<sub>0</sub>) / (P<sub>0</sub> + D<sub>0</sub>), from P<sub>0</sub> = D<sub>0</sub>(1 + g)/(r &minus; g)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> (a) A stock just paid a $2.00 dividend; dividends grow 4% a year forever and investors require 10%. What is it worth? (b) If it trades at $40, with D<sub>1</sub> = $2.08 and g = 4%, what return does the market require? (c) What is a preferred share paying $3.00 a year worth at a 7.5% required return?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) &ldquo;Just paid&rdquo; is D<sub>0</sub>. Grow it: D<sub>1</sub> = 2.00 &times; 1.04 = 2.08.</li>
+          <li>V<sub>0</sub> = 2.08 / (0.10 &minus; 0.04) = 2.08 / 0.06 = 34.6667, so <b>$34.67</b>.</li>
+          <li>(b) r = D<sub>1</sub>/P<sub>0</sub> + g = 2.08/40 + 0.04 = 0.052 + 0.04 = <b>9.20%</b>: a 5.20% dividend yield plus 4% growth.</li>
+          <li>Sense check: $40 is above the $34.67 the share is worth at 10%, so the market must require less than 10%. It does: 9.20%.</li>
+          <li>(c) V<sub>0</sub> = D<sub>p</sub>/r<sub>p</sub> = 3.00 / 0.075 = <b>$40.00</b>.</li>
+        </ol>
+        <p>Answer: (a) $34.67; (b) 9.20%; (c) $40.00.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Shell&rsquo;s old dividend, D<sub>0</sub> = $1.88, with an illustrative 3% growth rate and 8% required return: find D<sub>1</sub> and V<sub>0</sub>. Then V<sub>0</sub> after the cut (D<sub>0</sub> = $0.64), the growth a made-up price of $25 would imply, and a preferred share paying $5 a year at a 6% required return. Plain arithmetic, not the TVM worksheet, so type rates as decimals: 8% is .08.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Leave any worksheet and clear the screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1; the brackets below keep the order right either way)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Next year&rsquo;s dividend, D<sub>1</sub> = 1.88 &times; 1.03, kept in memory</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>1.88</kbd> <kbd>&times;</kbd> <kbd>1.03</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>1.88</kbd> <kbd>&times;</kbd> <kbd>1.03</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (D is the green letter above <kbd>x&#8315;&#185;</kbd>)</div>
+            <p class="calc-see">Display: <samp>1.9364</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">The value: D<sub>1</sub> &divide; (r &minus; g)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>38.7280</samp> on both. Forget the brackets and you get 1.9364 &divide; .08 &minus; .03 = 24.1750: wrong.</p>
+          </li>
+          <li>
+            <p class="calc-what">After the cut: the same with D<sub>0</sub> = 0.64</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.64</kbd> <kbd>&times;</kbd> <kbd>1.03</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.64</kbd> <kbd>&times;</kbd> <kbd>1.03</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>.03</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>13.1840</samp> on both. 13.1840 &divide; 38.7280 = 0.3404, exactly 0.64 &divide; 1.88: the value falls 66%, in step with the dividend.</p>
+          </li>
+          <li>
+            <p class="calc-what">The growth a $25 price implies. D<sub>1</sub> contains g, so use the D<sub>0</sub> version, (r &times; P<sub>0</sub> &minus; D<sub>0</sub>) &divide; (P<sub>0</sub> + D<sub>0</sub>), as a percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>&minus;</kbd> <kbd>1.88</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>1.88</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>.08</kbd> <kbd>&times;</kbd> <kbd>25</kbd> <kbd>&minus;</kbd> <kbd>1.88</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>1.88</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.4464</samp> (BA II Plus) / <samp>.4464</samp> (TI-84): growth of 0.45% a year. Check: D<sub>1</sub> = 1.88 &times; 1.004464 = 1.8884, and 8% &minus; 1.8884/25 = 8% &minus; 7.5536% = 0.4464%.</p>
+          </li>
+          <li>
+            <p class="calc-what">The preferred share: D<sub>p</sub> &divide; r<sub>p</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>.06</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>5</kbd> <kbd>&divide;</kbd> <kbd>.06</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>83.3333</samp> on both.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: D<sub>1</sub> = $1.9364 and V<sub>0</sub> = $38.73; after the cut, $13.18 (66% less); a $25 price implies growth of just 0.45% a year; the preferred share is worth $83.33.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The model says value is proportional to next year&rsquo;s dividend. With r = 8% and g = 3% (illustrative, not anyone&rsquo;s estimate for Shell), the old $1.88 dividend supports $38.73 a share and the new $0.64 supports $13.18: 66% less, the size of the cut.</p>
+      <p>Yet the shares fell about 7% in early London trading and, by one report, as much as 14% early in New York. So before the news the price cannot have been near what the old dividend supported: it must already have been far lower.</p>
+      <p>Read the model backwards: at the same r, a lower price means lower expected growth, g = r &minus; D<sub>1</sub>/P<sub>0</sub>. At a made-up $25, the old dividend implies growth of just 0.45% a year, not 3%.</p>
+      <p>The likeliest reading: investors had largely priced in a cut before Shell announced it. A price moves on the surprise, not on the news.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Putting D<sub>0</sub> on top. The model needs next year&rsquo;s dividend: if the question says &ldquo;just paid&rdquo;, multiply by (1 + g) first. Shell&rsquo;s 1.88 / 0.05 = 37.60, not 38.73.</li>
+          <li>Using the model when g &ge; r. At g = 9% and r = 8%: 2.0492 / (&minus;0.01) = &minus;204.92, a negative price. The model doesn&rsquo;t apply; a stretch of fast growth needs a multistage model (Day 20).</li>
+          <li>Valuing a preferred share at the common shares&rsquo; required return. Use r<sub>p</sub>: the $5 preferred is worth 83.33 at its own 6%, not 62.50 at a common-stock 8%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="63.55" data-tol="0.01" data-show="63.55">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A company just paid a dividend of $3.10 a share. Dividends are expected to grow 2.5% a year forever, and investors require 7.5%. What is a share worth? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 2 and 3 of the walkthrough; D<sub>0</sub> (3.1), g (.025) and r (.075) change. &ldquo;Just paid&rdquo; means D<sub>0</sub>: grow it first.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>1</sub> = 3.10 &times; 1.025 = 3.1775. V<sub>0</sub> = 3.1775 / (0.075 &minus; 0.025) = 3.1775 / 0.05 = <b>63.55</b>.</p>
+            <p>BA II Plus: <kbd>3.1</kbd> <kbd>&times;</kbd> <kbd>1.025</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>3.1775</samp>; then <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.075</kbd> <kbd>&minus;</kbd> <kbd>.025</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>63.5500</samp>.</p>
+            <p>TI-84 Plus: <kbd>3.1</kbd> <kbd>&times;</kbd> <kbd>1.025</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.1775</samp>; then <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.075</kbd> <kbd>&minus;</kbd> <kbd>.025</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>63.5500</samp>.</p>
+            <p>The usual slips: D<sub>0</sub> on top gives 62.00; leaving g out of the denominator gives 42.37.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> A share goes ex-dividend today; the dividend is $0.50. What happens to its price, and why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Nothing changes today; it falls by about $0.50 on the payment date, when the cash actually leaves the company</span></label>
+              <p class="cq-why">The cash leaves on the payment date, but who gets it is settled by the ex-date. From the ex-date the share no longer carries that dividend, so that is when the price drops.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It falls by about $0.50 today, because holders of record sell their shares on the ex-date once the dividend is theirs</span></label>
+              <p class="cq-why">Nobody has to sell. Whoever owned the share before the ex-date gets the dividend whether they sell or not; the price drops because the share itself now carries one dividend fewer.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. It falls by about $0.50 today: a buyer from today does not get that dividend, so the share is worth only the dividends that remain</span></label>
+              <p class="cq-why">Right. Step 1 of the derivation: just before, the share is worth the coming dividend plus everything after it; from the ex-date a buyer gets only everything after it.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Just before the ex-date: value &asymp; the $0.50 about to be paid + the value of the dividends after it. On the ex-date the $0.50 stays with the seller, so the share is worth about $0.50 less. &ldquo;About&rdquo;, because the market moves that day for other reasons too.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="9.18" data-tol="0.01" data-pct data-show="9.18%">
+          <p class="cq-stem"><b>3. Twist: the return the market requires.</b> A share trades at $50. It just paid a $1.50 dividend, and dividends are expected to grow 6% a year forever. What return is the market requiring? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> First D<sub>1</sub> = D<sub>0</sub> &times; (1 + g). Then r = D<sub>1</sub>/P<sub>0</sub> + g: dividend yield plus growth.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>1</sub> = 1.50 &times; 1.06 = 1.59. Dividend yield = 1.59 / 50 = 0.0318 = 3.18%. r = 3.18% + 6% = <b>9.18%</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1.5</kbd> <kbd>&times;</kbd> <kbd>1.06</kbd> <kbd>&divide;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>.06</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>9.1800</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>1.5</kbd> <kbd>&times;</kbd> <kbd>1.06</kbd> <kbd>&divide;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>.06</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>9.1800</samp>.</p>
+            <p>Check it forwards: 1.59 / (0.0918 &minus; 0.06) = 50.00. Using D<sub>0</sub> instead gives 9.00%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A company has just paid an annual dividend of $1.20 per share. Dividends are expected to grow at 5% a year indefinitely, and the required return on its equity is 11%. Using the Gordon growth model, the value of one share is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $20.00</span></label>
+              <p class="cq-why">That is 1.20 / 0.06: D<sub>0</sub> on top. &ldquo;Just paid&rdquo; is D<sub>0</sub>; the model needs next year&rsquo;s dividend.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $21.00</span></label>
+              <p class="cq-why">Right: D<sub>1</sub> = 1.20 &times; 1.05 = 1.26, and 1.26 / (0.11 &minus; 0.05) = 21.00.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $11.45</span></label>
+              <p class="cq-why">That is 1.26 / 0.11: growth left out of the denominator, as if the dividend stopped growing after next year.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>V<sub>0</sub> = D<sub>0</sub>(1 + g) / (r &minus; g) = 1.26 / 0.06 = 21.00.</p>
+            <p>BA II Plus: <kbd>1.2</kbd> <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>21.0000</samp>. TI-84 Plus: the same keys, ending <kbd>ENTER</kbd> &rarr; <samp>21.0000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does V<sub>0</sub> = D<sub>1</sub> / (r &minus; g) say, and why does it work only when r is bigger than g?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A share is worth the present value of all its future dividends; if they grow at a constant rate g forever, that growing perpetuity adds up to next year&rsquo;s dividend divided by (r &minus; g). Each discounted dividend is the one before times (1 + g)/(1 + r), so only when r is bigger than g do they shrink and add up to a finite value; if g &ge; r they never shrink and the sum has no end.</p>
+            <p>A complete answer says: (1) it is the present value of a growing perpetuity of dividends; (2) D<sub>1</sub> is next year&rsquo;s dividend, D<sub>0</sub> &times; (1 + g); (3) if g &ge; r the discounted dividends never get smaller, so the sum has no finite value.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Equity Investments, Learning Module: Equity Valuation: Concepts and Basic Tools (the dividend payment chronology, the value of a non-callable, non-convertible preferred share and the Gordon constant-growth dividend discount model), with the required return and implied growth of equity from Quantitative Methods, Learning Module 4: The Time Value of Money in Finance.</p>
+      <p><strong>Sources.</strong> Reuters, &ldquo;Shell cuts dividend for first time since World War Two&rdquo;, 30 April 2020, as carried by LSE.co.uk and by Offshore Engineer (the cut from 47 to 16 cents; the first since the Second World War; no cut even in the downturns of the 1980s; London shares about 7% lower in the first hour); NBC News, &ldquo;Oil major Shell slashes dividend for the first time since World War II&rdquo;, 30 April 2020; Oil &amp; Gas 360, &ldquo;Why shares of Shell and Chesapeake tanked on 4/30&rdquo; (US-listed shares down as much as 14% in the first half hour); Shell plc, &ldquo;First Quarter 2020 Interim Dividend&rdquo;. The 8% required return, the 3% growth rate and the $25 price are illustrative, not estimates for Shell.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-18.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Apple split its stock 4-for-1 and lost three-quarters of its pull on the Dow. Nothing about Apple changed. — CFA Math, Day 22 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Apple split its stock 4-for-1 and lost three-quarters of its pull on the Dow. Nothing about Apple changed.",
+    "path": "reports/cfa/l1/day-22.html",
+    "summary": "Day 22 of CFA Math: Logan learns how price, market-cap, float-adjusted and equal weighting decide what an index says, why a stock split forces a price-weighted index to reset its divisor but leaves a cap-weighted index alone, and computes a new divisor of 1.5, a price return of 4.00% and a total return of 5.00% against a cap-weighted 3.28%.",
+    "headlines": [
+      "Day 22 of 90 · Quantitative Methods: price, value and equal weighting, and why a split forces a price-weighted index to reset its divisor",
+      "Calculator: a price-weighted index’s new divisor after a 4-for-1 split, its price and total return, and the cap-weighted return, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Apple split its stock 4-for-1 and lost three-quarters of its pull on the Dow. Nothing about Apple changed.</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        An index is a basket of shares on paper, and its weighting rule (by share price, by company value or equally) decides what it says when a company splits its stock.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 22 of 90 &middot; LM3 Benchmarking Returns &middot; Index weighting: price, value, equal</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="22">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 19 and one from Day 15, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="4.5" data-tol="0.01" data-pct data-show="4.50%">
+          <p class="cq-stem"><b>From Day 19.</b> A share trades at 60.00. Next year&rsquo;s dividend is expected to be 2.10, and investors require 8% a year. What constant growth rate does the price imply? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Read Gordon backwards: required return = dividend yield + growth.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>g = r &minus; D<sub>1</sub>/P<sub>0</sub> = 0.08 &minus; 2.10/60 = 0.08 &minus; 0.035 = <b>4.50%</b>. Check: 2.10/(0.08 &minus; 0.045) = 60.00.</p>
+            <p>BA II Plus: <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>2.1</kbd> <kbd>&divide;</kbd> <kbd>60</kbd> <kbd>=</kbd> &rarr; <samp>0.0450</samp> (AOS divides first). TI-84 Plus: <kbd>.08</kbd> <kbd>&minus;</kbd> <kbd>2.1</kbd> <kbd>&divide;</kbd> <kbd>60</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0450</samp>.</p>
+            <p>Adding the yield instead (8% + 3.5% = 11.50%) is the slip. Keep the 3.5% in mind: it is this share&rsquo;s <em>income</em> return, the part today&rsquo;s total-return index counts and a price index leaves out.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 15.</b> A 9-year bond pays a 5% coupon semiannually. Its yield to maturity is 6.5%. Its price per 100 of par is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 100.00</span></label>
+              <p class="cq-why">That discounts at the coupon rate (I/Y = 2.5). Any bond discounted at its own coupon rate is worth par; the market yield is 6.5%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 89.90</span></label>
+              <p class="cq-why">Right: N = 18, I/Y = 3.25, PMT = 2.5, FV = 100 gives PV = &minus;89.8996. A discount, because the 5% coupon is below the 6.5% yield.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 123.57</span></label>
+              <p class="cq-why">That uses the full 5 as the half-year coupon (PMT = 5 with N = 18, I/Y = 3.25). A price above par for a coupon below the yield is the red flag.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Semiannual: halve the coupon and the yield, double the years. BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>18</kbd> <kbd>N</kbd> <kbd>3.25</kbd> <kbd>I/Y</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;89.8996</samp> (END mode: no <samp>BGN</samp> on the display). TI-84 Plus: TVM Solver <samp>N=18</samp>, <samp>I%=3.25</samp>, <samp>PV=0</samp>, <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>, cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;89.8996</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Apple&rsquo;s split and the Dow&rsquo;s reshuffle</h3>
+      <p>Apple&rsquo;s shares closed at $499.23 on Friday 28 August 2020. Over the weekend its 4-for-1 stock split took effect: each old share became four new ones. Friday&rsquo;s close was the same as about $124.81 a share.</p>
+      <p>On Monday 31 August, before the open, the Dow Jones Industrial Average changed too. Out went ExxonMobil, Pfizer and Raytheon Technologies. In came Salesforce, Amgen and Honeywell. S&amp;P Dow Jones Indices, which runs the Dow, said the changes were prompted by Apple&rsquo;s split.</p>
+      <p>Apple had been the Dow&rsquo;s heaviest member: about 12% of the index by one estimate (others put it nearer 10%). After the split it was about 3%.</p>
+      <p>In the S&amp;P 500 the split left Apple&rsquo;s weight exactly where it was.</p>
+      <p>The split itself changed nothing about Apple&rsquo;s business, profits or total market value. So how can one index decide Apple suddenly matters a quarter as much, while another says nothing changed?</p>
+
+      <h3>The idea</h3>
+      <p>An index turns many prices into one number: how did the market do? It is also the yardstick. Day 13&rsquo;s time-weighted return judges a manager; an index is what the manager is judged against.</p>
+      <p>To build one, you must decide how much each stock counts: its <b>weight</b>. The main answers:</p>
+      <ul>
+        <li><b>Price weighting.</b> Each stock counts by its share price. The Dow works this way.</li>
+        <li><b>Market-cap (value) weighting.</b> Each stock counts by the company&rsquo;s value, price &times; shares.</li>
+        <li><b>Float-adjusted.</b> The same, counting only the <b>free float</b>: shares outstanding minus closely held shares (insiders, controlling owners, governments), the shares the public can actually buy. The S&amp;P 500 works this way.</li>
+        <li><b>Equal weighting.</b> Every stock counts the same.</li>
+        <li><b>Fundamental weighting.</b> By a size measure that is not the share price, such as sales, earnings, book value or dividends.</li>
+      </ul>
+      <p>An everyday picture. A price-weighted index is a shopping list that says &ldquo;one of each&rdquo;. If the shop starts selling cheese by the quarter-wheel, &ldquo;one cheese&rdquo; now means a quarter-wheel. Cheese shrinks on your bill, though there is just as much cheese in the shop.</p>
+      <p>One more term: liquidity, how easily shares trade. A common measure is <b>average daily volume</b>, the number of shares that change hands on a typical day.</p>
+
+      <h3>Why it works</h3>
+      <p>Start from Day 11: a return is end value &divide; start value &minus; 1. An index is a basket of shares on paper, so its return is the basket&rsquo;s; each weighting method is a recipe for what goes in.</p>
+      <ol>
+        <li><b>Price-weighted: one share of each.</b> The basket is worth P<sub>1</sub> + P<sub>2</sub> + &hellip; + P<sub>N</sub>. Divide by a divisor D to get a handy level: Index = &Sigma;P<sub>i</sub> / D.</li>
+        <li><b>A weight is a share of the money:</b> P<sub>i</sub> / &Sigma;P<sub>j</sub>. A $400 share counts five times an $80 one, whatever the companies&rsquo; size.</li>
+        <li><b>A k-for-1 split</b> turns P into P/k, so &Sigma;P drops though nothing real happened. The fix: D<sub>new</sub> = (sum of prices after the split) / (index just before). Same level, but the stock&rsquo;s weight now follows its smaller price.</li>
+        <li><b>Market-cap: the whole company.</b> Stock i is worth P<sub>i</sub> &times; Q<sub>i</sub>, so w<sub>i</sub> = P<sub>i</sub>Q<sub>i</sub> / &Sigma;P<sub>j</sub>Q<sub>j</sub>. A split makes the price P/k and the shares kQ: the product does not move, so neither does the weight. Float-adjusted: Q counts float shares only.</li>
+        <li><b>Equal: the same money in each</b>, w<sub>i</sub> = 1/N. Prices move and the weights drift (with the worked example&rsquo;s returns, thirds become 34.78%, 30.60%, 34.62% in a quarter), so the index is <b>rebalanced</b>: sell some winners, buy losers.</li>
+        <li><b>The return, for any recipe.</b> Each stock&rsquo;s money ends at its start &times; (1 + R<sub>i</sub>). So the basket&rsquo;s end &divide; start = &Sigma;w<sub>i</sub>(1 + R<sub>i</sub>) = 1 + &Sigma;w<sub>i</sub>R<sub>i</sub>, since the weights add to 1. Hence R<sub>index</sub> = &Sigma;w<sub>i</sub>R<sub>i</sub>, with start-of-period weights. Price-weighted, the divisor cancels: &Sigma;P<sub>end</sub> / &Sigma;P<sub>start</sub> &minus; 1.</li>
+        <li><b>Total return</b> adds Day 11&rsquo;s income: each R<sub>i</sub> becomes (P<sub>end</sub> &minus; P<sub>start</sub> + Inc<sub>i</sub>)/P<sub>start</sub>. So total return = price return + &Sigma;w<sub>i</sub> &times; Inc<sub>i</sub>/P<sub>i</sub>, the income return.</li>
+      </ol>
+      <p>In plain words: an index is a pretend basket of shares. The recipe says how much of each goes in, and the index&rsquo;s return is how much the basket gained.</p>
+      <div class="formula">
+        <p class="expr">Price-weighted: Index = &Sigma;P<sub>i</sub> / D, &nbsp; w<sub>i</sub> = P<sub>i</sub> / &Sigma;P<sub>j</sub></p>
+        <p class="expr">After a split: D<sub>new</sub> = &Sigma;(prices after the split) / index just before</p>
+        <p class="expr">Market-cap: w<sub>i</sub> = P<sub>i</sub>Q<sub>i</sub> / &Sigma;P<sub>j</sub>Q<sub>j</sub> &nbsp; Equal: w<sub>i</sub> = 1/N</p>
+        <p class="expr">R<sub>index</sub> = &Sigma;w<sub>i</sub>R<sub>i</sub>; &nbsp; total return = price return + &Sigma;w<sub>i</sub> &times; Inc<sub>i</sub>/P<sub>i</sub></p>
+        <dl>
+          <dt>P<sub>i</sub></dt><dd>share price of stock i (at the start of the period, in the weights)</dd>
+          <dt>D</dt><dd>the divisor of a price-weighted index</dd>
+          <dt>Q<sub>i</sub></dt><dd>shares of stock i counted: shares outstanding, or the free float in a float-adjusted index</dd>
+          <dt>w<sub>i</sub></dt><dd>weight of stock i: its share of the basket&rsquo;s money at the start; the weights add to 1</dd>
+          <dt>R<sub>i</sub></dt><dd>return of stock i over the period, as a decimal</dd>
+          <dt>N</dt><dd>number of stocks in the index</dd>
+          <dt>Inc<sub>i</sub></dt><dd>income (dividends) paid by stock i during the period</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Price-weighted index value: Index = &Sigma; P<sub>i</sub> / divisor</li>
+          <li>New divisor after a split: choose D<sub>new</sub> so that &Sigma; (post-split prices) / D<sub>new</sub> = index value just before the split</li>
+          <li>Market-cap (value) weight: w<sub>i</sub> = (P<sub>i</sub> &times; Q<sub>i</sub>) / &Sigma; (P<sub>j</sub> &times; Q<sub>j</sub>); float-adjusted uses float shares for Q</li>
+          <li>Equal weight with N stocks: w<sub>i</sub> = 1/N (must be rebalanced as prices move)</li>
+          <li>Index total return vs price return: total return = price return + income (dividends) return</li>
+          <li>Free float: shares outstanding &minus; closely held shares (insiders, controlling owners, governments); float-adjusted weights use float shares</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Three stocks over one quarter. X: 50 &rarr; 54; 200m shares, 40m closely held. Y: 20 &rarr; 19; 500m shares, none closely held; pays a 0.40 dividend. Z: 80 &rarr; 86; 100m shares, 50m closely held. Find (a) the float-adjusted weights and price return, (b) the full-cap and equal-weighted price returns, (c) the float-adjusted total return.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Returns: X 54/50 &minus; 1 = +8.00%; Y 19/20 &minus; 1 = &minus;5.00%; Z 86/80 &minus; 1 = +7.50%.</li>
+          <li>Free float = outstanding &minus; closely held: 160m, 500m, 50m.</li>
+          <li>Float caps ($m): 50 &times; 160 = 8,000; 20 &times; 500 = 10,000; 80 &times; 50 = 4,000. Total 22,000.</li>
+          <li>(a) Weights 36.36%, 45.45%, 18.18%. Return = 0.3636 &times; 8 + 0.4545 &times; (&minus;5) + 0.1818 &times; 7.5 = 2.91 &minus; 2.27 + 1.36 = <b>2.00%</b>.</li>
+          <li>(b) Full caps 10,000, 10,000, 8,000 (of 28,000): weights 35.71%, 35.71%, 28.57%, return <b>3.21%</b>. Equal: (8 &minus; 5 + 7.5)/3 = <b>3.50%</b>.</li>
+          <li>(c) Y with its dividend: (19 + 0.40)/20 &minus; 1 = &minus;3.00%. Index: 0.3636 &times; 8 + 0.4545 &times; (&minus;3) + 0.1818 &times; 7.5 = <b>2.91%</b> = 2.00% price + 0.91% income (0.4545 &times; 2%).</li>
+        </ol>
+        <p>Same three stocks, three recipes, three answers.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A price-weighted index holds A (400), B (80) and C (120), with a divisor of 3. A splits 4-for-1. Find the index before the split and the new divisor. Over the next period, prices move to A 110, B 76, C 126, and B and C pay dividends of 2 and 1: find the price return and the total return. Then compare a cap-weighted index of the same stocks, with 40, 50 and 30 million shares after the split. The BA II Plus uses ordinary arithmetic (in AOS), a memory and the <kbd>2ND</kbd> <kbd>&Delta;%</kbd> worksheet from Day 11; the TI-84 works on the home screen.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear, then the index before the split: one share of each, divided by 3</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> <kbd>(</kbd> <kbd>400</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd> <kbd>(</kbd> <kbd>400</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>200.0000</samp> on both. A is 400 of the 600 in the basket: 66.67% of the index.</p>
+          </li>
+          <li>
+            <p class="calc-what">The split: A becomes 400 &divide; 4 = 100. New divisor = new sum &divide; old index level; keep it in memory</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>200</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>200</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (the line ends in <samp>&rarr;D</samp>; D is the green letter above <kbd>x&#8315;&#185;</kbd>)</div>
+            <p class="calc-see">Display: <samp>1.5000</samp> on both. Check: 300 &divide; 1.5 = 200, the same level as before. A is now 100 of 300: 33.33%. Its pull halved (not quartered: A was most of the basket, so its cut shrank the total too), and nothing about the company changed.</p>
+          </li>
+          <li>
+            <p class="calc-what">The index at the end of the period: new prices over the new divisor</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>110</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>110</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>208.0000</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">Price return: OLD = 200, NEW = 208, solve for %CH</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>&Delta;%</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>200</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>208</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> (clearing sets #PD to 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>208</kbd> <kbd>&divide;</kbd> <kbd>200</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>%CH = 4.0000</samp> (BA II Plus) / <samp>4.0000</samp> (TI-84). Price return 4.00%. Same as 312/300 &minus; 1: the divisor cancels.</p>
+          </li>
+          <li>
+            <p class="calc-what">Total return: one share of each also collects one dividend of each, so add 2 + 1 to the end prices</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>(</kbd> <kbd>110</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>2ND</kbd> <kbd>&Delta;%</kbd> (it opens on <samp>OLD = 200.0000</samp>) <kbd>&darr;</kbd> <kbd>210</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>110</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd>, then <kbd>(</kbd> <kbd>210</kbd> <kbd>&divide;</kbd> <kbd>200</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>210.0000</samp>, then <samp>%CH = 5.0000</samp> (BA II Plus) / <samp>210.0000</samp>, then <samp>5.0000</samp> (TI-84). Total return 5.00% = 4.00% price + 1.00% income (3 of dividends on 300).</p>
+          </li>
+          <li>
+            <p class="calc-what">Cap-weighted: the basket is every share, so add up price &times; shares at the start and at the end ($ millions)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>&times;</kbd> <kbd>30</kbd> <kbd>=</kbd>, then <kbd>110</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>&times;</kbd> <kbd>30</kbd> <kbd>=</kbd> (AOS multiplies before it adds)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>&times;</kbd> <kbd>30</kbd> <kbd>ENTER</kbd>, then <kbd>110</kbd> <kbd>&times;</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>76</kbd> <kbd>&times;</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>126</kbd> <kbd>&times;</kbd> <kbd>30</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>11,600.0000</samp>, then <samp>11,980.0000</samp> (BA II Plus) / <samp>11600.0000</samp>, then <samp>11980.0000</samp> (TI-84). A is 100 &times; 40 = 4,000 after the split, exactly what 400 &times; 10 was before.</p>
+          </li>
+          <li>
+            <p class="calc-what">Cap-weighted price return: OLD = 11,600, NEW = 11,980</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>&Delta;%</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>11600</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>11980</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>11980</kbd> <kbd>&divide;</kbd> <kbd>11600</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>%CH = 3.2759</samp> (BA II Plus) / <samp>3.2759</samp> (TI-84). Lower than 4.00% because B, the loser (&minus;5%), is 34.48% of the cap-weighted basket but only 26.67% of the price-weighted one, while C (+5%) is 31.03% against 40.00%.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: index 200 before the split; new divisor 1.5; index 208 at the end: price return 4.00%, total return 5.00%. The cap-weighted index of the same stocks returned 3.28%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The Dow is price-weighted: one share of each of its 30 stocks, summed and divided by a divisor of about 0.15. Apple counted as $499.23 in that sum on Friday and as $124.81 after the split. Its price fell by three-quarters, and its weight nearly as much: about 12% became about 3%. (Apple was a small slice of the sum; A, most of the walkthrough&rsquo;s basket, only halved.)</p>
+      <p>Each $1 move in any Dow stock moved the index about 6.7 points (1 &divide; 0.15). So a 1% move in Apple, about $5, had been worth roughly 33 points; after the split, about 8.</p>
+      <p>That morning the divisor was reset, for the split and the three swaps at once, so the Dow&rsquo;s level did not jump: the walkthrough&rsquo;s step 2, for real.</p>
+      <p>The S&amp;P 500 weights by price &times; shares. Apple&rsquo;s price went to a quarter, its share count rose fourfold, and the product, its market value, did not move. Neither did its weight.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Not resetting the divisor after a split. In the walkthrough, keeping D = 3 shows 300 &divide; 3 = 100 the moment A splits: a 50% &ldquo;fall&rdquo; for no economic reason.</li>
+          <li>Thinking a split changes a cap-weighted index&rsquo;s weights. A&rsquo;s market cap is 400 &times; 10m = 4,000 before and 100 &times; 40m = 4,000 after: 34.48% of the index both times.</li>
+          <li>Reporting the price return when the total return is asked. In the walkthrough that is 4.00% instead of 5.00%: the dividends are the gap.</li>
+          <li>Using shares outstanding in a float-adjusted index. In the worked example that turns the 2.00% return into 3.21%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.6315789473684292" data-tol="0.01" data-pct data-show="2.63%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A price-weighted index holds three stocks priced 90, 45 and 165, with a divisor of 2.5. The 165 stock splits 3-for-1. Over the next period the prices move to 93, 44 and 58 (no dividends). What is the index&rsquo;s price return for the period? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same steps as the walkthrough: the prices, the divisor and the split ratio change. Index level first, then the new divisor (the 165 stock is now 55), then the end level, then the percent change.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Index = 300/2.5 = 120. After the split: 90 + 45 + 55 = 190, so D<sub>new</sub> = 190/120 = 1.5833. End level = 195/1.5833 = 123.1579. Price return = 123.1579/120 &minus; 1 = <b>2.63%</b> (2.6316). Shortcut: the divisor cancels, 195/190 &minus; 1.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>(</kbd> <kbd>90</kbd> <kbd>+</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>165</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2.5</kbd> <kbd>=</kbd> &rarr; <samp>120.0000</samp>; <kbd>(</kbd> <kbd>90</kbd> <kbd>+</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>55</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>=</kbd> &rarr; <samp>1.5833</samp> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>(</kbd> <kbd>93</kbd> <kbd>+</kbd> <kbd>44</kbd> <kbd>+</kbd> <kbd>58</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>123.1579</samp>; <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0263</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>2.6316</samp>. (Or <kbd>2ND</kbd> <kbd>&Delta;%</kbd> with OLD = 120, NEW = 123.1579: <samp>%CH = 2.6316</samp>.)</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>90</kbd> <kbd>+</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>165</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2.5</kbd> <kbd>ENTER</kbd> &rarr; <samp>120.0000</samp>; <kbd>(</kbd> <kbd>90</kbd> <kbd>+</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>55</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.5833</samp>; <kbd>(</kbd> <kbd>93</kbd> <kbd>+</kbd> <kbd>44</kbd> <kbd>+</kbd> <kbd>58</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>123.1579</samp>; <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0263</samp> (the line starts with <samp>Ans</samp>); <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.6316</samp>.</p>
+            <p>The usual slip: keeping the divisor at 2.5 gives an end level of 78 and a &ldquo;return&rdquo; of &minus;35.00%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> A company in a market-cap-weighted index splits its stock 2-for-1. Nothing else changes. What happens to its weight in the index?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It halves, because its share price halves</span></label>
+              <p class="cq-why">That is price-weighted thinking, where a stock&rsquo;s weight follows its share price. A cap-weighted index looks at price &times; shares.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It doubles, because there are twice as many shares</span></label>
+              <p class="cq-why">The share count doubles, but each share is now worth half as much. Counting the shares and forgetting the price is half the picture.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. It does not change: the price halves and the share count doubles, so price &times; shares is the same</span></label>
+              <p class="cq-why">Right. The weight is the company&rsquo;s market value over the total, and a split changes neither.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>w<sub>i</sub> = P<sub>i</sub>Q<sub>i</sub> / &Sigma;P<sub>j</sub>Q<sub>j</sub>. After a 2-for-1 split, (P/2) &times; (2Q) = PQ, and every other company is unchanged, so the top and the bottom of the fraction stay put. That is why Apple&rsquo;s weight in the S&amp;P 500 stayed put through the split, while the Dow had to reset its divisor.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="2.6153846153846154" data-tol="0.0001" data-show="2.6154">
+          <p class="cq-stem"><b>3. Twist: a swap, like the Dow&rsquo;s in 2020.</b> A price-weighted index of four stocks has prices that add up to 260 and a divisor of 2.0. A stock priced 30 is replaced by one priced 110. What must the new divisor be? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">divisor</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same rule as a split: the new divisor keeps the index where it was. Find the level now, then the new sum of prices.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Index now = 260/2.0 = 130. New sum = 260 &minus; 30 + 110 = 340. D<sub>new</sub> = 340/130 = <b>2.6154</b>. It rises, so the dearer newcomer does not make the index jump: 340/2.6154 = 130.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>260</kbd> <kbd>&minus;</kbd> <kbd>30</kbd> <kbd>+</kbd> <kbd>110</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>260</kbd> <kbd>&divide;</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>2.6154</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> for <kbd>=</kbd> &rarr; <samp>2.6154</samp>.</p>
+            <p>Keeping D = 2.0 would show 340/2 = 170, a 30.77% &ldquo;jump&rdquo; that no investor earned.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A price-weighted index holds three stocks. Over the year, A rises from 25 to 30, B falls from 50 to 45 and C rises from 100 to 110; C also pays a dividend of 2.00. The index&rsquo;s price return for the year is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 5.71%</span></label>
+              <p class="cq-why">Right: (30 + 45 + 110)/(25 + 50 + 100) &minus; 1 = 185/175 &minus; 1. Within the year the divisor cancels.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 6.67%</span></label>
+              <p class="cq-why">That averages the three returns (20%, &minus;10%, 10%): equal weighting. A price-weighted index gives C, the dearest stock, the most weight.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 6.86%</span></label>
+              <p class="cq-why">That adds C&rsquo;s dividend: (185 + 2)/175 &minus; 1 is the total return, not the price return.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>The weights are the starting prices over their sum: 25/175 = 14.29%, 50/175 = 28.57%, 100/175 = 57.14%. Weighted return = (25 &times; 20% + 50 &times; (&minus;10%) + 100 &times; 10%)/175 = (5 &minus; 5 + 10)/175 = 5.71%, the same as 185/175 &minus; 1.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>30</kbd> <kbd>+</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>110</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>50</kbd> <kbd>+</kbd> <kbd>100</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0571</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>5.7143</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>.0571</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.7143</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why must a price-weighted index change its divisor after a stock split, and why does a cap-weighted index not need to?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A price-weighted index is the sum of the share prices divided by a divisor, and a split cuts a share&rsquo;s price without changing the company&rsquo;s value, so without a new divisor the index would fall for no economic reason; the divisor is reset so the level is the same just after the split as just before. In a cap-weighted index the price falls by the split factor while the share count rises by the same factor, so price &times; shares, and with it the weight, does not change.</p>
+            <p>A complete answer says: (1) index = &Sigma; prices / divisor, so weight follows share price; (2) a split cuts the price but not the value, so the divisor is reset to keep the index level unchanged; (3) in a cap-weighted index P falls and Q rises by the same factor, so value and weight are unchanged.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 3: Benchmarking Returns (index construction: price, market-cap, float-adjusted, equal and fundamental weighting; the divisor after a split or a change of members; index price return and total return), with free float and average daily volume as covered in Equity Investments.</p>
+      <p><strong>Sources.</strong> S&amp;P Dow Jones Indices&rsquo; announcement as reported by NBC News, &ldquo;Dow index replaces three companies as markets shake up&rdquo;, August 2020 (Salesforce, Amgen and Honeywell replace ExxonMobil, Pfizer and Raytheon Technologies before the open on 31 August, prompted by Apple&rsquo;s 4-for-1 split); CNBC, &ldquo;The Dow makes its biggest swap in years&rdquo;, 25 August 2020; Zacks via Nasdaq.com, &ldquo;Apple Stock Split Prompts Significant Changes in the Dow&rdquo;, 27 August 2020 (Apple about 12% of the Dow before the split); The Motley Fool, &ldquo;Why Apple&rsquo;s stock split spurred a Dow Jones shake-up&rdquo;, 26 August 2020 (price weighting; about 3% after the split); InvestingCube, &ldquo;Apple share price gains in premarket trading as stock split takes effect&rdquo;, 31 August 2020 ($499.23 before the split, $124.81 adjusted); MacRumors, &ldquo;Apple Shares Rise as Trading Begins Following Four-for-One Stock Split&rdquo;, 31 August 2020; S&amp;P Global, &ldquo;Dow Jones Industrial Average: 124 years and it keeps changing&rdquo; (how the divisor works).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-21.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

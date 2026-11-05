@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The decade’s best fund made 18% a year; its typical investor lost 11% a year. Both numbers are true — CFA Math, Day 13 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The decade’s best fund made 18% a year; its typical investor lost 11% a year. Both numbers are true",
+    "path": "reports/cfa/l1/day-13.html",
+    "summary": "Day 13 of CFA Math: Logan learns why a fund’s time-weighted return (sub-period returns chain-linked, so it measures the manager) and its investors’ money-weighted return (the IRR of their own deposits and withdrawals, so timing counts) can tell opposite stories, and computes both for a two-share purchase on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 13 of 90 · Quantitative Methods: the money-weighted return counts the investor’s timing, the time-weighted return measures the manager",
+      "Calculator: an investor’s money-weighted return by IRR and her annualized time-weighted return, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The decade’s best fund made 18% a year; its typical investor lost 11% a year. Both numbers are true</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        One fund, two honest returns: the time-weighted return follows a single untouched dollar and judges the manager; the money-weighted return follows your own dollars and counts when you put them in.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 13 of 90 &middot; LM3 Benchmarking Returns &middot; Money-weighted vs time-weighted returns</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="13">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 12 and Day 4, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="4.215038298745544" data-tol="0.01" data-pct data-show="4.22%">
+          <p class="cq-stem"><b>From Day 12.</b> A fund returned +18%, &minus;12% and +9% in three straight years. What was its geometric mean annual return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Turn each return into a growth factor (1.18, 0.88, 1.09), multiply them, take the cube root, subtract 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>1.18</kbd> <kbd>&times;</kbd> <kbd>0.88</kbd> <kbd>&times;</kbd> <kbd>1.09</kbd> <kbd>=</kbd> &rarr; <samp>1.1319</samp>; <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.0422</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0422</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.2150</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>1.18</kbd> <kbd>&times;</kbd> <kbd>0.88</kbd> <kbd>&times;</kbd> <kbd>1.09</kbd> <kbd>)</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0422</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.2150</samp>.</p>
+            <p>So <b>4.22%</b> a year: $10,000 became $11,318.56, and a steady 4.2150% a year for three years gives exactly the same. The arithmetic mean, (18 &minus; 12 + 9)/3 = 5.00%, overstates it. Keep this root in mind: today it annualizes a time-weighted return.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 4.</b> Three savings accounts quote these rates. Which one pays the most over a year?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 6.00% compounded monthly</span></label>
+              <p class="cq-why">Right: EAR = 1.005<sup>12</sup> &minus; 1 = 6.17%, the highest of the three.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 6.10% compounded annually</span></label>
+              <p class="cq-why">The highest stated rate, but compounded once a year its EAR is just 6.10%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 5.95% compounded daily</span></label>
+              <p class="cq-why">Daily compounding lifts it to an EAR of 6.13%: better than B, still below A&rsquo;s 6.17%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Compare EARs, never stated rates: EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1. BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 6.1678</samp>. TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, then <kbd>6</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.1678</samp> (the line reads <samp>►Eff(6,12)</samp>); <samp>►Eff(5.95,365)</samp> &rarr; <samp>6.1301</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The best fund of the decade, and its losing investors</h3>
+      <p>On 31 December 2009 the Wall Street Journal named the best-performing US stock fund of the decade: CGM Focus, run by the stock-picker Ken Heebner. Over the ten years to late November 2009 it had returned about 18% a year.</p>
+      <p>At that pace, money grows roughly fivefold in ten years.</p>
+      <p>The paper also reported a second number. Morningstar had estimated what the fund&rsquo;s typical shareholder earned over the same decade: a loss of about 11% a year. At that pace, money shrinks to less than a third.</p>
+      <p>Neither number is a misprint. Much of the money had simply arrived at the wrong moment. In 2007 the fund gained about 80%. In 2008 investors poured about $2.6 billion into it. That year it fell about 48%.</p>
+      <p>Same fund, same ten years. How can the fund earn about +18% a year while the people who owned it lost about 11% a year?</p>
+
+      <h3>The idea</h3>
+      <p>A fund&rsquo;s return and its investors&rsquo; return answer different questions.</p>
+      <p>The <b>time-weighted return</b> (TWR) follows one dollar that went in at the start and was never touched. It asks: how well did the manager invest whatever money he had? Money coming in or going out does not move it.</p>
+      <p>The <b>money-weighted return</b> (MWR) follows your actual dollars: how many, and when. It is the IRR of your own deposits and withdrawals (Day 10), so a year when you had a lot in counts for more than a year when you had a little.</p>
+      <p>An everyday picture: a bus runs fast on the highway and crawls through town. Its timetable is the same whoever rides. But if most riders board just before the traffic jam, the typical rider&rsquo;s trip is slow, though the bus kept its timetable.</p>
+      <p>Managers rarely choose when clients add or pull money, so the TWR is the standard for judging them. The MWR is the honest number for what an investor actually earned.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Two kinds of change.</b> An account moves because its investments rise or fall (return) and because the owner adds or withdraws cash (an <b>external cash flow</b>). A deposit makes it bigger without earning anything.</p>
+      <p><b>A small case.</b> She deposits 100 today. Year 1 earns 20%: 120. She deposits another 100: 220. Year 2 earns 5%: 231.</p>
+      <p><b>Money-weighted: Day 10&rsquo;s IRR, from her side.</b> Deposits leave her pocket: &minus;100 today, &minus;100 at year 1. The ending value comes back, as if she cashed out: +231 at year 2. The MWR is the rate that makes their NPV zero.</p>
+      <p><b>What that rate means.</b> Try 10%. The first 100 grows for two years: 100 &times; 1.10<sup>2</sup> = 121. The second grows for one: 100 &times; 1.10 = 110. Together 231, exactly her ending value. So her MWR is 10.00%: the one rate that, earned on every dollar for as long as it was in, rebuilds her account.</p>
+      <p><b>Why timing counts.</b> The second 100 was there only for year 2, so year 2 had 220 at work against year 1&rsquo;s 100, and the MWR leans toward its 5%.</p>
+      <p><b>Time-weighted: Day 11&rsquo;s chain, cut at each flow.</b> Split the time line at every deposit or withdrawal. Inside each piece no money comes or goes, so the change is pure investment result: 120/100 &minus; 1 = 20%, then 231/220 &minus; 1 = 5% (year 2 starts at 220, after the deposit).</p>
+      <p><b>Link, then annualize.</b> $1 left alone becomes 1.20 &times; 1.05 = 1.26. The deposit changed how many dollars there were, not what each one earned, so it drops out. Two years: take the square root, Day 12&rsquo;s geometric mean. &radic;1.26 &minus; 1 = 12.25% a year.</p>
+      <p><b>Why they differ.</b> More money sat in the weaker year, so MWR (10.00%) &lt; TWR (12.25%). Money arriving before a strong year flips it. With no flows after the first deposit, the two are equal.</p>
+      <p>In plain words: the TWR asks how well one dollar did in the manager&rsquo;s hands; the MWR asks how well <em>your</em> dollars did, given when you put them in.</p>
+      <div class="formula">
+        <p class="expr">&Sigma;<sub>t=0</sub><sup>N</sup> CF<sub>t</sub> / (1 + MWR)<sup>t</sup> = 0</p>
+        <p class="expr">HPR<sub>i</sub> = (V<sub>end</sub> &minus; V<sub>start</sub>) / V<sub>start</sub></p>
+        <p class="expr">TWR = (1 + HPR<sub>1</sub>)(1 + HPR<sub>2</sub>)&hellip;(1 + HPR<sub>n</sub>) &minus; 1</p>
+        <p class="expr">TWR<sub>annual</sub> = (1 + TWR)<sup>1/N</sup> &minus; 1</p>
+        <dl>
+          <dt>CF<sub>t</sub></dt><dd>the investor&rsquo;s own cash flow at time t: deposits negative, withdrawals and the ending value positive</dd>
+          <dt>t</dt><dd>when each flow happens, in periods (usually years) from the first deposit</dd>
+          <dt>MWR</dt><dd>money-weighted return per period: the IRR of those cash flows</dd>
+          <dt>V<sub>start</sub></dt><dd>value at the start of a sub-period, after that date&rsquo;s deposit or withdrawal</dd>
+          <dt>V<sub>end</sub></dt><dd>value at the end of the sub-period, just before the next flow, plus any income paid out in it</dd>
+          <dt>HPR<sub>i</sub></dt><dd>holding-period return of sub-period i</dd>
+          <dt>n</dt><dd>number of sub-periods (cut at every external cash flow)</dd>
+          <dt>N</dt><dd>number of years the whole span covers (with yearly periods, also the last t)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Money-weighted return: the IRR of the investor&rsquo;s cash flows: &Sigma; CF<sub>t</sub> / (1 + MWR)<sup>t</sup> = 0</li>
+          <li>Time-weighted return over n sub-periods: TWR = (1 + HPR<sub>1</sub>)(1 + HPR<sub>2</sub>)&hellip;(1 + HPR<sub>n</sub>) &minus; 1, annualized geometrically</li>
+          <li>When is TWR the right measure? When the manager does not control the timing of external cash flows (manager evaluation)</li>
+          <li>Effect of timing on MWR: MWR &gt; TWR if more money is invested just before strong returns; MWR &lt; TWR if before weak returns</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A client gives a manager $1,000,000. After one year the account is worth $1,150,000, and the client withdraws $400,000. A year later the remaining account is worth $690,000. Find the annualized TWR and the MWR, by hand.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Cut at the withdrawal. Sub-period 1: HPR<sub>1</sub> = 1,150,000 &divide; 1,000,000 &minus; 1 = 15.00%.</li>
+          <li>Sub-period 2 starts after it, at 1,150,000 &minus; 400,000 = 750,000: HPR<sub>2</sub> = 690,000 &divide; 750,000 &minus; 1 = &minus;8.00%.</li>
+          <li>Chain: 1.15 &times; 0.92 = 1.058, a TWR of 5.80% over two years. Annualized: &radic;1.058 &minus; 1 = 1.028591 &minus; 1 = <b>2.86%</b> a year.</li>
+          <li>MWR: the client&rsquo;s flows are &minus;1,000,000 today, +400,000 at year 1, +690,000 at year 2. With v = 1/(1 + r), NPV = 0 reads 690,000v<sup>2</sup> + 400,000v &minus; 1,000,000 = 0.</li>
+          <li>Two years make it a quadratic: v = [&minus;400,000 + &radic;(400,000<sup>2</sup> + 4 &times; 690,000 &times; 1,000,000)] &divide; (2 &times; 690,000) = (&minus;400,000 + 1,708,800.7) &divide; 1,380,000 = 0.948406.</li>
+          <li>MWR = 1/v &minus; 1 = 1.054400 &minus; 1 = <b>5.44%</b> a year. (CF worksheet: &minus;1,000,000, 400,000, 690,000, <kbd>IRR</kbd> <kbd>CPT</kbd> &rarr; <samp>IRR = 5.4400</samp>; TI-84: <samp>irr(&minus;1000000,{400000,690000})</samp> &rarr; <samp>5.4400</samp>.)</li>
+          <li>MWR above TWR: 1,000,000 worked through the good year (+15%), only 750,000 through the bad one (&minus;8%).</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> An investor buys one share at 100. A year later she receives a 2.00 dividend and buys a second share at 120. At the end of year 2 she receives 2.00 per share and sells both shares at 130. Find her money-weighted return (the IRR) and the annualized time-weighted return.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Open the cash-flow tool, empty</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (old cash flows stay until you clear them)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, <kbd>CLEAR</kbd>, then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">8:irr(</kbd></div>
+            <p class="calc-see">Display: <samp>CFo = 0.0000</samp> (BA II Plus) / <samp>irr(</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Today: she pays 100 for the first share, so CF0 = &minus;100</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(&minus;)</kbd> <kbd>100</kbd> <kbd>,</kbd></div>
+            <p class="calc-see">Display: <samp>CFo = &minus;100.0000</samp>, then <samp>C01 = 0.0000</samp> (BA II Plus) / <samp>irr(&minus;100,</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Year 1: she pays 120 for the second share and receives the 2.00 dividend, a net &minus;118</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>118</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (the second <kbd>&darr;</kbd> steps past F01, left at 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> open the list with <kbd>2nd</kbd> <kbd>(</kbd> ({), then <kbd>(&minus;)</kbd> <kbd>118</kbd> <kbd>,</kbd></div>
+            <p class="calc-see">Display: <samp>C01 = &minus;118.0000</samp>, <samp>F01 = 1.0000</samp>, then <samp>C02 = 0.0000</samp> (BA II Plus) / <samp>irr(&minus;100,{&minus;118,</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Year 2: 4 of dividends plus 260 for the shares, +264. Then solve for the IRR: that is the MWR</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>264</kbd> <kbd>ENTER</kbd> <kbd>IRR</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>264</kbd> <kbd>2nd</kbd> <kbd>)</kbd> (}) <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>C02 = 264.0000</samp>, then <samp>IRR = 13.8612</samp> (BA II Plus) / <samp>13.8612</samp> under <samp>irr(&minus;100,{&minus;118,264})</samp> (TI-84). MWR = 13.86% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">Now the TWR. Her flows fall at year-ends, so each year is a sub-period: find its return per share, dividend included (Day 11&rsquo;s HPR)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> (leave the worksheet), then <kbd>120</kbd> <kbd>&minus;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>100</kbd> <kbd>=</kbd>, then <kbd>130</kbd> <kbd>&minus;</kbd> <kbd>120</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> still on the home screen: <kbd>(</kbd> <kbd>120</kbd> <kbd>&minus;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd>, then <kbd>(</kbd> <kbd>130</kbd> <kbd>&minus;</kbd> <kbd>120</kbd> <kbd>+</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>22.0000</samp>, then <samp>0.2200</samp>; <samp>12.0000</samp>, then <samp>0.1000</samp> (BA II Plus) / <samp>.2200</samp>, then <samp>.1000</samp> (TI-84). Year 1: +22%; year 2: +10%. The whole account agrees: year 2 starts at 2 &times; 120 = 240 and ends at 264, +10%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Chain-link the two years, then take the square root: the span is two years</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>1.22</kbd> <kbd>&times;</kbd> <kbd>1.1</kbd> <kbd>=</kbd> <kbd>&radic;x</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>1.22</kbd> <kbd>&times;</kbd> <kbd>1.1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (an operator first puts <samp>Ans</samp> in front; this <kbd>&minus;</kbd> is subtraction, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>1.3420</samp>, <samp>1.1584</samp>, <samp>0.1584</samp>, <samp>15.8447</samp> (BA II Plus) / <samp>1.1584</samp>, then <samp>.1584</samp>, then <samp>15.8447</samp> (TI-84). TWR = 15.84% a year.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: MWR = 13.86% a year; TWR = 15.84% a year. The MWR is lower because year 2, the weaker year (+10% against +22%), had 240 of her money at work against 100 in year 1.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The fund&rsquo;s +18% a year is time-weighted: one dollar followed through the decade, so it measures Heebner&rsquo;s stock picking. The shareholders&rsquo; &minus;11% is money-weighted: it counts how many dollars were in each year, and a great many arrived just in time for 2008.</p>
+      <p>Take a hypothetical investor. She puts $10,000 in at the start of 2007, the +80% year: $18,000. She adds $20,000 at the start of 2008: $38,000. The fund falls 48%; she ends with $19,760, having put in $30,000.</p>
+      <p>Time-weighted: 1.80 &times; 0.52 &minus; 1 = &minus;6.40% over two years, &minus;3.25% a year. Money-weighted: the IRR of &minus;10,000, &minus;20,000 and +19,760 is &minus;27.49% a year. Two-thirds of her money arrived just before the bad year.</p>
+      <p>It is not a one-off. Morningstar&rsquo;s &ldquo;Mind the Gap&rdquo; study found US fund investors earned about 6.0% a year in the ten years to December 2022, against 7.7% for the funds themselves.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Treating a deposit or withdrawal as a return.</b> In the TWR, cut the time line at every external cash flow and start the next sub-period from the value <em>after</em> the flow. The worked example&rsquo;s account fell from 1,000,000 to 690,000, but it did not lose 31.00%: 400,000 was withdrawn.</li>
+          <li><b>Signs in the IRR.</b> Take the investor&rsquo;s side: deposits negative, withdrawals and the ending value positive. Enter the walkthrough&rsquo;s year-1 purchase as +118 and the &ldquo;MWR&rdquo; jumps to 131.86%. (Flipping <em>every</em> sign changes nothing: still 13.86%.)</li>
+          <li><b>Annualizing arithmetically.</b> A two-year TWR of 5.80% is &radic;1.058 &minus; 1 = 2.86% a year, not 5.80 &divide; 2 = 2.90%. The bigger the returns, the bigger the gap.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2.2713266557598977" data-tol="0.01" data-pct data-show="2.27%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An investor buys 1 share at 50. A year later she receives a 1.00 dividend and buys 2 more shares at 60. At the end of year 2 she receives 1.00 a share and sells all 3 shares at 57. What is her money-weighted return? As a percent a year, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough; only the cash flows change. Year 1: she pays 2 &times; 60 and receives 1.00. Year 2: three dividends of 1.00 plus three shares at 57.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Cash flows: &minus;50 today; &minus;120 + 1 = &minus;119 at year 1; 3 &times; 1 + 3 &times; 57 = +174 at year 2.</p>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>50</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>119</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>174</kbd> <kbd>ENTER</kbd> <kbd>IRR</kbd> <kbd>CPT</kbd> &rarr; <samp>IRR = 2.2713</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">8:irr(</kbd> <kbd>(&minus;)</kbd> <kbd>50</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>(&minus;)</kbd> <kbd>119</kbd> <kbd>,</kbd> <kbd>174</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.2713</samp> under <samp>irr(&minus;50,{&minus;119,174})</samp>.</p>
+            <p>So the MWR is <b>2.27%</b> a year. For comparison, the TWR: per share, year 1 is (60 &minus; 50 + 1)/50 = +22.00% and year 2 is (57 &minus; 60 + 1)/60 = &minus;3.33%; &radic;(1.22 &times; 0.966667) &minus; 1 = 8.60% a year.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> In question 1 the money-weighted return comes out far below the time-weighted return. Why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The MWR leaves out the dividends</span></label>
+              <p class="cq-why">They are in it: the year-1 flow nets the 1.00 dividend (&minus;119), and the year-2 flow includes 3.00 of dividends (+174).</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The TWR counts her second purchase as a gain</span></label>
+              <p class="cq-why">The opposite: the TWR cuts the time line at the purchase and measures year 2 from the 60 price, so new money never counts as return.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Two of her three shares were bought just before the losing year</span></label>
+              <p class="cq-why">Right. Year 1 (+22%) had 50 of her money at work; year 2 (&minus;3.33%) had 180. The IRR weights each year by the money in it, so the bad year dominates.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The TWR gives each year the same weight, whatever the money: one dollar through +22% and then &minus;3.33%. The MWR follows her actual dollars, and most of them arrived for the bad year. It is CGM Focus in 2008, in miniature.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="8.035200000000021" data-tol="0.01" data-pct data-show="8.04%">
+          <p class="cq-stem"><b>3. Twist: cut at the cash flows.</b> An account is worth 200,000 on 1 January. On 31 March it is worth 208,000, and the client then deposits 50,000. On 31 August it is worth 252,840, and the client then withdraws 30,000. On 31 December it is worth 236,210.40. What is the time-weighted return for the year? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Three sub-periods, one between each pair of dates. Each starts from the value after the flow: 208,000 + 50,000 = 258,000, then 252,840 &minus; 30,000 = 222,840. The three pieces make exactly one year, so there is nothing to annualize.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>HPR<sub>1</sub> = 208,000/200,000 &minus; 1 = 4.00%; HPR<sub>2</sub> = 252,840/258,000 &minus; 1 = &minus;2.00%; HPR<sub>3</sub> = 236,210.40/222,840 &minus; 1 = 6.00%.</p>
+            <p>TWR = 1.04 &times; 0.98 &times; 1.06 &minus; 1 = 1.080352 &minus; 1 = <b>8.04%</b>. The pieces are 3, 5 and 4 months long; that does not matter, because each factor already covers its own stretch.</p>
+            <p>BA II Plus: <kbd>208000</kbd> <kbd>&divide;</kbd> <kbd>200000</kbd> <kbd>&times;</kbd> <kbd>252840</kbd> <kbd>&divide;</kbd> <kbd>258000</kbd> <kbd>&times;</kbd> <kbd>236210.4</kbd> <kbd>&divide;</kbd> <kbd>222840</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0804</samp>, <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>8.0352</samp>.</p>
+            <p>TI-84 Plus: <kbd>208000</kbd> <kbd>&divide;</kbd> <kbd>200000</kbd> <kbd>&times;</kbd> <kbd>252840</kbd> <kbd>&divide;</kbd> <kbd>258000</kbd> <kbd>&times;</kbd> <kbd>236210.4</kbd> <kbd>&divide;</kbd> <kbd>222840</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0804</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>8.0352</samp>.</p>
+            <p>Not 236,210.40/200,000 &minus; 1 = 18.11%: that counts the client&rsquo;s net 20,000 of deposits as if the manager had earned it.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A client invests $100 with a manager. The account earns 15% in year 1. At the start of year 2 the client adds $100, and the account earns 6% in year 2, ending at $227.90. The manager&rsquo;s annualized performance is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 10.95%</span></label>
+              <p class="cq-why">That is the two-year TWR (1.15 &times; 1.06 &minus; 1 = 21.90%) divided by 2: annualizing arithmetically instead of taking the square root.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 10.41%</span></label>
+              <p class="cq-why">Right. A manager is judged by the TWR: &radic;(1.15 &times; 1.06) &minus; 1 = &radic;1.219 &minus; 1 = 10.41% a year.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 9.03%</span></label>
+              <p class="cq-why">That is the MWR, the IRR of &minus;100, &minus;100 and +227.90. It reflects the client&rsquo;s choice to add money before the weaker year, which the manager did not control.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>1.15</kbd> <kbd>&times;</kbd> <kbd>1.06</kbd> <kbd>=</kbd> &rarr; <samp>1.2190</samp>, <kbd>&radic;x</kbd> &rarr; <samp>1.1041</samp>, <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.1041</samp>.</p>
+            <p>TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>1.15</kbd> <kbd>&times;</kbd> <kbd>1.06</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1041</samp>.</p>
+            <p>The MWR, for comparison: CFo = &minus;100, C01 = &minus;100, C02 = 227.9, <kbd>IRR</kbd> <kbd>CPT</kbd> &rarr; <samp>IRR = 9.0283</samp> (TI-84: <samp>irr(&minus;100,{&minus;100,227.9})</samp>). &ldquo;Manager&rdquo; in the question means TWR; &ldquo;what the client earned&rdquo; would mean MWR.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what do the money-weighted and the time-weighted return each measure, and who should use which?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The money-weighted return is the IRR of the investor&rsquo;s own deposits, withdrawals and ending value, so it counts how much money was in during each period and shows what the investor actually earned, timing included; the time-weighted return chain-links the returns of the sub-periods between cash flows, so deposits and withdrawals drop out, which makes it the standard for judging a manager who does not control when money comes and goes.</p>
+            <p>A complete answer says: (1) MWR = the IRR of the investor&rsquo;s own cash flows, so the size and timing of deposits and withdrawals count (the investor&rsquo;s experience); (2) TWR = sub-period returns chain-linked, with the time line cut at every cash flow, so the flows have no effect; (3) use the TWR to evaluate managers and the MWR for what the investor earned.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 3: Benchmarking Returns (the money-weighted return as the IRR of an investor&rsquo;s cash flows; the time-weighted return by chain-linking sub-period returns, annualized geometrically; which one evaluates a manager).</p>
+      <p><strong>Sources.</strong> Eleanor Laise, &ldquo;Best Stock Fund of the Decade: CGM Focus&rdquo;, The Wall Street Journal, 31 December 2009, as excerpted and cited by GuruFocus and by Benzinga (the $2.6 billion of 2008 inflows and the 48% fall); CBS MoneyWatch, &ldquo;Why you should avoid the decade&rsquo;s top fund&rdquo; (Morningstar: investors about &minus;10.8% a year against the fund&rsquo;s about 17.9%); Kiplinger, &ldquo;CGM Focus&rdquo; (the roughly 80% gain in 2007); Morningstar, &ldquo;Mind the Gap 2023&rdquo; (US fund investors about 6.0% a year against 7.7% for the funds, ten years to December 2022). The investor in &ldquo;Back to the story&rdquo; is hypothetical.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-12.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

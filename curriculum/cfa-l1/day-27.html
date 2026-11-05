@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>‘1 in 73 million’ helped convict Sally Clark of murder. Bayes’ formula shows it answered the wrong question — CFA Math, Day 27 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "‘1 in 73 million’ helped convict Sally Clark of murder. Bayes’ formula shows it answered the wrong question",
+    "path": "reports/cfa/l1/day-27.html",
+    "summary": "Day 27 of CFA Math: Bayes’ formula updates a prior probability on new information, dividing by P(Information) from the total probability rule; Logan turns a 40% prior on an earnings beat into 64% after a signal, and sees why ‘1 in 73 million’ answered the wrong question in the Sally Clark case.",
+    "headlines": [
+      "Day 27 of 90 · Quantitative Methods: Bayes’ formula updates a prior on new information, P(E | I) = [P(I | E)/P(I)] × P(E)",
+      "Calculator: P(signal) by the total probability rule, then P(beat | signal) from stored values, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>&lsquo;1 in 73 million&rsquo; helped convict Sally Clark of murder. Bayes&rsquo; formula shows it answered the wrong question</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Bayes&rsquo; formula turns &ldquo;how likely is this evidence if it&rsquo;s true?&rdquo; into &ldquo;how likely is it true, given this evidence?&rdquo;, and shows why a rare coincidence is not proof.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 27 of 90 &middot; LM6 Statistical Distributions for Financial Asset Prices and Returns &middot; Bayes&rsquo; formula</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="27">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 26 and 20, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="96.7" data-tol="0.01" data-show="96.70">
+          <p class="cq-stem"><b>From Day 26.</b> A one-year bond pays 100, or 45 if the issuer defaults. There is a 25% chance of recession, when the default probability is 12%, and a 75% chance of expansion, when it is 4%. What is the expected payoff? Per 100 of face value, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Find the expected payoff inside each scenario, then weight each by the scenario&rsquo;s probability and add: the total probability rule for expected value.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>E(payoff | recession) = 0.88 &times; 100 + 0.12 &times; 45 = 88.00 + 5.40 = 93.40.</p>
+            <p>E(payoff | expansion) = 0.96 &times; 100 + 0.04 &times; 45 = 96.00 + 1.80 = 97.80.</p>
+            <p>E(payoff) = 0.25 &times; 93.40 + 0.75 &times; 97.80 = 23.35 + 73.35 = <b>96.70</b>.</p>
+            <p>Shortcut check: P(default) = 0.25 &times; 0.12 + 0.75 &times; 0.04 = 0.03 + 0.03 = 0.06, and 100 &minus; 0.06 &times; 55 = 96.70. Keep that P(default) line in mind: it is today&rsquo;s denominator.</p>
+            <p>BA II Plus (AOS): <kbd>.88</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>.12</kbd> <kbd>&times;</kbd> <kbd>45</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>93.4000</samp>; <kbd>.96</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>.04</kbd> <kbd>&times;</kbd> <kbd>45</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>97.8000</samp>; <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>.75</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>96.7000</samp>.</p>
+            <p>TI-84 Plus: <kbd>.88</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>.12</kbd> <kbd>&times;</kbd> <kbd>45</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>93.4000</samp>; <kbd>.96</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>.04</kbd> <kbd>&times;</kbd> <kbd>45</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>97.8000</samp>; <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>.75</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>96.7000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 20.</b> A share&rsquo;s dividend, D<sub>0</sub> = 1.50, will grow 8% a year for two years, then 3% a year forever. The required return is 9%. The terminal value at the end of year 2, V<sub>2</sub>, is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 29.16</span></label>
+              <p class="cq-why">That is D<sub>2</sub> / (r &minus; g<sub>L</sub>) = 1.7496 / 0.06. The Gordon formula needs the <em>next</em> dividend, D<sub>3</sub>, the first one paid in stable growth.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 25.28</span></label>
+              <p class="cq-why">That is V<sub>2</sub> discounted to today, 30.0348 / 1.09<sup>2</sup>: a later step in valuing the share, not the value at the end of year 2.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 30.03</span></label>
+              <p class="cq-why">Right. D<sub>3</sub> = 1.50 &times; 1.08<sup>2</sup> &times; 1.03 = 1.8021, and V<sub>2</sub> = 1.8021 / (0.09 &minus; 0.03) = 30.03.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>V<sub>n</sub> = D<sub>n+1</sub> / (r &minus; g<sub>L</sub>) is a value at time n, built from the first dividend of stable growth: D<sub>1</sub> = 1.62, D<sub>2</sub> = 1.7496, D<sub>3</sub> = 1.7496 &times; 1.03 = 1.8021.</p></details>
+        </div>
+      </section>
+
+      <h3>Sally Clark and the 1-in-73-million figure</h3>
+      <p>On 9 November 1999, at Chester Crown Court in England, the solicitor Sally Clark was convicted by a 10&ndash;2 majority of murdering her two baby sons. Both had died suddenly in infancy.</p>
+      <p>The paediatrician Sir Roy Meadow had told the jury that the chance of two cot deaths (sudden infant death syndrome, SIDS) in a family like hers was about 1 in 73 million. He had taken 1 in 8,543 for one such death and squared it: 8,543 &times; 8,543 = 72,982,849.</p>
+      <p>A number that small sounds like proof. If an innocent family had a 1-in-73-million chance of this, the innocent explanation looks dead.</p>
+      <p>Her first appeal was dismissed in October 2000. Statisticians objected. In October 2001 the Royal Statistical Society said publicly that the figure had &ldquo;no statistical basis&rdquo;. In January 2002 it wrote to the Lord Chancellor that &ldquo;the calculation leading to 1 in 73 million is false&rdquo;.</p>
+      <p>A second appeal quashed her convictions in January 2003. She was freed on 29 January, after about three years in prison.</p>
+      <p>So what was wrong with the number? What question should the jury have been asking, and how should the evidence of two deaths change a probability?</p>
+
+      <h3>The idea</h3>
+      <p>Two questions sound alike and are not. &ldquo;If this is true, how likely is the evidence?&rdquo; is P(Information | Event). &ldquo;Given the evidence, how likely is it true?&rdquo; is P(Event | Information). Decisions need the second. Data usually hands you the first.</p>
+      <p>A smoke alarm makes it obvious. It sounds at almost every kitchen fire, so P(alarm | fire) is close to 1. Yet when it sounds, it is usually burnt toast: P(fire | alarm) is small, because toast burns far more often than kitchens do.</p>
+      <p><b>Bayes&rsquo; formula</b> turns one into the other. You start with a <b>prior</b>: your probability before the news. The information arrives. The <b>posterior</b> is your probability after it.</p>
+      <p>How far it moves depends on one comparison: how much more likely the information is when the event is true than when it isn&rsquo;t. And the rarer the event to begin with, the more false alarms there are to wade through.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Count it first.</b> Take 1,000 firms. The prior says 5% will default within a year: 50 firms. The other 950 won&rsquo;t.</p>
+      <p><b>Send the warnings.</b> A warning goes to 70% of the 50 defaulters: 35 firms. It also goes to 10% of the 950 healthy ones: 95 firms. That makes 130 warned firms.</p>
+      <p><b>Look only at the warned.</b> A warning arrived, so your firm is one of those 130. Only 35 of them default: 35 / 130 = 26.9%. That is all Bayes does: the answer is a share of the <em>warned</em>, not of the defaulters.</p>
+      <p><b>Swap counts for probabilities</b> (divide each count by 1,000; W = warning, D = default). The 35 is a joint probability, Day 26&rsquo;s multiplication rule: P(W and D) = P(W | D) &times; P(D) = 0.70 &times; 0.05. The 130 is Day 26&rsquo;s total probability rule, one term per branch: P(W) = P(W | D)P(D) + P(W | not D)P(not D).</p>
+      <p><b>Divide.</b> P(D | W) = P(W and D) / P(W) = P(W | D) &times; P(D) / P(W).</p>
+      <p><b>The same in one line.</b> The joint probability can be written either way round: P(E | I) &times; P(I) = P(E and I) = P(I | E) &times; P(E). Divide both sides by P(I), and Bayes&rsquo; formula falls out.</p>
+      <p><b>The CFA layout</b> groups it as [P(I | E) / P(I)] &times; P(E). Call the bracket the <b>update factor</b> (our label, not an exam term): how much more often the information shows up when the event is true than it does overall. Above 1, the probability rises; below 1, it falls; exactly 1, the information tells you nothing.</p>
+      <p><b>In plain words:</b> out of all the ways you could see this clue, what share come from the thing you are asking about?</p>
+      <div class="formula">
+        <p class="expr">P(E | I) = [P(I | E) / P(I)] &times; P(E)</p>
+        <p class="expr">P(I) = P(I | E)P(E) + P(I | not E)P(not E)</p>
+        <dl>
+          <dt>E</dt><dd>the event (a default, an earnings beat, guilt)</dd>
+          <dt>I</dt><dd>the information that arrives (a warning, a signal, the evidence)</dd>
+          <dt>P(E)</dt><dd>the prior: the probability before the information</dd>
+          <dt>P(E | I)</dt><dd>the posterior: the probability after it</dd>
+          <dt>P(I | E)</dt><dd>how likely the information is if the event is true</dd>
+          <dt>P(I | not E)</dt><dd>how likely it is if the event is not true: the false-alarm rate</dd>
+          <dt>P(I)</dt><dd>the unconditional probability of the information: every branch that produces it, added up</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Bayes&rsquo; formula: P(Event | Information) = [P(Information | Event) / P(Information)] &times; P(Event)</li>
+          <li>Unconditional probability of the information: P(I) = P(I | E)P(E) + P(I | not E)P(not E)</li>
+          <li>Prior and posterior: prior = P(Event) before the information; posterior = P(Event | Information) after it</li>
+          <li>The inverted conditional (prosecutor&rsquo;s fallacy): P(Information | Event) is not P(Event | Information); Bayes converts one into the other using the prior and P(Information)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> An analyst puts a 5% prior probability on a company defaulting within a year. A credit-watch warning is issued before 70% of defaults, but also for 10% of companies that do not default. The warning is issued. What is the probability of default now, and what would it have been with no warning?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Draw the tree. First split: default (0.05) or not (0.95). Second split: warning or not. Four ends: D and W = 0.70 &times; 0.05 = 0.035; D and no W = 0.30 &times; 0.05 = 0.015; no D and W = 0.10 &times; 0.95 = 0.095; no D and no W = 0.90 &times; 0.95 = 0.855. They add to 1.</li>
+          <li>Joint: P(W and D) = P(W | D) &times; P(D) = 0.70 &times; 0.05 = 0.035.</li>
+          <li>Total probability: P(W) = 0.70 &times; 0.05 + 0.10 &times; 0.95 = 0.035 + 0.095 = 0.13.</li>
+          <li>Bayes: P(D | W) = (0.70 / 0.13) &times; 0.05 = 5.3846 &times; 0.05 = 0.035 / 0.13 = <b>26.92%</b>.</li>
+          <li>No warning: P(no W) = 1 &minus; 0.13 = 0.87; P(D | no W) = (0.30 &times; 0.05) / 0.87 = 0.015 / 0.87 = <b>1.72%</b>.</li>
+          <li>Read it: the warning lifts the default probability from 5% to about 27%, a big jump, yet about 73% of warned companies still do not default.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Before results, you put a 40% prior on a firm beating earnings. A signal (say, upbeat guidance) appears 80% of the time before beats and 30% of the time otherwise. The signal appears: find P(signal), then P(beat | signal). Plain arithmetic, with each branch stored so nothing is retyped.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Top branch, beat and signal: P(signal | beat) &times; P(beat) = 0.80 &times; 0.40. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.3200</samp> (BA II Plus) / <samp>.3200</samp> (TI-84). Of 100 such firms, 32 beat <em>and</em> show the signal.</p>
+          </li>
+          <li>
+            <p class="calc-what">Bottom branch, no beat and signal: P(signal | no beat) &times; P(no beat) = 0.30 &times; 0.60 (P(no beat) = 1 &minus; 0.40). Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>.6</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.1800</samp> (BA II Plus) / <samp>.1800</samp> (TI-84). 18 in 100 show the signal and then miss: the false alarms.</p>
+          </li>
+          <li>
+            <p class="calc-what">Add the branches: P(signal), the total probability rule. Store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> (C is above <kbd>PRGM</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.5000</samp> (BA II Plus) / <samp>.5000</samp> (TI-84). Half of all firms show the signal.</p>
+          </li>
+          <li>
+            <p class="calc-what">Bayes: the top branch&rsquo;s share of P(signal)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.6400</samp> (BA II Plus) / <samp>.6400</samp> (TI-84). Of the 50 in 100 that show the signal, 32 beat.</p>
+          </li>
+          <li>
+            <p class="calc-what">The same answer in the CFA layout: [P(signal | beat) / P(signal)] &times; P(beat)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.8</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.8</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>.4</kbd> <kbd>ENTER</kbd> (the TI-84 types <samp>Ans*</samp> in front for you)</div>
+            <p class="calc-see">Display: <samp>1.6000</samp>, then <samp>0.6400</samp> (BA II Plus) / <samp>1.6000</samp>, then <samp>.6400</samp> (TI-84). 1.6 is the update factor: the signal is 1.6 times as common before beats as it is overall.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: P(signal) = 0.50; P(beat | signal) = 0.64. The signal lifts the probability of a beat from 40% to 64%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p><b>Error one: multiplying as if independent.</b> Squaring treats the two deaths as unconnected, but a family that has lost one baby to SIDS is more likely to lose another: the mathematician Ray Hill later put that dependency factor at about 5 to 10.</p>
+      <p><b>Error two: the inverted conditional.</b> 1 in 73 million is P(two deaths | innocent). The jury needed P(innocent | two deaths). Bayes divides by P(two deaths), every way two deaths can happen, and the double murder of babies is also extraordinarily rare.</p>
+      <p>Hill estimated double SIDS at roughly 4.5 to 9 times as likely as double murder. Weigh just those two: at 9 to 1, P(guilty | two deaths) = 1/(1 + 9) = 10%; at 4.5 to 1, 1/(1 + 4.5) = 18%. The opposite of the impression the jury was given.</p>
+      <p>Statistics alone cannot settle guilt, which rests on the medical and other evidence. The point: the figure the jury heard answered the wrong question.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Confusing P(A | B) with P(B | A), the prosecutor&rsquo;s fallacy. P(signal | beat) = 80%, but P(beat | signal) = 64%; P(warning | default) = 70%, but P(default | warning) = 26.92%.</li>
+          <li>Leaving a branch out of the denominator P(Information). It adds every way the information can arise: drop the &ldquo;no beat&rdquo; branch and you divide 0.32 by 0.32 and call the beat certain.</li>
+          <li>Multiplying probabilities as if events were independent when they are not. P(A and B) = P(B | A) &times; P(A); P(A) &times; P(B) works only when A tells you nothing about B. Squaring 1 in 8,543 was this mistake.</li>
+          <li>Taking P(I | not E) as 1 &minus; P(I | E). 1 &minus; 0.80 = 0.20 is P(no signal | beat), another branch. Use the false-alarm rate given, 0.30; the shortcut turns 64% into 72.73%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="53.84615384615385" data-tol="0.01" data-pct data-show="53.85%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> You put a 25% prior on a firm cutting its dividend this year. A warning sign appears before 70% of cuts and for 20% of firms that do not cut. The warning sign appears. What is the probability of a cut now? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough. The prior and both conditional probabilities change; P(no cut) = 1 &minus; 0.25 = 0.75.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Top branch: 0.70 &times; 0.25 = 0.175. Bottom branch: 0.20 &times; 0.75 = 0.15. P(sign) = 0.175 + 0.15 = 0.325. P(cut | sign) = 0.175 / 0.325 = <b>53.85%</b>. (70% is P(sign | cut): the inverted conditional.)</p>
+            <p>BA II Plus: <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.25</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.1750</samp>; <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>.75</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.1500</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>0.3250</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>0.5385</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>53.8462</samp>.</p>
+            <p>TI-84 Plus: <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>.25</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1750</samp>; <kbd>.2</kbd> <kbd>&times;</kbd> <kbd>.75</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1500</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3250</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.5385</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>53.8462</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> An expert tells a jury: &ldquo;The chance of this evidence if the defendant is innocent is 1 in a million, so the chance he is innocent is 1 in a million.&rdquo; What is wrong with the reasoning?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It swaps P(evidence | innocent) for P(innocent | evidence); Bayes also needs the prior and P(evidence), which counts every other way the evidence can arise</span></label>
+              <p class="cq-why">Right. 1 in a million says how surprising the evidence would be if he were innocent. Whether innocence is likely depends on how surprising the evidence is under guilt too, and on how rare guilt is to begin with.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Nothing: P(evidence | innocent) and P(innocent | evidence) are always equal</span></label>
+              <p class="cq-why">Bayes says P(innocent | evidence) = P(evidence | innocent) &times; P(innocent) / P(evidence), so they are equal only if P(innocent) happens to equal P(evidence). Today&rsquo;s walkthrough: P(signal | beat) = 80%, P(beat | signal) = 64%.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Only that the figure should have been squared, because there are two pieces of evidence</span></label>
+              <p class="cq-why">Squaring repeats the independence mistake from the Clark case, and the squared figure would still answer the wrong question.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>P(innocent | evidence) = P(evidence | innocent) &times; P(innocent) / P(evidence), and P(evidence) adds the guilty branch to the innocent one. If guilt is itself very rare, the guilty branch can be tiny too, and innocence can stay the likelier explanation. The expert reported the likelihood and called it the posterior.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="11.811023622047244" data-tol="0.01" data-pct data-show="11.81%">
+          <p class="cq-stem"><b>3. Twist: the other branch.</b> You put a 30% prior on a firm beating earnings. The signal appears before 75% of beats and before 20% of misses. This time the signal does <em>not</em> appear. What is P(beat | no signal)? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Build the tree on the no-signal ends: P(no signal | beat) = 1 &minus; 0.75 and P(no signal | no beat) = 1 &minus; 0.20. Then the same three steps.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Top: P(no signal | beat) &times; P(beat) = 0.25 &times; 0.30 = 0.075. Bottom: P(no signal | no beat) &times; P(no beat) = 0.80 &times; 0.70 = 0.56. P(no signal) = 0.075 + 0.56 = 0.635. P(beat | no signal) = 0.075 / 0.635 = <b>11.81%</b>.</p>
+            <p>BA II Plus: <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.0750</samp>; <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>0.5600</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>3</kbd> &rarr; <samp>0.6350</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>0.1181</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>11.8110</samp>.</p>
+            <p>TI-84 Plus: <kbd>.25</kbd> <kbd>&times;</kbd> <kbd>.3</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0750</samp>; <kbd>.8</kbd> <kbd>&times;</kbd> <kbd>.7</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>.5600</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6350</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>C</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1181</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>11.8110</samp>.</p>
+            <p>A missing signal is information too: the 30% prior falls to 11.81%. (Had the signal appeared, it would have risen to 61.64%.)</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A credit screen flags 90% of firms that later default and 5% of firms that do not. 2% of firms default. The probability that a flagged firm defaults is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 90.00%</span></label>
+              <p class="cq-why">That is P(flagged | default), the conditional the wrong way round: the prosecutor&rsquo;s fallacy.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 26.87%</span></label>
+              <p class="cq-why">Right: 0.90 &times; 0.02 = 0.018, divided by P(flagged) = 0.018 + 0.05 &times; 0.98 = 0.018 + 0.049 = 0.067.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 94.74%</span></label>
+              <p class="cq-why">That is 0.90 / (0.90 + 0.05): the 2% prior ignored, as if defaulters and survivors were equally common.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Count 1,000 firms: 20 default, and 18 of them are flagged. 980 survive, and 49 of them are flagged. Of the 67 flagged firms, 18 default: 18 / 67 = <b>26.87%</b>.</p>
+            <p>Formula: P(D | F) = [P(F | D) / P(F)] &times; P(D) = (0.90 / 0.067) &times; 0.02 = 26.87%. A screen that catches 90% of defaults still flags mostly survivors, because survivors are 49 times as common.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences, using the Sally Clark case or the earnings signal: what does Bayes&rsquo; formula do, and why is P(evidence | innocent) not the chance of innocence?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Bayes&rsquo; formula updates a prior on new information: the posterior is P(information | event) &times; prior &divide; P(information), where P(information) adds up every way the information can arise. &ldquo;1 in 73 million&rdquo; was P(two deaths | innocent), not P(innocent | two deaths); double murder is also extremely rare, so on the deaths alone the innocent explanation stayed the likelier one.</p>
+            <p>A complete answer says: (1) posterior = P(I | E) &times; P(E) / P(I); (2) P(I) adds every branch, by the total probability rule; (3) P(A | B) is not P(B | A); (4) a rare event can stay fairly unlikely even after a fairly reliable signal, as the warned firm still defaults only about 27% of the time.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 6: Statistical Distributions for Financial Asset Prices and Returns (Bayes&rsquo; formula; prior and posterior probabilities; the unconditional probability of the information by the total probability rule; probability trees; Bayesian updating in investment problems).</p>
+      <p><strong>Sources.</strong> Wikipedia, &ldquo;Sally Clark&rdquo; (convicted 9 November 1999 by a 10&ndash;2 majority; 1 in 73 million from squaring 1 in 8,543; first appeal dismissed October 2000; Royal Statistical Society statement, October 2001, and letter to the Lord Chancellor, January 2002; convictions quashed 2003; Hill&rsquo;s 4.5:1 to 9:1 estimate); The Irish Times, &ldquo;Expert told court multiple cot deaths &lsquo;one in 73m&rsquo;&rdquo;; Ray Hill, &ldquo;Multiple sudden infant deaths &ndash; coincidence or beyond coincidence?&rdquo;, <em>Paediatric and Perinatal Epidemiology</em> 18 (2004), 320&ndash;326 (dependency factor 5 to 10); <em>Plus</em> magazine (University of Cambridge), issue 21, feature on the Clark case and the statistics; MOJO Scotland, &ldquo;On this day 2003&rdquo; (freed 29 January 2003 after about three years in prison).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-26.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>One judge’s vote moved an Olympic gold in 2002. Skating’s fix: throw out the highest and lowest marks — CFA Math, Day 23 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "One judge’s vote moved an Olympic gold in 2002. Skating’s fix: throw out the highest and lowest marks",
+    "path": "reports/cfa/l1/day-23.html",
+    "summary": "Day 23 of CFA Math: Logan learns why the median, quartiles and trimmed and winsorized means resist extreme values, locates any percentile at L = (n + 1) × y/100 in the sorted data, and computes a nine-judge panel’s mean 8.3889, median 8.50, quartiles 8.125 and 8.75, trimmed mean 8.4643 and winsorized mean 8.4444.",
+    "headlines": [
+      "Day 23 of 90 · Quantitative Methods: the median, percentiles at (n + 1) × y/100, and trimmed and winsorized means that one extreme value cannot drag around",
+      "Calculator: a nine-judge panel’s mean, median, quartiles, trimmed mean and winsorized mean, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>One judge’s vote moved an Olympic gold in 2002. Skating’s fix: throw out the highest and lowest marks</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Sort the numbers and judge by the middle: the median, the quartiles and a trimmed mean say where the data sit, and no single extreme value can drag them around.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 23 of 90 &middot; LM5 Statistical Characteristics of Asset Returns &middot; Median, quantiles and trimmed means</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="23">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 22 and one from Day 16, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="1.1785714285714286" data-tol="0.0001" data-show="1.1786">
+          <p class="cq-stem"><b>From Day 22.</b> A price-weighted index holds three stocks priced 45, 120 and 80, with a divisor of 1.75. The 120 stock splits 3-for-1. What is the new divisor? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">divisor</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The index must read the same just after the split as just before. Find that level, then the new sum of prices.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Index before = 245/1.75 = 140. After the split the 120 stock is 40, so the sum is 45 + 40 + 80 = 165. D<sub>new</sub> = 165/140 = <b>1.1786</b>. Check: 165/1.1786 &asymp; 140.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>120</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.75</kbd> <kbd>=</kbd> &rarr; <samp>140.0000</samp>; <kbd>(</kbd> <kbd>45</kbd> <kbd>+</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>80</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>140</kbd> <kbd>=</kbd> &rarr; <samp>1.1786</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> for <kbd>=</kbd>.</p>
+            <p>Keeping D = 1.75 would show 165/1.75 = 94.2857: a 32.65% &ldquo;fall&rdquo; that nobody lost.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 16.</b> A 6-year bond with a 5% annual coupon is priced at 104.00 per 100 of par. It can be called in 2 years at 101. Its yield-to-worst is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 4.23%</span></label>
+              <p class="cq-why">That is the yield to maturity (N = 6, FV = 100). It is the higher of the two yields, so it is not the worst.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 2.91%</span></label>
+              <p class="cq-why">That uses par (FV = 100) in the yield to call. If called, the bond pays the call price, 101.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 3.39%</span></label>
+              <p class="cq-why">Right: the yield to call (N = 2, FV = 101) is below the 4.23% YTM, so it is the worst case.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Yield-to-worst is the lowest of the YTM and every yield to call. BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>2</kbd> <kbd>N</kbd> <kbd>104</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>5</kbd> <kbd>PMT</kbd> <kbd>101</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 3.3894</samp>; then <kbd>6</kbd> <kbd>N</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 4.2312</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=2</samp>, <samp>I%=0</samp>, <samp>PV=&minus;104</samp>, <samp>PMT=5</samp>, <samp>FV=101</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>, cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=3.3894</samp>; then <samp>N=6</samp>, <samp>FV=100</samp>, solve <samp>I%=</samp> again &rarr; <samp>I%=4.2312</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The 5&ndash;4 vote at Salt Lake City</h3>
+      <p>On 11 February 2002, at the Winter Olympics in Salt Lake City, Canada&rsquo;s Jamie Sal&eacute; and David Pelletier skated a pairs free program that was widely described as clean.</p>
+      <p>Russia&rsquo;s Elena Berezhnaya and Anton Sikharulidze made a visible error: Sikharulidze stepped out of a double Axel.</p>
+      <p>The judges gave the gold to the Russians anyway, five votes to four.</p>
+      <p>Within days the French judge, Marie-Reine Le Gougne, was reported to have said she had been pressured by her federation to vote for the Russians. She later retracted the claim.</p>
+      <p>On 15 February the IOC and the International Skating Union (ISU) awarded Sal&eacute; and Pelletier a second set of gold medals; the Russians kept theirs. In April the ISU suspended Le Gougne and the French federation&rsquo;s head, Didier Gailhaguet, for three years.</p>
+      <p>One judge&rsquo;s vote was enough to move a gold medal. If any one judge might be leaning on the scale, how do you combine nine scores so that no single mark, however extreme, can decide the result?</p>
+
+      <h3>The idea</h3>
+      <p>The mean (Day 12) gives every number the same say. That is its strength and its weakness: one wild number drags it.</p>
+      <p>The fix is to sort the data, smallest to largest, and look at <em>positions</em>:</p>
+      <ul>
+        <li><b>Median:</b> the middle value. Half the data sit below it, half above.</li>
+        <li><b>Mode:</b> the most frequent value.</li>
+        <li><b>Quantiles</b> cut the sorted data into equal groups: <b>quartiles</b> into 4 (Q1 = 25th percentile, Q2 = median, Q3 = 75th), <b>quintiles</b> into 5, <b>deciles</b> into 10, <b>percentiles</b> into 100.</li>
+        <li><b>Interquartile range</b>, IQR = Q3 &minus; Q1: the width of the middle half. A <b>box plot</b> draws it as a box, with a line at the median and whiskers out to the extremes (some versions stop the whiskers at 1.5 &times; IQR and dot anything beyond as an outlier).</li>
+        <li><b>Trimmed mean:</b> drop a set share of the lowest and highest values, average the rest.</li>
+        <li><b>Winsorized mean:</b> replace those extremes with the nearest values you kept, then average all of them.</li>
+      </ul>
+      <p>An everyday picture: a teacher who drops your best and your worst quiz before averaging is using a trimmed mean.</p>
+
+      <h3>Why it works</h3>
+      <p>Start with the median, the middle of n sorted values.</p>
+      <ol>
+        <li><b>Odd n.</b> Number the sorted values 1 to n. With n = 9 the middle is the 5th: four below, four above. And 5 = (9 + 1)/2.</li>
+        <li><b>Even n.</b> With n = 12 no value is in the middle; position 6.5 has six on each side. And 6.5 = (12 + 1)/2. So the middle is always at (n + 1)/2.</li>
+        <li><b>Why n + 1?</b> Picture a ruler from 0 to n + 1, with the sorted values standing at 1, 2, &hellip;, n and both ends empty. The median stands halfway along: (n + 1) &times; 50/100.</li>
+        <li><b>Any percentile</b> stands y% of the way along the same ruler: L<sub>y</sub> = (n + 1) &times; y/100. For nine marks, Q1 is at 10 &times; 0.25 = 2.5 and Q3 at 7.5.</li>
+        <li><b>Symmetry check.</b> 2.5 is 1.5 places in from the 1st value; 7.5 is 1.5 in from the 9th. Mirror images, as Q1 and Q3 should be. With n instead, 2.25 and 6.75 sit 1.25 and 2.25 in: lopsided.</li>
+        <li><b>Between two values.</b> Location 2.5 falls between the 2nd and 3rd values: start at the lower one and add 0.5 of the gap, X<sub>2</sub> + 0.5 &times; (X<sub>3</sub> &minus; X<sub>2</sub>).</li>
+        <li><b>The plain mean</b>, &Sigma;x/n, gives every mark a weight of 1/n. A mark d points too high lifts the mean by d/n, however big d gets: 2 points among nine moves it 0.2222.</li>
+        <li><b>Trimmed:</b> drop the k lowest and k highest, average the n &minus; 2k left. A dropped mark counts zero, so pushing it further out changes nothing.</li>
+        <li><b>Winsorized:</b> reset the k lowest to the lowest kept value and the k highest to the highest kept value, then divide by n. The extremes still count, but only as much as their nearest neighbour.</li>
+        <li><b>The median</b> is trimming taken to the limit: drop everything but the middle.</li>
+      </ol>
+      <p>In plain words: line the numbers up and judge by the middle of the line, not by the loudest numbers at its ends.</p>
+      <div class="formula">
+        <p class="expr">L<sub>y</sub> = (n + 1) &times; y / 100</p>
+        <p class="expr">P<sub>y</sub> = X<sub>below</sub> + (L<sub>y</sub> &minus; whole part of L<sub>y</sub>) &times; (X<sub>above</sub> &minus; X<sub>below</sub>)</p>
+        <p class="expr">IQR = Q3 &minus; Q1</p>
+        <p class="expr">Trimmed mean = sum of the kept values / number kept; &nbsp; Winsorized mean = sum with the extremes reset / n</p>
+        <dl>
+          <dt>n</dt><dd>number of observations</dd>
+          <dt>y</dt><dd>the percentile wanted: 25 for Q1, 50 for the median, 75 for Q3</dd>
+          <dt>L<sub>y</sub></dt><dd>position of the y-th percentile, counting from 1 in the data sorted smallest to largest</dd>
+          <dt>X<sub>below</sub>, X<sub>above</sub></dt><dd>the sorted values at the whole positions just below and just above L<sub>y</sub></dd>
+          <dt>P<sub>y</sub></dt><dd>the y-th percentile itself</dd>
+          <dt>Q1, Q3</dt><dd>first and third quartiles: the 25th and 75th percentiles</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Location of the y-th percentile in n sorted observations: L<sub>y</sub> = (n + 1) &times; y / 100</li>
+          <li>Interpolating a percentile at a non-integer location: P = X<sub>(below)</sub> + (L<sub>y</sub> &minus; whole part) &times; (X<sub>(above)</sub> &minus; X<sub>(below)</sub>)</li>
+          <li>Trimmed mean: discard a stated % of the lowest and highest observations, then average the rest (a 5% trimmed mean drops the lowest 2.5% and the highest 2.5%)</li>
+          <li>Winsorized mean: replace the extreme observations with the nearest retained values, then average (a 95% winsorized mean resets the bottom and top 2.5%)</li>
+          <li>Interquartile range: IQR = Q3 &minus; Q1</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Twelve monthly fund returns (%): 2.1, &minus;0.8, 1.5, 3.4, &minus;4.6, 0.9, 1.2, &minus;1.1, 2.6, 0.4, 7.9, &minus;0.3. Find the median, Q1, Q3, the IQR and the 10th percentile; then the mean, the trimmed mean that drops one value at each end, and the winsorized mean that resets them.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Sort (n = 12): &minus;4.6, &minus;1.1, &minus;0.8, &minus;0.3, 0.4, 0.9, 1.2, 1.5, 2.1, 2.6, 3.4, 7.9. Every location is 13 &times; y/100.</li>
+          <li>Median: L = 13 &times; 0.50 = 6.5 &rarr; 0.9 + 0.5 &times; (1.2 &minus; 0.9) = <b>1.05%</b>.</li>
+          <li>Q1: L = 13 &times; 0.25 = 3.25 &rarr; &minus;0.8 + 0.25 &times; (&minus;0.3 &minus; (&minus;0.8)) = <b>&minus;0.675%</b>.</li>
+          <li>Q3: L = 13 &times; 0.75 = 9.75 &rarr; 2.1 + 0.75 &times; (2.6 &minus; 2.1) = <b>2.475%</b>. IQR = 2.475 &minus; (&minus;0.675) = <b>3.15</b> percentage points.</li>
+          <li>10th percentile: L = 1.3 &rarr; &minus;4.6 + 0.3 &times; (&minus;1.1 &minus; (&minus;4.6)) = <b>&minus;3.55%</b>.</li>
+          <li>Mean = 13.2/12 = <b>1.10%</b>. Trimmed (drop &minus;4.6 and 7.9) = 9.9/10 = <b>0.99%</b>. Winsorized (&minus;4.6 &rarr; &minus;1.1, 7.9 &rarr; 3.4) = 12.2/12 = <b>1.0167%</b>.</li>
+          <li>Names: one of 12 at each end is 8.3%, so this is a 16.7% trimmed mean and an 83.3% winsorized mean.</li>
+        </ol>
+        <p>The 7.9% month sits furthest out, so the plain mean ends up above the trimmed one.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Nine judges&rsquo; marks for one program (illustrative): 8.50, 8.25, 9.75, 8.75, 8.00, 8.50, 6.50, 8.75, 8.50. Find n, the mean and &Sigma;x; sort and find the median and the quartiles with (n + 1) &times; y/100; then the trimmed mean (drop the highest and lowest) and the winsorized mean. The BA II Plus has no median or sort, so its quantiles are done by hand; the TI-84 does both, but for quartiles it follows a different rule from the CFA&rsquo;s (step 3).</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; if L1 holds old numbers, press <kbd>&#9650;</kbd> until the <samp>L1</samp> title is highlighted, then <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the nine marks in the order given (order does not matter for the mean)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>8.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.25</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>9.75</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.75</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.75</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.5</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past <samp>Y</samp>, the frequency, which stays 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>8.5</kbd> <kbd>ENTER</kbd> <kbd>8.25</kbd> <kbd>ENTER</kbd> <kbd>9.75</kbd> <kbd>ENTER</kbd> <kbd>8.75</kbd> <kbd>ENTER</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>8.5</kbd> <kbd>ENTER</kbd> <kbd>6.5</kbd> <kbd>ENTER</kbd> <kbd>8.75</kbd> <kbd>ENTER</kbd> <kbd>8.5</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: the last entry reads <samp>X09 = 8.5000</samp> (BA II Plus); L1 holds the nine marks, the last one 8.5 (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">One-variable statistics: read n, the mean and &Sigma;x</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>; if the screen does not show <samp>1-V</samp>, press <kbd>2ND</kbd> <kbd>SET</kbd> until it does; then <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd>, reading each line</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd>, then <kbd>2nd</kbd> <kbd>1</kbd> (L1) <kbd>ENTER</kbd>; press <kbd>&#9660;</kbd> to scroll to the bottom of the list</div>
+            <p class="calc-see">Display: <samp>n = 9.0000</samp>, <samp>x̄ = 8.3889</samp>, <samp>Sx = 0.8580</samp>, <samp>&sigma;x = 0.8089</samp>, <samp>&Sigma;x = 75.5000</samp> (BA II Plus) / <samp>x̄=8.3889</samp>, <samp>&Sigma;x=75.5000</samp>, <samp>n=9</samp>, then <samp>minX=6.5000</samp>, <samp>Q1=8.1250</samp>, <samp>Med=8.5000</samp>, <samp>Q3=8.7500</samp>, <samp>maxX=9.7500</samp> (TI-84). Sx and &sigma;x are tomorrow&rsquo;s subject. The TI-84 finds Q1 and Q3 as the medians of the lower and upper halves. With n odd, as here, that matches the CFA formula; with n even it does not, so always locate quartiles by hand.</p>
+          </li>
+          <li>
+            <p class="calc-what">Sort the marks, smallest first</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> no sort key: write them in order on paper</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">2:SortA(</kbd> <kbd>2nd</kbd> <kbd>1</kbd> (L1) <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd> to read L1</div>
+            <p class="calc-see">Display: <samp>Done</samp>, then L1 runs 6.50, 8.00, 8.25, 8.50, 8.50, 8.50, 8.75, 8.75, 9.75 (TI-84). Positions 1 to 9. The mode is 8.50 (three times).</p>
+          </li>
+          <li>
+            <p class="calc-what">Locate: L = (9 + 1) &times; y/100 gives 2.5 (Q1), 5 (median) and 7.5 (Q3). The median is the 5th mark, 8.50. Q3 is halfway between the 7th and 8th, both 8.75, so 8.75. Q1 is halfway from the 2nd (8.00) to the 3rd (8.25): interpolate</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8.25</kbd> <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>)</kbd> <kbd>=</kbd> (AOS multiplies before it adds)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>8</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>8.25</kbd> <kbd>&minus;</kbd> <kbd>8</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>8.1250</samp> on both. Q1 = 8.125, median 8.50, Q3 = 8.75: IQR = 0.625. The middle half of the panel sits within 0.625 points.</p>
+          </li>
+          <li>
+            <p class="calc-what">Trimmed mean: take the lowest (6.50) and highest (9.75) out of &Sigma;x, divide by the 7 left</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>75.5</kbd> <kbd>&minus;</kbd> <kbd>6.5</kbd> <kbd>&minus;</kbd> <kbd>9.75</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>75.5</kbd> <kbd>&minus;</kbd> <kbd>6.5</kbd> <kbd>&minus;</kbd> <kbd>9.75</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>8.4643</samp> on both. Divide by 7, not 9: the two dropped marks are gone.</p>
+          </li>
+          <li>
+            <p class="calc-what">Winsorized mean: reset 6.50 to 8.00 (the lowest kept) and 9.75 to 8.75 (the highest kept), divide by all 9</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>75.5</kbd> <kbd>&minus;</kbd> <kbd>6.5</kbd> <kbd>&minus;</kbd> <kbd>9.75</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>8.75</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>9</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>75.5</kbd> <kbd>&minus;</kbd> <kbd>6.5</kbd> <kbd>&minus;</kbd> <kbd>9.75</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>8.75</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>9</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>8.4444</samp> on both. The sum inside the brackets is 76.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: mean 8.3889; median 8.50; Q1 8.125 and Q3 8.75 (IQR 0.625); trimmed mean 8.4643; winsorized mean 8.4444.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>In 2004 the ISU replaced the 6.0 system with a new one, created in response to Salt Lake City. Up to nine judges mark each element; the highest and lowest marks are thrown out and the rest averaged. With nine judges that is the middle seven: one in nine (11.1%) dropped at each end, about a 22% trimmed mean.</p>
+      <p>In the walkthrough&rsquo;s panel the 9.75 and 6.50 pull the plain mean to 8.3889. The trimmed mean is 8.4643; the median, 8.50.</p>
+      <p>Let the top judge lean harder: 10.00 instead of 9.75. The plain mean rises by 0.25/9 = 0.0278. The trimmed mean does not move: the most extreme judge is always the one thrown away.</p>
+      <p>Trimming caps the damage; it does not remove it. An 8.75 nudged to 9.00, inside the pack, still lifts the trimmed mean by 0.25/7 = 0.0357.</p>
+      <p>(The 2002 event was judged on ordinal placings under 6.0; these marks only illustrate the method.)</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using n &times; y/100 instead of (n + 1) &times; y/100. In the worked example that puts Q1 at position 3, &minus;0.80%, instead of 3.25, &minus;0.675%.</li>
+          <li>Forgetting to sort first. Reading position 3.25 in the twelve returns as reported gives Q1 = 1.975%, nonsense for a quartile that should sit below the median.</li>
+          <li>Trusting the TI-84&rsquo;s Q1 and Q3. They agree with the CFA formula only when n is odd; for the twelve returns it shows &minus;0.55 and 2.35 instead of &minus;0.675 and 2.475.</li>
+          <li>Mixing up trimmed (drop the extremes, divide by fewer) and winsorized (replace them, divide by all n), and misreading the names: a 5% trimmed mean drops 2.5% at each end; a 95% winsorized mean resets 2.5% at each end.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="8.035714285714286" data-tol="0.0001" data-show="8.0357">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> Another panel of nine judges marks a program: 8.00, 7.75, 8.25, 9.50, 8.00, 8.50, 7.50, 8.25, 5.75. What is the trimmed mean that drops the highest and the lowest mark? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">points</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> New marks, same keys: enter all nine, read &Sigma;x, take out the highest and the lowest, divide by the 7 left.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>&Sigma;x = 71.50 (mean 7.9444). Highest 9.50, lowest 5.75. Trimmed mean = (71.5 &minus; 5.75 &minus; 9.5)/7 = 56.25/7 = <b>8.0357</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>7.75</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.25</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>9.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>7.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>8.25</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>5.75</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd> (<samp>1-V</samp>) <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>n = 9.0000</samp>, <samp>x̄ = 7.9444</samp>, &hellip;, <samp>&Sigma;x = 71.5000</samp>; <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>(</kbd> <kbd>71.5</kbd> <kbd>&minus;</kbd> <kbd>5.75</kbd> <kbd>&minus;</kbd> <kbd>9.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>=</kbd> &rarr; <samp>8.0357</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1, type the nine marks, each followed by <kbd>ENTER</kbd>; <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>x̄=7.9444</samp>, <samp>&Sigma;x=71.5000</samp> (and <samp>minX=5.7500</samp>, <samp>maxX=9.5000</samp> further down); then, on the same home screen, <kbd>(</kbd> <kbd>71.5</kbd> <kbd>&minus;</kbd> <kbd>5.75</kbd> <kbd>&minus;</kbd> <kbd>9.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> &rarr; <samp>8.0357</samp>.</p>
+            <p>The harsh 5.75 pulled the plain mean down to 7.9444; trimmed, the panel says 8.0357. Dividing by 9 instead of 7 gives 6.2500, below every judge but one: a sure sign of the slip.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> One of nine judges gives a mark far above all the others. Why does a trimmed mean that drops the highest and lowest marks resist that judge, when the plain mean does not?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It replaces the extreme marks with the nearest remaining marks, so the outlier counts as a normal mark</span></label>
+              <p class="cq-why">That is the winsorized mean. A trimmed mean does not replace the extreme marks; it drops them.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The most extreme mark is thrown out, so how extreme it is has no effect; in the plain mean every point it is out of line moves the average by 1/9 of a point</span></label>
+              <p class="cq-why">Right. A dropped mark carries zero weight, however far out it is; in the plain mean each mark carries 1/n.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. It is the middle (5th) of the nine sorted marks, so the extremes never enter</span></label>
+              <p class="cq-why">That is the median. The trimmed mean here averages seven marks, not one.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The plain mean is &Sigma;x/n: a judge who marks d points too high lifts it by d/n, and the bigger d, the bigger the lift. Sorting first and dropping the top and bottom marks gives the most extreme judge a weight of zero, so pushing the mark further out changes nothing. In the walkthrough, 9.75 &rarr; 10.00 moves the plain mean by 0.0278 and the trimmed mean by 0.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="-0.2200000000000002" data-tol="0.01" data-pct data-show="&minus;0.22%">
+          <p class="cq-stem"><b>3. Twist: a percentile between two values.</b> Ten annual returns, as reported (%): 4.2, &minus;2.5, 1.8, 6.1, &minus;0.7, 3.3, 0.9, &minus;5.4, 2.6, 7.4. Using L<sub>y</sub> = (n + 1) &times; y/100, what is the 30th percentile? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Sort first. With n = 10 the location is 11 &times; 0.30; walk from the value below by the fractional part of the gap.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Sorted: &minus;5.4, &minus;2.5, &minus;0.7, 0.9, 1.8, 2.6, 3.3, 4.2, 6.1, 7.4. L<sub>30</sub> = 11 &times; 0.30 = 3.3: between the 3rd (&minus;0.7) and the 4th (0.9), a gap of 1.6. P<sub>30</sub> = &minus;0.7 + 0.3 &times; 1.6 = &minus;0.7 + 0.48 = <b>&minus;0.22%</b>.</p>
+            <p>BA II Plus: <kbd>.7</kbd> <kbd>+|&minus;</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>.9</kbd> <kbd>&minus;</kbd> <kbd>.7</kbd> <kbd>+|&minus;</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>-0.2200</samp>. TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>.7</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>.9</kbd> <kbd>&minus;</kbd> <kbd>(&minus;)</kbd> <kbd>.7</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>-.2200</samp>.</p>
+            <p>Slips: location n &times; y/100 = 3 gives the 3rd value, &minus;0.70%; skipping the sort and reading position 3.3 in the list as reported gives 3.09%. And here n is even, so the quartile trap bites: the CFA Q1 is &minus;1.15% (L = 2.75), but the TI-84&rsquo;s 1-Var Stats shows <samp>Q1=-.7000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> An analyst has eight monthly returns, as reported (%): 2.0, &minus;1.5, 6.5, 0.5, 4.0, &minus;3.0, 2.5, 1.0. Using linear interpolation, the 75th percentile is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 3.625%</span></label>
+              <p class="cq-why">Right: sorted, L<sub>75</sub> = 9 &times; 0.75 = 6.75, so 2.5 + 0.75 &times; (4.0 &minus; 2.5) = 3.625.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 2.500%</span></label>
+              <p class="cq-why">That uses the location n &times; y/100 = 8 &times; 0.75 = 6, the 6th sorted value. The formula has n + 1.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 1.125%</span></label>
+              <p class="cq-why">That interpolates at 6.75 in the list as reported, between &minus;3.0 and 2.5. Sort first.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Sorted: &minus;3.0, &minus;1.5, 0.5, 1.0, 2.0, 2.5, 4.0, 6.5. L<sub>75</sub> = (8 + 1) &times; 75/100 = 6.75: three-quarters of the way from the 6th value (2.5) to the 7th (4.0). 2.5 + 0.75 &times; 1.5 = 2.5 + 1.125 = 3.625%.</p>
+            <p>BA II Plus: <kbd>2.5</kbd> <kbd>+</kbd> <kbd>.75</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4</kbd> <kbd>&minus;</kbd> <kbd>2.5</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>3.6250</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>3.6250</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is the difference between a trimmed and a winsorized mean, and why does figure skating&rsquo;s scoring throw out the highest and lowest marks?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Both limit the pull of extreme values: a trimmed mean drops a set share of the lowest and highest observations and averages the rest, while a winsorized mean replaces them with the nearest values kept and averages all n. Skating drops the top and bottom marks so that no single judge&rsquo;s extreme mark, however far out, can move the score.</p>
+            <p>A complete answer says: (1) both limit the influence of extremes; (2) trimmed drops them (and divides by fewer), winsorized replaces them with the nearest retained values (and divides by n); (3) with the top and bottom marks dropped, the most extreme judge carries no weight.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 5: Statistical Characteristics of Asset Returns (central tendency and location: median, mode, trimmed and winsorized means; quartiles, quintiles, deciles and percentiles located at L<sub>y</sub> = (n + 1)y/100 with linear interpolation; the interquartile range and box plots).</p>
+      <p><strong>Sources.</strong> HISTORY.com, &ldquo;Canadian figure skaters awarded gold after judging scandal&rdquo; (This Day in History, 15 February); AP via the Lawrence Journal-World, &ldquo;Canadian skating pair awarded gold medal&rdquo;, 15 February 2002; ESPN, 30 April 2002 (the ISU suspends Le Gougne and Gailhaguet for three years); Deseret News archives, &ldquo;Remembering a judging scandal at the 2002 Winter Games&rdquo;, 9 February 2025 (the 5&ndash;4 vote; Sikharulidze stepped out of a double Axel); Wikipedia, &ldquo;2002 Winter Olympics figure skating scandal&rdquo; (Le Gougne&rsquo;s statement and retraction); Wikipedia, &ldquo;ISU Judging System&rdquo; (created in response to the 2002 scandal, replaced 6.0 in 2004; with up to nine judges the highest and lowest marks are discarded and the rest averaged); International Skating Union, figure skating rules. The judges&rsquo; marks in the walkthrough are illustrative, not the 2002 scores.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-22.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

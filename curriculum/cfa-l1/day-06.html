@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>$2.04 billion or $997.6 million today? The Powerball choice, and the payment that comes first — CFA Math, Day 6 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "$2.04 billion or $997.6 million today? The Powerball choice, and the payment that comes first",
+    "path": "reports/cfa/l1/day-06.html",
+    "summary": "Day 6 of CFA Math: an annuity due pays at the start of each period, so every payment is discounted one period less and the stream is worth the ordinary annuity × (1 + r); Logan values the Powerball annuity, simplified to 30 level payments of $68 million, in BGN mode, finds the 5.94% rate that matches the $997.6 million cash, and switches back to END.",
+    "headlines": [
+      "Day 6 of 90 · Quantitative Methods: an annuity due pays at the start of each period, so it is worth the ordinary annuity × (1 + r)",
+      "Calculator: the Powerball annuity in BGN mode, the rate that matches the $997.6 million cash, and back to END, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>$2.04 billion or $997.6 million today? The Powerball choice, and the payment that comes first</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Move every payment to the start of its period and each one is discounted one period less, so the whole stream is worth exactly (1 + r) times as much; today you price a record jackpot in BGN mode.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 6 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Annuity due: payments in advance</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="6">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 5 and 4, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="7985.420074156176" data-tol="0.01" data-signless data-show="7,985.42">
+          <p class="cq-stem"><b>From Day 5.</b> An investment pays $2,000 at the end of each year for 5 years. At 8% a year, what is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> An ordinary annuity: PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r. On the calculator: N = 5, I/Y = 8, PMT = 2,000, FV = 0, solve for PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.08<sup>&minus;5</sup> = 0.6805832, so the factor is (1 &minus; 0.6805832) / 0.08 = 3.992710, and PV = 2,000 &times; 3.992710 = <b>7,985.42</b>.</p>
+            <p>BA II Plus (no <samp>BGN</samp> in the display): <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>5</kbd> <kbd>N</kbd> <kbd>8</kbd> <kbd>I/Y</kbd> <kbd>2000</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;7,985.4201</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=5</samp>, <samp>I%=8</samp>, <samp>PV=0</samp>, <samp>PMT=2000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;7985.4201</samp>.</p>
+            <p>Keep this number. By the end of today you will know, without a calculator, what it becomes if each $2,000 arrives at the start of the year instead.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 4.</b> Deposit X pays a stated 5% a year, compounded quarterly. Deposit Y pays 5.1% a year, compounded once a year. Which earns more over a year?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. X: quarterly compounding always beats annual compounding</span></label>
+              <p class="cq-why">Only for the same stated rate. X&rsquo;s EAR is 1.0125<sup>4</sup> &minus; 1 = 5.09%, still below Y&rsquo;s 5.10%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. They earn the same</span></label>
+              <p class="cq-why">Only if their EARs matched, and they don&rsquo;t: 5.0945% against 5.1000%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. Y: X&rsquo;s effective annual rate is 5.09%, just below Y&rsquo;s 5.10%</span></label>
+              <p class="cq-why">Right: compare EARs, not stated rates. 1.0125<sup>4</sup> = 1.050945, an EAR of 5.0945%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 5.0945</samp>. TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, <kbd>5</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.0945</samp>.</p>
+            <p>Y compounds once a year, so its EAR is its stated 5.1%. The gap is tiny, 55 cents a year on $10,000, but the exam asks which, not by how much.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The $2.04 billion ticket from Altadena</h3>
+      <p>The Powerball draw of Monday 7 November 2022 ran about 10 hours late. The Minnesota Lottery needed more time to verify its sales, so the numbers were drawn on the morning of 8 November.</p>
+      <p>The jackpot was a record $2.04 billion, and a single ticket won it. It had been sold at Joe&rsquo;s Service Center in Altadena, California. In February 2023 the California Lottery named the winner: Edwin Castro.</p>
+      <p>He had a choice. He could take $997.6 million in cash. Or he could take the annuity: one payment straight away, then 29 more, once a year, each 5% bigger than the last. Those 30 payments add up to $2.04 billion.</p>
+      <p>He took the cash.</p>
+      <p>Which raises two questions. Why is &ldquo;$2.04 billion&rdquo; worth less than half that in cash? ($997.6 million is 48.9% of it.) And the annuity&rsquo;s first payment came straight away, not a year later. How much does that matter?</p>
+
+      <h3>The idea</h3>
+      <p>Day 5&rsquo;s ordinary annuity pays at the <b>end</b> of each period, so the first payment is a period away. Plenty of payments run the other way. Rent is due at the start of the month. Leases, insurance premiums and school fees are paid in advance. The Powerball annuity pays its first installment straight away.</p>
+      <p>Equal payments at the <b>start</b> of each period make an <b>annuity due</b>. Same number of payments, same size. The only change: each one comes a period sooner.</p>
+      <p>Money sooner is worth more, because it can earn a period of interest. So each payment is worth (1 + r) times what it was worth in the ordinary annuity, and so is the whole stream.</p>
+      <p>Picture two tenants, each paying $1,000 a month for a year, one at the start of the month and one at the end. Twelve payments each, but the landlord prefers the first: every check arrives a month sooner.</p>
+      <p>The warm-up&rsquo;s $2,000 a year was worth $7,985.42 paid at year-ends. Paid at the start of each year, it is worth 7,985.42 &times; 1.08 = <b>$8,624.25</b>.</p>
+      <p>On the calculator it is one switch: BGN mode. And when a lump sum is offered instead, ask at what rate the two are worth the same: solve for I/Y.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 5.</b> An ordinary annuity pays A at the end of periods 1 to N. Its PV is N single sums, each discounted for the periods it waits:</p>
+      <p>PV<sub>ordinary</sub> = A/(1 + r) + A/(1 + r)<sup>2</sup> + &hellip; + A/(1 + r)<sup>N</sup> = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r</p>
+      <p><b>Slide every payment one period earlier.</b> An annuity due pays the same A at t = 0, 1, &hellip;, N &minus; 1. Still N payments, but each waits one period less:</p>
+      <p>PV<sub>due</sub> = A + A/(1 + r) + &hellip; + A/(1 + r)<sup>N&minus;1</sup></p>
+      <p><b>Match the terms.</b> Multiply any ordinary term by (1 + r) and one power of (1 + r) cancels. A/(1 + r) becomes A; A/(1 + r)<sup>2</sup> becomes A/(1 + r); the last, A/(1 + r)<sup>N</sup>, becomes A/(1 + r)<sup>N&minus;1</sup>. That is the annuity due, term for term.</p>
+      <p><b>So the totals match.</b> Every term &times; (1 + r) means the sum &times; (1 + r): PV<sub>due</sub> = PV<sub>ordinary</sub> &times; (1 + r).</p>
+      <p><b>See it.</b> $1,000 a year for 3 years at 10%. Ordinary, paid at t = 1, 2, 3: 909.09 + 826.45 + 751.31 = 2,486.85. Due, paid at t = 0, 1, 2: 1,000.00 + 909.09 + 826.45 = 2,735.54. And 2,486.85 &times; 1.1 = 2,735.535, which rounds to 2,735.54: the same.</p>
+      <p><b>Another way to see it.</b> Split off the first payment: paid today, it is worth A. The other N &minus; 1 payments start a period from now, an ordinary annuity. Here: 1,000 + 1,000 &times; 1.735537 = 2,735.54, the same.</p>
+      <p><b>Future value.</b> Day 5&rsquo;s FV<sub>ordinary</sub> values each payment at t = N, the date of the last one. Made a period earlier, each payment grows one period longer: FV<sub>due</sub> = FV<sub>ordinary</sub> &times; (1 + r), still valued at t = N. Here the three payments grow 3, 2 and 1 years: 1,331 + 1,210 + 1,100 = 3,641.00, which is the ordinary 3,310.00 &times; 1.1.</p>
+      <p><b>In plain words:</b> same payments, each a period sooner, so each is worth one period&rsquo;s interest more, and so is the whole stream. BGN mode tells the calculator exactly that.</p>
+      <div class="formula">
+        <p class="expr">PV<sub>due</sub> = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r &times; (1 + r)</p>
+        <p class="expr">FV<sub>due</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r &times; (1 + r)</p>
+        <p class="expr">Split: PV<sub>due</sub> = A + A &times; [1 &minus; (1 + r)<sup>&minus;(N&minus;1)</sup>] / r</p>
+        <dl>
+          <dt>A</dt><dd>the level payment, made at the start of each period</dd>
+          <dt>r</dt><dd>the interest rate per period, as a decimal</dd>
+          <dt>N</dt><dd>the number of payments (and of periods)</dd>
+          <dt>PV<sub>due</sub></dt><dd>value at t = 0, the moment of the first payment</dd>
+          <dt>FV<sub>due</sub></dt><dd>value at t = N, the end of the last period: one period after the last payment</dd>
+          <dt>(1 + r)</dt><dd>one period of interest: what each payment gains by arriving a period sooner</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>PV<sub>due</sub> = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r &times; (1 + r)</li>
+          <li>FV<sub>due</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r &times; (1 + r)</li>
+          <li>PV<sub>due</sub> = A + PV of an ordinary annuity of N &minus; 1 payments</li>
+          <li>BA II Plus, annuity-due mode: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (shows BGN); repeat to return to END</li>
+          <li>Does <kbd>2ND</kbd> <kbd>CLR TVM</kbd> reset BGN/END? No &mdash; clearing TVM leaves BGN/END and P/Y unchanged</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Rent of $1,200 is due at the start of each year for 3 years. At 5%, what is it worth today, and how does that compare with the same payments at the end of each year? What is it worth at the end of year 3?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Annuity due, as single sums (paid at t = 0, 1, 2): 1,200 + 1,200/1.05 + 1,200/1.05<sup>2</sup>.</li>
+          <li>= 1,200.0000 + 1,142.8571 + 1,088.4354 = <b>3,431.29</b>.</li>
+          <li>Ordinary, paid at t = 1, 2, 3: 1.05<sup>&minus;3</sup> = 0.8638376, so the factor is (1 &minus; 0.8638376) / 0.05 = 2.723248.</li>
+          <li>1,200 &times; 2.723248 = <b>3,267.90</b>.</li>
+          <li>Ratio: 3,431.29 / 3,267.90 = 1.0500, exactly 1 + r.</li>
+          <li>Split check: 1,200 today + an ordinary annuity of 2 payments = 1,200 + 1,200 &times; 1.859410 = 3,431.29.</li>
+          <li>At the end of year 3: 1,200 &times; 1.05<sup>3</sup> + 1,200 &times; 1.05<sup>2</sup> + 1,200 &times; 1.05 = 1,389.15 + 1,323.00 + 1,260.00 = <b>3,972.15</b>, also 3,431.29 &times; 1.05<sup>3</sup>.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> The Powerball annuity, simplified to 30 level payments of $68 million (the $2.04 billion spread evenly), the first one today. Work in $ millions. (1) At 4% a year, an illustrative rate, what is the stream worth today? (2) What rate makes it worth exactly the $997.6 million cash? (3) Switch back to END, see what the same payments are worth a year later each, and check with the split. P/Y = C/Y = 1, as always.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Switch to annuity-due mode (payments at the start)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>BGN</kbd> (above <kbd>PMT</kbd>; the screen shows <samp>END</samp>), <kbd>2ND</kbd> <kbd>SET</kbd> (it changes to <samp>BGN</samp>), <kbd>2ND</kbd> <kbd>QUIT</kbd>. A small <samp>BGN</samp> now stays in the display until you switch it back.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>. Press <kbd>&darr;</kbd> down to the bottom line, <samp>PMT:END BEGIN</samp>, then <kbd>►</kbd> to <samp>BEGIN</samp> and <kbd>ENTER</kbd>: BEGIN is now highlighted.</div>
+          </li>
+          <li>
+            <p class="calc-what">Clear the old numbers and enter the stream: 30 payments of 68 that you receive (positive), at 4%</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> (BGN stays on: clearing never touches it), <kbd>30</kbd> <kbd>N</kbd> <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>68</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&uarr;</kbd> up to <samp>N=</samp>, then set each line (type the value, <kbd>&darr;</kbd> to the next): <samp>N=30</samp>, <samp>I%=4</samp>, <samp>PV=0</samp>, <samp>PMT=68</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp></div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the value today</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;1,222.8926</samp> (BA II Plus) / <samp>PV=&minus;1222.8926</samp> (TI-84): $1,222.9 million. Negative because it is what you would pay today to receive the 30 payments.</p>
+          </li>
+          <li>
+            <p class="calc-what">The cash offer: enter $997.6 million as the price paid today, then solve for the rate that makes the two equal</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>997.6</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> on <samp>PV=</samp> type <kbd>(&minus;)</kbd> <kbd>997.6</kbd>, then cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 5.9442</samp> / <samp>I%=5.9442</samp>. At 5.94% a year the level stream and the cash are worth the same.</p>
+          </li>
+          <li>
+            <p class="calc-what">Back to END, and value the same 30 payments with each one a year later</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>BGN</kbd> (shows <samp>BGN</samp>), <kbd>2ND</kbd> <kbd>SET</kbd> (now <samp>END</samp>), <kbd>2ND</kbd> <kbd>QUIT</kbd>: the small BGN is gone. Then <kbd>4</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> set <samp>I%=4</samp>; <kbd>&darr;</kbd> down to <samp>PMT:END BEGIN</samp>, <kbd>◄</kbd> to <samp>END</samp>, <kbd>ENTER</kbd>; then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;1,175.8583</samp> / <samp>PV=&minus;1175.8583</samp>. And 1,222.8926 &divide; 1,175.8583 = 1.0400: the first-payment-today version is worth exactly 1.04 times as much.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check with the split: 68 today, plus an ordinary annuity of the other 29 (still in END)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>29</kbd> <kbd>N</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> (shows <samp>PV = &minus;1,154.8926</samp>), then <kbd>68</kbd> <kbd>+</kbd> <kbd>1154.8926</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> set <samp>N=29</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> (shows <samp>PV=&minus;1154.8926</samp>); then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, <kbd>68</kbd> <kbd>+</kbd> <kbd>1154.8926</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>1,222.8926</samp> / <samp>1222.8926</samp>: the BGN answer again, to the last decimal.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer ($ millions, at 4%): with the first payment today the level stream is worth 1,222.8926 (BGN); with every payment a year later, 1,175.8583 (END); and 1,222.8926 is exactly 1.04 &times; 1,175.8583. It is worth the $997.6 million cash at 5.9442% a year. Both calculators are now back in END.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Why is &ldquo;$2.04 billion&rdquo; worth less than half that in cash? Because $2.04 billion is 30 payments simply added up, as if money 29 years away were worth as much as money today.</p>
+      <p>Spread evenly and discounted at 4%, the payments are worth $1,222.9 million. The first one coming today adds $47.0 million: if each came a year later, they would be worth $1,175.9 million, a ratio of exactly 1.04. Against the cash, the level stream breaks even at 5.94% a year.</p>
+      <p>The real schedule is more back-loaded: about $30.7 million first, rising 5% a year to about $126.4 million. Only about $386 million of it arrives in the first 10 years (level: $680 million). So it matches the $997.6 million cash at a rate of only about 4.4%: on these numbers, anyone who can earn more than that on the cash does better taking it. Most of the headline $2.04 billion is money far in the future.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Leaving the calculator in BGN. The next ordinary annuity comes out (1 + r) too big: the warm-up&rsquo;s 7,985.42 would show as 8,624.25. Switch back to END the moment you finish, and look for the small BGN before every TVM problem.</li>
+          <li>Treating payments made in advance as an ordinary annuity. Rent, leases and insurance premiums are usually paid at the start of the period: the worked example&rsquo;s rent is worth 3,431.29, not 3,267.90.</li>
+          <li>Applying (1 + r) twice. BGN mode already includes it; multiplying a BGN answer by 1.05 again turns 3,431.29 into 3,602.85.</li>
+          <li>Counting today&rsquo;s payment as an extra one. Thirty payments, the first today, is N = 30, not 31. Only the split uses N &minus; 1 = 29, for its ordinary part.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="19458.77202154574" data-tol="0.01" data-signless data-show="19,458.77">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An insurance premium of $2,400 is paid at the start of each year for 10 years. At 5% a year, what are the 10 premiums worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> BGN mode back on (you switched it off). Then N = 10, I/Y = 5, PMT = 2,400, FV = 0, and solve for PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (BGN shows), <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>2400</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;19,458.7720</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=10</samp>, <samp>I%=5</samp>, <samp>PV=0</samp>, <samp>PMT=2400</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, then <kbd>&darr;</kbd> to <samp>PMT:END BEGIN</samp>, <kbd>►</kbd> to <samp>BEGIN</samp>, <kbd>ENTER</kbd>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;19458.7720</samp>.</p>
+            <p>By formula: the 10-year factor at 5% is 7.721735; &times; 1.05 = 8.107822; &times; 2,400 = <b>19,458.77</b>. In END mode you would get 18,532.16, too low by a factor of 1.05. Leave BGN on for question 3.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> A 10-year annuity due and a 10-year ordinary annuity pay the same amount each year, at the same rate r. Why is the annuity due worth exactly (1 + r) times as much today?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It makes one more payment than the ordinary annuity</span></label>
+              <p class="cq-why">Both make 10 payments: the annuity due at t = 0 to 9, the ordinary annuity at t = 1 to 10. It gains one today but has none at year 10.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Each payment arrives one period sooner, so each is discounted one period less: every term is (1 + r) times bigger, so the total is too</span></label>
+              <p class="cq-why">Right. A/(1 + r)<sup>t</sup> &times; (1 + r) = A/(1 + r)<sup>t&minus;1</sup>, for every one of the 10 payments.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Payments made in advance are safer, so they are discounted at a lower rate</span></label>
+              <p class="cq-why">The same r discounts both. The whole difference is timing, not risk.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Line them up. Ordinary: t = 1, 2, &hellip;, 10. Due: t = 0, 1, &hellip;, 9. It can look like an extra payment, because the due has one today, but it also has none at t = 10: the count is still 10. What changes is that each payment waits one period less, so each is worth (1 + r) times more, and a sum of terms that are each (1 + r) times bigger is (1 + r) times bigger.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="219325.88391858686" data-tol="0.01" data-signless data-show="219,325.88">
+          <p class="cq-stem"><b>3. Twist: future value.</b> You save $5,000 at the start of each year for 20 years, earning 7% a year. How much is in the account at the end of year 20? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Still BGN. Now PV = 0 and FV is the unknown: N = 20, I/Y = 7, PMT = &minus;5,000 (you pay it in). Or Day 5&rsquo;s FV formula, then &times; 1.07.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By formula: 1.07<sup>20</sup> = 3.86968446, so the FV factor is (3.86968446 &minus; 1) / 0.07 = 40.995492. Ordinary: 5,000 &times; 40.995492 = 204,977.46. Due: 204,977.46 &times; 1.07 = <b>219,325.88</b>.</p>
+            <p>BA II Plus (BGN showing): <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>20</kbd> <kbd>N</kbd> <kbd>7</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PV</kbd> <kbd>5000</kbd> <kbd>+|&minus;</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; <samp>FV = 219,325.8839</samp>.</p>
+            <p>TI-84 Plus (BEGIN highlighted): TVM Solver <samp>N=20</samp>, <samp>I%=7</samp>, <samp>PV=0</samp>, <samp>PMT=&minus;5000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=219325.8839</samp>.</p>
+            <p>The first deposit grows 20 years; the last, made at the start of year 20, still grows one. You paid in $100,000. Now switch back to END: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (the small <samp>BGN</samp> disappears); on the TI-84, highlight <samp>END</samp> on the <samp>PMT:</samp> row and press <kbd>ENTER</kbd>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A retiree will receive 20 annual payments of $50,000, the first one today. At a discount rate of 6%, the present value of the payments is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $607,905.82</span></label>
+              <p class="cq-why">Right: an annuity due. The ordinary value, 573,496.06, &times; 1.06; or BGN mode.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $573,496.06</span></label>
+              <p class="cq-why">END mode: it puts the first payment a year away, so every payment is discounted one year too many.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $644,380.17</span></label>
+              <p class="cq-why">BGN mode and then &times; 1.06 again by hand: the (1 + r) applied twice.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>&ldquo;The first one today&rdquo; makes it an annuity due, so BGN goes back on. BA II Plus: <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (BGN shows), <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>20</kbd> <kbd>N</kbd> <kbd>6</kbd> <kbd>I/Y</kbd> <kbd>50000</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;607,905.8246</samp>; then back to END the same way.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=20</samp>, <samp>I%=6</samp>, <samp>PV=0</samp>, <samp>PMT=50000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, highlight <samp>BEGIN</samp> on the <samp>PMT:</samp> row, <kbd>ENTER</kbd>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;607905.8246</samp>; then highlight <samp>END</samp> again and press <kbd>ENTER</kbd>.</p>
+            <p>Split check: 50,000 today + 19 ordinary payments worth 557,905.82 (END, N = 19) = 607,905.82. And 573,496.06 &times; 1.06 = 607,905.82: B is the right stream in the wrong mode.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: when is a stream of payments an annuity due, and how does that change its value?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>It is an annuity due when each payment comes at the start of the period, as with rent, leases and insurance premiums, so the first one is today. Each payment then arrives a period sooner than in an ordinary annuity and is discounted one period less, so its PV and FV are the ordinary values &times; (1 + r); on the calculator, set BGN, and switch back to END afterwards.</p>
+            <p>A complete answer says: (1) the payments come at the start of each period (rent, leases, premiums); (2) each is discounted one period less, so the value is the ordinary annuity&rsquo;s &times; (1 + r); (3) BGN mode on the calculator, then back to END.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (annuities: ordinary annuity and annuity due, their present and future values, and the rate implied by a lump-sum alternative).</p>
+      <p><strong>Sources.</strong> Fortune, &ldquo;Why was the winning Powerball delayed 10 hours?&rdquo;, 11 November 2022, with KSTP and the Star Tribune, November 2022 (the Minnesota Lottery&rsquo;s sales-verification delay; the draw held on 8 November); the Boston Globe, 8 November 2022, and the California Lottery as reported by CBS News Los Angeles, &ldquo;Edwin Castro announced as $2.04 billion Powerball jackpot winner&rdquo;, February 2023 (Joe&rsquo;s Service Center, Altadena; the $997.6 million cash option, which he took); Powerball.com (Multi-State Lottery Association), prize and annuity FAQ, and NBC News/CNBC, December 2023 (one immediate payment, then 29 annual payments, each 5% larger than the last). The 30 level payments of $68 million and the 4% rate are simplifications for the lesson, not the lottery&rsquo;s figures.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-05.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

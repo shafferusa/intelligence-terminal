@@ -7,7 +7,9 @@ from a Telegram link, early in the morning, and does not read long walls of text
 to read these"). So: short paragraphs, the story kept tight, and most of the 20 minutes spent
 *doing* — the calculator walkthrough and the graded questions.
 
-**Files.** Plan: `curriculum/cfa-l1.json` (one entry per day). Page skeleton:
+**Files.** Plan: `curriculum/cfa-l1/plan.json` (one entry per day, with the verified story, worked
+numbers, walkthrough, check-question ideas, memorize cards and any `writer_notes`, which override the
+rest of the entry); `curriculum/cfa-l1.json` is its slim copy for the course page. Page skeleton:
 `curriculum/cfa-l1/template.html` (copy it; keep everything outside the content exactly). Keystrokes:
 `curriculum/cfa-l1/calculator-guide.md` (every keystroke on a page must agree with it). Output:
 `curriculum/cfa-l1/day-NN.html` (two digits). Number check: `curriculum/cfa-l1/verify/day-NN.py`.
@@ -87,8 +89,9 @@ TI-84 Plus keystrokes.
 
 ## 4. Review days and the final stretch
 
-Review days (`kind: "review"` in the plan) have no story or new concept. They open with a one-paragraph
-"what this week was about", a compact formula recap (the week's memorize cards), then **ten** graded
+Review days (`kind: "review"` in the plan) have no story or new concept. They keep the warm-up (two
+questions from the plan's `warmup_from` days, which reach back past this week, for spacing), then a
+one-paragraph "what this week was about", a compact formula recap (the week's memorize cards), then **ten** graded
 questions (`c1`–`c10`, mixed `num` and `mc`, at least four needing the calculator, all CFA-style, all
 new numbers), then the score box. `kind: "exam"` days follow the plan's own instructions.
 

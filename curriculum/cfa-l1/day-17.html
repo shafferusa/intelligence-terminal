@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>No coupon was due, yet Greece’s 2012 debt swap paid bondholders for every day since the last one — CFA Math, Day 17 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "No coupon was due, yet Greece’s 2012 debt swap paid bondholders for every day since the last one",
+    "path": "reports/cfa/l1/day-17.html",
+    "summary": "Day 17 of CFA Math: between coupon dates a bond buyer pays the full price, the bond’s value on the last coupon date grown at the yield, PV × (1 + r)^(t/T); Logan splits it into accrued interest and the quoted flat price and checks both on the BA II Plus BOND worksheet.",
+    "headlines": [
+      "Day 17 of 90 · Fixed Income: the full price is the last-coupon value grown at the yield, and it splits into accrued interest and the quoted flat price",
+      "Calculator: a bond’s full price, accrued interest and flat price between coupon dates, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>No coupon was due, yet Greece&rsquo;s 2012 debt swap paid bondholders for every day since the last one</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Between coupon dates a bond&rsquo;s price is its value on the last coupon date, grown at the yield; part of that is interest the seller has already earned, and the quoted price leaves it out.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 17 of 90 &middot; Fixed-Income Bond Valuation: Prices and Yields &middot; Full price, flat price and accrued interest</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="17">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 16 and 10, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="5.01481911242212" data-tol="0.01" data-pct data-show="5.01%">
+          <p class="cq-stem"><b>From Day 16.</b> A 12-year bond with a 4.5% coupon, paid semiannually, is priced at 95.40 per 100 of par. What is its yield to maturity on a semiannual-bond basis? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Per half-year: N = 24, PMT = 2.25, PV = &minus;95.40, FV = 100. CPT I/Y gives the half-year rate, so double it.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>24</kbd> <kbd>N</kbd> <kbd>95.4</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>2.25</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.5074</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=24</samp>, <samp>PV=&minus;95.4</samp>, <samp>PMT=2.25</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=2.5074</samp>.</p>
+            <p>That is per half-year. Doubled: 2 &times; 2.5074 = 5.0148, so the YTM is <b>5.01%</b> on a semiannual-bond basis (not 2.51%).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 10.</b> A project costs 1,200 today and pays 400 at the end of each of years 1&ndash;3 and 300 at the end of year 4. At 9%, its NPV is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 1,225.05</span></label>
+              <p class="cq-why">That is the PV of the inflows only: CF0 = &minus;1,200 was left out.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 25.05</span></label>
+              <p class="cq-why">Right: &minus;1,200 + PV of 400 for three years + PV of 300 in year 4 = 25.05.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. &minus;580.52</span></label>
+              <p class="cq-why">F01 was left at 1, so the calculator saw 400 in year 1 and 300 in year 2, and nothing after.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>1200</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>400</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>300</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 25.0454</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd>, then <samp>npv(9,&minus;1200,{400,300},{3,1})</samp> <kbd>ENTER</kbd> &rarr; <samp>25.0454</samp> (braces are <kbd>2nd</kbd> <kbd>(</kbd> and <kbd>2nd</kbd> <kbd>)</kbd>).</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Greece pays for the days, not the coupons</h3>
+      <p>March 2012, deep in Greece&rsquo;s debt crisis. In a deal known as the PSI, for &ldquo;private-sector involvement&rdquo;, private holders of almost &euro;200 billion (face value) of Greek government bonds handed them in.</p>
+      <p>For every &euro;100 of face value they received &euro;31.50 of new Greek bonds and &euro;15 of short-term notes from the eurozone&rsquo;s rescue fund, the European Financial Stability Facility (EFSF), plus GDP-linked warrants. That is &euro;46.50 of new debt for every &euro;100 of old: a 53.5% cut in face value.</p>
+      <p>One item was settled on its own. Each old bond had been building up interest since its last coupon date. That interest, counted up to 24 February 2012, was paid separately, in six-month EFSF zero-coupon notes due on 12 September 2012.</p>
+      <p>Here is the odd part. No coupon was due on the day the old bonds were cancelled. So why did Greece owe bondholders any interest at all? And how much is owed for part of a coupon period?</p>
+
+      <h3>The idea</h3>
+      <p>A bond pays its coupon on fixed dates, but it trades on any day. Whoever holds it on the payment date gets the whole coupon, even if they bought it last week.</p>
+      <p>Think of a job paid once a month. Quit on the 10th and you are still owed for 10 days, even though payday is weeks away. A bond seller is in the same spot: they held the bond for part of the period, so they earned part of the coming coupon.</p>
+      <p>So a buyer between coupon dates pays the <b>full price</b> (also called the invoice or &ldquo;dirty&rdquo; price): what the bond&rsquo;s remaining cash flows are worth on the settlement day, at the market yield. Inside it sits the seller&rsquo;s share of the coming coupon, the <b>accrued interest</b> (AI). Take AI out and you have the <b>flat price</b> (the quoted or &ldquo;clean&rdquo; price), the one on screens.</p>
+      <p>Everything turns on one fraction, t/T: t is the days since the last coupon, T the days in the whole coupon period. <b>Government bonds</b> count actual calendar days (actual/actual). <b>Corporate bonds</b> pretend every month has 30 days and the year 360 (30/360), so a half-year period is always 180 days.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start on a coupon date (Day 15).</b> Just after a coupon is paid, the bond is worth the PV of what is left: PV = PMT/(1 + r) + PMT/(1 + r)<sup>2</sup> + &hellip; + (PMT + FV)/(1 + r)<sup>N</sup>, with r the yield per coupon period.</p>
+      <p><b>Let t days pass.</b> Settlement is t/T of a period later, so a cash flow that was k periods away is now only k &minus; t/T away.</p>
+      <p><b>Rediscount each one.</b> Its discount factor becomes 1/(1 + r)<sup>k &minus; t/T</sup> = [1/(1 + r)<sup>k</sup>] &times; (1 + r)<sup>t/T</sup>. Every term gains the same factor, (1 + r)<sup>t/T</sup>.</p>
+      <p><b>Pull it out of the sum.</b> PV<sub>full</sub> = PV &times; (1 + r)<sup>t/T</sup>. That is Day 1&rsquo;s FV formula with N = t/T: the coupon-date value, grown at the yield for the part of the period that has gone.</p>
+      <p><b>Split off the seller&rsquo;s share.</b> The next coupon is earned evenly over the T days, and the seller held the bond for t of them: AI = (t/T) &times; PMT. By convention it is a straight-line share, not compounded.</p>
+      <p><b>What is left is quoted.</b> PV<sub>flat</sub> = PV<sub>full</sub> &minus; AI.</p>
+      <p><b>Why quote flat?</b> The full price climbs all period, then drops by the coupon on payment day. For the walkthrough bond below it is 106.5811 just before the 15 August coupon and 104.0811 just after. The flat price is 104.0811 on both sides. No saw-tooth, so moves in the quoted price show the market, not the calendar.</p>
+      <p><b>Fine print.</b> AI grows in a straight line while the full price compounds. So a 4% semiannual bond priced at exactly 100 on its coupon dates (4% yield) shows a flat price of 99.9950 halfway between them, not 100.</p>
+      <p>In plain words: you pay what the bond was worth on its last payday, grown for the days since. Part of that is the seller&rsquo;s share of the next payment, and the price on the screen leaves that part out.</p>
+      <div class="formula">
+        <p class="expr">PV<sub>full</sub> = PV &times; (1 + r)<sup>t/T</sup></p>
+        <p class="expr">AI = (t / T) &times; PMT</p>
+        <p class="expr">PV<sub>flat</sub> = PV<sub>full</sub> &minus; AI</p>
+        <dl>
+          <dt>PV<sub>full</sub></dt><dd>full (invoice, &ldquo;dirty&rdquo;) price: what the buyer pays on the settlement date</dd>
+          <dt>PV</dt><dd>the bond&rsquo;s value on the last coupon date: Day 15&rsquo;s price of the coupons and principal still to come</dd>
+          <dt>r</dt><dd>market yield per coupon period, as a decimal (half the annual yield for a semiannual bond)</dd>
+          <dt>t</dt><dd>days from the last coupon date to settlement</dd>
+          <dt>T</dt><dd>days in the coupon period, last coupon to next</dd>
+          <dt>PMT</dt><dd>coupon per period (half the annual coupon for a semiannual bond)</dd>
+          <dt>AI</dt><dd>accrued interest: the seller&rsquo;s share of the next coupon</dd>
+          <dt>PV<sub>flat</sub></dt><dd>flat (quoted, &ldquo;clean&rdquo;) price</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>PV<sub>full</sub> = PV<sub>last coupon date</sub> &times; (1 + r)<sup>t/T</sup></li>
+          <li>AI = (t / T) &times; PMT (t = days since last coupon, T = days in the coupon period)</li>
+          <li>PV<sub>flat</sub> = PV<sub>full</sub> &minus; AI</li>
+          <li>Day counts: government bonds actual/actual; corporate bonds 30/360</li>
+          <li>BA II Plus BOND worksheet: PRI = flat price per 100 of par; full price = PRI + AI</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A corporate bond pays a 6% coupon semiannually (15 March and 15 September) and matures on 15 March 2028. It settles on 2 June 2027 at a 5% yield. Day count 30/360. Find the full price, accrued interest and flat price per 100.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Days since the last coupon (30/360, 15 Mar &rarr; 2 Jun): (6 &minus; 3) &times; 30 + (2 &minus; 15) = 77, out of 180.</li>
+          <li>Per period: coupon 6/2 = 3, yield 5%/2 = 2.5%. Two coupons are left after 15 March 2027.</li>
+          <li>PV on 15 March: 3/1.025 + 103/1.025<sup>2</sup> = 2.9268 + 98.0369 = 100.9637.</li>
+          <li>Full price: 100.9637 &times; 1.025<sup>77/180</sup> = 100.9637 &times; 1.010619 = <b>102.0358</b>.</li>
+          <li>AI = (77/180) &times; 3 = <b>1.2833</b>.</li>
+          <li>Flat price = 102.0358 &minus; 1.2833 = <b>100.7525</b>.</li>
+          <li>Actual days would be 79 of 184, giving AI = 1.2880: the day-count convention changes the answer.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A 5% government bond pays coupons on 15 February and 15 August and matures on 15 February 2032. It settles on 27 April 2027 at a 4% yield (actual/actual). Find its value on the last coupon date, the full price, the accrued interest and the flat price per 100; then check them with the BA II Plus BOND worksheet. Per half-year: coupon 2.5, yield 2%, and 10 coupons left after 15 February 2027.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Count the days: t from 15 Feb to 27 Apr 2027, then T from 15 Feb to 15 Aug 2027 (dates are typed MM.DDYY)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATE</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>; <samp>DT1=</samp> <kbd>2.1527</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>DT2=</samp> <kbd>4.2727</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>DBD=</samp> <kbd>CPT</kbd>. Then <kbd>&uarr;</kbd> to <samp>DT2=</samp>, <kbd>8.1527</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd>. The line under DBD must read <samp>ACT</samp> (<kbd>2ND</kbd> <kbd>SET</kbd> switches it). <kbd>2ND</kbd> <kbd>QUIT</kbd>.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen; <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">D:dbd(</kbd> (scroll to it, <kbd>ENTER</kbd>), then <kbd>2.1527</kbd> <kbd>,</kbd> <kbd>4.2727</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. Again with <kbd>8.1527</kbd> as the second date.</div>
+            <p class="calc-see">Display: <samp>DBD = 71.0000</samp>, then <samp>DBD = 181.0000</samp> (BA II Plus) / <samp>71.0000</samp>, then <samp>181.0000</samp> (TI-84). So t/T = 71/181.</p>
+          </li>
+          <li>
+            <p class="calc-what">Value on the last coupon date (15 Feb 2027): Day 15&rsquo;s bond price with 10 coupons left</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>2</kbd> <kbd>I/Y</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=10</samp>, <samp>I%=2</samp>, <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;104.4913</samp> (BA II Plus) / <samp>PV=&minus;104.4913</samp> (TI-84). The minus sign only says you pay it.</p>
+          </li>
+          <li>
+            <p class="calc-what">Full price: grow it at 2% for 71/181 of a period, and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>104.4913</kbd> <kbd>&times;</kbd> <kbd>1.02</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>71</kbd> <kbd>&divide;</kbd> <kbd>181</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (AOS, set on Day 1, does the power first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>104.4913</kbd> <kbd>&times;</kbd> <kbd>1.02</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>71</kbd> <kbd>&divide;</kbd> <kbd>181</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>ENTER</kbd> (F for full)</div>
+            <p class="calc-see">Display: <samp>105.3061</samp> on both (1.02<sup>71/181</sup> = 1.007798).</p>
+          </li>
+          <li>
+            <p class="calc-what">Accrued interest: 71/181 of the 2.5 coupon</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>71</kbd> <kbd>&divide;</kbd> <kbd>181</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>71</kbd> <kbd>&divide;</kbd> <kbd>181</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.9807</samp> (BA II Plus) / <samp>.9807</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Flat price = full price &minus; AI</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>&minus;</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS, the AI just computed) <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>104.3255</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check with the BOND worksheet (BA II Plus only)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>BOND</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>; <samp>SDT=</samp> <kbd>4.2727</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>CPN=</samp> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>RDT=</samp> <kbd>2.1532</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>RV=</samp> shows 100, <kbd>&darr;</kbd>; <samp>ACT</samp> <kbd>&darr;</kbd>; <samp>2/Y</samp> <kbd>&darr;</kbd> (if either shows <samp>360</samp> or <samp>1/Y</samp>, press <kbd>2ND</kbd> <kbd>SET</kbd> on it); <samp>YLD=</samp> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; <samp>PRI=</samp> <kbd>CPT</kbd>; <kbd>&darr;</kbd> to <samp>AI=</samp></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> no bond worksheet: steps 2&ndash;5 are the whole method on the TI-84</div>
+            <p class="calc-see">Display: <samp>PRI = 104.3255</samp>, then <samp>AI = 0.9807</samp>. PRI is the flat price; full = PRI + AI = 105.3061 (adding the two rounded displays gives 105.3062: rounding in the last digit).</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: value on 15 Feb 104.4913; full price 105.3061; accrued interest 0.9807; flat (quoted) price 104.3255, per 100 of par.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>A coupon is earned day by day, by whoever holds the bond. Greece ended the old bonds partway through their coupon periods, so their holders had already earned a slice of coupons that would now never be paid. Greece paid that slice, the accrued interest, on its own, in the six-month EFSF notes.</p>
+      <p>An illustration (not an actual Greek bond): &euro;100,000 of a bond paying a 4.5% coupon once a year, last paid on 20 August 2011. By 24 February 2012 it had run 188 of the period&rsquo;s 366 days (actual/actual, and 2012 had a 29 February). AI = 4,500 &times; 188/366 = <b>&euro;2,311.48</b>.</p>
+      <p>That is today&rsquo;s (t/T) &times; PMT, nothing more. The 53.5% cut fell on face value; the interest already earned was its own line, just as every bond trade splits the full price into AI and the flat price.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Quoting the full price as the flat price, or the reverse. Quotes are flat; the buyer pays full = flat + AI. The BA II Plus <samp>PRI</samp> is flat, so add <samp>AI</samp> for the full price.</li>
+          <li>Using 30/360 for a government bond (or actual days for a corporate one). Check the day count first: it changes both t and T.</li>
+          <li>Using the annual yield or coupon. t/T is a fraction of a <em>coupon period</em>, so r is the periodic yield (2% for a 4% semiannual yield) and PMT the periodic coupon.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="103.41008266914305" data-tol="0.01" data-signless data-show="103.41">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 6% government bond pays coupons semiannually, with 8 coupons left after its last coupon date. The market yield is 5%, and settlement is 75 days into a 184-day coupon period. What is its flat price per 100 of par? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same steps as the walkthrough (no dates to count): N = 8, I/Y = 2.5, PMT = 3, FV = 100 for the PV; then grow it by 1.025<sup>75/184</sup>, and take off AI = 75/184 &times; 3.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>8</kbd> <kbd>N</kbd> <kbd>2.5</kbd> <kbd>I/Y</kbd> <kbd>3</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;103.5851</samp>. Then <kbd>103.5851</kbd> <kbd>&times;</kbd> <kbd>1.025</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>75</kbd> <kbd>&divide;</kbd> <kbd>184</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>104.6329</samp> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>75</kbd> <kbd>&divide;</kbd> <kbd>184</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>1.2228</samp> <kbd>STO</kbd> <kbd>2</kbd>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>103.4101</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=8</samp>, <samp>I%=2.5</samp>, <samp>PMT=3</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;103.5851</samp>. Home screen: <kbd>103.5851</kbd> <kbd>&times;</kbd> <kbd>1.025</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>75</kbd> <kbd>&divide;</kbd> <kbd>184</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>104.6329</samp>, <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>ENTER</kbd>; <kbd>75</kbd> <kbd>&divide;</kbd> <kbd>184</kbd> <kbd>&times;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.2228</samp>; <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>&minus;</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> <kbd>ENTER</kbd> &rarr; <samp>103.4101</samp>.</p>
+            <p>PV 103.5851 &rarr; full 104.6329 &rarr; AI 1.2228 &rarr; flat <b>103.41</b>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> Why does the buyer of a bond between coupon dates pay the seller accrued interest?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It is the dealer&rsquo;s fee for arranging the trade</span></label>
+              <p class="cq-why">No: AI goes to the seller, not a dealer, and it is fixed by a formula, (t/T) &times; coupon. Dealers earn the bid&ndash;ask spread.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It pays the seller for the default risk carried until the next coupon</span></label>
+              <p class="cq-why">No: default risk is priced through the yield. AI depends only on the days and the coupon, and is the same for a safe issuer or a risky one.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The seller earned part of the coming coupon, but the buyer will collect all of it</span></label>
+              <p class="cq-why">Right. The seller held the bond for t of the T days; AI hands them that earned share now, and the buyer gets it back inside the full coupon on payment day.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The issuer pays the whole coupon to whoever holds the bond on the payment date. Without AI the buyer would collect interest for days the seller owned the bond. So the buyer pays (t/T) &times; PMT now and receives the full PMT later, keeping only the share for the days he holds it.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="98.11666666666666" data-tol="0.0005" data-signless data-show="98.1167">
+          <p class="cq-stem"><b>3. Twist: from the quote to the invoice.</b> A 4% corporate bond pays coupons on 1 May and 1 November and uses 30/360. It is quoted at 97.25 (flat) for settlement on 19 July. What does the buyer actually pay, per 100 of par? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> This time you know the flat price and need the full price: full = flat + AI. Count the days 30/360 from 1 May; the coupon per period is 2 and T = 180.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>t (30/360) = (7 &minus; 5) &times; 30 + (19 &minus; 1) = 78, out of 180.</p>
+            <p>AI = (78/180) &times; 2 = 0.8667. Full price = 97.25 + 0.8667 = <b>98.1167</b>.</p>
+            <p>BA II Plus: <kbd>78</kbd> <kbd>&divide;</kbd> <kbd>180</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>97.25</kbd> <kbd>=</kbd> &rarr; <samp>98.1167</samp>. TI-84 Plus: <kbd>78</kbd> <kbd>&divide;</kbd> <kbd>180</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>+</kbd> <kbd>97.25</kbd> <kbd>ENTER</kbd> &rarr; <samp>98.1167</samp>.</p>
+            <p>Actual days (79 of 184) would give 98.1087: the government convention, wrong for a corporate bond.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A 4% government bond pays coupons semiannually. Its last coupon was paid on 1 March and the next is due on 1 September. For settlement on 15 May, the accrued interest per 100 of par is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.8152</span></label>
+              <p class="cq-why">Right: actual/actual, 75 of 184 days, &times; 2 = 0.8152.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 0.8222</span></label>
+              <p class="cq-why">30/360: 74/180 &times; 2. That is the corporate convention; a government bond counts actual days.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 1.6304</span></label>
+              <p class="cq-why">75/184 &times; 4: the annual coupon was not halved. A semiannual coupon is 2 per period.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>t = 1 Mar &rarr; 15 May = 75 actual days; T = 1 Mar &rarr; 1 Sep = 184. AI = (75/184) &times; 2 = 0.8152. Any year gives the same count, since March to September never includes 29 February.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATE</kbd> <kbd>3.0127</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>5.1527</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>DBD = 75.0000</samp>; <kbd>&uarr;</kbd> <kbd>9.0127</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>DBD = 184.0000</samp>.</p>
+            <p>TI-84 Plus: <samp>dbd(3.0127,5.1527)</samp> &rarr; <samp>75.0000</samp>; <samp>dbd(3.0127,9.0127)</samp> &rarr; <samp>184.0000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is the difference between a bond&rsquo;s full price and its flat price, and why are bonds quoted flat?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The full price is what the buyer pays: the bond&rsquo;s value on the last coupon date grown at the yield to settlement, and it includes accrued interest, the seller&rsquo;s (t/T) share of the coming coupon; the flat price is the full price minus that AI. Bonds are quoted flat because the full price drops by a coupon on every payment date, while the flat price does not, so moves in the quote reflect yield changes rather than the calendar.</p>
+            <p>A complete answer says: (1) full = flat + AI, and the full price is what changes hands; (2) AI = (t/T) &times; PMT is the seller&rsquo;s earned share of the next coupon; (3) the flat price avoids the jump on each coupon date, so its moves reflect yield changes.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Fixed-Income Bond Valuation: Prices and Yields (full price, flat price and accrued interest between coupon dates; actual/actual and 30/360 day counts).</p>
+      <p><strong>Sources.</strong> Hellenic Republic Ministry of Finance, press release of 7 March 2012, via the Athens Exchange (unpaid interest accrued up to 24 February 2012 paid in six-month EFSF zero-coupon notes maturing 12 September 2012); Hellenic Republic, &ldquo;PSI launch&rdquo; press release, 21 February 2012, via Mondo Visione (31.5% of face in new bonds, 15% in EFSF notes, GDP-linked securities); European Stability Mechanism, &ldquo;What was the private sector debt restructuring of March 2012?&rdquo; (the accrued-interest facility); Lawyer Monthly, &ldquo;How did the 2012 PSI alleviate Greece&rsquo;s debt crisis?&rdquo;, May 2023 (&euro;199.2 billion of face value took part). The &euro;100,000 bond in &ldquo;Back to the story&rdquo; is an illustration, not an actual Greek bond.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-16.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

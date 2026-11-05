@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Bernoulli’s 1683 riddle: credit interest every instant and you still can’t triple your money — CFA Math, Day 4 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Bernoulli’s 1683 riddle: credit interest every instant and you still can’t triple your money",
+    "path": "reports/cfa/l1/day-04.html",
+    "summary": "Day 4 of CFA Math: a stated annual rate compounded m times a year is worth an effective annual rate of (1 + r_s/m)^m − 1, which climbs toward e^(r_s) − 1 as compounding becomes continuous; Logan turns Bernoulli’s 100% into EARs compounded monthly, daily and continuously, and converts 12% monthly to an EAR and back.",
+    "headlines": [
+      "Day 4 of 90 · Quantitative Methods: compounding more often raises the effective annual rate, but never past the continuous ceiling e^(r_s) − 1",
+      "Calculator: Bernoulli’s 100% as an EAR compounded monthly, daily and continuously, and 12% monthly to an EAR and back, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Bernoulli’s 1683 riddle: credit interest every instant and you still can’t triple your money</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        How often interest is credited changes what a rate is really worth: the effective annual rate puts every quote on one footing, and even compounding every instant has a ceiling.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 4 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Stated, effective and continuous rates</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="4">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 3 and 2, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="2.857142857142869" data-tol="0.01" data-pct data-show="2.86%">
+          <p class="cq-stem"><b>From Day 3.</b> A bond yields 8% a year and inflation is 5%. What is the exact real return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Divide, don&rsquo;t subtract: real = (1 + nominal) / (1 + inflation) &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.08 &divide; 1.05 &minus; 1 = 1.028571 &minus; 1 = <b>2.86%</b>. The shortcut 8% &minus; 5% = 3.00% overstates it, because inflation erodes the interest as well as the principal.</p>
+            <p>BA II Plus: <kbd>1.08</kbd> <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0286</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>2.8571</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.08</kbd> <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0286</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.8571</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 2.</b> $1,000 grows to $1,500 in 5 years. The annual compound return is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 8.45%</span></label>
+              <p class="cq-why">Right: (1,500 / 1,000)<sup>1/5</sup> &minus; 1 = 1.5<sup>1/5</sup> &minus; 1 = 1.084472 &minus; 1 = 8.45%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 10.00%</span></label>
+              <p class="cq-why">50% &divide; 5 is simple interest. It ignores that each year&rsquo;s gain earns a return too, so it overstates the yearly rate.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 8.11%</span></label>
+              <p class="cq-why">That is ln(1.5) &divide; 5. Dividing the log by N gives the <em>continuously compounded</em> rate (today&rsquo;s topic), not the once-a-year rate the question asks for.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>5</kbd> <kbd>N</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>1500</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 8.4472</samp>. TI-84 Plus: TVM Solver <samp>N=5</samp>, <samp>PV=&minus;1000</samp>, <samp>PMT=0</samp>, <samp>FV=1500</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=8.4472</samp>.</p>
+            <p>Keep C in mind: 8.11% is the same growth, quoted as a continuously compounded rate. By the end of today you will see why.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Jacob Bernoulli and the interest that never runs away</h3>
+      <p>In 1683 Jacob Bernoulli, a mathematician in Basel, Switzerland, asked a lender&rsquo;s question.</p>
+      <p>Lend 1 at 100% a year. Credit the interest once, at the end of the year, and the debt doubles to 2.</p>
+      <p>Now credit half the interest, 50%, after six months, and let it earn interest too. The debt is multiplied by 1.5 twice: 1.5 &times; 1.5 = 2.25. Credit 25% every three months and it reaches 2.4414. Crediting more often always earns more.</p>
+      <p>So keep going. Credit it monthly and the debt reaches 2.6130; daily, 2.7146. Every hour, every instant: the debt keeps growing. Yet Bernoulli showed it never runs away: it stays between 2 and 3.</p>
+      <p>Leonhard Euler later identified the limit as the number now called <i>e</i>, and in 1748 published its value to well over a dozen decimal places: 2.71828&hellip;</p>
+      <p>Which leaves a puzzle. If crediting interest more often always earns more, why doesn&rsquo;t crediting it every instant earn an infinite amount?</p>
+
+      <h3>The idea</h3>
+      <p>A quoted rate has two parts: a number, and how often it is credited. &ldquo;12% a year, compounded monthly&rdquo; is a <b>stated annual rate</b> of 12%, paid as 1% a month. CFA calls the 1% the <b>periodic rate</b>.</p>
+      <p>The frequency matters. January&rsquo;s interest joins the balance, so February&rsquo;s 1% is paid on slightly more money, and so on all year. By December the money is up 12.68%, not 12%. That true one-year growth is the <b>effective annual rate</b>, or EAR.</p>
+      <p>Same stated rate, more frequent credits, higher EAR: 12% is 12.36% compounded semiannually, 12.68% monthly and 12.75% <b>continuously</b>, which means credited every instant.</p>
+      <p>So rates are compared only as EARs. A deposit at 8% compounded quarterly (EAR 8.24%) pays more than one at 8.2% compounded once a year.</p>
+      <p>And the climb has a ceiling. However often you compound, the EAR never passes e<sup>r<sub>s</sub></sup> &minus; 1, its value when compounding is continuous. That ceiling is Bernoulli&rsquo;s answer.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Slice the year.</b> From Day 1, each period multiplies money by (1 + that period&rsquo;s rate). Compounded m times a year, a stated rate r<sub>s</sub> pays r<sub>s</sub>/m a period (12% monthly is 1% a month), so a year multiplies money by (1 + r<sub>s</sub>/m)<sup>m</sup>: 1.01<sup>12</sup> = 1.126825.</p>
+      <p><b>Name it.</b> The EAR is the once-a-year rate with the same growth: 1 + EAR = (1 + r<sub>s</sub>/m)<sup>m</sup>, so EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1, here 12.6825%. N years hold m &times; N periods: FV<sub>N</sub> = PV &times; (1 + r<sub>s</sub>/m)<sup>m&times;N</sup>.</p>
+      <p><b>Where the extra comes from.</b> At 12% semiannually, 100 is 106 by midyear, and the second half earns 6% of 106 = 6.36, not 6: the extra 0.36 is interest on interest.</p>
+      <p><b>Why it stops.</b> Split Bernoulli&rsquo;s interest (1 at 100%) into generations: the 1 earns exactly 1 however you slice the year, that interest earns more, and so on. Each generation starts at zero and builds up, so it averages at most half its final size, and at 100% the next one it earns is at most half that. So the generations are at most 1, 1/2, 1/4&hellip;, and the debt stays below 1 + 1 + 1/2 + 1/4 + &hellip; = 3. With infinitely thin slices it is exactly 1 + 1 + 1/2 + 1/6 + 1/24 + &hellip; = 2.71828&hellip;, the number e.</p>
+      <p><b>Any rate.</b> At r<sub>s</sub> the generations are r<sub>s</sub>, r<sub>s</sub><sup>2</sup>/2, r<sub>s</sub><sup>3</sup>/6&hellip;, and 1 + r<sub>s</sub> + r<sub>s</sub><sup>2</sup>/2 + &hellip; = e<sup>r<sub>s</sub></sup>. At 8%: 1 + 0.08 + 0.0032 + 0.0000853 + &hellip; = 1.0832871 = e<sup>0.08</sup>. So continuously, EAR = e<sup>r<sub>s</sub></sup> &minus; 1 and FV<sub>N</sub> = PV &times; e<sup>r<sub>s</sub>&times;N</sup>.</p>
+      <p><b>Going back.</b> Undo the steps: the m-th root of (1 + EAR), minus 1, times m gives r<sub>s</sub>. For r<sub>cc</sub>, <kbd>LN</kbd> undoes eˣ: r<sub>cc</sub> = ln(1 + EAR).</p>
+      <p><b>In plain words:</b> the EAR is how much your money really grows in a year. Crediting interest more often raises it, but never past e<sup>r<sub>s</sub></sup> &minus; 1.</p>
+      <div class="formula">
+        <p class="expr">EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1</p>
+        <p class="expr">FV<sub>N</sub> = PV &times; (1 + r<sub>s</sub>/m)<sup>m&times;N</sup></p>
+        <p class="expr">Continuous: EAR = e<sup>r<sub>s</sub></sup> &minus; 1 and FV<sub>N</sub> = PV &times; e<sup>r<sub>s</sub>&times;N</sup></p>
+        <p class="expr">Back: r<sub>s</sub> = m &times; [(1 + EAR)<sup>1/m</sup> &minus; 1] and r<sub>cc</sub> = ln(1 + EAR)</p>
+        <dl>
+          <dt>r<sub>s</sub></dt><dd>stated annual interest rate (the quoted rate), as a decimal</dd>
+          <dt>m</dt><dd>compounding periods per year: 2 semiannual, 4 quarterly, 12 monthly, 365 daily</dd>
+          <dt>r<sub>s</sub>/m</dt><dd>periodic rate: the rate for one compounding period</dd>
+          <dt>EAR</dt><dd>effective annual rate: the money&rsquo;s true growth in one year</dd>
+          <dt>N</dt><dd>number of years, so m &times; N periods</dd>
+          <dt>e</dt><dd>2.71828&hellip;, Bernoulli&rsquo;s limit (the <kbd>eˣ</kbd> key raises it to a power)</dd>
+          <dt>r<sub>cc</sub></dt><dd>continuously compounded rate</dd>
+          <dt>ln</dt><dd>natural log (the <kbd>LN</kbd> key), which undoes eˣ</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1</li>
+          <li>FV<sub>N</sub> = PV &times; (1 + r<sub>s</sub>/m)<sup>m &times; N</sup></li>
+          <li>FV<sub>N</sub> = PV &times; e<sup>r<sub>s</sub> &times; N</sup></li>
+          <li>EAR = e<sup>r<sub>s</sub></sup> &minus; 1</li>
+          <li>r<sub>cc</sub> = ln(1 + EAR)</li>
+          <li>r<sub>s</sub> = m &times; [(1 + EAR)<sup>1/m</sup> &minus; 1]</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A bank quotes 8% stated annual, compounded quarterly. (a) What is the EAR? (b) What does $10,000 grow to in 3 years? (c) If the same 8% were compounded continuously, what would the EAR and the 3-year value be?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Periodic rate: 8% &divide; 4 = 2% a quarter.</li>
+          <li>(a) A year is 4 quarters: 1.02<sup>4</sup> = 1.08243216, so EAR = <b>8.2432%</b>.</li>
+          <li>(b) Three years are 4 &times; 3 = 12 quarters: 1.02<sup>12</sup> = 1.268242.</li>
+          <li>FV = 10,000 &times; 1.268242 = <b>$12,682.42</b>.</li>
+          <li>Same answer from the EAR: 10,000 &times; 1.08243216<sup>3</sup> = 12,682.42. (Using 1.08<sup>3</sup> instead gives 12,597.12: too little.)</li>
+          <li>(c) Continuous: e<sup>0.08</sup> = 1.083287, so EAR = <b>8.3287%</b>.</li>
+          <li>FV = 10,000 &times; e<sup>0.08 &times; 3</sup> = 10,000 &times; e<sup>0.24</sup> = 10,000 &times; 1.271249 = <b>$12,712.49</b>, $30.07 more than quarterly.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Bernoulli on the calculator: what EAR does a stated 100% give compounded monthly, then daily, then continuously? Then convert 12% compounded monthly to an EAR, and back. The BA II Plus has a converter worksheet, ICONV: <samp>NOM</samp> is the stated rate, <samp>EFF</samp> the EAR, <samp>C/Y</samp> the compoundings per year. The TI-84 has <samp>►Eff(</samp> and <samp>►Nom(</samp> in its Finance menu, used on the home screen. Both take rates in percent: 100, not 1.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Open the converter</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>ICONV</kbd> (above the <kbd>2</kbd> key). It opens at <samp>NOM=</samp>.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> down the list until <kbd class="menu">C:►Eff(</kbd> is highlighted, <kbd>ENTER</kbd>. The home screen shows <samp>►Eff(</samp>.</div>
+          </li>
+          <li>
+            <p class="calc-what">100% stated, compounded monthly: enter both, compute the EAR</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> (<samp>EFF=</samp>) <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (back to <samp>EFF=</samp>) <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>►Eff(100,12)</samp>)</div>
+            <p class="calc-see">Display: <samp>EFF = 161.3035</samp> (BA II Plus) / <samp>161.3035</samp> (TI-84): an EAR of 161.30%, so 1 becomes 2.6130.</p>
+          </li>
+          <li>
+            <p class="calc-what">Daily: change only the compounding, to 365</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>365</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (<samp>EFF=</samp>) <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, then <kbd>100</kbd> <kbd>,</kbd> <kbd>365</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>EFF = 171.4567</samp> / <samp>171.4567</samp>. About 30 times as many credits, but only 10.15 points more.</p>
+          </li>
+          <li>
+            <p class="calc-what">Every instant: EAR = e<sup>1</sup> &minus; 1, with the eˣ key</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> (leave the worksheet), <kbd>1</kbd> <kbd>2ND</kbd> <kbd>eˣ</kbd> (shows <samp>2.7183</samp>: that is e) <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>LN</kbd> (eˣ; the screen shows <samp>e^(</samp>) <kbd>1</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the TI-84 fills in <samp>Ans</samp> for you)</div>
+            <p class="calc-see">Display: <samp>1.7183</samp>, then <samp>171.8282</samp> on both: the ceiling, an EAR of 171.83%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Now a real-world quote: 12% compounded monthly to an EAR</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>ICONV</kbd> (back at <samp>NOM=</samp>) <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (<samp>EFF=</samp>) <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, then <kbd>12</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>EFF = 12.6825</samp> / <samp>12.6825</samp>: 12% monthly really earns 12.68% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">And back: from the EAR to the stated rate</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&uarr;</kbd> (<samp>NOM=</samp>) <kbd>CPT</kbd>: the calculator recomputes NOM from EFF and C/Y</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">B:►Nom(</kbd>, <kbd>ENTER</kbd>, then <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>►Nom(Ans,12)</samp>)</div>
+            <p class="calc-see">Display: <samp>NOM = 12.0000</samp> / <samp>12.0000</samp>: the same equation, run backwards. Give it an EAR and a frequency, and it returns the quote.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: a stated 100% is an EAR of 161.3035% compounded monthly, 171.4567% daily and 171.8282% continuously, and never more; 12% compounded monthly is an EAR of 12.6825%, and back again to 12%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Bernoulli&rsquo;s loan is a stated rate of 100%. As an EAR, (1 + 1/m)<sup>m</sup> &minus; 1:</p>
+      <ul>
+        <li>once a year: 100%</li>
+        <li>twice a year: 125%</li>
+        <li>quarterly: 144.14%</li>
+        <li>monthly: 161.30%</li>
+        <li>daily: 171.46%</li>
+        <li>continuously: e &minus; 1 = 171.83%</li>
+      </ul>
+      <p>Each step adds less. Monthly to daily adds 10.15 points; daily to every instant only 0.37. The extra is interest on interest, and each generation of it is at most half the one before, so the debt can never reach 3.</p>
+      <p>It tops out at 2.71828 times the loan: the limit Bernoulli pinned between 2 and 3, and why no amount of slicing triples your money. At real-world rates the ceiling is just as firm: 8% compounded as often as you like never beats an EAR of 8.33%.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Comparing stated rates that compound at different frequencies. 8% compounded quarterly beats 8.2% compounded annually; compare the EARs (8.24% against 8.20%).</li>
+          <li>Using years and the stated rate when the compounding is monthly. 12% monthly for 3 years is 36 periods at 1%, not 3 periods at 12% (and not 3 periods at 1%).</li>
+          <li>Dividing the rate yourself and leaving P/Y and C/Y at 12: the calculator divides by 12 a second time. With N = 36 and I/Y = 1, $1,000 then grows to only $1,030.44 instead of $1,430.77. Keep P/Y = C/Y = 1 and convert N and the rate yourself.</li>
+          <li>Thinking continuous compounding makes the rate infinite. It gives e<sup>r<sub>s</sub></sup> &minus; 1: 8.33% for 8%, 12.75% for 12%.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="6.167781186449828" data-tol="0.01" data-pct data-show="6.17%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A savings account pays a stated 6% a year, compounded monthly. What is its effective annual rate? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keys as the 12% monthly step: change NOM to 6 and keep C/Y = 12. On the TI-84, <samp>►Eff(6,12)</samp>.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 6.1678</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, <kbd>6</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.1678</samp>.</p>
+            <p>By formula: 0.5% a month, so 1.005<sup>12</sup> &minus; 1 = 1.061678 &minus; 1 = <b>6.17%</b>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> A bank compounds a stated 10% a year continuously, crediting interest every instant. Why is the effective annual rate not infinite?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. In theory it is infinite; banks just cannot credit interest more often than about once a day</span></label>
+              <p class="cq-why">The limit is in the math, not the bank. (1 + 0.10/m)<sup>m</sup> never passes e<sup>0.10</sup> = 1.1052, however large m gets: daily gives 10.5156%, every instant 10.5171%.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Continuous compounding is just 10% simple interest, so the EAR is exactly 10%</span></label>
+              <p class="cq-why">Interest still earns interest, as with any compounding, so the EAR is above 10%: e<sup>0.10</sup> &minus; 1 = 10.52%.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Each finer slice adds interest on a smaller extra amount, so (1 + 0.10/m)<sup>m</sup> rises toward e<sup>0.10</sup> and the EAR stops at 10.52%</span></label>
+              <p class="cq-why">Right. More slices always add something, but less each time, and the additions sum to a finite amount.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Count the generations at 10%: 0.10 on the principal, then 0.10<sup>2</sup>/2 = 0.0050 of interest on interest, then 0.10<sup>3</sup>/6 = 0.000167, and so on. They shrink fast: 0.10 + 0.0050 + 0.000167 = 0.105167 already. Monthly gives 10.4713%, daily 10.5156%, continuously e<sup>0.10</sup> &minus; 1 = 10.5171%. The EAR creeps up to 10.52% and stops there.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="8.711272345856447" data-tol="0.01" data-pct data-show="8.71%">
+          <p class="cq-stem"><b>3. Twist: go backwards.</b> A lender wants an effective annual rate of exactly 9%. What stated annual rate, compounded quarterly, should it quote? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Now EFF is known and NOM is the unknown: EFF = 9, C/Y = 4, then compute NOM. Or r<sub>s</sub> = 4 &times; [(1.09)<sup>1/4</sup> &minus; 1].</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By formula: 1.09<sup>1/4</sup> = 1.021778, so the quarterly rate is 0.021778; &times; 4 = 0.0871, or <b>8.71%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>&darr;</kbd> (<samp>EFF=</samp>) <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> (<samp>NOM=</samp>) <kbd>CPT</kbd> &rarr; <samp>NOM = 8.7113</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">B:►Nom(</kbd>, <kbd>ENTER</kbd>, <kbd>9</kbd> <kbd>,</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>8.7113</samp>.</p>
+            <p>And the continuously compounded rate for the same 9%: r<sub>cc</sub> = ln(1.09) = 0.0862, or 8.62%. BA II Plus: <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>1.09</kbd> <kbd>LN</kbd> &rarr; <samp>0.0862</samp>. TI-84 Plus: <kbd>LN</kbd> <kbd>1.09</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0862</samp>. The more often a rate compounds, the lower the quote needed for the same EAR.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor deposits $5,000 at a stated annual rate of 9%, compounded monthly. After 4 years the account is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $7,057.91</span></label>
+              <p class="cq-why">Compounded annually: 5,000 &times; 1.09<sup>4</sup> = 5,000 &times; 1.411582. It ignores the monthly compounding.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $7,157.03</span></label>
+              <p class="cq-why">Right: 0.75% a month for 48 months, 5,000 &times; 1.0075<sup>48</sup> = 5,000 &times; 1.4314053.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $5,151.70</span></label>
+              <p class="cq-why">The monthly rate, but N = 4 (years) instead of 48 (months): 5,000 &times; 1.0075<sup>4</sup> = 5,000 &times; 1.0303392. That is four months of interest.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Periodic rate 9% &divide; 12 = 0.75%; periods 4 &times; 12 = 48.</p>
+            <p>BA II Plus (P/Y = C/Y = 1; check with <kbd>2ND</kbd> <kbd>P/Y</kbd>, <kbd>&darr;</kbd>, then <kbd>2ND</kbd> <kbd>QUIT</kbd>): <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>48</kbd> <kbd>N</kbd> <kbd>0.75</kbd> <kbd>I/Y</kbd> <kbd>5000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; <samp>FV = 7,157.0267</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=48</samp>, <samp>I%=.75</samp>, <samp>PV=&minus;5000</samp>, <samp>PMT=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=7157.0267</samp>.</p>
+            <p>Check through the EAR: 1.0075<sup>12</sup> &minus; 1 = 9.3807%, and 5,000 &times; 1.093807<sup>4</sup> = 7,157.03.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why must you compare effective annual rates, not stated rates, when two quotes compound at different frequencies?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A stated rate leaves out how often interest is credited, and interest credited more often starts earning interest sooner, so the same stated rate is worth more the more often it compounds. EAR = (1 + r<sub>s</sub>/m)<sup>m</sup> &minus; 1 turns every quote into what it actually earns in one year, so the comparison is like for like.</p>
+            <p>A complete answer says: (1) a stated rate hides the compounding frequency; (2) the EAR puts every rate on one annual basis; (3) for the same stated rate, more frequent compounding gives a higher EAR.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (stated annual and periodic rates, the effective annual rate, compounding frequency and continuous compounding).</p>
+      <p><strong>Sources.</strong> Encyclopaedia Britannica, &ldquo;e (mathematics)&rdquo; (Bernoulli&rsquo;s compound-interest problem, the limit between 2 and 3, Euler); Plus Magazine (University of Cambridge), on the number e (Bernoulli, 1683, compound interest); Wikipedia, &ldquo;e (mathematical constant)&rdquo; (Bernoulli, 1683; Euler&rsquo;s 1748 value).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-03.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
