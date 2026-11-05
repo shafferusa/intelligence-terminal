@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The last Civil War pension paid $73.13 a month until 2020. What is a stream like that worth today? — CFA Math, Day 5 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "The last Civil War pension paid $73.13 a month until 2020. What is a stream like that worth today?",
+    "path": "reports/cfa/l1/day-05.html",
+    "summary": "Day 5 of CFA Math: an ordinary annuity is N single sums added up, which gives PV = A[1 − (1 + r)^−N]/r and FV = A[(1 + r)^N − 1]/r; Logan prices ten years of Irene Triplett’s $73.13-a-month Civil War pension at $7,223.06 and solves for the yearly saving that builds $500,000.",
+    "headlines": [
+      "Day 5 of 90 · Quantitative Methods: an ordinary annuity is N single sums added up, PV = A[1 − (1 + r)^−N]/r and FV = A[(1 + r)^N − 1]/r",
+      "Calculator: the PV and FV of 120 monthly payments of $73.13 (CPT PV, CPT FV), on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>The last Civil War pension paid $73.13 a month until 2020. What is a stream like that worth today?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A level payment every period is just a row of single sums: add up their present values and one formula prices a pension, a loan or a savings plan.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 5 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Ordinary annuities</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="5">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 4 and one from Day 3, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="19.561817146153395" data-tol="0.01" data-pct data-show="19.56%">
+          <p class="cq-stem"><b>From Day 4.</b> A credit card charges 18% a year, stated, compounded monthly. What is the effective annual rate? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The monthly rate is 18% &divide; 12 = 1.5%. EAR = (1 + periodic rate)<sup>12</sup> &minus; 1. Or ICONV: NOM = 18, C/Y = 12, CPT EFF.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.015<sup>12</sup> = 1.195618, so EAR = 1.195618 &minus; 1 = <b>19.56%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>18</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 19.5618</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">C:&#9658;Eff(</kbd> <kbd>18</kbd> <kbd>,</kbd> <kbd>12</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>19.5618</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 3.</b> A deposit pays 8% a year. The interest is taxed at 25% and inflation is 3%. The after-tax real return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 3.64%</span></label>
+              <p class="cq-why">This taxes the real return: (1.08 &divide; 1.03 &minus; 1) &times; 0.75. Tax falls on the whole 8% of nominal interest, so take it off first.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 3.00%</span></label>
+              <p class="cq-why">The subtraction shortcut, 6% &minus; 3%. Rates multiply: you must divide by 1.03.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 2.91%</span></label>
+              <p class="cq-why">Right. After tax: 8% &times; 0.75 = 6%. Then 1.06 &divide; 1.03 &minus; 1 = 2.91%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Two steps, in this order: tax the nominal interest (8% &rarr; 6%), then remove inflation exactly, 1.06 &divide; 1.03 = 1.029126.</p></details>
+        </div>
+      </section>
+
+      <h3>Irene Triplett&rsquo;s $73.13</h3>
+      <p>On 31 May 2020, Irene Triplett died in a nursing home in Wilkesboro, North Carolina, aged 90. She was the last person drawing a pension from the American Civil War, a war that had ended in 1865, 155 years earlier.</p>
+      <p>The pension came through her father. Mose Triplett fought first for the Confederacy and then for the Union. Irene was born in 1930; he died in 1938, aged 92.</p>
+      <p>Because of her cognitive disability, the Department of Veterans Affairs classed her as a &ldquo;helpless child&rdquo; of a veteran. It paid her $73.13 a month.</p>
+      <p>A small cheque, arriving every month for decades. Now suppose someone had offered her one lump sum in place of the next ten years of cheques: 120 payments, each a month after the last. What would be a fair price? Surely not the full 120 &times; $73.13 = $8,775.60. And what does the answer depend on?</p>
+
+      <h3>The idea</h3>
+      <p>Day 2 priced one future payment. Today prices a whole row of them.</p>
+      <p>An <b>annuity</b> is a series of equal payments, A each, one per period, for N periods. A pension, a car-loan payment, a bond&rsquo;s coupons, $500 saved every month: all annuities.</p>
+      <p>In an <b>ordinary annuity</b> each payment comes at the <b>end</b> of its period. The first arrives at t = 1, one period from now, and the last at t = N. That is the calculator&rsquo;s END setting. (Payments at the start of each period make an annuity due: Day 6.)</p>
+      <p>Two questions. What is the whole stream worth today (its PV)? And what would it grow to if every payment were banked until the last one (its FV)?</p>
+      <p>Nothing here is new. Each payment is a single sum from Days 1 and 2; the annuity formula is just a fast way to add N of them.</p>
+      <p>One rule carries over from Day 4: the rate and N must match the payment. Monthly payments need a monthly rate (stated rate &divide; 12) and N counted in months. P/Y stays 1.</p>
+      <p>On the calculator, N, I/Y, PV, PMT and FV are tied by one equation: know any four, and CPT finds the fifth.</p>
+
+      <h3>Why it works</h3>
+      <p>Build it from Day 2, with small numbers alongside: $100 at the end of each of 2 years, at 10%.</p>
+      <ol>
+        <li><b>Each payment is a single sum.</b> From Day 2, A paid at time t is worth A / (1 + r)<sup>t</sup> today. Here: 100 / 1.10 = 90.91 and 100 / 1.21 = 82.64.</li>
+        <li><b>The annuity is their sum.</b> PV = A/(1 + r) + A/(1 + r)<sup>2</sup> + &hellip; + A/(1 + r)<sup>N</sup>. Here: 90.91 + 82.64 = 173.55. That is the whole idea; the rest is a quicker way to add.</li>
+        <li><b>A deposit that pays A for ever.</b> Put A/r in a bank paying r. Each period it earns r &times; A/r = A; take that out and the deposit never shrinks. Here: $1,000 at 10% pays $100 a year.</li>
+        <li><b>It buys two things.</b> The N payments, plus the A/r still in the bank at time N.</li>
+        <li><b>Price the leftover.</b> A/r due at N is a single sum, so today it is worth (A/r) / (1 + r)<sup>N</sup>. Here: 1,000 / 1.21 = 826.45.</li>
+        <li><b>Subtract.</b> The payments are worth the rest: PV = A/r &minus; (A/r)(1 + r)<sup>&minus;N</sup> = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r. Here: 1,000 &minus; 826.45 = 173.55, the same as step 2.</li>
+        <li><b>Roll it forward.</b> Day 1 moves any sum forward: multiply step 6 by (1 + r)<sup>N</sup> to get FV<sub>N</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r. Here: 100 &times; 0.21 / 0.10 = 210.00, which is 110 + 100.</li>
+      </ol>
+      <p>In plain words: the PV is the amount you would need in the bank today to pay yourself A at the end of every period, with the account hitting zero on the last payment. Check it: 173.55 grows to 190.91; pay 100, leaving 90.91; that grows to 100.00; pay 100, leaving 0.</p>
+      <div class="formula">
+        <p class="expr">PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r</p>
+        <p class="expr">FV<sub>N</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r</p>
+        <dl>
+          <dt>A</dt><dd>the level payment each period (PMT on the calculator)</dd>
+          <dt>r</dt><dd>rate per period, as a decimal (monthly: stated annual rate &divide; 12)</dd>
+          <dt>N</dt><dd>number of payments (one per period)</dd>
+          <dt>(1 + r)<sup>&minus;N</sup></dt><dd>1 / (1 + r)<sup>N</sup>, Day 2&rsquo;s discount factor</dd>
+          <dt>PV</dt><dd>value one period before the first payment (t = 0)</dd>
+          <dt>FV<sub>N</sub></dt><dd>value on the date of the last payment (t = N)</dd>
+          <dt>[1 &minus; (1 + r)<sup>&minus;N</sup>] / r</dt><dd>the annuity factor: what $1 a period is worth today</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r</li>
+          <li>FV<sub>N</sub> = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r</li>
+          <li>Ordinary annuity: payments at the END of each period; first payment at t = 1 (calculator END mode)</li>
+          <li>Monthly payments with P/Y = 1: N = years &times; 12; periodic rate = annual stated rate / 12</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> An ordinary annuity pays $1,000 at the end of each of the next 4 years. At 6%, find its PV by adding the four single sums, then with the formula. Then find its FV at year 4.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Each payment&rsquo;s PV (Day 2): 1,000 / 1.06 = 943.40; 1,000 / 1.06<sup>2</sup> = 890.00; 1,000 / 1.06<sup>3</sup> = 839.62; 1,000 / 1.06<sup>4</sup> = 792.09.</li>
+          <li>Add them: 943.40 + 890.00 + 839.62 + 792.09 = <b>3,465.11</b>.</li>
+          <li>Formula: 1.06<sup>4</sup> = 1.262477, so 1.06<sup>&minus;4</sup> = 0.792094.</li>
+          <li>PV = 1,000 &times; (1 &minus; 0.792094) / 0.06 = 1,000 &times; 3.465106 = <b>3,465.11</b>. Same answer, one line.</li>
+          <li>FV = 1,000 &times; (1.262477 &minus; 1) / 0.06 = 1,000 &times; 4.374616 = <b>4,374.62</b>.</li>
+          <li>Check (Day 1): 3,465.11 &times; 1.262477 = 4,374.62.</li>
+          <li>Check by single sums: 1,191.02 + 1,123.60 + 1,060.00 + 1,000.00 = 4,374.62. The year-1 payment earns 3 years of interest; the year-4 payment earns none.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Ten years of Irene Triplett&rsquo;s cheques: 120 monthly payments of $73.13, the first one month from now. At a 4% stated annual rate, what is the stream worth today? Then: banked at the same rate, what would the cheques grow to by the last one? P/Y stays 1, so you feed the calculator monthly numbers yourself: N = 10 &times; 12 = 120 and a rate of 4 &divide; 12 percent a month.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Make sure the calculator is in END mode, then clear the old numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (no <samp>BGN</samp> means END). Then <kbd>2ND</kbd> <kbd>CLR TVM</kbd>. P/Y is still 1 from Day 1.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; on the bottom row, <samp>PMT:</samp> highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Number of payments: 120 months</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>120</kbd> <kbd>N</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=120</samp> (type <kbd>120</kbd> <kbd>ENTER</kbd>)</div>
+          </li>
+          <li>
+            <p class="calc-what">The monthly rate: type 4 &divide; 12 as a division, so no digits are lost</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> on <samp>I%=</samp> type <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 0.3333</samp> (BA II Plus) / <samp>I%=.3333</samp> (TI-84): a third of a percent a month. Both keep every digit behind the display.</p>
+          </li>
+          <li>
+            <p class="calc-what">The payment (received, so positive) and FV = 0</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>73.13</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> (PV is the unknown; CLR TVM already set it to 0)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>PV=0</samp>, <samp>PMT=73.13</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp></div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the present value</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;7,223.0629</samp> (BA II Plus) / <samp>PV=&minus;7223.0629</samp> (TI-84). Negative because it is what you would pay today to receive the cheques.</p>
+          </li>
+          <li>
+            <p class="calc-what">The future value of the same stream: set PV back to 0, solve for FV</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0</kbd> <kbd>PV</kbd> <kbd>CPT</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>PV=0</samp>, then cursor on <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>FV = &minus;10,768.3782</samp> (BA II Plus) / <samp>FV=&minus;10768.3782</samp> (TI-84). The size is what the banked cheques grow to; the minus sign only balances 120 cheques in. Check (Day 1): 7,223.0629 &times; 1.490833 = 10,768.38.</p>
+          </li>
+          <li>
+            <p class="calc-what">What the rate does: same stream at 8% stated (FV back to 0 first)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0</kbd> <kbd>FV</kbd> <kbd>8</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>FV=0</samp>, <samp>I%=</samp> <kbd>8</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd>, then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;6,027.4829</samp> (BA II Plus) / <samp>PV=&minus;6027.4829</samp> (TI-84).</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: at 4% a year, ten years of $73.13 a month are worth $7,223.06 today. Banked at the same rate, the cheques grow to $10,768.38. At 8%, the same stream is worth only $6,027.48.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>A fair lump sum for the next ten years of cheques, at 4% a year, is $7,223.06. That is only 82% of the $8,775.60 they add up to, because later cheques are worth less today: the 120th, ten years out, is worth 67 cents on the dollar.</p>
+      <p>The bank picture gives the same answer. $21,939.00 at 4% a year (0.3333% a month) earns exactly $73.13 a month. Pay the cheques from the interest for ten years and the $21,939.00 is still there, worth $14,715.94 today. The cheques are worth the difference: $7,223.06.</p>
+      <p>And what does the price depend on? The rate: at 8%, the same ten years are worth $6,027.48. The length: thirty years at 4% are worth $15,317.90, only 2.12 times ten years, because the extra cheques are far away. Even for ever, the stream is worth just $21,939.00, which Day 8 will call a perpetuity.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Mixing periods: a monthly payment with an annual rate, or with N in years. Monthly payments need N = years &times; 12 and r = stated annual rate &divide; 12. Expect the mixed-up answer among the options.</li>
+          <li>Giving PV and PMT the same sign when PV is the price paid for the stream. Paid out is negative, received is positive; with both positive, CPT I/Y gives <samp>Error 5</samp> (TI-84: <samp>ERR:NO SIGN CHNG</samp>).</li>
+          <li>Counting a payment made today as part of an ordinary annuity. Its first payment is one period away; if one comes today, it is an annuity due (Day 6).</li>
+          <li>Stale settings: <samp>BGN</samp> left on, or an old FV still in the calculator. Press <kbd>2ND</kbd> <kbd>CLR TVM</kbd>, check that no <samp>BGN</samp> shows, and on the TI-84 set every line.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="23276.502338008937" data-tol="0.01" data-signless data-show="23,276.50">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A pension pays $450 at the end of each month for 5 years. At a 6% stated annual rate, compounded monthly, what is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 1 to 5, with N = 60, I/Y = 6 &divide; 12 and PMT = 450.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>N = 5 &times; 12 = 60 months; r = 6% &divide; 12 = 0.5% a month. PV = 450 &times; [1 &minus; 1.005<sup>&minus;60</sup>] / 0.005 = 450 &times; 51.725561 = <b>23,276.50</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>60</kbd> <kbd>N</kbd> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd> <kbd>450</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;23,276.5023</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=60</samp>, <samp>I%=</samp> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd>, <samp>PV=0</samp>, <samp>PMT=450</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;23276.5023</samp>.</p>
+            <p>The 60 payments total $27,000.00; discounting at 0.5% a month brings them to $23,276.50 today.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> An annuity pays $1,000 at the end of each year for 20 years. At 6% its PV is $11,469.92. If it paid for 40 years instead, by about how much would the PV rise?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. About 100%: twice the payments, twice the value</span></label>
+              <p class="cq-why">That counts every payment the same, as if money had no time value. The added payments arrive in years 21 to 40, and each is worth far less today.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. About 31%</span></label>
+              <p class="cq-why">Right. The annuity factor goes from 11.4699 to 15.0463: PV $15,046.30, up 31.18%. The 20 added payments are worth only $3,576.38 together.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. 0%: payments beyond 20 years are worth nothing today</span></label>
+              <p class="cq-why">Far-off payments are worth less, not nothing: even the $1,000 in year 40 is worth $97.22 today.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Years 21 to 40 are the same 20-year annuity, pushed 20 years out. So they are worth today&rsquo;s 20-year PV times Day 2&rsquo;s discount factor 1.06<sup>&minus;20</sup> = 0.311805: 11,469.92 &times; 0.311805 = 3,576.38. That is why the PV rises by 31.18%, not 100%: each added payment is a single sum discounted 21 to 40 years.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="7525.717540138281" data-tol="0.01" data-signless data-show="7,525.72">
+          <p class="cq-stem"><b>3. Twist: solve for the payment.</b> You want $500,000 in 30 years, and your account earns 5% a year. How much must you deposit at the end of each year? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Now FV is known and PMT is the unknown: N = 30, I/Y = 5, PV = 0, FV = 500,000, CPT PMT. Or solve FV = A &times; [(1 + r)<sup>N</sup> &minus; 1] / r for A.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.05<sup>30</sup> = 4.321942, so A = 500,000 &times; 0.05 / (4.321942 &minus; 1) = 25,000 / 3.321942 = <b>7,525.72</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>30</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PV</kbd> <kbd>500000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;7,525.7175</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=30</samp>, <samp>I%=5</samp>, <samp>PV=0</samp>, <samp>FV=500000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;7525.7175</samp>.</p>
+            <p>The minus sign says you pay it in. Your 30 deposits come to about $225,772; interest supplies the other $274,228.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> An annuity pays $2,000 at the end of each month for 20 years. If the stated annual rate is 6%, compounded monthly, the present value of the annuity is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $279,161.54</span></label>
+              <p class="cq-why">Right: N = 20 &times; 12 = 240 and I/Y = 6 &divide; 12 = 0.5, with PMT = 2,000.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $275,278.11</span></label>
+              <p class="cq-why">Treats the year&rsquo;s 12 payments as one $24,000 payment at each year-end (N = 20, I/Y = 6). Monthly cash arrives sooner, so it is worth a little more.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $22,939.84</span></label>
+              <p class="cq-why">A monthly payment with N = 20 and I/Y = 6: it values just 20 payments of $2,000 at an annual rate. Rate and N must match the payment.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>240</kbd> <kbd>N</kbd> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd> <kbd>2000</kbd> <kbd>PMT</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;279,161.5434</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=240</samp>, <samp>I%=</samp> <kbd>6</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>ENTER</kbd>, <samp>PV=0</samp>, <samp>PMT=2000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;279161.5434</samp>.</p>
+            <p>By formula: 2,000 &times; [1 &minus; 1.005<sup>&minus;240</sup>] / 0.005 = 2,000 &times; 139.580772 = 279,161.54.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what does PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r add up, and why does the first payment sit at t = 1?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>It adds up the present values of N separate payments, each a single sum A / (1 + r)<sup>t</sup> for t = 1 to N. In an ordinary annuity each payment comes at the end of its period (END mode), so the first is a full period away; and r and N must be counted in the same periods as the payments.</p>
+            <p>A complete answer says: (1) the formula is the sum of N single-sum present values; (2) an ordinary annuity pays at the end of each period, so the first payment is at t = 1; (3) the rate and N must match the payment period (monthly payments: monthly rate, N in months).</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (the present and future value of an ordinary annuity; solving for the payment; monthly payments with the rate and the number of periods matched to the payment).</p>
+      <p><strong>Sources.</strong> Associated Press, &ldquo;Last person to receive a Civil War pension dies at 90&rdquo;, June 2020, via Military.com and Boston.com, 5 June 2020 (died 31 May 2020 in Wilkesboro, North Carolina; $73.13 a month from the Department of Veterans Affairs); The Week, &ldquo;Irene Triplett, the last American to receive a monthly Civil War pension, dies at 90&rdquo;, June 2020, reporting The Wall Street Journal&rsquo;s 2014 interview (the &ldquo;helpless child&rdquo; classification); AARP, &ldquo;Last Civil War pensioner dies&rdquo;, 2020 (Mose Triplett served the Confederacy, then the Union; died in 1938 aged 92). The lump-sum offer and the 4% and 8% discount rates are illustrations, not data.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-04.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

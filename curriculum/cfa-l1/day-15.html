@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Disney borrowed for 100 years, and the $100 it promised to repay in 2093 was worth six cents — CFA Math, Day 15 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Disney borrowed for 100 years, and the $100 it promised to repay in 2093 was worth six cents",
+    "path": "reports/cfa/l1/day-15.html",
+    "summary": "Day 15 of CFA Math: Logan learns that a bond’s price is the PV of its coupons (an annuity) plus the PV of its par value (a single sum), discounted at the market yield, so it falls when the yield rises and sits above par when the coupon beats the yield; he prices Disney’s 100-year ‘Sleeping Beauty’ bond at three yields on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 15 of 90 · Fixed Income: a bond’s price is the PV of its coupons plus the PV of its par value, discounted at the market yield",
+      "Calculator: Disney’s 100-year bond priced at 7.55%, 4% and 9%, and its final $100 on its own, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Disney borrowed for 100 years, and the $100 it promised to repay in 2093 was worth six cents</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A bond is two things you can already price: a row of coupons (an annuity) and one repayment (a single sum), both discounted at the yield the market demands today.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 15 of 90 &middot; Fixed-Income Bond Valuation: Prices and Yields &middot; Pricing a bond from its yield</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="15">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 12 and Day 8, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="19.672131147540984" data-tol="0.01" data-show="19.67">
+          <p class="cq-stem"><b>From Day 12.</b> You invest $800 in a fund on each of three dates, at share prices of $16, $20 and $25. What is your average cost per share? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars a share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The same money each time: that is the harmonic mean, 3 &divide; (1/16 + 1/20 + 1/25). Or count the shares you bought.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Shares bought: 800/16 = 50, 800/20 = 40, 800/25 = 32. That is 122 shares for $2,400, and 2,400 &divide; 122 = <b>19.67</b>.</p>
+            <p>BA II Plus: <kbd>16</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>20</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>1/x</kbd> <kbd>=</kbd> &rarr; <samp>0.1525</samp>; <kbd>1/x</kbd> &rarr; <samp>6.5574</samp>; <kbd>&times;</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>19.6721</samp>.</p>
+            <p>TI-84 Plus: <kbd>3</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>16</kbd> <kbd>x⁻¹</kbd> <kbd>+</kbd> <kbd>20</kbd> <kbd>x⁻¹</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>x⁻¹</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>19.6721</samp>.</p>
+            <p>The plain average of the prices, 20.33, is the trap: equal money buys more shares when the price is low, so the true average cost is lower.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 8.</b> A perpetual bond pays 4.00 a year per 100 of par, for ever, the first payment one year from now. Investors now demand 5% a year. What is it worth per 100?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 100.00</span></label>
+              <p class="cq-why">That divides by the coupon rate, 4/0.04. Value uses the rate investors demand now (5%), not the coupon rate. Keep this one in mind: it is today&rsquo;s first exam trap.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 76.19</span></label>
+              <p class="cq-why">That is 80.00 discounted one extra year. A/r already gives the value at t = 0, one period before the first payment.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 80.00</span></label>
+              <p class="cq-why">Right: PV = A/r = 4/0.05 = 80.00.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.05</kbd> <kbd>=</kbd> &rarr; <samp>80.0000</samp>. TI-84 Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.05</kbd> <kbd>ENTER</kbd> &rarr; <samp>80.0000</samp>. A perpetual bond is a bond with no maturity date. It comes back at the end of today&rsquo;s story.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Sleeping Beauty&rsquo;s hundred-year promise</h3>
+      <p>July 1993. The Walt Disney Company borrowed $300 million by selling bonds that would not mature until 15 July 2093.</p>
+      <p>The coupon was 7.55%, and the bonds were sold at par: buyers paid $100 for each $100 of face value. In return Disney promised $7.55 a year on every $100, for up to a century, and the $100 back at the end.</p>
+      <p>Wall Street called them &ldquo;Sleeping Beauty&rdquo; bonds, after the princess who slept for a hundred years. They were the first 100-year bonds sold by an American company since 1954. Within days Coca-Cola sold century bonds of its own.</p>
+      <p>Paid in full, that is $755 of coupons for every $100 lent, plus the $100 itself: $855 in all. Yet buyers paid just $100, and the last of it would not arrive for a hundred years.</p>
+      <p>So what is a century of coupons, plus $100 repaid in 2093, worth today? And how much of that value comes from the $100 at the end?</p>
+
+      <h3>The idea</h3>
+      <p>A plain bond makes two promises. It pays a fixed <b>coupon</b> every period, and it repays its <b>par value</b> (face value, quoted as 100) at maturity.</p>
+      <p>You already price both. The coupons are an ordinary annuity (Day 5). The par value is a single sum (Day 2). The bond&rsquo;s price is the two PVs added.</p>
+      <p>The rate to discount at is the <b>market yield</b> (the market discount rate): the return investors demand today on a bond like this one. Not the coupon rate. The coupon rate was fixed when the bond was sold, and it sets the cash. The yield changes every day, and it sets the price.</p>
+      <p>Picture owning an apartment rented out with the rent fixed for good. If rents on new leases rise, it is worth less to anyone buying it from you. If they fall, it is worth more. Bonds work the same way: yield up, price down.</p>
+      <p>That gives three cases. Coupon rate equal to the yield: the price is <b>par</b>, 100. Coupon below the yield: a <b>discount</b>, under 100. Coupon above it: a <b>premium</b>, over 100.</p>
+      <p>Two market habits. Prices are quoted per 100 of par. And US bonds usually pay twice a year, so you work in half-years: half the coupon, half the yield, twice the years.</p>
+
+      <h3>Why it works</h3>
+      <p>Build it from Days 2 and 5 with a 2-year bond: 8% annual coupon, par 100.</p>
+      <ol>
+        <li><b>List the cash.</b> A coupon, PMT, at the end of each period, and par, FV, with the last coupon. Here: 8 at t = 1, then 8 + 100 = 108 at t = 2.</li>
+        <li><b>Price each payment (Day 2).</b> Discount each one at the market yield r. At r = 10%: 8/1.10 = 7.2727 and 108/1.10<sup>2</sup> = 89.2562. Price = 96.5289.</li>
+        <li><b>Group them (Days 5 and 2).</b> The coupons are an annuity: 8 &times; [1 &minus; 1.10<sup>&minus;2</sup>]/0.10 = 8 &times; 1.735537 = 13.8843. The par is a single sum: 100/1.21 = 82.6446. Total: 96.5289 again. TVM with both PMT and FV filled in does exactly this.</li>
+        <li><b>Coupon = yield gives par.</b> 100 in a bank at 8% pays 8 a year and gives the 100 back after two years: the bond&rsquo;s cash exactly. So at r = 8% the bond is worth the deposit: 8/1.08 + 108/1.1664 = 7.4074 + 92.5926 = 100.0000.</li>
+        <li><b>Higher yield, lower price.</b> The cash is fixed; only r moves. A bigger r shrinks every discount factor 1/(1 + r)<sup>t</sup>, so the sum shrinks. At 10% the bond is a discount (96.5289); at 6% it is a premium: 7.5472 + 96.1196 = 103.6668.</li>
+        <li><b>Where a discount buyer&rsquo;s return comes from.</b> The coupon pays 8 where the buyer wants 10. Paying less than 100 makes up the gap: at a steady 10% the price climbs to 108/1.10 = 98.1818 with a year left, and to 100 at maturity. This drift toward 100, up for a discount bond and down for a premium one, is the <b>pull to par</b> (the curriculum&rsquo;s constant-yield price trajectory).</li>
+        <li><b>Semiannual and zero-coupon bonds.</b> Twice-yearly coupons: PMT = annual coupon/2, r = annual yield/2, N = 2 &times; years. A zero-coupon bond has PMT = 0, which leaves only Day 2&rsquo;s single sum.</li>
+      </ol>
+      <p>In plain words: a bond&rsquo;s price is what its coupons and its final 100 are worth today, at the return you could get elsewhere.</p>
+      <div class="formula">
+        <p class="expr">PV = PMT/(1 + r)<sup>1</sup> + PMT/(1 + r)<sup>2</sup> + &hellip; + (PMT + FV)/(1 + r)<sup>N</sup></p>
+        <p class="expr">PV = PMT &times; [1 &minus; (1 + r)<sup>&minus;N</sup>]/r + FV/(1 + r)<sup>N</sup></p>
+        <p class="expr">Zero-coupon: PV = FV/(1 + r)<sup>N</sup></p>
+        <dl>
+          <dt>PV</dt><dd>the bond&rsquo;s price today, quoted per 100 of par</dd>
+          <dt>PMT</dt><dd>coupon per period: coupon rate &times; par &divide; payments per year</dd>
+          <dt>FV</dt><dd>par (face) value, repaid at maturity with the last coupon; 100 in a quote</dd>
+          <dt>r</dt><dd>market discount rate (yield) per period, as a decimal; never the coupon rate</dd>
+          <dt>N</dt><dd>number of coupon periods to maturity</dd>
+          <dt>[1 &minus; (1 + r)<sup>&minus;N</sup>]/r</dt><dd>Day 5&rsquo;s annuity factor: what 1 a period for N periods is worth today</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Price of a fixed-rate bond: PV = PMT/(1 + r)<sup>1</sup> + PMT/(1 + r)<sup>2</sup> + &hellip; + (PMT + FV)/(1 + r)<sup>N</sup></li>
+          <li>Price of a zero-coupon bond: PV = FV / (1 + r)<sup>N</sup></li>
+          <li>Semiannual-pay bond inputs (P/Y = 1): PMT = annual coupon/2, rate = annual yield/2, N = 2 &times; years</li>
+          <li>Price vs par: coupon rate &gt; yield &rarr; premium; coupon rate &lt; yield &rarr; discount; equal &rarr; par</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Price per 100 of par: (a) a 3-year bond with a 5% annual coupon when the market yield is 6%; (b) a 3-year zero-coupon bond at 6%.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Year 1 coupon: 5/1.06 = 4.7170.</li>
+          <li>Year 2 coupon: 5/1.06<sup>2</sup> = 5/1.1236 = 4.4500.</li>
+          <li>Year 3 coupon + principal: 105/1.06<sup>3</sup> = 105/1.191016 = 88.1600.</li>
+          <li>(a) Price = 4.7170 + 4.4500 + 88.1600 = <b>97.3270</b>: a discount, because the 5% coupon is below the 6% yield.</li>
+          <li>Same by the formula: coupons 5 &times; 2.673012 = 13.3651, plus par 100/1.191016 = 83.9619, makes 97.3270.</li>
+          <li>(b) Zero: 100/1.06<sup>3</sup> = <b>83.9619</b>, the par piece of (a) on its own.</li>
+          <li>Check the direction: at a 4% yield the same coupon bond is worth 102.7751, a premium.</li>
+          <li>Pull to par: a year later, with 2 years left and the yield still 6%, it is worth 98.1666; with 1 year left, 105/1.06 = 99.0566.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Price Disney&rsquo;s 7.55% bond due 2093, per 100 of par, as on the day it was sold, with 100 years to go. Assume semiannual coupons, the US norm, so work in half-years: N = 100 &times; 2 = 200, PMT = 7.55 &divide; 2 = 3.775, FV = 100, and I/Y = the annual yield &divide; 2. Price it at 7.55%, 4% and 9%; then find what the final 100 alone is worth.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">END mode, then clear the old numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd> (no <samp>BGN</samp> means END). Then <kbd>2ND</kbd> <kbd>CLR TVM</kbd>. P/Y is still 1 from Day 1.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; set <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, and on the <samp>PMT:</samp> row highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the bond, per half-year: 200 periods, a 3.775 coupon, 100 back at the end</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>200</kbd> <kbd>N</kbd> <kbd>3.775</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> type each value and press <kbd>ENTER</kbd>: <samp>N=200</samp>, <samp>PV=0</samp>, <samp>PMT=3.775</samp>, <samp>FV=100</samp></div>
+            <p class="calc-see">Display: <samp>N = 200.0000</samp>, <samp>PMT = 3.7750</samp>, <samp>FV = 100.0000</samp> as you press each key (BA II Plus). Coupon and par are both cash you receive, so both are positive.</p>
+          </li>
+          <li>
+            <p class="calc-what">Price it at the 1993 yield, Disney&rsquo;s own 7.55%: 3.775% per half-year</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.775</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor up to <samp>I%=</samp>, <kbd>3.775</kbd> <kbd>ENTER</kbd>, then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;100.0000</samp> (BA II Plus) / <samp>PV=&minus;100.0000</samp> (TI-84). Par: coupon equals yield. The minus sign only says you pay it.</p>
+          </li>
+          <li>
+            <p class="calc-what">Yields fall to 4% a year: 2% per half-year</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor up to <samp>I%=</samp>, <kbd>2</kbd> <kbd>ENTER</kbd>, then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;187.0590</samp> (BA II Plus) / <samp>PV=&minus;187.0590</samp> (TI-84). A premium: 7.55% is generous next to 4%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Yields rise to 9% a year: 4.5% per half-year</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>4.5</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor up to <samp>I%=</samp>, <kbd>4.5</kbd> <kbd>ENTER</kbd>, then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;83.8913</samp> (BA II Plus) / <samp>PV=&minus;83.8913</samp> (TI-84). A discount: 7.55% is stingy next to 9%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Only the final 100, at 9%: switch the coupons off</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor down to <samp>PMT=</samp>, <kbd>0</kbd> <kbd>ENTER</kbd>, then cursor back up to <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;0.0150</samp> (BA II Plus) / <samp>PV=&minus;.0150</samp> (TI-84). One and a half cents of the 83.89.</p>
+          </li>
+          <li>
+            <p class="calc-what">The final 100 at Disney&rsquo;s 7.55%, still with PMT = 0</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>3.775</kbd> <kbd>I/Y</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor up to <samp>I%=</samp>, <kbd>3.775</kbd> <kbd>ENTER</kbd>, then cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;0.0605</samp> (BA II Plus) / <samp>PV=&minus;.0605</samp> (TI-84). Six cents of the 100.00 price.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer, per 100 of par: 100.00 at 7.55% (par), 187.06 at 4% (premium), 83.89 at 9% (discount). The final 100 on its own is worth 0.06 at 7.55% and 0.015 at 9%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The $855 of promised cash was never worth $855, because most of it lay decades away. At Disney&rsquo;s own 7.55% the whole bond was worth exactly 100.00: coupon equal to yield, so par.</p>
+      <p>And the $100 due in 2093? Worth six cents in 1993. The coupons carried 99.94 of the 100.00. The worked example&rsquo;s 3-year bond is the other way round: its principal is 83.96 of its 97.33.</p>
+      <p>So a century bond is nearly a perpetuity (Day 8). At 9%: 3.775/0.045 = 83.8889, within a quarter of a cent of the 200-period price, 83.8913. With the coupons fixed, the yield alone moves the price: 187.06 at 4%, 83.89 at 9%.</p>
+      <p>A coda. The 2093 repayment will never happen. The bonds could be called from 15 July 2023, and on that date Disney redeemed the $201 million still outstanding, 70 years early.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Discounting at the coupon rate.</b> Always discount at the market yield. At its own coupon rate every bond prices at exactly 100, whatever its maturity, so a &ldquo;100.00&rdquo; answer to a question whose yield differs from the coupon is a red flag.</li>
+          <li><b>Annual inputs on a semiannual bond.</b> Halve the coupon, halve the yield, double N. Type the full 7.55 as PMT with N = 200 and I/Y = 4.5, and Disney&rsquo;s bond &ldquo;costs&rdquo; 167.7676 instead of 83.8913.</li>
+          <li><b>Mixed signs.</b> Coupons and par are both money you receive: enter PMT and FV positive, and PV comes back negative, the price you pay. Enter PMT = &minus;5 with FV = 100 and the worked example&rsquo;s bond shows <samp>PV = &minus;70.5969</samp> instead of <samp>&minus;97.3270</samp>.</li>
+          <li><b>Premium and discount swapped.</b> Ask whether the coupon is generous next to today&rsquo;s yield. Coupon above the yield: premium. Below: discount.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="115.45432824252873" data-tol="0.01" data-signless data-show="115.45">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 30-year bond has a 6% coupon, paid semiannually. The market yield is 5%. What is its price per 100 of par? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough; N, I/Y and PMT change. In half-years: N = 60, I/Y = 2.5, PMT = 3, FV = 100.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>60</kbd> <kbd>N</kbd> <kbd>2.5</kbd> <kbd>I/Y</kbd> <kbd>3</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;115.4543</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=60</samp>, <samp>I%=2.5</samp>, <samp>PV=0</samp>, <samp>PMT=3</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;115.4543</samp>.</p>
+            <p>So <b>115.45</b>: a premium, because the 6% coupon beats the 5% yield. Annual inputs (N = 30, I/Y = 5, PMT = 6) give 115.37: close, and wrong.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Market yields rise from 5% to 6%. Why does the price of a bond already issued with a fixed 5% coupon fall?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The issuer lowers the coupon to keep in line with the market</span></label>
+              <p class="cq-why">No: a fixed-rate bond&rsquo;s coupon is written into its terms and never changes. The cash stays the same; only what it is worth today changes.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Its fixed cash flows are now discounted at a higher rate, so each is worth less today</span></label>
+              <p class="cq-why">Right: price = &Sigma; CF/(1 + r)<sup>t</sup> with every CF fixed, so a larger r shrinks every term.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Its credit quality must have fallen</span></label>
+              <p class="cq-why">A downgrade is one reason a bond&rsquo;s yield can rise, but it is not why price and yield move in opposite directions. A default-free government bond falls too when market yields rise.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>The numerators of the price formula are fixed by contract; only the denominators move. A 10-year 5% annual-pay bond is worth 100.0000 at a 5% yield and 92.6399 at 6%. In a buyer&rsquo;s terms: nobody pays 100 for 5 a year when new bonds pay 6 a year for 100, so the old bond&rsquo;s price falls until it too returns 6%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="61.02709428588309" data-tol="0.01" data-signless data-show="61.03">
+          <p class="cq-stem"><b>3. Twist: no coupons.</b> A 10-year zero-coupon bond is priced at a 5% yield, stated with semiannual compounding (the usual basis). What is its price per 100 of par? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> A zero has PMT = 0, so only the single sum is left. Count in half-years and use the half-year rate.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>PV = 100/1.025<sup>20</sup> = 100/1.638616 = <b>61.03</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>20</kbd> <kbd>N</kbd> <kbd>2.5</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;61.0271</samp>. Or with the power key: <kbd>100</kbd> <kbd>&divide;</kbd> <kbd>1.025</kbd> <kbd>yˣ</kbd> <kbd>20</kbd> <kbd>=</kbd> &rarr; <samp>61.0271</samp> (AOS does the power first).</p>
+            <p>TI-84 Plus: on the home screen, <kbd>100</kbd> <kbd>&divide;</kbd> <kbd>1.025</kbd> <kbd>^</kbd> <kbd>20</kbd> <kbd>ENTER</kbd> &rarr; <samp>61.0271</samp>. Or the TVM Solver with <samp>N=20</samp>, <samp>I%=2.5</samp>, <samp>PMT=0</samp>, <samp>FV=100</samp>: <samp>PV=&minus;61.0271</samp>.</p>
+            <p>Annual compounding, 100/1.05<sup>10</sup> = 61.39, is the trap: on a semiannual basis even a zero is discounted in half-years.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A 20-year bond pays a 4% coupon semiannually. If the market discount rate is 6%, the bond&rsquo;s price per 100 of par is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 76.89</span></label>
+              <p class="cq-why">Right: N = 40, I/Y = 3, PMT = 2, FV = 100 gives 76.8852. The coupon is below the yield, so a discount.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 123.11</span></label>
+              <p class="cq-why">The coupon was not halved: PMT = 4 with N = 40 and I/Y = 3 is an 8% bond against a 6% yield, so it comes out a premium.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 100.00</span></label>
+              <p class="cq-why">Discounted at the coupon rate (I/Y = 2). Any bond priced at its own coupon rate is at par.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>40</kbd> <kbd>N</kbd> <kbd>3</kbd> <kbd>I/Y</kbd> <kbd>2</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;76.8852</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=40</samp>, <samp>I%=3</samp>, <samp>PV=0</samp>, <samp>PMT=2</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;76.8852</samp>.</p>
+            <p>Sanity check before you compute: a 4% coupon against a 6% yield must price below 100. Only A does.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is a bond&rsquo;s price, and when is it above par?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>A bond&rsquo;s price is the present value of its coupons (an annuity) plus the present value of its par value (a single sum), all discounted at the market yield rather than the coupon rate; because that cash is fixed, the price falls when the yield rises, and it sits above par (a premium) when the coupon rate is higher than the yield, below par (a discount) when it is lower, and at par when they are equal.</p>
+            <p>A complete answer says: (1) price = PV of the coupons + PV of the principal, discounted at the market yield; (2) coupon rate &gt; yield &rarr; premium, &lt; &rarr; discount, = &rarr; par; (3) price and yield move in opposite directions, because the cash flows are fixed.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Fixed-Income Bond Valuation: Prices and Yields (a bond&rsquo;s price as the PV of its coupons and principal at the market discount rate; zero-coupon bonds; premium, discount and par; the constant-yield price trajectory), building on Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (the PV of fixed-income instruments from their cash flows).</p>
+      <p><strong>Sources.</strong> The Seattle Times, &ldquo;Coca-Cola follows Disney in selling 100-year bonds&rdquo;, 23 July 1993; Robert Bowen, &ldquo;The Walt Disney Company&rdquo; case, University of Washington, on the pricing supplement of 21 July 1993 ($300 million, 7.55%, due 15 July 2093, the &ldquo;Sleeping Beauty&rdquo; name, the first century bond from a US company since 1954, callable from 15 July 2023); Darden Business Publishing, &ldquo;The Walt Disney Company: 100-Year Bonds (Sleeping Beauties)&rdquo;; The Walt Disney Company, Form 8-K, June 2023, SEC EDGAR (redemption on 15 July 2023 of all $201,169,000 of the 7.55% Senior Debentures due 2093 then outstanding). The calculations assume semiannual coupons; the 4% and 9% yields are illustrations.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-14.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

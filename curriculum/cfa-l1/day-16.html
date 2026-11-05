@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Argentina, eight defaults behind it, borrowed for 100 years at 90 cents on the dollar. What did 7.917% mean? — CFA Math, Day 16 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Argentina, eight defaults behind it, borrowed for 100 years at 90 cents on the dollar. What did 7.917% mean?",
+    "path": "reports/cfa/l1/day-16.html",
+    "summary": "Day 16 of CFA Math: Logan learns that a bond’s yield to maturity is the IRR of buying it at its price and holding it to the end, what current yield, yield-to-call and yield-to-worst measure instead, and why yields must share a periodicity before they are compared; he finds the yield on Argentina’s 100-year bond, its annual-pay equivalent and its current yield on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 16 of 90 · Fixed Income: the yield to maturity is the IRR of buying a bond at its price and holding it to maturity",
+      "Calculator: the YTM of Argentina’s 100-year bond, its annual-pay equivalent and its current yield, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Argentina, eight defaults behind it, borrowed for 100 years at 90 cents on the dollar. What did 7.917% mean?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A bond&rsquo;s yield to maturity is its IRR: the one rate at which everything the bond promises is worth exactly the price you pay for it.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 16 of 90 &middot; Yield and Yield Spread Measures for Fixed-Rate Bonds &middot; Yield to maturity, call and worst</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="16">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 15 and Day 9, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="108.53020283677584" data-tol="0.01" data-signless data-show="108.53">
+          <p class="cq-stem"><b>From Day 15.</b> A 5-year bond pays an 8% coupon, semiannually. The market yield is 6%. What is its price per 100 of par? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work in half-years: N = 10, I/Y = 3, PMT = 4, FV = 100. Solve for PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>3</kbd> <kbd>I/Y</kbd> <kbd>4</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;108.5302</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=10</samp>, <samp>I%=3</samp>, <samp>PV=0</samp>, <samp>PMT=4</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;108.5302</samp>.</p>
+            <p>So <b>108.53</b>, a premium: the 8% coupon beats the 6% yield. Annual inputs (N = 5, I/Y = 6, PMT = 8) give 108.42, the trap. That was yield &rarr; price. Today runs it the other way.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 9.</b> A $150,000, 30-year mortgage at 6% (stated annual) is repaid monthly, $899.33 a month. How much of the <em>first</em> payment is interest?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. $750.00</span></label>
+              <p class="cq-why">Right: one month&rsquo;s interest on the whole balance, 0.005 &times; 150,000 = 750.00. Interest is paid first.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. $149.33</span></label>
+              <p class="cq-why">That is the principal part: what is left after the interest, 899.33 &minus; 750.00.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. $9,000.00</span></label>
+              <p class="cq-why">That uses the annual rate, 0.06 &times; 150,000: a year&rsquo;s interest, more than ten monthly payments. A monthly loan uses 6% &divide; 12 = 0.5% a month.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>Interest = monthly rate &times; balance owed = 0.005 &times; 150,000 = <b>750.00</b>. The other 149.33 repays principal, leaving 149,850.67. BA II Plus: <kbd>150000</kbd> <kbd>&times;</kbd> <kbd>.005</kbd> <kbd>=</kbd> &rarr; <samp>750.0000</samp>. TI-84 Plus: <kbd>150000</kbd> <kbd>&times;</kbd> <kbd>.005</kbd> <kbd>ENTER</kbd> &rarr; <samp>750.0000</samp>. (The payment itself: N = 360, I/Y = 0.5, PV = 150,000, FV = 0, CPT PMT &rarr; &minus;899.3258.)</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>Argentina&rsquo;s 100-year bond</h3>
+      <p>19 June 2017. Argentina sold $2.75 billion of US-dollar bonds that would not be repaid until 2117. A century bond.</p>
+      <p>The borrower&rsquo;s record was not reassuring. Argentina had defaulted on its debts eight times since independence, most recently in 2014.</p>
+      <p>Investors queued anyway: about $9.75 billion of orders, more than three times what was on offer.</p>
+      <p>The coupon was 7.125%: $7.125 a year on every $100 of face value. But buyers did not pay $100. They paid 90 cents on the dollar, $90 for each $100 Argentina promised to repay in 2117.</p>
+      <p>Bloomberg reported the yield as 7.917%.</p>
+      <p>So the coupon says 7.125% and the yield says 7.917%. Where do the extra 0.79 points come from, when you pay 90 for a bond that repays 100? And can 7.917% be set beside the yield on a bond that pays once a year?</p>
+
+      <h3>The idea</h3>
+      <p>Day 15 went from a yield to a price. Today goes from a price to a yield. Same equation, read the other way.</p>
+      <p>The <b>yield to maturity (YTM)</b> is the bond&rsquo;s IRR (Day 10): the one discount rate at which its coupons and par are worth exactly its price. It is your yearly return if you buy today and hold to the end, provided every payment arrives on time and every coupon is reinvested at the YTM itself.</p>
+      <p>Picture a $100 gift card you buy for $90 that also pays interest. Your return is the interest <em>plus</em> the $10 you gain at the end.</p>
+      <p>Three narrower measures:</p>
+      <ul>
+        <li><b>Current yield</b> = annual coupon &divide; price: the coupon part only, ignoring the drift to par.</li>
+        <li><b>Yield-to-call (YTC)</b>: the IRR if the issuer repays early, at the call price on a call date.</li>
+        <li><b>Yield-to-worst</b>: the lowest of the YTM and every YTC. The issuer calls when it suits it, which is when it hurts you.</li>
+      </ul>
+      <p>To compare yields, count periods the same way. US bonds pay twice a year and quote twice the half-year rate: the <b>semiannual-bond basis</b>. Many bonds pay once a year. Convert first.</p>
+      <p>Quotes assume the <b>street convention</b>: payments on schedule. The <b>true yield</b> uses actual dates (a coupon due on a Saturday arrives Monday), so it is never higher.</p>
+
+      <h3>Why it works</h3>
+      <p>Build it from Day 15 and Day 10, with a 4-year, 6% annual-coupon bond priced at 96.6128.</p>
+      <ol>
+        <li><b>List the cash.</b> You pay 96.6128 today. You get 6, 6, 6, then 106 (the last coupon plus par).</li>
+        <li><b>Day 15, backwards.</b> Day 15: price = 6/(1 + r) + 6/(1 + r)<sup>2</sup> + 6/(1 + r)<sup>3</sup> + 106/(1 + r)<sup>4</sup>. Now the price is known and r is the unknown.</li>
+        <li><b>That is an IRR.</b> Move the price across: &minus;96.6128 + 6/(1 + r) + &hellip; + 106/(1 + r)<sup>4</sup> = 0. The r that solves it is the YTM: the IRR of buying the bond (Day 10).</li>
+        <li><b>Search for it.</b> No algebra isolates r, so try rates. Price falls as r rises, so only one r fits. At 6%: 100.0000 (coupon = yield: par), too high a price, so r is bigger. At 8%: 93.3757, too low. At 7%: 96.6128. Found. <kbd>CPT</kbd> <kbd>I/Y</kbd> does this search for you.</li>
+        <li><b>Where the 7% comes from.</b> The coupon on what you paid: 6/96.6128 = 6.21%, the current yield. The other 0.79 points: the climb from 96.61 to 100. Spread that gain evenly and you get the simple yield; the YTM compounds it.</li>
+        <li><b>Half-years.</b> On a semiannual bond, <kbd>CPT</kbd> <kbd>I/Y</kbd> gives the rate per half-year. The market quotes it doubled: a stated annual rate with m = 2 (Day 4).</li>
+        <li><b>One periodicity.</b> A rate stated with m periods a year grows 1 to (1 + APR<sub>m</sub>/m)<sup>m</sup> in a year. Two yields match when 1 grows to the same amount: 8% semiannual, 1.04<sup>2</sup> = 1.0816, is 8.16% annual-pay.</li>
+        <li><b>Calls.</b> If the issuer can repay early, the cash stops at the call date, with the call price in place of par. Same IRR, shorter N, new FV: the yield-to-call.</li>
+      </ol>
+      <p>In plain words: the YTM is the one interest rate that makes what a bond promises worth what you pay. Pay under 100 and you earn more than the coupon, because the climb back to 100 is yours too.</p>
+      <div class="formula">
+        <p class="expr">Price = PMT/(1 + r) + PMT/(1 + r)<sup>2</sup> + &hellip; + (PMT + FV)/(1 + r)<sup>N</sup>, solved for r</p>
+        <p class="expr">Current yield = annual coupon / flat price</p>
+        <p class="expr">Simple yield = [annual coupon + (par &minus; flat price)/years] / flat price</p>
+        <p class="expr">(1 + APR<sub>m</sub>/m)<sup>m</sup> = (1 + APR<sub>n</sub>/n)<sup>n</sup></p>
+        <dl>
+          <dt>r</dt><dd>the YTM per period: the bond&rsquo;s IRR. On a semiannual bond the quoted YTM is 2r</dd>
+          <dt>PMT</dt><dd>coupon per period</dd>
+          <dt>FV</dt><dd>par, repaid at maturity; for a yield-to-call, the call price</dd>
+          <dt>N</dt><dd>periods to maturity; for a yield-to-call, periods to the call date</dd>
+          <dt>flat price</dt><dd>the quoted price, without accrued interest (more on Day 17); on a coupon date it is simply the price</dd>
+          <dt>(par &minus; flat price)/years</dt><dd>the gain (discount bond) or loss (premium bond, negative) spread evenly over the years to maturity</dd>
+          <dt>APR<sub>m</sub></dt><dd>an annual yield stated with m periods a year: m = 2 is the semiannual-bond basis, m = 1 annual-pay</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Current yield = annual coupon / flat price</li>
+          <li>Yield-to-call inputs: N = periods to the call date, FV = call price, PV = price, PMT = coupon; solve for r</li>
+          <li>Yield-to-worst: the lowest of the YTM and the yields to every call date</li>
+          <li>Converting yields between periodicities: (1 + APR<sub>m</sub>/m)<sup>m</sup> = (1 + APR<sub>n</sub>/n)<sup>n</sup>; semiannual-bond basis &rarr; annual-pay: (1 + r<sub>s</sub>/2)<sup>2</sup> = 1 + r<sub>annual</sub></li>
+          <li>YTM&rsquo;s three assumptions: held to maturity; all coupons and principal paid on time; coupons reinvested at the YTM</li>
+          <li>Simple yield = (annual coupon + straight-line amortized gain, or &minus; amortized loss, per year) / flat price</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A 4-year bond with a 6% annual coupon is priced at 96.6128. (a) Show its YTM is 7% by discounting. (b) Current yield. (c) Simple yield. (d) Restate 7% (annual-pay) on a semiannual-bond basis.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) 6/1.07 = 5.6075; 6/1.07<sup>2</sup> = 5.2406; 6/1.07<sup>3</sup> = 4.8978; 106/1.07<sup>4</sup> = 106/1.310796 = 80.8669.</li>
+          <li>Sum: 5.6075 + 5.2406 + 4.8978 + 80.8669 = 96.6128, the price. So the YTM is <b>7%</b>.</li>
+          <li>(b) Current yield = 6/96.6128 = <b>6.2104%</b>.</li>
+          <li>(c) Discount: 100 &minus; 96.6128 = 3.3872, spread over 4 years = 0.8468 a year. Simple yield = (6 + 0.8468)/96.6128 = <b>7.0868%</b>.</li>
+          <li>(d) (1 + r<sub>s</sub>/2)<sup>2</sup> = 1.07, so r<sub>s</sub> = 2 &times; (1.07<sup>0.5</sup> &minus; 1) = 2 &times; 0.034408 = <b>6.8816%</b>. Fewer points, compounded twice, grow to the same 1.07.</li>
+          <li>The order for a discount bond: coupon 6% &lt; current yield 6.21% &lt; YTM 7%.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Argentina&rsquo;s bond due 2117: a 7.125% coupon, 100 years to go, price 90 per 100 of par. Assume coupons twice a year, the usual basis for a US-dollar bond, so work in half-years: N = 200, PMT = 7.125 &divide; 2 = 3.5625, PV = &minus;90 (you pay it), FV = 100. Find the YTM on a semiannual-bond basis, the current yield, the YTM of a 10-year twin at the same price, and the annual-pay equivalent.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">END mode, then clear the old numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. Then <kbd>2ND</kbd> <kbd>CLR TVM</kbd>. P/Y is still 1 from Day 1.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; set <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, and on the <samp>PMT:</samp> row highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the bond: 200 half-years, 90 paid now, 3.5625 every half-year, 100 at the end</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>200</kbd> <kbd>N</kbd> <kbd>90</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>3.5625</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> type each value and press <kbd>ENTER</kbd>: <samp>N=200</samp>, <samp>PV=&minus;90</samp> (the minus is <kbd>(&minus;)</kbd>), <samp>PMT=3.5625</samp>, <samp>FV=100</samp>; leave <samp>I%=</samp> alone, it is the unknown</div>
+            <p class="calc-see">The price is negative and the coupons and par positive: the sign change the rate solver needs.</p>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the rate: the IRR per half-year</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 3.9585</samp> (BA II Plus) / <samp>I%=3.9585</samp> (TI-84). Per half-year, not yet the quote.</p>
+          </li>
+          <li>
+            <p class="calc-what">Double it: the YTM on a semiannual-bond basis</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> with 3.9585 still showing: <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen; <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> (it recomputes the solver&rsquo;s rate, 3.9585, at full precision); then <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (the line reads <samp>Ans*2</samp>)</div>
+            <p class="calc-see">Display: <samp>7.9170</samp> on both. Bloomberg&rsquo;s 7.917%.</p>
+          </li>
+          <li>
+            <p class="calc-what">The current yield: annual coupon &divide; price</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>7.125</kbd> <kbd>&divide;</kbd> <kbd>90</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>7.125</kbd> <kbd>&divide;</kbd> <kbd>90</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>7.9167</samp> on both. Within 0.0004 of the YTM.</p>
+          </li>
+          <li>
+            <p class="calc-what">A 10-year twin: same coupon, same price 90, only 20 half-years</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> PV, PMT and FV are still stored: <kbd>20</kbd> <kbd>N</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> (shows <samp>I/Y = 4.3193</samp>), then <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; <samp>N=20</samp> <kbd>ENTER</kbd>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> (shows <samp>I%=4.3193</samp>); then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>8.6385</samp> on both. Same coupon, same price: the climb to 100 now counts.</p>
+          </li>
+          <li>
+            <p class="calc-what">Back to the 100-year bond: restate 7.917% on an annual-pay basis (2 periods a year)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>ICONV</kbd> (opens at <samp>NOM=</samp>) <kbd>7.917</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> (<samp>EFF=</samp>) <kbd>CPT</kbd>, then <kbd>2ND</kbd> <kbd>QUIT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> on the home screen, <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, then <kbd>7.917</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the line reads <samp>►Eff(7.917,2)</samp>)</div>
+            <p class="calc-see">Display: <samp>EFF = 8.0737</samp> (BA II Plus) / <samp>8.0737</samp> (TI-84). The same as 1.039585<sup>2</sup> &minus; 1; typing the rounded 7.917 does not move it.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: YTM 7.917% on a semiannual-bond basis (3.9585% a half-year); current yield 7.917% (7.9167); the 10-year twin 8.64%; annual-pay equivalent 8.07%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Bloomberg&rsquo;s 7.917% is the IRR of paying 90 for 200 half-yearly coupons of 3.5625 plus 100 at the end: 3.9585% a half-year, doubled.</p>
+      <p>Nearly all of the extra 0.79 points is the coupon earned on a cheaper price: 7.125/90 is 7.917% too. A century bond is almost a perpetuity, whose yield is exactly coupon &divide; price (Day 8: PV = A/r).</p>
+      <p>The climb from 90 to 100 adds 0.0004 of a point: it was a century away, and in 2017 that final 100 was worth about 4 cents. On a 10-year bond at 90 the same climb lifts the YTM to 8.64%.</p>
+      <p>Beside an annual-pay bond, 7.917% becomes 8.07%.</p>
+      <p>And the YTM assumes every payment arrives on time. In 2020, less than three years after the sale, Argentina defaulted for a ninth time. In that year&rsquo;s restructuring the century bonds were swapped, at roughly 55 cents on the dollar by one estimate, for bonds due decades sooner.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Not doubling.</b> On a semiannual bond, <kbd>CPT</kbd> <kbd>I/Y</kbd> gives the half-year rate. Argentina&rsquo;s 3.9585 is a 7.917% YTM; quoting 3.96% is the trap.</li>
+          <li><b>Comparing unlike yields.</b> Convert first: (1 + r<sub>s</sub>/2)<sup>2</sup> = 1 + r<sub>annual</sub>. A semiannual-bond-basis yield always looks smaller than the same return quoted annual-pay: 7.917% is 8.07%.</li>
+          <li><b>Par in a yield-to-call.</b> FV is the call price. A 5-year 8% annual-pay bond at 104, callable in 2 years at 102: N = 2, PV = &minus;104, PMT = 8, FV = 102 gives a YTC of 6.76%. With FV = 100 you get 5.82%.</li>
+          <li><b>The worst of a premium bond.</b> That bond&rsquo;s YTM is 7.02%, but its yield-to-worst is the 6.76% YTC. A premium bond&rsquo;s coupon beats the market, so the issuer would gladly call it: its yield-to-worst is often the yield to first call.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="6.041808617928868" data-tol="0.005" data-pct data-show="6.04%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 20-year bond pays a 5% coupon, semiannually, and is priced at 88 per 100 of par. What is its yield to maturity on a semiannual-bond basis? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Steps 1&ndash;4 of the walkthrough, with new inputs: N = 40, PV = &minus;88, PMT = 2.5, FV = 100. Solve for the rate, then double it.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>40</kbd> <kbd>N</kbd> <kbd>88</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 3.0209</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>6.0418</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=40</samp>, <samp>PV=&minus;88</samp>, <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=3.0209</samp>. Home screen: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.0418</samp>.</p>
+            <p>So <b>6.04%</b>. 3.02 is the half-year rate, not the YTM. Annual inputs (N = 20, PMT = 5) give 6.05: close, and wrong. The current yield is 5/88 = 5.68%, so: coupon 5% &lt; current yield 5.68% &lt; YTM 6.04%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> For a bond bought below par, the YTM is higher than the current yield, which is higher than the coupon rate. Why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The YTM assumes coupons are reinvested at the coupon rate, which adds return</span></label>
+              <p class="cq-why">No: the YTM assumes reinvestment at the YTM itself, not the coupon rate. And reinvestment is not what separates the three measures.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The current yield divides the coupon by par, while the YTM divides it by the price</span></label>
+              <p class="cq-why">No: the current yield already divides by the price. Coupon &divide; par is just the coupon rate.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The current yield earns the coupon on a price below par, and the YTM also counts the gain as the price climbs to par</span></label>
+              <p class="cq-why">Right: each measure adds a source of return. Coupon rate: coupon on par. Current yield: the same coupon on a smaller price. YTM: that plus the pull to par.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Question 1&rsquo;s bond shows the ladder: 5% coupon on 100; 5/88 = 5.68% on the 88 you pay; 6.04% once the climb from 88 to 100 is counted. For a premium bond the ladder flips: the price falls to par, a loss, so YTM &lt; current yield &lt; coupon rate.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="3.789503154685714" data-tol="0.01" data-pct data-show="3.79%">
+          <p class="cq-stem"><b>3. Twist: a callable bond.</b> A 10-year bond pays a 6% coupon, semiannually, and is priced at 108. The issuer can call it in 3 years at 102. What is its yield-to-worst, on a semiannual-bond basis? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Work out two yields and keep the lower. Both have PV = &minus;108 and PMT = 3. To the call: N = 6, FV = 102 (the call price). To maturity: N = 20, FV = 100. Double each.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus, to the call: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>108</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>3</kbd> <kbd>PMT</kbd> <kbd>102</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 1.8948</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>3.7895</samp>. To maturity: <kbd>20</kbd> <kbd>N</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.4874</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>4.9749</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=6</samp>, <samp>PV=&minus;108</samp>, <samp>PMT=3</samp>, <samp>FV=102</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=1.8948</samp>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.7895</samp>. Back in the solver set <samp>N=20</samp>, <samp>FV=100</samp> and solve <samp>I%=</samp> &rarr; <samp>I%=2.4874</samp>; doubled the same way &rarr; <samp>4.9749</samp>.</p>
+            <p>YTC 3.79% &lt; YTM 4.97%, so the yield-to-worst is <b>3.79%</b>. A premium bond, as the traps warned: the call gives the worst. Using par (FV = 100) in the YTC gives 3.18%, the other trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A bond yields 6.00% on a semiannual-bond basis. To compare it with bonds that pay annually, its yield on an annual-pay basis is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 6.00%</span></label>
+              <p class="cq-why">No conversion. Two half-years at 3% compound to more than 6% over a year.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 6.09%</span></label>
+              <p class="cq-why">Right: (1 + 0.06/2)<sup>2</sup> &minus; 1 = 1.0609 &minus; 1 = 6.09%.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 5.91%</span></label>
+              <p class="cq-why">Converted the wrong way: 2 &times; (1.06<sup>0.5</sup> &minus; 1) = 5.91% turns an annual-pay 6% into a semiannual-basis rate.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>CPT</kbd> &rarr; <samp>EFF = 6.0900</samp>. TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">C:►Eff(</kbd>, <kbd>ENTER</kbd>, <kbd>6</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.0900</samp>. Sanity check: the annual-pay number is always the bigger one, because it already counts the compounding.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what is a bond&rsquo;s yield to maturity, and what has to be true for you to actually earn it?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The YTM is the IRR of buying the bond at today&rsquo;s price and holding it to maturity: the one discount rate that makes the PV of its coupons and par equal the price. You earn it only if you hold to maturity, every coupon and the principal are paid in full and on time, and each coupon is reinvested at the YTM.</p>
+            <p>A complete answer says: (1) it is the IRR, the rate that equates the PV of the promised cash flows to the price; (2) every payment is made on time (no default); (3) coupons are reinvested at the YTM, and the bond is held to maturity.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income, Learning Module: Yield and Yield Spread Measures for Fixed-Rate Bonds (the yield to maturity as the bond&rsquo;s IRR and its assumptions; current yield and simple yield; yield-to-call and yield-to-worst; converting yields between periodicities; street convention and true yield), building on Fixed-Income Bond Valuation: Prices and Yields and on Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (the internal rate of return).</p>
+      <p><strong>Sources.</strong> Bloomberg, &ldquo;Argentina Sells 100-Year Bond Just a Year After Default Deal&rdquo;, 19&ndash;20 June 2017 (sold at 90 cents on the dollar, yield 7.917%); Reuters via Yahoo News, &ldquo;Argentina sees strong demand for surprise 100-year bond&rdquo;, June 2017 ($2.75 billion sold, about $9.75 billion of orders, 7.125% coupon); Fox Business, &ldquo;Argentina Sells $2.75 Billion of 100-Year Bonds&rdquo;, June 2017; Mawer Investment Management, &ldquo;Argentina&rsquo;s 100-year Houdini bond&rdquo; (restructured in 2020 at around 55 cents on the dollar, into bonds repayable in 20&ndash;30 years); Anna Isaac and Pat Minczeski, &ldquo;Argentina&rsquo;s Preposterous Century Bond Never Got Chance to Grow Old&rdquo;, The Wall Street Journal, 2020; InvestireOggi, &ldquo;Bond argentini&rdquo; (the 2020 restructuring after the ninth default in Argentina&rsquo;s history). The calculations assume semiannual coupons, which reproduce the reported 7.917% yield; the 10-year bond at 90 is an illustration.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-15.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

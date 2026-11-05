@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Türkiye cut its rate to 14% in a year prices rose 36%. How much poorer is a saver at 14%, exactly? — CFA Math, Day 3 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Türkiye cut its rate to 14% in a year prices rose 36%. How much poorer is a saver at 14%, exactly?",
+    "path": "reports/cfa/l1/day-03.html",
+    "summary": "Day 3 of CFA Math: a required interest rate is a real risk-free rate plus premiums for inflation, default, liquidity and maturity, and real and nominal rates multiply rather than subtract; Logan computes the exact real return, −16.23%, of a saver earning Türkiye’s 14% policy rate while prices rise 36.08%, then an after-tax real return.",
+    "headlines": [
+      "Day 3 of 90 · Quantitative Methods: a required return is a real rate plus premiums, and real and nominal rates multiply, not subtract",
+      "Calculator: the exact real return on 14% with 36.08% inflation, and an after-tax real return, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Türkiye cut its rate to 14% in a year prices rose 36%. How much poorer is a saver at 14%, exactly?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Interest and inflation multiply, they don&rsquo;t subtract: the exact real return is (1 + nominal) &divide; (1 + inflation) &minus; 1, and every required rate is a real risk-free rate plus a premium for each thing the lender bears.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 3 of 90 &middot; LM1 Returns of Financial Assets and Instruments &middot; Real, nominal and after-tax returns</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="3">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 2 and one from Day 1, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="7411.551135553507" data-tol="0.01" data-signless data-show="7,411.55">
+          <p class="cq-stem"><b>From Day 2.</b> A payment of $12,000 is due in 9 years. At a discount rate of 5.5% a year, what is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> PV = FV<sub>N</sub> / (1 + r)<sup>N</sup> with FV = 12,000, r = 0.055 and N = 9. Or TVM: N = 9, I/Y = 5.5, PMT = 0, FV = 12,000, CPT PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>12,000 &divide; 1.055<sup>9</sup> = 12,000 &divide; 1.619094 = <b>7,411.55</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>9</kbd> <kbd>N</kbd> <kbd>5.5</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>12000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;7,411.5511</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=9</samp>, <samp>I%=5.5</samp>, <samp>PMT=0</samp>, <samp>FV=12000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;7411.5511</samp>. The minus sign only says it is what you would pay today.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 1.</b> You want the future value of $1,000 at 5% a year for 10 years, but you key <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>10</kbd> <kbd>N</kbd> <kbd>0.05</kbd> <kbd>I/Y</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd>. What does the BA II Plus show?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. FV = 1,628.8946</span></label>
+              <p class="cq-why">That is the answer to the question you meant, with 5 typed in I/Y. The calculator never saw a 5.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. FV = 1,005.0113</span></label>
+              <p class="cq-why">Right. I/Y is read in percent, so 0.05 means 0.05% a year: $1,000 earns just $5.01 in ten years.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. FV = &minus;1,005.0113</span></label>
+              <p class="cq-why">The sign is wrong. PV went in negative (paid out), so FV comes back positive (received).</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>The TVM keys want percent: type <kbd>5</kbd> for 5%. Today&rsquo;s formulas are the opposite: inside a bracket like (1 + r), 5% is 0.05. Keep the two apart.</p></details>
+        </div>
+      </section>
+
+      <h3>Türkiye&rsquo;s 14% that lost money</h3>
+      <p>On 16 December 2021, the Central Bank of the Republic of Türkiye cut its policy rate, the one-week repo rate, from 15% to 14%. It was the bank&rsquo;s fourth cut since September: 500 basis points in all, or 5 percentage points (a basis point is a hundredth of a percentage point).</p>
+      <p>Eighteen days later, on 3 January 2022, the statistics office, TurkStat, reported that consumer prices had risen 36.08% in the year to December, the fastest pace since 2002. Over 2021 the lira lost about 44% of its value against the dollar, its worst year in two decades.</p>
+      <p>Now picture a saver who earns the policy rate, 14%, for a year while prices rise 36.08%. His balance grows by 14%. Is he richer or poorer at the end of the year, and by how much?</p>
+      <p>The quick answer is 14% &minus; 36.08% = &minus;22.08%. It looks obvious, and it is off by more than five percentage points. What is the true figure, and why does subtraction miss it?</p>
+
+      <h3>The idea</h3>
+      <p>An interest rate is the price of waiting. The curriculum reads one rate three ways: as a <b>required rate of return</b> (the least an investor will accept), as a <b>discount rate</b> (Day 2&rsquo;s r, which brings future money back to today) and as an <b>opportunity cost</b> (what you give up by spending the money instead).</p>
+      <p>The price is built in layers. The <b>real risk-free rate</b> pays for waiting alone, with no inflation and no risk. The <b>inflation premium</b> pays for the money buying less when it comes back. Together they make the <b>nominal risk-free rate</b>.</p>
+      <p>A riskier loan adds three more: a <b>default risk premium</b> (the borrower may not pay in full and on time), a <b>liquidity premium</b> (you may have to sell in a hurry, below fair value) and a <b>maturity premium</b> (a longer bond&rsquo;s price swings more when rates move).</p>
+      <p>Every return also comes in pairs. <b>Nominal</b> or <b>real</b>: measured in money, or in what the money buys. <b>Pre-tax</b> or <b>after-tax</b>. <b>Gross</b> or <b>net</b>: before or after the manager&rsquo;s management, custody and administrative fees (trading costs are already out of the gross figure). Türkiye&rsquo;s puzzle is the first pair.</p>
+
+      <h3>Why it works</h3>
+      <p>Build it from Day 1, and count in shopping baskets instead of money.</p>
+      <ol>
+        <li><b>Money grows by a factor.</b> From Day 1, a year at the nominal rate r turns 1 unit of money into (1 + r).</li>
+        <li><b>So do prices.</b> A basket that costs 1 today costs (1 + &pi;) in a year; &pi; (pi) is the inflation rate.</li>
+        <li><b>Count baskets.</b> Start with enough money for 1 basket. A year later you hold (1 + r) and a basket costs (1 + &pi;), so you can buy (1 + r) &divide; (1 + &pi;) baskets.</li>
+        <li><b>That is the real growth factor.</b> You began with 1 basket, so the real return is (1 + r) / (1 + &pi;) &minus; 1.</li>
+        <li><b>Multiply by (1 + &pi;).</b> (1 + r) = (1 + real) &times; (1 + &pi;): two growth factors in a row, like two years on Day 1 (1.05 &times; 1.05 = 1.1025, not 1.10).</li>
+        <li><b>Open the brackets.</b> 1 + r = 1 + real + &pi; + real &times; &pi;, so r = real + &pi; + (real &times; &pi;).</li>
+        <li><b>Drop the small piece.</b> At a 2% real rate and 3% inflation, the cross term is 0.02 &times; 0.03 = 0.0006, six hundredths of a percent. Ignore it and nominal &asymp; real + inflation, which is why a required rate can be stacked as a sum. At 36% inflation the cross term is not small.</li>
+        <li><b>Another view.</b> (1 + r) / (1 + &pi;) &minus; 1 = (r &minus; &pi;) / (1 + &pi;). The shortcut&rsquo;s r &minus; &pi; is counted in end-of-year money; dividing by (1 + &pi;) restates it in today&rsquo;s prices, much like Day 2&rsquo;s discounting.</li>
+        <li><b>Tax.</b> A tax at rate t takes t of the interest, so you keep r &times; (1 &minus; t). It is charged on the nominal interest: take the tax off first, then divide by (1 + &pi;).</li>
+      </ol>
+      <p>In plain words: your money grows, prices grow, and what you really gain is how much more your money can buy. That is one growth divided by the other.</p>
+      <div class="formula">
+        <p class="expr">r = real risk-free rate + inflation premium + default risk premium + liquidity premium + maturity premium</p>
+        <p class="expr">(1 + r<sub>nominal</sub>) = (1 + r<sub>real</sub>) &times; (1 + &pi;)</p>
+        <p class="expr">r<sub>real</sub> = (1 + r<sub>nominal</sub>) / (1 + &pi;) &minus; 1</p>
+        <p class="expr">after-tax return = pre-tax return &times; (1 &minus; t)</p>
+        <dl>
+          <dt>r</dt><dd>the required (nominal) rate of return on an investment</dd>
+          <dt>r<sub>nominal</sub></dt><dd>nominal rate: how fast the money grows</dd>
+          <dt>r<sub>real</sub></dt><dd>real rate: how fast its buying power grows</dd>
+          <dt>&pi;</dt><dd>the inflation rate (expected inflation, for a required return)</dd>
+          <dt>t</dt><dd>the tax rate on the return (here, on interest)</dd>
+          <dt>units</dt><dd>every rate as a decimal: 14% is 0.14</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>r = real risk-free rate + inflation premium + default risk premium + liquidity premium + maturity premium</li>
+          <li>(1 + nominal rate) = (1 + real rate) &times; (1 + inflation rate)</li>
+          <li>real = (1 + nominal) / (1 + inflation) &minus; 1</li>
+          <li>nominal rf &asymp; real rf + expected inflation</li>
+          <li>after-tax return = pre-tax return &times; (1 &minus; tax rate)</li>
+          <li>Gross return: before management, custody and other administrative fees (trading costs already deducted); net return: after those fees</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A 5-year corporate bond: real risk-free rate 1.5%, inflation premium 2.5%, default risk premium 1.2%, liquidity premium 0.3%, maturity premium 0.5%. (a) What is its required return? (b) If it yields 6% and inflation is 2.5%, what is the exact real return? (c) After a 30% tax on the interest, what are the after-tax nominal and after-tax real returns?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) Stack the layers: 1.5% + 2.5% + 1.2% + 0.3% + 0.5% = <b>6.0%</b>. The first two, 4.0%, are the nominal risk-free rate.</li>
+          <li>(b) Real growth factor: 1.06 &divide; 1.025 = 1.034146.</li>
+          <li>Real return = 1.034146 &minus; 1 = 0.034146 = <b>3.41%</b>.</li>
+          <li>The shortcut, 6% &minus; 2.5% = 3.50%, is only 0.09 points off, because inflation is low.</li>
+          <li>(c) After-tax nominal = 6% &times; (1 &minus; 0.30) = 6% &times; 0.70 = <b>4.20%</b>.</li>
+          <li>After-tax real = 1.042 &divide; 1.025 &minus; 1 = 1.016585 &minus; 1 = <b>1.66%</b>.</li>
+          <li>Sense check: tax, then inflation, shrink a 6% yield to a 1.66% real gain.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Türkiye, 2021: a saver earns 14% for a year while prices rise 36.08%. Find the exact real return as a percent and compare it with the subtraction shortcut. Then find the after-tax real return if the interest were taxed at a hypothetical 15%. This is plain arithmetic, not the TVM worksheet, so type each rate as a decimal: 14% is 0.14.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Leave any worksheet and start from a clean screen</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> (in case a worksheet is still open), then <kbd>CE/C</kbd> until the display shows <samp>0.0000</samp>. Day 1 set AOS; the brackets keep the order right either way.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, then <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Real return as a decimal: (1 + 0.14) &divide; (1 + 0.3608) &minus; 1</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.14</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.3608</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.14</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.3608</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> (the <kbd>&minus;</kbd> subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>&minus;0.1623</samp> (BA II Plus) / <samp>&minus;.1623</samp> (TI-84). Before the &minus; 1, the growth factor 1.14 &divide; 1.3608 was 0.8377.</p>
+          </li>
+          <li>
+            <p class="calc-what">Turn it into a percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> (the screen writes <samp>Ans*100</samp>)</div>
+            <p class="calc-see">Display: <samp>&minus;16.2257</samp> on both: a real return of &minus;16.23%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Compare the subtraction shortcut, 14 &minus; 36.08</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>14</kbd> <kbd>&minus;</kbd> <kbd>36.08</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>14</kbd> <kbd>&minus;</kbd> <kbd>36.08</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;22.0800</samp> on both: 5.85 points worse than the exact answer.</p>
+          </li>
+          <li>
+            <p class="calc-what">After-tax nominal return, kept in memory: 0.14 &times; (1 &minus; 0.15)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.14</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>0.15</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (saves the display in memory 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.14</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>0.15</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>0.1190</samp> (BA II Plus) / <samp>.1190</samp> (TI-84): 11.90% after tax, stored.</p>
+          </li>
+          <li>
+            <p class="calc-what">After-tax real return: (1 + stored value) &divide; 1.3608 &minus; 1, as a percent</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.3608</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> (shows <samp>&minus;0.1777</samp>), then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.3608</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>&minus;17.7690</samp> on both.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: the exact real return is &minus;16.2257% (about &minus;16.23%), not the shortcut&rsquo;s &minus;22.08%. After a hypothetical 15% tax on the interest, it is &minus;17.7690% (about &minus;17.77%).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The saver got poorer, by 16.23%, not 22.08%. Follow 10,000 lira. At 14% it becomes 11,400 lira. Shopping that cost 10,000 lira now costs 13,608. So 11,400 &divide; 13,608 = 0.8377: his money buys about 16% less than a year earlier.</p>
+      <p>The shortcut overstates the loss by 5.85 points, and that gap is exactly the cross term: &minus;0.1623 &times; 0.3608 = &minus;0.0585. When rates are a few percent you can drop it. At 36% inflation you can&rsquo;t.</p>
+      <p>What rate would have protected him? Just to stand still in real terms, 36.08%. To earn a 2% real return, 1.02 &times; 1.3608 &minus; 1 = 38.80%, not the shortcut&rsquo;s 38.08%. That is for a default-free lender; a riskier loan stacks default, liquidity and maturity premiums on top. And tax deepens the hole: with a hypothetical 15% tax on the interest, the real return falls to &minus;17.77%.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using the subtraction shortcut (nominal &minus; inflation) when the question asks for the exact real rate. Use (1 + nominal) / (1 + inflation) &minus; 1, and expect the shortcut&rsquo;s answer among the wrong options.</li>
+          <li>Adding a default risk premium to a default-free government bill. A short Treasury bill&rsquo;s rate is the nominal risk-free rate: real risk-free rate plus inflation premium.</li>
+          <li>Taxing the real return instead of the nominal return. Tax is levied on nominal income: take the tax off first, then adjust for inflation.</li>
+          <li>Typing percents inside a formula: (1 + 14) &divide; (1 + 36.08) is nonsense. Inside brackets 14% is 0.14; only the TVM keys (I/Y) want 14.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="4.606525911708248" data-tol="0.01" data-pct data-show="4.61%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A bond yields 9% a year and inflation is 4.2%. What is the exact real return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 2 and 3, with 0.09 in place of 0.14 and 0.042 in place of 0.3608. Divide, don&rsquo;t subtract.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.09 &divide; 1.042 = 1.046065, so the real return is <b>4.61%</b>. The shortcut, 9 &minus; 4.2 = 4.80%, is 0.19 points too high.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.09</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.042</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0461</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.6065</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.09</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.042</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0461</samp>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.6065</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> In the story, the exact real return, 1.14 &divide; 1.3608 &minus; 1 = &minus;16.23%, is a smaller loss than the shortcut, 14% &minus; 36.08% = &minus;22.08%. Why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The shortcut is exact too; the 5.85-point gap is just rounding in 36.08%</span></label>
+              <p class="cq-why">Rounding moves the last decimal, not 5.85 points. The two formulas differ by a genuine term, real &times; inflation, which is big at 36% inflation.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The exact formula allows for tax on the interest, and the shortcut leaves tax out</span></label>
+              <p class="cq-why">Neither figure includes tax. Taxing the interest makes the loss bigger, not smaller: &minus;17.77% at a 15% tax.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The shortcut&rsquo;s &minus;22.08% is in end-of-year lira; dividing by 1.3608 restates it in today&rsquo;s buying power</span></label>
+              <p class="cq-why">Right. Real = (r &minus; &pi;) / (1 + &pi;) = &minus;0.2208 &divide; 1.3608 = &minus;0.1623.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>(1 + r) / (1 + &pi;) &minus; 1 = (r &minus; &pi;) / (1 + &pi;): the shortcut&rsquo;s answer divided by one year&rsquo;s price growth, 1 + &pi;. Said the other way, r &minus; &pi; = real + real &times; &pi;, and the cross term &minus;0.1623 &times; 0.3608 = &minus;0.0585 is the whole 5.85-point gap. When inflation is low, 1 + &pi; is close to 1 and the two answers nearly agree.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="3.1862745098039102" data-tol="0.01" data-pct data-show="3.19%">
+          <p class="cq-stem"><b>3. Twist: tax, then inflation.</b> A bond pays 7% interest, the interest is taxed at 25%, and inflation is 2%. What is the after-tax real return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two steps, in this order. After-tax nominal = 0.07 &times; (1 &minus; 0.25). Then (1 + that) &divide; 1.02 &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>After tax: 0.07 &times; 0.75 = 0.0525. Then 1.0525 &divide; 1.02 &minus; 1 = 0.031863 = <b>3.19%</b>.</p>
+            <p>BA II Plus: <kbd>0.07</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>0.25</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.0525</samp>; <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0319</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>3.1863</samp>.</p>
+            <p>TI-84 Plus: <kbd>0.07</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>0.25</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0525</samp>; <kbd>(</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>1.02</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.1863</samp>.</p>
+            <p>The wrong orders: taxing the real return, (1.07 &divide; 1.02 &minus; 1) &times; 0.75 = 4.90% &times; 0.75 = 3.68%, taxes too little, because the tax falls on the whole 7%, including the part that only makes up for inflation. The shortcut, 5.25 &minus; 2 = 3.25%, ignores the division by 1.02.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> An analyst estimates the real risk-free rate at 1.0% and the inflation premium at 2.7%. A 10-year corporate bond carries a default risk premium of 1.6%, a liquidity premium of 0.4% and a maturity premium of 0.9%. The required rate of return on a 3-month Treasury bill is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 3.7%</span></label>
+              <p class="cq-why">Right. A T-bill has no default risk, is highly liquid and matures in months, so its rate is the nominal risk-free rate: 1.0% + 2.7%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 5.3%</span></label>
+              <p class="cq-why">Adds the bond&rsquo;s 1.6% default risk premium to a default-free government bill.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 6.6%</span></label>
+              <p class="cq-why">Adds every premium. That is the corporate bond&rsquo;s required return, not the bill&rsquo;s.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Each premium pays for a risk the lender bears. Match the premiums to the instrument: the T-bill bears only the wait and inflation (1.0 + 2.7 = 3.7%); the 10-year corporate bond bears all five (1.0 + 2.7 + 1.6 + 0.4 + 0.9 = 6.6%).</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why is (1 + nominal) = (1 + real) &times; (1 + inflation) a product and not a sum?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Inflation shrinks the buying power of everything you get back, the interest as well as the principal, so real growth and price growth compound on each other: money grows by (1 + real) &times; (1 + inflation). Adding the rates drops the cross term real &times; inflation, which is tiny at low rates but large when inflation is high.</p>
+            <p>A complete answer says: (1) inflation erodes the principal and the interest alike; (2) real growth and price growth are growth factors that multiply, like two years of compounding; (3) nominal &asymp; real + inflation works only when the rates are small.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 1: Returns of Financial Assets and Instruments (an interest rate as required return, discount rate and opportunity cost; the real risk-free rate and the inflation, default risk, liquidity and maturity premiums; nominal and real rates), with gross and net, pre-tax and after-tax, and nominal and real returns from Learning Module 2: Types of Financial Returns.</p>
+      <p><strong>Sources.</strong> Central Bank of the Republic of Türkiye rate decision, 16 December 2021 (one-week repo rate 15% to 14%), reported by Hürriyet Daily News and Daily Sabah, 16 December 2021, and Business Standard, 17 December 2021 (the fourth cut, 500 basis points since September); TurkStat consumer price index for December 2021 (36.08% year on year, the highest since 2002), released 3 January 2022 and reported by Bianet, Daily Sabah, SeeNews and Euronews; Reuters, &ldquo;Turkey&rsquo;s lira logs worst year in two decades under Erdogan&rdquo;, 31 December 2021 (the lira down about 44% against the dollar in 2021). The saver earning the policy rate and the 15% tax are illustrations, not data.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-02.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>18.63%: the 1981 mortgage whose first payment paid off about $6 of the house — CFA Math, Day 9 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "18.63%: the 1981 mortgage whose first payment paid off about $6 of the house",
+    "path": "reports/cfa/l1/day-09.html",
+    "summary": "Day 9 of CFA Math: each level loan payment pays interest on the balance first and only the rest repays principal, so early payments are mostly interest and the balance is always the PV of the payments left; Logan splits the payments on a $100,000 mortgage at 1981's record 18.63% and finds when principal finally beats interest.",
+    "headlines": [
+      "Day 9 of 90 · Quantitative Methods: each loan payment pays interest on the balance first and the rest repays principal",
+      "Calculator: a mortgage payment, where payment 1 and year 1 went, and the balance left, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>18.63%: the 1981 mortgage whose first payment paid off about $6 of the house</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Every loan payment first pays the interest on what you still owe, and only the leftover pays down the loan, so the early payments are almost all interest.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 9 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Amortizing loans</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="9">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 8 and Day 2, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="158.4187326476041" data-tol="0.01" data-signless data-show="158.42">
+          <p class="cq-stem"><b>From Day 8.</b> An investment pays $12 a year forever. The first payment arrives at the end of year 5. At a 6% required return, what is it worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> A/r values the payments one period before the first one, so at t = 4. Then discount that single sum back 4 years.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>12 / 0.06 = 200.00, the value at t = 4. Then 200.00 / 1.06<sup>4</sup> = 200.00 / 1.262477 = <b>158.42</b>.</p>
+            <p>BA II Plus: <kbd>12</kbd> <kbd>&divide;</kbd> <kbd>.06</kbd> <kbd>=</kbd> &rarr; <samp>200.0000</samp>; then <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>4</kbd> <kbd>N</kbd> <kbd>6</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>200</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;158.4187</samp>.</p>
+            <p>TI-84 Plus: <kbd>12</kbd> <kbd>&divide;</kbd> <kbd>.06</kbd> <kbd>ENTER</kbd> &rarr; <samp>200.0000</samp>; then the TVM Solver with <samp>N=4</samp>, <samp>I%=6</samp>, <samp>PMT=0</samp>, <samp>FV=200</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;158.4187</samp>.</p>
+            <p>Discounting 5 years instead of 4 gives 149.45: the classic slip. A/r already sits one period before the first payment.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 2.</b> $8,000 grows to $11,000 in 5 years. What annual compound return is that?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 37.50%</span></label>
+              <p class="cq-why">That is the total growth over all 5 years (11,000 / 8,000 &minus; 1), not a rate per year.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 7.50%</span></label>
+              <p class="cq-why">That is 37.5% &divide; 5, simple interest. It ignores compounding: 8,000 &times; 1.075<sup>5</sup> = 11,485.03, too much.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 6.58%</span></label>
+              <p class="cq-why">Right: r = (11,000 / 8,000)<sup>1/5</sup> &minus; 1 = 1.375<sup>0.2</sup> &minus; 1 = 6.58%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>5</kbd> <kbd>N</kbd> <kbd>8000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>11000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 6.5763</samp>. TI-84 Plus: TVM Solver <samp>N=5</samp>, <samp>PV=&minus;8000</samp> (minus with the <kbd>(&minus;)</kbd> key), <samp>PMT=0</samp>, <samp>FV=11000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=6.5763</samp>. Today uses the same TVM keys, with a payment added.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The 18.63% mortgage</h3>
+      <p>In the week of 9 October 1981, Freddie Mac&rsquo;s weekly survey put the average US 30-year fixed mortgage rate at <b>18.63%</b>. That was the highest since the survey began in 1971, and no week since has topped it: the record still stands.</p>
+      <p>Behind it: the Federal Reserve under Paul Volcker had pushed interest rates to around 20% to break double-digit inflation. Banks&rsquo; prime rate, the rate they charge their best business borrowers, had reached 21.5%.</p>
+      <p>Home sales collapsed. Builders mailed chunks of two-by-four lumber to Volcker and to members of Congress in protest. One addressed to Volcker is catalogued in the St. Louis Fed&rsquo;s FRASER digital library.</p>
+      <p>So take a $100,000, 30-year loan at 18.63%, paid monthly. Day 5&rsquo;s annuity formula gives the payment. The harder question is what that payment buys. How much of the first one actually pays off the house? And how many years pass before principal outweighs interest?</p>
+
+      <h3>The idea</h3>
+      <p>A loan is Day 5&rsquo;s annuity seen from the borrower&rsquo;s side. The bank hands you the PV today; you pay back the same amount, A, every month. The payment never changes. What it buys does.</p>
+      <p>Each payment does two jobs, in a fixed order. First it pays this month&rsquo;s interest on what you still owe. Whatever is left repays <b>principal</b>: it makes the debt itself smaller.</p>
+      <p>An everyday picture: a credit card with $1,000 on it, charging 1.5% a month. Pay $20, and $15 of it is interest; only $5 of the debt goes away. You now owe $995.</p>
+      <p>So at the start, when you owe the most, interest eats most of the payment. As the balance falls, so does the interest, and more of the same payment goes to principal: slowly at first, then faster and faster. The month-by-month table of those splits is the <b>amortization schedule</b>.</p>
+      <p>And at any moment, what you still owe is simply the PV of the payments you have left.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Step 1: the payment, from Day 5.</b> The lender hands you PV today and receives A at the end of each of N periods. A fair loan means those payments, discounted at the loan rate, are worth exactly the cash lent:</p>
+      <p>PV = A &times; [1 &minus; (1 + r)<sup>&minus;N</sup>] / r</p>
+      <p>Solve for A (multiply both sides by r, divide by the bracket):</p>
+      <p>A = PV &times; r / [1 &minus; (1 + r)<sup>&minus;N</sup>]</p>
+      <p><b>Step 2: one period of the loan.</b> At the start of period t you owe B<sub>t&minus;1</sub>. Interest is charged on that, and your payment covers it first. Only the rest cuts the debt:</p>
+      <p>Interest<sub>t</sub> = r &times; B<sub>t&minus;1</sub><br>
+      Principal<sub>t</sub> = A &minus; Interest<sub>t</sub><br>
+      B<sub>t</sub> = B<sub>t&minus;1</sub> &minus; Principal<sub>t</sub></p>
+      <p><b>Step 3: why principal snowballs.</b> Repaying Principal<sub>t</sub> cuts next period&rsquo;s interest by r &times; Principal<sub>t</sub>. The payment stays the same, so that saving moves to principal:</p>
+      <p>Principal<sub>t+1</sub> = Principal<sub>t</sub> + r &times; Principal<sub>t</sub> = Principal<sub>t</sub> &times; (1 + r)</p>
+      <p>Principal grows like money in a bank at rate r. At 18.63%: 6.0828 in month 1, then 6.0828 &times; 1.015525 = 6.1772 in month 2. Start tiny, and it stays tiny for years.</p>
+      <p><b>Step 4: the balance is the PV of what is left.</b> Put step 2&rsquo;s lines together: B<sub>t</sub> = B<sub>t&minus;1</sub> &times; (1 + r) &minus; A.</p>
+      <p>Now let V<sub>t</sub> be the PV of the payments still to come after period t. One period earlier, they were the next payment plus all the rest, discounted one period: V<sub>t&minus;1</sub> = (A + V<sub>t</sub>) / (1 + r). Rearranged: V<sub>t</sub> = V<sub>t&minus;1</sub> &times; (1 + r) &minus; A.</p>
+      <p>Same rule, same start (B<sub>0</sub> = V<sub>0</sub> = PV, by step 1), so they stay equal every period. After k payments you owe the PV of the N &minus; k payments left.</p>
+      <p><b>In one sentence:</b> each payment first pays rent on the money you still owe, and only what is left over buys back a piece of the loan.</p>
+      <div class="formula">
+        <p class="expr">A = PV &times; r / [1 &minus; (1 + r)<sup>&minus;N</sup>]</p>
+        <p class="expr">Interest<sub>t</sub> = r &times; B<sub>t&minus;1</sub>; Principal<sub>t</sub> = A &minus; Interest<sub>t</sub></p>
+        <p class="expr">B<sub>k</sub> = A &times; [1 &minus; (1 + r)<sup>&minus;(N &minus; k)</sup>] / r</p>
+        <dl>
+          <dt>A</dt><dd>the level payment, the same every period</dd>
+          <dt>PV</dt><dd>the amount borrowed (the balance at t = 0)</dd>
+          <dt>r</dt><dd>the loan rate per period, as a decimal (monthly loan: the annual stated rate &divide; 12)</dd>
+          <dt>N</dt><dd>the number of payments (monthly loan: years &times; 12)</dd>
+          <dt>B<sub>t&minus;1</sub></dt><dd>the balance owed at the start of period t, right after payment t &minus; 1</dd>
+          <dt>Interest<sub>t</sub>, Principal<sub>t</sub></dt><dd>the two parts of payment t: interest first, principal is the rest</dd>
+          <dt>k</dt><dd>payments already made; N &minus; k are left</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>A = PV &times; r / [1 &minus; (1 + r)<sup>&minus;N</sup>]</li>
+          <li>Interest<sub>t</sub> = r &times; Balance<sub>t&minus;1</sub></li>
+          <li>Principal<sub>t</sub> = A &minus; Interest<sub>t</sub></li>
+          <li>Balance<sub>k</sub> = PV of the remaining N &minus; k payments at the loan rate</li>
+          <li>Solve the loan in TVM first, then <kbd>2ND</kbd> <kbd>AMORT</kbd>: P1, P2, <kbd>&darr;</kbd> BAL, <kbd>&darr;</kbd> PRN, <kbd>&darr;</kbd> INT</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A $10,000 loan at 6% is repaid with 3 equal payments, one at the end of each year. Find the payment and build the schedule.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Payment: A = 10,000 &times; 0.06 / [1 &minus; 1.06<sup>&minus;3</sup>] = 600 / 0.1603807 = <b>3,741.10</b>.</li>
+          <li>Year 1: interest = 0.06 &times; 10,000.00 = 600.00. Principal = 3,741.10 &minus; 600.00 = 3,141.10. Balance = 6,858.90.</li>
+          <li>Year 2: interest = 0.06 &times; 6,858.90 = 411.53. Principal = 3,741.10 &minus; 411.53 = 3,329.57. Balance = 3,529.33.</li>
+          <li>Year 3: interest = 0.06 &times; 3,529.33 = 211.76. Principal = 3,741.10 &minus; 211.76 = 3,529.34, one cent more than the 3,529.33 owed (rounding). So the last payment is trimmed to 3,741.09, and the balance is 0.00.</li>
+          <li>See the pattern: interest falls (600.00, 411.53, 211.76) while principal grows by 6% a year (3,141.10 &times; 1.06 = 3,329.57).</li>
+          <li>Check: the balance after year 1 is the PV of the 2 payments left: 3,741.098 &times; [1 &minus; 1.06<sup>&minus;2</sup>] / 0.06 = 3,741.098 &times; 1.833393 = 6,858.90.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A $100,000, 30-year mortgage at 18.63% a year, stated, with a payment at the end of each month. Find the payment; where payment 1 goes; the balance after 12 payments and the principal and interest paid in them; and the first payment in which principal beats interest.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the TVM memory (P/Y = 1 and END from the one-time setup: no <samp>BGN</samp> on the BA II Plus display)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the loan in months: N = 30 &times; 12 = 360, rate = 18.63 &divide; 12 per month. PV is positive: you receive the cash</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>360</kbd> <kbd>N</kbd> <kbd>18.63</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd> <kbd>100000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=360</samp>, <samp>I%=18.63/12</samp> (type <kbd>18.63</kbd> <kbd>&divide;</kbd> <kbd>12</kbd>), <samp>PV=100000</samp>, <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp></div>
+            <p class="calc-see">Display: <samp>I/Y = 1.5525</samp> (BA II Plus) / <samp>I%=1.5525</samp> once you move off the line (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the payment</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>PMT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>PMT=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PMT = &minus;1,558.5828</samp> (BA II Plus) / <samp>PMT=&minus;1558.5828</samp> (TI-84). Negative: it leaves your pocket.</p>
+          </li>
+          <li>
+            <p class="calc-what">Payment 1: the balance after it, its principal and its interest (P1 = P2 = 1)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>AMORT</kbd>; at <samp>P1=</samp> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; at <samp>P2=</samp> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> (BAL); <kbd>&darr;</kbd> (PRN); <kbd>&darr;</kbd> (INT)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen. <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">9:bal(</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">0:&Sigma;Prn(</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>. <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&#9660;</kbd> down the list until <kbd class="menu">A:&Sigma;Int(</kbd> is highlighted, <kbd>ENTER</kbd>, <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (these read the loan from the TVM Solver)</div>
+            <p class="calc-see">Display: <samp>BAL = 99,993.9172</samp>, <samp>PRN = &minus;6.0828</samp>, <samp>INT = &minus;1,552.5000</samp> (BA II Plus) / <samp>99993.9172</samp>, <samp>&minus;6.0828</samp>, <samp>&minus;1552.5000</samp> (TI-84). Of $1,558.58, just $6.08 repays the loan.</p>
+          </li>
+          <li>
+            <p class="calc-what">The whole first year: payments 1 to 12 (P1 = 1, P2 = 12)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&darr;</kbd> (back to <samp>P1=</samp>) <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd>; at <samp>P2=</samp> <kbd>12</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> (BAL); <kbd>&darr;</kbd> (PRN); <kbd>&darr;</kbd> (INT)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> as in step 4, with new arguments: <samp>bal(12)</samp>, <samp>&Sigma;Prn(1,12)</samp>, <samp>&Sigma;Int(1,12)</samp>, each followed by <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>BAL</samp> &asymp; 99,920.44, <samp>PRN</samp> &asymp; &minus;79.56, <samp>INT</samp> &asymp; &minus;18,623.43 (BA II Plus) / about <samp>99920.44</samp>, <samp>&minus;79.56</samp>, <samp>&minus;18623.43</samp> (TI-84). Both round each month to your 4 decimals, so the last two decimals can differ a little.</p>
+          </li>
+          <li>
+            <p class="calc-what">When does principal finally win? Payment 317 alone (P1 = P2 = 317)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&darr;</kbd> (to <samp>P1=</samp>) <kbd>317</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>317</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> (PRN); <kbd>&darr;</kbd> (INT)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>&Sigma;Prn(317,317)</samp> <kbd>ENTER</kbd>, then <samp>&Sigma;Int(317,317)</samp> <kbd>ENTER</kbd>, from the same Finance menu</div>
+            <p class="calc-see">Display: <samp>PRN</samp> &asymp; &minus;791.3, <samp>INT</samp> &asymp; &minus;767.3 (both calculators). Try 316 the same way: PRN &asymp; &minus;779.2, INT &asymp; &minus;779.4, so interest is still just ahead.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: the payment is $1,558.58. Payment 1 is $1,552.50 of interest and $6.08 of principal. After 12 payments the balance is about $99,920.44: $79.56 repaid, $18,623.43 of interest paid. Principal first beats interest in payment 317.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>At 18.63% the monthly rate is 18.63 &divide; 12 = 1.5525%. Month 1&rsquo;s interest is 100,000 &times; 0.015525 = $1,552.50, out of a $1,558.58 payment. That leaves <b>$6.08</b> to pay off the house.</p>
+      <p>A full year of payments, $18,702.99, brought the balance down only to $99,920.44: $79.56 repaid.</p>
+      <p>Principal grows by just 1.5525% a month from that $6.08 start, so it first outweighs interest in <b>payment 317</b>, 26 years and 5 months in. Over the 30 years the borrower pays about <b>$461,090</b> of interest on a $100,000 loan.</p>
+      <p>For more than 26 years, most of every payment was rent on the money, not a piece of the house.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>The annual rate with monthly payments. I/Y = 18.63 with N = 360 treats 18.63% as a <em>monthly</em> rate: PMT = 18,630.00, a full year&rsquo;s interest every month. Monthly loan: I/Y = annual rate &divide; 12 and N = years &times; 12 (P/Y stays 1).</li>
+          <li>P1 to P2 is a range. AMORT, &Sigma;Prn( and &Sigma;Int( add up payments P1 through P2. Interest in payment 12 alone: P1 = P2 = 12 gives 1,551.38. Interest in the first year: P1 = 1, P2 = 12 gives 18,623.43. Read whether the question wants one payment or a span.</li>
+          <li>Principal is not repaid evenly. 100,000 &divide; 360 = 277.78 is not what each payment repays: payment 1 repays $6.08, and principal grows by (1 + r) every period.</li>
+          <li>Balance is not the loan minus the payments. 100,000 &minus; 18,702.99 (a year of payments) = 81,297.01 ignores interest. What you owe is the PV of the payments left: 99,920.44.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="282990.0820740268" data-tol="0.05" data-signless data-show="282,990.08">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A $300,000 mortgage runs 30 years at 7.2% a year, stated, with a payment at the end of each month. How much is still owed right after the 60th payment? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with new inputs: N = 360, I/Y = 7.2 &divide; 12 = 0.6, PV = 300,000, FV = 0. Compute PMT, then AMORT with P2 = 60 (TI-84: bal(60)).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>360</kbd> <kbd>N</kbd> <kbd>7.2</kbd> <kbd>&divide;</kbd> <kbd>12</kbd> <kbd>=</kbd> <kbd>I/Y</kbd> <kbd>300000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;2,036.3646</samp>. Then <kbd>2ND</kbd> <kbd>AMORT</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>60</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> &rarr; <samp>BAL</samp> &asymp; 282,990.08.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=360</samp>, <samp>I%=7.2/12</samp>, <samp>PV=300000</samp>, <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;2036.3646</samp>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">9:bal(</kbd> <kbd>60</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; about <samp>282990.08</samp>.</p>
+            <p>By the formula: the PV of the 300 payments left, 2,036.3646 &times; [1 &minus; 1.006<sup>&minus;300</sup>] / 0.006 = 2,036.3646 &times; 138.968276 = <b>282,990.08</b>. Payment 1 was 300,000 &times; 0.006 = 1,800.00 of interest and only 236.36 of principal. Five years of payments, 122,181.88, repaid just 17,009.92. Anything within 5 cents is marked right, because the calculators round each month.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> On question 1&rsquo;s loan, the first payment of $2,036.36 is $1,800.00 of interest and only $236.36 of principal. Why is the first payment mostly interest?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Interest is the rate times the balance still owed, and the balance is largest at the start.</span></label>
+              <p class="cq-why">Right. 0.006 &times; 300,000 = 1,800.00 must be paid first; only the rest repays principal. As the balance falls, interest falls and principal grows.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The loan contract front-loads interest, charging a higher rate in the early years.</span></label>
+              <p class="cq-why">The rate is 0.6% every month; nothing is front-loaded. Each period&rsquo;s interest is exactly r &times; that period&rsquo;s balance, so the big early interest is arithmetic, not a contract term.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Principal is repaid in equal slices of 300,000 &divide; 360, so the rest of each payment must be interest.</span></label>
+              <p class="cq-why">Equal slices would be 833.33 a month, and payment 1 would be 833.33 + 1,800.00 = 2,633.33, not 2,036.36. Principal starts at 236.36 and grows.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Interest<sub>t</sub> = r &times; B<sub>t&minus;1</sub>, and the payment covers it first. At the start B is the whole loan, so interest is at its peak and principal at its smallest. Each repaid dollar cuts the next interest charge, so principal grows by (1 + r) every month: 236.3646 &times; 1.006 = 237.78 in month 2.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="152018.19723206913" data-tol="0.35" data-signless data-show="152,018.20">
+          <p class="cq-stem"><b>3. Twist: what is still owed, as a PV.</b> A $200,000 mortgage runs 15 years at 6% a year, stated, with monthly payments. Five years in, right after the 60th payment, the borrower asks for the payoff amount. Find it as the PV of the payments still to come. In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> First the payment: N = 180, I/Y = 0.5, PV = 200,000, FV = 0, CPT PMT. Then 180 &minus; 60 = 120 payments are left: keep that PMT, change only N to 120, and compute PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>180</kbd> <kbd>N</kbd> <kbd>0.5</kbd> <kbd>I/Y</kbd> <kbd>200000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;1,687.7137</samp>. Then <kbd>120</kbd> <kbd>N</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = 152,018.1972</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=180</samp>, <samp>I%=.5</samp>, <samp>PV=200000</samp>, <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;1687.7137</samp>. Then set <samp>N=120</samp>, cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=152018.1972</samp>.</p>
+            <p>The payoff is <b>152,018.20</b>. AMORT with P1 = 1, P2 = 60 (or <samp>bal(60)</samp>) gives the same balance, to within a cent or so. Retyping the rounded 1,687.71 gives 152,017.87, also marked right. After a third of the term, only 47,981.80 (24.0%) of the loan is repaid.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A $250,000 mortgage has a 25-year term and a 6% stated annual rate, with payments at the end of each month. The monthly payment is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $1,629.72</span></label>
+              <p class="cq-why">That is the annual payment (N = 25, I/Y = 6: 19,556.68) divided by 12. Monthly payments cut the balance during the year, so the true payment is lower.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $1,610.75</span></label>
+              <p class="cq-why">Right: N = 25 &times; 12 = 300, I/Y = 6 &divide; 12 = 0.5, PV = 250,000, FV = 0, CPT PMT.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $2,083.33</span></label>
+              <p class="cq-why">That is 250,000 &divide; 300 = 833.33 of principal plus one month&rsquo;s interest of 1,250.00: it assumes principal is repaid evenly. Payment 1 really repays only 360.75.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>300</kbd> <kbd>N</kbd> <kbd>0.5</kbd> <kbd>I/Y</kbd> <kbd>250000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;1,610.7535</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=300</samp>, <samp>I%=.5</samp>, <samp>PV=250000</samp>, <samp>PMT=0</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;1610.7535</samp>.</p>
+            <p>Payment 1 splits into 250,000 &times; 0.005 = 1,250.00 of interest and 1,610.75 &minus; 1,250.00 = 360.75 of principal.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: where does each loan payment go, and why does that split change over the life of the loan?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Each payment first pays interest, the rate times the balance owed at the start of the period, and the rest repays principal. Since the balance keeps falling, the interest part shrinks and the principal part grows, and at any time the balance is just the PV of the payments still to come.</p>
+            <p>A complete answer says: (1) interest = r &times; the balance at the start of the period, and it is paid first; (2) the rest of the payment repays principal; (3) the balance falls, so interest falls and principal rises; (4) the balance at any time is the PV of the remaining payments at the loan rate.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (amortizing loans: the level payment, the interest and principal in each payment, the amortization schedule, and the outstanding balance as the PV of the remaining payments).</p>
+      <p><strong>Sources.</strong> Freddie Mac Primary Mortgage Market Survey, week of 9 October 1981: 18.63% (FRED series MORTGAGE30US), as reported by Time (&ldquo;Historical Mortgage Rates&rdquo;) and Yahoo Finance (the record since the survey began in 1971); Associated Press obituary of Paul Volcker, December 2019, via InsuranceNewsNet, &ldquo;2-by-4s a lasting legacy of Volcker&rsquo;s bold interest rate tinkering&rdquo; (two-by-fours mailed to Volcker and Congress; prime rate 21.5%); Marketplace, &ldquo;Paul Volcker&rsquo;s battle against inflation pushed interest rates up to 20%&rdquo;, 9 December 2019; FRASER, Federal Reserve Bank of St. Louis, &ldquo;Wood 2x4 mailed to Mr. Paul Volcker, Chairman, Board of Governors&rdquo;. The $100,000 loan is an illustration at the record rate, not a particular borrower&rsquo;s mortgage.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-08.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>ARK’s average year was +20.7%, yet $10,000 shrank to $6,383. Which average tells the truth? — CFA Math, Day 12 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "ARK’s average year was +20.7%, yet $10,000 shrank to $6,383. Which average tells the truth?",
+    "path": "reports/cfa/l1/day-12.html",
+    "summary": "Day 12 of CFA Math: Logan learns which question each of the arithmetic, geometric and harmonic means answers and why they always fall in the order harmonic, geometric, arithmetic, and computes ARKK's 2020–2022 arithmetic mean (+20.70%), geometric mean (−13.90% a year) and the $6,383 left from $10,000 on the BA II Plus and the TI-84.",
+    "headlines": [
+      "Day 12 of 90 · Quantitative Methods: arithmetic, geometric and harmonic means, and the question each one answers",
+      "Calculator: ARKK's arithmetic mean (+20.70%) with 1-V statistics, its geometric mean (−13.90%) with the power key, and what $10,000 became, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>ARK’s average year was +20.7%, yet $10,000 shrank to $6,383. Which average tells the truth?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Three averages, three questions: the typical year, the steady rate that ends with the same money, and the price you really paid per share.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 12 of 90 &middot; LM2 Types of Financial Returns &middot; Arithmetic, geometric and harmonic means</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="12">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 11 and 2, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="-0.88" data-tol="0.01" data-pct data-show="&minus;0.88%">
+          <p class="cq-stem"><b>From Day 11.</b> A fund returns +18%, then &minus;25%, then +12% in three successive years. What is its total 3-year return? As a percent, to two decimals; type a minus sign for a loss.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Turn each return into a growth factor (1 + R), multiply the three, then subtract 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1.18 &times; 0.75 &times; 1.12 = 0.9912, and 0.9912 &minus; 1 = &minus;0.0088 = <b>&minus;0.88%</b>.</p>
+            <p>BA II Plus: <kbd>1.18</kbd> <kbd>&times;</kbd> <kbd>.75</kbd> <kbd>&times;</kbd> <kbd>1.12</kbd> <kbd>=</kbd> &rarr; <samp>0.9912</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.0088</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.18</kbd> <kbd>&times;</kbd> <kbd>.75</kbd> <kbd>&times;</kbd> <kbd>1.12</kbd> <kbd>ENTER</kbd> &rarr; <samp>.9912</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.0088</samp>.</p>
+            <p>Adding the returns says +5.00%, yet the fund lost money. Hold on to that: today&rsquo;s story is the same trap, three years long.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>From Day 2.</b> $5,000 grows to $8,000 in 6 years. What annual compound rate of return is that?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 10.00%</span></label>
+              <p class="cq-why">That divides the total gain, 60%, by 6 years: simple interest. It ignores that each year&rsquo;s gain earns more gains.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 7.83%</span></label>
+              <p class="cq-why">That is ln(1.6) &divide; 6, the continuously compounded rate (Day 4). With yearly compounding you take the 6th root instead.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 8.15%</span></label>
+              <p class="cq-why">Right: (8,000/5,000)<sup>1/6</sup> &minus; 1 = 1.6<sup>1/6</sup> &minus; 1 = 1.0815 &minus; 1 = 8.15%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>r = (FV/PV)<sup>1/N</sup> &minus; 1. BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>5000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>8000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 8.1484</samp>. TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>, <samp>N=6</samp>, <samp>PV=&minus;5000</samp>, <samp>PMT=0</samp>, <samp>FV=8000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=8.1484</samp>.</p>
+            <p>Keep this formula in view. Today&rsquo;s geometric mean is the same root, taken of a product of growth factors.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>The fund whose average year was +20.7%</h3>
+      <p>In 2020, Cathie Wood&rsquo;s ARK Innovation ETF, ticker ARKK, was the star fund of the year. Investors piled into its bets on disruptive technology, and it gained about 152.5%.</p>
+      <p>Then the bets turned. ARKK lost about 23.4% in 2021. In 2022, as rising interest rates hammered growth stocks, it lost about 67.0%, and in late December it hit a five-year low.</p>
+      <p>Now average the three years the way you would average test scores: (152.5 &minus; 23.4 &minus; 67.0) &divide; 3 = +20.7% a year. That looks like a healthy fund.</p>
+      <p>Follow real money instead. $10,000 put in at the start of 2020 was worth about $25,250 a year later. Two years after that it was worth about $6,383 (using the rounded yearly returns): a loss of about 36%.</p>
+      <p>How can a fund average +20.7% a year and still lose more than a third of your money? And which average tells the truth?</p>
+
+      <h3>The idea</h3>
+      <p>An average squeezes many numbers into one. The real question is: one number that keeps <em>what</em> the same? Today&rsquo;s three means keep different things, so each answers a different question.</p>
+      <p>The <b>arithmetic mean</b> keeps the <em>sum</em>. Add the returns, divide by how many. It answers &ldquo;what does a typical single year look like?&rdquo; It is the best guess for next year.</p>
+      <p>The <b>geometric mean</b> keeps the <em>ending wealth</em>. It answers &ldquo;what one steady return, earned every year, would turn my starting money into what I actually ended with?&rdquo; That is the honest record of compound growth.</p>
+      <p>The <b>harmonic mean</b> keeps the <em>number of shares</em> when you put the same money in each time. It answers &ldquo;what did I really pay per share?&rdquo;</p>
+      <p>An everyday picture for that one: drive 60 miles at 30 mph, then 60 miles back at 60 mph. Your average speed is not 45. The trip took 2 hours plus 1 hour: 120 miles in 3 hours, 40 mph. You spent more <em>time</em> going slowly. Equal money works the same way: it buys more shares when the price is low.</p>
+      <p>For positive numbers that are not all equal, the order never changes: harmonic &lt; geometric &lt; arithmetic.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Arithmetic: keep the sum.</b> You want one return R̄ that, used for every year, gives the same total: n &times; R̄ = R<sub>1</sub> + R<sub>2</sub> + &hellip; + R<sub>n</sub>. Divide both sides by n. For ARKK: 62.1 &divide; 3 = 20.7.</p>
+      <p><b>But wealth multiplies.</b> From Day 11, $1 becomes (1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>). The <em>sum</em> of the returns appears nowhere in that.</p>
+      <p><b>Geometric: keep the wealth.</b> You want one return R<sub>G</sub> that, earned every year, ends in the same place: (1 + R<sub>G</sub>)<sup>n</sup> = (1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>).</p>
+      <p><b>Undo the power.</b> Take the n-th root of both sides and subtract 1: the formula below. It is Day 2&rsquo;s r = (FV/PV)<sup>1/N</sup> &minus; 1, with FV/PV = the product of the growth factors.</p>
+      <p><b>Why the geometric mean sits lower.</b> +50% then &minus;50% averages 0%, but $100 &rarr; $150 &rarr; $75. The loss hit the bigger base. Every swing costs compound growth, and bigger swings cost more.</p>
+      <p><b>A rough rule.</b> R<sub>G</sub> &asymp; R̄ &minus; &sigma;<sup>2</sup>/2, where &sigma; is how far returns typically sit from their mean. For &plusmn;10%: 0 &minus; 0.10<sup>2</sup>/2 = &minus;0.50%, against a true &minus;0.5013%. For &plusmn;50%: &minus;12.5%, against a true &minus;13.40%. Rough when swings are big.</p>
+      <p><b>Harmonic: keep the shares.</b> Put the same money M in at each of n prices P<sub>1</sub>&hellip;P<sub>n</sub>. Shares bought: M/P<sub>1</sub> + &hellip; + M/P<sub>n</sub>. Money spent: n &times; M. Cost per share = money &divide; shares = nM &divide; (M/P<sub>1</sub> + &hellip; + M/P<sub>n</sub>). The M cancels, leaving n &divide; (1/P<sub>1</sub> + &hellip; + 1/P<sub>n</sub>). Low prices buy more shares, so they weigh more: that is why it sits lowest.</p>
+      <p>In plain words: the arithmetic mean is the typical year; the geometric mean is the steady pace that gets your money to the same place; the harmonic mean is what you really paid per share.</p>
+      <div class="formula">
+        <p class="expr">R̄ = (R<sub>1</sub> + R<sub>2</sub> + &hellip; + R<sub>n</sub>) / n</p>
+        <p class="expr">R<sub>G</sub> = [(1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>)]<sup>1/n</sup> &minus; 1</p>
+        <p class="expr">X̄<sub>H</sub> = n / &Sigma;(1/X<sub>i</sub>)</p>
+        <dl>
+          <dt>R<sub>t</sub></dt><dd>return in period t, as a decimal (&minus;0.234 for &minus;23.4%)</dd>
+          <dt>n</dt><dd>number of periods, or of values averaged</dd>
+          <dt>R̄</dt><dd>arithmetic mean: the typical single period</dd>
+          <dt>1 + R<sub>t</sub></dt><dd>growth factor: what $1 became in period t</dd>
+          <dt>R<sub>G</sub></dt><dd>geometric mean: the one steady return that gives the same ending wealth</dd>
+          <dt>X<sub>i</sub></dt><dd>the i-th value averaged; here, a price paid with the same money each time</dd>
+          <dt>&Sigma;(1/X<sub>i</sub>)</dt><dd>the sum of the reciprocals, 1/X<sub>1</sub> + &hellip; + 1/X<sub>n</sub></dd>
+          <dt>X̄<sub>H</sub></dt><dd>harmonic mean: the average cost per share</dd>
+          <dt>&sigma;<sup>2</sup></dt><dd>variance of the returns (in the rough rule)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>R̄ = (R<sub>1</sub> + R<sub>2</sub> + &hellip; + R<sub>n</sub>) / n</li>
+          <li>R<sub>G</sub> = [(1 + R<sub>1</sub>)(1 + R<sub>2</sub>)&hellip;(1 + R<sub>n</sub>)]<sup>1/n</sup> &minus; 1</li>
+          <li>X̄<sub>H</sub> = n / &Sigma;(1 / X<sub>i</sub>) (average cost per share when equal money is invested each period)</li>
+          <li>Positive values, not all equal: harmonic &lt; geometric &lt; arithmetic</li>
+          <li>R<sub>G</sub> &asymp; R̄ &minus; &sigma;<sup>2</sup>/2 (rough; poor when swings are large)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> (a) You invest $1,200 in a fund each month for three months, at share prices of $20, $25 and $40. What is your average cost per share? (b) A stock gains 50% and then loses 50%. Find its arithmetic and geometric mean returns.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) Shares bought: 1,200 &divide; 20 = 60; 1,200 &divide; 25 = 48; 1,200 &divide; 40 = 30. Total: 138 shares for $3,600.</li>
+          <li>Average cost = 3,600 &divide; 138 = <b>$26.0870</b>.</li>
+          <li>Harmonic mean of the prices: 3 &divide; (1/20 + 1/25 + 1/40) = 3 &divide; 0.115 = 26.0870. The same number.</li>
+          <li>Arithmetic mean of the prices: (20 + 25 + 40) &divide; 3 = 28.3333. Too high: equal money bought twice as many shares at $20 as at $40.</li>
+          <li>(b) Arithmetic mean = (50% &minus; 50%) &divide; 2 = <b>0.00%</b>.</li>
+          <li>Geometric mean = (1.50 &times; 0.50)<sup>1/2</sup> &minus; 1 = 0.75<sup>1/2</sup> &minus; 1 = 0.8660 &minus; 1 = <b>&minus;13.40%</b>. You really are down: $100 &rarr; $150 &rarr; $75.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> ARKK&rsquo;s yearly returns (rounded): +152.5% (2020), &minus;23.4% (2021), &minus;67.0% (2022). Find the arithmetic mean with one-variable statistics, the geometric mean with the power key, and what $10,000 became. For the statistics, type returns in percent (152.5, not 1.525); for the product, type growth factors: 1 + 1.525 = 2.525, 1 &minus; 0.234 = 0.766, 1 &minus; 0.670 = 0.33.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old data (TI-84: the first time only, switch STAT WIZARDS off so the statistics commands paste straight in)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (the screen shows <samp>X01</samp>)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> First time only: <kbd>MODE</kbd>, press <kbd>&#9660;</kbd> down to the <samp>STAT WIZARDS</samp> row near the bottom, <kbd>&#9658;</kbd> to <samp>OFF</samp>, <kbd>ENTER</kbd>, then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT); older software has no such row, so skip it. Then <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; if L1 holds old numbers, press <kbd>&#9650;</kbd> until the <samp>L1</samp> title is highlighted, then <kbd>CLEAR</kbd> <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the three returns in percent (two are negative)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>152.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>23.4</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>67</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past <samp>Y</samp>, the frequency, which stays 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> (cursor in L1) <kbd>152.5</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>23.4</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>67</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: the last entry reads <samp>X03 = &minus;67.0000</samp> (BA II Plus); L1 holds the three returns, 152.5, &minus;23.4 and &minus;67 (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">Run one-variable statistics: read n, then the arithmetic mean x̄</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>; if the screen does not show <samp>1-V</samp>, press <kbd>2ND</kbd> <kbd>SET</kbd> until it does; then <kbd>&darr;</kbd> (n) <kbd>&darr;</kbd> (x̄)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd>, then <kbd>2nd</kbd> <kbd>1</kbd> (L1) <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>n = 3.0000</samp>, then <samp>x̄ = 20.7000</samp> (BA II Plus) / <samp>x̄=20.7000</samp> on the first line, with n (3) further down (TI-84). Check n first: a 4 means an old entry is still in the list. The arithmetic mean is +20.70%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Geometric mean: multiply the growth factors, take the cube root (power 1/3), subtract 1</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> (leave the worksheet), then <kbd>2.525</kbd> <kbd>&times;</kbd> <kbd>.766</kbd> <kbd>&times;</kbd> <kbd>.33</kbd> <kbd>=</kbd>, then <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd>, then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>CLEAR</kbd>, then <kbd>2.525</kbd> <kbd>&times;</kbd> <kbd>.766</kbd> <kbd>&times;</kbd> <kbd>.33</kbd> <kbd>ENTER</kbd>, then <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>ENTER</kbd>, then <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd>. Starting a line with an operator puts <samp>Ans</samp> (the last answer) in front; this <kbd>&minus;</kbd> is the subtraction key, not <kbd>(&minus;)</kbd>.</div>
+            <p class="calc-see">Display: <samp>0.6383</samp>, then <samp>0.8610</samp>, then <samp>&minus;0.1390</samp>, then <samp>&minus;13.9004</samp> (BA II Plus) / <samp>.6383</samp>, <samp>.8610</samp>, <samp>&minus;.1390</samp>, <samp>&minus;13.9004</samp> (TI-84). Each $1 became $0.6383 over three years; the steady yearly factor is 0.8610: a geometric mean of &minus;13.90% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">What $10,000 became</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>10000</kbd> <kbd>&times;</kbd> <kbd>2.525</kbd> <kbd>&times;</kbd> <kbd>.766</kbd> <kbd>&times;</kbd> <kbd>.33</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>10000</kbd> <kbd>&times;</kbd> <kbd>2.525</kbd> <kbd>&times;</kbd> <kbd>.766</kbd> <kbd>&times;</kbd> <kbd>.33</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>6,382.6950</samp> (BA II Plus) / <samp>6382.6950</samp> (TI-84): a loss of 36.17%.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check with Day 2&rsquo;s TVM: the steady rate that turns 10,000 into 6,382.695 in 3 years</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>3</kbd> <kbd>N</kbd> <kbd>10000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>6382.695</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=3</samp>, <samp>PV=&minus;10000</samp>, <samp>PMT=0</samp>, <samp>FV=6382.695</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = &minus;13.9004</samp> (BA II Plus) / <samp>I%=&minus;13.9004</samp> (TI-84). The same number: the geometric mean <em>is</em> the compound annual return.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: arithmetic mean +20.70% a year; geometric mean &minus;13.90% a year; $10,000 became $6,382.70, a loss of 36.17%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Both averages are correct arithmetic. They answer different questions.</p>
+      <p>The arithmetic mean, +20.70%, answers &ldquo;what was a typical single year?&rdquo; Pick one of the three years at random and +20.70% is what you should expect. It says nothing about money that stayed for all three.</p>
+      <p>Wealth compounds, so the honest three-year summary is the geometric mean, &minus;13.90% a year. Three steady years at &minus;13.90% take $10,000 to $8,610, then $7,413, then $6,383: the same place as the real path through $25,250 and $19,341.50.</p>
+      <p>The gap between the two, 34.60 percentage points, is the cost of volatility. A 152.5% gain and a 67.0% loss sound like a net gain, yet together they turn $1 into $0.83: the loss struck the much bigger base the gain had built.</p>
+      <p>So the +20.7% &ldquo;average year&rdquo; was not false. Quoting it as the fund&rsquo;s growth rate would be. (All of this uses the rounded yearly returns.)</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>The arithmetic mean as compound growth.</b> ARKK&rsquo;s +20.70% &ldquo;average&rdquo; lost 36% of the money. Past multi-year growth: geometric. Next year&rsquo;s expected return: arithmetic.</li>
+          <li><b>A geometric mean of the returns themselves.</b> Always use the growth factors (1 + R), and subtract 1 at the end. The cube root of 152.5 &times; (&minus;23.4) &times; (&minus;67.0) is 62.07, which is nonsense: the two minus signs cancel and the losses turn into gains.</li>
+          <li><b>The harmonic mean in the wrong place.</b> It is for prices paid with the <em>same money</em> each time, not for returns. Buy the same <em>number of shares</em> each time (10 at each of $20, $25 and $40) and your cost per share is the plain average, $28.33.</li>
+          <li><b>A leftover entry in the data list.</b> Read n before x̄. n = 4 on a three-year problem means an old X04 (or a fourth number in L1) is still there.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="4.003143348612159" data-tol="0.01" data-pct data-show="4.00%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A fund&rsquo;s yearly returns are +25%, &minus;10%, +30% and &minus;20%. Find the arithmetic mean with one-variable statistics (it is in the solution), then type the <em>geometric</em> mean return. As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the ARKK walkthrough, with four entries (two negative), so n = 4. The growth factors are 1.25, 0.90, 1.30 and 0.80; their product is 1.17. Four years, so the power is 1/4.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>25</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>10</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>30</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>20</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>2ND</kbd> <kbd>STAT</kbd> (1-V) <kbd>&darr;</kbd> &rarr; <samp>n = 4.0000</samp> <kbd>&darr;</kbd> &rarr; <samp>x̄ = 6.2500</samp>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>1.25</kbd> <kbd>&times;</kbd> <kbd>.9</kbd> <kbd>&times;</kbd> <kbd>1.3</kbd> <kbd>&times;</kbd> <kbd>.8</kbd> <kbd>=</kbd> &rarr; <samp>1.1700</samp>; <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.0400</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0400</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.0031</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1, then <kbd>25</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>30</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>20</kbd> <kbd>ENTER</kbd>; <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>x̄=6.2500</samp>, with n (4) further down. Then <kbd>CLEAR</kbd> <kbd>1.25</kbd> <kbd>&times;</kbd> <kbd>.9</kbd> <kbd>&times;</kbd> <kbd>1.3</kbd> <kbd>&times;</kbd> <kbd>.8</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.1700</samp>; <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>4</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.0400</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0400</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0031</samp>.</p>
+            <p>So the arithmetic mean is 6.25% and the geometric mean is <b>4.00%</b> a year. The gap, 2.25 points, is far smaller than ARKK&rsquo;s because the swings are far smaller.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> A fund&rsquo;s yearly returns are not all equal. Why is its geometric mean return always below its arithmetic mean return?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The geometric mean leaves out the years with negative returns</span></label>
+              <p class="cq-why">Every year goes in, a loss as a growth factor below 1: ARKK&rsquo;s &minus;67% went in as 0.33. Leaving losses out would push the geometric mean <em>up</em>, not down.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Returns multiply, not add: a gain and a loss of the same size leave you below where you started, in either order</span></label>
+              <p class="cq-why">Right. +50% then &minus;50% averages 0%, but $100 &rarr; $150 &rarr; $75; the other order goes $100 &rarr; $50 &rarr; $75. Either way 1.5 &times; 0.5 = 0.75. The bigger the swings, the bigger the gap.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The arithmetic mean counts dividends twice</span></label>
+              <p class="cq-why">Both means are computed from the same returns, so dividends cannot open a gap between them. Price-only returns of +50% and &minus;50% show the gap with no dividend anywhere.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The arithmetic mean treats +50 and &minus;50 as cancelling. Wealth does not, because each return multiplies whatever the earlier ones left. That is why the geometric mean falls short by roughly &sigma;<sup>2</sup>/2. Only when every return is the same do the two means match.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="10.884353741496598" data-tol="0.01" data-show="10.88">
+          <p class="cq-stem"><b>3. Twist: what did you really pay?</b> You invest $500 in a fund every quarter for a year. The share prices on the four dates are $10.00, $12.50, $8.00 and $16.00. What is your average cost per share? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Equal money each time, so this is the harmonic mean of the prices: 4 &divide; (1/10 + 1/12.50 + 1/8 + 1/16). Or count the shares each $500 buys and divide the $2,000 by them.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Shares: 50 + 40 + 62.5 + 31.25 = 183.75 for $2,000, and 2,000 &divide; 183.75 = <b>$10.88</b>. The harmonic mean says the same: 4 &divide; (0.1 + 0.08 + 0.125 + 0.0625) = 4 &divide; 0.3675 = 10.8844.</p>
+            <p>BA II Plus: <kbd>10</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>12.5</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>1/x</kbd> <kbd>+</kbd> <kbd>16</kbd> <kbd>1/x</kbd> <kbd>=</kbd> &rarr; <samp>0.3675</samp>; <kbd>1/x</kbd> &rarr; <samp>2.7211</samp>; <kbd>&times;</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>10.8844</samp>.</p>
+            <p>TI-84 Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>10</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>+</kbd> <kbd>12.5</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>+</kbd> <kbd>16</kbd> <kbd>x&#8315;&#185;</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>10.8844</samp>.</p>
+            <p>The plain average of the prices, $11.625, is the trap. It ignores that $500 bought 62.5 shares at $8 but only 31.25 at $16.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> A portfolio returns 10%, &minus;5% and 20% in three successive years. Its compound annual rate of return over the three years is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 7.84%</span></label>
+              <p class="cq-why">Right. 1.10 &times; 0.95 &times; 1.20 = 1.254; 1.254<sup>1/3</sup> = 1.0784; minus 1 is 7.84%.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 8.33%</span></label>
+              <p class="cq-why">That is the arithmetic mean, (10 &minus; 5 + 20) &divide; 3: the typical year, not the compound rate.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 25.40%</span></label>
+              <p class="cq-why">That is the whole 3-year return, 1.254 &minus; 1. The cube root that turns it into a yearly rate was never taken.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>1.1</kbd> <kbd>&times;</kbd> <kbd>.95</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>=</kbd> &rarr; <samp>1.2540</samp>; <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>1.0784</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0784</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.1</kbd> <kbd>&times;</kbd> <kbd>.95</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.2540</samp>; <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.0784</samp>; <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0784</samp>.</p>
+            <p>&ldquo;Compound annual&rdquo;, &ldquo;annualized&rdquo; and &ldquo;geometric mean&rdquo; all point to the same formula.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> A fund has a 10-year record. Which mean would you report as its past growth rate, and which as your estimate of next year&rsquo;s return? Say why, in one or two sentences.</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>For the past ten years I would report the geometric mean, because it is the one steady yearly return that compounds the starting money into the actual ending wealth; for next year I would use the arithmetic mean, because it is the expected return of a single year. The more the returns swing, the further the geometric mean falls below the arithmetic one.</p>
+            <p>A complete answer says: (1) the geometric mean for compound growth of wealth over many periods; (2) the arithmetic mean as the expected value of one period; (3) the gap between them widens with volatility (roughly &sigma;<sup>2</sup>/2).</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 2: Types of Financial Returns (arithmetic, geometric and harmonic mean returns).</p>
+      <p><strong>Sources.</strong> Morningstar, &ldquo;ARK Innovation ETF has likely been a disappointment for most investors&rdquo; (ARKK gained 152.5% in 2020); Chartrow, &ldquo;ARKK returns by year&rdquo; (2020 +152.6%, 2021 &minus;23.4%, 2022 &minus;67.0%, total return); POEMS ETF screener, NYSE:ARKK yearly price returns (2020 +152.52%, 2021 &minus;23.35%, 2022 &minus;66.98%); Motley Fool, &ldquo;Cathie Wood&rsquo;s Ark Innovation ETF just hit a 5-year low&rdquo;, 23 December 2022 (rising rates and growth stocks). The lesson uses the rounded returns +152.5%, &minus;23.4% and &minus;67.0%.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-11.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

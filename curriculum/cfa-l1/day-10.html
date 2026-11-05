@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>46 states, $206 billion, one uneven stream: how Ohio turned its tobacco payments into cash up front — CFA Math, Day 10 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "46 states, $206 billion, one uneven stream: how Ohio turned its tobacco payments into cash up front",
+    "path": "reports/cfa/l1/day-10.html",
+    "summary": "Day 10 of CFA Math: an uneven stream is priced by discounting each cash flow from its own date and adding (cash-flow additivity), and its IRR is the rate that makes that NPV zero; Logan computes the NPV at 6% and the IRR of a stream of tobacco-settlement payments sold for cash up front.",
+    "headlines": [
+      "Day 10 of 90 · Quantitative Methods: NPV discounts each uneven cash flow and adds them; the IRR is the rate that makes it zero",
+      "Calculator: the NPV at 6% and the IRR of an uneven payment stream, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>46 states, $206 billion, one uneven stream: how Ohio turned its tobacco payments into cash up front</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        To price a stream that changes every year, discount each payment on its own, add, and take off the price; the one rate that makes that total exactly zero is the return the buyer earns.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 10 of 90 &middot; LM4 The Time Value of Money in Finance &middot; NPV and IRR of uneven cash flows</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="10">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Day 9 and Day 2, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="463.98723670627857" data-tol="0.01" data-signless data-show="463.99">
+          <p class="cq-stem"><b>From Day 9.</b> A $24,000 car loan at a 6% stated annual rate is repaid in equal monthly payments over 5 years. What is the monthly payment? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars a month</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Monthly payments, so work in months: N = 5 &times; 12 = 60 and I/Y = 6 &divide; 12 = 0.5. Then PV = 24,000, FV = 0, CPT PMT.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>60</kbd> <kbd>N</kbd> <kbd>0.5</kbd> <kbd>I/Y</kbd> <kbd>24000</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PMT</kbd> &rarr; <samp>PMT = &minus;463.9872</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=60</samp>, <samp>I%=.5</samp>, <samp>PV=24000</samp>, <samp>FV=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PMT=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PMT=&minus;463.9872</samp>.</p>
+            <p>By formula: 24,000 &times; 0.005 / (1 &minus; 1.005<sup>&minus;60</sup>) = 120 / 0.258628 = <b>463.99</b>. The minus sign only says the payment goes out. Dividing the annual payment by 12 gives 474.79: too high, because it ignores that each monthly payment cuts the balance sooner.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 2.</b> What is the discount factor for a cash flow due in 3 years at 8% a year?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 0.7938</span></label>
+              <p class="cq-why">Right: DF = 1 / 1.08<sup>3</sup> = 1 / 1.259712 = 0.7938. A dollar due in 3 years is worth about 79 cents today.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 0.8065</span></label>
+              <p class="cq-why">That is 1 / (1 + 3 &times; 0.08), simple interest. It ignores interest on interest, so it discounts too little.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 1.2597</span></label>
+              <p class="cq-why">That is 1.08<sup>3</sup>, the growth factor: it runs money forward. Discounting divides by it.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Keep this factor in mind: today every cash flow gets its own discount factor like this one. In the worked example, $150 due in year 3 at 8% is worth 150 &times; 0.7938 = 119.07.</p></details>
+        </div>
+      </section>
+
+      <h3>Selling the tobacco settlement</h3>
+      <p>On 23 November 1998 the four largest US cigarette makers, Philip Morris, R.J. Reynolds, Brown &amp; Williamson and Lorillard, signed the Master Settlement Agreement with 46 states, the District of Columbia and five territories. It settled the states&rsquo; claims for the health-care costs of smoking.</p>
+      <p>The companies agreed to pay about $206 billion over the first 25 years, in annual instalments. Each instalment is adjusted for inflation and for how many cigarettes are sold. So the payments are anything but level.</p>
+      <p>Many states did not want to wait. They sold their future payments for cash now. In October 2007 Ohio&rsquo;s Buckeye Tobacco Settlement Financing Authority sold $5.53 billion of bonds backed by Ohio&rsquo;s share, reported at the time as the state&rsquo;s largest borrowing ever. Investors paid cash up front; Ohio&rsquo;s tobacco payments were to repay them.</p>
+      <p>Days 5 to 9 priced streams of equal payments. This one changes every year. How do you put one price on it, and what return does the buyer actually earn?</p>
+
+      <h3>The idea</h3>
+      <p>Equal payments allowed shortcuts: the annuity and perpetuity formulas. Real streams are lumpy: a project, a business, a settlement. There is no shortcut for them, and you don&rsquo;t need one.</p>
+      <p><b>Net present value (NPV).</b> Bring every cash flow back to today with its own Day 2 discount, then add them all, counting what you pay today as a negative. The total is what the deal adds to your wealth, in today&rsquo;s dollars, at the rate r you require.</p>
+      <p>Read the sign. NPV &gt; 0: the stream earns more than r. NPV = 0: exactly r. NPV &lt; 0: less than r.</p>
+      <p><b>Internal rate of return (IRR).</b> The one rate that makes the NPV exactly zero. It is the stream&rsquo;s own return, and it needs no outside rate at all.</p>
+      <p>An everyday picture: a friend asks to borrow $470 and promises back $120, $120, $115, $110 and $105 over five years. Your savings account pays 6%. NPV says whether the friend beats the bank, and by how much. IRR says what rate the friend is really paying.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 2.</b> One cash flow CF<sub>t</sub>, due in t years, is worth CF<sub>t</sub> / (1 + r)<sup>t</sup> today.</p>
+      <p><b>A stream is just several single sums.</b> Discount each one from its own date. The friend&rsquo;s payments at 6%:</p>
+      <p>120 / 1.06 = 113.21<br>
+      120 / 1.06<sup>2</sup> = 106.80<br>
+      115 / 1.06<sup>3</sup> = 96.56<br>
+      110 / 1.06<sup>4</sup> = 87.13<br>
+      105 / 1.06<sup>5</sup> = 78.46</p>
+      <p><b>Now add.</b> All five are in today&rsquo;s dollars, so they add: 482.16. That is <b>cash-flow additivity</b>: amounts at the same date can be added, like converting every currency to dollars before totalling a bill. Amounts at different dates never add directly.</p>
+      <p><b>Count today&rsquo;s cash too.</b> The $470 is paid at t = 0, and (1 + r)<sup>0</sup> = 1, so it enters undiscounted, as a negative: NPV = &minus;470 + 482.16 = <b>12.16</b>.</p>
+      <p><b>Why NPV &gt; 0 means &ldquo;beats r&rdquo;.</b> To pay yourself those same five amounts out of a 6% bank account, you would have to deposit 482.16. The friend&rsquo;s deal gives them to you for 470. That saving, in today&rsquo;s dollars, is the NPV.</p>
+      <p><b>Now the IRR.</b> Raise r and every future term shrinks (Day 2: a higher rate lowers PV), so the NPV falls: 100.00 at 0% (just 570 &minus; 470), 38.90 at 4%, 12.16 at 6%, &minus;0.38 at 7%. It crosses zero just below 7%, at 6.9689%. That crossing is the IRR.</p>
+      <p>No algebra isolates r here (it sits inside five different powers), so the calculator finds it by fast trial and error.</p>
+      <p><b>Check it.</b> Put 470 in an account paying 6.9689%. After a year it holds 502.75; take out 120, leaving 382.75. Keep going, and the fifth withdrawal of 105 empties it: 0.00 left. The IRR is the interest the stream pays on the money still tied up in it.</p>
+      <p><b>In one sentence:</b> turn every future payment into today&rsquo;s money, add, and take off what you pay. That is the NPV. The IRR is the rate that makes it come out to exactly zero.</p>
+      <div class="formula">
+        <p class="expr">NPV = CF<sub>0</sub> + CF<sub>1</sub>/(1 + r) + CF<sub>2</sub>/(1 + r)<sup>2</sup> + &hellip; + CF<sub>N</sub>/(1 + r)<sup>N</sup></p>
+        <p class="expr">NPV = &Sigma;<sub>t=0</sub><sup>N</sup> CF<sub>t</sub> / (1 + r)<sup>t</sup></p>
+        <p class="expr">0 = &Sigma;<sub>t=0</sub><sup>N</sup> CF<sub>t</sub> / (1 + IRR)<sup>t</sup></p>
+        <dl>
+          <dt>CF<sub>t</sub></dt><dd>the cash flow at time t: positive if you receive it, negative if you pay it</dd>
+          <dt>CF<sub>0</sub></dt><dd>today&rsquo;s cash flow (t = 0), usually the price or outlay, so negative; it is not discounted</dd>
+          <dt>t</dt><dd>when each cash flow arrives, in periods from today (0, 1, 2, &hellip;, N)</dd>
+          <dt>r</dt><dd>the discount rate per period (your required return), as a decimal</dd>
+          <dt>N</dt><dd>the period of the last cash flow</dd>
+          <dt>&Sigma;</dt><dd>&ldquo;add up&rdquo;, for every t from 0 to N</dd>
+          <dt>IRR</dt><dd>the rate per period that makes the sum exactly zero</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>NPV = &Sigma;<sub>t=0</sub><sup>N</sup> CF<sub>t</sub> / (1 + r)<sup>t</sup></li>
+          <li>IRR is the r that makes &Sigma; CF<sub>t</sub> / (1 + IRR)<sup>t</sup> = 0</li>
+          <li>Cash-flow additivity: PVs of cash flows measured at the same point in time can be added</li>
+          <li>TI-84: npv(rate in %, CF0, {CF1, CF2, &hellip;}[, {freq1, freq2, &hellip;}]); irr(CF0, {CF1, CF2, &hellip;}[, {freqs}]) returns a percent</li>
+          <li>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>; CFo <kbd>ENTER</kbd> <kbd>&darr;</kbd> C01 <kbd>ENTER</kbd> <kbd>&darr;</kbd> F01 <kbd>ENTER</kbd> <kbd>&darr;</kbd> &hellip;; <kbd>NPV</kbd> I <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd>; <kbd>IRR</kbd> <kbd>CPT</kbd></li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A project costs 500 today and returns 200, 250 and 150 at the ends of years 1 to 3. At 8%, what is its NPV? Is its IRR above or below 10%?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Year 1: 200 / 1.08 = 185.19.</li>
+          <li>Year 2: 250 / 1.08<sup>2</sup> = 250 / 1.1664 = 214.33.</li>
+          <li>Year 3: 150 / 1.08<sup>3</sup> = 150 / 1.259712 = 119.07.</li>
+          <li>Add, with the cost: NPV = &minus;500 + 185.19 + 214.33 + 119.07 = <b>18.59</b>. Positive, so the project earns more than 8%.</li>
+          <li>Try 10%: &minus;500 + 181.82 + 206.61 + 112.70 = 1.13. Still positive, so the IRR is above 10%.</li>
+          <li>Try 11%: the NPV is &minus;7.24, negative. The zero lies between 10% and 11%; the calculator puts it at <b>10.13%</b>.</li>
+          <li>Answer: NPV = 18.59 at 8%; the IRR is above 10% (10.13%).</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> An illustration, not Ohio&rsquo;s actual figures: a buyer pays 470 ($ millions) today for a state&rsquo;s next five settlement payments, projected at 120, 120, 115, 110 and 105 at the ends of years 1 to 5. Find the NPV at 6% and the IRR. Then: what IRR if every payment comes in 10% short?</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Open the cash-flow tool, empty</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> (this worksheet keeps old cash flows until you do this; <kbd>2ND</kbd> <kbd>CLR TVM</kbd> does not touch it)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, <kbd>CLEAR</kbd>, then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> (no memory to clear: the whole stream goes into one command)</div>
+            <p class="calc-see">Display: <samp>CFo = 0.0000</samp> (BA II Plus) / <samp>npv(</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Today: the 470 price is paid out, so CF0 is negative</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>470</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> npv( takes the rate first, in percent, then CF0: <kbd>6</kbd> <kbd>,</kbd> <kbd>(&minus;)</kbd> <kbd>470</kbd> <kbd>,</kbd></div>
+            <p class="calc-see">Display: <samp>CFo = &minus;470.0000</samp>, then <samp>C01 = 0.0000</samp> (BA II Plus) / <samp>npv(6,&minus;470,</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Years 1 and 2 pay 120 each: enter 120 once and give it a frequency of 2</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>120</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> open the list with <kbd>2nd</kbd> <kbd>(</kbd> ({) and type 120 once: <kbd>120</kbd> <kbd>,</kbd> (its 2 goes in the frequency list in step 5)</div>
+            <p class="calc-see">Display: <samp>C01 = 120.0000</samp>, <samp>F01 = 2.0000</samp>, then <samp>C02 = 0.0000</samp> (BA II Plus) / <samp>npv(6,&minus;470,{120,</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Years 3, 4 and 5: 115, 110 and 105, once each</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>115</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>110</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>105</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past a frequency left at 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>115</kbd> <kbd>,</kbd> <kbd>110</kbd> <kbd>,</kbd> <kbd>105</kbd> <kbd>2nd</kbd> <kbd>)</kbd> (}) <kbd>,</kbd></div>
+            <p class="calc-see">Display: <samp>C02 = 115.0000</samp>, <samp>C03 = 110.0000</samp>, <samp>C04 = 105.0000</samp> (BA II Plus) / <samp>npv(6,&minus;470,{120,115,110,105},</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">The rate, 6%, and the NPV</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>NPV</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> (the rate is typed in percent at the <samp>I=</samp> prompt)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> the frequency list, one entry per amount in the same order, then close and run: <kbd>2nd</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>NPV = 12.1557</samp> (BA II Plus) / <samp>12.1557</samp> under <samp>npv(6,&minus;470,{120,115,110,105},{2,1,1,1})</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">The IRR: no rate to enter this time, because the IRR is the rate</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>IRR</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">8:irr(</kbd> <kbd>(&minus;)</kbd> <kbd>470</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>120</kbd> <kbd>,</kbd> <kbd>115</kbd> <kbd>,</kbd> <kbd>110</kbd> <kbd>,</kbd> <kbd>105</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>IRR = 6.9689</samp> (BA II Plus) / <samp>6.9689</samp> under <samp>irr(&minus;470,{120,115,110,105},{2,1,1,1})</samp> (TI-84). A percent: 6.97% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">The risk: every payment 10% short (108, 108, 103.5, 99, 94.5). What IRR then?</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> the worksheet kept everything, so overwrite only the amounts: <kbd>CF</kbd> <kbd>&darr;</kbd> <kbd>108</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>103.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>99</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>94.5</kbd> <kbd>ENTER</kbd> <kbd>IRR</kbd> <kbd>CPT</kbd> (F01 stays 2)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">8:irr(</kbd> <kbd>(&minus;)</kbd> <kbd>470</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>108</kbd> <kbd>,</kbd> <kbd>103.5</kbd> <kbd>,</kbd> <kbd>99</kbd> <kbd>,</kbd> <kbd>94.5</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> <kbd>2</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>1</kbd> <kbd>2nd</kbd> <kbd>)</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>IRR = 3.0647</samp> (BA II Plus) / <samp>3.0647</samp> (TI-84): 3.06% a year.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: NPV at 6% = 12.16 ($ millions), so the stream beats 6%; IRR = 6.97% a year. If every payment comes in 10% short, the IRR falls to 3.06%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>One price for a lumpy stream: discount each payment from its own year, add, and compare with the price. In the illustration, five payments worth 482.16 at 6% cost 470: NPV +12.16, so the buyer earns more than 6%. The IRR says how much more: 6.97% a year.</p>
+      <p>But an IRR assumes the payments arrive as projected. If each came in 10% short, the same 470 would earn only 3.06%.</p>
+      <p>That is what happened to tobacco bonds. Smoking fell faster than projected, and because the payments follow cigarette sales, they came in short. In July 2012 Moody&rsquo;s projected defaults on many tobacco bonds if sales kept falling about 3% a year. Ohio&rsquo;s bonds drifted toward default until a refinancing of about $5.35 billion in February 2020 took them off that track.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Not clearing the worksheet. Press <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> first: old C0x values stay in memory and quietly join the new stream.</li>
+          <li>Forgetting CF0, or its sign. Without the &minus;470 you get 482.16, the PV of the inflows, not the NPV. With no negative cash flow at all, the IRR has no answer (BA II Plus <samp>Error 5</samp>, TI-84 <samp>ERR:NO SIGN CHNG</samp>).</li>
+          <li>Miscounting frequencies. 120 for two years is C01 = 120 with F01 = 2; left at 1, a year drops out and every later payment moves one year earlier. On the TI-84 the frequency list needs one entry per amount, in the same order.</li>
+          <li>Typing the rate as a decimal. <samp>npv(.06,&hellip;)</samp> means 0.06%, and returns 98.9994 instead of 12.1557. Both calculators take percent: <samp>I=6</samp> on the BA II Plus, <samp>npv(6,&hellip;</samp> on the TI-84.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="226.0027176182889" data-tol="0.01" data-show="226.00">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A project costs $2,000 today and returns $500, $700, $700 and $900 at the ends of years 1 to 4. What is its NPV at 9%? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough with new inputs: CF0 = &minus;2,000; C01 = 500; C02 = 700 with F02 = 2 (the one repeated cash flow); C03 = 900; rate 9.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>2000</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>500</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>700</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>900</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 226.0027</samp>. Then <kbd>IRR</kbd> <kbd>CPT</kbd> &rarr; <samp>IRR = 13.6105</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> and complete the line to read <samp>npv(9,&minus;2000,{500,700,900},{1,2,1})</samp>, then <kbd>ENTER</kbd> &rarr; <samp>226.0027</samp>. For the IRR, <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">8:irr(</kbd> and complete <samp>irr(&minus;2000,{500,700,900},{1,2,1})</samp>, <kbd>ENTER</kbd> &rarr; <samp>13.6105</samp>.</p>
+            <p>NPV = <b>226.00</b>: positive, so the project beats 9%, and its IRR is 13.61%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> A project costs money today and pays back cash in later years. At a discount rate of 8% its NPV is positive. Its IRR must be:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Below 8%</span></label>
+              <p class="cq-why">This reverses the NPV&ndash;rate link. A higher rate shrinks every future inflow, so the NPV falls as the rate rises. It is still positive at 8%, so it can only reach zero further up.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Exactly 8%</span></label>
+              <p class="cq-why">This confuses NPV &gt; 0 with NPV = 0. The IRR is the rate where the NPV is zero, and at 8% it is not zero yet.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Above 8%</span></label>
+              <p class="cq-why">Right. With the outlay first and inflows after, the NPV falls as the rate rises. It is still above zero at 8%, so the rate that brings it to zero, the IRR, lies above 8%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The worked example shows the slide: NPV 18.59 at 8%, 1.13 at 10%, &minus;7.24 at 11%, so the zero sits at 10.13%. For an outlay followed by inflows, a positive NPV at r means the IRR is above r: the stream earns more than r.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="226.8985475075283" data-tol="0.01" data-signless data-show="226.90">
+          <p class="cq-stem"><b>3. Twist: solve for the price.</b> A buyer requires 7% a year. What is the most she should pay today for payments of $50, $50, $50, $60 and $70 at the ends of years 1 to 5? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The most she should pay is the price that makes the NPV zero at 7%: the PV of the inflows. Leave CF0 = 0, enter C01 = 50 with F01 = 3, C02 = 60, C03 = 70, and compute the NPV at 7%.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> (CFo stays 0) <kbd>50</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>60</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>70</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>7</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 226.8985</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> and complete the line to read <samp>npv(7,0,{50,60,70},{3,1,1})</samp>, then <kbd>ENTER</kbd> &rarr; <samp>226.8985</samp>. CF0 is typed as 0: nothing is paid yet.</p>
+            <p>The most to pay is <b>226.90</b>. At that price the NPV is exactly 0 and the IRR exactly 7%; pay less and she earns more than 7%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> An investment costs $1,000 today and pays $400 at the end of each of the next 3 years, then $300 at the end of year 4. At a discount rate of 10%, its NPV is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. &minus;$388.43</span></label>
+              <p class="cq-why">F01 left at 1: the 400 counts only once, and the 300 lands in year 2 instead of year 4.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $199.64</span></label>
+              <p class="cq-why">Right: C01 = 400 with F01 = 3, C02 = 300, CF0 = &minus;1,000, at 10%.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $1,199.64</span></label>
+              <p class="cq-why">CF0 forgotten: that is the PV of the inflows. The $1,000 cost was never subtracted.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>400</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>300</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 199.6448</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> and complete the line to read <samp>npv(10,&minus;1000,{400,300},{3,1})</samp>, then <kbd>ENTER</kbd> &rarr; <samp>199.6448</samp>.</p>
+            <p>Cash-flow additivity lets you split it, too: the three 400s are a Day 5 annuity worth 994.74, the 300 is worth 300 / 1.1<sup>4</sup> = 204.90, and 994.74 + 204.90 &minus; 1,000 = 199.64.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: what are NPV and IRR, and how does the sign of the NPV tell you whether a stream beats your required rate?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>NPV brings every cash flow back to today from its own date and adds them, counting today&rsquo;s cost as negative; a positive NPV means the stream earns more than the discount rate, because a bank at that rate would need more money up front to pay out the same amounts. The IRR is the one rate that makes the NPV exactly zero: the stream&rsquo;s own return.</p>
+            <p>A complete answer says: (1) discount each cash flow from its own date and add them (cash-flow additivity: only values at the same date add); (2) NPV &gt; 0 means the stream earns more than the discount rate (NPV &lt; 0, less; NPV = 0, exactly that rate); (3) the IRR is the rate that makes the NPV zero.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (uneven cash flows, cash-flow additivity, net present value and the internal rate of return).</p>
+      <p><strong>Sources.</strong> Philip Morris Companies Inc., Form 8-K, November 1998 (SEC EDGAR: the Master Settlement Agreement with 46 states, the District of Columbia and five territories, and the original participating manufacturers); Congressional Research Service, RL30058, &ldquo;Tobacco Master Settlement Agreement (1998)&rdquo; (about $206 billion); SEC fund prospectuses (e.g. Goldman Sachs Trust, 2011) and Bond Case Briefs, &ldquo;Drop in smoking threatens embattled tobacco bonds&rdquo;, 4 March 2014 (payments adjusted for inflation and cigarette volume; Moody&rsquo;s July 2012 projection); Ohio Office of Budget and Management, Buckeye Tobacco Settlement Financing Authority offering circular, October 2007 ($5,531,594,541 of bonds); The Bond Buyer (the state&rsquo;s largest borrowing) and &ldquo;Ohio Buckeye tobacco refunding took debt off default track&rdquo;, 2020 (the $5.35 billion refunding of February 2020). The 470-for-five-payments stream is an illustration, not Ohio&rsquo;s figures.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-09.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
