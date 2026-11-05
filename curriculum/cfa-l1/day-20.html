@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Microsoft paid nothing for nearly 17 years, then 8 cents. How do you value a dividend that sprints, then slows? — CFA Math, Day 20 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Microsoft paid nothing for nearly 17 years, then 8 cents. How do you value a dividend that sprints, then slows?",
+    "path": "reports/cfa/l1/day-20.html",
+    "summary": "Day 20 of CFA Math: when dividends grow fast for a few years and then settle, a share is worth the PV of each high-growth dividend plus the PV of a Gordon terminal value, V_n = D_(n+1)/(r − g_L), discounted n periods; Logan values a 0.50 dividend growing 20% for three years and then 5% at 19.34 with the CF worksheet.",
+    "headlines": [
+      "Day 20 of 90 · Equity Investments: the two-stage dividend discount model discounts each fast-growth dividend, then adds a Gordon terminal value placed at the end of the sprint",
+      "Calculator: three high-growth dividends, the terminal value and the share’s value with the CF worksheet, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Microsoft paid nothing for nearly 17 years, then 8 cents. How do you value a dividend that sprints, then slows?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        When dividends grow fast for a few years and then settle down, value the fast years one by one and everything after them as a single Gordon lump at the end of the sprint.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Equity Investments</p>
+      <span class="track-progress">Day 20 of 90 &middot; Equity Valuation: Concepts and Basic Tools &middot; Two-stage dividend discount model</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="20">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 19 and one from Day 13, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="33.28" data-tol="0.01" data-show="33.28">
+          <p class="cq-stem"><b>From Day 19.</b> A stock has just paid a dividend of 1.60. Dividends grow 4% a year forever and investors require 9%. What is the share worth? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &ldquo;Just paid&rdquo; is D<sub>0</sub>. Grow it one year to get D<sub>1</sub>, then divide by r &minus; g.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>1</sub> = 1.60 &times; 1.04 = 1.664. V<sub>0</sub> = 1.664 / (0.09 &minus; 0.04) = 1.664 / 0.05 = <b>33.28</b>.</p>
+            <p>BA II Plus: <kbd>1.6</kbd> <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>33.2800</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.6</kbd> <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>33.2800</samp>.</p>
+            <p>D<sub>0</sub> on top gives 32.00, the classic slip. Keep this formula close: today it moves a few years into the future.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 13.</b> A client puts most of her money into an account just before the manager&rsquo;s best year. Compared with the time-weighted return, her money-weighted return will be:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. Higher</span></label>
+              <p class="cq-why">Right. The money-weighted return is the IRR of her own cash flows, so it gives the most weight to the period when the most money was invested, here the strong year.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. Lower</span></label>
+              <p class="cq-why">That is the case the other way round: a big deposit just before a <em>bad</em> year pulls the money-weighted return below the time-weighted one.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. The same, because both measure the manager</span></label>
+              <p class="cq-why">Only the time-weighted return strips out the client&rsquo;s deposits and withdrawals. The money-weighted return keeps them, so their timing moves it.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>TWR chain-links the sub-period returns, so the size of the account in each period does not matter: it judges the manager. MWR is the IRR of the client&rsquo;s deposits, withdrawals and ending value: it describes what she actually earned, timing included.</p></details>
+        </div>
+      </section>
+
+      <h3>Microsoft&rsquo;s 8-cent starter dividend</h3>
+      <p>Microsoft went public in March 1986. For almost 17 years it paid no dividend at all. It kept its cash.</p>
+      <p>On 16 January 2003 it declared its first: 8 cents a share for the year, after a 2-for-1 stock split announced the same day (16 cents on the old shares). On about 10.8 billion shares that came to roughly $864 million. Reports at the time called it a &ldquo;starter&rdquo; dividend.</p>
+      <p>Then the cash started to flow. On 20 July 2004 Microsoft announced a one-time special dividend of $3 a share, about $32 billion, paid on 2 December 2004. And the regular dividend kept climbing. By September 2025 it was 91 cents a quarter: $3.64 a year.</p>
+      <p>From 8 cents to $3.64 is 45.5 times as much. That is growth of about 18% a year, compounded, for more than 22 years.</p>
+      <p>Day 19&rsquo;s model needs one growth rate that lasts forever and stays below the required return. 18% a year is above any sensible required return, and it cannot last forever either. So how do you value a dividend that sprints for a while and then slows?</p>
+
+      <h3>The idea</h3>
+      <p>Split the future in two.</p>
+      <ul>
+        <li><b>The sprint.</b> The first n years, when dividends grow fast, at g<sub>S</sub>. There are only a few of them, so list each one and discount it on its own.</li>
+        <li><b>The cruise.</b> From year n + 1 on, growth settles at a long-run rate g<sub>L</sub>, below r, forever. That is Day 19&rsquo;s growing perpetuity, so one formula sums all of it.</li>
+      </ul>
+      <p>The cruise is summed into a single lump dated at the end of the sprint, time n. It is called the <b>terminal value</b>, V<sub>n</sub>.</p>
+      <p>An everyday picture: you buy the share, collect the sprint dividends, and sell at the end of year n. Your buyer is getting an ordinary constant-growth stock, so she pays the Gordon price. That price is V<sub>n</sub>.</p>
+      <p>Today, then, the share is worth the dividends you collect plus the price you sell for, each discounted from its own date. The fast rate is used only for the years it lasts. The rate that runs forever is the slow one.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 19.</b> A share is worth the present value of all its future dividends: V<sub>0</sub> = D<sub>1</sub>/(1 + r) + D<sub>2</sub>/(1 + r)<sup>2</sup> + D<sub>3</sub>/(1 + r)<sup>3</sup> + &hellip;</p>
+      <p><b>Cut the list after year n.</b> D<sub>1</sub> to D<sub>n</sub> are the sprint: only a few, so discount each one separately, as Day 10 did with uneven cash flows.</p>
+      <p><b>Look at what is left, standing at time n.</b> The rest is D<sub>n+1</sub>, D<sub>n+2</sub>, &hellip;, each (1 + g<sub>L</sub>) times the one before, forever. The first of them is one period away. That is Day 19&rsquo;s picture exactly, moved n years into the future.</p>
+      <p><b>So use Day 19&rsquo;s formula there.</b> Gordon always gives a value one period <em>before</em> the first dividend it counts. Here that dividend is D<sub>n+1</sub>, so V<sub>n</sub> = D<sub>n+1</sub>/(r &minus; g<sub>L</sub>) is a value dated n, not today. It needs g<sub>L</sub> &lt; r: that is why the sprint rate cannot be used here.</p>
+      <p><b>The top is D<sub>n+1</sub>, not D<sub>n</sub>.</b> D<sub>n</sub> is the last sprint dividend, already counted. The first cruise dividend grows at the new, slower rate: D<sub>n+1</sub> = D<sub>n</sub> &times; (1 + g<sub>L</sub>).</p>
+      <p><b>Bring V<sub>n</sub> back to today.</b> It is one lump sum at time n, so divide by (1 + r)<sup>n</sup>, as on Day 2. n periods, no more.</p>
+      <p><b>Add.</b> Values at the same date can be added (cash-flow additivity, Day 10). That gives the formula below.</p>
+      <p><b>One shortcut.</b> D<sub>n</sub> and V<sub>n</sub> sit on the same date, so they can travel together as one cash flow, D<sub>n</sub> + V<sub>n</sub>, at time n. That is what goes into the CF worksheet.</p>
+      <p>In plain words: count the fast dividends one by one, then pretend you sell the share when the sprint ends, for the price a Day 19 buyer would pay, and bring that price back to today too.</p>
+      <div class="formula">
+        <p class="expr">V<sub>0</sub> = D<sub>1</sub>/(1 + r) + D<sub>2</sub>/(1 + r)<sup>2</sup> + &hellip; + D<sub>n</sub>/(1 + r)<sup>n</sup> + V<sub>n</sub>/(1 + r)<sup>n</sup></p>
+        <p class="expr">V<sub>n</sub> = D<sub>n+1</sub> / (r &minus; g<sub>L</sub>), with D<sub>n+1</sub> = D<sub>n</sub> &times; (1 + g<sub>L</sub>)</p>
+        <dl>
+          <dt>V<sub>0</sub></dt><dd>what the share is worth today</dd>
+          <dt>D<sub>t</sub></dt><dd>the dividend paid at the end of year t; in the sprint, D<sub>t</sub> = D<sub>0</sub> &times; (1 + g<sub>S</sub>)<sup>t</sup></dd>
+          <dt>g<sub>S</sub></dt><dd>the fast growth rate of the first n years</dd>
+          <dt>n</dt><dd>the number of fast-growth years: the end of the sprint</dd>
+          <dt>g<sub>L</sub></dt><dd>the long-run growth rate from year n + 1 on, forever; must be below r</dd>
+          <dt>r</dt><dd>the required return on the equity, as a decimal</dd>
+          <dt>V<sub>n</sub></dt><dd>terminal value: what all dividends from year n + 1 on are worth at time n</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Two-stage DDM: V<sub>0</sub> = &Sigma;<sub>t=1..n</sub> D<sub>t</sub>/(1 + r)<sup>t</sup> + [D<sub>n+1</sub>/(r &minus; g<sub>L</sub>)]/(1 + r)<sup>n</sup></li>
+          <li>Terminal value at the end of the high-growth stage: V<sub>n</sub> = D<sub>n+1</sub> / (r &minus; g<sub>L</sub>), with D<sub>n+1</sub> = D<sub>n</sub> &times; (1 + g<sub>L</sub>)</li>
+          <li>How many periods to discount the terminal value V<sub>n</sub>: n periods (it is a value at time n)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> D<sub>0</sub> = 1.00. Dividends grow 10% a year for 2 years, then 4% a year forever. The required return is 8%. Value the share by hand.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>The sprint: D<sub>1</sub> = 1.00 &times; 1.10 = 1.1000; D<sub>2</sub> = 1.10 &times; 1.10 = 1.2100.</li>
+          <li>The first cruise dividend, at the slow rate: D<sub>3</sub> = 1.21 &times; 1.04 = 1.2584.</li>
+          <li>Terminal value at t = 2: V<sub>2</sub> = D<sub>3</sub>/(r &minus; g<sub>L</sub>) = 1.2584/0.04 = 31.4600.</li>
+          <li>PV of D<sub>1</sub> = 1.10/1.08 = 1.0185.</li>
+          <li>D<sub>2</sub> and V<sub>2</sub> share a date, so add them: 1.21 + 31.46 = 32.67. PV = 32.67/1.08<sup>2</sup> = 32.67/1.1664 = 28.0093.</li>
+          <li>V<sub>0</sub> = 1.0185 + 28.0093 = 29.0278.</li>
+        </ol>
+        <p>Answer: V<sub>0</sub> = 29.03 a share.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A company has just paid D<sub>0</sub> = 0.50. Dividends grow 20% a year for 3 years, then 5% a year forever, and investors require 9%. Find D<sub>1</sub> to D<sub>3</sub>, D<sub>4</sub>, the terminal value V<sub>3</sub>, and the share&rsquo;s value V<sub>0</sub>.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1, so &times; and &divide; are done before + and &minus;)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">The sprint: grow 0.50 by 20% three times, for D<sub>1</sub>, D<sub>2</sub> and D<sub>3</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>=</kbd> (each <kbd>&times;</kbd> picks up the number on screen)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>1.2</kbd> <kbd>ENTER</kbd> (each new line starts with <samp>Ans*</samp> by itself)</div>
+            <p class="calc-see">Display: <samp>0.6000</samp>, <samp>0.7200</samp>, <samp>0.8640</samp> (BA II Plus) / <samp>.6000</samp>, <samp>.7200</samp>, <samp>.8640</samp> (TI-84). These are D<sub>1</sub>, D<sub>2</sub>, D<sub>3</sub>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Keep D<sub>3</sub> in memory, then grow it once at the slow rate, 5%: the first cruise dividend D<sub>4</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>STO</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> (the screen shows <samp>Ans&rarr;D</samp>; D is the green letter above <kbd>x&#8315;&#185;</kbd>), then <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.9072</samp> (BA II Plus) / <samp>.9072</samp> (TI-84). That is D<sub>4</sub>: the 20% is over, and 5% runs from here on.</p>
+          </li>
+          <li>
+            <p class="calc-what">Terminal value V<sub>3</sub> = D<sub>4</sub> / (r &minus; g<sub>L</sub>), then add D<sub>3</sub>, since both are dated year 3</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>=</kbd>, then <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.09</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (that <kbd>&minus;</kbd> is the subtraction key, not <kbd>(&minus;)</kbd>), then <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>22.6800</samp>, then <samp>23.5440</samp> on both. 22.68 is V<sub>3</sub>, what the whole cruise is worth at the end of year 3. 23.544 is the year-3 cash flow, D<sub>3</sub> + V<sub>3</sub>.</p>
+          </li>
+          <li>
+            <p class="calc-what">Enter the three cash flows. CF0 is 0: nothing is paid today, we want what the dividends are worth</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>.72</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>23.544</kbd> <kbd>ENTER</kbd> (CFo stays 0 after clearing; each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past a frequency left at 1)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> <kbd>9</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>(</kbd> ({) <kbd>.6</kbd> <kbd>,</kbd> <kbd>.72</kbd> <kbd>,</kbd> <kbd>23.544</kbd> <kbd>2nd</kbd> <kbd>)</kbd> (}) (the rate goes first, in percent)</div>
+            <p class="calc-see">Display: <samp>CFo = 0.0000</samp>, <samp>C01 = 0.6000</samp>, <samp>C02 = 0.7200</samp>, <samp>C03 = 23.5440</samp> (BA II Plus) / <samp>npv(9,0,{.6,.72,23.544}</samp> (TI-84)</p>
+          </li>
+          <li>
+            <p class="calc-what">Discount everything at 9%: the share&rsquo;s value</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>NPV</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>NPV = 19.3368</samp> (BA II Plus) / <samp>19.3368</samp> under <samp>npv(9,0,{.6,.72,23.544})</samp> (TI-84). With CF0 = 0, the &ldquo;NPV&rdquo; is simply the value: V<sub>0</sub> = 19.34.</p>
+          </li>
+          <li>
+            <p class="calc-what">Where the value sits: the terminal value alone, brought back 3 years</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>22.68</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1.09</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>22.68</kbd> <kbd>&divide;</kbd> <kbd>1.09</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>17.5131</samp> on both: about 91% of 19.3368. The three sprint dividends add only 1.8236 (type C03 = .864 alone and the NPV shows exactly that).</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: D<sub>1</sub> to D<sub>3</sub> = 0.60, 0.72, 0.864; D<sub>4</sub> = 0.9072; V<sub>3</sub> = 22.68; V<sub>0</sub> = 19.34 a share, of which 17.51 comes from the terminal value.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Microsoft&rsquo;s 18% a year is the whole problem. Put it into Day 19&rsquo;s formula with a 9% required return and r &minus; g comes out at &minus;9%: the formula hands back a negative price.</p>
+      <p>The two-stage model uses the fast rate only for the years it lasts. After that a slower rate, below r, takes over, and Gordon works again, from the end of the sprint.</p>
+      <p>The walkthrough shows where the value sits. Its three fast-growing dividends are worth $1.82 today; the terminal value is worth $17.51. Of the $19.34 total, about 91% comes from the years after the sprint.</p>
+      <p>That is the point for a company like Microsoft in 2003. An 8-cent starter dividend said little about what the shares were worth: in a two-stage view, most of the value lies in the long, steady stretch after the fast years.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Discounting the terminal value n + 1 periods. V<sub>n</sub> is already a value at time n. In the walkthrough, dividing 22.68 by 1.09<sup>4</sup> instead of 1.09<sup>3</sup> gives V<sub>0</sub> = 17.8907 instead of 19.3368.</li>
+          <li>Putting D<sub>n</sub> instead of D<sub>n+1</sub> on top of the terminal value: .864 / .04 = 21.60, and V<sub>0</sub> drops to 18.5028.</li>
+          <li>Growing D<sub>n+1</sub> at the sprint rate. D<sub>4</sub> = .864 &times; 1.20 = 1.0368 makes V<sub>3</sub> = 25.92 and V<sub>0</sub> = 21.8386. The first cruise dividend grows at g<sub>L</sub>.</li>
+          <li>Forgetting to add V<sub>n</sub> to the year-n cash flow in the CF worksheet: the NPV is then 1.8236, the sprint dividends alone.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="30.218388429752046" data-tol="0.01" data-show="30.22">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A company has just paid D<sub>0</sub> = 1.20. Dividends grow 15% a year for 4 years, then 4% a year forever. The required return is 10%. What is the share worth? Keep at least four decimals along the way; answer to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same steps as the walkthrough, with four sprint dividends instead of three: grow by 1.15 four times, then once by 1.04, divide by (.10 &minus; .04), and add the terminal value to the fourth dividend, C04. Discount at 10.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>1</sub> to D<sub>4</sub> = 1.38, 1.587, 1.82505, 2.0988075. D<sub>5</sub> = 2.0988075 &times; 1.04 = 2.1827598. V<sub>4</sub> = 2.1827598 / 0.06 = 36.3793. C04 = 2.0988 + 36.3793 = 38.4781. V<sub>0</sub> = <b>30.22</b> (30.2184).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>1.2</kbd> <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>=</kbd> &rarr; <samp>1.3800</samp>; <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>=</kbd> &rarr; <samp>1.5870</samp>; <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>=</kbd> (1.82505, shown rounded); <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>=</kbd> &rarr; <samp>2.0988</samp>; <kbd>STO</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>36.3793</samp>; <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>38.4781</samp>. Then <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>1.38</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1.587</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1.82505</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>38.4781</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 30.2184</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.2</kbd> <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>1.15</kbd> <kbd>ENTER</kbd> three more times &rarr; <samp>2.0988</samp>; <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd>; <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.04</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>36.3793</samp>; <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>38.4781</samp>. Then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> and <samp>npv(10,0,{1.38,1.587,1.82505,38.4781})</samp> <kbd>ENTER</kbd> &rarr; <samp>30.2184</samp>.</p>
+            <p>The usual slips: leaving V<sub>4</sub> out of C04 gives 5.3708; discounting V<sub>4</sub> five periods gives 27.9595.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> In a two-stage model the terminal value V<sub>n</sub> = D<sub>n+1</sub>/(r &minus; g<sub>L</sub>) is discounted n periods, not n + 1. Why?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Because D<sub>n+1</sub> is paid at time n</span></label>
+              <p class="cq-why">D<sub>n+1</sub> is paid at the end of year n + 1, one period after n. The timing of the dividend is not the reason; the timing of the formula&rsquo;s answer is.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Because the Gordon formula gives a value one period before the first dividend it counts, so V<sub>n</sub> is already a value at time n</span></label>
+              <p class="cq-why">Right. D<sub>1</sub>/(r &minus; g) is a value today, one period before D<sub>1</sub>. Moved forward, D<sub>n+1</sub>/(r &minus; g<sub>L</sub>) is a value at time n, one period before D<sub>n+1</sub>.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Because the terminal value is a perpetuity due, whose first payment comes at once</span></label>
+              <p class="cq-why">It is an ordinary growing perpetuity: its first payment, D<sub>n+1</sub>, comes one period after time n. A perpetuity due would also count D<sub>n</sub>, which belongs to the sprint.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Every Gordon value is dated one period before its first dividend. So V<sub>n</sub> is a lump sum sitting at time n, and a lump sum at time n is brought to today by dividing by (1 + r)<sup>n</sup>. One more period would discount the cruise twice for the same year.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="24.373046043365008" data-tol="0.01" data-show="24.37">
+          <p class="cq-stem"><b>3. Twist: no dividends yet.</b> A young company will pay nothing for 3 years. Its first dividend, D<sub>4</sub> = 2.00, comes at the end of year 4 and then grows 5% a year forever. The required return is 11%. What is the share worth today? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The sprint is three zeros. D<sub>4</sub> is already the first dividend of the stable stage, so Gordon gives a value at time 3. How many periods back is that?</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>V<sub>3</sub> = D<sub>4</sub>/(r &minus; g<sub>L</sub>) = 2.00/0.06 = 33.3333, a value at the end of year 3. V<sub>0</sub> = 33.3333/1.11<sup>3</sup> = 33.3333/1.367631 = <b>24.37</b> (24.3730).</p>
+            <p>BA II Plus: <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>33.3333</samp>; <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>1.11</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>24.3730</samp>.</p>
+            <p>TI-84 Plus: <kbd>2</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>33.3333</samp>; <kbd>&divide;</kbd> <kbd>1.11</kbd> <kbd>^</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> &rarr; <samp>24.3730</samp>. (Or <samp>npv(11,0,{0,0,33.3333})</samp>, which also gives 24.3730.)</p>
+            <p>The usual slips: discounting 4 periods, because the first dividend is in year 4, gives 21.9577; growing D<sub>4</sub> first and putting 2.10 on top gives 25.5917. D<sub>4</sub> is already the &ldquo;next&rdquo; dividend as seen from year 3.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A company has just paid a dividend of 2.00. Dividends are expected to grow 12% a year for the next 2 years and 6% a year thereafter. The required return on equity is 10%. The value of a share is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 54.06</span></label>
+              <p class="cq-why">That discounts the terminal value 66.4832 three periods instead of two: 66.4832/1.10<sup>3</sup> = 49.9498, and 2.0364 + 2.0734 + 49.9498 = 54.0596.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 55.94</span></label>
+              <p class="cq-why">That puts D<sub>2</sub> on top of the terminal value: 2.5088/0.04 = 62.72 instead of 2.6593/0.04, and 2.0364 + (2.5088 + 62.72)/1.10<sup>2</sup> = 2.0364 + 53.9081 = 55.9445.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 59.05</span></label>
+              <p class="cq-why">Right: 2.0364 + 57.0182 = 59.0545.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>D<sub>1</sub> = 2.24, D<sub>2</sub> = 2.5088, D<sub>3</sub> = 2.5088 &times; 1.06 = 2.659328. V<sub>2</sub> = 2.659328/(0.10 &minus; 0.06) = 66.4832. V<sub>0</sub> = 2.24/1.10 + (2.5088 + 66.4832)/1.10<sup>2</sup> = 2.0364 + 57.0182 = 59.0545.</p>
+            <p>BA II Plus: <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>2.24</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>68.992</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 59.0545</samp>. TI-84 Plus: <samp>npv(10,0,{2.24,68.992})</samp> <kbd>ENTER</kbd> &rarr; <samp>59.0545</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: how does a two-stage dividend discount model value a share, and why is the terminal value discounted only n periods?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>It discounts each high-growth dividend on its own, then adds the present value of a terminal value: Day 19&rsquo;s Gordon value of all the later dividends, D<sub>n+1</sub>/(r &minus; g<sub>L</sub>), which needs g<sub>L</sub> below r. Gordon gives a value one period before its first dividend, so the terminal value is dated n and is discounted n periods.</p>
+            <p>A complete answer says: (1) the PV of each high-growth dividend, one by one; (2) plus the PV of a Gordon terminal value at the start of stable growth, with g<sub>L</sub> &lt; r; (3) the terminal value is a value at time n, so it is discounted n periods.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Equity Investments: Equity Valuation: Concepts and Basic Tools (multistage dividend discount models: the two-stage DDM and the terminal value).</p>
+      <p><strong>Sources.</strong> CBS News, &ldquo;Microsoft To Pay Dividends, Finally&rdquo;, January 2003 (first dividend declared 16 January 2003, with a 2-for-1 split); a news report of 17 January 2003 as reposted online (16 cents a year before the split, 8 cents after; 10.8 billion shares; &ldquo;starter dividend&rdquo;); CNN Money, &ldquo;Microsoft to pay special cash dividend&rdquo;, 20 July 2004 ($3 a share, about $32 billion); Microsoft Form 10-Q filed with the SEC (special dividend paid 2 December 2004); Microsoft, &ldquo;Microsoft announces quarterly dividend increase&rdquo;, 15 September 2025 (91 cents a quarter).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-19.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>December 2008: investors lent the US Treasury $30 billion for four weeks and asked for nothing — CFA Math, Day 18 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "December 2008: investors lent the US Treasury $30 billion for four weeks and asked for nothing",
+    "path": "reports/cfa/l1/day-18.html",
+    "summary": "Day 18 of CFA Math: money-market rates are quoted on a discount basis (on face value) or an add-on basis (on price) over 360- or 365-day years; Logan prices a 28-day T-bill from its 5.25% discount rate, converts it to a 5.34% bond-equivalent yield, and works out the interest on a repo.",
+    "headlines": [
+      "Day 18 of 90 · Fixed Income: discount and add-on money-market rates must be put on one basis, the 365-day bond-equivalent yield, before they are compared",
+      "Calculator: a T-bill's price from its discount rate, its bond-equivalent yield and a repo's interest, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>December 2008: investors lent the US Treasury $30 billion for four weeks and asked for nothing</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        A money-market rate can be figured on face value or on the price paid, over a 360- or a 365-day year, so turn every quote into one yardstick, the bond-equivalent yield, before you compare.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income</p>
+      <span class="track-progress">Day 18 of 90 &middot; Yield and Yield Spread Measures for Floating-Rate Instruments &middot; Money-market yields and repos</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="18">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 17 and one from Day 11, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="101.55824175824175" data-tol="0.01" data-show="101.56">
+          <p class="cq-stem"><b>From Day 17.</b> A 4.5% government bond pays coupons twice a year. It settles 60 days into a 182-day coupon period (actual/actual) at a full price of 102.3000 per 100 of par. What is its flat price per 100? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Flat = full &minus; accrued interest, and AI = (t/T) &times; the half-year coupon (4.5 / 2 = 2.25).</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>AI = (60/182) &times; 2.25 = 0.7418. Flat = 102.3000 &minus; 0.7418 = 101.5582, so <b>101.56</b>.</p>
+            <p>BA II Plus: <kbd>102.3</kbd> <kbd>&minus;</kbd> <kbd>60</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>&times;</kbd> <kbd>2.25</kbd> <kbd>=</kbd> &rarr; <samp>101.5582</samp> (AOS does the division and multiplication first).</p>
+            <p>TI-84 Plus: <kbd>102.3</kbd> <kbd>&minus;</kbd> <kbd>60</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>&times;</kbd> <kbd>2.25</kbd> <kbd>ENTER</kbd> &rarr; <samp>101.5582</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 11.</b> An investment returns 1.5% in one quarter. Its annualized return is closest to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 6.00%</span></label>
+              <p class="cq-why">That is 4 &times; 1.5%: it adds the quarters as if each earned only on the starting amount, ignoring interest on interest.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 6.14%</span></label>
+              <p class="cq-why">Right: 1.015<sup>4</sup> &minus; 1 = 6.1364%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 0.37%</span></label>
+              <p class="cq-why">That is 1.015<sup>1/4</sup> &minus; 1: the fourth root turns a year&rsquo;s return into a quarter&rsquo;s, the wrong direction.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>R<sub>annual</sub> = (1 + R<sub>period</sub>)<sup>c</sup> &minus; 1 with c = 4 quarters a year. Keep it in mind today: money-market quotes are an exception, annualized by plain scaling (Year/Days) by convention.</p></details>
+        </div>
+      </section>
+
+      <h3>Lending to the Treasury for nothing</h3>
+      <p>On 9 December 2008, less than three months after Lehman Brothers collapsed, the US Treasury auctioned $30 billion of four-week bills. The rate came out at 0.000%.</p>
+      <p>It was the first zero rate since the Treasury began selling four-week bills in 2001. And buyers were not scarce: bids came to more than four times the amount on offer.</p>
+      <p>The slide had been fast. A week earlier the same bills had sold at 0.04%. The day before, three-month bills had gone for 0.005%, reportedly the lowest since the Treasury began auctioning bills in 1929.</p>
+      <p>A Treasury bill pays no coupon. You buy it below its face value and collect the face value when it matures; the gap is your interest. At 0.000% there was no gap.</p>
+      <p>So why would anyone lend money for four weeks for nothing? And how does a bill&rsquo;s &ldquo;discount rate&rdquo; turn into the price an investor pays?</p>
+
+      <h3>The idea</h3>
+      <p>Money-market instruments are debts that come due within a year: Treasury bills, commercial paper, bank certificates of deposit (CDs), repos. Most pay all their interest in one lump at the end.</p>
+      <p>Their rates are quoted in two ways.</p>
+      <ul>
+        <li><b>Discount basis</b> (T-bills, commercial paper): the rate is applied to the <em>face value</em>. The discount comes off the top and you pay what is left.</li>
+        <li><b>Add-on basis</b> (CDs, repos): the rate is applied to the <em>money you put in</em>, and the interest is added on top.</li>
+      </ul>
+      <p>And the &ldquo;year&rdquo; can be 360 days (US T-bills, CDs and repos) or 365.</p>
+      <p>An everyday picture: a $100 jacket at 20% off costs $80. Measured against the $80 you paid, the $20 you saved is 25%. Same $20, two percentages. A discount rate is the 20%; an add-on rate is the 25%.</p>
+      <p>So two quotes that look alike can describe different deals. Before comparing, put every rate on one yardstick: the <b>bond-equivalent yield</b> (BEY), an add-on rate on a 365-day year.</p>
+      <p>One contrast with Day 11: money-market rates are annualized <em>simply</em>, scaling the period&rsquo;s return by Year/Days, with no compounding.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 2.</b> One period back is PV = FV / (1 + r). For part of a year, money markets use simple interest: the period&rsquo;s rate is (Days/Year) &times; the annual rate. 90 days at 4% on a 360-day year: 90/360 &times; 4% = 1%.</p>
+      <p><b>Add-on.</b> Put that into Day 2&rsquo;s formula: PV = FV / [1 + (Days/Year) &times; AOR]. $100 deposited for 90 days at a 4% add-on rate comes back as 100 &times; 1.01 = $101.</p>
+      <p><b>Discount.</b> Now the rate is applied to the face value: the discount is FV &times; (Days/Year) &times; DR, and you pay the rest, PV = FV &times; [1 &minus; (Days/Year) &times; DR]. A $100 bill, 90 days, a 4% discount rate: $1 off, price $99.</p>
+      <p><b>Read both rates from the price.</b> Solve each formula for its rate:</p>
+      <p>DR = (Year/Days) &times; (FV &minus; PV) / FV<br>AOR = (Year/Days) &times; (FV &minus; PV) / PV</p>
+      <p>Same top: FV &minus; PV, the dollars you earn. Different bottom: the discount rate divides by the face value, the add-on rate by what you actually paid. Year/Days stretches the period&rsquo;s return to a year.</p>
+      <p><b>So the discount rate looks smaller:</b> the same gain divided by a bigger number. The $99 bill: DR = 4 &times; 1/100 = 4.0000%, but AOR = 4 &times; 1/99 = 4.0404%.</p>
+      <p><b>The yardstick.</b> The BEY is the add-on rate with Year = 365: (365/90) &times; 1/99 = 4.0965% for the same bill. Any quote converts this way: price first, then the BEY.</p>
+      <p><b>Repos.</b> A repurchase agreement is a short loan dressed as a sale: a dealer sells securities and agrees to buy them back, often the next day, a little higher. The difference is the interest, add-on on a 360-day year: principal &times; repo rate &times; days/360. The lender lends less than the collateral is worth; the gap is the <b>haircut</b>: loan = collateral value &times; (1 &minus; haircut).</p>
+      <p>In plain words: a discount rate measures your profit against the number on the label; the bond-equivalent yield measures it against the money you actually paid, over a full 365-day year.</p>
+      <div class="formula">
+        <p class="expr">PV = FV &times; [1 &minus; (Days/Year) &times; DR]</p>
+        <p class="expr">PV = FV / [1 + (Days/Year) &times; AOR]</p>
+        <p class="expr">BEY = (365/Days) &times; (FV &minus; PV) / PV</p>
+        <p class="expr">Repo interest = principal &times; repo rate &times; (days/360)</p>
+        <dl>
+          <dt>PV</dt><dd>the price paid today</dd>
+          <dt>FV</dt><dd>face value, paid back at maturity (100 when prices are per 100)</dd>
+          <dt>Days</dt><dd>days until maturity</dd>
+          <dt>Year</dt><dd>days in the quoting year: 360 or 365</dd>
+          <dt>DR</dt><dd>discount rate, as a decimal: figured on face value</dd>
+          <dt>AOR</dt><dd>add-on rate, as a decimal: figured on the price paid</dd>
+          <dt>BEY</dt><dd>bond-equivalent yield: the add-on rate on a 365-day year</dd>
+          <dt>haircut</dt><dd>the share of the collateral&rsquo;s value the repo lender does not lend</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Discount basis price: PV = FV &times; [1 &minus; (Days/Year) &times; DR]</li>
+          <li>Add-on price: PV = FV / [1 + (Days/Year) &times; AOR]</li>
+          <li>Add-on rate from price: AOR = (Year / Days) &times; (FV &minus; PV) / PV</li>
+          <li>Bond-equivalent yield, a 365-day add-on rate: BEY = (365 / Days) &times; (FV &minus; PV) / PV</li>
+          <li>Repo interest = principal &times; repo rate &times; (days / 360)</li>
+          <li>Haircut = 1 &minus; loan / collateral value, so loan = collateral value &times; (1 &minus; haircut)</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> Which pays more: a 90-day T-bill quoted at a 4.90% discount rate, or a 90-day CD quoted at a 4.95% add-on rate on a 360-day year? Compare them on a bond-equivalent basis.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Bill discount per 100: 100 &times; (90/360) &times; 0.049 = 1.2250.</li>
+          <li>Bill price: PV = 100 &minus; 1.2250 = 98.7750.</li>
+          <li>Return on the money paid, for 90 days: 1.2250 / 98.7750 = 0.0124019.</li>
+          <li>Bill BEY = (365/90) &times; 0.0124019 = <b>5.0297%</b>.</li>
+          <li>CD: already add-on, but on 360 days. Its 90-day return is (90/360) &times; 4.95% = 1.2375%; restated over 365 days, &times; 365/90 = <b>5.01875%</b>. (Shortcut: 4.95% &times; 365/360.)</li>
+          <li>The bill wins, 5.0297% to 5.01875%, although its quoted rate is lower: a discount rate is figured on face value, not on the money you pay.</li>
+        </ol>
+        <p>Answer: bill 5.0297% vs CD 5.01875% (BEY): the bill pays more.</p>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A 4-week (28-day) T-bill, first at the December 2008 discount rate of 0.000%, then at 5.25%: its price per 100 and its bond-equivalent yield. Then the interest on a 7-day repo of $20,000,000 at 5.20%. No TVM worksheet today: plain arithmetic, with the price kept in memory so nothing is retyped.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1, so &times; and &divide; are done before &minus;, which these formulas need)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">The December 2008 bill: price per 100 at DR = 0</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>28</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>0</kbd> <kbd>)</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>28</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>0</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> (the subtraction key, not <kbd>(&minus;)</kbd>)</div>
+            <p class="calc-see">Display: <samp>100.0000</samp> on both. Nothing comes off the face value: pay 100, get 100 back. No gain, so the BEY is 0.</p>
+          </li>
+          <li>
+            <p class="calc-what">At a 5.25% discount rate (typed .0525: in plain arithmetic a rate is a decimal, unlike the TVM keys), find the price and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>28</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.0525</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>28</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.0525</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>ENTER</kbd> (P is the green letter above <kbd>7</kbd>)</div>
+            <p class="calc-see">Display: <samp>99.5917</samp> on both. Memory keeps every digit, not just the four shown.</p>
+          </li>
+          <li>
+            <p class="calc-what">Gain over price, on a 360-day year (the add-on rate)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>360</kbd> <kbd>&divide;</kbd> <kbd>28</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>&times;</kbd> <kbd>360</kbd> <kbd>&divide;</kbd> <kbd>28</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>5.2715</samp> on both. Already above 5.25: the same 0.4083 of gain, divided by 99.5917 instead of 100.</p>
+          </li>
+          <li>
+            <p class="calc-what">Stretch it to a 365-day year: the bond-equivalent yield</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>ENTER</kbd> (the line starts with <samp>Ans</samp> by itself)</div>
+            <p class="calc-see">Display: <samp>5.3447</samp> on both. In one go, (100 &minus; price) &divide; price &times; 365 &divide; 28 &times; 100 gives the same 5.3447.</p>
+          </li>
+          <li>
+            <p class="calc-what">The repo: $20,000,000 for 7 days at 5.20%, on a 360-day year</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>20000000</kbd> <kbd>&times;</kbd> <kbd>.052</kbd> <kbd>&times;</kbd> <kbd>7</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>20000000</kbd> <kbd>&times;</kbd> <kbd>.052</kbd> <kbd>&times;</kbd> <kbd>7</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>20,222.2222</samp> (BA II Plus) / <samp>20222.2222</samp> (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: at 5.25% the bill costs 99.5917 per 100 and yields 5.3447% bond-equivalent (at 0.000%: 100.0000 and 0). The repo costs $20,222.22 of interest, so the dealer buys back for $20,020,222.22.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>At 0.000% the formula gives PV = 100 &times; [1 &minus; (28/360) &times; 0] = 100.00. Investors paid $100 to get $100 back four weeks later. For four weeks&rsquo; use of $30 billion, the Treasury paid nothing.</p>
+      <p>Run the week-earlier rate, 0.04%, through the same formula for 28 days: a $100,000 bill costs $99,996.89, so $3.11 of interest for four weeks, a 0.0406% bond-equivalent yield. On $30 billion, that comes to about $933,333.</p>
+      <p>So why lend for nothing? In December 2008 the return that mattered was getting the money back. Next to a bank or a fund that might fail, a Treasury bill paying nothing was still the safest place to wait. Bids for more than four times the bills on offer show how many people thought so.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Using a 365-day year for a US T-bill discount rate: it is 360. At 5.25% for 28 days, a 365-day year gives a price of 99.5973 instead of 99.5917.</li>
+          <li>Treating a discount rate as the return on money invested. It is figured on face value, so it understates the return: the 5.25% bill really yields 5.3447%. Always go through the price.</li>
+          <li>Comparing a 360-day rate with a 365-day rate without converting: a 360-day add-on rate &times; 365/360 is the BEY.</li>
+          <li>Charging repo interest on the collateral&rsquo;s value. Interest is on the loan, collateral &times; (1 &minus; haircut), over a 360-day year.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="4.304027761400202" data-tol="0.01" data-pct data-show="4.30%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A 13-week (91-day) T-bill is quoted at a 4.20% discount rate. What is its bond-equivalent yield? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the walkthrough; only Days (91 instead of 28) and DR (.042 instead of .0525) change. The price uses 360 days, the BEY 365.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Price = 100 &times; [1 &minus; (91/360) &times; 0.042] = 100 &times; (1 &minus; 0.010617) = 98.9383. BEY = (365/91) &times; (100 &minus; 98.9383) / 98.9383 = <b>4.30%</b> (4.3040%).</p>
+            <p>BA II Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>91</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.042</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>98.9383</samp>; then <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>91</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.3040</samp>.</p>
+            <p>TI-84 Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>91</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.042</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>ENTER</kbd> &rarr; <samp>98.9383</samp>; then <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>91</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.3040</samp>.</p>
+            <p>The quote said 4.20%; the money earns 4.30%. A 360-day year in the BEY gives 4.2451, and a 365-day year in the price gives 4.2444: both are wrong.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>2. Why.</b> A 28-day T-bill quoted at a 5.25% discount rate gives its buyer a 5.3447% bond-equivalent yield. Why is the quoted rate lower than the return?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. The discount is divided by the face value, which is more than the price paid, and annualized over 360 days rather than 365</span></label>
+              <p class="cq-why">Right. Both rates use the same gain, 0.4083 per 100. Dividing by 99.5917 instead of 100 lifts 5.25% to 5.2715%; a 365-day year lifts that to 5.3447%.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The BEY adds a default premium for lending, which the discount rate leaves out</span></label>
+              <p class="cq-why">Nothing is added: both rates describe the same price and the same 100 at maturity. They differ only in what the gain is divided by and how long a year is.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The buyer also collects a coupon, which the discount rate does not count</span></label>
+              <p class="cq-why">T-bills pay no coupon. The whole return is the gap between the price and the face value.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>DR = (360/Days) &times; gain / FV; BEY = (365/Days) &times; gain / PV. The price is below the face value and 365 is more than 360, so whenever the rate is above zero the BEY is the larger of the two. At 0.000%, as in December 2008, both are zero.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="18106.666666666668" data-tol="0.01" data-signless data-show="18,106.67">
+          <p class="cq-stem"><b>3. Twist: a repo with a haircut.</b> A dealer borrows against $10,000,000 of Treasuries for 14 days. The lender applies a 3% haircut and charges a 4.80% repo rate. How much interest does the dealer pay? In dollars, to the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> First the loan: collateral value &times; (1 &minus; haircut). Then interest = loan &times; repo rate &times; days/360.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Loan = 10,000,000 &times; 0.97 = 9,700,000. Interest = 9,700,000 &times; 0.048 &times; 14/360 = <b>18,106.67</b>. The dealer buys the Treasuries back for 9,718,106.67.</p>
+            <p>BA II Plus: <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>.97</kbd> <kbd>&times;</kbd> <kbd>.048</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>=</kbd> &rarr; <samp>18,106.6667</samp>.</p>
+            <p>TI-84 Plus: <kbd>10000000</kbd> <kbd>&times;</kbd> <kbd>.97</kbd> <kbd>&times;</kbd> <kbd>.048</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>ENTER</kbd> &rarr; <samp>18106.6667</samp>.</p>
+            <p>The usual slips: interest on the full $10,000,000 gives 18,666.67; a 365-day year gives 17,858.63.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> A 90-day T-bill is bought for 98.80 per 100 of face value. Its bond-equivalent yield is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 4.80%</span></label>
+              <p class="cq-why">That is the discount rate: the 1.20 gain divided by the face value, on a 360-day year, (360/90) &times; 1.20/100.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 4.86%</span></label>
+              <p class="cq-why">Right base (the price), wrong year: (360/90) &times; 1.20/98.80 = 4.8583% is the 360-day add-on rate.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 4.93%</span></label>
+              <p class="cq-why">Right: (365/90) &times; 1.20/98.80 = 4.9258%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Gain = 100 &minus; 98.80 = 1.20. BEY = (365/90) &times; 1.20 / 98.80 = 4.9258%.</p>
+            <p>BA II Plus: <kbd>1.2</kbd> <kbd>&divide;</kbd> <kbd>98.8</kbd> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>90</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.9258</samp>. TI-84 Plus: the same keys, ending <kbd>ENTER</kbd> &rarr; <samp>4.9258</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why must money-market rates be put on a common basis before you compare them?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The same-looking quote can mean different things: a discount rate is figured on face value and an add-on rate on the price paid, and the year can be 360 or 365 days. Converting each to the bond-equivalent yield, a 365-day add-on rate worked out from the price, measures every one as dollars earned per dollar invested over the same year.</p>
+            <p>A complete answer says: (1) a discount rate is on face value, an add-on rate on the price, so a discount rate understates the return; (2) quotes use 360- or 365-day years; (3) convert both to the BEY, the 365-day add-on rate, before comparing.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Fixed Income: Yield and Yield Spread Measures for Floating-Rate Instruments (money-market discount and add-on rates, 360- and 365-day years, the bond-equivalent yield) and Fixed-Income Markets for Corporate Issuers (repurchase agreements: repo rate, repo interest and the haircut).</p>
+      <p><strong>Sources.</strong> The Bond Buyer, &ldquo;Treasury 4-Weeks Auctioned at Zero High Yield&rdquo;, 9 December 2008; The New York Times, report of 10 December 2008, as reposted to the pen-l mailing list ($30 billion of four-week bills at zero, demand more than four times the amount sold); Newser, &ldquo;Jittery About Loss, Investors Stuff Cash In 0% T-Bills&rdquo;, December 2008 (the prior week&rsquo;s four-week rate of 0.04%; three-month bills at 0.005%, lowest since 1929); Dave Manuel, &ldquo;Thirty Billion Dollars of T-Bills Sold Earlier This Week With a Yield of 0.00%&rdquo;, 11 December 2008.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-17.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

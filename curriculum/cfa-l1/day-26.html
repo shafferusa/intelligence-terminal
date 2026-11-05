@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>A game stopped at 2–1 with 64 pistoles at stake: in 1654 Pascal priced the rounds never played — CFA Math, Day 26 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "A game stopped at 2–1 with 64 pistoles at stake: in 1654 Pascal priced the rounds never played",
+    "path": "reports/cfa/l1/day-26.html",
+    "summary": "Day 26 of CFA Math: an expected value weights each outcome by its probability, and the total probability rule averages conditional expectations across scenarios; Logan computes a bank’s expected EPS (2.3575) and its standard deviation (0.2619) across two economies, and sees how Pascal valued an unfinished game at 48 pistoles.",
+    "headlines": [
+      "Day 26 of 90 · Quantitative Methods: expected value, and the total probability rule that averages it across scenarios",
+      "Calculator: a bank’s expected EPS across two economies and its standard deviation (σx, not Sx), on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>A game stopped at 2&ndash;1 with 64 pistoles at stake: in 1654 Pascal priced the rounds never played</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        An expected value weights each outcome by its probability; when the future forks, average inside each branch, then average the branches.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 26 of 90 &middot; LM6 Statistical Distributions for Financial Asset Prices and Returns &middot; Expected value and total probability</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="26">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 25 and 11, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="-0.2" data-tol="0.01" data-show="&minus;0.20">
+          <p class="cq-stem"><b>From Day 25.</b> Two funds&rsquo; returns have sample standard deviations of 15% and 9% and a sample covariance of &minus;27 (%<sup>2</sup>). What is their correlation? To two decimals (keep the sign).</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">r</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Correlation is the covariance divided by both standard deviations.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>r = s<sub>XY</sub> / (s<sub>X</sub> s<sub>Y</sub>) = &minus;27 / (15 &times; 9) = &minus;27 / 135 = <b>&minus;0.20</b>: a weak negative relation.</p>
+            <p>BA II Plus: <kbd>27</kbd> <kbd>+|&minus;</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>&minus;0.2000</samp>. TI-84 Plus: <kbd>(&minus;)</kbd> <kbd>27</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>15</kbd> <kbd>&times;</kbd> <kbd>9</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;.2000</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 11.</b> A fund returns +15%, &minus;10% and +6% in three successive years. Its three-year holding-period return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 11.00%</span></label>
+              <p class="cq-why">That adds the three returns. Each year&rsquo;s return applies to a new, changed base, so they compound.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 9.71%</span></label>
+              <p class="cq-why">Right: 1.15 &times; 0.90 &times; 1.06 = 1.0971, and 1.0971 &minus; 1 = 9.71%.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 3.14%</span></label>
+              <p class="cq-why">That is the annualized return, 1.0971<sup>1/3</sup> &minus; 1: per year, not the three-year total.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Chain-link: turn each return into a growth factor (1 + R), multiply them, subtract 1 at the end. 1.15 &times; 0.90 &times; 1.06 = 1.0971, so <b>9.71%</b>.</p></details>
+        </div>
+      </section>
+
+      <h3>Pascal, Fermat and the unfinished game</h3>
+      <p>In the summer of 1654 Blaise Pascal, in Paris, was trading letters with Pierre de Fermat in Toulouse. Their subject was a gambling puzzle, probably put to Pascal by the Chevalier de M&eacute;r&eacute;.</p>
+      <p>Two equally skilled players each stake 32 pistoles. The first to win three rounds takes all 64. But they have to stop early, before anyone has won. How should they split the pot?</p>
+      <p>There was an old answer. Luca Pacioli had printed it in 1494: split the money in proportion to the rounds already won.</p>
+      <p>In his letter of 29 July 1654, Pascal gave a different answer. If one player leads two rounds to one, the leader should take 48 pistoles and the other 16.</p>
+      <p>Pacioli&rsquo;s rule gives the leader two-thirds of 64: about 42.67. Pascal said 48.</p>
+      <p>Where does 48 come from? How do you put a value on rounds that were never played?</p>
+
+      <h3>The idea</h3>
+      <p>You can&rsquo;t know a random outcome in advance. You can still price it.</p>
+      <p>The <b>expected value</b> is the probability-weighted average of the outcomes: what you would average per try if the same situation could be replayed again and again.</p>
+      <p>A bet that pays $10 with probability 0.3, and nothing otherwise, is worth 0.3 &times; $10 = $3.00. No single play pays $3; the long-run average does.</p>
+      <p>The <b>variance</b> measures how far outcomes stray from that average, weighted the same way. Its square root is the standard deviation.</p>
+      <p>Often the odds depend on a <b>scenario</b>. A bank&rsquo;s earnings depend on whether the economy is good or poor. Then work in two steps: find the average inside each scenario (a <b>conditional expected value</b>, E(X | S), read &ldquo;given S&rdquo;), then average those, weighted by how likely each scenario is. That is the <b>total probability rule</b>.</p>
+      <p>An everyday picture: a 30% chance of rain, when your commute takes 40 minutes; otherwise it takes 25. Expected commute: 0.3 &times; 40 + 0.7 &times; 25 = 12 + 17.5 = 29.5 minutes.</p>
+      <p>A <b>probability tree</b> draws it: a first fork for the scenario, then a fork for the outcome inside it.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from a plain average (Day 12).</b> Put 100 tickets in a hat: 45 say 2.60, 15 say 2.45, 10 say 2.20, 30 say 2.00. Their mean is (45 &times; 2.60 + 15 &times; 2.45 + 10 &times; 2.20 + 30 &times; 2.00) / 100 = 235.75 / 100 = 2.3575.</p>
+      <p><b>Split the division.</b> Divide each count by 100 first: 0.45 &times; 2.60 + 0.15 &times; 2.45 + 0.10 &times; 2.20 + 0.30 &times; 2.00, the same 2.3575. Each count / 100 is the chance of drawing that ticket, so the mean is &Sigma; P(X<sub>i</sub>) X<sub>i</sub>.</p>
+      <p><b>Variance, the same way.</b> Day 24&rsquo;s population variance averages squared deviations over every ticket: &Sigma; P(X<sub>i</sub>)[X<sub>i</sub> &minus; E(X)]<sup>2</sup>. The probabilities describe the whole hat; nothing is estimated from a sample, so there is no n &minus; 1: on the calculator, &sigma;x, not Sx.</p>
+      <p><b>Where 0.45 comes from: multiply along the path.</b> EPS is 2.60 only if the economy is good (0.60) <em>and</em> earnings then come in high (0.75 of good years): 0.75 &times; 0.60 = 0.45. That is P(AB) = P(A | B) &times; P(B); the bar reads &ldquo;given&rdquo;.</p>
+      <p><b>Add the paths.</b> An event that can happen in several scenarios gets the sum of its paths: P(A) = &Sigma; P(A | S<sub>i</sub>) P(S<sub>i</sub>). The scenarios must not overlap and must cover everything, or a path is counted twice or missed.</p>
+      <p><b>Group the paths by branch.</b> Pull 0.60 out of the good-economy terms and 0.40 out of the poor ones:</p>
+      <p>E(X) = 0.60 &times; (0.75 &times; 2.60 + 0.25 &times; 2.45) + 0.40 &times; (0.25 &times; 2.20 + 0.75 &times; 2.00)</p>
+      <p>= 0.60 &times; 2.5625 + 0.40 &times; 2.05 = 2.3575.</p>
+      <p>The brackets are E(X | good) and E(X | poor). Nothing new: the same sum, factored. That is the total probability rule for expected value.</p>
+      <p><b>The overlap.</b> P(A) + P(B) counts the outcomes where both happen twice, so take them off once: P(A or B) = P(A) + P(B) &minus; P(AB).</p>
+      <p><b>Independence.</b> If knowing B tells you nothing about A, P(A | B) = P(A); only then is P(AB) = P(A) &times; P(B).</p>
+      <p><b>In plain words:</b> an expected value is what something pays on average if you could play it over and over. When the future forks, average each branch, then average the branches by how likely each one is.</p>
+      <div class="formula">
+        <p class="expr">E(X) = &Sigma; P(X<sub>i</sub>) X<sub>i</sub></p>
+        <p class="expr">&sigma;<sup>2</sup>(X) = &Sigma; P(X<sub>i</sub>) [X<sub>i</sub> &minus; E(X)]<sup>2</sup></p>
+        <p class="expr">E(X) = &Sigma; E(X | S<sub>i</sub>) P(S<sub>i</sub>) &nbsp;&middot;&nbsp; P(A) = &Sigma; P(A | S<sub>i</sub>) P(S<sub>i</sub>)</p>
+        <p class="expr">P(AB) = P(A | B) P(B) &nbsp;&middot;&nbsp; P(A or B) = P(A) + P(B) &minus; P(AB)</p>
+        <dl>
+          <dt>X<sub>i</sub></dt><dd>outcome i (an EPS, a payoff, a return)</dd>
+          <dt>P(X<sub>i</sub>)</dt><dd>its probability; all of them add to 1</dd>
+          <dt>E(X)</dt><dd>expected value: the probability-weighted mean</dd>
+          <dt>&sigma;<sup>2</sup>(X)</dt><dd>variance; its square root &sigma;(X) is the standard deviation</dd>
+          <dt>S<sub>i</sub></dt><dd>scenario i; the scenarios do not overlap and together cover everything (mutually exclusive and exhaustive)</dd>
+          <dt>E(X | S<sub>i</sub>)</dt><dd>conditional expected value: the mean of X if S<sub>i</sub> happens</dd>
+          <dt>P(A | B)</dt><dd>conditional probability: the chance of A, given that B happens</dd>
+          <dt>P(AB)</dt><dd>joint probability: the chance that A and B both happen</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Expected value of a discrete random variable: E(X) = &Sigma; P(X<sub>i</sub>) &times; X<sub>i</sub></li>
+          <li>Variance of a discrete random variable: &sigma;<sup>2</sup>(X) = &Sigma; P(X<sub>i</sub>) &times; [X<sub>i</sub> &minus; E(X)]<sup>2</sup></li>
+          <li>Total probability rule for expected value: E(X) = E(X | S<sub>1</sub>)P(S<sub>1</sub>) + E(X | S<sub>2</sub>)P(S<sub>2</sub>) + &hellip; for mutually exclusive, exhaustive scenarios</li>
+          <li>Joint probability (multiplication rule): P(AB) = P(A | B) &times; P(B)</li>
+          <li>Addition rule: P(A or B) = P(A) + P(B) &minus; P(AB)</li>
+          <li>Independent events: P(A | B) = P(A), so P(AB) = P(A) &times; P(B) &mdash; only then may probabilities simply be multiplied</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A one-year bond pays 100 unless the issuer defaults, in which case holders recover 40. There is a 30% chance of recession (R), when the default probability is 10%, and a 70% chance of expansion, when it is 2%. Find P(recession and default), P(default), P(recession or default) and the expected payoff.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Multiplication rule: P(R and D) = P(D | R) &times; P(R) = 0.10 &times; 0.30 = <b>0.03</b>.</li>
+          <li>Total probability: P(D) = 0.10 &times; 0.30 + 0.02 &times; 0.70 = 0.030 + 0.014 = <b>0.044</b>.</li>
+          <li>Addition rule: P(R or D) = 0.30 + 0.044 &minus; 0.03 = <b>0.314</b>. The 0.03 sat inside both, so it comes off once.</li>
+          <li>Conditional expected values: E(payoff | R) = 0.90 &times; 100 + 0.10 &times; 40 = 94.0. E(payoff | expansion) = 0.98 &times; 100 + 0.02 &times; 40 = 98.8.</li>
+          <li>Total probability rule: E(payoff) = 0.30 &times; 94.0 + 0.70 &times; 98.8 = 28.20 + 69.16 = <b>97.36</b>.</li>
+          <li>Check by the short route: P(D) = 0.044, so E(payoff) = 0.956 &times; 100 + 0.044 &times; 40 = 95.60 + 1.76 = 97.36.</li>
+          <li>Answer: P(R and D) = 3.0%; P(D) = 4.4%; P(R or D) = 31.4%; E(payoff) = 97.36.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> A bank&rsquo;s EPS next year depends on the economy. Good (probability 0.60): EPS 2.60 with probability 0.75, or 2.45 with 0.25. Poor (0.40): EPS 2.20 with probability 0.25, or 2.00 with 0.75. Find E(EPS | good), E(EPS | poor), E(EPS) by the total probability rule, and the standard deviation of EPS.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">E(EPS | good): weight the good-economy outcomes, and store it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>2.6</kbd> <kbd>+</kbd> <kbd>0.25</kbd> <kbd>&times;</kbd> <kbd>2.45</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> (AOS mode, set on Day 1, multiplies first)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>2.6</kbd> <kbd>+</kbd> <kbd>0.25</kbd> <kbd>&times;</kbd> <kbd>2.45</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> (A is above <kbd>MATH</kbd>)</div>
+            <p class="calc-see">Display: <samp>2.5625</samp> on both.</p>
+          </li>
+          <li>
+            <p class="calc-what">E(EPS | poor): the same for the poor economy</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.25</kbd> <kbd>&times;</kbd> <kbd>2.2</kbd> <kbd>+</kbd> <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.25</kbd> <kbd>&times;</kbd> <kbd>2.2</kbd> <kbd>+</kbd> <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> (B is above <kbd>APPS</kbd>)</div>
+            <p class="calc-see">Display: <samp>2.0500</samp> (BA II Plus) / <samp>2.05</samp> (TI-84).</p>
+          </li>
+          <li>
+            <p class="calc-what">E(EPS): weight the two conditional means by the scenario probabilities</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.4</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>0.4</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>2.3575</samp> on both. That is E(EPS).</p>
+          </li>
+          <li>
+            <p class="calc-what">For the SD, enter the four outcomes with whole-number weights: each path&rsquo;s probability &times; 100 (0.60 &times; 0.75 = 0.45 &rarr; 45; then 15, 10, 30)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>45</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.45</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>15</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2.2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>30</kbd> <kbd>ENTER</kbd> (X01, Y01 &hellip; X04, Y04; in 1-V each Y is a frequency)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>; cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>, and the same on <samp>L2</samp>. Down L1: <kbd>2.6</kbd> <kbd>ENTER</kbd> <kbd>2.45</kbd> <kbd>ENTER</kbd> <kbd>2.2</kbd> <kbd>ENTER</kbd> <kbd>2</kbd> <kbd>ENTER</kbd>; then down L2 from its first row: <kbd>45</kbd> <kbd>ENTER</kbd> <kbd>15</kbd> <kbd>ENTER</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>30</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Check: the weights add to 100, so the probabilities add to 1.</p>
+          </li>
+          <li>
+            <p class="calc-what">One-variable statistics with the weights: read the mean and the population SD, &sigma;x</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>STAT</kbd>; if it shows <samp>LIN</samp> (Day 25 left it there), press <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp> shows; then <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd>, reading each line</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (L2 is read as the frequency list)</div>
+            <p class="calc-see">Display: <samp>n = 100.0000</samp>, <samp>x&#772; = 2.3575</samp>, <samp>Sx = 0.2632</samp>, <samp>&sigma;x = 0.2619</samp> (BA II Plus) / <samp>x&#772;=2.3575</samp>, <samp>Sx=.2632</samp>, <samp>&sigma;x=.2619</samp>, <samp>n=100</samp> (TI-84). x&#772; matches step 3. Take &sigma;x; Sx divides by 99, as if the 100 weights were a sample.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: E(EPS | good) = 2.5625; E(EPS | poor) = 2.05; E(EPS) = 2.3575; standard deviation = 0.2619 (variance 0.0686).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>Pascal priced the game by what could happen next, not by what had happened. That is the total probability rule for expected value, with the next round as the scenario.</p>
+      <p>At 2&ndash;1 the next round goes one of two equally likely ways, since the players are equally skilled.</p>
+      <p>The leader wins it (&frac12;): three wins, all 64. He loses it (&frac12;): 2&ndash;2, an even game worth 32 to each.</p>
+      <p>His share: &frac12; &times; 64 + &frac12; &times; 32 = <b>48</b>. The other player gets 16. Pacioli&rsquo;s 42.67 shortchanged the leader by 5.33.</p>
+      <p>The rule chains backwards. At 2&ndash;0: &frac12; &times; 64 + &frac12; &times; 48 = 56. At 1&ndash;0: &frac12; &times; 56 + &frac12; &times; 32 = 44, exactly the 44 pistoles Pascal gives in the same letter. Pacioli&rsquo;s rule would hand that leader all 64 after a single round.</p>
+      <p>Pacioli looked back at rounds won; Pascal looked forward. A share of an unfinished game is the expected value of all the ways it could finish.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>Reading Sx for a probability distribution. Sx divides by n &minus; 1 as if the weights were a sample (0.2632 today); the probability-weighted SD is &sigma;x = 0.2619.</li>
+          <li>Probabilities that do not add to 1. Check every fork (0.60 + 0.40; 0.75 + 0.25) and the paths (0.45 + 0.15 + 0.10 + 0.30 = 1) before weighting anything.</li>
+          <li>Confusing a joint probability with a conditional one. P(default | recession) = 10%, but P(recession and default) = 3%: the second also needs the recession to happen.</li>
+          <li>Multiplying probabilities of events that are not independent. P(R) &times; P(D) = 0.30 &times; 0.044 = 1.32%, not the true 3%: default is likelier in a recession (10% against 4.4% overall).</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="14.568802284333465" data-tol="0.01" data-pct data-show="14.57%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A stock&rsquo;s one-year return will be 25% with probability 0.20, 10% with probability 0.50, or &minus;15% with probability 0.30. What is the standard deviation of its return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Steps 4 and 5 with new data: three outcomes (25, 10, &minus;15) as X, weights 20, 50, 30 as frequencies. Read &sigma;x.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By hand: E(R) = 0.20 &times; 25 + 0.50 &times; 10 + 0.30 &times; (&minus;15) = 5.00 + 5.00 &minus; 4.50 = 5.50%. Deviations +19.50, +4.50, &minus;20.50; squared 380.25, 20.25, 420.25; weighted 76.05 + 10.125 + 126.075 = 212.25 (%<sup>2</sup>). &sigma; = &radic;212.25 = <b>14.57%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>25</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>20</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>50</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>15</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>30</kbd> <kbd>ENTER</kbd>; <kbd>2ND</kbd> <kbd>STAT</kbd> (<samp>1-V</samp>) <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>n = 100.0000</samp>, <samp>x&#772; = 5.5000</samp>, <samp>Sx = 14.6422</samp>, <samp>&sigma;x = 14.5688</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clear L1 and L2 first (the walkthrough left a fourth row), then L1 = 25, 10, &minus;15 (<kbd>(&minus;)</kbd> <kbd>15</kbd> for the last) and L2 = 20, 50, 30; <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>x&#772;=5.5000</samp>, <samp>Sx=14.6422</samp>, <samp>&sigma;x=14.5688</samp>, <samp>n=100</samp>. Sx (14.64%) is the trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> When the frequencies on the calculator stand for probabilities, why read &sigma;x rather than Sx?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. &sigma;x is the larger of the two, so it is the more conservative choice</span></label>
+              <p class="cq-why">&sigma;x is the smaller (0.2619 against 0.2632 today), and size is no reason to pick a formula.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It makes no difference, because n = 100 is large</span></label>
+              <p class="cq-why">It is still the wrong formula, and the gap depends on how you scale the weights: enter Pascal&rsquo;s two outcomes, 64 and 32 (&frac12; each), with weights 1 and 1, and Sx = 22.63 against the true 16.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The probabilities are the whole distribution, not a sample, so the variance &Sigma; P(X<sub>i</sub>)[X<sub>i</sub> &minus; E(X)]<sup>2</sup> takes no n &minus; 1 correction</span></label>
+              <p class="cq-why">Right. Weights / total = probabilities, so &sigma;x is exactly the probability-weighted standard deviation.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>&sigma;x divides the weighted squared deviations by the total weight (100), which turns each weight back into its probability: that is &Sigma; P(X<sub>i</sub>)[X<sub>i</sub> &minus; E(X)]<sup>2</sup>. Sx divides by 99, the n &minus; 1 correction for estimating from a sample. Here there is no sample: the probabilities are the whole distribution.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="2" data-tol="0.01" data-show="2.00">
+          <p class="cq-stem"><b>3. Twist: the missing scenario.</b> Analysts expect a company&rsquo;s EPS to average 2.30 overall. In a good economy (probability 0.60) they expect 2.50. What EPS do they expect in a poor economy, the only other scenario? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Write the total probability rule with E(EPS | poor) as the unknown, and remember P(poor) = 1 &minus; 0.60.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>2.30 = 0.60 &times; 2.50 + 0.40 &times; E(EPS | poor). So 0.40 &times; E(EPS | poor) = 2.30 &minus; 1.50 = 0.80, and E(EPS | poor) = 0.80 / 0.40 = <b>2.00</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>2.3</kbd> <kbd>&minus;</kbd> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>0.4</kbd> <kbd>=</kbd> &rarr; <samp>2.0000</samp> (AOS). TI-84 Plus: <kbd>(</kbd> <kbd>2.3</kbd> <kbd>&minus;</kbd> <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>2.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>0.4</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.0000</samp>.</p>
+            <p>Dividing by 0.60 instead of 0.40 gives 1.33: the leftover 0.80 belongs to the poor branch, so divide by its probability.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>4. Exam style.</b> P(A) = 0.40, P(B) = 0.30 and P(A | B) = 0.50. The probability that A or B occurs is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 0.55</span></label>
+              <p class="cq-why">Right: P(AB) = P(A | B) &times; P(B) = 0.50 &times; 0.30 = 0.15, and 0.40 + 0.30 &minus; 0.15 = 0.55.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 0.70</span></label>
+              <p class="cq-why">P(A) + P(B) with the joint probability not subtracted: the outcomes where both happen are counted twice.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 0.58</span></label>
+              <p class="cq-why">Treats A and B as independent, P(AB) = 0.40 &times; 0.30 = 0.12. They are not: P(A | B) = 0.50 is not P(A) = 0.40.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>First the joint probability, by the multiplication rule: P(AB) = P(A | B) P(B) = 0.15. Then the addition rule takes the overlap off once: 0.40 + 0.30 &minus; 0.15 = <b>0.55</b>.</p>
+            <p>Multiplying P(A) &times; P(B) is allowed only when P(A | B) = P(A). Here learning that B happened raises A&rsquo;s chance from 0.40 to 0.50, so they are dependent.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences, using Pascal&rsquo;s game at 2&ndash;1: how does the total probability rule put a value on a future that has several possible paths?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Split what can happen next into scenarios that cannot both happen and that cover every possibility, find the expected value inside each, then weight each by its probability and add. At 2&ndash;1 the next round is a win for the leader (&frac12;), worth all 64, or a loss (&frac12;), leaving an even game worth 32: &frac12; &times; 64 + &frac12; &times; 32 = 48.</p>
+            <p>A complete answer says: (1) split the future into mutually exclusive, exhaustive scenarios; (2) find the expected value within each scenario (the conditional expectation); (3) weight each by its probability and add.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 6: Statistical Distributions for Financial Asset Prices and Returns (expected value and variance of a discrete random variable, conditional expected values, the total probability rule, joint probability, the addition rule, independence and probability trees).</p>
+      <p><strong>Sources.</strong> Pascal to Fermat, 29 July 1654, English translation, University of York history of statistics pages; R. J. Pulskamp, translation of the Pascal&ndash;Fermat correspondence (from <em>&OElig;uvres de Fermat</em>, vol. 2, 1894); Litgloss, University at Buffalo, Pascal&rsquo;s letter with glosses (32 pistoles each; 48 and 16 at 2&ndash;1; 44 and 20 at 1&ndash;0); IREM de Caen, &ldquo;Les partis chez Pascal et Fermat&rdquo; (every state of the game worked); Wikipedia, &ldquo;Problem of points&rdquo; (Pacioli, 1494; proposed to Pascal, probably in 1654, by the Chevalier de M&eacute;r&eacute;).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-25.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Ten questions, six lessons: can you price a bond, find its yield and value a share? — CFA Math, Day 21 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Ten questions, six lessons: can you price a bond, find its yield and value a share?",
+    "path": "reports/cfa/l1/day-21.html",
+    "summary": "Day 21 of CFA Math reviews Days 15–20: Logan prices bonds and finds their yields to maturity, call and worst, restates a yield’s periodicity, splits a full price into accrued interest and the flat quote, turns a T-bill discount rate into a bond-equivalent yield, and values shares with the Gordon and two-stage models, in ten graded questions.",
+    "headlines": [
+      "Day 21 of 90 · Fixed Income and Equity Investments: week review of bond prices and yields, accrued interest, money-market rates and dividend models",
+      "Calculator: bond prices and yields in TVM, a yield conversion, a flat price and a two-stage DDM, on the BA II Plus and the TI-84",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Ten questions, six lessons: can you price a bond, find its yield and value a share?</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        No new idea today: every price you met this week was a present value, and ten graded questions check that you can compute each one, calculator in hand.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Fixed Income and Equity Investments</p>
+      <span class="track-progress">Day 21 of 90 &middot; Review &middot; Days 15&ndash;20: bond prices, yields and dividend models</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="21">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">One from Day 20 and one from Day 8, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="63" data-tol="0.01" data-show="63.00">
+          <p class="cq-stem"><b>From Day 20.</b> A company&rsquo;s fast-growth years end with D<sub>4</sub> = 3.00, paid at the end of year 4. After that, dividends grow 5% a year forever, and investors require 10%. What is the terminal value V<sub>4</sub>? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per share</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The terminal value&rsquo;s numerator is the first slow-growth dividend, D<sub>5</sub>, not the last fast one.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>5</sub> = 3.00 &times; 1.05 = 3.15. V<sub>4</sub> = D<sub>5</sub>/(r &minus; g<sub>L</sub>) = 3.15/(0.10 &minus; 0.05) = 3.15/0.05 = <b>63.00</b>.</p>
+            <p>BA II Plus: <kbd>3</kbd> <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>63.0000</samp>.</p>
+            <p>TI-84 Plus: <kbd>3</kbd> <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.1</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>63.0000</samp>.</p>
+            <p>D<sub>4</sub> on top gives 60.00, the classic slip. And remember where V<sub>4</sub> sits: at the end of year 4, so it is discounted 4 periods.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 8.</b> A perpetuity pays 4 a year forever. The first payment comes at the end of year 3, and the discount rate is 5%. Its value today is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 72.56</span></label>
+              <p class="cq-why">Right. 4/0.05 = 80.00 is a value at the end of year 2, one period before the first payment. Then 80/1.05<sup>2</sup> = 72.56.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 69.11</span></label>
+              <p class="cq-why">That discounts 3 periods: 80/1.05<sup>3</sup>. But A/r already sits one period before the first payment, at t = 2, so only 2 periods are left.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 80.00</span></label>
+              <p class="cq-why">That ignores the wait. 80 is what the perpetuity is worth at the end of year 2, not today.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>A/r always gives a value one period before the first payment. First payment at t = 3, so A/r is dated t = 2: discount 2 periods. BA II Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.05</kbd> <kbd>=</kbd> &rarr; <samp>80.0000</samp>, <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>yˣ</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>72.5624</samp>. TI-84 Plus: <kbd>4</kbd> <kbd>&divide;</kbd> <kbd>.05</kbd> <kbd>&divide;</kbd> <kbd>1.05</kbd> <kbd>^</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>72.5624</samp>.</p>
+            <p>This week&rsquo;s Gordon model is the same perpetuity with growth: set g = 0 in D<sub>1</sub>/(r &minus; g) and you are back to A/r.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>One idea ran through all six days: a price is the present value of the cash its owner will receive, discounted at the market&rsquo;s rate. A bond is an annuity of coupons plus one lump at the end (Day 15). Its yield to maturity is that rate, worked backwards from the price: the bond&rsquo;s IRR (Day 16). Between coupon dates the value grows at the yield, and the quoted price leaves out the interest owed to the seller (Day 17). Money-market paper is quoted in simple interest on 360 or 365 days, so convert before you compare (Day 18). And a share is the present value of its dividends: one growing perpetuity (Day 19), or a few dividends listed one by one plus a perpetuity that starts later (Day 20).</p>
+
+      <div class="sie-block memorize">
+        <b>Memorize &middot; the week&rsquo;s formulas</b>
+        <ul>
+          <li><b>Day 15.</b> Bond price: PV = PMT/(1 + r)<sup>1</sup> + PMT/(1 + r)<sup>2</sup> + &hellip; + (PMT + FV)/(1 + r)<sup>N</sup></li>
+          <li><b>Day 15.</b> Semiannual-pay bond (P/Y = 1): PMT = annual coupon/2, rate = annual yield/2, N = 2 &times; years</li>
+          <li><b>Day 15.</b> Coupon rate &gt; yield &rarr; premium; coupon rate &lt; yield &rarr; discount; equal &rarr; par</li>
+          <li><b>Day 16.</b> Current yield = annual coupon / flat price</li>
+          <li><b>Day 16.</b> Yield to call: N = periods to the call date, FV = call price; solve for r. Yield-to-worst = the lowest of the YTM and the yields to every call date</li>
+          <li><b>Day 16.</b> Periodicity: (1 + APR<sub>m</sub>/m)<sup>m</sup> = (1 + APR<sub>n</sub>/n)<sup>n</sup>; semiannual-bond basis &harr; annual-pay: (1 + r<sub>s</sub>/2)<sup>2</sup> = 1 + r<sub>annual</sub></li>
+          <li><b>Day 17.</b> PV<sub>full</sub> = PV<sub>last coupon date</sub> &times; (1 + r)<sup>t/T</sup>; AI = (t/T) &times; PMT; PV<sub>flat</sub> = PV<sub>full</sub> &minus; AI (government bonds actual/actual, corporates 30/360)</li>
+          <li><b>Day 18.</b> Discount basis: PV = FV &times; [1 &minus; (Days/Year) &times; DR]. Add-on basis: PV = FV / [1 + (Days/Year) &times; AOR]</li>
+          <li><b>Day 18.</b> Bond-equivalent yield, a 365-day add-on rate: BEY = (365/Days) &times; (FV &minus; PV)/PV. Repo interest = principal &times; repo rate &times; (days/360)</li>
+          <li><b>Day 19.</b> V<sub>0</sub> = D<sub>1</sub>/(r &minus; g), with D<sub>1</sub> = D<sub>0</sub> &times; (1 + g); implied r = D<sub>1</sub>/P<sub>0</sub> + g; implied g = r &minus; D<sub>1</sub>/P<sub>0</sub></li>
+          <li><b>Day 20.</b> V<sub>0</sub> = &Sigma;<sub>t=1..n</sub> D<sub>t</sub>/(1 + r)<sup>t</sup> + [D<sub>n+1</sub>/(r &minus; g<sub>L</sub>)]/(1 + r)<sup>n</sup>: the terminal value is discounted n periods</li>
+        </ul>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>Semiannual inputs.</b> Halve the coupon and the yield and double the years going in; double the computed I/Y coming out. That doubled rate is the semiannual-bond-basis yield, not (1 + r)<sup>2</sup> &minus; 1.</li>
+          <li><b>Full vs flat.</b> The buyer pays the full price; quotes (and the BA II Plus BOND worksheet&rsquo;s PRI) are flat. Grow the last-coupon PV with the <em>periodic</em> yield.</li>
+          <li><b>D<sub>0</sub> vs D<sub>1</sub>, and the terminal value&rsquo;s date.</b> &ldquo;Just paid&rdquo; is D<sub>0</sub>; Gordon&rsquo;s numerator is the next dividend. In two stages the terminal value uses D<sub>n+1</sub> and sits at time n.</li>
+          <li><b>Day counts.</b> T-bill discount rates and repo interest use 360 days; the bond-equivalent yield uses 365, on the price, not the face value.</li>
+        </ul>
+      </div>
+
+      <h3>On your calculator: a thirty-second check</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Most of today&rsquo;s questions run through TVM, and a wrong setting gives a confident wrong price. So test the settings on a bond whose answer you already know: a 2-year bond with a 10% coupon paid semiannually, at a 10% yield. Coupon equal to yield means it must price at par, exactly 100.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">END mode: coupons arrive at the end of each period</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> If <samp>BGN</samp> shows in the display, press <kbd>2ND</kbd> <kbd>BGN</kbd> <kbd>2ND</kbd> <kbd>SET</kbd> <kbd>2ND</kbd> <kbd>QUIT</kbd>. No <samp>BGN</samp> means END.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>; on the bottom row, <samp>PMT:</samp> highlight <samp>END</samp> and press <kbd>ENTER</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">One period a year: P/Y = 1. You do the halving and doubling yourself</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>P/Y</kbd>. If the display does not read <samp>P/Y = 1.0000</samp>, type <kbd>1</kbd> <kbd>ENTER</kbd>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd>.</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> in the same screen, <samp>P/Y=1</samp> and <samp>C/Y=1</samp></div>
+          </li>
+          <li>
+            <p class="calc-what">Price the test bond: halve the coupon and the yield, double the years</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>4</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=4</samp>, <samp>I%=5</samp>, <samp>PMT=5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>PV = &minus;100.0000</samp> (BA II Plus) / <samp>PV=&minus;100.0000</samp> (TI-84). If you see &minus;118.1439, P/Y is still 12: go back to step 2. If you see &minus;100.8865, BGN is on: go back to step 1.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Ready: END, P/Y = 1, and the week&rsquo;s first rule already in your fingers. Clear TVM before each new bond; on the TI-84, set every line.</p>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions, in the week&rsquo;s order, graded here. Most need the calculator: TVM for 1&ndash;4 and 6, the converter for 5, the CF worksheet or <samp>npv(</samp> for 10. Each names its day, so a miss tells you which lesson to reopen. Work each before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="93.8088570586716" data-tol="0.01" data-signless data-show="93.81">
+          <p class="cq-stem"><b>1. Day 15 &middot; Bond price, on the calculator.</b> A 12-year bond pays a 4.5% coupon semiannually. The market yield is 5.2%. What is its price per 100 of par? Two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100 of par</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Semiannual: halve the coupon (PMT = 2.25) and the yield (I/Y = 2.6), double the years (N = 24). FV = 100, P/Y = 1, then compute PV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>N = 24, I/Y = 2.6, PMT = 2.25, FV = 100 &rarr; PV = &minus;93.8089. The price is <b>93.81</b>; the minus only says you pay it. Below par, because the coupon (4.5%) is below the yield (5.2%).</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>24</kbd> <kbd>N</kbd> <kbd>2.6</kbd> <kbd>I/Y</kbd> <kbd>2.25</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;93.8089</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=24</samp>, <samp>I%=2.6</samp>, <samp>PMT=2.25</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;93.8089</samp>.</p>
+            <p>The sneaky slip: annual inputs (N = 12, I/Y = 5.2, PMT = 4.5) give 93.87, close enough to look right. Discounting at the coupon rate gives exactly 100.00.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Day 15 &middot; Pull to par.</b> A 10-year 6% annual-pay bond yields 5% and is priced at 107.72. If its yield is still 5% one year from now, its price then, just after that year&rsquo;s coupon is paid, will be <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. 108.34</span></label>
+              <p class="cq-why">That moves the price the right distance (0.61) in the wrong direction. A premium does not keep building: it must be gone by maturity, when the bond pays exactly 100.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. 107.11</span></label>
+              <p class="cq-why">Right. With 9 years left: N = 9, I/Y = 5, PMT = 6, FV = 100 gives 107.1078. The premium shrinks from 7.72 to 7.11.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. 107.72</span></label>
+              <p class="cq-why">That assumes a price moves only when the yield moves. Time moves it too: at an unchanged yield a premium bond is pulled down toward par (and a discount bond up).</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Re-price it with one year gone. BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>9</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>6</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;107.1078</samp>. TI-84 Plus: TVM Solver <samp>N=9</samp>, <samp>I%=5</samp>, <samp>PMT=6</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;107.1078</samp>.</p>
+            <p>Why it falls: the owner earns the 5% yield on the price, 107.7217 &times; 1.05 = 113.1078, and is then paid the 6 coupon, which leaves 107.1078. The coupon (6) is more than the 5% earned (5.3861), so the extra 0.6139 comes out of the premium this year, and a little more each year after, until it reaches zero at maturity.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="5.5476855492604615" data-tol="0.01" data-pct data-show="5.55%">
+          <p class="cq-stem"><b>3. Day 16 &middot; Yield to maturity, on the calculator.</b> An 8-year bond with a 5% coupon paid semiannually is priced at 96.50. What is its yield to maturity, quoted the usual way, on a semiannual-bond basis? As a percent, two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> N = 16, PV = &minus;96.50 (you pay it), PMT = 2.5, FV = 100. Computing I/Y gives the rate per half-year: double it.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>The rate per half-year is 2.7738%; doubled, the YTM is <b>5.55%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>16</kbd> <kbd>N</kbd> <kbd>96.5</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.7738</samp>, then <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>5.5477</samp> (it doubles the unrounded rate).</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=16</samp>, <samp>PV=&minus;96.5</samp> (the minus is the <kbd>(&minus;)</kbd> key), <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=2.7738</samp>. Double it: 2.7738 &times; 2 = 5.5476. Either way, 5.55%.</p>
+            <p>The slips: 2.77 is the half-year rate, not doubled. 5.62 is (1.027738)<sup>2</sup> &minus; 1, the annual-pay equivalent, not the semiannual-bond-basis quote. A positive PV gives <samp>Error 5</samp> (BA II Plus) or <samp>ERR:NO SIGN CHNG</samp> (TI-84).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="num" data-answer="5.5279507027466535" data-tol="0.01" data-pct data-show="5.53%">
+          <p class="cq-stem"><b>4. Day 16 &middot; Yield-to-worst, on the calculator.</b> A 10-year bond with a 6.5% coupon paid semiannually is priced at 104.25. It can be called in 4 years at 101. What is its yield-to-worst, on a semiannual-bond basis? As a percent, two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two yields, the same keys twice, with PV = &minus;104.25 and PMT = 3.25. YTM: N = 20, FV = 100. Yield to call: N = 8, FV = 101, the call price. Double each; the worst is the lower one.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>YTM = 2.9653% &times; 2 = 5.93%. Yield to call = 2.7640% &times; 2 = 5.5280%. The worst is the lower: <b>5.53%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>20</kbd> <kbd>N</kbd> <kbd>104.25</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>3.25</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.9653</samp>, <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>5.9305</samp>. Only N and FV change for the call: <kbd>8</kbd> <kbd>N</kbd> <kbd>101</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.7640</samp>, <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>5.5280</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=20</samp>, <samp>PV=&minus;104.25</samp>, <samp>PMT=3.25</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=2.9653</samp>. Then change to <samp>N=8</samp> and <samp>FV=101</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=2.7640</samp>. Doubled: about 5.93 and 5.5280.</p>
+            <p>Why the call is worse: the bond trades above both par and the call price. If it is called, you lose 3.25 of premium (104.25 &rarr; 101) in 4 years instead of 4.25 spread over 10. The slip: FV = 100 in the call gives 5.31.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>5. Day 16 &middot; Periodicity.</b> A bond yields 5.80% on an annual-pay basis. To compare it with Treasuries, which are quoted on a semiannual-bond basis, you restate it. Its semiannual-bond-basis yield is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c5" value="A"> <span>A. 5.80%</span></label>
+              <p class="cq-why">That treats the two conventions as the same. 5.80% compounded twice a year grows by more than 5.80% in a year.</p></li>
+            <li><label><input type="radio" name="c5" value="B"> <span>B. 5.88%</span></label>
+              <p class="cq-why">That converts the wrong way: (1.029)<sup>2</sup> &minus; 1 treats 5.80% as the semiannual quote and finds its annual-pay equivalent.</p></li>
+            <li><label><input type="radio" name="c5" value="C"> <span>C. 5.72%</span></label>
+              <p class="cq-why">Right: 2 &times; (1.058<sup>0.5</sup> &minus; 1) = 5.7183%. Compounding twice a year needs a lower quoted rate to reach the same 5.80% a year.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Set the year&rsquo;s growth equal: (1 + r<sub>s</sub>/2)<sup>2</sup> = 1.058, so r<sub>s</sub>/2 = 1.058<sup>0.5</sup> &minus; 1 = 2.8591% and r<sub>s</sub> = 5.7183%.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>ICONV</kbd> <kbd>&darr;</kbd> (<samp>EFF=</samp>) <kbd>5.8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> (<samp>C/Y=</samp>) <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> (<samp>NOM=</samp>) <kbd>CPT</kbd> &rarr; <samp>NOM = 5.7183</samp>. TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd>, <kbd>&darr;</kbd> to <kbd class="menu">B:►Nom(</kbd>, <kbd>ENTER</kbd>, <kbd>5.8</kbd> <kbd>,</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>5.7183</samp>.</p>
+            <p>The rule: more compounding periods, lower quote, same growth.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="num" data-answer="98.41984713230467" data-tol="0.01" data-show="98.42">
+          <p class="cq-stem"><b>6. Day 17 &middot; Flat price, on the calculator.</b> A 4% government bond pays coupons semiannually. Six coupons remain, the yield is 4.6%, and the trade settles 62 days into a 182-day coupon period (actual/actual). What is the flat price per 100 of par? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">per 100 of par</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Three steps. PV at the last coupon date: N = 6, I/Y = 2.3, PMT = 2, FV = 100. Grow it to settlement: &times; 1.023<sup>62/182</sup>. Then subtract AI = 62/182 &times; 2.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>PV at the last coupon date = 98.3365. Full price = 98.3365 &times; 1.023<sup>62/182</sup> = 99.1012. AI = 62/182 &times; 2 = 0.6813. Flat = 99.1012 &minus; 0.6813 = 98.4199: <b>98.42</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>2.3</kbd> <kbd>I/Y</kbd> <kbd>2</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;98.3365</samp>. Then <kbd>98.3365</kbd> <kbd>&times;</kbd> <kbd>1.023</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>62</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>99.1012</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>62</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>0.6813</samp>, <kbd>STO</kbd> <kbd>2</kbd>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>98.4199</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=6</samp>, <samp>I%=2.3</samp>, <samp>PMT=2</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;98.3365</samp>. Home screen (<kbd>2nd</kbd> <kbd>MODE</kbd>, QUIT): <kbd>98.3365</kbd> <kbd>&times;</kbd> <kbd>1.023</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>62</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>99.1012</samp>, <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>ENTER</kbd>; <kbd>62</kbd> <kbd>&divide;</kbd> <kbd>182</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>.6813</samp>; <kbd>ALPHA</kbd> <kbd>F</kbd> <kbd>&minus;</kbd> <kbd>2nd</kbd> <kbd>(&minus;)</kbd> (ANS) <kbd>ENTER</kbd> &rarr; <samp>98.4199</samp>.</p>
+            <p>Carry every decimal of the PV and it is 98.4198; to the cent, 98.42 either way. The slips: 99.10 is the full price, what the buyer pays, not the quote. Growing at the annual 4.6% instead of the half-year 2.3% gives a flat price of 99.17.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="num" data-answer="4.006247889226604" data-tol="0.01" data-pct data-show="4.01%">
+          <p class="cq-stem"><b>7. Day 18 &middot; Money-market yield.</b> A 120-day T-bill is quoted at a 3.90% discount rate. What is its bond-equivalent yield? As a percent, two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Price first, on a 360-day year: 100 &times; (1 &minus; 120/360 &times; 0.039). The BEY is a 365-day add-on rate: (365/120) &times; (100 &minus; price)/price.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Price = 100 &times; (1 &minus; 120/360 &times; 0.039) = 98.70. You pay 98.70 and get 100, so you earn 1.30 on 98.70. BEY = 365/120 &times; 1.30/98.70 = 4.0062%: <b>4.01%</b>.</p>
+            <p>BA II Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>120</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.039</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>98.7000</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.0062</samp>.</p>
+            <p>TI-84 Plus: <kbd>100</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>120</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>&times;</kbd> <kbd>.039</kbd> <kbd>)</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>ENTER</kbd> &rarr; <samp>98.7000</samp>; <kbd>(</kbd> <kbd>100</kbd> <kbd>&minus;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>P</kbd> <kbd>&times;</kbd> <kbd>365</kbd> <kbd>&divide;</kbd> <kbd>120</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.0062</samp>.</p>
+            <p>The slips: 3.95 is the add-on rate on a 360-day year (right base, wrong year). 3.90 is the discount rate itself, figured on face value, not on the money you put in.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>8. Day 18 &middot; Repo interest.</b> A dealer borrows $25,000,000 for 30 days in a repo at 4.40%. The interest owed at repurchase is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c8" value="A"> <span>A. $91,666.67</span></label>
+              <p class="cq-why">Right: 25,000,000 &times; 0.044 &times; 30/360.</p></li>
+            <li><label><input type="radio" name="c8" value="B"> <span>B. $90,410.96</span></label>
+              <p class="cq-why">That uses a 365-day year. Repo rates are money-market rates on a 360-day year.</p></li>
+            <li><label><input type="radio" name="c8" value="C"> <span>C. $1,100,000.00</span></label>
+              <p class="cq-why">That is a full year&rsquo;s interest: the 30 days were left out.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Repo interest = principal &times; repo rate &times; days/360. BA II Plus: <kbd>25000000</kbd> <kbd>&times;</kbd> <kbd>.044</kbd> <kbd>&times;</kbd> <kbd>30</kbd> <kbd>&divide;</kbd> <kbd>360</kbd> <kbd>=</kbd> &rarr; <samp>91,666.6667</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>91666.6667</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="7.9" data-tol="0.01" data-pct data-show="7.90%">
+          <p class="cq-stem"><b>9. Day 19 &middot; Implied required return.</b> A share trades at 52.00. It has just paid a dividend of 1.95, and dividends are expected to grow 4% a year forever. What required return is the market pricing in? As a percent, two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &ldquo;Has just paid&rdquo; is D<sub>0</sub>. Grow it once to D<sub>1</sub>, then r = D<sub>1</sub>/P<sub>0</sub> + g.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>D<sub>1</sub> = 1.95 &times; 1.04 = 2.028. D<sub>1</sub>/P<sub>0</sub> = 2.028/52 = 3.90%, the dividend yield. r = 3.90% + 4% = <b>7.90%</b>. Check: 2.028/(0.079 &minus; 0.04) = 52.00.</p>
+            <p>BA II Plus: <kbd>1.95</kbd> <kbd>&times;</kbd> <kbd>1.04</kbd> <kbd>&divide;</kbd> <kbd>52</kbd> <kbd>&times;</kbd> <kbd>100</kbd> <kbd>+</kbd> <kbd>4</kbd> <kbd>=</kbd> &rarr; <samp>7.9000</samp>. TI-84 Plus: the same keys with <kbd>ENTER</kbd> &rarr; <samp>7.9000</samp>.</p>
+            <p>The slip: D<sub>0</sub>/P<sub>0</sub> + g = 1.95/52 + 4% = 7.75%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>10. Day 20 &middot; Two-stage DDM, on the calculator.</b> A company has just paid a dividend of 1.50. Dividends are expected to grow 18% a year for the next 3 years and 5% a year after that, forever. The required return is 11%. The value of a share today is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c10" value="A"> <span>A. 33.50</span></label>
+              <p class="cq-why">That discounts the terminal value 4 periods. V<sub>3</sub> = D<sub>4</sub>/(r &minus; g<sub>L</sub>) is already a value at the end of year 3.</p></li>
+            <li><label><input type="radio" name="c10" value="B"> <span>B. 35.13</span></label>
+              <p class="cq-why">That puts D<sub>3</sub> on top of the terminal value: 2.4645/0.06 = 41.08. The numerator is the first slow-growth dividend, D<sub>4</sub> = D<sub>3</sub> &times; 1.05.</p></li>
+            <li><label><input type="radio" name="c10" value="C"> <span>C. 36.63</span></label>
+              <p class="cq-why">Right: 36.6278, of which 31.54 (86%) is the terminal value.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>D<sub>1</sub> = 1.77, D<sub>2</sub> = 2.0886, D<sub>3</sub> = 2.4645. D<sub>4</sub> = 2.4645 &times; 1.05 = 2.5878. V<sub>3</sub> = 2.5878/0.06 = 43.1296. Year-3 cash flow = D<sub>3</sub> + V<sub>3</sub> = 45.5941. Discount at 11%: V<sub>0</sub> = 36.6278.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>1.5</kbd> <kbd>&times;</kbd> <kbd>1.18</kbd> <kbd>=</kbd> &rarr; <samp>1.7700</samp>; <kbd>&times;</kbd> <kbd>1.18</kbd> <kbd>=</kbd> &rarr; <samp>2.0886</samp>; <kbd>&times;</kbd> <kbd>1.18</kbd> <kbd>=</kbd> &rarr; <samp>2.4645</samp>, <kbd>STO</kbd> <kbd>1</kbd>; <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>=</kbd> &rarr; <samp>2.5878</samp>; <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>43.1296</samp>; <kbd>+</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>45.5941</samp>. Then <kbd>CF</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>&darr;</kbd> <kbd>1.77</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>2.0886</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>45.5941</kbd> <kbd>ENTER</kbd> <kbd>NPV</kbd> <kbd>11</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>NPV = 36.6278</samp>.</p>
+            <p>TI-84 Plus: <kbd>1.5</kbd> <kbd>&times;</kbd> <kbd>1.18</kbd> <kbd>ENTER</kbd>, then <kbd>&times;</kbd> <kbd>1.18</kbd> <kbd>ENTER</kbd> twice &rarr; <samp>2.4645</samp>; <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd>; <kbd>&times;</kbd> <kbd>1.05</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>.11</kbd> <kbd>&minus;</kbd> <kbd>.05</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>43.1296</samp>; <kbd>+</kbd> <kbd>ALPHA</kbd> <kbd>D</kbd> <kbd>ENTER</kbd> &rarr; <samp>45.5941</samp>. Then <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">7:npv(</kbd> and <samp>npv(11,0,{1.77,2.0886,45.5941})</samp> <kbd>ENTER</kbd> &rarr; <samp>36.6278</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, review of Fixed Income (Fixed-Income Bond Valuation: Prices and Yields; Yield and Yield Spread Measures for Fixed-Rate Bonds; Yield and Yield Spread Measures for Floating-Rate Instruments; Fixed-Income Markets for Corporate Issuers, for repos) and Equity Investments (Equity Valuation: Concepts and Basic Tools).</p>
+      <p><strong>Sources.</strong> None needed: a review day has no story, and every question uses made-up numbers. The week&rsquo;s stories and their sources are on Days 15 to 20.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-20.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

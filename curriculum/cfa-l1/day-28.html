@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Reset the divisor, tame the outliers, update the odds: the Week 4 review in ten questions — CFA Math, Day 28 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Reset the divisor, tame the outliers, update the odds: the Week 4 review in ten questions",
+    "path": "reports/cfa/l1/day-28.html",
+    "summary": "Day 28 of CFA Math, the Week 4 review: the formulas of Days 22–27 in one box, the three slips that cost the most points, then ten graded questions with new numbers on index divisors and float weights, percentiles and winsorized means, sample and downside deviation, covariance and Spearman’s rank correlation, a probability-weighted standard deviation and Bayes’ formula.",
+    "headlines": [
+      "Day 28 of 90 · Quantitative Methods: Week 4 review of index weighting, quantiles, dispersion, correlation, expected value and Bayes",
+      "Calculator: a split-adjusted divisor, a percentile, Sx, downside deviation, a covariance and a probability-weighted SD, on the BA II Plus and the TI-84",
+      "Review: 10 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Reset the divisor, tame the outliers, update the odds: the Week 4 review in ten questions</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Six lessons on one page: the week&rsquo;s formulas in one box, the three slips that cost the most points, then ten exam-style questions with new numbers, six of them on the calculator.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 28 of 90 &middot; Review &middot; Week 4: indexes and statistics</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="28">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Days 27 and 12, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="55.55555555555556" data-tol="0.01" data-pct data-show="55.56%">
+          <p class="cq-stem"><b>From Day 27.</b> An analyst puts a 20% prior probability on a bond being downgraded this year. Its credit spread jumps before 75% of downgrades, but also for 15% of bonds that are not downgraded. The spread has just jumped. What is the probability of a downgrade now? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Bayes: the &ldquo;downgrade and jump&rdquo; branch, divided by every way a jump can happen.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>P(jump) = 0.75 &times; 0.20 + 0.15 &times; 0.80 = 0.15 + 0.12 = 0.27. P(downgrade | jump) = 0.15 / 0.27 = <b>55.56%</b>.</p>
+            <p>In 100 bonds: 20 are downgraded, and 15 of them jump. 12 of the other 80 jump too. So 15 of the 27 jumps are real.</p>
+            <p>BA II Plus: <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>0.2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>0.1500</samp>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.15</kbd> <kbd>&times;</kbd> <kbd>0.8</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.5556</samp>. TI-84 Plus: <kbd>0.75</kbd> <kbd>&times;</kbd> <kbd>0.2</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>.1500</samp>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>0.15</kbd> <kbd>&times;</kbd> <kbd>0.8</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.5556</samp>.</p>
+            <p>75% is P(jump | downgrade): the conditional turned around.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 12.</b> A fund returns &minus;20%, +35% and +8% in three successive years. Its compound annual (geometric mean) return is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 5.26%</span></label>
+              <p class="cq-why">Right: 0.80 &times; 1.35 &times; 1.08 = 1.1664; its cube root is 1.0526; minus 1 gives 5.26%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 7.67%</span></label>
+              <p class="cq-why">That is the arithmetic mean, (&minus;20 + 35 + 8) / 3: a typical single year, not the compound rate. Volatility keeps it above the geometric mean.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 16.64%</span></label>
+              <p class="cq-why">That is the three-year total, 1.1664 &minus; 1: the cube root was never taken.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary>
+            <p>$100 becomes 80.00, then 108.00, then 116.64. Three years at the unrounded rate, 5.2646%, end at the same 116.64.</p>
+            <p>BA II Plus: <kbd>0.8</kbd> <kbd>&times;</kbd> <kbd>1.35</kbd> <kbd>&times;</kbd> <kbd>1.08</kbd> <kbd>=</kbd> <kbd>yˣ</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>=</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>0.0526</samp>. TI-84 Plus: <kbd>(</kbd> <kbd>0.8</kbd> <kbd>&times;</kbd> <kbd>1.35</kbd> <kbd>&times;</kbd> <kbd>1.08</kbd> <kbd>)</kbd> <kbd>^</kbd> <kbd>(</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>&minus;</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0526</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <h3>What this week was about</h3>
+      <p>This week turned single returns into whole sets of them. Day 22 built indexes: a price-weighted index divides the sum of prices by a divisor that must be reset after every split, while cap and float weights follow what the companies are worth. Days 23 and 24 described a set of returns by where it sits (the median, percentiles at position (n + 1)y/100, trimmed and winsorized means) and how widely it spreads (sample variance over n &minus; 1, the coefficient of variation, downside deviation below a target). Day 25 measured how two series move together, with covariance and its scaled form, correlation. Days 26 and 27 looked ahead: an expected value weights outcomes by their probabilities, the total probability rule averages the scenarios, and Bayes&rsquo; formula updates a probability when evidence arrives.</p>
+
+      <h3>The week&rsquo;s formulas</h3>
+      <div class="sie-block memorize">
+        <b>Memorize &middot; Days 22&ndash;27</b>
+        <ul>
+          <li><b>Day 22.</b> Price-weighted index = &Sigma; P<sub>i</sub> / divisor. After a split, choose D<sub>new</sub> so that &Sigma; (post-split prices) / D<sub>new</sub> = the index value just before the split.</li>
+          <li><b>Day 22.</b> Market-cap weight w<sub>i</sub> = (P<sub>i</sub> &times; Q<sub>i</sub>) / &Sigma; (P<sub>j</sub> &times; Q<sub>j</sub>); float-adjusted uses float shares (shares outstanding &minus; closely held) for Q. Equal weight = 1/N, rebalanced as prices move. Total return = price return + income return.</li>
+          <li><b>Day 23.</b> The y-th percentile of n sorted observations sits at L<sub>y</sub> = (n + 1) &times; y / 100. Between two values: P = X<sub>below</sub> + (L<sub>y</sub> &minus; whole part) &times; (X<sub>above</sub> &minus; X<sub>below</sub>). IQR = Q3 &minus; Q1.</li>
+          <li><b>Day 23.</b> Trimmed mean: discard the extremes, average the rest. Winsorized mean: replace them with the nearest retained values, then average. A 5% trimmed mean drops 2.5% at each end; a 95% winsorized mean resets 2.5% at each end.</li>
+          <li><b>Day 24.</b> s<sup>2</sup> = &Sigma; (X<sub>i</sub> &minus; X̄)<sup>2</sup> / (n &minus; 1); &sigma;<sup>2</sup> = &Sigma; (X<sub>i</sub> &minus; &mu;)<sup>2</sup> / N; MAD = &Sigma; |X<sub>i</sub> &minus; X̄| / n; CV = s / X̄.</li>
+          <li><b>Day 24.</b> Target downside deviation: s<sub>Target</sub> = &radic;[ &Sigma;<sub>(X<sub>i</sub> &le; B)</sub> (X<sub>i</sub> &minus; B)<sup>2</sup> / (n &minus; 1) ]: sum only the observations at or below B, but divide by n &minus; 1 using all n.</li>
+          <li><b>Day 25.</b> s<sub>XY</sub> = &Sigma; (X<sub>i</sub> &minus; X̄)(Y<sub>i</sub> &minus; Y&#772;) / (n &minus; 1); r<sub>XY</sub> = s<sub>XY</sub> / (s<sub>X</sub> &times; s<sub>Y</sub>), so s<sub>XY</sub> = r &times; s<sub>X</sub> &times; s<sub>Y</sub>. &minus;1 &le; r &le; +1, and 0 means no <em>linear</em> relation.</li>
+          <li><b>Day 25.</b> Spearman rank correlation (2027 coverage uncertain): r<sub>s</sub> = 1 &minus; 6 &Sigma; d<sub>i</sub><sup>2</sup> / [n (n<sup>2</sup> &minus; 1)], d<sub>i</sub> = the gap between observation i&rsquo;s two ranks.</li>
+          <li><b>Day 26.</b> E(X) = &Sigma; P(X<sub>i</sub>) X<sub>i</sub>; &sigma;<sup>2</sup>(X) = &Sigma; P(X<sub>i</sub>) [X<sub>i</sub> &minus; E(X)]<sup>2</sup>; total probability: E(X) = &Sigma; E(X | S<sub>i</sub>) P(S<sub>i</sub>) over mutually exclusive, exhaustive scenarios.</li>
+          <li><b>Day 26.</b> P(AB) = P(A | B) &times; P(B); P(A or B) = P(A) + P(B) &minus; P(AB). Only if P(A | B) = P(A) (independence) is P(AB) = P(A) &times; P(B).</li>
+          <li><b>Day 27.</b> Bayes: P(Event | Information) = [P(Information | Event) / P(Information)] &times; P(Event), where P(I) = P(I | E)P(E) + P(I | not E)P(not E). Prior before the information, posterior after.</li>
+        </ul>
+      </div>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>n versus n &minus; 1.</b> Sample variance, sample covariance and target downside deviation all divide by n &minus; 1, and the downside deviation&rsquo;s n counts every observation, not only those below the target.</li>
+          <li><b>Sx versus &sigma;x.</b> Both calculators show both. Take Sx for a sample of returns, and pair r with Sx and Sy. Take &sigma;x for a probability distribution entered with weights: there is no sample, so no n &minus; 1.</li>
+          <li><b>P(A | B) versus P(B | A).</b> The chance of the evidence given the event is not the chance of the event given the evidence. Bayes converts one into the other with the prior and P(evidence).</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Ten questions, all with new numbers, graded here. Six need the calculator, so keep it in hand. Work each before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="1.56" data-tol="0.0001" data-show="1.5600">
+          <p class="cq-stem"><b>1. Index divisor (Day 22) &middot; calculator.</b> A price-weighted index holds four stocks priced 40, 60, 25 and 155, and its divisor is 2.8. The 155 stock splits 5-for-1. What new divisor keeps the index level unchanged? To four decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">divisor</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> First the index level just before the split, with the old divisor. Then the divisor that gives that same level from the new prices.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Before: (40 + 60 + 25 + 155) / 2.8 = 280 / 2.8 = 100.0000. After the split the stock trades at 155 / 5 = 31, so the prices add to 40 + 60 + 25 + 31 = 156. New divisor: 156 / 100 = <b>1.5600</b>.</p>
+            <p>BA II Plus: <kbd>40</kbd> <kbd>+</kbd> <kbd>60</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>155</kbd> <kbd>=</kbd> <kbd>&divide;</kbd> <kbd>2.8</kbd> <kbd>=</kbd> &rarr; <samp>100.0000</samp> <kbd>STO</kbd> <kbd>1</kbd>; then <kbd>40</kbd> <kbd>+</kbd> <kbd>60</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>155</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>156.0000</samp> (AOS divides first) <kbd>&divide;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>=</kbd> &rarr; <samp>1.5600</samp>.</p>
+            <p>TI-84 Plus: <kbd>(</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>60</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>155</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>2.8</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>100.0000</samp>; <kbd>(</kbd> <kbd>40</kbd> <kbd>+</kbd> <kbd>60</kbd> <kbd>+</kbd> <kbd>25</kbd> <kbd>+</kbd> <kbd>155</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>1.5600</samp>.</p>
+            <p>Keep 2.8 by mistake and the index reads 156 / 2.8 = 55.7143: a 44.29% &ldquo;crash&rdquo; on a day nothing lost value. BA II Plus: <kbd>2ND</kbd> <kbd>&Delta;%</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>55.7143</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>CPT</kbd> &rarr; <samp>%CH = &minus;44.2857</samp>. TI-84 Plus: <kbd>156</kbd> <kbd>&divide;</kbd> <kbd>2.8</kbd> <kbd>&minus;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;44.2857</samp> (from a base of 100, points are percent).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Float weights (Day 22).</b> An index uses float-adjusted market-cap weights. Stock A: price 50, 300 million shares outstanding, 120 million closely held. Stock B: price 20, 1,000 million shares, all free float. Stock C: price 80, 200 million shares, 50 million closely held. A&rsquo;s weight in the index is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. 33.33%</span></label>
+              <p class="cq-why">That is A&rsquo;s price weight, 50 / (50 + 20 + 80): share prices alone, ignoring how many shares there are.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. 21.95%</span></label>
+              <p class="cq-why">Right: float caps are 50 &times; 180 = 9,000, 20 &times; 1,000 = 20,000 and 80 &times; 150 = 12,000 ($ million), total 41,000; 9,000 / 41,000 = 21.95%.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. 29.41%</span></label>
+              <p class="cq-why">Uses shares outstanding, not float: 15,000 / 51,000. Closely held shares do not trade, so a float-adjusted index leaves them out.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Float = shares outstanding &minus; closely held: A 180 million, B 1,000 million, C 150 million. Weight = price &times; float / total of price &times; float. A: 9,000 / 41,000 = <b>21.95%</b> (B 48.78%, C 29.27%).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="3.92" data-tol="0.01" data-pct data-show="3.92%">
+          <p class="cq-stem"><b>3. Percentile (Day 23) &middot; calculator.</b> Eleven monthly returns (%): 5.2, &minus;1.4, 3.8, 9.1, 0.6, &minus;3.7, 2.9, 7.5, 1.1, 4.4, &minus;0.2. Using the curriculum&rsquo;s location formula, what is the 60th percentile? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Sort first. The location is (n + 1) &times; y / 100; a location of, say, 4.3 means the 4th value plus 0.3 of the gap to the 5th.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Sorted: &minus;3.7, &minus;1.4, &minus;0.2, 0.6, 1.1, 2.9, 3.8, 4.4, 5.2, 7.5, 9.1. L<sub>60</sub> = (11 + 1) &times; 60 / 100 = 7.2: 0.2 of the way from the 7th value (3.8) to the 8th (4.4). P<sub>60</sub> = 3.8 + 0.2 &times; (4.4 &minus; 3.8) = 3.8 + 0.12 = <b>3.92%</b>.</p>
+            <p>BA II Plus (no sort key: sort by hand): <kbd>3.8</kbd> <kbd>+</kbd> <kbd>0.2</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.8</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>3.9200</samp>.</p>
+            <p>TI-84 Plus: type the returns into L1 (<kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, clearing old numbers first), then let it sort: <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd class="menu">2:SortA(</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>Done</samp>. Read rows 7 and 8 in <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, then <kbd>3.8</kbd> <kbd>+</kbd> <kbd>0.2</kbd> <kbd>&times;</kbd> <kbd>(</kbd> <kbd>4.4</kbd> <kbd>&minus;</kbd> <kbd>3.8</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.9200</samp>.</p>
+            <p>The trap: n &times; y / 100 = 6.6 gives 2.9 + 0.6 &times; 0.9 = 3.44%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Winsorized mean (Day 23).</b> Ten annual returns (%), sorted: &minus;12.0, &minus;2.0, 0.5, 1.5, 2.0, 3.0, 3.5, 4.5, 6.0, 18.0. The 80% winsorized mean, which resets the lowest and the highest value to their nearest neighbours, is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 2.50%</span></label>
+              <p class="cq-why">The plain arithmetic mean, 25.0 / 10: nothing was reset.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 2.38%</span></label>
+              <p class="cq-why">The trimmed mean: &minus;12.0 and 18.0 dropped, 19.0 / 8 = 2.375. Trimming discards the extremes; winsorizing replaces them and keeps all ten.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 2.30%</span></label>
+              <p class="cq-why">Right: &minus;12.0 becomes &minus;2.0 and 18.0 becomes 6.0; the sum falls from 25.0 to 23.0, and 23.0 / 10 = 2.30%.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Winsorize = replace; trim = remove. One value of ten at each end is 10% per end, so this is an 80% winsorized mean (dropping them would be a 20% trimmed mean).</p>
+            <p>New list: &minus;2.0, &minus;2.0, 0.5, 1.5, 2.0, 3.0, 3.5, 4.5, 6.0, 6.0. Sum 23.0, mean <b>2.30%</b>. Shortcut: the sum gains 10.0 at the bottom and loses 12.0 at the top, so 25.0 &minus; 2.0 = 23.0.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="num" data-answer="6.016643582596529" data-tol="0.01" data-pct data-show="6.02%">
+          <p class="cq-stem"><b>5. Sample standard deviation (Day 24) &middot; calculator.</b> Six annual returns (%): 9.0, &minus;3.5, 4.0, 12.5, &minus;1.0, 6.0. What is their sample standard deviation? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> One-variable statistics on the six returns. Two standard deviations appear: take the one that divides by n &minus; 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>By hand: mean 27.0 / 6 = 4.50. Deviations 4.5, &minus;8.0, &minus;0.5, 8.0, &minus;5.5, 1.5; squared 20.25, 64.00, 0.25, 64.00, 30.25, 2.25; sum 181.00. Divide by n &minus; 1 = 5: 36.20. &radic;36.20 = <b>6.02%</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>3.5</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>12.5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>1</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> (each <kbd>&darr;</kbd> <kbd>&darr;</kbd> steps past Y, the frequency, which stays 1). Then <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp> shows, <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>n = 6.0000</samp>, <samp>x&#772; = 4.5000</samp>, <samp>Sx = 6.0166</samp>, <samp>&sigma;x = 5.4924</samp>.</p>
+            <p>TI-84 Plus: <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd>, cursor up onto the <samp>L1</samp> title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>; then <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>3.5</kbd> <kbd>ENTER</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>12.5</kbd> <kbd>ENTER</kbd> <kbd>(&minus;)</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> <kbd>6</kbd> <kbd>ENTER</kbd>. <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>ENTER</kbd> &rarr; <samp>x&#772;=4.5000</samp>, <samp>Sx=6.0166</samp>, <samp>&sigma;x=5.4924</samp>.</p>
+            <p>&sigma;x = 5.49% divides by 6, the population formula: that is the trap.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c6" data-type="num" data-answer="2.80178514522438" data-tol="0.01" data-pct data-show="2.80%">
+          <p class="cq-stem"><b>6. Downside deviation (Day 24) &middot; calculator.</b> The same six returns. What is their target downside deviation for a target return B = 2%? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Only returns at or below 2% count, measured from 2%, not from the mean. Still divide by n &minus; 1 for all six years.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>At or below 2%: &minus;3.5 and &minus;1.0. Shortfalls from the target: &minus;3.5 &minus; 2 = &minus;5.5 and &minus;1.0 &minus; 2 = &minus;3.0. Squares 30.25 + 9.00 = 39.25. Divide by n &minus; 1 = 5: 7.85. &radic;7.85 = <b>2.80%</b>.</p>
+            <p>BA II Plus: <kbd>(</kbd> <kbd>5.5</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>=</kbd> &rarr; <samp>7.8500</samp>, then <kbd>&radic;x</kbd> &rarr; <samp>2.8018</samp>. TI-84 Plus: <kbd>2nd</kbd> <kbd>x&sup2;</kbd> (&radic;) <kbd>(</kbd> <kbd>5.5</kbd> <kbd>x&sup2;</kbd> <kbd>+</kbd> <kbd>3</kbd> <kbd>x&sup2;</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>2.8018</samp>.</p>
+            <p>Type the shortfalls without their minus signs: squaring removes it anyway, and on the TI-84 <kbd>(&minus;)</kbd> <kbd>5.5</kbd> <kbd>x&sup2;</kbd> gives &minus;30.25. Dividing by the two below-target years instead gives 4.43%; by 6, 2.56%.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c7" data-type="num" data-answer="6.25" data-tol="0.01" data-show="6.25">
+          <p class="cq-stem"><b>7. Covariance (Day 25) &middot; calculator.</b> Five years of returns (%), year by year. Fund X: 15, &minus;8, 4, 22, 9. Fund Y: 3, 5, &minus;1, 6, 2. What is the sample covariance of the two funds&rsquo; returns? To two decimals, in %<sup>2</sup>.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%&sup2;</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Two-variable statistics give r, Sx and Sy; the covariance is r &times; Sx &times; Sy. Store the three instead of retyping them.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>15</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>3</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>8</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>5</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>4</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>1</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>22</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>9</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> (X01, Y01 &hellip; Y05). <kbd>2ND</kbd> <kbd>STAT</kbd>, <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>LIN</samp> shows; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> to <samp>Sx = 11.3710</samp>, <kbd>STO</kbd> <kbd>2</kbd>; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> to <samp>Sy = 2.7386</samp>, <kbd>STO</kbd> <kbd>3</kbd>; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> to <samp>r = 0.2007</samp>, <kbd>STO</kbd> <kbd>1</kbd>. Then <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>6.2500</samp>.</p>
+            <p>TI-84 Plus: in <kbd>STAT</kbd> <kbd class="menu">1:Edit&hellip;</kbd> clear L1 and L2 (cursor onto each title, <kbd>CLEAR</kbd> <kbd>ENTER</kbd>), then L1 = 15, &minus;8, 4, 22, 9 and L2 = 3, 5, &minus;1, 6, 2. <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">2:2-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>Sx=11.3710</samp>, <samp>Sy=2.7386</samp>. Then <kbd>STAT</kbd> <kbd>&#9658;</kbd> <kbd class="menu">8:LinReg(a+bx)</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>a=2.5940</samp>, <samp>b=.0483</samp>, <samp>r&sup2;=.0403</samp>, <samp>r=.2007</samp> (DiagnosticOn, set on Day 25, shows r). Finally <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (EQ) <kbd class="menu">7:r</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">3:Sx</kbd> <kbd>&times;</kbd> <kbd>VARS</kbd> <kbd class="menu">5:Statistics&hellip;</kbd> <kbd class="menu">6:Sy</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.2500</samp>.</p>
+            <p>By hand, as a check: X̄ = 8.4, Y&#772; = 3.0; the products of deviations are 0.0, &minus;32.8, 17.6, 40.8 and &minus;0.6, adding to 25.0; 25.0 / (5 &minus; 1) = <b>6.25</b>. Retyping the rounded displays gives 6.2499; pairing r with &sigma;x and &sigma;y gives 5.00, the population covariance (&divide; 5).</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c8" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>8. Rank correlation (Day 25).</b> Two analysts rank the same six stocks from 1 (best) to 6. Analyst 1: A 1, B 2, C 3, D 4, E 5, F 6. Analyst 2: A 1, B 3, C 2, D 6, E 4, F 5. The Spearman rank correlation between the two rankings is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c8" value="A"> <span>A. 0.9619</span></label>
+              <p class="cq-why">The 6 in the numerator was left out: 1 &minus; 8 / 210.</p></li>
+            <li><label><input type="radio" name="c8" value="B"> <span>B. &minus;0.6000</span></label>
+              <p class="cq-why">Uses n(n &minus; 1) = 30 instead of n(n<sup>2</sup> &minus; 1) = 210: 1 &minus; 48 / 30. A negative value for two rankings that mostly agree is the giveaway.</p></li>
+            <li><label><input type="radio" name="c8" value="C"> <span>C. 0.7714</span></label>
+              <p class="cq-why">Right: &Sigma;d<sup>2</sup> = 8, and 1 &minus; 6 &times; 8 / [6 &times; (36 &minus; 1)] = 1 &minus; 48 / 210 = 0.7714.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Rank gaps d (Analyst 1 minus Analyst 2): 0, &minus;1, +1, &minus;2, +1, +1. Squares 0, 1, 1, 4, 1, 1, so &Sigma;d<sup>2</sup> = 8. n(n<sup>2</sup> &minus; 1) = 6 &times; 35 = 210. r<sub>s</sub> = 1 &minus; 48 / 210 = <b>0.7714</b>.</p>
+            <p>Check: enter the two rank lists as X and Y (BA II Plus <samp>LIN</samp>, or LinReg on the TI-84) and r is also 0.7714. Spearman is just r on the ranks.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c9" data-type="num" data-answer="10.468524251297314" data-tol="0.01" data-pct data-show="10.47%">
+          <p class="cq-stem"><b>9. Probability-weighted SD (Day 26) &middot; calculator.</b> Next year the market is strong (probability 0.55) or weak (0.45). If strong, a fund returns 18% with probability 0.6 or 8% with probability 0.4. If weak, it returns 2% or &minus;10%, each with probability 0.5. What is the standard deviation of the fund&rsquo;s return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Multiply along each path for four probabilities that add to 1. Enter them as whole-number weights (&times; 200 makes every one whole) and read &sigma;x, not Sx.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Paths: 0.55 &times; 0.6 = 0.33 (18%); 0.55 &times; 0.4 = 0.22 (8%); 0.45 &times; 0.5 = 0.225 (2%); 0.225 (&minus;10%).</p>
+            <p>Mean, by total probability: E(R | strong) = 0.6 &times; 18 + 0.4 &times; 8 = 14; E(R | weak) = 0.5 &times; 2 + 0.5 &times; (&minus;10) = &minus;4; E(R) = 0.55 &times; 14 + 0.45 &times; (&minus;4) = 7.70 &minus; 1.80 = 5.90%.</p>
+            <p>Variance: 0.33 &times; 12.1<sup>2</sup> + 0.22 &times; 2.1<sup>2</sup> + 0.225 &times; (&minus;3.9)<sup>2</sup> + 0.225 &times; (&minus;15.9)<sup>2</sup> = 48.3153 + 0.9702 + 3.42225 + 56.88225 = 109.59 (%<sup>2</sup>). &sigma; = &radic;109.59 = <b>10.47%</b>.</p>
+            <p>On the calculator, &times; 100 would give 22.5, not a whole number, so use &times; 200: weights 66, 44, 45, 45.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>DATA</kbd> <kbd>2ND</kbd> <kbd>CLR WORK</kbd>, then <kbd>18</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>66</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>44</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>45</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>10</kbd> <kbd>+|&minus;</kbd> <kbd>ENTER</kbd> <kbd>&darr;</kbd> <kbd>45</kbd> <kbd>ENTER</kbd>. <kbd>2ND</kbd> <kbd>STAT</kbd>; question 7 left it on <samp>LIN</samp>, so <kbd>2ND</kbd> <kbd>SET</kbd> until <samp>1-V</samp> shows; <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> &rarr; <samp>n = 200.0000</samp>, <samp>x&#772; = 5.9000</samp>, <samp>Sx = 10.4948</samp>, <samp>&sigma;x = 10.4685</samp>.</p>
+            <p>TI-84 Plus: clear L1 and L2; L1 = 18, 8, 2, &minus;10 and L2 = 66, 44, 45, 45. <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>STAT</kbd> <kbd>&#9658;</kbd> (CALC) <kbd class="menu">1:1-Var Stats</kbd> <kbd>2nd</kbd> <kbd>1</kbd> <kbd>,</kbd> <kbd>2nd</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>x&#772;=5.9000</samp>, <samp>Sx=10.4948</samp>, <samp>&sigma;x=10.4685</samp>.</p>
+            <p>x&#772; = 5.90 confirms the mean. Take &sigma;x: the probabilities are the whole distribution, so there is no n &minus; 1.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c10" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>10. Bayes (Day 27).</b> Only 10% of fund managers are skilled. A skilled manager beats the benchmark three years running with probability 0.60. For an unskilled one each year is a coin flip, so the chance is 0.5<sup>3</sup> = 0.125. A manager has just beaten the benchmark three years running. The probability that this manager is skilled is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c10" value="A"> <span>A. 34.78%</span></label>
+              <p class="cq-why">Right: P(three beats) = 0.60 &times; 0.10 + 0.125 &times; 0.90 = 0.06 + 0.1125 = 0.1725, and 0.06 / 0.1725 = 34.78%.</p></li>
+            <li><label><input type="radio" name="c10" value="B"> <span>B. 60.00%</span></label>
+              <p class="cq-why">That is P(three beats | skilled): the conditional turned around.</p></li>
+            <li><label><input type="radio" name="c10" value="C"> <span>C. 82.76%</span></label>
+              <p class="cq-why">Ignores the 10% prior: 0.60 / (0.60 + 0.125) treats skilled and unskilled managers as equally common.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Picture 1,000 managers. 100 are skilled, and 60 of them beat the benchmark three times. 900 are not, and 112.5 of them do it by luck. Of the 172.5 three-time winners, 60 are skilled: 60 / 172.5 = <b>34.78%</b>. Nearly two streaks in three (65.22%) are luck.</p>
+            <p>BA II Plus: <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>0.1</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd>; <kbd>RCL</kbd> <kbd>1</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>0.125</kbd> <kbd>&times;</kbd> <kbd>0.9</kbd> <kbd>)</kbd> <kbd>=</kbd> &rarr; <samp>0.3478</samp>. TI-84 Plus: <kbd>0.6</kbd> <kbd>&times;</kbd> <kbd>0.1</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd>; <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>&divide;</kbd> <kbd>(</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>0.125</kbd> <kbd>&times;</kbd> <kbd>0.9</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3478</samp>.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods: Learning Module 3, Benchmarking Returns (price, market-cap, float-adjusted and equal index weights); Learning Module 5, Statistical Characteristics of Asset Returns (quantiles, trimmed and winsorized means, sample and population dispersion, target downside deviation, covariance and correlation); Learning Module 6, Statistical Distributions for Financial Asset Prices and Returns (expected value and variance, the total probability rule, Bayes&rsquo; formula). Spearman rank correlation is included as insurance: its place in the 2027 curriculum is uncertain.</p>
+      <p><strong>Sources.</strong> No story today: every question uses new, invented numbers. The true stories behind this week&rsquo;s ideas are in Days 22 to 27.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-27.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

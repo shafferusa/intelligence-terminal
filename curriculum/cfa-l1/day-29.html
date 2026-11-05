@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Paul the octopus went 8 for 8 at the World Cup. The binomial formula says how surprised to be — CFA Math, Day 29 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Paul the octopus went 8 for 8 at the World Cup. The binomial formula says how surprised to be",
+    "path": "reports/cfa/l1/day-29.html",
+    "summary": "Day 29 of CFA Math: the binomial formula P(X = x) = nCx p^x (1 − p)^(n − x), built from counting the orders and multiplying by the chance of one order; Logan computes the odds of Paul the octopus’s 8-for-8 World Cup record, of exactly 6 of 8 and of at least 6 of 8, and sees why one lucky streak is weak evidence of skill.",
+    "headlines": [
+      "Day 29 of 90 · Quantitative Methods: the chance of exactly x successes in n independent trials, P(X = x) = nCx p^x (1 − p)^(n − x)",
+      "Calculator: P(8 of 8), P(exactly 6 of 8) with nCr and P(at least 6 of 8) for Paul’s picks, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Paul the octopus went 8 for 8 at the World Cup. The binomial formula says how surprised to be</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Count the ways a run of yes-or-no outcomes can happen, multiply by the chance of any one way, and you can tell a lucky streak from real skill.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 29 of 90 &middot; LM6 Statistical Distributions for Financial Asset Prices and Returns &middot; Binomial probabilities and counting</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="29">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones, from Days 26 and 22, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="6.66" data-tol="0.01" data-pct data-show="6.66%">
+          <p class="cq-stem"><b>From Day 26.</b> A fund&rsquo;s return next year depends on the economy. Expansion (probability 0.70): the return is 14% with probability 0.6, or 6% with probability 0.4. Recession (probability 0.30): &minus;8% or 2%, each with probability 0.5. What is the fund&rsquo;s expected return? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Find the expected return inside each scenario first, then weight each by the scenario&rsquo;s probability and add: the total probability rule for expected value.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>E(R | expansion) = 0.6 &times; 14 + 0.4 &times; 6 = 8.40 + 2.40 = 10.80%.</p>
+            <p>E(R | recession) = 0.5 &times; (&minus;8) + 0.5 &times; 2 = &minus;4.00 + 1.00 = &minus;3.00%.</p>
+            <p>E(R) = 0.70 &times; 10.80 + 0.30 &times; (&minus;3.00) = 7.56 &minus; 0.90 = <b>6.66%</b>. (A plain average of the four returns, 3.50%, ignores the probabilities.)</p>
+            <p>BA II Plus (AOS): <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>1</kbd> &rarr; <samp>10.8000</samp>; <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>8</kbd> <kbd>+|&minus;</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> <kbd>STO</kbd> <kbd>2</kbd> &rarr; <samp>&minus;3.0000</samp>; <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>1</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>RCL</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>6.6600</samp>.</p>
+            <p>TI-84 Plus: <kbd>.6</kbd> <kbd>&times;</kbd> <kbd>14</kbd> <kbd>+</kbd> <kbd>.4</kbd> <kbd>&times;</kbd> <kbd>6</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>ENTER</kbd> &rarr; <samp>10.8000</samp>; <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>(&minus;)</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>.5</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>STO&rarr;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>&minus;3.0000</samp>; <kbd>.7</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>A</kbd> <kbd>+</kbd> <kbd>.3</kbd> <kbd>&times;</kbd> <kbd>ALPHA</kbd> <kbd>B</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.6600</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 22.</b> A two-stock index holds X (price 40; 300 million shares, 100 million of them held by the founding family) and Y (price 25; 400 million shares, none closely held). X&rsquo;s weight in a float-adjusted market-cap index is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 44.44%</span></label>
+              <p class="cq-why">Right. X&rsquo;s float is 300 &minus; 100 = 200 million shares. Float caps: X 40 &times; 200 = 8,000; Y 25 &times; 400 = 10,000 (millions). 8,000 / 18,000 = 44.44%.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 54.55%</span></label>
+              <p class="cq-why">That uses all 300 million shares: 12,000 / 22,000. The family&rsquo;s 100 million shares do not trade, so a float-adjusted index leaves them out.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. 61.54%</span></label>
+              <p class="cq-why">That is X&rsquo;s weight in a price-weighted index, 40 / (40 + 25) = 40 / 65: share counts ignored.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Float-adjusted weight = price &times; float shares, divided by the same for all members added up. Float = shares outstanding &minus; closely held shares. Y gets the other 55.56%.</p></details>
+        </div>
+      </section>
+
+      <h3>Paul the octopus, 8 for 8</h3>
+      <p>The 2010 World Cup, in South Africa. At the Sea Life aquarium in Oberhausen, Germany, keepers lowered two boxes into the tank of an octopus named Paul before each of Germany&rsquo;s matches. Each box held food and carried one team&rsquo;s flag. The box he opened first was his &ldquo;pick&rdquo;.</p>
+      <p>News outlets reported his picks before the games. &ldquo;Psychic octopus (named Paul) picks Germany over England in World Cup,&rdquo; ran one headline in June.</p>
+      <p>He picked Germany to beat Australia, Ghana, England, Argentina and Uruguay, and Germany beat all five. He picked Serbia for the match Germany lost to Serbia, and Spain for the semi-final that Germany lost to Spain.</p>
+      <p>Then he picked Spain over the Netherlands for the final on 11 July 2010. Spain won.</p>
+      <p>Paul died in his tank on 26 October 2010, aged about two, with a perfect World Cup record: eight correct calls out of eight.</p>
+      <p>Eight right in a row. Was Paul psychic? And if he was only guessing, how surprised should we be?</p>
+
+      <h3>The idea</h3>
+      <p>Many finance questions are yes-or-no, asked again and again: does the stock rise, does the bond default, was the analyst right? Each go is a <b>Bernoulli trial</b>: success with probability p, failure with probability 1 &minus; p.</p>
+      <p>Run n independent trials with the same p and count the successes. That count, X, is a <b>binomial random variable</b>: anything from 0 up to n.</p>
+      <p>Flip a coin 8 times. Every particular sequence, say HHTHHHTH, has the same chance: 0.5<sup>8</sup> = 1/256. But 8 heads happens in one sequence and 6 heads in 28 (the 2 tails can fall anywhere), so 6 heads is 28 times as likely.</p>
+      <p>That is the whole formula: <b>(number of ways) &times; (chance of one way)</b>.</p>
+      <p>A <b>binomial tree</b> for a stock works the same way: each period the price goes up (probability p) or down, and the ending node depends only on how many up-moves there were. So each node&rsquo;s probability is a binomial probability.</p>
+      <p>Also today: the <b>uniform distribution</b>, where every outcome is equally likely. Discrete: k outcomes, 1/k each (a fair die: 1/6). Continuous, from a to b: the chance of a slice is its share of the range, (x<sub>2</sub> &minus; x<sub>1</sub>) / (b &minus; a); the mean is the midpoint, (a + b) / 2.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start with one order.</b> A fund beats its benchmark with probability 0.7 each year, independently. Beat, beat, then miss: independent events multiply (Day 26), so 0.7 &times; 0.7 &times; 0.3 = 0.147.</p>
+      <p><b>Every order has the same chance.</b> Beat-miss-beat and miss-beat-beat shuffle the same three factors: 0.147 each. Each success brings a p and each failure a (1 &minus; p), so any one order of x successes in n trials has probability p<sup>x</sup>(1 &minus; p)<sup>n &minus; x</sup>.</p>
+      <p><b>Add the orders.</b> Only one order can happen, so they are mutually exclusive and add. Exactly 2 beats in 3 years: 3 &times; 0.147 = 0.441. In general, P(X = x) = (number of orders) &times; p<sup>x</sup>(1 &minus; p)<sup>n &minus; x</sup>.</p>
+      <p><b>Count the orders.</b> Choosing Paul&rsquo;s 2 misses fixes his 6 hits. The first miss can be any of 8 matches, the second any of the other 7: 8 &times; 7 = 56 (the multiplication rule). That is a <b>permutation</b>, <sub>8</sub>P<sub>2</sub> = 8!/6!: it counts <em>ordered</em> choices.</p>
+      <p><b>Remove the double count.</b> &ldquo;Match 3, then match 5&rdquo; and &ldquo;match 5, then match 3&rdquo; are the same two misses. Each pair was counted 2! = 2 times: 56 / 2 = 28 orders. In general r items can be listed in r! orders, so <sub>n</sub>C<sub>r</sub> = <sub>n</sub>P<sub>r</sub> / r! = n! / [(n &minus; r)! r!]. Choosing 2 misses or 6 hits is the same choice: <sub>8</sub>C<sub>2</sub> = <sub>8</sub>C<sub>6</sub> = 28.</p>
+      <p><b>Mean and variance.</b> One trial is a <b>Bernoulli</b> variable: 1 with probability p, else 0. By Day 26&rsquo;s formulas its mean is 1 &times; p + 0 &times; (1 &minus; p) = p, and its variance is p(1 &minus; p)<sup>2</sup> + (1 &minus; p)(0 &minus; p)<sup>2</sup> = p(1 &minus; p)[(1 &minus; p) + p] = p(1 &minus; p). X adds up n independent trials (no covariance terms), so the means add to np and the variances to np(1 &minus; p).</p>
+      <p><b>In plain words:</b> count the ways it can happen, then multiply by the chance of any one way.</p>
+      <div class="formula">
+        <p class="expr">P(X = x) = <sub>n</sub>C<sub>x</sub> &times; p<sup>x</sup> &times; (1 &minus; p)<sup>n &minus; x</sup></p>
+        <p class="expr"><sub>n</sub>C<sub>x</sub> = n! / [(n &minus; x)! &times; x!]</p>
+        <p class="expr">E(X) = np; Var(X) = np(1 &minus; p)</p>
+        <dl>
+          <dt>X</dt><dd>the number of successes in n trials: a binomial random variable</dd>
+          <dt>n</dt><dd>the number of trials, independent, each with the same p</dd>
+          <dt>x</dt><dd>the number of successes asked about, from 0 to n</dd>
+          <dt>p</dt><dd>the probability of success on one trial; 1 &minus; p is the probability of failure</dd>
+          <dt><sub>n</sub>C<sub>x</sub></dt><dd>&ldquo;n choose x&rdquo;: how many orders hold exactly x successes (a combination)</dd>
+          <dt>n!</dt><dd>n factorial, n &times; (n &minus; 1) &times; &hellip; &times; 2 &times; 1; by definition 0! = 1, so <sub>8</sub>C<sub>8</sub> = 1</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>Binomial probability of exactly x successes in n trials: P(X = x) = <sub>n</sub>C<sub>x</sub> &times; p<sup>x</sup> &times; (1 &minus; p)<sup>(n &minus; x)</sup></li>
+          <li>Mean and variance of a binomial random variable: E(X) = n p; Var(X) = n p (1 &minus; p)</li>
+          <li>Combinations (order does not matter): <sub>n</sub>C<sub>r</sub> = n! / [(n &minus; r)! &times; r!]</li>
+          <li>Permutations (order matters): <sub>n</sub>P<sub>r</sub> = n! / (n &minus; r)!</li>
+          <li>Continuous uniform distribution on [a, b]: P(x<sub>1</sub> &le; X &le; x<sub>2</sub>) = (x<sub>2</sub> &minus; x<sub>1</sub>) / (b &minus; a); mean = (a + b) / 2</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> (a) A stock moves up with probability 0.6 each period, independently. Over 4 periods, find P(exactly 3 up-moves), the probability of the tree&rsquo;s 3-up ending node, and the mean and variance of the number of up-moves. (b) How many ways can you choose 3 funds from 8, and how many ordered podiums (1st, 2nd, 3rd)? (c) A return is uniform between &minus;4% and 10%: find P(0% &le; R &le; 5%) and the mean.</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>(a) <sub>4</sub>C<sub>3</sub> = 4! / (1! &times; 3!) = 4 paths with three ups: UUUD, UUDU, UDUU, DUUU.</li>
+          <li>Each path: 0.6<sup>3</sup> &times; 0.4 = 0.216 &times; 0.4 = 0.0864. P(X = 3) = 4 &times; 0.0864 = <b>0.3456</b>.</li>
+          <li>E(X) = np = 4 &times; 0.6 = <b>2.4</b>; Var(X) = np(1 &minus; p) = 4 &times; 0.6 &times; 0.4 = <b>0.96</b>.</li>
+          <li>(b) Order does not matter: <sub>8</sub>C<sub>3</sub> = 8! / (5! &times; 3!) = <b>56</b>. Order matters: <sub>8</sub>P<sub>3</sub> = 8! / 5! = 8 &times; 7 &times; 6 = <b>336</b> = 56 &times; 3!, since each group of 3 fills the podium 6 ways.</li>
+          <li>(c) P = (5 &minus; 0) / (10 &minus; (&minus;4)) = 5/14 = <b>35.71%</b>; mean = (&minus;4 + 10) / 2 = <b>3%</b>.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> Treat each of Paul&rsquo;s 8 picks as a coin flip, p = 0.5. Find P(8 of 8), P(exactly 6 of 8) using <sub>8</sub>C<sub>6</sub>, and P(at least 6 of 8). The BA II Plus has no binomial key, so the formula is the exam method; the TI-84 also has <samp>binompdf(</samp> and <samp>binomcdf(</samp> to check.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Go to the plain calculator and clear it</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>QUIT</kbd> <kbd>CE/C</kbd> <kbd>CE/C</kbd> (still in AOS from Day 1, which matters today: it does the power before the &times;)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) <kbd>CLEAR</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">One particular order: all 8 right is 0.5 multiplied by itself 8 times. Then flip it over to read &ldquo;1 in &hellip;&rdquo;</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>.5</kbd> <kbd>yˣ</kbd> <kbd>8</kbd> <kbd>=</kbd>, then <kbd>1/x</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>.5</kbd> <kbd>^</kbd> <kbd>8</kbd> <kbd>ENTER</kbd>, then <kbd>x⁻¹</kbd> <kbd>ENTER</kbd> (the line reads <samp>Ans⁻¹</samp>)</div>
+            <p class="calc-see">Display: <samp>0.0039</samp>, then <samp>256.0000</samp> (BA II Plus) / <samp>.0039</samp>, then <samp>256.0000</samp> (TI-84). Every particular sequence of 8 picks has this same chance: 1 in 256.</p>
+          </li>
+          <li>
+            <p class="calc-what">Count the orders with exactly 6 right: <sub>8</sub>C<sub>6</sub></p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>8</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>6</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>8</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> (to PRB; PROB on a CE) <kbd class="menu">3:nCr</kbd> <kbd>6</kbd> <kbd>ENTER</kbd> (the line reads <samp>8 nCr 6</samp>)</div>
+            <p class="calc-see">Display: <samp>28.0000</samp> (BA II Plus) / <samp>28.0000</samp> (TI-84). 28 ways to place his 2 misses among 8 matches.</p>
+          </li>
+          <li>
+            <p class="calc-what">Multiply by the chance of one order, 0.5<sup>6</sup> &times; 0.5<sup>2</sup> = 0.5<sup>8</sup>: that is P(exactly 6 of 8)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>yˣ</kbd> <kbd>8</kbd> <kbd>=</kbd> (carries on from 28)</div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>^</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> (the line starts with <samp>Ans</samp>). Shortcut, same answer: <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR), <kbd>&#9660;</kbd> down to <kbd class="menu">A:binompdf(</kbd> (<samp>0:binompdf(</samp> before OS 2.30), <kbd>ENTER</kbd> (with STAT WIZARDS off since Day 12 it pastes straight in), then <kbd>8</kbd> <kbd>,</kbd> <kbd>.5</kbd> <kbd>,</kbd> <kbd>6</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.1094</samp> (BA II Plus) / <samp>.1094</samp> (TI-84, both ways). 28/256 = 10.94%. Inside <samp>binompdf(</samp> the order is n, p, x.</p>
+          </li>
+          <li>
+            <p class="calc-what">Count the orders with 7 right, and with 8 right</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>8</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>7</kbd> <kbd>=</kbd>, then <kbd>8</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>8</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>8</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd class="menu">3:nCr</kbd> <kbd>7</kbd> <kbd>ENTER</kbd>, then <kbd>8</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd class="menu">3:nCr</kbd> <kbd>8</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>8.0000</samp>, then <samp>1.0000</samp> (both calculators). The one miss can be any of the 8 matches; a perfect record happens only one way.</p>
+          </li>
+          <li>
+            <p class="calc-what">At least 6 = exactly 6 + exactly 7 + exactly 8. Every order has the same 0.5<sup>8</sup>, so add the counts first</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>(</kbd> <kbd>28</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>yˣ</kbd> <kbd>8</kbd> <kbd>=</kbd>, then <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>(</kbd> <kbd>28</kbd> <kbd>+</kbd> <kbd>8</kbd> <kbd>+</kbd> <kbd>1</kbd> <kbd>)</kbd> <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>^</kbd> <kbd>8</kbd> <kbd>ENTER</kbd>. Check: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>2nd</kbd> <kbd>VARS</kbd> (DISTR), <kbd>&#9660;</kbd> down to <kbd class="menu">B:binomcdf(</kbd> (<samp>A:binomcdf(</samp> before OS 2.30), <kbd>ENTER</kbd>, then <kbd>8</kbd> <kbd>,</kbd> <kbd>.5</kbd> <kbd>,</kbd> <kbd>5</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>0.1445</samp>, then <samp>14.4531</samp> (BA II Plus) / <samp>.1445</samp> (TI-84, both ways). <samp>binomcdf(8,.5,5)</samp> alone shows <samp>.8555</samp>, the chance of 5 <em>or fewer</em>: hence 1 minus it.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: P(8 of 8) = 1/256 = 0.39%; P(exactly 6 of 8) = 28/256 = 10.94%; P(at least 6 of 8) = 37/256 = 14.45%.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>If Paul was guessing, each pick was a coin flip: n = 8, p = 0.5. Then P(8 of 8) = <sub>8</sub>C<sub>8</sub> &times; 0.5<sup>8</sup> = 1/256 = 0.39%. For one guesser, that is rare.</p>
+      <p>But Paul was far from the only animal, pundit or fan making picks, and nobody writes about the ones who failed. Take 100 coin-flip guessers calling the same eight matches. All 100 fall short with probability (255/256)<sup>100</sup> = 0.6761, so at least one goes 8 for 8 with probability 1 &minus; 0.6761 = 32.4%. With 256 guessers, expect one perfect record: np = 256 &times; 1/256 = 1.</p>
+      <p>A guesser averages np = 4 right, give or take &radic;2 &asymp; 1.41, and gets 6 or more right 14.45% of the time.</p>
+      <p>A streak picked out after the fact is weak evidence of skill, for an octopus or for a fund manager with one lucky run.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li><b>A permutation where order does not matter.</b> <sub>8</sub>P<sub>6</sub> = 20,160 counts every set of 6 hits 6! = 720 times over; the binomial needs <sub>8</sub>C<sub>6</sub> = 20,160 / 720 = 28. Ask: would swapping two items give a different outcome? If not, use C.</li>
+          <li><b>Dropping (1 &minus; p)<sup>n &minus; x</sup>.</b> Exactly 3 ups in 4 periods also means exactly 1 down. Leave it out and you get 4 &times; 0.6<sup>3</sup> = 0.864, not 0.3456. With p = 0.5 the two factors merge into 0.5<sup>8</sup> and the second one hides; with any other p, both must be there.</li>
+          <li><b>&ldquo;Exactly&rdquo; when the question says &ldquo;at least&rdquo;.</b> Exactly 6 of 8 is 10.94%; at least 6 (6, 7 or 8) is 14.45%. On the TI-84, <samp>binomcdf(n,p,x)</samp> adds everything up to and including x, so at least 6 is 1 &minus; <samp>binomcdf(8,.5,5)</samp>. Subtracting <samp>binomcdf(8,.5,6)</samp> instead gives 3.52%, which is &ldquo;at least 7&rdquo;.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="4.39453125" data-tol="0.01" data-pct data-show="4.39%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> An analyst calls the direction (beat or miss) of 10 earnings surprises, and each call is a pure coin flip, p = 0.5. What is the probability that exactly 8 of the 10 calls are right? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as steps 3 and 4 of the walkthrough. Only n and x change: n = 10, x = 8, so the power is 10 too.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>Orders: <sub>10</sub>C<sub>8</sub> = 45 (choose the 2 misses: 10 &times; 9 / 2 = 45). One order: 0.5<sup>8</sup> &times; 0.5<sup>2</sup> = 0.5<sup>10</sup> = 1/1024. P(X = 8) = 45 / 1024 = <b>4.39%</b>.</p>
+            <p>BA II Plus: <kbd>10</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>8</kbd> <kbd>=</kbd> &rarr; <samp>45.0000</samp>; <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>yˣ</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>0.0439</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>4.3945</samp>.</p>
+            <p>TI-84 Plus: <kbd>10</kbd> <kbd>MATH</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd>&#9658;</kbd> <kbd class="menu">3:nCr</kbd> <kbd>8</kbd> <kbd>ENTER</kbd> &rarr; <samp>45.0000</samp>; <kbd>&times;</kbd> <kbd>.5</kbd> <kbd>^</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0439</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>4.3945</samp>. Or <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">A:binompdf(</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>.5</kbd> <kbd>,</kbd> <kbd>8</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.0439</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2. Why.</b> In P(X = x) = <sub>n</sub>C<sub>x</sub> &times; p<sup>x</sup> &times; (1 &minus; p)<sup>n &minus; x</sup>, what job does <sub>n</sub>C<sub>x</sub> do?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. It turns the probability into a percentage, so the answer comes out on a 0 to 100 scale</span></label>
+              <p class="cq-why">The formula&rsquo;s answer is a probability between 0 and 1 (Paul&rsquo;s 6 of 8: 0.1094). <sub>n</sub>C<sub>x</sub> is a count, 28 there, not a unit conversion.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. It corrects for the trials not being independent, which would otherwise make the product of p&rsquo;s too large</span></label>
+              <p class="cq-why">The binomial <em>assumes</em> independent trials: that is why one order&rsquo;s probability is a plain product of p&rsquo;s and (1 &minus; p)&rsquo;s. With dependent trials the formula does not apply at all.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Every particular order of x successes and n &minus; x failures has the same probability, p<sup>x</sup>(1 &minus; p)<sup>n &minus; x</sup>, and <sub>n</sub>C<sub>x</sub> counts how many such orders there are</span></label>
+              <p class="cq-why">Right. The orders are mutually exclusive, so their probabilities add, and adding the same number <sub>n</sub>C<sub>x</sub> times is multiplying by <sub>n</sub>C<sub>x</sub>.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>Exactly 2 beats in 3 years can happen as BBM, BMB or MBB. Each has probability 0.7 &times; 0.7 &times; 0.3 = 0.147, and only one can happen, so P = 0.147 + 0.147 + 0.147 = 3 &times; 0.147 = 0.441. The 3 is <sub>3</sub>C<sub>2</sub>.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="40.12630607616213" data-tol="0.01" data-pct data-show="40.13%">
+          <p class="cq-stem"><b>3. Twist: at least one.</b> A portfolio holds 10 bonds. Each has a 5% chance of defaulting this year, independently of the others. What is the probability that at least one defaults? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">%</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> &ldquo;At least one&rdquo; is everything except &ldquo;none&rdquo;. Find P(X = 0) with the binomial formula (<sub>10</sub>C<sub>0</sub> = 1 and anything to the power 0 is 1), then subtract it from 1.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>None: P(X = 0) = <sub>10</sub>C<sub>0</sub> &times; 0.05<sup>0</sup> &times; 0.95<sup>10</sup> = 1 &times; 1 &times; 0.5987 = 0.5987. At least one: 1 &minus; 0.5987 = <b>40.13%</b>.</p>
+            <p>Not 10 &times; 5% = 50%: adding the 5%s counts outcomes with two or more defaults more than once. 10 &times; 0.05 = 0.5 is np, the <em>expected number</em> of defaults, not a probability.</p>
+            <p>BA II Plus (AOS): <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.95</kbd> <kbd>yˣ</kbd> <kbd>10</kbd> <kbd>=</kbd> &rarr; <samp>0.4013</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>=</kbd> &rarr; <samp>40.1263</samp>.</p>
+            <p>TI-84 Plus: <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>.95</kbd> <kbd>^</kbd> <kbd>10</kbd> <kbd>ENTER</kbd> &rarr; <samp>.4013</samp>; <kbd>&times;</kbd> <kbd>100</kbd> <kbd>ENTER</kbd> &rarr; <samp>40.1263</samp>. Or <kbd>1</kbd> <kbd>&minus;</kbd> <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">A:binompdf(</kbd> <kbd>10</kbd> <kbd>,</kbd> <kbd>.05</kbd> <kbd>,</kbd> <kbd>0</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.4013</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>4. Exam style.</b> A stock rises in a period with probability 0.55, independently each period. The probability that it rises in exactly 3 of the next 5 periods is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. 3.37%</span></label>
+              <p class="cq-why">That is 0.55<sup>3</sup> &times; 0.45<sup>2</sup>, the chance of one particular order, such as rise-rise-rise-fall-fall. <sub>5</sub>C<sub>3</sub> = 10 was left out.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. 33.69%</span></label>
+              <p class="cq-why">Right: 10 &times; 0.55<sup>3</sup> &times; 0.45<sup>2</sup> = 10 &times; 0.166375 &times; 0.2025 = 0.3369.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. 59.31%</span></label>
+              <p class="cq-why">That is P(at least 3) = P(3) + P(4) + P(5) = 0.3369 + 0.2059 + 0.0503. The question says exactly 3.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>Exactly 3 rises in 5 periods means 3 rises and 2 falls, in any of <sub>5</sub>C<sub>3</sub> = 10 orders, each with probability 0.55<sup>3</sup> &times; 0.45<sup>2</sup> = 0.03369. So P = 10 &times; 0.03369 = <b>33.69%</b>.</p>
+            <p>BA II Plus (AOS): <kbd>5</kbd> <kbd>2ND</kbd> <kbd>nCr</kbd> <kbd>3</kbd> <kbd>=</kbd> &rarr; <samp>10.0000</samp>; <kbd>&times;</kbd> <kbd>.55</kbd> <kbd>yˣ</kbd> <kbd>3</kbd> <kbd>&times;</kbd> <kbd>.45</kbd> <kbd>x&sup2;</kbd> <kbd>=</kbd> &rarr; <samp>0.3369</samp>. TI-84 Plus: <kbd>2nd</kbd> <kbd>VARS</kbd> <kbd class="menu">A:binompdf(</kbd> <kbd>5</kbd> <kbd>,</kbd> <kbd>.55</kbd> <kbd>,</kbd> <kbd>3</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>.3369</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: was Paul psychic? Use the binomial formula, and say why his record is weak evidence of skill.</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Probably not. If every pick was a coin flip, P(8 of 8) = <sub>8</sub>C<sub>8</sub> &times; 0.5<sup>8</sup> = 1/256, rare for one guesser; but with many animals, pundits and fans guessing, someone was likely to go 8 for 8 (32.4% with just 100 guessers), and only the winner made the news. One streak picked out after the fact is weak evidence of skill.</p>
+            <p>A complete answer says: (1) under pure guessing, P(8 of 8) = 0.5<sup>8</sup> = 1/256; (2) with many guessers a perfect run somewhere is likely, and only the winner gets noticed; (3) a streak chosen after the fact is weak evidence of skill, for an octopus or a fund manager.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 6: Statistical Distributions for Financial Asset Prices and Returns (Bernoulli trials and the binomial distribution; the mean and variance of a binomial random variable; binomial trees; the discrete and continuous uniform distributions). The counting rules (factorials, combinations, permutations) are included as insurance: the 2027 module may not test them on their own, but the binomial formula rests on <sub>n</sub>C<sub>x</sub>.</p>
+      <p><strong>Sources.</strong> Wikipedia, &ldquo;Paul the Octopus&rdquo; (Sea Life aquarium, Oberhausen; two boxes holding food and marked with flags; all seven of Germany&rsquo;s matches and the final called correctly; died 26 October 2010); AP via Fox News, &ldquo;Paul the Octopus Picks Spain to Win World Cup&rdquo;, July 2010; AP via Bangor Daily News, &ldquo;Octopus that predicted World Cup results dies&rdquo;, 26 October 2010 (eight matches correct; died in his tank at Oberhausen); <em>Christian Science Monitor</em>, &ldquo;Paul the Octopus has died&rdquo;, 26 October 2010; <em>Christian Science Monitor</em>, &ldquo;Psychic octopus (named Paul) picks Germany over England in World Cup&rdquo;, 26 June 2010.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-28.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
