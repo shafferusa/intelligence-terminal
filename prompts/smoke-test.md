@@ -6,7 +6,7 @@ then messages the results to Telegram. Follow the steps in order; never print se
 
 ## 1. Runtime checks
 
-- `TZ="America/New_York" date` — record current ET time and UTC time.
+- `TZ=America/New_York date` — record current ET time and UTC time.
 - Confirm the repo cloned: `git log --oneline -1` and `git status`.
 
 ## 2. Environment variables

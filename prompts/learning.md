@@ -74,8 +74,8 @@ treat 30 as the hard limit. Work efficiently: the lesson's resource is chosen in
 so research only what you are not certain of.
 
 1. ```bash
-   TODAY=$(TZ="America/New_York" date +%F)
-   DOW=$(TZ="America/New_York" date +%u)     # 1-5 = Mon-Fri
+   TODAY=$(TZ=America/New_York date +%F)
+   DOW=$(TZ=America/New_York date +%u)     # 1-5 = Mon-Fri
    ```
 2. **Weekday guard:** if `DOW` is 6 or 7, this report does not run. Append
    `{"ts":"<UTC ISO>","slot":"offschedule","ok":true,"note":"learning brief invoked on a weekend; exited by design"}`

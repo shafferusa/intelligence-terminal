@@ -12,6 +12,8 @@ Usage
   python3 .github/scripts/api_get.py --wait-200 URL [--tries N] [--sleep S]
 
   @NAME@ in a URL or header is replaced by the environment variable NAME. @A|B@ takes the first one that is set.
+  Date tokens use the America/New_York clock: @ET_DATE@ (2026-11-05), @ET_YYYYMMDD@ (20261105),
+  @ET_YYYYMM@ (202611), @ET_YEAR@ (2026).
   Without -o the body is printed to stdout after a one-line status on stderr.
   LIST (for --batch, written with the Write tool): one fetch per line, fields separated by TABs:
       outfile<TAB>URL[<TAB>Header: value]...
@@ -33,6 +35,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timedelta, timezone
 
 GOV_UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
 DEFAULT_UA = "curl/8.5.0"
@@ -57,8 +60,27 @@ def redact(text):
     return text
 
 
+def et_now():
+    """Now on the America/New_York clock; falls back to fixed UTC-5 if the tz database is missing."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York"))
+    except Exception:  # noqa: BLE001 - never let a date token break a fetch
+        return datetime.now(timezone(timedelta(hours=-5)))
+
+
+def et_tokens():
+    now = et_now()
+    return {"ET_DATE": now.strftime("%Y-%m-%d"), "ET_YYYYMMDD": now.strftime("%Y%m%d"),
+            "ET_YYYYMM": now.strftime("%Y%m"), "ET_YEAR": now.strftime("%Y")}
+
+
 def expand(text):
+    dates = et_tokens() if "@ET_" in text else {}
+
     def sub(match):
+        if match.group(1) in dates:
+            return dates[match.group(1)]
         for name in match.group(1).split("|"):
             value = os.environ.get(name, "")
             if value:

@@ -13,8 +13,8 @@ Use `python3 .github/scripts/api_get.py` (SR §0b) for API fetches, WebSearch/We
 
 
 1. ```bash
-   TODAY=$(TZ="America/New_York" date +%F)
-   DOW=$(TZ="America/New_York" date +%u)    # 6=Saturday, 7=Sunday
+   TODAY=$(TZ=America/New_York date +%F)
+   DOW=$(TZ=America/New_York date +%u)    # 6=Saturday, 7=Sunday
    ```
    `SLOT=sat` if DOW=6, `SLOT=sun` if DOW=7. (Any other value: something is misscheduled — note it
    in the run log and follow the day the clock actually says via `prompts/weekday.md` instead.)

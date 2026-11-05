@@ -7,7 +7,7 @@ WebFetch tools for news research. Never print secret values.
 
 ## Step 0 — Time, slot, idempotency, inputs
 
-**0a. Day-of-week guard:** if `TZ="America/New_York" date +%u` returns `6` or `7` (Saturday/
+**0a. Day-of-week guard:** if `TZ=America/New_York date +%u` returns `6` or `7` (Saturday/
 Sunday), this weekday procedure does not apply — the weekend routine owns those days. Append
 one line to `state/run-log.jsonl`:
 `{"ts":"<UTC ISO>","slot":"offschedule","ok":true,"note":"weekday routine invoked on a weekend day; exited by design"}`
@@ -23,9 +23,9 @@ report, send no Telegram message.
 1. Compute Eastern time:
 
    ```bash
-   TODAY=$(TZ="America/New_York" date +%F)          # YYYY-MM-DD
-   HOUR=$(TZ="America/New_York" date +%H)
-   NOW_ET=$(TZ="America/New_York" date "+%Y-%m-%d %H:%M %Z")
+   TODAY=$(TZ=America/New_York date +%F)          # YYYY-MM-DD
+   HOUR=$(TZ=America/New_York date +%H)
+   NOW_ET=$(TZ=America/New_York date +%Y-%m-%dT%H:%M%Z)
    ```
 
 2. Slot: if `HOUR` < 12 → `SLOT=am` (Morning Brief), else `SLOT=pm` (Closing Brief).
@@ -66,7 +66,7 @@ back to `state/market-history/last-good.json`. `.gov` hosts always get
 ### 2.1 Treasury daily par yield curve (.gov UA)
 
 ```
-https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=$(TZ=America/New_York date +%Y%m)
+https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=@ET_YYYYMM@
 ```
 
 Parse the most recent entry: 1M→30Y par yields. Compute 2s10s, 3m10y, 5s30s from it.
