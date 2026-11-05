@@ -50,8 +50,12 @@ shell-safety check prompts when a command puts a brace expansion inside quotes, 
    Many fetches at once: write a list with the Write tool (one `outfile<TAB>URL[<TAB>Header: value]` per
    line) and run `python3 .github/scripts/api_get.py --batch <list> --dir <scratch dir>`.
 2. **No `${...}` or `%{...}` inside quotes anywhere in a Bash command.** Plain `$VAR` is fine
-   (`"$TODAY"`). Anything longer than one plain command: write it to a script file in your scratch
-   directory with the Write tool and run `python3 <file>` or `bash <file>`.
+   (`"$TODAY"`). The second prompt seen in these runs is "Quoted text in this command can't be
+   checked before it runs": it fires on inline code such as `python3 -c "<multi-line code>"`,
+   `curl ... | python3 -c "..."`, and grep/sed patterns with quotes nested inside quotes. So any
+   code, parsing or multi-step logic goes in a script file: write it to your scratch directory with
+   the Write tool, then run `python3 <file>` or `bash <file>`. Keep each Bash call one plain program
+   with plain arguments.
 3. The PR fallback (§15.2b) uses `python3 .github/scripts/open_pr.py --title "<commit subject>"`, and the
    page poll (§15.3) uses `python3 .github/scripts/api_get.py --wait-200 <report URL>`.
 
