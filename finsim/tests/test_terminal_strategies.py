@@ -3,7 +3,12 @@ simulation import), the §19.22 resolution pins (715 / 770 / 840 / 730 / 800, ex
 sizing 1,000 + 10 / 5 / 10 + 20 / 2 ES, fill_mode AON vs SEQUENTIAL), the iron-condor package priced from a fixture chain
 (credit +4,200.00, margin 28,100.00, max loss 25,800.00, breakevens 725.80 and 804.20), a sequential protective put and a
 zero-cost collar, a beta-hedged long against the front ES, TRS availability per account, the 202 "fetching" answer and the
-catalogue reasons.  Every expected number is worked by hand in a comment; no network; nothing touches ~/.finsim."""
+catalogue reasons.  Every expected number is worked by hand in a comment; no network; nothing touches ~/.finsim.
+
+1.0.7.2 (``CustomPackageTests``): the CUSTOM key - the exact legs of a Smart Ticket combination - on the fictional ACME (spot 100.00,
+an invented chain listing 2026-12-18 and 2027-01-15) and WIDG: an all-or-none credit call spread and a straddle (prices, margin
+width x 100 net of the credit, payoff), a sequential buy-write (the shares first with their limit, the call covered by them), every
+refusal code, and the catalogue still 60 without CUSTOM."""
 from __future__ import annotations
 
 import os
@@ -573,6 +578,247 @@ class _RuntimeCase(unittest.TestCase):
             st.package_legs(rt, US_EXCHANGE, "LONG_CALL", {"underlying": "SPY", "tenor_months": 3})
         self.assertEqual("NOT_AVAILABLE", cm.exception.code)
         self.assertIn("no listed expiry on or after 2027-01-20", cm.exception.message)
+
+
+# ===== 1.0.7.2: CUSTOM packages (the exact legs of a Smart Ticket combination) on the fictional ACME / WIDG ================================
+E1, E2 = "2026-12-18", "2027-01-15"
+ACME_SPOT = Decimal("100.00")
+
+
+def acme(right: str, strike, expiry: str = E1) -> str:
+    return occ("ACME", expiry, right, strike)
+
+
+def add_name(rt, sym: str) -> None:
+    """A fictional US listing with listed options (Cboe symbol = ticker), as Yahoo resolution would store it."""
+    with rt.db.writer() as tx:
+        rt.instruments.upsert(tx, instrument_id=sym, kind="EQUITY", symbol=sym, name=f"{sym} test listing", currency="USD", session_group="US_EQUITY",
+                              account_kinds=["US_EXCHANGE", "PB"], yahoo_symbol=sym, cboe_symbol=sym, spec={"exchange": "NYQ"})
+
+
+def acme_chain(now) -> ChainSnapshot:
+    """ACME 100.00 (underlying bid 99.98 / ask 100.02); every price invented."""
+    rows = [row("ACME", E1, "C", 95, "7.90", "8.10", 20, 20),
+            row("ACME", E1, "C", 100, "4.80", "5.00", 20, 20, delta=0.52, vega=0.18, theta=-0.04),
+            row("ACME", E1, "C", 105, "2.60", "2.75", 20, 20, delta=0.33, vega=0.16, theta=-0.035),
+            row("ACME", E1, "C", 110, "1.20", "1.30", 20, 20),
+            row("ACME", E1, "P", 95, "2.10", "2.25", 20, 20),
+            row("ACME", E1, "P", 100, "4.10", "4.30", 20, 20, delta=-0.48, vega=0.18, theta=-0.03),
+            row("ACME", E1, "P", 105, "6.90", "7.10", 20, 20),
+            row("ACME", E1, "C", 115, None, "0.40", 0, 20),                 # no bid: nothing can be sold there
+            row("ACME", E2, "C", 100, "6.20", "6.40", 20, 20),
+            row("ACME", E2, "C", 105, "3.90", "4.05", 20, 20)]
+    return chain("ACME", ACME_SPOT, rows, now, bid="99.98", ask="100.02")
+
+
+class CustomPackageTests(unittest.TestCase):
+    """Its own fixture (``make_runtime`` + ``QuoteCache`` / ``ChainCache`` as ``_RuntimeCase``), so the template tests do not run twice."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="fst-strategies-custom-")
+        rt = self.rt = make_runtime(self.tmp)                                  # 2026-10-20 14:00 ET, T1 with USD 10,000,000
+        self.now = rt.clock.epoch()
+        rt.cache = QuoteCache(rt.db, rt.instruments, rt.sessions, rt.clock, rt.bus, rt.log)
+        rt.chains = ChainCache(rt.clock)
+        st.register(rt.bus)
+        for sym in ("ACME", "WIDG"):
+            add_name(rt, sym)
+        rt.chains.put(acme_chain(self.now))
+        rt.cache.put(rec("ACME", "100.00", self.now), self.now)
+
+    def tearDown(self):
+        self.rt.close()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def spec(self, legs, account=US_EXCHANGE):
+        return st.package_legs(self.rt, account, "CUSTOM", {"legs": legs})
+
+    def refused(self, legs, code, account=US_EXCHANGE):
+        with self.assertRaises(RejectError) as cm:
+            self.spec(legs, account)
+        self.assertEqual(code, cm.exception.code, cm.exception.message)
+        return cm.exception
+
+    # ---- all-or-none: a credit call spread and a straddle -------------------------------------------------------------------------
+    def test_aon_credit_call_spread_prices_margin_and_payoff(self):
+        spec = self.spec([{"instrument_id": acme("C", 100), "side": "STO", "qty": 2}, {"instrument_id": acme("C", 105), "side": "BTO", "qty": 2}])
+        self.assertEqual(("CUSTOM", "CUSTOM", "AON", None, E1, "ACME"), (spec.strategy_key, spec.group, spec.fill_mode, spec.primary_index, spec.expiry,
+                                                                        spec.underlying_id))
+        self.assertEqual("Your own legs: 2 legs on ACME (all or none)", spec.title)
+        c100, c105 = spec.legs
+        # sold at the bid 4.80, bought at the ask 2.75 (the chain row's executable sides); MARKET, no limit
+        self.assertEqual([("OPTION", "STO", "SELL", 2, D("4.8"), "Cboe bid", "MARKET", None), ("OPTION", "BTO", "BUY", 2, D("2.75"), "Cboe ask", "MARKET", None)],
+                         [(l.kind, l.side, l.template_side, l.qty, l.est_price, l.price_basis, l.order_type, l.limit_px) for l in spec.legs])
+        # cash +4.80 x 100 x 2 = +960.00 and -2.75 x 100 x 2 = -550.00 -> credit +410.00; fees 2 legs x 2 contracts x 0.65 = 2.60;
+        # after fees 410.00 - 2.60 = 407.40
+        self.assertEqual(([96_000, -55_000], [1_30, 1_30]), ([l.cash_c for l in spec.legs], [l.fee_c for l in spec.legs]))
+        self.assertEqual(("410.00", "2.60", "407.40", "410.00"), (spec.totals["net_cash"], spec.totals["fees"], spec.totals["net_cash_after_fees"],
+                                                                    spec.totals["net_option_premium"]))
+        # margin: width (105 - 100) x 100 x 2 = 1,000.00 net of the credit (4.80 - 2.75) x 100 x 2 = 410.00 -> 590.00
+        self.assertEqual((59_000, "590.00"), (spec.margin["requirement_c"], spec.margin["requirement"]))
+        self.assertEqual([("vertical spread", 2, "5", 41_000, 59_000)], [(d["rule"], d["contracts"], d["width"], d["credit_c"], d["requirement_c"])
+                                                                          for d in spec.margin["detail"]])
+        # payoff at 2026-12-18: below 100 both expire worthless (+410.00); above 105 -(105 - 100) x 200 + 410 = -590.00; breakeven 100 + 2.05 = 102.05
+        po = spec.payoff
+        self.assertEqual(("410.00", "-590.00", ["102.05"], False, False), (po["max_gain"], po["max_loss"], po["breakevens"], po["unlimited_up"], po["unlimited_down"]))
+        pts = {Decimal(a): Decimal(b) for a, b in po["payoff"]}
+        self.assertEqual((D("410.00"), D("-590.00"), D("10.00")), (pts[D(100)], pts[D(105)], pts[D(102)]))       # 102: -2 x 200 + 410 = 10
+        # greeks x contracts x 100, signed: -(0.52 x 200) = -104; +0.33 x 200 = +66 -> -38 shares
+        self.assertEqual(([D("-104.00"), D("66.00")], "-38.00"), ([l.delta_shares for l in spec.legs], spec.totals["delta_shares"]))
+        self.assertEqual("sell to open 2 ACME 2026-12-18 100 call at 4.80 (+0.00 % from spot)", c100.what)
+        self.assertEqual("buy to open 2 ACME 2026-12-18 105 call at 2.75 (+5.00 % from spot)", c105.what)
+        # neither contract is in the master yet: the preview's hook lists them from the chain row (nothing else)
+        self.assertEqual([acme("C", 100), acme("C", 105)], spec.missing_instruments)
+        d = spec.to_dict()
+        self.assertEqual(("CUSTOM", "CUSTOM", "Your own legs", spec.title, st.CUSTOM_META["simple"], True),
+                         (d["strategy"]["key"], d["strategy"]["group"], d["group_label"], d["strategy"]["title"], d["strategy"]["simple"], d["aon"]))
+        self.assertEqual([{"instrument_id": acme("C", 100), "side": "STO", "qty": 2, "order_type": "MARKET"},
+                          {"instrument_id": acme("C", 105), "side": "BTO", "qty": 2, "order_type": "MARKET"}], d["params"]["legs"])
+        self.assertEqual([(acme("C", 100), "STO", 2, "MARKET", None), (acme("C", 105), "BTO", 2, "MARKET", None)],
+                         [(l["instrument_id"], l["side"], l["qty"], l["order_type"], l["limit_px"]) for l in d["legs"]])
+
+    def test_aon_straddle_two_buys(self):
+        spec = self.spec([{"instrument_id": acme("C", 100), "side": "BTO", "qty": 1}, {"instrument_id": acme("P", 100), "side": "BTO", "qty": 1}])
+        self.assertEqual(("AON", [D("5"), D("4.3")]), (spec.fill_mode, [l.est_price for l in spec.legs]))     # both at the ask
+        # debit 5.00 x 100 + 4.30 x 100 = 930.00; no short leg -> no option margin
+        self.assertEqual(("-930.00", 0), (spec.totals["net_cash"], spec.margin["requirement_c"]))
+        # payoff: -930.00 at 100; the long call / put each pay 100 per point: breakevens 100 -/+ 9.30; at either end of the
+        # +/-35 % grid (65.00 or 135.00) 35 x 100 - 930 = 2,570.00
+        po = spec.payoff
+        self.assertEqual(("2570.00", "-930.00", ["90.70", "109.30"]), (po["max_gain"], po["max_loss"], po["breakevens"]))
+
+    def test_aon_calendar_has_two_expiries(self):
+        spec = self.spec([{"instrument_id": acme("C", 100), "side": "STO", "qty": 1}, {"instrument_id": acme("C", 100, E2), "side": "BTO", "qty": 1}])
+        self.assertEqual(("AON", E1), (spec.fill_mode, spec.expiry))                    # the near expiry
+        self.assertIn("legs expire on different dates", spec.payoff["grid_note"])
+        self.assertEqual([2, 3], [l.tenor_months for l in spec.legs])                   # 59 days / 30.4375 = 1.94 -> 2; 87 days -> 2.86 -> 3
+
+    # ---- sequential: the shares first, their own limit, the call covered by them ------------------------------------------------------
+    def test_sequential_buy_write_puts_the_shares_first_with_their_limit(self):
+        # named call first, shares second: the package lists the shares first (the primary)
+        spec = self.spec([{"instrument_id": acme("C", 105), "side": "STO", "qty": 1}, {"instrument_id": "ACME", "side": "BUY", "qty": 100, "limit_px": "100.00"}])
+        self.assertEqual(("SEQUENTIAL", 0, "Your own legs: 2 legs on ACME (the shares first)"), (spec.fill_mode, spec.primary_index, spec.title))
+        stock, call = spec.legs
+        self.assertEqual(("STOCK", "ACME", "BUY", 100, "LIMIT", D("100"), D("100"), "your limit"), (stock.kind, stock.instrument_id, stock.side, stock.qty,
+                                                                                                  stock.order_type, stock.limit_px, stock.est_price, stock.price_basis))
+        self.assertEqual(("OPTION", "STO", D("2.6"), "MARKET"), (call.kind, call.side, call.est_price, call.order_type))
+        # cash -100 x 100.00 = -10,000.00 + 2.60 x 100 = +260.00 -> -9,740.00; fees: 100 shares at 0.005 = 0.50 -> the 1.00 minimum, + 0.65
+        self.assertEqual(("-9740.00", "1.65"), (spec.totals["net_cash"], spec.totals["fees"]))
+        # the 100 shares the package buys cover the sold call: no option margin
+        self.assertEqual((0, "covered call", "covered by 100 shares the account holds after the package"),
+                         (spec.margin["requirement_c"], spec.margin["detail"][0]["rule"], spec.margin["detail"][0]["note"]))
+        # payoff: capped at (105 - 100) x 100 + 260 = 760.00 above 105; at 65.00 (65 - 100) x 100 + 260 = -3,240.00; breakeven 100 - 2.60 = 97.40
+        po = spec.payoff
+        self.assertEqual(("760.00", "-3240.00", ["97.40"], False), (po["max_gain"], po["max_loss"], po["breakevens"], po["unlimited_up"]))
+        d = spec.to_dict()
+        # what order.submit reads (T/orders.py: the primary's order_type / limit_px, the children's legs): the limit travels as text
+        self.assertEqual([("ACME", "BUY", 100, "LIMIT", "100"), (acme("C", 105), "STO", 1, "MARKET", None)],
+                         [(l["instrument_id"], l["side"], l["qty"], l["order_type"], l["limit_px"]) for l in d["legs"]])
+        self.assertEqual(("SEQUENTIAL", 0, False), (d["fill_mode"], d["primary_index"], d["aon"]))
+        self.assertEqual({"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT", "limit_px": "100"}, d["params"]["legs"][1])
+
+    def test_sequential_children_keep_their_limit_and_a_sale_uncovers_the_call(self):
+        # held 300 ACME; SELL 300 + STO 1 call LIMIT 2.70: after the sale nothing is left to cover the call -> naked
+        self.assertTrue(buy(self.rt, US_EXCHANGE, "ACME", 300, "100.00").ok)
+        spec = self.spec([{"instrument_id": "ACME", "side": "SELL", "qty": 300}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 1, "limit_px": "2.70"}])
+        stock, call = spec.legs
+        self.assertEqual(("MARKET", None, D("99.98"), "Cboe underlying bid"), (stock.order_type, stock.limit_px, stock.est_price, stock.price_basis))
+        self.assertEqual(("LIMIT", D("2.7"), D("2.6")), (call.order_type, call.limit_px, call.est_price))     # estimated at the bid; the limit travels
+        self.assertEqual("sell to open 1 ACME 2026-12-18 105 call at 2.60, limit 2.70 (+5.00 % from spot)", call.what)
+        # naked call, mark = the chain mid (2.60 + 2.75) / 2 = 2.675 -> premium 267.50; OTM 105 - 100 = 5:
+        #   a = 267.50 + 0.20 x 100 x 100 - 5 x 100 = 267.50 + 2,000 - 500 = 1,767.50; b = 267.50 + 0.10 x 100 x 100 = 1,267.50 -> 1,767.50
+        self.assertEqual((176_750, "naked call"), (spec.margin["requirement_c"], spec.margin["detail"][0]["rule"]))
+        # still holding the 300 and no share leg: the 3 sold calls are covered by the 300 shares held (covered calls are counted first; the
+        # bought 110 call is spare) -> no option margin
+        spec2 = self.spec([{"instrument_id": acme("C", 105), "side": "STO", "qty": 3}, {"instrument_id": acme("C", 110), "side": "BTO", "qty": 1}])
+        self.assertEqual(("AON", 0, [("covered call", 3)]), (spec2.fill_mode, spec2.margin["requirement_c"],
+                                                             [(x["rule"], x["contracts"]) for x in spec2.margin["detail"]]))
+
+    # ---- the refusals: nothing is invented, one name per package, the codes ----------------------------------------------------------
+    def test_not_listed_never_invents_a_contract(self):
+        n0 = self.rt.instruments.count()
+        e = self.refused([{"instrument_id": acme("C", 120), "side": "STO", "qty": 1}, {"instrument_id": acme("C", 105), "side": "BTO", "qty": 1}], "NOT_LISTED")
+        self.assertIn("neither on the cached ACME chain nor in the master", e.message)
+        self.assertEqual(1, e.details["leg"])
+        self.assertIsNone(self.rt.instruments.get(acme("C", 120)))
+        self.assertEqual(n0, self.rt.instruments.count())
+        # a contract in the master but not on the chain has no Cboe quote: NOT_AVAILABLE (never priced from elsewhere)
+        with self.rt.db.writer() as tx:
+            self.rt.instruments.ensure_option(tx, acme("C", 125), self.rt.instruments.get("ACME"), {"option": acme("C", 125)})
+        e = self.refused([{"instrument_id": acme("C", 125), "side": "BTC", "qty": 1}, {"instrument_id": acme("C", 105), "side": "STO", "qty": 1}], "NOT_AVAILABLE")
+        self.assertIn("not on the cached ACME chain", e.message)
+        # a row without a bid cannot be sold
+        e = self.refused([{"instrument_id": acme("C", 115), "side": "STO", "qty": 1}, {"instrument_id": acme("C", 110), "side": "BTO", "qty": 1}], "NOT_AVAILABLE")
+        self.assertIn("no bid for ACME 2026-12-18 115 call", e.message)
+
+    def test_limit_in_aon_combo_invalid_side_invalid_and_the_leg_count(self):
+        c100, c105 = acme("C", 100), acme("C", 105)
+        e = self.refused([{"instrument_id": c100, "side": "BTO", "qty": 1, "limit_px": "5.00"}, {"instrument_id": c105, "side": "STO", "qty": 1}], "LIMIT_IN_AON")
+        self.assertEqual(1, e.details["leg"])
+        self.refused([{"instrument_id": c100, "side": "BTO", "qty": 1}, {"instrument_id": c105, "side": "STO", "qty": 1, "order_type": "STOP"}], "LIMIT_IN_AON")
+        # two names (an ACME call and a WIDG call): structure first, so no chain of WIDG is ever asked for
+        widg = occ("WIDG", E1, "C", 50)
+        e = self.refused([{"instrument_id": c100, "side": "BTO", "qty": 1}, {"instrument_id": widg, "side": "STO", "qty": 1}], "COMBO_INVALID")
+        self.assertIn("a package holds one name: its shares and its options", e.message)
+        self.assertEqual(["ACME", "WIDG"], e.details["names"])
+        self.assertEqual([], self.rt.chains.pending())
+        # shares of one name with an option of another
+        self.refused([{"instrument_id": "WIDG", "side": "BUY", "qty": 100}, {"instrument_id": c105, "side": "STO", "qty": 1}], "COMBO_INVALID")
+        # a futures leg
+        e = self.refused([{"instrument_id": "ESZ26", "side": "BUY", "qty": 1}, {"instrument_id": c100, "side": "BTO", "qty": 1}], "COMBO_INVALID")
+        self.assertIn("is a futures contract", e.message)
+        # order sides per kind
+        self.refused([{"instrument_id": c100, "side": "BUY", "qty": 1}, {"instrument_id": c105, "side": "STO", "qty": 1}], "SIDE_INVALID")
+        self.refused([{"instrument_id": "ACME", "side": "BTO", "qty": 100}, {"instrument_id": c105, "side": "STO", "qty": 1}], "SIDE_INVALID")
+        # 2 to 8 legs: one leg is an order of its own, nine is too many
+        e = self.refused([{"instrument_id": c100, "side": "BTO", "qty": 1}], "LEGS")
+        self.assertIn("a single leg is an order of its own", e.message)
+        nine = [{"instrument_id": acme(r, k, ex), "side": "BTO", "qty": 1} for r, k, ex in
+                (("C", 95, E1), ("C", 100, E1), ("C", 105, E1), ("C", 110, E1), ("P", 95, E1), ("P", 100, E1), ("P", 105, E1), ("C", 100, E2), ("C", 105, E2))]
+        self.assertEqual((9, "LEGS"), (len(nine), self.refused(nine, "LEGS").code))
+        self.assertEqual("AON", self.spec(nine[:8]).fill_mode)                            # eight is the most
+        self.refused({"instrument_id": c100}, "LEGS")                                      # not a list
+        self.refused([{"instrument_id": c100, "side": "BTO", "qty": 1}, {"instrument_id": c100, "side": "STO", "qty": 1}], "LEGS")   # one contract twice
+
+    def test_quantity_type_price_account_and_instrument_codes(self):
+        c105 = acme("C", 105)
+        for qty in (0, -1, "1.5", True, "x"):
+            self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": qty}, {"instrument_id": c105, "side": "STO", "qty": 1}], "QTY_INVALID")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "STOP"}, {"instrument_id": c105, "side": "STO", "qty": 1}],
+                     "ORDER_TYPE_INVALID")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "MARKET", "limit_px": "99"}, {"instrument_id": c105, "side": "STO", "qty": 1}],
+                     "ORDER_TYPE_INVALID")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "BOGUS"}, {"instrument_id": c105, "side": "STO", "qty": 1}],
+                     "ORDER_TYPE_INVALID")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "order_type": "LIMIT"}, {"instrument_id": c105, "side": "STO", "qty": 1}], "PRICE_REQUIRED")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "limit_px": "99.995"}, {"instrument_id": c105, "side": "STO", "qty": 1}], "PRICE_TICK")
+        self.refused([{"instrument_id": "ACME", "side": "BUY", "qty": 100, "limit_px": "-1"}, {"instrument_id": c105, "side": "STO", "qty": 1}], "PRICE_TICK")
+        self.refused([{"instrument_id": "NOPE", "side": "BUY", "qty": 100}, {"instrument_id": c105, "side": "STO", "qty": 1}], "INSTRUMENT_UNKNOWN")
+        self.refused([{"instrument_id": occ("NOPE", E1, "C", 10), "side": "BTO", "qty": 1}, {"instrument_id": c105, "side": "STO", "qty": 1}], "INSTRUMENT_UNKNOWN")
+        self.refused([{"instrument_id": c105, "side": "STO", "qty": 1}, {"instrument_id": acme("C", 110), "side": "BTO", "qty": 1}], "NOT_AVAILABLE", TREASURY)
+        self.refused([{"instrument_id": c105, "side": "STO", "qty": 1}, {"instrument_id": acme("C", 110), "side": "BTO", "qty": 1}], "ACCOUNT_UNKNOWN", "T9:US_EXCHANGE")
+
+    def test_chain_pending_and_the_preview_lists_the_chain_contracts(self):
+        rt = self.rt
+        legs = [{"instrument_id": occ("WIDG", E1, "C", 50), "side": "BTO", "qty": 1}, {"instrument_id": occ("WIDG", E1, "C", 55), "side": "STO", "qty": 1}]
+        status, body = st.preview_view(rt, {"account_id": US_EXCHANGE, "key": "CUSTOM", "params": {"legs": legs}})
+        self.assertEqual((202, "fetching", "WIDG"), (status, body["status"], body["underlying"]))     # no WIDG chain cached: it is asked for once
+        self.assertEqual(["WIDG"], rt.chains.pending())
+        # the ACME preview lists its two contracts from the cached chain rows (the light command), then answers the package
+        status, body = st.preview_view(rt, {"account_id": US_EXCHANGE, "key": "CUSTOM",
+                                            "params": {"legs": [{"instrument_id": acme("C", 100), "side": "STO", "qty": 2}, {"instrument_id": acme("C", 105), "side": "BTO", "qty": 2}]}})
+        self.assertEqual((200, "CUSTOM", "590.00", []), (status, body["strategy_key"], body["margin"]["requirement"], body["missing_instruments"]))
+        c105 = rt.instruments.get(acme("C", 105))
+        self.assertEqual(("OPTION", "ACME", E1, D(105), "C", D(100)), (c105.kind, c105.underlying_id, c105.expiry, c105.strike, c105.right, c105.multiplier))
+
+    def test_custom_is_never_in_the_catalogue(self):
+        cat = st.catalogue_view(self.rt, US_EXCHANGE)
+        self.assertEqual(60, cat["count"])
+        self.assertNotIn("CUSTOM", {s["key"] for s in cat["strategies"]})
+        self.assertNotIn("CUSTOM", st.BY_KEY)
+        self.assertEqual(60, len(st.STRATEGIES))
+        self.assertIn("CUSTOM", st.__all__)
+
 
 
 if __name__ == "__main__":

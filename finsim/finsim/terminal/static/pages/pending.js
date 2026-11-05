@@ -11,6 +11,10 @@
  *   drawer (T.orderDrawer, shared with the account Orders page and Completed Trades): timeline, fills with the quote used and their
  *   settlement, journal entries, sweeps, borrow, package legs and the stored preview.
  * - "New order" opens the docked ticket for the filtered account, or a venue picker for the book.
+ * - 1.0.7.2 mass cancel: a check box in the actions cell of every order that can be cancelled (the selection survives the polls and
+ *   keeps only orders still cancelable); "Cancel selected (N)" and "Cancel all open in <book>" (every open order of the selected book,
+ *   or of every book with "all books" ticked, whatever the other filters show) list the count and up to 12 orders in words, then send
+ *   one POST /api/orders/cancel?book=<b> per book (request id mc:<12 hex>) and say what was cancelled, already ended or failed.
  * - The page polls every 5 s while anything is working, else every 30 s.
  * Trader wording only; ASCII; the C4 classes (.filterbar, .stage-chip, .badge-asof, .drawer, .drawer-tabs, .kv-grid).
  * 1.0.6.1 (walk defect P8R2-01): a stored code (SESSION_CLOSED, CALL_7PCT, SEQUENTIAL, AON ...) is shown in words - the server's
@@ -66,8 +70,14 @@
     if (r.qty == null && r.notional != null) { return T.esc(T.fmt.money(r.notional)) + ' <span class="muted">notional</span>'; }
     return T.esc(T.fmt.qty(r.qty));
   }
+  /* 1.0.7.2 mass cancel: the mounted page's selection (order id -> its row), read by the actions cell; null while the page is not shown */
+  var SEL = null;
   function actHtml(r) {
     var a = r.actions || {}; var h = '';
+    if (a.cancel && r.order_id) {
+      h += '<input type="checkbox" class="act-sel" data-act="sel" title="select it for Cancel selected"' + (SEL && SEL[r.order_id] ? ' checked' : '') +
+           ' aria-label="select ' + T.esc(r.order_id) + ' to cancel">';
+    }
     if (a.cancel) { h += '<button class="btn small act" data-act="x" title="cancel this order (x)">x</button>'; }
     if (a.resume) { h += '<button class="btn small act" data-act="resume" title="resume this held order">resume</button>'; }
     if (a.modify) { h += '<button class="btn small act" data-act="modify" title="change its price, quantity or time in force (the ticket in amend mode)">mod</button>'; }
@@ -186,6 +196,69 @@
     T.ticket.open({ account_id: r.account_id, instrument_id: r.instrument_id, kind: r.kind || undefined, order_mode: mode, order: r });
   }
   function openDesk(r) { T.router.go(T.router.account(r.account_id, 'markets')); }
+
+  /* ---------------------------------------------------------------- mass cancel (1.0.7.2, r1072 CHANGE_PLAN 4.2) ------- */
+  /* explicit order ids only: the confirm lists what goes (the count and up to 12 orders in words), then ONE POST /api/orders/cancel?book=<b>
+     per book (at most 500 ids a batch), one batch after another, each with its own request id mc:<12 hex>; the server cancels an
+     all-or-none package once and reports an order that already ended - never cancelled twice */
+  var MASS_MAX = 500, MASS_LIST = 12;
+  function bookNameOf(code) {
+    var b = (T.state.books || []).filter(function (x) { return x && x.book_code === code; })[0];
+    return b ? (b.name || b.book_code) : (code || '');
+  }
+  function massWords(r) {
+    return (r.side_words || String(r.side || '').replace(/_/g, ' ')) + ' ' + T.fmt.qty(r.open_qty != null ? r.open_qty : r.qty) + ' ' + (r.symbol || r.instrument_id || '') +
+      ' . ' + (r.account_name || T.accountName(r.account_id)) + ' . ' + bookNameOf(r.book);
+  }
+  /* 1.0.7.2 review (R3): what ends WITH the orders ticked - every other open leg of a ticked all-or-none package and every open order
+     that waits for a ticked primary - taken from the open orders (``pool``); they are listed in the confirm and sent in the batch, so
+     the count confirmed is exactly what ends */
+  function linkedRows(rows, pool) {
+    var ids = {}, pk = {}, extra = [];
+    rows.forEach(function (r) { ids[r.order_id] = true; if (r.package_id && r.fill_mode === 'AON') { pk[r.package_id] = true; } });
+    (pool || []).forEach(function (x) {
+      if (!x || (x.row_kind && x.row_kind !== 'order') || !x.order_id || ids[x.order_id] || !(x.actions && x.actions.cancel)) { return; }
+      var withPkg = !!(x.package_id && x.fill_mode === 'AON' && pk[x.package_id]);
+      var withPrimary = !!(x.parent_order_id && ids[x.parent_order_id]);
+      if (withPkg || withPrimary) { ids[x.order_id] = true; extra.push(Object.assign({}, x, { $with: withPkg ? 'its all-or-none package' : 'its primary ' + x.parent_order_id })); }
+    });
+    return extra;
+  }
+  function massConfirm(rows, title) {
+    var body = T.h('div', null, T.h('div', null, 'Cancel ' + rows.length + ' open order' + (rows.length === 1 ? '' : 's') + '?'));
+    var ul = T.h('ul', { class: 'mono' });
+    rows.slice(0, MASS_LIST).forEach(function (r) { ul.appendChild(T.h('li', null, (r.order_id || '') + ': ' + massWords(r) + (r.$with ? ' (ends with ' + r.$with + ')' : ''))); });
+    if (rows.length > MASS_LIST) { ul.appendChild(T.h('li', { class: 'muted' }, '... and ' + (rows.length - MASS_LIST) + ' more')); }
+    body.appendChild(ul);
+    body.appendChild(T.h('div', { class: 'hint' }, 'One cancel per book; an all-or-none package goes as one; an order that ends meanwhile is reported as already ended.'));
+    return T.ui.confirm(body, { title: title, ok: 'Cancel ' + rows.length + ' order' + (rows.length === 1 ? '' : 's'), cancel: 'Keep' });
+  }
+  /* -> {cancelled, skipped, failed, errors} summed over the batches */
+  function massCancel(rows, reason) {
+    var groups = {}, books = [];
+    rows.forEach(function (r) {
+      var b = r.book || '';
+      if (!groups[b]) { groups[b] = []; books.push(b); }
+      if (groups[b].indexOf(r.order_id) < 0) { groups[b].push(r.order_id); }
+    });
+    var batches = [];
+    books.forEach(function (b) { for (var i = 0; i < groups[b].length; i += MASS_MAX) { batches.push({ book: b, ids: groups[b].slice(i, i + MASS_MAX) }); } });
+    var tot = { cancelled: 0, skipped: 0, failed: 0, errors: [] };
+    function one(k) {
+      if (k >= batches.length) { return Promise.resolve(tot); }
+      var bt = batches[k];
+      var rid = 'mc:' + String(T.uuid()).replace(/-/g, '').toLowerCase().slice(0, 12);
+      return T.api.post('/api/orders/cancel?book=' + encodeURIComponent(bt.book), { order_ids: bt.ids, reason: reason }, { request_id: rid }).then(function (a) {
+        tot.cancelled += ((a && a.cancelled) || []).length; tot.skipped += ((a && a.skipped) || []).length; tot.failed += ((a && a.failed) || []).length;
+      }, function (e) { tot.errors.push((bookNameOf(bt.book) || 'a book') + ': ' + T.api.describe(e)); console.warn('mass cancel', bt.book, e && e.status, e && e.code); })
+        .then(function () { return one(k + 1); });
+    }
+    return one(0);
+  }
+  function massWordsOf(tot) {
+    return 'cancelled ' + tot.cancelled + (tot.skipped ? ' . already ended ' + tot.skipped : '') + (tot.failed ? ' . failed ' + tot.failed : '') +
+      (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
+  }
 
   /* ---------------------------------------------------------------- the order drawer (P2 task 6) -------------------- */
   /* T.orderDrawer(host, orderId, {tab, onChange}) mounts the drawer into `host` (replacing what it held) and returns {close}. */
@@ -326,11 +399,15 @@
   function render(el, route) {
     var q = route.query || {};
     var st = { status: q.status && STATUSES.some(function (s) { return s[0] === q.status; }) ? q.status : 'open', account: q.account || '', cls: q.asset_class || '', inst: q.instrument || '',
-               all: q.all === '1', rows: [], total: 0, next: null, anyLive: false, drawer: null };
+               all: q.all === '1', rows: [], total: 0, next: null, anyLive: false, drawer: null, selected: {}, massNote: '', massBusy: false };
     var dead = false;
+    SEL = st.selected;
     var newBtn = T.h('button', { class: 'btn', title: 'open the order ticket for the chosen account', onclick: function () { if (st.account) { T.ticket.open({ account_id: st.account }); } else { venuePicker(); } } }, 'New order');
     var countsEl = T.h('span', { class: 'sub' });
-    T.pageHead(el, 'Pending Trades', '', [countsEl, newBtn]);
+    var cancelSelBtn = T.h('button', { class: 'btn', id: 'pending-cancel-selected', disabled: true, title: 'cancel the orders ticked in the table (listed first, then confirmed)',
+                                       onclick: function () { cancelSelected(); } }, 'Cancel selected (0)');
+    var cancelAllBtn = T.h('button', { class: 'btn', id: 'pending-cancel-all', title: 'cancel every open order of the book (listed first, then confirmed)', onclick: function () { cancelAllOpen(); } }, 'Cancel all open');
+    T.pageHead(el, 'Pending Trades', '', [countsEl, cancelSelBtn, cancelAllBtn, newBtn]);
     var statusSel = T.h('select', { 'aria-label': 'status' });
     STATUSES.forEach(function (s) { statusSel.appendChild(T.h('option', { value: s[0] }, s[1])); });
     statusSel.value = st.status;
@@ -365,8 +442,12 @@
     var grid = T.components.grid.mount(gridEl, { columns: COLS, csvColumns: CSV_COLS, narrowBelow: NARROW_BELOW, rows: [], csv: 'pending-trades.csv', empty: 'loading ...', focus: true,
       rowKey: function (r) { return r.order_id; }, onEnter: function (r) { openDrawer(r, 'timeline'); },
       onClick: function (r, e) {
-        var b = e.target.closest('button[data-act]'); if (!b) { return; }
+        var b = e.target.closest('[data-act]'); if (!b) { return; }
         var act = b.dataset.act;
+        if (act === 'sel') {                                     /* the selection survives the 5 s / 30 s polls (pruned to orders still cancelable) */
+          if (r && r.order_id && r.actions && r.actions.cancel && b.checked) { st.selected[r.order_id] = r; } else if (r && r.order_id) { delete st.selected[r.order_id]; }
+          paintMass(); grid.update(st.rows); return;
+        }
         if (act === 'x') { cancelOrder(r, function () { load(false); }); } else if (act === 'resume') { resumeOrder(r, function () { load(false); }); }
         else if (act === 'modify') { editOrder(r, 'amend'); } else if (act === 'replace') { editOrder(r, 'replace'); }
         else if (act === 'review') { openDrawer(r, 'review'); } else if (act === 'desk') { openDesk(r); }
@@ -391,12 +472,68 @@
         st.rows = append ? st.rows.concat(r.rows || []) : (r.rows || []);
         st.total = r.total || 0; st.next = r.next_offset;
         st.anyLive = st.rows.some(function (x) { return x.row_kind === 'rfq' || (x.actions && x.actions.cancel); });
+        pruneSel();
         grid.update(st.rows, { empty: st.status === 'open' ? 'nothing pending: no working, held or queued order' : 'no ' + st.status + ' orders' });
         countEl.textContent = st.rows.length + ' of ' + st.total;
         more.hidden = st.next == null;
         paintCounts(r.counts);
-        T.clear(notesEl); (r.notes || []).forEach(function (n) { notesEl.appendChild(T.h('div', null, n)); });
+        T.clear(notesEl);
+        if (st.massNote) { notesEl.appendChild(T.h('div', null, st.massNote)); }
+        (r.notes || []).forEach(function (n) { notesEl.appendChild(T.h('div', null, n)); });
       }, function (e) { if (!dead) { T.clear(gridEl); T.errorBox(gridEl, e, 'pending trades'); } });
+    }
+    /* the selection keeps only the orders still listed with a cancel (the new row replaces the old one: its words follow the server) */
+    function pruneSel() {
+      var live = {};
+      st.rows.forEach(function (x) { if (x && x.row_kind === 'order' && x.order_id && x.actions && x.actions.cancel) { live[x.order_id] = x; } });
+      Object.keys(st.selected).forEach(function (id) { if (live[id]) { st.selected[id] = live[id]; } else { delete st.selected[id]; } });
+      paintMass();
+    }
+    function paintMass() {
+      var n = Object.keys(st.selected).length;
+      cancelSelBtn.textContent = 'Cancel selected (' + n + ')';
+      cancelSelBtn.disabled = !n || st.massBusy;
+      cancelAllBtn.textContent = 'Cancel all open in ' + (st.all ? 'every book' : (bookNameOf(T.book.code) || 'the book'));
+      cancelAllBtn.disabled = st.massBusy;
+    }
+    function runMass(rows, title, pool) {
+      if (!rows.length) { T.ui.toast('nothing to cancel: no open order with a cancel' + (title ? ' (' + title.toLowerCase() + ')' : ''), '', 3500); return; }
+      if (!pool) {
+        /* the open orders of the book (or every book), to find what ends with the ticked ones before the confirm */
+        var p = { status: 'open', limit: 5000 };
+        if (st.all) { p.scope = 'ALL_BOOKS'; }
+        T.api.get('/api/blotter/pending', p).then(function (r) { if (!dead) { runMass(rows, title, (r && r.rows) || []); } },
+          function (e) { T.api.fail(e, 'pending trades: the open orders could not be read, nothing was cancelled'); });
+        return;
+      }
+      rows = rows.concat(linkedRows(rows, pool));
+      massConfirm(rows, title).then(function (yes) {
+        if (!yes || dead) { return; }
+        st.massBusy = true; paintMass();
+        massCancel(rows, 'cancelled by the owner (Pending Trades)').then(function (tot) {
+          var msg = massWordsOf(tot);
+          T.ui.toast(msg, tot.failed || tot.errors.length ? 'err' : 'ok', 6000);
+          ['orders', 'account_detail', 'accounts'].forEach(function (p) { T.poll.kick(p); });
+          if (dead) { return; }
+          st.massBusy = false; st.massNote = title + ': ' + msg;
+          Object.keys(st.selected).forEach(function (id) { delete st.selected[id]; });
+          paintMass(); load(false);
+        });
+      });
+    }
+    function cancelSelected() {
+      var rows = Object.keys(st.selected).map(function (id) { return st.selected[id]; }).filter(function (x) { return x && x.actions && x.actions.cancel; });
+      runMass(rows, 'Cancel selected');
+    }
+    /* every open order with a cancel of the selected book (or of every book with "all books"), whatever the other filters show */
+    function cancelAllOpen() {
+      var p = { status: 'open', limit: 5000 };
+      if (st.all) { p.scope = 'ALL_BOOKS'; }
+      T.api.get('/api/blotter/pending', p).then(function (r) {
+        if (dead) { return; }
+        var rows = (r.rows || []).filter(function (x) { return x && x.row_kind === 'order' && x.order_id && x.actions && x.actions.cancel; });
+        runMass(rows, 'Cancel all open in ' + (st.all ? 'every book' : (bookNameOf(T.book.code) || 'the book')), r.rows || []);
+      }, function (e) { T.api.fail(e, 'pending trades: cancel all open'); });
     }
     function changed() {
       st.status = statusSel.value; st.account = acctSel.value; st.cls = clsSel.value; st.inst = instIn.value; st.all = allBox.checked;
@@ -414,7 +551,9 @@
     var offA = T.state.on('accounts', function () { if (!dead) { fillAccounts(); } });
     var lastLoad = 0;
     var offO = T.state.on('orders', function () { var t = Date.now(); if (!dead && t - lastLoad > 2000) { lastLoad = t; load(false); } });   /* a ticket submit / amend elsewhere */
-    T.pages.pending.unmount = function () { dead = true; clearTimeout(tmr); offA(); offO(); T.pages.pending.unmount = null; };
+    var offB = T.state.on('books', function () { if (!dead) { paintMass(); } });
+    paintMass();
+    T.pages.pending.unmount = function () { dead = true; clearTimeout(tmr); offA(); offO(); offB(); if (SEL === st.selected) { SEL = null; } T.pages.pending.unmount = null; };
   }
   T.pages.pending = { render: render, unmount: null, COLS: COLS, CSV_COLS: CSV_COLS, orderDrawer: orderDrawer, editOrder: editOrder, cancelOrder: cancelOrder };
 })();

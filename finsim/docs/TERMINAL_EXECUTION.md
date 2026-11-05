@@ -137,6 +137,42 @@ NAV falls by exactly the 1.00 commission.
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
   the package. Example (§19.22, iron condor ×10): premiums −2,100 + 4,000 + 3,500 − 1,200 = +4,200.00 credit, fees
   4 × 10 × 0.65 = 26.00, margin = max(put spread 30,000 − 1,900, call spread 30,000 − 2,300) = 28,100.00.
+- **Your own legs (key CUSTOM, 1.0.7.2: the Smart Ticket's combinations, `strategies._custom_spec`)**: 2 to 8 exact
+  legs `{instrument_id, side, qty, order_type?, limit_px?}` in a US Exchange or prime-broker account, as one package.
+  Options on one name are all-or-none as above: every leg is MARKET at its executable bid / ask. A leg with a limit or
+  another order type is refused `LIMIT_IN_AON`: there is no net limit on a combination in this version, so send that
+  leg as an order of its own. One share leg plus options on that same name is sequential as above. The shares are the
+  primary (MARKET or LIMIT) and are listed first whatever order they were named in; the option legs wait for its fills
+  and keep their own MARKET / LIMIT terms (`PackageLeg.limit_px` carries a limit to `order.submit`). A waiting leg is
+  released in whole numbers: floor(shares filled x its own quantity / the primary's quantity), so every leg is released
+  in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th share). Anything else is
+  refused (`COMBO_INVALID` / `LEGS`): two names, a futures leg, two share legs, or one contract named twice. A package
+  holds one name: its shares and its options. Option sides are BTO / STO / BTC / STC and share sides BUY / SELL /
+  SELL_SHORT / BUY_TO_COVER (`SIDE_INVALID` otherwise). An option leg must be in the master or on the cached chain
+  (`CHAIN_PENDING` while it loads); neither is `NOT_LISTED` and nothing is invented, and a leg the cached chain does
+  not quote is `NOT_AVAILABLE`. Prices are as the templates: the chain's ask to buy (BTO / BTC), its bid to sell (STO
+  / STC), the shares at your limit or the quote. A sold call counts as covered by the shares the account holds after
+  the package's share leg. `POST /api/orders` lists the package's contracts and records their chain quotes before the
+  command, as for a single option order. So an all-or-none combination whose legs are executable fills at the submit
+  from that one observation; otherwise it works until one observation can fill every leg. Request ids: the
+  combination's own id, `<id>:L1..` for its all-or-none legs, `<id>:H1..` for a sequential package's waiting legs.
+  Pending and the order drawer name it 'your own legs (Smart Ticket)'. It is never listed among the 60 templates.
+- **Cancel many at once (`POST /api/orders/cancel[?book=]`, 1.0.7.2)**: explicit order ids only (1 to 500, each named
+  once) and one reason (at most 120 characters; 'cancelled by the owner' when none is given). The request id is the
+  batch id (8 to 60 characters). The whole list is checked before anything is cancelled, and nothing is cancelled if
+  any check fails: a malformed body or batch id (400), an unknown order (404, the ids named), or, with `?book=`, an
+  order of another book (409 `BOOK_MISMATCH`, the orders named). Then there is one `order.cancel` per target, in the
+  order given, never in parallel, each with the request id `<batch id>:<order or package id>`. An order of an
+  all-or-none package cancels its whole package once, and its other legs, listed or not, are reported with it. Any
+  other order is cancelled itself, and a primary's unfilled legs go with it, reported with it whether listed or not
+  (a listed one gets no command of its own). So the answer counts every order the batch ended; Pending Trades lists
+  those legs in its confirm before anything is cancelled. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is
+  reported with its code. The answer lists what was cancelled, skipped and failed. Resending the same batch after a
+  lost answer replays every cancel already made (`X-Replayed: 1`) and cancels nothing twice.
+- **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in
+  `preview_id`, `confirm_large` or the Smart Ticket's `smart` note is the same order and is answered as its replay
+  (`X-Replayed: 1`, the order that was placed): every send takes a fresh preview first. Any other difference is still
+  409 `REQUEST_ID_REUSED`.
 
 ## 10. What is not simulated
 

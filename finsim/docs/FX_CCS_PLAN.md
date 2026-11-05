@@ -1885,7 +1885,7 @@ The output is PASS or FAIL per item, with evidence. Exit 0 only when every item 
 1. Take two sqlite3 backups of `%USERPROFILE%\.finsim\terminal.db` (source opened `mode=ro`) into a new folder,
    `C:\Users\logan\finsim-orchestrator\fxccs\dryrun-<ts>\`: C0 (the control) and C1 (the dry run). Each is about 30 MB and stays outside
    %TEMP%.
-2. Start `py -3.12 -m finsim serve --home <folder of C1> --port 8975 --no-open` with real data. Wait until EURUSD, EURGBP and GBPUSD are fresh
+2. Start `py -3.12 -m finsim serve --home <folder of C1> --port 8975` with real data. Wait until EURUSD, EURGBP and GBPUSD are fresh
    and the overnight series and the BoE and ECB curves are loaded.
 3. Run `otcplan snapshot` on C1.
 4. Run `otcplan run docs\plans\OWNER_FX_TRADES_2026-10-28.plan.json --base-url http://127.0.0.1:8975 --report <folder>\run1`.

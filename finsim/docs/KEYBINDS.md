@@ -33,6 +33,8 @@ the app (Settings > Keyboard) and every page follows them.
 | Shift+F7 | Accounting |
 | Shift+F8 | Completed Trades - executions and their settlement (on an account page: that account's) |
 | Shift+F9 | Watchlists |
+| Ctrl+F9 | Smart Ticket: type what you want to trade - several orders, options and combinations in one instruction; nothing is sent until you confirm |
+| Ctrl+Shift+Enter | Smart Ticket: submit the selected legs - opens the confirm that lists every order (only on the Smart Ticket page; elsewhere it says where it works) - also in a box |
 | Shift+F10 | History: NAV history, transactions, account activity, past lifetimes |
 | Shift+F11 | Settings |
 | Shift+F12 | Keyboard help |
@@ -42,7 +44,7 @@ Release 1.0.6: the keys follow the sidebar.
 | Sidebar section | Pages and keys |
 | --- | --- |
 | Top | Dashboard F12, Portfolio F7 |
-| Trading | US Exchange F1, Debt Instruments F2, Credit Instruments F3, Foreign Markets & FX F4, Private Markets F5, the prime broker account F6, Watchlists Shift+F9 |
+| Trading | US Exchange F1, Debt Instruments F2, Credit Instruments F3, Foreign Markets & FX F4, Private Markets F5, the prime broker account F6, Watchlists Shift+F9, Smart Ticket Ctrl+F9 |
 | Fund | Pending Trades F8, Completed Trades Shift+F8, Accounts Shift+F4, Treasury F10, Cash & Collateral Shift+F5, Derivatives Shift+F6, History Shift+F10, Settings Shift+F11 |
 | Book views | Risk F11, Accounting Shift+F7 |
 
@@ -59,7 +61,7 @@ What changed from 1.0.5:
 
 Those earlier pages keep their actions without a key; bind them in Settings > Keyboard. Keys you changed yourself in Settings > Keyboard are kept.
 
-The registry holds 74 actions. A page's key shows in the '?' help and in Settings > Keyboard only once that page is in the build.
+The registry holds 76 actions (1.0.7.2 added the Smart Ticket's two: Ctrl+F9 and Ctrl+Shift+Enter). A page's key shows in the '?' help and in Settings > Keyboard only once that page is in the build.
 
 ### Single keys (never while you type in a box)
 
@@ -91,6 +93,18 @@ The registry holds 74 actions. A page's key shows in the '?' help and in Setting
 | B / S | Ticket for the selected row: buy / sell (options: buy to open / sell to open) |
 | X | Cancel the selected order (Orders) |
 | R | Record a reported funding round for the selected company (Private Markets) |
+
+### On the Smart Ticket page (1.0.7.2)
+
+| Key | Action |
+| --- | --- |
+| Enter | Read the instruction in the box (the text is read only when you press it) |
+| Shift+Enter | A new line in the box |
+| Esc | Clear the box (what is staged stays until you read a new text or start a new ticket) |
+| Ctrl+Shift+Enter | Submit selected: the confirm opens with Back focused; only a click on 'Send N orders' sends (no global key acts while a dialog is open) |
+| / | Put the cursor in the instruction box |
+
+The order ticket's keys, Ctrl+Enter included, never act on this page: the ticket dock shows only on account pages.
 
 ### Actions without a default key (bind them in Settings > Keyboard)
 

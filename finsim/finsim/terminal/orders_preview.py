@@ -1410,7 +1410,10 @@ def _notices(services, module: str, account_id, inst, side, qty, pv, warnings) -
 
 def preview(services, req: dict, *, snapshot=None, now: Optional[int] = None) -> dict:
     """§10.3: pure (no writes); validation failures become ``blockers`` (code, message, details, http), the rest of the
-    preview still carries what could be computed; the result is stored in the ``PreviewStore`` under ``preview_id``."""
+    preview still carries what could be computed; the result is stored in the ``PreviewStore`` under ``preview_id``.  A refusal for want
+    of a quote (NO_QUOTE, QUOTE_STALE) or of a borrow (NO_BORROW: a short sale of a name never quoted has no mark to size its 102 %
+    collateral) subscribes the instrument PAGE (``_ask_for_quote``, PREVIEW-SHORT-NOQUOTE 1.0.7.2), so the ticket's next preview finds it
+    fetched."""
     pv: dict = {}
     try:
         ctx = None
@@ -1426,7 +1429,7 @@ def preview(services, req: dict, *, snapshot=None, now: Optional[int] = None) ->
         if not vo.executable:
             _ask_for_quote(services, vo.inst.instrument_id)
     except RejectError as e:
-        if e.code in ("NO_QUOTE", "QUOTE_STALE"):
+        if e.code in ("NO_QUOTE", "QUOTE_STALE", "NO_BORROW"):
             _ask_for_quote(services, str(req.get("instrument_id") or ""))
         pv.setdefault("as_of", int(now if now is not None else services.clock.epoch()))
         pv["ok"] = False
@@ -1454,6 +1457,17 @@ def _ask_for_quote(services, instrument_id: str) -> None:
         cache.subscribe([instrument_id], 90, "PAGE")
     except Exception:   # noqa: BLE001 - a subscription is a hint; the preview never fails on it
         pass
+    # CHAIN-FETCH-1 (1.0.7.2 review): an option's quote comes from its chain, and the worker reads the chain priority from the option's
+    # BEST pin - HELD ranks above PAGE, so a ticket on an option the owner holds (closing or rolling it) stayed a REFRESH behind every
+    # pinned refresh.  The ticket asks for the chain itself, at REQUEST (an in-memory hint like the subscription; nothing is written)
+    if inst.kind == "OPTION" and inst.underlying_id:
+        chains = getattr(services, "chains", None)
+        ask = getattr(chains, "request", None) if chains is not None else None
+        if callable(ask):
+            try:
+                ask(inst.underlying_id, priority="REQUEST")
+            except Exception:   # noqa: BLE001 - a hint; the preview never fails on it
+                pass
 
 
 def _jsonable(x):

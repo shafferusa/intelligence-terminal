@@ -3317,7 +3317,11 @@ def _quote_terms(kind: str, pv: dict) -> Tuple[Optional[dict], dict, str]:
     if k == SINGLE_CDS_KIND:                     # CDS-107: firm on the spread, the coupon, the maturity and the tier - all fixed when the dealer quotes
         bp = pv.get("deal_spread_bp")
         firm = {"dealt_spread_bp": bp, "coupon_bp": pv.get("coupon_bp"), "maturity_date": pv.get("maturity_date"), "tier": pv.get("tier")}
-        words = f"{pv.get('entity_label')} {bp} bp (MODEL mid {pv.get('mid_spread_bp')} bp); {pv.get('upfront_direction')} upfront"
+        # CDS-V-01 (1.0.7.2): 2 decimals, and the dealing level's own rule ("mid X bp = model Y bp + your negotiated basis ..." / "mid X bp =
+        # MODEL (you confirmed ...)") instead of calling every mid a MODEL mid; the firm / compare values keep their stored 4 decimals
+        rule = (pv.get("level") or {}).get("rule") if isinstance(pv.get("level"), dict) else None
+        words = (f"{pv.get('entity_label')} {_bp2(bp)} bp ({rule or 'mid ' + _bp2(pv.get('mid_spread_bp')) + ' bp'});"
+                 f" {pv.get('upfront_direction')} upfront")
         return firm, {"deal_spread_bp": bp, "coupon_bp": pv.get("coupon_bp"), "maturity_date": pv.get("maturity_date")}, words
     if k == "XCCY":
         legs = pv.get("legs") or {}
@@ -3340,6 +3344,14 @@ def _quote_terms(kind: str, pv: dict) -> Tuple[Optional[dict], dict, str]:
                  f" {pv.get('expiry')} at {pv.get('strike')} (mid forward {pv.get('forward')})")
         return None, {"strike": pv.get("strike")}, words
     return None, {"strike": pv.get("strike")}, f"forward {pv.get('strike')} (model forward {pv.get('forward')})"
+
+
+def _bp2(x) -> str:
+    """A spread in bp with 2 decimals for a sentence ('67.47'); the text as given when it is not a number."""
+    try:
+        return f"{Decimal(str(x)):.2f}"
+    except (InvalidOperation, ValueError, TypeError):
+        return str(x)
 
 
 def _money_words(c) -> str:

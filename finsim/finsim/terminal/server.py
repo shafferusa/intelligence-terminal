@@ -122,7 +122,9 @@ OPTIONAL_MODULES = {"orders": "orders", "options": "products.options", "futures"
                     # restatements (P3), cash / settlement / collateral (P6), the historical import (P5); each stays "missing" until it lands
                     "dashboard": "dashboard", "blotters": "blotters", "navhistory": "navhistory", "collateral": "collateral", "importer": "importer",
                     # FX_CCS_PLAN 1.0.6.1 (P-D): the standing settlement-funding instruction of OTC contracts (K8)
-                    "ccyfunding": "ccyfunding"}
+                    "ccyfunding": "ccyfunding",
+                    # FinSim 1.0.7.2 (r1072 CHANGE_PLAN 2.5): the Smart Ticket's pure parse route POST /api/smart-ticket/parse (no command, no schema)
+                    "smart_ticket": "smart_ticket"}
 
 
 def code_tree() -> str:
@@ -441,6 +443,15 @@ class Runtime:
         if name == "quotes":
             w = QuoteWorker(self.cache, self.chains, self.instruments, self.providers, self.sessions, self.bus, self.matcher, self.clock, self.log,
                             fetch_threads=self.fetch_threads, db=self.db, services=self, curve=self.curve, rates=self.rates, fxstore=self.fxstore, cal=self.cal)
+            old = self.worker
+            if old is not None and old is not w and hasattr(old, "retire"):
+                # 1.0.7.2 review: the dead worker's pools are stopped (a running chain download finishes and releases its slot; nothing new
+                # starts) before its replacement runs, which never hands that live slot out again (ChainCache slot owners)
+                try:
+                    old.retire(w)
+                except Exception:   # noqa: BLE001 - the replacement starts anyway; the failure is logged
+                    if self.log:
+                        self.log.exception("retiring the old quote worker failed")
             self.worker = w
             w.start()
             return w

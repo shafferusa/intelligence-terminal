@@ -12,6 +12,10 @@
  *   box (the page itself never jumps); a refresh of the same expiry keeps where the viewer scrolled.
  * - A one-sided quote reads 'no bid' / 'no ask' (Cboe shows no price on that side: a bid of 0.00 is no bid) instead of a red
  *   N/A chip, and that side cannot be clicked (there is no price to deal at).
+ * - 1.0.7.2 (CHAIN-LEGS-1): the head counts the strikes Cboe's file lists with only a call or only a put (data.one_sided:
+ *   'N strikes list one side only (Cboe file)', the strikes in its title).  When Cboe lists two roots for one cell (a weekly root at
+ *   a monthly strike, an adjusted series) the cell shows the quoted one - its root named when it is not the standard root - and a
+ *   small '+N' says the other contracts of that cell (row.alt), listed with their market in its title.
  *
  *   var c = T.components.chain.mount(el, {data, expiry, onExpiry(exp), onPick({instrument_id, kind, strike, expiry, side, price, leg})});
  *   c.update(data);  c.centerAtm();
@@ -36,11 +40,22 @@
     return later.length ? later[0] : list[list.length - 1];
   }
   function oneSided(v) { return v == null || v === '' || !isFinite(Number(v)) || Number(v) <= 0; }
-  function legCell(leg, field, kind, chainQuality) {
+  /* the other roots of a cell (row.alt) and the cell's own root when it is not the standard one, as the cell's title and a '+N' mark */
+  function rootNote(leg, alts) {
+    var parts = [];
+    if (leg && leg.root) { parts.push(leg.instrument_id + ': root ' + leg.root + ' (not the standard root)'); }
+    (alts || []).forEach(function (a) {
+      parts.push('also listed: ' + (a.instrument_id || '?') + (oneSided(a.bid) && oneSided(a.ask) ? ' (no market)' : ' (bid ' + (a.bid == null ? '-' : a.bid) + ' / ask ' + (a.ask == null ? '-' : a.ask) + ')'));
+    });
+    return parts.join('; ');
+  }
+  function legCell(leg, field, kind, chainQuality, alts) {
     if (!leg) { return '<td class="optq"></td>'; }
+    var note = rootNote(leg, alts);
+    var mark = alts && alts.length ? ' <span class="muted" title="' + T.esc(note) + '">+' + alts.length + '</span>' : '';
     if (oneSided(leg[field])) {
-      return '<td class="optq none ' + field + '" title="Cboe shows no ' + field + ' for ' + T.esc(leg.instrument_id || '') + ': no price to ' + (field === 'bid' ? 'sell' : 'buy') + ' at">' +
-        '<span class="muted">no ' + field + '</span></td>';
+      return '<td class="optq none ' + field + '" title="Cboe shows no ' + field + ' for ' + T.esc(leg.instrument_id || '') + ': no price to ' + (field === 'bid' ? 'sell' : 'buy') + ' at' +
+        (note ? '; ' + T.esc(note) : '') + '">' + '<span class="muted">no ' + field + '</span>' + mark + '</td>';
     }
     var rec = Object.assign({}, leg, { as_of: undefined });
     var other = field === 'bid' ? 'ask' : 'bid';
@@ -49,7 +64,8 @@
       rec.quality = chainQuality || 'delayed';
       rec.note = 'one-sided quote: Cboe shows no ' + other + ' for this contract';
     }
-    return '<td class="optq ' + field + '" data-kind="' + kind + '" data-field="' + field + '" data-id="' + T.esc(leg.instrument_id || '') + '">' + T.pxHtml(rec, { field: field }) + '</td>';
+    return '<td class="optq ' + field + '" data-kind="' + kind + '" data-field="' + field + '" data-id="' + T.esc(leg.instrument_id || '') + '"' +
+      (note ? ' title="' + T.esc(note) + '"' : '') + '>' + T.pxHtml(rec, { field: field }) + mark + '</td>';
   }
   function num(v, dp) { return v == null || v === '' ? '' : T.fmt.num(v, dp == null ? 2 : dp); }
   function mount(el, opts) {
@@ -84,6 +100,12 @@
       head.appendChild(T.qchip(data.quality));
       var u = data.underlying;
       if (u) { head.appendChild(T.h('span', { class: 'muted' }, ' underlying ')); head.appendChild(T.px(u, { size: 'inline' })); }
+      var os = data.one_sided || [];
+      if (os.length) {
+        /* strikes Cboe's file lists with only a call or only a put (the missing side is blank, not lost) */
+        head.appendChild(T.h('span', { class: 'muted', title: os.map(function (x) { return x.strike + ' ' + x.has + ' only'; }).join(', ') },
+          ' . ' + os.length + (os.length === 1 ? ' strike lists' : ' strikes list') + ' one side only (Cboe file)'));
+      }
       var spot = u ? Number(u.last != null ? u.last : u.mid) : null;
       var rows = data.rows || [];
       var atmIdx = -1, best = Infinity;
@@ -92,12 +114,12 @@
         '<th title="puts">bid</th><th title="puts">ask</th><th title="puts">size</th><th title="puts">iv</th><th title="puts">delta</th><th title="puts">oi</th></tr></thead><tbody>';
       if (!rows.length) { html += '<tr><td colspan="13" class="empty l">no contracts for this expiry</td></tr>'; }
       rows.forEach(function (r, i) {
-        var c = r.call, p = r.put;
+        var c = r.call, p = r.put, alt = r.alt || {};
         html += '<tr' + (i === atmIdx ? ' class="atm" title="at the money: the strike nearest the underlying"' : '') + '>';
-        html += legCell(c, 'bid', 'call', data.quality) + legCell(c, 'ask', 'call', data.quality);
+        html += legCell(c, 'bid', 'call', data.quality, alt.call) + legCell(c, 'ask', 'call', data.quality, alt.call);
         html += '<td>' + (c ? T.esc(num(c.bid_size, 0) + 'x' + num(c.ask_size, 0)) : '') + '</td><td>' + (c ? T.esc(c.iv == null ? '' : T.fmt.pct(c.iv, 1)) : '') + '</td><td>' + (c ? T.esc(num(c.delta, 2)) : '') + '</td><td>' + (c ? T.esc(num(c.oi, 0)) : '') + '</td>';
         html += '<td class="strike" data-strike="' + T.esc(r.strike) + '">' + T.esc(T.fmt.px(r.strike)) + '</td>';
-        html += legCell(p, 'bid', 'put', data.quality) + legCell(p, 'ask', 'put', data.quality);
+        html += legCell(p, 'bid', 'put', data.quality, alt.put) + legCell(p, 'ask', 'put', data.quality, alt.put);
         html += '<td>' + (p ? T.esc(num(p.bid_size, 0) + 'x' + num(p.ask_size, 0)) : '') + '</td><td>' + (p ? T.esc(p.iv == null ? '' : T.fmt.pct(p.iv, 1)) : '') + '</td><td>' + (p ? T.esc(num(p.delta, 2)) : '') + '</td><td>' + (p ? T.esc(num(p.oi, 0)) : '') + '</td>';
         html += '</tr>';
       });

@@ -101,7 +101,8 @@ OWNER_REF_TEXT = "booked by the operator at the owner's instruction (ref {ref})"
 CODE_RE = re.compile(r"\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b")
 FILL_MODE_WORDS = {"SEQUENTIAL": "sequential (the hedge legs wait for the primary)", "AON": "all or none (every leg fills together or none does)"}
 HEDGE_TITLES = {"PUT_7PCT": "protective put ~7 % below", "COLLAR_7": "collar ~7 % / ~7 %", "PUT_SPREAD": "put spread 7 % / 15 %",
-                "CALL_7PCT": "protective call ~7 % above", "CALL_SPREAD": "call spread 7 % / 15 %", "COLLAR_SHORT": "short collar"}
+                "CALL_7PCT": "protective call ~7 % above", "CALL_SPREAD": "call spread 7 % / 15 %", "COLLAR_SHORT": "short collar",
+                "CUSTOM": "your own legs (Smart Ticket)"}
 _CODE_MAPS: List[Dict[str, str]] = []
 HISTORICAL_MODEL_LABEL = "Historical model (not an independent execution)"
 SYSTEM_EVENTS = {"EXERCISE": "exercise", "ASSIGNMENT": "assignment", "EXPIRY": "expiry", "FUTURES_FINAL": "final settlement", "MATURITY": "maturity"}
@@ -701,7 +702,10 @@ def _otc_rows(services, conn: sqlite3.Connection, accts: Dict[str, dict], cache:
         row.update({"execution_id": cid, "kind": "otc", "parent_id": f"T-{r['command_id']}", "parent_kind": "ticket", "side": str(terms.get("side") or side_words),
                     "side_words": side_words, "qty": qty, "notional_c": int(r["notional_c"]), "price": price, "price_label": price_kind, "gross_c": None,
                     "fee_c": int(fee or 0), "fees_journal_c": int(fee or 0), "exec_ts": exec_ts or None, "trade_date": trade_date,
-                    "settle_date": _get(r, "value_date") or r["start_date"], "settled_ts": None, "settle_id": None, "status": status, "status_label": words,
+                    # 1.0.6.1 open item 5: an FX forward settles on its value date (terms; the maturity), never on its trade date
+                    "settle_date": ((terms.get("value_date") or r["maturity_date"]) if r["kind"] == "FX_FORWARD"
+                                    else (_get(r, "value_date") or r["start_date"])),
+                    "settled_ts": None, "settle_id": None, "status": status, "status_label": words,
                     "source": src["source"], "source_label": src["label"], "asof": src["asof"], "badge": src["badge"], "entered_ts": src["entered_ts"],
                     "batch_id": src["batch_id"], "booking": src["booking"],
                     "note": f"initial margin {from_c(int(r['im_c'] or 0))}; matures {r['maturity_date']}"})

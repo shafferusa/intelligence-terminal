@@ -32,6 +32,9 @@
  *             Shift+F5 Cash & Collateral, Shift+F6 Derivatives; Shift+F10 the History hub - the last past lifetime's pages while the
  *             hub is not in the build); #/settings/data (the old Data Status address) opens Settings > Market data; an error is
  *             said in the server's words without its internal code (V104R2-BW-04: T.api.describe; the code stays in the console).
+ *   1.0.7.2:  #/smart?query renders T.pages.smart (the Smart Ticket, pages/smartticket.js; NOT YET BUILT while its file is not in
+ *             the build); Ctrl+F9 opens it and Ctrl+Shift+Enter ('smart.submit') asks the page for its confirm - on any other page
+ *             that key only says where it works.  The dock stays hidden there (no account route), so the ticket's keys never act.
  *
  * Conventions this file enforces on screen
  * - Nothing is computed here: every figure is a field of an API response; this file formats and routes.
@@ -1022,6 +1025,8 @@
     [/^#\/accounts$/, function () { return { page: 'accounts' }; }],
     [/^#\/cash(?:\?(.*))?$/, function (m) { return { page: 'cash_collateral', query: parseQuery(m[1]) }; }],
     [/^#\/derivatives(?:\/([a-z_-]+))?$/, function (m) { return { page: 'derivatives', tab: m[1] || null }; }],
+    /* 1.0.7.2: the Smart Ticket (pages/smartticket.js; Ctrl+F9) - NOT YET BUILT while its file is not in the build */
+    [/^#\/smart(?:\?(.*))?$/, function (m) { return { page: 'smart', query: parseQuery(m[1]) }; }],
     [/^#\/history(?:\/([a-z_-]+))?$/, function (m) { return { page: 'history', hub: true, tab: m[1] || null }; }],
     [/^#\/treasury$/, function () { return { page: 'treasury' }; }],
     [/^#\/portfolio(?:\/([a-z]+))?$/, function (m) { return { page: 'portfolio', tab: m[1] || 'positions' }; }],
@@ -1070,7 +1075,8 @@
     accounts: ['Accounts', 'every account is in the sidebar; Treasury has its own page'],
     cash_collateral: ['Cash & Collateral', 'cash, financing and collateral are on each account\'s Cash & financing page and under Accounting'],
     derivatives: ['Derivatives', 'OTC contracts are on the prime-broker account\'s Markets page (OTC tab); listed options and futures are on the account Positions pages'],
-    history: ['History', 'the pages of a past lifetime are reached from Settings > Lifetimes; account activity is under Activity']
+    history: ['History', 'the pages of a past lifetime are reached from Settings > Lifetimes; account activity is under Activity'],
+    smart: ['Smart Ticket', 'orders are entered one at a time with the ticket on each account page']
   };
   /* the History hub (C1): T.pages.history.hub = {render(el, route), unmount?, tabs?} or a render function; null while not built */
   function historyHub() {
@@ -1548,6 +1554,10 @@
     'page.accounts': goPage('#/accounts'),
     'page.cash_collateral': function () { var id = routeAccount(); T.router.go(id ? T.router.account(id, 'cash') : '#/cash'); },
     'page.derivatives': goPage('#/derivatives'),
+    /* 1.0.7.2: the Smart Ticket; its submit key acts only on #/smart and always opens the page's confirm first (a global key never
+       runs while a dialog is open, so the confirm itself can never be pressed by it) */
+    'page.smart': goPage('#/smart'),
+    'smart.submit': function () { var p = T.pages.smart; var r = T.router.current; if (r && r.page === 'smart' && p && p.submit) { p.submit(); } else { T.ui.toast('open the Smart Ticket first' + (K.paren ? K.paren('page.smart') : ''), '', 2500); } },
     'dock.toggle': toggleDock,
     'app.search': focusSearch,
     'app.help': function () { T.ui.help(); },

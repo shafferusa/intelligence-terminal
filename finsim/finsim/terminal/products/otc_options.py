@@ -157,6 +157,15 @@ TERMS_LABEL = "ASSUMED: the basis levels, the dealer half-width and IM are {name
 ASSUMED_SUFFIX = ", ASSUMED"
 
 
+def _model_text(kind: str, method: Optional[str] = None) -> str:
+    """1.0.6.1 open item 6 (1.0.7.2): the model words of a contract - an FX forward priced on the term curves (method CURVES) reads
+    ``CURVES_MODEL``, a legacy one (any other method, or none stored: booked before 1.0.6.1) ``MODELS["FX_FORWARD"]`` with
+    ``LEGACY_LABEL``; every other kind ``MODELS[kind]``.  Display only: nothing stored is restated."""
+    if kind == "FX_FORWARD":
+        return CURVES_MODEL if str(method or "").strip().upper() == "CURVES" else MODELS[kind] + " - " + LEGACY_LABEL
+    return MODELS[kind]
+
+
 def schedule_terms_labels(labels: List[str], xt: dict) -> List[str]:
     """V1061R2-01: ``labels`` with the curve module's basis-only label replaced in place by ``TERMS_LABEL`` (appended when absent) -
     "ASSUMED: the basis levels, the dealer half-width and IM are Goldman Sachs schedule terms" for the GS account."""
@@ -958,7 +967,7 @@ def _eq_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
               "chain": _chain_info(chain, cq, creason), "rate": rinfo, "dividend": qinfo}
     return {"kind": "EQ_OPTION", "sched": sched, "today": today, "trade_date": today, "expiry": expiry, "tenor": tenor, "premium_date": premium_date, "S": S, "K": K,
             "sigma": sigma, "deal_sigma": deal_sigma, "hw": hw, "mult": mult, "mid_px": mid_px, "deal_px": deal_px, "premium_c": premium_c, "mid_c": mid_c,
-            "mark0_c": sign * mid_c, "cost_c": abs(premium_c - mid_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct, "im_source": imp.get("source"),
+            "mark0_c": sign * mid_c, "cost_c": abs(premium_c - mid_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct, "im_source": assumed_source(imp.get("source")),
             "greeks": g, "pos": pos, "inputs": inputs, "blockers": blockers, "underlying_id": uid, "inst": inst, "quote": mv, "sign": sign, "units": units,
             "chain_quality": cq, "dv01_c": pos["rho_usd_c"], "margin_mode": str(sched.swap_margin_mode).upper()}
 
@@ -1037,7 +1046,7 @@ def _fx_option_deal(services, conn, snap, acct: dict, t: dict, now: int, request
     return {"kind": "FX_OPTION", "sched": sched, "today": td, "trade_date": td, "expiry": expiry, "tenor": tenor, "premium_date": sd, "S": S, "K": K, "F": F,
             "sigma": sigma, "deal_sigma": deal_sigma, "hw": hw, "mult": mult, "mid_px": mid_px, "deal_px": deal_px, "premium_c": premium_c, "mid_c": mid_c,
             "premium_q_c": premium_q_c, "mark0_c": sign * mid_c, "cost_c": abs(premium_c - mid_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct,
-            "im_source": imp.get("source"), "greeks": greeks, "pos": pos, "inputs": inputs, "blockers": blockers, "pair": pair, "sign": sign, "usd_q": usd_q,
+            "im_source": assumed_source(imp.get("source")), "greeks": greeks, "pos": pos, "inputs": inputs, "blockers": blockers, "pair": pair, "sign": sign, "usd_q": usd_q,
             "usd_b": usd_b, "dv01_c": pos["rho_usd_c"], "margin_mode": str(sched.swap_margin_mode).upper(), "vd": vd, "fin": fin}
 
 
@@ -1122,7 +1131,7 @@ def _eq_forward_deal(services, conn, snap, acct: dict, t: dict, now: int, reques
                                f" {'+' if sign > 0 else '-'} {hw_px} ({hw_bp} bp half-width) = {K}")}
     return {"kind": "EQ_FORWARD", "sched": sched, "today": today, "trade_date": today, "expiry": maturity, "tenor": tenor, "S": S, "F": F, "F_deal": F_deal, "K": K,
             "hw_bp": hw_bp, "hw_px": hw_px, "mult": mult, "units": units, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c,
-            "im_c": im_c, "im_pct": im_pct, "im_source": imp.get("source"), "premium_c": 0, "inputs": inputs, "blockers": [], "underlying_id": uid, "inst": inst,
+            "im_c": im_c, "im_pct": im_pct, "im_source": assumed_source(imp.get("source")), "premium_c": 0, "inputs": inputs, "blockers": [], "underlying_id": uid, "inst": inst,
             "quote": mv, "dv01_c": dv01_c, "margin_mode": str(sched.swap_margin_mode).upper(), "spread": spread, "carry_pct": carry_pct}
 
 
@@ -1511,7 +1520,7 @@ def _fx_forward_legacy_deal(services, conn, snap, acct: dict, t: dict, now: int,
               "labels": ["MODEL", LEGACY_LABEL], "sensitivities": {"pv_delta_c": sens["pv_delta"], "rate01_c": sens["rate01_c"], "points01_c": sens["points01_c"]}}
     return {"kind": "FX_FORWARD", "sched": sched, "today": td, "trade_date": td, "expiry": vd, "tenor": tenor, "S": S, "F": F, "K": K, "hw_bp": hw_bp, "hw_px": hw_px,
             "mult": mult, "sign": sign, "mark0_c": mark0_c, "cost_c": abs(mark0_c), "notional_c": notional_c, "im_c": im_c, "im_pct": im_pct,
-            "im_source": imp.get("source"), "premium_c": 0, "inputs": inputs, "blockers": blockers, "pair": pair, "usd_q": usd_q, "usd_b": usd_b, "dv01_c": dv01_c,
+            "im_source": assumed_source(imp.get("source")), "premium_c": 0, "inputs": inputs, "blockers": blockers, "pair": pair, "usd_q": usd_q, "usd_b": usd_b, "dv01_c": dv01_c,
             "margin_mode": str(sched.swap_margin_mode).upper(), "buy_ccy": buy_ccy, "sell_ccy": sell_ccy, "buy_c": buy_c, "sell_c": sell_c, "sd": sd, "fin": fin,
             "ledger_rate": ledger_rate, "method": "LEGACY", "record": record, "sens": sens, "points": fin.get("points"), "df_b": df_b, "df_q": Decimal(repr(df_q)),
             "labels": ["MODEL", LEGACY_LABEL], "sfi": dict(t.get("settlement_funding") or {})}
@@ -1548,7 +1557,7 @@ def _store_terms(deal: dict, t: dict) -> dict:
     out.pop("strike_pct", None)
     out.update(kind=kind, trade_date=deal["trade_date"].isoformat(), expiry=deal["expiry"].isoformat(), tenor=deal.get("tenor"),
                receiver=deal["sign"] > 0,              # the sign accounting gives the position row (a sold / short contract shows negative)
-               dealt_ts=None, margin_mode=deal["margin_mode"], otc_spread_mult=str(deal["mult"]), model=MODELS[kind])
+               dealt_ts=None, margin_mode=deal["margin_mode"], otc_spread_mult=str(deal["mult"]), model=_model_text(kind, deal.get("method")))
     if kind in OPTION_KINDS:
         out.update(strike=str(deal["K"]), atm=bool(t.get("atm")), strike_pct=str(t["strike_pct"]) if t.get("strike_pct") is not None else None,
                    premium_c=deal["premium_c"], premium_per_unit=str(deal["deal_px"]), mid_per_unit=str(deal["mid_px"]), sigma0=f"{deal['sigma']:.6f}",
@@ -1863,7 +1872,7 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
     K = Decimal(str(terms["strike"]))
     expiry = _date(terms["expiry"])
     carried = _carried(row)
-    base_inputs = {"kind": kind, "K": str(K), "sign": sign, "model": MODELS[kind]}
+    base_inputs = {"kind": kind, "K": str(K), "sign": sign, "model": _model_text(kind, terms.get("pricing_method"))}
     if kind in ("EQ_OPTION", "EQ_FORWARD"):
         uid = terms["underlying_id"]
         inst = services.instruments.get(uid, conn)
@@ -1967,12 +1976,12 @@ def _value(services, conn, snap, row: dict, terms: dict, now: int, close: Option
         inputs = dict(base_inputs, S=str(S), F=str(F), days_to_delivery=days_d, days_to_expiry=t_days, T=f"{t_days / 365.0:.6f}", df_quote=f"{df_q:.10f}",
                       sigma=f"{sigma:.6f}", sigma_method=vinfo.get("method"), sigma_kind=vinfo.get("kind"), notional_c=int(terms["notional_c"]), pair=pair,
                       usd_per_quote=str(usd_q), valuation_date=day.isoformat(), fx=fxinfo, r_base=rbd, r_quote=rqd, price_per_unit=f"{px:.6f}",
-                      formula=f"{'+' if sign > 0 else '-'}{pair[:3]} {fmt_money(int(terms['notional_c']))} x {px:.6f} {quote} x {usd_q} USD/{quote}")
+                      formula=f"{'+' if sign > 0 else '-'}{pair[:3]} {fmt_money(int(terms['notional_c']))} x {px:.6f} {quote} x {usd_q} USD per {quote}")
         return value_c, inputs
     value_c = sign * to_c(A * (F - K) * Decimal(repr(df_q)) * usd_q)
     inputs = dict(base_inputs, S=str(S), F=str(F), days_to_value=days_d, df_quote=f"{df_q:.10f}", notional_c=int(terms["notional_c"]), pair=pair, usd_per_quote=str(usd_q),
                   valuation_date=day.isoformat(), fx=fxinfo, r_base=rbd, r_quote=rqd,
-                  formula=f"{'+' if sign > 0 else '-'}{pair[:3]} {fmt_money(int(terms['notional_c']))} x (F {F} - K {K}) x DF {df_q:.6f} x {usd_q} USD/{quote}")
+                  formula=f"{'+' if sign > 0 else '-'}{pair[:3]} {fmt_money(int(terms['notional_c']))} x (F {F} - K {K}) x DF {df_q:.6f} x {usd_q} USD per {quote}")
     return value_c, inputs
 
 
@@ -2028,7 +2037,7 @@ def _curve_fwd_value(services, conn, snap, row: dict, terms: dict, now: int, clo
               "df_quote": str(df_q), "spot_date": sd.isoformat(), "days_to_value": (vd - sd).days, "notional_c": int(terms["notional_c"]), "pair": pair,
               "usd_per_quote": str(usd_q), "usd_per_base": str(usd_b), "valuation_date": day.isoformat(), "fx": fxinfo, "labels": list(dict.fromkeys(labels)),
               "curves": {c: {"as_of": curves[c].d0.isoformat(), "kind": curves[c].kind, "level_bp": str(curves[c].level_bp)} for c in (base, quote)},
-              "formula": (f"{'+' if sign > 0 else '-'}{base} {fmt_money(int(terms['notional_c']))} x (F {F} - K {K}) x DF*_{quote} {df_q} x {usd_q} USD/{quote}"
+              "formula": (f"{'+' if sign > 0 else '-'}{base} {fmt_money(int(terms['notional_c']))} x (F {F} - K {K}) x DF*_{quote} {df_q} x {usd_q} USD per {quote}"
                           f" (F = {S} x {df_b} / {df_q}, for the spot date {sd.isoformat()})")}
     return value_c, inputs
 
@@ -2104,7 +2113,7 @@ def mark(services, contract, at: Optional[int] = None, valuation_date=None, snap
     cid = row["contract_id"]
     now = int(at if at is not None else services.clock.epoch())
     terms = _terms(row)
-    base = {"as_of": now, "contract_id": cid, "kind": row["kind"], "model": MODELS[row["kind"]], "quality": "computed"}
+    base = {"as_of": now, "contract_id": cid, "kind": row["kind"], "model": _model_text(row["kind"], terms.get("pricing_method")), "quality": "computed"}
     if row.get("status") != "OPEN":
         return 0, dict(base, note=f"{row.get('status')}: settled")
     snap = _snap_for(services, row, terms, snapshot)
@@ -2265,7 +2274,7 @@ def _payoff_c(kind: str, terms: dict, S: Decimal, close_info: dict) -> Tuple[int
     intrinsic = max(Decimal(0), S - K) if terms["right"] == "C" else max(Decimal(0), K - S)
     return (sign * to_c(A * intrinsic * usd_q),
             f"{'+' if sign > 0 else '-'}{pair[:3]} {fmt_money(int(terms['notional_c']))} x max(0, {'S - K' if terms['right'] == 'C' else 'K - S'}) = {intrinsic}"
-            f" {pair[3:]} per unit x {usd_q} USD/{pair[3:]}")
+            f" {pair[3:]} per unit x {usd_q} USD per {pair[3:]}")
 
 
 def h_expire(ctx: TxContext, payload: dict) -> dict:
@@ -2463,7 +2472,7 @@ def contract_detail(services, contract, conn=None) -> Optional[dict]:
     side = ("LONG_" if terms.get("side") == "BUY" else "SHORT_") + ("CALL" if terms.get("right") == "C" else "PUT" if terms.get("right") == "P" else "FORWARD")
     out = {"kind": kind, "side": side, "side_text": _side_text(kind, terms), "underlying_id": terms.get("underlying_id"), "pair": terms.get("pair"),
            "right": terms.get("right"), "style": terms.get("style"), "strike": terms.get("strike"), "expiry": terms.get("expiry"), "units": terms.get("units"),
-           "notional_base_c": terms.get("notional_c"), "model": MODELS[kind], "trade_date": terms.get("trade_date")}
+           "notional_base_c": terms.get("notional_c"), "model": _model_text(kind, terms.get("pricing_method")), "trade_date": terms.get("trade_date")}
     if kind in OPTION_KINDS:
         sid = terms.get("premium_settle_id")
         s = conn.execute("SELECT due_date, amount_c, status, entry_id FROM settlements WHERE settle_id=?", (sid,)).fetchone() if sid else None

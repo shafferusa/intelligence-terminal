@@ -42,6 +42,17 @@ Conventions
   (``hedges.position_candidates``; params ``underlying``, ``candidate_id``, ``edits``): the same legs, prices, fees, margin
   (the held shares cover a sold call) and payoff (the held position included, measured from spot, NOT traded); all-or-none;
   nothing is bought or sold in the underlying.  Not one of the 60 templates (never listed in the catalogue).
+- ``CUSTOM`` (1.0.7.2, the Smart Ticket's combinations): the exact legs the owner named, 2 to 8 of ``{instrument_id, side, qty,
+  order_type?, limit_px?}``, in a US Exchange or prime-broker account.  Options on ONE underlying are all-or-none (AON): every leg
+  MARKET at its executable bid / ask - an option leg with a limit or another order type is refused ``LIMIT_IN_AON`` (no net limit in
+  this version).  Exactly one share leg plus options on that same name is SEQUENTIAL: the shares are the primary (MARKET or LIMIT,
+  listed first), the options wait for its fills and keep their own MARKET / LIMIT terms (``PackageLeg.limit_px``).  Anything else
+  (two names, a futures leg, two share legs) is ``COMBO_INVALID``: a package holds one name, its shares and its options.  Option
+  sides BTO / STO / BTC / STC, share sides BUY / SELL / SELL_SHORT / BUY_TO_COVER (``SIDE_INVALID`` otherwise).  An option leg must be
+  in the master or on the cached chain (``ChainPending`` while it loads); neither is ``NOT_LISTED`` and nothing is invented, so the
+  option rows materialised for the submit always come from a cached chain row.  Prices as the templates: options at the chain's ask
+  (BTO / BTC) or bid (STO / STC), the shares at their limit or the quote; the margin counts the shares the account holds after the
+  package's share leg as cover for a sold call; the payoff is the legs' own.  Never listed in the catalogue (still 60).
 """
 from __future__ import annotations
 
@@ -58,7 +69,9 @@ from .books import account_kind_for, account_row, eligibility
 from .commands import Command, ConflictError, RejectError
 from .execution import fee_for
 from .instruments import EQUITY_KINDS, INDEX_OPTION_ROOTS, Instrument, parse_occ
+from .ledger import position as _ledger_position
 from .orders_preview import quote_of
+from .orders_rules import CASH_SIDES, OPTION_SIDES, ORDER_TYPES, on_tick, px_words
 from .quotes import QUALITY_RANK, QuoteRecord, freshness
 from .quotes.cache import record_from_chain_row
 from .strategies_catalogue import BY_KEY, GROUPS, STRATEGIES
@@ -96,6 +109,18 @@ POSITION_HEDGE_META = {"key": POSITION_HEDGE, "group": "HEDGE", "title": "Hedge 
                        "simple": "the option legs of a hedge for a position you already hold, traded together all-or-none; nothing is bought or sold in the underlying",
                        "legs": []}
 HELD_NOTE = " · the position already held is part of the payoff (measured from today's spot), but it is not traded"
+CUSTOM = "CUSTOM"
+CUSTOM_META = {"key": CUSTOM, "group": "CUSTOM", "title": "Your own legs",
+               "simple": "the exact legs you named (Smart Ticket): options on one name all-or-none, or shares with their options in sequence",
+               "legs": []}
+CUSTOM_MIN_LEGS, CUSTOM_MAX_LEGS = 2, 8
+CUSTOM_GROUP_LABEL = "Your own legs"
+CUSTOM_ONE_NAME = "a package holds one name: its shares and its options"
+CUSTOM_BUY_SIDES = ("BTO", "BTC", "BUY", "BUY_TO_COVER")
+CUSTOM_LEG_TYPES = ("MARKET", "LIMIT")                    # what a package leg carries to order.submit (order_type, limit_px)
+SIDE_WORDS = {"BTO": "buy to open", "STO": "sell to open", "BTC": "buy to close", "STC": "sell to close", "BUY": "buy", "SELL": "sell",
+              "SELL_SHORT": "sell short", "BUY_TO_COVER": "buy to cover"}
+OPTION_TICK = D("0.01")                                   # the tick InstrumentMaster.ensure_option gives a contract it lists
 
 
 class ChainPending(ConflictError):
@@ -308,6 +333,7 @@ class PackageLeg:
     fee_basis: str
     multiplier: Decimal
     order_type: str = "MARKET"
+    limit_px: Optional[Decimal] = None   # CUSTOM SEQUENTIAL legs: the primary's / a child's own limit, carried to order.submit
     strike: Optional[Decimal] = None
     expiry: Optional[str] = None
     right: Optional[str] = None
@@ -328,7 +354,8 @@ class PackageLeg:
 
     def to_dict(self) -> dict:
         return {"index": self.index, "kind": self.kind, "symbol": self.symbol, "instrument_id": self.instrument_id, "side": self.side,
-                "template_side": self.template_side, "qty": self.qty, "order_type": self.order_type, "est_price": _s(self.est_price),
+                "template_side": self.template_side, "qty": self.qty, "order_type": self.order_type, "limit_px": _s(self.limit_px),
+                "est_price": _s(self.est_price),
                 "price_basis": self.price_basis, "cash": str(from_c(self.cash_c)), "cash_c": self.cash_c, "fee": str(from_c(self.fee_c)), "fee_c": self.fee_c,
                 "fee_basis": self.fee_basis, "multiplier": str(self.multiplier), "strike": _s(self.strike), "expiry": self.expiry, "right": self.right,
                 "tenor_months": self.tenor_months, "pct_from_spot": _s(self.pct_from_spot), "delta_shares": _s(self.delta_shares), "vega": _s(self.vega),
@@ -361,14 +388,15 @@ class PackageSpec:
     warnings: List[str] = field(default_factory=list)
     missing_instruments: List[str] = field(default_factory=list)
     conventions: Dict[str, str] = field(default_factory=dict)
-    params_extra: Optional[dict] = None              # POSITION_HEDGE: candidate_id, edits, position_qty (echoed for the submit)
+    params_extra: Optional[dict] = None              # POSITION_HEDGE: candidate_id, edits, position_qty; CUSTOM: legs (echoed for the submit)
 
     def to_dict(self) -> dict:
-        strat = BY_KEY.get(self.strategy_key) or dict(POSITION_HEDGE_META, title=self.title)
+        strat = BY_KEY.get(self.strategy_key) or dict(CUSTOM_META if self.strategy_key == CUSTOM else POSITION_HEDGE_META, title=self.title)
         params = {"underlying": self.underlying_id, "other": self.other_id, "units": self.units, "tenor_months": self.tenor_months}
         params.update(self.params_extra or {})
+        group_label = GROUP_LABELS.get(self.group, CUSTOM_GROUP_LABEL if self.group == "CUSTOM" else ("Position hedge" if self.group == "HEDGE" else self.group))
         return {"strategy": {k: v for k, v in strat.items() if k != "legs"}, "strategy_key": self.strategy_key, "title": self.title, "group": self.group,
-                "group_label": GROUP_LABELS.get(self.group, "Position hedge" if self.group == "HEDGE" else self.group), "account_id": self.account_id,
+                "group_label": group_label, "account_id": self.account_id,
                 "underlying_id": self.underlying_id, "other_id": self.other_id, "params": params,
                 "spot": str(self.spot), "legs": [l.to_dict() for l in self.legs], "fill_mode": self.fill_mode, "primary_index": self.primary_index,
                 "expiry": self.expiry, "totals": dict(self.totals), "margin": dict(self.margin), "payoff": dict(self.payoff), "chain_quality": self.chain_quality,
@@ -666,10 +694,13 @@ def package_legs(services, account_id: str, key: str, params: Optional[dict] = N
     Raises ``RejectError`` UNKNOWN_STRATEGY / ACCOUNT_UNKNOWN / INSTRUMENT_UNKNOWN / UNITS / TENOR / STRIKES / NOT_AVAILABLE and
     ``ChainPending`` (409 CHAIN_PENDING) while the chain is being fetched.  Never fetches; writes nothing itself - ``materialise``
     (the preview's: ``_ensure_legs``) is called with the legs BEFORE the incremental margin when an option row is missing.
-    ``key`` POSITION_HEDGE resolves a hedge of a position held (``_position_hedge_spec``)."""
+    ``key`` POSITION_HEDGE resolves a hedge of a position held (``_position_hedge_spec``); ``key`` CUSTOM the exact legs of
+    ``params['legs']`` (``_custom_spec``, the Smart Ticket's combinations)."""
     params = dict(params or {})
     if str(key or "").strip().upper() == POSITION_HEDGE:
         return _position_hedge_spec(services, account_id, params, materialise)
+    if str(key or "").strip().upper() == CUSTOM:
+        return _custom_spec(services, account_id, params, materialise)
     strat = BY_KEY.get(str(key or "").strip().upper())
     if strat is None:
         raise RejectError("UNKNOWN_STRATEGY", f"unknown strategy {key!r}", {"known": sorted(BY_KEY)})
@@ -849,11 +880,17 @@ def package_legs(services, account_id: str, key: str, params: Optional[dict] = N
                        margin, payoff, chain_quality, now, warnings, missing, {k: tables.CONVENTIONS[k] for k in CONVENTION_KEYS if k in tables.CONVENTIONS})
 
 
-def _margin_block(services, account_id: str, legs: Sequence[PackageLeg], spot: Decimal, index: bool, held_shares: int = 0) -> dict:
+def _margin_block(services, account_id: str, legs: Sequence[PackageLeg], spot: Decimal, index: bool, held_shares: int = 0,
+                  long_shares: Optional[int] = None) -> dict:
+    """The option margin of a package's legs (§13.3 formula, plus WP-03's incremental figure when bound).  The shares that cover a
+    sold call are the package's bought shares + ``held_shares``, or exactly ``long_shares`` when the caller knows them (CUSTOM: the
+    account's position after the package's own share leg, so a sale or a cover in the package is counted)."""
     option_legs = [{"index": l.index, "instrument_id": l.instrument_id, "side": l.template_side, "right": l.right, "strike": l.strike, "expiry": l.expiry,
                     "qty": l.qty, "est_price": l.est_price, "mark": _dec(l.quote.get("mid")) if l.quote.get("mid") else l.est_price}
                    for l in legs if l.kind == "OPTION" and l.strike is not None and l.est_price is not None]
-    long_shares = sum(l.qty for l in legs if l.kind == "STOCK" and l.template_side == "BUY") + max(0, int(held_shares))
+    if long_shares is None:
+        long_shares = sum(l.qty for l in legs if l.kind == "STOCK" and l.template_side == "BUY") + max(0, int(held_shares))
+    long_shares = max(0, int(long_shares))
     if not option_legs:
         return {"requirement_c": 0, "requirement": "0.00", "method": "none (no option legs)", "detail": [], "incremental_c": None, "incremental": None,
                 "formula": tables.CONVENTIONS["OPT_MARGIN"]}
@@ -1040,6 +1077,240 @@ def _position_hedge_spec(services, account_id: str, params: dict, materialise=No
                        params_extra=extra)
 
 
+# ===== CUSTOM: the exact legs the owner named (the Smart Ticket's combinations, 1.0.7.2) ==============================================
+_KIND_WORDS = {"FUTURE": "a futures contract", "INDEX": "an index (no shares to trade)", "FX": "a currency pair", "BOND": "a bond",
+               "PRIVATE": "a private holding", "SWAP": "a swap", "YIELD": "a yield"}
+
+
+def _custom_legs_in(params: dict) -> list:
+    raw = params.get("legs")
+    if not isinstance(raw, list):
+        raise RejectError("LEGS", f"a package of your own legs takes a list of {CUSTOM_MIN_LEGS} to {CUSTOM_MAX_LEGS} legs, each "
+                                  "{instrument_id, side, qty, order_type?, limit_px?}", {"min": CUSTOM_MIN_LEGS, "max": CUSTOM_MAX_LEGS})
+    if not CUSTOM_MIN_LEGS <= len(raw) <= CUSTOM_MAX_LEGS:
+        raise RejectError("LEGS", f"a package of your own legs takes {CUSTOM_MIN_LEGS} to {CUSTOM_MAX_LEGS} legs, got {len(raw)}"
+                          + ("; a single leg is an order of its own" if len(raw) == 1 else ""), {"legs": len(raw), "min": CUSTOM_MIN_LEGS, "max": CUSTOM_MAX_LEGS})
+    for n, leg in enumerate(raw, 1):
+        if not isinstance(leg, dict) or not str(leg.get("instrument_id") or "").strip():
+            raise RejectError("LEGS", f"leg {n} names no instrument: each leg is {{instrument_id, side, qty, order_type?, limit_px?}}", {"leg": n})
+    return raw
+
+
+def _leg_qty(v, n: int) -> int:
+    try:
+        d = None if isinstance(v, bool) else _dec(v, "qty")
+    except ValueError:
+        d = None
+    if d is None or not d.is_finite() or d <= 0 or d != d.to_integral_value():
+        raise RejectError("QTY_INVALID", f"leg {n}: the quantity must be a positive whole number, got {v!r}", {"leg": n})
+    return int(d)
+
+
+def _leg_limit(v, n: int) -> Decimal:
+    try:
+        d = None if isinstance(v, bool) else _dec(v, "limit_px")
+    except ValueError:
+        d = None
+    if d is None or not d.is_finite() or d <= 0:
+        raise RejectError("PRICE_TICK", f"leg {n}: the limit {v!r} is not a positive price", {"leg": n})
+    return d
+
+
+def _option_terms(iid: str, opt_inst) -> Tuple[date, str, Decimal]:
+    parsed = parse_occ(iid)
+    if parsed is not None:
+        return parsed[1], parsed[2], parsed[3]
+    return date.fromisoformat(str(opt_inst.expiry)[:10]), str(opt_inst.right), qprice(opt_inst.strike)
+
+
+def _custom_spec(services, account_id: str, params: dict, materialise=None) -> PackageSpec:
+    """``params['legs']`` (2 to 8 ``{instrument_id, side, qty, order_type?, limit_px?}``) -> ONE package of exactly those legs
+    (module docstring CUSTOM).  The structure is checked before any chain is read (LEGS, ACCOUNT_UNKNOWN, NOT_AVAILABLE,
+    INSTRUMENT_UNKNOWN, COMBO_INVALID, SIDE_INVALID, QTY_INVALID, ORDER_TYPE_INVALID, LIMIT_IN_AON, PRICE_REQUIRED, PRICE_TICK);
+    then the underlying's cached chain (``ChainPending`` while it loads): an option leg neither in the master nor on the chain is
+    NOT_LISTED - never invented - and a leg without a usable Cboe bid / ask (or a name without a price) is NOT_AVAILABLE.  Writes
+    nothing itself: ``materialise`` (the preview's hook) lists the chain's contracts that are not in the master yet."""
+    from .products.options import underlying_of
+    raw = _custom_legs_in(params)
+    with services.db.reader() as conn:
+        row = account_row(conn, str(account_id or ""))
+        acct = dict(row) if row is not None else None
+    if acct is None:
+        raise RejectError("ACCOUNT_UNKNOWN", f"account {account_id!r} does not exist")
+    akind = account_kind_for(acct)
+    if akind not in LISTED_ACCOUNT_KINDS:
+        raise RejectError("NOT_AVAILABLE", f"listed shares and options trade in a US Exchange or prime-broker account, not {akind}",
+                          {"reason": f"NOT AVAILABLE HERE / listed products do not trade in a {akind} account"})
+    # 1. each leg on its own: the instrument, its side, quantity and order terms (no chain is read yet)
+    items: List[dict] = []
+    seen: Dict[str, int] = {}
+    for n, leg in enumerate(raw, 1):
+        iid = str(leg.get("instrument_id")).strip().upper()
+        if iid in seen:
+            raise RejectError("LEGS", f"leg {n} repeats the contract of leg {seen[iid]} ({iid}): name each contract once, with its whole quantity",
+                              {"leg": n, "same_as": seen[iid]})
+        seen[iid] = n
+        inst = services.instruments.get(iid)
+        if inst is not None and inst.kind == "OPTION":
+            kind, under = "OPTION", (services.instruments.get(inst.underlying_id) if inst.underlying_id else None)
+        elif inst is None and parse_occ(iid) is not None:
+            kind, under = "OPTION", underlying_of(services, iid)
+        elif inst is None:
+            raise RejectError("INSTRUMENT_UNKNOWN", f"leg {n}: {iid} is not in the master (resolve it first)", {"leg": n, "instrument_id": iid})
+        elif inst.kind in EQUITY_KINDS:
+            kind, under = "STOCK", inst
+        else:
+            raise RejectError("COMBO_INVALID", f"leg {n} ({inst.symbol}) is {_KIND_WORDS.get(inst.kind, 'a ' + inst.kind.lower() + ' instrument')}: {CUSTOM_ONE_NAME}",
+                              {"leg": n, "instrument_id": iid, "kind": inst.kind})
+        if under is None:
+            raise RejectError("INSTRUMENT_UNKNOWN", f"leg {n}: the underlying of {iid} is not in the master (resolve it first)", {"leg": n, "instrument_id": iid})
+        side = str(leg.get("side") or "").strip().upper()
+        allowed = OPTION_SIDES if kind == "OPTION" else CASH_SIDES
+        if side not in allowed:
+            raise RejectError("SIDE_INVALID", f"leg {n}: side {side!r} is not valid for {'an option' if kind == 'OPTION' else 'shares'}: use one of {', '.join(allowed)}",
+                              {"leg": n, "allowed": list(allowed)})
+        qty = _leg_qty(leg.get("qty"), n)
+        has_limit = leg.get("limit_px") not in (None, "")
+        otype = str(leg.get("order_type") or ("LIMIT" if has_limit else "MARKET")).strip().upper()
+        if otype not in ORDER_TYPES:
+            raise RejectError("ORDER_TYPE_INVALID", f"leg {n}: {otype!r} is not an order type: a leg of a package is MARKET or LIMIT", {"leg": n})
+        items.append({"n": n, "iid": iid, "inst": inst, "kind": kind, "under": under.instrument_id, "side": side, "qty": qty, "order_type": otype,
+                      "limit_raw": leg.get("limit_px"), "has_limit": has_limit, "limit": None})
+    # 2. the package: one name; AON (options only) or SEQUENTIAL (one share leg first, then its options)
+    names = sorted({it["under"] for it in items})
+    if len(names) != 1:
+        raise RejectError("COMBO_INVALID", f"the legs are on {len(names)} names ({', '.join(names)}): {CUSTOM_ONE_NAME}", {"names": names})
+    stock = [it for it in items if it["kind"] == "STOCK"]
+    opts = [it for it in items if it["kind"] == "OPTION"]
+    if len(stock) > 1:
+        raise RejectError("COMBO_INVALID", f"legs {stock[0]['n']} and {stock[1]['n']} are both share legs: {CUSTOM_ONE_NAME}",
+                          {"legs": [it["n"] for it in stock]})
+    fill_mode = "SEQUENTIAL" if stock else "AON"
+    for it in items:
+        n = it["n"]
+        if fill_mode == "AON":
+            if it["has_limit"] or it["order_type"] != "MARKET":
+                what = "limit" if it["has_limit"] else it["order_type"].lower().replace("_", " ") + " type"
+                raise RejectError("LIMIT_IN_AON", f"leg {n}: the legs of an all-or-none package trade at each leg's executable bid / ask, with no limit in "
+                                                  f"this version: drop the {what}, or send the leg as an order of its own", {"leg": n})
+            continue
+        if it["order_type"] not in CUSTOM_LEG_TYPES:
+            raise RejectError("ORDER_TYPE_INVALID", f"leg {n}: a leg of a package is MARKET or LIMIT, not {it['order_type']}", {"leg": n})
+        if it["order_type"] == "MARKET":
+            if it["has_limit"]:
+                raise RejectError("ORDER_TYPE_INVALID", f"leg {n}: a MARKET leg takes no limit price: make it LIMIT or drop the price", {"leg": n})
+            continue
+        if not it["has_limit"]:
+            raise RejectError("PRICE_REQUIRED", f"leg {n}: a LIMIT leg needs its limit price", {"leg": n})
+        lim = _leg_limit(it["limit_raw"], n)
+        tick = it["inst"].tick if it["inst"] is not None else OPTION_TICK
+        if not on_tick(lim, tick):
+            raise RejectError("PRICE_TICK", f"leg {n}: the limit {lim} is not on the {tick} tick", {"leg": n, "tick": str(tick)})
+        it["limit"] = qprice(lim)
+    under = services.instruments.get(names[0])
+    why = _check_name(services, under, {"OPTION"} | ({"STOCK"} if stock else set()), akind)
+    if why:
+        raise RejectError("NOT_AVAILABLE", why, {"reason": why})
+    # 3. the cached chain: every option leg is listed (master or chain) and priced from the chain's bid / ask
+    snap, fresh = _chain_for(services, under.instrument_id)
+    for it in opts:
+        opt_inst = it["inst"]
+        exp, right, k = _option_terms(it["iid"], opt_inst)
+        it["words"] = f"{under.symbol} {exp.isoformat()} {k} {'call' if right == 'C' else 'put'}"
+        it["row"] = ((snap.by_occ(opt_inst.cboe_symbol) if opt_inst is not None and opt_inst.cboe_symbol else None) or snap.by_occ(it["iid"]))
+        if it["row"] is None and opt_inst is None:
+            raise RejectError("NOT_LISTED", f"leg {it['n']}: {it['words']} ({it['iid']}) is neither on the cached {under.symbol} chain nor in the master: nothing "
+                                            "is invented - load the chain or pick a listed contract", {"leg": it["n"], "instrument_id": it["iid"],
+                                                                                                      "underlying_id": under.instrument_id})
+        if it["row"] is None:
+            raise RejectError("NOT_AVAILABLE", f"leg {it['n']}: {it['words']} has no Cboe quote: it is not on the cached {under.symbol} chain (outside its "
+                                               "strike band or expiry window)", {"leg": it["n"], "instrument_id": it["iid"]})
+    spot = _level_of(services, under, snap)
+    if spot is None:
+        raise RejectError("NOT_AVAILABLE", f"no price for {under.symbol} (quote unavailable)", {"reason": f"NOT AVAILABLE / no price for {under.symbol}"})
+    now = int(services.clock.epoch())
+    today = services.clock.today()
+    index_under = under.kind == "INDEX" or under.symbol in INDEX_OPTION_ROOTS
+    legs: List[PackageLeg] = []
+    qualities: List[str] = []
+    expiries: List[str] = []
+    tenors = set()
+    for i, it in enumerate(stock + opts):                          # the share leg (the primary) first, then the options as named
+        n, side, qty = it["n"], it["side"], it["qty"]
+        buy = side in CUSTOM_BUY_SIDES
+        sign = ONE if buy else -ONE
+        limit_words = "" if it["limit"] is None else f", limit {px_words(it['limit'])}"
+        if it["kind"] == "STOCK":
+            inst = it["inst"]
+            qpx, qbasis, prov = _stock_quote(services, inst, buy, snap, fresh, now)
+            if it["limit"] is not None:
+                px, basis = it["limit"], "your limit"
+            elif qpx is None:
+                raise RejectError("NOT_AVAILABLE", f"leg {n}: no quote for {inst.symbol}", {"reason": f"NOT AVAILABLE / no quote for {inst.symbol}", "leg": n})
+            else:
+                px, basis = qpx, qbasis
+            if qpx is not None:
+                qualities.append(prov.get("quality", "unavailable"))
+            gross = mul_c(qty, px, inst.multiplier, inst.price_scale)
+            fee_c, fee_basis = fee_for(services, acct, inst, qty)
+            what = (f"{SIDE_WORDS[side]} {qty:,} {inst.symbol} at {px_words(px)}" + (" (your limit)" if it["limit"] is not None else "")
+                    + (" (locate and borrow first)" if side == "SELL_SHORT" else ""))
+            legs.append(PackageLeg(i, "STOCK", under.instrument_id, inst.instrument_id, side, "BUY" if buy else "SELL", qty, px, basis, -gross if buy else gross,
+                                   fee_c, fee_basis, inst.multiplier, order_type=it["order_type"], limit_px=it["limit"], delta_shares=D(sign * qty), quote=prov,
+                                   what=what))
+            continue
+        row, opt_inst = it["row"], it["inst"]
+        exp, right, k = _option_terms(it["iid"], opt_inst)
+        px = row.ask if buy else row.bid
+        if px is None or px <= 0 or (row.ask is not None and row.bid is not None and row.ask < row.bid):
+            raise RejectError("NOT_AVAILABLE", f"leg {n}: no {'ask' if buy else 'bid'} for {it['words']} (Cboe shows no usable quote)",
+                              {"reason": f"NOT AVAILABLE / no {'ask' if buy else 'bid'} for {it['iid']}", "leg": n})
+        px = qprice(px)
+        mult = opt_inst.multiplier if opt_inst is not None else D(OPTION_MULT)
+        gross = mul_c(qty, px, mult)
+        fee_c, fee_basis = fee_for(services, acct, opt_inst if opt_inst is not None else SimpleNamespace(kind="OPTION"), qty)
+        quality = _row_quality(services, snap, row, it["iid"], index_under, now)
+        qualities.append(quality)
+        pct = _q2((k / spot - ONE) * HUNDRED)
+        tenor_m = max(1, _round_int(D((exp - today).days) / D("30.4375")))
+        tenors.add(tenor_m)
+        expiries.append(exp.isoformat())
+        what = f"{SIDE_WORDS[side]} {qty:,} {it['words']} at {px_words(px)}{limit_words} ({'+' if pct >= 0 else ''}{pct} % from spot)"
+        legs.append(PackageLeg(i, "OPTION", under.instrument_id, it["iid"], side, "BUY" if buy else "SELL", qty, px, "Cboe " + ("ask" if buy else "bid"),
+                               -gross if buy else gross, fee_c, fee_basis, mult, order_type=it["order_type"], limit_px=it["limit"], strike=k, expiry=exp.isoformat(),
+                               right=right, tenor_months=tenor_m, pct_from_spot=pct, delta_shares=_greek(sign, qty, row.delta), vega=_greek(sign, qty, row.vega),
+                               theta=_greek(sign, qty, row.theta), iv=row.iv,
+                               quote={"bid": _s(row.bid), "ask": _s(row.ask), "bid_size": row.bid_size, "ask_size": row.ask_size, "mid": _s(row.mid),
+                                      "quality": quality, "source": f"{snap.source} ({snap.cboe_symbol})", "as_of": snap.quote_time, "fetched_at": snap.fetched_at,
+                                      "delay_label": snap.delay_label, "basis": "Cboe " + ("ask" if buy else "bid"), "chain_fresh": fresh},
+                               materialised=opt_inst is not None, what=what))
+    if materialise is not None and any(l.kind == "OPTION" and not l.materialised for l in legs):
+        materialise(legs)
+    missing = [l.instrument_id for l in legs if l.kind == "OPTION" and not l.materialised]
+    # 4. margin (a sold call is covered by the shares the account holds AFTER the package's share leg), totals, payoff
+    with services.db.reader() as conn:
+        held = _ledger_position(conn, account_id, under.instrument_id)[0]
+    shares_after = int(held) + sum((l.qty if l.template_side == "BUY" else -l.qty) for l in legs if l.kind == "STOCK")
+    margin = _margin_block(services, account_id, legs, spot, index_under, long_shares=max(0, shares_after))
+    for d in margin.get("detail") or []:
+        if d.get("rule") == "covered call":
+            d["note"] = f"covered by {int(d['contracts']) * OPTION_MULT:,} shares the account holds after the package"
+    units = max(int(l.qty) * (int(l.multiplier) if l.kind == "OPTION" else 1) for l in legs)
+    tenor = max(tenors) if tenors else DEFAULT_TENOR_MONTHS
+    totals = _totals(legs, spot, margin, units, tenor)
+    payoff = payoff_grid(legs, spot, {under.instrument_id: spot}, under.instrument_id, mixed_expiries=len(set(expiries)) > 1)
+    chain_quality = max(qualities, key=lambda q: QUALITY_RANK.get(q, 9)) if qualities else None
+    warnings: List[str] = []
+    if not fresh:
+        warnings.append(f"the {under.symbol} chain is {now - int(snap.fetched_at)} s old (stale); a refresh is in flight")
+    norm = [dict({"instrument_id": it["iid"], "side": it["side"], "qty": it["qty"], "order_type": it["order_type"]},
+                 **({"limit_px": str(it["limit"])} if it["limit"] is not None else {})) for it in items]
+    title = f"{CUSTOM_META['title']}: {len(legs)} legs on {under.symbol} ({'all or none' if fill_mode == 'AON' else 'the shares first'})"
+    return PackageSpec(CUSTOM, title, "CUSTOM", account_id, under.instrument_id, None, units, tenor, spot, legs, fill_mode, 0 if stock else None,
+                       min(expiries) if expiries else None, totals, margin, payoff, chain_quality, now, warnings, missing,
+                       {k: tables.CONVENTIONS[k] for k in CONVENTION_KEYS if k in tables.CONVENTIONS}, params_extra={"legs": norm})
+
+
 # ===== materialising option rows (light command) ===============================================================================
 def _ensure_rid(payload: dict, today: str) -> str:
     h = hashlib.sha256((payload["underlying_id"] + "|" + "|".join(sorted(payload["occs"]))).encode("utf-8")).hexdigest()[:40]
@@ -1188,4 +1459,4 @@ def preview_view(services, body: dict) -> Tuple[int, dict]:
 __all__ = ["GROUPS", "STRATEGIES", "BY_KEY", "GROUP_LABELS", "LegSpec", "PackageLeg", "PackageSpec", "ChainPending", "parse_rule", "resolve_strike",
            "zero_cost_call", "add_months", "expiry_for_tenor", "size_legs", "fill_mode_for", "order_side", "payoff_grid", "package_margin_c", "availability",
            "front_month", "package_legs", "ensure_instruments", "ensure_instruments_tx", "h_ensure_instruments", "register", "catalogue_view", "preview_view",
-           "POSITION_HEDGE"]
+           "POSITION_HEDGE", "CUSTOM", "CUSTOM_META"]

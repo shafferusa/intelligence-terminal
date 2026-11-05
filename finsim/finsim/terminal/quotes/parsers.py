@@ -12,6 +12,13 @@ Conventions
 - Cboe (copied from finsim2 ``contracts``): reduced at parse to expiries ≤ ``CHAIN_MAX_DAYS`` and strikes within
   ± ``CHAIN_STRIKE_BAND`` of spot; implied vols in percent are normalised to decimals when the median exceeds 3; the
   chain's ``quote_time`` is the UNDERLYING's ``last_trade_time`` (naive Eastern → epoch).
+- CHAIN-LEGS-1 (1.0.7.2): every entry ``parse_chain`` skips is counted by reason in ``ChainSnapshot.drops`` (``CHAIN_DROP_REASONS``:
+  not_a_dict, bad_symbol, bad_date, expired, beyond_max_days, out_of_band, duplicate).  An exact duplicate OCC keeps the entry with
+  a usable NBBO (bid > 0, ask >= bid), else the first.  The rows are then sorted by (expiry, strike, right, root rank, OCC) - root
+  rank 0 for the standard root (the Cboe symbol without "_", compared without "." / "-"), 1 for any other (SPXW beside SPX, an
+  adjusted series) - so a snapshot is the same whatever order Cboe's file had, and every first-match consumer (``ChainSnapshot.row``,
+  the chain view's cell, the hedge panel, the strategies) takes the same, preferred contract.  ``one_sided(expiry)`` lists the
+  strikes that carry only a call or only a put.
 - Treasury.gov: the latest ``NEW_DATE`` entry of the monthly par-curve feed, tenors 1M…30Y as years (8 dp).
 - FRED: blank and "." observations are skipped.  Frankfurter: units of currency per USD.  FINRA: pipe file, values
   rounded HALF_EVEN to whole shares, rows with total ≤ 0 or short > 1.05 × total dropped.
@@ -59,7 +66,7 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from decimal import Decimal, ROUND_HALF_EVEN
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
 from typing import Dict, Iterable, List, Optional, Tuple
 
 import html as _html
@@ -75,6 +82,9 @@ from . import Bar1m
 from .http import FetchError
 
 OCC_TAIL = re.compile(r"(\d{2})(\d{2})(\d{2})([CP])(\d{8})$")
+#: CHAIN-LEGS-1 (1.0.7.2): why parse_chain skipped an entry of a Cboe file (``ChainSnapshot.drops`` counts them in this order)
+CHAIN_DROP_REASONS = ("not_a_dict", "bad_symbol", "bad_date", "expired", "beyond_max_days", "out_of_band", "duplicate")
+_ROOT_JUNK = re.compile(r"[\s_.\-]")
 TENORS: List[Tuple[str, str, Decimal]] = [   # (XML field, label, years)
     ("BC_1MONTH", "1M", Decimal(1) / Decimal(12)), ("BC_2MONTH", "2M", Decimal(2) / Decimal(12)), ("BC_3MONTH", "3M", Decimal("0.25")),
     ("BC_4MONTH", "4M", Decimal(4) / Decimal(12)), ("BC_6MONTH", "6M", Decimal("0.5")), ("BC_1YEAR", "1Y", Decimal(1)),
@@ -241,7 +251,9 @@ class ChainSnapshot:
     source: str = "Cboe delayed quotes"
     delay_s: int = YAHOO_DELAY_S
     delay_label: str = YAHOO_DELAY_LABEL
+    drops: Dict[str, int] = field(default_factory=dict)        # CHAIN-LEGS-1: the entries parse_chain skipped, by reason (CHAIN_DROP_REASONS)
     _by_occ: Optional[Dict[str, ChainRow]] = field(default=None, repr=False, compare=False)
+    _by_key: Optional[Dict[Tuple[str, str, Decimal], ChainRow]] = field(default=None, init=False, repr=False, compare=False)
 
     @property
     def spot(self) -> Optional[Decimal]:
@@ -262,8 +274,56 @@ class ChainSnapshot:
             self._by_occ = {c.occ: c for c in self.contracts}
         return self._by_occ.get(occ)
 
+    def row(self, expiry, right, strike) -> Optional[ChainRow]:
+        """CHAIN-LEGS-1: the preferred contract of ``(expiry, right, strike)`` - the FIRST row of that key, the one every first-match
+        consumer takes (``parse_chain`` sorts the standard root first); None when the snapshot lists none.  ``expiry`` an ISO date (or a
+        date), ``right`` C / P (or call / put), ``strike`` a Decimal, a number or its text."""
+        key = _chain_key(expiry, right, strike)
+        if key is None:
+            return None
+        if self._by_key is None:
+            idx: Dict[Tuple[str, str, Decimal], ChainRow] = {}
+            for c in self.contracts:
+                idx.setdefault((c.expiry, c.right, c.strike), c)
+            self._by_key = idx
+        return self._by_key.get(key)
+
+    def one_sided(self, expiry) -> List[dict]:
+        """CHAIN-LEGS-1: the strikes of ``expiry`` that list only a call or only a put in this snapshot (Cboe's file had one side), in
+        strike order: ``[{"strike": "115", "has": "put"}]``."""
+        exp = _iso_day(expiry)
+        sides: Dict[Decimal, set] = {}
+        for c in self.contracts:
+            if c.expiry == exp:
+                sides.setdefault(c.strike, set()).add(c.right)
+        return [{"strike": str(k), "has": "call" if "C" in s else "put"} for k, s in sorted(sides.items()) if len(s) == 1]
+
     def n_kept(self) -> int:
         return len(self.contracts)
+
+
+def _iso_day(x) -> str:
+    """A date or an ISO date / timestamp text as ``YYYY-MM-DD``."""
+    s = x.isoformat() if hasattr(x, "isoformat") else str(x or "")
+    return s.strip()[:10]
+
+
+def _chain_key(expiry, right, strike) -> Optional[Tuple[str, str, Decimal]]:
+    """``(expiry, "C" | "P", strike)`` as the chain rows carry them, or None when a part cannot be read."""
+    r = str(right or "").strip().upper()
+    r = {"CALL": "C", "PUT": "P"}.get(r, r)
+    if r not in ("C", "P"):
+        return None
+    if isinstance(strike, Decimal):
+        k = strike
+    else:
+        try:
+            k = Decimal(str(strike).strip())
+        except (InvalidOperation, ValueError):
+            return None
+    if not k.is_finite():
+        return None
+    return _iso_day(expiry), r, k
 
 
 @dataclass
@@ -502,39 +562,66 @@ def parse_chain(payload, cboe_symbol: str, underlying_id: str, today: date, fetc
     options = data.get("options")
     rows: List[ChainRow] = []
     n_raw = 0
+    counts: Dict[str, int] = {}                   # CHAIN-LEGS-1: the entries skipped, by reason
+    seen: Dict[str, int] = {}                     # OCC -> its index in rows (one row per exact OCC)
+
+    def drop(reason: str) -> None:
+        counts[reason] = counts.get(reason, 0) + 1
+
     lo = hi = None
     if spot is not None and spot > 0:
         lo, hi = spot * (1 - band), spot * (1 + band)
     for o in (options if isinstance(options, list) else []):
         if not isinstance(o, dict):
+            drop("not_a_dict")
             continue
         n_raw += 1
         occ = str(o.get("option") or "").strip()
         m = OCC_TAIL.search(occ)
         if not m or len(occ) > 24:
+            drop("bad_symbol")
             continue
         yy, mm, dd, right, k = m.groups()
         try:
             exp = date(2000 + int(yy), int(mm), int(dd))
         except ValueError:
+            drop("bad_date")
             continue
         days = (exp - today).days
-        if days < 0 or days > max_days:
+        if days < 0:
+            drop("expired")
+            continue
+        if days > max_days:
+            drop("beyond_max_days")
             continue
         strike = (Decimal(int(k)) / Decimal(1000)).normalize()
         if strike == strike.to_integral_value():
             strike = strike.quantize(Decimal(1))
         if lo is not None and (strike < lo or strike > hi):
+            drop("out_of_band")
             continue
-        rows.append(ChainRow(occ, exp.isoformat(), right, strike, dec(o.get("bid")), dec(o.get("ask")), intv(o.get("bid_size")), intv(o.get("ask_size")),
-                             dec(o.get("last_trade_price")), et_naive_to_epoch(o.get("last_trade_time")), num(o.get("iv")), num(o.get("delta")),
-                             num(o.get("gamma")), num(o.get("theta")), num(o.get("vega")), intv(o.get("open_interest")), intv(o.get("volume"))))
+        row = ChainRow(occ, exp.isoformat(), right, strike, dec(o.get("bid")), dec(o.get("ask")), intv(o.get("bid_size")), intv(o.get("ask_size")),
+                       dec(o.get("last_trade_price")), et_naive_to_epoch(o.get("last_trade_time")), num(o.get("iv")), num(o.get("delta")),
+                       num(o.get("gamma")), num(o.get("theta")), num(o.get("vega")), intv(o.get("open_interest")), intv(o.get("volume")))
+        i = seen.get(occ)
+        if i is not None:                         # an exact duplicate: the entry with a usable NBBO is kept, else the first
+            drop("duplicate")
+            if row.quoted and not rows[i].quoted:
+                rows[i] = row
+            continue
+        seen[occ] = len(rows)
+        rows.append(row)
     ivs = sorted(c.iv for c in rows if c.iv is not None and c.iv > 0)
     if ivs and ivs[len(ivs) // 2] > 3.0:          # quoted in percent: convert to decimal
         for c in rows:
             if c.iv is not None:
                 c.iv = c.iv / 100.0
-    return ChainSnapshot(underlying_id, cboe_symbol, under, rows, fetched_at, under.last_trade_time, n_raw)
+    # CHAIN-LEGS-1: the same snapshot whatever order Cboe's file had; within (expiry, strike, right) the standard root first (the Cboe
+    # symbol without "_", compared without "." / "-"), then any other root (SPXW beside SPX, an adjusted series), then the OCC itself
+    std = _ROOT_JUNK.sub("", str(cboe_symbol or "")).upper()
+    rows.sort(key=lambda c: (c.expiry, c.strike, c.right, 0 if _ROOT_JUNK.sub("", c.occ[:-15]).upper() == std else 1, c.occ))
+    drops = {r: counts[r] for r in CHAIN_DROP_REASONS if counts.get(r)}
+    return ChainSnapshot(underlying_id, cboe_symbol, under, rows, fetched_at, under.last_trade_time, n_raw, drops=drops)
 
 
 # ---- Treasury / FRED / Frankfurter / FINRA parsing -----------------------------------------------------------------------------
@@ -1209,7 +1296,7 @@ def parse_fedinvest(text) -> Tuple[Optional[date], Dict[str, dict]]:
 
 __all__ = ["num", "dec", "intv", "et_naive_to_epoch", "YahooIntraday", "DailyBar", "DivEvent", "SplitEvent", "Events", "ChainUnderlying", "ChainRow",
            "ChainSnapshot", "ParCurve", "FxRates", "chart_result", "chart_bars", "clean_meta", "parse_intraday", "parse_daily", "parse_minute_bars", "parse_events", "parse_chain",
-           "parse_treasury_xml", "parse_fred_csv", "parse_frankfurter", "parse_finra", "OCC_TAIL", "TENORS", "TENOR_Q", "TENOR_YEARS", "YAHOO_DELAY_S",
+           "parse_treasury_xml", "parse_fred_csv", "parse_frankfurter", "parse_finra", "OCC_TAIL", "CHAIN_DROP_REASONS", "TENORS", "TENOR_Q", "TENOR_YEARS", "YAHOO_DELAY_S",
            "YAHOO_DELAY_LABEL", "DAILY_DELAY_LABEL", "FRED_MAINTENANCE", "looks_like_html", "parse_fred_json", "parse_nyfed_rates", "parse_ecb_csv",
            "parse_mof_jgb", "parse_treasury_real_xml", "REAL_TENORS", "parse_mspd", "parse_auctions", "parse_fedinvest", "CUSIP_RE", "MSPD_TYPES",
            "FEDINVEST_TYPES", "exact_dec", "parse_ecb_csv_exact", "parse_nyfed_index", "parse_boe_iadb", "parse_boe_ois_zip", "parse_boe_ois_sheet",

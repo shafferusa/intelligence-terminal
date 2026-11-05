@@ -198,8 +198,8 @@ finsim/finsim/terminal/
   quotes/__init__.py   QuoteRecord, Bar1m, QUALITY, freshness(), is_executable(), MarkView, MarkSet protocol, FixedMarks
   quotes/http.py       http_get (UA policy, gzip, size cap), RateLimiter, CircuitBreaker, ProviderHealth
   quotes/providers.py  YahooChart, CboeChain, TreasuryCurve, FredSeries, Frankfurter, FinraShortVolume, FakeProvider
-  quotes/cache.py      QuoteCache (thread-safe, pins/subscriptions, persistence), ChainCache (LRU 2, single-flight)
-  quotes/worker.py     QuoteWorker (scheduler + 2 fetch threads), RatesRefresher, matcher hook
+  quotes/cache.py      QuoteCache (thread-safe, pins/subscriptions, persistence), ChainCache (LRU, single-flight, REQUEST / ORDER / REFRESH priorities, max_in_flight)
+  quotes/worker.py     QuoteWorker (scheduler + 2 fetch threads + 3 chain-fetch threads), RatesRefresher, matcher hook
   quotes/rates.py      CurveStore, RateStore (curve_points table)
   marks.py             MarkProvider (mark selection per kind, computed marks: bond, CIP forward, option model), snapshot()
   orders.py            validate(), preview(), evaluate() (pure), Matcher thread, handlers order.submit/cancel/expire/resume
@@ -1549,11 +1549,13 @@ class QuoteCache:
     def subscribe(self, ids, ttl_s=90, priority="WATCH"); def pin(self, ids, priority); def unpin(self, ids)
     def due(self, now) -> list[tuple[str, str]]; def load_persisted(self) -> int; def persist(self) -> int
     def snapshot(self, ids) -> dict[str, QuoteRecord]              # deep copies for a command
-class ChainCache:                                                   # LRU of 2 reduced chains; single-flight per underlying
+class ChainCache:                                                   # LRU (owner setting 2-24); single-flight per underlying; REQUEST / ORDER / REFRESH priorities
     def get(self, underlying_id, max_age_s=90) -> ChainSnapshot | None
-    def request(self, underlying_id) -> Future                       # one in-flight fetch per underlying shared by the chain page and the hedge panel
+    def request(self, underlying_id, max_age_s=90, priority="REQUEST") -> Future   # one in-flight fetch per underlying shared by the chain page and the hedge panel
+    def take_pending(self, owner=None) -> str | None; def set_max_in_flight(self, n); def requeue_in_flight(self, ids=None, keep=None) -> list[str]; def stats(self) -> dict
 class QuoteWorker(threading.Thread):
-    def __init__(self, cache, chains, instruments, providers, sessions, bus, matcher, clock, log, fetch_threads=2)
+    def __init__(self, cache, chains, instruments, providers, sessions, bus, matcher, clock, log, fetch_threads=2,
+                 chain_threads=None)                               # (config.CHAIN_FETCH_WORKERS = 3; 0 when fetch_threads=0)
     def run(self)        # every 1 s: due ids -> group by provider -> fetch on the pool -> cache.put -> matcher.on_quotes(changed)
     def stop(self, timeout=3.0); def stats(self) -> dict
 class RatesRefresher:    # part of the worker loop: curve daily after 18:00 ET (+ at startup if missing today), FRED every 6 h, FINRA after 18:00 ET, Frankfurter daily
@@ -1564,9 +1566,36 @@ its session is closed (keeps `prev_close` and the last close honest, catches lat
 chain is on screen or an option position/order exists for that underlying; `_SPX` only on demand. Budget: Yahoo
 ≤ 2 rps, Cboe ≤ 1 rps; 60 held/ordered + 200 watched names ≈ 1 request/s. A symbol answering 404/400 is
 `unavailable` with the error and retried hourly. Memory: 2,000 records ≈ 2 MB; two reduced chains ≈ 1.2 MB; the SPX
-parse peaks ≈ 120 MB for a second and chain fetches are serialised (one at a time, shared future), so two never
+parse peaks ≈ 120 MB for a second and chain downloads overlap (up to 3, 1.0.7.2) but the parses are serialised (`providers._CHAIN_PARSE_LOCK`), so two never
 overlap. The cache is persisted (`quotes.persist_batch`, light) every 60 s and at shutdown so a restart starts from the
 last marks (they come back as `close`/`stale`, never `delayed`).
+
+**Chain fetching and snapshots (1.0.7.2, CHAIN-FETCH-1 / CHAIN-LEGS-1):** Option chains download on the worker's own
+chain pool (`chain_threads` = `config.CHAIN_FETCH_WORKERS` = 3 threads named chain-fetch; none with `fetch_threads=0`,
+where one chain is fetched per tick on the scheduler thread as before), and `ChainCache` hands out at most that many
+fetches at once (`max_in_flight`; the class default 1). Pending chains are served by `CHAIN_PRIORITY`: REQUEST (a
+ticket, an instrument page or the hedge panel asked; the default of `request`) before ORDER (a due option with a working
+order) before REFRESH (the 90 s refresh of a pinned or on-screen chain), each rank in arrival order; a pending chain
+asked for again at a better rank moves up and keeps its arrival place. Each tick starts one job per free slot, and a job
+takes the next pending chain itself when it finishes one, so the cycle never waits for a slow tick. Any failure ends in
+`ChainCache.fail`, so a slot is never lost, and `run()` gives a dead worker's slots back (`requeue_in_flight`) - only
+the slots no live job holds: each slot keeps the worker that took it, and a replacement worker (the Supervisor's
+restart) first retires the dead one's pools, whose running download finishes and releases its own slot, so one
+underlying is never downloaded twice at once. An order ticket on an option asks for its chain at REQUEST itself
+(`orders_preview._ask_for_quote`), so a held option's chain is not left a REFRESH behind the pinned ones. When the
+standard root of a chain cell shows no market and another root of that cell does, the quoted contract takes the
+cell (its root named on it) and the other goes to the cell's `alt`, which the chain page lists. The
+downloads overlap (the Cboe limiter still spaces their starts at 1 a second); the JSON decode and `parse_chain` run
+under `providers._CHAIN_PARSE_LOCK`, one at a time, so the memory peak stays one parse. `parse_chain` counts every
+skipped entry by reason (`ChainSnapshot.drops`), keeps the quoted entry of an exact duplicate OCC (else the first), and
+sorts the rows by (expiry, strike, right, root rank, OCC), the standard root (the Cboe symbol without "_", compared
+without "." / "-") first. A snapshot is therefore the same whatever order Cboe's file had, and every first-match
+consumer (`ChainSnapshot.row`, the chain view, the hedge panel, the strategies, the option quote records) takes the same
+contract. The chain view fills each cell with its first contract and puts another root's contract of that cell in `alt`;
+`one_sided` lists the strikes that carry only one side, and the chain head says "N strikes list one side only (Cboe
+file)". Health: `ChainCache.stats()` gives `in_flight` (a sorted list), `max_in_flight`, `pending_priority` and
+`oldest_pinned_age_s`, and the worker's `stats()["chain_fetch_s"]` the last fetch time of up to 32 underlyings;
+`GET /api/health` carries them as counts only.
 
 **Matcher hook:** after each batch the worker calls `matcher.on_quotes(changed_ids)` on its own thread; the matcher
 reads open orders (reader connection), evaluates with the pure rules (§10.5), and calls `bus.execute(order.match …)`
@@ -2582,10 +2611,10 @@ Startup sequence (exit codes in brackets):
    > 3 of its cycles is itself an attention item "quote worker stalled").
 7. `serve_forever()`. Health answers only from this point.
 
-Threads: HTTP request threads (short-lived daemon), quote scheduler (1), fetch pool (2), matcher (1), lifecycle (1),
+Threads: HTTP request threads (short-lived daemon), quote scheduler (1), fetch pool (2), chain-fetch pool (3), matcher (1), lifecycle (1),
 supervisor (main). The writer `RLock` is the only lock that serialises anything; a command holds it 1–20 ms; the
 scoped integrity check is indexed on touched keys. Reads are lock-free (WAL, pooled connections). Network I/O never
-happens while holding the lock. Chain fetches are serialised (single-flight) so the SPX parse never overlaps another.
+happens while holding the lock. Each chain is single-flight; up to 3 downloads run at once and their parses are serialised (`_CHAIN_PARSE_LOCK`), so the SPX parse never overlaps another.
 
 Provider errors: counted in `provider_health` and surfaced in `/api/health.providers` and the Attention strip (one
 open WARN per provider, auto-resolved on the next success; "Yahoo unreachable since 14:02 — quotes are stale;
@@ -3484,7 +3513,7 @@ corrupted `gl_balances` row (§19.12) → `integrity.ok False`, `failing: ["L3"]
 | A reset deletes history | reset closes accounts (ledger refuses CLOSED), stores the final figures and integrity report, keeps every row; History pages read the archived scope (§13.10, L23) |
 | Integrity inside the transaction could stall the writer | §6.8: the scoped set is indexed on touched keys (O(touched)); the whole-DB set runs on a reader; §19.12 health < 50 ms while the lock is held 2 s |
 | Operational violations: `legacy` on the live finsim.db, `wmic`, VBS deferring to any 200 | §18: `legacy` is gone (1.0.6); `stop` uses `OpenProcess` + image name (no wmic, no `os.kill`); the VBS checks the `finsim-terminal` marker and shuts the old engine down first; `install` records the finsim.db sha256 before and after |
-| Memory: two SPX parses at once | §8.5 single-flight `ChainCache.request` shared by the chain page and the hedge panel; fetches serialised |
+| Memory: two SPX parses at once | §8.5 single-flight `ChainCache.request` shared by the chain page and the hedge panel; up to 3 downloads overlap, the parses are serialised (`_CHAIN_PARSE_LOCK`, 1.0.7.2) |
 | Option freshness has no provider timestamp | §8.1: chain records take the underlying's `last_trade_time`; per-contract executable only when `bid > 0 and ask ≥ bid` |
 | Observed-close capture timing (16:02 may miss the closing print) | §11.4: capture at 16:20 (16:35 index options); `CLOSE_REVISED` INFO when the next day's prev_close differs |
 | Participation cap double counting / same-bar refill | §10.6: cap 0 on an unchanged `last_bar_ts`; `fills.idem_key` carries `bar_ts`; §19.9 same-bar test |

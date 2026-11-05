@@ -73,6 +73,9 @@ CHAIN_STRIKE_BAND = Decimal("0.35")
 CHAIN_CACHE_ENTRIES = 12
 CHAIN_CACHE_ENTRIES_MIN = 2
 CHAIN_CACHE_ENTRIES_MAX = 24
+# Cboe chain downloads in flight at once (CHAIN-FETCH-1, 2026-11-04: one serial fetcher let the pinned chains pass the 5-minute fetch
+# grace); the parses stay one at a time (memory)
+CHAIN_FETCH_WORKERS = 3
 
 # Accounting-day boundary (§6.6) and the lifecycle times used by the core (sessions / snapshots).
 ACCOUNTING_DAY_CLOSE_ET = "17:00"

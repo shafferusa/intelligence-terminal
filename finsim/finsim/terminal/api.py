@@ -39,6 +39,9 @@ Conventions (every one is enforced here, not left to goodwill)
 - Body: ``{"error": {"code", "message", "details"}, "request_id"}`` on every error; cents fields and epochs follow
   the codec above on every success.  Static files (``/`` and ``/static/*``) are served from the package's ``static``
   folder with ``no-store`` and a path-traversal guard.
+- 1.0.7.2: ``GET /api/health`` ``workers.quotes.chains`` is the option-chain cache in counts (``chain_counts``: cached, pending, in
+  flight, pinned, the in-flight limit, the oldest pinned chain's age and the slowest recent fetch) - never an underlying's name;
+  ``PACKAGES['smart_ticket']`` names the Smart Ticket's reader and ``pages/smartticket.js`` is a planned optional page.
 """
 from __future__ import annotations
 
@@ -84,7 +87,9 @@ PACKAGES = {"worker": "WP-01", "cache": "WP-01", "chains": "WP-01", "curve": "WP
             # CDS-107 (CDS_SINGLE_NAME_PLAN, release 1.0.7): the single-name CDS modules
             "credit_entities": "CDS-B2", "cds_model": "CDS-B3", "swaps_cds_names": "CDS-B1",
             # FINSIM1_PLAN C2: the optional modules of the FinSim1 completion build (a module not in the tree stays "missing")
-            "dashboard": "F1-P1", "blotters": "F1-P2", "navhistory": "F1-P3", "collateral": "F1-P6", "importer": "F1-P5"}
+            "dashboard": "F1-P1", "blotters": "F1-P2", "navhistory": "F1-P3", "collateral": "F1-P6", "importer": "F1-P5",
+            # 1.0.7.2: the Smart Ticket's reader (the pure parse route; r1072 CHANGE_PLAN 2)
+            "smart_ticket": "ST-1"}
 
 # C3 (BUILD2_PLAN): the optional UI files planned by Build 2 packages.  While one is missing on disk, /static/<path> answers 200 with a
 # one-line JavaScript comment (so index.html can list it and the console shows no 404); the real file replaces the stub as soon as it lands.
@@ -95,7 +100,8 @@ PLANNED_STATIC = ("pages/markets_debt.js", "components/bondticket.js", "pages/ma
                   # FINSIM1_PLAN C1: the pages of the new navigation (Pending / Completed Trades, Accounts, Cash & Collateral,
                   # Derivatives) and the import panel; each route shows NOT YET BUILT until its file lands
                   "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
-                  "components/imports.js")
+                  "components/imports.js",
+                  "pages/smartticket.js")                      # 1.0.7.2: the Smart Ticket page (#/smart); NOT YET BUILT until it lands
 
 # §20 — what the terminal does NOT do, or does only in part, served by GET /api/unsupported (Settings > Unsupported, search).
 # SHELL-07 / APIUI-15 (2026-10-21): trader wording only (no endpoints, package ids, doc or glossary references).  The static rows are
@@ -1298,6 +1304,57 @@ def _worker_health(th, last_tick_ts, errors, last_error, cycle_s: int, now: int,
     return d
 
 
+def _count_of(v) -> Optional[int]:
+    """A COUNT of one chain-cache stats value: a list / tuple / set / dict -> its length, an int -> itself, a single id (the one
+    in-flight slot of 1.0.7.1) -> 1, an empty one -> 0; anything else -> None.  Never the value itself: no underlying is named."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, int):
+        return v
+    if isinstance(v, (list, tuple, set, frozenset, dict)):
+        return len(v)
+    if isinstance(v, str):
+        return 1 if v else 0
+    return None
+
+
+def _number_of(v):
+    """An int or a finite float of one stats value (a Decimal becomes a float; a {seconds} record its seconds); anything else -> None."""
+    if isinstance(v, dict):
+        v = v.get("seconds", v.get("s", v.get("duration_s")))
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, int):
+        return v
+    if isinstance(v, Decimal):
+        v = float(v)
+    if isinstance(v, float):
+        return v if v == v and abs(v) != float("inf") else None
+    return None
+
+
+def chain_counts(ws) -> dict:
+    """CHAIN-FETCH-1 (1.0.7.2): the option-chain cache of the quote worker in COUNTS, for ``GET /api/health`` (the deploy post-check
+    reads ``max_in_flight`` and ``oldest_pinned_age_s``; r1072 PROCEDURE 11): ``{cached, pending, in_flight, pinned, max_in_flight,
+    oldest_pinned_age_s, slowest_fetch_s}`` from ``stats()['chains']`` (``ChainCache.stats()``) and ``stats()['chain_fetch_s']`` (the last
+    fetch duration per underlying).  Every key is always there and None when the worker or that figure is absent (an older cache, no
+    worker), so the block renders on any runtime; the names of the underlyings never leave the worker (counts and seconds only)."""
+    ws = ws if isinstance(ws, dict) else {}
+    ch = ws.get("chains") if isinstance(ws.get("chains"), dict) else {}
+
+    def count(key):
+        if key not in ch:
+            return None
+        v = ch.get(key)
+        return 0 if v is None else _count_of(v)           # 1.0.7.1: in_flight None = nothing in flight
+    fs = ws.get("chain_fetch_s")
+    vals = list(fs.values()) if isinstance(fs, dict) else (list(fs) if isinstance(fs, (list, tuple)) else [fs])
+    secs = [n for n in (_number_of(v) for v in vals) if n is not None]
+    return {"cached": count("cached"), "pending": count("pending"), "in_flight": count("in_flight"), "pinned": count("pinned"),
+            "max_in_flight": _number_of(ch.get("max_in_flight")), "oldest_pinned_age_s": _number_of(ch.get("oldest_pinned_age_s")),
+            "slowest_fetch_s": max(secs) if secs else None}
+
+
 def _db_files(rt) -> dict:
     """SHELL-14: the database's main file and its WAL (the WAL holds recent commits until a checkpoint)."""
     path = getattr(rt.db, "path", None) or getattr(rt, "db_path", None) or ""
@@ -1472,6 +1529,7 @@ def health_view(rt) -> dict:
         "supervisor": {"alive": bool(sup is not None and sup.alive), "last_tick_ts": getattr(sup, "last_tick_ts", None), "stalled": False,
                        "errors_1h": 0, "last_error": getattr(sup, "last_error", None)},
     }
+    workers["quotes"]["chains"] = chain_counts(ws)            # CHAIN-FETCH-1 (1.0.7.2): counts only, never an underlying's name
     lifecycle = {"due": (lc.due_count() if lc is not None and hasattr(lc, "due_count") else None), "failing": failing}
     if lc is None:
         lifecycle["note"] = "no scheduled jobs run in this build"
@@ -1708,5 +1766,5 @@ def get_setting_safe(rt, key: str, default=None):
 
 
 __all__ = ["Router", "Request", "ApiError", "NotFound", "NotBuilt", "encode", "quote_dict", "mark_dict", "error_body", "run_command", "ok_or_raise", "need",
-           "lifetime_for", "register", "health_view", "settings_map", "chain_entries_in_force", "thread_alive", "jobs_view", "lifecycle_times", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
+           "lifetime_for", "register", "health_view", "chain_counts", "settings_map", "chain_entries_in_force", "thread_alive", "jobs_view", "lifecycle_times", "UNSUPPORTED", "PACKAGES", "LOOPBACK", "RETRY_MS", "MAX_QUOTE_IDS",
            "OPEN_ORDER_STATUSES", "PLANNED_STATIC", "PLANNED", "NOT_REJECTIONS", "add_refusal_recorder", "remove_refusal_recorder", "refusal_recorders", "unsupported_rows"]

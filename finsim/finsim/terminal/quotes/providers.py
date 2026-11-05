@@ -10,6 +10,8 @@ Conventions
   retryable, no provider failure).
 - Cboe (``TERMINAL_UA``, 1 rps, 60 s timeout) answers the FULL chain (SPY 5.7 MB, _SPX 13 MB): the JSON is parsed and
   reduced at once (``parse_chain``) and the dict released; a 403 to the honest UA sets ``refused_ua`` — never a bypass.
+  Downloads may overlap (the quote worker's chain pool, CHAIN-FETCH-1, 1.0.7.2) but the JSON decode and ``parse_chain`` run under
+  the module lock ``_CHAIN_PARSE_LOCK``, one chain at a time, so the memory peak stays one parse.
 - Treasury.gov (``GOV_UA``, 45 s): the daily par yield curve XML feed of this month, else last month's.
 - FRED (``GOV_UA``): ``fredgraph.csv`` for one series with a 60-day look-back.  Frankfurter (``TERMINAL_UA``): ECB
   reference rates, fallback FX only.  FINRA (``GOV_UA``): the daily consolidated short volume pipe file (None when the
@@ -115,6 +117,9 @@ ECBDFR_FALLBACK_SOURCE = "ECB data API (FM deposit facility rate)"
 FRANKFURTER_URL = "https://api.frankfurter.app/latest?from=USD"
 FINRA_URL = "https://cdn.finra.org/equity/regsho/daily/CNMSshvol{yyyymmdd}.txt"
 Getter = Callable[[str, str, float, str], bytes]
+# CHAIN-FETCH-1 (1.0.7.2): one Cboe JSON decode + parse at a time, whatever the number of chain downloads in flight (the parse of a
+# 1-16 MB file is the memory peak, not the download)
+_CHAIN_PARSE_LOCK = threading.Lock()
 
 
 # ---- live providers -------------------------------------------------------------------------------------------------------------
@@ -240,18 +245,19 @@ class CboeChain(_Base):
             raise FetchError("invalid Cboe symbol", status=400, retryable=False)
         url = CBOE_URL.format(sym=urllib.parse.quote(cboe_symbol, safe=""))
         try:
-            raw = self._get(url, TERMINAL_UA, 60.0, attempts=2)
+            raw = self._get(url, TERMINAL_UA, 60.0, attempts=2)            # the download: outside the parse lock, so downloads overlap
         except FetchError as e:
             if e.status == 403 and self.health is not None:
                 self.health.set_refused_ua(self.name, True)
             raise
-        try:
-            payload = json.loads(raw.decode("utf-8", "replace"))
-        except ValueError:
-            raise FetchError("invalid chain JSON", retryable=False) from None
-        del raw
-        snap = parse_chain(payload, cboe_symbol, underlying_id or cboe_symbol.lstrip("_"), self.clock.today(), self._now())
-        del payload
+        with _CHAIN_PARSE_LOCK:                                             # one decode + parse at a time (the memory peak)
+            try:
+                payload = json.loads(raw.decode("utf-8", "replace"))
+            except ValueError:
+                raise FetchError("invalid chain JSON", retryable=False) from None
+            del raw
+            snap = parse_chain(payload, cboe_symbol, underlying_id or cboe_symbol.lstrip("_"), self.clock.today(), self._now())
+            del payload
         return snap
 
 

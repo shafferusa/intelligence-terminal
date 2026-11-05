@@ -392,7 +392,9 @@
       mcol('notional', 'notional'), mcol('exposure', 'credit exposure', 'protection bought = short credit (negative)'),
       { key: 'mid_spread_bp', label: 'mid (bp)', text: function (r) { return num(r.mid_spread_bp) == null ? 'unavailable' : T.fmt.num(r.mid_spread_bp, 2); },
         sort: function (r) { var n = num(r.mid_spread_bp); return n == null ? '' : n; } },
-      { key: 'bucket', label: 'bucket', cls: 'l', text: function (r) { return r.bucket ? s(r.bucket) + '-like' : ''; } },
+      { key: 'bucket', label: 'bucket (mid)', cls: 'l', title_h: 'the bucket of the mid on the FRED ladder (model spread bucket - not a credit rating); the model\'s own bucket is in each cell\'s title',
+        text: function (r) { return r.bucket ? s(r.bucket) + '-like' : ''; },
+        title: function (r) { return r.model_bucket ? 'model bucket ' + s(r.model_bucket) + '-like' : ''; } },
       mcol('cs01', 'CS01'), mcol('jtd', 'jump to default', 'what the contract gains (+) or loses (-) if the name defaults now at 40 % recovery'), mcol('value', 'value'),
       { key: 'level_kind', label: 'level / note', cls: 'l', html: function (r) {                  /* the dealing level with its basis; a note under it */
           var note = s(r.note || (r.quality && r.quality !== 'computed' ? r.quality : ''));
@@ -419,9 +421,12 @@
         if (!block) { return; }
         if (block.error) { line.textContent = 'could not be measured: ' + s(block.error); }
         else {
-          line.textContent = 'CS01 ' + signedMoney(block, 'cs01') + ' . jump to default: gain ' + money(block, 'jtd_gain') + ', loss ' + money(block, 'jtd_loss') + ', net ' + signedMoney(block, 'net_jtd') +
+          /* a total the server could not compute (no contract valued now) reads unavailable, never 0 */
+          var tot = function (key, signed) { return hasMoney(block, key) ? (signed ? signedMoney(block, key) : money(block, key)) : 'unavailable'; };
+          line.textContent = 'CS01 ' + tot('cs01', true) + ' . jump to default: gain ' + tot('jtd_gain') + ', loss ' + tot('jtd_loss') + ', net ' + tot('net_jtd', true) +
             ' . protection bought (short credit) ' + money(block, 'short_credit') + ' . sold (long credit) ' + money(block, 'long_credit') +
-            ' . gross ' + (num(block.gross_pct_nav) != null ? pct(block.gross_pct_nav) : 'n/a') + ' of NAV' + ((block.missing || []).length ? ' . not valued now: ' + block.missing.join(', ') : '');
+            ' . gross ' + (num(block.gross_pct_nav) != null ? pct(block.gross_pct_nav) : 'n/a') + ' of NAV' +
+            ((block.missing || []).length ? ' . not valued now: ' + block.missing.join(', ') + (block.partial ? ' (the totals exclude them)' : '') : '');
         }
         rowsG.update(block.rows || [], { empty: 'no single-name CDS contracts' });
         namesG.update(block.by_name || [], { empty: 'none' });

@@ -900,10 +900,17 @@ def recompute_option_margin(ctx: TxContext, services, account_id: str, link_id: 
 
 # ---- hedge children (§10.7 step 8) ------------------------------------------------------------------------------------
 def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_qty: int, primary_ended: bool = False) -> List[dict]:
-    """Size the WAITING_PARENT / working children of a primary to ``floor(primary filled × ratio)``; a child whose target
-    is still 0 keeps waiting; when the primary ended with no fill the children are CANCELLED."""
+    """Size the WAITING_PARENT / working children of a primary to ``floor(primary filled × leg qty / primary qty)``; a child whose target
+    is still 0 keeps waiting; when the primary ended with no fill the children are CANCELLED.
+
+    1.0.7.2 review: the arithmetic is on whole numbers - the leg's own quantity is ``round(primary qty × ratio)`` (the ratio is stored
+    as leg qty / primary qty at 8 decimals, so the rounding gives back the exact quantity) - never ``floor(filled × ratio)``, which lost
+    a contract whenever the 8-decimal ratio was rounded down (300 shares + 1 call: 0.00333333 × 300 = 0.999999 -> 0, the call never
+    released).  A primary FILLED in full releases each leg's whole quantity.  The stored ratio is unchanged (1.0.7.1 reads it as before)."""
     conn = ctx.conn
     out: List[dict] = []
+    prow = conn.execute("SELECT qty FROM orders WHERE order_id=?", (primary_order_id,)).fetchone()
+    pqty = int(prow["qty"]) if prow is not None and prow["qty"] else 0
     rows = conn.execute("SELECT * FROM orders WHERE parent_order_id=? AND status IN ('WAITING_PARENT','WORKING','PARTIAL','FILLED')", (primary_order_id,)).fetchall()
     for r in rows:
         if primary_ended and int(primary_filled_qty) == 0:
@@ -915,7 +922,13 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
                 out.append({"order_id": r["order_id"], "status": "CANCELLED"})
             continue
         ratio = Decimal(r["ratio"] or "0")
-        target = int((Decimal(int(primary_filled_qty)) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
+        if pqty > 0:
+            full = int((Decimal(pqty) * ratio).to_integral_value(rounding="ROUND_HALF_UP"))      # the leg's own quantity, exact
+            target = (int(primary_filled_qty) * full) // pqty
+            how = f"floor({int(primary_filled_qty):,} × {full:,} / {pqty:,})"
+        else:
+            target = int((Decimal(int(primary_filled_qty)) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
+            how = f"floor({int(primary_filled_qty):,} × {ratio})"
         filled = int(r["filled_qty"])
         if target <= 0 or target == int(r["qty"]) and r["status"] != "WAITING_PARENT":
             continue
@@ -924,7 +937,7 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
         status = "WORKING" if filled == 0 else "PARTIAL"
         conn.execute("UPDATE orders SET qty=?, status=?, updated_ts=? WHERE order_id=?", (target, status, ctx.ts, r["order_id"]))
         conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
-                     (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = floor({primary_filled_qty:,} × {ratio}) after the primary's fill"))
+                     (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill"))
         ctx.event("ORDER_RESUMED" if r["status"] == "WAITING_PARENT" else "ORDER_RESIZED", account_id=r["account_id"], instrument_id=r["instrument_id"],
                   ref_type="order", ref_id=r["order_id"], qty=target, primary_filled=int(primary_filled_qty), ratio=str(ratio))
         out.append({"order_id": r["order_id"], "status": status, "qty": target})

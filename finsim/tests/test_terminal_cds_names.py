@@ -101,6 +101,7 @@ class StubModel:
         self.shocks = {}
         self.pending = set()
         self.undealable = {}
+        self.refuse = {}                 # 1.0.7.2: {maturity ISO: reason} the live model cannot value now (CDS-V-04 tests)
         self.calls = []
 
     @staticmethod
@@ -134,6 +135,8 @@ class StubModel:
         else:
             if cik in self.pending:
                 return {"ok": False, "code": "INPUTS_PENDING", "reason": "fetching ORACLE CORP's SEC filings and 1,000 daily closes", "retry_ms": 1500}
+            if maturity.isoformat() in self.refuse:
+                return {"ok": False, "code": "MODEL_UNAVAILABLE", "reason": self.refuse[maturity.isoformat()]}
             sp = self.spread[cik]
             ts = int(now if now is not None else services.clock.epoch())
             v = ny_of(ts).date()
@@ -672,7 +675,11 @@ class CdsNamesBookedTests(unittest.TestCase):
         self.level()
         rid, quote = self._quote()
         self.assertEqual({"dealt_spread_bp": "67.4700", "coupon_bp": "100", "maturity_date": "2031-12-20", "tier": "A_OR_BETTER"}, quote["firm"])
-        self.assertTrue(quote["words"].startswith("ORCL 5Y CDS (ORACLE CORP) 67.4700 bp (MODEL mid 65.4700 bp); you receive USD"), quote["words"])
+        # CDS-V-01 (1.0.7.2): the dealt spread in 2 decimals with the dealing level's own rule (here the MODEL confirmation level() made at
+        # 14:00 ET), not "MODEL mid" in 4 decimals: dealt 65.47 + 2.00 = 67.47 bp; the buyer's upfront 5,000,000 x (67.47 - 100) bp x
+        # RPV01(67.47) 4.5669965459 = -74,282.20 -> received
+        self.assertEqual("ORCL 5Y CDS (ORACLE CORP) 67.47 bp (mid 65.47 bp = MODEL (you confirmed dealing at the model on 2026-10-29 14:00 ET)); you receive USD"
+                         " 74,282.20 upfront", quote["words"])
         self.model.spread[ORCL_CIK] = D("66.47")                         # the model moves +1 bp before the accept
         a = execute(rt, "otc.rfq.accept", {"rfq_id": rid}, "ui:cdsn-rfq-accept")
         self.assertTrue(a.ok, a.body)
@@ -807,7 +814,9 @@ class CdsNamesBookedTests(unittest.TestCase):
         s = self.book(SELL, "ui:cdsn-book-sell")["contract_id"]
         blk = cdsn.risk_block(rt, self._pos_rows([b, s]), 2000000000)
         rows = {r["contract_id"]: r for r in blk["rows"]}
-        # JTD buyer +3,078,913.97, seller -3,078,913.97 (the MV of each at the booking mark); net 0 for the name
+        # JTD buyer +3,078,913.97, seller -3,078,913.97; net 0 for the name.  1.0.7.2 (CDS-V-02) re-checked by hand: JTD now comes from each
+        # contract's value NOW, at the mid 65.47 on 10-29 (the clock has not moved since the booking): buyer -78,913.97, seller +78,913.97 ->
+        # 3,000,000.00 - (-78,913.97) = +3,078,913.97 and -3,000,000.00 - 78,913.97 = -3,078,913.97 (the same numbers as the booking mark)
         self.assertEqual((307891397, -307891397), (rows[b]["jtd_c"], rows[s]["jtd_c"]))
         self.assertEqual((0, 2, 1000000000, 0), (blk["by_name"][0]["jtd_c"], blk["by_name"][0]["contracts"], blk["by_name"][0]["gross_notional_c"],
                                                  blk["by_name"][0]["net_exposure_c"]))
@@ -818,6 +827,74 @@ class CdsNamesBookedTests(unittest.TestCase):
         self.assertEqual("ORACLE CORP jump to default would lose USD 3,078,913.97 (15.39 % of NAV, above 10 %)", blk["warnings"][0]["message"])
         self.assertEqual(("0.1539", "0.10"), (blk["warnings"][0]["value"], blk["warnings"][0]["threshold"]))
         self.assertEqual(("default of ORCL (largest jump-to-default loss)", -307891397), (blk["scenarios"][-1]["name"], blk["scenarios"][-1]["pnl_c"]))
+
+    # ---- 1.0.7.2: CDS-V-02 .. CDS-V-04 (the Risk block's display) ------------------------------------------------------------------------
+    def test_r1072_jump_to_default_is_from_the_value_now(self):
+        """CDS-V-02: JTD came from the last VM mark (the row's mv_c) while VALUE was the value now; both are the value now.  A position row whose
+        stored mark is 0 (a VM not yet run): JTD = 3,000,000.00 - (-78,913.97, the value now at mid 65.47) = +3,078,913.97 - never
+        3,000,000.00 - 0 - the same figure the contract's drawer shows."""
+        rt = self.rt
+        self.level()
+        b = self.book()["contract_id"]
+        row = cdsn.risk_block(rt, self._pos_rows([b], mv=0), 2000000000)["rows"][0]
+        self.assertEqual((-7891397, 307891397), (row["value_c"], row["jtd_c"]))
+        self.assertEqual(self.mark0("65.47"), row["value_c"])
+        self.assertEqual(row["jtd_c"], cdsn.contract_detail(rt, b)["jtd_c"])
+
+    def test_r1072_the_bucket_beside_the_mid_is_the_mids(self):
+        """CDS-V-03: the bucket printed next to the mid was the MODEL's.  A negotiated mid 84.00 bp on the stub ladder: |ln(84 / 73)| = 0.1405 (A)
+        < |ln(84 / 109)| = 0.2605 (BBB) < |ln(84 / 63)| = 0.2877 (AA) -> A-like; the model's own 65.47 bp stays AA-like (model_bucket)."""
+        rt = self.rt
+        self.level("ui:cdsn-neg-84-risk", negotiated_mid_bp="84.00")
+        b = self.book()["contract_id"]
+        row = cdsn.risk_block(rt, self._pos_rows([b]), 2000000000)["rows"][0]
+        self.assertEqual((D("84.00"), D("65.47"), "A", "AA"), (D(row["mid_spread_bp"]), D(row["model_spread_bp"]), row["bucket"], row["model_bucket"]))
+        self.assertEqual("A", cdsn.bucket_of_mid(rt, D("84.00"), self.model.model_spread(rt, ORCL_CIK, date(2031, 12, 20))))
+
+    def test_r1072_a_contract_not_valued_now_shows_unavailable_never_zero(self):
+        """CDS-V-04, nothing valued: the model is fetching its inputs (the stub's INPUTS_PENDING).  CS01, the JTD totals and every spread scenario
+        are unavailable (None) with the reason - before 1.0.7.2 they read 0."""
+        rt = self.rt
+        self.level()
+        b = self.book()["contract_id"]
+        self.model.pending.add(ORCL_CIK)
+        blk = cdsn.risk_block(rt, self._pos_rows([b]), 2000000000)
+        self.assertEqual((None, None, None, None, False, [b]), (blk["cs01_c"], blk["jtd_gain_c"], blk["jtd_loss_c"], blk["net_jtd_c"], blk["partial"], blk["missing"]))
+        row = blk["rows"][0]
+        self.assertEqual((None, None, None, None, None, "fetching ORACLE CORP's SEC filings and 1,000 daily closes"),
+                         (row["value_c"], row["jtd_c"], row["cs01_c"], row["bucket"], row["model_bucket"], row["note"]))
+        nm = blk["by_name"][0]
+        self.assertEqual((None, None, 1, -500000000), (nm["cs01_c"], nm["jtd_c"], nm["contracts"], nm["net_exposure_c"]))
+        spread = [s for s in blk["scenarios"] if "shock_bp" in s]
+        self.assertEqual(list(cdsn.SPREAD_SHOCKS_BP), [s["shock_bp"] for s in spread])
+        self.assertEqual([(None, f"unavailable: not valued now: {b}")] * 4, [(s["pnl_c"], s["note"]) for s in spread])
+        self.assertTrue(all(s["pnl_c"] is None for s in blk["scenarios"]), blk["scenarios"])     # the equity ones too; no default scenario
+        self.assertEqual([], [s for s in blk["scenarios"] if s["name"].startswith("default of")])
+
+    def test_r1072_one_valued_and_one_not_sums_the_valued_one_said_partial(self):
+        """CDS-V-04, partly valued: a 5Y buyer valued now and a 3Y buyer the model cannot value now (the stub refuses its maturity).  The totals
+        are the 5Y's alone, said partial: CS01 = value(66.47) - value(65.47) = -76,597.14 - (-78,913.97) = +2,316.83; JTD +3,078,913.97; each
+        spread scenario is the 5Y's revaluation and names what it excludes.  The name's own JTD stays unknown (one of its contracts is not valued)
+        while its CS01 is the valued contract's."""
+        rt = self.rt
+        self.level()
+        five = self.book()["contract_id"]
+        three = self.book(dict(BUY, tenor_years=3), "ui:cdsn-book-3y")["contract_id"]
+        self.model.refuse["2029-12-20"] = "the model cannot value the 2029-12-20 maturity now (test)"
+        blk = cdsn.risk_block(rt, self._pos_rows([five, three]), 2000000000)
+        cs01 = self.mark0("66.47") - self.mark0("65.47")
+        self.assertEqual(231683, cs01)
+        self.assertEqual((cs01, 307891397, 0, 307891397, True, [three]), (blk["cs01_c"], blk["jtd_gain_c"], blk["jtd_loss_c"], blk["net_jtd_c"], blk["partial"],
+                                                                         blk["missing"]))
+        rows = {r["contract_id"]: r for r in blk["rows"]}
+        self.assertEqual((cs01, 307891397), (rows[five]["cs01_c"], rows[five]["jtd_c"]))
+        self.assertEqual((None, None, "the model cannot value the 2029-12-20 maturity now (test)"), (rows[three]["cs01_c"], rows[three]["jtd_c"], rows[three]["note"]))
+        nm = blk["by_name"][0]
+        self.assertEqual((2, None, cs01), (nm["contracts"], nm["jtd_c"], nm["cs01_c"]))
+        base = self.mark0("65.47")
+        spread = {s["shock_bp"]: s for s in blk["scenarios"] if "shock_bp" in s}
+        for b in cdsn.SPREAD_SHOCKS_BP:
+            self.assertEqual((self.mark0(str(D("65.47") + b)) - base, f"excludes {three} (not valued now)"), (spread[b]["pnl_c"], spread[b]["note"]), b)
 
     def test_terms_edit_and_refusals_in_words(self):
         rt = self.rt

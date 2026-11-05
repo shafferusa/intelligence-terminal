@@ -7,11 +7,15 @@ FakeClock (Tue 2026-10-20 14:00 ET) and a FakeProvider (no network):
   - a resting LIMIT BUY of 50 SPY at 700.00, far below the 769.32 print (an open Pending Trades row);
   - a LIMIT BUY of 10 MSFT at 400.00, then cancelled (the Cancelled filter);
   - a filled market BUY of 1 GCZ26 (a futures position for the Derivatives > Futures tab);
-  - a refused SELL of 100 MSFT the account does not hold (the Rejected filter: the order ticket's refusal is recorded).
+  - a refused SELL of 100 MSFT the account does not hold (the Rejected filter: the order ticket's refusal is recorded);
+  - 1.0.7.2: two fictional listings for the Smart Ticket, ACME and WIDG (master rows as Yahoo resolution stores them, a print each, an
+    ACME option chain on the FakeProvider; invented prices), with no order in them, so every count the other tests read is unchanged.
 The runtime is closed and ``serve(offline=True)`` serves the same database on port 0 with the same FakeProvider (its prints) and a
 FakeClock at the same instant.  A headless Edge / Chrome (``terminal_cdp``, standard library CDP) opens every main route of the
 directive's navigation at 1440 x 900: Dashboard, Portfolio, Trading, Pending Trades (each status filter), Completed Trades (an
-execution drawer, every tab), Accounts, Cash & Collateral, Derivatives, History, Settings, Risk, Accounting and Activity.
+execution drawer, every tab), Accounts, Cash & Collateral, Derivatives, History, Settings, Risk, Accounting, Activity and the Smart
+Ticket; and, last (``test_z_...``), the Smart Ticket's whole flow: nothing posted before its confirm, one order at a time after it, the
+first refusal stops the run.
 
 For each route it asserts:
   - 0 console errors, uncaught exceptions or browser log errors, and 0 HTTP responses >= 400 (and no failed request);
@@ -24,19 +28,25 @@ to keep a PNG of every route.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
 import tempfile
 import threading
 import unittest
+from datetime import date
+from decimal import Decimal
+from urllib.parse import urlsplit
 
 from tests.terminal_cdp import NO_BROWSER, Browser, find_browser
 from tests.terminal_helpers import _Log
 from tests.test_terminal_static import NEWS_STRINGS
 from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock, epoch_of
-from finsim.terminal.quotes.providers import FakeProvider
+from finsim.terminal.instruments import occ_symbol
+from finsim.terminal.quotes.providers import ChainRow, ChainSnapshot, ChainUnderlying, FakeProvider
+from finsim.terminal.units import qprice
 
 AT = "2026-10-20T14:00:00-04:00"                        # Tuesday 14:00 ET: US equities open
 FUND = config.BOOKS[1]                                  # ("F", "Fund Book", "FUND", 25,000,000.00)
@@ -52,7 +62,24 @@ ROUTES = [("#/dashboard", "tiles"), ("#/portfolio", "tiles"), ("#/trading", "tab
          [(f"#/pending?status={s}", "table") for s in PENDING_FILTERS] + \
          [("#/completed", "table"), ("#/accounts", "table"), ("#/cash", "table"), ("#/derivatives", "text"), ("#/derivatives/options", "text"),
           ("#/derivatives/futures", "table"), ("#/derivatives/servicing", "text"), ("#/history", "table"), ("#/settings", "table"), ("#/risk", "table"),
-          ("#/accounting", "table"), ("#/activity", "table")]
+          ("#/accounting", "table"), ("#/activity", "table"), ("#/smart", "text")]
+#: 1.0.7.2: the Smart Ticket's fictional listings (name, last print) and an invented ACME chain (expiry, right, strike, bid, ask)
+SMART_NAMES = {"ACME": ("Acme Test Corp", "60.00"), "WIDG": ("Widget Test Inc", "250.00")}
+ACME_CHAIN = [("2026-12-18", "C", 60, "3.10", "3.30"), ("2026-12-18", "C", 65, "1.20", "1.35"), ("2026-12-18", "P", 55, "1.40", "1.55"),
+              ("2027-01-15", "C", 60, "4.20", "4.45")]
+#: three legs: a small resting limit, one above 25 % of the Fund Book's NAV (30,000 x 250.00 = 7,500,000.00 > 25 % of about 25,000,000.00:
+#: the large-order confirm), another small limit; ";" always ends a clause
+SMART_TEXT = "buy 10 ACME limit 50; buy 30000 WIDG limit 250; buy 5 ACME limit 49"
+
+
+def _acme_chain(clock: FakeClock) -> ChainSnapshot:
+    """The invented ACME chain as the live provider would reduce it (a Cboe snapshot observed a minute ago)."""
+    now = int(clock.epoch())
+    qt = now - 60
+    rows = [ChainRow(occ_symbol("ACME", date.fromisoformat(e), r, Decimal(str(k))), e, r, qprice(k), qprice(b), qprice(a), 20, 20, None, None, 0.30, None, None,
+                     None, None, 100, 10) for e, r, k, b, a in ACME_CHAIN]
+    under = ChainUnderlying(symbol="ACME", last=qprice("60.00"), bid=None, ask=None, bid_size=None, ask_size=None, last_trade_time=qt, prev_close=None, iv30=0.30)
+    return ChainSnapshot(underlying_id="ACME", cboe_symbol="ACME", underlying=under, contracts=rows, fetched_at=now, quote_time=qt, n_raw=len(rows))
 
 # the page state the checks read in one evaluation
 PAGE_STATE = """(function () {
@@ -73,7 +100,13 @@ def _seed(home: str, clock: FakeClock, fp: FakeProvider) -> dict:
                                fetch_threads=0)
     try:
         qt = epoch_of(clock.today(), "13:58")
-        for iid, last in PRINTS.items():
+        aapl = rt.instruments.get("AAPL")
+        with rt.db.writer() as tx:                       # the Smart Ticket's fictional listings, stored as Yahoo resolution stores a US listing
+            for sym, (name, _last) in SMART_NAMES.items():
+                rt.instruments.upsert(tx, instrument_id=sym, kind="EQUITY", symbol=sym, name=name, currency="USD", session_group=aapl.session_group,
+                                      account_kinds=list(aapl.account_kinds), yahoo_symbol=sym, cboe_symbol=sym, spec={"exchange": "NYQ"})
+        fp.set_chain("ACME", _acme_chain(clock))
+        for iid, last in dict(PRINTS, **{s: v[1] for s, v in SMART_NAMES.items()}).items():
             inst = rt.instruments.get(iid)
             fp.set(inst.yahoo_symbol, last=last, quote_time=qt, bar=(qt - qt % 60 - 60, 61900))
             rt.cache.subscribe([iid], 86400, "PAGE")
@@ -305,6 +338,178 @@ class BrowserSmokeTests(unittest.TestCase):
         seen = [e for e in b.errors(None, 0) if "favicon" in e.lower()]
         seen += [f"{r['status']} {r['url']}" for r in b.responses(None, 0) if "favicon" in str(r["url"] or "").lower()]
         self.assertEqual([], seen)
+
+    # ---- the Smart Ticket (1.0.7.2, r1072 CHANGE_PLAN 5.7) -----------------------------------------------------------------------
+    def _press(self, key: str, vk: int, ctrl: bool = False, shift: bool = False) -> None:
+        """One key press with Ctrl and / or Shift (Browser.key knows Shift only)."""
+        base = {"key": key, "code": key, "windowsVirtualKeyCode": vk, "nativeVirtualKeyCode": vk, "modifiers": (2 if ctrl else 0) | (8 if shift else 0)}
+        for kind in ("keyDown", "keyUp"):
+            self.browser.call("Input.dispatchKeyEvent", dict(base, type=kind), session=self.sid)
+
+    def _smart_grid_fits(self, when: str) -> None:
+        """Plan rule 5 (new tables fit 1440 px): the leg grid never scrolls sideways (the dock is hidden on #/smart)."""
+        m = self.browser.js(self.sid, "(function () { var s = document.querySelector('#smart-grid .scroll'); return s ? { client: s.clientWidth, scroll: s.scrollWidth } : null; })()")
+        self.assertIsNotNone(m, when)
+        self.assertLessEqual(m["scroll"], m["client"], f"#/smart {when}: the leg grid scrolls sideways at 1440 px ({m})")
+
+    def _posts(self, since: int, path: str) -> list:
+        """Every POST to ``path`` (exactly; the query aside) the page sent since ``since``: {rid, body, query, status}."""
+        status, out = {}, []
+        for e in self.browser._events(self.sid, since):
+            m, p = e.get("method"), e.get("params") or {}
+            if m == "Network.responseReceived":
+                status[p.get("requestId")] = int((p.get("response") or {}).get("status") or 0)
+            elif m == "Network.requestWillBeSent":
+                r = p.get("request") or {}
+                u = urlsplit(r.get("url") or "")
+                if r.get("method") == "POST" and u.path == path:
+                    body = json.loads(r.get("postData") or "{}")
+                    hdr = {k.lower(): v for k, v in (r.get("headers") or {}).items()}
+                    out.append({"id": p.get("requestId"), "rid": hdr.get("x-request-id") or body.get("request_id"), "body": body, "query": u.query})
+        for x in out:
+            x["status"] = status.get(x.pop("id"))
+        return out
+
+    def _order_posts(self, since: int) -> list:
+        """Every POST /api/orders (an order submit; not its preview, not a cancel) the page sent since ``since``."""
+        return self._posts(since, "/api/orders")
+
+    def test_z_smart_ticket_sends_only_after_the_confirm(self):
+        """The Smart Ticket on the real server (named to run last: it leaves a working order and a draft behind).  A three-leg instruction
+        (fictional ACME / WIDG, read on Enter) renders three legs with their flags; nothing is posted to /api/orders before the confirm -
+        Ctrl+Enter (the docked ticket's submit key) sends nothing here, Ctrl+Shift+Enter opens the confirm with Back focused; after "Send 3
+        orders" leg 1 goes with its st: request id and smart record, leg 2 (7,500,000.00, above 25 % of the Fund Book's NAV) answers 409
+        CONFIRM_REQUIRED and the run waits for the owner, who stops it: leg 3 is never sent.  0 console errors (the browser's own line for
+        that 409 aside), no HTTP response >= 400 but that 409, no undefined / NaN / [object Object] on screen."""
+        b, sid = self.browser, self.sid
+        since = b.mark()
+        state = self.visit("#/smart", "text")
+        self.assertEqual([], state["notbuilt"])
+        self.assertTrue(b.js(sid, "T.hasModule('smart_ticket')"), "the Smart Ticket's reader (smart_ticket) is not bound in this build")
+        b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.focus(); t.value = %s; t.dispatchEvent(new Event('input', { bubbles: true })); return true; })()"
+             % json.dumps(SMART_TEXT))
+        self._press("Enter", 13)
+        b.wait(sid, "document.querySelectorAll('#smart-grid tbody tr[data-i]').length === 3", timeout=20)
+        rows = b.js(sid, "Array.prototype.map.call(document.querySelectorAll('#smart-grid tbody tr[data-i]'), function (tr) {"
+                         " return { text: tr.innerText, chips: tr.querySelectorAll('.smart-chip').length }; })")
+        self.assertEqual(3, len(rows))
+        for i, (row, sym) in enumerate(zip(rows, ("ACME", "WIDG", "ACME"))):
+            self.assertIn(sym, row["text"], f"leg {i + 1}")
+            self.assertGreater(row["chips"], 0, f"leg {i + 1} shows no flag")
+        # every leg previewed without a blocker: Submit selected opens
+        b.wait(sid, "!document.querySelector('#smart-submit').disabled", timeout=40)
+        self.assertEqual([], self._order_posts(since))
+        self._smart_grid_fits("staged")
+        shots = os.environ.get("FINSIM_SMOKE_SHOTS")
+        if shots:
+            b.screenshot(sid, os.path.join(shots, "smart_staged.png"))
+        # Ctrl+Enter is the docked ticket's submit: the dock never shows on #/smart, so it sends nothing and opens nothing
+        self._press("Enter", 13, ctrl=True)
+        b.pump(0.8)
+        self.assertEqual(0, b.js(sid, "T.ui.dialogs()"))
+        self.assertFalse(b.js(sid, "T.dock.visible()"))
+        # Ctrl+Shift+Enter opens the confirm, every order in words with its book; Back is focused; still nothing posted
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        conf = b.js(sid, "(function () { var m = document.querySelector('#modal-root .modal'); return { text: m.innerText, focus: document.activeElement && document.activeElement.id,"
+                         " send: document.querySelector('#smart-send').innerText }; })()")
+        self.assertEqual("smart-back", conf["focus"])
+        self.assertEqual("Send 3 orders", conf["send"])
+        for s in ("L1", "L2", "L3", "ACME", "WIDG", "Fund"):
+            self.assertIn(s, conf["text"])
+        self.assertIn("a large order", conf["text"])                                # leg 2's preview says it will ask again
+        b.pump(0.3)
+        self.assertEqual([], self._order_posts(since))
+        # Send 3 orders: one at a time; leg 2 is refused 409 CONFIRM_REQUIRED and the run waits for the owner's click
+        if shots:
+            b.screenshot(sid, os.path.join(shots, "smart_confirm.png"))
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "!!document.querySelector('#smart-confirm-large')", timeout=40)
+        if shots:
+            b.screenshot(sid, os.path.join(shots, "smart_large_order.png"))
+        ticket = b.js(sid, "JSON.parse(localStorage.getItem('finsim.smart.draft')).ticket")
+        self.assertRegex(ticket, r"^[0-9a-f]{12}$")
+        posts = self._order_posts(since)
+        self.assertEqual([(f"st:{ticket}:L1:r1", 200), (f"st:{ticket}:L2:r1", 409)], [(p["rid"], p["status"]) for p in posts])
+        self.assertEqual((ticket, "L1"), (posts[0]["body"]["smart"]["ticket"], posts[0]["body"]["smart"]["item"]))
+        self.assertIn("ACME", posts[0]["body"]["smart"]["clause"])
+        self.assertEqual(("ACME", 10, "LIMIT"), (posts[0]["body"]["instrument_id"], posts[0]["body"]["qty"], posts[0]["body"]["order_type"]))
+        self.assertTrue(posts[0]["body"].get("preview_id"))                            # the fresh preview taken just before the send
+        self.assertEqual(("WIDG", 30000, False), (posts[1]["body"]["instrument_id"], posts[1]["body"]["qty"], posts[1]["body"].get("confirm_large")))
+        # Stop: the run ends at leg 2; leg 3 is never sent
+        self.assertEqual("smart-stop", b.js(sid, "document.activeElement && document.activeElement.id"))
+        b.js(sid, "document.querySelector('#smart-stop').click(); true")
+        b.wait(sid, "!document.querySelector('#smart-stop') && /stopped/.test(document.querySelector('#smart-status').innerText)", timeout=15)
+        b.pump(1.0)
+        self.assertEqual([f"st:{ticket}:L1:r1", f"st:{ticket}:L2:r1"], [p["rid"] for p in self._order_posts(since)])
+        res = b.js(sid, "Array.prototype.map.call(document.querySelectorAll('#smart-grid tbody tr[data-i]'), function (tr) { return tr.lastElementChild.innerText; })")
+        self.assertRegex(res[0].lower(), r"\S+ working")                             # leg 1: its order, resting at its limit (the chip is upper case on screen)
+        self.assertIn("not sent", res[1])
+        self.assertNotIn("working", res[2].lower())
+        self._smart_grid_fits("after the run")
+        # "Cancel what this ticket sent": its one open order (leg 1, found by the ticket's request-id prefix) is listed, confirmed and
+        # cancelled in one batch of the Fund Book (request id mc:<12 hex>)
+        leg1 = res[0].split()[0]
+        b.js(sid, "document.querySelector('#smart-cancel-sent').click(); true")
+        b.wait(sid, "Array.prototype.some.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return x.innerText === 'Cancel 1 order'; })",
+               timeout=15)
+        listed = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+        self.assertIn(leg1, listed)
+        self.assertIn("ACME", listed)
+        b.js(sid, "Array.prototype.filter.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return x.innerText === 'Cancel 1 order'; })[0].click(); true")
+        b.wait(sid, "/^cancelled 1/.test(document.querySelector('#smart-status').innerText)", timeout=20)
+        batches = self._posts(since, "/api/orders/cancel")
+        self.assertEqual(1, len(batches), batches)
+        self.assertRegex(batches[0]["rid"], r"^mc:[0-9a-f]{12}$")
+        self.assertEqual(("book=F", [leg1], 200), (batches[0]["query"], batches[0]["body"]["order_ids"], batches[0]["status"]))
+        self.assertEqual([f"st:{ticket}:L1:r1", f"st:{ticket}:L2:r1"], [p["rid"] for p in self._order_posts(since)])   # nothing else was sent
+        # the record: no console error but the browser's own line for that 409; no other HTTP >= 400; nothing unrendered on screen
+        self.assertEqual([], [e for e in b.errors(sid, since) if not ("409" in e and "/api/orders" in e)])
+        bad = b.http_errors(sid, since)
+        self.assertEqual(1, len(bad), bad)
+        self.assertTrue(bad[0].startswith("409 ") and "/api/orders?" in bad[0], bad)
+        text = _clean(b.js(sid, "document.body.innerText"))
+        for rx in BAD_WORDS:
+            self.assertIsNone(rx.search(text), f"#/smart: {rx.pattern!r} on screen")
+        if shots:
+            b.screenshot(sid, os.path.join(shots, "smart_stopped.png"))
+
+    def test_zz_pending_cancel_selected(self):
+        """1.0.7.2 mass cancel on Pending Trades (named to run after every other test: it cancels the seeded working SPY order).  The
+        order's box is ticked; "Cancel selected (1)" lists it in words (side, quantity, instrument, account, book) and, once confirmed,
+        sends it as ONE cancel batch of the Fund Book (request id mc:<12 hex>); the answer is said on the page and the order leaves the open
+        filter.  0 console errors, no HTTP response >= 400."""
+        b, sid = self.browser, self.sid
+        since = b.mark()
+        working = self.seeded["working"]
+        self.visit("#/pending?status=open")
+        self.assertTrue(b.js(sid, "document.querySelector('#pending-cancel-selected').disabled"))         # nothing ticked yet
+        self.assertIn("Cancel all open in Fund Book", b.js(sid, "document.querySelector('#pending-cancel-all').innerText"))
+        ticked = b.js(sid, "(function () { var trs = document.querySelectorAll('#page .grid table tbody tr[data-i]'); for (var i = 0; i < trs.length; i++) {"
+                           " if (trs[i].innerText.indexOf(%s) >= 0) { var x = trs[i].querySelector('input[data-act=\"sel\"]'); if (x) { x.click(); return true; } } } return false; })()"
+                      % json.dumps(working))
+        self.assertTrue(ticked, "the working order has no selection box")
+        b.wait(sid, "document.querySelector('#pending-cancel-selected').innerText === 'Cancel selected (1)' && !document.querySelector('#pending-cancel-selected').disabled",
+               timeout=10)
+        b.js(sid, "document.querySelector('#pending-cancel-selected').click(); true")
+        b.wait(sid, "!!document.querySelector('#modal-root .modal')", timeout=10)
+        listed = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+        for s in (working, "BUY", "50", "SPY", "US Exchange", "Fund Book"):
+            self.assertIn(s, listed)
+        self.assertEqual([], self._posts(since, "/api/orders/cancel"))                     # nothing before the confirm
+        b.js(sid, "Array.prototype.filter.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return x.innerText === 'Cancel 1 order'; })[0].click(); true")
+        b.wait(sid, "/Cancel selected: cancelled 1/.test(document.querySelector('#page').innerText)", timeout=20)
+        b.wait(sid, "document.querySelector('#page .grid').innerText.indexOf(%s) < 0" % json.dumps(working), timeout=20)
+        batches = self._posts(since, "/api/orders/cancel")
+        self.assertEqual(1, len(batches), batches)
+        self.assertRegex(batches[0]["rid"], r"^mc:[0-9a-f]{12}$")
+        self.assertEqual(("book=F", [working], 200), (batches[0]["query"], batches[0]["body"]["order_ids"], batches[0]["status"]))
+        self.assertEqual("Cancel selected (0)", b.js(sid, "document.querySelector('#pending-cancel-selected').innerText"))
+        self.assertEqual([], b.errors(sid, since))
+        self.assertEqual([], b.http_errors(sid, since))
+        text = _clean(b.js(sid, "document.body.innerText"))
+        for rx in BAD_WORDS:
+            self.assertIsNone(rx.search(text), f"#/pending: {rx.pattern!r} on screen")
 
 
 if __name__ == "__main__":

@@ -31,9 +31,18 @@ Conventions
   ``QuoteRecord`` (method ``chain_underlying``), so a stock order fills at the observed ask (buys) / bid (sells) while a
   fresh chain of it is in memory (nothing is fetched for this).
 - ``ChainCache``: an LRU of ``max_entries`` reduced chains with ONE in-flight fetch per underlying shared by every requester
-  (single-flight ``Future``); the worker serves pending requests one at a time so the SPX parse never overlaps another.  The
-  class default is 2; the server builds it with the owner setting ``chain_cache_entries`` (2-24, default 12 since 1.0.7.1)
-  and ``resize()`` applies a change live: under the lock, a smaller limit drops the least recently used chains at once.
+  (single-flight ``Future``).  The class default is 2; the server builds it with the owner setting ``chain_cache_entries`` (2-24,
+  default 12 since 1.0.7.1) and ``resize()`` applies a change live: under the lock, a smaller limit drops the least recently used
+  chains at once.
+- Chain priorities (CHAIN-FETCH-1, 1.0.7.2): pending fetches are handed out by ``CHAIN_PRIORITY`` - REQUEST (a ticket, an instrument
+  page or the hedge panel asked: the default of ``request``) before ORDER (an option with a working order) before REFRESH (the 90 s
+  refresh of a pinned or on-screen chain, ``due``) - each rank in arrival order; an entry already pending that is asked for again at a
+  better rank moves up to that rank and keeps its place in the arrival order.  At most ``max_in_flight`` fetches are out at once
+  (``take_pending``; the class default 1 keeps the one-at-a-time behaviour; the quote worker sets ``config.CHAIN_FETCH_WORKERS`` = 3
+  for its chain pool), so a newly asked chain no longer waits behind every pinned refresh.  The downloads overlap; the JSON parses
+  stay one at a time (``providers._CHAIN_PARSE_LOCK``: the memory peak is one parse).  ``requeue_in_flight`` gives the slots of a
+  worker that died back to the queue, and ``stats()`` reports the in-flight ids, the limit, each pending id's rank and the age of the
+  oldest pinned chain.
 - Persistence (TX-6, 2026-10-21): ``persist()`` (the worker's 60 s slot and shutdown) upserts only the records that
   changed since the last persist (the dirty set: every ``put``, and a ``record_error`` that creates a record or changes
   its error text) straight into ``quote_cache`` in one short writer transaction — never through the command journal
@@ -62,7 +71,7 @@ import time as _time
 from concurrent.futures import Future
 from collections import OrderedDict, deque
 from decimal import Decimal
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from ..config import BROWSE_PER_MIN, QUOTE_INTERVALS
 from ..db import canonical_json, get_meta, set_meta
@@ -77,6 +86,9 @@ UNKNOWN_RANK = 5                 # any other class (e.g. PRIVATE_LISTED) ranks b
 BROWSE_BURST = 5                 # BROWSE hand-outs one due() call may make after a quiet spell; the steady rate is BROWSE_PER_MIN / 60 s
 RETRY_NOT_FOUND_S = 3600
 PRUNE_IDLE_S = 3600              # a record nobody pins, holds, works, watches or marks with is dropped after this long (TX-6)
+# CHAIN-FETCH-1 (1.0.7.2): the order pending chain fetches are handed out in (lower first; arrival order within a rank)
+CHAIN_PRIORITY = {"REQUEST": 0, "ORDER": 1, "REFRESH": 2}
+_CHAIN_PRIORITY_NAME = {v: k for k, v in CHAIN_PRIORITY.items()}
 # the one-time journal compaction (compact_persist_journal, TX-6)
 COMPACT_KIND = "quotes.persist_batch"
 COMPACT_AGE_S = 86400            # the last day's rows keep their payload
@@ -794,14 +806,18 @@ def _vacuum_if_worth_it(conn, path: Optional[str]) -> dict:
 
 # ---- the chain cache ----------------------------------------------------------------------------------------------------------------
 class ChainCache:
-    def __init__(self, clock=None, max_entries: int = 2, log=None):
+    def __init__(self, clock=None, max_entries: int = 2, log=None, max_in_flight: int = 1):
         self.clock, self.log = clock, log
         self.max_entries = int(max_entries)
+        self.max_in_flight = max(1, int(max_in_flight))       # CHAIN-FETCH-1: fetches handed out at once (the class default: one at a time)
         self._lock = threading.RLock()
         self._snaps: "OrderedDict[str, ChainSnapshot]" = OrderedDict()
         self._futures: Dict[str, Future] = {}
-        self._pending: List[str] = []
-        self._in_flight: Optional[str] = None
+        self._pending: List[str] = []                          # kept in (rank, sequence) order
+        self._prio: Dict[str, Tuple[int, int]] = {}            # pending id -> (CHAIN_PRIORITY rank, arrival sequence)
+        self._seq = 0
+        self._in_flight: set = set()
+        self._owner: Dict[str, Any] = {}                       # in-flight id -> who holds the slot (the worker that took it; None: unknown)
         self._screen: Dict[str, int] = {}
         self._pins: set = set()
         self._next_due: Dict[str, int] = {}
@@ -846,8 +862,14 @@ class ChainCache:
         with self._lock:
             return self._errors.get(underlying_id)
 
-    def request(self, underlying_id: str, max_age_s: int = 90) -> Future:
-        """One in-flight fetch per underlying shared by every requester; a fresh snapshot answers at once."""
+    def request(self, underlying_id: str, max_age_s: int = 90, priority: str = "REQUEST") -> Future:
+        """One in-flight fetch per underlying shared by every requester; a fresh snapshot answers at once.  ``priority`` (CHAIN_PRIORITY):
+        REQUEST (a ticket, an instrument page, the hedge panel: the default), ORDER (an option with a working order) or REFRESH (the 90 s
+        refresh of a pinned or on-screen chain, ``due``).  A new pending entry queues behind the entries of its own and better ranks; an
+        entry already pending at a worse rank moves up to this one and keeps its arrival sequence; the single-flight future is unchanged."""
+        rank = CHAIN_PRIORITY.get(str(priority).strip().upper()) if isinstance(priority, str) else None
+        if rank is None:
+            raise ValueError(f"chain priority {priority!r} is not one of {', '.join(CHAIN_PRIORITY)}")
         with self._lock:
             snap = self._snaps.get(underlying_id)
             if snap is not None and snap.fetched_at >= self._now() - int(max_age_s):
@@ -858,22 +880,69 @@ class ChainCache:
             if f is None:
                 f = Future()
                 self._futures[underlying_id] = f
-                if underlying_id not in self._pending and self._in_flight != underlying_id:
+            if underlying_id not in self._in_flight:
+                cur = self._prio.get(underlying_id)
+                if cur is None:
+                    self._seq += 1
+                    self._prio[underlying_id] = (rank, self._seq)
                     self._pending.append(underlying_id)
+                    self._order_pending()
+                elif rank < cur[0]:
+                    self._prio[underlying_id] = (rank, cur[1])
+                    self._order_pending()
             return f
 
+    def _order_pending(self) -> None:
+        """``_pending`` in (rank, sequence) order; the caller holds the lock."""
+        self._pending.sort(key=self._prio.__getitem__)
+
     def pending(self) -> List[str]:
+        """The pending underlyings in the order they will be handed out (rank, then arrival)."""
         with self._lock:
             return list(self._pending)
 
-    def take_pending(self) -> Optional[str]:
-        """The next underlying to fetch (one at a time: None while one is in flight)."""
+    def take_pending(self, owner: Any = None) -> Optional[str]:
+        """The next underlying to fetch - the best rank, the earliest arrival within it - moved to the in-flight set; None while
+        ``max_in_flight`` fetches are out or nothing is pending.  ``owner`` (the worker taking the slot) is kept with the slot until
+        ``put`` / ``fail`` / a requeue releases it, so a restarted worker can tell a slot a live job still holds from an orphaned one."""
         with self._lock:
-            if self._in_flight is not None or not self._pending:
+            if len(self._in_flight) >= self.max_in_flight or not self._pending:
                 return None
             uid = self._pending.pop(0)
-            self._in_flight = uid
+            self._prio.pop(uid, None)
+            self._in_flight.add(uid)
+            self._owner[uid] = owner
             return uid
+
+    def set_max_in_flight(self, n: int) -> int:
+        """CHAIN-FETCH-1: how many fetches ``take_pending`` hands out at once (the worker's chain pool size); at least 1."""
+        n = int(n)
+        if n < 1:
+            raise ValueError(f"a chain cache hands out at least one fetch at a time, not {n!r}")
+        with self._lock:
+            self.max_in_flight = n
+        return n
+
+    def requeue_in_flight(self, ids: Optional[Iterable[str]] = None, keep: Optional[Callable[[str, Any], bool]] = None) -> List[str]:
+        """Every in-flight id (or those of ``ids`` that are in flight) back to pending as REQUEST, behind the REQUESTs already queued: a
+        restarted worker never inherits a slot that a dead thread held, and a fetch the worker could not start gives its slot back.
+        ``keep(id, owner)`` True leaves that slot in flight: a slot a LIVE job still holds (the old worker's chain pool keeps downloading
+        after its scheduler thread died) is never handed out twice (1.0.7.2 review: the single flight).  The single-flight futures stay;
+        returns the ids moved, sorted."""
+        with self._lock:
+            moved = sorted(self._in_flight if ids is None else (set(ids) & self._in_flight))
+            if keep is not None:
+                moved = [uid for uid in moved if not keep(uid, self._owner.get(uid))]
+            for uid in moved:
+                self._in_flight.discard(uid)
+                self._owner.pop(uid, None)
+                if uid not in self._prio:
+                    self._seq += 1
+                    self._prio[uid] = (CHAIN_PRIORITY["REQUEST"], self._seq)
+                    self._pending.append(uid)
+            if moved:
+                self._order_pending()
+        return moved
 
     def put(self, snap: ChainSnapshot) -> None:
         with self._lock:
@@ -883,8 +952,8 @@ class ChainCache:
             self._evict()
             self._errors.pop(uid, None)
             self._next_due[uid] = int(snap.fetched_at) + int(QUOTE_INTERVALS["CHAIN"])
-            if self._in_flight == uid:
-                self._in_flight = None
+            self._in_flight.discard(uid)
+            self._owner.pop(uid, None)
             f = self._futures.pop(uid, None)
         if f is not None and not f.done():
             f.set_result(snap)
@@ -917,8 +986,8 @@ class ChainCache:
         with self._lock:
             self._errors[underlying_id] = str(exc)[:200]
             self._next_due[underlying_id] = self._now() + int(QUOTE_INTERVALS["CHAIN"])
-            if self._in_flight == underlying_id:
-                self._in_flight = None
+            self._in_flight.discard(underlying_id)
+            self._owner.pop(underlying_id, None)
             f = self._futures.pop(underlying_id, None)
         if f is not None and not f.done():
             f.set_exception(exc)
@@ -940,7 +1009,8 @@ class ChainCache:
             self._pins = set(ids)
 
     def due(self, now: Optional[int] = None) -> List[str]:
-        """Underlyings whose chain is on screen or pinned and older than CHAIN (90 s); each is queued once."""
+        """Underlyings whose chain is on screen or pinned and older than CHAIN (90 s); each is queued once, as REFRESH (behind every
+        chain a ticket, a page or an order asked for)."""
         now = now if now is not None else self._now()
         out: List[str] = []
         with self._lock:
@@ -949,19 +1019,26 @@ class ChainCache:
                     self._screen.pop(uid)
             active = set(self._screen) | set(self._pins)
             for uid in sorted(active):
-                if self._next_due.get(uid, 0) <= now and uid not in self._pending and self._in_flight != uid:
+                if self._next_due.get(uid, 0) <= now and uid not in self._prio and uid not in self._in_flight:
                     out.append(uid)
                     self._next_due[uid] = now + int(QUOTE_INTERVALS["CHAIN"])
         for uid in out:
-            self.request(uid, max_age_s=0)
+            self.request(uid, max_age_s=0, priority="REFRESH")
         return out
 
     def stats(self) -> dict:
+        """``{cached (LRU order), pending (hand-out order), in_flight (sorted), pinned, on_screen, errors, max_entries, max_in_flight,
+        pending_priority {id: REQUEST | ORDER | REFRESH}, oldest_pinned_age_s}``; ``oldest_pinned_age_s`` = now - the oldest fetch time
+        among the pinned chains that are cached (None when none is)."""
         with self._lock:
-            return {"cached": list(self._snaps), "pending": list(self._pending), "in_flight": self._in_flight, "pinned": sorted(self._pins),
-                    "on_screen": sorted(self._screen), "errors": dict(self._errors), "max_entries": self.max_entries}
+            now = self._now()
+            fetched = [int(self._snaps[u].fetched_at) for u in self._pins if u in self._snaps]
+            return {"cached": list(self._snaps), "pending": list(self._pending), "in_flight": sorted(self._in_flight), "pinned": sorted(self._pins),
+                    "on_screen": sorted(self._screen), "errors": dict(self._errors), "max_entries": self.max_entries,
+                    "max_in_flight": self.max_in_flight, "pending_priority": {u: _CHAIN_PRIORITY_NAME[self._prio[u][0]] for u in self._pending},
+                    "oldest_pinned_age_s": max(0, now - min(fetched)) if fetched else None}
 
 
 __all__ = ["QuoteCache", "ChainCache", "record_from_intraday", "record_from_chain_row", "records_from_chain", "unavailable_record", "register",
            "compact_persist_journal", "PRIORITY_RANK", "UNKNOWN_RANK", "BROWSE", "BROWSE_BURST", "RETRY_NOT_FOUND_S", "PRUNE_IDLE_S", "COMPACT_KIND",
-           "COMPACT_AGE_S", "COMPACT_MARK", "Decimal"]
+           "COMPACT_AGE_S", "COMPACT_MARK", "CHAIN_PRIORITY", "Decimal"]

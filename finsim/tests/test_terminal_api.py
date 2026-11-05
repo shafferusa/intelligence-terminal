@@ -105,6 +105,36 @@ class RoundTrip(ApiBase):
         self.assertEqual("bound", h["modules"]["orders"])
         self.assertEqual(__import__("finsim.terminal", fromlist=["VERSION"]).VERSION, h["lock"] and h["version"])
 
+    def test_health_chain_counts_never_name_an_underlying(self):
+        """CHAIN-FETCH-1 (1.0.7.2, r1072 CHANGE_PLAN 5.6): ``workers.quotes.chains`` is the option-chain cache in COUNTS - cached, pending,
+        in flight, pinned, the in-flight limit, the oldest pinned chain's age, the slowest recent fetch - every value an integer, a float
+        or None, and no underlying's name anywhere in it (the deploy post-check reads it on the live app).  Fictional names: ACME and WIDG
+        pinned, WIDG taken in flight, ACME requested (pending), nothing cached; the worker's last fetch durations set by hand (1.25 s,
+        0.5 s): the slowest is 1.25.  A runtime without a quote worker renders the same keys, every one None."""
+        rt = self.rt
+        rt.chains.pin("ACME")
+        rt.chains.pin("WIDG")
+        rt.chains.request("WIDG")
+        self.assertEqual("WIDG", rt.chains.take_pending())
+        rt.chains.request("ACME")
+        with rt.worker._lock:
+            rt.worker.stats_["chain_fetch_s"] = {"ACME": 1.25, "WIDG": 0.5}
+        h, _ = self.ok("GET", "/api/health")
+        ch = h["workers"]["quotes"]["chains"]
+        keys = {"cached", "pending", "in_flight", "pinned", "max_in_flight", "oldest_pinned_age_s", "slowest_fetch_s"}
+        self.assertEqual(keys, set(ch))
+        for k, v in ch.items():
+            self.assertTrue(v is None or (isinstance(v, (int, float)) and not isinstance(v, bool)), (k, v))
+        self.assertEqual({"cached": 0, "pending": 1, "in_flight": 1, "pinned": 2, "slowest_fetch_s": 1.25},
+                         {k: ch[k] for k in ("cached", "pending", "in_flight", "pinned", "slowest_fetch_s")})
+        self.assertIsNone(ch["oldest_pinned_age_s"])                             # no pinned chain is cached yet
+        text = json.dumps(ch)
+        for name in ("ACME", "WIDG"):
+            self.assertNotIn(name, text)
+        self.assertNotIn("ACME", json.dumps(h["workers"]["quotes"]))
+        self.assertEqual(dict.fromkeys(keys, None), _api.chain_counts({}))     # no worker: the block is there, every figure None
+        self.assertEqual(dict.fromkeys(keys, None), _api.chain_counts(None))
+
     def test_accounts_books_and_state_before_any_trade(self):
         rows, _ = self.ok("GET", "/api/accounts?book=T")
         ids = [r["account_id"] for r in rows]

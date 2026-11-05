@@ -68,7 +68,11 @@ OPTIONAL_STATIC = {"components/ticket.js", "components/preview.js", "components/
                    "components/cdsnames.js",                                     # single-name CDS desk (CDS-107)
                    # FINSIM1_PLAN C1: the pages of the new navigation and the import panel (NOT YET BUILT until their packages land)
                    "pages/pending.js", "pages/completed.js", "pages/accounts.js", "pages/cash_collateral.js", "pages/derivatives.js",
-                   "components/imports.js"}
+                   "components/imports.js",
+                   "pages/smartticket.js"}                                       # 1.0.7.2: the Smart Ticket page (#/smart)
+#: POSTs that need no request id (the previews and the Smart Ticket's pure parse, registered mutating=False like the real API)
+NON_MUTATING_POSTS = ("/api/orders/preview", "/api/fx/preview", "/api/otc/preview", "/api/private/preview", "/api/strategies/preview",
+                      "/api/smart-ticket/parse")
 MIME = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8",
         ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json",
         ".txt": "text/plain; charset=utf-8", ".csv": "text/csv; charset=utf-8"}
@@ -339,7 +343,7 @@ class _Handler(BaseHTTPRequestHandler):
         if not name:
             return self._error(404, "NOT_FOUND", "no fixture route for %s %s" % (method, path))
         body = self._read_body() if method in ("POST", "PATCH", "DELETE") else None
-        if method in ("POST", "PATCH", "DELETE") and path != "/api/shutdown" and path not in ("/api/orders/preview", "/api/fx/preview", "/api/otc/preview", "/api/private/preview", "/api/strategies/preview"):
+        if method in ("POST", "PATCH", "DELETE") and path != "/api/shutdown" and path not in NON_MUTATING_POSTS:
             rid = (body or {}).get("request_id") or self.headers.get("X-Request-Id")
             if not rid:
                 return self._error(400, "BAD_REQUEST_ID", "request_id is required on every mutating route")

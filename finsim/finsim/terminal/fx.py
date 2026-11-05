@@ -1417,7 +1417,7 @@ def forward_mtm(services, row, snapshot=None) -> dict:
     return {"deal_id": r["deal_id"], "mtm_c": mtm_c, "mtm": str(from_c(mtm_c)), "quality": quality, "note": note or fin.get("note") or "",
             "inputs": {"pair": pair, "K": str(K), "F_now": str(F), "base_amount": str(A), "buying_base": buying_base, "value_in_quote_at_vd": str(qprice(value_q)),
                        "quote_ccy": quote_ccy, "days_to_value": days_left, "df": str(df), "r_quote": iq, "usd_per_quote": str(leg["rate"]), "forward": fin,
-                       "formula": f"{'+' if buying_base else '-'}{A} x ({F} - {K}) {quote_ccy} x DF {df} x {leg['rate']} USD/{quote_ccy}"}}
+                       "formula": f"{'+' if buying_base else '-'}{A} x ({F} - {K}) {quote_ccy} x DF {df} x {leg['rate']} USD per {quote_ccy}"}}
 
 
 def forward_overlays(services, conn, account_id: str, snapshot=None) -> List[dict]:

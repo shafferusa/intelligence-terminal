@@ -1013,11 +1013,20 @@ def ensure_option(services, occ: str, chain=None, tx=None, underlying: Optional[
         return master.ensure_option(tx2, occ, under, row)
 
 
+def _occ_root(occ: Optional[str]) -> str:
+    p = parse_occ(occ) if occ else None
+    return str(p[0]) if p else ""
+
+
 def chain_view(services, underlying_id: str, expiry: Optional[str] = None, chain=None, now: Optional[int] = None) -> dict:
     """§15 ``GET /api/instruments/{id}/chain``: ``{underlying, underlying_id, expiries, expiry, rows: [{strike, call, put}], as_of,
     fetched_at, delay_label, quality, source}``; ``{"status": "fetching", "retry_ms": 1500}`` while the cache loads (202);
     ConflictError NO_CHAIN (409) when the underlying has no listed options; ServiceUnavailable CBOE_REFUSED_UA (503).
-    Each contract row is the ChainRow plus ``instrument_id`` (the OCC id), ``listed`` (already in the master) and ``quality``."""
+    Each contract row is the ChainRow plus ``instrument_id`` (the OCC id), ``listed`` (already in the master) and ``quality``.
+    CHAIN-LEGS-1 (1.0.7.2): a cell takes the FIRST row of its (strike, right) - the preferred contract, ``parse_chain``'s order - and a
+    further contract of the same cell (another root) goes to ``row["alt"]["call" | "put"]``, never over the leg; ``one_sided`` lists
+    the strikes of the expiry that carry only one side (``[{strike, has: call | put}]``, said in ``note``) and ``drops`` the entries
+    the parse skipped, by reason."""
     now = int(now if now is not None else services.clock.epoch())
     master = services.instruments
     under = master.get(underlying_id)
@@ -1054,11 +1063,36 @@ def chain_view(services, underlying_id: str, expiry: Optional[str] = None, chain
     by_strike: Dict[Decimal, dict] = {}
     for row in snap.rows_for(exp):
         d = leg_dict(row, snap, quality, now, listed=master.get(row.occ) is not None)
-        by_strike.setdefault(row.strike, {"strike": str(row.strike), "call": None, "put": None})["call" if row.right == "C" else "put"] = d
+        cell = by_strike.setdefault(row.strike, {"strike": str(row.strike), "call": None, "put": None})
+        side = "call" if row.right == "C" else "put"
+        if cell[side] is None:                   # CHAIN-LEGS-1: the first row of a cell wins (the preferred contract: parse_chain's order)
+            cell[side] = d
+        elif cell[side]["quality"] == "unavailable" and d["quality"] != "unavailable":
+            # 1.0.7.2 review: an UNQUOTED standard root never hides a quoted second root - the quoted contract takes the cell (its root is
+            # named on it) and the unquoted one goes to ``alt``; ChainSnapshot.row() keeps the standard-root rule for every other consumer
+            cell.setdefault("alt", {}).setdefault(side, []).append(cell[side])
+            cell[side] = d
+        else:                                    # a second root (SPXW beside SPX, an adjusted series) never overwrites the leg
+            cell.setdefault("alt", {}).setdefault(side, []).append(d)
+    std_root = (under.cboe_symbol or under.symbol or "").replace("_", "").replace(".", "").replace("-", "").upper()
+    for cell in by_strike.values():
+        for side in ("call", "put"):
+            d = cell.get(side)
+            root = _occ_root(d["instrument_id"]) if d else ""
+            if d and root and std_root and root.replace(".", "").replace("-", "").upper() != std_root:
+                d["root"] = root                 # the cell's contract is not the standard root's: chain.js names it
+    one_sided_fn = getattr(snap, "one_sided", None)
+    one_sided = one_sided_fn(exp) if callable(one_sided_fn) else [
+        {"strike": str(k), "has": "call" if by_strike[k]["call"] is not None else "put"} for k in sorted(by_strike)
+        if (by_strike[k]["call"] is None) != (by_strike[k]["put"] is None)]
+    n1 = len(one_sided)
+    one_note = (f"{n1} strike{'' if n1 == 1 else 's'} of this expiry list{'s' if n1 == 1 else ''} only one side in this Cboe snapshot"
+                if one_sided else None)
+    note = "; ".join(x for x in (stale_note or stale_reason, one_note) if x) or None
     return {"underlying_id": underlying_id, "underlying": underlying_dict(snap, quality, now, underlying_id),
             "expiries": expiries, "expiry": exp, "rows": [by_strike[k] for k in sorted(by_strike)], "as_of": snap.quote_time, "fetched_at": snap.fetched_at,
             "delay_label": snap.delay_label, "quality": quality, "age_s": age_s, "stale_reason": stale_reason, "source": snap.source, "n_kept": snap.n_kept(),
-            "note": stale_note or stale_reason}
+            "one_sided": one_sided, "drops": dict(getattr(snap, "drops", None) or {}), "note": note}
 
 
 __all__ = ["margin_requirement_c", "reserved_shares", "observed_close", "intrinsic_of", "is_index_option", "h_expire", "h_margin_mark", "h_exercise", "register",

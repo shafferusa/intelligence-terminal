@@ -641,6 +641,34 @@ class FxBookingLabelsAndWords(unittest.TestCase):
         self.assertTrue(s["note"].startswith(f"settlement funding of {self.swap}: EUR for the obligations due 2026-11-02 (pay leg coupon 1)"), s["note"])
         self.assertEqual(2, len([r for r in rows if r["kind"] == "otc"]))
 
+    def test_item5_completed_trades_settle_the_fx_forward_on_its_value_date(self):
+        """1.0.6.1 open item 5 (1.0.7.2): Completed Trades shows this class's FX forward settling on its value date - the one in its stored
+        terms, which is its maturity - never on its trade date (the contract row's own value-date column holds the trade date, which the row
+        showed).  Display only: the swap, not a forward, still settles on its start date.  The dates are read from the stored contract, not
+        restated here."""
+        rows = self.ok("GET", "/api/blotter/executions?scope=F1:ALL")["rows"]
+        by = {r["execution_id"]: r for r in rows}
+        fwd, swap = by[self.fwd], by[self.swap]
+        with self.rt.db.reader() as conn:
+            c = conn.execute("SELECT terms_json, maturity_date, value_date FROM otc_contracts WHERE contract_id=?", (self.fwd,)).fetchone()
+            s = conn.execute("SELECT start_date FROM otc_contracts WHERE contract_id=?", (self.swap,)).fetchone()
+        value_date = json.loads(c["terms_json"])["value_date"]
+        self.assertEqual((value_date, value_date), (fwd["settle_date"], c["maturity_date"]))
+        self.assertGreater(fwd["settle_date"], fwd["trade_date"])                  # a forward settles after its trade date
+        self.assertEqual(fwd["trade_date"], c["value_date"])                        # what the row showed before the fix
+        self.assertEqual(s["start_date"], swap["settle_date"])
+        # the execution drawer and the CSV read the same row
+        self.assertEqual(value_date, self.ok("GET", f"/api/executions/{self.fwd}")["execution"]["settle_date"])
+        st, csv_text, _h = self.rt.router.handle("GET", "/api/blotter/executions?scope=F1:ALL&format=csv", None, None, "127.0.0.1", None)
+        self.assertEqual(200, st)
+        line = [x for x in str(csv_text).splitlines() if x.startswith(self.fwd + ",")][0]
+        self.assertIn(f",{fwd['trade_date']},{value_date},", line)
+
+    def test_custom_package_words(self):
+        """1.0.7.2: a Smart Ticket combination (strategy key CUSTOM) reads in words on Pending and in the order drawer."""
+        self.assertEqual("your own legs (Smart Ticket)", blotters.code_words("CUSTOM"))
+        self.assertEqual("your own legs (Smart Ticket)", blotters.HEDGE_TITLES["CUSTOM"])
+
     def test_v1061r2_04_completed_trades_name_eurusd_in_market_convention(self):
         """V1061R2-04: the owner asked that a currency pair is never shown reversed, and Completed Trades is his confirmation view (10.7).
         Both EUR/USD rows of trade A read in market convention - EUR the base, the rate in USD per EUR, the side words base first:

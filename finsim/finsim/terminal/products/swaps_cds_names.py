@@ -1835,7 +1835,11 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
     alone; spread scenarios (-25 / +25 / +50 / +100 bp, the mid floored at 1 bp), equity scenarios through the model (every reference equity
     -30 % / +30 % together; the name with the largest jump-to-default alone -30 / +30 / +50 %), the default of the largest JTD loss, and a
     CDS_JTD_CONCENTRATION warning above 10 % of NAV.  A name whose model cannot be re-run shows "unavailable" (None), never 0.  ``rows`` are
-    risk's PosRisk rows (kind SWAP, ``extra.kind`` CDS); None when there are none."""
+    risk's PosRisk rows (kind SWAP, ``extra.kind`` CDS); None when there are none.  1.0.7.2 (CDS-V-02 .. 04): jump to default is computed
+    from each contract's value now (the VALUE column), never the last VM mark; a row's ``bucket`` is the bucket of its mid on the FRED
+    ladder (``model_bucket`` the model's own); when no contract can be valued now, CS01, the jump-to-default totals and every spread
+    scenario are None ("unavailable: not valued now: <ids>"), and when only some can, the totals are the sums over the valued ones with
+    ``partial`` True and each spread scenario says what it excludes; a name with no valued contract has ``cs01_c`` None."""
     mine = [r for r in rows if getattr(r, "kind", None) == "SWAP" and (getattr(r, "extra", None) or {}).get("kind") == KIND]
     if not mine:
         return None
@@ -1864,11 +1868,11 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
             item = {"contract_id": row["contract_id"], "account_id": row["account_id"], "label": f"{terms.get('ticker')} {terms.get('tenor_years')}Y CDS"
                     f" {'sell' if side == 'SELL_PROTECTION' else 'buy'} protection", "cik": cik, "ticker": terms.get("ticker"), "entity_name": terms.get("entity_name"),
                     "side": side, "notional_c": n, "exposure_c": exp, "tenor_years": terms.get("tenor_years"), "maturity_date": row["maturity_date"],
-                    "mid_spread_bp": None, "model_spread_bp": None, "basis_bp": None, "bucket": None, "cs01_c": None, "jtd_c": None, "value_c": None,
-                    "quality": "unavailable", "note": None}
+                    "mid_spread_bp": None, "model_spread_bp": None, "basis_bp": None, "bucket": None, "model_bucket": None, "cs01_c": None, "jtd_c": None,
+                    "value_c": None, "quality": "unavailable", "note": None}
             nm = names.setdefault(cik, {"cik": cik, "ticker": terms.get("ticker"), "entity_name": terms.get("entity_name"), "contracts": 0, "gross_notional_c": 0,
-                                        "net_exposure_c": 0, "jtd_c": 0, "jtd_known": True, "cs01_c": 0, "levels": set(), "eq": {"0.7": 0, "1.3": 0, "1.5": 0},
-                                        "eq_known": {"0.7": True, "1.3": True, "1.5": True}})
+                                        "net_exposure_c": 0, "jtd_c": 0, "jtd_known": True, "valued": 0, "cs01_c": 0, "cs01_known": False, "levels": set(),
+                                        "eq": {"0.7": 0, "1.3": 0, "1.5": 0}, "eq_known": {"0.7": True, "1.3": True, "1.5": True}})
             nm["contracts"] += 1
             nm["gross_notional_c"] += n
             nm["net_exposure_c"] += exp
@@ -1882,16 +1886,19 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
                 continue
             base, _ = _value_at(st, st["mid"])
             up, _ = _value_at(st, st["mid"] + ONE)
-            mv = getattr(r, "mv_c", None)
-            mv = int(mv) if mv is not None else int(base)
-            jtd = _jtd(side, n, mv)
+            # CDS-V-02 (1.0.7.2): jump to default from the value NOW, like the VALUE column and the contract drawer (not the last VM mark)
+            jtd = _jtd(side, n, int(base))
             cs = None if up is None else int(up) - int(base)
-            item.update(mid_spread_bp=str(st["mid"]), model_spread_bp=str(st["model_bp"]), basis_bp=str(st["basis"].quantize(BP_Q)), bucket=st["model"].get("bucket"),
+            # CDS-V-03: the bucket printed beside the mid is the mid's own (the dealing level on the FRED ladder); the model's beside it
+            item.update(mid_spread_bp=str(st["mid"]), model_spread_bp=str(st["model_bp"]), basis_bp=str(st["basis"].quantize(BP_Q)),
+                        bucket=bucket_of_mid(services, st["mid"], st["model"]), model_bucket=st["model"].get("bucket"),
                         cs01_c=cs, jtd_c=jtd, value_c=int(base), quality=str(st["model"].get("quality") or "computed"), level_kind=(st["level"] or {}).get("level_kind"))
             if cs is not None:
                 cs_total += cs
                 nm["cs01_c"] += cs
-            nm["jtd_c"] += jtd
+                nm["cs01_known"] = True
+            nm["jtd_c"] += jtd                    # the name's JTD over its valued contracts (the name's own figure needs them all: jtd_known)
+            nm["valued"] += 1
             nm["levels"].add((st["level"] or {}).get("level_kind") or "NONE")
             for b in SPREAD_SHOCKS_BP:
                 v = _shocked_value(st, st["mid"] + Decimal(b))
@@ -1910,6 +1917,11 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
             states.append((st, item, int(base)))
             out_rows.append(item)
     nav = int(base_c or 0)
+    # CDS-V-04 (1.0.7.2): a block whose contracts cannot be valued now never shows defaulted zeros - nothing valued: the totals and the
+    # spread scenarios are unavailable (None); some valued: the totals are the sums over the valued ones, said partial
+    valued = len(states)
+    none_valued = bool(missing) and not valued
+    partial = bool(missing) and bool(valued)
     by_name = []
     warnings = []
     for cik, nm in sorted(names.items(), key=lambda kv: str(kv[1].get("ticker") or kv[0])):
@@ -1917,7 +1929,7 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
         levels = sorted(nm["levels"])
         row = {"cik": cik, "ticker": nm["ticker"], "entity_name": nm["entity_name"], "contracts": nm["contracts"], "gross_notional_c": nm["gross_notional_c"],
                "net_exposure_c": nm["net_exposure_c"], "jtd_c": jtd, "jtd_pct_nav": None if jtd is None or not nav else (Decimal(jtd) / Decimal(nav)).quantize(PX4),
-               "cs01_c": nm["cs01_c"], "level_kind": levels[0] if len(levels) == 1 else ("MIXED" if levels else None),
+               "cs01_c": nm["cs01_c"] if nm["cs01_known"] else None, "level_kind": levels[0] if len(levels) == 1 else ("MIXED" if levels else None),
                "eq_dn30_pnl_c": nm["eq"]["0.7"] if nm["eq_known"]["0.7"] else None, "eq_up30_pnl_c": nm["eq"]["1.3"] if nm["eq_known"]["1.3"] else None,
                "eq_up50_pnl_c": nm["eq"]["1.5"] if nm["eq_known"]["1.5"] else None}
         by_name.append(row)
@@ -1928,9 +1940,15 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
                                          f" above {(JTD_WARN * PCT).quantize(Decimal('1'))} %)"),
                              "account_id": None, "instrument_id": None, "value": str(frac), "threshold": str(JTD_WARN)})
     known = [x for x in by_name if x["jtd_c"] is not None]
-    gains = sum(x["jtd_c"] for x in known if x["jtd_c"] > 0)
-    losses = sum(x["jtd_c"] for x in known if x["jtd_c"] < 0)
-    scenarios = [{"name": f"single-name spreads {'+' if b > 0 else ''}{b} bp", "shock_bp": b, "pnl_c": shocks[b]} for b in SPREAD_SHOCKS_BP]
+    # the jump-to-default totals: each name netted over its valued contracts (all of them when every contract is valued), then the gains
+    # and the losses summed apart; None when nothing is valued now
+    netted = [nm["jtd_c"] for nm in names.values() if nm["valued"]]
+    gains = None if none_valued else sum(v for v in netted if v > 0)
+    losses = None if none_valued else sum(v for v in netted if v < 0)
+    ids = ", ".join(missing)
+    shock_note = ({"note": f"unavailable: not valued now: {ids}"} if none_valued else {"note": f"excludes {ids} (not valued now)"} if partial else {})
+    scenarios = [dict({"name": f"single-name spreads {'+' if b > 0 else ''}{b} bp", "shock_bp": b, "pnl_c": None if none_valued else shocks[b]}, **shock_note)
+                 for b in SPREAD_SHOCKS_BP]
     for k, words in (("0.7", "-30 %"), ("1.3", "+30 %")):
         unknown = [x["ticker"] or str(x["cik"]) for x in by_name if (x["eq_dn30_pnl_c"] if k == "0.7" else x["eq_up30_pnl_c"]) is None]
         pnl = None if unknown else sum((x["eq_dn30_pnl_c"] if k == "0.7" else x["eq_up30_pnl_c"]) for x in by_name)
@@ -1947,9 +1965,9 @@ def risk_block(services, rows, base_c: int) -> Optional[dict]:
     elif top is not None:
         scenarios.append({"name": f"default of {top['ticker']} (largest jump-to-default)", "cik": top["cik"], "pnl_c": top["jtd_c"]})
     pct = None if not nav else (Decimal(short_c + long_c) / Decimal(nav)).quantize(PX4)
-    return {"bucket": "Credit derivatives (single-name CDS notional)", "rows": out_rows, "by_name": by_name, "cs01_c": cs_total, "jtd_gain_c": gains,
-            "jtd_loss_c": losses, "net_jtd_c": gains + losses, "short_credit_c": short_c, "long_credit_c": long_c, "gross_pct_nav": pct, "missing": missing,
-            "scenarios": scenarios, "warnings": warnings, "label": LABEL,
+    return {"bucket": "Credit derivatives (single-name CDS notional)", "rows": out_rows, "by_name": by_name, "cs01_c": None if none_valued else cs_total,
+            "jtd_gain_c": gains, "jtd_loss_c": losses, "net_jtd_c": None if none_valued else gains + losses, "short_credit_c": short_c, "long_credit_c": long_c,
+            "gross_pct_nav": pct, "missing": missing, "partial": partial, "scenarios": scenarios, "warnings": warnings, "label": LABEL,
             "note": ("CS01 = P&L for +1 bp of each name's spread; jump to default = (1 - 40 %) x notional less the contract's value now, signed; spreads are"
                      " MODEL")}
 

@@ -4,7 +4,8 @@
  *   Dashboard (F12) -> Portfolio (F7) -> TRADING - the group title opens #/trading (the last venue used, else US Exchange) - with the
  *   selected book's venue accounts: US Exchange (F1) -> Debt Instruments (F2) -> Credit Instruments (F3) -> Foreign Markets & FX (F4)
  *   -> Private Markets (F5; when the lifetime has it, otherwise a dimmed row with ONE short reason, the full sentence on hover) -> each
- *   prime broker (F6), each with its NAV / avail / working / settling line, then Watchlists (Shift+F9) -> Pending Trades (F8) ->
+ *   prime broker (F6), each with its NAV / avail / working / settling line, then Watchlists (Shift+F9) -> Smart Ticket (Ctrl+F9,
+ *   1.0.7.2) -> Pending Trades (F8) ->
  *   Completed Trades (Shift+F8) -> Accounts (Shift+F4), with Treasury (F10) inside and its NAV and cash -> Cash & Collateral
  *   (Shift+F5) -> Derivatives (Shift+F6) -> History (Shift+F10; lit on the hub #/history and on an archived lifetime's pages #/h/...;
  *   Settings no longer lights there, reversing SHELL-23) -> Settings (Shift+F11) -> Book views: Risk (F11), Accounting (Shift+F7).
@@ -143,6 +144,8 @@
       if (!canOnboard) { nav.appendChild(T.h('span', { class: 'nav-why', title: pbFull }, shortPb(e))); }
     }
     nav.appendChild(item('#/watchlists', 'Watchlists', { key: keyOf('page.watchlists') }));
+    /* 1.0.7.2: the Smart Ticket closes the TRADING group (Ctrl+F9; NOT YET BUILT while its page file is not in the build) */
+    nav.appendChild(item('#/smart', 'Smart Ticket', { key: keyOf('page.smart'), prefix: '#/smart', title: 'Smart Ticket: type what you want to trade; nothing is sent until you confirm' }));
     /* the trade blotters, the accounts, cash & collateral, derivatives, history, settings */
     nav.appendChild(T.h('div', { class: 'nav-section' }, 'Fund'));
     nav.appendChild(item('#/pending', 'Pending Trades', { key: keyOf('page.pending'), prefix: '#/pending', badge: b.pending, badgeCls: 'count', badgeTitle: b.pendingTitle,

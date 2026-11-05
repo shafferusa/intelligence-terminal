@@ -8,8 +8,17 @@ Conventions
 - Pins: every 30 s the worker scans the database — HELD = instruments with a position in an OPEN lifetime (plus the
   underlyings of OPEN TRS contracts and the USD pairs of OPEN cross-currency swaps, ``instruments.otc_reference_ids``), ORDER =
   instruments with a WORKING / PARTIAL / WAITING_PARENT order — and keeps the option underlyings of those on the
-  chain cache's pin list (CHAIN 90 s).  Chains are fetched ONE at a time (single-flight) and shared by every
-  requester; a materialised option gets its ``chain`` record from each snapshot.
+  chain cache's pin list (CHAIN 90 s).  Each chain is single-flight and shared by every requester; a materialised option gets its
+  ``chain`` record from each snapshot.
+- CHAIN FETCHING (CHAIN-FETCH-1, 1.0.7.2; one serial fetcher let the pinned chains pass the 5-minute fetch grace): chains are fetched on
+  their own pool of ``chain_threads`` threads ("chain-fetch", ``config.CHAIN_FETCH_WORKERS`` = 3; the chain cache hands out that many
+  fetches at once), in the cache's priority order - a chain a ticket, an instrument page or the hedge panel asked for (REQUEST) before
+  an option with a working order (ORDER) before the 90 s refresh of a pinned or on-screen chain (REFRESH).  Each tick starts a job per
+  free slot; a job takes the next pending chain itself as it finishes one, so the chain cycle never waits for a slow tick, and any
+  failure ends in ``ChainCache.fail`` (counted in ``chain_errors``), so a slot is never lost.  The downloads overlap (the Cboe rate
+  limiter spaces their starts at 1 a second); the JSON parse stays one at a time (``providers._CHAIN_PARSE_LOCK``: the memory peak
+  is one parse).  ``stats()["chain_fetch_s"]`` keeps the last fetch time of up to 32 underlyings.  With ``fetch_threads=0`` (how tests
+  drive ``tick()``) there is no pool: one chain per tick on the scheduler thread, as before.
 - A failed Cboe chain fetch is attached to every cached option record of that underlying (``record_error``, EXEC-2): their
   ``fetched_at`` stays the last good chain, so they go stale 60 s after it (ERROR_AGE_S) and executions pause - the chain's own
   failure (``ChainCache.fail``) never reached the option records before.
@@ -69,12 +78,13 @@ from datetime import time as dtime
 from typing import Callable, Dict, List, Optional, Tuple
 
 from ..clock import ny_of, ny_str
+from .. import config as _config
 from ..commands import Command, RejectError
 from ..config import QUOTE_INTERVALS
 from ..db import canonical_json
 from ..instruments import ADV_DAYS, EQUITY_KINDS, Instrument, adv_from_daily, fx_pair_id, needs_adv, otc_reference_ids, parse_futures_id
 from . import cache as _cache_mod, providers as _providers_mod, rates as _rates_mod
-from .cache import ChainCache, QuoteCache, record_from_intraday, records_from_chain
+from .cache import CHAIN_PRIORITY, ChainCache, QuoteCache, record_from_intraday, records_from_chain
 from .http import FetchError
 from .parsers import chart_bars, parse_intraday
 from .providers import YAHOO_DELAY_LABEL, ProviderSet
@@ -111,6 +121,9 @@ BARS_MAX_AGE_S = 60              # request_bars answers from memory while the la
 BARS_KEEP = 12                   # full-session bar snapshots kept in memory (LRU): ~400 small dicts each
 BARS_PER_TICK = 2                # bar fetches started per worker tick (the Yahoo rate limiter spaces them further)
 INTRADAY_QUERY = "range=1d&interval=1m&includePrePost=false"
+# CHAIN-FETCH-1 (1.0.7.2): the chain priority of a due option's best quote pin (anything else is a REFRESH), and the fetch times kept
+CHAIN_PRIORITY_OF_PIN = {"ORDER": "ORDER", "PAGE": "REQUEST"}
+CHAIN_FETCH_TIMES_KEPT = 32
 
 
 
@@ -876,18 +889,31 @@ def fetch_ecb_curve(src, rates, now: int, latest=None) -> str:
 # ---- the worker -------------------------------------------------------------------------------------------------------------------
 class QuoteWorker(threading.Thread):
     def __init__(self, cache: QuoteCache, chains: ChainCache, instruments, providers: ProviderSet, sessions, bus, matcher, clock, log, fetch_threads: int = 2,
-                 db=None, services=None, curve=None, rates=None, fxstore=None, cal=None, period_s: float = 1.0):
+                 db=None, services=None, curve=None, rates=None, fxstore=None, cal=None, period_s: float = 1.0, chain_threads: Optional[int] = None):
         super().__init__(name="quote-worker", daemon=True)
         self.cache, self.chains, self.instruments, self.providers, self.sessions = cache, chains, instruments, providers, sessions
         self.bus, self.matcher, self.clock, self.log = bus, matcher, clock, log
         self.db = db if db is not None else getattr(cache, "db", None)
         self.services = services
         self.fetch_threads = int(fetch_threads)
+        # CHAIN-FETCH-1: the chain pool's size - none when the worker runs inline (fetch_threads=0, how tests drive tick())
+        if self.fetch_threads <= 0:
+            self.chain_threads = 0
+        else:
+            self.chain_threads = max(0, int(chain_threads if chain_threads is not None else _config.CHAIN_FETCH_WORKERS))
+        if self.chain_threads > 0 and hasattr(chains, "set_max_in_flight"):
+            chains.set_max_in_flight(self.chain_threads)
         self.period_s = float(period_s)
         self._stop_event = threading.Event()
         self._pool: Optional[ThreadPoolExecutor] = None
+        self._chain_pool: Optional[ThreadPoolExecutor] = None
         self._lock = threading.Lock()
         self._changed: List[str] = []
+        # 1.0.7.2 review: the chain slots this worker holds (taken from the chain cache and not yet put / failed / given back), so a
+        # replacement worker never hands out a slot a live job of this one still downloads; and the retired worker it replaced, whose
+        # last chain job's quote changes it drains with its own
+        self._chain_active: set = set()
+        self._predecessor: Optional["QuoteWorker"] = None
         self._resolve: deque = deque()
         self._resolve_errors: Dict[str, Tuple[str, Optional[int]]] = {}
         self._adv: deque = deque()
@@ -898,7 +924,8 @@ class QuoteWorker(threading.Thread):
         self.refresher = RatesRefresher(providers, cache, curve, rates, fxstore, instruments, self.db, bus, clock, cal, services, log, beat=self._beat)
         self.stats_ = {"ticks": 0, "last_tick_ts": None, "last_progress_ts": None, "fetches": 0, "fetch_errors": 0, "changed": 0, "chains": 0, "chain_errors": 0,
                        "loop_errors": 0, "last_error": None, "matcher_calls": 0, "resolved": 0, "refresher_runs": 0, "refresher_errors": 0, "bars_fetches": 0,
-                       "bars_errors": 0, "adv_set": 0}
+                       "bars_errors": 0, "adv_set": 0,
+                       "chain_fetch_s": {}}          # CHAIN-FETCH-1: {underlying: seconds of its last chain fetch}, the last CHAIN_FETCH_TIMES_KEPT
         # C14: registered product refreshers and the chart's full-session bars (request_bars)
         self._refreshers: Dict[str, Refresher] = {}
         self._bars: "OrderedDict[str, dict]" = OrderedDict()
@@ -1047,9 +1074,10 @@ class QuoteWorker(threading.Thread):
     def stats(self) -> dict:
         with self._lock:
             d = dict(self.stats_)
+            d["chain_fetch_s"] = dict(self.stats_.get("chain_fetch_s") or {})      # a copy: the chain jobs keep writing the live one
         d.update(alive=self.is_alive(), stopping=self._stop_event.is_set(), cache_size=self.cache.size(), chains=self.chains.stats(), slots=self.refresher.stats(),
                  providers=self.providers.health.snapshot() if self.providers.health is not None else {}, fetch_threads=self.fetch_threads,
-                 refreshers=self.refreshers(), bars=self._bars_stats())
+                 chain_threads=self.chain_threads, refreshers=self.refreshers(), bars=self._bars_stats())
         return d
 
     def _bars_stats(self) -> dict:
@@ -1059,6 +1087,16 @@ class QuoteWorker(threading.Thread):
     def run(self) -> None:
         if self.fetch_threads > 0 and self._pool is None:
             self._pool = ThreadPoolExecutor(max_workers=self.fetch_threads, thread_name_prefix="quote-fetch")
+        requeue = getattr(self.chains, "requeue_in_flight", None)
+        if callable(requeue):
+            # CHAIN-FETCH-1: a slot a dead worker's thread held goes back to the queue - never one a live job of the retired worker still
+            # downloads (1.0.7.2 review: the same underlying downloaded twice at once)
+            try:
+                requeue(keep=self._slot_held_elsewhere)
+            except TypeError:                      # a chain cache without slot owners: every slot, as before
+                requeue()
+        if self.chain_threads > 0 and self._chain_pool is None:
+            self._chain_pool = ThreadPoolExecutor(max_workers=self.chain_threads, thread_name_prefix="chain-fetch")
         while not self._stop_event.is_set():
             try:
                 self.tick()
@@ -1077,6 +1115,7 @@ class QuoteWorker(threading.Thread):
         if self._pool is not None:
             self._pool.shutdown(wait=False, cancel_futures=True)
             self._pool = None
+        self._stop_chain_pool(timeout)
         try:
             self.cache.persist()
         except Exception as e:   # noqa: BLE001 — shutdown must not hang on a persist failure; it is logged
@@ -1092,29 +1131,41 @@ class QuoteWorker(threading.Thread):
             self._last_pin_scan = now
             self._beat()
         jobs = []
-        chain_requests: List[str] = []
-        for iid, _prio in self.cache.due(now):
+        chain_requests: Dict[str, str] = {}       # underlying -> the best chain priority of its due options (CHAIN-FETCH-1)
+        for iid, prio in self.cache.due(now):
             inst = self.instruments.get(iid) if self.instruments is not None else None
             if inst is None:
                 continue
             if inst.kind == "OPTION":
                 if inst.underlying_id:
-                    chain_requests.append(inst.underlying_id)
+                    p = CHAIN_PRIORITY_OF_PIN.get(prio, "REFRESH")      # an order on it -> ORDER, a ticket / page -> REQUEST, else REFRESH
+                    best = chain_requests.get(inst.underlying_id)
+                    if best is None or CHAIN_PRIORITY[p] < CHAIN_PRIORITY[best]:
+                        chain_requests[inst.underlying_id] = p
                 continue
             if not inst.yahoo_symbol:
                 self.cache.record_error(inst, "no quote source for this instrument", None, now)
                 report["errors"].append((iid, "no quote source"))
                 continue
             jobs.append(inst)
-        for uid in dict.fromkeys(chain_requests):
+        for uid, p in chain_requests.items():
             self.chains.keep_on_screen(uid, ttl_s=int(QUOTE_INTERVALS["CHAIN"]) + 30)
-            self.chains.request(uid)
-        self._run_fetches(jobs, now, report)
-        self.chains.due(now)                      # queues a refresh for every on-screen / pinned chain older than CHAIN (90 s)
-        uid = self.chains.take_pending()
-        if uid is not None:
-            report["chain"] = self._fetch_chain(uid, now)
-            self._beat()
+            self.chains.request(uid, priority=p)
+        if self._chain_pool is not None:
+            # pool mode: the chain jobs start before the quote fetches (which may wait FETCH_WAIT_S) and again after them
+            self.chains.due(now)                  # queues a refresh for every on-screen / pinned chain older than CHAIN (90 s)
+            started = self._start_chain_jobs()
+            self._run_fetches(jobs, now, report)
+            started += self._start_chain_jobs()
+            report["chain"] = {"started": started} if started else None
+        else:
+            # inline mode (fetch_threads=0): one chain per tick on this thread, after the quote fetches, as before
+            self._run_fetches(jobs, now, report)
+            self.chains.due(now)                  # queues a refresh for every on-screen / pinned chain older than CHAIN (90 s)
+            uid = self._take_chain()
+            if uid is not None:
+                report["chain"] = self._run_chain(uid, now)
+                self._beat()
         report["bars"] = self._serve_bars()
         self._run_resolves(report)
         self._run_adv(report)
@@ -1250,6 +1301,131 @@ class QuoteWorker(threading.Thread):
             self.cache.record_error(inst, f"Cboe chain: {error}", None, now, provider="cboe")   # never the 1-hour not-found retry: chains have their own schedule
             n += 1
         return n
+
+    # ---- CHAIN-FETCH-1 (1.0.7.2): the chain pool ------------------------------------------------------------------------------
+    def _start_chain_jobs(self) -> List[str]:
+        """Pool mode: one job per free in-flight slot of the chain cache (each job then takes the next pending chains itself); returns
+        the ids started.  A pool already shut down (``stop``) gives the slot back to the queue."""
+        started: List[str] = []
+        pool = self._chain_pool
+        while pool is not None and not self._stop_event.is_set():
+            uid = self._take_chain()
+            if uid is None:
+                break
+            try:
+                fut = pool.submit(self._chain_job, uid)
+            except RuntimeError:                  # "cannot schedule new futures after shutdown": the worker is stopping
+                self._give_back(uid)
+                break
+            # a job cancelled before it started (the pool shut down) gives its slot back at once - never left for a later restart
+            fut.add_done_callback(lambda f, u=uid: self._give_back(u) if f.cancelled() else None)
+            started.append(uid)
+        return started
+
+    def _take_chain(self) -> Optional[str]:
+        """The next pending chain, its slot held by this worker (``ChainCache.take_pending(owner=self)``) until put / failed / given back."""
+        try:
+            uid = self.chains.take_pending(owner=self)
+        except TypeError:                          # a chain cache without slot owners
+            uid = self.chains.take_pending()
+        if uid is not None:
+            with self._lock:
+                self._chain_active.add(uid)
+        return uid
+
+    def _give_back(self, uid: str) -> None:
+        with self._lock:
+            self._chain_active.discard(uid)
+        try:
+            self.chains.requeue_in_flight([uid])
+        except Exception:   # noqa: BLE001 - the slot is logged; a later start requeues an orphan
+            if self.log:
+                self.log.exception("chain cache: giving the slot of %s back failed", uid)
+
+    def holds_chain(self, uid: str) -> bool:
+        """Whether a job of this worker still holds ``uid``'s chain slot (taken, not yet put or failed)."""
+        with self._lock:
+            return uid in self._chain_active
+
+    def _slot_held_elsewhere(self, uid: str, owner) -> bool:
+        """``ChainCache.requeue_in_flight(keep=...)``: a slot another worker's job still holds stays in flight."""
+        held = getattr(owner, "holds_chain", None) if owner is not None and owner is not self else None
+        try:
+            return bool(held(uid)) if callable(held) else False
+        except Exception:   # noqa: BLE001 - an owner that cannot answer holds nothing
+            return False
+
+    def retire(self, successor: Optional["QuoteWorker"] = None) -> None:
+        """This worker is being replaced (``Runtime.make_worker('quotes')`` after its scheduler thread died): stop, without waiting, its
+        quote pool and chain pool - a chain download already running finishes and releases its slot; queued jobs give theirs back; no
+        job takes a new chain - and hand its pending quote changes to ``successor``, which drains this worker's later ones too."""
+        self._stop_event.set()
+        pool, self._pool = self._pool, None
+        if pool is not None:
+            pool.shutdown(wait=False, cancel_futures=True)
+        self._stop_chain_pool(0.0)
+        if successor is not None and successor is not self:
+            successor._predecessor = self
+
+    def _chain_job(self, uid: Optional[str]) -> None:
+        """A chain-pool job: fetch ``uid``, then the next pending chain, until none is left or the worker stops, so the chain cycle never
+        waits for a slow tick.  ``_run_chain`` releases the slot whatever happens (``ChainCache.put`` or ``fail``)."""
+        while uid is not None:
+            self._run_chain(uid, int(self.clock.epoch()))
+            self._beat()
+            if self._stop_event.is_set():
+                return
+            uid = self._take_chain()
+
+    def _run_chain(self, uid: str, now: int) -> dict:
+        """One chain fetch (``_fetch_chain``, whose provider failures are already ``ChainCache.fail``), timed into
+        ``stats_["chain_fetch_s"]``.  Any other failure (the master, the quote cache) still ends in ``ChainCache.fail`` - so the in-flight
+        slot is released and the waiters get the error - is counted in ``chain_errors`` and logged; only a non-``Exception`` propagates."""
+        t0 = _time.monotonic()
+        try:
+            return self._fetch_chain(uid, now)
+        except BaseException as e:   # noqa: BLE001 - the slot is released whatever happened
+            self._chain_failed(uid, e)
+            if not isinstance(e, Exception):
+                raise
+            return {"underlying": uid, "ok": False, "error": f"{type(e).__name__}: {e}"[:200]}
+        finally:
+            with self._lock:
+                self._chain_active.discard(uid)
+            self._chain_time(uid, _time.monotonic() - t0)
+
+    def _chain_failed(self, uid: str, e: BaseException) -> None:
+        err = e if isinstance(e, FetchError) else FetchError(f"{type(e).__name__}: {e}", retryable=False)
+        try:
+            self.chains.fail(uid, err)
+        except Exception:   # noqa: BLE001 - the failure is logged; nothing else can be done for this fetch
+            if self.log:
+                self.log.exception("chain cache: recording the failed fetch of %s failed", uid)
+        with self._lock:
+            self.stats_["chain_errors"] += 1
+            self.stats_["last_error"] = f"chain {uid}: {type(e).__name__}: {e}"[:200]
+        if self.log:
+            self.log.error("chain fetch of %s failed: %s: %s", uid, type(e).__name__, e)
+
+    def _chain_time(self, uid: str, seconds: float) -> None:
+        """The last fetch duration of ``uid`` (seconds, 3 dp), the most recent CHAIN_FETCH_TIMES_KEPT underlyings kept."""
+        with self._lock:
+            times = self.stats_.setdefault("chain_fetch_s", {})
+            times.pop(uid, None)
+            times[uid] = round(max(0.0, float(seconds)), 3)
+            while len(times) > CHAIN_FETCH_TIMES_KEPT:
+                times.pop(next(iter(times)))
+
+    def _stop_chain_pool(self, timeout: float) -> None:
+        """Shut the chain pool: queued jobs never start (each cancelled job gives its slot back at once: ``_give_back``), a running job
+        ends after its current chain; waits up to ``timeout`` seconds for the pool's threads."""
+        pool, self._chain_pool = self._chain_pool, None
+        if pool is None:
+            return
+        pool.shutdown(wait=False, cancel_futures=True)
+        waiter = threading.Thread(target=pool.shutdown, name="chain-pool-stop", daemon=True)     # shutdown(wait=True) joins the pool's threads
+        waiter.start()
+        waiter.join(max(0.0, float(timeout)))
 
     def _fetch_chain(self, uid: str, now: int) -> dict:
         inst = self.instruments.get(uid) if self.instruments is not None else None
@@ -1476,9 +1652,12 @@ class QuoteWorker(threading.Thread):
 
     def _drain_changed(self) -> List[str]:
         with self._lock:
-            out = list(dict.fromkeys(self._changed))
+            out = list(self._changed)
             self._changed = []
-        return out
+        pred = self._predecessor
+        if pred is not None:                       # the retired worker's last chain job: its quote changes are this worker's to report
+            out.extend(pred._drain_changed())
+        return list(dict.fromkeys(out))
 
     def _notify(self, changed: List[str]) -> None:
         if self.matcher is None:

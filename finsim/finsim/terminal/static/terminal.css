@@ -385,3 +385,53 @@ table.kb-table tr.kb-changed td.key kbd { border-color: var(--accent); color: va
 .ta .dd .sym { color: var(--accent); min-width: 70px; } .ta .dd .nm { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .spin { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- the Smart Ticket (#/smart, pages/smartticket.js; 1.0.7.2): the instruction bar, the leg grid's chips and edit boxes, the
+   confirm and the dialogs.  Existing tokens only (no new colour).  The preview renderers' boxes (components/preview.js) are styled
+   here too for this page and its dialogs: the ticket injects them only when it mounts, and the ticket never mounts on #/smart. */
+.smart-bar { display: flex; gap: 8px; align-items: stretch; margin-bottom: 2px; }
+.smart-bar textarea { flex: 1; min-width: 0; min-height: 58px; max-height: 120px; resize: vertical; line-height: 1.4; }
+.smart-examples { display: flex; flex-wrap: wrap; gap: 3px 14px; margin: 2px 0 8px; font-family: var(--mono); font-size: 11px; color: var(--fg3); }
+.smart-examples a { color: var(--blue); }
+.smart-readback { margin: 6px 0; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); font-family: var(--mono); font-size: 11.5px; }
+.smart-read-head { color: var(--fg3); font-size: 10.5px; margin-bottom: 3px; }
+.smart-read-text { color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.smart-unparsed { color: var(--down); text-decoration: underline wavy var(--down); }
+.smart-iflags { margin: 4px 0; }
+.smart-warn { border-left: 3px solid var(--warn); padding: 4px 8px; margin: 4px 0; background: var(--panel-2); font-size: 11.5px; color: var(--text); }
+.smart-chip { display: inline-block; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; margin: 1px 3px 1px 0;
+  padding: 0 5px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel-2); color: var(--fg3); font-family: var(--mono); font-size: 9.5px; line-height: 16px;
+  min-height: 0; cursor: pointer; }
+.smart-chip.sev-blocker { color: var(--down); border-color: var(--down); }
+.smart-chip.sev-check { color: var(--warn); border-color: var(--warn); }
+.smart-chip.sev-info { color: var(--fg3); }
+.smart-chip:hover { border-color: var(--accent); }
+.smart-grid th, .smart-grid td { padding-left: 4px; padding-right: 4px; }
+.smart-grid th { white-space: normal; line-height: 1.2; }
+.smart-grid td .smart-resbox { display: inline-block; min-width: 60px; max-width: 180px; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.smart-grid td { height: auto; min-height: 28px; padding-top: 2px; padding-bottom: 2px; }
+.smart-grid td input, .smart-grid td select { min-height: 22px; padding: 1px 3px; font-size: 11px; }
+.smart-grid td select { max-width: 96px; }
+.smart-grid td input[type="checkbox"] { min-height: 0; }
+.smart-grid td .smart-inst { min-width: 110px; max-width: 200px; }
+.smart-grid td input.smart-qty { width: 64px; text-align: right; }
+.smart-grid td input.smart-px { width: 72px; text-align: right; }
+.smart-grid td input[type="date"] { width: 126px; }
+.smart-grid td .smart-pv { display: inline-block; min-width: 150px; max-width: 260px; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+.smart-grid td .smart-other { color: var(--warn); }
+.smart-grid tr.smart-sent td { color: var(--fg3); }
+.smart-res-refused, .smart-res-error, .smart-res-lost { color: var(--down); }
+.smart-res-stale, .smart-res-confirm, .smart-res-sending { color: var(--warn); }
+.smart-res-skipped, .smart-res-stopped { color: var(--fg3); }
+.smart-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 4px; }
+.smart-status { min-height: 16px; margin: 2px 0 6px; font-family: var(--mono); font-size: 11.5px; color: var(--fg3); }
+.smart-status.err { color: var(--down); }
+.smart-status.ok { color: var(--up); }
+.smart-detail h2 small { text-transform: none; }
+.smart-confirm ol { margin: 6px 0 8px 20px; padding: 0; font-family: var(--mono); font-size: 11.5px; }
+.smart-confirm li { margin: 5px 0; }
+.smart-confirm li .muted { font-size: 11px; }
+.smart-page .error-box, .smart-dialog .error-box { border-left: 3px solid var(--down); padding: 4px 8px; margin: 4px 0; background: var(--panel-2); font-size: 11.5px; }
+.smart-page .warn-box, .smart-page .amber-box, .smart-dialog .warn-box, .smart-dialog .amber-box { border-left: 3px solid var(--warn); padding: 4px 8px; margin: 4px 0; background: var(--panel-2); font-size: 11.5px; }
+.smart-page .blue-box, .smart-dialog .blue-box { border-left: 3px solid var(--blue); padding: 4px 8px; margin: 4px 0; background: var(--panel-2); font-size: 11.5px; }
+.smart-page .pv-msg, .smart-dialog .pv-msg { font-family: var(--mono); font-size: 11px; }

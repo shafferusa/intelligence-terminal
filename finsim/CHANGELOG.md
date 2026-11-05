@@ -3,6 +3,74 @@
 One plain-English line per change, compiled by the WP-15 integration from `docs/BUILD_LOG.md` (every package's line) and
 the resolutions in `docs/design_proposals/BUILD_NOTES.md`.  Newest first.  Versions are `finsim.terminal.VERSION`.
 
+## 1.0.7.2 (built 2026-11-05; the Smart Ticket: type what you want to trade, several orders and options in one instruction; option chains fetched in parallel; cancel many orders at once)
+
+**The Smart Ticket** (your "allow me to send the app instructions on what i want to do then it autofills (so many tickets on one and allow options on same ticket etc.)")
+
+- A new page, Smart Ticket: in the sidebar after Watchlists, or Ctrl+F9 from anywhere. Type what you want to trade in your own words, for example "buy 200 ACME limit 225, sell 2 ACME Dec 18 2026 240 calls, and buy 50 WIDG at market in the Fund book", and press Enter (or Parse). FinSim stages one order per instruction, each with its book, account, side, quantity, contract, order type, prices and time in force. The text is read only when you press Enter or Parse, never while you type.
+- It reads your words with a fixed grammar, not a language model and not a guess: the same words with the same positions and chains always give the same ticket. Words it could not read are underlined and block the ticket until you change them.
+- Every field FinSim filled in for you is flagged on its order. A red flag blocks that order (for example an expiry or a strike that is not listed: FinSim never snaps to a near one, it offers the nearest listed ones). An amber flag means look before sending (a side read from your position, a year it assumed, a price taken from the quote, an order going to another book than the one selected). A grey one says how the words were read. Click a flag for its text, its alternatives (picking one rewrites those words in the box and reads the text again; nothing is applied by itself) and its action (look a symbol up, load a chain, or open the product's own ticket).
+- What you can write: buy, sell, short, cover and buy / sell to open / close; quantities such as 200, 1.5k, all and half; market, limit, stop, stop limit and trailing stops; "at the bid / ask / mid"; day, gtc, gtd and next session; options as "ACME Dec 18 2026 240 call", "ACME 240c 12/18/26" or an OCC symbol; futures as "ES Mar" or "front ES"; several orders joined by commas, "and", semicolons or new lines; a book or an account for one order or for the whole text ("in the Fund book: ..."); and the strategy words call / put spread, straddle, strangle, iron condor, call / put condor, iron butterfly, butterfly, calendar, covered call, buy write, collar and "roll ... to ...". The page shows examples, and docs/SMART_TICKET.md has the whole grammar.
+- Sides follow your positions: "sell" an option you hold sells to close, "sell" one you do not hold sells to open (amber: its margin is in the preview), "buy" shares you are short covers them. A sale beyond what is free (net of working sells, covered calls and lent shares) offers to sell the free quantity, or to sell it and short the rest. A side you typed explicitly (short, cover, bto, sto, btc, stc) is never changed. "all" and "half" close a position and are refused when they would add to it. Reading the same text again after an order went shows that order as sent, never as a new one.
+- Options on one name in one instruction ("as a package", a spread, a straddle, a condor, a roll ...) are one all-or-none order: every leg fills from the same Cboe observation at its executable bid / ask, or nothing fills. There is no net limit on a combination in this version: a limit on one of its legs, or a price typed on a strategy, a roll or a collar, is refused (never dropped), with the choice of dropping the limits or sending the legs as separate orders. Shares with their options on the same name (a covered call or buy write that buys the shares, "as a package") go in sequence: the shares first, then the options are released in proportion as the shares fill, all of them once the shares have filled.
+- The server previews each staged order and combination with the same checks as the order ticket (funds, margin, locates, compliance), again after each edit and every 15 seconds while the page is open. You can change the side, quantity, type, prices, time in force and GTD date in place, or move one order to the order ticket of its account.
+- Nothing is sent until you confirm. Submit selected (or Ctrl+Shift+Enter) opens a confirm that lists every order in words with its book (saying so when it is not the selected book) and the server's figures; Back is focused, and only "Send N orders" sends. The orders go one at a time, in order, each after a fresh preview, and the first refusal stops the rest. A price that moved shows what changed, with Accept and continue / Skip / Stop; a large order asks for your confirmation again. An order sent twice (a double click, a reload, a lost answer) is recognised as the order already placed and never placed again.
+- The draft (text, edits, results) stays in this browser until every selected order is sent. FX, bonds, OTC and private names keep their own tickets: the Smart Ticket offers to open them, prefilled.
+- A Smart Ticket order is an ordinary order: it shows on Pending Trades and is cancelled or changed there. A combination reads "your own legs (Smart Ticket)" on Pending Trades and in the order drawer.
+
+**Cancel many orders at once**
+
+- Pending Trades has a tick box on each order you can cancel, "Cancel selected (N)" and "Cancel all open in" the selected book (every book when all books are shown). Both list what will be cancelled first, including the legs that go with an all-or-none package or with the shares of a sequential one, and cancel only after you confirm. The whole list is checked before anything is cancelled; an order that ended meanwhile is reported as already ended, and a refused cancel with its reason.
+- The Smart Ticket has "Cancel what this ticket sent": the open orders this ticket placed, listed and confirmed the same way.
+
+**Option chains** (the stale chains of 2026-11-04)
+
+- Option chains now download up to three at a time instead of one after another, so the routine 90-second refreshes of the chains kept live no longer drift past the 5-minute freshness limit. The files are still read one at a time, so memory use stays as in 1.0.7.1.
+- A chain you ask for (an order ticket on an option, the instrument page, the hedge panel) goes ahead of those refreshes, and a chain with a working option order next. An order ticket on an option you already hold asks for its chain first too.
+- A chain cell no longer loses a contract that Cboe's file lists with a market. When Cboe lists the same contract twice, the quoted entry is kept. When two roots list the same expiry, strike and right (an index's weekly root, an adjusted series), the standard root is shown first; if it has no market and the other root does, the quoted contract takes the cell with its root named, and the other is listed with the cell. The chain is now the same whatever order Cboe's file has.
+- The chain head says when some strikes list only a call or only a put in Cboe's file, so a blank side is the file's and not a lost leg.
+
+**Short sales of a name never quoted**
+
+- A short-sale preview of a name FinSim had not quoted yet was refused for "no borrow" without fetching the quote, so that short could never be previewed. That refusal now asks for the quote, and the ticket's next preview, a few seconds later, locates the borrow on it.
+
+**Sequential packages**
+
+- A sequential package (shares first, then their options or hedges) now releases each waiting leg in whole numbers of its own quantity: floor(shares filled x the leg's quantity / the shares' quantity), so every leg is released in full once the shares have filled. Before, an uneven ratio such as 1 call for 300 shares could leave the last contract waiting. This applies to the hedge panel's packages as well; nothing changes until a package's shares fill.
+
+**Display fixes**
+
+- Single-name CDS (the 1.0.7 verification items): the dealing quote reads the level you deal at and its rule ("mid ... = model ... + your negotiated basis ..." or "you confirmed dealing at the model") with 2 decimals, no longer "MODEL mid" with 4; jump to default is computed from the value now, like the value column and the contract drawer; the bucket column is the bucket of the mid (the model's own bucket is in the cell's title); a risk block whose contracts cannot be valued now reads "unavailable" instead of zeros, and partial totals say which contracts they leave out.
+- FX: a USD rate is written "USD per GBP" instead of "USD/GBP"; an FX forward's drawer names the model it was priced with (the term curves, or the older rate for a forward booked before 1.0.6.1); an initial margin taken from an assumed table is labelled assumed on older forwards and OTC options too; Completed Trades shows an FX forward's settle date as its value date, not its trade date.
+
+**Keys**
+
+- Ctrl+F9 opens the Smart Ticket; Ctrl+Shift+Enter submits the selected orders there, always through the confirm. Both can be changed in Settings > Keyboard, which now lists 76 actions. The order ticket's keys never act on the Smart Ticket page.
+
+**Installing 1.0.7.2**
+
+- It changes no order, position or setting, and adds no table or setting to the database, so going back to 1.0.7.1 needs no restore (1.0.7.1 shows a Smart Ticket combination as "custom").
+
+**Tests**
+
+- Suites on the 1.0.7.2 build, one interpreter after the other: py-3.12 and py-3.14 each ran 1329 tests in 88 files with 0 failures, 0 errors, 0 skips and 0 ResourceWarnings: 1.0.7.1's 1207 tests plus 122 new ones, in six new files (chain fetching, the 1.0.7.2 fixes, the Smart Ticket's grammar, its reading with the proof that it has no side effects, Smart Ticket orders and combinations end to end, mass cancel) and in seven existing ones.
+- The Smart Ticket's reading is proven free of side effects over 280 instructions on invented names: nothing is written, fetched, subscribed, previewed or marked, and the chain and quote caches do not move. A 20-order instruction is read in about 9-13 ms on this laptop (the test's limit is 300 ms).
+- In a headless browser, a three-order instruction is typed: nothing is sent before the confirm, the orders go one at a time, and the run stops at a large order's confirmation.
+- An adversarial review tried to make the Smart Ticket read an instruction into an order you did not write, send twice or without the confirm, or break the chain fixes. Its 19 findings are fixed and their 26 reproductions pass on both interpreters; the suite gained 5 tests and 20 instructions for them.
+
+**Known limits**
+
+- No net limit on an all-or-none combination yet: each leg fills at its executable bid / ask.
+- No funding check across the orders of one Smart Ticket: each order is previewed and funded on its own.
+- An instruction for several books places the same quantity in each, with no allocation.
+- A month without a day ("Dec 2026") needs the chain in memory and resolves only when that month lists one expiry. An option leg of a strategy on a name with two roots must be typed as OCC symbols in parentheses.
+
+**Not in this release**
+
+- One-cancels-other orders and brackets, hard limits, financing a purchase at 50 % initial margin in one step, saved instructions, immediate-or-cancel and fill-or-kill, futures spreads, algorithms, building combinations by clicking the chain, and block allocation.
+- The remaining 1.0.6.1 items (telling a lifecycle fill from a restart loss in the OTC booking check, the Cash page's "unfunded" before a start date, the forward delivery check, the USD scenario on nominal amounts, the EUR OIS spread row) and the CDS production-input report item, which is outside FinSim.
+- "Option chains kept live" keeps its maximum of 24.
+
 ## 1.0.7.1 (built 2026-11-03; 12 option chains kept live instead of 2, and the Autofill fill mode)
 
 **Option chains kept live** (your "raise the option-chain limit")

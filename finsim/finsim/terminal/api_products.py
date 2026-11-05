@@ -15,10 +15,24 @@ Conventions
 - Routes of a desk whose module is not merged (prime WP-07, swaps WP-17 / WP-26, private WP-19, private credit WP-21,
   lifetimes WP-23) answer 501 NOT_BUILT with the package id; the handlers below are written against the documented
   module names so they come alive when those packages land (``getattr`` guarded, never a fake number meanwhile).
+- 1.0.7.2 ``POST /api/orders`` with a CUSTOM package (the Smart Ticket's combinations, ``strategies._custom_spec``): before the command
+  each OCC leg is listed in the master and its chain quote recorded, exactly as a single option order's contract
+  (``_materialise_option``: only what the cached chain lists), so an all-or-none package whose legs are executable fills at the submit
+  from that one chain observation; a leg that cannot be listed is left to the command, which refuses it (NOT_LISTED ...) and records it.
+- 1.0.7.2 ``POST /api/orders/cancel[?book=P]`` (mass cancel; a request id is the batch id, 8-60 characters): body ``{order_ids: [1..500
+  distinct ids], reason?: <= 120 characters, default "cancelled by the owner"}``.  Everything is checked BEFORE the first cancel: 400
+  BAD_REQUEST (the shape), 400 BAD_REQUEST_ID (the batch id), 404 NOT_FOUND ``{unknown}``, 409 BOOK_MISMATCH ``{orders, selected}`` when
+  ``?book=`` is given and an order's account is in another book.  Then, in the given order, one ``order.cancel`` command per target,
+  never in parallel, request id ``<batch>:<order or package id>``: an order of an all-or-none package cancels its package once (its
+  other listed legs are reported with it), any other order itself (a primary's unfilled legs follow it; a listed leg that ended with
+  its primary in this batch is reported with it, no command of its own).  200 ``{batch_id, requested, cancelled: [{order_id, status,
+  package_id?, with?}], skipped: [{order_id, code, message}] (NOT_OPEN: it had already ended), failed: [{order_id, code, message, http}],
+  replayed}``; ``replayed`` (and ``X-Replayed: 1``) when every accepted cancel was a replay of this batch - nothing is cancelled twice.
 """
 from __future__ import annotations
 
 import json
+import re
 from decimal import Decimal
 from typing import Dict, List, Optional
 
@@ -29,7 +43,7 @@ from .accounting import ScopeError
 from .api import (ApiError, MAX_QUOTE_IDS, NOT_REJECTIONS, NotBuilt, NotFound, PACKAGES, RETRY_MS, Request, mark_dict, need, ok_or_raise, quote_dict,
                   run_command, OPEN_ORDER_STATUSES)
 from .api_views import _account_or_404, account_row, order_full
-from .commands import ConflictError, Result
+from .commands import Command, ConflictError, RejectError, Result
 from .instruments import EQUITY_KINDS, parse_futures_id
 from .quotes.cache import PRIORITY_RANK
 
@@ -59,6 +73,13 @@ BROWSE_TTL_S = 1800             # a listed row's BROWSE subscription lives 30 mi
 #: what a list row's quote carries (the grid's price, chg %, bid / ask, volume and freshness chip): no bars_tail / bar / inputs / sizes
 COMPACT_QUOTE_FIELDS = ("last", "bid", "ask", "mid", "prev_close", "day_volume", "quote_time", "fetched_at", "delay_s", "delay_label", "quality",
                         "source", "provider", "method", "error")
+#: 1.0.7.2 mass cancel (``POST /api/orders/cancel``): at most 500 orders a batch; the batch id leaves room for ":<order or package id>"
+#: inside the 80 characters of a request id (commands.RID_RE)
+CANCEL_BATCH_MAX = 500
+CANCEL_BATCH_ID_RE = re.compile(r"^[A-Za-z0-9:_.-]{8,60}$")
+CANCEL_REASON_MAX = 120
+CANCEL_REASON_DEFAULT = "cancelled by the owner"
+CANCEL_LIVE_STATUSES = ("WORKING", "PARTIAL", "SUSPENDED", "WAITING_PARENT")      # what order.cancel accepts (orders_rules.LIVE_STATUSES)
 
 
 def _inst_or_404(rt, iid: str):
@@ -323,6 +344,62 @@ def _materialise_option(rt, iid) -> None:
     if row is not None:
         from .quotes.cache import record_from_chain_row
         cache.put(record_from_chain_row(inst, snap, row))
+
+
+#: keys of an order body that never change the order itself: the preview it was checked against, the large-order confirmation and the
+#: Smart Ticket's note of the words typed
+RESEND_KEYS = ("preview_id", "confirm_large", "smart")
+
+
+def _resend_payload(rt, request_id: Optional[str], payload: dict) -> dict:
+    """1.0.7.2 review (R1): a resend of an order under its OWN request id whose body differs from the stored command only in
+    ``RESEND_KEYS`` is the same order - every send of the Smart Ticket (and the ticket's PREVIEW_STALE / CONFIRM_REQUIRED resends) takes a
+    fresh preview first, so its ``preview_id`` always differs - and is answered as the replay of the stored command (X-Replayed, the
+    order that was placed), never 409 REQUEST_ID_REUSED for an order that is working.  Any other difference (side, quantity, price,
+    account, legs ...) keeps the stored payload apart and is still REQUEST_ID_REUSED.  Read only; the command bus decides."""
+    rid = str(request_id or "")
+    if not rid:
+        return payload
+    try:
+        with rt.db.reader() as conn:
+            row = conn.execute("SELECT kind, payload_json FROM commands WHERE request_id=?", (rid,)).fetchone()
+    except Exception:   # noqa: BLE001 - no stored command can be read: the bus answers as before
+        return payload
+    if row is None or row["kind"] != "order.submit":
+        return payload
+    try:
+        from .db import canonical_json
+        stored = json.loads(row["payload_json"] or "{}")
+        now = json.loads(canonical_json(payload))
+    except (TypeError, ValueError):
+        return payload
+    if not isinstance(stored, dict) or not isinstance(now, dict):
+        return payload
+    same = {k: v for k, v in stored.items() if k not in RESEND_KEYS} == {k: v for k, v in now.items() if k not in RESEND_KEYS}
+    return stored if same else payload
+
+
+def _materialise_custom_legs(rt, payload: dict) -> None:
+    """1.0.7.2: the option legs of a CUSTOM package (a Smart Ticket combination) are listed and their chain quotes recorded BEFORE the
+    command, as a single option order's contract is (``_materialise_option``: only a contract the cached chain lists), so an
+    all-or-none package whose legs are executable fills at the submit from that one observation instead of resting until the next
+    chain refresh.  Template packages carry no legs (unchanged).  A leg that cannot be listed (not on the cached chain, an unknown
+    underlying) is left to the command, whose refusal names it (NOT_LISTED / INSTRUMENT_UNKNOWN) and is recorded as a rejection."""
+    pk = payload.get("package")
+    mod = getattr(rt, "strategies", None)
+    if not isinstance(pk, dict) or mod is None or not hasattr(mod, "CUSTOM") or str(pk.get("strategy_key") or "").strip().upper() != mod.CUSTOM:
+        return
+    legs = pk.get("legs")
+    if not isinstance(legs, list) or not mod.CUSTOM_MIN_LEGS <= len(legs) <= mod.CUSTOM_MAX_LEGS:
+        return                                               # the command refuses the leg count (LEGS): nothing to prepare
+    for leg in legs:
+        iid = leg.get("instrument_id") if isinstance(leg, dict) else None
+        if not isinstance(iid, str) or not iid.strip():
+            continue
+        try:
+            _materialise_option(rt, iid)
+        except RejectError:
+            continue
 
 
 def markets_view(req: Request, aid: str, tab: Optional[str]) -> dict:
@@ -758,6 +835,8 @@ def register_routes(r) -> None:
         payload.pop("request_id", None)
         book_guard(req, payload.get("account_id"))
         _materialise_option(rt, payload.get("instrument_id"))
+        _materialise_custom_legs(rt, payload)
+        payload = _resend_payload(rt, req.request_id, payload)      # R1: the same order resent with a fresh preview is a replay
         res = run_command(req, "order.submit", payload)
         if res.ok:
             body = res.body if isinstance(res.body, dict) else {}
@@ -791,6 +870,143 @@ def register_routes(r) -> None:
         body = ok_or_raise(res)
         with rt.db.reader() as conn:
             return 200, {"order": order_full(rt, conn, oid, with_events=True), "result": body}, _replay(res)
+
+    def orders_cancel_batch(req: Request):
+        """1.0.7.2 mass cancel (module docstring): validate the whole batch, then one ``order.cancel`` per target in the given order."""
+        rt = req.rt
+        need(rt, "orders")
+        if "order.cancel" not in rt.bus.kinds():
+            raise NotBuilt(PACKAGES.get("orders", "?"), "orders", "command order.cancel has no handler in this build")
+        batch = str(req.request_id or "")
+        if not CANCEL_BATCH_ID_RE.match(batch):
+            raise ApiError(400, "BAD_REQUEST_ID", "the batch id (request_id) must be 8 to 60 characters of A-Z a-z 0-9 : _ . - (each order's cancel "
+                                                  "adds ':' and its id, 80 characters at most)", {"request_id": batch, "max": 60})
+        body = req.body or {}
+        ids = body.get("order_ids")
+        if not isinstance(ids, list) or not 1 <= len(ids) <= CANCEL_BATCH_MAX:
+            raise ApiError(400, "BAD_REQUEST", f"order_ids must be a list of 1 to {CANCEL_BATCH_MAX} order ids",
+                           {"max": CANCEL_BATCH_MAX, "got": len(ids) if isinstance(ids, list) else None})
+        if any(not isinstance(i, str) or not i.strip() for i in ids):
+            raise ApiError(400, "BAD_REQUEST", "every entry of order_ids must be an order id (text)")
+        ids = [i.strip() for i in ids]
+        seen, dup = set(), []
+        for i in ids:
+            if i in seen and i not in dup:
+                dup.append(i)
+            seen.add(i)
+        if dup:
+            raise ApiError(400, "BAD_REQUEST", f"order_ids names {', '.join(dup[:5])} more than once: name each order once", {"duplicates": dup})
+        reason = body.get("reason")
+        if reason is not None and not isinstance(reason, str):
+            raise ApiError(400, "BAD_REQUEST", "reason must be text")
+        reason = (reason or "").strip() or CANCEL_REASON_DEFAULT
+        if len(reason) > CANCEL_REASON_MAX:
+            raise ApiError(400, "BAD_REQUEST", f"reason is at most {CANCEL_REASON_MAX} characters, got {len(reason)}", {"max": CANCEL_REASON_MAX})
+        sel = (req.q("book") or "").strip().upper()
+        with rt.db.reader() as conn:              # ONE read of every order before anything is cancelled
+            rows = {r["order_id"]: dict(r) for r in conn.execute(
+                f"SELECT order_id, account_id, status, package_id, fill_mode, parent_order_id FROM orders WHERE order_id IN ({','.join('?' for _ in ids)})",
+                ids).fetchall()}
+            # 1.0.7.2 review (R3): the open orders that end WITH a listed one (a waiting leg of a listed primary), reported in the answer too
+            kids = {r["order_id"]: dict(r) for r in conn.execute(
+                f"SELECT order_id, parent_order_id, package_id, status FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)})"
+                f" AND status IN ({','.join('?' for _ in CANCEL_LIVE_STATUSES)})", list(ids) + list(CANCEL_LIVE_STATUSES)).fetchall()}
+            names = {b.code: b.name for b in _books.books(conn)} if sel else {}
+        unknown = [i for i in ids if i not in rows]
+        if unknown:
+            raise NotFound(f"{len(unknown)} of the orders do not exist: {', '.join(unknown[:10])}", {"unknown": unknown})
+        if sel:
+            def book_of(aid: str) -> Optional[str]:
+                try:
+                    return _books.book_code_of(_books.split_account_id(aid)[0])
+                except (ValueError, AttributeError):
+                    return None
+            other = [i for i in ids if book_of(rows[i]["account_id"]) != sel]
+            if other:
+                raise ApiError(409, "BOOK_MISMATCH", f"{len(other)} of the orders belong to another book than the selected {names.get(sel, sel)}: switch books "
+                                                     "or cancel them from their own book", {"orders": other, "selected": sel})
+        # the targets, in the given order: an all-or-none package once (at its first listed leg), every other order itself
+        targets: List[dict] = []
+        by_package: Dict[str, dict] = {}
+        for oid in ids:
+            r = rows[oid]
+            pid = r["package_id"]
+            if pid and r["fill_mode"] == "AON":
+                t = by_package.get(pid)
+                if t is None:
+                    t = by_package[pid] = {"key": pid, "payload": {"package_id": pid, "reason": reason}, "orders": [oid], "package_id": pid}
+                    targets.append(t)
+                else:
+                    t["orders"].append(oid)
+                continue
+            targets.append({"key": oid, "payload": {"order_id": oid, "reason": reason}, "orders": [oid], "package_id": pid, "parent": r["parent_order_id"]})
+        cancelled: List[dict] = []
+        skipped: List[dict] = []
+        failed: List[dict] = []
+        results: List[Result] = []
+        done = set()                                # orders this batch cancelled with a command of their own
+        reported = set()                            # every order is in exactly one list of the answer, once
+
+        def report(lst: List[dict], entry: dict) -> None:
+            if entry["order_id"] not in reported:
+                reported.add(entry["order_id"])
+                lst.append(entry)
+        for t in targets:
+            oid = t["key"]
+            if all(x in reported for x in t["orders"]):
+                continue                            # it already ended with an order listed before it (and is said there)
+            if t.get("parent") and t["parent"] in done:
+                # a leg whose primary this batch just cancelled: it ended with it (unfilled) - no command of its own
+                with rt.db.reader() as conn:
+                    now_status = (conn.execute("SELECT status FROM orders WHERE order_id=?", (oid,)).fetchone() or {"status": None})["status"]
+                if now_status not in CANCEL_LIVE_STATUSES:
+                    if now_status == "CANCELLED":
+                        report(cancelled, dict({"order_id": oid, "status": "CANCELLED", "with": "primary", "parent_order_id": t["parent"]},
+                                               **({"package_id": t["package_id"]} if t["package_id"] else {})))
+                    else:
+                        report(skipped, {"order_id": oid, "code": "NOT_OPEN", "message": f"order {oid} is {str(now_status).lower()}: it had already ended"})
+                    continue
+            res = rt.bus.execute(Command("order.cancel", t["payload"], f"{batch}:{oid}", "ui"))
+            results.append(res)
+            if res.ok:
+                out = res.body if isinstance(res.body, dict) else {}
+                if "package_id" in t["payload"]:
+                    legs = {x.get("order_id"): x for x in (out.get("cancelled") or []) if isinstance(x, dict)}
+                    for n, leg_id in enumerate(t["orders"]):
+                        if leg_id in legs:
+                            report(cancelled, dict({"order_id": leg_id, "status": legs[leg_id].get("status") or "CANCELLED", "package_id": t["package_id"]},
+                                                   **({"with": "package"} if n else {})))
+                        else:
+                            report(skipped, {"order_id": leg_id, "code": "NOT_OPEN", "message": f"order {leg_id} had already ended"})
+                    # R3: the package's legs that were not listed ended with it: said too, so the answer counts what ended
+                    for leg_id in sorted(legs):
+                        if leg_id and leg_id not in t["orders"]:
+                            report(cancelled, {"order_id": leg_id, "status": legs[leg_id].get("status") or "CANCELLED", "package_id": t["package_id"],
+                                               "with": "package"})
+                else:
+                    done.add(oid)
+                    report(cancelled, dict({"order_id": oid, "status": (out.get("order") or {}).get("status") or "CANCELLED"},
+                                           **({"package_id": t["package_id"]} if t["package_id"] else {})))
+                    # R3: the legs that waited for this primary ended with it (unfilled): said, whether listed or not
+                    mine = sorted(k for k, r in kids.items() if r["parent_order_id"] == oid and k not in reported)
+                    if mine:
+                        with rt.db.reader() as conn:
+                            now = {r["order_id"]: r["status"] for r in conn.execute(
+                                f"SELECT order_id, status FROM orders WHERE order_id IN ({','.join('?' for _ in mine)})", mine).fetchall()}
+                        for k in mine:
+                            if now.get(k) == "CANCELLED":
+                                report(cancelled, dict({"order_id": k, "status": "CANCELLED", "with": "primary", "parent_order_id": oid},
+                                                       **({"package_id": kids[k]["package_id"]} if kids[k]["package_id"] else {})))
+            elif res.code == "NOT_OPEN":
+                for leg_id in t["orders"]:
+                    report(skipped, {"order_id": leg_id, "code": "NOT_OPEN", "message": res.message or f"order {leg_id} had already ended"})
+            else:
+                for leg_id in t["orders"]:
+                    report(failed, {"order_id": leg_id, "code": res.code or "ERROR", "message": res.message or "", "http": int(res.http)})
+        accepted = [r for r in results if r.ok]
+        replayed = bool(accepted) and all(r.replayed for r in accepted)
+        answer = {"batch_id": batch, "requested": len(ids), "cancelled": cancelled, "skipped": skipped, "failed": failed, "replayed": replayed}
+        return 200, answer, ({"X-Replayed": "1"} if replayed else {})
 
     def order_resume(req: Request):
         rt, oid = req.rt, req.params[0]
@@ -1054,6 +1270,7 @@ def register_routes(r) -> None:
     r.add("GET", r"/api/rates", rates)
     r.add("POST", r"/api/orders/preview", order_preview, mutating=False)
     r.add("POST", r"/api/orders", order_submit)
+    r.add("POST", r"/api/orders/cancel", orders_cancel_batch)        # 1.0.7.2 mass cancel (mutating: the request id is the batch id)
     r.add("GET", r"/api/orders/([^/]+)", order_get)
     r.add("DELETE", r"/api/orders/([^/]+)", order_cancel)
     r.add("POST", r"/api/orders/([^/]+)/resume", order_resume)
