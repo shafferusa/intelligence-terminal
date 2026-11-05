@@ -80,8 +80,9 @@ payment number `ENTER` `↓` `P2=` last payment number `ENTER` `↓` then `BAL=`
 **TI-84 Plus.** With the loan solved in the TVM Solver: Finance menu `9:bal(npmt)` (balance after
 payment npmt), `0:ΣPrn(p1,p2)` and `A:ΣInt(p1,p2)` (principal and interest paid in payments p1–p2).
 These read the solver's values. The BA II Plus rounds amortization results to the displayed
-decimals (4 here), so the two calculators can differ in the last digit or two: give amortization
-questions a tolerance that covers it.
+decimals (4 here), and the TI-84 functions can round too (they take an optional rounding argument,
+e.g. `bal(12,9)`), so the two calculators can differ in the last digit or two: give amortization
+questions a tolerance that covers it (about 0.05 on a six-figure balance).
 
 ## Statistics on a list of numbers
 
@@ -91,8 +92,15 @@ questions a tolerance that covers it.
 the results. `1-V`: `n`, `x̄`, `Sx` (sample standard deviation), `σx` (population), `Σx`, `Σx²`.
 `LIN`: `n`, `x̄`, `Sx`, `σx`, `ȳ`, `Sy`, `σy`, `a` (intercept), `b` (slope), `r` (correlation),
 `X'`, `Y'` (predictions: type a value at one and `CPT` the other), `Σx`, `Σx²`, `Σy`, `Σy²`, `Σxy`.
-In `1-V` the Y entries are frequencies and must be whole numbers, so probability-weighted means are
-done by hand. Sample covariance = `r` × `Sx` × `Sy`.
+In `1-V` the Y entries are frequencies and must be whole numbers. For a probability-weighted mean or
+standard deviation either work by hand, or enter whole-number frequencies proportional to the
+probabilities (probabilities 0.45/0.15/0.10/0.30 → Y = 45/15/10/30) and read `x̄` and `σx` (the
+population figure is the right one for a probability distribution). Sample covariance =
+`r` × `Sx` × `Sy`.
+
+**Using a worksheet result in arithmetic (BA II Plus).** While the value is on screen press `STO`
+and a digit (`STO` `1`); leave the worksheet with `2ND` `QUIT`; then use it with `RCL` `1`. Storing
+avoids retyping rounded displays, which can move later answers in the last decimals.
 
 **TI-84 Plus.** `STAT` `1:Edit…`, type values in `L1` (and `L2`). `STAT`, `►` to `CALC`,
 `1:1-Var Stats` (then `L1` — `2nd` `1` — `ENTER`): shows `x̄`, `Σx`, `Σx²`, `Sx`, `σx`, `n`,

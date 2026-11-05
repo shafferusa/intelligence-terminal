@@ -7,7 +7,9 @@ from a Telegram link, early in the morning, and does not read long walls of text
 to read these"). So: short paragraphs, the story kept tight, and most of the 20 minutes spent
 *doing* — the calculator walkthrough and the graded questions.
 
-**Files.** Plan: `curriculum/cfa-l1.json` (one entry per day). Page skeleton:
+**Files.** Plan: `curriculum/cfa-l1/plan.json` (one entry per day, with the verified story, worked
+numbers, walkthrough, check-question ideas, memorize cards and any `writer_notes`, which override the
+rest of the entry); `curriculum/cfa-l1.json` is its slim copy for the course page. Page skeleton:
 `curriculum/cfa-l1/template.html` (copy it; keep everything outside the content exactly). Keystrokes:
 `curriculum/cfa-l1/calculator-guide.md` (every keystroke on a page must agree with it). Output:
 `curriculum/cfa-l1/day-NN.html` (two digits). Number check: `curriculum/cfa-l1/verify/day-NN.py`.

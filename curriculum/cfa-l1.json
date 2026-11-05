@@ -1,0 +1,2492 @@
+{
+ "id": "cfa-l1",
+ "title": "CFA Math (Level I)",
+ "exam": "CFA Level I, May 2027 window (11-17 May 2027)",
+ "start_date": "2026-11-16",
+ "total_days": 90,
+ "note": "The 90-day plan for the course page (site/cfa.json). Full lesson detail: curriculum/cfa-l1/plan.json. SPEC §0e.",
+ "days": [
+  {
+   "day": 1,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Compounding: how money grows",
+   "concept": "Money invested at rate r for N periods grows to FV_N = PV(1 + r)^N because every period's interest itself earns interest.",
+   "memorize": [
+    {
+     "front": "Future value of a single sum (CFA notation)",
+     "back": "FV_N = PV × (1 + r)^N"
+    },
+    {
+     "front": "Simple interest earned over N periods",
+     "back": "Interest = PV × r × N (no interest on interest)"
+    },
+    {
+     "front": "Calculators allowed in the CFA exam room",
+     "back": "Only the TI BA II Plus (incl. BA II Plus Professional) and the HP 12C family (incl. 12C Platinum); the TI-84 is not allowed, and results earned with it are voided"
+    },
+    {
+     "front": "BA II Plus one-time setup",
+     "back": "2ND P/Y 1 ENTER 2ND QUIT; 2ND FORMAT 4 ENTER, ↓ to Chn/AOS, 2ND SET until AOS, 2ND QUIT"
+    },
+    {
+     "front": "TVM sign rule",
+     "back": "Cash paid out is negative, cash received is positive; solving for I/Y or N needs a sign change among PV, PMT and FV (else BA II Plus Error 5 / TI-84 ERR:NO SIGN CHNG)"
+    }
+   ]
+  },
+  {
+   "day": 2,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Discounting: present value and implied rate",
+   "concept": "Present value PV = FV_N / (1 + r)^N is compounding run backwards, and the same equation solves for the rate r = (FV/PV)^(1/N) − 1 or the number of periods N = ln(FV/PV)/ln(1 + r).",
+   "memorize": [
+    {
+     "front": "Present value of a single sum",
+     "back": "PV = FV_N / (1 + r)^N"
+    },
+    {
+     "front": "Discount factor for N periods at rate r",
+     "back": "DF = 1 / (1 + r)^N"
+    },
+    {
+     "front": "Implied rate from PV, FV and N",
+     "back": "r = (FV_N / PV)^(1/N) − 1"
+    },
+    {
+     "front": "Number of periods from PV, FV and r",
+     "back": "N = ln(FV_N / PV) / ln(1 + r)"
+    },
+    {
+     "front": "Rule of 72",
+     "back": "Years to double ≈ 72 / (interest rate in percent) — a mental check, not a CFA formula"
+    }
+   ]
+  },
+  {
+   "day": 3,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM1 Returns of Financial Assets and Instruments",
+   "title": "Required returns: real, nominal, after-tax",
+   "concept": "A nominal required return is the real risk-free rate plus premiums for expected inflation, default, liquidity and maturity, and real and nominal rates are linked exactly by (1 + nominal) = (1 + real)(1 + inflation).",
+   "memorize": [
+    {
+     "front": "Components of a required interest rate",
+     "back": "r = real risk-free rate + inflation premium + default risk premium + liquidity premium + maturity premium"
+    },
+    {
+     "front": "Exact link between nominal and real rates",
+     "back": "(1 + nominal rate) = (1 + real rate) × (1 + inflation rate)"
+    },
+    {
+     "front": "Real rate from nominal and inflation (exact)",
+     "back": "real = (1 + nominal) / (1 + inflation) − 1"
+    },
+    {
+     "front": "Nominal risk-free rate (approximation)",
+     "back": "nominal rf ≈ real rf + expected inflation"
+    },
+    {
+     "front": "After-tax return",
+     "back": "after-tax return = pre-tax return × (1 − tax rate)"
+    },
+    {
+     "front": "Gross vs net return",
+     "back": "Gross return: before management, custody and other administrative fees (trading costs already deducted); net return: after those fees"
+    }
+   ]
+  },
+  {
+   "day": 4,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Stated, effective and continuous rates",
+   "concept": "Compounding m times a year turns a stated annual rate r_s into a larger effective annual rate EAR = (1 + r_s/m)^m − 1, which rises toward e^(r_s) − 1 as compounding becomes continuous.",
+   "memorize": [
+    {
+     "front": "Effective annual rate from a stated annual rate compounded m times",
+     "back": "EAR = (1 + r_s/m)^m − 1"
+    },
+    {
+     "front": "Future value with m compounding periods per year",
+     "back": "FV_N = PV × (1 + r_s/m)^(m × N)"
+    },
+    {
+     "front": "Future value with continuous compounding",
+     "back": "FV_N = PV × e^(r_s × N)"
+    },
+    {
+     "front": "EAR with continuous compounding",
+     "back": "EAR = e^(r_s) − 1"
+    },
+    {
+     "front": "Continuously compounded rate from an EAR (or holding-period growth)",
+     "back": "r_cc = ln(1 + EAR)"
+    },
+    {
+     "front": "Stated annual rate from an EAR (m compounding periods)",
+     "back": "r_s = m × [(1 + EAR)^(1/m) − 1]"
+    }
+   ]
+  },
+  {
+   "day": 5,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Ordinary annuities: level payments",
+   "concept": "A level payment A at the end of each of N periods is worth PV = A[1 − (1 + r)^−N]/r today and FV = A[(1 + r)^N − 1]/r at the end, because it is just N single sums discounted or compounded and added.",
+   "memorize": [
+    {
+     "front": "PV of an ordinary annuity of A per period for N periods at r",
+     "back": "PV = A × [1 − (1 + r)^−N] / r"
+    },
+    {
+     "front": "FV of an ordinary annuity",
+     "back": "FV_N = A × [(1 + r)^N − 1] / r"
+    },
+    {
+     "front": "Ordinary annuity timing",
+     "back": "Payments at the END of each period; first payment at t = 1 (calculator END mode)"
+    },
+    {
+     "front": "Monthly payments with P/Y = 1",
+     "back": "N = years × 12; periodic rate = annual stated rate / 12"
+    }
+   ]
+  },
+  {
+   "day": 6,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Annuity due: payments in advance",
+   "concept": "When each payment comes at the start of the period, every payment is discounted one period less than in an ordinary annuity, so PV_due = PV_ordinary × (1 + r) and FV_due = FV_ordinary × (1 + r).",
+   "memorize": [
+    {
+     "front": "PV of an annuity due",
+     "back": "PV_due = A × [1 − (1 + r)^−N] / r × (1 + r)"
+    },
+    {
+     "front": "FV of an annuity due",
+     "back": "FV_due = A × [(1 + r)^N − 1] / r × (1 + r)"
+    },
+    {
+     "front": "Annuity due as a split stream",
+     "back": "PV_due = A + PV of an ordinary annuity of N − 1 payments"
+    },
+    {
+     "front": "BA II Plus: switch to annuity-due mode",
+     "back": "2ND BGN 2ND SET 2ND QUIT (shows BGN); repeat to return to END"
+    },
+    {
+     "front": "Does 2ND CLR TVM reset BGN/END?",
+     "back": "No — clearing TVM leaves BGN/END and P/Y unchanged"
+    }
+   ]
+  },
+  {
+   "day": 7,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 1 review: growth and discounting",
+   "concept": "Review of Days 1–6: compounding and discounting single sums, required and real returns, effective and continuous rates, ordinary annuities and annuities due.",
+   "memorize": [],
+   "review_of": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ]
+  },
+  {
+   "day": 8,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Perpetuities: payments forever",
+   "concept": "A level payment A received every period forever, starting one period from now, is worth PV = A/r, because the infinite sum of discounted payments converges; a perpetuity that starts later is valued at t − 1 and discounted back as a single sum.",
+   "memorize": [
+    {
+     "front": "PV of a level perpetuity, first payment one period from now",
+     "back": "PV = A / r"
+    },
+    {
+     "front": "Implied rate of a perpetuity",
+     "back": "r = A / PV"
+    },
+    {
+     "front": "PV of a perpetuity whose first payment is at time t",
+     "back": "PV_0 = (A / r) / (1 + r)^(t − 1)"
+    },
+    {
+     "front": "PV of a growing perpetuity (preview)",
+     "back": "PV = A_1 / (r − g), valid only if r > g"
+    },
+    {
+     "front": "Real-estate capitalization rate (low priority)",
+     "back": "Cap rate = NOI / property value, so value = NOI / cap rate (a perpetuity with A = NOI)"
+    }
+   ]
+  },
+  {
+   "day": 9,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Amortizing loans: where each payment goes",
+   "concept": "Each level loan payment first covers interest on the balance outstanding and only the remainder repays principal, so early payments are mostly interest and the balance at any time is the PV of the remaining payments.",
+   "memorize": [
+    {
+     "front": "Level payment on an amortizing loan",
+     "back": "A = PV × r / [1 − (1 + r)^−N]"
+    },
+    {
+     "front": "Interest part of payment t",
+     "back": "Interest_t = r × Balance_(t−1)"
+    },
+    {
+     "front": "Principal part of payment t",
+     "back": "Principal_t = A − Interest_t"
+    },
+    {
+     "front": "Outstanding balance after k payments",
+     "back": "Balance_k = PV of the remaining N − k payments at the loan rate"
+    },
+    {
+     "front": "BA II Plus amortization worksheet",
+     "back": "Solve the loan in TVM first, then 2ND AMORT: P1, P2, ↓ BAL, ↓ PRN, ↓ INT"
+    }
+   ]
+  },
+  {
+   "day": 10,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM4 The Time Value of Money in Finance",
+   "title": "Uneven cash flows: NPV and IRR",
+   "concept": "An uneven stream is valued by discounting each cash flow separately and adding (cash-flow additivity), and its internal rate of return is the single discount rate that makes that net present value zero.",
+   "memorize": [
+    {
+     "front": "Net present value",
+     "back": "NPV = Σ_(t=0..N) CF_t / (1 + r)^t"
+    },
+    {
+     "front": "Internal rate of return",
+     "back": "IRR is the r that makes Σ CF_t / (1 + IRR)^t = 0"
+    },
+    {
+     "front": "Cash-flow additivity principle",
+     "back": "PVs of cash flows measured at the same point in time can be added"
+    },
+    {
+     "front": "TI-84 npv syntax",
+     "back": "npv(rate in %, CF0, {CF1, CF2, …}[, {freq1, freq2, …}]); irr(CF0, {CF1, CF2, …}[, {freqs}]) returns a percent"
+    },
+    {
+     "front": "BA II Plus CF worksheet",
+     "back": "CF 2ND CLR WORK; CFo ENTER ↓ C01 ENTER ↓ F01 ENTER ↓ …; NPV I ENTER ↓ CPT; IRR CPT"
+    }
+   ]
+  },
+  {
+   "day": 11,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM1 Returns of Financial Assets and Instruments (annualizing: LM2 Types of Financial Returns)",
+   "title": "Holding-period returns and chain-linking",
+   "concept": "Returns over successive periods compound by multiplying growth factors, (1 + R_1)(1 + R_2)…(1 + R_n) − 1, which is why a 50% loss needs a 100% gain to recover and why a period return is annualized as (1 + R_period)^c − 1.",
+   "memorize": [
+    {
+     "front": "Holding-period return",
+     "back": "HPR = (P_1 − P_0 + D_1) / P_0"
+    },
+    {
+     "front": "Chain-linking period returns",
+     "back": "R_total = (1 + R_1)(1 + R_2)…(1 + R_n) − 1"
+    },
+    {
+     "front": "Annualizing a return earned over a period (c periods per year)",
+     "back": "R_annual = (1 + R_period)^c − 1 (for a return over several years, c = 1/years)"
+    },
+    {
+     "front": "Gain needed to recover a loss L",
+     "back": "Required gain = L / (1 − L) (a 50% loss needs +100%)"
+    }
+   ]
+  },
+  {
+   "day": 12,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM2 Types of Financial Returns",
+   "title": "Arithmetic, geometric and harmonic means",
+   "concept": "The arithmetic mean answers 'what is a typical one-period return', the geometric mean answers 'what constant return gives the same ending wealth', and the harmonic mean gives the average cost per share when the same amount of money is invested each period.",
+   "memorize": [
+    {
+     "front": "Arithmetic mean return",
+     "back": "R̄ = (R_1 + R_2 + … + R_n) / n"
+    },
+    {
+     "front": "Geometric mean return",
+     "back": "R_G = [(1 + R_1)(1 + R_2)…(1 + R_n)]^(1/n) − 1"
+    },
+    {
+     "front": "Harmonic mean",
+     "back": "X̄_H = n / Σ(1 / X_i) (average cost per share when equal money is invested each period)"
+    },
+    {
+     "front": "Order of the three means (positive values, not all equal)",
+     "back": "harmonic < geometric < arithmetic"
+    },
+    {
+     "front": "Approximate link between geometric and arithmetic means",
+     "back": "R_G ≈ R̄ − σ²/2 (rough; poor when swings are large)"
+    }
+   ]
+  },
+  {
+   "day": 13,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM3 Benchmarking Returns",
+   "title": "Money-weighted vs time-weighted returns",
+   "concept": "The money-weighted return is the IRR of the investor's own cash flows and so rewards or punishes the timing of deposits and withdrawals, while the time-weighted return chain-links sub-period returns and so measures the manager regardless of those flows.",
+   "memorize": [
+    {
+     "front": "Money-weighted return",
+     "back": "The IRR of the investor's cash flows: Σ CF_t / (1 + MWR)^t = 0"
+    },
+    {
+     "front": "Time-weighted return over n sub-periods",
+     "back": "TWR = (1 + HPR_1)(1 + HPR_2)…(1 + HPR_n) − 1, annualized geometrically"
+    },
+    {
+     "front": "When is TWR the right measure?",
+     "back": "When the manager does not control the timing of external cash flows (manager evaluation)"
+    },
+    {
+     "front": "Effect of timing on MWR",
+     "back": "MWR > TWR if more money is invested just before strong returns; MWR < TWR if before weak returns"
+    }
+   ]
+  },
+  {
+   "day": 14,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 2 review: streams of cash and returns",
+   "concept": "Review of Days 8–13: perpetuities, amortization, NPV and IRR, holding-period and chain-linked returns, the three means, money- vs time-weighted returns.",
+   "memorize": [],
+   "review_of": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ]
+  },
+  {
+   "day": 15,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Fixed-Income Bond Valuation: Prices and Yields",
+   "title": "Pricing a bond from its yield",
+   "concept": "A bond's price is the PV of its coupons (an annuity) plus the PV of its principal (a single sum), all discounted at the market yield, so the price falls when the yield rises and sits above par when the coupon rate exceeds the yield.",
+   "memorize": [
+    {
+     "front": "Price of a fixed-rate bond",
+     "back": "PV = PMT/(1 + r)^1 + PMT/(1 + r)^2 + … + (PMT + FV)/(1 + r)^N"
+    },
+    {
+     "front": "Price of a zero-coupon bond",
+     "back": "PV = FV / (1 + r)^N"
+    },
+    {
+     "front": "Semiannual-pay bond inputs (P/Y = 1)",
+     "back": "PMT = annual coupon/2, rate = annual yield/2, N = 2 × years"
+    },
+    {
+     "front": "Price vs par",
+     "back": "Coupon rate > yield → premium; coupon rate < yield → discount; equal → par"
+    }
+   ]
+  },
+  {
+   "day": 16,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield and Yield Spread Measures for Fixed-Rate Bonds",
+   "title": "Yield to maturity, call and worst",
+   "concept": "The yield to maturity is the IRR of buying a bond at its price and holding it to maturity; current yield, yield-to-call and yield-to-worst answer narrower questions, and yields can be compared only after converting them to the same periodicity.",
+   "memorize": [
+    {
+     "front": "Current yield",
+     "back": "Current yield = annual coupon / flat price"
+    },
+    {
+     "front": "Yield-to-call inputs",
+     "back": "N = periods to the call date, FV = call price, PV = price, PMT = coupon; solve for r"
+    },
+    {
+     "front": "Yield-to-worst",
+     "back": "The lowest of the YTM and the yields to every call date"
+    },
+    {
+     "front": "Converting yields between periodicities",
+     "back": "(1 + APR_m/m)^m = (1 + APR_n/n)^n; semiannual-bond basis → annual-pay: (1 + r_s/2)^2 = 1 + r_annual"
+    },
+    {
+     "front": "YTM's three assumptions",
+     "back": "Held to maturity; all coupons and principal paid on time; coupons reinvested at the YTM"
+    },
+    {
+     "front": "Simple yield",
+     "back": "Simple yield = (annual coupon + straight-line amortized gain, or − amortized loss, per year) / flat price"
+    }
+   ]
+  },
+  {
+   "day": 17,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Fixed-Income Bond Valuation: Prices and Yields",
+   "title": "Full price, flat price and accrued interest",
+   "concept": "Between coupon dates a buyer pays the full price — the bond's PV at the last coupon date moved forward to settlement, PV × (1 + r)^(t/T) — which splits into accrued interest owed to the seller for the days since the last coupon and the quoted flat price.",
+   "memorize": [
+    {
+     "front": "Full price of a bond between coupon dates",
+     "back": "PV_full = PV_last coupon date × (1 + r)^(t/T)"
+    },
+    {
+     "front": "Accrued interest",
+     "back": "AI = (t / T) × PMT (t = days since last coupon, T = days in the coupon period)"
+    },
+    {
+     "front": "Flat price",
+     "back": "PV_flat = PV_full − AI"
+    },
+    {
+     "front": "Day-count conventions",
+     "back": "Government bonds: actual/actual; corporate bonds: 30/360"
+    },
+    {
+     "front": "BA II Plus BOND worksheet output",
+     "back": "PRI = flat price per 100 of par; full price = PRI + AI"
+    }
+   ]
+  },
+  {
+   "day": 18,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield and Yield Spread Measures for Floating-Rate Instruments (repos: Fixed-Income Markets for Corporate Issuers)",
+   "title": "Money-market yields and repos",
+   "concept": "Money-market rates are quoted on a discount basis (on face value) or an add-on basis (on price) over 360- or 365-day years, so they must be converted to a common basis such as the 365-day add-on bond-equivalent yield before they are compared.",
+   "memorize": [
+    {
+     "front": "Price of a money-market instrument quoted on a discount basis",
+     "back": "PV = FV × [1 − (Days/Year) × DR]"
+    },
+    {
+     "front": "Price of an add-on instrument",
+     "back": "PV = FV / [1 + (Days/Year) × AOR]"
+    },
+    {
+     "front": "Add-on rate from price",
+     "back": "AOR = (Year / Days) × (FV − PV) / PV"
+    },
+    {
+     "front": "Bond-equivalent yield",
+     "back": "A 365-day add-on rate: BEY = (365 / Days) × (FV − PV) / PV"
+    },
+    {
+     "front": "Repo interest",
+     "back": "Repo interest = principal × repo rate × (days / 360)"
+    },
+    {
+     "front": "Repo haircut",
+     "back": "Haircut = 1 − loan / collateral value, so loan = collateral value × (1 − haircut)"
+    }
+   ]
+  },
+  {
+   "day": 19,
+   "kind": "lesson",
+   "area": "Equities",
+   "module": "Equity Valuation: Concepts and Basic Tools",
+   "title": "Constant-growth dividend discount model",
+   "concept": "If dividends grow at a constant rate g forever, a share is a growing perpetuity worth V_0 = D_1/(r − g), and the same equation read backwards gives the market's implied required return r = D_1/P_0 + g or implied growth g = r − D_1/P_0.",
+   "memorize": [
+    {
+     "front": "Gordon growth model",
+     "back": "V_0 = D_1 / (r − g), where D_1 = D_0 × (1 + g)"
+    },
+    {
+     "front": "Implied required return on equity",
+     "back": "r = D_1 / P_0 + g"
+    },
+    {
+     "front": "Implied dividend growth rate",
+     "back": "g = r − D_1 / P_0"
+    },
+    {
+     "front": "Value of a non-callable, non-convertible preferred share",
+     "back": "V_0 = D_p / r_p"
+    },
+    {
+     "front": "Dividend chronology",
+     "back": "Declaration date → ex-dividend date (shares bought on or after it do not get the dividend; price falls by about D) → holder-of-record date → payment date"
+    },
+    {
+     "front": "Implied growth when only D_0 and P_0 are known",
+     "back": "g = (r × P_0 − D_0) / (P_0 + D_0), from P_0 = D_0(1 + g)/(r − g)"
+    }
+   ]
+  },
+  {
+   "day": 20,
+   "kind": "lesson",
+   "area": "Equities",
+   "module": "Equity Valuation: Concepts and Basic Tools",
+   "title": "Two-stage dividend discount model",
+   "concept": "When dividends grow fast for a few years and then settle into stable growth, value = PV of the explicit dividends + PV of a Gordon terminal value V_n = D_(n+1)/(r − g_L) placed at the start of stable growth.",
+   "memorize": [
+    {
+     "front": "Two-stage DDM",
+     "back": "V_0 = Σ_(t=1..n) D_t/(1 + r)^t + [D_(n+1)/(r − g_L)]/(1 + r)^n"
+    },
+    {
+     "front": "Terminal value at the end of the high-growth stage",
+     "back": "V_n = D_(n+1) / (r − g_L), with D_(n+1) = D_n × (1 + g_L)"
+    },
+    {
+     "front": "How many periods to discount the terminal value V_n",
+     "back": "n periods (it is a value at time n)"
+    }
+   ]
+  },
+  {
+   "day": 21,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 3 review: bonds and dividend models",
+   "concept": "Review of Days 15–20: bond prices from yields, yield measures and periodicity, full/flat price and accrued interest, money-market yields, constant-growth and two-stage dividend models.",
+   "memorize": [],
+   "review_of": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+   ]
+  },
+  {
+   "day": 22,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM3 Benchmarking Returns",
+   "title": "Index weighting: price, value, equal",
+   "concept": "An index's value and return depend on how it weights its members: a price-weighted index moves with share prices, so a stock split shrinks a company's influence and forces a new divisor, while a market-cap (value) index moves with company values and ignores splits.",
+   "memorize": [
+    {
+     "front": "Price-weighted index value",
+     "back": "Index = Σ P_i / divisor"
+    },
+    {
+     "front": "New divisor after a split",
+     "back": "Choose D_new so that Σ (post-split prices) / D_new = index value just before the split"
+    },
+    {
+     "front": "Market-cap (value) weight",
+     "back": "w_i = (P_i × Q_i) / Σ (P_j × Q_j); float-adjusted uses float shares for Q"
+    },
+    {
+     "front": "Equal weight with N stocks",
+     "back": "w_i = 1/N (must be rebalanced as prices move)"
+    },
+    {
+     "front": "Index total return vs price return",
+     "back": "Total return = price return + income (dividends) return"
+    },
+    {
+     "front": "Free float",
+     "back": "Shares outstanding − closely held shares (insiders, controlling owners, governments); float-adjusted weights use float shares"
+    }
+   ]
+  },
+  {
+   "day": 23,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM5 Statistical Characteristics of Asset Returns",
+   "title": "Median, quantiles and trimmed means",
+   "concept": "The median, quantiles and trimmed or winsorized means describe where returns sit without being dragged around by a few extreme values; the y-th percentile is found at position L_y = (n + 1)y/100 in the sorted data, interpolating between neighbours.",
+   "memorize": [
+    {
+     "front": "Location of the y-th percentile in n sorted observations",
+     "back": "L_y = (n + 1) × y / 100"
+    },
+    {
+     "front": "Interpolating a percentile at a non-integer location",
+     "back": "P = X_(below) + (L_y − whole part) × (X_(above) − X_(below))"
+    },
+    {
+     "front": "Trimmed mean",
+     "back": "Discard a stated % of the lowest and highest observations, then average the rest (a 5% trimmed mean drops the lowest 2.5% and the highest 2.5%)"
+    },
+    {
+     "front": "Winsorized mean",
+     "back": "Replace the extreme observations with the nearest retained values, then average (a 95% winsorized mean resets the bottom and top 2.5%)"
+    },
+    {
+     "front": "Interquartile range",
+     "back": "IQR = Q3 − Q1"
+    }
+   ]
+  },
+  {
+   "day": 24,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM5 Statistical Characteristics of Asset Returns",
+   "title": "Dispersion: variance, SD and downside risk",
+   "concept": "Variance and standard deviation measure how far returns typically stray from their mean (the sample version divides by n − 1), the coefficient of variation scales that risk per unit of mean return, and target downside deviation counts only the shortfalls below a chosen target.",
+   "memorize": [
+    {
+     "front": "Sample variance",
+     "back": "s² = Σ (X_i − X̄)² / (n − 1)"
+    },
+    {
+     "front": "Population variance",
+     "back": "σ² = Σ (X_i − μ)² / N"
+    },
+    {
+     "front": "Mean absolute deviation",
+     "back": "MAD = Σ |X_i − X̄| / n"
+    },
+    {
+     "front": "Coefficient of variation",
+     "back": "CV = s / X̄ (risk per unit of mean return)"
+    },
+    {
+     "front": "Target downside deviation (target semideviation)",
+     "back": "s_Target = √[ Σ_(X_i ≤ B) (X_i − B)² / (n − 1) ] — sum over observations at or below the target B, divide by n − 1 using all n"
+    }
+   ]
+  },
+  {
+   "day": 25,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM5 Statistical Characteristics of Asset Returns",
+   "title": "Covariance and correlation",
+   "concept": "Covariance measures whether two return series move together, and correlation rescales it to lie between −1 and +1 (r = s_XY/(s_X s_Y)) so that the strength of the co-movement can be compared across pairs.",
+   "memorize": [
+    {
+     "front": "Sample covariance",
+     "back": "s_XY = Σ (X_i − X̄)(Y_i − Ȳ) / (n − 1)"
+    },
+    {
+     "front": "Correlation coefficient",
+     "back": "r_XY = s_XY / (s_X × s_Y)"
+    },
+    {
+     "front": "Covariance from correlation (BA II Plus route)",
+     "back": "s_XY = r × s_X × s_Y"
+    },
+    {
+     "front": "Range and meaning of correlation",
+     "back": "−1 ≤ r ≤ +1; 0 means no LINEAR relation, not no relation"
+    },
+    {
+     "front": "Spearman rank correlation (2027 coverage uncertain)",
+     "back": "r_s = 1 − 6 Σ d_i² / [n (n² − 1)], d_i = difference between the two ranks of observation i"
+    }
+   ]
+  },
+  {
+   "day": 26,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM6 Statistical Distributions for Financial Asset Prices and Returns",
+   "title": "Expected value and total probability",
+   "concept": "An expected value weights each outcome by its probability, E(X) = Σ P(X_i)X_i, and when outcomes depend on which scenario occurs, the total probability rule averages the conditional expectations: E(X) = Σ E(X | S_i)P(S_i).",
+   "memorize": [
+    {
+     "front": "Expected value of a discrete random variable",
+     "back": "E(X) = Σ P(X_i) × X_i"
+    },
+    {
+     "front": "Variance of a discrete random variable",
+     "back": "σ²(X) = Σ P(X_i) × [X_i − E(X)]²"
+    },
+    {
+     "front": "Total probability rule for expected value",
+     "back": "E(X) = E(X | S_1)P(S_1) + E(X | S_2)P(S_2) + … for mutually exclusive, exhaustive scenarios"
+    },
+    {
+     "front": "Joint probability (multiplication rule)",
+     "back": "P(AB) = P(A | B) × P(B)"
+    },
+    {
+     "front": "Addition rule",
+     "back": "P(A or B) = P(A) + P(B) − P(AB)"
+    },
+    {
+     "front": "Independent events",
+     "back": "P(A | B) = P(A), so P(AB) = P(A) × P(B) — only then may probabilities simply be multiplied"
+    }
+   ]
+  },
+  {
+   "day": 27,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM6 Statistical Distributions for Financial Asset Prices and Returns",
+   "title": "Bayes' formula: updating on evidence",
+   "concept": "Bayes' formula updates a prior probability with new information, P(Event | Info) = [P(Info | Event)/P(Info)] × P(Event), where the unconditional P(Info) comes from the total probability rule over every way the information can arise.",
+   "memorize": [
+    {
+     "front": "Bayes' formula",
+     "back": "P(Event | Information) = [P(Information | Event) / P(Information)] × P(Event)"
+    },
+    {
+     "front": "Unconditional probability of the information",
+     "back": "P(I) = P(I | E)P(E) + P(I | not E)P(not E)"
+    },
+    {
+     "front": "Prior and posterior",
+     "back": "Prior = P(Event) before the information; posterior = P(Event | Information) after it"
+    },
+    {
+     "front": "The inverted conditional (prosecutor’s fallacy)",
+     "back": "P(Information | Event) is not P(Event | Information); Bayes converts one into the other using the prior and P(Information)"
+    }
+   ]
+  },
+  {
+   "day": 28,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 4 review: indexes and statistics",
+   "concept": "Review of Days 22–27: index weighting, location (median, quantiles, trimmed means), dispersion and downside deviation, covariance and correlation, expected value and the total probability rule, Bayes' formula.",
+   "memorize": [],
+   "review_of": [
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+   ]
+  },
+  {
+   "day": 29,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM6 Statistical Distributions for Financial Asset Prices and Returns",
+   "title": "Binomial probabilities and counting",
+   "concept": "With n independent trials each succeeding with probability p, the probability of exactly x successes is nCx p^x (1 − p)^(n − x), where nCx = n!/[(n − x)! x!] counts the ways the successes can be arranged.",
+   "memorize": [
+    {
+     "front": "Binomial probability of exactly x successes in n trials",
+     "back": "P(X = x) = nCx × p^x × (1 − p)^(n − x)"
+    },
+    {
+     "front": "Mean and variance of a binomial random variable",
+     "back": "E(X) = n p; Var(X) = n p (1 − p)"
+    },
+    {
+     "front": "Combinations (order does not matter)",
+     "back": "nCr = n! / [(n − r)! × r!]"
+    },
+    {
+     "front": "Permutations (order matters)",
+     "back": "nPr = n! / (n − r)!"
+    },
+    {
+     "front": "Continuous uniform distribution on [a, b]",
+     "back": "P(x_1 ≤ X ≤ x_2) = (x_2 − x_1) / (b − a); mean = (a + b) / 2"
+    }
+   ]
+  },
+  {
+   "day": 30,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM6 Statistical Distributions for Financial Asset Prices and Returns",
+   "title": "The normal curve and fat tails",
+   "concept": "In a normal distribution the probability of an outcome depends only on how many standard deviations it lies from the mean, z = (X − μ)/σ, while real returns' skewness and excess kurtosis make extreme moves far more likely than the normal curve says.",
+   "memorize": [
+    {
+     "front": "Standard normal z-value",
+     "back": "z = (X − μ) / σ"
+    },
+    {
+     "front": "Normal confidence bands",
+     "back": "68% ≈ μ ± 1σ; 90% = μ ± 1.645σ; 95% = μ ± 1.96σ; 99% = μ ± 2.58σ"
+    },
+    {
+     "front": "One-tailed critical z values",
+     "back": "5% one tail: 1.645; 2.5%: 1.96; 1%: 2.33"
+    },
+    {
+     "front": "Skewness and the mean–median–mode order",
+     "back": "Positive skew (long right tail): mean > median > mode; negative skew (long left tail): mean < median < mode"
+    },
+    {
+     "front": "Excess kurtosis",
+     "back": "Excess kurtosis = sample kurtosis − 3; > 0 (leptokurtic) means fatter tails than the normal"
+    },
+    {
+     "front": "Value at risk (describe only)",
+     "back": "The minimum loss expected over a period a given small % of the time (e.g. on the worst 5% of days): a left-tail percentile of returns"
+    }
+   ]
+  },
+  {
+   "day": 31,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM9 Simulation of Financial Asset Prices and Returns",
+   "title": "Lognormal prices and Monte Carlo simulation",
+   "concept": "If continuously compounded returns are normal, prices are lognormal — never negative and skewed right — and Monte Carlo simulation draws many random returns from such a model to build the whole distribution of outcomes when no formula is handy.",
+   "memorize": [
+    {
+     "front": "Continuously compounded return over a period",
+     "back": "r_cc = ln(P_1 / P_0) = ln(1 + HPR)"
+    },
+    {
+     "front": "Additivity of log returns",
+     "back": "r_(0,T) = r_1 + r_2 + … + r_T"
+    },
+    {
+     "front": "Price from a continuously compounded return",
+     "back": "P_T = P_0 × e^(r_(0,T))"
+    },
+    {
+     "front": "Lognormal distribution",
+     "back": "If ln(P_T) is normal, P_T is lognormal: bounded below by 0 and skewed right"
+    },
+    {
+     "front": "Bootstrap resampling",
+     "back": "Draw random samples WITH replacement from the observed data to simulate the sampling distribution"
+    }
+   ]
+  },
+  {
+   "day": 32,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM8 The Return and Risk of a Financial Portfolio",
+   "title": "Two-asset portfolio return and risk",
+   "concept": "A portfolio's expected return is the weighted average of its assets' expected returns, but its variance also depends on how the assets move together: σ_p² = w_1²σ_1² + w_2²σ_2² + 2w_1w_2ρ_12σ_1σ_2.",
+   "memorize": [
+    {
+     "front": "Expected return of a portfolio",
+     "back": "E(R_p) = Σ w_i × E(R_i)"
+    },
+    {
+     "front": "Variance of a two-asset portfolio",
+     "back": "σ_p² = w_1²σ_1² + w_2²σ_2² + 2 w_1 w_2 ρ_12 σ_1 σ_2"
+    },
+    {
+     "front": "Covariance from correlation",
+     "back": "Cov_12 = ρ_12 × σ_1 × σ_2"
+    },
+    {
+     "front": "Covariance from a joint probability table",
+     "back": "Cov(R_A, R_B) = Σ P(R_A,i, R_B,j) × [R_A,i − E(R_A)] × [R_B,j − E(R_B)]"
+    }
+   ]
+  },
+  {
+   "day": 33,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM8 The Return and Risk of a Financial Portfolio",
+   "title": "Minimum-variance portfolio and efficient frontier",
+   "concept": "The lower the correlation, the bigger the diversification benefit: the two-asset weight that minimizes variance is w_1 = (σ_2² − Cov_12)/(σ_1² + σ_2² − 2Cov_12), and the efficient frontier is the upper part of the minimum-variance frontier, above the global minimum-variance portfolio.",
+   "memorize": [
+    {
+     "front": "Two-asset minimum-variance weight on asset 1",
+     "back": "w_1* = (σ_2² − Cov_12) / (σ_1² + σ_2² − 2 Cov_12)"
+    },
+    {
+     "front": "Zero-risk weights when ρ = −1",
+     "back": "w_1 = σ_2 / (σ_1 + σ_2)"
+    },
+    {
+     "front": "Efficient frontier",
+     "back": "The part of the minimum-variance frontier above (higher return than) the global minimum-variance portfolio"
+    },
+    {
+     "front": "When does diversification reduce risk?",
+     "back": "Whenever ρ < +1; the lower ρ, the larger the reduction"
+    }
+   ]
+  },
+  {
+   "day": 34,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM8 The Return and Risk of a Financial Portfolio",
+   "title": "Risk aversion, utility and the capital allocation line",
+   "concept": "A risk-averse investor scores a portfolio by utility U = E(r) − ½Aσ², and mixing the risk-free asset with the best risky portfolio gives a straight capital allocation line on which the highest-utility point depends on A; when the risky portfolio is the market, that line is the capital market line.",
+   "memorize": [
+    {
+     "front": "Mean–variance utility",
+     "back": "U = E(r) − ½ × A × σ² (decimals)"
+    },
+    {
+     "front": "Capital allocation line (and CML with the market portfolio)",
+     "back": "E(R_p) = R_f + [(E(R_i) − R_f) / σ_i] × σ_p"
+    },
+    {
+     "front": "Optimal weight in the risky portfolio",
+     "back": "w* = [E(R_i) − R_f] / (A × σ_i²)"
+    },
+    {
+     "front": "Roy's safety-first ratio",
+     "back": "SFRatio = [E(R_p) − R_L] / σ_p; choose the portfolio with the highest ratio"
+    }
+   ]
+  },
+  {
+   "day": 35,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 5 review: probability to portfolios",
+   "concept": "Review of Days 29–34: binomial and counting, the normal curve, skewness and kurtosis, lognormal prices and simulation, two-asset portfolio risk, the minimum-variance portfolio and efficient frontier, utility and the capital allocation line.",
+   "memorize": [],
+   "review_of": [
+    29,
+    30,
+    31,
+    32,
+    33,
+    34
+   ]
+  },
+  {
+   "day": 36,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "The Term Structure of Interest Rates: Spot, Par, and Forward Curves",
+   "title": "Spot rates and bootstrapping",
+   "concept": "Each cash flow should be discounted at the zero-coupon (spot) rate for its own date, and spot rates can be bootstrapped one maturity at a time from the yields of par bonds.",
+   "memorize": [
+    {
+     "front": "Bond price using spot rates",
+     "back": "PV = Σ CF_t / (1 + Z_t)^t (each cash flow at its own spot rate)"
+    },
+    {
+     "front": "Discount factor from a spot rate",
+     "back": "DF_t = 1 / (1 + Z_t)^t"
+    },
+    {
+     "front": "Bootstrapping step for an N-year par bond with coupon c (per 100)",
+     "back": "100 = c × DF_1 + … + c × DF_(N−1) + (100 + c) × DF_N → solve DF_N, then Z_N = DF_N^(−1/N) − 1"
+    }
+   ]
+  },
+  {
+   "day": 37,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "The Term Structure of Interest Rates: Spot, Par, and Forward Curves",
+   "title": "Forward rates and par rates",
+   "concept": "An implied forward rate is the future one-period rate that makes investing for two periods equal to investing for one and rolling over — (1 + Z_2)² = (1 + Z_1)(1 + IFR_(1,1)) — and the par rate is the coupon that prices a bond at par given the spot curve.",
+   "memorize": [
+    {
+     "front": "Implied forward rate between years A and B",
+     "back": "(1 + Z_A)^A × (1 + IFR_(A,B−A))^(B−A) = (1 + Z_B)^B"
+    },
+    {
+     "front": "One-year rate one year forward",
+     "back": "1y1y = (1 + Z_2)² / (1 + Z_1) − 1"
+    },
+    {
+     "front": "Par rate for N years from discount factors",
+     "back": "Par rate = (1 − DF_N) / (DF_1 + DF_2 + … + DF_N)"
+    },
+    {
+     "front": "Spot and forward curves when the spot curve is inverted",
+     "back": "Forward rates lie below spot rates"
+    }
+   ]
+  },
+  {
+   "day": 38,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield and Yield Spread Measures for Fixed-Rate Bonds",
+   "title": "Yield spreads and matrix pricing",
+   "concept": "A yield spread is the extra yield over a benchmark — the G-spread over a government bond, the I-spread over swaps, the Z-spread added to every spot rate — and matrix pricing borrows the yields of comparable bonds to price one that rarely trades.",
+   "memorize": [
+    {
+     "front": "G-spread",
+     "back": "G-spread = YTM of the bond − YTM of the (interpolated) government bond of the same maturity"
+    },
+    {
+     "front": "Z-spread",
+     "back": "The constant Z that makes PV = Σ CF_t / (1 + z_t + Z)^t equal the bond's price"
+    },
+    {
+     "front": "Option-adjusted spread",
+     "back": "OAS = Z-spread − option value (in bps): callable OAS < Z-spread"
+    },
+    {
+     "front": "Linear interpolation of a yield",
+     "back": "y = y_short + (T − T_short)/(T_long − T_short) × (y_long − y_short)"
+    },
+    {
+     "front": "FRN inputs per period (P/Y = 1)",
+     "back": "Coupon = (MRR + quoted margin)/m × 100; discount rate = (MRR + discount margin)/m"
+    }
+   ]
+  },
+  {
+   "day": 39,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield-Based Bond Duration Measures and Properties",
+   "title": "Macaulay and modified duration",
+   "concept": "Macaulay duration is the PV-weighted average time to a bond's cash flows, and modified duration = MacDur/(1 + r) turns it into the approximate percentage price fall for a 1-percentage-point rise in yield; MacDur is also the horizon at which price and reinvestment risk offset.",
+   "memorize": [
+    {
+     "front": "Macaulay duration",
+     "back": "MacDur = Σ t × [CF_t/(1 + r)^t] / PV"
+    },
+    {
+     "front": "Modified duration",
+     "back": "ModDur = MacDur / (1 + r)"
+    },
+    {
+     "front": "Percentage price change from duration",
+     "back": "%ΔPV ≈ −AnnModDur × ΔYield"
+    },
+    {
+     "front": "Duration gap",
+     "back": "Duration gap = Macaulay duration − investment horizon"
+    },
+    {
+     "front": "Macaulay duration of a zero-coupon bond",
+     "back": "Equal to its time to maturity"
+    }
+   ]
+  },
+  {
+   "day": 40,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield-Based Bond Duration Measures and Properties",
+   "title": "Approximate duration, money duration and PVBP",
+   "concept": "Price sensitivity can be measured by repricing the bond at yields a little higher and lower — ApproxModDur = (PV_− − PV_+)/(2 × ΔYield × PV_0) — and money duration and the price value of a basis point turn that sensitivity into currency.",
+   "memorize": [
+    {
+     "front": "Approximate modified duration",
+     "back": "ApproxModDur = (PV_− − PV_+) / (2 × ΔYield × PV_0)"
+    },
+    {
+     "front": "Money duration",
+     "back": "MoneyDur = AnnModDur × PV_full (for the position)"
+    },
+    {
+     "front": "Price value of a basis point",
+     "back": "PVBP = (PV_− − PV_+) / 2, with yields ±1 bp"
+    },
+    {
+     "front": "Portfolio duration (approximation)",
+     "back": "D_p ≈ Σ w_i × D_i, w_i = market-value weights"
+    }
+   ]
+  },
+  {
+   "day": 41,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Yield-Based Bond Convexity and Portfolio Properties",
+   "title": "Convexity: correcting the duration estimate",
+   "concept": "Duration draws a straight line through a curved price–yield relation; adding ½ × convexity × (ΔYield)² corrects the estimate, so with positive convexity gains are larger and losses smaller than duration alone predicts — and the error grows with the size of the yield move.",
+   "memorize": [
+    {
+     "front": "Approximate convexity",
+     "back": "ApproxCon = (PV_− + PV_+ − 2 × PV_0) / [(ΔYield)² × PV_0]"
+    },
+    {
+     "front": "Price change with duration and convexity",
+     "back": "%ΔPV ≈ −AnnModDur × ΔYield + ½ × AnnConvexity × (ΔYield)²"
+    },
+    {
+     "front": "Sign of the convexity adjustment for an option-free bond",
+     "back": "Always positive (adds to the estimate for yield rises and falls)"
+    }
+   ]
+  },
+  {
+   "day": 42,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 6 review: the yield curve and rate risk",
+   "concept": "Review of Days 36–41: spot rates and bootstrapping, forward and par rates, yield spreads and matrix pricing, Macaulay and modified duration, approximate and money duration, PVBP, convexity.",
+   "memorize": [],
+   "review_of": [
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+   ]
+  },
+  {
+   "day": 43,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM7 Estimation and Hypothesis Testing",
+   "title": "Standard error and confidence intervals",
+   "concept": "By the central limit theorem the sample mean is approximately normal with standard error σ/√n, so a confidence interval is the point estimate ± reliability factor × standard error, using a t reliability factor with n − 1 degrees of freedom when σ is unknown.",
+   "memorize": [
+    {
+     "front": "Standard error of the sample mean",
+     "back": "s_X̄ = s / √n (σ/√n if σ known)"
+    },
+    {
+     "front": "Confidence interval for the mean",
+     "back": "X̄ ± (reliability factor) × standard error"
+    },
+    {
+     "front": "Reliability factors for z",
+     "back": "90%: 1.645; 95%: 1.96; 99%: 2.576"
+    },
+    {
+     "front": "When to use t",
+     "back": "Population variance unknown (use s); df = n − 1"
+    },
+    {
+     "front": "Central limit theorem",
+     "back": "For n ≥ 30, the sample mean is approximately normal with mean μ and variance σ²/n, whatever the population's distribution"
+    }
+   ]
+  },
+  {
+   "day": 44,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM7 Estimation and Hypothesis Testing",
+   "title": "Hypothesis tests: testing a mean",
+   "concept": "A hypothesis test asks whether a sample result is too far from the null hypothesis to be chance: compute test statistic = (sample statistic − hypothesized value)/standard error, compare it with the critical value or read its p-value, and know the two ways the decision can be wrong.",
+   "memorize": [
+    {
+     "front": "Test statistic for a mean",
+     "back": "t = (X̄ − μ_0) / (s / √n), df = n − 1"
+    },
+    {
+     "front": "Type I error",
+     "back": "Rejecting a true null hypothesis; P(Type I) = α (significance level)"
+    },
+    {
+     "front": "Type II error and power",
+     "back": "Type II = failing to reject a false null (probability β); power = 1 − β"
+    },
+    {
+     "front": "p-value decision rule",
+     "back": "Reject H_0 if p-value < α"
+    },
+    {
+     "front": "Wording of a non-rejection",
+     "back": "'Fail to reject H_0' — never 'accept H_0'"
+    }
+   ]
+  },
+  {
+   "day": 45,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM7 Estimation and Hypothesis Testing",
+   "title": "Comparing two means: pooled and paired",
+   "concept": "To compare two groups, test the difference in means with a pooled-variance t-statistic when the samples are independent, but test the mean of the differences when observations come in matched pairs.",
+   "memorize": [
+    {
+     "front": "Pooled variance",
+     "back": "s_p² = [(n_1 − 1)s_1² + (n_2 − 1)s_2²] / (n_1 + n_2 − 2)"
+    },
+    {
+     "front": "t-test for a difference in means (independent samples, equal variances)",
+     "back": "t = (X̄_1 − X̄_2) / √(s_p²/n_1 + s_p²/n_2), df = n_1 + n_2 − 2"
+    },
+    {
+     "front": "Paired-comparisons t-test",
+     "back": "t = d̄ / (s_d / √n), df = n − 1"
+    },
+    {
+     "front": "Which test for matched data (same months, same firms)?",
+     "back": "The paired-comparisons test (samples are dependent)"
+    }
+   ]
+  },
+  {
+   "day": 46,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM7 Estimation and Hypothesis Testing",
+   "title": "Chi-square and F tests",
+   "concept": "To test whether a variance equals a value use χ² = (n − 1)s²/σ_0² with n − 1 df, to compare two variances use F = s_1²/s_2² with the larger variance on top, and when the data are counts in categories a χ² test of independence compares observed with expected counts.",
+   "memorize": [
+    {
+     "front": "Chi-square test of a single variance",
+     "back": "χ² = (n − 1) s² / σ_0², df = n − 1"
+    },
+    {
+     "front": "F-test of two variances",
+     "back": "F = s_1² / s_2² (larger sample variance on top), df = n_1 − 1 and n_2 − 1"
+    },
+    {
+     "front": "Expected count in a contingency table",
+     "back": "E_ij = (row i total × column j total) / overall total"
+    },
+    {
+     "front": "Chi-square test of independence",
+     "back": "χ² = Σ (O_ij − E_ij)² / E_ij, df = (r − 1)(c − 1)"
+    }
+   ]
+  },
+  {
+   "day": 47,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM10 Applications of Simple Linear Regression in Finance",
+   "title": "Least squares: fitting the line",
+   "concept": "Least squares fits the line Ŷ = b̂_0 + b̂_1X that minimizes the sum of squared vertical errors, which gives slope b̂_1 = Cov(X, Y)/Var(X) and intercept b̂_0 = Ȳ − b̂_1X̄.",
+   "memorize": [
+    {
+     "front": "Least squares slope",
+     "back": "b̂_1 = Cov(X, Y) / Var(X) = Σ(X_i − X̄)(Y_i − Ȳ) / Σ(X_i − X̄)²"
+    },
+    {
+     "front": "Least squares intercept",
+     "back": "b̂_0 = Ȳ − b̂_1 × X̄"
+    },
+    {
+     "front": "Residual",
+     "back": "e_i = Y_i − Ŷ_i = Y_i − (b̂_0 + b̂_1 X_i)"
+    },
+    {
+     "front": "Four assumptions of simple linear regression",
+     "back": "Linearity; homoskedasticity (constant error variance); independence of errors; normally distributed errors"
+    },
+    {
+     "front": "BA II Plus LIN output names",
+     "back": "a = intercept b̂_0; b = slope b̂_1; r = correlation"
+    }
+   ]
+  },
+  {
+   "day": 48,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM10 Applications of Simple Linear Regression in Finance",
+   "title": "ANOVA, R² and the standard error",
+   "concept": "Total variation in Y splits into an explained part and an unexplained part, SST = SSR + SSE; R² = SSR/SST measures the fit, the standard error of estimate √(SSE/(n − 2)) measures the typical miss, and F = MSR/MSE tests whether the slope explains anything at all.",
+   "memorize": [
+    {
+     "front": "Decomposition of variation",
+     "back": "SST = SSR + SSE"
+    },
+    {
+     "front": "Coefficient of determination",
+     "back": "R² = SSR / SST (= r² with one independent variable)"
+    },
+    {
+     "front": "Mean squared error",
+     "back": "MSE = SSE / (n − 2)"
+    },
+    {
+     "front": "Standard error of estimate",
+     "back": "SEE = √MSE = √[SSE / (n − 2)]"
+    },
+    {
+     "front": "F-statistic in simple regression",
+     "back": "F = MSR / MSE = (SSR / 1) / [SSE / (n − 2)], df = 1 and n − 2"
+    }
+   ]
+  },
+  {
+   "day": 49,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 7 review: inference and regression",
+   "concept": "Review of Days 43–48: standard error and confidence intervals, testing a mean, pooled and paired tests, variance tests and non-parametric tests, least squares, ANOVA, R² and SEE.",
+   "memorize": [],
+   "review_of": [
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+   ]
+  },
+  {
+   "day": 50,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM10 Applications of Simple Linear Regression in Finance",
+   "title": "Testing the slope; beta by regression",
+   "concept": "The slope's t-statistic, (b̂_1 − B_1)/s_b̂1 with n − 2 df, tests whether X really moves Y; regressing a stock's returns on the market's gives its beta, and in simple regression the slope test is the same as the correlation test t = r√(n − 2)/√(1 − r²).",
+   "memorize": [
+    {
+     "front": "t-statistic for a regression slope",
+     "back": "t = (b̂_1 − B_1) / s_b̂1, df = n − 2"
+    },
+    {
+     "front": "t-statistic for a correlation (simple regression)",
+     "back": "t = r √(n − 2) / √(1 − r²), df = n − 2"
+    },
+    {
+     "front": "Beta from data",
+     "back": "β = Cov(R_i, R_m) / Var(R_m) = slope of R_i regressed on R_m"
+    },
+    {
+     "front": "Link between F and t in simple regression",
+     "back": "F = t² (slope test)"
+    }
+   ]
+  },
+  {
+   "day": 51,
+   "kind": "lesson",
+   "area": "Quantitative Methods",
+   "module": "LM10 Applications of Simple Linear Regression in Finance",
+   "title": "Forecasts, prediction intervals and log models",
+   "concept": "A regression forecast Ŷ_f = b̂_0 + b̂_1X_f comes with a prediction interval Ŷ_f ± t_c × s_f that widens as X_f moves away from X̄, and taking logs of Y and/or X lets a straight line fit exponential growth or elasticities.",
+   "memorize": [
+    {
+     "front": "Variance of a forecast",
+     "back": "s_f² = SEE² × [1 + 1/n + (X_f − X̄)² / ((n − 1) s_X²)]"
+    },
+    {
+     "front": "Prediction interval",
+     "back": "Ŷ_f ± t_c × s_f, df = n − 2"
+    },
+    {
+     "front": "Log-lin model",
+     "back": "ln Y = b_0 + b_1 X; forecast Y = e^(b_0 + b_1 X)"
+    },
+    {
+     "front": "Log-log model slope",
+     "back": "b_1 = elasticity: % change in Y for a 1% change in X"
+    }
+   ]
+  },
+  {
+   "day": 52,
+   "kind": "lesson",
+   "area": "Portfolio Construction",
+   "module": "Portfolio Risk and Return: Part II",
+   "title": "Beta, CAPM and the security market line",
+   "concept": "Only systematic risk is rewarded, so an asset's expected return is E(R_i) = R_f + β_i[E(R_m) − R_f] with β_i = Cov(R_i, R_m)/σ_m² = ρ_im σ_i/σ_m; an asset that plots above the security market line is undervalued (positive alpha).",
+   "memorize": [
+    {
+     "front": "Beta",
+     "back": "β_i = Cov(R_i, R_m) / σ_m² = ρ_im × σ_i / σ_m"
+    },
+    {
+     "front": "Capital asset pricing model",
+     "back": "E(R_i) = R_f + β_i × [E(R_m) − R_f]"
+    },
+    {
+     "front": "Alpha against the SML",
+     "back": "α = forecast (or actual) return − CAPM required return; α > 0 → undervalued"
+    },
+    {
+     "front": "Arbitrage pricing / multi-factor model",
+     "back": "E(R_p) = R_F + λ_1 β_p,1 + … + λ_K β_p,K"
+    },
+    {
+     "front": "CML vs SML x-axis",
+     "back": "CML: total risk σ (efficient portfolios); SML: beta (any asset or portfolio)"
+    }
+   ]
+  },
+  {
+   "day": 53,
+   "kind": "lesson",
+   "area": "Portfolio Construction",
+   "module": "Portfolio Risk and Return: Part II",
+   "title": "Risk-adjusted performance measures",
+   "concept": "Risk-adjusted measures compare excess return with the risk that matters: the Sharpe ratio uses total risk σ, Treynor and Jensen's alpha use beta, M² restates the Sharpe ratio as a return at the market's risk, and Sortino and Calmar look at downside risk and drawdowns.",
+   "memorize": [
+    {
+     "front": "Sharpe ratio",
+     "back": "Sharpe = (R_p − R_f) / σ_p"
+    },
+    {
+     "front": "Treynor ratio",
+     "back": "Treynor = (R_p − R_f) / β_p"
+    },
+    {
+     "front": "M-squared (M²)",
+     "back": "M² = (R_p − R_f) × (σ_m / σ_p) − (R_m − R_f); equivalently, the risk-adjusted return R_f + (R_p − R_f) × σ_m/σ_p compared with R_m"
+    },
+    {
+     "front": "Jensen's alpha",
+     "back": "α_p = R_p − [R_f + β_p (R_m − R_f)]"
+    },
+    {
+     "front": "Sortino ratio",
+     "back": "Sortino = (R_p − MAR) / downside deviation"
+    }
+   ]
+  },
+  {
+   "day": 54,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Curve-Based and Empirical Fixed-Income Risk Measures",
+   "title": "Effective duration and negative convexity",
+   "concept": "When cash flows change with interest rates — callable bonds and mortgage securities — sensitivity must be measured by repricing under shifts of the benchmark curve, EffDur = (PV_− − PV_+)/(2 × ΔCurve × PV_0), and prepayments give mortgage securities negative convexity.",
+   "memorize": [
+    {
+     "front": "Effective duration",
+     "back": "EffDur = (PV_− − PV_+) / (2 × ΔCurve × PV_0)"
+    },
+    {
+     "front": "Effective convexity",
+     "back": "EffCon = [PV_− + PV_+ − 2 × PV_0] / [(ΔCurve)² × PV_0]"
+    },
+    {
+     "front": "Conditional prepayment rate from the single monthly mortality",
+     "back": "CPR = 1 − (1 − SMM)^12"
+    },
+    {
+     "front": "Negative convexity",
+     "back": "Price rises less when rates fall than it falls when rates rise (callables, MBS)"
+    },
+    {
+     "front": "Key rate durations",
+     "back": "Sum of key rate durations = effective duration"
+    }
+   ]
+  },
+  {
+   "day": 55,
+   "kind": "lesson",
+   "area": "Fixed Income",
+   "module": "Credit Risk",
+   "title": "Credit risk: expected loss and spreads",
+   "concept": "Expected loss equals the probability of default times the loss given default (exposure × (1 − recovery rate)); the credit spread is roughly that annual expected loss, and a spread change moves a bond's price by about −ModDur × ΔSpread + ½ × Convexity × (ΔSpread)².",
+   "memorize": [
+    {
+     "front": "Expected loss",
+     "back": "EL = probability of default × loss given default"
+    },
+    {
+     "front": "Loss given default",
+     "back": "LGD = exposure × (1 − recovery rate)"
+    },
+    {
+     "front": "Credit spread approximation",
+     "back": "Spread ≈ POD × LGD (as % of exposure per year)"
+    },
+    {
+     "front": "Price change from a spread change",
+     "back": "%ΔPV ≈ −ModDur × ΔSpread + ½ × Convexity × (ΔSpread)²"
+    },
+    {
+     "front": "Leverage ratios used by credit analysts",
+     "back": "Debt/EBITDA, FFO/debt, debt/capital; coverage: EBITDA/interest"
+    }
+   ]
+  },
+  {
+   "day": 56,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 8 review: regression to credit",
+   "concept": "Review of Days 50–55: slope tests and beta by regression, forecasts and log models, CAPM and the SML, risk-adjusted performance, effective duration and negative convexity, credit risk. Plus a one-paragraph note on Quantitative Methods LM11 Introduction to Financial Data Science (big data, machine learning, AI and LLMs — described only, no calculations).",
+   "memorize": [],
+   "review_of": [
+    50,
+    51,
+    52,
+    53,
+    54,
+    55
+   ]
+  },
+  {
+   "day": 57,
+   "kind": "lesson",
+   "area": "Derivatives and Risk Management",
+   "module": "Pricing and Valuation of Forward Contracts and for an Underlying with Varying Maturities",
+   "title": "Forward prices and the cost of carry",
+   "concept": "No-arbitrage forces a forward price to equal the spot price carried forward at the risk-free rate, adjusted for income forgone and costs paid — F_0(T) = [S_0 − PV(I) + PV(C)](1 + r)^T — and the forward's value later is the PV of the change in the forward price.",
+   "memorize": [
+    {
+     "front": "Forward price with no carry",
+     "back": "F_0(T) = S_0 × (1 + r)^T"
+    },
+    {
+     "front": "Forward price with income and costs",
+     "back": "F_0(T) = [S_0 − PV_0(I) + PV_0(C)] × (1 + r)^T"
+    },
+    {
+     "front": "Forward price, continuous compounding",
+     "back": "F_0(T) = S_0 × e^((r + c − i) T)"
+    },
+    {
+     "front": "Value of a long forward at time t",
+     "back": "V_t(T) = [F_t(T) − F_0(T)] / (1 + r)^(T − t)"
+    },
+    {
+     "front": "Commodity futures return components",
+     "back": "Total return = price return + roll return + collateral return"
+    }
+   ]
+  },
+  {
+   "day": 58,
+   "kind": "lesson",
+   "area": "Derivatives and Risk Management",
+   "module": "Pricing and Valuation of Interest Rate and Other Swaps",
+   "title": "FRAs and interest rate swaps",
+   "concept": "A forward rate agreement locks in an implied forward rate, and an interest rate swap is a bundle of such forward agreements whose fixed rate is set so the PV of fixed payments equals the PV of floating ones: s_N = (1 − DF_N)/Σ DF_i.",
+   "memorize": [
+    {
+     "front": "Par swap rate from discount factors",
+     "back": "s_N = (1 − DF_N) / (DF_1 + DF_2 + … + DF_N)"
+    },
+    {
+     "front": "Discount factor",
+     "back": "DF_i = 1 / (1 + Z_i)^i"
+    },
+    {
+     "front": "FRA settlement amount (paid at the start of the period)",
+     "back": "Notional × (MRR − FRA rate) × (days/360) / [1 + MRR × (days/360)]"
+    },
+    {
+     "front": "Who gains when rates rise?",
+     "back": "The fixed-rate payer (floating receiver) in a swap; the long FRA"
+    }
+   ]
+  },
+  {
+   "day": 59,
+   "kind": "lesson",
+   "area": "Derivatives and Risk Management",
+   "module": "Pricing and Valuation of Options",
+   "title": "Option payoffs, profits and value",
+   "concept": "At expiry a call pays max(0, S_T − X) and a put max(0, X − S_T); profit subtracts the premium, so breakevens are X + c_0 for a call and X − p_0 for a put; before expiry an option's price is its intrinsic value plus time value, bounded below by no-arbitrage.",
+   "memorize": [
+    {
+     "front": "Call payoff at expiration",
+     "back": "c_T = max(0, S_T − X)"
+    },
+    {
+     "front": "Put payoff at expiration",
+     "back": "p_T = max(0, X − S_T)"
+    },
+    {
+     "front": "Breakeven prices",
+     "back": "Long call: S_T = X + c_0; long put: S_T = X − p_0"
+    },
+    {
+     "front": "Lower bound of a European call",
+     "back": "c_0 ≥ max[0, S_0 − X / (1 + r)^T]"
+    },
+    {
+     "front": "Lower bound of a European put",
+     "back": "p_0 ≥ max[0, X / (1 + r)^T − S_0]"
+    }
+   ]
+  },
+  {
+   "day": 60,
+   "kind": "lesson",
+   "area": "Derivatives and Risk Management",
+   "module": "Option Replication Using Put-Call Parity",
+   "title": "Put-call parity and synthetic positions",
+   "concept": "A call plus a risk-free bond paying the strike (a fiduciary call) has the same payoff as a put plus the stock (a protective put), so S_0 + p_0 = c_0 + X/(1 + r)^T, any one price follows from the others, and with a forward F_0/(1 + r)^T + p_0 = c_0 + X/(1 + r)^T.",
+   "memorize": [
+    {
+     "front": "Put-call parity",
+     "back": "S_0 + p_0 = c_0 + X / (1 + r)^T"
+    },
+    {
+     "front": "Put-call-forward parity",
+     "back": "F_0(T) / (1 + r)^T + p_0 = c_0 + X / (1 + r)^T"
+    },
+    {
+     "front": "Synthetic call",
+     "back": "c_0 = S_0 + p_0 − X / (1 + r)^T"
+    },
+    {
+     "front": "Synthetic put",
+     "back": "p_0 = c_0 − S_0 + X / (1 + r)^T"
+    }
+   ]
+  },
+  {
+   "day": 61,
+   "kind": "lesson",
+   "area": "Derivatives and Risk Management",
+   "module": "Valuing a Derivative Using a One-Period Binomial Model",
+   "title": "One-period binomial option pricing",
+   "concept": "In a one-period binomial model an option is priced by building a riskless hedge of stock and option, which yields the risk-neutral probability π = (1 + r − d)/(u − d) and the option value c_0 = [π c_u + (1 − π) c_d]/(1 + r) — real-world probabilities never enter.",
+   "memorize": [
+    {
+     "front": "Risk-neutral probability of an up move",
+     "back": "π = (1 + r − d) / (u − d)"
+    },
+    {
+     "front": "One-period binomial call value",
+     "back": "c_0 = [π × c_u + (1 − π) × c_d] / (1 + r)"
+    },
+    {
+     "front": "Hedge ratio",
+     "back": "h = (c_u − c_d) / (S_u − S_d)"
+    },
+    {
+     "front": "No-arbitrage condition",
+     "back": "d < 1 + r < u"
+    }
+   ]
+  },
+  {
+   "day": 62,
+   "kind": "lesson",
+   "area": "Economics",
+   "module": "Exchange Rate Calculations",
+   "title": "Exchange rates and cross rates",
+   "concept": "An exchange rate A/B is the price of one unit of the base currency B in units of the price currency A, cross rates follow by multiplying quotes so the common currency cancels, and one currency's percentage change against another is not the negative of the other's.",
+   "memorize": [
+    {
+     "front": "Exchange-rate quote A/B",
+     "back": "Number of units of currency A (price) per 1 unit of currency B (base)"
+    },
+    {
+     "front": "Cross rate",
+     "back": "(A/B) × (B/C) = A/C"
+    },
+    {
+     "front": "Percentage change of the base currency in an A/B quote",
+     "back": "%Δ = (A/B)_new / (A/B)_old − 1"
+    },
+    {
+     "front": "Percentage change of the price currency against the base",
+     "back": "%Δ_price = 1 / (1 + %Δ_base) − 1"
+    }
+   ]
+  },
+  {
+   "day": 63,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 9 review: derivatives and currencies",
+   "concept": "Review of Days 57–62: forward prices and value, FRAs and swaps, option payoffs and bounds, put-call parity, the one-period binomial model, exchange-rate quotes and cross rates.",
+   "memorize": [],
+   "review_of": [
+    57,
+    58,
+    59,
+    60,
+    61,
+    62
+   ]
+  },
+  {
+   "day": 64,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Inventories",
+   "title": "Inventory: FIFO, LIFO and weighted average",
+   "concept": "When unit costs change, the cost-flow assumption decides which costs land in cost of goods sold and which stay in ending inventory — FIFO expenses the oldest costs, LIFO the newest, weighted average the mean — so in rising prices LIFO reports higher COGS, lower profit and lower taxes.",
+   "memorize": [
+    {
+     "front": "Inventory identity",
+     "back": "Beginning inventory + purchases = COGS + ending inventory"
+    },
+    {
+     "front": "Weighted-average unit cost",
+     "back": "Cost of goods available for sale / units available for sale"
+    },
+    {
+     "front": "FIFO vs LIFO when prices are rising",
+     "back": "LIFO: higher COGS, lower gross profit and taxes, lower ending inventory; FIFO: the reverse"
+    },
+    {
+     "front": "Which standards allow LIFO?",
+     "back": "US GAAP only; IFRS prohibits LIFO"
+    },
+    {
+     "front": "Inventory turnover and days on hand",
+     "back": "Turnover = COGS / average inventory; DOH = 365 / turnover"
+    }
+   ]
+  },
+  {
+   "day": 65,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Inventories",
+   "title": "LIFO reserve, LIFO liquidation and NRV",
+   "concept": "The LIFO reserve (FIFO inventory − LIFO inventory) lets an analyst restate a LIFO company as if it used FIFO — inventory + reserve, COGS − change in reserve, equity + reserve × (1 − t) — while a LIFO liquidation flatters profit with old, cheap costs and inventory is written down when it is worth less than cost.",
+   "memorize": [
+    {
+     "front": "Converting LIFO inventory to FIFO",
+     "back": "Inventory_FIFO = Inventory_LIFO + LIFO reserve"
+    },
+    {
+     "front": "Converting LIFO COGS to FIFO",
+     "back": "COGS_FIFO = COGS_LIFO − ΔLIFO reserve"
+    },
+    {
+     "front": "Equity adjustment when restating to FIFO",
+     "back": "Equity increases by LIFO reserve × (1 − tax rate)"
+    },
+    {
+     "front": "Net realisable value",
+     "back": "NRV = estimated selling price − estimated costs to complete and sell"
+    },
+    {
+     "front": "LIFO liquidation signal",
+     "back": "Units sold exceed units purchased, so old low-cost layers enter COGS (LIFO reserve falls)"
+    }
+   ]
+  },
+  {
+   "day": 66,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Long-Term Assets",
+   "title": "Capitalize or expense?",
+   "concept": "Capitalizing a cost puts it on the balance sheet and spreads it over later years as depreciation, so it raises current profit, assets and equity and moves the cash outflow from operating to investing activities — and capitalized interest does the same with borrowing costs during construction.",
+   "memorize": [
+    {
+     "front": "Effect of capitalizing (vs expensing) in the first year",
+     "back": "Higher net income, assets and equity; higher CFO and lower (more negative) CFI"
+    },
+    {
+     "front": "Effect over the asset's life",
+     "back": "Total expense and total cash flow are the same; capitalizing smooths expense into later years"
+    },
+    {
+     "front": "Where capitalized interest appears",
+     "back": "Added to the asset's cost (later depreciated); cash paid classified in CFI"
+    },
+    {
+     "front": "Interest coverage ratio",
+     "back": "Interest coverage = EBIT / interest expense (analysts often add capitalized interest to the denominator)"
+    }
+   ]
+  },
+  {
+   "day": 67,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Long-Term Assets",
+   "title": "Depreciation methods and asset age",
+   "concept": "Depreciation spreads an asset's cost minus salvage over its life — straight-line evenly, double-declining-balance at 2/n of each year's opening book value (front-loaded, stopping at salvage), units-of-production by use — and ratios of the accounts reveal an asset base's age and remaining life.",
+   "memorize": [
+    {
+     "front": "Straight-line depreciation",
+     "back": "(Cost − salvage value) / useful life"
+    },
+    {
+     "front": "Double-declining-balance depreciation",
+     "back": "(2 / useful life) × beginning book value (salvage ignored until book value would fall below it)"
+    },
+    {
+     "front": "Units-of-production depreciation",
+     "back": "(Cost − salvage) × (units this period / total expected units)"
+    },
+    {
+     "front": "Average age of PPE",
+     "back": "Accumulated depreciation / annual depreciation expense"
+    },
+    {
+     "front": "Remaining useful life of PPE",
+     "back": "Net PPE / annual depreciation expense"
+    }
+   ]
+  },
+  {
+   "day": 68,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Long-Term Assets",
+   "title": "Impairment, revaluation and disposal",
+   "concept": "When an asset's carrying amount exceeds what it can recover, it is written down — under IFRS to the recoverable amount (higher of fair value less costs to sell and value in use), under US GAAP to fair value after a recoverability test on undiscounted cash flows — and selling an asset books a gain or loss of proceeds minus carrying amount.",
+   "memorize": [
+    {
+     "front": "IFRS recoverable amount",
+     "back": "Higher of fair value less costs to sell and value in use"
+    },
+    {
+     "front": "US GAAP recoverability test",
+     "back": "Impaired if carrying amount > undiscounted expected future cash flows; loss = carrying amount − fair value"
+    },
+    {
+     "front": "Reversal of impairment losses",
+     "back": "IFRS: allowed (up to original carrying amount); US GAAP: not allowed for assets held for use"
+    },
+    {
+     "front": "Gain or loss on disposal",
+     "back": "Gain (loss) = sale proceeds − carrying amount"
+    }
+   ]
+  },
+  {
+   "day": 69,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Topics in Long-Term Liabilities and Equity",
+   "title": "Leases on the balance sheet",
+   "concept": "A lessee records a right-of-use asset and a lease liability equal to the PV of the lease payments, and the liability then amortizes like a loan: each period interest accrues on the balance and the payment reduces it.",
+   "memorize": [
+    {
+     "front": "Initial lease liability",
+     "back": "PV of the lease payments discounted at the implicit rate (or the lessee's incremental borrowing rate)"
+    },
+    {
+     "front": "Initial right-of-use asset",
+     "back": "Lease liability + initial direct costs + lease payments made at or before commencement − incentives"
+    },
+    {
+     "front": "IFRS 16 lessee expense",
+     "back": "Depreciation of the ROU asset + interest on the lease liability"
+    },
+    {
+     "front": "US GAAP operating lease (lessee)",
+     "back": "On the balance sheet; single straight-line lease cost in the income statement"
+    }
+   ]
+  },
+  {
+   "day": 70,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 10 review: inventories and long-lived assets",
+   "concept": "Review of Days 64–69: FIFO, LIFO and weighted average; LIFO reserve and liquidation; NRV write-downs; capitalize vs expense; depreciation methods and asset age; impairment, revaluation and disposal; lessee lease accounting.",
+   "memorize": [],
+   "review_of": [
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+   ]
+  },
+  {
+   "day": 71,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Income Taxes",
+   "title": "Deferred taxes: DTL and DTA",
+   "concept": "Income tax expense differs from taxes payable because accounting and tax rules recognise items at different times: a deferred tax liability arises when an asset's carrying amount exceeds its tax base, DTL = (carrying amount − tax base) × t, and income tax expense = taxes payable + ΔDTL − ΔDTA.",
+   "memorize": [
+    {
+     "front": "Deferred tax liability on an asset",
+     "back": "DTL = (carrying amount − tax base) × tax rate, when carrying amount > tax base"
+    },
+    {
+     "front": "Deferred tax asset on an asset",
+     "back": "DTA = (tax base − carrying amount) × tax rate, when tax base > carrying amount"
+    },
+    {
+     "front": "Income tax expense",
+     "back": "Income tax expense = taxes payable + ΔDTL − ΔDTA"
+    },
+    {
+     "front": "Permanent differences",
+     "back": "Differences that never reverse (e.g. tax-exempt income, non-deductible fines): no deferred tax; they change the effective rate"
+    }
+   ]
+  },
+  {
+   "day": 72,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analysis of Income Taxes",
+   "title": "Tax rates, reconciliation and rate changes",
+   "concept": "The effective tax rate (income tax expense/pre-tax income) differs from the statutory rate because of permanent differences, foreign rates and credits, the reconciliation explains each gap, and when the tax rate changes deferred tax assets and liabilities are remeasured with the change flowing through tax expense.",
+   "memorize": [
+    {
+     "front": "Effective tax rate",
+     "back": "Effective tax rate = income tax expense / pre-tax income"
+    },
+    {
+     "front": "Cash tax rate",
+     "back": "Cash tax rate = cash taxes paid / pre-tax income"
+    },
+    {
+     "front": "Effect of a tax-rate change on deferred taxes",
+     "back": "Remeasure DTL and DTA at the new enacted rate; the change goes through income tax expense"
+    },
+    {
+     "front": "Tax-rate cut with a net DTA",
+     "back": "DTA falls in value → one-time increase in tax expense"
+    }
+   ]
+  },
+  {
+   "day": 73,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analyzing Income Statements",
+   "title": "Basic and diluted EPS",
+   "concept": "Basic EPS divides earnings available to common shareholders by the weighted-average shares outstanding; diluted EPS adds the extra shares that convertibles, options and warrants would create — and adds back what they cost — using the if-converted and treasury stock methods, and ignores anything antidilutive.",
+   "memorize": [
+    {
+     "front": "Basic EPS",
+     "back": "Basic EPS = (net income − preferred dividends) / weighted-average number of common shares"
+    },
+    {
+     "front": "Diluted EPS with convertible debt (if-converted)",
+     "back": "[NI − preferred dividends + convertible interest × (1 − t)] / (weighted-average shares + shares from conversion)"
+    },
+    {
+     "front": "Treasury stock method",
+     "back": "New shares = shares from exercise − (exercise proceeds / average market price)"
+    },
+    {
+     "front": "Antidilution test",
+     "back": "Exclude any security whose inclusion would increase diluted EPS"
+    },
+    {
+     "front": "When does a debt-funded share buyback raise EPS?",
+     "back": "When the earnings yield E/P exceeds the after-tax cost of debt r_d × (1 − t)"
+    }
+   ]
+  },
+  {
+   "day": 74,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analyzing Statements of Cash Flows I",
+   "title": "Cash from operations: indirect and direct",
+   "concept": "Profit and cash differ: the indirect method starts with net income, adds back non-cash charges and losses, subtracts gains, and adjusts for working capital (an increase in an operating asset uses cash, an increase in an operating liability provides it), while the direct method rebuilds cash received and paid line by line.",
+   "memorize": [
+    {
+     "front": "Indirect-method CFO",
+     "back": "CFO = NI + non-cash charges − gains + losses − increases in operating assets + increases in operating liabilities"
+    },
+    {
+     "front": "Cash collected from customers",
+     "back": "Revenue − increase in accounts receivable"
+    },
+    {
+     "front": "Cash paid to suppliers",
+     "back": "COGS + increase in inventory − increase in accounts payable"
+    },
+    {
+     "front": "Interest paid classification",
+     "back": "US GAAP: CFO; IFRS: CFO or CFF"
+    }
+   ]
+  },
+  {
+   "day": 75,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Analyzing Statements of Cash Flows II",
+   "title": "Free cash flow: FCFF and FCFE",
+   "concept": "Free cash flow is what is left after the business funds its investment: free cash flow to the firm, FCFF = CFO + Int(1 − t) − FCInv, belongs to all capital providers, and free cash flow to equity, FCFE = CFO − FCInv + net borrowing, belongs to shareholders.",
+   "memorize": [
+    {
+     "front": "Free cash flow to the firm from CFO",
+     "back": "FCFF = CFO + Int × (1 − t) − FCInv"
+    },
+    {
+     "front": "Free cash flow to equity from CFO",
+     "back": "FCFE = CFO − FCInv + net borrowing"
+    },
+    {
+     "front": "FCFF from net income",
+     "back": "FCFF = NI + NCC + Int × (1 − t) − FCInv − WCInv"
+    },
+    {
+     "front": "Cash interest coverage",
+     "back": "(CFO + interest paid + taxes paid) / interest paid"
+    }
+   ]
+  },
+  {
+   "day": 76,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Financial Analysis Techniques",
+   "title": "Common-size, activity ratios and the CCC",
+   "concept": "Dividing by sales turns statements into common-size percentages and balances into days — DSO, DOH and DPO — whose combination DOH + DSO − DPO, the cash conversion cycle, measures how long cash is tied up in operations, and a sales-based pro forma forecasts next year's statements from those same percentages and days.",
+   "memorize": [
+    {
+     "front": "Days sales outstanding",
+     "back": "DSO = 365 / (revenue / average receivables)"
+    },
+    {
+     "front": "Days of inventory on hand",
+     "back": "DOH = 365 / (COGS / average inventory)"
+    },
+    {
+     "front": "Days payables outstanding",
+     "back": "DPO = 365 / (purchases / average payables)"
+    },
+    {
+     "front": "Cash conversion cycle",
+     "back": "CCC = DOH + DSO − DPO"
+    },
+    {
+     "front": "Common-size statements",
+     "back": "Income statement: each item / revenue; balance sheet: each item / total assets"
+    },
+    {
+     "front": "Pro forma receivables from DSO",
+     "back": "Receivables = DSO × forecast revenue / 365"
+    }
+   ]
+  },
+  {
+   "day": 77,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 11 review: taxes, EPS and cash flows",
+   "concept": "Review of Days 71–76: deferred taxes, effective and cash tax rates and rate changes, basic and diluted EPS and buybacks, indirect and direct CFO, FCFF and FCFE, common-size statements, activity ratios, the cash conversion cycle and the sales-based pro forma.",
+   "memorize": [],
+   "review_of": [
+    71,
+    72,
+    73,
+    74,
+    75,
+    76
+   ]
+  },
+  {
+   "day": 78,
+   "kind": "lesson",
+   "area": "Financial Statement Analysis",
+   "module": "Financial Analysis Techniques",
+   "title": "DuPont: what drives ROE",
+   "concept": "Return on equity can be split to show why it is high or low — ROE = (NI/EBT)(EBT/EBIT)(EBIT/Revenue)(Revenue/Average assets)(Average assets/Average equity) — separating tax burden, interest burden, operating margin, asset turnover and financial leverage, and solvency ratios measure the risk behind the last two factors.",
+   "memorize": [
+    {
+     "front": "Three-step DuPont",
+     "back": "ROE = (NI / revenue) × (revenue / average total assets) × (average total assets / average equity)"
+    },
+    {
+     "front": "Five-step DuPont",
+     "back": "ROE = (NI/EBT) × (EBT/EBIT) × (EBIT/revenue) × (revenue/average assets) × (average assets/average equity)"
+    },
+    {
+     "front": "Financial leverage ratio",
+     "back": "Average total assets / average total equity"
+    },
+    {
+     "front": "Interest coverage",
+     "back": "EBIT / interest payments"
+    },
+    {
+     "front": "Fixed-charge coverage",
+     "back": "(EBIT + lease payments) / (interest payments + lease payments)"
+    },
+    {
+     "front": "Debt-to-capital ratio",
+     "back": "Total debt / (total debt + total shareholders' equity)"
+    }
+   ]
+  },
+  {
+   "day": 79,
+   "kind": "lesson",
+   "area": "Equities",
+   "module": "Equity Valuation: Concepts and Basic Tools",
+   "title": "Sustainable growth and the justified P/E",
+   "concept": "A firm that reinvests a fraction b of earnings at its return on equity can grow dividends at g = b × ROE, and putting that into the Gordon model gives the justified leading P/E = (1 − b)/(r − g), linking a fair multiple to payout, growth and risk.",
+   "memorize": [
+    {
+     "front": "Sustainable growth rate",
+     "back": "g = b × ROE (b = retention ratio)"
+    },
+    {
+     "front": "Justified leading P/E",
+     "back": "P_0 / E_1 = (D_1 / E_1) / (r − g) = (1 − b) / (r − g)"
+    },
+    {
+     "front": "Justified trailing P/E",
+     "back": "P_0 / E_0 = (1 − b)(1 + g) / (r − g)"
+    },
+    {
+     "front": "Payout ratio",
+     "back": "Payout = D / E = 1 − b"
+    }
+   ]
+  },
+  {
+   "day": 80,
+   "kind": "lesson",
+   "area": "Equities",
+   "module": "Equity Valuation: Concepts and Basic Tools",
+   "title": "Multiples and enterprise value",
+   "concept": "Multiples price a company relative to what it earns or owns, and EV/EBITDA uses enterprise value — equity value plus debt and preferred stock minus cash — so that companies with very different debt levels can be compared on their whole operating business.",
+   "memorize": [
+    {
+     "front": "Enterprise value",
+     "back": "EV = market value of equity + debt + preferred stock + non-controlling interest − cash and short-term investments"
+    },
+    {
+     "front": "EV/EBITDA",
+     "back": "Enterprise value / EBITDA (compare firms with different capital structures)"
+    },
+    {
+     "front": "Price-to-book",
+     "back": "P/B = market price per share / book value per share"
+    },
+    {
+     "front": "Residual income",
+     "back": "RI_t = NI_t − r × B_(t−1)"
+    }
+   ]
+  },
+  {
+   "day": 81,
+   "kind": "lesson",
+   "area": "Corporate Finance",
+   "module": "Capital Investments and Capital Allocation",
+   "title": "Capital budgeting: NPV, IRR and ROIC",
+   "concept": "A company should accept a project when its NPV at the cost of capital is positive; the IRR agrees for a single conventional project but can mislead when ranking mutually exclusive projects of different size or timing, and sunk costs never enter the decision.",
+   "memorize": [
+    {
+     "front": "NPV decision rule",
+     "back": "Accept if NPV > 0; for mutually exclusive projects choose the highest NPV"
+    },
+    {
+     "front": "IRR decision rule",
+     "back": "Accept if IRR > required rate of return (cost of capital)"
+    },
+    {
+     "front": "Return on invested capital",
+     "back": "ROIC = after-tax operating profit / average book value of invested capital"
+    },
+    {
+     "front": "Crossover rate",
+     "back": "The discount rate at which two projects' NPVs are equal (the IRR of the differences in cash flows)"
+    },
+    {
+     "front": "Sunk costs",
+     "back": "Never included in project cash flows"
+    }
+   ]
+  },
+  {
+   "day": 82,
+   "kind": "lesson",
+   "area": "Corporate Finance",
+   "module": "Capital Structure",
+   "title": "The weighted average cost of capital",
+   "concept": "The weighted average cost of capital blends the after-tax cost of debt, the cost of preferred stock and the cost of equity by target market-value weights, WACC = w_d r_d(1 − t) + w_p r_p + w_e r_e, and it is the hurdle rate for average-risk projects.",
+   "memorize": [
+    {
+     "front": "Weighted average cost of capital",
+     "back": "WACC = w_d × r_d × (1 − t) + w_p × r_p + w_e × r_e"
+    },
+    {
+     "front": "After-tax cost of debt",
+     "back": "r_d × (1 − t), with r_d = YTM of the firm's debt"
+    },
+    {
+     "front": "Cost of preferred stock",
+     "back": "r_p = D_p / P_p"
+    },
+    {
+     "front": "Cost of equity via CAPM",
+     "back": "r_e = R_f + β × [E(R_m) − R_f]"
+    },
+    {
+     "front": "MM proposition I with taxes",
+     "back": "V_L = V_U + t × D (value rises with debt via the tax shield)"
+    }
+   ]
+  },
+  {
+   "day": 83,
+   "kind": "lesson",
+   "area": "Economics",
+   "module": "Exchange Rate Calculations",
+   "title": "Forward exchange rates and interest parity",
+   "concept": "A forward exchange rate is the spot rate adjusted for the two currencies' interest rates, F_(A/B) = S_(A/B) × [1 + i_A(days/360)]/[1 + i_B(days/360)] with A the price currency and B the base currency, so the higher-interest currency trades at a forward discount and a hedged carry trade earns nothing extra.",
+   "memorize": [
+    {
+     "front": "Covered interest rate parity (A/B quote, A = price currency, B = base currency)",
+     "back": "F_(A/B) = S_(A/B) × [1 + i_A × (days/360)] / [1 + i_B × (days/360)]"
+    },
+    {
+     "front": "Forward rate from points",
+     "back": "F = S + points / 10,000 (÷ 100 when the quote has two decimals, e.g. JPY)"
+    },
+    {
+     "front": "Which currency trades at a forward discount?",
+     "back": "The currency with the higher interest rate"
+    },
+    {
+     "front": "Forward premium (base currency)",
+     "back": "F − S > 0: the base currency trades at a forward premium"
+    }
+   ]
+  },
+  {
+   "day": 84,
+   "kind": "review",
+   "area": "Mixed (week review)",
+   "module": "Review",
+   "title": "Week 12 review: ratios, valuation and capital",
+   "concept": "Review of Days 78–83: DuPont, profitability, solvency and coverage ratios, sustainable growth and the justified P/E, multiples and enterprise value, capital budgeting with NPV/IRR/ROIC, the WACC, forward exchange rates and covered interest parity.",
+   "memorize": [],
+   "review_of": [
+    78,
+    79,
+    80,
+    81,
+    82,
+    83
+   ]
+  },
+  {
+   "day": 85,
+   "kind": "lesson",
+   "area": "Corporate Finance",
+   "module": "Working Capital and Liquidity",
+   "title": "Liquidity ratios and the cost of trade credit",
+   "concept": "Liquidity ratios — current, quick, cash and the defensive interval — measure whether near-term obligations can be met, and skipping a supplier's early-payment discount is borrowing at cost = [1 + d/(1 − d)]^(365/days beyond the discount period) − 1, to be compared with other short-term funding.",
+   "memorize": [
+    {
+     "front": "Cost of trade credit",
+     "back": "Cost = [1 + discount / (1 − discount)]^(365 / days beyond the discount period) − 1"
+    },
+    {
+     "front": "Reading '2/10, net 30'",
+     "back": "2% discount if paid within 10 days; otherwise the full amount is due in 30 days"
+    },
+    {
+     "front": "Take the discount?",
+     "back": "Yes if the cost of trade credit exceeds the cost of alternative short-term financing"
+    },
+    {
+     "front": "Quick ratio",
+     "back": "(Cash + short-term marketable investments + receivables) / current liabilities"
+    },
+    {
+     "front": "Defensive interval",
+     "back": "(Cash + short-term marketable investments + receivables) / daily cash expenditures"
+    }
+   ]
+  },
+  {
+   "day": 86,
+   "kind": "lesson",
+   "area": "Economics",
+   "module": "Firms and Market Structures",
+   "title": "Profit maximization, shutdown and concentration",
+   "concept": "Every firm maximizes profit where marginal revenue equals marginal cost, breaks even where price equals average total cost, shuts down in the short run when price falls below average variable cost, and the Herfindahl-Hirschman Index (the sum of squared market shares) gauges how concentrated its market is.",
+   "memorize": [
+    {
+     "front": "Profit-maximizing output",
+     "back": "Produce where MR = MC"
+    },
+    {
+     "front": "Short-run shutdown rule",
+     "back": "Shut down if price < average variable cost; operate (even at a loss) if AVC ≤ P < ATC"
+    },
+    {
+     "front": "Breakeven point",
+     "back": "P = ATC (economic profit = 0)"
+    },
+    {
+     "front": "Herfindahl-Hirschman Index",
+     "back": "HHI = Σ (market share_i)², shares in percent (max 10,000)"
+    },
+    {
+     "front": "N-firm concentration ratio",
+     "back": "Sum of the market shares of the N largest firms"
+    }
+   ]
+  },
+  {
+   "day": 87,
+   "kind": "lesson",
+   "area": "Alternative Investments",
+   "module": "Alternative Investment Performance and Returns",
+   "title": "Hedge-fund fees: from gross to net",
+   "concept": "Hedge-fund investors earn the gross return minus a management fee and an incentive fee on profits above any hurdle and high-water mark, so a '2 and 20' fund must earn a large gross return just to match an index fund, and a fund of funds adds a second layer of fees.",
+   "memorize": [
+    {
+     "front": "Investor net return",
+     "back": "Net return = (ending NAV after all fees − beginning NAV) / beginning NAV"
+    },
+    {
+     "front": "Incentive fee net of management fee, hard hurdle",
+     "back": "Incentive = rate × max[0, ending assets − management fee − beginning assets × (1 + hurdle)]"
+    },
+    {
+     "front": "High-water mark",
+     "back": "Incentive fees are paid only on value above the highest previous NAV (net of fees)"
+    },
+    {
+     "front": "Leveraged portfolio return",
+     "back": "R_L = R + (V_B / V_E) × (R − r_D)"
+    }
+   ]
+  },
+  {
+   "day": 88,
+   "kind": "lesson",
+   "area": "Alternative Investments",
+   "module": "Alternative Investment Performance and Returns",
+   "title": "Private equity waterfalls, IRR and MOIC",
+   "concept": "In private equity the distribution waterfall decides when the general partner earns carried interest — after investors have their capital and preferred return back, either across the whole fund (European) or deal by deal (American), with catch-up and clawback provisions — and performance is reported as IRR and the multiple of invested capital.",
+   "memorize": [
+    {
+     "front": "Multiple of invested capital",
+     "back": "MOIC = (realized value + unrealized value) / total invested capital"
+    },
+    {
+     "front": "European (whole-of-fund) waterfall",
+     "back": "LPs receive all contributed capital plus the preferred return before the GP earns carry"
+    },
+    {
+     "front": "American (deal-by-deal) waterfall",
+     "back": "Carry is paid on each deal as it is exited (earlier for the GP; clawback risk for LPs)"
+    },
+    {
+     "front": "Full catch-up",
+     "back": "After the preferred return, the GP receives (most or all of) distributions until it has its full carry share of total profits"
+    },
+    {
+     "front": "Clawback",
+     "back": "GP must return carry received in excess of its entitled share over the life of the fund"
+    }
+   ]
+  },
+  {
+   "day": 89,
+   "kind": "exam",
+   "area": "Mixed (mock exam)",
+   "module": "Mock exam — session 1 topics",
+   "title": "Mock exam 1: Quant, Economics, FSA",
+   "concept": "CFA-style mock in the order of the real exam's first session (math topics only): 30 three-option questions in about 45 minutes (90 seconds each) on Quantitative Methods, Economics and Financial Statement Analysis, graded on the page, with a topic breakdown to show where to focus from February to May.",
+   "memorize": [],
+   "review_of": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    50,
+    51,
+    62,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    78,
+    83,
+    86
+   ]
+  },
+  {
+   "day": 90,
+   "kind": "exam",
+   "area": "Mixed (mock exam)",
+   "module": "Mock exam — session 2 topics",
+   "title": "Mock exam 2: FI, Equities, Derivatives and more",
+   "concept": "CFA-style mock in the order of the real exam's second session (math topics only): 30 three-option questions in about 45 minutes on Corporate Finance, Equities, Fixed Income, Derivatives, Alternative Investments and Portfolio Construction, graded on the page, with a topic breakdown and a closing plan for review before May.",
+   "memorize": [],
+   "review_of": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    52,
+    53,
+    54,
+    55,
+    57,
+    58,
+    59,
+    60,
+    61,
+    79,
+    80,
+    81,
+    82,
+    85,
+    87,
+    88
+   ]
+  }
+ ]
+}
