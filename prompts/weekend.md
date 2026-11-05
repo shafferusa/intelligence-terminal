@@ -13,8 +13,8 @@ Use `python3 .github/scripts/api_get.py` (SR §0b) for API fetches, WebSearch/We
 
 
 1. ```bash
-   TODAY=$(TZ="America/New_York" date +%F)
-   DOW=$(TZ="America/New_York" date +%u)    # 6=Saturday, 7=Sunday
+   TODAY=$(TZ=America/New_York date +%F)
+   DOW=$(TZ=America/New_York date +%u)    # 6=Saturday, 7=Sunday
    ```
    `SLOT=sat` if DOW=6, `SLOT=sun` if DOW=7. (Any other value: something is misscheduled — note it
    in the run log and follow the day the clock actually says via `prompts/weekday.md` instead.)
@@ -33,7 +33,7 @@ and for indices/futures/commodities/EURUSD/DXY (browser UA acceptable for Yahoo 
 Data as a spot-check only — exactly as `prompts/weekday.md` §2.4 (Twelve Data's free tier is
 8 credits/minute; sweeping the universe through it just hits 429), Treasury par curve XML (this week's
 dates), FRED weekly deltas for `DGS2 DGS10 T10Y2Y T10YIE DFII10 SOFR BAMLH0A0HYM2 ICSA` (+ append
-`hy-oas.csv` if a new observation exists), Cboe history CSVs (VIX/VIX9D/VIX3M week path),
+`hy-oas.csv` if a new observation exists), Yahoo v8 daily closes for `^VIX ^VIX9D ^VIX3M` (the VIX week path; weekday.md §2.3),
 CoinGecko simple/price + global, `state/market-history/breadth.json` history for the week's
 breadth arc. Exact endpoints, keys, labels: `prompts/weekday.md` Step 2. Update
 `state/market-history/last-good.json`. News research per SR §4–§6 for weekend developments.

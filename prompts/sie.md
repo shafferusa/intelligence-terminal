@@ -80,7 +80,7 @@ Teach him **like an intelligent junior trader, not a high-school student**:
 ## Step 0 — Time, slot, idempotency
 
 1. ```bash
-   TODAY=$(TZ="America/New_York" date +%F)
+   TODAY=$(TZ=America/New_York date +%F)
    ```
    Slot is `sie`. Runs every day of the week, weekends included.
 2. SR §1 idempotency with `KEY="$TODAY-sie"`. Already `success` (or `paused` / `complete`) → EXIT NOW:

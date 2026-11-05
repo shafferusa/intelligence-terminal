@@ -70,7 +70,9 @@ api.weather.gov
 requires the `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)` header. **Add it to the
 environment allowlist before the first morning run**, or the strip will silently be omitted.
 
-`cdn.cboe.com` stays on the list for VIX quotes and history. Its options market-statistics path
+`cdn.cboe.com` stays on the list for VIX quotes and history. **Since at least 2026-11-04 it answers
+`307` to `cdn-api.cboe.com`**, so that host must be on the allowlist too, or every VIX fetch fails with
+`CONNECT tunnel failed, response 403` (seen in the 2026-11-05 permission self-test). Its options market-statistics path
 (put/call ratios) is retired — it returned 403 on every run for weeks.
 
 **Environment variables** (secrets live ONLY here — never in the repo):

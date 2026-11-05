@@ -7,7 +7,7 @@ WebFetch tools for news research. Never print secret values.
 
 ## Step 0 — Time, slot, idempotency, inputs
 
-**0a. Day-of-week guard:** if `TZ="America/New_York" date +%u` returns `6` or `7` (Saturday/
+**0a. Day-of-week guard:** if `TZ=America/New_York date +%u` returns `6` or `7` (Saturday/
 Sunday), this weekday procedure does not apply — the weekend routine owns those days. Append
 one line to `state/run-log.jsonl`:
 `{"ts":"<UTC ISO>","slot":"offschedule","ok":true,"note":"weekday routine invoked on a weekend day; exited by design"}`
@@ -23,9 +23,9 @@ report, send no Telegram message.
 1. Compute Eastern time:
 
    ```bash
-   TODAY=$(TZ="America/New_York" date +%F)          # YYYY-MM-DD
-   HOUR=$(TZ="America/New_York" date +%H)
-   NOW_ET=$(TZ="America/New_York" date "+%Y-%m-%d %H:%M %Z")
+   TODAY=$(TZ=America/New_York date +%F)          # YYYY-MM-DD
+   HOUR=$(TZ=America/New_York date +%H)
+   NOW_ET=$(TZ=America/New_York date +%Y-%m-%dT%H:%M%Z)
    ```
 
 2. Slot: if `HOUR` < 12 → `SLOT=am` (Morning Brief), else `SLOT=pm` (Closing Brief).
@@ -66,7 +66,7 @@ back to `state/market-history/last-good.json`. `.gov` hosts always get
 ### 2.1 Treasury daily par yield curve (.gov UA)
 
 ```
-https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=$(TZ=America/New_York date +%Y%m)
+https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value_month=@ET_YYYYMM@
 ```
 
 Parse the most recent entry: 1M→30Y par yields. Compute 2s10s, 3m10y, 5s30s from it.
@@ -86,12 +86,15 @@ Label `EOD official (<obs date>)`. **hy-oas archive:** if the newest `BAMLH0A0HY
 date is later than the last row of `state/market-history/hy-oas.csv`, append one data row
 (`YYYY-MM-DD,<value>` — the file's header is `date,bamlh0a0hym2`). Never rewrite existing rows.
 
-### 2.3 Cboe volatility & options (delayed ~15 min on quotes)
+### 2.3 Volatility & options (VIX from Yahoo v8)
 
-- Quotes: `https://cdn.cboe.com/api/global/delayed_quotes/quotes/_VIX.json` (also `_VIX9D.json`,
-  `_VIX3M.json`). Label `Delayed (+15 min)`.
-- EOD history for term structure: `https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv`,
-  `VIX9D_History.csv`, `VIX3M_History.csv`. Compute VIX9D/VIX/VIX3M term structure and flag inversions.
+- **VIX, VIX9D, VIX3M come from the Yahoo v8 chart endpoint** (§2.4 host, already allowlisted):
+  `^VIX`, `^VIX9D`, `^VIX3M` with `interval=1d&range=3mo` (URL-encode `^` as `%5E`). The latest
+  price is the quote (label `Delayed`, with Yahoo's `regularMarketTime`); the daily closes are the
+  history for the term structure. Compute VIX9D/VIX/VIX3M term structure and flag inversions.
+- Cboe's own feed (`cdn.cboe.com/api/global/...`) has redirected to `cdn-api.cboe.com` since about
+  2026-11-04, and that host is not on the environment allowlist (proxy 403). Do not fetch it and do
+  not list it as a failed source; if the owner adds `cdn-api.cboe.com`, Cboe becomes a cross-check.
 - Put/call ratios: **RETIRED 2026-08-16.** `cdn.cboe.com/data/us/options/market_statistics/daily/`
   has returned 403 AccessDenied on every run for weeks. Do not fetch it, do not list it as a failed
   source, do not mention put/call in the report. If a free replacement is ever found, add it here.
