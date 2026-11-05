@@ -138,13 +138,13 @@
       <h3>Argentina&rsquo;s 100-year bond</h3>
       <p>19 June 2017. Argentina sold $2.75 billion of US-dollar bonds that would not be repaid until 2117. A century bond.</p>
       <p>The borrower&rsquo;s record was not reassuring. Argentina had defaulted on its debts eight times since independence, most recently in 2014.</p>
-      <p>Investors queued anyway: about $9.75 billion of orders, more than three times what was on offer.</p>
+      <p>Investors queued anyway: about $9.75 billion of orders, more than three times the amount sold.</p>
       <p>The coupon was 7.125%: $7.125 a year on every $100 of face value. But buyers did not pay $100. They paid 90 cents on the dollar, $90 for each $100 Argentina promised to repay in 2117.</p>
       <p>Bloomberg reported the yield as 7.917%.</p>
       <p>So the coupon says 7.125% and the yield says 7.917%. Where do the extra 0.79 points come from, when you pay 90 for a bond that repays 100? And can 7.917% be set beside the yield on a bond that pays once a year?</p>
 
       <h3>The idea</h3>
-      <p>Day 15 went from a yield to a price. Today goes from a price to a yield. Same equation, read the other way.</p>
+      <p>Day 15 went from a yield to a price. Today runs the same equation backwards: price to yield.</p>
       <p>The <b>yield to maturity (YTM)</b> is the bond&rsquo;s IRR (Day 10): the one discount rate at which its coupons and par are worth exactly its price. It is your yearly return if you buy today and hold to the end, provided every payment arrives on time and every coupon is reinvested at the YTM itself.</p>
       <p>Picture a $100 gift card you buy for $90 that also pays interest. Your return is the interest <em>plus</em> the $10 you gain at the end.</p>
       <p>Three narrower measures:</p>
@@ -163,7 +163,7 @@
         <li><b>Day 15, backwards.</b> Day 15: price = 6/(1 + r) + 6/(1 + r)<sup>2</sup> + 6/(1 + r)<sup>3</sup> + 106/(1 + r)<sup>4</sup>. Now the price is known and r is the unknown.</li>
         <li><b>That is an IRR.</b> Move the price across: &minus;96.6128 + 6/(1 + r) + &hellip; + 106/(1 + r)<sup>4</sup> = 0. The r that solves it is the YTM: the IRR of buying the bond (Day 10).</li>
         <li><b>Search for it.</b> No algebra isolates r, so try rates. Price falls as r rises, so only one r fits. At 6%: 100.0000 (coupon = yield: par), too high a price, so r is bigger. At 8%: 93.3757, too low. At 7%: 96.6128. Found. <kbd>CPT</kbd> <kbd>I/Y</kbd> does this search for you.</li>
-        <li><b>Where the 7% comes from.</b> The coupon on what you paid: 6/96.6128 = 6.21%, the current yield. The other 0.79 points: the climb from 96.61 to 100. Spread that gain evenly and you get the simple yield; the YTM compounds it.</li>
+        <li><b>Where the 7% comes from.</b> The coupon on what you paid: 6/96.6128 = 6.21%, the current yield. The other 0.79 points: the climb from 96.61 to 100. Spread that gain evenly and you get the simple yield, which ignores when the gain arrives; the YTM discounts it as cash due at the end.</li>
         <li><b>Half-years.</b> On a semiannual bond, <kbd>CPT</kbd> <kbd>I/Y</kbd> gives the rate per half-year. The market quotes it doubled: a stated annual rate with m = 2 (Day 4).</li>
         <li><b>One periodicity.</b> A rate stated with m periods a year grows 1 to (1 + APR<sub>m</sub>/m)<sup>m</sup> in a year. Two yields match when 1 grows to the same amount: 8% semiannual, 1.04<sup>2</sup> = 1.0816, is 8.16% annual-pay.</li>
         <li><b>Calls.</b> If the issuer can repay early, the cash stops at the call date, with the call price in place of par. Same IRR, shorter N, new FV: the yield-to-call.</li>
@@ -181,7 +181,7 @@
           <dt>N</dt><dd>periods to maturity; for a yield-to-call, periods to the call date</dd>
           <dt>flat price</dt><dd>the quoted price, without accrued interest (more on Day 17); on a coupon date it is simply the price</dd>
           <dt>(par &minus; flat price)/years</dt><dd>the gain (discount bond) or loss (premium bond, negative) spread evenly over the years to maturity</dd>
-          <dt>APR<sub>m</sub></dt><dd>an annual yield stated with m periods a year: m = 2 is the semiannual-bond basis, m = 1 annual-pay</dd>
+          <dt>APR<sub>m</sub>, APR<sub>n</sub></dt><dd>the same return as an annual yield stated with m, or with n, periods a year: 2 is the semiannual-bond basis, 1 annual-pay</dd>
         </dl>
       </div>
 
@@ -287,7 +287,7 @@
           <div class="cq-hint"><b>Hint</b> Steps 1&ndash;4 of the walkthrough, with new inputs: N = 40, PV = &minus;88, PMT = 2.5, FV = 100. Solve for the rate, then double it.</div>
           <details class="cq-solution"><summary>Solution</summary>
             <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>40</kbd> <kbd>N</kbd> <kbd>88</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>2.5</kbd> <kbd>PMT</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 3.0209</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>6.0418</samp>.</p>
-            <p>TI-84 Plus: TVM Solver <samp>N=40</samp>, <samp>PV=&minus;88</samp>, <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=3.0209</samp>. Home screen: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.0418</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=40</samp>, <samp>PV=&minus;88</samp>, <samp>PMT=2.5</samp>, <samp>FV=100</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=3.0209</samp>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>6.0418</samp>.</p>
             <p>So <b>6.04%</b>. 3.02 is the half-year rate, not the YTM. Annual inputs (N = 20, PMT = 5) give 6.05: close, and wrong. The current yield is 5/88 = 5.68%, so: coupon 5% &lt; current yield 5.68% &lt; YTM 6.04%.</p>
           </details>
         </div>
@@ -314,7 +314,7 @@
           <div class="cq-hint"><b>Hint</b> Work out two yields and keep the lower. Both have PV = &minus;108 and PMT = 3. To the call: N = 6, FV = 102 (the call price). To maturity: N = 20, FV = 100. Double each.</div>
           <details class="cq-solution"><summary>Solution</summary>
             <p>BA II Plus, to the call: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6</kbd> <kbd>N</kbd> <kbd>108</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>3</kbd> <kbd>PMT</kbd> <kbd>102</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 1.8948</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>3.7895</samp>. To maturity: <kbd>20</kbd> <kbd>N</kbd> <kbd>100</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 2.4874</samp>; <kbd>&times;</kbd> <kbd>2</kbd> <kbd>=</kbd> &rarr; <samp>4.9749</samp>.</p>
-            <p>TI-84 Plus: TVM Solver <samp>N=6</samp>, <samp>PV=&minus;108</samp>, <samp>PMT=3</samp>, <samp>FV=102</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=1.8948</samp>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.7895</samp>. Back in the solver set <samp>N=20</samp>, <samp>FV=100</samp> and solve <samp>I%=</samp> &rarr; <samp>I%=2.4874</samp>; doubled the same way &rarr; <samp>4.9749</samp>.</p>
+            <p>TI-84 Plus: <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>: <samp>N=6</samp>, <samp>PV=&minus;108</samp>, <samp>PMT=3</samp>, <samp>FV=102</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=1.8948</samp>. Then <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT), <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">3:tvm_I%</kbd> <kbd>ENTER</kbd> <kbd>&times;</kbd> <kbd>2</kbd> <kbd>ENTER</kbd> &rarr; <samp>3.7895</samp>. Back in the solver (<kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd>) set <samp>N=20</samp>, <samp>FV=100</samp> and solve <samp>I%=</samp> &rarr; <samp>I%=2.4874</samp>; doubled the same way &rarr; <samp>4.9749</samp>.</p>
             <p>YTC 3.79% &lt; YTM 4.97%, so the yield-to-worst is <b>3.79%</b>. A premium bond, as the traps warned: the call gives the worst. Using par (FV = 100) in the YTC gives 3.18%, the other trap.</p>
           </details>
         </div>

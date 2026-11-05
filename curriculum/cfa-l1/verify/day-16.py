@@ -98,6 +98,7 @@ show("w2  interest in payment 1: 0.005 x 150,000 (A, right)", "{:,.2f}".format(w
 show("w2  principal in payment 1: PMT - interest (B)", "{:,.2f}".format(-w2pmt - w2int))
 show("w2  annual rate x balance: 0.06 x 150,000 (C)", "{:,.2f}".format(0.06 * 150000))
 show("w2  balance after payment 1", "{:,.2f}".format(150000 - (-w2pmt - w2int)))
+show("w2  C's 'more than ten monthly payments': 10 x PMT vs 9,000", "{:,.2f} < 9,000.00: {}".format(-10 * w2pmt, -10 * w2pmt < 0.06 * 150000))
 
 # ------------------------------------------------------------------ story
 print("\n=== Story: Argentina's 100-year bond, 19 June 2017 ===")
@@ -231,6 +232,8 @@ show("c3  YTM: N=20 PV=-108 PMT=3 FV=100: CPT I/Y", "{!r} -> {} / TI {}".format(
 show("c3  YTM x 2", "{!r} -> {} -> {:.2f}%".format(2 * c3_ytm_iy, ba(2 * c3_ytm_iy), 2 * c3_ytm_iy))
 show("c3  trap: YTC with FV = 100", "{} -> x 2 = {} -> {:.2f}%".format(ba(c3_par_iy), ba(2 * c3_par_iy), 2 * c3_par_iy))
 show("c3  current yield 6 / 108", "{:.4f}".format(6 / 108 * 100))
+later = [2 * tvm_iy(n, -108, 3, 102) for n in range(7, 20)]
+show("c3  if also callable later at 102 (N = 7..19): lowest YTC x 2", "{:.4f} (> 3.7895, so the first call stays the worst)".format(min(later)))
 
 # c4: 6% on a semiannual-bond basis -> annual-pay
 c4b = eff(6, 2)
