@@ -2,7 +2,7 @@
 
 You are the scheduled Mon–Fri routine for Logan's Daily Newspaper. You have already read
 `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below); `docs/SPEC.md` is authoritative when in
-doubt. Execute the steps below in order. Use Bash + `curl` for API fetches and the WebSearch /
+doubt. Execute the steps below in order. Use `python3 .github/scripts/api_get.py` (SR §0b) for API fetches and the WebSearch /
 WebFetch tools for news research. Never print secret values.
 
 ## Step 0 — Time, slot, idempotency, inputs
@@ -78,7 +78,7 @@ For each series — `CPIAUCSL CPILFESL PAYEMS ICSA UNRATE T10Y2Y DGS2 DGS10 T10Y
 BAMLH0A0HYM2` — one call:
 
 ```
-https://api.stlouisfed.org/fred/series/observations?series_id=<S>&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=30
+https://api.stlouisfed.org/fred/series/observations?series_id=<S>&api_key=@FRED_API_KEY@&file_type=json&sort_order=desc&limit=30
 ```
 
 Capture latest value + observation date + prior values (for D/W/M changes and revision checks).
@@ -164,7 +164,7 @@ session `D` (previous business day per `data/nyse-holidays.json`; both am and pm
 otherwise duplicate it).
 
 ```
-https://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/<D>?adjusted=true&apiKey=${MASSIVE_KEY:-${POLYGON_API_KEY:-}}
+https://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/<D>?adjusted=true&apiKey=@MASSIVE_KEY|POLYGON_API_KEY@
 ```
 
 If neither key env var is set, or the response is 401/403: breadth = `Source unavailable` (or
@@ -206,9 +206,9 @@ If `fetched` is null or older than 18 hours, refresh (each best-effort; .gov UA 
 - Launches: `https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=10` (free tier ~15 req/hr — one call).
 - Earnings, two layers: Alpha Vantage 3-month CSV **at most once per day** (store `earnings_fetched`
   date in the cache; AV free tier is tiny):
-  `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=${ALPHA_VANTAGE_KEY}`
+  `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=@ALPHA_VANTAGE_KEY@`
   plus Finnhub day-of confirmations:
-  `https://finnhub.io/api/v1/calendar/earnings?from=$TODAY&to=$TODAY&token=${FINNHUB_KEY}`
+  `https://finnhub.io/api/v1/calendar/earnings?from=$TODAY&to=$TODAY&token=@FINNHUB_KEY@`
 
 Normalize into `events`: `{"ts_et","type","name","importance":"Critical|High|Medium|Low","reason","source"}`,
 set `fetched` to now. Importance is classified by you, with the reason stated (SPEC §17).

@@ -2,7 +2,7 @@
 
 You are the scheduled Sat/Sun routine for Logan's Daily Newspaper. You have already read
 `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below); `docs/SPEC.md` wins when in doubt.
-Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never print secrets.
+Use `python3 .github/scripts/api_get.py` (SR §0b) for API fetches, WebSearch/WebFetch for news research. Never print secrets.
 
 ## Step 0 — Time, slot, idempotency, inputs
 

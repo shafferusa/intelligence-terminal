@@ -32,7 +32,7 @@ mechanism.
 
 ## 3. Network egress (allowlist verification)
 
-`curl -sS -o /dev/null -w "%{http_code}" --max-time 20` each of the following. Record the
+`python3 .github/scripts/api_get.py "<URL>" -o /dev/null --timeout 20` each of the following (SR §0b). Record the
 HTTP code per endpoint. A `403` accompanied by response header `x-deny-reason: host_not_allowed`
 means the domain is missing from the environment allowlist — record it as BLOCKED.
 
@@ -52,11 +52,11 @@ One real call per configured key — record `ok` (HTTP 200 + parseable payload) 
 status per API. Never print key values or full responses; a one-line summary field is fine.
 
 ```bash
-curl -s "https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=1"
-curl -s "https://api.twelvedata.com/quote?symbol=SPY&apikey=${TWELVE_DATA_KEY}"
-curl -s "https://finnhub.io/api/v1/quote?symbol=AAPL&token=${FINNHUB_KEY}"
-curl -s "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=${ALPHA_VANTAGE_KEY}"   # uses 1 of the 25/day budget
-curl -s "https://api.polygon.io/v2/aggs/ticker/SPY/prev?apiKey=${MASSIVE_KEY}"
+python3 .github/scripts/api_get.py "https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=@FRED_API_KEY@&file_type=json&sort_order=desc&limit=1"
+python3 .github/scripts/api_get.py "https://api.twelvedata.com/quote?symbol=SPY&apikey=@TWELVE_DATA_KEY@"
+python3 .github/scripts/api_get.py "https://finnhub.io/api/v1/quote?symbol=AAPL&token=@FINNHUB_KEY@"
+python3 .github/scripts/api_get.py "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=@ALPHA_VANTAGE_KEY@"   # uses 1 of the 25/day budget
+python3 .github/scripts/api_get.py "https://api.polygon.io/v2/aggs/ticker/SPY/prev?apiKey=@MASSIVE_KEY@"
 ```
 
 Add to the §7 diagnosis JSON: `"api_checks":{"fred":"ok|<err>","twelvedata":"ok|<err>","finnhub":"ok|<err>","alphavantage":"ok|<err>","massive":"ok|<err>"}`.
@@ -72,7 +72,7 @@ Commit as `Smoke test: connectivity check` and `git push origin main`.
 
 ## 5. Site reachability
 
-`curl -s -o /dev/null -w "%{http_code}" https://shafferusa.github.io/intelligence-terminal/` — expect 200.
+`python3 .github/scripts/api_get.py --wait-200 https://shafferusa.github.io/intelligence-terminal/ --tries 1` — expect 200.
 
 ## 6. Telegram delivery
 
