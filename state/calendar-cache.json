@@ -1,56 +1,8 @@
 {
-  "fetched": "2026-11-04T10:39:18-05:00",
+  "fetched": "2026-11-05T14:29:59-05:00",
   "earnings_fetched": "2026-11-01",
   "earnings_fetched_note": "2026-11-01 sun: Alpha Vantage 3-month CSV + Finnhub Nov 2-6 fetched; conflicts ARM (Finnhub Nov 5 vs AV Nov 4), PLTR (on AV, absent from Finnhub list; EPS est 0.33 AV vs 0.41 press), AAPL EPS 1.98 AV vs 2.02 Finnhub.",
   "events": [
-    {
-      "ts_et": "2026-11-04T08:30",
-      "type": "treasury",
-      "name": "Quarterly refunding announcement",
-      "importance": "High",
-      "reason": "Coupon sizes; guidance",
-      "source": "treasury.gov"
-    },
-    {
-      "ts_et": "2026-11-04T08:30",
-      "type": "data",
-      "name": "Trade balance (Sept)",
-      "importance": "Low",
-      "reason": "Per calendars; BEA",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-04T10:00",
-      "type": "data",
-      "name": "ISM Services PMI (Oct)",
-      "importance": "Medium",
-      "reason": "Consensus ~54.8",
-      "source": "ismworld.org calendar"
-    },
-    {
-      "ts_et": "2026-11-04T16:00",
-      "type": "earnings",
-      "name": "Qualcomm, AppLovin, DoorDash, MercadoLibre, Snap",
-      "importance": "High",
-      "reason": "Phones/PCs and growth names",
-      "source": "finnhub"
-    },
-    {
-      "ts_et": "2026-11-04T07:00",
-      "type": "earnings",
-      "name": "CVS, McDonald's, Uber, Datadog, Novo Nordisk (bmo)",
-      "importance": "Medium",
-      "reason": "Consumer/health",
-      "source": "finnhub+alphavantage"
-    },
-    {
-      "ts_et": "2026-11-04T00:00",
-      "type": "politics",
-      "name": "Israel official results to President Herzog",
-      "importance": "Medium",
-      "reason": "Coalition mandate within a week",
-      "source": "research"
-    },
     {
       "ts_et": "2026-11-05T07:00",
       "type": "central_bank",
@@ -76,12 +28,12 @@
       "source": "finnhub+alphavantage"
     },
     {
-      "ts_et": "2026-11-06T08:30",
-      "type": "data",
-      "name": "Employment Situation (Oct)",
-      "importance": "Critical",
-      "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
-      "source": "bls.ics"
+      "ts_et": "2026-11-05T16:00",
+      "type": "earnings",
+      "name": "Airbnb, Cloudflare, Monster, EOG, Devon, Live Nation (amc)",
+      "importance": "Medium",
+      "reason": "Travel/AI infra read after selloff",
+      "source": "finnhub"
     },
     {
       "ts_et": "2026-11-06T07:00",
@@ -92,12 +44,92 @@
       "source": "finnhub"
     },
     {
+      "ts_et": "2026-11-06T07:00",
+      "type": "earnings",
+      "name": "Vistra, Humana, Charter (bmo)",
+      "importance": "Medium",
+      "reason": "AI-power bellwether after two-day rout",
+      "source": "finnhub"
+    },
+    {
+      "ts_et": "2026-11-06T08:30",
+      "type": "data",
+      "name": "Employment Situation (Oct)",
+      "importance": "Critical",
+      "reason": "Jobs report before Dec FOMC; ~50-55K forecast, UR 4.2%",
+      "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-06T19:46",
+      "type": "launch",
+      "name": "Falcon 9 USSF-432 (Vandenberg), NET",
+      "importance": "Low",
+      "reason": "Classified NSSL",
+      "source": "thespacedevs"
+    },
+    {
+      "ts_et": "2026-11-09T13:00",
+      "type": "treasury",
+      "name": "3-year note auction $58B",
+      "importance": "Medium",
+      "reason": "First post-election coupon test",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-10T00:00",
+      "type": "geopolitics",
+      "name": "US-mediated Ukraine-Russia working-level talks, Abu Dhabi (Nov 10-11)",
+      "importance": "Medium",
+      "reason": "Per Witkoff; Kremlin confirmation unclear",
+      "source": "research"
+    },
+    {
+      "ts_et": "2026-11-10T00:00",
+      "type": "politics",
+      "name": "US-Russia-Ukraine talks, Abu Dhabi (Nov 10-11)",
+      "importance": "Medium",
+      "reason": "First round since February",
+      "source": "research"
+    },
+    {
       "ts_et": "2026-11-10T08:30",
       "type": "data",
       "name": "CPI (Oct)",
       "importance": "Critical",
       "reason": "Inflation before Dec FOMC",
       "source": "bls.ics"
+    },
+    {
+      "ts_et": "2026-11-10T13:00",
+      "type": "treasury",
+      "name": "10-year note auction $42B",
+      "importance": "High",
+      "reason": "Long-end demand post-election",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-12T11:30",
+      "type": "treasury",
+      "name": "Bills settling Nov 12: 6w $100B, 13w $95B, 26w $82B",
+      "importance": "Low",
+      "reason": "Bill supply",
+      "source": "treasurydirect upcoming"
+    },
+    {
+      "ts_et": "2026-11-12T13:00",
+      "type": "treasury",
+      "name": "30-year bond auction $25B",
+      "importance": "High",
+      "reason": "Long-end demand",
+      "source": "treasury.gov refunding statement"
+    },
+    {
+      "ts_et": "2026-11-13T00:00",
+      "type": "launch",
+      "name": "ULA Vulcan return to flight (Amazon Leo), NET",
+      "importance": "Low",
+      "reason": "Range approval pending",
+      "source": "research"
     },
     {
       "ts_et": "2026-11-13T08:30",
@@ -122,94 +154,6 @@
       "importance": "Critical",
       "reason": "Dec hike ~72% priced (Oct 30, as reported)",
       "source": "federalreserve.gov"
-    },
-    {
-      "ts_et": "2026-11-05T12:00",
-      "type": "cb",
-      "name": "Bank of England decision",
-      "importance": "High",
-      "reason": "54/63 economists expect hike to 4.00%",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-06T08:30",
-      "type": "data",
-      "name": "Employment Situation (Oct)",
-      "importance": "Critical",
-      "reason": "Consensus ~63K, UR 4.2%",
-      "source": "bls.ics"
-    },
-    {
-      "ts_et": "2026-11-05T08:30",
-      "type": "data",
-      "name": "Productivity and Costs (Q3 prelim)",
-      "importance": "Medium",
-      "reason": "Unit labor costs",
-      "source": "bls.ics"
-    },
-    {
-      "ts_et": "2026-11-06T19:46",
-      "type": "launch",
-      "name": "Falcon 9 USSF-432 (Vandenberg), NET",
-      "importance": "Low",
-      "reason": "Classified NSSL",
-      "source": "thespacedevs"
-    },
-    {
-      "ts_et": "2026-11-10T00:00",
-      "type": "geopolitics",
-      "name": "US-mediated Ukraine-Russia working-level talks, Abu Dhabi (Nov 10-11)",
-      "importance": "Medium",
-      "reason": "Per Witkoff; Kremlin confirmation unclear",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-04T10:30",
-      "type": "data",
-      "name": "EIA crude inventories",
-      "importance": "Medium",
-      "reason": "API ~-5.3M (single source); Hormuz supply",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-09T13:00",
-      "type": "treasury",
-      "name": "3-year note auction $58B",
-      "importance": "Medium",
-      "reason": "First post-election coupon test",
-      "source": "treasury.gov refunding statement"
-    },
-    {
-      "ts_et": "2026-11-10T13:00",
-      "type": "treasury",
-      "name": "10-year note auction $42B",
-      "importance": "High",
-      "reason": "Long-end demand post-election",
-      "source": "treasury.gov refunding statement"
-    },
-    {
-      "ts_et": "2026-11-12T13:00",
-      "type": "treasury",
-      "name": "30-year bond auction $25B",
-      "importance": "High",
-      "reason": "Long-end demand",
-      "source": "treasury.gov refunding statement"
-    },
-    {
-      "ts_et": "2026-11-10T00:00",
-      "type": "politics",
-      "name": "US-Russia-Ukraine talks, Abu Dhabi (Nov 10-11)",
-      "importance": "Medium",
-      "reason": "First round since February",
-      "source": "research"
-    },
-    {
-      "ts_et": "2026-11-13T00:00",
-      "type": "launch",
-      "name": "ULA Vulcan return to flight (Amazon Leo), NET",
-      "importance": "Low",
-      "reason": "Range approval pending",
-      "source": "research"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

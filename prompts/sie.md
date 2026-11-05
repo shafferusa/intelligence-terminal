@@ -79,9 +79,7 @@ Teach him **like an intelligent junior trader, not a high-school student**:
 
 ## Step 0 — Time, slot, idempotency
 
-1. ```bash
-   TODAY=$(TZ=America/New_York date +%F)
-   ```
+1. Run `TZ=America/New_York date +%F` as its own Bash command (the shell rule) and read `TODAY`.
    Slot is `sie`. Runs every day of the week, weekends included.
 2. SR §1 idempotency with `KEY="$TODAY-sie"`. Already `success` (or `paused` / `complete`) → EXIT NOW:
    no page, no commit.

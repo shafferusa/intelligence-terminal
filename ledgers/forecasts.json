@@ -6881,6 +6881,76 @@
       "probability": "55-70%",
       "basis": "Consensus 59-65K, forecaster range 45-100K; ADP +86K",
       "status": "open"
+    },
+    {
+      "id": "2026-11-05-am-1",
+      "date": "2026-11-05",
+      "slot": "am",
+      "forecast": "S&P 500 closes Thu Nov 5, 2026 below 7,500.",
+      "horizon": "2026-11-05",
+      "probability": "70-85%",
+      "basis": "7,387 at 2:22 PM ET with under two hours left; VIX curve inverted; day high 7,681",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-am-2",
+      "date": "2026-11-05",
+      "slot": "am",
+      "forecast": "VIX closes above 25 on Thu Nov 5, 2026.",
+      "horizon": "2026-11-05",
+      "probability": "60-75%",
+      "basis": "27.15 at 2:07 PM ET, session high 28.09, from 16.61 Nov 4",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-am-3",
+      "date": "2026-11-05",
+      "slot": "am",
+      "forecast": "10-year Treasury par yield on Nov 5, 2026 is below 4.90% (Nov 4 level).",
+      "horizon": "2026-11-05",
+      "probability": "75-85%",
+      "basis": "Yahoo 10Y reference ~4.83% at 2:07 PM ET; risk-off bid",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-am-4",
+      "date": "2026-11-05",
+      "slot": "am",
+      "forecast": "PHLX Semiconductor index closes Fri Nov 6, 2026 below its Nov 4 close of 10,268.65.",
+      "horizon": "2026-11-06",
+      "probability": "75-90%",
+      "basis": "9,261 at 2:22 PM Nov 5 (-9.8%); would need ~11% gain",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-1",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "S&P 500 closes Fri Nov 6, 2026 above Thursday's close of 7,353.73.",
+      "horizon": "2026-11-06",
+      "probability": "45-60%",
+      "basis": "Partial rebounds commonly follow 4%+ single-day drops, offset by payroll-day risk and an inverted VIX curve.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-2",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "VIX closes above 22 on Fri Nov 6, 2026.",
+      "horizon": "2026-11-06",
+      "probability": "65-80%",
+      "basis": "VIX closed 28.18 with 9-day at 32.66; a 6+ point one-day drop is uncommon.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-3",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "Front-month WTI crude settles above $88.00 on Fri Nov 6, 2026.",
+      "horizon": "2026-11-06",
+      "probability": "65-80%",
+      "basis": "Thursday settle ~$90.52 (Rigzone) after renewed Hormuz tanker incidents; deal headlines are the downside risk.",
+      "status": "open"
     }
   ]
 }

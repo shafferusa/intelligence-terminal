@@ -37,6 +37,18 @@ When environment variables are missing or egress is blocked (403 `host_not_allow
 
 ## 0b. Shell commands in an unattended run (read before your first Bash call)
 
+**THE SHELL RULE (read before your first Bash call).** No one can answer a permission prompt during a
+scheduled run, so a prompt stops the edition. Every Bash call is ONE plain command:
+- fetch ONLY with `python3 .github/scripts/api_get.py "<URL>" -o <file>` (keys as `@NAME@`; many URLs:
+  `--batch <list>`), including any one-off source you decide to check;
+- parse or compute ONLY by writing a script with the Write tool and running `python3 <that file>`;
+- publish ONLY with `python3 .github/scripts/publish.py --subject "<commit subject>" --body-file <file>`;
+- the date: `TZ=America/New_York date +%F` on its own.
+Never type `curl`, `wget`, a pipe `|`, `;`, `&&`, `||`, a heredoc, `$(...)`, `cd X; ...`, or `python3 -c` in
+a Bash command. On 2026-11-05 two runs stopped for a click: one on an inline curl to treasurydirect.gov, one
+on a chained git commit. Details: `prompts/shared-rules.md` §0b.
+
+
 Nobody is watching a scheduled run, so a permission prompt is never answered: the run just stops and the
 edition is lost (the 2026-11-05 Morning Brief stalled at 07:44 ET on one curl command). Claude Code's
 shell-safety check prompts when a command puts a brace expansion inside quotes, such as
@@ -56,8 +68,13 @@ shell-safety check prompts when a command puts a brace expansion inside quotes, 
    code, parsing or multi-step logic goes in a script file: write it to your scratch directory with
    the Write tool, then run `python3 <file>` or `bash <file>`. Keep each Bash call one plain program
    with plain arguments.
-3. The PR fallback (§15.2b) uses `python3 .github/scripts/open_pr.py --title "<commit subject>"`, and the
-   page poll (§15.3) uses `python3 .github/scripts/api_get.py --wait-200 <report URL>`.
+3. **Publishing is one plain command** (§15.2): write the commit body (if any) to a file with the Write
+   tool, then run `python3 .github/scripts/publish.py --subject "report: <date> <slot>" --body-file <file>`.
+   It sets the git identity, stages only the routine write set, makes the one commit, rebases onto
+   `origin/main`, pushes to `main`, and falls back to the §15.2b pull request by itself. Never chain git
+   commands with `||`, `;` or `&&`, and never pass a commit message through a heredoc: the 2026-11-05 late
+   Morning Brief stopped for a click at exactly that. The page poll (§15.3) uses
+   `python3 .github/scripts/api_get.py --wait-200 <report URL>`.
 
 ## 1. Idempotency check (do this FIRST, before any fetch)
 
@@ -358,12 +375,16 @@ nothing) as a safety net, but never calls `sendMessage` and never confirms updat
 
 ## 15. Publish, verify, and log
 
-1. Ensure git identity: if unset, `git config user.name "Intelligence Terminal Bot"` and
-   `git config user.email "loganshaffer87@gmail.com"`.
-2. Stage only files inside the allowed write set (`site/reports/`, `state/`, `ledgers/`, `registry/`).
-   `git pull --rebase origin main` before each push; if rebase conflicts on `index.json` or
-   `run-log.jsonl`, take the remote version and re-apply your addition. Commit with a message like
-   `report: 2026-07-27 am`, then `git push origin main`. **Never force-push.**
+1. Write the commit body (the two trailer lines your run uses, if any) to a scratch file with the
+   Write tool.
+2. Publish with ONE command: `python3 .github/scripts/publish.py --subject "report: 2026-07-27 am"
+   --body-file <file>` (subject `learning: <date> day <N>` or `sie: <date> day <N>` for those runs). It
+   sets the git identity if unset, stages ONLY the write set (`site/reports/`, `state/`, `ledgers/`,
+   `registry/`) and lists anything else it left out, makes the one commit, rebases onto `origin/main`,
+   pushes to `main` (retrying a non-fast-forward), and opens the §15.2b PR itself if `main` is refused.
+   Exit 0 = published. Exit 3 = a rebase conflict on `index.json` or `run-log.jsonl`: take the remote
+   version, re-apply your addition, `git add` the file, `git rebase --continue`, then
+   `python3 .github/scripts/publish.py --push-only`. **Never force-push.**
 
    **ONE COMMIT PER RUN.** The report page, `site/reports/index.json`, all `state/` files
    (including `run-log.jsonl`, `last-run.json`, `stories.json`, `curriculum`/`learning` state),
