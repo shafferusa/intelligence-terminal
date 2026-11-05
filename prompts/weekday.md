@@ -22,11 +22,8 @@ report, send no Telegram message.
 
 1. Compute Eastern time:
 
-   ```bash
-   TODAY=$(TZ=America/New_York date +%F)          # YYYY-MM-DD
-   HOUR=$(TZ=America/New_York date +%H)
-   NOW_ET=$(TZ=America/New_York date +%Y-%m-%dT%H:%M%Z)
-   ```
+   Run `TZ=America/New_York date +%Y-%m-%dT%H:%M%Z` as its own Bash command (the shell rule) and read
+   `TODAY` (YYYY-MM-DD), `HOUR` and `NOW_ET` from its output.
 
 2. Slot: if `HOUR` < 12 → `SLOT=am` (Morning Brief), else `SLOT=pm` (Closing Brief).
 3. Run the SR §1 idempotency check with `KEY="$TODAY-$SLOT"`. If already successful, EXIT NOW.

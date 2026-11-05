@@ -37,6 +37,18 @@ When environment variables are missing or egress is blocked (403 `host_not_allow
 
 ## 0b. Shell commands in an unattended run (read before your first Bash call)
 
+**THE SHELL RULE (read before your first Bash call).** No one can answer a permission prompt during a
+scheduled run, so a prompt stops the edition. Every Bash call is ONE plain command:
+- fetch ONLY with `python3 .github/scripts/api_get.py "<URL>" -o <file>` (keys as `@NAME@`; many URLs:
+  `--batch <list>`), including any one-off source you decide to check;
+- parse or compute ONLY by writing a script with the Write tool and running `python3 <that file>`;
+- publish ONLY with `python3 .github/scripts/publish.py --subject "<commit subject>" --body-file <file>`;
+- the date: `TZ=America/New_York date +%F` on its own.
+Never type `curl`, `wget`, a pipe `|`, `;`, `&&`, `||`, a heredoc, `$(...)`, `cd X; ...`, or `python3 -c` in
+a Bash command. On 2026-11-05 two runs stopped for a click: one on an inline curl to treasurydirect.gov, one
+on a chained git commit. Details: `prompts/shared-rules.md` §0b.
+
+
 Nobody is watching a scheduled run, so a permission prompt is never answered: the run just stops and the
 edition is lost (the 2026-11-05 Morning Brief stalled at 07:44 ET on one curl command). Claude Code's
 shell-safety check prompts when a command puts a brace expansion inside quotes, such as

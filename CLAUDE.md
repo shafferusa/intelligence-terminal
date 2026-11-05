@@ -7,6 +7,18 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 
 ## If you are a scheduled routine, read in this order — then execute
 
+**THE SHELL RULE (read before your first Bash call).** No one can answer a permission prompt during a
+scheduled run, so a prompt stops the edition. Every Bash call is ONE plain command:
+- fetch ONLY with `python3 .github/scripts/api_get.py "<URL>" -o <file>` (keys as `@NAME@`; many URLs:
+  `--batch <list>`), including any one-off source you decide to check;
+- parse or compute ONLY by writing a script with the Write tool and running `python3 <that file>`;
+- publish ONLY with `python3 .github/scripts/publish.py --subject "<commit subject>" --body-file <file>`;
+- the date: `TZ=America/New_York date +%F` on its own.
+Never type `curl`, `wget`, a pipe `|`, `;`, `&&`, `||`, a heredoc, `$(...)`, `cd X; ...`, or `python3 -c` in
+a Bash command. On 2026-11-05 two runs stopped for a click: one on an inline curl to treasurydirect.gov, one
+on a chained git commit. Details: `prompts/shared-rules.md` §0b.
+
+
 1. `docs/SPEC.md` — the authoritative product spec. When in doubt, it wins.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).

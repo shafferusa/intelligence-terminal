@@ -12,10 +12,8 @@ Use `python3 .github/scripts/api_get.py` (SR §0b) for API fetches, WebSearch/We
 > as success. Halt ONLY for SR §1 idempotency or a repo that cannot be pushed to at all.
 
 
-1. ```bash
-   TODAY=$(TZ=America/New_York date +%F)
-   DOW=$(TZ=America/New_York date +%u)    # 6=Saturday, 7=Sunday
-   ```
+1. Run `TZ=America/New_York date +%F_%u` as its own Bash command (the shell rule) and read `TODAY`
+   and `DOW` (6=Saturday, 7=Sunday) from its output.
    `SLOT=sat` if DOW=6, `SLOT=sun` if DOW=7. (Any other value: something is misscheduled — note it
    in the run log and follow the day the clock actually says via `prompts/weekday.md` instead.)
 2. SR §1 idempotency check with `KEY="$TODAY-$SLOT"`. Already successful → EXIT NOW. Record `RUN_START`.
