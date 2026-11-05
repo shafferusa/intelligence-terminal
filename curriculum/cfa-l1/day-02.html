@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Sixty guilders for Manhattan: the one interest rate that decides whether it was a steal — CFA Math, Day 2 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "Sixty guilders for Manhattan: the one interest rate that decides whether it was a steal",
+    "path": "reports/cfa/l1/day-02.html",
+    "summary": "Day 2 of CFA Math: present value is compounding run backwards, and the same equation gives the implied rate and the number of periods; Logan finds the 6.66% a year that makes $24 paid for Manhattan in 1626 equal its $1.74 trillion of land in 2014.",
+    "headlines": [
+      "Day 2 of 90 · Quantitative Methods: present value is compounding run backwards, and the same equation gives the rate and the years",
+      "Calculator: the implied rate behind $24 for Manhattan (CPT I/Y) and the years to double at 7% (CPT N), on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>Sixty guilders for Manhattan: the one interest rate that decides whether it was a steal</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        Present value is compounding run backwards, and the same equation finds the rate, or the years, hidden between any two sums of money.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 2 of 90 &middot; LM4 The Time Value of Money in Finance &middot; Present value and implied rate</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="2">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from Day 1, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="6897.578851788341" data-tol="0.01" data-signless data-show="6,897.58">
+          <p class="cq-stem"><b>From Day 1.</b> $2,500 is invested at 7% a year, compounded annually, for 15 years. What is it worth at the end? To the nearest cent.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> FV = PV &times; (1 + r)<sup>N</sup> with PV = 2,500, r = 0.07 and N = 15. Or TVM: N = 15, I/Y = 7, PV = &minus;2,500, PMT = 0, CPT FV.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>2,500 &times; 1.07<sup>15</sup> = 2,500 &times; 2.759032 = <b>6,897.58</b>.</p>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>15</kbd> <kbd>N</kbd> <kbd>7</kbd> <kbd>I/Y</kbd> <kbd>2500</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; <samp>FV = 6,897.5789</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=15</samp>, <samp>I%=7</samp>, <samp>PV=&minus;2500</samp>, <samp>PMT=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>FV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>FV=6897.5789</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="A">
+          <p class="cq-stem"><b>From Day 1.</b> On the BA II Plus you enter N = 10, I/Y = 6, PV = 2,000 (typed positive, no <kbd>+|&minus;</kbd>) and PMT = 0, then press <kbd>CPT</kbd> <kbd>FV</kbd>. What does the screen show?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. FV = &minus;3,581.6954</span></label>
+              <p class="cq-why">Right. A positive PV is cash you receive today, so the FV that settles it at the end is cash going out: negative. The size is still correct.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. FV = 3,581.6954</span></label>
+              <p class="cq-why">You get a positive FV only when PV is entered as &minus;2,000: you pay the money out today and receive the FV back at the end.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. Error 5</span></label>
+              <p class="cq-why">Error 5 comes only when solving for I/Y or N with no sign change among PV, PMT and FV. Solving for FV, PV or PMT never errors.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Out is negative, in is positive. Today it matters more: to solve for a <em>rate</em>, PV and FV must have opposite signs, or you will meet Error 5 for real.</p></details>
+        </div>
+      </section>
+
+      <h3>Sixty guilders for Manhattan</h3>
+      <p>On 5 November 1626, Pieter Schaghen, a Dutch official in Amsterdam, wrote to the States General in The Hague. The colonists of New Netherland, he reported, &ldquo;have purchased the Island Manhattes from the Indians for the value of 60 guilders.&rdquo;</p>
+      <p>The letter is the only known contemporary record of the deal, and it does not say what changed hands. In the 1840s, American historians converted the sum at the exchange rate of their day, about 40 cents to the guilder. That made it $24, and &ldquo;$24&rdquo; entered the schoolbooks.</p>
+      <p>Now jump 388 years. In a 2018 paper, the economists Jason Barr, Fred Smith and Sayali Kulkarni estimated that Manhattan&rsquo;s developable land alone, not counting the buildings on it, was worth about $1.74 trillion in 2014. (An earlier version of their study, widely reported in 2016, had said about $1.4 trillion.)</p>
+      <p>So was $24 a steal? Not obviously: money left to compound grows too. There is exactly one annual rate at which $24 in 1626 and $1.74 trillion in 2014 are worth the same. What is it, and how would you find it?</p>
+
+      <h3>The idea</h3>
+      <p>Day 1 ran money forward: a sum today, grown at r for N years, becomes FV. Today runs it backward.</p>
+      <p><b>Present value</b> asks: how much would I need today, invested at r, to have FV in N years? That amount is what the future sum is worth now. Finding it is called <b>discounting</b>, and r is the <b>discount rate</b>.</p>
+      <p>An everyday picture: you want $1,000 for a trip in two years, and the bank pays 5%. You don&rsquo;t need to deposit $1,000, because less will grow into it. Present value says exactly how much less: $907.03.</p>
+      <p>Two rules follow, and they never change. A higher rate means you need less today. A longer wait means you need less today.</p>
+      <p>The equation holds four numbers: PV, FV, r and N. Know any three and you can find the fourth. Day 1 found FV. Today finds PV, the rate r (Manhattan&rsquo;s question) and the number of periods N.</p>
+
+      <h3>Why it works</h3>
+      <p><b>Start from Day 1.</b> FV<sub>N</sub> = PV &times; (1 + r)<sup>N</sup>. Each year multiplies the money by (1 + r).</p>
+      <p><b>Go back one year.</b> What grows into $105 in a year at 5%? Times 1.05 it gives 105, so it is 105 &divide; 1.05 = $100. One year back means dividing by (1 + r).</p>
+      <p><b>Go back N years.</b> Divide once per year, which is dividing by (1 + r)<sup>N</sup>. Check: 110.25 &divide; 1.05<sup>2</sup> = 110.25 &divide; 1.1025 = 100.</p>
+      <p>So PV = FV<sub>N</sub> / (1 + r)<sup>N</sup>: Day 1&rsquo;s formula divided through by (1 + r)<sup>N</sup>. In plain words: the amount to put in the bank today to end up with the future sum.</p>
+      <p><b>The discount factor.</b> DF = 1 / (1 + r)<sup>N</sup> is what $1 due in N years is worth today, so PV = FV &times; DF. At 5% over 6 years DF = 0.7462: a dollar promised in 6 years is worth about 75 cents now.</p>
+      <p><b>Solve for the rate.</b> Divide Day 1&rsquo;s formula by PV: FV/PV = (1 + r)<sup>N</sup>, the number of times the money multiplied. Undo the power N with the Nth root (raise to 1/N): (FV/PV)<sup>1/N</sup> = 1 + r. Subtract 1. In plain words: how fast the money must grow each year to turn PV into FV. Only the ratio FV/PV matters, not the units.</p>
+      <p><b>Solve for N.</b> Now the unknown is the exponent. The <kbd>LN</kbd> key brings exponents down: ln(a<sup>N</sup>) = N &times; ln(a). So ln(FV/PV) = N &times; ln(1 + r); divide by ln(1 + r).</p>
+      <p><b>The Rule of 72.</b> To double, FV/PV = 2, and ln 2 = 0.6931. For small r, ln(1 + r) &asymp; r, so N &asymp; 69.3 / (rate in percent). At ordinary rates the exact constant creeps up (71.71 at 7%, 72.05 at 8%), and 72 divides evenly by 2, 3, 4, 6, 8, 9 and 12.</p>
+      <div class="formula">
+        <p class="expr">PV = FV<sub>N</sub> / (1 + r)<sup>N</sup></p>
+        <p class="expr">r = (FV<sub>N</sub> / PV)<sup>1/N</sup> &minus; 1</p>
+        <p class="expr">N = ln(FV<sub>N</sub> / PV) / ln(1 + r)</p>
+        <dl>
+          <dt>PV</dt><dd>present value: the future sum&rsquo;s worth today</dd>
+          <dt>FV<sub>N</sub></dt><dd>future value at the end of period N</dd>
+          <dt>r</dt><dd>rate per period (discount rate or implied return), as a decimal</dd>
+          <dt>N</dt><dd>number of periods (years here)</dd>
+          <dt>1/(1 + r)<sup>N</sup></dt><dd>the discount factor, DF</dd>
+          <dt>ln</dt><dd>natural log (the <kbd>LN</kbd> key)</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>PV = FV<sub>N</sub> / (1 + r)<sup>N</sup></li>
+          <li>DF = 1 / (1 + r)<sup>N</sup></li>
+          <li>r = (FV<sub>N</sub> / PV)<sup>1/N</sup> &minus; 1</li>
+          <li>N = ln(FV<sub>N</sub> / PV) / ln(1 + r)</li>
+          <li>Years to double &asymp; 72 / (interest rate in percent) &mdash; a mental check, not a CFA formula</li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <p><b>Problem.</b> A savings bond pays $5,000 in 6 years. (a) At 5% a year, what is it worth today? (b) If it sells for $3,500, what annual return does it offer? (c) At 5%, how many years does $3,500 take to grow to $5,000?</p>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Growth factor: 1.05<sup>6</sup> = 1.340096.</li>
+          <li>Discount factor: DF = 1 &divide; 1.340096 = 0.746215.</li>
+          <li>(a) PV = 5,000 &times; 0.746215 = <b>$3,731.08</b>.</li>
+          <li>(b) Growth needed: 5,000 &divide; 3,500 = 1.428571.</li>
+          <li>Spread it over 6 years: 1.428571<sup>1/6</sup> = 1.061248, so r = 0.061248 = <b>6.12%</b>.</li>
+          <li>(c) N = ln(1.428571) &divide; ln(1.05) = 0.356675 &divide; 0.048790 = <b>7.31 years</b>.</li>
+          <li>Sense check: $3,500 is below the 5% value of $3,731.08, so the buyer earns more than 5% (6.12%). At only 5%, the money needs longer than 6 years (7.31).</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> What annual rate turns $24 in 1626 into $1.74 trillion in 2014 (N = 388)? Then: how many years does money take to double at 7%? The BA II Plus takes at most 10 digits and $1.74 trillion has 13, so work in thousands of dollars on both calculators: PV = &minus;0.024, FV = 1,740,000,000. Dividing both by 1,000 leaves FV/PV, and so the rate, unchanged.</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old numbers and open the TVM screen (P/Y is still 1 from Day 1)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd> (nothing clears here: the next step retypes every line except the unknown)</div>
+          </li>
+          <li>
+            <p class="calc-what">Enter what you know, in $ thousands: $24 paid out (negative), $1.74 trillion of land held at the end (positive)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>388</kbd> <kbd>N</kbd> <kbd>0.024</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>1740000000</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=388</samp>, <samp>PV=&minus;.024</samp>, <samp>PMT=0</samp>, <samp>FV=1740000000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp> (type <kbd>(&minus;)</kbd> for the minus sign); leave <samp>I%=</samp> as it is, since it is the unknown</div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for the rate</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>I/Y</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>I%=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>I/Y = 6.6573</samp> (BA II Plus) / <samp>I%=6.6573</samp> (TI-84). It is a percent per period, and a period here is a year: 6.6573% a year.</p>
+          </li>
+          <li>
+            <p class="calc-what">Part 2, doubling at 7%: clear, then enter $1 paid out now (negative) and $2 back at the end (positive)</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>7</kbd> <kbd>I/Y</kbd> <kbd>1</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>2</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>I%=7</samp>, <samp>PV=&minus;1</samp>, <samp>PMT=0</samp>, <samp>FV=2</samp> (P/Y, C/Y and END stay as they are); leave <samp>N=</samp> alone, it is now the unknown</div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for N</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>N</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>N=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>N = 10.2448</samp> (BA II Plus) / <samp>N=10.2448</samp> (TI-84): 10.2448 years.</p>
+          </li>
+          <li>
+            <p class="calc-what">Check it with the formula: N = ln 2 / ln 1.07</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2</kbd> <kbd>LN</kbd> <kbd>&divide;</kbd> <kbd>1.07</kbd> <kbd>LN</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>2nd</kbd> <kbd>MODE</kbd> (QUIT) to the home screen, then <kbd>LN</kbd> <kbd>2</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>LN</kbd> <kbd>1.07</kbd> <kbd>)</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>10.2448</samp> on both (ln 2 = 0.6931, ln 1.07 = 0.0677).</p>
+          </li>
+          <li>
+            <p class="calc-what">Sanity check with the Rule of 72</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>72</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>=</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>72</kbd> <kbd>&divide;</kbd> <kbd>7</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>10.2857</samp>: only 0.04 of a year (about two weeks) more than the exact 10.2448.</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: the break-even rate for Manhattan is 6.6573% a year (about 6.66%); money doubles at 7% in 10.2448 years (Rule of 72: 10.29).</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>The break-even rate is 6.66% a year. If $24 could have been invested at more than that for 388 years, it would have outgrown the island; at less, the buyers got the bargain.</p>
+      <p>Now see how hard the rate swings the value. Discount $1.74 trillion back 388 years: at 6% it was worth $264.16 in 1626, at 7% $6.91, at 8% about 19 cents. Each extra point divides the answer by more than 35.</p>
+      <p>The rate itself barely moves. The authors&rsquo; range of $1.54&ndash;1.95 trillion gives 6.62% to 6.69%, and the older $1.4 trillion gives 6.60%. A 388th root flattens any error in the price.</p>
+      <p>The inputs are rough (an 1840s exchange rate set against 2014 dollars), but the lesson is exact: over long horizons, the rate decides everything.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>PV and FV entered with the same sign when solving for I/Y or N: the BA II Plus shows <samp>Error 5</samp>, the TI-84 <samp>ERR:NO SIGN CHNG</samp>. One of them must be negative.</li>
+          <li>Thinking a higher discount rate raises the present value. It lowers it, and the longer the wait, the harder it falls.</li>
+          <li>Reading <samp>I/Y = 6.6573</samp> as a decimal (it is 6.6573%), or as an annual rate when the periods are months or quarters: I/Y is the rate per period, whatever the period is.</li>
+          <li>Discounting with simple interest, FV / (1 + r &times; N): it ignores interest on interest and overstates the PV.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="6.743455084448646" data-tol="0.01" data-pct data-show="6.74%">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> A painting bought for $12,000 in 1995 sold for $85,000 in 2025. What annual return did it earn? As a percent, to two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">% a year</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as the Manhattan rate, with N = 30, PV = &minus;12,000, PMT = 0, FV = 85,000. These numbers fit, so no thousands trick is needed.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>30</kbd> <kbd>N</kbd> <kbd>12000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>85000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>I/Y</kbd> &rarr; <samp>I/Y = 6.7435</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=30</samp>, <samp>PV=&minus;12000</samp>, <samp>PMT=0</samp>, <samp>FV=85000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>END</samp>; cursor on <samp>I%=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>I%=6.7435</samp>.</p>
+            <p>By formula: (85,000 / 12,000)<sup>1/30</sup> &minus; 1 = 7.083333<sup>1/30</sup> &minus; 1 = <b>6.74%</b> a year.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>2. Why.</b> Two promises of $1,000 each: one paid in 5 years, one in 30 years. The discount rate rises from 4% to 5%. What happens to their present values?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Both fall by about the same percentage, since the rate rose by one point for both</span></label>
+              <p class="cq-why">That treats the change as one step. But the rate is applied once per year: the 5-year PV divides by (1 + r) five times, the 30-year PV thirty times.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. The 30-year PV falls by a far larger percentage</span></label>
+              <p class="cq-why">Right. 5-year: 821.93 &rarr; 783.53 (&minus;4.67%). 30-year: 308.32 &rarr; 231.38 (&minus;24.96%). The extra point is compounded N times inside (1 + r)<sup>N</sup>.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. The 5-year PV falls by more, because it is closer to today</span></label>
+              <p class="cq-why">This mixes up size and sensitivity. The 5-year PV is bigger, but it has only five periods for the higher rate to compound over, so it moves less.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>PV = 1,000 / (1 + r)<sup>N</sup>. Going from 4% to 5% multiplies each year&rsquo;s divisor by 1.05/1.04 = 1.009615. The new PV is the old one times (1.04/1.05)<sup>N</sup>: 0.9533 for N = 5, but 0.7504 for N = 30. The longer the wait, the more a rate change hits the present value.</p></details>
+        </div>
+
+        <div class="cq" data-q="c3" data-type="num" data-answer="14.550117572045528" data-tol="0.01" data-show="14.55">
+          <p class="cq-stem"><b>3. Twist: solve for N.</b> How many years does $40,000 take to grow to $100,000 at 6.5% a year? To two decimals.</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">years</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> The unknown is N this time. Growth needed: 100,000 / 40,000 = 2.5. Use N = ln(FV/PV) / ln(1 + r), or CPT N.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>N = ln 2.5 / ln 1.065 = 0.916291 / 0.062975 = <b>14.55 years</b>.</p>
+            <p>BA II Plus: <kbd>2.5</kbd> <kbd>LN</kbd> <kbd>&divide;</kbd> <kbd>1.065</kbd> <kbd>LN</kbd> <kbd>=</kbd> &rarr; <samp>14.5501</samp>. Or TVM: <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>6.5</kbd> <kbd>I/Y</kbd> <kbd>40000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>100000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>N</kbd> &rarr; <samp>N = 14.5501</samp>.</p>
+            <p>TI-84 Plus: <kbd>LN</kbd> <kbd>2.5</kbd> <kbd>)</kbd> <kbd>&divide;</kbd> <kbd>LN</kbd> <kbd>1.065</kbd> <kbd>)</kbd> <kbd>ENTER</kbd> &rarr; <samp>14.5501</samp>. Or TVM Solver <samp>I%=6.5</samp>, <samp>PV=&minus;40000</samp>, <samp>PMT=0</samp>, <samp>FV=100000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>N=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>N=14.5501</samp>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c4" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>4. Exam style.</b> An investor will receive $250,000 in 12 years. At a discount rate of 7% a year, the present value is <em>closest</em> to:</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c4" value="A"> <span>A. $135,869.57</span></label>
+              <p class="cq-why">Simple-interest discounting: 250,000 / (1 + 0.07 &times; 12). It ignores interest on interest, so it overstates the PV.</p></li>
+            <li><label><input type="radio" name="c4" value="B"> <span>B. $233,145.87</span></label>
+              <p class="cq-why">The BA II Plus left at its factory P/Y = 12: it reads N = 12 as twelve months at 7%/12 each, i.e. one year instead of twelve.</p></li>
+            <li><label><input type="radio" name="c4" value="C"> <span>C. $111,002.99</span></label>
+              <p class="cq-why">Right: 250,000 / 1.07<sup>12</sup> = 250,000 / 2.252192 = 111,002.99.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary>
+            <p>BA II Plus (P/Y = 1): <kbd>2ND</kbd> <kbd>CLR TVM</kbd> <kbd>12</kbd> <kbd>N</kbd> <kbd>7</kbd> <kbd>I/Y</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>250000</kbd> <kbd>FV</kbd> <kbd>CPT</kbd> <kbd>PV</kbd> &rarr; <samp>PV = &minus;111,002.9898</samp>.</p>
+            <p>TI-84 Plus: TVM Solver <samp>N=12</samp>, <samp>I%=7</samp>, <samp>PMT=0</samp>, <samp>FV=250000</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>; cursor on <samp>PV=</samp>, <kbd>ALPHA</kbd> <kbd>ENTER</kbd> &rarr; <samp>PV=&minus;111002.9898</samp>.</p>
+            <p>The minus sign just says it is what you would pay today to receive $250,000 later.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why is present value compounding run backwards, and why does a higher rate or a longer wait make it smaller?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>Compounding multiplies by (1 + r) each period, so going back divides by it: PV = FV / (1 + r)<sup>N</sup> is just FV = PV &times; (1 + r)<sup>N</sup> rearranged. A higher r or a longer N makes (1 + r)<sup>N</sup> bigger, so less money today is enough to grow into the same future sum.</p>
+            <p>A complete answer says: (1) PV = FV/(1 + r)<sup>N</sup> is the FV formula rearranged (divide instead of multiply); (2) the discount factor 1/(1 + r)<sup>N</sup> is what $1 due at N is worth now; (3) a larger r or N makes the denominator bigger, so the PV falls.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, Quantitative Methods, Learning Module 4: The Time Value of Money in Finance (present value of a single sum, the discount factor, the implied rate of return and the number of periods).</p>
+      <p><strong>Sources.</strong> Pieter Schaghen, letter to the States General, 5 November 1626 (Nationaal Archief, The Hague), in the New York State Library&rsquo;s translation; New Netherland Institute, &ldquo;Peter Schagen letter&rdquo; (the only record of the purchase); New Amsterdam History Center, &ldquo;The Schaghen Letter&rdquo; (the 1840s conversion at 40 cents a guilder); Jason Barr, Fred Smith and Sayali Kulkarni, &ldquo;What&rsquo;s Manhattan worth? A land values index from 1950 to 2014&rdquo;, <em>Regional Science and Urban Economics</em> 70 (2018), 1&ndash;19 (about $1.74 trillion for 2014, range $1.54&ndash;1.95 trillion); The Real Deal, 6 January 2016 (the earlier working paper&rsquo;s figure of about $1.4 trillion).</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./day-01.html">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>
