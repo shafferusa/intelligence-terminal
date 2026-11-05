@@ -58,6 +58,11 @@ jobs:
           CUR=$(python3 -c "import json; print(json.load(open('state/learning.json'))['curriculum'])" 2>/dev/null || echo academy-300)
           cp "curriculum/$CUR.json" site/academy.json || echo "no curriculum $CUR yet"
 
+      # The CFA Math course page (cfa.html) lists the 90 days and builds its
+      # formula cards from the course plan, which also lives outside the site.
+      - name: Publish the CFA Math plan for the course page
+        run: cp curriculum/cfa-l1.json site/cfa.json || echo "no CFA plan yet"
+
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
       # that key by hand was the documented rule and it was missed the very

@@ -197,6 +197,48 @@ then *"i want a restart on this path, so day 1."*
 - **Schedule and routine unchanged** (4:50 AM ET start, delivered by 5:30); the routine's prompt
   defers to `prompts/learning.md` and `state/learning.json`, so the restart needed no routine edit.
 
+### 0e. Amendment of 2026-11-05 — the CFA Math course replaces the Learning Brief (PAUSES §0d)
+
+Logan: *"Lowkey not going to read these. Can you just make a 3 month financial math (90 days)
+learning course (CFA Level 1). I am taking CFA in May and lots of math i need to understand,
+know/memorize, and by understand i mean totally. Use stories and confirm I understand. Also, I have
+the ti-84 finance calculator, have me walk through a problem on each with the calculator."* He
+chose both calculators side by side and about 20 minutes a day.
+
+- **The Learning Brief is paused** (`state/learning.json` → `"paused": true`; `prompts/learning.md`
+  exits at once while it is set). The Connected Path keeps its position (day 29) and resumes only
+  when Logan asks. The routine itself could not be disabled from a session; Logan can switch it off
+  in his routines to save usage.
+- **CFA Math (Level I)**: 90 lessons, **one every day of the week** from Saturday 2026-11-07 to
+  Thursday 2027-02-04, for the May 2027 window (11–17 May 2027). Every calculation and formula on
+  the 2027 Level I exam: Quantitative Methods first, then the math of Economics, Financial Statement
+  Analysis, Corporate Finance, Equities, Fixed Income, Derivatives, Alternative Investments and
+  Portfolio Management, with review days. Plan: `curriculum/cfa-l1.json`; authoring spec:
+  `curriculum/cfa-l1/README.md`; calculator reference: `curriculum/cfa-l1/calculator-guide.md`.
+- **Each lesson** (~20 minutes): a warm-up of two questions from earlier days (spaced recall) →
+  a real, verified story that poses the puzzle → The idea → Why it works (the formula built up,
+  nothing taken on trust) → Memorize → Worked example by hand → **On your calculator** (one problem,
+  keystroke by keystroke, **BA II Plus and TI-84 Plus side by side**, switchable) → Back to the
+  story → Exam traps → **Check your understanding** (five questions **graded on the page**: number
+  answers within a tolerance with a hint and one retry, three-option multiple choice with a reason
+  for every option, and an explain-it-back rated against a model answer). 80% right the first time
+  marks a lesson mastered; anything less puts it on the redo list. Scores stay on Logan's device.
+- **The exam calculator rule** is stated on the course page and on Day 1: only the BA II Plus
+  (incl. Professional) and the HP 12C family are allowed; the TI-84 is not.
+- **Written in advance, released by an Action.** All 90 pages are written and fact-checked before
+  release (every number recomputed, every keystroke checked, every story verified) and stored as
+  `curriculum/cfa-l1/day-NN.html` with date placeholders. `.github/workflows/cfa-release.yml`
+  (about 4:37 AM ET daily, with a 6:13 AM backup) runs `.github/scripts/cfa_release.py`, which
+  publishes the day due to `site/reports/cfa/l1/day-NN.html`, links the previous lesson's Next,
+  prepends the index entry (slot `cfa`), records `state/cfa.json` and the run log, starts the Pages
+  build and sends the Telegram push through `notify.py`. No Claude run is involved, so a week without
+  Claude usage no longer stops a lesson. Releases catch up in order after a missed morning.
+- **Course page**: `site/cfa.html` (linked from the front page) shows progress, the redo list,
+  formula flashcards from every released lesson and all 90 days; the build copies the plan in as
+  `site/cfa.json`.
+- **No routine writes any of this.** News routines leave `site/reports/cfa/`, `state/cfa.json` and
+  `curriculum/cfa-l1*` alone.
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.

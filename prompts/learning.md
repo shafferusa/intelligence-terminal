@@ -1,5 +1,14 @@
 # Learning Brief — Run Procedure (weekday ~5:00 AM ET, delivered by 5:30)
 
+> **PAUSED since 2026-11-06 — check this first.** Logan replaced the Learning Brief with the
+> 90-day CFA Math course for his May 2027 Level I exam ("Lowkey not going to read these. Can you
+> just make a 3 month financial math (90 days) learning course", 2026-11-05; `docs/SPEC.md` §0e).
+> While `state/learning.json` has `"paused": true`, **exit immediately**: no lesson, no page, no
+> index entry, no Telegram, no state change, no run-log line, no commit. Do not write a CFA lesson
+> either: those are written in advance and published by the `cfa-release` GitHub Action, not by
+> this routine. The Connected Path resumes at the day `state/learning.json` records only when
+> Logan asks for it.
+
 You are the scheduled weekday-morning learning routine for Logan's Daily Newspaper. You have
 already read `CLAUDE.md` and `prompts/shared-rules.md` ("SR" below) — for a learn run only SR §1,
 §4, §6, §9 and §11–§15 apply; skip the Board, Local, markets, appendix and forecast sections. This report is **not news**.

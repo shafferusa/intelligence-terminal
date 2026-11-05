@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<!--
+  CFA Math (Level I) - lesson page template (docs/SPEC.md Sec.0e).
+
+  Lessons are written in advance as curriculum/cfa-l1/day-NN.html and the
+  cfa-release Action publishes one each morning to
+  site/reports/cfa/l1/day-NN.html, filling the three date placeholders on the
+  way (DATE, DATELINE and GENERATED_AT, each written with two underscores on
+  both sides, in report-meta and the dateline). Leave them exactly as written.
+
+  Rules for the page (the authoring spec is curriculum/cfa-l1/README.md):
+  - Paths: the page is served three directories below the site root, so every
+    site-root reference starts with ../../../ exactly as below.
+  - report-meta: slot "cfa", path "reports/cfa/l1/day-NN.html", title = the
+    h1 text, headlines = exactly three strings, reading_minutes = 20.
+  - main data-slot="cfa"; article data-cfa-day="N".
+  - Questions: every graded question is a div with class "cq", a unique data-q
+    (w1, w2 in the warm-up; c1 to c5 in the check) and a data-type of num, mc
+    or explain. num needs data-answer (a plain number) and data-tol (the
+    absolute tolerance); add data-signless when the sign does not matter,
+    data-pct when the answer is a percent (then 0.0525 typed for 5.25 also
+    counts) and data-show for how the answer should be displayed. mc needs
+    data-answer (A, B or C), three options with a reason each. explain has a
+    textarea and a model answer.
+  - Solutions sit in a closed details element with class "cq-solution" so the
+    page stays readable with scripts off; cfa.js hides them until he answers.
+  - Calculator steps: one li per step, a div with classes "calc-keys ba" for
+    the BA II Plus and "calc-keys ti" for the TI-84 Plus. Keys are kbd
+    elements spelled as printed on the key; TI-84 menu choices use kbd with
+    class "menu".
+  - This comment must never contain a literal tag in angle brackets.
+  Everything between the REPORT markers below is SAMPLE content showing each
+  component; the numbers in it are real but the lesson is a demo.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>SAMPLE LESSON TITLE — CFA Math, Day 0 of 90 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <script type="application/json" id="report-meta">
+  {
+    "date": "__DATE__",
+    "slot": "cfa",
+    "title": "SAMPLE LESSON TITLE",
+    "path": "reports/cfa/l1/day-00.html",
+    "summary": "Day 0 of CFA Math: one sentence on what this lesson teaches.",
+    "headlines": [
+      "Day 0 of 90 · Quantitative Methods: the concept in one clause",
+      "Calculator: what you will compute, on the BA II Plus and the TI-84",
+      "Check yourself: 5 questions graded on the page"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "__GENERATED_AT__",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../cfa.html">&larr; CFA Math course</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="cfa">
+<!--REPORT:START-->
+    <header class="paper-head">
+      <p class="paper-edition">CFA Math &middot; Level I</p>
+      <h1>SAMPLE LESSON TITLE</h1>
+      <p class="paper-dateline">
+        __DATELINE__ <span class="sep">&middot;</span> 20 min
+      </p>
+      <p class="paper-standfirst">
+        One sentence: the idea of the day, in plain words.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Quantitative Methods</p>
+      <span class="track-progress">Day 0 of 90 &middot; Time Value of Money &middot; Future value</span>
+    </div>
+
+    <article class="lesson-body cfa-lesson" data-cfa-day="0">
+
+      <section class="cfa-warmup" aria-labelledby="s-warm">
+        <h3 id="s-warm">Warm-up &middot; from earlier lessons</h3>
+        <p class="cq-intro">Two quick ones from earlier days, so they stick. First try counts.</p>
+
+        <div class="cq" data-q="w1" data-type="num" data-answer="1102.50" data-tol="0.01" data-show="1,102.50">
+          <p class="cq-stem"><b>From Day 0.</b> $1,000 earns 5% a year, compounded annually. What is it worth after 2 years?</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Multiply by 1.05 once for each year.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>1,000 &times; 1.05<sup>2</sup> = 1,000 &times; 1.1025 = <b>1,102.50</b>.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="w2" data-type="mc" data-answer="B">
+          <p class="cq-stem"><b>From Day 0.</b> On the BA II Plus, what does P/Y need to be for an annual problem?</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="w2" value="A"> <span>A. 12</span></label>
+              <p class="cq-why">12 is the factory setting, and the most common silent error: with P/Y = 12 an annual rate is treated as monthly.</p></li>
+            <li><label><input type="radio" name="w2" value="B"> <span>B. 1</span></label>
+              <p class="cq-why">Right: one payment (and one compounding) per year.</p></li>
+            <li><label><input type="radio" name="w2" value="C"> <span>C. It doesn&rsquo;t matter</span></label>
+              <p class="cq-why">It changes every answer: I/Y is divided by P/Y.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Why</summary><p>Set P/Y = 1 once and leave it; adjust N and I/Y yourself for other periods.</p></details>
+        </div>
+      </section>
+
+      <h3>SAMPLE story title: a real moment with a puzzle</h3>
+      <p>Two to four short paragraphs of a true story with its date, place, people and numbers, ending on a question
+      the reader cannot answer yet.</p>
+
+      <h3>The idea</h3>
+      <p>The concept in plain words, with the intuition first.</p>
+
+      <h3>Why it works</h3>
+      <p>The formula built up step by step, so nothing has to be taken on trust.</p>
+      <div class="formula">
+        <p class="expr">FV = PV &times; (1 + r)<sup>N</sup></p>
+        <dl>
+          <dt>FV</dt><dd>future value</dd>
+          <dt>PV</dt><dd>present value (today&rsquo;s amount)</dd>
+          <dt>r</dt><dd>interest rate per period, as a decimal</dd>
+          <dt>N</dt><dd>number of periods</dd>
+        </dl>
+      </div>
+
+      <div class="sie-block memorize">
+        <b>Memorize</b>
+        <ul>
+          <li>FV = PV &times; (1 + r)<sup>N</sup></li>
+          <li>PV = FV / (1 + r)<sup>N</sup></li>
+        </ul>
+      </div>
+
+      <h3>Worked example</h3>
+      <div class="worked">
+        <b>By hand</b>
+        <ol>
+          <li>Each step on its own line, with the arithmetic shown.</li>
+        </ol>
+      </div>
+
+      <h3>On your calculator</h3>
+      <div class="calc">
+        <p class="calc-task"><b>Problem.</b> You invest $1,000 at 5% a year for 10 years. What is it worth at the end?</p>
+        <ol class="calc-steps">
+          <li>
+            <p class="calc-what">Clear the old numbers</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>2ND</kbd> <kbd>CLR TVM</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <kbd>APPS</kbd> <kbd class="menu">1:Finance</kbd> <kbd class="menu">1:TVM Solver</kbd></div>
+          </li>
+          <li>
+            <p class="calc-what">Enter the inputs</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>10</kbd> <kbd>N</kbd> <kbd>5</kbd> <kbd>I/Y</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> <samp>N=10</samp>, <samp>I%=5</samp>, <samp>PV=&minus;1000</samp>, <samp>PMT=0</samp>, <samp>P/Y=1</samp>, <samp>C/Y=1</samp>, <samp>PMT: END</samp> (type <kbd>(&minus;)</kbd> for the minus sign)</div>
+          </li>
+          <li>
+            <p class="calc-what">Solve for FV</p>
+            <div class="calc-keys ba"><span class="calc-label">BA II Plus</span> <kbd>CPT</kbd> <kbd>FV</kbd></div>
+            <div class="calc-keys ti"><span class="calc-label">TI-84 Plus</span> cursor on <samp>FV=</samp>, then <kbd>ALPHA</kbd> <kbd>ENTER</kbd></div>
+            <p class="calc-see">Display: <samp>FV = 1,628.89</samp> (BA II Plus, 2 decimals) / <samp>FV=1628.894627</samp> (TI-84)</p>
+          </li>
+        </ol>
+        <p class="calc-answer">Answer: $1,628.89.</p>
+      </div>
+
+      <h3>Back to the story</h3>
+      <p>How the idea answers the opening puzzle.</p>
+
+      <div class="sie-block traps">
+        <b>Exam traps</b>
+        <ul>
+          <li>A mistake the exam is built to catch, and how to avoid it.</li>
+        </ul>
+      </div>
+
+      <section class="cfa-check" aria-labelledby="s-check">
+        <h3 id="s-check">Check your understanding</h3>
+        <p class="cq-intro">Five questions, graded here. Work them before peeking; the first try is what counts.</p>
+
+        <div class="cq" data-q="c1" data-type="num" data-answer="2593.74" data-tol="0.01" data-show="2,593.74">
+          <p class="cq-stem"><b>1. Your turn, on the calculator.</b> $1,000 at 10% a year for 10 years. Future value?</p>
+          <div class="cq-input"><input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span class="cq-unit">dollars</span> <button type="button" class="cq-check">Check</button></div>
+          <div class="cq-hint"><b>Hint</b> Same keystrokes as above with I/Y = 10.</div>
+          <details class="cq-solution"><summary>Solution</summary>
+            <p>BA II Plus: <kbd>10</kbd> <kbd>N</kbd> <kbd>10</kbd> <kbd>I/Y</kbd> <kbd>1000</kbd> <kbd>+|&minus;</kbd> <kbd>PV</kbd> <kbd>0</kbd> <kbd>PMT</kbd> <kbd>CPT</kbd> <kbd>FV</kbd> &rarr; 2,593.74.</p>
+          </details>
+        </div>
+
+        <div class="cq" data-q="c2" data-type="mc" data-answer="C">
+          <p class="cq-stem"><b>2.</b> A conceptual question, CFA style, three options.</p>
+          <ul class="cq-opts">
+            <li><label><input type="radio" name="c2" value="A"> <span>A. Option</span></label><p class="cq-why">Why A is wrong.</p></li>
+            <li><label><input type="radio" name="c2" value="B"> <span>B. Option</span></label><p class="cq-why">Why B is wrong.</p></li>
+            <li><label><input type="radio" name="c2" value="C"> <span>C. Option</span></label><p class="cq-why">Why C is right.</p></li>
+          </ul>
+          <button type="button" class="cq-check">Check</button>
+          <details class="cq-solution"><summary>Explanation</summary><p>The full reasoning.</p></details>
+        </div>
+
+        <div class="cq" data-q="c5" data-type="explain">
+          <p class="cq-stem"><b>5. Say it back.</b> In one or two sentences: why does money compound faster than simple interest?</p>
+          <div class="cq-explain"><textarea aria-label="Your explanation"></textarea>
+            <button type="button" class="cq-check">Compare with the model answer</button></div>
+          <details class="cq-solution"><summary>Model answer</summary>
+            <p>The model answer, plus the two or three points a complete answer needs.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="cfa-score"><b>Your result</b><p>Answer the questions above to see your score. 80% right the first time marks the lesson mastered.</p></div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Curriculum.</strong> CFA Program 2027 Level I, the module this lesson covers.</p>
+      <p><strong>Sources.</strong> The story&rsquo;s sources.</p>
+      <p><strong>Method.</strong> Written in advance, every number recomputed and every keystroke checked by a second
+      pass, then released automatically. <a href="../../../cfa.html">Course page</a> &middot;
+      <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a class="is-disabled" aria-disabled="true">&larr; Previous report</a>
+      <a href="../../../cfa.html">Course page</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script src="../../../assets/cfa.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed details element before printing. */
+    (function () {
+      var touched = [];
+      window.addEventListener("beforeprint", function () {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) { d.setAttribute("open", ""); touched.push(d); });
+      });
+      window.addEventListener("afterprint", function () {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      });
+    })();
+  </script>
+</body>
+</html>

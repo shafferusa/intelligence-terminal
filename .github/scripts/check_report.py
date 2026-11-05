@@ -26,7 +26,7 @@ import os
 import re
 import sys
 
-SLOTS = ("am", "pm", "sat", "sun", "learn", "sie")
+SLOTS = ("am", "pm", "sat", "sun", "learn", "sie", "cfa")
 NAME = re.compile(r"(\d{4})-(\d{2})-(\d{2})-(%s)\.html$" % "|".join(SLOTS))
 DAY = r"(Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
 MON = r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"

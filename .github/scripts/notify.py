@@ -54,6 +54,7 @@ EDITION = {
     "sun": "Week-Ahead Outlook",
     "learn": "Learning Brief",
     "sie": "SIE Program",
+    "cfa": "CFA Math",
 }
 
 
