@@ -56,8 +56,13 @@ shell-safety check prompts when a command puts a brace expansion inside quotes, 
    code, parsing or multi-step logic goes in a script file: write it to your scratch directory with
    the Write tool, then run `python3 <file>` or `bash <file>`. Keep each Bash call one plain program
    with plain arguments.
-3. The PR fallback (§15.2b) uses `python3 .github/scripts/open_pr.py --title "<commit subject>"`, and the
-   page poll (§15.3) uses `python3 .github/scripts/api_get.py --wait-200 <report URL>`.
+3. **Publishing is one plain command** (§15.2): write the commit body (if any) to a file with the Write
+   tool, then run `python3 .github/scripts/publish.py --subject "report: <date> <slot>" --body-file <file>`.
+   It sets the git identity, stages only the routine write set, makes the one commit, rebases onto
+   `origin/main`, pushes to `main`, and falls back to the §15.2b pull request by itself. Never chain git
+   commands with `||`, `;` or `&&`, and never pass a commit message through a heredoc: the 2026-11-05 late
+   Morning Brief stopped for a click at exactly that. The page poll (§15.3) uses
+   `python3 .github/scripts/api_get.py --wait-200 <report URL>`.
 
 ## 1. Idempotency check (do this FIRST, before any fetch)
 
@@ -358,12 +363,16 @@ nothing) as a safety net, but never calls `sendMessage` and never confirms updat
 
 ## 15. Publish, verify, and log
 
-1. Ensure git identity: if unset, `git config user.name "Intelligence Terminal Bot"` and
-   `git config user.email "loganshaffer87@gmail.com"`.
-2. Stage only files inside the allowed write set (`site/reports/`, `state/`, `ledgers/`, `registry/`).
-   `git pull --rebase origin main` before each push; if rebase conflicts on `index.json` or
-   `run-log.jsonl`, take the remote version and re-apply your addition. Commit with a message like
-   `report: 2026-07-27 am`, then `git push origin main`. **Never force-push.**
+1. Write the commit body (the two trailer lines your run uses, if any) to a scratch file with the
+   Write tool.
+2. Publish with ONE command: `python3 .github/scripts/publish.py --subject "report: 2026-07-27 am"
+   --body-file <file>` (subject `learning: <date> day <N>` or `sie: <date> day <N>` for those runs). It
+   sets the git identity if unset, stages ONLY the write set (`site/reports/`, `state/`, `ledgers/`,
+   `registry/`) and lists anything else it left out, makes the one commit, rebases onto `origin/main`,
+   pushes to `main` (retrying a non-fast-forward), and opens the §15.2b PR itself if `main` is refused.
+   Exit 0 = published. Exit 3 = a rebase conflict on `index.json` or `run-log.jsonl`: take the remote
+   version, re-apply your addition, `git add` the file, `git rebase --continue`, then
+   `python3 .github/scripts/publish.py --push-only`. **Never force-push.**
 
    **ONE COMMIT PER RUN.** The report page, `site/reports/index.json`, all `state/` files
    (including `run-log.jsonl`, `last-run.json`, `stories.json`, `curriculum`/`learning` state),
