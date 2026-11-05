@@ -1,6 +1,86 @@
 {
   "stories": [
     {
+      "id": "ai-selloff-close-nov5",
+      "headline": "Close: S&P -4.36% 7,353.73 (worst since Apr 2025), Nasdaq -5.52% 24,315.00 (correction), Dow -1,833 (-3.44%) 51,523.06, RUT -4.45%, SOX -12.25% 9,011.14 (worst since Mar 2020 per NBC); MU -17.5, AMD -17.3, MRVL -16.4, ARM -13.1, NVDA -9.3; all 11 sectors down; RSP -2.9 vs SPY -4.4",
+      "status": "Materially changed",
+      "rationale": "Lead: largest market move of the cycle; deepened after 2:20 PM press",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "rates-haven-nov5",
+      "headline": "Par 2Y 4.46 (-12), 10Y 4.84 (-6), 30Y 5.25 (-3); 2s10s 38bp; gold ~$4,100; Barkin, Hammack back gradual hikes; Dec hike odds ~66-80% conflicting",
+      "status": "New",
+      "rationale": "Fed path repricing on equity stress",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "vix-spike-nov5",
+      "headline": "VIX 28.18 (+11.57), VIX9D 32.66, VIX3M 25.55 inverted; HYG -0.31, LQD +0.15 (credit calm)",
+      "status": "New",
+      "rationale": "Stress gauge; credit not following",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "ah-earnings-nov5",
+      "headline": "After close: NET rev $782.5M, EPS 0.38 vs 0.34, AH +18-21%; IONQ beat/raise AH ~+5%; ABNB/DKNG/AFRM/LYFT/MCHP results not seen at press. APP closed +31.0% $356.10; QCOM -9.5%; ARM -13.1%",
+      "status": "New",
+      "rationale": "Earnings reactions",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "oil-rebound-nov5",
+      "headline": "WTI Dec settle $90.52 (+2.7%), Brent Jan $98.29 (+~4%) per Rigzone (single source); IRGC tanker fire claims; UKMTO 5+ incidents since Sunday; Eurasia deal odds 10% (as cited)",
+      "status": "Materially changed",
+      "rationale": "Iran war / oil",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "lam-buyback-nov5",
+      "headline": "Lam Research $25B buyback authorization + $0.33 dividend (8-K Nov 5)",
+      "status": "New",
+      "rationale": "Primary filing, chip sector support",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "pnc-cfo-nov5",
+      "headline": "PNC: Overstrom to succeed Reilly as CFO; Reilly to Executive Vice Chairman Mar 1, 2027 (8-K Ex 99.1)",
+      "status": "New",
+      "rationale": "Local (Pittsburgh) corporate",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
+      "id": "house-leadership-nov5b",
+      "headline": "Johnson won't lead GOP; Jeffries formal Speaker bid letter; MS and AK Senate uncalled; funding deadline Dec 11",
+      "status": "Developing",
+      "rationale": "US politics",
+      "first_seen": "2026-11-05",
+      "last_seen": "2026-11-05",
+      "last_report": "reports/2026/11/2026-11-05-pm.html",
+      "updated": "2026-11-05-pm"
+    },
+    {
       "id": "ai-trade-cracks-nov5",
       "headline": "S&P -3.92% 7,387, Nasdaq -5.02% 24,444, Dow -1,652 (-3.10%), RUT -4.61%, SOX -9.81% at 2:22 PM; MU -14.7, AMD -14.9, MRVL -13.4, VRT -14.1, TSLA -11.1, NVDA -8.4, SPCX -7.7; RSP -2.8 vs SPY -4.0; narrative: Dem Congress vs AI data-center build-out",
       "status": "Materially changed",
@@ -445,65 +525,7 @@
       "score_rationale": "finance-first selection, 2026-11-02 am; local/state",
       "last_seen": "2026-11-03",
       "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "allegheny-ballot-question-nov3",
-      "headline": "Allegheny County Nov 3 ballot question to allow council staff/office funding; 2027 county budget $1.25B no tax hike",
-      "status": "Continuing",
-      "last_updated": "2026-11-02-am",
-      "score_rationale": "finance-first selection, 2026-11-02 am; local"
-    },
-    {
-      "id": "sylvia-doj-referral",
-      "headline": "WaPo: Lt. Gen. Sylvia referred to DOJ over alleged leaks; no charge",
-      "status": "Developing",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
-    },
-    {
-      "id": "pa-measles-oct28",
-      "headline": "PA DOH: 1,398 measles cases, 265 hospitalised, 5 deaths as of Oct 28 (Reuters); CDC national 4,852 cases",
-      "status": "New",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
-    },
-    {
-      "id": "pgh-zoning-signed-oct29",
-      "headline": "Mayor O'Connor signed zoning ordinances Oct 29: parking minimums eliminated, ADUs, affordable-housing incentives (WPXI)",
-      "status": "New",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
-    },
-    {
-      "id": "abbv-cl-q3-oct30",
-      "headline": "AbbVie adj EPS $3.82, rev $17.40B, FY guide $13.95-13.99, div +5.2% (8-K), +1.4%; Colgate base EPS $0.97, organic +3.6%, GM guide raised (8-K), +2.3%",
-      "status": "New",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
-    },
-    {
-      "id": "ninth-circuit-ca-ballots-oct30",
-      "headline": "Ninth Circuit panel again denies DOJ bid to set aside ~20K CA ballots (NBC, Democracy Docket); SCOTUS appeal expected, none found; AP: early vote ~10M ahead of 2022; Trump restores Iowa/Kansas Sunday rallies",
-      "status": "Materially changed",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
-    },
-    {
-      "id": "oil-month-hormuz-oct30",
-      "headline": "Dec Brent settled ~$117.64 (single source), WTI ~$103-104; UKMTO limpet-style attack on tanker; Iran claims 4 mine hits, CENTCOM denies; Cooper briefed Trump on strike options; Qatari delegation in Tehran; OPEC+ Sunday",
-      "status": "Developing",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm",
-      "last_seen": "2026-11-03",
-      "last_report": "reports/2026/11/2026-11-03-pm.html"
-    },
-    {
-      "id": "eci-q3-ust-month-oct30",
-      "headline": "ECI Q3 +0.8% (wages +0.7%, 3.1% y/y; real -0.6%); Chicago PMI 55.3; 10Y par 4.94% (-4bp, -35bp in Oct), 2Y 4.56%; Dec hike ~72% (reported)",
-      "status": "New",
-      "last_updated": "2026-10-30-pm",
-      "score_rationale": "finance-first selection, 2026-10-30 pm"
     }
   ],
-  "updated": "2026-11-05T19:29:59Z"
+  "updated": "2026-11-05T21:46:22Z"
 }

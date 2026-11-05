@@ -6921,6 +6921,36 @@
       "probability": "75-90%",
       "basis": "9,261 at 2:22 PM Nov 5 (-9.8%); would need ~11% gain",
       "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-1",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "S&P 500 closes Fri Nov 6, 2026 above Thursday's close of 7,353.73.",
+      "horizon": "2026-11-06",
+      "probability": "45-60%",
+      "basis": "Partial rebounds commonly follow 4%+ single-day drops, offset by payroll-day risk and an inverted VIX curve.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-2",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "VIX closes above 22 on Fri Nov 6, 2026.",
+      "horizon": "2026-11-06",
+      "probability": "65-80%",
+      "basis": "VIX closed 28.18 with 9-day at 32.66; a 6+ point one-day drop is uncommon.",
+      "status": "open"
+    },
+    {
+      "id": "2026-11-05-pm-3",
+      "date": "2026-11-05",
+      "slot": "pm",
+      "forecast": "Front-month WTI crude settles above $88.00 on Fri Nov 6, 2026.",
+      "horizon": "2026-11-06",
+      "probability": "65-80%",
+      "basis": "Thursday settle ~$90.52 (Rigzone) after renewed Hormuz tanker incidents; deal headlines are the downside risk.",
+      "status": "open"
     }
   ]
 }
