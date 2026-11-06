@@ -16,7 +16,7 @@ The Smart Ticket reads what you type, in your own words, into staged orders and 
 | sell 1 ACME Dec 18 2026 220/230/250/260 iron condor | the credit condor, 4 legs, all-or-none | sell = credit, buy = debit |
 | roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 | close the 2 held and open 2 of the new contract, all-or-none | refused when none is held |
 | buy 200 ACME limit 225 and sell 2 ACME Dec 18 2026 240 calls as a package | the shares first; the calls are released as the shares fill | |
-| covered call 100 ACME Dec 18 2026 240 | with 100 ACME held free: STO 1 call only; none held: BUY 100 ACME, then STO 1 call (said as a check) | the quantity is in shares, by 100; shares held but not free, or a short holding, are refused and said; "buy write" always buys the shares |
+| covered call 100 ACME Dec 18 2026 240 | with 100 ACME held free: STO 1 call only; none held: BUY 100 ACME, then STO 1 call (said as a check) | the quantity is in shares, by 100 ("100 contracts" or "1 lot" is refused, with "100 contracts = 10,000 shares" and "100 shares" offered); shares held but not free, or a short holding, are refused and said; "buy write" always buys the shares |
 | collar 100 ACME Dec 18 2026 220/260 | shares held free: the put and the call, all-or-none; none held: the shares first | said as a check; shares held but not free, or a short holding, are refused and said |
 | buy 2 ES Mar / sell 1 front ES stop 6500 | the next listed March contract / the active month | the year or the month FinSim picked (check) |
 | in the Fund book: buy 100 ACME; buy 100 WIDG gtc | two orders in the Fund book | |
@@ -54,8 +54,8 @@ The Smart Ticket reads what you type, in your own words, into staged orders and 
   - Iron butterfly: K1/K2/K3.
   - Butterfly / fly: K1/K2/K3, 2 x the body; calls unless "put butterfly" (a check says so when no call / put word is typed).
   - Calendar: E1/E2 K call or put; the near expiry is sold. Near and far are told apart as dates once both are read ("Dec 18/Jan 15 2027" sells Dec 18; a month alone, "Dec 2026", is the one date the cached chain lists that month), never by how they are typed. When either date cannot be read, the calendar is refused.
-  - Covered call: the calls on shares held free, else shares + calls (a check says the shares are bought). Shares held but not free (in working sells, reserved by calls, lent) offer the calls on the free round lots or a buy write; a book short the shares is refused. Buy write: shares + calls.
-  - Collar: the put and the call on shares held free, else shares + put + call; the same refusals as the covered call.
+  - Covered call: the calls on shares held free, else shares + calls (a check says the shares are bought). Shares held but not free (in working sells, reserved by calls, lent) offer the calls on the free round lots or a buy write (named in the account the covered call was read in); a book short the shares is refused. Buy write: shares + calls. The quantity is in shares: in contracts or lots it is refused, never read as shares.
+  - Collar: the put and the call on shares held free, else shares + put + call; the same refusals as the covered call, the quantity in shares too.
   - Roll ... to ...
 - **Clauses.**
   - ";", "." and a new line end an order.
@@ -97,13 +97,16 @@ The Smart Ticket reads what you type, in your own words, into staged orders and 
   - A quantity that is only partly covered by the position offers the split.
   - Explicit sides (short, cover, bto, sto, btc, stc) are never changed.
   - When the whole position is already in working closing orders, "buy" / "sell" is refused (the explicit opening side is offered): it is never turned silently into an order that opens a new position.
-  - The same words already sent from a Smart Ticket on that contract in that book (still working, or filled today) read as that same order again (a check), never as a new one once the position it closed has moved; an order whose "buy" / "sell" is carried from the order before is matched by its own words and that side.
+  - The same words already sent from a Smart Ticket on that contract in that book (still working, or filled today) read as that same order again (a check), never as a new one once the position it closed has moved; an order whose "buy" / "sell" is carried from the order before is matched by its own words and that side, and the words match with or without that leading "buy" / "sell" (so a choice on another order that writes the carried side word into them never turns the order that went into a new one).
+  - "sto" on shares is a short sale: the alternative offered is "short" (sell short), read where the "sto" was read. "bto" on shares offers "buy", named in the account it was read in, and says when it would cover a short held there.
 - **Held quantities.** "all" is the quantity held and "half" half of it, rounded down to the lot (a check says the quantity taken). They close a position: a side that would add to it ("buy all WIDG" while WIDG is held, "sell all" of a short) is refused, with "close" offered.
 
 ## Combinations
 
 - Options on one name fill all-or-none: every leg from one Cboe observation at its executable bid / ask, or nothing.
 - There is no net limit in this version, so an option leg with its own limit inside such a group is refused. Two fixes are offered: drop the limits, or send the legs as separate orders. A price typed on a strategy, a roll or a collar is refused the same way, never dropped, also inside a group ("as a package", parentheses).
+- When "as separate orders" would leave the orders free just before another group word on the same name, that next group is written with parentheses instead of its word, so its run never takes them in; the cover hint groups the shares and the call with parentheses for the same reason.
+- An all-or-none combination is sent without a preview id (its legs fill at their bid / ask), so the page holds it to the net cash its confirm listed: when its turn comes, a net cash more than 0.5 % against you, or a confirmed preview more than 2 minutes old on the server's clock, and it is not sent - it stays staged and selected with its new figures for you to confirm again, and the other orders of the run go on.
 - Shares with their options on the same name fill in sequence: the shares first, then the options are released in proportion as the shares fill (whole numbers: all of them once the shares have filled). A price typed on a collar that buys its shares is refused (the shares, or a net price?).
 - One price typed for a close of several contracts ("close ACME calls limit 2") is refused: name each contract with its own price, or close them at market.
 - Anything else (two names, a futures leg, two share legs, one contract named twice) is refused: a package holds one name, its shares and its options, each contract once.
@@ -128,8 +131,9 @@ Each leg and combination carries flags.
   - a side carried from the order before ("short 100 WIDG in the Fund book and 1 ACME Dec 18 2026 240/250 call spread": "buy 1 ACME ... call spread in the Fund book");
   - the orders after it that carry its side keep their own ("... and short 1 ACME ... put spread in the Institutional book");
   - a book or account phrase that would land in the closing phrase of the last order, and so apply to every order naming none, is matched by the others' own ("buy 3 WIDG ... calls in the Personal book and buy 1 ACME ... at I1:PB_MS in the Institutional book").
-  - The opening part of a split ("stc 2 + sto 1") names the account the order was read in, so it stays where the calls are held.
+  - The opening part of a split ("stc 2 + sto 1") names the account the order was read in, so it stays where the calls are held; so do a buy write and a side alternative that would read the account another way.
   - A choice that cannot keep the other orders as they were is not offered: a side for the first of two orders without one would carry into the second.
+- **Every choice is checked resolved.** Before it is offered, every choice (also on an instruction of one order) is read again the way the page would read it, with the positions, accounts and orders already sent: every other order must keep its book, account, side, quantity and contract, read as an order already sent when it was one, stay in its package and never become sendable; the order the choice is on must stay in its book and account (unless the choice is that book or account) and join no package with another order. A choice that fails this is not offered.
 - **Actions.** An action runs an existing step and then reads the text again: "Look it up", "Load the chain", or the product's own ticket.
 
 ## The route
@@ -151,7 +155,8 @@ POST /api/smart-ticket/parse[?book=P]
 
 ## Limits in this version
 
-- No net limit on an all-or-none combination; each leg fills at its executable bid / ask.
+- No net limit on an all-or-none combination; each leg fills at its executable bid / ask (the page sends it only at the net cash its confirm listed, within 0.5 %).
+- "Cancel what this ticket sent" finds the orders by this ticket's request ids: a shares order re-priced in Pending Trades (a replace) is no longer this ticket's, so a hedge leg still waiting for it is kept while it works (said in the confirm); cancel that order in Pending Trades and the leg ends with it.
 - FX, bonds, OTC and private names open their own ticket.
 - Several books mean the same quantity in each, with no allocation.
 - A month without a day ("Dec 2026") needs the cached chain, and resolves only when one expiry is listed that month.

@@ -26,12 +26,19 @@
  *   The first refusal stops the run: a moved price (PREVIEW_STALE) shows the server's diff with Accept & continue / Skip / Stop (Accept
  *   resends the same request id with the preview the dialog shows - third review: the server stores the 409's preview, so a price that
  *   moves again while the dialog is open asks again); a large order (CONFIRM_REQUIRED) is resent under the same id with
- *   confirm_large only when the owner clicks Confirm and send; any other refusal stops with its message.  A lost answer is looked up
+ *   confirm_large only when the owner clicks Confirm and send; any other refusal stops with its message.  Fourth review: an
+ *   all-or-none combination (no preview id: its legs fill at their bid / ask) is checked against the package preview its confirm
+ *   listed - its net cash worse by more than the server's 0.5 % rule, or that preview older than 2 minutes on the server's clock
+ *   (``previewed_at``), and it is not sent: it stays staged and selected with its new figures for the owner to confirm again, and the
+ *   rest go on (as Skip would).  A lost answer is looked up
  *   by its request id (a single order through T.api's reconcile, a combination by rid / rid:L1 / rid:H1) before anything else goes,
  *   and recorded as sent only when the orders there have the item's terms (a sequential package's option legs too: type, limit and
  *   size through their ratio; third review).
- * - "Cancel what this ticket sent": the open orders of this ticket (request ids st:<ticket>:...) in every account it used, listed and
- *   confirmed, then one POST /api/orders/cancel?book=<b> per book, every hedge leg listed before its primary (each by its own cancel).
+ * - "Cancel what this ticket sent": the open orders of this ticket (request ids st:<ticket>:...) in every account it used - every page of
+ *   them (fourth review: 2000 a read, never only the 200 newest) - listed and confirmed, then one POST /api/orders/cancel?book=<b> per
+ *   book, every hedge leg listed before its primary and in its batch: the server cancels the shares order first and the leg after it,
+ *   only once that order has ended; a leg whose shares order is not this ticket's any more (re-priced or replaced in Pending Trades)
+ *   is kept while that order works, and the confirm says so.
  * The ticket id is made here (T.uuid, 12 hex characters), never from the text; an unchanged item resent is a replay ("already
  * submitted"), never a second order, and within one ticket an order already sent stays marked sent when the text is read again - by
  * its terms, or by its words in the same place when they now read as another order (a position it closed has moved): such an item is
@@ -915,7 +922,9 @@
       if (money(tt.option_margin)) { f2.push('option margin ' + money(tt.option_margin)); }
       if (it.ppv) { f2.push('shares: ' + execWords(it.ppv)); }
       li.appendChild(T.h('div', { class: 'muted' }, 'the server\'s package preview: ' + (f2.length ? f2.join(' . ') : 'no totals')));
-      li.appendChild(T.h('div', { class: it.fill_mode === 'AON' ? 'smart-warn' : 'muted' }, it.fill_mode === 'AON' ? 'one combination: ' + AON_WORDS : 'one combination: the shares first, the options released as they fill'));
+      li.appendChild(T.h('div', { class: it.fill_mode === 'AON' ? 'smart-warn' : 'muted' }, it.fill_mode === 'AON' ? 'one combination: ' + AON_WORDS +
+        '; it goes only at the net cash listed here (at most 0.5 % worse) and within 2 minutes of this preview, else it stays staged for you to confirm again' :
+        'one combination: the shares first, the options released as they fill'));
     }
     return li;
   }
@@ -928,13 +937,18 @@
     body.appendChild(T.h('div', null, 'These ' + plural(n, 'order') + ' go out one at a time, in this order; the first refusal stops the rest. Nothing has been sent yet.'));
     var ol = T.h('ol'); list.forEach(function (it) { ol.appendChild(confirmLine(S, it)); }); body.appendChild(ol);
     body.appendChild(T.h('div', { class: 'hint' }, 'Ticket ' + S.ticket + '. Each order is checked again just before it is sent and goes with the preview listed here;' +
-      ' a moved price or a large order asks you again (moved: more than 0.5 % against you since this preview, or this preview older than 2 minutes).'));
+      ' a moved price or a large order asks you again (moved: more than 0.5 % against you since this preview, or this preview older than 2 minutes).' +
+      (list.some(isAon) ? ' An all-or-none combination is held to the net cash listed here the same way: moved or older, it is not sent - it stays staged' +
+       ' with its new figures for you to confirm again, and the rest go on.' : '')));
     var label = 'Send ' + plural(n, 'order');
     /* what the owner confirms is exactly what goes: no edit and no new reading while the confirm is open, and "Send" checks that every
        listed item is still staged with the same terms (else nothing is sent).  Second review: the preview each order was confirmed with
        (the figures listed above, taken now: the 15-s refresh may replace it.pv while the confirm is open) is the one its POST carries */
     var sigs = list.map(function (it) { return it.sig; });
     var pvids = list.map(confirmedPv);
+    /* fourth review: an all-or-none combination's package preview listed here (its net cash, the server's clock and moved-price rule):
+       the figures it may go at, checked again when its turn comes (sendOne) */
+    list.forEach(function (it) { it.cbase = confirmedTotals(it); });
     S.confirming = true; paint(S);
     var h = T.ui.modal({ title: label + '?', body: body, sticky: true, wide: true,
       onDismiss: function () { say(S, 'not sent (Back)'); },
@@ -974,6 +988,36 @@
   function confirmedPv(it) {
     if (it.kind === 'leg') { return (it.pv && it.pv.preview_id) || null; }
     return it.fill_mode === 'SEQUENTIAL' ? ((it.ppv && it.ppv.preview_id) || null) : null;
+  }
+  function isAon(it) { return it.kind === 'combo' && it.fill_mode === 'AON'; }
+  /* fourth review: the package preview the confirm lists for an all-or-none combination - {net, at, rule} - else null */
+  function confirmedTotals(it) {
+    if (!isAon(it) || !it.spec) { return null; }
+    return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null };
+  }
+  function ageWords(s) { return s < 120 ? Math.round(s) + ' s' : Math.floor(s / 60) + ' minutes'; }
+  /* why an all-or-none combination must not go now (null: it may): its fresh package preview against the one its confirm listed - the
+     net cash worse by more than the server's moved-price rule (0.5 %), or the listed preview older than a preview lives (120 s), both on
+     the server's figures and clock; nothing is computed but the comparison */
+  function aonMoved(it, spec) {
+    var b = it.cbase; var tt = (spec && spec.totals) || {};
+    if (!b) { return 'the confirm listed no package preview for it'; }
+    var rule = b.rule || (spec && spec.stale_rule) || {};
+    var ttl = Number(rule.ttl_s) > 0 ? Number(rule.ttl_s) : 120, pct = Number(rule.moved_pct) > 0 ? Number(rule.moved_pct) : 0.005;
+    var at0 = Number(b.at), at1 = Number(spec && spec.previewed_at);
+    if (at0 > 0 && at1 > 0 && at1 - at0 > ttl) {
+      return 'the preview its confirm listed was taken ' + ageWords(at1 - at0) + ' before its turn (a preview lives ' + ageWords(ttl) + ')';
+    }
+    var n0 = Number(b.net), n1 = Number(tt.net_cash);
+    if (b.net == null || b.net === '' || tt.net_cash == null || tt.net_cash === '' || !isFinite(n0) || !isFinite(n1)) {
+      return 'its net cash could not be checked against the confirm';
+    }
+    var worse = n0 - n1;                                       /* net cash: received +, paid -; worse = paying more or receiving less */
+    if (worse > 0 && (n0 === 0 || worse > Math.abs(n0) * pct)) {
+      return 'its net cash moved from ' + money(b.net) + ' to ' + money(tt.net_cash) + (n0 !== 0 ? ' (' + T.fmt.num(worse / Math.abs(n0) * 100, 2) + ' % against you)' : '') +
+        ' since the confirm';
+    }
+    return null;
   }
   /* the POST body: the request, the smart note and the preview the owner CONFIRMED (it.cpv, second review), never one taken after the
      click - so a price that moved against the owner since the confirm comes back 409 PREVIEW_STALE and asks again (askStale); the fresh
@@ -1021,7 +1065,9 @@
     var all = run && run.list.every(function (it) { return !!it.sent; });
     if (all) { T.store.set(STORE, null); S.cleared = true; } else { saveState(S); }
     var n = run ? run.list.length : 0;
-    if (!why) { say(S, (all ? 'all ' + plural(n, 'order') + ' sent' : 'sent ' + run.sent + ' of ' + n + (run.skipped ? ', skipped ' + run.skipped : '')) + '. They are in Pending Trades.', 'ok'); }
+    var skips = run ? run.list.filter(function (it) { return !it.sent && it.result && it.result.state === 'skipped'; }).map(function (it) { return it.key + ': ' + it.result.text; }) : [];
+    if (!why) { say(S, (all ? 'all ' + plural(n, 'order') + ' sent' : 'sent ' + run.sent + ' of ' + n + (run.skipped ? ', skipped ' + run.skipped : '')) + '. They are in Pending Trades.' +
+                   (skips.length ? ' ' + skips.join(' | ') : ''), skips.length ? 'err' : 'ok'); }
     else { say(S, 'sent ' + (run ? run.sent : 0) + ' of ' + n + '; stopped at ' + why, 'err'); }
     S.items.forEach(function (it) { if (!it.sent && !it.moved) { schedule(S, it, false); } });
     paint(S);
@@ -1058,6 +1104,15 @@
       if (fr.blockers && fr.blockers.length) {
         it.result = { state: 'refused', text: 'not sent: the fresh preview refuses it: ' + (fr.blockers[0].message || 'not accepted'), blockers: fr.blockers };
         return 'stop';
+      }
+      if (isAon(it)) {
+        /* fourth review: no preview id goes with an all-or-none combination (its legs fill at their bid / ask), so the page holds it to the
+           net cash its confirm listed: moved against the owner or listed too long ago, it is not sent and stays staged with its new figures */
+        var why = aonMoved(it, fr.spec);
+        if (why) {
+          it.result = { state: 'skipped', text: 'not sent: ' + why + '; it stays staged with its new figures - submit it again to confirm them' };
+          return 'skip';
+        }
       }
       return post(S, it, bodyOf(S, it, fr), ridOf(S, it));
     });
@@ -1226,6 +1281,20 @@
   }
 
   /* ---------------------------------------------------------------- cancel what this ticket sent ------------------ */
+  /* fourth review: every open order of an account, page after page (2000 a read, the route's largest; its default is only the 200 newest),
+     each once */
+  var OPEN_PAGE = 2000, OPEN_PAGES = 100;
+  function openOrdersOf(acct) {
+    var all = [], seen = {};
+    function page(k) {
+      return T.api.get('/api/accounts/' + encodeURIComponent(acct) + '/orders', { status: 'open', limit: OPEN_PAGE, offset: k * OPEN_PAGE }).then(function (r) {
+        var rows = (r && r.orders) || [];
+        rows.forEach(function (o) { if (o && o.order_id && !seen[o.order_id]) { seen[o.order_id] = true; all.push(o); } });
+        return rows.length >= OPEN_PAGE && k + 1 < OPEN_PAGES ? page(k + 1) : all;
+      });
+    }
+    return page(0);
+  }
   function cancelSent() {
     var S = st; if (!S || S.dead || S.sending) { return; }
     var prefix = 'st:' + S.ticket + ':';
@@ -1235,23 +1304,36 @@
     if (!accts.length) { say(S, 'this ticket has sent nothing yet'); return; }
     say(S, 'looking for the open orders of ticket ' + S.ticket + ' ...');
     Promise.all(accts.map(function (a) {
-      return T.api.get('/api/accounts/' + encodeURIComponent(a) + '/orders', { status: 'open' }).then(function (r) {
-        return ((r && r.orders) || []).filter(function (o) { return o && typeof o.request_id === 'string' && o.request_id.indexOf(prefix) === 0; })
+      return openOrdersOf(a).then(function (rows) {
+        return rows.filter(function (o) { return o && typeof o.request_id === 'string' && o.request_id.indexOf(prefix) === 0; })
           .map(function (o) { return Object.assign({}, o, { book: bookOf[a] }); });
       });
     })).then(function (lists) {
       if (S.dead) { return; }
       var open = [].concat.apply([], lists);
       if (!open.length) { say(S, 'nothing this ticket sent is still open'); return; }
+      var ids = {}; open.forEach(function (o) { ids[o.order_id] = true; });
+      /* fourth review: a hedge leg whose shares order is not listed (re-priced or replaced in Pending Trades, so it no longer carries this
+         ticket's request id) is not cancelled while that order works - the server keeps it; said here before the confirm */
+      var held = open.filter(function (o) { return o.parent_order_id && !ids[o.parent_order_id]; });
       var body = T.h('div', { class: 'smart-dialog' }, T.h('div', null, 'Cancel ' + plural(open.length, 'open order') + ' that ticket ' + S.ticket + ' sent?'));
       var ul = T.h('ul', { class: 'mono' });
       open.slice(0, 12).forEach(function (o) {
+        var note = '';
+        if (o.parent_order_id && !ids[o.parent_order_id]) {
+          note = o.status === 'WAITING_PARENT' ? ' (kept: it waits for its shares order, which no longer carries this ticket\'s id - re-priced or replaced in Pending Trades; cancel that order there and this leg ends with it)'
+            : ' (kept while its shares order still works)';
+        } else if (o.parent_order_id) {
+          note = ' (after its shares order: ends with it while it waits, else cancelled once that order has ended)';
+        }
         ul.appendChild(T.h('li', null, (o.order_id || '') + ': ' + String(o.side || '').replace(/_/g, ' ') + ' ' + T.fmt.qty((Number(o.qty) || 0) - (Number(o.filled_qty) || 0)) + ' ' + (o.symbol || o.instrument_id || '') +
-          ' . ' + T.accountName(o.account_id) + ' . ' + bookName(o.book)));
+          ' . ' + T.accountName(o.account_id) + ' . ' + bookName(o.book) + note));
       });
       if (open.length > 12) { ul.appendChild(T.h('li', { class: 'muted' }, '... and ' + (open.length - 12) + ' more')); }
       body.appendChild(ul);
-      body.appendChild(T.h('div', { class: 'hint' }, 'One cancel per book; an order that ends meanwhile is reported, never cancelled twice.'));
+      body.appendChild(T.h('div', { class: 'hint' }, 'One cancel per book; an order that ends meanwhile is reported, never cancelled twice. A hedge leg is never cancelled while' +
+        ' its shares order keeps buying: it goes after that order' + (held.length ? ', and ' + plural(held.length, 'leg') + ' whose shares order is not listed here ' +
+        (held.length === 1 ? 'is' : 'are') + ' kept while that order works' : '') + '.'));
       T.ui.confirm(body, { title: 'Cancel what this ticket sent', ok: 'Cancel ' + plural(open.length, 'order'), cancel: 'Keep' }).then(function (yes) {
         if (!yes || S.dead) { return; }
         cancelByBook(S, open, 'cancelled by the owner (Smart Ticket ' + S.ticket + ')');
@@ -1260,31 +1342,43 @@
   }
   function cancelByBook(S, orders, reason) {
     /* every order listed in the confirm is cancelled by its own command: a hedge leg goes BEFORE its primary (third review: the server
-       reads a leg listed after its primary as "ends with it", which would keep a released leg working) */
+       reads a leg listed after its primary as "ends with it", which would keep a released leg working); fourth review: the server sends
+       the primary's cancel first and the leg's only once the primary has ended, and a primary stays in one batch with its legs */
     var placed = {}, listed = [];
     function put(o) { if (!placed[o.order_id]) { placed[o.order_id] = true; listed.push(o); } }
     orders.forEach(function (o) {
       orders.forEach(function (k) { if (k.parent_order_id && k.parent_order_id === o.order_id) { put(k); } });
       put(o);
     });
-    var groups = {}, order = [];
-    listed.forEach(function (o) { var b = o.book || ''; if (!groups[b]) { groups[b] = []; order.push(b); } if (groups[b].indexOf(o.order_id) < 0) { groups[b].push(o.order_id); } });
+    var groups = {}, order = [], units = {};
+    listed.forEach(function (o) {
+      var b = o.book || ''; if (!groups[b]) { groups[b] = []; order.push(b); }
+      var key = b + ' ' + (o.parent_order_id && placed[o.parent_order_id] ? o.parent_order_id : o.order_id);
+      if (!units[key]) { units[key] = []; groups[b].push(units[key]); }
+      if (units[key].indexOf(o.order_id) < 0) { units[key].push(o.order_id); }
+    });
     var batches = [];
-    order.forEach(function (b) { for (var i = 0; i < groups[b].length; i += BATCH_MAX) { batches.push({ book: b, ids: groups[b].slice(i, i + BATCH_MAX) }); } });
-    var tot = { cancelled: 0, skipped: 0, failed: 0, kept: 0, errors: [] };
+    order.forEach(function (b) {
+      var cur = [];
+      groups[b].forEach(function (u) { if (cur.length && cur.length + u.length > BATCH_MAX) { batches.push({ book: b, ids: cur }); cur = []; } cur = cur.concat(u); });
+      if (cur.length) { batches.push({ book: b, ids: cur }); }
+    });
+    var tot = { cancelled: 0, skipped: 0, failed: 0, kept: 0, keptWhy: [], errors: [] };
     function one(k) {
       if (k >= batches.length) { return Promise.resolve(); }
       var bt = batches[k];
       return T.api.post('/api/orders/cancel' + bookQ(bt.book), { order_ids: bt.ids, reason: reason }, { request_id: 'mc:' + hex12() }).then(function (r) {
         tot.cancelled += ((r && r.cancelled) || []).length; tot.skipped += ((r && r.skipped) || []).length; tot.failed += ((r && r.failed) || []).length;
         tot.kept += ((r && r.kept) || []).length;
+        ((r && r.kept) || []).forEach(function (x) { if (x && x.order_id) { tot.keptWhy.push(x.order_id + ' ' + (x.message || 'kept')); } });
       }, function (e) { tot.errors.push(bookName(bt.book) + ': ' + T.api.describe(e)); }).then(function () { return one(k + 1); });
     }
     say(S, 'cancelling ...');
     one(0).then(function () {
       kick();
       var msg = 'cancelled ' + tot.cancelled + (tot.skipped ? ' . already ended ' + tot.skipped : '') + (tot.failed ? ' . failed ' + tot.failed : '') +
-        (tot.kept ? ' . kept working ' + tot.kept : '') + (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
+        (tot.kept ? ' . kept working ' + tot.kept + ': ' + tot.keptWhy.slice(0, 3).join('; ') + (tot.keptWhy.length > 3 ? '; ...' : '') : '') +
+        (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
       T.ui.toast(msg, tot.failed || tot.errors.length ? 'err' : 'ok', 6000);
       if (!S.dead) { say(S, msg, tot.failed || tot.errors.length ? 'err' : 'ok'); }
     });
@@ -1368,5 +1462,5 @@
     if (S.grid) { try { S.grid.destroy(); } catch (e) { /* the page is gone anyway */ } }
     st = null; ui = null;
   }
-  T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms };     /* sameTerms: pure, read by the browser smoke */
+  T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms, aonMoved: aonMoved };     /* sameTerms: pure, read by the browser smoke */
 })();

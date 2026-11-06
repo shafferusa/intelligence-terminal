@@ -917,17 +917,20 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
     is still 0 keeps waiting; when the primary ends, a child still waiting is CANCELLED (nothing can release it any more), and a child
     already released keeps working at its size.
 
-    1.0.7.2 review: the arithmetic is on whole numbers.  The leg's quantity is read back from its ratio (stored as leg qty / primary qty
-    at 8 decimals) as the whole number nearest ``shares qty × ratio`` when that product IS a whole number up to the 8-decimal rounding:
-    the shares still have the quantity the ratio was set against, or one it fits exactly.  So 300 shares + 1 call (0.00333333) release
-    the call at the 300th share, never floor(300 × 0.00333333) = 0.  Second review: when an amend or a replace gave the shares a quantity
-    the ratio does not fit (300 shares + 3 calls amended to 350: 3.5 calls), the release is floor(shares filled × ratio) as in 1.0.7.1 -
-    never the half-up rounding of the new quantity, which released a call the shares did not cover.  The shares are counted over the
-    replace chain (``replaces_order_id``): what the orders it replaced filled plus this one's fill, against what they filled plus this
-    one's quantity, and the children of the orders it replaced (a leg released before the replace) are sized with it, so every leg is
-    released in full once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before).  Third
-    review: a confirmed leg that ends with its primary after a partial fill is said - the owner's own cancel names it in its answer;
-    when a fill or the session close ended the primary, ONE INFO attention item (HEDGE_LEG_ENDED) per primary names the legs."""
+    1.0.7.2 review: the arithmetic is on whole numbers.  Fourth review: the leg's quantity and its primary's, as they were confirmed (L0
+    and P0: their ORDER_SUBMITTED records, which ``create_hedge_children`` writes with them, checked against the stored ratio - L0 / P0 at
+    8 decimals), size the leg as floor(shares filled × L0 / P0) in whole numbers, whatever quantity an amend or a replace gave the
+    shares.  So 300 shares + 1 call release the call at the 300th share (never floor(300 × 0.00333333) = 0); 300 + 3 calls amended to 350
+    release floor(350 × 3 / 300) = 3; 3,000,000 shares + 30,000 calls amended to 2,999,999 release 29,999 - the second and third rounds'
+    "the ratio fits these shares" test (a tolerance of shares × 0.000000005 around a whole number) read 2,999,999 × 0.01 = 29,999.99 as
+    fitting from 2,000,000 shares on and released a call the shares did not cover.  A leg with no such record (none: every leg of 1.0.7.1
+    and 1.0.7.2 has one) is sized from its stored ratio as before: its whole quantity while that ratio fits the shares, else 1.0.7.1's
+    floor(shares filled × ratio).  The shares are counted over the replace chain
+    (``replaces_order_id``): what the orders it replaced filled plus this one's fill, against what they filled plus this one's quantity,
+    and the children of the orders it replaced (a leg released before the replace) are sized with it, so every leg is released in full
+    once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before).  Third review: a confirmed
+    leg that ends with its primary after a partial fill is said - the owner's own cancel names it in its answer; when a fill or the
+    session close ended the primary, ONE INFO attention item (HEDGE_LEG_ENDED) per primary names the legs."""
     conn = ctx.conn
     out: List[dict] = []
     ended_due: List[Any] = []
@@ -938,6 +941,32 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
     ids = [r["order_id"] for r in chain] or [primary_order_id]
     rows = conn.execute(f"SELECT * FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)})"
                         " AND status IN ('WAITING_PARENT','WORKING','PARTIAL','FILLED') ORDER BY order_id", ids).fetchall()
+    submitted: Dict[str, Any] = {}
+
+    def as_submitted(oid: str):
+        """(quantity, parent) of an order as it was submitted: its ORDER_SUBMITTED record (read only), else None."""
+        if oid not in submitted:
+            got = None
+            ev = conn.execute("SELECT payload_json FROM events WHERE type='ORDER_SUBMITTED' AND ref_type='order' AND ref_id=? ORDER BY id DESC LIMIT 1",
+                              (oid,)).fetchone()
+            try:
+                p = json.loads(ev["payload_json"]) if ev is not None else None
+                if isinstance(p, dict) and int(p.get("qty") or 0) > 0:
+                    got = (int(p["qty"]), p.get("parent_order_id"))
+            except (TypeError, ValueError):
+                got = None
+            submitted[oid] = got
+        return submitted[oid]
+
+    def confirmed(r) -> Optional[Tuple[int, int]]:
+        """(L0, P0): the leg's quantity and its primary's as confirmed, when they give the leg's stored ratio (L0 / P0 at 8 decimals)."""
+        leg = as_submitted(r["order_id"])
+        prim = as_submitted(str(leg[1])) if leg is not None and leg[1] else None
+        if leg is None or prim is None:
+            return None
+        if (Decimal(leg[0]) / Decimal(prim[0])).quantize(Decimal("0.00000001"), rounding="ROUND_HALF_EVEN") != Decimal(r["ratio"] or "0"):
+            return None
+        return leg[0], prim[0]
     for r in rows:
         if primary_ended and shares_filled == 0:
             if r["status"] in ("WAITING_PARENT", "WORKING", "PARTIAL"):
@@ -949,13 +978,17 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
             continue
         ratio = Decimal(r["ratio"] or "0")
         target, how = None, None
-        if pqty > 0:
+        base = confirmed(r)
+        if base is not None:                                                         # whole numbers: the leg's and the shares' quantities as confirmed
+            target = (shares_filled * base[0]) // base[1]
+            how = f"floor({shares_filled:,} × {base[0]:,} / {base[1]:,})"
+        elif pqty > 0:                                                               # no record of them (never for a 1.0.7.x leg): the stored ratio
             prod = Decimal(pqty) * ratio
             full = prod.to_integral_value(rounding="ROUND_HALF_UP")
-            if abs(prod - full) <= Decimal(pqty) * Decimal("0.000000005"):            # the ratio fits these shares: the leg's quantity, exact
+            if abs(prod - full) <= Decimal(pqty) * Decimal("0.000000005"):            # the ratio fits these shares: the leg's quantity
                 target = (shares_filled * int(full)) // pqty
                 how = f"floor({shares_filled:,} × {int(full):,} / {pqty:,})"
-        if target is None:                                                           # the shares' quantity changed to one the ratio does not fit
+        if target is None:                                                           # else 1.0.7.1's rule
             target = int((Decimal(shares_filled) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
             how = f"floor({shares_filled:,} × {ratio})"
         filled = int(r["filled_qty"])

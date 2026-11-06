@@ -243,11 +243,18 @@ class MassCancelTests(MassCancelBase):
         assert_integrity(self, self.rt, "full")
 
     def test_e_a_sequential_leg_alone_and_a_leg_listed_before_its_primary(self):
-        # the waiting leg alone: cancelled by its own command, its primary keeps working
+        # fourth review: the waiting leg alone is KEPT while its shares order works (no command): a batch never takes a hedge away from
+        # shares that are still being bought; its own x (DELETE) still cancels it
         st, out, _h = self.cancel([self.pH], "mc:e0e0e0e0e0e0", book="P")
-        self.assertEqual((200, [{"order_id": self.pH, "status": "CANCELLED", "package_id": self.seq}]), (st, out["cancelled"]))
+        self.assertEqual((200, [], [(self.pH, "PRIMARY_WORKING", "WAITING_PARENT", self.pS)]),
+                         (st, out["cancelled"], [(x["order_id"], x["code"], x["status"], x["parent_order_id"]) for x in out["kept"]]))
+        self.assertIn("keeps working", out["kept"][0]["message"])
+        self.assertEqual([], self.cancels("mc:e0e0e0e0e0e0"))
+        self.assertEqual(("WORKING", "WAITING_PARENT"), (self.statuses()[self.pS], self.statuses()[self.pH]))
+        st, out, _h = self.rt.router.handle("DELETE", f"/api/orders/{self.pH}?book=P", None, {"request_id": "ui:mc-test-x-pH"}, "127.0.0.1", None)
+        self.assertEqual((200, "CANCELLED"), (st, out["order"]["status"]), out)
         self.assertEqual(("WORKING", "CANCELLED"), (self.statuses()[self.pS], self.statuses()[self.pH]))
-        # a new buy-write, its leg listed BEFORE its primary: each cancelled by its own command, in that order
+        # a new buy-write, its leg listed BEFORE its primary: the primary's cancel goes first; the leg, still waiting, ends with it
         st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
             {"instrument_id": "ACME", "side": "BUY", "qty": 200, "order_type": "LIMIT", "limit_px": "94.00"},
             {"instrument_id": acme("C", 105), "side": "STO", "qty": 2}]}}, "st:0123456789ab:C3:r1")
@@ -256,10 +263,12 @@ class MassCancelTests(MassCancelBase):
         h2 = self.one("SELECT order_id FROM orders WHERE parent_order_id=?", (p2,))["order_id"]
         batch = "mc:e1e1e1e1e1e1"
         st, out, _h = self.cancel([h2, p2], batch, book="P")
-        self.assertEqual([h2, p2], [x["order_id"] for x in out["cancelled"]])
-        self.assertEqual([], [x for x in out["cancelled"] if "with" in x])
-        self.assertEqual(sorted([f"{batch}:{h2}", f"{batch}:{p2}"]), self.cancels(batch))
-        self.assertEqual((DEFAULT_REASON, DEFAULT_REASON), tuple(self.one("SELECT reason FROM orders WHERE order_id=?", (x,))["reason"] for x in (h2, p2)))
+        self.assertEqual([(p2, None), (h2, "primary")], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        self.assertEqual([f"{batch}:{p2}"], self.cancels(batch))
+        self.assertEqual((DEFAULT_REASON, "primary ended unfilled"), tuple(self.one("SELECT reason FROM orders WHERE order_id=?", (x,))["reason"] for x in (p2, h2)))
+        # the same batch again: the same answer, nothing new
+        st, again, h = self.cancel([h2, p2], batch, book="P")
+        self.assertEqual((out["cancelled"], out["kept"], "1"), (again["cancelled"], again["kept"], h.get("X-Replayed")))
         assert_integrity(self, self.rt, "full")
 
     def test_f_a_partly_filled_primary_keeps_its_released_leg_and_ends_the_one_still_waiting(self):
@@ -387,9 +396,13 @@ class ListedWithItsPrimaryTests(MassCancelBase):
         batch = "mc:9d9d9d9d9d9d"
         st, out, _h = self.cancel([self.h, self.p], batch, book="P")
         self.assertEqual(200, st, out)
-        self.assertEqual(([self.h, self.p], []), ([x["order_id"] for x in out["cancelled"]], out["kept"]))
+        # fourth review: the primary's cancel first, then the leg's own (its primary has ended)
+        self.assertEqual(([self.p, self.h], []), ([x["order_id"] for x in out["cancelled"]], out["kept"]))
+        self.assertEqual([], [x for x in out["cancelled"] if "with" in x])
         self.assertEqual(sorted([f"{batch}:{self.h}", f"{batch}:{self.p}"]), self.cancels(batch))
         self.assertEqual(("CANCELLED", "CANCELLED"), (self.facts(self.h)[0], self.facts(self.p)[0]))
+        st, again, h = self.cancel([self.h, self.p], batch, book="P")      # a replay: the same answer, nothing new
+        self.assertEqual((out["cancelled"], out["kept"], "1"), (again["cancelled"], again["kept"], h.get("X-Replayed")))
         # the primary alone (the x, or "Cancel selected" with it ticked alone) reports its released leg as kept, never cancels it
         self.tearDown()
         self.setUp()
@@ -398,6 +411,71 @@ class ListedWithItsPrimaryTests(MassCancelBase):
         self.assertEqual(([(self.p, None)], [(self.h, "RELEASED")]), ([(x["order_id"], x.get("with")) for x in out["cancelled"]],
                                                                        [(x["order_id"], x["code"]) for x in out["kept"]]))
         self.assertEqual(("WORKING", 0, 1), self.facts(self.h))
+        assert_integrity(self, self.rt, "full")
+
+    # ---- fourth review: a re-priced (replaced) primary, a refused primary with its legs listed first, a leg sent alone ---------------------
+    def replace(self, limit: str, rid: str) -> str:
+        st, out, _h = self.post(f"/api/orders/{self.p}/replace?book=P", {"limit_px": limit}, rid)
+        self.assertEqual(200, st, out)
+        new = out["order"]["order_id"]
+        self.assertEqual(([self.h], new), (out["hedge_legs_moved"], self.one("SELECT parent_order_id FROM orders WHERE order_id=?", (self.h,))["parent_order_id"]))
+        return new
+
+    def test_k_the_waiting_leg_of_a_replaced_primary_is_kept_while_the_replacement_works(self):
+        # Pending read [primary, its waiting calls] before the owner's re-price (a replace) landed: the calls now wait for the replacement
+        new = self.replace("99.50", "ui:mc-test-rp-k01")
+        batch = "mc:9f9f9f9f9f9f"
+        st, out, _h = self.cancel([self.p, self.h], batch, book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(([], [(self.p, "NOT_OPEN")]), (out["cancelled"], [(x["order_id"], x["code"]) for x in out["skipped"]]))
+        self.assertEqual([(self.h, "PRIMARY_REPLACED", "WAITING_PARENT", new)], [(x["order_id"], x["code"], x["status"], x["parent_order_id"]) for x in out["kept"]])
+        self.assertIn(f"replaced by {new}", out["kept"][0]["message"])
+        self.assertEqual([], self.cancels(batch))                       # the calls had no command of their own (the refused one leaves no row)
+        self.bar(50000)                                                  # the replacement buys the other 240: all 3 calls released
+        self.assertEqual((("FILLED", 240, 240), ("WORKING", 0, 3)), (self.facts(new), self.facts(self.h)))
+        # listed with the replacement, the waiting calls end with it
+        self.tearDown()
+        self.setUp()
+        new = self.replace("99.50", "ui:mc-test-rp-k02")
+        st, out, _h = self.cancel([new, self.h], "mc:9g9g9g9g9g9g", book="P")
+        self.assertEqual([(new, None), (self.h, "primary")], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        self.assertEqual("CANCELLED", self.facts(self.h)[0])
+        assert_integrity(self, self.rt, "full")
+
+    def test_l_legs_listed_before_a_primary_whose_cancel_is_refused_are_kept(self):
+        # Cancel all open (and the Smart Ticket's cancel) list a leg BEFORE its shares order: its cancel waits for theirs
+        real = self.rt.bus.execute
+        p = self.p
+
+        def busy_for_the_primary(cmd):
+            if cmd.kind == "order.cancel" and (cmd.payload or {}).get("order_id") == p:
+                return Result(False, 503, {"error": {"code": "WRITER_BUSY", "message": "the writer is busy; retry", "details": {}}, "request_id": cmd.request_id},
+                              retry_after=1)
+            return real(cmd)
+        with mock.patch.object(self.rt.bus, "execute", busy_for_the_primary):
+            st, out, _h = self.cancel([self.h, self.p], "mc:9h9h9h9h9h9h", book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual([(self.p, "WRITER_BUSY")], [(x["order_id"], x["code"]) for x in out["failed"]])
+        self.assertEqual([(self.h, "PRIMARY_NOT_CANCELLED", "WAITING_PARENT")], [(x["order_id"], x["code"], x["status"]) for x in out["kept"]])
+        self.assertEqual([], self.cancels("mc:9h9h9h9h9h9h"))
+        self.bar(50000)                                                  # the shares still buy: the calls are released for them
+        self.assertEqual((("FILLED", 300, 300), ("WORKING", 0, 3)), (self.facts(self.p), self.facts(self.h)))
+        assert_integrity(self, self.rt, "full")
+
+    def test_m_a_leg_sent_alone_is_kept_while_its_shares_order_works(self):
+        # the Smart Ticket's "Cancel what this ticket sent" after the shares order was re-priced in Pending: only the leg carries the
+        # ticket's request id, so the leg is listed alone; it is kept while the replacement works, and released when it fills
+        new = self.replace("99.50", "ui:mc-test-rp-m01")
+        st, out, _h = self.cancel([self.h], "mc:9i9i9i9i9i9i", book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual(([], [(self.h, "PRIMARY_WORKING", new)]), (out["cancelled"], [(x["order_id"], x["code"], x["parent_order_id"]) for x in out["kept"]]))
+        self.assertEqual([], self.cancels("mc:9i9i9i9i9i9i"))
+        self.bar(50000)
+        self.assertEqual((("FILLED", 240, 240), ("WORKING", 0, 3)), (self.facts(new), self.facts(self.h)))
+        # once its shares order has ended, the leg alone is cancelled by its own command
+        st, out, _h = self.cancel([self.h], "mc:9j9j9j9j9j9j", book="P")
+        self.assertEqual([(self.h, None)], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        self.assertEqual(["mc:9j9j9j9j9j9j:" + self.h], self.cancels("mc:9j9j9j9j9j9j"))
         assert_integrity(self, self.rt, "full")
 
 

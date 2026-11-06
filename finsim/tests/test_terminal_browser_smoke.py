@@ -46,6 +46,7 @@ from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock, epoch_of
 from finsim.terminal.instruments import occ_symbol
 from finsim.terminal.quotes import Bar1m, QuoteRecord
+from finsim.terminal.quotes.cache import records_from_chain
 from finsim.terminal.quotes.providers import ChainRow, ChainSnapshot, ChainUnderlying, FakeProvider
 from finsim.terminal.units import qprice
 
@@ -374,6 +375,115 @@ class BrowserSmokeTests(unittest.TestCase):
     def _order_posts(self, since: int) -> list:
         """Every POST /api/orders (an order submit; not its preview, not a cancel) the page sent since ``since``."""
         return self._posts(since, "/api/orders")
+
+    def _served_chain(self, moved=None) -> None:
+        """The invented ACME chain observed now in the served runtime (as its quote worker caches a fetched chain), ``moved`` {(expiry,
+        right, strike): (bid, ask)} replacing those rows' quotes."""
+        rt, fp = self.server.rt, self.server.fp
+        now = int(rt.clock.epoch())
+        rows = []
+        for e, r, k, bid, ask in ACME_CHAIN:
+            bid, ask = (moved or {}).get((e, r, k), (bid, ask))
+            rows.append(ChainRow(occ_symbol("ACME", date.fromisoformat(e), r, Decimal(str(k))), e, r, qprice(k), qprice(bid), qprice(ask), 20, 20, None, None, 0.30,
+                                 None, None, None, None, 100, 10))
+        under = ChainUnderlying(symbol="ACME", last=qprice("60.00"), bid=None, ask=None, bid_size=None, ask_size=None, last_trade_time=now - 60, prev_close=None, iv30=0.30)
+        snap = ChainSnapshot(underlying_id="ACME", cboe_symbol="ACME", underlying=under, contracts=rows, fetched_at=now, quote_time=now - 60, n_raw=len(rows))
+        fp.set_chain("ACME", snap)
+        rt.chains.put(snap)
+        for rec in records_from_chain(snap, rt.instruments):
+            rt.cache.put(rec, now)
+
+    def _smart_read(self, text: str, legs: int) -> None:
+        b, sid = self.browser, self.sid
+        b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.focus(); t.value = %s; t.dispatchEvent(new Event('input', { bubbles: true }));"
+                  " return true; })()" % json.dumps(text))
+        self._press("Enter", 13)
+        b.wait(sid, "document.querySelectorAll('#smart-grid tbody tr[data-i]').length === %d" % legs, timeout=30)
+        b.wait(sid, "!document.querySelector('#smart-submit').disabled", timeout=60)
+
+    def test_x_smart_ticket_holds_an_all_or_none_combination_and_keeps_a_hedge_its_shares_need(self):
+        """1.0.7.2 fourth review, on the real server.  (a) An all-or-none combination goes only at the net cash its confirm listed: the
+        60 / 65 call spread moves 81 % against the buyer while the confirm is open, and "Send 1 order" sends nothing - the item stays
+        staged, said - while its page check (exported read-only) also holds a combination whose confirmed preview is older than 2
+        minutes on the server's clock.  (b) "Cancel what this ticket sent" after the ticket's shares order was re-priced in Pending
+        (a replace: the replacement carries the replace's request id): the waiting puts are listed with a note and kept by the server
+        while the replacement works - never cancelled alone.  The draft and the orders are cleaned up for the tests after it."""
+        b, sid = self.browser, self.sid
+        rt = self.server.rt
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); true")
+        self._served_chain()
+        since = b.mark()
+        self.visit("#/smart", "text")
+        self._smart_read("buy 1 ACME Dec 18 2026 60/65 call spread", 2)
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        conf = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+        for s in ("net cash", "-210.00", "goes only at the net cash listed here", "a moved price or a large order asks you again"):
+            self.assertIn(s, conf)
+        self._served_chain({("2026-12-18", "C", 60): ("4.10", "4.30"), ("2026-12-18", "C", 65): ("0.50", "0.60")})
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "/^sent 0 of 1, skipped 1/.test(document.querySelector('#smart-status').innerText)", timeout=40)
+        self.assertEqual([], self._order_posts(since))                         # nothing was sent at the moved price
+        status = b.js(sid, "document.querySelector('#smart-status').innerText")
+        self.assertIn("its net cash moved from -210.00 to -380.00", status)
+        self.assertIn("submit it again to confirm them", status)
+        ticket = b.js(sid, "JSON.parse(localStorage.getItem('finsim.smart.draft')).ticket")
+        with rt.db.reader() as conn:
+            self.assertEqual(0, conn.execute("SELECT COUNT(*) FROM orders WHERE request_id LIKE ?", (f"st:{ticket}:%",)).fetchone()[0])
+        self._served_chain()
+        # the page's check itself: the server's clock, its moved-price rule, a debit and a credit
+        got = b.js(sid, """(function () {
+          var f = T.pages.smart.aonMoved, rule = { moved_pct: '0.005', ttl_s: 120 };
+          function it(net, at) { return { cbase: { net: net, at: at, rule: rule } }; }
+          function spec(net, at) { return { totals: { net_cash: net }, previewed_at: at, stale_rule: rule }; }
+          return [f(it('-210.00', 1000), spec('-210.00', 1600)), f(it('-210.00', 1000), spec('-210.00', 1100)), f(it('-210.00', 1000), spec('-211.00', 1100)),
+                  f(it('-210.00', 1000), spec('-212.00', 1100)), f(it('150.00', 1000), spec('149.00', 1100)), f(it('150.00', 1000), spec('151.00', 1100)),
+                  f(it('-210.00', 1000), spec(null, 1100))];
+        })()""")
+        self.assertIn("10 minutes before its turn", got[0])
+        self.assertEqual([None, None], got[1:3])                               # the same; 0.48 % worse is within the rule
+        self.assertIn("0.95 % against you", got[3])
+        self.assertIn("0.67 % against you", got[4])                            # a credit: receiving less is worse
+        self.assertIsNone(got[5])
+        self.assertIn("could not be checked", got[6])
+        # (b) a sequential package with protective puts that wait; the shares order re-priced by a replace (Pending / another window)
+        since = b.mark()
+        self._smart_read("buy 300 ACME limit 58 and buy 3 ACME Dec 18 2026 55 puts limit 1.00 as a package", 2)
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "/^(all 1 order sent|sent 1 of 2)/.test(document.querySelector('#smart-status').innerText)", timeout=40)
+        ticket = b.js(sid, "JSON.parse(localStorage.getItem('finsim.smart.draft') || 'null') ? JSON.parse(localStorage.getItem('finsim.smart.draft')).ticket : null") or ticket
+        with rt.db.reader() as conn:
+            rows = {r["request_id"]: dict(r) for r in conn.execute("SELECT order_id, request_id, status FROM orders WHERE request_id LIKE ?", (f"st:{ticket}:C%",))}
+        shares = next(r for k, r in rows.items() if not k.endswith(":H1"))
+        puts = next(r for k, r in rows.items() if k.endswith(":H1"))
+        self.assertEqual(("WORKING", "WAITING_PARENT"), (shares["status"], puts["status"]))
+        st_, out, _h = rt.router.handle("POST", f"/api/orders/{shares['order_id']}/replace?book=F", None, {"limit_px": "58.05", "request_id": "ui:smoke-rp-0001"},
+                                        "127.0.0.1", None)
+        self.assertEqual(200, st_, out)
+        new = out["order"]["order_id"]
+        b.js(sid, "document.querySelector('#smart-cancel-sent').click(); true")
+        b.wait(sid, "Array.prototype.some.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return /^Cancel \\d+ order/.test(x.innerText); })",
+               timeout=20)
+        listed = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+        self.assertIn(puts["order_id"], listed)
+        self.assertIn("kept: it waits for its shares order", listed)
+        b.js(sid, "Array.prototype.filter.call(document.querySelectorAll('#modal-root .modal .btn.primary'), function (x) { return /^Cancel \\d+ order/.test(x.innerText); })[0].click(); true")
+        b.wait(sid, "/kept working 1/.test(document.querySelector('#smart-status').innerText)", timeout=20)
+        self.assertEqual([[puts["order_id"]]], [x["body"]["order_ids"] for x in self._posts(since, "/api/orders/cancel")])
+        self.assertIn(f"keeps working", b.js(sid, "document.querySelector('#smart-status').innerText"))
+        with rt.db.reader() as conn:
+            now = {r["order_id"]: r["status"] for r in conn.execute("SELECT order_id, status FROM orders WHERE order_id IN (?,?)", (puts["order_id"], new))}
+        self.assertEqual({puts["order_id"]: "WAITING_PARENT", new: "WORKING"}, now)
+        # clean up for the tests after this one: the replacement cancelled (its waiting puts end with it), the draft gone
+        st_, out, _h = rt.router.handle("DELETE", f"/api/orders/{new}?book=F", None, {"request_id": "ui:smoke-rp-x-0001"}, "127.0.0.1", None)
+        self.assertEqual(200, st_, out)
+        self.assertEqual([puts["order_id"]], [x["order_id"] for x in out.get("ended_with_it") or []])
+        b.js(sid, "localStorage.removeItem('finsim.smart.draft'); location.hash = '#/dashboard'; true")
+        b.pump(0.8)
+        self.assertEqual([], b.errors(sid, since))
+        self.assertEqual([], b.http_errors(sid, since))
 
     def test_y_smart_ticket_records_a_sequential_package_as_sent_only_with_its_terms(self):
         """1.0.7.2 third review: the page records an item as sent under its own request id (a reload or a second window got there first)

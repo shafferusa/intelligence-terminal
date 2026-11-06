@@ -24,16 +24,21 @@ Conventions
   BAD_REQUEST (the shape), 400 BAD_REQUEST_ID (the batch id), 404 NOT_FOUND ``{unknown}``, 409 BOOK_MISMATCH ``{orders, selected}`` when
   ``?book=`` is given and an order's account is in another book.  Then, in the given order, one ``order.cancel`` command per target,
   never in parallel, request id ``<batch>:<order or package id>``: an order of an all-or-none package cancels its package once (its
-  other listed legs are reported with it), any other order itself (a primary's unfilled legs follow it).  Third review: a sequential
-  leg listed AFTER its own primary is listed WITH it and gets no command of its own - still waiting when the primary's cancel went
-  through, it ended with it (reported ``with: primary``); released for shares bought (before the batch or while it ran), or with a
-  primary that did not end in this batch (already ended, refused), it keeps working and is reported under ``kept``.  A leg listed
-  BEFORE its primary (or without it) is cancelled by its own command.  200 ``{batch_id, requested, cancelled: [{order_id, status,
-  package_id?, with?}], skipped: [{order_id, code, message}] (NOT_OPEN: it had already ended), failed: [{order_id, code, message, http}],
-  kept: [{order_id, status, code, message, parent_order_id}] (RELEASED / PRIMARY_ENDED / PRIMARY_NOT_CANCELLED: a leg that keeps working,
-  listed or released by a primary this batch cancelled), replayed}``; ``replayed`` (and ``X-Replayed: 1``) when every accepted cancel
-  was a replay of this batch - nothing is cancelled twice.  ``DELETE /api/orders/{id}`` names the waiting legs that ended with the
-  primary in ``ended_with_it``.
+  other listed legs are reported with it), any other order itself (a primary's unfilled legs follow it).  A sequential hedge leg is
+  never cancelled while its shares order keeps working (third and fourth reviews); its shares order is its primary, or the order that
+  replaced it (``replace_chain``: a re-price by replace moves the legs still waiting to the replacement).  A leg listed AFTER its
+  primary (or after an order that primary replaced) is listed WITH it and gets no command of its own - still waiting when the
+  primary's cancel went through, it ended with it (reported ``with: primary``); released for shares bought (before the batch or while
+  it ran), or with a primary that did not end in this batch (already ended, refused) or was replaced by one that keeps working, it keeps
+  working and is reported under ``kept``.  A leg listed BEFORE its primary (the owner's own tick) is settled right after the primary's
+  turn: cancelled by its own command once the primary has ended, else kept.  A leg listed without its primary is cancelled by its own
+  command once that primary has ended, else kept (``PRIMARY_WORKING``; its own x still cancels it).  200 ``{batch_id, requested,
+  cancelled: [{order_id, status, package_id?, with?}], skipped: [{order_id, code, message}] (NOT_OPEN: it had already ended), failed:
+  [{order_id, code, message, http}], kept: [{order_id, status, code, message, parent_order_id}] (RELEASED / PRIMARY_ENDED /
+  PRIMARY_NOT_CANCELLED / PRIMARY_REPLACED / PRIMARY_WORKING: a leg that keeps working), replayed}``; ``replayed`` (and ``X-Replayed:
+  1``) when every accepted cancel was a replay of this batch - nothing is cancelled twice.  ``DELETE /api/orders/{id}`` names the waiting
+  legs that ended with the primary in ``ended_with_it``.  ``POST /api/strategies/preview`` answers ``previewed_at`` (the server's clock)
+  and ``stale_rule`` {moved_pct, ttl_s} with a package preview (fourth review: the Smart Ticket holds an all-or-none combination to it).
 """
 from __future__ import annotations
 
@@ -116,6 +121,31 @@ def ended_with_primary(conn, primary_order_id: str) -> List[dict]:
                         " ORDER BY o.order_id", (primary_order_id, len(head), head)).fetchall()
     return [{"order_id": r["order_id"], "instrument_id": r["instrument_id"], "side": r["side"], "qty": int(r["qty"]), "status": r["status"],
              "reason": r["reason"]} for r in rows]
+
+
+def replace_chain(conn, order_id: Optional[str], forward: bool = False) -> List[str]:
+    """1.0.7.2 fourth review: an order and the orders it replaced (``replaces_order_id``, back to the first), newest first; ``forward``
+    starts from the order that replaced it last (``replaced_by_order_id`` followed: the one that works now).  A re-price by replace moves
+    a primary's legs still waiting to the replacement; a leg already released stays with the order that released it."""
+    if not order_id:
+        return []
+    head, seen = str(order_id), {str(order_id)}
+    while forward:
+        r = conn.execute("SELECT * FROM orders WHERE order_id=?", (head,)).fetchone()
+        nxt = r["replaced_by_order_id"] if r is not None and "replaced_by_order_id" in r.keys() else None
+        if not nxt or nxt in seen:
+            break
+        seen.add(nxt)
+        head = str(nxt)
+    out: List[str] = []
+    cur: Optional[str] = head
+    while cur and cur not in out:
+        r = conn.execute("SELECT * FROM orders WHERE order_id=?", (cur,)).fetchone()
+        if r is None:
+            break
+        out.append(cur)
+        cur = r["replaces_order_id"] if "replaces_order_id" in r.keys() else None
+    return out
 
 
 def book_guard(req: Request, account_id) -> None:
@@ -926,14 +956,28 @@ def register_routes(r) -> None:
         if len(reason) > CANCEL_REASON_MAX:
             raise ApiError(400, "BAD_REQUEST", f"reason is at most {CANCEL_REASON_MAX} characters, got {len(reason)}", {"max": CANCEL_REASON_MAX})
         sel = (req.q("book") or "").strip().upper()
+        live = list(CANCEL_LIVE_STATUSES)
         with rt.db.reader() as conn:              # ONE read of every order before anything is cancelled
             rows = {r["order_id"]: dict(r) for r in conn.execute(
                 f"SELECT order_id, account_id, status, package_id, fill_mode, parent_order_id FROM orders WHERE order_id IN ({','.join('?' for _ in ids)})",
                 ids).fetchall()}
-            # 1.0.7.2 review (R3): the open orders that end WITH a listed one (a waiting leg of a listed primary), reported in the answer too
-            kids = {r["order_id"]: dict(r) for r in conn.execute(
-                f"SELECT order_id, parent_order_id, package_id, status FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)})"
-                f" AND status IN ({','.join('?' for _ in CANCEL_LIVE_STATUSES)})", list(ids) + list(CANCEL_LIVE_STATUSES)).fetchall()}
+            # fourth review: a listed hedge leg's shares order through its replaces (a re-price by replace moves the legs still waiting to the
+            # replacement; a leg already released stays with the order that released it), the order that works now first
+            chains = {oid: replace_chain(conn, r["parent_order_id"], forward=True) for oid, r in rows.items()
+                      if r["parent_order_id"] and r["fill_mode"] != "AON"}
+            # 1.0.7.2 review (R3): the open hedge legs of every listed shares order (and of the orders it replaced): reported with it when its
+            # cancel ends them, or as kept when they keep working
+            owner: Dict[str, str] = {}
+            for oid, r in rows.items():
+                if not r["parent_order_id"] and r["fill_mode"] != "AON":
+                    for x in replace_chain(conn, oid):
+                        owner.setdefault(x, oid)
+            kids: Dict[str, dict] = {}
+            if owner:
+                parents = list(owner)
+                for k in conn.execute(f"SELECT order_id, parent_order_id, package_id, status FROM orders WHERE parent_order_id IN ({','.join('?' for _ in parents)})"
+                                      f" AND status IN ({','.join('?' for _ in live)})", parents + live).fetchall():
+                    kids[k["order_id"]] = dict(k, primary=owner[k["parent_order_id"]])
             names = {b.code: b.name for b in _books.books(conn)} if sel else {}
         unknown = [i for i in ids if i not in rows]
         if unknown:
@@ -949,8 +993,12 @@ def register_routes(r) -> None:
                 raise ApiError(409, "BOOK_MISMATCH", f"{len(other)} of the orders belong to another book than the selected {names.get(sel, sel)}: switch books "
                                                      "or cancel them from their own book", {"orders": other, "selected": sel})
         # the targets, in the given order: an all-or-none package once (at its first listed leg), every other order itself - except a
-        # sequential leg listed AFTER its own primary (third review): it ends WITH that primary, never by a command of its own
+        # sequential hedge leg, which is never cancelled while its shares order keeps working (third and fourth reviews): listed AFTER its
+        # shares order (or an order that shares order replaced) it ends WITH it, never by a command of its own; listed BEFORE it (the
+        # owner's own tick: Cancel all open, a leg ticked with its shares order, the Smart Ticket's cancel) its own cancel goes right after
+        # that order's, and only once that order has ended; listed without it, it is kept while that order works
         targets: List[dict] = []
+        later: Dict[str, List[dict]] = {}
         by_package: Dict[str, dict] = {}
         pos = {oid: n for n, oid in enumerate(ids)}
         for oid in ids:
@@ -964,9 +1012,18 @@ def register_routes(r) -> None:
                 else:
                     t["orders"].append(oid)
                 continue
-            parent = r["parent_order_id"]
-            targets.append({"key": oid, "payload": {"order_id": oid, "reason": reason}, "orders": [oid], "package_id": pid, "parent": parent,
-                            "with_primary": bool(parent) and parent in pos and pos[parent] < pos[oid]})
+            t = {"key": oid, "payload": {"order_id": oid, "reason": reason}, "orders": [oid], "package_id": pid, "leg": oid in chains, "mode": None}
+            if oid in chains:
+                listed = [m for m in chains[oid] if m in pos]
+                if listed:
+                    last = max(listed, key=lambda m: pos[m])
+                    t["mode"] = "with" if any(pos[m] < pos[oid] for m in listed) else "after"
+                    if pos[last] > pos[oid]:
+                        later.setdefault(last, []).append(t)       # settled right after its shares order's turn
+                        continue
+                else:
+                    t["mode"] = "alone"
+            targets.append(t)
         cancelled: List[dict] = []
         skipped: List[dict] = []
         failed: List[dict] = []
@@ -980,48 +1037,86 @@ def register_routes(r) -> None:
                 reported.add(entry["order_id"])
                 lst.append(entry)
 
-        def keep(oid: str, parent: str, package_id: Optional[str], status: str) -> None:
-            """A leg that does not end with its primary: released for the shares it bought (it hedges them), or its primary did not end."""
-            with rt.db.reader() as conn:
-                p = conn.execute("SELECT status, filled_qty FROM orders WHERE order_id=?", (parent,)).fetchone()
-            pst, pfill = (str(p["status"]), int(p["filled_qty"] or 0)) if p is not None else ("?", 0)
-            how = outcome.get(parent)
-            waits = status == "WAITING_PARENT"
-            if how == "done":
-                code, msg = "RELEASED", (f"keeps working: released for the {pfill:,} shares its primary {parent} bought before it was cancelled - it hedges them;"
-                                         " cancel it on its own to end it")
-            elif how == "ended":
-                code, msg = "PRIMARY_ENDED", (f"keeps {'waiting' if waits else 'working'}: its primary {parent} had already ended ({pst.lower()}, {pfill:,} filled)"
-                                              + ("" if waits else " and released it for the shares bought") + "; cancel it on its own to end it")
-            else:
-                code, msg = "PRIMARY_NOT_CANCELLED", (f"kept: its primary {parent} was not cancelled ({how or 'not reached'}), so this leg still "
-                                                      + ("waits for its shares" if waits else "hedges the shares bought") + "; cancel the primary again (a leg"
-                                                      " still waiting ends with it)")
-            report(kept, dict({"order_id": oid, "status": status, "code": code, "message": msg, "parent_order_id": parent},
-                              **({"package_id": package_id} if package_id else {})))
-        for t in targets:
-            oid = t["key"]
-            if all(x in reported for x in t["orders"]):
-                continue                            # it already ended with an order listed before it (and is said there)
-            if t.get("with_primary"):
-                # third review: a leg listed after its own primary is listed WITH it (Pending's "ends with its primary"): it gets no command of
-                # its own.  Still waiting when its primary's cancel went through, it ended with it (the server's rule); released for shares
-                # bought - before the batch or while it ran - or with a primary that did not end here, it keeps working and is said (kept)
-                with rt.db.reader() as conn:
-                    now_status = (conn.execute("SELECT status FROM orders WHERE order_id=?", (oid,)).fetchone() or {"status": None})["status"]
-                if now_status in CANCEL_LIVE_STATUSES:
-                    keep(oid, t["parent"], t["package_id"], str(now_status))
-                elif now_status == "CANCELLED" and outcome.get(t["parent"]) == "done":
-                    report(cancelled, dict({"order_id": oid, "status": "CANCELLED", "with": "primary", "parent_order_id": t["parent"]},
-                                           **({"package_id": t["package_id"]} if t["package_id"] else {})))
-                else:
-                    report(skipped, {"order_id": oid, "code": "NOT_OPEN", "message": f"order {oid} is {str(now_status).lower()}: it had already ended"})
-                continue
-            res = rt.bus.execute(Command("order.cancel", t["payload"], f"{batch}:{oid}", "ui"))
+        def cancel_one(oid: str, package_id: Optional[str]) -> None:
+            """The order's own ``order.cancel`` (request id ``<batch>:<order id>``), reported; the legs of a shares order it ended are said."""
+            res = rt.bus.execute(Command("order.cancel", {"order_id": oid, "reason": reason}, f"{batch}:{oid}", "ui"))
             results.append(res)
             if res.ok:
                 out = res.body if isinstance(res.body, dict) else {}
-                if "package_id" in t["payload"]:
+                outcome[oid] = "done"
+                report(cancelled, dict({"order_id": oid, "status": (out.get("order") or {}).get("status") or "CANCELLED"},
+                                       **({"package_id": package_id} if package_id else {})))
+                # R3: the legs still waiting for this shares order ended with it: said, listed or not (a listed one at its own turn); third
+                # review: a leg it had released keeps working - said as kept (Pending listed it as "keeps working"), never cancelled here
+                for k in sorted(k for k, r in kids.items() if r["primary"] == oid and k not in pos and k not in reported):
+                    settle(k, "with", kids[k]["package_id"])
+            elif res.code == "NOT_OPEN":
+                outcome[oid] = "ended"
+                report(skipped, {"order_id": oid, "code": "NOT_OPEN", "message": res.message or f"order {oid} had already ended"})
+            else:
+                outcome[oid] = str(res.code or "ERROR")
+                report(failed, {"order_id": oid, "code": res.code or "ERROR", "message": res.message or "", "http": int(res.http)})
+
+        def settle(oid: str, mode: str, package_id: Optional[str]) -> None:
+            """A sequential hedge leg at its turn: ended with its shares order (``with: primary``), kept (it keeps working: ``kept``), or
+            cancelled by its own command (the owner listed it before its shares order, or without it, and that order has ended)."""
+            with rt.db.reader() as conn:
+                row = conn.execute("SELECT status, parent_order_id FROM orders WHERE order_id=?", (oid,)).fetchone()
+                status = str(row["status"]) if row is not None else None
+                chain = replace_chain(conn, row["parent_order_id"], forward=True) if row is not None and row["parent_order_id"] else []
+                fills = {r["order_id"]: (str(r["status"]), int(r["filled_qty"] or 0)) for r in conn.execute(
+                    f"SELECT order_id, status, filled_qty FROM orders WHERE order_id IN ({','.join('?' for _ in chain)})", chain).fetchall()} if chain else {}
+                own = conn.execute("SELECT 1 FROM commands WHERE request_id=?", (f"{batch}:{oid}",)).fetchone() is not None
+            head = chain[0] if chain else None
+            hst = fills.get(head, (None, 0))[0] if head else None
+            bought = sum(f for _s, f in fills.values())
+            extra = {"package_id": package_id} if package_id else {}
+            if own and mode != "with":
+                cancel_one(oid, package_id)             # this batch already sent its own cancel (a replay of the batch): the same answer
+                return
+            if status not in CANCEL_LIVE_STATUSES:
+                if status == "CANCELLED" and any(outcome.get(m) == "done" for m in chain):
+                    report(cancelled, dict({"order_id": oid, "status": "CANCELLED", "with": "primary", "parent_order_id": head}, **extra))
+                else:
+                    report(skipped, {"order_id": oid, "code": "NOT_OPEN", "message": f"order {oid} is {str(status).lower()}: it had already ended"})
+                return
+            waits = status == "WAITING_PARENT"
+            does = "still waits for its shares" if waits else "hedges the shares bought"
+            if hst in CANCEL_LIVE_STATUSES:             # its shares order keeps working: a hedge leg never goes without it
+                gone = next((m for m in chain[1:] if m in pos), None)
+                if mode == "alone":
+                    code, msg = "PRIMARY_WORKING", (f"kept: its primary {head} keeps working, so this leg {does}; a hedge leg is not cancelled alone"
+                                                    " while its primary works - cancel the primary with it (the leg ends with it, or goes after it), or"
+                                                    " cancel the leg on its own with its x")
+                elif head not in pos and gone is not None:
+                    code, msg = "PRIMARY_REPLACED", (f"kept: its primary {gone} was replaced by {head}, which keeps working, so this leg {does};"
+                                                     f" cancel {head} to end it (a leg still waiting ends with it)")
+                else:
+                    code, msg = "PRIMARY_NOT_CANCELLED", (f"kept: its primary {head} was not cancelled ({outcome.get(head) or 'not reached'}), so this"
+                                                          f" leg {does}; cancel the primary again (a leg still waiting ends with it)")
+                report(kept, dict({"order_id": oid, "status": status, "code": code, "message": msg, "parent_order_id": head}, **extra))
+                return
+            if mode == "with":                          # listed with its shares order, which has ended: it keeps working
+                pst = str(hst or "?").lower()
+                if outcome.get(head) == "done":
+                    code, msg = "RELEASED", (f"keeps working: released for the {bought:,} shares its primary {head} bought before it was cancelled -"
+                                             " it hedges them; cancel it on its own to end it")
+                else:
+                    code, msg = "PRIMARY_ENDED", (f"keeps {'waiting' if waits else 'working'}: its primary {head} had already ended ({pst}, {bought:,}"
+                                                  " filled)" + ("" if waits else " and released it for the shares bought") + "; cancel it on its own to end it")
+                report(kept, dict({"order_id": oid, "status": status, "code": code, "message": msg, "parent_order_id": head}, **extra))
+                return
+            cancel_one(oid, package_id)                 # the owner's own tick, and its shares order has ended: its own cancel
+
+        def run(t: dict) -> None:
+            oid = t["key"]
+            if all(x in reported for x in t["orders"]):
+                return                                  # it already ended with an order listed before it (and is said there)
+            if "package_id" in t["payload"]:
+                res = rt.bus.execute(Command("order.cancel", t["payload"], f"{batch}:{oid}", "ui"))
+                results.append(res)
+                if res.ok:
+                    out = res.body if isinstance(res.body, dict) else {}
                     legs = {x.get("order_id"): x for x in (out.get("cancelled") or []) if isinstance(x, dict)}
                     for n, leg_id in enumerate(t["orders"]):
                         if leg_id in legs:
@@ -1034,31 +1129,24 @@ def register_routes(r) -> None:
                         if leg_id and leg_id not in t["orders"]:
                             report(cancelled, {"order_id": leg_id, "status": legs[leg_id].get("status") or "CANCELLED", "package_id": t["package_id"],
                                                "with": "package"})
+                elif res.code == "NOT_OPEN":
+                    for leg_id in t["orders"]:
+                        report(skipped, {"order_id": leg_id, "code": "NOT_OPEN", "message": res.message or f"order {leg_id} had already ended"})
                 else:
-                    outcome[oid] = "done"
-                    report(cancelled, dict({"order_id": oid, "status": (out.get("order") or {}).get("status") or "CANCELLED"},
-                                           **({"package_id": t["package_id"]} if t["package_id"] else {})))
-                    # R3: the legs still waiting for this primary ended with it: said, whether listed or not; third review: a leg the primary
-                    # had released keeps working - said as kept (Pending listed it as "keeps working"), never cancelled here
-                    mine = sorted(k for k, r in kids.items() if r["parent_order_id"] == oid and k not in reported)
-                    if mine:
-                        with rt.db.reader() as conn:
-                            now = {r["order_id"]: r["status"] for r in conn.execute(
-                                f"SELECT order_id, status FROM orders WHERE order_id IN ({','.join('?' for _ in mine)})", mine).fetchall()}
-                        for k in mine:
-                            if now.get(k) == "CANCELLED":
-                                report(cancelled, dict({"order_id": k, "status": "CANCELLED", "with": "primary", "parent_order_id": oid},
-                                                       **({"package_id": kids[k]["package_id"]} if kids[k]["package_id"] else {})))
-                            elif now.get(k) in CANCEL_LIVE_STATUSES and not (k in pos and pos[k] < pos[oid]):
-                                keep(k, oid, kids[k]["package_id"], str(now[k]))
-            elif res.code == "NOT_OPEN":
-                outcome[oid] = "ended"
-                for leg_id in t["orders"]:
-                    report(skipped, {"order_id": leg_id, "code": "NOT_OPEN", "message": res.message or f"order {leg_id} had already ended"})
+                    for leg_id in t["orders"]:
+                        report(failed, {"order_id": leg_id, "code": res.code or "ERROR", "message": res.message or "", "http": int(res.http)})
+            elif t.get("leg"):
+                settle(oid, t["mode"], t["package_id"])
             else:
-                outcome[oid] = str(res.code or "ERROR")
-                for leg_id in t["orders"]:
-                    report(failed, {"order_id": leg_id, "code": res.code or "ERROR", "message": res.message or "", "http": int(res.http)})
+                cancel_one(oid, t["package_id"])
+
+        for t in targets:
+            run(t)
+            for d in later.pop(t["key"], []):
+                run(d)
+        for rest in later.values():                   # (never left over: every shares order a leg waits for is a target of its own)
+            for d in rest:
+                run(d)
         accepted = [r for r in results if r.ok]
         replayed = bool(accepted) and all(r.replayed for r in accepted)
         answer = {"batch_id": batch, "requested": len(ids), "cancelled": cancelled, "skipped": skipped, "failed": failed, "kept": kept, "replayed": replayed}
@@ -1163,6 +1251,11 @@ def register_routes(r) -> None:
     def strategies_preview(req: Request):
         mod = need(req.rt, "strategies")
         status, body = mod.preview_view(req.rt, dict(req.body or {}))
+        if int(status) == 200 and isinstance(body, dict):
+            # 1.0.7.2 fourth review: when it was taken (the server's clock) and the moved-price rule of an order's preview, so the Smart
+            # Ticket sends an all-or-none combination only at the net cash its confirm listed (within 0.5 %) and within 2 minutes of it
+            body["previewed_at"] = int(req.rt.clock.epoch())
+            body["stale_rule"] = {"moved_pct": str(config.PRICE_MOVED_PCT), "ttl_s": int(config.PREVIEW_TTL_S)}
         return int(status), body
 
     def risk(req: Request):

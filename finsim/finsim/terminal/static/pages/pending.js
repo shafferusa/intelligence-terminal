@@ -16,7 +16,10 @@
  *   or of every book with "all books" ticked, whatever the other filters show) list the count and up to 12 orders in words, then send
  *   one POST /api/orders/cancel?book=<b> per book (request id mc:<12 hex>) and say what was cancelled, already ended, failed or kept
  *   working.  Third review: a hedge leg ticked with its primary is listed before it (its own cancel); a waiting leg of a ticked primary
- *   is listed right after it and ends WITH it (no cancel of its own: released for shares bought meanwhile, it keeps working).  The x
+ *   is listed right after it and ends WITH it (no cancel of its own: released for shares bought meanwhile, it keeps working).  Fourth
+ *   review: the server sends the primary's cancel first and a ticked leg's only once its primary has ended (a refused primary keeps
+ *   its legs), keeps a leg whose primary was re-priced by a replace, and never cancels a leg ticked alone while its primary keeps
+ *   buying (the confirm says so; the leg's own x still cancels it); a primary and its ticked legs stay in one batch.  The x
  *   on a package's shares order says first which of its legs end with it and which keep working, and its toast names the ended ones.
  * - The page polls every 5 s while anything is working, else every 30 s.
  * Trader wording only; ASCII; the C4 classes (.filterbar, .stage-chip, .badge-asof, .drawer, .drawer-tabs, .kv-grid).
@@ -247,10 +250,14 @@
      waiting leg is sent right AFTER its primary (``batchOrder``), which the server reads as "ends with its primary": it gets no cancel of
      its own, so a leg the shares release while the confirm is open - or one whose primary's cancel does not go through - keeps working
      and comes back as kept.
-     -> {extra: the rows that end with the ticked ones, keeps: the released legs that keep working} */
+     Fourth review: a leg ticked without its primary while that primary keeps working is kept by the server (a hedge is never taken
+     from shares still being bought): ``alone`` names those primaries so the confirm says it.
+     -> {extra: the rows that end with the ticked ones, keeps: the released legs that keep working, alone: {leg id: its working primary}} */
   function linkedRows(rows, pool) {
-    var ids = {}, pk = {}, extra = [], keeps = [];
+    var ids = {}, pk = {}, extra = [], keeps = [], alone = {}, open = {};
     rows.forEach(function (r) { ids[r.order_id] = r; if (r.package_id && r.fill_mode === 'AON') { pk[r.package_id] = true; } });
+    (pool || []).forEach(function (x) { if (x && x.order_id && (!x.row_kind || x.row_kind === 'order') && x.actions && x.actions.cancel) { open[x.order_id] = true; } });
+    rows.forEach(function (r) { if (r.parent_order_id && r.fill_mode !== 'AON' && !ids[r.parent_order_id] && open[r.parent_order_id]) { alone[r.order_id] = r.parent_order_id; } });
     (pool || []).forEach(function (x) {
       if (!x || (x.row_kind && x.row_kind !== 'order') || !x.order_id || ids[x.order_id] || !(x.actions && x.actions.cancel)) { return; }
       var withPkg = !!(x.package_id && x.fill_mode === 'AON' && pk[x.package_id]);
@@ -263,7 +270,7 @@
         keeps.push(Object.assign({}, x, { $filled: primary.filled_qty || 0 }));
       }
     });
-    return { extra: extra, keeps: keeps };
+    return { extra: extra, keeps: keeps, alone: alone };
   }
   /* the order the batch lists them in (third review): a leg the owner ticked goes BEFORE its ticked primary - the server cancels it by its
      own command; a waiting leg listed only because its primary is ticked goes right AFTER that primary - the server ends it with its
@@ -281,7 +288,11 @@
   function massConfirm(rows, title, keeps) {
     var body = T.h('div', null, T.h('div', null, 'Cancel ' + rows.length + ' open order' + (rows.length === 1 ? '' : 's') + '?'));
     var ul = T.h('ul', { class: 'mono' });
-    rows.slice(0, MASS_LIST).forEach(function (r) { ul.appendChild(T.h('li', null, (r.order_id || '') + ': ' + massWords(r) + (r.$with ? ' (ends with ' + r.$with + ')' : ''))); });
+    rows.slice(0, MASS_LIST).forEach(function (r) {
+      ul.appendChild(T.h('li', null, (r.order_id || '') + ': ' + massWords(r) + (r.$with ? ' (ends with ' + r.$with + ')' : '') +
+        (r.$alone ? ' (kept while its primary ' + r.$alone + ' keeps working: a hedge leg is not cancelled alone while its shares are being bought - tick ' +
+                    r.$alone + ' too, or use the leg\'s own x)' : '')));
+    });
     if (rows.length > MASS_LIST) { ul.appendChild(T.h('li', { class: 'muted' }, '... and ' + (rows.length - MASS_LIST) + ' more')); }
     body.appendChild(ul);
     if (keeps && keeps.length) {
@@ -295,19 +306,23 @@
       body.appendChild(kl);
     }
     body.appendChild(T.h('div', { class: 'hint' }, 'One cancel per book; an all-or-none package goes as one; a hedge leg listed with its primary ends with it only while it' +
-      ' still waits (shares bought meanwhile keep it working, said as kept); an order that ends meanwhile is reported as already ended.'));
+      ' still waits (shares bought meanwhile keep it working, said as kept); a hedge leg ticked with its primary is cancelled after it, once it has ended' +
+      ' (kept if its cancel does not go through, or if it was re-priced meanwhile); an order that ends meanwhile is reported as already ended.'));
     return T.ui.confirm(body, { title: title, ok: 'Cancel ' + rows.length + ' order' + (rows.length === 1 ? '' : 's'), cancel: 'Keep' });
   }
   /* -> {cancelled, skipped, failed, kept, errors} summed over the batches; a leg listed with its primary stays in its primary's batch */
   function massCancel(rows, reason) {
-    var groups = {}, books = [], seen = {};
+    var groups = {}, books = [], seen = {}, listed = {}, units = {};
+    rows.forEach(function (r) { listed[r.order_id] = true; });
     rows.forEach(function (r) {
       var b = r.book || '';
       if (!groups[b]) { groups[b] = []; books.push(b); }
       if (seen[r.order_id]) { return; }
       seen[r.order_id] = true;
-      var g = groups[b]; var last = g[g.length - 1];
-      if (r.$primary && last && last.indexOf(r.$primary) >= 0) { last.push(r.order_id); } else { g.push([r.order_id]); }
+      /* fourth review: a primary and every leg listed with it (ticked or ending with it) are one unit, never split between two batches */
+      var key = b + ' ' + (r.$primary || (r.parent_order_id && listed[r.parent_order_id] ? r.parent_order_id : r.order_id));
+      if (!units[key]) { units[key] = []; groups[b].push(units[key]); }
+      units[key].push(r.order_id);
     });
     var batches = [];
     books.forEach(function (b) {
@@ -333,7 +348,7 @@
   }
   function massWordsOf(tot) {
     return 'cancelled ' + tot.cancelled + (tot.skipped ? ' . already ended ' + tot.skipped : '') + (tot.failed ? ' . failed ' + tot.failed : '') +
-      (tot.kept ? ' . kept working ' + tot.kept + ' (hedge legs released for shares bought, or whose primary did not end)' : '') +
+      (tot.kept ? ' . kept working ' + tot.kept + ' (hedge legs released for shares bought, or whose primary did not end, was re-priced or keeps working)' : '') +
       (tot.errors.length ? ' . refused: ' + tot.errors.join('; ') : '');
   }
 
@@ -584,6 +599,7 @@
         return;
       }
       var linked = linkedRows(rows, pool);
+      rows = rows.map(function (r) { return linked.alone[r.order_id] ? Object.assign({}, r, { $alone: linked.alone[r.order_id] }) : r; });
       rows = batchOrder(rows, linked.extra);
       massConfirm(rows, title, linked.keeps).then(function (yes) {
         if (!yes || dead) { return; }

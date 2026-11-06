@@ -525,7 +525,8 @@ class ResolverRules(_ResolverBase):
         text = "buy 100 ACME and sell 1 ACME Dec 18 2026 260 call"
         out = self.parse(text)
         f = flag(out["legs"][1], "COVER_HINT")
-        self.assertEqual(([0, len(text)], [text + " as a package"]), (f["span"], [c["clause"] for c in f["choices"]]))
+        # fourth review: the pair is grouped with parentheses (a group word's run would reach back over an order before them)
+        self.assertEqual(([0, len(text)], ["(" + text + ")"]), (f["span"], [c["clause"] for c in f["choices"]]))
         self.assertEqual("SEQUENTIAL", self.parse(f["choices"][0]["clause"])["combos"][0]["fill_mode"])
         out = self.parse("buy 100 ACME; buy 100 ACME")
         self.assertTrue(all("DUPLICATE_LEG" in codes(l["flags"]) for l in out["legs"]))
@@ -678,6 +679,174 @@ class ChoicesKeepOtherOrders(_ResolverBase):
         self.assertEqual("stc 2 ACME Dec 18 2026 250 calls in the Institutional book and sto 1 ACME Dec 18 2026 250 calls in the Institutional book at pb ms",
                          f["choices"][0]["clause"])
         self.assertEqual([PB, PB], [l["account_id"] for l in self.parse(f["choices"][0]["clause"])["legs"]])
+
+
+class ChoicesFourthReview(_ResolverBase):
+    """1.0.7.2 fourth review, applied as the page applies a choice (its text in place of the flag's span, then a new reading): a choice on
+    one order never turns an order already sent into a new one (R2 reads the words without a leading "buy" / "sell"); "as separate
+    orders" and the cover hint never merge another order into a package (the next group, or the pair, is written with parentheses); a
+    choice keeps the order it is on in the account it was read in (the buy write, the side alternatives: "sto" on shares is a short
+    sale); a covered call or collar quantity in contracts or lots is refused, never read as shares.  The world: the corpus's, a WIDG
+    chain, 100 WIDG short in the Fund book, 200 WIDG long at I1:PB_MS, and the Personal book's Dec-18 240 / 250 calls closed today by two
+    Smart Ticket orders whose commands keep the clause as the page stores it (fixture rows, fictional ids)."""
+
+    SENT = (("O-ST4-BTC", "st:4f4f4f4f4f01:L2:r1", C240, "BTC", 2, "2 ACME Dec 18 2026 240 calls"),
+            ("O-ST4-STC", "st:4f4f4f4f4f02:L2:r1", C250, "STC", 3, "3 ACME Dec 18 2026 250 calls"))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp, cls.rt = cls._make()
+        world = dict(corpus.WORLD)
+        world["chains"] = list(corpus.WORLD["chains"]) + [{"underlying": "WIDG", "cboe": "WIDG", "spot": 40, "expiries": ("2026-11-20", corpus.DEC),
+                                                           "strikes": (35, 40, 45), "skip": (), "age_s": 30, "trade_time": corpus.TRADE_TIME, "extra": ()}]
+        world["positions"] = ([x for x in corpus.WORLD["positions"] if not (x[0] == P and x[1] in (C240, C250))]
+                              + [(F, "WIDG", "SHORT", 100, "40"), (PB, "WIDG", "LONG", 200, "40")])
+        build_world(unittest.TestCase(), cls.rt, world)
+        now = int(cls.rt.clock.epoch())
+        with cls.rt.db.writer() as tx:                               # fixture only: two Smart Ticket orders sent and filled today
+            for oid, rid, iid, side, qty, clause in cls.SENT:
+                payload = json.dumps({"account_id": P, "instrument_id": iid, "side": side, "qty": qty, "order_type": "MARKET", "tif": "DAY",
+                                      "smart": {"ticket": rid.split(":")[1], "item": "L2", "clause": clause}}, sort_keys=True)
+                tx.conn.execute("INSERT INTO commands(request_id, kind, actor, payload_json, payload_sha256, result_json, http_status, started_ts, finished_ts,"
+                                " duration_ms, app_version, state_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                                (rid, "order.submit", "ui", payload, "0" * 64, "{}", 200, now, now, 1, "test", 0))
+                tx.conn.execute("INSERT INTO orders(order_id, request_id, account_id, instrument_id, side, qty, filled_qty, order_type, tif, status, session_group,"
+                                " created_ts, updated_ts, expires_ts, preview_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,'{}')",
+                                (oid, rid, P, iid, side, qty, qty, "MARKET", "DAY", "FILLED", "US_EQUITY_OPTIONS", now, now, now + 7200))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.rt.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    @staticmethod
+    def goes(out, l) -> bool:
+        return l["request"] is not None and (l["combo"] is None or any(c["id"] == l["combo"] and c["request"] is not None for c in out["combos"]))
+
+    def apply(self, text, book, code, label):
+        out = self.parse(text, book)
+        for item in out["legs"] + out["combos"]:
+            for f in item["flags"]:
+                for ch in f.get("choices") or [] if f["code"] == code else []:
+                    if label in ch["label"]:
+                        a, b = f["span"]
+                        return out, f, ch, self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
+        self.fail(f"no {code} choice labelled {label!r} on {text!r}: {json.dumps([l['flags'] for l in out['legs']])[:2000]}")
+
+    def test_r2_an_order_already_sent_reads_as_it_after_a_choice_on_another_order(self):
+        for text, code, label, iid, side in (("buy 300 GIZM and 2 ACME Dec 18 2026 240 calls", "SIDE_SPLIT", "cover 200 only", C240, "BTC"),
+                                             ("sell 400 WIDG and 3 ACME Dec 18 2026 250 calls", "WOULD_OVERSELL", "sell 200 + short 200", C250, "STC")):
+            with self.subTest(text=text):
+                out, f, ch, out2 = self.apply(text, "P", code, label)
+                self.assertIn(("buy " if side == "BTC" else "sell ") + text.split(" and ")[1], ch["clause"])     # the guard wrote the carried side word
+                for o in (out, out2):
+                    leg = next(l for l in o["legs"] if l["instrument"].get("id") == iid)
+                    self.assertEqual((side, True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])), o["text"])
+        # the words with their own side word read as the order that went too (the side's direction is compared on its own)
+        leg = self.one("buy 2 ACME Dec 18 2026 240 calls")
+        self.assertEqual(("BTC", True), (leg["side"], "ALREADY_SENT" in codes(leg["flags"])))
+        leg = self.one("sell 2 ACME Dec 18 2026 240 calls")                                     # the other direction is another order
+        self.assertNotIn("ALREADY_SENT", codes(leg["flags"]))
+
+    def test_grouping_choices_keep_each_package_its_own_orders(self):
+        cases = (("buy 1 ACME Dec 18 2026 220 put as a package, buy 1 ACME Dec 18 2026 240/250 call spread as a package", "F", "COMBO_INVALID", "as separate orders",
+                  "buy 1 ACME Dec 18 2026 220 put, (buy 1 ACME Dec 18 2026 240/250 call spread)"),
+                 ("(bto 1 ACME Dec 18 2026 260 call); 1 ACME Dec 18 2026 210/220 put spread as a package", "P", "COMBO_INVALID", "as separate orders",
+                  "bto 1 ACME Dec 18 2026 260 call; (1 ACME Dec 18 2026 210/220 put spread)"),
+                 ("in the Fund book: sell 2 ACME Dec 18 2026 250 calls limit 1.10 as a package, 100 ACME as a package", "I", "COMBO_INVALID", "as separate orders",
+                  "sell 2 ACME Dec 18 2026 250 calls limit 1.10, (100 ACME)"),
+                 ("buy 1 ACME Dec 18 2026 240/250 call spread, buy 100 ACME, sell 1 ACME Dec 18 2026 260 call; buy 50 WIDG", "F", "COVER_HINT", "group them",
+                  "(buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)"))
+        for text, book, code, label, want in cases:
+            with self.subTest(text=text):
+                out, f, ch, out2 = self.apply(text, book, code, label)
+                self.assertTrue(ch["clause"].endswith(want), ch["clause"])
+                before = {tuple(c["legs"]) for c in out["combos"] if c["request"] is not None}
+                a, b = f["span"]
+                inside = {l["n"] for l in out2["legs"] if a <= l["span"][0] and l["span"][1] <= a + len(ch["clause"])}
+                merged = [c["legs"] for c in out2["combos"] if c["request"] is not None and set(c["legs"]) & inside and set(c["legs"]) - inside]
+                self.assertEqual([], merged, out2["text"])
+                for c in before:                              # every sendable package of the other orders is still there, with its legs
+                    self.assertIn(len(c), [len(x["legs"]) for x in out2["combos"] if x["request"] is not None], out2["text"])
+        # the pair alone: grouped with parentheses (a sequential package of the shares and the call)
+        out = self.parse("buy 100 ACME, sell 1 ACME Dec 18 2026 260 call", "F")
+        f = flag(out["legs"][1], "COVER_HINT")
+        self.assertEqual(["(buy 100 ACME, sell 1 ACME Dec 18 2026 260 call)"], [c["clause"] for c in f["choices"]])
+        self.assertEqual("SEQUENTIAL", self.parse(f["choices"][0]["clause"], "F")["combos"][0]["fill_mode"])
+
+    def test_a_choice_keeps_the_order_it_is_on_in_its_account(self):
+        out, f, ch, out2 = self.apply("covered call 300 WIDG Dec 18 2026 45 in the Institutional book", "P", "SIDE_SPLIT", "buy write")
+        self.assertEqual(({PB}, "buy write 300 WIDG Dec 18 2026 45 in the Institutional book at pb ms"), ({l["account_id"] for l in out["legs"]}, ch["clause"]))
+        self.assertEqual([(PB, "BUY", 300), (PB, "STO", 3)], [(l["account_id"], l["side"], l["qty"]) for l in out2["legs"]])
+        # "sto" on shares is a short sale: the alternative is "short", read where the "sto" was read (an opening side)
+        out, f, ch, out2 = self.apply("sto 50 WIDG in the Institutional book", "P", "MISSING_SIDE", "sell short")
+        self.assertEqual(([I], "short 50 WIDG in the Institutional book"), ([l["account_id"] for l in out["legs"]], ch["clause"]))
+        self.assertEqual([(I, "SELL_SHORT", 50)], [(l["account_id"], l["side"], l["qty"]) for l in out2["legs"]])
+        # "bto" on shares: "buy", named where the "bto" was read, and said when it covers a short held there
+        out, f, ch, out2 = self.apply("bto 50 WIDG in the Fund book", "P", "MISSING_SIDE", "buy")
+        self.assertEqual(("buy (covers the 100 short in F1:US_EXCHANGE)", "buy 50 WIDG in the Fund book at us exchange"), (ch["label"], ch["clause"]))
+        self.assertEqual([(F, "BUY_TO_COVER", 50)], [(l["account_id"], l["side"], l["qty"]) for l in out2["legs"]])
+
+    TEXTS = (("buy 300 GIZM and 2 ACME Dec 18 2026 240 calls", "P"), ("sell 400 WIDG and 3 ACME Dec 18 2026 250 calls", "P"),
+             ("buy 1 ACME Dec 18 2026 220 put as a package, buy 1 ACME Dec 18 2026 240/250 call spread as a package", "F"),
+             ("(bto 1 ACME Dec 18 2026 260 call); 1 ACME Dec 18 2026 210/220 put spread as a package", "P"),
+             ("in the Fund book: sell 2 ACME Dec 18 2026 250 calls limit 1.10 as a package, 100 ACME as a package", "I"),
+             ("buy 1 ACME Dec 18 2026 240/250 call spread, buy 100 ACME, sell 1 ACME Dec 18 2026 260 call; buy 50 WIDG", "F"),
+             ("covered call 300 WIDG Dec 18 2026 45 in the Institutional book", "P"), ("sto 50 WIDG in the Institutional book", "P"),
+             ("bto 50 WIDG in the Fund book", "P"), ("covered call 100 contracts WIDG Dec 18 2026 45", "P"))
+
+    def test_every_choice_keeps_the_other_orders_and_its_own_account(self):
+        """Every choice offered on these texts, applied: every OTHER order keeps its book, account, side, quantity and reading as an
+        order already sent, and is never newly sendable; the orders the choice writes stay in the book and account they were read in
+        (unless the choice is about those) and join no package with an order outside them."""
+        problems, applied = [], 0
+        for text, book in self.TEXTS:
+            out = self.parse(text, book)
+            for item in out["legs"] + out["combos"]:
+                for f in item["flags"]:
+                    for ch in f.get("choices") or []:
+                        applied += 1
+                        a, b = f["span"]
+                        out2 = self.parse(out["text"][:a] + ch["clause"] + out["text"][b:], book)
+                        delta, end = len(ch["clause"]) - (b - a), a + len(ch["clause"])
+                        where = f"{text!r} [{f['code']} -> {ch['clause']!r}]"
+                        before = {(l["book"], l["account_id"]) for l in out["legs"] if a <= l["span"][0] and l["span"][1] <= b}
+                        inside = {m["n"] for m in out2["legs"] if a <= m["span"][0] and m["span"][1] <= end}
+                        for m in out2["legs"]:
+                            if m["n"] in inside and f["code"] not in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK") and self.goes(out2, m) and before and                                     (m["book"], m["account_id"]) not in before:
+                                problems.append(f"{where}: leg {m['n']} moved to {m['book']} {m['account_id']}")
+                        for c in out2["combos"]:
+                            if c["request"] is not None and set(c["legs"]) & inside and set(c["legs"]) - inside:
+                                problems.append(f"{where}: package {c['legs']} joins the choice's orders with others")
+                        for l in out["legs"]:
+                            if a <= l["span"][0] and l["span"][1] <= b:
+                                continue
+                            words = st._clause_words(l["clause"])           # a parenthesis written next to it can move a comma into its clause
+                            m = next((m for m in out2["legs"] if m["n"] not in inside and st._clause_words(m["clause"]) == words
+                                      and m["instrument"].get("id") == l["instrument"].get("id")), None)
+                            sent = ("ALREADY_SENT" in codes(l["flags"]), m is not None and "ALREADY_SENT" in codes(m["flags"]))
+                            if m is None or (m["book"], m["account_id"], m["side"], m["qty"]) != (l["book"], l["account_id"], l["side"], l["qty"])                                     or sent[0] != sent[1] or (self.goes(out2, m) and not self.goes(out, l)):
+                                problems.append(f"{where}: the other leg {l['n']} {(l['book'], l['account_id'], l['side'], l['qty'])} became "
+                                                f"{None if m is None else (m['book'], m['account_id'], m['side'], m['qty'], sent[1], self.goes(out2, m))}")
+        self.assertEqual([], problems, "\n".join(problems))
+        self.assertGreaterEqual(applied, 12)
+
+    def test_a_covered_call_or_collar_in_contracts_or_lots_is_refused(self):
+        for text, book, n in (("covered call 100 contracts WIDG Dec 18 2026 45", "P", 100), ("covered call 200 lots WIDG Dec 18 2026 45", "P", 200),
+                              ("collar 100 contracts ACME Dec 18 2026 220/260", "F", 100),
+                              ("collar 100 contracts GIZM Dec 18 2026 45/55 in the Fund book", "P", 100)):
+            with self.subTest(text=text):
+                out = self.parse(text, book)
+                self.assertEqual([], [l["n"] for l in out["legs"] if self.goes(out, l)], text)
+                self.assertTrue(all("UNIT_KIND_MISMATCH" in codes(l["flags"]) for l in out["legs"]), text)
+                f = next(x for l in out["legs"] for x in l["flags"] if x["code"] == "UNIT_KIND_MISMATCH")
+                self.assertEqual(2, len(f["choices"]), f)
+                self.assertIn(f"{n * 100:,} shares", f["choices"][0]["label"])
+                self.assertNotIn(" contracts ", f["choices"][1]["clause"] + " ")
+                self.assertNotIn(" lots ", f["choices"][1]["clause"] + " ")
+        # shares (or no unit) read as before: 200 WIDG held free in the Personal book, a covered call of 2 calls
+        out = self.parse("covered call 200 shares WIDG Dec 18 2026 45", "P")
+        self.assertEqual([("STO", 2)], [(l["side"], l["qty"]) for l in out["legs"] if self.goes(out, l)])
 
 
 # ===== the route on a full runtime: registration, 400s, the corpus and the purity proof ================================================

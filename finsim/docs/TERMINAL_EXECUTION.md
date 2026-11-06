@@ -133,10 +133,10 @@ NAV falls by exactly the 1.00 commission.
 - **Sequential (stock or futures primary + option legs)**: the primary works on its own; the hedge legs wait
   (`WAITING_PARENT`) and are released, sized to floor(primary filled × ratio), on each fill of the primary (12,000 of
   50,000 SPY with ratio 0.01 → 120 contracts; 21,000 → 210). Legs then match on their own quotes. 1.0.7.2: the release
-  is in whole numbers, floor(shares filled × leg quantity / shares quantity), while the ratio fits the primary's quantity
-  (1 call for 300 shares is released at the 300th share). When an amend or a replace gives the primary a quantity the
-  ratio does not fit (300 shares + 3 calls amended to 350: 3.5 calls), the legs follow it at the ratio, rounded down as
-  before: floor(shares filled × ratio), 3 calls at 350 shares, 2 at 250 - never one more than the shares cover. Over a
+  is in whole numbers, floor(shares filled × leg quantity / shares quantity), with the two quantities as they were
+  confirmed (1 call for 300 shares is released at the 300th share), whatever quantity an amend or a replace gave the
+  primary: 300 shares + 3 calls amended to 350 release 3 calls, at 250 shares 2, and 3,000,000 shares + 30,000 calls
+  amended to 2,999,999 release 29,999 - never one more than the shares cover, at any size. Over a
   replace the shares are counted over the chain (what the replaced orders filled plus the replacement's fill, against
   what they filled plus its quantity), and the legs released before the replace are resized with it. When the primary
   ends (filled, cancelled or expired), a leg still waiting ends with it (cancelled: "primary ended unfilled" when no share
@@ -156,10 +156,9 @@ NAV falls by exactly the 1.00 commission.
   leg as an order of its own. One share leg plus options on that same name is sequential as above. The shares are the
   primary (MARKET or LIMIT) and are listed first whatever order they were named in; the option legs wait for its fills
   and keep their own MARKET / LIMIT terms (`PackageLeg.limit_px` carries a limit to `order.submit`). A waiting leg is
-  released in whole numbers: floor(shares filled x its own quantity / the primary's quantity), so every leg is released
-  in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th share), also
-  over a replace of the shares; an amended quantity the ratio does not fit releases floor(shares filled x ratio), as for
-  every sequential package above. Anything else is
+  released in whole numbers: floor(shares filled x its own quantity / the primary's quantity, as confirmed), so every leg
+  is released in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th
+  share), also over a replace or an amend of the shares, as for every sequential package above. Anything else is
   refused (`COMBO_INVALID` / `LEGS`): two names, a futures leg, two share legs, or one contract named twice. A package
   holds one name: its shares and its options. Option sides are BTO / STO / BTC / STC and share sides BUY / SELL /
   SELL_SHORT / BUY_TO_COVER (`SIDE_INVALID` otherwise). An option leg must be in the master or on the cached chain
@@ -179,15 +178,22 @@ NAV falls by exactly the 1.00 commission.
   order given, never in parallel, each with the request id `<batch id>:<order or package id>`. An order of an
   all-or-none package cancels its whole package once, and its other legs, listed or not, are reported with it. Any
   other order is cancelled itself, and a primary's legs still waiting end with it, reported with it whether listed or
-  not. A hedge leg listed AFTER its own primary is listed with it and never gets a command of its own: still waiting
-  when its primary's cancel went through, it ended with it; released for shares bought (before the batch, or while the
-  confirm was open), or with a primary whose cancel did not go through (it had already ended, or it was refused), it
-  keeps working and is reported as kept (`RELEASED`, `PRIMARY_ENDED`, `PRIMARY_NOT_CANCELLED`), so a protective leg is
-  never cancelled for shares you hold unless you ticked it. A leg listed BEFORE its primary, or without it, is your own
-  tick and is cancelled by its own command. Pending Trades lists the waiting legs of a ticked primary in its confirm
-  ("ends with its primary") right after it, the released ones apart as "keeps working", and a leg you ticked before its
-  primary; "Cancel all open" and the Smart Ticket's "Cancel what this ticket sent" list every leg before its primary (the
-  confirm names them all). An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
+  not. A hedge leg is never cancelled while its shares order keeps buying (fourth review); its shares order is the
+  primary or, after a re-price by replace, the order that replaced it (the legs still waiting move to it). A hedge leg
+  listed AFTER its primary (or after an order that primary replaced) is listed with it and never gets a command of its
+  own: still waiting when its primary's cancel went through, it ended with it; released for shares bought (before the
+  batch, or while the confirm was open), or with a primary whose cancel did not go through (it had already ended, or it
+  was refused), or whose primary was replaced meanwhile by an order that keeps working, it keeps working and is reported
+  as kept (`RELEASED`, `PRIMARY_ENDED`, `PRIMARY_NOT_CANCELLED`, `PRIMARY_REPLACED`), so a protective leg is never
+  cancelled for shares you hold unless you ticked it. A leg listed BEFORE its primary is your own tick: its cancel goes
+  right after the primary's, and only once the primary has ended (cancelled here, or already ended); a primary whose
+  cancel is refused, or that was replaced by an order that keeps working, keeps it (kept). A leg listed without its
+  primary is cancelled by its own command once that primary has ended, and kept (`PRIMARY_WORKING`) while it still
+  works - cancel the primary with it, or the leg on its own with its x. Pending Trades lists the waiting legs of a
+  ticked primary in its confirm ("ends with its primary") right after it, the released ones apart as "keeps working",
+  a leg you ticked before its primary, and says when a leg you ticked alone is kept; "Cancel all open" and the Smart
+  Ticket's "Cancel what this ticket sent" list every leg before its primary (the confirm names them all) and keep a
+  primary with its legs in one batch of 500. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is reported with
   its code. The answer lists what was cancelled, skipped, failed and kept working. Resending the same batch after a
   lost answer replays every cancel already made (`X-Replayed: 1`) and cancels nothing twice.
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in

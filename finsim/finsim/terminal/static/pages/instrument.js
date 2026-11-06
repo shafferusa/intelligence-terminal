@@ -249,10 +249,22 @@
         { key: 'status', label: 'status', cls: 'l', html: function (o) { return '<span class="st-' + T.esc(o.status) + '">' + T.esc(o.status) + '</span>'; }, text: function (o) { return o.status; } }],
         onClick: function (o, e) { if (e.target.closest('button[data-act="x"]')) { cancel(o); } }, onKey: function (k, o) { if (k === 'x') { cancel(o); return true; } return false; } });
     }
+    /* 1.0.7.2 fourth review: the x cancels through Pending Trades' cancel when it is loaded - on a package's shares order its confirm says
+       which hedge legs end with it and which keep working, and its toast names the legs that ended (the answer's ended_with_it) */
     function cancel(o) {
+      var after = function () { T.poll.kick('orders'); T.poll.kick('account_detail'); };
+      var pp = T.pages && T.pages.pending;
+      if (pp && pp.cancelOrder) {
+        pp.cancelOrder(Object.assign({}, o, { side_words: o.side_words || String(o.side || '').replace(/_/g, ' '), symbol: o.symbol || o.instrument_id }), after);
+        return;
+      }
       T.ui.confirm('Cancel order ' + o.order_id + ' (' + o.side + ' ' + o.qty + ' ' + o.instrument_id + ')?', { ok: 'Cancel order', cancel: 'Keep' }).then(function (yes) {
         if (!yes) { return; }
-        T.api.del('/api/orders/' + encodeURIComponent(o.order_id), {}).then(function () { T.ui.toast('order cancelled', 'ok'); T.poll.kick('orders'); T.poll.kick('account_detail'); }, function (e) { T.api.fail(e, 'cancel'); });
+        T.api.del('/api/orders/' + encodeURIComponent(o.order_id), {}).then(function (res) {
+          var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];
+          T.ui.toast('order cancelled' + (ended.length ? ' . ended with it: ' + ended.map(function (l) { return l.order_id; }).join(', ') : ''), 'ok', ended.length ? 6000 : undefined);
+          after();
+        }, function (e) { T.api.fail(e, 'cancel'); });
       });
     }
     /* ---- chart (USX-06): the session's 1-minute bars; a 202 is asked again; refreshed while the session is open ---- */

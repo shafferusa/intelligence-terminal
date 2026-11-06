@@ -89,6 +89,13 @@ Conventions (sentence SMART_TICKET)
   grouping, and the order it is on its book and account (unless the choice is that book or account); where that needs it the choice
   also writes out what those orders inherited (a carried side word, "in the X book", "at <account>") and its span covers them, and a
   choice that cannot is not offered (``Resolver._keep_others``).  The opening part of a split names the account the order was read in.
+  Fourth review: every choice kept (one order too) is then RESOLVED as the page would re-read it (``Resolver._reads_alike``: positions,
+  accounts, orders already sent, packages) and offered only when every other order reads as before - book, account, side, quantity,
+  contract, its R2 reading, its package, never newly sendable - and the order it is on stays in its book and account and joins no other
+  order's package; R2 compares the words with or without a leading "buy" / "sell"; "as separate orders" writes the next group with
+  parentheses when its word's run would take the freed orders, and COVER_HINT groups the pair with parentheses; a buy write and a side
+  alternative that reads the account another way name the account the order was read in ("sto" on shares offers "short"); a covered
+  call's or a collar's quantity in contracts or lots is UNIT_KIND_MISMATCH, never read as shares.
 - A leg's ``request`` is exactly the order body (account_id, instrument_id, side, qty, order_type, tif, limit_px / stop_px / trail_amt /
   trail_pct / gtd_date when they apply, ``borrow: true`` for SELL_SHORT), null while the leg has a blocker.  A combination's ``request`` is
   ``{account_id, tif, package: {strategy_key: "CUSTOM", legs: [{instrument_id, side, qty, order_type?, limit_px?}]}}``, null while it or a
@@ -223,7 +230,9 @@ def _flag(code: str, text: str, span=None, choices=None, action=None, severity: 
     if span is not None:
         f["span"] = [int(span[0]), int(span[1])]
     if choices:
-        f["choices"] = [{"label": str(c["label"]), "clause": str(c["clause"])} for c in choices]
+        # (a choice's ``_span``: the wider words it needs - fourth review - is consumed by ``_widen`` before the answer is built)
+        f["choices"] = [dict({"label": str(c["label"]), "clause": str(c["clause"])}, **({"_span": [int(c["_span"][0]), int(c["_span"][1])]} if c.get("_span") else {}))
+                        for c in choices]
     if action:
         f["action"] = action
     return f
@@ -2034,6 +2043,40 @@ def _norm_root(r: Optional[str]) -> str:
     return str(r or "").upper().replace(".", "").replace("-", "").replace("_", "")
 
 
+def _bare_side(text: str) -> str:
+    """R2 (1.0.7.2 fourth review): a clause's words without a leading "buy" / "sell" - the side an order went with is compared on its own -
+    so the words a choice wrote the carried side word into ("buy 2 ACME Dec 18 2026 240 calls" for "2 ACME Dec 18 2026 240 calls" after
+    "buy ...") still read as the order that went."""
+    t = " ".join(str(text or "").split())
+    m = re.match(r"(?i)(?:buy|sell)\s+", t)
+    return t[m.end():] if m else t
+
+
+def _clause_words(text: Optional[str]) -> str:
+    """A clause's words without spaces, commas, semicolons and parentheses around them (fourth review: the guard's re-read matches the
+    orders a choice does not touch by their words)."""
+    return " ".join(re.sub(r"[,;()]", " ", str(text or "")).split()).lower()
+
+
+def _widen(text: str, f: dict) -> None:
+    """Fourth review: a flag one of whose choices needs more words than the flag's span (``_span``: "as separate orders" that also writes
+    the next group with parentheses) gets one span over them all, every choice written over it (the page replaces the flag's span)."""
+    chs = f.get("choices") or []
+    spans = [ch["_span"] for ch in chs if ch.get("_span")]
+    if not spans or not f.get("span"):
+        for ch in chs:
+            ch.pop("_span", None)
+        return
+    s0, s1 = int(f["span"][0]), int(f["span"][1])
+    u0, u1 = min([s0] + [int(x[0]) for x in spans]), max([s1] + [int(x[1]) for x in spans])
+    out = []
+    for ch in chs:
+        a, b = ch.pop("_span", None) or (s0, s1)
+        out.append(dict(ch, clause=text[u0:a] + ch["clause"] + text[b:u1]))
+    f["choices"] = out
+    f["span"] = [u0, u1]
+
+
 def _nearest(values: Sequence, x) -> List:
     """The nearest listed value below and the nearest above ``x`` (listing facts only, never applied)."""
     below = [v for v in values if v < x]
@@ -2248,6 +2291,33 @@ class Resolver:
                 row = next((x for x in self._accounts(leg["lifetime_id"]) if x["account_id"] == leg["account_id"]), None) if leg.get("lifetime_id") else None
                 out += " at " + (_account_words_of(row) if row is not None else str(leg["account_id"]))
         return out
+
+    def _pin_account(self, clause: str, leg: dict) -> str:
+        """Fourth review: a choice that changes how the account is read (an opening side reads R-ACCT-1, a side read from the position the
+        account that holds the contract) names the account the leg was read in, so the order stays where it was read."""
+        if leg.get("_acct_named") or not leg.get("account_id") or not leg.get("lifetime_id"):
+            return clause
+        row = next((x for x in self._accounts(leg["lifetime_id"]) if x["account_id"] == leg["account_id"]), None)
+        return clause + " at " + (_account_words_of(row) if row is not None else str(leg["account_id"]))
+
+    def _share_unit(self, c: dict, what: str) -> Optional[dict]:
+        """Fourth review: a covered call's or a collar's quantity is in shares (100 a contract): typed in contracts or lots it is refused
+        (UNIT_KIND_MISMATCH), never read as shares - with the two readings as choices: that many contracts (x 100 shares), or that many
+        shares (the unit word dropped)."""
+        qa = c.get("qty") or {}
+        unit = qa.get("unit")
+        if not unit or unit in UNITS_OK["shares"]:
+            return None
+        q = qa.get("value") if qa.get("kind") == "num" else None
+        choices = []
+        if qa.get("unit_span") and qa.get("span") and q:
+            lo, hi = sorted((int(qa["span"][0]), int(qa["unit_span"][0])))
+            hi = max(int(qa["span"][1]), int(qa["unit_span"][1]))
+            choices.append({"label": f"{q:,} {qa.get('unit_word') or unit} = {q * 100:,} shares", "clause": self._clause_edit(c, [(lo, hi, str(q * 100))])})
+            choices.append({"label": f"{q:,} shares (without the unit word)", "clause": self._clause_edit(c, [(qa["unit_span"][0], qa["unit_span"][1], "")])})
+        return _flag("UNIT_KIND_MISMATCH", f"'{qa.get('unit_word') or unit}' with a {what}: its quantity is in shares (100 a contract), so"
+                     f" {q:,} {qa.get('unit_word') or unit} is not read as {q:,} shares" if q else f"'{qa.get('unit_word') or unit}' with a {what}: its quantity is in"
+                     " shares (100 a contract)", c["span"], choices or None)
 
     def _opening_pick(self, leg: dict, con: dict) -> Optional[str]:
         """The account an explicit opening side would be read in, with no account named (``_account`` with ``aware`` False): the page's
@@ -2902,10 +2972,26 @@ class Resolver:
             allowed = OPTION_SIDES if cls == "option" else (FUTURES_SIDES if cls == "future" else CASH_SIDES)
             if typed in allowed:
                 return typed
+            # fourth review: "sto" (sell to open) on shares is a short sale; an alternative that reads the account another way than the typed
+            # side (an opening side: R-ACCT-1; "buy" / "sell": the account that holds it) names the account the leg was read in, and says
+            # when it would close a holding there
             alt = {("option", "SELL_SHORT"): "sto", ("option", "BUY_TO_COVER"): "btc", ("shares", "BTO"): "buy", ("shares", "BTC"): "buy",
-                   ("shares", "STO"): "sell", ("shares", "STC"): "sell", ("future", "SELL_SHORT"): "sell", ("future", "BUY_TO_COVER"): "buy",
+                   ("shares", "STO"): "short", ("shares", "STC"): "sell", ("future", "SELL_SHORT"): "sell", ("future", "BUY_TO_COVER"): "buy",
                    ("future", "BTO"): "buy", ("future", "BTC"): "buy", ("future", "STO"): "sell", ("future", "STC"): "sell"}.get((cls, typed))
-            choices = [{"label": alt, "clause": self._side_edit(c, alt, None, leg, con)}] if alt else None
+            choices = None
+            if alt:
+                clause = self._side_edit(c, alt, None, leg, con)
+                if typed in ("BTO", "STO", "SELL_SHORT") and alt not in OPENING_WORDS:
+                    clause = self._pin_account(clause, leg)
+                label = alt
+                held_here = int(pos["qty"]) if pos is not None and cls == "shares" else 0
+                if cls == "shares" and typed == "STO":
+                    label = "sell short (sto on shares opens a short)"
+                elif alt == "buy" and held_here < 0:
+                    label = f"buy (covers the {-held_here:,} short in {leg['account_id']})"
+                elif alt == "sell" and held_here > 0:
+                    label = f"sell (sells the {held_here:,} held in {leg['account_id']})"
+                choices = [{"label": label, "clause": clause}]
             flags.append(_flag("MISSING_SIDE", f"'{v.get('word')}' is not a side for {KIND_WORDS.get(con.get('kind'), 'this kind')}: "
                                + {"option": "bto, sto, btc or stc", "future": "buy or sell", "shares": "buy, sell, short or cover"}[cls], leg["span"], choices))
             return None
@@ -3220,8 +3306,10 @@ class Resolver:
         or filled today - so the same text read again reads as THAT order (its account and side), never as a new opening one once the
         position it closed has moved.  Only a clause with its own side word ("buy" / "sell", read from the position); the words are the
         clause as typed, kept with the order's command (``smart.clause``).  Second review: a clause whose "buy" / "sell" is carried from
-        the clause before is matched too, by its own words (the leg's clause, as the page stores it) and the carried side.  Read only
-        (orders and commands on the parse's connection)."""
+        the clause before is matched too, by its own words (the leg's clause, as the page stores it) and the carried side.  Fourth review:
+        the words are compared without a leading "buy" / "sell" too (the side's direction is compared on its own), so a choice on ANOTHER
+        order that writes the carried side word into these words never turns the order that went into a new one.  Read only (orders and
+        commands on the parse's connection)."""
         v = c.get("verb") or {}
         if con is None or not con.get("id") or v.get("kind") != "side" or v.get("side") not in ("buy", "sell"):
             return None
@@ -3244,6 +3332,7 @@ class Resolver:
             self._sent[key] = rows
             self._midnight = midnight
         want = c["text"].strip()
+        bare = _bare_side(want)
         buys = ("BUY", "BUY_TO_COVER", "BTO", "BTC")
         for r in rows:
             live = r["status"] in LIVE_ORDER_STATUSES
@@ -3255,8 +3344,10 @@ class Resolver:
             except ValueError:
                 continue
             smart = payload.get("smart") if isinstance(payload, dict) else None
-            if isinstance(smart, dict) and str(smart.get("clause") or "").strip() == want:
-                return r
+            if isinstance(smart, dict):
+                got = str(smart.get("clause") or "").strip()
+                if got == want or _bare_side(got) == bare:
+                    return r
         return None
 
     def _resolve_date(self, exp: Optional[dict], snap=None) -> Optional[str]:
@@ -3371,10 +3462,14 @@ class Resolver:
             free = int(shares["position"]["free"]) if held_qty > 0 else 0
         shares["side"] = "BUY"
         sym = ia.get("symbol")
+        uflag = self._share_unit(c, "buy write" if buy_write else "covered call")
         # second review: the SIGNED holding decides, never only the free long shares - a short holding or shares held but not free (in
         # working sells, reserved by calls, lent) are said, never read as "none held" (which buys the shares)
-        covered_by_held = not buy_write and q is not None and not q % 100 and con is not None and a is not None and held_qty > 0 and free >= q
-        if q is not None and q % 100:
+        covered_by_held = (uflag is None and not buy_write and q is not None and not q % 100 and con is not None and a is not None and held_qty > 0
+                           and free >= q)
+        if uflag is not None:
+            shares["flags"].append(uflag)                 # fourth review: contracts / lots are never read as shares
+        elif q is not None and q % 100:
             lo, hi = q // 100 * 100, (q // 100 + 1) * 100
             choices = [{"label": f"{x:,} shares", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(x))])} for x in (lo, hi) if x > 0]
             shares["flags"].append(_flag("QTY_LOT", f"a covered call covers 100 shares per contract: {q:,} is not a multiple of 100", c["span"], choices))
@@ -3386,7 +3481,11 @@ class Resolver:
             choices = ([{"label": f"covered call on the {lots:,} held free", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else [])
             v = c.get("verb") or {}
             if v.get("span"):
-                choices.append({"label": f"buy write {q:,} (buy the shares)", "clause": self._clause_edit(c, [(v["span"][0], v["span"][1], "buy write")])})
+                # fourth review: a buy write reads its account as an opening side (R-ACCT-1); it names the account this covered call was read in
+                bw = self._clause_edit(c, [(v["span"][0], v["span"][1], "buy write")])
+                if not shares.get("_acct_named") and self._opening_pick(shares, con) != a["account_id"]:
+                    bw += " at " + _account_words_of(a)
+                choices.append({"label": f"buy write {q:,} (buy the shares)", "clause": bw})
             shares["flags"].append(_flag("SIDE_SPLIT", f"covered call on {q:,} {sym} but {free:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
                                          + self._not_free_words(shares["position"]) + ": write calls on the free round lots, or buy the shares with the calls",
                                          c["span"], choices or None))
@@ -3418,7 +3517,7 @@ class Resolver:
             call["qty"] = q // 100
         elif q is not None:
             call["flags"].extend(f for f in shares["flags"] if f["code"] == "QTY_LOT")
-        call["flags"].extend(f for f in shares["flags"] if f["code"] in ("SIDE_SPLIT", "NOTHING_HELD"))
+        call["flags"].extend(f for f in shares["flags"] if f["code"] in ("SIDE_SPLIT", "NOTHING_HELD") or f is uflag)
         if covered_by_held:
             # the calls only, an order of their own (no package: nothing to wait for); a typed price is the calls' own limit
             call["flags"].extend(f for f in shares["flags"] if f["code"] in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK", "NOT_TRADEABLE_HERE") and f not in call["flags"])
@@ -3470,6 +3569,12 @@ class Resolver:
                 leg["qty"] = q // 100
             self._price_tif(c, leg, con2, market_only=True)
             opts.append(leg)
+        uflag = self._share_unit(c, "collar")
+        if uflag is not None:                             # fourth review: contracts / lots are never read as shares
+            self._price_tif(c, shares, con, market_only=True)
+            for leg in [shares] + opts:
+                leg["flags"].append(uflag)
+            return [shares] + opts
         if q is not None and q % 100:
             lo, hi = q // 100 * 100, (q // 100 + 1) * 100
             choices = [{"label": f"{x:,} shares", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(x))])} for x in (lo, hi) if x > 0]
@@ -3792,6 +3897,8 @@ class Resolver:
                         d["limit_px"] = l["limit_px"]
                 pk.append(d)
             combo["request"] = {"account_id": combo["account_id"], "tif": tif, "package": {"strategy_key": "CUSTOM", "legs": pk}}
+        for f in flags:
+            _widen(self.text, f)
         combo["flags"] = sort_flags(flags)
         return combo
 
@@ -3806,7 +3913,36 @@ class Resolver:
         for i, ch in enumerate(self.text[s0:e0], s0):           # every parenthesis of the group's text goes (a nested one too)
             if ch in "()" and not (g.get("word_span") and g["word_span"][0] <= i < g["word_span"][1]):
                 edits.append((i, i + 1, ""))
-        return [{"label": "as separate orders", "clause": _edit(self.text, g["span"], edits)}]
+        span = [s0, e0]
+        # fourth review: once this group's words go, a group word right after it whose run reaches back over these orders (the same name,
+        # no group word between) would take them into ITS package - that group is written with parentheses instead (the same orders in
+        # it), so each package keeps its own orders; when its word is not the last words of its run, the choice is not offered
+        nxt = self._absorber(g)
+        if nxt is not None:
+            clauses = self._tree["clauses"]
+            ws = nxt["word_span"]
+            first, last = clauses[nxt["clauses"][0]], clauses[nxt["clauses"][-1]]
+            if self.text[ws[1]:last["span"][1]].strip(" ,;") or ws[0] < first["span"][0]:
+                return None
+            edits.append((first["span"][0], first["span"][0], "("))
+            edits.append((ws[0], ws[1], ")"))
+            span = [s0, max(e0, last["span"][1])]
+        out = {"label": "as separate orders", "clause": _edit(self.text, span, edits)}
+        if span != [s0, e0]:
+            out["_span"] = span
+        return [out]
+
+    def _absorber(self, g: dict) -> Optional[dict]:
+        """The group-word group right after group ``g`` whose run would reach back over ``g``'s last order once ``g`` is undone, else None."""
+        clauses = self._tree["clauses"]
+        last = max(g["clauses"])
+        nxt = next((h for h in self._tree["groups"] if h is not g and h.get("kind") == "word" and h.get("clauses") and min(h["clauses"]) == last + 1
+                    and h.get("word_span")), None)
+        if nxt is None:
+            return None
+        key = clauses[max(nxt["clauses"])].get("underlying_key")
+        c = clauses[last]
+        return nxt if key and c["kind"] in ("order", "strategy") and c.get("underlying_key") == key else None
 
     def _aon_limit_choices(self, src: dict) -> List[dict]:
         out = []
@@ -3897,6 +4033,7 @@ class Resolver:
         for cb in combos:                     # a combination stays sendable only while every leg of it does
             if cb["request"] is not None and any(legs[n - 1]["request"] is None for n in cb["legs"]):
                 cb["request"] = None
+        self._last = (legs, combos)
         self._keep_others(tree, legs, combos)
         out_legs = []
         for l in legs:
@@ -3935,7 +4072,9 @@ class Resolver:
                 span = b["span"]
                 if c2 == c1 + 1 and c1 not in grouped and c2 not in grouped and a["_rep"] == b["_rep"]:
                     s, e = clauses[c1]["span"][0], clauses[c2]["span"][1]
-                    choices = [{"label": "group them as a package (the call waits for the shares)", "clause": self.text[s:e] + " as a package"}]
+                    # fourth review: in parentheses, never with a group word - the word's run would reach back over an order on the same
+                    # name before them and take it into the package
+                    choices = [{"label": "group them as a package (in parentheses: the call waits for the shares)", "clause": "(" + self.text[s:e] + ")"}]
                     span = [s, e]
                 b["flags"].append(_flag("COVER_HINT", f"legs {a['n']} and {b['n']} look like a covered call: as typed they are two orders and the call can fill"
                                         " before the shares", span, choices))
@@ -3957,17 +4096,21 @@ class Resolver:
     PLACE_CODES = ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK")
 
     def _keep_others(self, tree: dict, legs: List[dict], combos: List[dict]) -> None:
-        """Every choice of an instruction of several orders is re-read the way the page applies it (its text in place of the flag's span,
-        then a new parse of the whole instruction) with the pure parse, and must leave every OTHER order with the side, book, account and
-        grouping the parser read for it, and the order it is on with its book and account (unless the choice is about those).  Where it
-        would not - a side word written into an order whose side, book and account are carried from the order before; the orders after it
-        that carry ITS side; a book or account phrase that lands in the closing phrase of the last order and so applies to every order
-        naming none - the choice also writes, in trader words, what those orders had inherited (the carried side word, "in the X book",
-        "at <account>"), its span widened over them; a choice that still cannot be read that way is not offered.  Pure, like the rest."""
+        """Every choice is re-read the way the page applies it (its text in place of the flag's span, then a new parse of the whole
+        instruction).  Third review (instructions of several orders, the pure parse): it must leave every OTHER order with the side, book,
+        account and grouping the parser read for it, and the order it is on with its book and account (unless the choice is about those).
+        Where it would not - a side word written into an order whose side, book and account are carried from the order before; the
+        orders after it that carry ITS side; a book or account phrase that lands in the closing phrase of the last order and so applies
+        to every order naming none - the choice also writes, in trader words, what those orders had inherited (the carried side word, "in
+        the X book", "at <account>"), its span widened over them; a choice that still cannot be read that way is not offered.  Fourth
+        review (every instruction, one order too): each choice kept is then RESOLVED as the page would re-read it (``_reads_alike``: the
+        positions, the accounts, the orders already sent, the packages), and offered only when every other order reads as before and the
+        order it is on stays in its book and account and joins no other order's package.  Pure, like the rest."""
+        if getattr(self, "_nested", False):
+            return                                        # a re-read made by the guard itself offers no guard of its own
         clauses = tree["clauses"]
-        if len(clauses) < 2:
-            return
         old = None
+        facts0 = None
         cache: Dict[tuple, tuple] = {}
         done: set = set()
         for fl in [l["flags"] for l in legs] + [cb["flags"] for cb in combos]:
@@ -3977,15 +4120,104 @@ class Resolver:
                 done.add(id(f))
                 key = (f["code"], tuple(f["span"]), tuple(ch["clause"] for ch in f["choices"]))
                 if key not in cache:
-                    if old is None:
-                        old = (self._contexts(tree), self._resolved_accounts(legs))
-                    cache[key] = self._guard_flag(tree, old[0], old[1], f)
+                    span, chs = f["span"], f["choices"]
+                    if len(clauses) > 1:
+                        if old is None:
+                            old = (self._contexts(tree), self._resolved_accounts(legs))
+                        span, chs = self._guard_flag(tree, old[0], old[1], f)
+                    if chs:
+                        if facts0 is None:
+                            facts0 = self._facts(legs, combos)
+                        place = f["code"] in self.PLACE_CODES
+                        chs = [ch for ch in chs if self._reads_alike(tree, facts0, span, ch["clause"], place)]
+                    cache[key] = (span, chs or None)
                 span, chs = cache[key]
                 f["span"] = list(span)
                 if chs:
                     f["choices"] = [dict(ch) for ch in chs]
                 else:
                     f.pop("choices", None)
+
+    def _shadow(self) -> "Resolver":
+        """A resolver on the same connection, sharing this one's reads (positions, accounts, chains, the orders already sent), for a re-read
+        the guard makes; it offers no guard of its own."""
+        r = Resolver.__new__(Resolver)
+        r.__dict__.update(self.__dict__)
+        r._nested = True
+        return r
+
+    @staticmethod
+    def _facts(legs: List[dict], combos: List[dict]) -> Dict[int, list]:
+        """Per clause: each leg's (book, account, side, quantity, contract, read as an order already sent), whether it can be sent, and the
+        clauses its combination joins it with."""
+        of: Dict[int, dict] = {}
+        for cb in combos:
+            for n in cb["legs"]:
+                of[n] = cb
+        out: Dict[int, list] = {}
+        for l in legs:
+            cb = of.get(l["n"])
+            partners = frozenset(legs[m - 1]["_ci"] for m in cb["legs"]) - {l["_ci"]} if cb else frozenset()
+            goes = l["request"] is not None and (cb is None or cb["request"] is not None)
+            fact = (l["book"], l["account_id"], l["side"], l["qty"], (l.get("instrument") or {}).get("id"), any(f["code"] == "ALREADY_SENT" for f in l["flags"]))
+            out.setdefault(l["_ci"], []).append((fact, goes, partners))
+        return out
+
+    def _reads_alike(self, tree: dict, facts0: Dict[int, list], span: Sequence[int], clause: str, place: bool) -> bool:
+        """Fourth review: whether the instruction a choice gives, RESOLVED as the page re-reads it, leaves every OTHER order as it was read
+        - the same book, account, side, quantity and contract, the same reading as an order already sent (R2), the same package, never
+        newly sendable - and the order it is on in its own book and account (unless the choice is about those, ``place``) and in no
+        package with an order it was not with.  A re-read the parser refuses stages nothing: that choice stays."""
+        a, b = int(span[0]), int(span[1])
+        n = len(clause)
+        try:
+            t2 = parse(self.text[:a] + clause + self.text[b:], list(self.vocab.books))
+            sh = self._shadow()
+            sh.run(t2)
+        except SmartTicketError:
+            return True
+        legs2, combos2 = sh._last
+        facts2 = self._facts(legs2, combos2)
+        # the orders before the choice's words and after them are the re-read's first and last clauses, in order, with the same words
+        # (spaces, commas, semicolons and parentheses aside: a parenthesis written by a choice can move a comma into the clause before it)
+        cl0, cl2 = tree["clauses"], t2["clauses"]
+        before = [i for i, c in enumerate(cl0) if c["span"][1] <= a]
+        after = [i for i, c in enumerate(cl0) if c["span"][0] >= b]
+        if len(cl2) < len(before) + len(after):
+            return False
+        same: Dict[int, int] = {}                         # a clause of the re-read -> the one of this reading it is
+        for i, j in list(zip(before, range(len(before)))) + list(zip(after, range(len(cl2) - len(after), len(cl2)))):
+            if _clause_words(cl0[i].get("text")) != _clause_words(cl2[j].get("text")):
+                return False
+            same[j] = i
+        region0 = {i for i in range(len(cl0)) if i not in before and i not in after}
+        region2 = {j for j in range(len(cl2)) if j not in same}
+
+        def k0(i):
+            return "IN" if i in region0 else i
+
+        def k2(j):
+            return same.get(j, "IN")
+        for j, i in same.items():
+            old, new = facts0.get(i, []), facts2.get(j, [])
+            if len(old) != len(new):
+                return False
+            for (f0, g0, p0), (f2, g2, p2) in zip(old, new):
+                if f0 != f2 or (g2 and not g0) or {k0(x) for x in p0} != {k2(x) for x in p2}:
+                    return False
+        mine0 = [x for i in sorted(region0) for x in facts0.get(i, [])]
+        mine2 = [x for j in sorted(region2) for x in facts2.get(j, [])]
+        if not place:                                     # a book or account not read yet (ambiguous, unknown) is settled, never moved
+            where = {(f[0], f[1]) for f, _g, _p in mine0}
+            books = {w[0] for w in where}
+            book_known = bool(where) and None not in books
+            acct_known = book_known and all(w[1] is not None for w in where)
+            for f, g, _p in mine2:
+                if g and ((book_known and f[0] not in books) or (acct_known and (f[0], f[1]) not in where)):
+                    return False
+        joined0 = {k0(x) for _f, _g, ps in mine0 for x in ps} - {"IN"}
+        joined2 = {k2(x) for _f, _g, ps in mine2 for x in ps} - {"IN"}
+        return joined2 <= joined0
 
     def _contexts(self, tree: dict) -> List[dict]:
         """Per clause of a pure parse: its books (as ``_books_for`` reads them), its named account (``_named_account``), its side and

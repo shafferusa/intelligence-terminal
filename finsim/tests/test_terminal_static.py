@@ -543,7 +543,7 @@ class SmartTicketShellTests(unittest.TestCase):
         raw.decode("ascii")                                                            # ASCII only
         src = raw.decode("ascii")
         self.assertIsNone(re.search(r"https?://", src), "the page loads or links nothing outside the app")
-        self.assertIn("T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms };", src)
+        self.assertIn("T.pages.smart = { render: render, unmount: unmount, submit: submit, sameTerms: sameTerms, aonMoved: aonMoved };", src)
         self.assertEqual((0, 0, 0), js_balance(src))
         for helper in ("T.components.grid.mount(", "T.components.preview", "T.ui.modal(", "T.store.set(STORE", "T.uuid()", "T.poll.page('smart'"):
             self.assertIn(helper, src, helper)
@@ -673,9 +673,41 @@ class SmartTicketShellTests(unittest.TestCase):
         # third review: a ticked leg is listed before its primary, a waiting leg of a ticked primary right after it (it ends with it, never by
         # a cancel of its own); "kept" is counted and said; the x reads the primary's legs before its confirm and its toast names the ended ones
         for s in ("rows = batchOrder(rows, linked.extra);", "rows.forEach(function (r) { (kidsOf[r.order_id] || []).forEach(put); put(r); (linkedOf[r.order_id] || []).forEach(put); });",
-                  "tot.kept += ((a && a.kept) || []).length;", "if (r.$primary && last && last.indexOf(r.$primary) >= 0) { last.push(r.order_id); }",
+                  "tot.kept += ((a && a.kept) || []).length;",
+                  "var key = b + ' ' + (r.$primary || (r.parent_order_id && listed[r.parent_order_id] ? r.parent_order_id : r.order_id));",
                   "primaryLegs(r).then(function (lk) {", "var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];"):
             self.assertIn(s, src, s)
+        # fourth review: a leg ticked without its working primary is said to be kept (the server keeps it); a primary and its legs are one
+        # unit of a batch; the instrument page's x cancels through Pending's cancel (the legs that end with it named)
+        self.assertIn("rows = rows.map(function (r) { return linked.alone[r.order_id] ? Object.assign({}, r, { $alone: linked.alone[r.order_id] }) : r; });", src)
+        inst = read(os.path.join(STATIC, "pages", "instrument.js"))
+        self.assertIn("var pp = T.pages && T.pages.pending;", inst)
+        self.assertIn("pp.cancelOrder(Object.assign({}, o, { side_words: o.side_words || String(o.side || '').replace(/_/g, ' '), symbol: o.symbol || o.instrument_id }), after);", inst)
+        self.assertIn("var ended = (res && Array.isArray(res.ended_with_it)) ? res.ended_with_it : [];", inst)
+        self.assertEqual((0, 0, 0), js_balance(inst))
+
+    def test_smart_all_or_none_check_and_cancel_paging(self):
+        """1.0.7.2 fourth review: an all-or-none combination goes only at the net cash its confirm listed (within the server's moved-price
+        rule) and within a preview's life on the server's clock, else it is not sent and stays staged; "Cancel what this ticket sent"
+        reads every page of the open orders (2000 a read) and keeps a primary with its legs in one batch."""
+        src = read(SMART)
+        fns = _functions(src)
+        self.assertEqual("submit", _enclosing(fns, src.index("list.forEach(function (it) { it.cbase = confirmedTotals(it); });")))
+        self.assertEqual("sendOne", _enclosing(fns, src.index("var why = aonMoved(it, fr.spec);")))
+        self.assertIn("return { net: (it.spec.totals || {}).net_cash, at: it.spec.previewed_at, rule: it.spec.stale_rule || null };", src)
+        self.assertIn("if (at0 > 0 && at1 > 0 && at1 - at0 > ttl) {", src)
+        self.assertIn("if (worse > 0 && (n0 === 0 || worse > Math.abs(n0) * pct)) {", src)
+        self.assertIn("it.result = { state: 'skipped', text: 'not sent: ' + why + '; it stays staged with its new figures - submit it again to confirm them' };", src)
+        self.assertIn("var OPEN_PAGE = 2000, OPEN_PAGES = 100;", src)
+        self.assertIn("{ status: 'open', limit: OPEN_PAGE, offset: k * OPEN_PAGE }", src)
+        self.assertEqual("cancelSent", _enclosing(fns, src.index("return openOrdersOf(a).then(function (rows) {")))
+        self.assertIn("var key = b + ' ' + (o.parent_order_id && placed[o.parent_order_id] ? o.parent_order_id : o.order_id);", src)
+        # the server's package preview carries its time and the moved-price rule
+        from finsim.terminal import api_products
+        with open(api_products.__file__, encoding="utf-8") as f:
+            ap = f.read()
+        self.assertIn('body["previewed_at"] = int(req.rt.clock.epoch())', ap)
+        self.assertIn('body["stale_rule"] = {"moved_pct": str(config.PRICE_MOVED_PCT), "ttl_s": int(config.PREVIEW_TTL_S)}', ap)
 
     def test_smart_css_uses_the_tokens_only(self):
         css = read(NEW_CSS)

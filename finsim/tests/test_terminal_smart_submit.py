@@ -419,8 +419,9 @@ class SequentialComboTests(SmartSubmitBase):
 # ===== the release after the shares' quantity changed (1.0.7.2 second review) ========================================================
 class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
     """BUY 300 ACME limit 99 (below the 100.00 print: the shares rest) + STO 3 Dec 18 2026 105 calls (bid 2.60), ratio 3 / 300 = 0.01.
-    The release is floor(shares filled x leg qty / shares qty) while the ratio fits the shares' quantity, else floor(shares filled x
-    ratio) as in 1.0.7.1 - never a half-up rounding of an amended quantity; over a replace the shares are counted over the chain."""
+    Fourth review: the release is floor(shares filled x leg qty / shares qty) in whole numbers, with the two quantities as they were
+    confirmed (their submit records), whatever quantity an amend or a replace gave the shares - never a half-up rounding of an amended
+    quantity, never a tolerance that grows with the quantity; over a replace the shares are counted over the chain."""
     CALL = acme("C", 105)
 
     def package(self, shares: int, calls: int, n: int = 1):
@@ -473,8 +474,8 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
                 self.sell_calls()
                 ch = self.row(c)
                 got[case] = (int(ch["qty"]), int(ch["filled_qty"]), self.positions())
-                # 350 x 0.01 = 3.5 and 250 x 0.01 = 2.5: the ratio does not fit, so floor(filled x 0.01) - 1.0.7.1's 3 and 2, never 4 and 3
-                self.assertTrue(any(e["note"] == f"resized to {qty // 100:,} = floor({qty:,} \u00d7 0.01) after the primary's fill"
+                # 350 x 3 / 300 = 3.5 and 250 x 3 / 300 = 2.5: floor - 1.0.7.1's 3 and 2, never 4 and 3
+                self.assertTrue(any(e["note"] == f"resized to {qty // 100:,} = floor({qty:,} \u00d7 3 / 300) after the primary's fill"
                                     for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c,))), case)
                 assert_integrity(self, self.rt, "full")
         self.assertEqual({"amended up": (3, 3, {"ACME": 350, self.CALL: -3}), "amended down": (2, 2, {"ACME": 250, self.CALL: -2}),
@@ -511,6 +512,51 @@ class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
         self.assertEqual((p, 3), (self.row(c)["parent_order_id"], int(self.row(c)["qty"])))
         self.sell_calls()
         self.assertEqual({"ACME": 300, self.CALL: -3}, self.positions())
+        assert_integrity(self, self.rt, "full")
+
+    def test_p_millions_of_shares_never_release_a_call_the_shares_do_not_cover(self):
+        """Fourth review: 3,000,000 WIDG + STO 30,000 calls (ratio 0.01) amended to 2,999,999 releases floor(2,999,999 x 30,000 / 3,000,000)
+        = 29,999 calls (1.0.7.1's floor(2,999,999 x 0.01) too), never the 30,000 a tolerance growing with the quantity read as fitting."""
+        call = occ_symbol("WIDG", date(2026, 12, 18), "C", Decimal("1.5"))
+
+        def widg(last: str, age: int, vol: int):
+            now = self.rt.clock.epoch()
+            px = qprice(last)
+            bar = Bar1m(int(now - 60), px, px, px, px, vol)
+            self.rt.cache.put(QuoteRecord(instrument_id="WIDG", provider="yahoo", source="Yahoo Finance chart (WIDG)", method="direct", last=px,
+                                          quote_time=now - age, fetched_at=now, delay_s=900, delay_label="up to 15 min delayed", currency="USD",
+                                          session_group="US_EQUITY", bar=bar, bars_tail=[bar]), now)
+
+        def chain():
+            now = self.rt.clock.epoch()
+            rows = [ChainRow(call, "2026-12-18", "C", qprice("1.5"), qprice("0.05"), qprice("0.06"), 100000, 100000, None, None, 0.30, None, None, None, None, 100, 10)]
+            snap = ChainSnapshot("WIDG", "WIDG", ChainUnderlying("WIDG", qprice("1.00"), None, None, None, None, now - 60, None, 0.30), rows, now, now - 60, len(rows))
+            self.rt.fp.set_chain("WIDG", snap)
+            self.rt.chains.put(snap)
+            for r in records_from_chain(snap, self.rt.instruments):
+                self.rt.cache.put(r, now)
+        widg("1.00", 120, 50_000_000)
+        chain()
+        body = {"account_id": ACCT, "instrument_id": "WIDG", "side": "BUY", "qty": 3_000_000, "order_type": "LIMIT", "limit_px": "0.99", "tif": "DAY",
+                "confirm_large": True, "hedge": {"legs": [{"instrument_id": call, "side": "STO", "qty": 30_000}]}}
+        st, out, _h = self.send(body, "ui:big-widg-0001")
+        self.assertEqual(200, st, out)
+        p = out["order"]["order_id"]
+        c = self.q("SELECT order_id FROM orders WHERE parent_order_id=?", (p,))[0]["order_id"]
+        self.assertEqual(("0.01", 30_000), (self.row(c)["ratio"], int(self.row(c)["qty"])))
+        st, out, _h = self.call("PATCH", f"/api/orders/{p}?book=T", {"qty": 2_999_999, "confirm_large": True}, "ui:big-widg-amend-01")
+        self.assertEqual(200, st, out)
+        for _ in range(2):
+            self.rt.clock.advance(60)
+            widg("0.98", 10, 50_000_000)                                 # 5,000,000 may fill a bar
+            self.rt.matcher.on_quotes(["WIDG"])
+        chain()
+        self.rt.matcher.on_quotes([call])
+        self.assertEqual(("FILLED", 2_999_999), (self.row(p)["status"], int(self.row(p)["filled_qty"])))
+        self.assertEqual(("FILLED", 29_999, 29_999), (self.row(c)["status"], int(self.row(c)["qty"]), int(self.row(c)["filled_qty"])))
+        self.assertEqual({"WIDG": 2_999_999, call: -29_999}, self.positions())
+        self.assertTrue(any(e["note"] == "resized to 29,999 = floor(2,999,999 \u00d7 30,000 / 3,000,000) after the primary's fill"
+                            for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c,))))
         assert_integrity(self, self.rt, "full")
 
     def test_l_a_primary_ended_after_a_partial_fill_ends_the_legs_still_waiting(self):
