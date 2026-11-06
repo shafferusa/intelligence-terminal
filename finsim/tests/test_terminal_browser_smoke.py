@@ -45,6 +45,7 @@ from tests.test_terminal_static import NEWS_STRINGS
 from finsim.terminal import config, server as _server
 from finsim.terminal.clock import FakeClock, epoch_of
 from finsim.terminal.instruments import occ_symbol
+from finsim.terminal.quotes import Bar1m, QuoteRecord
 from finsim.terminal.quotes.providers import ChainRow, ChainSnapshot, ChainUnderlying, FakeProvider
 from finsim.terminal.units import qprice
 
@@ -434,7 +435,7 @@ class BrowserSmokeTests(unittest.TestCase):
         self.assertEqual((ticket, "L1"), (posts[0]["body"]["smart"]["ticket"], posts[0]["body"]["smart"]["item"]))
         self.assertIn("ACME", posts[0]["body"]["smart"]["clause"])
         self.assertEqual(("ACME", 10, "LIMIT"), (posts[0]["body"]["instrument_id"], posts[0]["body"]["qty"], posts[0]["body"]["order_type"]))
-        self.assertTrue(posts[0]["body"].get("preview_id"))                            # the fresh preview taken just before the send
+        self.assertTrue(posts[0]["body"].get("preview_id"))                            # the preview the confirm listed (second review)
         self.assertEqual(("WIDG", 30000, False), (posts[1]["body"]["instrument_id"], posts[1]["body"]["qty"], posts[1]["body"].get("confirm_large")))
         # Stop: the run ends at leg 2; leg 3 is never sent
         self.assertEqual("smart-stop", b.js(sid, "document.activeElement && document.activeElement.id"))
@@ -473,6 +474,48 @@ class BrowserSmokeTests(unittest.TestCase):
             self.assertIsNone(rx.search(text), f"#/smart: {rx.pattern!r} on screen")
         if shots:
             b.screenshot(sid, os.path.join(shots, "smart_stopped.png"))
+        # 1.0.7.2 second review: the POST carries the preview the CONFIRM listed, so a price that moves against the owner while the confirm
+        # is open comes back 409 PREVIEW_STALE and asks again (Accept & continue / Skip / Stop) - it is never sent at the moved price
+        # unasked.  "buy 10 WIDG" at market: the confirm lists gross 2,500.00 (10 x 250.00); WIDG then prints 257.50 (3 % against the buy;
+        # the server's guard is 0.5 %); "Send 1 order" -> the moved-price dialog; Stop -> nothing placed.
+        rt, fp = self.server.rt, self.server.fp
+        now = int(rt.clock.epoch())
+
+        def widg(last: str, age: int) -> None:
+            px = qprice(last)
+            bar = Bar1m(now - 60, px, px, px, px, 61900)
+            fp.set("WIDG", last=last, quote_time=now - age, bar=(now - 60, 61900))
+            rt.cache.put(QuoteRecord(instrument_id="WIDG", provider="yahoo", source="Yahoo Finance chart (WIDG)", method="direct", last=px, quote_time=now - age,
+                                     fetched_at=now, delay_s=900, delay_label="up to 15 min delayed", currency="USD", session_group="US_EQUITY", bar=bar,
+                                     bars_tail=[bar]), now)
+        widg("250.00", 30)                                                         # a live print: a market order fills now
+        since = b.mark()
+        b.js(sid, "(function () { var t = document.querySelector('#smart-text'); t.focus(); t.value = 'buy 10 WIDG'; t.dispatchEvent(new Event('input', { bubbles: true }));"
+                  " return true; })()")
+        self._press("Enter", 13)
+        b.wait(sid, "document.querySelectorAll('#smart-grid tbody tr[data-i]').length === 1 && /fills now 10/.test(document.querySelector('#smart-grid').innerText)",
+               timeout=40)
+        b.wait(sid, "!document.querySelector('#smart-submit').disabled", timeout=40)
+        self._press("Enter", 13, ctrl=True, shift=True)
+        b.wait(sid, "!!document.querySelector('#smart-send')", timeout=10)
+        conf = b.js(sid, "document.querySelector('#modal-root .modal').innerText")
+        self.assertIn("2,500.00", conf)
+        self.assertIn("a moved price or a large order asks you again", conf)
+        previews = [x for x in self._posts(since, "/api/orders/preview") if x["body"].get("instrument_id") == "WIDG"]
+        self.assertTrue(previews, "no preview of the WIDG order was taken before the confirm")
+        widg("257.50", 10)
+        b.js(sid, "document.querySelector('#smart-send').click(); true")
+        b.wait(sid, "!!document.querySelector('#smart-accept')", timeout=40)
+        sent = self._order_posts(since)
+        self.assertEqual([(f"st:{ticket}:L1:r2", 409)], [(x["rid"], x["status"]) for x in sent])     # the item's revision 2 (leg 1 read again)
+        self.assertTrue(sent[0]["body"].get("preview_id"))
+        b.js(sid, "document.querySelector('#smart-stop').click(); true")
+        b.wait(sid, "!document.querySelector('#smart-stop') && /stopped/.test(document.querySelector('#smart-status').innerText)", timeout=15)
+        b.pump(0.5)
+        self.assertEqual([(f"st:{ticket}:L1:r2", 409)], [(x["rid"], x["status"]) for x in self._order_posts(since)])
+        with rt.db.reader() as conn:
+            self.assertEqual(0, conn.execute("SELECT COUNT(*) FROM orders WHERE request_id=?", (f"st:{ticket}:L1:r2",)).fetchone()[0])
+        self.assertEqual([], [e for e in b.errors(sid, since) if not ("409" in e and "/api/orders" in e)])
 
     def test_zz_pending_cancel_selected(self):
         """1.0.7.2 mass cancel on Pending Trades (named to run after every other test: it cancels the seeded working SPY order).  The

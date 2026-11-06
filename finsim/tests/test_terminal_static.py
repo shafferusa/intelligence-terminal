@@ -618,9 +618,14 @@ class SmartTicketShellTests(unittest.TestCase):
         callers = sorted({_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])post\(S, it, ", src)})
         self.assertEqual(["askConfirm", "askStale", "sendOne"], callers)
         # the loop starts only from the confirm's "Send N orders" (Back focused: T.ui.modal would focus the primary button)
-        starts = [_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])sendAll\(S, list, sigs\)", src)]
+        starts = [_enclosing(fns, m.start()) for m in re.finditer(r"(?<!function )(?<![\w.])sendAll\(S, list, sigs, pvids\)", src)]
         self.assertEqual(["submit"], starts)
-        self.assertIn("{ label: label, cls: 'primary', id: 'smart-send', onClick: function (m, btn) { btn.disabled = true; m.close(); sendAll(S, list, sigs); } }", src)
+        self.assertIn("{ label: label, cls: 'primary', id: 'smart-send', onClick: function (m, btn) { btn.disabled = true; m.close(); sendAll(S, list, sigs, pvids); } }", src)
+        # 1.0.7.2 second review: the preview each order was confirmed with (taken when the confirm opens) is the one its POST carries, so a
+        # price that moved against the owner since the confirm comes back PREVIEW_STALE and asks again - never a preview taken after the click
+        self.assertEqual("submit", _enclosing(fns, src.index("var pvids = list.map(confirmedPv);")))
+        self.assertEqual("sendAll", _enclosing(fns, src.index("list.forEach(function (it, i) { it.cpv = (pvids && pvids[i]) || null; });")))
+        self.assertEqual("bodyOf", _enclosing(fns, src.index("var pid = it.cpv || ")))
         # what goes is exactly what was confirmed: nothing is edited or read while the confirm is open, and Send checks each item's terms
         self.assertIn("var changed = list.some(function (it, i) { return S.items.indexOf(it) < 0 || it.sent || it.moved || !it.sel || it.sig !== sigs[i]; });", src)
         self.assertIn("return !!(it && it.base && !it.sent && !it.moved && !S.sending && !S.confirming);", src)

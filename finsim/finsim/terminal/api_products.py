@@ -956,7 +956,8 @@ def register_routes(r) -> None:
             if all(x in reported for x in t["orders"]):
                 continue                            # it already ended with an order listed before it (and is said there)
             if t.get("parent") and t["parent"] in done:
-                # a leg whose primary this batch just cancelled: it ended with it (unfilled) - no command of its own
+                # a leg whose primary this batch just cancelled: a leg still waiting ended with it - no command of its own; a leg already
+                # released for the shares bought keeps working (the server's rule), so a listed one gets its own cancel below
                 with rt.db.reader() as conn:
                     now_status = (conn.execute("SELECT status FROM orders WHERE order_id=?", (oid,)).fetchone() or {"status": None})["status"]
                 if now_status not in CANCEL_LIVE_STATUSES:
@@ -987,7 +988,7 @@ def register_routes(r) -> None:
                     done.add(oid)
                     report(cancelled, dict({"order_id": oid, "status": (out.get("order") or {}).get("status") or "CANCELLED"},
                                            **({"package_id": t["package_id"]} if t["package_id"] else {})))
-                    # R3: the legs that waited for this primary ended with it (unfilled): said, whether listed or not
+                    # R3: the legs still waiting for this primary ended with it: said, whether listed or not (a released leg keeps working)
                     mine = sorted(k for k, r in kids.items() if r["parent_order_id"] == oid and k not in reported)
                     if mine:
                         with rt.db.reader() as conn:

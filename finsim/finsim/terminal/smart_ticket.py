@@ -42,14 +42,16 @@ Conventions (sentence SMART_TICKET)
   today in New York (YEAR_INFERRED).  A book phrase inside a clause applies to that clause; a prefix scope ("in the Fund book: ...") to
   every clause naming none (BOOK_FROM_SCOPE information; a clause's own book overriding it says so: BOOK_CONFLICT check); a book phrase
   at the very end of the text - only the last order's own price, time in force, account or group word may follow it - to every leg naming
-  none (SD-2, BOOK_FROM_SCOPE check on each); a clause that carries the side of the one before carries its book and account too
-  (BOOK_FROM_SCOPE check); no book anywhere -> the selected book (BOOK_SELECTED); several books -> the clause once per book at the same
+  none (SD-2, BOOK_FROM_SCOPE check on each; an account phrase inside it or right beside it goes with it); a clause that carries the side
+  of the one before carries its book and account too (BOOK_FROM_SCOPE check; the account also without a book), unless it names its own;
+  no book anywhere -> the selected book (BOOK_SELECTED); several books -> the clause once per book at the same
   quantity (MULTI_BOOK); a leg outside the selected book is allowed (OTHER_BOOK).  The account is the one account of the book's OPEN
-  lifetime that trades the instrument (US Exchange first, the others listed: ACCOUNT_CHOICE) - but when the side is read from the position
-  (or closes it, or the quantity is 'all' / 'half') the account of the book that HOLDS the contract, whatever the quantity's wording;
-  holdings split over accounts, or a named account that holds nothing while another one holds it, are an ACCOUNT_CHOICE blocker.  A named
-  account must belong to the book (ACCOUNT_NOT_IN_BOOK); an account phrase in an opening or closing phrase is never dropped: with the
-  phrase's book for the legs that take it, alone ("at pb ms: ...") for every leg that names no account, read in that leg's book.
+  lifetime that trades the instrument (US Exchange first, the others listed: ACCOUNT_CHOICE, an explicit opening side included) - but
+  when the side is read from the position (or closes it, or the quantity is 'all' / 'half') the account of the book that HOLDS the
+  contract, whatever the quantity's wording; holdings split over accounts, or a named account that holds nothing while another one
+  holds it, are an ACCOUNT_CHOICE blocker.  A named account must belong to the book (ACCOUNT_NOT_IN_BOOK); an account phrase in an
+  opening or closing phrase is never dropped: with the phrase's book for the legs that take it, alone ("at pb ms: ...") for every leg
+  that names no account, read in that leg's book.
 - INSTRUMENTS.  Equities by an exact id / symbol / Yahoo symbol / alias match (several -> SYMBOL_AMBIGUOUS, none -> SYMBOL_UNKNOWN with
   "Look it up").  Options in this order: the cached chain row (the standard root first; two roots for one expiry, right and strike ->
   ROOT_CHOICE, never a silent pick), the master's option rows, else the OCC id built by ``occ_symbol`` and flagged OPTION_UNVERIFIED with
@@ -63,19 +65,22 @@ Conventions (sentence SMART_TICKET)
   The explicit sides (short, cover, bto, sto, btc, stc and their long forms) are never changed.  A position wholly in working closing
   orders is ALREADY_CLOSING (blocker; the explicit opening side offered), never silently an order that opens a new position.  The same
   words already sent from a Smart Ticket on that contract in that book (live, or filled today) read as THAT order again (ALREADY_SENT
-  check: its account and side), never as a new one once the position it closed has moved.  "all" is the held quantity, "half"
-  floor(held / 2) on the lot (QTY_FROM_HELD / QTY_ROUNDED check), and never on a side that would ADD to the position (ADDS_TO_POSITION
-  blocker, "close" offered); "k" / "m" multiply by 1,000 / 1,000,000.
+  check: its account and side; a carried "buy" / "sell" too), never as a new one once the position it closed has moved.  "all" is the
+  held quantity, "half" floor(held / 2) on the lot (QTY_FROM_HELD / QTY_ROUNDED check), and never on a side that would ADD to the
+  position (ADDS_TO_POSITION blocker, "close" offered); "k" / "m" multiply by 1,000 / 1,000,000.
 - COMBINATIONS.  A strategy word, a roll, a covered call / buy-write, a collar or a group is ONE combination with package key CUSTOM:
   all-or-none (AON) when all legs are options on one underlying - legs at each leg's executable bid / ask, no net limit in this version, so
   an option leg with its own limit is LIMIT_IN_AON with the two choices; SEQUENTIAL when it holds exactly one share leg plus options on the
   same name (the shares first); anything else COMBO_INVALID ("a package holds one name: its shares and its options"), and so is a
   combination that names one contract twice (the CUSTOM package refuses it: name each contract once, with its whole quantity).  A
   vertical's debit or credit follows the side, never the typed strike order (bought = a debit); a bare "condor" is TOKEN_AMBIGUOUS (iron,
-  call or put condor); a butterfly without call / put is calls (RIGHT_DEFAULT check); a calendar's near expiry is told from the far one as
-  a date (the year inferred), never by its spelling; a price typed on a strategy, a roll or a collar reaches the combination and is
-  refused there (LIMIT_IN_AON / COMBO_INVALID), never dropped; a covered call on shares the book holds is the calls only (a "buy write"
-  buys the shares); one price typed for a close of several contracts is PRICE_AMBIGUOUS.
+  call or put condor); a strategy takes only buy or sell, typed or carried (MISSING_SIDE otherwise; its legs then have no side); a
+  butterfly without call / put is calls (RIGHT_DEFAULT check); a calendar's near expiry is told from the far one as a date (the year
+  inferred, a month alone through the cached chain), never by its spelling, and refused when a date cannot be read; a price typed on a
+  strategy, a roll or a collar reaches the combination - its group's when it is grouped - and is refused there (LIMIT_IN_AON /
+  COMBO_INVALID), never dropped; a covered call or collar reads the signed holding: on shares held free the options only, on shares held
+  but not free SIDE_SPLIT, on a short NOTHING_HELD, none held the shares bought (a check; a "buy write" always buys them); one price typed
+  for a close of several contracts is PRICE_AMBIGUOUS.
 - CHOICES are clause texts (``{label, clause}``): the page puts the choice's text in place of the flag's span and parses again, so the
   grammar stays the one source of truth.  Every flag that offers choices carries the span it replaces: the leg's clause, the
   combination's text, both clauses for COVER_HINT, or for an instruction-level flag the word it names (an unknown or shared book word
@@ -341,10 +346,13 @@ _RX = (
 )
 _JUNK = re.compile(r"[^\s,;:@()&+]+")
 _NUM_PARTS = re.compile(r"^(\$?)([0-9,]*\.?[0-9]*)(st|nd|rd|th|[kKmM%xX])?$")
-#: a number with a comma that is not a thousands group ("1,5k", "2,5", "10,25"): ONE malformed number (QTY_NOT_WHOLE in the quantity
-#: slot), never a clause break that would leave "5k ACME" as an order of its own (1.0.7.2 review); after a month word it stays a day and
-#: a year ("Dec 18,26")
-_BADNUM = re.compile(r"\$?\d+,\d{1,2}(?!\d)(?:\.\d+)?[kKmMxX%]?(?![A-Za-z0-9])")
+#: digits, a comma and digits typed together ("1,5k", "2,5", "10,25", "1,5000", "12,34567") that are not a thousands grouping
+#: (``_THOUSANDS_OK``): ONE malformed number (QTY_NOT_WHOLE in the quantity slot), never a clause break that would leave "5k ACME" or
+#: "5000 ACME" as an order of its own (1.0.7.2 review; second review: any number of digits after the comma); right after a month word a
+#: day and a year stay a day and a year ("Dec 18,26", "Dec 18,2026": ``_DAY_YEAR``)
+_BADNUM = re.compile(r"\$?\d+(?:,\d+)+(?:\.\d+)?[kKmMxX%]?(?![A-Za-z0-9])")
+_THOUSANDS_OK = re.compile(r"\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?[kKmMxX%]?")
+_DAY_YEAR = re.compile(r"\d{1,2},(?:\d{2}|\d{4})")
 #: a quantity typed with a point before exactly three digits ("1.000"): a decimal point or a thousands point?  TOKEN_AMBIGUOUS
 _THOUSANDS_POINT = re.compile(r"\d{1,3}\.\d{3}")
 
@@ -454,7 +462,8 @@ def tokenize(text: str) -> List[Token]:
             continue
         bm = _BADNUM.match(text, i) if ch.isdigit() or ch == "$" else None
         prev = toks[-1] if toks else None
-        if bm is not None and not (prev is not None and prev.kind == "word" and prev.lower in MONTHS):
+        if bm is not None and not _THOUSANDS_OK.fullmatch(bm.group(0)) \
+                and not (prev is not None and prev.kind == "word" and prev.lower in MONTHS and _DAY_YEAR.fullmatch(bm.group(0))):
             tok = Token("badnum", bm.group(0), i, bm.end(), bm.group(0))
             toks.append(tok)
             i = tok.end
@@ -1744,7 +1753,10 @@ def expand_strategy(c: dict) -> List[dict]:
     if kind != "strategy" or not c.get("strategy"):
         return []
     s = c["strategy"]
-    side = (c.get("verb") or {}).get("side") or (c.get("_carried") or {}).get("side") or "buy"
+    side = (c.get("verb") or {}).get("side")
+    # a strategy is bought or sold: any other side - none, or short / cover / btc / stc, typed or carried from the clause before - is a
+    # MISSING_SIDE blocker, and its legs carry no side at all (second review: never expanded as a bought strategy by default)
+    known = side in ("buy", "sell", "BTO", "STO")
     sell = side in ("sell", "STO")
     ks, r, exps = s["strikes"], s["right"], s["expiries"]
     e = exps[0] if exps else None
@@ -1752,7 +1764,7 @@ def expand_strategy(c: dict) -> List[dict]:
     def L(sd, right, k, ratio=1, expiry=None):
         if sell:
             sd = "STO" if sd == "BTO" else "BTO"
-        return {"role": "option", "side": sd, "right": right, "strike": k, "expiry": expiry or e, "ratio": ratio}
+        return {"role": "option", "side": sd if known else None, "right": right, "strike": k, "expiry": expiry or e, "ratio": ratio}
     name = s["name"]
     if name in ("call spread", "put spread"):
         # 1.0.7.2 review: the SIDE decides debit or credit, never the typed strike order - a bought spread is a debit (the call of the
@@ -1776,19 +1788,24 @@ def expand_strategy(c: dict) -> List[dict]:
         return [L("BTO", r, ks[0]), L("STO", r, ks[1]), L("STO", r, ks[2]), L("BTO", r, ks[3])]
     if name == "calendar":
         a, b = exps[0], exps[1]
-        # the near expiry is sold on a buy: compared as dates (a missing year counts as unknown here - the resolver, which knows today,
-        # infers it and puts the legs right before anything is resolved: Resolver._calendar_order); never by the typed spelling
-        near, far = (a, b) if _exp_key(a) <= _exp_key(b) else (b, a)
+        # the near expiry is sold on a buy: compared as dates when both years are typed; otherwise the typed order is only a placeholder -
+        # the resolver, which knows today and the cached chain, reads both dates and puts the legs right, or refuses the calendar, before
+        # anything is resolved (Resolver._calendar_order); never by the typed spelling
+        ka, kb = _exp_key(a), _exp_key(b)
+        near, far = (b, a) if ka is not None and kb is not None and kb < ka else (a, b)
         return [L("STO", r, ks[0], expiry=near), L("BTO", r, ks[0], expiry=far)]
     return []
 
 
-def _exp_key(e: dict) -> Tuple[int, int, int]:
-    """An expiry's (year, month, day) for ordering; an unknown year or day counts 0 (the pure layer has no clock)."""
+def _exp_key(e: dict) -> Optional[Tuple[int, int, int]]:
+    """An expiry's (year, month, day) for ordering when its year is typed (a month alone counts day 0), else None: the pure layer has no
+    clock, so a day typed without its year is never ordered against another expiry here (second review)."""
     if e.get("date"):
         y, m, d = (int(x) for x in str(e["date"]).split("-"))
         return y, m, d
-    return int(e.get("y") or 0), int(e.get("m") or 0), int(e.get("d") or 0)
+    if not e.get("y"):
+        return None
+    return int(e["y"]), int(e.get("m") or 0), int(e.get("d") or 0)
 
 
 def _clause_leg_count(c: dict) -> int:
@@ -1846,15 +1863,25 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
             if prev is not None and prev.get("verb") and prev["verb"]["kind"] == "side":
                 c["verb"] = dict(prev["verb"], span=None, carried=True)
                 c["side_carried"] = True
-                c["flags"].append(_flag("SIDE_CARRIED", f"no side: '{prev['verb']['word']}' carried from the clause before", c["span"]))
                 # 1.0.7.2 review: the book (and account) the clause before named travel with its side ("buy 100 ACME in the Fund book and 50
-                # WIDG" puts both in the Fund book); the leg says so (BOOK_FROM_SCOPE check)
+                # WIDG" puts both in the Fund book); the leg says so (BOOK_FROM_SCOPE check).  Second review: its account travels too when it
+                # named no book ("buy 100 ACME at pb ms and 50 WIDG": both at pb ms), unless this clause names its own book or account
+                own_book = bool((c["mods"].get("scope") or {}).get("books"))
                 pscope = prev["mods"].get("scope") if (prev["mods"].get("scope") or {}).get("books") else prev.get("carried_scope")
-                if not (c["mods"].get("scope") or {}).get("books") and pscope:
+                if not own_book and pscope:
                     c["carried_scope"] = pscope
-                    pacct = prev["mods"].get("account") or prev.get("carried_account")
-                    if c["mods"].get("account") is None and pacct is not None:
-                        c["carried_account"] = pacct
+                pacct = prev["mods"].get("account") or prev.get("carried_account")
+                said = ""
+                if not own_book and c["mods"].get("account") is None and pacct is not None:
+                    c["carried_account"] = pacct
+                    if not pscope:
+                        said = f", with its account '{norm[pacct['span'][0]:pacct['span'][1]]}'" if pacct.get("span") else ", with its account"
+                c["flags"].append(_flag("SIDE_CARRIED", f"no side: '{prev['verb']['word']}' carried from the clause before{said}", c["span"]))
+                if c["kind"] == "strategy" and c["verb"].get("side") not in ("buy", "sell", "BTO", "STO"):
+                    # second review: the strategy side rule applies to a carried side as to a typed one - a strategy is bought or sold
+                    sname = (c.get("strategy") or {}).get("name") or "strategy"
+                    c["flags"].append(_flag("MISSING_SIDE", f"a strategy is bought or sold: '{prev['verb']['word']}', carried from the clause before, does not apply"
+                                            f" to {_a(sname)}", c["span"], [{"label": f"{w} ...", "clause": f"{w} " + c["text"]} for w in ("buy", "sell")]))
             else:
                 c["side_carried"] = False
                 c["flags"].append(_flag("MISSING_SIDE", "no side: start with buy, sell, short, cover, bto, sto, btc or stc", c["span"],
@@ -1865,7 +1892,9 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
             sold = sd in ("sell", "STO")
             sname = c["strategy"]["name"]
             conv = None
-            if sname in ("iron condor", "iron butterfly"):
+            if sd not in ("buy", "sell", "BTO", "STO"):
+                pass                                        # no side a strategy takes: MISSING_SIDE says so, and no convention applies
+            elif sname in ("iron condor", "iron butterfly"):
                 conv = "a credit: the wings bought, the body sold" if sold else "a debit: the body bought, the wings sold"
             elif sname == "condor" and c["strategy"].get("right"):
                 conv = "a credit: the body bought, the wings sold" if sold else "a debit: the wings bought, the body sold"
@@ -1898,8 +1927,12 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
                 and not any(s[0] <= t.start and t.end <= s[1] for s in mod_spans)]
         if not tail:                                        # nothing but separators and modifiers after the book phrase: it ends the text
             acct = last["mods"].get("account")
-            # an account in the phrase itself ("in the Institutional book at pb ms") goes with the book to every leg that inherits it
-            carried = acct if acct is not None and sc["span"][0] <= acct["span"][0] and acct["span"][1] <= sc["span"][1] else None
+            asp = (acct or {}).get("span")
+            # an account in the phrase itself ("in the Institutional book at pb ms") goes with the book to every leg that inherits it; so
+            # does one right beside the phrase - just before it, or just after it past a comma ("at pb ms in the Institutional book", "in
+            # the Institutional book, at pb ms"): swapping the two phrases or adding a comma never moves an order to another account
+            inside = bool(asp) and sc["span"][0] <= asp[0] and asp[1] <= sc["span"][1]
+            carried = acct if asp and (inside or _beside(norm, asp, sc["span"])) else None
             suffix = {"scope": sc, "account": carried, "clause": len(clauses) - 1, "flags": []}
     for c in clauses:
         if c["kind"] == "scope":
@@ -1949,6 +1982,13 @@ def parse(text: str, books: Optional[Sequence[Sequence[str]]] = None) -> dict:
             "unparsed": [{"span": list(u), "text": norm[u[0]:u[1]]} for u in unparsed], "flags": sort_flags(flags), "legs": count}
 
 
+def _beside(text: str, a: Sequence[int], b: Sequence[int]) -> bool:
+    """Whether two spans of ``text`` touch, with only spaces or commas between them (second review: the account phrase of a closing
+    book phrase)."""
+    lo, hi = (a, b) if a[1] <= b[0] else (b, a)
+    return lo[1] <= hi[0] and text[lo[1]:hi[0]].strip(" \t,") == ""
+
+
 def _books_named(scope: Optional[dict]) -> int:
     if not scope:
         return 0
@@ -1960,7 +2000,7 @@ def _expansion_words(c: dict, legs: Optional[List[dict]] = None) -> str:
     words = []
     for l in legs:
         k = l.get("strike")
-        words.append(f"{l['side']} {'2 x ' if l.get('ratio') == 2 else ''}{k} {'call' if l.get('right') == 'C' else ('put' if l.get('right') == 'P' else 'call or put?')}"
+        words.append(f"{l['side'] or 'buy or sell?'} {'2 x ' if l.get('ratio') == 2 else ''}{k} {'call' if l.get('right') == 'C' else ('put' if l.get('right') == 'P' else 'call or put?')}"
                      + (f" {_exp_text(l['expiry'])}" if c["strategy"]["name"] == "calendar" and l.get("expiry") else ""))
     return ", ".join(words) + " (all-or-none)"
 
@@ -2265,7 +2305,11 @@ class Resolver:
             flags.append(_flag("BOOK_FROM_SCOPE", f"book from '{stext}' at the start", scope["span"], severity="info"))
             leg["inferred"].append(f"R-BOOK-2: book {code} from the opening phrase")
         elif src == "suffix":
-            flags.append(_flag("BOOK_FROM_SCOPE", f"book from '{stext}' at the end of the text (it applies to every leg that names no book)", scope["span"]))
+            sacct = (self._tree.get("suffix") or {}).get("account") or {}
+            asp = sacct.get("span")
+            beside = (f" with the account '{self.text[asp[0]:asp[1]]}' beside it" if asp and scope and not (scope["span"][0] <= asp[0] and asp[1] <= scope["span"][1])
+                      else "")
+            flags.append(_flag("BOOK_FROM_SCOPE", f"book from '{stext}'{beside} at the end of the text (it applies to every leg that names no book)", scope["span"]))
             leg["inferred"].append(f"R-BOOK-3: book {code} applies to every leg without a book")
         elif src == "carried":
             flags.append(_flag("BOOK_FROM_SCOPE", f"book from '{stext}' in the order before: it travels with the side carried from there", scope["span"]))
@@ -2317,7 +2361,7 @@ class Resolver:
         book when the leg takes that book, and on its own ("at pb ms: ...", "...; at pb ms") for every leg that names no account, read
         in the leg's own book (ACCOUNT_NOT_IN_BOOK when that book lacks it).  Never dropped (1.0.7.2 review)."""
         a = c["mods"].get("account")
-        if a is None and binfo["src"] == "carried":
+        if a is None:                                   # the account of the order whose side this clause carries (with its book or not)
             a = c.get("carried_account")
         prefix = tree.get("prefix") or {}
         if a is None and prefix.get("account") is not None and (binfo["src"] == "prefix" or not prefix.get("books")):
@@ -2733,7 +2777,7 @@ class Resolver:
                     flags.append(_flag("NOT_TRADEABLE_HERE", f"{words} does not trade in any open account of the {book}", leg["span"]))
                     return None
                 hold = [x for x in cands if x["account_id"] in held]
-                if len(hold) == 1:
+                if len(hold) == 1 and aware:
                     a = hold[0]
                     leg["inferred"].append(f"R-ACCT-1: {a['account_id']}, the account that holds it")
                     others = [x for x in cands if x is not a]
@@ -2749,15 +2793,18 @@ class Resolver:
                     flags.append(_flag("ACCOUNT_CHOICE", f"the {book} holds {words} in {len(hold)} accounts ({self._held_words(held, con)}): name the account",
                                        leg["span"], choices, severity="blocker"))
                 else:
+                    # R-ACCT-1: US Exchange first.  Second review: an explicit opening side (bto, sto, short) opens where this rule puts it,
+                    # never silently in the account that holds the contract - that account is offered in the choices, with what it holds
                     us = [x for x in cands if x["role"] == "US_EXCHANGE"]
-                    a = (hold or us or cands)[0]
+                    a = (us or cands)[0]
                     leg["inferred"].append(f"R-ACCT-1: {a['account_id']}")
                     if len(cands) > 1:
                         others = [x for x in cands if x is not a]
                         choices = [{"label": f"{x['name']} ({x['account_id']})",
                                     "clause": self._clause_edit(c, [(c["span"][1], c["span"][1], " at " + _account_words_of(x))])} for x in others]
-                        flags.append(_flag("ACCOUNT_CHOICE", f"{a['name']} picked; {words} also trades in " + ", ".join(x["name"] for x in others),
-                                           leg["span"], choices))
+                        names = ", ".join(x["name"] + (f" (it holds {self._held_words({x['account_id']: held[x['account_id']]}, con)})" if x["account_id"] in held else "")
+                                          for x in others)
+                        flags.append(_flag("ACCOUNT_CHOICE", f"{a['name']} picked; {words} also trades in {names}", leg["span"], choices))
         leg["account_id"], leg["account_name"] = a["account_id"], a["name"]
         return a
 
@@ -3140,9 +3187,11 @@ class Resolver:
         """R2 (1.0.7.2 review): the order these exact words already made from a Smart Ticket on this contract in this book - still live,
         or filled today - so the same text read again reads as THAT order (its account and side), never as a new opening one once the
         position it closed has moved.  Only a clause with its own side word ("buy" / "sell", read from the position); the words are the
-        clause as typed, kept with the order's command (``smart.clause``).  Read only (orders and commands on the parse's connection)."""
+        clause as typed, kept with the order's command (``smart.clause``).  Second review: a clause whose "buy" / "sell" is carried from
+        the clause before is matched too, by its own words (the leg's clause, as the page stores it) and the carried side.  Read only
+        (orders and commands on the parse's connection)."""
         v = c.get("verb") or {}
-        if con is None or not con.get("id") or v.get("kind") != "side" or v.get("carried") or v.get("side") not in ("buy", "sell"):
+        if con is None or not con.get("id") or v.get("kind") != "side" or v.get("side") not in ("buy", "sell"):
             return None
         if self._cls(con) == "future" or not leg.get("lifetime_id"):
             return None
@@ -3178,14 +3227,23 @@ class Resolver:
                 return r
         return None
 
-    def _resolve_date(self, exp: Optional[dict]) -> Optional[str]:
-        """An expiry's date without flags or the chain (``_expiry``'s year rule: the first on or after today); None for a month alone."""
+    def _resolve_date(self, exp: Optional[dict], snap=None) -> Optional[str]:
+        """An expiry's date the way ``_expiry`` reads it, without its flags: a date; a day with its year, or the first on or after today
+        without one; a month with its year through the cached chain ``snap`` when it lists exactly one date that month (second review).
+        None when it cannot be known: a month without a year or a chain, or a day that is not a date."""
         if not exp:
             return None
         if exp.get("date"):
             return str(exp["date"])
         if exp.get("d") is None:
-            return None
+            y = exp.get("y")
+            if y is None or snap is None or exp.get("m") is None:
+                return None
+            try:
+                listed = [e for e in snap.expiries() if str(e)[:7] == f"{int(y):04d}-{int(exp['m']):02d}"]
+            except Exception:   # noqa: BLE001 - a chain that cannot list its expiries gives no date (the calendar is then refused)
+                return None
+            return str(listed[0]) if len(listed) == 1 else None
         m, d, y = int(exp["m"]), int(exp["d"]), exp.get("y")
         for yy in ((int(y),) if y else (self.today.year, self.today.year + 1)):
             try:
@@ -3204,8 +3262,14 @@ class Resolver:
         exps = s.get("expiries") or []
         if s.get("name") != "calendar" or len(exps) != 2 or len(c.get("legs") or []) != 2:
             return
-        da, db = self._resolve_date(exps[0]), self._resolve_date(exps[1])
-        if not da or not db or da == db:
+        # second review: both dates are read as each leg reads its own (a month alone through the cached chain's one date that month);
+        # when either cannot be known the calendar is refused (``_strategy_legs``), never left in the pure layer's typed order
+        snap = self._snap(self._calendar_uid(c))
+        da, db = self._resolve_date(exps[0], snap), self._resolve_date(exps[1], snap)
+        if not da or not db:
+            c["_calendar_unknown"] = True
+            return
+        if da == db:
             return
         near, far = (exps[0], exps[1]) if da < db else (exps[1], exps[0])
         if c["legs"][0].get("expiry") == near and c["legs"][1].get("expiry") == far:
@@ -3214,6 +3278,15 @@ class Resolver:
         old = f"{s['name']}: "
         c["flags"] = [_flag("STRATEGY_EXPANDED", f"{s['name']}: " + _expansion_words(c, c["legs"]), c["span"]) if f["code"] == "STRATEGY_EXPANDED"
                       and f["text"].startswith(old) else f for f in c["flags"]]
+
+    def _calendar_uid(self, c: dict) -> Optional[str]:
+        """The underlying id of a calendar typed on a ticker (read only: the master's exact match, as ``_underlying`` reads it)."""
+        ia = c.get("instrument") or {}
+        if ia.get("kind") != "ticker":
+            return None
+        sym = str(ia.get("symbol") or "").upper()
+        hits = self._lookup(ROOT_UNDERLYING.get(sym, sym))
+        return hits[0].instrument_id if len(hits) == 1 else None
 
     def _strategy_legs(self, ci: int, c: dict, binfo: dict, tree: dict) -> List[dict]:
         s = c["strategy"]
@@ -3237,6 +3310,10 @@ class Resolver:
             leg["side"] = al["side"]
             self._price_tif(c, leg, con, market_only=True)
             out.append(leg)
+        if c.get("_calendar_unknown") and out and not any(self._blocked(l["flags"]) for l in out):
+            for leg in out:
+                leg["flags"].append(_flag("EXPIRY_MONTH_ONLY", "a calendar sells the near expiry and buys the far one: both expiries must be dates FinSim can read"
+                                          " (a day, or a month the cached chain lists once) before the near one can be told from the far one", leg["span"]))
         return out
 
     def _covered_legs(self, ci: int, c: dict, binfo: dict, tree: dict) -> List[dict]:
@@ -3255,29 +3332,43 @@ class Resolver:
         buy_write = str((c.get("verb") or {}).get("word") or "").replace("-", " ") == "buy write"
         holders = self._holders(shares["lifetime_id"], con["id"]) if con is not None else None
         a = self._account(c, shares, binfo, tree, con, holders, aware=not buy_write)
-        free = 0
+        free = held_qty = 0
         if a is not None and con is not None:
             shares["position"] = self._position(a["account_id"], con["id"], True)
-            free = int(shares["position"]["free"]) if shares["position"]["qty"] > 0 else 0
+            held_qty = int(shares["position"]["qty"])
+            free = int(shares["position"]["free"]) if held_qty > 0 else 0
         shares["side"] = "BUY"
-        covered_by_held = not buy_write and q is not None and not q % 100 and con is not None and a is not None and free >= q
+        sym = ia.get("symbol")
+        # second review: the SIGNED holding decides, never only the free long shares - a short holding or shares held but not free (in
+        # working sells, reserved by calls, lent) are said, never read as "none held" (which buys the shares)
+        covered_by_held = not buy_write and q is not None and not q % 100 and con is not None and a is not None and held_qty > 0 and free >= q
         if q is not None and q % 100:
             lo, hi = q // 100 * 100, (q // 100 + 1) * 100
             choices = [{"label": f"{x:,} shares", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(x))])} for x in (lo, hi) if x > 0]
             shares["flags"].append(_flag("QTY_LOT", f"a covered call covers 100 shares per contract: {q:,} is not a multiple of 100", c["span"], choices))
-        elif not buy_write and con is not None and a is not None and q and 0 < free < q:
+        elif not buy_write and con is not None and a is not None and q and held_qty < 0:
+            shares["flags"].append(_flag("NOTHING_HELD", f"covered call on {q:,} {sym}: the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']} - a covered"
+                                         " call writes calls on shares held long", c["span"]))
+        elif not buy_write and con is not None and a is not None and q and held_qty > 0 and free < q:
             lots = free // 100 * 100
-            choices = ([{"label": f"covered call on the {lots:,} held", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else [])
+            choices = ([{"label": f"covered call on the {lots:,} held free", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else [])
             v = c.get("verb") or {}
             if v.get("span"):
                 choices.append({"label": f"buy write {q:,} (buy the shares)", "clause": self._clause_edit(c, [(v["span"][0], v["span"][1], "buy write")])})
-            shares["flags"].append(_flag("SIDE_SPLIT", f"covered call on {q:,} {ia.get('symbol')} but {free:,} are held free in {a['account_id']}: write calls on the held"
-                                         " round lots, or buy the shares with the calls", c["span"], choices or None))
+            shares["flags"].append(_flag("SIDE_SPLIT", f"covered call on {q:,} {sym} but {free:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
+                                         + self._not_free_words(shares["position"]) + ": write calls on the free round lots, or buy the shares with the calls",
+                                         c["span"], choices or None))
         elif con is not None and q and not covered_by_held:
             shares["qty"] = self._qty(c, shares, con, shares["position"])
-            if buy_write and free > 0:
-                shares["flags"].append(_flag("SIDE_INFERRED", f"buy write: buys {q:,} {ia.get('symbol')} although {free:,} are held free in {a['account_id']}"
+            if buy_write and held_qty > 0:
+                shares["flags"].append(_flag("SIDE_INFERRED", f"buy write: buys {q:,} {sym} although {held_qty:,} are held in {a['account_id']} ({free:,} free)"
                                              " (write 'covered call' to write calls on the shares held)", shares["span"]))
+            elif buy_write and held_qty < 0:
+                shares["flags"].append(_flag("SIDE_INFERRED", f"buy write: buys {q:,} {sym} while the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']}"
+                                             " (the purchase is a long lot beside the short, not a cover)", shares["span"]))
+            elif not buy_write and a is not None:
+                shares["flags"].append(_flag("SIDE_INFERRED", f"no {sym} held in {a['account_id']}: the covered call buys the {q:,} shares first, then writes the"
+                                             " calls (a buy write)", shares["span"]))
         self._price_tif(c, shares, con, market_only=True)
         if shares["qty"] and shares["order_type"] == "MARKET":
             shares["flags"].append(_flag("TYPE_DEFAULT", "no price: the shares at market (fills at the next executable delayed print)", shares["span"]))
@@ -3295,7 +3386,7 @@ class Resolver:
             call["qty"] = q // 100
         elif q is not None:
             call["flags"].extend(f for f in shares["flags"] if f["code"] == "QTY_LOT")
-        call["flags"].extend(f for f in shares["flags"] if f["code"] == "SIDE_SPLIT")
+        call["flags"].extend(f for f in shares["flags"] if f["code"] in ("SIDE_SPLIT", "NOTHING_HELD"))
         if covered_by_held:
             # the calls only, an order of their own (no package: nothing to wait for); a typed price is the calls' own limit
             call["flags"].extend(f for f in shares["flags"] if f["code"] in ("ACCOUNT_CHOICE", "ACCOUNT_NOT_IN_BOOK", "NOT_TRADEABLE_HERE") and f not in call["flags"])
@@ -3326,10 +3417,11 @@ class Resolver:
         self._set_instrument(shares, con)
         holders = self._holders(shares["lifetime_id"], con["id"]) if con is not None else None
         a = self._account(c, shares, binfo, tree, con, holders, aware=True)
-        held = 0
+        held = held_qty = 0
         if a is not None and con is not None:
             shares["position"] = self._position(a["account_id"], con["id"], True)
-            held = int(shares["position"]["free"]) if shares["position"]["qty"] > 0 else 0
+            held_qty = int(shares["position"]["qty"])
+            held = int(shares["position"]["free"]) if held_qty > 0 else 0
         opts = []
         for right, k, side, i in (("P", ks[0], "BTO", 0), ("C", ks[1], "STO", 1)):
             leg = self._leg_base(ci, c, binfo, ia.get("symbol"))
@@ -3355,11 +3447,19 @@ class Resolver:
         if q is None or con is None or a is None:
             return [shares] + opts
         sym = ia.get("symbol")
-        if held >= q:
+        # second review: the SIGNED holding decides (as for the covered call): a short holding is refused; shares held but not free are a
+        # SIDE_SPLIT naming why; only a book that holds none buys the shares
+        if held_qty < 0:
+            self._price_tif(c, shares, con, market_only=True)        # the package's one time in force (no second refusal about it)
+            for leg in [shares] + opts:
+                leg["flags"].append(_flag("NOTHING_HELD", f"collar on {q:,} {sym}: the {shares['book_name']} is short {-held_qty:,} {sym} in {a['account_id']} - a collar"
+                                          " protects shares held long", leg["span"]))
+            return [shares] + opts
+        if held_qty > 0 and held >= q:
             for leg in opts:
                 leg["flags"].append(_flag("SIDE_INFERRED", f"collar on {q:,} of the {held:,} {sym} held: the put and the call only, all-or-none", leg["span"]))
             return opts
-        if held <= 0:
+        if held_qty == 0:
             shares["qty"], shares["side"] = q, "BUY"
             self._price_tif(c, shares, con, market_only=True)
             shares["flags"].append(_flag("TYPE_DEFAULT", "no price: the shares at market (fills at the next executable delayed print)", shares["span"]))
@@ -3367,11 +3467,23 @@ class Resolver:
                 leg["flags"].append(_flag("SIDE_INFERRED", f"no {sym} held: the collar buys the {q:,} shares first, then the put and the call", leg["span"]))
             return [shares] + opts
         lots = held // 100 * 100
-        choices = [{"label": f"collar the {lots:,} held", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else None
+        choices = [{"label": f"collar the {lots:,} held free", "clause": self._clause_edit(c, [(qa["span"][0], qa["span"][1], str(lots))])}] if lots > 0 else None
+        self._price_tif(c, shares, con, market_only=True)            # the package's one time in force (no second refusal about it)
         for leg in [shares] + opts:
-            leg["flags"].append(_flag("SIDE_SPLIT", f"collar {q:,} but {held:,} {sym} free: collar the held round lots, or buy the shares as their own order",
+            leg["flags"].append(_flag("SIDE_SPLIT", f"collar {q:,} but {held:,} of the {held_qty:,} {sym} held in {a['account_id']} are free"
+                                      + self._not_free_words(shares["position"]) + ": collar the free round lots, or buy the shares as their own order",
                                       leg["span"], choices))
         return [shares] + opts
+
+    @staticmethod
+    def _not_free_words(pos: Optional[dict]) -> str:
+        """Why shares held are not free: " (300 in working sells, 100 reserved by covered calls, 50 lent)", or ""."""
+        pos = pos or {}
+        why = []
+        for n, words in ((pos.get("working_sells"), "in working sells"), (pos.get("reserved"), "reserved by covered calls"), (pos.get("lent"), "lent")):
+            if n:
+                why.append(f"{int(n):,} {words}")
+        return f" ({', '.join(why)})" if why else ""
 
     def _roll_legs(self, ci: int, c: dict, binfo: dict, tree: dict) -> List[dict]:
         ia = c.get("instrument") or {}
@@ -3732,11 +3844,15 @@ class Resolver:
         for g in tree["groups"]:
             reps = max((len(insts[ci]) for ci in g["clauses"]), default=0)
             names = [clauses[ci]["strategy"]["name"] for ci in g["clauses"] if clauses[ci]["kind"] == "strategy" and clauses[ci].get("strategy")]
+            # second review: a price typed on a strategy, a roll or a collar inside a group ('as a package', parentheses) reaches the
+            # group's combination and is refused there like an ungrouped one (its legs are priced at market), never dropped
+            gprice = next((clauses[ci]["mods"]["price"] for ci in g["clauses"] if clauses[ci]["kind"] in ("strategy", "roll", "collar")
+                           and clauses[ci]["mods"].get("price") is not None), None)
             for r in range(reps):
                 members = [l for ci in g["clauses"] for inst in insts[ci] if inst["rep"] == r for l in inst["legs"]]
                 if members:
                     sources.append({"legs": members, "span": g["span"], "clauses": list(g["clauses"]), "kind": "group", "group": g,
-                                    "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "price": None})
+                                    "strategy": names[0] if len(names) == 1 and len(g["clauses"]) == 1 else None, "price": gprice})
         combos = [self._combo(s) for s in sources]
         combos.sort(key=lambda cb: min(cb["legs"]) if cb["legs"] else 0)
         for n, cb in enumerate(combos, 1):

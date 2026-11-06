@@ -910,9 +910,11 @@ class QuoteWorker(threading.Thread):
         self._lock = threading.Lock()
         self._changed: List[str] = []
         # 1.0.7.2 review: the chain slots this worker holds (taken from the chain cache and not yet put / failed / given back), so a
-        # replacement worker never hands out a slot a live job of this one still downloads; and the retired worker it replaced, whose
-        # last chain job's quote changes it drains with its own
+        # replacement worker never hands out a slot a live job of this one still downloads.  Second review: once retired, the worker that
+        # replaced it (``_successor``), to which its last chain job hands its quote changes - the live worker keeps no link to a dead one
+        # (``_predecessor`` stays None: kept for readers of 1.0.7.2's first form)
         self._chain_active: set = set()
+        self._successor: Optional["QuoteWorker"] = None
         self._predecessor: Optional["QuoteWorker"] = None
         self._resolve: deque = deque()
         self._resolve_errors: Dict[str, Tuple[str, Optional[int]]] = {}
@@ -1358,14 +1360,32 @@ class QuoteWorker(threading.Thread):
     def retire(self, successor: Optional["QuoteWorker"] = None) -> None:
         """This worker is being replaced (``Runtime.make_worker('quotes')`` after its scheduler thread died): stop, without waiting, its
         quote pool and chain pool - a chain download already running finishes and releases its slot; queued jobs give theirs back; no
-        job takes a new chain - and hand its pending quote changes to ``successor``, which drains this worker's later ones too."""
+        job takes a new chain - and hand its pending quote changes to ``successor`` now.  Second review: a chain job still running hands
+        the changes of its last chain over itself when it ends (``_hand_over``); the successor keeps no link to this worker, so restarts
+        never build a chain of dead workers that every tick walks."""
         self._stop_event.set()
         pool, self._pool = self._pool, None
         if pool is not None:
             pool.shutdown(wait=False, cancel_futures=True)
         self._stop_chain_pool(0.0)
         if successor is not None and successor is not self:
-            successor._predecessor = self
+            self._successor = successor
+            self._hand_over()
+
+    def _hand_over(self) -> None:
+        """A retired worker's pending quote changes go to the live worker that replaced it (following later replacements), which reports
+        them on its next tick; nothing is held back here."""
+        target, seen = self._successor, {id(self)}
+        while target is not None and target._successor is not None and id(target) not in seen:
+            seen.add(id(target))
+            target = target._successor
+        if target is None or target is self:
+            return
+        with self._lock:
+            pending, self._changed = self._changed, []
+        if pending:
+            with target._lock:
+                target._changed.extend(pending)
 
     def _chain_job(self, uid: Optional[str]) -> None:
         """A chain-pool job: fetch ``uid``, then the next pending chain, until none is left or the worker stops, so the chain cycle never
@@ -1374,6 +1394,7 @@ class QuoteWorker(threading.Thread):
             self._run_chain(uid, int(self.clock.epoch()))
             self._beat()
             if self._stop_event.is_set():
+                self._hand_over()                 # retired meanwhile: this chain's quote changes go to the worker that replaced it
                 return
             uid = self._take_chain()
 
@@ -1651,12 +1672,10 @@ class QuoteWorker(threading.Thread):
         report["adv"].append(iid)
 
     def _drain_changed(self) -> List[str]:
+        """The quote changes to report: this worker's own and those a retired worker it replaced handed over (``_hand_over``)."""
         with self._lock:
             out = list(self._changed)
             self._changed = []
-        pred = self._predecessor
-        if pred is not None:                       # the retired worker's last chain job: its quote changes are this worker's to report
-            out.extend(pred._drain_changed())
         return list(dict.fromkeys(out))
 
     def _notify(self, changed: List[str]) -> None:

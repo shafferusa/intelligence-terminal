@@ -106,7 +106,7 @@ re-checked against the command clock: a cancel that committed in between wins.
    after the negotiated calendar days). Settlement moves the payable or receivable into settled cash on the due date.
 4. Shorts consume their borrow; covers return it. Option fills recompute the account's option margin (moved to 1310).
 5. The order's filled quantity, average price, status (PARTIAL / FILLED), fees and the bar it used are updated; hedge
-   children of a primary are resized to floor(filled × ratio).
+   children of a primary are resized to floor(shares filled × leg quantity / shares quantity) (section 9).
 6. The ledger-level integrity set runs on the touched keys before COMMIT.
 
 Worked example (D2): BUY 100 AAPL at the observed last 339.50 with no cash in the account: gross 33,950.00, fee
@@ -130,8 +130,15 @@ NAV falls by exactly the 1.00 commission.
 
 - **Sequential (stock or futures primary + option legs)**: the primary works on its own; the hedge legs wait
   (`WAITING_PARENT`) and are released, sized to floor(primary filled × ratio), on each fill of the primary (12,000 of
-  50,000 SPY with ratio 0.01 → 120 contracts; 21,000 → 210). Legs then match on their own quotes. If the primary ends
-  unfilled, its legs are cancelled.
+  50,000 SPY with ratio 0.01 → 120 contracts; 21,000 → 210). Legs then match on their own quotes. 1.0.7.2: the release
+  is in whole numbers, floor(shares filled × leg quantity / shares quantity), while the ratio fits the primary's quantity
+  (1 call for 300 shares is released at the 300th share). When an amend or a replace gives the primary a quantity the
+  ratio does not fit (300 shares + 3 calls amended to 350: 3.5 calls), the legs follow it at the ratio, rounded down as
+  before: floor(shares filled × ratio), 3 calls at 350 shares, 2 at 250 - never one more than the shares cover. Over a
+  replace the shares are counted over the chain (what the replaced orders filled plus the replacement's fill, against
+  what they filled plus its quantity), and the legs released before the replace are resized with it. When the primary
+  ends (filled, cancelled or expired), a leg still waiting ends with it (cancelled: "primary ended unfilled" when no share
+  was bought, else "primary ended before it was due"), and a leg already released keeps working at its size.
 - **All-or-none (option-only, one underlying)**: every leg needs a fresh Cboe quote with displayed size for its whole
   remaining quantity in the **same** chain observation; otherwise nothing fills (`AON_SIZE`, `AON_STALE`) and every leg
   keeps working. The fill is one command for all legs with one option-margin recomputation; cancelling any leg cancels
@@ -145,7 +152,9 @@ NAV falls by exactly the 1.00 commission.
   primary (MARKET or LIMIT) and are listed first whatever order they were named in; the option legs wait for its fills
   and keep their own MARKET / LIMIT terms (`PackageLeg.limit_px` carries a limit to `order.submit`). A waiting leg is
   released in whole numbers: floor(shares filled x its own quantity / the primary's quantity), so every leg is released
-  in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th share). Anything else is
+  in full once the shares have filled, whatever the ratio (1 call for 300 shares is released at the 300th share), also
+  over a replace of the shares; an amended quantity the ratio does not fit releases floor(shares filled x ratio), as for
+  every sequential package above. Anything else is
   refused (`COMBO_INVALID` / `LEGS`): two names, a futures leg, two share legs, or one contract named twice. A package
   holds one name: its shares and its options. Option sides are BTO / STO / BTC / STC and share sides BUY / SELL /
   SELL_SHORT / BUY_TO_COVER (`SIDE_INVALID` otherwise). An option leg must be in the master or on the cached chain
@@ -164,9 +173,11 @@ NAV falls by exactly the 1.00 commission.
   order of another book (409 `BOOK_MISMATCH`, the orders named). Then there is one `order.cancel` per target, in the
   order given, never in parallel, each with the request id `<batch id>:<order or package id>`. An order of an
   all-or-none package cancels its whole package once, and its other legs, listed or not, are reported with it. Any
-  other order is cancelled itself, and a primary's unfilled legs go with it, reported with it whether listed or not
-  (a listed one gets no command of its own). So the answer counts every order the batch ended; Pending Trades lists
-  those legs in its confirm before anything is cancelled. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is
+  other order is cancelled itself, and a primary's legs still waiting end with it, reported with it whether listed or
+  not (one listed after its primary gets no command of its own). A leg already released for the shares the primary
+  bought keeps working; listed itself, it is cancelled by its own command. So the answer counts every order the batch
+  ended; Pending Trades lists the waiting legs in its confirm before anything is cancelled, and the released ones apart,
+  as "keeps working", outside the batch unless they are ticked. An order that had already ended is skipped (`NOT_OPEN`); a refused cancel is
   reported with its code. The answer lists what was cancelled, skipped and failed. Resending the same batch after a
   lost answer replays every cancel already made (`X-Replayed: 1`) and cancels nothing twice.
 - **Resending an order under its own request id (1.0.7.2)**: a body that differs from the stored command only in

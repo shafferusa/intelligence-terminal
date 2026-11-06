@@ -1581,7 +1581,9 @@ takes the next pending chain itself when it finishes one, so the cycle never wai
 `ChainCache.fail`, so a slot is never lost, and `run()` gives a dead worker's slots back (`requeue_in_flight`) - only
 the slots no live job holds: each slot keeps the worker that took it, and a replacement worker (the Supervisor's
 restart) first retires the dead one's pools, whose running download finishes and releases its own slot, so one
-underlying is never downloaded twice at once. An order ticket on an option asks for its chain at REQUEST itself
+underlying is never downloaded twice at once. The retired worker hands its pending quote changes to its replacement, and
+a download still running hands over its own when it ends; the live worker keeps no link to a dead one, so restarts never
+pile up dead workers. An order ticket on an option asks for its chain at REQUEST itself
 (`orders_preview._ask_for_quote`), so a held option's chain is not left a REFRESH behind the pinned ones. When the
 standard root of a chain cell shows no market and another root of that cell does, the quoted contract takes the
 cell (its root named on it) and the other goes to the cell's `alt`, which the chain page lists. The

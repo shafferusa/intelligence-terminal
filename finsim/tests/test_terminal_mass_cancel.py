@@ -260,6 +260,44 @@ class MassCancelTests(MassCancelBase):
         self.assertEqual((DEFAULT_REASON, DEFAULT_REASON), tuple(self.one("SELECT reason FROM orders WHERE order_id=?", (x,))["reason"] for x in (h2, p2)))
         assert_integrity(self, self.rt, "full")
 
+    def test_f_a_partly_filled_primary_keeps_its_released_leg_and_ends_the_one_still_waiting(self):
+        """1.0.7.2 second review: cancelling a partly filled sequential primary keeps a leg already RELEASED for the shares it bought (it
+        covers them: Pending lists it apart as 'keeps working' and leaves it out of the batch) and ends a leg still WAITING - nothing can
+        release it any more - reported with its primary, no command of its own.  A released leg the owner ticks is cancelled by its own
+        command."""
+        st, pkg, _h = self.post("/api/orders?book=P", {"account_id": P_ACCT, "tif": "DAY", "package": {"strategy_key": "CUSTOM", "legs": [
+            {"instrument_id": "ACME", "side": "BUY", "qty": 300, "order_type": "LIMIT", "limit_px": "99.00"},
+            {"instrument_id": acme("C", 105), "side": "STO", "qty": 3}, {"instrument_id": acme("C", 100), "side": "BTO", "qty": 1}]}}, "st:0123456789ab:C4:r1")
+        self.assertEqual((200, "SEQUENTIAL"), (st, pkg["package"]["fill_mode"]), pkg)
+        p = pkg["order"]["order_id"]
+        kids = {r["instrument_id"]: r["order_id"] for r in self.q("SELECT order_id, instrument_id FROM orders WHERE parent_order_id=?", (p,))}
+        sold, bought = kids[acme("C", 105)], kids[acme("C", 100)]
+        # a 98.90 print on the next completed bar of 1,500 shares (the other ACME buys rest at 95.00 and below): 10 % = 150 of the 300 fill
+        # at the 99.00 limit; the 3 calls sold release 150 x 3 // 300 = 1, the 1 call bought 150 x 1 // 300 = 0 (it keeps waiting)
+        self.rt.clock.advance(60)
+        now = self.rt.clock.epoch()
+        px = qprice("98.90")
+        bar = Bar1m(now - 60, px, px, px, px, 1500)
+        self.rt.cache.put(QuoteRecord(instrument_id="ACME", provider="yahoo", source="Yahoo Finance chart (ACME)", method="direct", last=px, quote_time=now - 10,
+                                      fetched_at=now, delay_s=900, delay_label="up to 15 min delayed", currency="USD", session_group="US_EQUITY", bar=bar,
+                                      bars_tail=[bar]), now)
+        self.rt.matcher.on_quotes(["ACME"])
+        rows = {r["order_id"]: (r["status"], int(r["qty"]), int(r["filled_qty"])) for r in self.q("SELECT * FROM orders WHERE order_id IN (?,?,?)", (p, sold, bought))}
+        self.assertEqual({p: ("PARTIAL", 300, 150), sold: ("WORKING", 1, 0), bought: ("WAITING_PARENT", 1, 0)}, rows)
+        batch = "mc:f0f0f0f0f0f0"
+        st, out, _h = self.cancel([p], batch, book="P")
+        self.assertEqual(200, st, out)
+        self.assertEqual([(p, None), (bought, "primary")], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        self.assertEqual([f"{batch}:{p}"], self.cancels(batch))
+        st_ = self.statuses()
+        self.assertEqual(("CANCELLED", "WORKING", "CANCELLED"), (st_[p], st_[sold], st_[bought]))
+        self.assertEqual("primary ended before it was due", self.one("SELECT reason FROM orders WHERE order_id=?", (bought,))["reason"])
+        # the released call, ticked on its own: its own cancel
+        st, out, _h = self.cancel([sold], "mc:f1f1f1f1f1f1", book="P")
+        self.assertEqual([{"order_id": sold, "status": "CANCELLED", "package_id": pkg["package"]["package_id"]}], out["cancelled"])
+        self.assertEqual(["mc:f1f1f1f1f1f1:" + sold], self.cancels("mc:f1f1f1f1f1f1"))
+        assert_integrity(self, self.rt, "full")
+
 
 if __name__ == "__main__":
     unittest.main()

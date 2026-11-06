@@ -20,7 +20,9 @@
  *   figures; an all-or-none combination says that its legs fill together at each leg's executable bid / ask, with no net limit in this
  *   version.  Back is focused; only "Send N orders" sends.
  * - The send loop: strictly one item at a time, in leg order: a fresh preview (a blocker stops), then POST /api/orders?book=<its book>
- *   with the request id st:<ticket>:<L|C><n>:r<revision> and smart {ticket, item, clause} (the words typed, kept with the command).
+ *   with the request id st:<ticket>:<L|C><n>:r<revision>, smart {ticket, item, clause} (the words typed, kept with the command) and the
+ *   id of the preview the CONFIRM listed (an order's, or a sequential combination's shares leg's; second review), so the server judges a
+ *   price that moved since the owner read the confirm (PREVIEW_STALE: more than 0.5 % against the owner, or a preview older than 120 s).
  *   The first refusal stops the run: a moved price (PREVIEW_STALE) shows the server's diff with Accept & continue / Skip / Stop (Accept
  *   resends the same request id with the fresh preview); a large order (CONFIRM_REQUIRED) is resent under the same id with
  *   confirm_large only when the owner clicks Confirm and send; any other refusal stops with its message.  A lost answer is looked up
@@ -31,7 +33,9 @@
  * submitted"), never a second order, and within one ticket an order already sent stays marked sent when the text is read again - by
  * its terms, or by its words in the same place when they now read as another order (a position it closed has moved): such an item is
  * shown as the order that went, unselected, and never offered again (1.0.7.2 review).  A 409 REQUEST_ID_REUSED on the ticket's own
- * request id is looked up in the account's orders (recovered, "already submitted"), never shown as a refusal of an order that works.  The
+ * request id (or a lost answer of a combination) is looked up in the account's orders: recorded as sent ("already submitted") only when
+ * the order found there has this item's terms; otherwise (another window sent other terms under the same id) it is a refusal naming that
+ * order, and the item's revision moves on, so sending it again places it under a new id (second review).  The
  * draft (text, parse, edits, revisions, results) is kept in this browser only (T.store 'smart.draft') and cleared once every selected
  * item is sent.  The dock never opens here (no account route), so the ticket's keys never act on this page.
  * Nothing here computes a price, an amount or a total.  ASCII only; no framework, no CDN.
@@ -920,17 +924,20 @@
     var body = T.h('div', { class: 'smart-confirm smart-dialog' });
     body.appendChild(T.h('div', null, 'These ' + plural(n, 'order') + ' go out one at a time, in this order; the first refusal stops the rest. Nothing has been sent yet.'));
     var ol = T.h('ol'); list.forEach(function (it) { ol.appendChild(confirmLine(S, it)); }); body.appendChild(ol);
-    body.appendChild(T.h('div', { class: 'hint' }, 'Ticket ' + S.ticket + '. Each order gets a fresh preview just before it is sent; a moved price or a large order asks you again.'));
+    body.appendChild(T.h('div', { class: 'hint' }, 'Ticket ' + S.ticket + '. Each order is checked again just before it is sent and goes with the preview listed here;' +
+      ' a moved price or a large order asks you again (moved: more than 0.5 % against you since this preview, or this preview older than 2 minutes).'));
     var label = 'Send ' + plural(n, 'order');
     /* what the owner confirms is exactly what goes: no edit and no new reading while the confirm is open, and "Send" checks that every
-       listed item is still staged with the same terms (else nothing is sent) */
+       listed item is still staged with the same terms (else nothing is sent).  Second review: the preview each order was confirmed with
+       (the figures listed above, taken now: the 15-s refresh may replace it.pv while the confirm is open) is the one its POST carries */
     var sigs = list.map(function (it) { return it.sig; });
+    var pvids = list.map(confirmedPv);
     S.confirming = true; paint(S);
     var h = T.ui.modal({ title: label + '?', body: body, sticky: true, wide: true,
       onDismiss: function () { say(S, 'not sent (Back)'); },
       onClose: function () { S.confirming = false; paint(S); },
       actions: [{ label: 'Back', id: 'smart-back', onClick: function (m) { m.close(); say(S, 'not sent (Back)'); } },
-                { label: label, cls: 'primary', id: 'smart-send', onClick: function (m, btn) { btn.disabled = true; m.close(); sendAll(S, list, sigs); } }] });
+                { label: label, cls: 'primary', id: 'smart-send', onClick: function (m, btn) { btn.disabled = true; m.close(); sendAll(S, list, sigs, pvids); } }] });
     var back = h.el.querySelector('#smart-back');
     if (back) { try { back.focus(); } catch (e) { /* focus is a convenience */ } }
   }
@@ -959,18 +966,28 @@
       return { blockers: [it.err] };
     });
   }
+  /* the id of the preview the confirm lists for an item: an order's own, a sequential combination's shares leg's (an all-or-none
+     combination sends none: its legs fill at their bid / ask, no net limit) */
+  function confirmedPv(it) {
+    if (it.kind === 'leg') { return (it.pv && it.pv.preview_id) || null; }
+    return it.fill_mode === 'SEQUENTIAL' ? ((it.ppv && it.ppv.preview_id) || null) : null;
+  }
+  /* the POST body: the request, the smart note and the preview the owner CONFIRMED (it.cpv, second review), never one taken after the
+     click - so a price that moved against the owner since the confirm comes back 409 PREVIEW_STALE and asks again (askStale); the fresh
+     preview of sendOne only checks that nothing new blocks the order (its id is used only when the confirm had none) */
   function bodyOf(S, it, fr) {
     var b = clone(it.req);
-    if (it.kind === 'leg') { if (fr.pv && fr.pv.preview_id) { b.preview_id = fr.pv.preview_id; } }
-    else if (it.fill_mode === 'SEQUENTIAL' && fr.ppv && fr.ppv.preview_id) { b.preview_id = fr.ppv.preview_id; }
+    var pid = it.cpv || (it.kind === 'leg' ? (fr.pv && fr.pv.preview_id) : (it.fill_mode === 'SEQUENTIAL' && fr.ppv ? fr.ppv.preview_id : null));
+    if (pid && (it.kind === 'leg' || it.fill_mode === 'SEQUENTIAL')) { b.preview_id = pid; }
     b.confirm_large = false;
     b.smart = { ticket: S.ticket, item: it.key, clause: clauseOf(it) };
     return b;
   }
-  function sendAll(S, list, sigs) {
+  function sendAll(S, list, sigs, pvids) {
     if (S.sending || S.dead) { return; }
     var changed = list.some(function (it, i) { return S.items.indexOf(it) < 0 || it.sent || it.moved || !it.sel || it.sig !== sigs[i]; });
     if (changed) { say(S, 'the staged orders changed after the confirm opened: nothing was sent - open the confirm again', 'err'); paint(S); return; }
+    list.forEach(function (it, i) { it.cpv = (pvids && pvids[i]) || null; });
     S.sending = true; S.run = { list: list, i: 0, sent: 0, skipped: 0 };
     S.items.forEach(function (it) { clearTimeout(it.timer); }); S.queue = [];
     say(S, 'sending ' + plural(list.length, 'order') + ', one at a time ...'); paint(S);
@@ -1052,10 +1069,11 @@
         it.result = { state: 'lost', text: 'lost answer (' + e.message + '): check Pending Trades before sending it again' };
         return 'stop';
       }
-      if (e && e.code === 'NETWORK' && it.kind === 'combo') { return reconcileCombo(S, it, rid); }
+      if (e && e.code === 'NETWORK' && it.kind === 'combo') { return reconcileCombo(S, it, rid, body); }
       /* R1 (1.0.7.2 review): this ticket's own request id already carries an order (a reload or a second window between the send and
-         its answer): it is looked up and recorded as sent ("already submitted"), never shown as refused */
-      if (e && e.code === 'REQUEST_ID_REUSED' && String(rid).indexOf('st:' + S.ticket + ':') === 0) { return reconcileCombo(S, it, rid); }
+         its answer): it is looked up; second review: recorded as sent ("already submitted") only when that order has THIS item's terms
+         - the server replays the same terms itself, so a 409 means another window sent other terms under the id - else refused */
+      if (e && e.code === 'REQUEST_ID_REUSED' && String(rid).indexOf('st:' + S.ticket + ':') === 0) { return reconcileCombo(S, it, rid, body, e); }
       var d = detailsOf(e);
       if (e && e.code === 'PREVIEW_STALE') { return askStale(S, it, body, rid, e, d); }
       if (e && e.code === 'CONFIRM_REQUIRED') { return askConfirm(S, it, body, rid, e, d); }
@@ -1067,19 +1085,72 @@
   /* an item whose answer was lost (or whose own request id already carries an order): its request id (a single order, a sequential
      primary), rid:L1 (all-or-none legs) or rid:H1 (the primary's children) is looked up in the account's orders before anything else
      is sent */
-  function reconcileCombo(S, it, rid) {
+  function reconcileCombo(S, it, rid, body, err) {
     var acct = (it.req && it.req.account_id) || it.account_id;
     return T.api.get('/api/accounts/' + encodeURIComponent(acct) + '/orders', { status: 'all' }).then(function (rows) {
       var list = Array.isArray(rows) ? rows : (rows && rows.orders) || [];
       var ids = [rid, rid + ':L1', rid + ':H1']; var hit = null;
       list.forEach(function (o) { if (!hit && o && ids.indexOf(o.request_id) >= 0) { hit = o; } });
-      if (hit) { return record(S, it, rid, { order: hit, package: { package_id: hit.package_id, status: hit.status }, recovered: true, replayed: true }); }
+      if (hit && sameTerms(it.req || body, list, rid)) {
+        return record(S, it, rid, { order: hit, package: { package_id: hit.package_id, status: hit.status }, recovered: true, replayed: true });
+      }
+      if (hit) {
+        /* another order (other terms) already went under this id: nothing of THIS item was placed; its revision moves on so that sending it
+           again places it under a new id, never answered as that other order */
+        var next = bumpRev(S, it);
+        it.result = { state: 'refused', text: 'refused: request ' + rid + ' already carries ' + (hit.order_id || 'an order') + ' (' + orderWords(hit) + '), not these terms - ' +
+                      'nothing was sent for this item; it is now revision r' + next + ': send it again to place it as a new order',
+                      blockers: [{ code: (err && err.code) || 'REQUEST_ID_REUSED', message: 'request ' + rid + ' already carries ' + (hit.order_id || 'another order') }] };
+        return 'stop';
+      }
       it.result = { state: 'lost', text: 'lost answer and no order found under request ' + rid + ': check Pending Trades before sending it again' };
       return 'stop';
     }, function () {
       it.result = { state: 'lost', text: 'lost answer; the orders could not be re-read: do not send it again until Pending Trades answers' };
       return 'stop';
     });
+  }
+  /* whether the orders under request ``rid`` (a single order, a sequential primary rid with its waiting legs rid:H1.., or all-or-none
+     legs rid:L1..) are the item's request ``req``: account, instrument, side, quantity, type, prices and time in force (a waiting leg's
+     size follows its primary, so it is matched by instrument and side) */
+  function sameTerms(req, orders, rid) {
+    if (!req) { return false; }
+    var by = {}; (orders || []).forEach(function (o) { if (o && typeof o.request_id === 'string') { by[o.request_id] = o; } });
+    function px(a, b) { return (a == null || a === '') ? (b == null || b === '') : (b != null && b !== '' && Number(a) === Number(b)); }
+    function tifOf(o) { return o.gtd_date ? 'GTD' : (o.activate_ts != null ? 'NEXT_SESSION' : o.tif); }
+    function one(o, r, sized) {
+      if (!o || o.account_id !== req.account_id || o.instrument_id !== r.instrument_id || o.side !== r.side) { return false; }
+      if (!sized) { return true; }
+      return Number(o.qty) === Number(r.qty) && o.order_type === (r.order_type || 'MARKET') && px(o.limit_px, r.limit_px) && px(o.stop_px, r.stop_px) &&
+        px(o.trail_amt, r.trail_amt) && px(o.trail_pct, r.trail_pct) && tifOf(o) === (req.tif || 'DAY') && (req.tif !== 'GTD' || String(o.gtd_date || '').slice(0, 10) === req.gtd_date);
+    }
+    var pl = req.package && Array.isArray(req.package.legs) ? req.package.legs : null;
+    if (!pl) { return one(by[rid], req, true); }
+    /* each leg of the request matched to one order of its own under the id (rid:H1.. waiting legs, rid:L1.. all-or-none legs) */
+    function each(legs, prefix, sized) {
+      var got = Object.keys(by).filter(function (k) { return k.indexOf(prefix) === 0; }).map(function (k) { return by[k]; });
+      if (got.length !== legs.length) { return false; }
+      var used = {};
+      return legs.every(function (l) {
+        for (var j = 0; j < got.length; j++) { if (!used[j] && one(got[j], l, sized)) { used[j] = true; return true; } }
+        return false;
+      });
+    }
+    if (by[rid]) {                                     /* sequential: the shares leg is the primary (listed first), the options wait */
+      return one(by[rid], pl[0], true) && each(pl.slice(1), rid + ':H', false);
+    }
+    return each(pl, rid + ':L', true);
+  }
+  function orderWords(o) {
+    return (SIDE_WORDS[o.side] || o.side || '?') + ' ' + T.fmt.qty(o.qty) + ' ' + (o.symbol || o.instrument_id || '?') + (o.order_type === 'LIMIT' && o.limit_px ? ' limit ' + o.limit_px : '');
+  }
+  /* the item's next revision, kept with the draft: a resend gets a request id never used for other terms */
+  function bumpRev(S, it) {
+    var r = S.revs[it.key];
+    it.rev = Math.max(Number(it.rev) || 0, r ? Number(r.rev) || 0 : 0) + 1;
+    S.revs[it.key] = { rev: it.rev, sig: it.sig };
+    saveState(S);
+    return it.rev;
   }
   /* the owner's choice in a sticky dialog: resolves once, whatever closes it (Esc / x = Stop) */
   function ask(spec) {

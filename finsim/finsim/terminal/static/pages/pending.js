@@ -210,26 +210,44 @@
     return (r.side_words || String(r.side || '').replace(/_/g, ' ')) + ' ' + T.fmt.qty(r.open_qty != null ? r.open_qty : r.qty) + ' ' + (r.symbol || r.instrument_id || '') +
       ' . ' + (r.account_name || T.accountName(r.account_id)) + ' . ' + bookNameOf(r.book);
   }
-  /* 1.0.7.2 review (R3): what ends WITH the orders ticked - every other open leg of a ticked all-or-none package and every open order
-     that waits for a ticked primary - taken from the open orders (``pool``); they are listed in the confirm and sent in the batch, so
-     the count confirmed is exactly what ends */
+  /* 1.0.7.2 review (R3): what ends WITH the orders ticked - every other open leg of a ticked all-or-none package and every leg still
+     WAITING for a ticked primary (the server ends a primary's waiting legs with it) - taken from the open orders (``pool``); they are
+     listed in the confirm and sent in the batch, so the count confirmed is exactly what ends.  Second review: a leg already RELEASED for
+     the shares a ticked primary bought (working or partly filled) does not end with it - the server keeps it hedging those shares, as
+     the row's x does - so it is listed apart as "keeps working" and left out of the batch unless it is ticked itself.
+     -> {extra: the rows that end with the ticked ones, keeps: the released legs that keep working} */
   function linkedRows(rows, pool) {
-    var ids = {}, pk = {}, extra = [];
-    rows.forEach(function (r) { ids[r.order_id] = true; if (r.package_id && r.fill_mode === 'AON') { pk[r.package_id] = true; } });
+    var ids = {}, pk = {}, extra = [], keeps = [];
+    rows.forEach(function (r) { ids[r.order_id] = r; if (r.package_id && r.fill_mode === 'AON') { pk[r.package_id] = true; } });
     (pool || []).forEach(function (x) {
       if (!x || (x.row_kind && x.row_kind !== 'order') || !x.order_id || ids[x.order_id] || !(x.actions && x.actions.cancel)) { return; }
       var withPkg = !!(x.package_id && x.fill_mode === 'AON' && pk[x.package_id]);
-      var withPrimary = !!(x.parent_order_id && ids[x.parent_order_id]);
-      if (withPkg || withPrimary) { ids[x.order_id] = true; extra.push(Object.assign({}, x, { $with: withPkg ? 'its all-or-none package' : 'its primary ' + x.parent_order_id })); }
+      var primary = x.parent_order_id ? ids[x.parent_order_id] : null;
+      if (withPkg || (primary && x.status === 'WAITING_PARENT')) {
+        ids[x.order_id] = x;
+        extra.push(Object.assign({}, x, { $with: withPkg ? 'its all-or-none package' : 'its primary ' + x.parent_order_id + ': it still waits for its shares' }));
+      } else if (primary) {
+        keeps.push(Object.assign({}, x, { $filled: primary.filled_qty || 0 }));
+      }
     });
-    return extra;
+    return { extra: extra, keeps: keeps };
   }
-  function massConfirm(rows, title) {
+  function massConfirm(rows, title, keeps) {
     var body = T.h('div', null, T.h('div', null, 'Cancel ' + rows.length + ' open order' + (rows.length === 1 ? '' : 's') + '?'));
     var ul = T.h('ul', { class: 'mono' });
     rows.slice(0, MASS_LIST).forEach(function (r) { ul.appendChild(T.h('li', null, (r.order_id || '') + ': ' + massWords(r) + (r.$with ? ' (ends with ' + r.$with + ')' : ''))); });
     if (rows.length > MASS_LIST) { ul.appendChild(T.h('li', { class: 'muted' }, '... and ' + (rows.length - MASS_LIST) + ' more')); }
     body.appendChild(ul);
+    if (keeps && keeps.length) {
+      body.appendChild(T.h('div', null, 'Keeps working (not cancelled: released for the shares its primary already bought; tick it to cancel it too):'));
+      var kl = T.h('ul', { class: 'mono' });
+      keeps.slice(0, MASS_LIST).forEach(function (r) {
+        kl.appendChild(T.h('li', { class: 'muted' }, (r.order_id || '') + ': ' + massWords(r) + ' (for the ' + T.fmt.qty(r.$filled) + ' of ' +
+          (r.parent_order_id || 'its primary') + ' filled)'));
+      });
+      if (keeps.length > MASS_LIST) { kl.appendChild(T.h('li', { class: 'muted' }, '... and ' + (keeps.length - MASS_LIST) + ' more')); }
+      body.appendChild(kl);
+    }
     body.appendChild(T.h('div', { class: 'hint' }, 'One cancel per book; an all-or-none package goes as one; an order that ends meanwhile is reported as already ended.'));
     return T.ui.confirm(body, { title: title, ok: 'Cancel ' + rows.length + ' order' + (rows.length === 1 ? '' : 's'), cancel: 'Keep' });
   }
@@ -506,8 +524,9 @@
           function (e) { T.api.fail(e, 'pending trades: the open orders could not be read, nothing was cancelled'); });
         return;
       }
-      rows = rows.concat(linkedRows(rows, pool));
-      massConfirm(rows, title).then(function (yes) {
+      var linked = linkedRows(rows, pool);
+      rows = rows.concat(linked.extra);
+      massConfirm(rows, title, linked.keeps).then(function (yes) {
         if (!yes || dead) { return; }
         st.massBusy = true; paintMass();
         massCancel(rows, 'cancelled by the owner (Pending Trades)').then(function (tot) {

@@ -234,6 +234,22 @@ class PoolModeTests(_Base):
         self.assertIsNone(w._chain_pool)
         self.assertEqual([], [t.name for t in fp.threads if t.is_alive()])
 
+    def test_a_retired_worker_hands_its_changes_to_the_live_one_and_is_never_linked(self):
+        """1.0.7.2 second review: ``Runtime.make_worker`` retires a dead quote worker.  Its pending quote changes, and those of a chain job
+        that ends after it retired, go to the worker that replaced it - followed through later replacements to the live one - and no worker
+        keeps a link to a dead one, so restarts never build a chain of dead workers that every tick walks."""
+        fp = SlowChains(self.rt.clock, delay=0.0)
+        w1, w2, w3 = (self.worker(fp, fetch_threads=0) for _ in range(3))
+        w1._changed = ["ACME"]
+        w1.retire(w2)
+        self.assertEqual((["ACME"], [], None), (w2._changed, w1._changed, w2._predecessor))
+        w2.retire(w3)                                                         # w2 died too: w3 is the live worker
+        self.assertEqual((["ACME"], None, None), (w3._changed, w3._predecessor, w2._predecessor))
+        w1._run_chain = lambda uid, now: w1._changed.append(uid)              # w1's last chain job, still running, ends now
+        w1._chain_job("WIDG1")                                                # retired: one chain, then its changes go forward and it ends
+        self.assertEqual((["ACME", "WIDG1"], []), (w3._drain_changed(), w1._changed))
+        self.assertEqual([], w3._drain_changed())
+
     def test_the_pool_size_follows_the_config_and_fetch_threads(self):
         fp = SlowChains(self.rt.clock, delay=0.0)
         self.assertEqual((3, 32), (config.CHAIN_FETCH_WORKERS, CHAIN_FETCH_TIMES_KEPT))

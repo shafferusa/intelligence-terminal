@@ -390,6 +390,121 @@ class SequentialComboTests(SmartSubmitBase):
         assert_integrity(self, self.rt, "full")
 
 
+# ===== the release after the shares' quantity changed (1.0.7.2 second review) ========================================================
+class ReleaseAfterAmendOrReplaceTests(SmartSubmitBase):
+    """BUY 300 ACME limit 99 (below the 100.00 print: the shares rest) + STO 3 Dec 18 2026 105 calls (bid 2.60), ratio 3 / 300 = 0.01.
+    The release is floor(shares filled x leg qty / shares qty) while the ratio fits the shares' quantity, else floor(shares filled x
+    ratio) as in 1.0.7.1 - never a half-up rounding of an amended quantity; over a replace the shares are counted over the chain."""
+    CALL = acme("C", 105)
+
+    def package(self, shares: int, calls: int, n: int = 1):
+        primary = {"account_id": ACCT, "instrument_id": "ACME", "side": "BUY", "qty": shares, "order_type": "LIMIT", "limit_px": "99.00", "tif": "DAY"}
+        st, pv, _h = self.call("POST", "/api/orders/preview?book=T", primary)
+        self.assertEqual(200, st, pv)
+        legs = [leg("ACME", "BUY", shares, order_type="LIMIT", limit_px="99.00"), leg(self.CALL, "STO", calls)]
+        st, out, _h = self.combo(n, legs, clause=f"buy {shares} ACME limit 99, sell {calls} ACME Dec 18 2026 105 calls as a package", preview_id=pv["preview_id"])
+        self.assertEqual(200, st, out)
+        rid = f"st:{TICKET}:C{n}:r1"
+        p = self.q("SELECT * FROM orders WHERE request_id=?", (rid,))[0]
+        c = self.q("SELECT * FROM orders WHERE request_id=?", (rid + ":H1",))[0]
+        self.assertEqual(("WORKING", "WAITING_PARENT", calls), (p["status"], c["status"], int(c["qty"])))
+        return p["order_id"], c["order_id"]
+
+    def bar(self, vol: int):
+        """The next completed 1-minute bar printing 98.90 (crosses the 99.00 limit) with ``vol`` shares: 10 % of it fills."""
+        self.rt.clock.advance(60)
+        now = self.rt.clock.epoch()
+        print_acme(self.rt, "98.90", 10, now - 60, vol)
+        self.rt.matcher.on_quotes(["ACME"])
+
+    def row(self, oid: str) -> dict:
+        return self.q("SELECT * FROM orders WHERE order_id=?", (oid,))[0]
+
+    def sell_calls(self):
+        load_chain(self.rt, acme_chain(self.rt.clock.epoch()))
+        self.rt.matcher.on_quotes([self.CALL])
+
+    def positions(self) -> dict:
+        return {r["instrument_id"]: int(r["qty"]) for r in self.q("SELECT instrument_id, qty FROM v_positions WHERE account_id=? AND qty != 0", (ACCT,))}
+
+    def test_j_an_amended_or_replaced_quantity_releases_at_the_ratio_never_one_call_more(self):
+        got = {}
+        for case, qty in (("amended up", 350), ("amended down", 250), ("replaced", 350)):
+            with self.subTest(case=case):
+                if got:
+                    self.tearDown()
+                    self.setUp()
+                p, c = self.package(300, 3)
+                if case.startswith("amended"):
+                    st, out, _h = self.call("PATCH", f"/api/orders/{p}?book=T", {"qty": qty}, f"ui:amend-{qty}-0001")
+                else:
+                    st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", {"qty": qty, "limit_px": "99.00"}, f"ui:replace-{qty}-0001")
+                    p = out["order"]["order_id"]
+                self.assertEqual(200, st, out)
+                self.assertEqual(p, self.row(c)["parent_order_id"])
+                self.bar(50000)                                                      # 5,000 shares available: the shares fill in full
+                self.assertEqual(("FILLED", qty), (self.row(p)["status"], int(self.row(p)["filled_qty"])))
+                self.sell_calls()
+                ch = self.row(c)
+                got[case] = (int(ch["qty"]), int(ch["filled_qty"]), self.positions())
+                # 350 x 0.01 = 3.5 and 250 x 0.01 = 2.5: the ratio does not fit, so floor(filled x 0.01) - 1.0.7.1's 3 and 2, never 4 and 3
+                self.assertTrue(any(e["note"] == f"resized to {qty // 100:,} = floor({qty:,} \u00d7 0.01) after the primary's fill"
+                                    for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c,))), case)
+                assert_integrity(self, self.rt, "full")
+        self.assertEqual({"amended up": (3, 3, {"ACME": 350, self.CALL: -3}), "amended down": (2, 2, {"ACME": 250, self.CALL: -2}),
+                          "replaced": (3, 3, {"ACME": 350, self.CALL: -3})}, got)
+
+    def test_k_a_replace_after_a_partial_fill_releases_every_leg_on_the_whole_chain(self):
+        # 300 shares + 1 call (ratio 0.00333333); 10 % x 2,000 = 200 shares fill: 200 x 1 // 300 = 0, the call waits; the rest (100) is
+        # re-priced by a replace; once those 100 fill, the chain has 300 of 300: 300 x 1 // 300 = 1 call released and sold
+        p, c = self.package(300, 1)
+        self.bar(2000)
+        self.assertEqual(("PARTIAL", 200, "WAITING_PARENT"), (self.row(p)["status"], int(self.row(p)["filled_qty"]), self.row(c)["status"]))
+        st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", {"limit_px": "99.50"}, "ui:replace-rest-0001")
+        self.assertEqual(200, st, out)
+        new = out["order"]["order_id"]
+        self.assertEqual((new, 100), (self.row(c)["parent_order_id"], int(self.row(new)["qty"])))
+        self.bar(50000)
+        self.assertEqual(("FILLED", 100), (self.row(new)["status"], int(self.row(new)["filled_qty"])))
+        self.assertTrue(any(e["note"] == "resized to 1 = floor(300 \u00d7 1 / 300) after the primary's fill" for e in self.q("SELECT note FROM order_events WHERE order_id=?", (c,))))
+        self.sell_calls()
+        self.assertEqual(({"ACME": 300, self.CALL: -1}, "FILLED"), (self.positions(), self.row(c)["status"]))
+        assert_integrity(self, self.rt, "full")
+        # 300 shares + 3 calls; 150 fill: 150 x 3 // 300 = 1 call released (it stays with the replaced order); the rest (150) replaced and
+        # filled: the chain's 300 of 300 resize that released call to 3
+        self.tearDown()
+        self.setUp()
+        p, c = self.package(300, 3)
+        self.bar(1500)
+        self.assertEqual(("WORKING", 1), (self.row(c)["status"], int(self.row(c)["qty"])))
+        st, out, _h = self.call("POST", f"/api/orders/{p}/replace?book=T", {"limit_px": "99.50"}, "ui:replace-rest-0002")
+        self.assertEqual(200, st, out)
+        new = out["order"]["order_id"]
+        self.bar(50000)
+        self.assertEqual(("FILLED", 150), (self.row(new)["status"], int(self.row(new)["filled_qty"])))
+        self.assertEqual((p, 3), (self.row(c)["parent_order_id"], int(self.row(c)["qty"])))
+        self.sell_calls()
+        self.assertEqual({"ACME": 300, self.CALL: -3}, self.positions())
+        assert_integrity(self, self.rt, "full")
+
+    def test_l_a_primary_ended_after_a_partial_fill_ends_the_legs_still_waiting(self):
+        # 300 shares + 1 call: 200 fill (200 x 1 // 300 = 0, the call waits), then the owner cancels the shares: nothing can release the
+        # call any more, so it ends with them (CANCELLED, said) instead of waiting until it expires; the cancel answer reports it with
+        # its primary.  A leg already released keeps working (test_terminal_orders test_d7, test_terminal_mass_cancel)
+        p, c = self.package(300, 1)
+        self.bar(2000)
+        self.assertEqual(("PARTIAL", 200, "WAITING_PARENT"), (self.row(p)["status"], int(self.row(p)["filled_qty"]), self.row(c)["status"]))
+        st, out, _h = self.call("POST", "/api/orders/cancel?book=T", {"order_ids": [p]}, "mc:release0001")
+        self.assertEqual(200, st, out)
+        self.assertEqual([(p, None), (c, "primary")], [(x["order_id"], x.get("with")) for x in out["cancelled"]])
+        ch = self.row(c)
+        self.assertEqual(("CANCELLED", "primary ended before it was due"), (ch["status"], ch["reason"]))
+        self.assertEqual("primary " + p + " ended with 200 shares filled: floor(200 \u00d7 1 / 300) = 0, none of this leg was due",
+                         self.q("SELECT note FROM order_events WHERE order_id=? ORDER BY rowid DESC LIMIT 1", (c,))[0]["note"])
+        self.assertEqual({"ACME": 200}, self.positions())
+        assert_integrity(self, self.rt, "full")
+
+
 class ReadAgainTests(SmartSubmitBase):
     def test_i_a_closing_leg_sent_then_read_again_is_the_order_that_went(self):
         """1.0.7.2 review R2: 'buy 2 ... calls' while short 2 reads buy to close; once that order is working (or filled), the same words
@@ -418,6 +533,32 @@ class ReadAgainTests(SmartSubmitBase):
         self.assertEqual((None, None), (other["side"], other["request"]))
         f = next(f for f in other["flags"] if f["code"] == "ALREADY_CLOSING")
         self.assertEqual(("blocker", ["bto 2 ACME Dec 18 2026 100 calls limit 1.05"]), (f["severity"], [ch["clause"] for ch in f["choices"]]))
+        assert_integrity(self, self.rt, "full")
+
+    def test_m_a_closing_leg_whose_side_is_carried_reads_again_as_the_order_that_went(self):
+        """Second review (R2 with a carried side): 'buy 100 ACME limit 100.00 and 2 ACME Dec 18 2026 105 calls limit 2.75' while short those
+        2 calls reads BUY 100 and BUY TO CLOSE 2 (the side carried from leg 1); both are sent and fill.  The same words read again are
+        those orders - leg 2 too, matched by its own words and the carried 'buy' - never a buy to open of 2 calls."""
+        c105 = acme("C", 105)
+        st, out, _h = self.send({"account_id": ACCT, "instrument_id": c105, "side": "STO", "qty": 2, "order_type": "MARKET", "tif": "DAY"}, "ui:readagain-seed-0002")
+        self.assertEqual((200, "FILLED"), (st, out["order"]["status"]), out)
+        text = "buy 100 ACME limit 100.00 and 2 ACME Dec 18 2026 105 calls limit 2.75"
+
+        def parse():
+            st_, ans, _h_ = self.call("POST", "/api/smart-ticket/parse?book=T", {"text": text, "book": "T"})
+            self.assertEqual(200, st_, ans)
+            return ans["legs"]
+        first = parse()
+        self.assertEqual([("BUY", 100), ("BTC", 2)], [(x["side"], x["qty"]) for x in first])
+        for x in first:
+            st, pv, _h = self.call("POST", "/api/orders/preview?book=T", dict(x["request"], confirm_large=False))
+            self.assertEqual(200, st, pv)
+            st, sent, _h = self.send(dict(x["request"], preview_id=pv["preview_id"], confirm_large=False, smart={"ticket": TICKET, "item": f"L{x['n']}", "clause": x["clause"]}),
+                                     f"st:{TICKET}:L{x['n']}:r1")
+            self.assertEqual((200, "FILLED"), (st, sent["order"]["status"]), sent)
+        again = parse()
+        self.assertEqual([("BUY", 100), ("BTC", 2)], [(x["side"], x["qty"]) for x in again])
+        self.assertEqual([True, True], ["ALREADY_SENT" in [f["code"] for f in x["flags"]] for x in again])
         assert_integrity(self, self.rt, "full")
 
 if __name__ == "__main__":

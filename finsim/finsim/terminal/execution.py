@@ -899,21 +899,44 @@ def recompute_option_margin(ctx: TxContext, services, account_id: str, link_id: 
 
 
 # ---- hedge children (§10.7 step 8) ------------------------------------------------------------------------------------
-def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_qty: int, primary_ended: bool = False) -> List[dict]:
-    """Size the WAITING_PARENT / working children of a primary to ``floor(primary filled × leg qty / primary qty)``; a child whose target
-    is still 0 keeps waiting; when the primary ended with no fill the children are CANCELLED.
+def _primary_chain(conn, primary_order_id: str) -> list:
+    """OMS-03: a primary and the orders it replaced (``replaces_order_id``, back to the first), newest first."""
+    out, seen, oid = [], set(), primary_order_id
+    while oid and oid not in seen:
+        seen.add(oid)
+        r = conn.execute("SELECT * FROM orders WHERE order_id=?", (oid,)).fetchone()
+        if r is None:
+            break
+        out.append(r)
+        oid = r["replaces_order_id"] if "replaces_order_id" in r.keys() else None
+    return out
 
-    1.0.7.2 review: the arithmetic is on whole numbers - the leg's own quantity is ``round(primary qty × ratio)`` (the ratio is stored
-    as leg qty / primary qty at 8 decimals, so the rounding gives back the exact quantity) - never ``floor(filled × ratio)``, which lost
-    a contract whenever the 8-decimal ratio was rounded down (300 shares + 1 call: 0.00333333 × 300 = 0.999999 -> 0, the call never
-    released).  A primary FILLED in full releases each leg's whole quantity.  The stored ratio is unchanged (1.0.7.1 reads it as before)."""
+
+def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_qty: int, primary_ended: bool = False) -> List[dict]:
+    """Size the WAITING_PARENT / working children of a primary to ``floor(shares filled × leg qty / shares qty)``; a child whose target
+    is still 0 keeps waiting; when the primary ends, a child still waiting is CANCELLED (nothing can release it any more), and a child
+    already released keeps working at its size.
+
+    1.0.7.2 review: the arithmetic is on whole numbers.  The leg's quantity is read back from its ratio (stored as leg qty / primary qty
+    at 8 decimals) as the whole number nearest ``shares qty × ratio`` when that product IS a whole number up to the 8-decimal rounding:
+    the shares still have the quantity the ratio was set against, or one it fits exactly.  So 300 shares + 1 call (0.00333333) release
+    the call at the 300th share, never floor(300 × 0.00333333) = 0.  Second review: when an amend or a replace gave the shares a quantity
+    the ratio does not fit (300 shares + 3 calls amended to 350: 3.5 calls), the release is floor(shares filled × ratio) as in 1.0.7.1 -
+    never the half-up rounding of the new quantity, which released a call the shares did not cover.  The shares are counted over the
+    replace chain (``replaces_order_id``): what the orders it replaced filled plus this one's fill, against what they filled plus this
+    one's quantity, and the children of the orders it replaced (a leg released before the replace) are sized with it, so every leg is
+    released in full once the package's shares have all filled.  The stored ratio is unchanged (1.0.7.1 reads it as before)."""
     conn = ctx.conn
     out: List[dict] = []
-    prow = conn.execute("SELECT qty FROM orders WHERE order_id=?", (primary_order_id,)).fetchone()
-    pqty = int(prow["qty"]) if prow is not None and prow["qty"] else 0
-    rows = conn.execute("SELECT * FROM orders WHERE parent_order_id=? AND status IN ('WAITING_PARENT','WORKING','PARTIAL','FILLED')", (primary_order_id,)).fetchall()
+    chain = _primary_chain(conn, primary_order_id)
+    before = sum(int(r["filled_qty"] or 0) for r in chain[1:])                     # what the orders it replaced filled
+    shares_filled = before + int(primary_filled_qty)
+    pqty = (int(chain[0]["qty"] or 0) + before) if chain else 0
+    ids = [r["order_id"] for r in chain] or [primary_order_id]
+    rows = conn.execute(f"SELECT * FROM orders WHERE parent_order_id IN ({','.join('?' for _ in ids)})"
+                        " AND status IN ('WAITING_PARENT','WORKING','PARTIAL','FILLED') ORDER BY order_id", ids).fetchall()
     for r in rows:
-        if primary_ended and int(primary_filled_qty) == 0:
+        if primary_ended and shares_filled == 0:
             if r["status"] in ("WAITING_PARENT", "WORKING", "PARTIAL"):
                 conn.execute("UPDATE orders SET status='CANCELLED', reason=?, updated_ts=? WHERE order_id=?", ("primary ended unfilled", ctx.ts, r["order_id"]))
                 conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
@@ -922,23 +945,33 @@ def resize_hedge_children(ctx: TxContext, primary_order_id: str, primary_filled_
                 out.append({"order_id": r["order_id"], "status": "CANCELLED"})
             continue
         ratio = Decimal(r["ratio"] or "0")
+        target, how = None, None
         if pqty > 0:
-            full = int((Decimal(pqty) * ratio).to_integral_value(rounding="ROUND_HALF_UP"))      # the leg's own quantity, exact
-            target = (int(primary_filled_qty) * full) // pqty
-            how = f"floor({int(primary_filled_qty):,} × {full:,} / {pqty:,})"
-        else:
-            target = int((Decimal(int(primary_filled_qty)) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
-            how = f"floor({int(primary_filled_qty):,} × {ratio})"
+            prod = Decimal(pqty) * ratio
+            full = prod.to_integral_value(rounding="ROUND_HALF_UP")
+            if abs(prod - full) <= Decimal(pqty) * Decimal("0.000000005"):            # the ratio fits these shares: the leg's quantity, exact
+                target = (shares_filled * int(full)) // pqty
+                how = f"floor({shares_filled:,} × {int(full):,} / {pqty:,})"
+        if target is None:                                                           # the shares' quantity changed to one the ratio does not fit
+            target = int((Decimal(shares_filled) * ratio).to_integral_value(rounding="ROUND_FLOOR"))
+            how = f"floor({shares_filled:,} × {ratio})"
         filled = int(r["filled_qty"])
-        if target <= 0 or target == int(r["qty"]) and r["status"] != "WAITING_PARENT":
-            continue
-        if target <= filled:
-            continue
-        status = "WORKING" if filled == 0 else "PARTIAL"
-        conn.execute("UPDATE orders SET qty=?, status=?, updated_ts=? WHERE order_id=?", (target, status, ctx.ts, r["order_id"]))
-        conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
-                     (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill"))
-        ctx.event("ORDER_RESUMED" if r["status"] == "WAITING_PARENT" else "ORDER_RESIZED", account_id=r["account_id"], instrument_id=r["instrument_id"],
-                  ref_type="order", ref_id=r["order_id"], qty=target, primary_filled=int(primary_filled_qty), ratio=str(ratio))
-        out.append({"order_id": r["order_id"], "status": status, "qty": target})
+        if target > 0 and target > filled and not (target == int(r["qty"]) and r["status"] != "WAITING_PARENT"):
+            status = "WORKING" if filled == 0 else "PARTIAL"
+            conn.execute("UPDATE orders SET qty=?, status=?, updated_ts=? WHERE order_id=?", (target, status, ctx.ts, r["order_id"]))
+            conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
+                         (r["order_id"], ctx.ts, r["status"], status, f"resized to {target:,} = {how} after the primary's fill"))
+            ctx.event("ORDER_RESUMED" if r["status"] == "WAITING_PARENT" else "ORDER_RESIZED", account_id=r["account_id"], instrument_id=r["instrument_id"],
+                      ref_type="order", ref_id=r["order_id"], qty=target, primary_filled=shares_filled, ratio=str(ratio))
+            out.append({"order_id": r["order_id"], "status": status, "qty": target})
+        elif primary_ended and r["status"] == "WAITING_PARENT":
+            # second review: the primary ended after a partial fill and none of this leg was due - nothing can release it any more, so it
+            # ends with its primary instead of waiting (and reserving) until it expires
+            conn.execute("UPDATE orders SET status='CANCELLED', reason=?, updated_ts=? WHERE order_id=?", ("primary ended before it was due", ctx.ts, r["order_id"]))
+            conn.execute("INSERT INTO order_events(order_id, ts, from_status, to_status, note) VALUES (?,?,?,?,?)",
+                         (r["order_id"], ctx.ts, r["status"], "CANCELLED", f"primary {primary_order_id} ended with {shares_filled:,} shares filled: {how} = 0,"
+                                                                          " none of this leg was due"))
+            ctx.event("ORDER_CANCELLED", account_id=r["account_id"], instrument_id=r["instrument_id"], ref_type="order", ref_id=r["order_id"],
+                      reason="primary ended before it was due")
+            out.append({"order_id": r["order_id"], "status": "CANCELLED"})
     return out

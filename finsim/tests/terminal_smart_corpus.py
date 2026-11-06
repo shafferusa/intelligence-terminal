@@ -455,6 +455,51 @@ CASES = [
         {"codes": ["ACCOUNT_CHOICE"], "request": False}]}),
     _case("ref-prefix-account-not-in-book", "at pb ms: buy 100 ACME", {"ok": False, "legs": [{"codes": ["ACCOUNT_NOT_IN_BOOK"], "request": False}]}),
     _case("ref-suffix-account-not-in-book", "buy 100 ACME; at pb ms", {"ok": False, "legs": [{"codes": ["ACCOUNT_NOT_IN_BOOK"], "request": False}]}),
+    # ---- 1.0.7.2 second review: the gaps left by the first fixes -------------------------------------------------------------------------
+    # a calendar with a month alone: both dates read (the month through the cached chain's one date), near sold on a buy, either typed order
+    _case("clean-calendar-month-only", "buy 1 ACME Dec 2026/Jan 15 240 call calendar", {"ok": True, "codes": ["EXPIRY_FROM_MONTH", "YEAR_INFERRED"], "legs": [
+        {"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
+    _case("clean-calendar-month-only-reversed", "buy 1 ACME Jan 15/Dec 2026 240 call calendar", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
+    _case("clean-calendar-month-only-sold", "sell 1 ACME Dec 2026/Jan 15 240 put calendar", {"ok": True, "legs": [{"side": "BTO", "id": P240}, {"side": "STO", "id": J240P}]}),
+    _case("clean-calendar-month-then-day", "buy 1 ACME Jan 2027/Dec 18 240 call calendar", {"ok": True, "legs": [{"side": "STO", "id": C240}, {"side": "BTO", "id": J240C}]}),
+    _case("ref-calendar-month-no-chain", "buy 1 WIDG Nov 2026/Dec 18 40 put calendar", {"ok": False, "codes": ["EXPIRY_MONTH_ONLY"], "combos": [{"request": False}]}),
+    # a price typed on a strategy, a roll or a collar inside a group reaches the group's combination (refused), never dropped
+    _case("ref-grouped-spread-price", "buy 1 ACME Dec 18 2026 240/250 call spread at 1.00 as a package", {"ok": False, "combos": [
+        {"codes": ["LIMIT_IN_AON"], "request": False}]}),
+    _case("ref-paren-spread-price", "(buy 1 ACME Dec 18 2026 240/250 call spread limit 1.00)", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
+    _case("ref-grouped-spread-price-and-call", "buy 1 ACME Dec 18 2026 240/250 call spread at 1.00 and sell 1 ACME Dec 18 2026 260 call as a package",
+          {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
+    _case("ref-paren-roll-price", "(roll 2 ACME Dec 18 2026 240 calls to Jan 15 2027 250 at 1.20)", {"ok": False, "combos": [{"codes": ["LIMIT_IN_AON"], "request": False}]}),
+    _case("ref-grouped-collar-price", "collar 100 ACME Dec 18 2026 220/260 limit 0.50 as a package", {"ok": False, "combos": [
+        {"codes": ["LIMIT_IN_AON"], "request": False}]}, book="F"),
+    # a side carried into a strategy: a strategy is bought or sold, never a carried short / stc read as a buy
+    _case("ref-carried-short-strategy", "short 100 WIDG and 1 ACME Dec 18 2026 240/250 call spread", {"ok": False, "codes": ["MISSING_SIDE"], "combos": [{"request": False}],
+                                                                                                    "absent": ["STRATEGY_SIDE_CONVENTION"]}),
+    _case("ref-carried-stc-strategy", "stc 1 ACME Dec 18 2026 250 calls and 1 ACME Dec 18 2026 240/250 call spread", {"ok": False, "codes": ["MISSING_SIDE"],
+                                                                                                                   "combos": [{"request": False}]}),
+    # a covered call / collar on a book that is short the shares: refused, never a share purchase beside the short
+    _case("ref-covered-call-short", "covered call 200 GIZM Dec 18 2026 55", {"ok": False, "codes": ["NOTHING_HELD"], "combos": [{"request": False}]}),
+    _case("ref-collar-short", "collar 200 GIZM Dec 18 2026 45/55", {"ok": False, "codes": ["NOTHING_HELD"], "combos": [{"request": False}]}),
+    _case("ref-covered-call-short-pb", "covered call 100 GIZM Dec 18 2026 55 in the Institutional book", {"ok": False, "codes": ["NOTHING_HELD"]}),
+    # an explicit opening side keeps R-ACCT-1 (US Exchange first); the account holding the contract is offered, never filled in silently
+    _case("clean-opening-side-not-in-holding-account", "sto 2 ACME Dec 18 2026 250 calls in the Institutional book", {"ok": True, "legs": [
+        {"account_id": I, "side": "STO", "codes": ["ACCOUNT_CHOICE"]}]}, book="I"),
+    _case("clean-bto-not-in-holding-account", "bto 2 ACME Dec 18 2026 250 calls in the Institutional book", {"ok": True, "legs": [
+        {"account_id": I, "side": "BTO", "codes": ["ACCOUNT_CHOICE"]}]}, book="I"),
+    _case("clean-short-not-in-holding-account", "short 20 GIZM in the Institutional book", {"ok": True, "legs": [
+        {"account_id": I, "side": "SELL_SHORT", "codes": ["ACCOUNT_CHOICE"]}]}, book="I"),
+    # the account travels with the carried side, and with the closing book phrase it stands beside
+    _case("clean-carried-account", "buy 100 ACME at pb ms and 50 WIDG", {"ok": True, "legs": [{"account_id": PB}, {"account_id": PB, "codes": ["SIDE_CARRIED"]}]},
+          book="I"),
+    _case("ref-carried-account-not-in-book", "buy 100 ACME at pb ms and 50 WIDG", {"ok": False, "legs": [{"codes": ["ACCOUNT_NOT_IN_BOOK"], "request": False},
+                                                                                         {"codes": ["ACCOUNT_NOT_IN_BOOK"], "request": False}]}),
+    _case("clean-account-before-closing-book", "buy 100 ACME, buy 50 WIDG at pb ms in the Institutional book", {"ok": True, "legs": [
+        {"book": "I", "account_id": PB}, {"book": "I", "account_id": PB}]}, book="I"),
+    _case("clean-account-after-closing-book", "buy 100 ACME, buy 50 WIDG in the Institutional book, at pb ms", {"ok": True, "legs": [
+        {"book": "I", "account_id": PB}, {"book": "I", "account_id": PB}]}, book="I"),
+    # a comma before four or more digits is one malformed number too, never two orders
+    _case("ref-qty-comma-4-digits", "buy 1,5000 ACME limit 225", {"ok": False, "legs": [{"codes": ["QTY_NOT_WHOLE"], "request": False}]}),
+    _case("ref-qty-comma-5-digits", "buy 12,34567 ACME limit 225", {"ok": False, "legs": [{"codes": ["QTY_NOT_WHOLE"], "request": False}]}),
     # ---- the route's 400s -------------------------------------------------------------------------------------------------------------
     _case("ref-400-too-long", LONG_TEXT, {"status": 400, "error": "TEXT_TOO_LONG"}),
     _case("ref-400-too-many-legs", "; ".join(["sell 1 ACME Dec 18 2026 210/220/250/260 iron condor"] * 5) + "; buy 1 ACME", {"status": 400, "error": "TOO_MANY_LEGS"}),
